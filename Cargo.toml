@@ -1,0 +1,4 @@
+[workspace]
+
+members = ["nusamai-geometry"]
+resolver = "2"
