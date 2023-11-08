@@ -1,4 +1,4 @@
 [workspace]
 
-members = ["nusamai-*"]
+members = ["nusamai-geometry", "nusamai-export/*"]
 resolver = "2"
