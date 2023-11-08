@@ -1,1 +1,1 @@
-pub use nusamai_geometry::Geometry;
+pub use nusamai_geometry::{Geometry, GeometryIndices};
