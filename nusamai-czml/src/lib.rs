@@ -17,6 +17,11 @@ struct Geometry {
     pub dim: u8,
     pub indices: GeometryIndices,
 }
+struct CzmlBase {
+    pub id: String,
+    pub name: String,
+    pub description: String,
+}
 
 fn load_geojson(filepath: String) -> String {
     let data = fs::read_to_string(filepath).expect("Unable to read file");
