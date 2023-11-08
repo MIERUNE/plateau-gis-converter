@@ -1,7 +1,7 @@
 use serde_json::Value;
 use std::fs;
 
-pub enum GeometryIndices {
+enum GeometryIndices {
     MultiPoint,
     MultiLineString {
         linestring_indices: Vec<Vec<u32>>,
@@ -12,7 +12,7 @@ pub enum GeometryIndices {
     },
 }
 
-pub struct Geometry {
+struct Geometry {
     pub vertices: Vec<Vec<f64>>,
     pub dim: u8,
     pub indices: GeometryIndices,
@@ -50,10 +50,8 @@ fn convert_to_geometry(geojson: &str) -> Result<Geometry, serde_json::Error> {
                 vertices.push(v);
             }
             let mut i = (0..vertices.len() as u32).collect::<Vec<_>>();
-            println!("i: {:?}\n", i);
 
             let max = indices.iter().flatten().max();
-            println!("max: {:?}\n", max);
             if max.is_none() {
                 indices.push(i);
                 continue;
