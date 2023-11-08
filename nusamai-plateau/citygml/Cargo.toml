@@ -1,0 +1,9 @@
+[package]
+name = "citygml"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+quick-xml = "0.31"
+thiserror = "1.0"
+macros = { path = "./macros" }
