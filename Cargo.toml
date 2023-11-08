@@ -1,4 +1,7 @@
 [workspace]
 
-members = ["nusamai-geometry"]
+members = [
+    "nusamai-geometry",
+    "app/src-tauri"
+]
 resolver = "2"
