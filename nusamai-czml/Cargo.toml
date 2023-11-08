@@ -8,3 +8,4 @@ edition = "2021"
 [dependencies]
 serde = "1.0.192"
 serde_json = { version = "1.0.108", features = ["float_roundtrip"] }
+nusamai-geometry = { path = "../nusamai-geometry" }
