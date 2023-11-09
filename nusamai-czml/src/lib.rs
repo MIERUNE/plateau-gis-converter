@@ -77,7 +77,7 @@ fn load_geojson(filepath: String) -> String {
 }
 
 fn convert_to_geometry(geojson: &str) -> Result<CompactMultiPolygon, serde_json::Error> {
-    let value: Value = serde_json::from_str(geojson)?;
+    let value: Value = serde_json::from_str(geojson).unwrap();
 
     let features = &value["features"].as_array().unwrap();
 
@@ -86,39 +86,34 @@ fn convert_to_geometry(geojson: &str) -> Result<CompactMultiPolygon, serde_json:
         .map(|x| x["geometry"].clone())
         .collect::<Vec<_>>();
 
-    let mut vertices: Vec<Vec<f64>> = Vec::new();
-    let mut indices: Vec<Vec<u32>> = Vec::new();
+    let mut vertices = Vec::new();
+    let mut indices = Vec::new();
 
     for geom in geom_list {
         let coordinates = geom["coordinates"].as_array();
+
         for polygon in coordinates.unwrap() {
             let polygon_vertices = polygon.as_array().unwrap();
+
             for vertex in polygon_vertices {
                 let vertex_coordinates = vertex.as_array().unwrap();
-                let mut v = Vec::new();
+
                 for coordinate in vertex_coordinates {
                     let coordinate_f64 = coordinate.as_f64().unwrap();
-                    v.push(coordinate_f64);
+                    vertices.push(coordinate_f64);
                 }
-                vertices.push(v);
             }
-            let mut i = (0..vertices.len() as u32).collect::<Vec<_>>();
-
-            let max = indices.iter().flatten().max();
-            if max.is_none() {
-                indices.push(i);
-                continue;
-            }
-            i = i.iter().map(|x| x + max.unwrap() + 1).collect::<Vec<_>>();
-            indices.push(i);
+            let index = vertices.len() as u32;
+            // 穴あきポリゴンは一切存在しないという想定で仮の実装
+            indices.push([index, 0]);
         }
     }
 
     let geometry_struct = CompactMultiPolygon {
         vertices,
         dim: 3,
-        polygon_indices: indices,
         hole_indices: Vec::new(),
+        part_indices: indices,
     };
     Ok(geometry_struct)
 }
@@ -141,10 +136,9 @@ mod tests {
         let geometry = convert_to_geometry(&geojson_data);
 
         assert!(geometry.is_ok(), "Geometry should be ok");
-        assert_eq!(
-            geometry.unwrap().vertices.len(),
-            13,
-            "Geometry should have 13 vertices"
-        );
+        let vertices_length = geometry.as_ref().unwrap().vertices.len();
+        let part_indices_length = geometry.as_ref().unwrap().part_indices.len();
+        assert_eq!(vertices_length, 39, "Geometry should have 39 vertices");
+        assert_eq!(part_indices_length, 2, "Geometry should have 2 parts")
     }
 }
