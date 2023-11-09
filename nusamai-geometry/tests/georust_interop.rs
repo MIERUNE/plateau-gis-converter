@@ -9,7 +9,9 @@ use geojson::GeoJson;
 use nusamai_geometry::CompactMultiPolygon;
 
 /// geo_types to compact
-fn geo_type2compact(multipolygon: &MultiPolygon) -> CompactMultiPolygon {
+fn georust2compact(multipolygon: &MultiPolygon) -> CompactMultiPolygon {
+    // 以下は、愚直に命令的に書けば、もっと効率的に短かく書けるはず
+
     let vertices: Vec<_> = multipolygon
         .0
         .iter()
@@ -37,33 +39,35 @@ fn geo_type2compact(multipolygon: &MultiPolygon) -> CompactMultiPolygon {
         })
         .collect();
 
-    let part_indices1 = multipolygon
-        .0
-        .iter()
-        .map(|polygon| {
-            let a = polygon.exterior().0.len() as u32;
-            let b: u32 = polygon.interiors().iter().map(|r| r.0.len() as u32).sum();
-            a + b
-        })
-        .scan(0, |state, x: u32| {
-            *state += x;
-            Some(*state)
-        });
+    let part_indices: Vec<[u32; 2]> = {
+        let part_indices_verts = multipolygon
+            .0
+            .iter()
+            .map(|polygon| {
+                let a = polygon.exterior().0.len() as u32;
+                let b: u32 = polygon.interiors().iter().map(|r| r.0.len() as u32).sum();
+                a + b
+            })
+            .scan(0, |state, x: u32| {
+                *state += x;
+                Some(*state)
+            });
 
-    let part_indices2 = multipolygon
-        .0
-        .iter()
-        .map(|polygon| polygon.interiors().len() as u32)
-        .scan(0, |state, x| {
-            *state += x;
-            Some(*state)
-        });
+        let part_indices_holes = multipolygon
+            .0
+            .iter()
+            .map(|polygon| polygon.interiors().len() as u32)
+            .scan(0, |state, x| {
+                *state += x;
+                Some(*state)
+            });
 
-    let part_indices: Vec<[u32; 2]> = part_indices1
-        .zip(part_indices2)
-        .map(|(i1, i2)| [i1, i2])
-        .take(multipolygon.0.len() - 1)
-        .collect();
+        part_indices_verts
+            .zip(part_indices_holes)
+            .map(|(i1, i2)| [i1, i2])
+            .take(multipolygon.0.len() - 1)
+            .collect()
+    };
 
     CompactMultiPolygon {
         vertices,
@@ -83,29 +87,30 @@ fn vertices_to_linestring(vertices: &[f64], dim: usize) -> LineString<f64> {
 }
 
 /// compact to geo_types
-fn compact2geo_type(mpoly: &CompactMultiPolygon) -> MultiPolygon {
+fn compact2georust(mpoly: &CompactMultiPolygon) -> MultiPolygon {
     let dim = mpoly.dim as usize;
+
     let mut poly_vert_start = 0;
     let mut poly_hole_start = 0;
-    let poly_end = [mpoly.vertices.len(), mpoly.hole_indices.len()];
     let mut polygons = Vec::with_capacity(mpoly.part_indices.len());
 
-    for [vert_end, hole_end] in mpoly
+    for [poly_vert_end, poly_hole_end] in mpoly
         .part_indices
         .iter()
         .map(|&[vi, hi]| [vi as usize * dim, hi as usize])
-        .chain(Some(poly_end))
+        .chain(Some([mpoly.vertices.len(), mpoly.hole_indices.len()]))
     {
-        let vertices = &mpoly.vertices[poly_vert_start..vert_end];
-        let hole_indices = &mpoly.hole_indices[poly_hole_start..hole_end];
+        let vertices = &mpoly.vertices[poly_vert_start..poly_vert_end];
+        let hole_indices = &mpoly.hole_indices[poly_hole_start..poly_hole_end];
 
-        let exterior_end = if hole_indices.is_empty() {
-            vertices.len()
-        } else {
-            hole_indices[0] as usize * dim
-        };
+        // exterior ring
+        let exterior_end = hole_indices
+            .first()
+            .map(|&idx| idx as usize * dim)
+            .unwrap_or(vertices.len());
         let exterior = vertices_to_linestring(&vertices[0..exterior_end], dim);
 
+        // interior rings
         let mut interiors = Vec::with_capacity(hole_indices.len());
         let mut hole_start = exterior_end;
         for hole_end in hole_indices
@@ -120,29 +125,32 @@ fn compact2geo_type(mpoly: &CompactMultiPolygon) -> MultiPolygon {
 
         polygons.push(Polygon::new(exterior, interiors));
 
-        // Polygon::new(exterior.into(), interiors.into());
-
         // next polygon
-        poly_vert_start = vert_end;
-        poly_hole_start = hole_end;
+        poly_vert_start = poly_vert_end;
+        poly_hole_start = poly_hole_end;
     }
 
     MultiPolygon(polygons)
 }
 
 #[test]
-fn main() {
+fn test_georust_multipolygon_interop() {
     let geojson_str = r#"
     {
         "type": "MultiPolygon",
         "coordinates": [
-            [[[102.0, 2.0], [103.0, 2.0], [103.0, 3.0], [102.0, 3.0], [102.0, 2.0]]],
-            [[[102.0, 2.0], [103.0, 2.0], [103.0, 3.0], [102.0, 3.0], [102.0, 2.0]]],
-            [[[100.0, 0.0], [101.0, 0.0], [101.0, 1.0], [100.0, 1.0], [100.0, 0.0]],
-             [[100.2, 0.2], [100.8, 0.2], [100.8, 0.8], [100.2, 0.2]]],
-            [[[200.0, 0.0], [201.0, 0.0], [201.0, 1.0], [200.0, 1.0], [200.0, 0.0]],
-             [[200.2, 0.2], [200.8, 0.2], [200.2, 0.8], [200.2, 0.2]],
-             [[200.2, 0.2], [200.8, 0.2], [200.8, 0.8], [200.2, 0.8], [200.2, 0.2]]]
+            [
+                [[102.0, 2.0], [103.0, 2.0], [103.0, 3.0], [102.0, 3.0], [102.0, 2.0]]
+            ],
+            [
+                [[100.0, 0.0], [101.0, 0.0], [101.0, 1.0], [100.0, 1.0], [100.0, 0.0]],
+                [[100.2, 0.2], [100.8, 0.2], [100.8, 0.8], [100.2, 0.2]]
+            ],
+            [
+                [[200.0, 0.0], [201.0, 0.0], [201.0, 1.0], [200.0, 1.0], [200.0, 0.0]],
+                [[200.2, 0.2], [200.8, 0.2], [200.2, 0.8], [200.2, 0.2]],
+                [[200.2, 0.2], [200.8, 0.2], [200.8, 0.8], [200.2, 0.8], [200.2, 0.2]]
+            ]
         ]
     }
     "#;
@@ -156,17 +164,12 @@ fn main() {
     let Ok(mpoly) = geometry.value.try_into() else {
         panic!();
     };
-    println!("mpoly: {:?}", mpoly);
-    println!("↓");
 
     // Convert to CompactMultiPolygon
-    let compact_mpoly = geo_type2compact(&mpoly);
-    println!("compact mpoly: {:?}", compact_mpoly);
-    println!("↓");
+    let compact_mpoly = georust2compact(&mpoly);
 
     // Invert to geo_types::MultiPolygon
-    let mpoly_again = compact2geo_type(&compact_mpoly);
-    println!("{:?}", mpoly_again);
+    let mpoly_again = compact2georust(&compact_mpoly);
 
     // Check equality
     assert_eq!(mpoly, mpoly_again);
