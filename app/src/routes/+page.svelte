@@ -1,6 +1,6 @@
 <script>
 	import { invoke } from '@tauri-apps/api/tauri';
-	import { fileTypeOptions, crsOptions } from '../settings';
+	import { fileTypeOptions, crsOptions } from '$lib/settings';
 	import { Icon } from 'svelte-materialdesign-icons';
 
 	let name = '';
