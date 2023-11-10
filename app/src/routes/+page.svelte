@@ -1,6 +1,7 @@
 <script>
 	import { invoke } from '@tauri-apps/api/tauri';
 	import { fileTypeOptions, crsOptions } from '../settings';
+	import { Icon } from 'svelte-materialdesign-icons';
 
 	let name = '';
 	let greetMsg = '';
@@ -20,25 +21,7 @@
 				<button
 					class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded inline-flex items-center w-15 h-15"
 				>
-					<svg
-						xmlns="http://www.w3.org/2000/svg"
-						fill="none"
-						viewBox="0 0 24 24"
-						stroke-width="1.5"
-						stroke="currentColor"
-						class="w-6 h-6"
-					>
-						<path
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							d="M21.75 6.75a4.5 4.5 0 01-4.884 4.484c-1.076-.091-2.264.071-2.95.904l-7.152 8.684a2.548 2.548 0 11-3.586-3.586l8.684-7.152c.833-.686.995-1.874.904-2.95a4.5 4.5 0 016.336-4.486l-3.276 3.276a3.004 3.004 0 002.25 2.25l3.276-3.276c.256.565.398 1.192.398 1.852z"
-						/>
-						<path
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							d="M4.867 19.125h.008v.008h-.008v-.008z"
-						/>
-					</svg>
+				<Icon name="cog-outline" class="shrink-0 h-5 w-5 mr-1"/>
 
 					<span>設定</span>
 				</button>
@@ -130,20 +113,7 @@
 				<button
 					class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded inline-flex items-center"
 				>
-					<svg
-						xmlns="http://www.w3.org/2000/svg"
-						fill="none"
-						viewBox="0 0 24 24"
-						stroke-width="1.5"
-						stroke="currentColor"
-						class="w-6 h-6"
-					>
-						<path
-							stroke-linecap="round"
-							stroke-linejoin="round"
-							d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z"
-						/>
-					</svg>
+				<Icon name="card-multiple" class="shrink-0 h-5 w-5 mr-1"/>
 					<span>一括処理</span>
 				</button>
 
