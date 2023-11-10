@@ -1,5 +1,6 @@
 <script>
 	import { invoke } from '@tauri-apps/api/tauri';
+	import { fileTypeOptions, crsOptions } from '../settings';
 
 	let name = '';
 	let greetMsg = '';
@@ -10,14 +11,6 @@
 	async function mierune() {
 		greetMsg = await invoke('mierune');
 	}
-
-	let fileTypeOptions = ['GeoJSON', 'GeoPackage', 'CZML'];
-
-	let crsOptions = [
-		{ value: 'EPSG:6678', label: 'JGD2011 / Japan Plane Rectangular CS X' },
-		{ value: 'EPSG:4326', label: 'WGS 84' },
-		{ value: 'EPSG:3857', label: 'Web Mercator' }
-	];
 </script>
 
 <div class="mx-auto max-w-xl">
@@ -132,8 +125,6 @@
 					</select>
 				</div>
 			</div>
-
-			
 
 			<div class="flex justify-around">
 				<button
