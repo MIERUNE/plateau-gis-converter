@@ -21,7 +21,7 @@
 				<button
 					class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded inline-flex items-center w-15 h-15"
 				>
-				<Icon name="cog-outline" class="shrink-0 h-5 w-5 mr-1"/>
+					<Icon name="cog-outline" class="shrink-0 h-5 w-5 mr-1" />
 
 					<span>設定</span>
 				</button>
@@ -113,7 +113,7 @@
 				<button
 					class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded inline-flex items-center"
 				>
-				<Icon name="card-multiple" class="shrink-0 h-5 w-5 mr-1"/>
+					<Icon name="card-multiple" class="shrink-0 h-5 w-5 mr-1" />
 					<span>一括処理</span>
 				</button>
 
