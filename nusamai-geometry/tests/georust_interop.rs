@@ -1,17 +1,17 @@
-//! geo_types <-> CompactMultiPolygon の相互変換テスト
+//! geo_types <-> MultiPolygon の相互変換テスト
 //!
 //! 処理の効率は考慮していない。
 //!
-//! のちほど CompactGeometry 自体にこれらの相互変換 (TryFrom, TryInto) を実装することも想定。  
+//! のちほど Geometry 自体にこれらの相互変換 (TryFrom, TryInto) を実装することも想定。  
 
 use geo_types::{Coord, LineString, MultiPolygon, Polygon};
 use geojson::GeoJson;
-use nusamai_geometry::{CompactLineString2, CompactMultiPolygon2};
+use nusamai_geometry::{LineString2, MultiPolygon2};
 
-/// Convert GeoRust MultiPolygon to CompactMultiPolygon
-fn georust_to_compact(multipolygon: &MultiPolygon) -> CompactMultiPolygon2 {
+/// Convert GeoRust MultiPolygon to MultiPolygon
+fn georust_to_compact(multipolygon: &MultiPolygon) -> MultiPolygon2 {
     let MultiPolygon(multipolygon) = &multipolygon;
-    let mut mpoly: CompactMultiPolygon2 = Default::default();
+    let mut mpoly: MultiPolygon2 = Default::default();
 
     for polygon in multipolygon {
         let LineString(exterior) = &polygon.exterior();
@@ -23,9 +23,9 @@ fn georust_to_compact(multipolygon: &MultiPolygon) -> CompactMultiPolygon2 {
     mpoly
 }
 
-/// Convert CompactMultiPolygon to GeoRust MultiPolygon
-fn compact_to_georust(mpoly: &CompactMultiPolygon2) -> MultiPolygon {
-    fn _coords_to_linestring(coords: &CompactLineString2) -> LineString<f64> {
+/// Convert MultiPolygon to GeoRust MultiPolygon
+fn compact_to_georust(mpoly: &MultiPolygon2) -> MultiPolygon {
+    fn _coords_to_linestring(coords: &LineString2) -> LineString<f64> {
         LineString::new(
             coords
                 .iter_closed()
@@ -86,10 +86,10 @@ fn test_georust_multipolygon_interop() {
         panic!("failed to convert GeoJSON to MultiPolygon");
     };
 
-    // GeoRust MultiPolygon -> CompactMultiPolygon
+    // GeoRust MultiPolygon -> MultiPolygon
     let compact_mpoly = georust_to_compact(&mpoly);
 
-    // CompactMultiPolygon -> GeoRust MultiPolygon
+    // MultiPolygon -> GeoRust MultiPolygon
     let mpoly_again = compact_to_georust(&compact_mpoly);
 
     // Check equality

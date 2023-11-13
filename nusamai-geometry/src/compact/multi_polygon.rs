@@ -1,11 +1,11 @@
 use std::borrow::Cow;
 
-use super::polygon::CompactPolygon;
+use super::polygon::Polygon;
 use num_traits::Float;
 
 /// Computer-friendly MultiPolygon
 #[derive(Debug, Clone, Default)]
-pub struct CompactMultiPolygon<'a, const D: usize, T: Float = f64> {
+pub struct MultiPolygon<'a, const D: usize, T: Float = f64> {
     /// すべての Polygon の座標データを連結したもの
     ///
     /// e.g. `[x0, y0, z0, x1, y1, z1, ...]`
@@ -21,10 +21,10 @@ pub struct CompactMultiPolygon<'a, const D: usize, T: Float = f64> {
     holes_spans: Cow<'a, [u32]>,
 }
 
-pub type CompactMultiPolygon2<'a, T = f64> = CompactMultiPolygon<'a, 2, T>;
-pub type CompactMultiPolygon3<'a, T = f64> = CompactMultiPolygon<'a, 3, T>;
+pub type MultiPolygon2<'a, T = f64> = MultiPolygon<'a, 2, T>;
+pub type MultiPolygon3<'a, T = f64> = MultiPolygon<'a, 3, T>;
 
-impl<'a, const D: usize, T: Float> CompactMultiPolygon<'a, D, T> {
+impl<'a, const D: usize, T: Float> MultiPolygon<'a, D, T> {
     pub fn new(
         all_coords: Cow<'a, [T]>,
         all_hole_indices: Cow<'a, [u32]>,
@@ -67,7 +67,7 @@ impl<'a, const D: usize, T: Float> CompactMultiPolygon<'a, D, T> {
     }
 
     /// index 番目の Polygon を取得する
-    pub fn get(&self, index: usize) -> CompactPolygon<D, T> {
+    pub fn get(&self, index: usize) -> Polygon<D, T> {
         let len = self.len();
         let (c_start, c_end, h_start, h_end) = match index {
             index if index >= len => {
@@ -95,7 +95,7 @@ impl<'a, const D: usize, T: Float> CompactMultiPolygon<'a, D, T> {
                 self.holes_spans[index] as usize,
             ),
         };
-        CompactPolygon::new(
+        Polygon::new(
             (&self.all_coords[c_start..c_end]).into(),
             (&self.all_hole_indices[h_start..h_end]).into(),
         )
@@ -147,8 +147,8 @@ impl<'a, const D: usize, T: Float> CompactMultiPolygon<'a, D, T> {
     }
 }
 
-impl<'a, const D: usize, T: Float> IntoIterator for &'a CompactMultiPolygon<'_, D, T> {
-    type Item = CompactPolygon<'a, D, T>;
+impl<'a, const D: usize, T: Float> IntoIterator for &'a MultiPolygon<'_, D, T> {
+    type Item = Polygon<'a, D, T>;
     type IntoIter = Iter<'a, D, T>;
 
     fn into_iter(self) -> Self::IntoIter {
@@ -157,12 +157,12 @@ impl<'a, const D: usize, T: Float> IntoIterator for &'a CompactMultiPolygon<'_, 
 }
 
 pub struct Iter<'a, const D: usize, T: Float> {
-    mpoly: &'a CompactMultiPolygon<'a, D, T>,
+    mpoly: &'a MultiPolygon<'a, D, T>,
     pos: usize,
 }
 
 impl<'a, const D: usize, T: Float> Iterator for Iter<'a, D, T> {
-    type Item = CompactPolygon<'a, D, T>;
+    type Item = Polygon<'a, D, T>;
 
     fn next(&mut self) -> Option<Self::Item> {
         if self.pos < self.mpoly.len() {
@@ -181,7 +181,7 @@ mod tests {
 
     #[test]
     fn test_mpoly_append() {
-        let mut mpoly: CompactMultiPolygon2 = Default::default();
+        let mut mpoly: MultiPolygon2 = Default::default();
         assert_eq!(mpoly.len(), 0);
         assert!(mpoly.is_empty());
 

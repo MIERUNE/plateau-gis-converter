@@ -4,17 +4,17 @@ use num_traits::Float;
 
 /// Computer-friendly LineString
 #[derive(Debug, Clone, Default)]
-pub struct CompactLineString<'a, const D: usize, T: Float = f64> {
+pub struct LineString<'a, const D: usize, T: Float = f64> {
     /// 座標データ
     ///
     /// e.g. `[x0, y0, z0, x1, y1, z1, ...]`
     coords: Cow<'a, [T]>,
 }
 
-pub type CompactLineString2<'a, T = f64> = CompactLineString<'a, 2, T>;
-pub type CompactLineString3<'a, T = f64> = CompactLineString<'a, 3, T>;
+pub type LineString2<'a, T = f64> = LineString<'a, 2, T>;
+pub type LineString3<'a, T = f64> = LineString<'a, 3, T>;
 
-impl<'a, const D: usize, T: Float> CompactLineString<'a, D, T> {
+impl<'a, const D: usize, T: Float> LineString<'a, D, T> {
     pub fn new(coords: Cow<'a, [T]>) -> Self {
         Self { coords }
     }
@@ -65,13 +65,13 @@ impl<'a, const D: usize, T: Float> CompactLineString<'a, D, T> {
     }
 }
 
-impl<const D: usize, T: Float> AsRef<[T]> for CompactLineString<'_, D, T> {
+impl<const D: usize, T: Float> AsRef<[T]> for LineString<'_, D, T> {
     fn as_ref(&self) -> &[T] {
         self.coords.as_ref()
     }
 }
 
-impl<'a, const D: usize, T: Float> IntoIterator for &'a CompactLineString<'_, D, T> {
+impl<'a, const D: usize, T: Float> IntoIterator for &'a LineString<'_, D, T> {
     type Item = &'a [T];
     type IntoIter = Iter<'a, D, T>;
 
@@ -107,8 +107,8 @@ mod tests {
 
     #[test]
     fn test_line_basic() {
-        let line: CompactLineString2 =
-            CompactLineString2::new((0..8).map(|v| v as f64).collect::<Vec<f64>>().into());
+        let line: LineString2 =
+            LineString2::new((0..8).map(|v| v as f64).collect::<Vec<f64>>().into());
         assert_eq!(line.len(), 4);
         assert!(!line.is_empty());
         for (i, coord) in line.iter().enumerate() {
@@ -124,7 +124,7 @@ mod tests {
 
     #[test]
     fn test_line_empty() {
-        let line: CompactLineString2 = Default::default();
+        let line: LineString2 = Default::default();
         assert_eq!(line.len(), 0);
         assert!(line.is_empty());
         for _coord in &line {
@@ -134,8 +134,8 @@ mod tests {
 
     #[test]
     fn test_line_close() {
-        let line: CompactLineString2 =
-            CompactLineString2::new((0..6).map(|v| v as f64).collect::<Vec<f64>>().into());
+        let line: LineString2 =
+            LineString2::new((0..6).map(|v| v as f64).collect::<Vec<f64>>().into());
         assert_eq!(line.len(), 3);
         assert!(!line.is_empty());
         for (i, coord) in line.iter_closed().enumerate() {

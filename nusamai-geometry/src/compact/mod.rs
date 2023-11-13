@@ -4,25 +4,23 @@ mod multi_point;
 mod multi_polygon;
 mod polygon;
 
-pub use linestring::{CompactLineString, CompactLineString2, CompactLineString3};
-pub use multi_linestring::{
-    CompactMultiLineString, CompactMultiLineString2, CompactMultiLineString3,
-};
-pub use multi_point::{CompactMultiPoint, CompactMultiPoint2, CompactMultiPoint3};
-pub use multi_polygon::{CompactMultiPolygon, CompactMultiPolygon2, CompactMultiPolygon3};
-pub use polygon::{CompactPolygon, CompactPolygon2, CompactPolygon3};
+pub use linestring::{LineString, LineString2, LineString3};
+pub use multi_linestring::{MultiLineString, MultiLineString2, MultiLineString3};
+pub use multi_point::{MultiPoint, MultiPoint2, MultiPoint3};
+pub use multi_polygon::{MultiPolygon, MultiPolygon2, MultiPolygon3};
+pub use polygon::{Polygon, Polygon2, Polygon3};
 
 use num_traits::Float;
 
 /// Computer-friendly Geometry
 #[derive(Debug, Clone)]
-pub enum CompactGeometry<'a, const D: usize, T: Float> {
-    LineString(CompactMultiPolygon<'a, D, T>),
-    Polygon(CompactLineString<'a, D, T>),
-    MultiPoint(CompactMultiPoint<'a, D, T>),
-    MultiLineString(CompactMultiLineString<'a, D, T>),
-    MultiPolygon(CompactMultiPolygon<'a, D, T>),
+pub enum Geometry<'a, const D: usize, T: Float> {
+    LineString(MultiPolygon<'a, D, T>),
+    Polygon(LineString<'a, D, T>),
+    MultiPoint(MultiPoint<'a, D, T>),
+    MultiLineString(MultiLineString<'a, D, T>),
+    MultiPolygon(MultiPolygon<'a, D, T>),
 }
 
-pub type CompactGeometry2<'a, T> = CompactGeometry<'a, 2, T>;
-pub type CompactGeometry3<'a, T> = CompactGeometry<'a, 3, T>;
+pub type Geometry2<'a, T> = Geometry<'a, 2, T>;
+pub type Geometry3<'a, T> = Geometry<'a, 3, T>;

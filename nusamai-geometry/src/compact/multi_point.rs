@@ -4,17 +4,17 @@ use num_traits::Float;
 
 /// Computer-friendly MultiPoint
 #[derive(Debug, Clone, Default)]
-pub struct CompactMultiPoint<'a, const D: usize, T: Float = f64> {
+pub struct MultiPoint<'a, const D: usize, T: Float = f64> {
     /// すべての Point の座標データを連結したもの
     ///
     /// e.g. `[x0, y0, z0, x1, y1, z1, ...]`
     coords: Cow<'a, [T]>,
 }
 
-pub type CompactMultiPoint2<'a, T = f64> = CompactMultiPoint<'a, 2, T>;
-pub type CompactMultiPoint3<'a, T = f64> = CompactMultiPoint<'a, 3, T>;
+pub type MultiPoint2<'a, T = f64> = MultiPoint<'a, 2, T>;
+pub type MultiPoint3<'a, T = f64> = MultiPoint<'a, 3, T>;
 
-impl<'a, const D: usize, T: Float> CompactMultiPoint<'a, D, T> {
+impl<'a, const D: usize, T: Float> MultiPoint<'a, D, T> {
     pub fn new(coords: Cow<'a, [T]>) -> Self {
         Self { coords }
     }
@@ -53,7 +53,7 @@ impl<'a, const D: usize, T: Float> CompactMultiPoint<'a, D, T> {
     }
 }
 
-impl<const D: usize, T: Float> AsRef<[T]> for CompactMultiPoint<'_, D, T> {
+impl<const D: usize, T: Float> AsRef<[T]> for MultiPoint<'_, D, T> {
     fn as_ref(&self) -> &[T] {
         self.coords.as_ref()
     }
