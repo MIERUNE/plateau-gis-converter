@@ -76,17 +76,21 @@ impl<'a, const D: usize, T: Float> MultiPolygon<'a, D, T> {
                     len, index
                 );
             }
+            0 => (
+                0,
+                self.coords_spans
+                    .first()
+                    .map_or(self.all_coords.len(), |&i| i as usize * D),
+                0,
+                self.holes_spans
+                    .first()
+                    .map_or(self.all_hole_indices.len(), |&i| i as usize),
+            ),
             index if index == len - 1 => (
                 self.coords_spans[index - 1] as usize * D,
                 self.all_coords.len(),
                 self.holes_spans[index - 1] as usize,
                 self.all_hole_indices.len(),
-            ),
-            0 => (
-                0,
-                self.coords_spans[0] as usize * D,
-                0,
-                self.holes_spans[0] as usize,
             ),
             _ => (
                 self.coords_spans[index - 1] as usize * D,
@@ -184,6 +188,9 @@ mod tests {
         let mut mpoly: MultiPolygon2 = Default::default();
         assert_eq!(mpoly.len(), 0);
         assert!(mpoly.is_empty());
+        for _ in &mpoly {
+            unreachable!();
+        }
 
         // 1st polygon
         mpoly.add_exterior([[0., 0.], [5., 0.], [5., 5.], [0., 5.], [0., 0.]]);
@@ -193,6 +200,12 @@ mod tests {
         mpoly.add_interior([[3., 3.], [4., 3.], [4., 4.], [3., 4.], [3., 3.]]);
         assert_eq!(mpoly.len(), 1);
         assert!(!mpoly.is_empty());
+        for (i, poly) in mpoly.iter().enumerate() {
+            match i {
+                0 => assert_eq!(poly.exterior().len(), 4),
+                _ => unreachable!(),
+            }
+        }
 
         // 2nd polygon
         mpoly.add_exterior([[4., 0.], [7., 0.], [7., 3.], [4., 3.], [4., 0.]]);
