@@ -8,3 +8,6 @@ edition = "2021"
 [dev-dependencies]
 geo-types = "0.7.11"
 geojson = "0.24.1"
+
+[dependencies]
+num-traits = "0.2.17"
