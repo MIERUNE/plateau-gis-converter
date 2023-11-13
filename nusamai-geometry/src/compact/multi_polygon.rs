@@ -59,8 +59,11 @@ impl<'a, const D: usize, T: Float> CompactMultiPolygon<'a, D, T> {
 
     /// この MultiPolygon に含まれる Polygon を返すイテレータを得る
     #[inline]
-    pub fn iter(&self) -> impl Iterator<Item = CompactPolygon<D, T>> {
-        (0..self.len()).map(|index| self.get(index))
+    pub fn iter(&self) -> Iter<'_, D, T> {
+        Iter {
+            mpoly: self,
+            pos: 0,
+        }
     }
 
     /// index 番目の Polygon を取得する
@@ -141,5 +144,72 @@ impl<'a, const D: usize, T: Float> CompactMultiPolygon<'a, D, T> {
         if tail > head + 2 * D && self.all_coords[head..head + D] == self.all_coords[tail - D..] {
             self.all_coords.to_mut().truncate(tail - D);
         }
+    }
+}
+
+impl<'a, const D: usize, T: Float> IntoIterator for &'a CompactMultiPolygon<'_, D, T> {
+    type Item = CompactPolygon<'a, D, T>;
+    type IntoIter = Iter<'a, D, T>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.iter()
+    }
+}
+
+pub struct Iter<'a, const D: usize, T: Float> {
+    mpoly: &'a CompactMultiPolygon<'a, D, T>,
+    pos: usize,
+}
+
+impl<'a, const D: usize, T: Float> Iterator for Iter<'a, D, T> {
+    type Item = CompactPolygon<'a, D, T>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.pos < self.mpoly.len() {
+            let poly = self.mpoly.get(self.pos);
+            self.pos += 1;
+            Some(poly)
+        } else {
+            None
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_mpoly_append() {
+        let mut mpoly: CompactMultiPolygon2 = Default::default();
+        assert_eq!(mpoly.len(), 0);
+        assert!(mpoly.is_empty());
+
+        // 1st polygon
+        mpoly.add_exterior([[0., 0.], [5., 0.], [5., 5.], [0., 5.], [0., 0.]]);
+        assert_eq!(mpoly.len(), 1);
+        mpoly.add_interior([[1., 1.], [2., 1.], [2., 2.], [1., 2.], [1., 1.]]);
+        assert_eq!(mpoly.len(), 1);
+        mpoly.add_interior([[3., 3.], [4., 3.], [4., 4.], [3., 4.], [3., 3.]]);
+        assert_eq!(mpoly.len(), 1);
+        assert!(!mpoly.is_empty());
+
+        // 2nd polygon
+        mpoly.add_exterior([[4., 0.], [7., 0.], [7., 3.], [4., 3.], [4., 0.]]);
+        assert_eq!(mpoly.len(), 2);
+        mpoly.add_interior([[5., 1.], [6., 1.], [6., 2.], [5., 2.], [5., 1.]]);
+        assert_eq!(mpoly.len(), 2);
+
+        for (i, poly) in mpoly.iter().enumerate() {
+            match i {
+                0 => assert_eq!(poly.interiors().count(), 2),
+                1 => assert_eq!(poly.interiors().count(), 1),
+                _ => unreachable!(),
+            }
+        }
+
+        mpoly.clear();
+        assert_eq!(mpoly.len(), 0);
+        assert!(mpoly.is_empty());
     }
 }
