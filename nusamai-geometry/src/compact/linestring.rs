@@ -24,6 +24,7 @@ impl<'a, const D: usize, T: Float> CompactLineString<'a, D, T> {
         self.as_ref()
     }
 
+    /// この LineString の座標列のイテレータを得る
     #[inline]
     pub fn iter(&self) -> Iter<'_, D, T> {
         Iter {
@@ -33,6 +34,7 @@ impl<'a, const D: usize, T: Float> CompactLineString<'a, D, T> {
         }
     }
 
+    /// 始点と終点を閉じた座標列のイテレータを得る
     #[inline]
     pub fn iter_closed(&self) -> Iter<'_, D, T> {
         Iter {

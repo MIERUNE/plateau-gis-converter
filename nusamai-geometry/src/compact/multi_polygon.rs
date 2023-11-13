@@ -39,6 +39,7 @@ impl<'a, const D: usize, T: Float> CompactMultiPolygon<'a, D, T> {
         }
     }
 
+    /// この MultiPolygon に含まれる Polygon の数を返す
     #[inline]
     pub fn len(&self) -> usize {
         match self.coords_spans.len() {
@@ -50,16 +51,19 @@ impl<'a, const D: usize, T: Float> CompactMultiPolygon<'a, D, T> {
         }
     }
 
+    /// この MultiPolygon が空かどうかを返す
     #[inline]
     pub fn is_empty(&self) -> bool {
         self.all_coords.is_empty()
     }
 
+    /// この MultiPolygon に含まれる Polygon を返すイテレータを得る
     #[inline]
     pub fn iter(&self) -> impl Iterator<Item = CompactPolygon<D, T>> {
         (0..self.len()).map(|index| self.get(index))
     }
 
+    /// index 番目の Polygon を取得する
     pub fn get(&self, index: usize) -> CompactPolygon<D, T> {
         let len = self.len();
         let (c_start, c_end, h_start, h_end) = match index {
@@ -94,6 +98,7 @@ impl<'a, const D: usize, T: Float> CompactMultiPolygon<'a, D, T> {
         )
     }
 
+    /// この MultiPolygon を空にする
     #[inline]
     pub fn clear(&mut self) {
         self.all_coords.to_mut().clear();
@@ -102,6 +107,7 @@ impl<'a, const D: usize, T: Float> CompactMultiPolygon<'a, D, T> {
         self.holes_spans.to_mut().clear();
     }
 
+    /// exterior ring を追加する
     pub fn add_exterior<I: IntoIterator<Item = [T; D]>>(&mut self, iter: I) {
         if !self.all_coords.is_empty() {
             self.coords_spans
@@ -121,6 +127,7 @@ impl<'a, const D: usize, T: Float> CompactMultiPolygon<'a, D, T> {
         }
     }
 
+    /// interior ring を追加する
     pub fn add_interior<I: IntoIterator<Item = [T; D]>>(&mut self, iter: I) {
         self.all_hole_indices
             .to_mut()
