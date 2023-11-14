@@ -27,6 +27,7 @@ const BUILDING_NS: Namespace = Namespace(b"http://www.opengis.net/citygml/buildi
 const CITYFURNITURE_NS: Namespace = Namespace(b"http://www.opengis.net/citygml/cityfurniture/2.0");
 const TRANSPORTATION_NS: Namespace =
     Namespace(b"http://www.opengis.net/citygml/transportation/2.0");
+const BRIDGE_NS: Namespace = Namespace(b"http://www.opengis.net/citygml/bridge/2.0");
 const VEGETATION_NS: Namespace = Namespace(b"http://www.opengis.net/citygml/vegetation/2.0");
 
 #[derive(Error, Debug)]
@@ -111,9 +112,22 @@ fn parse_cityobj(
         let ev = reader.read_resolved_event();
         match ev {
             Ok((
-                Bound(BUILDING_NS | CITYFURNITURE_NS | TRANSPORTATION_NS | VEGETATION_NS),
+                Bound(
+                    BUILDING_NS | CITYFURNITURE_NS | TRANSPORTATION_NS | VEGETATION_NS | BRIDGE_NS,
+                ),
                 Event::Start(e),
             )) => match e.local_name().as_ref() {
+                b"lod4Geometry" | b"lod4MultiSurface" => {
+                    if max_lod < 4 {
+                        max_lod = 4;
+                        mpoly.clear();
+                    }
+                    if max_lod == 4 {
+                        parse_lod_geometry(reader, &mut mpoly, buf)?;
+                    } else {
+                        depth += 1;
+                    }
+                }
                 b"lod3Geometry" | b"lod3MultiSurface" => {
                     if max_lod < 3 {
                         max_lod = 3;
@@ -167,12 +181,15 @@ fn parse_body(reader: &mut NsReader<&[u8]>) -> Result<Vec<MultiPolygon3<'static>
         match reader.read_resolved_event() {
             Ok((_, Event::Eof)) => return Ok(mpolys),
             Ok((
-                Bound(BUILDING_NS | CITYFURNITURE_NS | TRANSPORTATION_NS | VEGETATION_NS),
+                Bound(
+                    BUILDING_NS | CITYFURNITURE_NS | TRANSPORTATION_NS | VEGETATION_NS | BRIDGE_NS,
+                ),
                 Event::Start(e),
             )) => match e.local_name().as_ref() {
                 b"Building"
                 | b"CityFurniture"
                 | b"Road"
+                | b"Bridge"
                 | b"SolitaryVegetationObject"
                 | b"PlantCover" => mpolys.push(parse_cityobj(reader, &mut buf)?),
                 _ => (),
