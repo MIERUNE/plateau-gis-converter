@@ -145,7 +145,8 @@ mod tests {
         assert_eq!(polygon.interiors().count(), 0);
     }
 
-    /// Currently, it does not check whether the interior is valid (have at least three vertices) or not
+    /// Currently, it does not check whether the exterior is valid (have at least three vertices) or not
+    /// (It could be a "Steiner point", as we see in earcut)
     #[test]
     fn test_polygon_invalid_interior() {
         let all_coords: Vec<f64> = (0..=10).flat_map(|i| vec![i as f64, i as f64]).collect();
