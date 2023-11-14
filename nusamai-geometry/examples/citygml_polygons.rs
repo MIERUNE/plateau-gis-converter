@@ -136,7 +136,7 @@ fn parse_cityobj(
                         depth += 1;
                     }
                 }
-                b"lod1Solid" => {
+                b"lod1Solid" | b"lod1MultiSurface" => {
                     if max_lod < 1 {
                         max_lod = 1;
                         mpoly.clear();
