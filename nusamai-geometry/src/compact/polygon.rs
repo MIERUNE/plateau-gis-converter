@@ -62,3 +62,131 @@ impl<'a, const D: usize, T: Float> Polygon<'a, D, T> {
         self.hole_indices.to_mut().clear();
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_polygon_empty() {
+        let polygon: Polygon2<f64> = Default::default();
+        assert_eq!(polygon.exterior().len(), 0);
+        assert_eq!(polygon.interiors().count(), 0);
+    }
+
+    #[test]
+    fn test_polygon_no_interior() {
+        let all_coords: Vec<f64> = (0..=10).flat_map(|i| vec![i as f64, i as f64]).collect();
+        let hole_indices: Vec<u32> = vec![];
+        let polygon: Polygon2<f64> = Polygon2::new(all_coords.into(), hole_indices.into());
+
+        assert_eq!(polygon.exterior().len(), 11);
+        assert_eq!(polygon.interiors().count(), 0);
+        for _ in polygon.interiors() {
+            unreachable!();
+        }
+    }
+
+    #[test]
+    fn test_polygon_one_interior() {
+        let all_coords: Vec<f64> = (0..=10).flat_map(|i| vec![i as f64, i as f64]).collect();
+        let hole_indices: Vec<u32> = vec![4];
+        let polygon: Polygon2<f64> = Polygon2::new(all_coords.into(), hole_indices.into());
+
+        assert_eq!(polygon.exterior().len(), 4);
+        assert_eq!(polygon.interiors().count(), 1);
+        for (i, interior) in polygon.interiors().enumerate() {
+            match i {
+                0 => assert_eq!(interior.len(), 7),
+                _ => unreachable!(),
+            }
+        }
+    }
+
+    #[test]
+    fn test_polygon_multiple_interiors() {
+        let all_coords: Vec<f64> = (0..=10).flat_map(|i| vec![i as f64, i as f64]).collect();
+        let hole_indices: Vec<u32> = vec![4, 7];
+        let polygon: Polygon2<f64> = Polygon2::new(all_coords.into(), hole_indices.into());
+
+        assert_eq!(polygon.exterior().len(), 4);
+        assert_eq!(polygon.interiors().count(), 2);
+        for (i, interior) in polygon.interiors().enumerate() {
+            match i {
+                0 => assert_eq!(interior.len(), 3),
+                1 => assert_eq!(interior.len(), 4),
+                _ => unreachable!(),
+            }
+        }
+    }
+
+    #[test]
+    fn test_polygon_clear() {
+        let all_coords: Vec<f64> = (0..=10).flat_map(|i| vec![i as f64, i as f64]).collect();
+        let hole_indices: Vec<u32> = vec![4, 7];
+        let mut polygon: Polygon2<f64> = Polygon2::new(all_coords.into(), hole_indices.into());
+
+        assert_eq!(polygon.exterior().len(), 4);
+        assert_eq!(polygon.interiors().count(), 2);
+
+        polygon.clear();
+        assert_eq!(polygon.exterior().len(), 0);
+        assert_eq!(polygon.interiors().count(), 0);
+    }
+
+    /// Currently, it does not check whether the exterior is valid (have at least three vertices) or not
+    #[test]
+    fn test_polygon_invalid_exterior() {
+        let all_coords: Vec<f64> = (0..1).flat_map(|i| vec![i as f64, i as f64]).collect();
+        let hole_indices: Vec<u32> = vec![];
+        let polygon: Polygon2<f64> = Polygon2::new(all_coords.into(), hole_indices.into());
+
+        assert_eq!(polygon.exterior().len(), 1); // only one vertex
+        assert_eq!(polygon.interiors().count(), 0);
+    }
+
+    /// Currently, it does not check whether the exterior is valid (have at least three vertices) or not
+    #[test]
+    fn test_polygon_invalid_interior() {
+        let all_coords: Vec<f64> = (0..=10).flat_map(|i| vec![i as f64, i as f64]).collect();
+        let hole_indices: Vec<u32> = vec![10]; // only one vertex
+        let polygon: Polygon2<f64> = Polygon2::new(all_coords.into(), hole_indices.into());
+
+        assert_eq!(polygon.exterior().len(), 10);
+        assert_eq!(polygon.interiors().count(), 1);
+        for (i, interior) in polygon.interiors().enumerate() {
+            match i {
+                0 => assert_eq!(interior.len(), 1), // only one vertex
+                _ => unreachable!(),
+            }
+        }
+    }
+
+    /// Currently, it does not check whether the `hole_indices` value is valid (within the range of `all_coords`) or not
+    #[test]
+    fn test_polygon_invalid_hole_indices_1() {
+        let all_coords: Vec<f64> = (0..=2).flat_map(|i| vec![i as f64, i as f64]).collect();
+        let hole_indices: Vec<u32> = vec![3]; // out of `all_coords` range
+        let polygon: Polygon2<f64> = Polygon2::new(all_coords.into(), hole_indices.into());
+
+        assert_eq!(polygon.exterior().len(), 3);
+        assert_eq!(polygon.interiors().count(), 1);
+        for (i, interior) in polygon.interiors().enumerate() {
+            match i {
+                0 => assert_eq!(interior.len(), 0), // zero vertex
+                _ => unreachable!(),
+            }
+        }
+    }
+
+    /// Currently, it does not check whether the `hole_indices` value is valid (within the range of `all_coords`) or not
+    #[test]
+    #[should_panic]
+    fn test_polygon_invalid_hole_indices_2() {
+        let all_coords: Vec<f64> = (0..=2).flat_map(|i| vec![i as f64, i as f64]).collect();
+        let hole_indices: Vec<u32> = vec![99]; // out of `all_coords` range
+        let polygon: Polygon2<f64> = Polygon2::new(all_coords.into(), hole_indices.into());
+
+        polygon.exterior(); // panic, as `all_coords[0..hole_indices[0]]` is invalid
+    }
+}
