@@ -13,12 +13,12 @@ pub struct Gltf {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub extensions_required: Option<Vec<String>>,
 
-    // 必須: glTFアセットのメタデータ
-    pub asset: Asset,
-
-    // オプショナル: アクセサの配列
+    // An array of accessors. An accessor is a typed view into a bufferView.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub accessors: Option<Vec<Accessor>>,
+
+    // 必須: glTFアセットのメタデータ
+    pub asset: Asset,
 
     // オプショナル: バッファの配列
     #[serde(skip_serializing_if = "Option::is_none")]
