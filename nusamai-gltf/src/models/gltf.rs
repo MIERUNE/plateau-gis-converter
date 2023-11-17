@@ -1,4 +1,4 @@
-use super::{Accessor, Asset, Buffer, BufferView, Mesh, Node, Scene};
+use super::{Accessor, Animation, Asset, Buffer, BufferView, Mesh, Node, Scene};
 
 use serde::{Deserialize, Serialize};
 
@@ -16,6 +16,10 @@ pub struct Gltf {
     // An array of accessors. An accessor is a typed view into a bufferView.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub accessors: Option<Vec<Accessor>>,
+
+    /// An array of keyframe animations.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub animations: Option<Vec<Animation>>,
 
     // 必須: glTFアセットのメタデータ
     pub asset: Asset,

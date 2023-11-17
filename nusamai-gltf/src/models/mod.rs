@@ -1,4 +1,5 @@
 mod accessor;
+mod animation;
 mod asset;
 mod buffer;
 mod gltf;
@@ -7,6 +8,7 @@ mod node;
 mod scene;
 
 pub use accessor::*;
+pub use animation::*;
 pub use asset::*;
 pub use buffer::*;
 pub use gltf::*;
