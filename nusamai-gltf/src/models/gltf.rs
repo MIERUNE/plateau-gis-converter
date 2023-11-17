@@ -5,6 +5,14 @@ use serde::{Deserialize, Serialize};
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct Gltf {
+    /// Names of glTF extensions used in this asset.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub extensions_used: Option<Vec<String>>,
+
+    /// Names of glTF extensions required to properly load this asset.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub extensions_required: Option<Vec<String>>,
+
     // 必須: glTFアセットのメタデータ
     pub asset: Asset,
 
