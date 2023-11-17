@@ -25,18 +25,6 @@ pub enum ComponentType {
     Float = 5126,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
-#[serde(rename_all = "UPPERCASE")]
-pub enum AccessorType {
-    Scalar,
-    Vec2,
-    Vec3,
-    Vec4,
-    Mat2,
-    Mat3,
-    Mat4,
-}
-
 /// An object pointing to a buffer view containing the indices of deviating accessor values. The number of indices is equal to `accessor.sparse.count`. Indices **MUST** strictly increase.
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
@@ -79,6 +67,18 @@ pub struct AccessorSparse {
 
     /// An object pointing to a buffer view containing the deviating accessor values.
     pub values: AccessorSparseValues,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "UPPERCASE")]
+pub enum AccessorType {
+    Scalar,
+    Vec2,
+    Vec3,
+    Vec4,
+    Mat2,
+    Mat3,
+    Mat4,
 }
 
 /// Properties for an accessor. Accessors contain index or attribute data.

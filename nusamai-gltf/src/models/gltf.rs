@@ -28,9 +28,13 @@ pub struct Gltf {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub buffers: Option<Vec<Buffer>>,
 
-    // オプショナル: バッファビューの配列
+    /// An array of bufferViews. A bufferView is a view into a buffer generally representing a subset of the buffer.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub buffer_views: Option<Vec<BufferView>>,
+
+    /// An array of cameras. A camera defines a projection matrix.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub cameras: Option<Vec<Camera>>,
 
     // オプショナル: メッシュの配列
     #[serde(skip_serializing_if = "Option::is_none")]
