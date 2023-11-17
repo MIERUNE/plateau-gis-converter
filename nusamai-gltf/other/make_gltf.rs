@@ -4,7 +4,7 @@
 use std::fs::File;
 use std::io::{self, BufWriter, Write as _};
 
-use nusamai_gltf::*;
+// use nusamai_gltf::*;
 
 fn main() -> io::Result<()> {
     let mut gltf = Gltf::new();
