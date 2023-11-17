@@ -1,4 +1,7 @@
-use super::{Accessor, Animation, Asset, Buffer, BufferView, Camera, Image, Mesh, Node, Scene};
+use super::{
+    Accessor, Animation, Asset, Buffer, BufferView, Camera, Image, Material, Mesh, Node, Sampler,
+    Scene, Skin, Texture,
+};
 
 use serde::{Deserialize, Serialize};
 
@@ -39,6 +42,10 @@ pub struct Gltf {
     /// An array of images. An image defines data used to create a texture.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub images: Option<Vec<Image>>,
+
+    /// An array of materials. A material defines the appearance of a primitive.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub materials: Option<Vec<Material>>,
 
     // オプショナル: メッシュの配列
     #[serde(skip_serializing_if = "Option::is_none")]
