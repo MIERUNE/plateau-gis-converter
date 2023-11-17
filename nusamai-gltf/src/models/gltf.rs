@@ -2,12 +2,16 @@ use super::{
     Accessor, Animation, Asset, Buffer, BufferView, Camera, Image, Material, Mesh, Node, Sampler,
     Scene, Skin, Texture,
 };
+use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 
+/// The root object for a glTF asset.
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
-pub struct Gltf {
+#[serde(deny_unknown_fields)]
+pub struct GLTF {
     /// Names of glTF extensions used in this asset.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub extensions_used: Option<Vec<String>>,
@@ -16,7 +20,7 @@ pub struct Gltf {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub extensions_required: Option<Vec<String>>,
 
-    // An array of accessors. An accessor is a typed view into a bufferView.
+    /// An array of accessors. An accessor is a typed view into a bufferView.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub accessors: Option<Vec<Accessor>>,
 
@@ -47,55 +51,46 @@ pub struct Gltf {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub materials: Option<Vec<Material>>,
 
-    // オプショナル: メッシュの配列
+    /// An array of meshes. A mesh is a set of primitives to be rendered.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub meshes: Option<Vec<Mesh>>,
 
-    // オプショナル: ノードの配列
+    /// An array of nodes.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub nodes: Option<Vec<Node>>,
 
-    // オプショナル: シーンの配列
+    /// An array of samplers. A sampler contains properties for texture filtering and wrapping modes.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub scene: Option<usize>,
+    pub samplers: Option<Vec<Sampler>>,
 
-    // オプショナル: シーンの配列
+    /// The index of the default scene. This property MUST NOT be defined, when scenes is undefined.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub scene: Option<u32>,
+
+    /// An array of scenes.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub scenes: Option<Vec<Scene>>,
 
-    // オプショナル: 拡張機能に関するフィールド
+    /// An array of skins. A skin is defined by joints and matrices.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub extensions: Option<serde_json::Value>,
+    pub skins: Option<Vec<Skin>>,
 
-    // オプショナル: カスタムプロパティを追加するためのフィールド
+    /// An array of textures.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub extras: Option<serde_json::Value>,
+    pub textures: Option<Vec<Texture>>,
+
+    /// JSON object with extension-specific objects.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub extensions: Option<GLTFExtensions>,
+
+    /// Application-specific data.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub extras: Option<HashMap<String, Value>>,
 }
 
-impl Gltf {
-    pub fn new() -> Self {
-        Gltf {
-            asset: Asset::new(),
-            accessors: None,
-            buffers: None,
-            buffer_views: None,
-            meshes: None,
-            nodes: None,
-            scenes: None,
-            scene: None,
-            extensions: None,
-            extras: None,
-        }
-    }
-}
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_gltf_new() {
-        let gltf = Gltf::new();
-
-        assert_eq!(gltf.asset.version, "2.0");
-    }
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct GLTFExtensions {
+    #[serde(flatten)]
+    others: HashMap<String, Value>,
 }

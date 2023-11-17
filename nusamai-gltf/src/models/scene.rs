@@ -1,32 +1,15 @@
 use serde::{Deserialize, Serialize};
-use serde_json::Value as JsonValue;
 
+/// The root nodes of a scene.
 #[derive(Serialize, Deserialize, Debug)]
-#[serde(rename_all = "camelCase")]
+#[serde[rename_all = "camelCase"]]
+#[serde(deny_unknown_fields)]
 pub struct Scene {
-    // 配列: シーンのルートノードのインデックス
-    pub nodes: Vec<usize>,
-
-    // オプショナル: シーンの名前
+    /// The user-defined name of this object.  This is not necessarily unique, e.g., an accessor and a buffer could have the same name, or two accessors could even have the same name.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub name: Option<String>,
 
-    // オプショナル: 拡張機能に関するフィールド
+    /// The indices of each root node.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub extensions: Option<JsonValue>,
-
-    // オプショナル: カスタムプロパティを追加するためのフィールド
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub extras: Option<JsonValue>,
-}
-
-impl Scene {
-    pub fn new() -> Self {
-        Scene {
-            nodes: Vec::new(),
-            name: None,
-            extensions: None,
-            extras: None,
-        }
-    }
+    pub nodes: Option<Vec<u32>>,
 }

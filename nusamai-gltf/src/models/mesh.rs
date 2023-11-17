@@ -1,42 +1,11 @@
 use serde::{Deserialize, Serialize};
-use serde_json::Value as JsonValue;
-use serde_repr::{Deserialize_repr, Serialize_repr};
+use serde_repr::*;
 use std::collections::HashMap;
 
-#[derive(Serialize, Deserialize, Debug)]
-#[serde(rename_all = "camelCase")]
-pub struct Primitive {
-    // 必須: メッシュ属性セマンティクスとアクセサーインデックスのマッピング
-    pub attributes: HashMap<String, usize>,
+use serde_json::Value;
 
-    // オプショナル: 頂点インデックスを含むアクセサーのインデックス
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub indices: Option<usize>,
-
-    // オプショナル: このプリミティブに適用するマテリアルのインデックス
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub material: Option<usize>,
-
-    // オプショナル: プリミティブのトポロジータイプ
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub mode: Option<PrimitiveMode>,
-
-    // オプショナル: モーフターゲットの配列
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub targets: Option<Vec<HashMap<String, usize>>>,
-
-    // オプショナル: 拡張機能に関するフィールド
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub extensions: Option<JsonValue>,
-
-    // オプショナル: カスタムプロパティを追加するためのフィールド
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub extras: Option<JsonValue>,
-}
-
-#[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug)]
+#[derive(Serialize_repr, Deserialize_repr, Debug, PartialEq, Eq, Clone, Copy)]
 #[repr(u8)]
-#[serde(rename_all = "camelCase")]
 pub enum PrimitiveMode {
     Points = 0,
     Lines = 1,
@@ -47,51 +16,80 @@ pub enum PrimitiveMode {
     TriangleFan = 6,
 }
 
+impl Default for PrimitiveMode {
+    fn default() -> Self {
+        Self::Triangles
+    }
+}
+
+/// Geometry to be rendered with the given material.
+#[derive(Serialize, Deserialize, Debug, Default)]
+#[serde[rename_all = "camelCase"]]
+#[serde(deny_unknown_fields)]
+pub struct MeshPrimitive {
+    /// A plain JSON object, where each key corresponds to a mesh attribute semantic and each value is the index of the accessor containing attribute's data.
+    pub attributes: HashMap<String, u32>,
+
+    /// The index of the accessor that contains the vertex indices.  When this is undefined, the primitive defines non-indexed geometry.  When defined, the accessor **MUST** have `SCALAR` type and an unsigned integer component type.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub indices: Option<u32>,
+
+    /// The index of the material to apply to this primitive when rendering.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub material: Option<u32>,
+
+    /// The topology type of primitives to render.
+    #[serde(default)]
+    pub mode: PrimitiveMode,
+
+    /// An array of morph targets.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub targets: Option<Vec<HashMap<String, u32>>>,
+
+    /// JSON object with extension-specific objects.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub extensions: Option<MeshPrimitiveExtensions>,
+
+    /// Application-specific data.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub extras: Option<HashMap<String, Value>>,
+}
+
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
+pub struct MeshPrimitiveExtensions {
+    #[serde(flatten)]
+    others: HashMap<String, Value>,
+}
+
+/// A set of primitives to be rendered.  Its global transform is defined by a node that references it.
+#[derive(Serialize, Deserialize, Debug)]
+#[serde[rename_all = "camelCase"]]
+#[serde(deny_unknown_fields)]
 pub struct Mesh {
-    // 配列: レンダリングするためのプリミティブのセット
-    pub primitives: Vec<Primitive>,
-
-    // オプショナル: モーフターゲットに適用されるウェイトの配列
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub weights: Option<Vec<f32>>,
-
-    // オプショナル: メッシュの名前
+    /// The user-defined name of this object.  This is not necessarily unique, e.g., an accessor and a buffer could have the same name, or two accessors could even have the same name.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub name: Option<String>,
 
-    // オプショナル: 拡張機能に関するフィールド
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub extensions: Option<JsonValue>,
+    /// An array of primitives, each defining geometry to be rendered.
+    pub primitives: Vec<MeshPrimitive>,
 
-    // オプショナル: カスタムプロパティを追加するためのフィールド
+    /// Array of weights to be applied to the morph targets. The number of array elements **MUST** match the number of morph targets.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub extras: Option<JsonValue>,
+    pub weights: Option<Vec<f32>>,
+
+    /// JSON object with extension-specific objects.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub extensions: Option<MeshExtensions>,
+
+    /// Application-specific data.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub extras: Option<HashMap<String, Value>>,
 }
 
-impl Mesh {
-    pub fn new() -> Self {
-        Mesh {
-            primitives: Vec::new(),
-            weights: None,
-            name: None,
-            extensions: None,
-            extras: None,
-        }
-    }
-}
-
-impl Primitive {
-    pub fn new() -> Self {
-        Primitive {
-            attributes: HashMap::new(),
-            indices: None,
-            material: None,
-            mode: None,
-            targets: None,
-            extensions: None,
-            extras: None,
-        }
-    }
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct MeshExtensions {
+    #[serde(flatten)]
+    others: HashMap<String, Value>,
 }
