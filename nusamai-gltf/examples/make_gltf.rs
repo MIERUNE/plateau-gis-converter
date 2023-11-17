@@ -9,7 +9,7 @@ use std::vec;
 use nusamai_gltf::*;
 
 fn main() -> io::Result<()> {
-    let mut asset = Asset {
+    let asset = Asset {
         version: "2.0".to_string(),
         copyright: None,
         generator: None,
@@ -50,7 +50,7 @@ fn main() -> io::Result<()> {
     };
     buffer.uri = Some("data:application/octet-stream;base64,AAABAAIAAAAAAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAA=".to_string());
 
-    let mut buffer_view1 = BufferView {
+    let buffer_view1 = BufferView {
         name: None,
         buffer: 0,
         byte_offset: 0,
@@ -59,7 +59,7 @@ fn main() -> io::Result<()> {
         target: Some(BufferViewTarget::ElementArrayBuffer),
     };
 
-    let mut buffer_view2 = BufferView {
+    let buffer_view2 = BufferView {
         name: None,
         buffer: 0,
         byte_offset: 8,
@@ -68,7 +68,7 @@ fn main() -> io::Result<()> {
         target: Some(BufferViewTarget::ArrayBuffer),
     };
 
-    let mut accessor1 = Accessor {
+    let accessor1 = Accessor {
         name: None,
         buffer_view: Some(0),
         byte_offset: 0,
@@ -83,7 +83,7 @@ fn main() -> io::Result<()> {
         extras: None,
     };
 
-    let mut accessor2 = Accessor {
+    let accessor2 = Accessor {
         name: None,
         buffer_view: Some(1),
         byte_offset: 0,
@@ -109,7 +109,7 @@ fn main() -> io::Result<()> {
     };
     primitive.attributes.insert("POSITION".to_string(), 1);
 
-    let mut mesh = Mesh {
+    let mesh = Mesh {
         primitives: vec![primitive],
         weights: None,
         name: None,
@@ -117,7 +117,7 @@ fn main() -> io::Result<()> {
         extras: None,
     };
 
-    let mut node = Node {
+    let node = Node {
         camera: None,
         children: None,
         skin: None,
@@ -132,7 +132,7 @@ fn main() -> io::Result<()> {
         extras: None,
     };
 
-    let mut scene = Scene {
+    let scene = Scene {
         name: None,
         nodes: Some(vec![0]),
     };
