@@ -24,7 +24,7 @@ pub struct Gltf {
     /// Metadata about the glTF asset.
     pub asset: Asset,
 
-    // オプショナル: バッファの配列
+    /// An array of buffers. A buffer points to binary geometry, animation, or skins.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub buffers: Option<Vec<Buffer>>,
 

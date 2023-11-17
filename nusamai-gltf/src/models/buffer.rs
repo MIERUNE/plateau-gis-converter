@@ -1,94 +1,73 @@
 use serde::{Deserialize, Serialize};
-use serde_repr::{Deserialize_repr, Serialize_repr};
+use serde_repr::*;
 
-#[derive(Serialize, Deserialize, Debug)]
-#[serde(rename_all = "camelCase")]
-pub struct Buffer {
-    // オプショナル: バッファのURI（またはIRI）
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub uri: Option<String>,
+use std::collections::HashMap;
 
-    // 必須: バッファの長さ（バイト単位）
-    pub byte_length: usize,
+use serde_json::Value;
 
-    // オプショナル: バッファの名前
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub name: Option<String>,
-
-    // オプショナル: 拡張機能に関するフィールド
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub extensions: Option<serde_json::Value>,
-
-    // オプショナル: カスタムプロパティを追加するためのフィールド
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub extras: Option<serde_json::Value>,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-#[serde(rename_all = "camelCase")]
-pub struct BufferView {
-    // 必須: バッファのインデックス
-    pub buffer: usize,
-
-    // デフォルト: 0, バッファ内のオフセット（バイト単位）
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub byte_offset: Option<usize>,
-
-    // 必須: bufferViewの長さ（バイト単位）
-    pub byte_length: usize,
-
-    // オプショナル: 頂点属性間のストライド（バイト単位）
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub byte_stride: Option<usize>,
-
-    // オプショナル: このbufferViewで使用することを意図されたGPUバッファタイプのヒント
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub target: Option<BufferTarget>,
-
-    // オプショナル: bufferViewの名前
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub name: Option<String>,
-
-    // オプショナル: 拡張機能に関するフィールド
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub extensions: Option<serde_json::Value>,
-
-    // オプショナル: カスタムプロパティを追加するためのフィールド
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub extras: Option<serde_json::Value>,
-}
-
-#[derive(Serialize_repr, Deserialize_repr, PartialEq, Debug)]
+#[derive(Serialize_repr, Deserialize_repr, Debug, PartialEq, Eq, Clone, Copy)]
 #[repr(u16)]
-#[serde(rename_all = "camelCase")]
-pub enum BufferTarget {
+pub enum BufferViewTarget {
     ArrayBuffer = 34962,
     ElementArrayBuffer = 34963,
 }
 
-impl Buffer {
-    pub fn new(byte_length: usize) -> Self {
-        Buffer {
-            uri: None,
-            byte_length,
-            name: None,
-            extensions: None,
-            extras: None,
-        }
-    }
+/// A buffer points to binary geometry, animation, or skins.
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
+#[serde(deny_unknown_fields)]
+pub struct Buffer {
+    /// The user-defined name of this object.  This is not necessarily unique, e.g., an accessor and a buffer could have the same name, or two accessors could even have the same name.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub name: Option<String>,
+
+    /// The URI (or IRI) of the buffer.  Relative paths are relative to the current glTF asset.  Instead of referencing an external file, this field MAY contain a data:-URI.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub uri: Option<String>,
+
+    /// The length of the buffer in bytes.
+    pub byte_length: u32,
+
+    /// JSON object with extension-specific objects.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub extensions: Option<BufferExtensions>,
+
+    /// Application-specific data.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub extras: Option<HashMap<String, Value>>,
 }
 
-impl BufferView {
-    pub fn new() -> Self {
-        BufferView {
-            buffer: 0,
-            byte_offset: None,
-            byte_length: 0,
-            byte_stride: None,
-            target: None,
-            name: None,
-            extensions: None,
-            extras: None,
-        }
-    }
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct BufferExtensions {
+    #[serde(flatten)]
+    others: HashMap<String, Value>,
+}
+
+/// A view into a buffer generally representing a subset of the buffer.
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
+#[serde(deny_unknown_fields)]
+pub struct BufferView {
+    /// The user-defined name of this object.  This is not necessarily unique, e.g., an accessor and a buffer could have the same name, or two accessors could even have the same name.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub name: Option<String>,
+
+    /// The index of the buffer.
+    pub buffer: u32,
+
+    /// The offset into the buffer in bytes.
+    #[serde(default)]
+    pub byte_offset: u32,
+
+    /// The length of the bufferView in bytes.
+    pub byte_length: u32,
+
+    /// The stride, in bytes, between vertex attributes.  When this is not defined, data is tightly packed. When two or more accessors use the same buffer view, this field MUST be defined.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub byte_stride: Option<u32>,
+
+    /// The hint representing the intended GPU buffer type to use with this buffer view.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub target: Option<BufferViewTarget>,
 }
