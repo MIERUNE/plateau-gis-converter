@@ -2,6 +2,7 @@
 
 members = [
     "nusamai-geometry",
+    "nusamai-czml",
     "app/src-tauri"
 ]
 resolver = "2"

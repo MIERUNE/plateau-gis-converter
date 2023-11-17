@@ -9,3 +9,4 @@ edition = "2021"
 serde = "1.0.192"
 serde_json = { version = "1.0.108", features = ["float_roundtrip"] }
 nusamai-geometry = { path = "../nusamai-geometry" }
+clap = "4.4.8"
