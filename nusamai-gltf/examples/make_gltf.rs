@@ -1,3 +1,6 @@
+/// glTFを生成するサンプル
+///
+/// % cargo run --example make_gltf --release
 use std::fs::File;
 use std::io::{self, BufWriter, Write as _};
 
@@ -65,6 +68,8 @@ fn main() -> io::Result<()> {
 
     let gltf_json = serde_json::to_value(&gltf)?;
 
+    // フォルダを作成
+    std::fs::create_dir_all("data")?;
     // gltfファイルを出力
     let mut gltf_file = BufWriter::new(File::create("data/output.gltf")?);
     gltf_file.write_all(gltf_json.to_string().as_bytes())?;
