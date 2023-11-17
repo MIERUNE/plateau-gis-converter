@@ -1,3 +1,3 @@
-mod gltf;
+mod models;
 
-pub use gltf::*;
+pub use models::*;
