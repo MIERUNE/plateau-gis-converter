@@ -4,10 +4,39 @@
 use std::fs::File;
 use std::io::{self, BufWriter, Write as _};
 
-// use nusamai_gltf::*;
+use nusamai_gltf::*;
 
 fn main() -> io::Result<()> {
-    let mut gltf = Gltf::new();
+    let mut asset = Asset {
+        version: "2.0".to_string(),
+        copyright: None,
+        generator: None,
+        min_version: None,
+        extensions: None,
+        extras: None,
+    };
+
+    let mut gltf = GLTF {
+        extensions_used: None,
+        extensions_required: None,
+        accessors: None,
+        animations: None,
+        asset,
+        buffers: None,
+        buffer_views: None,
+        cameras: None,
+        images: None,
+        materials: None,
+        meshes: None,
+        nodes: None,
+        samplers: None,
+        scene: None,
+        scenes: None,
+        skins: None,
+        textures: None,
+        extensions: None,
+        extras: None,
+    };
 
     let byte_length = 44;
     let mut buffer = Buffer::new(byte_length);
