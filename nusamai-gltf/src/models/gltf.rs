@@ -1,9 +1,4 @@
-use super::accessor::Accessor;
-use super::asset::Asset;
-use super::buffer::{Buffer, BufferView};
-use super::mesh::Mesh;
-use super::node::Node;
-use super::scene::Scene;
+use super::{Accessor, Asset, Buffer, BufferView, Mesh, Node, Scene};
 
 use serde::{Deserialize, Serialize};
 
