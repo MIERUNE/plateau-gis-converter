@@ -1,8 +1,10 @@
+use std::collections::HashMap;
 /// glTFを生成するサンプル
 ///
 /// % cargo run --example make_gltf --release
 use std::fs::File;
 use std::io::{self, BufWriter, Write as _};
+use std::vec;
 
 use nusamai_gltf::*;
 
@@ -39,51 +41,101 @@ fn main() -> io::Result<()> {
     };
 
     let byte_length = 44;
-    let mut buffer = Buffer::new(byte_length);
+    let mut buffer = Buffer {
+        name: None,
+        byte_length,
+        uri: None,
+        extensions: None,
+        extras: None,
+    };
     buffer.uri = Some("data:application/octet-stream;base64,AAABAAIAAAAAAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAA=".to_string());
 
-    let mut buffer_view1 = BufferView::new();
-    buffer_view1.buffer = 0;
-    buffer_view1.byte_offset = Some(0);
-    buffer_view1.byte_length = 6;
-    buffer_view1.target = Some(BufferTarget::ElementArrayBuffer);
+    let mut buffer_view1 = BufferView {
+        name: None,
+        buffer: 0,
+        byte_offset: 0,
+        byte_length: 6,
+        byte_stride: None,
+        target: Some(BufferViewTarget::ElementArrayBuffer),
+    };
 
-    let mut buffer_view2 = BufferView::new();
-    buffer_view2.buffer = 0;
-    buffer_view2.byte_offset = Some(8);
-    buffer_view2.byte_length = 36;
-    buffer_view2.target = Some(BufferTarget::ArrayBuffer);
+    let mut buffer_view2 = BufferView {
+        name: None,
+        buffer: 0,
+        byte_offset: 8,
+        byte_length: 36,
+        byte_stride: None,
+        target: Some(BufferViewTarget::ArrayBuffer),
+    };
 
-    let mut accessor1 = Accessor::new();
-    accessor1.buffer_view = Some(0);
-    accessor1.byte_offset = Some(0);
-    accessor1.component_type = ComponentType::UnsignedShort;
-    accessor1.count = 3;
-    accessor1.accessor_type = AccessorType::Scalar;
-    accessor1.max = Some(vec![2.0]);
-    accessor1.min = Some(vec![0.0]);
+    let mut accessor1 = Accessor {
+        name: None,
+        buffer_view: Some(0),
+        byte_offset: 0,
+        component_type: ComponentType::UnsignedShort,
+        count: 3,
+        type_: AccessorType::Scalar,
+        max: Some(vec![2.0]),
+        min: Some(vec![0.0]),
+        sparse: None,
+        normalized: None,
+        extensions: None,
+        extras: None,
+    };
 
-    let mut accessor2 = Accessor::new();
-    accessor2.buffer_view = Some(1);
-    accessor2.byte_offset = Some(0);
-    accessor2.component_type = ComponentType::Float;
-    accessor2.count = 3;
-    accessor2.accessor_type = AccessorType::Vec3;
-    accessor2.max = Some(vec![1.0, 1.0, 0.0]);
-    accessor2.min = Some(vec![0.0, 0.0, 0.0]);
+    let mut accessor2 = Accessor {
+        name: None,
+        buffer_view: Some(1),
+        byte_offset: 0,
+        component_type: ComponentType::Float,
+        count: 3,
+        type_: AccessorType::Vec3,
+        max: Some(vec![1.0, 1.0, 0.0]),
+        min: Some(vec![0.0, 0.0, 0.0]),
+        sparse: None,
+        normalized: None,
+        extensions: None,
+        extras: None,
+    };
 
-    let mut primitive = Primitive::new();
+    let mut primitive = MeshPrimitive {
+        attributes: HashMap::new(),
+        indices: Some(0),
+        material: None,
+        mode: PrimitiveMode::Triangles,
+        targets: None,
+        extensions: None,
+        extras: None,
+    };
     primitive.attributes.insert("POSITION".to_string(), 1);
-    primitive.indices = Some(0);
 
-    let mut mesh = Mesh::new();
-    mesh.primitives = vec![primitive];
+    let mut mesh = Mesh {
+        primitives: vec![primitive],
+        weights: None,
+        name: None,
+        extensions: None,
+        extras: None,
+    };
 
-    let mut node = Node::new();
-    node.mesh = Some(0);
+    let mut node = Node {
+        camera: None,
+        children: None,
+        skin: None,
+        matrix: None,
+        mesh: Some(0),
+        rotation: None,
+        scale: None,
+        translation: None,
+        weights: None,
+        name: None,
+        extensions: None,
+        extras: None,
+    };
 
-    let mut scene = Scene::new();
-    scene.nodes.push(0);
+    let mut scene = Scene {
+        name: None,
+        nodes: Some(vec![0]),
+    };
 
     gltf.buffers = Some(vec![buffer]);
     gltf.buffer_views = Some(vec![buffer_view1, buffer_view2]);
