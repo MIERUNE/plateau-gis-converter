@@ -1,42 +1,41 @@
 use serde::{Deserialize, Serialize};
-use serde_json::Value as JsonValue;
 
+use std::collections::HashMap;
+
+use serde_json::Value;
+
+/// Metadata about the glTF asset.
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
+#[serde(deny_unknown_fields)]
 pub struct Asset {
-    // 必須: glTFのバージョンを指定するフィールド
-    pub version: String,
-
-    // オプショナル: glTFアセットを生成したツールやライブラリを指定するフィールド
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub generator: Option<String>,
-
-    // オプショナル: 著作権に関する情報を指定するフィールド
+    /// A copyright message suitable for display to credit the content creator.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub copyright: Option<String>,
 
-    // オプショナル: glTFの前のバージョンの最小互換バージョンを指定するフィールド
+    /// Tool that generated this glTF model.  Useful for debugging.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub generator: Option<String>,
+
+    /// The glTF version in the form of `<major>.<minor>` that this asset targets.
+    pub version: String,
+
+    /// The minimum glTF version in the form of `<major>.<minor>` that this asset targets. This property **MUST NOT** be greater than the asset version.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub min_version: Option<String>,
 
-    // オプショナル: 拡張機能に関するフィールド
+    /// JSON object with extension-specific objects.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub extensions: Option<JsonValue>,
+    pub extensions: Option<AssetExtensions>,
 
-    // オプショナル: アセットにカスタムプロパティを追加するためのフィールド
+    /// Application-specific data.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub extras: Option<JsonValue>,
+    pub extras: Option<HashMap<String, Value>>,
 }
 
-impl Asset {
-    pub fn new() -> Self {
-        Asset {
-            version: "2.0".to_string(),
-            generator: None,
-            copyright: None,
-            min_version: None,
-            extensions: None,
-            extras: None,
-        }
-    }
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct AssetExtensions {
+    #[serde(flatten)]
+    others: HashMap<String, Value>,
 }

@@ -21,7 +21,7 @@ pub struct Gltf {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub animations: Option<Vec<Animation>>,
 
-    // 必須: glTFアセットのメタデータ
+    /// Metadata about the glTF asset.
     pub asset: Asset,
 
     // オプショナル: バッファの配列
