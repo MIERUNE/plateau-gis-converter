@@ -1,10 +1,10 @@
 use std::borrow::Cow;
 
-use num_traits::Float;
+use super::CoordNum;
 
 /// Computer-friendly LineString
 #[derive(Debug, Clone, Default)]
-pub struct LineString<'a, const D: usize, T: Float = f64> {
+pub struct LineString<'a, const D: usize, T: CoordNum = f64> {
     /// 座標データ
     ///
     /// e.g. `[x0, y0, z0, x1, y1, z1, ...]`
@@ -14,18 +14,20 @@ pub struct LineString<'a, const D: usize, T: Float = f64> {
 pub type LineString2<'a, T = f64> = LineString<'a, 2, T>;
 pub type LineString3<'a, T = f64> = LineString<'a, 3, T>;
 
-impl<'a, const D: usize, T: Float> LineString<'a, D, T> {
-    pub fn new(coords: Cow<'a, [T]>) -> Self {
+impl<'a, const D: usize, T: CoordNum> LineString<'a, D, T> {
+    pub fn new() -> Self {
+        Default::default()
+    }
+
+    pub fn from_raw(coords: Cow<'a, [T]>) -> Self {
         Self { coords }
     }
 
-    #[inline]
     pub fn coords(&self) -> &[T] {
         self.as_ref()
     }
 
     /// この LineString の座標列のイテレータを得る
-    #[inline]
     pub fn iter(&self) -> Iter<'_, D, T> {
         Iter {
             slice: &self.coords,
@@ -35,7 +37,6 @@ impl<'a, const D: usize, T: Float> LineString<'a, D, T> {
     }
 
     /// 始点と終点を閉じた座標列のイテレータを得る
-    #[inline]
     pub fn iter_closed(&self) -> Iter<'_, D, T> {
         Iter {
             slice: &self.coords,
@@ -44,34 +45,30 @@ impl<'a, const D: usize, T: Float> LineString<'a, D, T> {
         }
     }
 
-    #[inline]
     pub fn len(&self) -> usize {
         self.coords.len() / D
     }
 
-    #[inline]
     pub fn is_empty(&self) -> bool {
         self.coords.is_empty()
     }
 
-    #[inline]
     pub fn push(&mut self, coord: &[T; D]) {
         self.coords.to_mut().extend(coord);
     }
 
-    #[inline]
     pub fn clear(&mut self) {
         self.coords.to_mut().clear();
     }
 }
 
-impl<const D: usize, T: Float> AsRef<[T]> for LineString<'_, D, T> {
+impl<const D: usize, T: CoordNum> AsRef<[T]> for LineString<'_, D, T> {
     fn as_ref(&self) -> &[T] {
         self.coords.as_ref()
     }
 }
 
-impl<'a, const D: usize, T: Float> IntoIterator for &'a LineString<'_, D, T> {
+impl<'a, const D: usize, T: CoordNum> IntoIterator for &'a LineString<'_, D, T> {
     type Item = &'a [T];
     type IntoIter = Iter<'a, D, T>;
 
@@ -80,13 +77,13 @@ impl<'a, const D: usize, T: Float> IntoIterator for &'a LineString<'_, D, T> {
     }
 }
 
-pub struct Iter<'a, const D: usize, T: Float> {
+pub struct Iter<'a, const D: usize, T: CoordNum> {
     slice: &'a [T],
     pos: usize,
     close: bool,
 }
 
-impl<'a, const D: usize, T: Float> Iterator for Iter<'a, D, T> {
+impl<'a, const D: usize, T: CoordNum> Iterator for Iter<'a, D, T> {
     type Item = &'a [T];
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -107,8 +104,8 @@ mod tests {
 
     #[test]
     fn test_line_basic() {
-        let line: LineString2 =
-            LineString2::new((0..8).map(|v| v as f64).collect::<Vec<f64>>().into());
+        let mut line: LineString2 =
+            LineString2::from_raw((0..8).map(|v| v as f64).collect::<Vec<f64>>().into());
         assert_eq!(line.len(), 4);
         assert!(!line.is_empty());
         for (i, coord) in line.iter().enumerate() {
@@ -120,22 +117,28 @@ mod tests {
                 _ => unreachable!(),
             }
         }
+
+        line.clear();
+        assert_eq!(line.len(), 0);
+        assert!(line.is_empty());
+
+        line.push(&[0., 1.]);
+        assert_eq!(line.len(), 1);
+        for _c in &line {}
     }
 
     #[test]
     fn test_line_empty() {
-        let line: LineString2 = Default::default();
+        let line: LineString2 = LineString2::new();
         assert_eq!(line.len(), 0);
         assert!(line.is_empty());
-        for _coord in &line {
-            unreachable!("should not be called");
-        }
+        assert_eq!(line.iter().count(), 0);
     }
 
     #[test]
     fn test_line_close() {
         let line: LineString2 =
-            LineString2::new((0..6).map(|v| v as f64).collect::<Vec<f64>>().into());
+            LineString2::from_raw((0..6).map(|v| v as f64).collect::<Vec<f64>>().into());
         assert_eq!(line.len(), 3);
         assert!(!line.is_empty());
         for (i, coord) in line.iter_closed().enumerate() {
