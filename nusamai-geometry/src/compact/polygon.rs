@@ -21,6 +21,9 @@ impl<'a, const D: usize, T: CoordNum> Polygon<'a, D, T> {
     }
 
     pub fn from_raw(coords: Cow<'a, [T]>, hole_indices: Cow<'a, [u32]>) -> Self {
+        if coords.len() % D != 0 {
+            panic!("coords.len() must be a multiple of D")
+        }
         // Check if all span values are within range and monotonically increasing
         if let Some(&last) = hole_indices.last() {
             let len = (coords.len() / D) as u32;

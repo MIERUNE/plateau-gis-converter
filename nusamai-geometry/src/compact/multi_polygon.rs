@@ -36,6 +36,9 @@ impl<'a, const D: usize, T: CoordNum> MultiPolygon<'a, D, T> {
         all_hole_indices: Cow<'a, [u32]>,
         holes_spans: Cow<'a, [u32]>,
     ) -> Self {
+        if all_coords.len() % D != 0 {
+            panic!("all_coords.len() must be a multiple of D")
+        }
         if coords_spans.len() != holes_spans.len() {
             panic!("coords_spans and holes_spans must have the same length");
         }

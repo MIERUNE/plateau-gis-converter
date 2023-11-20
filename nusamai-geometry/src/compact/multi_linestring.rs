@@ -28,6 +28,9 @@ impl<'a, const D: usize, T: CoordNum> MultiLineString<'a, D, T> {
     }
 
     pub fn from_raw(all_coords: Cow<'a, [T]>, coords_spans: Cow<'a, [u32]>) -> Self {
+        if all_coords.len() % D != 0 {
+            panic!("all_coords.len() must be a multiple of D")
+        }
         // Check if all span values are within range and monotonically increasing
         if let Some(&last) = coords_spans.last() {
             let len = (all_coords.len() / D) as u32;

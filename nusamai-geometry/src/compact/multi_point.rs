@@ -20,6 +20,9 @@ impl<'a, const D: usize, T: CoordNum> MultiPoint<'a, D, T> {
     }
 
     pub fn from_raw(coords: Cow<'a, [T]>) -> Self {
+        if coords.len() % D != 0 {
+            panic!("coords.len() must be a multiple of D")
+        }
         Self { coords }
     }
 
