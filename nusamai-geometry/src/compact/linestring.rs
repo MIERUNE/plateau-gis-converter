@@ -93,7 +93,7 @@ impl<'a, const D: usize, T: CoordNum> Iterator for Iter<'a, D, T> {
         self.pos += D;
         if self.pos <= self.slice.len() {
             Some(&self.slice[self.pos - D..self.pos])
-        } else if self.pos == self.slice.len() + D && self.close {
+        } else if self.close && self.slice.len() >= D && self.pos == self.slice.len() + D {
             Some(&self.slice[..D])
         } else {
             None
@@ -136,6 +136,12 @@ mod tests {
         assert_eq!(line.len(), 0);
         assert!(line.is_empty());
         assert_eq!(line.iter().count(), 0);
+    }
+
+    #[test]
+    fn test_line_empty_iter_closed() {
+        let line: LineString2 = LineString2::new();
+        assert_eq!(line.iter_closed().count(), 0);
     }
 
     #[test]
