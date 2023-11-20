@@ -105,7 +105,7 @@ fn parse_cityobj(
     reader: &mut NsReader<&[u8]>,
     buf: &mut Vec<f64>,
 ) -> Result<MultiPolygon3<'static>, ParseError> {
-    let mut mpoly: MultiPolygon3 = Default::default();
+    let mut mpoly = MultiPolygon3::new();
     let mut depth = 0;
     let mut max_lod = 0;
     loop {
