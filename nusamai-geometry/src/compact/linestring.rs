@@ -139,6 +139,12 @@ mod tests {
     }
 
     #[test]
+    fn test_line_empty_iter_closed() {
+        let line: LineString2 = LineString2::new();
+        assert_eq!(line.iter_closed().count(), 0);
+    }
+
+    #[test]
     fn test_line_close() {
         let line: LineString2 =
             LineString2::from_raw((0..6).map(|v| v as f64).collect::<Vec<f64>>().into());
