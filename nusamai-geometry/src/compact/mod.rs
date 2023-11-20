@@ -19,10 +19,10 @@ impl<T: Num + Copy + NumCast + PartialOrd + Default + Debug> CoordNum for T {}
 /// Computer-friendly Geometry
 #[derive(Debug, Clone)]
 pub enum Geometry<'a, const D: usize, T: CoordNum> {
-    LineString(MultiPolygon<'a, D, T>),
-    Polygon(LineString<'a, D, T>),
     MultiPoint(MultiPoint<'a, D, T>),
+    LineString(LineString<'a, D, T>),
     MultiLineString(MultiLineString<'a, D, T>),
+    Polygon(Polygon<'a, D, T>),
     MultiPolygon(MultiPolygon<'a, D, T>),
 }
 
