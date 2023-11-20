@@ -11,11 +11,11 @@ pub struct MultiPolygon<'a, const D: usize, T: CoordNum = f64> {
     /// e.g. `[x0, y0, z0, x1, y1, z1, ...]`
     all_coords: Cow<'a, [T]>,
 
-    /// 各ポリゴンでの各 hole の開始頂点インデクスの列を全ポリゴンについて連結したもの
-    all_hole_indices: Cow<'a, [u32]>,
-
     /// all_coords における各ポリゴンの開始頂点番号 (1つ目のポリゴンは必ず0なので省略)
     coords_spans: Cow<'a, [u32]>,
+
+    /// 各ポリゴンでの各 hole の開始頂点インデクスの列を全ポリゴンについて連結したもの
+    all_hole_indices: Cow<'a, [u32]>,
 
     /// all_hole_indices における各ポリゴンの開始位置 (1つ目のポリゴンは必ず0なので省略)
     holes_spans: Cow<'a, [u32]>,
@@ -32,8 +32,8 @@ impl<'a, const D: usize, T: CoordNum> MultiPolygon<'a, D, T> {
     /// Create a new polygon from the given raw data, checking for validity.
     pub fn from_raw(
         all_coords: Cow<'a, [T]>,
-        all_hole_indices: Cow<'a, [u32]>,
         coords_spans: Cow<'a, [u32]>,
+        all_hole_indices: Cow<'a, [u32]>,
         holes_spans: Cow<'a, [u32]>,
     ) -> Self {
         if coords_spans.len() != holes_spans.len() {
@@ -80,9 +80,9 @@ impl<'a, const D: usize, T: CoordNum> MultiPolygon<'a, D, T> {
     /// Creates a new multipolygon from the given raw data, without validity check.
     pub fn from_raw_unchecked(
         all_coords: Cow<'a, [T]>,
-        all_hole_indices: Cow<'a, [u32]>,
         coords_spans: Cow<'a, [u32]>,
         holes_spans: Cow<'a, [u32]>,
+        all_hole_indices: Cow<'a, [u32]>,
     ) -> Self {
         Self {
             all_coords,
@@ -261,7 +261,7 @@ mod tests {
         mpoly.add_interior([[5., 1.], [6., 1.], [6., 2.], [5., 2.], [5., 1.]]);
         assert_eq!(mpoly.len(), 2);
 
-        // Add the 3rd polygon
+        // 3rd polygon
         mpoly.add_exterior([[4., 0.], [7., 0.], [7., 3.], [4., 3.], [4., 0.]]);
         assert_eq!(mpoly.len(), 3);
         mpoly.add_interior([[5., 1.], [6., 1.], [6., 2.], [5., 2.], [5., 1.]]);
@@ -305,8 +305,8 @@ mod tests {
                 5.0, 1.0, 6.0, 1.0, 6.0, 2.0, 5.0, 2.0,
             ][..]
                 .into(),
-            [4, 8, 4, 4][..].into(),
             [12, 20][..].into(),
+            [4, 8, 4, 4][..].into(),
             [2, 3][..].into(),
         );
 
@@ -319,8 +319,8 @@ mod tests {
                 5.0, 1.0, 6.0, 1.0, 6.0, 2.0, 5.0, 2.0,
             ][..]
                 .into(),
-            [4, 8, 4, 4][..].into(),
             [12, 20][..].into(),
+            [4, 8, 4, 4][..].into(),
             [2, 3][..].into(),
         );
     }
@@ -330,8 +330,8 @@ mod tests {
     fn test_from_raw_invalid_1() {
         let _mpoly = MultiPolygon2::from_raw(
             [0.0, 0.0, 5.0, 0.0, 5.0, 5.0, 0.0, 1.0][..].into(),
-            [1, 99][..].into(),
             [2][..].into(),
+            [1, 99][..].into(), // invalid
             [1][..].into(),
         );
     }
@@ -341,8 +341,8 @@ mod tests {
     fn test_from_raw_invalid_2() {
         let _mpoly = MultiPolygon2::from_raw(
             [0.0, 0.0, 5.0, 0.0, 5.0, 5.0, 0.0, 1.0][..].into(),
+            [99][..].into(), // invalid
             [1, 1][..].into(),
-            [99][..].into(),
             [1][..].into(),
         );
     }
@@ -352,45 +352,45 @@ mod tests {
     fn test_from_raw_invalid_3() {
         let _mpoly = MultiPolygon2::from_raw(
             [0.0, 0.0, 5.0, 0.0, 5.0, 5.0, 0.0, 1.0][..].into(),
-            [1, 1][..].into(),
             [2][..].into(),
-            [99][..].into(),
+            [1, 1][..].into(),
+            [99][..].into(), // invalid
         );
     }
 
     #[test]
     #[should_panic]
-    fn test_from_raw_invalid4() {
+    fn test_from_raw_invalid_4() {
         // checked
         let _mpoly = MultiPolygon2::from_raw(
             [0.0, 0.0, 5.0, 0.0, 5.0, 5.0, 0.0, 1.0][..].into(),
-            [][..].into(),
             [1, 2][..].into(),
-            [0][..].into(),
+            [][..].into(),
+            [0][..].into(), // coords_spans.len() != holes_spans.len()
         );
     }
 
     #[test]
     #[should_panic]
-    fn test_from_raw_invalid5() {
+    fn test_from_raw_invalid_5() {
         // checked
         let _mpoly = MultiPolygon2::from_raw(
             [0.0, 0.0, 5.0, 0.0, 5.0, 5.0, 0.0, 1.0][..].into(),
+            [2, 1][..].into(), // not increasing
             [][..].into(),
-            [2, 1][..].into(),
             [0, 0][..].into(),
         );
     }
 
     #[test]
     #[should_panic]
-    fn test_from_raw_invalid6() {
+    fn test_from_raw_invalid_6() {
         // checked
         let _mpoly = MultiPolygon2::from_raw(
             [0., 0., 1., 1., 2., 2., 3., 3., 4., 4., 5., 5.][..].into(),
-            [1, 1][..].into(),
             [2, 4][..].into(),
-            [1, 0][..].into(),
+            [1, 1][..].into(),
+            [1, 0][..].into(), // not increasing
         );
     }
 }
