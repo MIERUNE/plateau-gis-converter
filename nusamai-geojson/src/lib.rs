@@ -7,8 +7,8 @@ pub fn nusamai_to_geojson_geometry<const D: usize, T: CoordNum>(
         Geometry::MultiPoint(_) => unimplemented!(),
         Geometry::LineString(_) => unimplemented!(),
         Geometry::MultiLineString(_) => unimplemented!(),
-        Geometry::Polygon(poly) => polygon_to_geojson_geometry(&poly),
-        Geometry::MultiPolygon(mpoly) => multi_polygon_to_geojson_geometry(&mpoly),
+        Geometry::Polygon(poly) => polygon_to_geojson_geometry(poly),
+        Geometry::MultiPolygon(mpoly) => multi_polygon_to_geojson_geometry(mpoly),
     }
 }
 
