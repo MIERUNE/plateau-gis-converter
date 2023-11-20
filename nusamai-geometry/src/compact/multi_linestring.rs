@@ -140,13 +140,15 @@ mod tests {
 
     #[test]
     fn test_mline_one_linestring() {
-        let mline =
-            MultiLineString2::from_raw_unchecked(Cow::Borrowed(&[1., 2., 3.]), Cow::Borrowed(&[]));
+        let mline = MultiLineString2::from_raw_unchecked(
+            Cow::Borrowed(&[1., 2., 3., 4.]),
+            Cow::Borrowed(&[]),
+        );
         assert_eq!(mline.len(), 1);
         assert!(!mline.is_empty());
         for (i, _line) in mline.iter().enumerate() {
             match i {
-                0 => assert_eq!(_line.coords(), &[1., 2., 3.]),
+                0 => assert_eq!(_line.coords(), &[1., 2., 3., 4.]),
                 _ => unreachable!(),
             }
         }
