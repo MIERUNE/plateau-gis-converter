@@ -90,6 +90,10 @@ impl<'a, const D: usize, T: CoordNum> Iterator for Iter<'a, D, T> {
     type Item = &'a [T];
 
     fn next(&mut self) -> Option<Self::Item> {
+        if self.slice.is_empty() {
+            return None;
+        }
+
         self.pos += D;
         if self.pos <= self.slice.len() {
             Some(&self.slice[self.pos - D..self.pos])
