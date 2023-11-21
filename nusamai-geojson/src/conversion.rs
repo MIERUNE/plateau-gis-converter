@@ -6,12 +6,22 @@ pub fn nusamai_to_geojson_geometry<const D: usize, T: CoordNum>(
     geometry: &Geometry<D, T>,
 ) -> geojson::Geometry {
     match geometry {
-        Geometry::MultiPoint(_) => unimplemented!(),
+        Geometry::MultiPoint(mpoint) => multi_point_to_geojson_geometry(mpoint),
         Geometry::LineString(_) => unimplemented!(),
         Geometry::MultiLineString(_) => unimplemented!(),
         Geometry::Polygon(poly) => polygon_to_geojson_geometry(poly),
         Geometry::MultiPolygon(mpoly) => multi_polygon_to_geojson_geometry(mpoly),
     }
+}
+
+fn multi_point_to_geojson_geometry<const D: usize, T: CoordNum>(
+    mpoint: &nusamai_geometry::MultiPoint<D, T>,
+) -> geojson::Geometry {
+    let point_list: Vec<geojson::PointType> = mpoint
+        .iter()
+        .map(|point| point.iter().map(|&t| t.to_f64().unwrap()).collect())
+        .collect();
+    geojson::Geometry::new(geojson::Value::MultiPoint(point_list))
 }
 
 fn polygon_to_geojson_geometry<const D: usize, T: CoordNum>(
@@ -45,7 +55,29 @@ fn polygon_to_rings<const D: usize, T: CoordNum>(poly: &Polygon<D, T>) -> geojso
 #[cfg(test)]
 mod tests {
     use super::*;
-    use nusamai_geometry::{MultiPolygon2, Polygon2, Polygon3};
+    use nusamai_geometry::{MultiPoint2, MultiPolygon2, Polygon2, Polygon3};
+
+    #[test]
+    fn test_multi_point_basic() {
+        let mut mpoint = MultiPoint2::new();
+        mpoint.push(&[0., 0.]);
+        mpoint.push(&[1., 1.]);
+        mpoint.push(&[2., 2.]);
+
+        let geojson_geometry = multi_point_to_geojson_geometry(&mpoint);
+
+        assert!(geojson_geometry.bbox.is_none());
+        assert!(geojson_geometry.foreign_members.is_none());
+
+        if let geojson::Value::MultiPoint(points) = geojson_geometry.value {
+            assert_eq!(points.len(), 3);
+            assert_eq!(points[0], vec![0., 0.]);
+            assert_eq!(points[1], vec![1., 1.]);
+            assert_eq!(points[2], vec![2., 2.]);
+        } else {
+            unreachable!("The result is not a GeoJSON MultiPoint");
+        };
+    }
 
     #[test]
     fn test_polygon_basic() {
