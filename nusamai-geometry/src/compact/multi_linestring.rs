@@ -76,6 +76,15 @@ impl<'a, const D: usize, T: CoordNum> MultiLineString<'a, D, T> {
         self.all_coords.to_mut().clear();
         self.coords_spans.to_mut().clear();
     }
+
+    pub fn add_linestring<I: IntoIterator<Item = [T; D]>>(&mut self, iter: I) {
+        if !self.all_coords.is_empty() {
+            self.coords_spans
+                .to_mut()
+                .push((self.all_coords.len() / D) as u32);
+        }
+        self.all_coords.to_mut().extend(iter.into_iter().flatten());
+    }
 }
 
 impl<'a, const D: usize, T: CoordNum> IntoIterator for &'a MultiLineString<'_, D, T> {
@@ -160,6 +169,30 @@ mod tests {
         assert_eq!(mline.len(), 0);
         assert!(mline.is_empty());
         assert_eq!(mline.iter().count(), 0);
+    }
+
+    #[test]
+    fn test_mline_add_linestring() {
+        let mut mline = MultiLineString2::new();
+        assert_eq!(mline.len(), 0);
+
+        mline.add_linestring(vec![[0., 0.], [1., 1.], [2., 2.]]);
+        assert_eq!(mline.len(), 1);
+
+        mline.add_linestring(vec![[3., 3.], [4., 4.], [5., 5.]]);
+        assert_eq!(mline.len(), 2);
+
+        mline.add_linestring(vec![[6., 6.], [7., 7.], [8., 8.], [9., 9.]]);
+        assert_eq!(mline.len(), 3);
+
+        for (i, line) in mline.iter().enumerate() {
+            match i {
+                0 => assert_eq!(line.coords(), &[0., 0., 1., 1., 2., 2.]),
+                1 => assert_eq!(line.coords(), &[3., 3., 4., 4., 5., 5.]),
+                2 => assert_eq!(line.coords(), &[6., 6., 7., 7., 8., 8., 9., 9.]),
+                _ => unreachable!(),
+            }
+        }
     }
 
     #[test]
