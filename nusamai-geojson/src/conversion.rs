@@ -7,8 +7,8 @@ pub fn nusamai_to_geojson_geometry<const D: usize, T: CoordNum>(
 ) -> geojson::Geometry {
     match geometry {
         Geometry::MultiPoint(geom) => multi_point_to_geojson_geometry(geom),
-        Geometry::LineString(geom) => line_string_to_geojson_geometry(geom),
-        Geometry::MultiLineString(geom) => multi_line_string_to_geojson_geometry(geom),
+        Geometry::LineString(geom) => linestring_to_geojson_geometry(geom),
+        Geometry::MultiLineString(geom) => multi_linestring_to_geojson_geometry(geom),
         Geometry::Polygon(geom) => polygon_to_geojson_geometry(geom),
         Geometry::MultiPolygon(geom) => multi_polygon_to_geojson_geometry(geom),
     }
@@ -24,23 +24,23 @@ fn multi_point_to_geojson_geometry<const D: usize, T: CoordNum>(
     geojson::Geometry::new(geojson::Value::MultiPoint(point_list))
 }
 
-fn line_string_to_geojson_geometry<const D: usize, T: CoordNum>(
-    line_string: &nusamai_geometry::LineString<D, T>,
+fn linestring_to_geojson_geometry<const D: usize, T: CoordNum>(
+    linestring: &nusamai_geometry::LineString<D, T>,
 ) -> geojson::Geometry {
-    let point_list: geojson::LineStringType = line_string
+    let point_list: geojson::LineStringType = linestring
         .iter()
         .map(|point| point.iter().map(|&t| t.to_f64().unwrap()).collect())
         .collect();
     geojson::Geometry::new(geojson::Value::LineString(point_list))
 }
 
-fn multi_line_string_to_geojson_geometry<const D: usize, T: CoordNum>(
-    mline_string: &nusamai_geometry::MultiLineString<D, T>,
+fn multi_linestring_to_geojson_geometry<const D: usize, T: CoordNum>(
+    mlinestring: &nusamai_geometry::MultiLineString<D, T>,
 ) -> geojson::Geometry {
-    let line_list: Vec<geojson::LineStringType> = mline_string
+    let line_list: Vec<geojson::LineStringType> = mlinestring
         .iter()
-        .map(|line_string| {
-            line_string
+        .map(|linestring| {
+            linestring
                 .iter()
                 .map(|point| point.iter().map(|&t| t.to_f64().unwrap()).collect())
                 .collect()
@@ -67,8 +67,8 @@ fn multi_polygon_to_geojson_geometry<const D: usize, T: CoordNum>(
 fn polygon_to_rings<const D: usize, T: CoordNum>(poly: &Polygon<D, T>) -> geojson::PolygonType {
     let rings = std::iter::once(poly.exterior())
         .chain(poly.interiors())
-        .map(|line_string| {
-            line_string
+        .map(|linestring| {
+            linestring
                 .iter_closed()
                 .map(|slice| slice.iter().map(|&t| t.to_f64().unwrap()).collect())
                 .collect()
@@ -105,19 +105,19 @@ mod tests {
     }
 
     #[test]
-    fn test_line_string_basic() {
-        let mut line_string = nusamai_geometry::LineString2::new();
-        line_string.push(&[0., 0.]);
-        line_string.push(&[1., 1.]);
-        line_string.push(&[2., 2.]);
+    fn test_linestring_basic() {
+        let mut linestring = nusamai_geometry::LineString2::new();
+        linestring.push(&[0., 0.]);
+        linestring.push(&[1., 1.]);
+        linestring.push(&[2., 2.]);
 
-        let geojson_geometry = line_string_to_geojson_geometry(&line_string);
+        let geojson_geometry = linestring_to_geojson_geometry(&linestring);
 
         assert!(geojson_geometry.bbox.is_none());
         assert!(geojson_geometry.foreign_members.is_none());
 
         if let geojson::Value::LineString(points) = geojson_geometry.value {
-            assert_eq!(points.len(), line_string.len());
+            assert_eq!(points.len(), linestring.len());
             assert_eq!(points[0], vec![0., 0.]);
             assert_eq!(points[1], vec![1., 1.]);
             assert_eq!(points[2], vec![2., 2.]);
@@ -132,7 +132,7 @@ mod tests {
         let coords_spans = vec![2, 4];
         let mls = MultiLineString2::from_raw(all_coords.into(), coords_spans.into());
 
-        let geojson_geometry = multi_line_string_to_geojson_geometry(&mls);
+        let geojson_geometry = multi_linestring_to_geojson_geometry(&mls);
 
         assert!(geojson_geometry.bbox.is_none());
         assert!(geojson_geometry.foreign_members.is_none());
