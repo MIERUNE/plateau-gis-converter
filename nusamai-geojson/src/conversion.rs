@@ -106,5 +106,61 @@ mod tests {
         mpoly.add_interior([[5., 1.], [6., 1.], [6., 2.], [5., 2.], [5., 1.]]);
 
         let geojson_geometry = multi_polygon_to_geojson_geometry(&mpoly);
+
+        assert!(geojson_geometry.bbox.is_none());
+        assert!(geojson_geometry.foreign_members.is_none());
+        if let geojson::Value::MultiPolygon(rings_list) = geojson_geometry.value {
+            for (i, rings) in rings_list.iter().enumerate() {
+                match i {
+                    0 => {
+                        assert_eq!(rings.len(), 3);
+                        assert_eq!(rings[0].len(), 5);
+                        assert_eq!(rings[1].len(), 5);
+                        assert_eq!(rings[2].len(), 5);
+                        assert_eq!(
+                            rings[0],
+                            vec![[0., 0.], [5., 0.], [5., 5.], [0., 5.], [0., 0.]]
+                        );
+                        assert_eq!(
+                            rings[1],
+                            vec![[1., 1.], [2., 1.], [2., 2.], [1., 2.], [1., 1.]]
+                        );
+                        assert_eq!(
+                            rings[2],
+                            vec![[3., 3.], [4., 3.], [4., 4.], [3., 4.], [3., 3.]]
+                        );
+                    }
+                    1 => {
+                        assert_eq!(rings.len(), 2);
+                        assert_eq!(rings[0].len(), 5);
+                        assert_eq!(rings[1].len(), 5);
+                        assert_eq!(
+                            rings[0],
+                            vec![[4., 0.], [7., 0.], [7., 3.], [4., 3.], [4., 0.]]
+                        );
+                        assert_eq!(
+                            rings[1],
+                            vec![[5., 1.], [6., 1.], [6., 2.], [5., 2.], [5., 1.]]
+                        );
+                    }
+                    2 => {
+                        assert_eq!(rings.len(), 2);
+                        assert_eq!(rings[0].len(), 5);
+                        assert_eq!(rings[1].len(), 5);
+                        assert_eq!(
+                            rings[0],
+                            vec![[4., 0.], [7., 0.], [7., 3.], [4., 3.], [4., 0.]]
+                        );
+                        assert_eq!(
+                            rings[1],
+                            vec![[5., 1.], [6., 1.], [6., 2.], [5., 2.], [5., 1.]]
+                        );
+                    }
+                    _ => unreachable!(),
+                }
+            }
+        } else {
+            unreachable!("The result is not a GeoJSON MultiPolygon");
+        };
     }
 }
