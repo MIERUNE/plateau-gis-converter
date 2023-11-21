@@ -250,6 +250,6 @@ fn main() {
     };
     let geojson = geojson::GeoJson::from(geojson_feature_collection);
 
-    let mut file = fs::File::create("out_2.geojson").unwrap();
+    let mut file = fs::File::create("out.geojson").unwrap();
     file.write_all(geojson.to_string().as_bytes()).unwrap();
 }
