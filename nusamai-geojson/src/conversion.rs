@@ -8,7 +8,7 @@ pub fn nusamai_to_geojson_geometry<const D: usize, T: CoordNum>(
     match geometry {
         Geometry::MultiPoint(geom) => multi_point_to_geojson_geometry(geom),
         Geometry::LineString(geom) => line_string_to_geojson_geometry(geom),
-        Geometry::MultiLineString(_) => unimplemented!(),
+        Geometry::MultiLineString(geom) => multi_line_string_to_geojson_geometry(geom),
         Geometry::Polygon(geom) => polygon_to_geojson_geometry(geom),
         Geometry::MultiPolygon(geom) => multi_polygon_to_geojson_geometry(geom),
     }
@@ -32,6 +32,21 @@ fn line_string_to_geojson_geometry<const D: usize, T: CoordNum>(
         .map(|point| point.iter().map(|&t| t.to_f64().unwrap()).collect())
         .collect();
     geojson::Geometry::new(geojson::Value::LineString(point_list))
+}
+
+fn multi_line_string_to_geojson_geometry<const D: usize, T: CoordNum>(
+    mline_string: &nusamai_geometry::MultiLineString<D, T>,
+) -> geojson::Geometry {
+    let line_list: Vec<geojson::LineStringType> = mline_string
+        .iter()
+        .map(|line_string| {
+            line_string
+                .iter()
+                .map(|point| point.iter().map(|&t| t.to_f64().unwrap()).collect())
+                .collect()
+        })
+        .collect();
+    geojson::Geometry::new(geojson::Value::MultiLineString(line_list))
 }
 
 fn polygon_to_geojson_geometry<const D: usize, T: CoordNum>(
@@ -65,7 +80,7 @@ fn polygon_to_rings<const D: usize, T: CoordNum>(poly: &Polygon<D, T>) -> geojso
 #[cfg(test)]
 mod tests {
     use super::*;
-    use nusamai_geometry::{MultiPoint2, MultiPolygon2, Polygon2, Polygon3};
+    use nusamai_geometry::{MultiLineString2, MultiPoint2, MultiPolygon2, Polygon2, Polygon3};
 
     #[test]
     fn test_multi_point_basic() {
@@ -108,6 +123,27 @@ mod tests {
             assert_eq!(points[2], vec![2., 2.]);
         } else {
             unreachable!("The result is not a GeoJSON LineString");
+        };
+    }
+
+    #[test]
+    fn test_multi_linestring_basic() {
+        let all_coords: Vec<f64> = (0..=6).flat_map(|i| vec![i as f64, i as f64]).collect();
+        let coords_spans = vec![2, 4];
+        let mls = MultiLineString2::from_raw(all_coords.into(), coords_spans.into());
+
+        let geojson_geometry = multi_line_string_to_geojson_geometry(&mls);
+
+        assert!(geojson_geometry.bbox.is_none());
+        assert!(geojson_geometry.foreign_members.is_none());
+
+        if let geojson::Value::MultiLineString(lines) = geojson_geometry.value {
+            assert_eq!(lines.len(), mls.len());
+            assert_eq!(lines[0], vec![[0., 0.], [1., 1.]]);
+            assert_eq!(lines[1], vec![[2., 2.], [3., 3.]]);
+            assert_eq!(lines[2], vec![[4., 4.], [5., 5.], [6., 6.]]);
+        } else {
+            unreachable!("The result is not a GeoJSON MultiLineString");
         };
     }
 
