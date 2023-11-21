@@ -128,9 +128,10 @@ mod tests {
 
     #[test]
     fn test_multi_linestring_basic() {
-        let all_coords: Vec<f64> = (0..=6).flat_map(|i| vec![i as f64, i as f64]).collect();
-        let coords_spans = vec![2, 4];
-        let mls = MultiLineString2::from_raw(all_coords.into(), coords_spans.into());
+        let mut mls = MultiLineString2::new();
+        mls.add_linestring(vec![[0., 0.], [1., 1.]]);
+        mls.add_linestring(vec![[2., 2.], [3., 3.]]);
+        mls.add_linestring(vec![[4., 4.], [5., 5.], [6., 6.]]);
 
         let geojson_geometry = multi_linestring_to_geojson_geometry(&mls);
 
