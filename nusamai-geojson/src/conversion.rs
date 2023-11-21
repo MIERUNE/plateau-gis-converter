@@ -6,12 +6,47 @@ pub fn nusamai_to_geojson_geometry<const D: usize, T: CoordNum>(
     geometry: &Geometry<D, T>,
 ) -> geojson::Geometry {
     match geometry {
-        Geometry::MultiPoint(_) => unimplemented!(),
-        Geometry::LineString(_) => unimplemented!(),
-        Geometry::MultiLineString(_) => unimplemented!(),
-        Geometry::Polygon(poly) => polygon_to_geojson_geometry(poly),
-        Geometry::MultiPolygon(mpoly) => multi_polygon_to_geojson_geometry(mpoly),
+        Geometry::MultiPoint(geom) => multi_point_to_geojson_geometry(geom),
+        Geometry::LineString(geom) => linestring_to_geojson_geometry(geom),
+        Geometry::MultiLineString(geom) => multi_linestring_to_geojson_geometry(geom),
+        Geometry::Polygon(geom) => polygon_to_geojson_geometry(geom),
+        Geometry::MultiPolygon(geom) => multi_polygon_to_geojson_geometry(geom),
     }
+}
+
+fn multi_point_to_geojson_geometry<const D: usize, T: CoordNum>(
+    mpoint: &nusamai_geometry::MultiPoint<D, T>,
+) -> geojson::Geometry {
+    let point_list: Vec<geojson::PointType> = mpoint
+        .iter()
+        .map(|point| point.iter().map(|&t| t.to_f64().unwrap()).collect())
+        .collect();
+    geojson::Geometry::new(geojson::Value::MultiPoint(point_list))
+}
+
+fn linestring_to_geojson_geometry<const D: usize, T: CoordNum>(
+    linestring: &nusamai_geometry::LineString<D, T>,
+) -> geojson::Geometry {
+    let point_list: geojson::LineStringType = linestring
+        .iter()
+        .map(|point| point.iter().map(|&t| t.to_f64().unwrap()).collect())
+        .collect();
+    geojson::Geometry::new(geojson::Value::LineString(point_list))
+}
+
+fn multi_linestring_to_geojson_geometry<const D: usize, T: CoordNum>(
+    mlinestring: &nusamai_geometry::MultiLineString<D, T>,
+) -> geojson::Geometry {
+    let line_list: Vec<geojson::LineStringType> = mlinestring
+        .iter()
+        .map(|linestring| {
+            linestring
+                .iter()
+                .map(|point| point.iter().map(|&t| t.to_f64().unwrap()).collect())
+                .collect()
+        })
+        .collect();
+    geojson::Geometry::new(geojson::Value::MultiLineString(line_list))
 }
 
 fn polygon_to_geojson_geometry<const D: usize, T: CoordNum>(
@@ -32,8 +67,8 @@ fn multi_polygon_to_geojson_geometry<const D: usize, T: CoordNum>(
 fn polygon_to_rings<const D: usize, T: CoordNum>(poly: &Polygon<D, T>) -> geojson::PolygonType {
     let rings = std::iter::once(poly.exterior())
         .chain(poly.interiors())
-        .map(|line_string| {
-            line_string
+        .map(|linestring| {
+            linestring
                 .iter_closed()
                 .map(|slice| slice.iter().map(|&t| t.to_f64().unwrap()).collect())
                 .collect()
@@ -45,7 +80,73 @@ fn polygon_to_rings<const D: usize, T: CoordNum>(poly: &Polygon<D, T>) -> geojso
 #[cfg(test)]
 mod tests {
     use super::*;
-    use nusamai_geometry::{MultiPolygon2, Polygon2, Polygon3};
+    use nusamai_geometry::{MultiLineString2, MultiPoint2, MultiPolygon2, Polygon2, Polygon3};
+
+    #[test]
+    fn test_multi_point_basic() {
+        let mut mpoint = MultiPoint2::new();
+        mpoint.push(&[0., 0.]);
+        mpoint.push(&[1., 1.]);
+        mpoint.push(&[2., 2.]);
+
+        let geojson_geometry = multi_point_to_geojson_geometry(&mpoint);
+
+        assert!(geojson_geometry.bbox.is_none());
+        assert!(geojson_geometry.foreign_members.is_none());
+
+        if let geojson::Value::MultiPoint(points) = geojson_geometry.value {
+            assert_eq!(points.len(), mpoint.len());
+            assert_eq!(points[0], vec![0., 0.]);
+            assert_eq!(points[1], vec![1., 1.]);
+            assert_eq!(points[2], vec![2., 2.]);
+        } else {
+            unreachable!("The result is not a GeoJSON MultiPoint");
+        };
+    }
+
+    #[test]
+    fn test_linestring_basic() {
+        let mut linestring = nusamai_geometry::LineString2::new();
+        linestring.push(&[0., 0.]);
+        linestring.push(&[1., 1.]);
+        linestring.push(&[2., 2.]);
+
+        let geojson_geometry = linestring_to_geojson_geometry(&linestring);
+
+        assert!(geojson_geometry.bbox.is_none());
+        assert!(geojson_geometry.foreign_members.is_none());
+
+        if let geojson::Value::LineString(points) = geojson_geometry.value {
+            assert_eq!(points.len(), linestring.len());
+            assert_eq!(points[0], vec![0., 0.]);
+            assert_eq!(points[1], vec![1., 1.]);
+            assert_eq!(points[2], vec![2., 2.]);
+        } else {
+            unreachable!("The result is not a GeoJSON LineString");
+        };
+    }
+
+    #[test]
+    fn test_multi_linestring_basic() {
+        let mut mls = MultiLineString2::new();
+        mls.add_linestring(vec![[0., 0.], [1., 1.]]);
+        mls.add_linestring(vec![[2., 2.], [3., 3.]]);
+        mls.add_linestring(vec![[4., 4.], [5., 5.], [6., 6.]]);
+
+        let geojson_geometry = multi_linestring_to_geojson_geometry(&mls);
+
+        assert!(geojson_geometry.bbox.is_none());
+        assert!(geojson_geometry.foreign_members.is_none());
+
+        if let geojson::Value::MultiLineString(lines) = geojson_geometry.value {
+            assert_eq!(lines.len(), mls.len());
+            assert_eq!(lines[0], vec![[0., 0.], [1., 1.]]);
+            assert_eq!(lines[1], vec![[2., 2.], [3., 3.]]);
+            assert_eq!(lines[2], vec![[4., 4.], [5., 5.], [6., 6.]]);
+        } else {
+            unreachable!("The result is not a GeoJSON MultiLineString");
+        };
+    }
 
     #[test]
     fn test_polygon_basic() {
