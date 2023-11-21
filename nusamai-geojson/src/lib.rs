@@ -1,6 +1,6 @@
 mod conversion;
 
-use conversion::nusamai_to_geojson_geometry;
+pub use conversion::nusamai_to_geojson_geometry;
 use nusamai_geometry::{CoordNum, Geometry};
 
 /// Convert a vector of "nusamai geometries" to a "geojson feature collection"
