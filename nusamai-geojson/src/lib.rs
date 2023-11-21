@@ -1,27 +1,5 @@
 use nusamai_geometry::{CoordNum, Geometry, MultiPolygon, Polygon};
 
-pub fn nusamai_to_geojson_geometry<const D: usize, T: CoordNum>(
-    geometry: &Geometry<D, T>,
-) -> geojson::Geometry {
-    match geometry {
-        Geometry::MultiPoint(_) => unimplemented!(),
-        Geometry::LineString(_) => unimplemented!(),
-        Geometry::MultiLineString(_) => unimplemented!(),
-        Geometry::Polygon(poly) => polygon_to_geojson_geometry(poly),
-        Geometry::MultiPolygon(mpoly) => multi_polygon_to_geojson_geometry(mpoly),
-    }
-}
-
-pub fn geojson_geometry_to_feature(geojson_geom: geojson::Geometry) -> geojson::Feature {
-    geojson::Feature {
-        bbox: None,
-        geometry: Some(geojson_geom),
-        id: None,
-        properties: None,
-        foreign_members: None,
-    }
-}
-
 pub fn geometries_to_geojson<const D: usize, T: CoordNum>(
     geometries: Vec<Geometry<D, T>>,
 ) -> geojson::GeoJson {
@@ -37,6 +15,28 @@ pub fn geometries_to_geojson<const D: usize, T: CoordNum>(
     };
 
     geojson::GeoJson::from(geojson_feature_collection)
+}
+
+pub fn geojson_geometry_to_feature(geojson_geom: geojson::Geometry) -> geojson::Feature {
+    geojson::Feature {
+        bbox: None,
+        geometry: Some(geojson_geom),
+        id: None,
+        properties: None,
+        foreign_members: None,
+    }
+}
+
+pub fn nusamai_to_geojson_geometry<const D: usize, T: CoordNum>(
+    geometry: &Geometry<D, T>,
+) -> geojson::Geometry {
+    match geometry {
+        Geometry::MultiPoint(_) => unimplemented!(),
+        Geometry::LineString(_) => unimplemented!(),
+        Geometry::MultiLineString(_) => unimplemented!(),
+        Geometry::Polygon(poly) => polygon_to_geojson_geometry(poly),
+        Geometry::MultiPolygon(mpoly) => multi_polygon_to_geojson_geometry(mpoly),
+    }
 }
 
 fn polygon_to_geojson_geometry<const D: usize, T: CoordNum>(
