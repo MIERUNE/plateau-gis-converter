@@ -1,6 +1,7 @@
 use nusamai_geometry::{CoordNum, Geometry, MultiPolygon, Polygon};
 
 /// A wrapper to convert an arbitrary "nusamai geometry" to a "geojson geometry"
+// TODO: implementations for all geometry variants
 pub fn nusamai_to_geojson_geometry<const D: usize, T: CoordNum>(
     geometry: &Geometry<D, T>,
 ) -> geojson::Geometry {
