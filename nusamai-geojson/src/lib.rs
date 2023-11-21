@@ -6,7 +6,7 @@ use nusamai_geometry::{CoordNum, Geometry};
 /// Convert a vector of "nusamai geometries" to a "geojson feature collection"
 // TODO: Handle properties
 pub fn geometries_to_geojson<const D: usize, T: CoordNum>(
-    geometries: Vec<Geometry<D, T>>,
+    geometries: &[Geometry<D, T>],
 ) -> geojson::GeoJson {
     let geojson_features = geometries
         .iter()
