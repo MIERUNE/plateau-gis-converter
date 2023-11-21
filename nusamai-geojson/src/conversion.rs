@@ -45,7 +45,7 @@ fn polygon_to_rings<const D: usize, T: CoordNum>(poly: &Polygon<D, T>) -> geojso
 #[cfg(test)]
 mod tests {
     use super::*;
-    use nusamai_geometry::{MultiPolygon2, Polygon2};
+    use nusamai_geometry::{MultiPolygon2, Polygon2, Polygon3};
 
     #[test]
     fn test_polygon_basic() {
@@ -74,6 +74,57 @@ mod tests {
             assert_eq!(
                 rings[2],
                 vec![[3., 3.], [4., 3.], [4., 4.], [3., 4.], [3., 3.]]
+            );
+        } else {
+            unreachable!("The result is not a GeoJSON Polygon");
+        };
+    }
+
+    #[test]
+    fn test_polygon_basic_3d() {
+        let mut poly = Polygon3::new();
+        poly.add_ring([[0., 0., 99.], [5., 0., 99.], [5., 5., 99.], [0., 5., 99.]]);
+        poly.add_ring([[1., 1., 99.], [2., 1., 99.], [2., 2., 99.], [1., 2., 99.]]);
+        poly.add_ring([[3., 3., 99.], [4., 3., 99.], [4., 4., 99.], [3., 4., 99.]]);
+
+        let geojson_geometry = polygon_to_geojson_geometry(&poly);
+
+        assert!(geojson_geometry.bbox.is_none());
+        assert!(geojson_geometry.foreign_members.is_none());
+        if let geojson::Value::Polygon(rings) = geojson_geometry.value {
+            assert_eq!(rings.len(), 3);
+            assert_eq!(rings[0].len(), 5);
+            assert_eq!(rings[1].len(), 5);
+            assert_eq!(rings[2].len(), 5);
+            assert_eq!(
+                rings[0],
+                vec![
+                    [0., 0., 99.],
+                    [5., 0., 99.],
+                    [5., 5., 99.],
+                    [0., 5., 99.],
+                    [0., 0., 99.]
+                ]
+            );
+            assert_eq!(
+                rings[1],
+                vec![
+                    [1., 1., 99.],
+                    [2., 1., 99.],
+                    [2., 2., 99.],
+                    [1., 2., 99.],
+                    [1., 1., 99.]
+                ]
+            );
+            assert_eq!(
+                rings[2],
+                vec![
+                    [3., 3., 99.],
+                    [4., 3., 99.],
+                    [4., 4., 99.],
+                    [3., 4., 99.],
+                    [3., 3., 99.]
+                ]
             );
         } else {
             unreachable!("The result is not a GeoJSON Polygon");
