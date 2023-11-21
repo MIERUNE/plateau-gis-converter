@@ -37,7 +37,6 @@ fn polygon_to_rings<const D: usize, T: CoordNum>(poly: &Polygon<D, T>) -> geojso
         .iter_closed()
         .map(|slice| slice.iter().map(|&t| t.to_f64().unwrap()).collect())
         .collect::<Vec<Vec<f64>>>();
-
     rings.push(exterior_positions);
 
     for interior in poly.interiors() {
