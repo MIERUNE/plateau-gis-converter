@@ -6,11 +6,11 @@ pub fn nusamai_to_geojson_geometry<const D: usize, T: CoordNum>(
     geometry: &Geometry<D, T>,
 ) -> geojson::Geometry {
     match geometry {
-        Geometry::MultiPoint(mpoint) => multi_point_to_geojson_geometry(mpoint),
-        Geometry::LineString(g) => line_string_to_geojson_geometry(g),
+        Geometry::MultiPoint(geom) => multi_point_to_geojson_geometry(geom),
+        Geometry::LineString(geom) => line_string_to_geojson_geometry(geom),
         Geometry::MultiLineString(_) => unimplemented!(),
-        Geometry::Polygon(poly) => polygon_to_geojson_geometry(poly),
-        Geometry::MultiPolygon(mpoly) => multi_polygon_to_geojson_geometry(mpoly),
+        Geometry::Polygon(geom) => polygon_to_geojson_geometry(geom),
+        Geometry::MultiPolygon(geom) => multi_polygon_to_geojson_geometry(geom),
     }
 }
 
