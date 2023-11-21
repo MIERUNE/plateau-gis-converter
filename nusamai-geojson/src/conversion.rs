@@ -80,7 +80,7 @@ mod tests {
         assert!(geojson_geometry.foreign_members.is_none());
 
         if let geojson::Value::MultiPoint(points) = geojson_geometry.value {
-            assert_eq!(points.len(), 3);
+            assert_eq!(points.len(), mpoint.len());
             assert_eq!(points[0], vec![0., 0.]);
             assert_eq!(points[1], vec![1., 1.]);
             assert_eq!(points[2], vec![2., 2.]);
@@ -102,7 +102,7 @@ mod tests {
         assert!(geojson_geometry.foreign_members.is_none());
 
         if let geojson::Value::LineString(points) = geojson_geometry.value {
-            assert_eq!(points.len(), 3);
+            assert_eq!(points.len(), line_string.len());
             assert_eq!(points[0], vec![0., 0.]);
             assert_eq!(points[1], vec![1., 1.]);
             assert_eq!(points[2], vec![2., 2.]);
