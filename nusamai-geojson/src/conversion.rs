@@ -30,23 +30,15 @@ fn multi_polygon_to_geojson_geometry<const D: usize, T: CoordNum>(
 }
 
 fn polygon_to_rings<const D: usize, T: CoordNum>(poly: &Polygon<D, T>) -> geojson::PolygonType {
-    let mut rings = Vec::new();
-
-    let exterior = poly.exterior();
-    let exterior_positions = exterior
-        .iter_closed()
-        .map(|slice| slice.iter().map(|&t| t.to_f64().unwrap()).collect())
-        .collect::<Vec<Vec<f64>>>();
-    rings.push(exterior_positions);
-
-    for interior in poly.interiors() {
-        let interior_positions = interior
-            .iter_closed()
-            .map(|slice| slice.iter().map(|&t| t.to_f64().unwrap()).collect())
-            .collect::<Vec<Vec<f64>>>();
-        rings.push(interior_positions);
-    }
-
+    let rings = std::iter::once(poly.exterior())
+        .chain(poly.interiors())
+        .map(|line_string| {
+            line_string
+                .iter_closed()
+                .map(|slice| slice.iter().map(|&t| t.to_f64().unwrap()).collect())
+                .collect()
+        })
+        .collect();
     rings
 }
 
