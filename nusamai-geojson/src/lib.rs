@@ -12,19 +12,23 @@ pub fn nusamai_to_geojson_geometry<const D: usize, T: CoordNum>(
     }
 }
 
-pub fn to_geojson<const D: usize, T: CoordNum>(
+pub fn geojson_geometry_to_feature(geojson_geom: geojson::Geometry) -> geojson::Feature {
+    geojson::Feature {
+        bbox: None,
+        geometry: Some(geojson_geom),
+        id: None,
+        properties: None,
+        foreign_members: None,
+    }
+}
+
+pub fn geometries_to_geojson<const D: usize, T: CoordNum>(
     geometries: Vec<Geometry<D, T>>,
 ) -> geojson::GeoJson {
     let geojson_features = geometries
         .iter()
         .map(|geom| nusamai_to_geojson_geometry(geom))
-        .map(|geojson_geom| geojson::Feature {
-            bbox: None,
-            geometry: Some(geojson_geom),
-            id: None,
-            properties: None,
-            foreign_members: None,
-        });
+        .map(geojson_geometry_to_feature);
 
     let geojson_feature_collection = geojson::FeatureCollection {
         bbox: None,
