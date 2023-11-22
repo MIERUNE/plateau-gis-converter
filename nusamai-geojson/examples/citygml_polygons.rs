@@ -19,7 +19,7 @@ use quick_xml::{
 };
 
 use std::fs;
-use std::io::Write;
+use std::io::BufWriter;
 use thiserror::Error;
 
 const GML_NS: Namespace = Namespace(b"http://www.opengis.net/gml");
@@ -251,5 +251,6 @@ fn main() {
     let geojson = geojson::GeoJson::from(geojson_feature_collection);
 
     let mut file = fs::File::create("out.geojson").unwrap();
-    file.write_all(geojson.to_string().as_bytes()).unwrap();
+    let mut writer = BufWriter::new(&mut file);
+    serde_json::to_writer(&mut writer, &geojson).unwrap();
 }
