@@ -1,4 +1,5 @@
-//! CityGMLファイル (.gml) からポリゴンを読み込んで .ply 形式で出力するデモ   
+//! CityGMLファイル (.gml) からポリゴンを読み込んで .geojson 形式で出力するデモ   
+//! nusamai-geometry/examples/citygml_polygons.rs を元にしています。
 //!
 //! 使用例:
 //!
@@ -8,10 +9,9 @@
 //!
 //! このXMLのパース方法は本格的なパーザで使うことを意図していません。
 
-use byteorder::{ByteOrder, LittleEndian, WriteBytesExt};
 use clap::Parser;
-use indexmap::IndexSet;
-use nusamai_geometry::MultiPolygon3;
+use nusamai_geojson::{geojson_geometry_to_feature, nusamai_to_geojson_geometry};
+use nusamai_geometry::{Geometry, MultiPolygon3};
 use quick_xml::{
     events::Event,
     name::{Namespace, ResolveResult::Bound},
@@ -19,7 +19,7 @@ use quick_xml::{
 };
 
 use std::fs;
-use std::io::Write;
+use std::io::BufWriter;
 use thiserror::Error;
 
 const GML_NS: Namespace = Namespace(b"http://www.opengis.net/gml");
@@ -67,9 +67,11 @@ fn parse_polygon(
                         .map(|v| v.parse::<f64>().unwrap()),
                 );
                 if is_interior {
-                    mpoly.add_interior(buf.chunks_exact(3).map(|c| [c[0], c[1], c[2]]));
+                    mpoly.add_interior(buf.chunks_exact(3).map(|c| [c[1], c[0], c[2]]));
+                // lon, lat, height
                 } else {
-                    mpoly.add_exterior(buf.chunks_exact(3).map(|c| [c[0], c[1], c[2]]));
+                    mpoly.add_exterior(buf.chunks_exact(3).map(|c| [c[1], c[0], c[2]]));
+                    // lon, lat, height
                 }
             }
             Ok(_) => (),
@@ -200,92 +202,6 @@ fn parse_body(reader: &mut NsReader<&[u8]>) -> Result<Vec<MultiPolygon3<'static>
     }
 }
 
-const PLY_HEADER_TEMPLATE: &str = r##"ply
-format binary_little_endian 1.0
-element vertex {n_verts}
-property float x
-property float y
-property float z
-element face {n_faces}
-property list uchar uint vertex_indices
-end_header
-"##;
-
-// comment crs: GEOGCRS["JGD2011",DATUM["Japanese Geodetic Datum 2011",ELLIPSOID["GRS 1980",6378137,298.257222101,LENGTHUNIT["metre",1]]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],CS[ellipsoidal,2],AXIS["geodetic latitude (Lat)",north,ORDER[1],ANGLEUNIT["degree",0.0174532925199433]],AXIS["geodetic longitude (Lon)",east,ORDER[2],ANGLEUNIT["degree",0.0174532925199433]],USAGE[SCOPE["Horizontal component of 3D system."],AREA["Japan - onshore and offshore."],BBOX[17.09,122.38,46.05,157.65]],ID["EPSG",6668]]
-
-fn write_features(mpolys: &[MultiPolygon3], mu_lng: f64, mu_lat: f64) {
-    use earcut_rs::{utils_3d::project3d_to_2d, Earcut};
-    let mut earcutter = Earcut::new();
-    let mut buf3d: Vec<f64> = Vec::new();
-    let mut buf2d: Vec<f64> = Vec::new();
-    let mut triangles_out: Vec<u32> = Vec::new();
-
-    let mut indices: Vec<u32> = Vec::new();
-    let mut vertices: IndexSet<[u32; 3]> = IndexSet::new();
-
-    for mpoly in mpolys {
-        for poly in mpoly {
-            let num_outer = match poly.hole_indices().first() {
-                Some(&v) => v as usize,
-                None => poly.coords().len() / 3,
-            };
-
-            buf3d.clear();
-            buf3d.extend(poly.coords().chunks_exact(3).flat_map(|v| {
-                let (lat, lng) = (v[0], v[1]);
-                [
-                    (lng - mu_lng) * (10000000. * lat.to_radians().cos() / 90.),
-                    (lat - mu_lat) * (10000000. / 90.),
-                    v[2],
-                ]
-            }));
-
-            if project3d_to_2d(&buf3d, num_outer, &mut buf2d) {
-                // earcut
-                earcutter.earcut(&buf2d, poly.hole_indices(), 2, &mut triangles_out);
-                // indices and vertices
-                indices.extend(triangles_out.iter().map(|idx| {
-                    let vbits = [
-                        (buf3d[*idx as usize * 3] as f32).to_bits(),
-                        (buf3d[*idx as usize * 3 + 1] as f32).to_bits(),
-                        (buf3d[*idx as usize * 3 + 2] as f32).to_bits(),
-                    ];
-                    let (index, _) = vertices.insert_full(vbits);
-                    index as u32
-                }));
-            } else {
-                println!("WARN: polygon does not have normal");
-            }
-        }
-    }
-
-    println!("{:?} {:?}", vertices.len(), indices.len());
-    let file = std::fs::File::create("out.ply").unwrap();
-    let mut writer = std::io::BufWriter::new(file);
-
-    writer
-        .write_all(
-            PLY_HEADER_TEMPLATE
-                .replace("{n_verts}", &vertices.len().to_string())
-                .replace("{n_faces}", &(indices.len() / 3).to_string())
-                .as_ref(),
-        )
-        .unwrap();
-
-    let mut buf = [0; 12];
-    vertices.iter().for_each(|v| {
-        LittleEndian::write_u32_into(v, &mut buf);
-        writer.write_all(&buf).unwrap();
-    });
-    indices.chunks_exact(3).for_each(|v| {
-        writer.write_u8(3).unwrap();
-        LittleEndian::write_u32_into(v, &mut buf);
-        writer.write_all(&buf).unwrap();
-    });
-
-    writer.flush().unwrap();
-}
-
 #[derive(Parser)]
 struct Args {
     #[clap(required = true)]
@@ -320,32 +236,21 @@ fn main() {
 
     // NOTE: この時点で MultiPolygon にジオメトリデータが詰め込まれている状態
     //
-    // ここから先は ply 形式での出力を行う。
+    // ここから先は geojson 形式での出力を行う。
 
-    // caluculate the center of lat/lng
-    let (mu_lat, mu_lng) = {
-        let (mut mu_lat, mut mu_lng) = (0.0, 0.0);
-        let mut num_features = 0;
-        for mpoly in &all_mpolys {
-            let (mut feat_mu_lng, mut feat_mu_lat) = (0.0, 0.0);
-            let mut num_verts = 0;
-            for poly in mpoly {
-                for v in poly.coords().chunks_exact(3) {
-                    num_verts += 1;
-                    feat_mu_lng += v[0];
-                    feat_mu_lat += v[1];
-                }
-            }
-            if num_verts > 0 {
-                num_features += 1;
-                mu_lat += feat_mu_lng / num_verts as f64;
-                mu_lng += feat_mu_lat / num_verts as f64;
-            }
-        }
-        (mu_lat / num_features as f64, mu_lng / num_features as f64)
+    let geojson_features = all_mpolys
+        .iter()
+        .map(|poly| nusamai_to_geojson_geometry(&Geometry::MultiPolygon::<3, f64>(poly.to_owned())))
+        .map(geojson_geometry_to_feature);
+
+    let geojson_feature_collection = geojson::FeatureCollection {
+        bbox: None,
+        features: geojson_features.collect(),
+        foreign_members: None,
     };
-    println!("{} {}", mu_lat, mu_lng);
+    let geojson = geojson::GeoJson::from(geojson_feature_collection);
 
-    // Write to PLY
-    write_features(&all_mpolys, mu_lng, mu_lat);
+    let mut file = fs::File::create("out.geojson").unwrap();
+    let mut writer = BufWriter::new(&mut file);
+    serde_json::to_writer(&mut writer, &geojson).unwrap();
 }

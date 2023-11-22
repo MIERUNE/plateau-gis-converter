@@ -11,7 +11,7 @@ use nusamai_geometry::{LineString2, MultiPolygon2};
 /// Convert GeoRust MultiPolygon to MultiPolygon
 fn georust_to_compact(multipolygon: &MultiPolygon) -> MultiPolygon2 {
     let MultiPolygon(multipolygon) = &multipolygon;
-    let mut mpoly: MultiPolygon2 = Default::default();
+    let mut mpoly = MultiPolygon2::new();
 
     for polygon in multipolygon {
         let LineString(exterior) = &polygon.exterior();

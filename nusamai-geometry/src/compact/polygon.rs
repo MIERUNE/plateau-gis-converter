@@ -1,11 +1,11 @@
 use std::borrow::Cow;
 
 use super::linestring::LineString;
-use num_traits::Float;
+use super::CoordNum;
 
 /// Computer-friendly Polygon
 #[derive(Debug, Clone, Default)]
-pub struct Polygon<'a, const D: usize, T: Float = f64> {
+pub struct Polygon<'a, const D: usize, T: CoordNum = f64> {
     /// 座標データ
     coords: Cow<'a, [T]>,
     /// 各 hole が何番目の頂点から始まるかの列
@@ -15,28 +15,46 @@ pub struct Polygon<'a, const D: usize, T: Float = f64> {
 pub type Polygon3<'a, T> = Polygon<'a, 3, T>;
 pub type Polygon2<'a, T> = Polygon<'a, 2, T>;
 
-impl<'a, const D: usize, T: Float> Polygon<'a, D, T> {
-    pub fn new(all_coords: Cow<'a, [T]>, hole_indices: Cow<'a, [u32]>) -> Self {
+impl<'a, const D: usize, T: CoordNum> Polygon<'a, D, T> {
+    pub fn new() -> Self {
+        Default::default()
+    }
+
+    pub fn from_raw(coords: Cow<'a, [T]>, hole_indices: Cow<'a, [u32]>) -> Self {
+        if coords.len() % D != 0 {
+            panic!("coords.len() must be a multiple of D")
+        }
+        // Check if all span values are within range and monotonically increasing
+        if let Some(&last) = hole_indices.last() {
+            let len = (coords.len() / D) as u32;
+            if last >= len || hole_indices.windows(2).any(|a| a[0] >= a[1]) {
+                panic!("invalid hole_indices")
+            }
+        }
         Self {
-            coords: all_coords,
+            coords,
             hole_indices,
         }
     }
 
-    #[inline]
+    pub fn from_raw_unchecked(coords: Cow<'a, [T]>, hole_indices: Cow<'a, [u32]>) -> Self {
+        Self {
+            coords,
+            hole_indices,
+        }
+    }
+
     pub fn coords(&self) -> &[T] {
         self.coords.as_ref()
     }
 
-    #[inline]
     pub fn hole_indices(&self) -> &[u32] {
         self.hole_indices.as_ref()
     }
 
-    #[inline]
     pub fn exterior(&self) -> LineString<D, T> {
-        LineString::new(if self.hole_indices.is_empty() {
-            self.coords.as_ref().into()
+        LineString::from_raw(if self.hole_indices.is_empty() {
+            self.coords[..].into()
         } else {
             self.coords[..self.hole_indices[0] as usize * D].into()
         })
@@ -53,13 +71,22 @@ impl<'a, const D: usize, T: Float> Polygon<'a, D, T> {
                     self.coords.len(),
                 )),
             })
-            .map(|(start, end)| LineString::new(self.coords[start..end].into()))
+            .map(|(start, end)| LineString::from_raw(self.coords[start..end].into()))
     }
 
-    #[inline]
     pub fn clear(&mut self) {
         self.coords.to_mut().clear();
         self.hole_indices.to_mut().clear();
+    }
+
+    /// Adds an exterior or interior ring to the polygon.
+    pub fn add_ring<I: IntoIterator<Item = [T; D]>>(&mut self, iter: I) {
+        if !self.coords.is_empty() {
+            self.hole_indices
+                .to_mut()
+                .push((self.coords.len() / D) as u32);
+        }
+        self.coords.to_mut().extend(iter.into_iter().flatten());
     }
 }
 
@@ -69,29 +96,28 @@ mod tests {
 
     #[test]
     fn test_polygon_empty() {
-        let polygon: Polygon2<f64> = Default::default();
+        let polygon = Polygon2::<f64>::new();
         assert_eq!(polygon.exterior().len(), 0);
         assert_eq!(polygon.interiors().count(), 0);
     }
 
     #[test]
     fn test_polygon_no_interior() {
-        let all_coords: Vec<f64> = (0..=10).flat_map(|i| vec![i as f64, i as f64]).collect();
+        let coords: Vec<f64> = (0..=10).flat_map(|i| vec![i as f64, i as f64]).collect();
         let hole_indices: Vec<u32> = vec![];
-        let polygon: Polygon2<f64> = Polygon2::new(all_coords.into(), hole_indices.into());
+        let polygon: Polygon2<f64> =
+            Polygon2::from_raw_unchecked(coords.into(), hole_indices.into());
 
         assert_eq!(polygon.exterior().len(), 11);
         assert_eq!(polygon.interiors().count(), 0);
-        for _ in polygon.interiors() {
-            unreachable!();
-        }
     }
 
     #[test]
     fn test_polygon_one_interior() {
-        let all_coords: Vec<f64> = (0..=10).flat_map(|i| vec![i as f64, i as f64]).collect();
+        let coords: Vec<f64> = (0..=10).flat_map(|i| vec![i as f64, i as f64]).collect();
         let hole_indices: Vec<u32> = vec![4];
-        let polygon: Polygon2<f64> = Polygon2::new(all_coords.into(), hole_indices.into());
+        let polygon: Polygon2<f64> =
+            Polygon2::from_raw_unchecked(coords.into(), hole_indices.into());
 
         assert_eq!(polygon.exterior().len(), 4);
         assert_eq!(polygon.interiors().count(), 1);
@@ -105,9 +131,10 @@ mod tests {
 
     #[test]
     fn test_polygon_multiple_interiors() {
-        let all_coords: Vec<f64> = (0..=10).flat_map(|i| vec![i as f64, i as f64]).collect();
+        let coords: Vec<f64> = (0..=10).flat_map(|i| vec![i as f64, i as f64]).collect();
         let hole_indices: Vec<u32> = vec![4, 7];
-        let polygon: Polygon2<f64> = Polygon2::new(all_coords.into(), hole_indices.into());
+        let polygon: Polygon2<f64> =
+            Polygon2::from_raw_unchecked(coords.into(), hole_indices.into());
 
         assert_eq!(polygon.exterior().len(), 4);
         assert_eq!(polygon.interiors().count(), 2);
@@ -122,9 +149,10 @@ mod tests {
 
     #[test]
     fn test_polygon_clear() {
-        let all_coords: Vec<f64> = (0..=10).flat_map(|i| vec![i as f64, i as f64]).collect();
+        let coords: Vec<f64> = (0..=10).flat_map(|i| vec![i as f64, i as f64]).collect();
         let hole_indices: Vec<u32> = vec![4, 7];
-        let mut polygon: Polygon2<f64> = Polygon2::new(all_coords.into(), hole_indices.into());
+        let mut polygon: Polygon2<f64> =
+            Polygon2::from_raw_unchecked(coords.into(), hole_indices.into());
 
         assert_eq!(polygon.exterior().len(), 4);
         assert_eq!(polygon.interiors().count(), 2);
@@ -134,24 +162,37 @@ mod tests {
         assert_eq!(polygon.interiors().count(), 0);
     }
 
+    #[test]
+    fn test_polygon_add_ring() {
+        let mut polygon = Polygon2::new();
+        assert_eq!(polygon.exterior().len(), 0);
+        assert_eq!(polygon.interiors().count(), 0);
+        polygon.add_ring([[0.0, 0.0], [1.0, 0.0], [0.0, 1.0]]);
+        assert_eq!(polygon.exterior().len(), 3);
+        assert_eq!(polygon.interiors().count(), 0);
+        polygon.add_ring([[0.0, 0.0], [1.0, 0.0], [0.0, 1.0]]);
+        assert_eq!(polygon.exterior().len(), 3);
+        assert_eq!(polygon.interiors().count(), 1);
+    }
+
     /// Currently, it does not check whether the exterior is valid (have at least three vertices) or not
     #[test]
     fn test_polygon_invalid_exterior() {
-        let all_coords: Vec<f64> = (0..1).flat_map(|i| vec![i as f64, i as f64]).collect();
+        let coords: Vec<f64> = (0..1).flat_map(|i| vec![i as f64, i as f64]).collect();
         let hole_indices: Vec<u32> = vec![];
-        let polygon: Polygon2<f64> = Polygon2::new(all_coords.into(), hole_indices.into());
+        let polygon: Polygon2<f64> = Polygon2::from_raw(coords.into(), hole_indices.into());
 
         assert_eq!(polygon.exterior().len(), 1); // only one vertex
         assert_eq!(polygon.interiors().count(), 0);
     }
 
-    /// Currently, it does not check whether the exterior is valid (have at least three vertices) or not
+    /// Currently, it does not check whether the interior is valid (have at least three vertices) or not
     /// (It could be a "Steiner point", as we see in earcut)
     #[test]
     fn test_polygon_invalid_interior() {
         let all_coords: Vec<f64> = (0..=10).flat_map(|i| vec![i as f64, i as f64]).collect();
         let hole_indices: Vec<u32> = vec![10]; // only one vertex
-        let polygon: Polygon2<f64> = Polygon2::new(all_coords.into(), hole_indices.into());
+        let polygon: Polygon2<f64> = Polygon2::from_raw(all_coords.into(), hole_indices.into());
 
         assert_eq!(polygon.exterior().len(), 10);
         assert_eq!(polygon.interiors().count(), 1);
@@ -163,31 +204,19 @@ mod tests {
         }
     }
 
-    /// Currently, it does not check whether the `hole_indices` value is valid (within the range of `all_coords`) or not
     #[test]
+    #[should_panic]
     fn test_polygon_invalid_hole_indices_1() {
-        let all_coords: Vec<f64> = (0..=2).flat_map(|i| vec![i as f64, i as f64]).collect();
+        let coords: Vec<f64> = (0..=2).flat_map(|i| vec![i as f64, i as f64]).collect();
         let hole_indices: Vec<u32> = vec![3]; // out of `all_coords` range
-        let polygon: Polygon2<f64> = Polygon2::new(all_coords.into(), hole_indices.into());
-
-        assert_eq!(polygon.exterior().len(), 3);
-        assert_eq!(polygon.interiors().count(), 1);
-        for (i, interior) in polygon.interiors().enumerate() {
-            match i {
-                0 => assert_eq!(interior.len(), 0), // zero vertex
-                _ => unreachable!(),
-            }
-        }
+        let _polygon: Polygon2<f64> = Polygon2::from_raw(coords.into(), hole_indices.into());
     }
 
-    /// Currently, it does not check whether the `hole_indices` value is valid (within the range of `all_coords`) or not
     #[test]
     #[should_panic]
     fn test_polygon_invalid_hole_indices_2() {
-        let all_coords: Vec<f64> = (0..=2).flat_map(|i| vec![i as f64, i as f64]).collect();
-        let hole_indices: Vec<u32> = vec![99]; // out of `all_coords` range
-        let polygon: Polygon2<f64> = Polygon2::new(all_coords.into(), hole_indices.into());
-
-        polygon.exterior(); // panic, as `all_coords[0..hole_indices[0]]` is invalid
+        let coords: Vec<f64> = (0..15).flat_map(|i| vec![i as f64, i as f64]).collect();
+        let hole_indices: Vec<u32> = vec![6, 3]; // not monotonically increasing
+        let _polygon: Polygon2<f64> = Polygon2::from_raw(coords.into(), hole_indices.into());
     }
 }

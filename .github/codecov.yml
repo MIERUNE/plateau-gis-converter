@@ -1,0 +1,25 @@
+coverage:
+  status:
+    project:
+      default:
+        # allows a 7% drop from the previous base commit coverage
+        threshold: 7%
+    patch:
+      default:
+        # allows a 7% drop from the previous base commit coverage
+        threshold: 7%
+
+comment:
+  layout: "condensed_header, condensed_files, components, condensed_footer"
+  hide_project_coverage: TRUE
+
+component_management:
+  individual_components:
+    - component_id: app
+      name: tauri-app
+      paths:
+        - app/**
+    - component_id: nusamai-*
+      name: nusamai-*
+      paths:
+        - nusamai-*/**
