@@ -1,7 +1,10 @@
-use citygml::CityGMLModel;
+use citygml::CityGMLElement;
 
-#[derive(Default, Debug, CityGMLModel)]
+#[derive(Default, Debug, CityGMLElement)]
 pub struct Building {
+    #[citygml(path = b"@gml:id")]
+    id: Option<String>,
+
     #[citygml(path = b"bldg:class")]
     pub class: Option<String>,
 
@@ -18,7 +21,7 @@ pub struct Building {
     pub bounded_by: Vec<BoundingSurface>,
 }
 
-#[derive(Default, Debug, CityGMLModel)]
+#[derive(Default, Debug, CityGMLElement)]
 pub enum BoundingSurface {
     #[default]
     UnknownSurface,
@@ -36,37 +39,43 @@ pub enum BoundingSurface {
     ClosureSurface(ClosureSurface),
 }
 
-#[derive(Default, Debug, CityGMLModel)]
+#[derive(Default, Debug, CityGMLElement)]
 pub struct WallSurface {
-    // TODO
+    #[citygml(path = b"@gml:id")]
+    id: Option<String>,
 }
 
-#[derive(Default, Debug, CityGMLModel)]
+#[derive(Default, Debug, CityGMLElement)]
 pub struct RoofSurface {
-    // TODO
+    #[citygml(path = b"@gml:id")]
+    id: Option<String>,
 }
 
-#[derive(Default, Debug, CityGMLModel)]
+#[derive(Default, Debug, CityGMLElement)]
 pub struct GroundSurface {
-    // TODO
+    #[citygml(path = b"@gml:id")]
+    id: Option<String>,
 }
 
-#[derive(Default, Debug, CityGMLModel)]
+#[derive(Default, Debug, CityGMLElement)]
 pub struct OuterCeilingSurface {
-    // TODO
+    #[citygml(path = b"@gml:id")]
+    id: Option<String>,
 }
 
-#[derive(Default, Debug, CityGMLModel)]
+#[derive(Default, Debug, CityGMLElement)]
 pub struct OuterFloorSurface {
-    // TODO
+    #[citygml(path = b"@gml:id")]
+    id: Option<String>,
 }
 
-#[derive(Default, Debug, CityGMLModel)]
+#[derive(Default, Debug, CityGMLElement)]
 pub struct ClosureSurface {
-    // TODO
+    #[citygml(path = b"@gml:id")]
+    id: Option<String>,
 }
 
-#[derive(Default, Debug, CityGMLModel)]
+#[derive(Default, Debug, CityGMLElement)]
 pub struct BuildingIDAttribute {
     #[citygml(path = b"uro:buildingID")]
     pub building_id: Option<String>,
@@ -78,7 +87,7 @@ pub struct BuildingIDAttribute {
     pub prefecture: Option<String>,
 }
 
-#[derive(Default, Debug, CityGMLModel)]
+#[derive(Default, Debug, CityGMLElement)]
 pub struct BuildingDetailAttribute {
     #[citygml(path = b"uro:surveyYear")]
     pub survey_year: Option<String>,

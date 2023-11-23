@@ -1,18 +1,18 @@
 use crate::parser::{ParseError, SubTreeReader};
 use std::io::BufRead;
 
-pub trait CityGMLModel: Sized {
+pub trait CityGMLElement: Sized {
     fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError>;
 }
 
-impl CityGMLModel for String {
+impl CityGMLElement for String {
     fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
         self.push_str(st.expect_text()?);
         Ok(())
     }
 }
 
-impl CityGMLModel for i32 {
+impl CityGMLElement for i32 {
     fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
         let text = st.expect_text()?;
         match text.parse() {
@@ -28,7 +28,7 @@ impl CityGMLModel for i32 {
     }
 }
 
-impl CityGMLModel for f64 {
+impl CityGMLElement for f64 {
     fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
         let text = st.expect_text()?;
         match text.parse() {
@@ -44,7 +44,7 @@ impl CityGMLModel for f64 {
     }
 }
 
-impl<T: CityGMLModel + Default> CityGMLModel for Option<T> {
+impl<T: CityGMLElement + Default> CityGMLElement for Option<T> {
     fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
         if self.is_some() {
             return Err(ParseError::SchemaViolation(
@@ -58,11 +58,27 @@ impl<T: CityGMLModel + Default> CityGMLModel for Option<T> {
     }
 }
 
-impl<T: CityGMLModel + Default> CityGMLModel for Vec<T> {
+impl<T: CityGMLElement + Default> CityGMLElement for Vec<T> {
     fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
         let mut v: T = Default::default();
-        T::parse(&mut v, st)?;
+        <T as CityGMLElement>::parse(&mut v, st)?;
         self.push(v);
         Ok(())
+    }
+}
+
+pub trait CityGMLAttribute: Sized {
+    fn parse_attr_value(value: &str) -> Result<Self, ParseError>;
+}
+
+impl CityGMLAttribute for String {
+    fn parse_attr_value(value: &str) -> Result<Self, ParseError> {
+        Ok(value.to_string())
+    }
+}
+
+impl<T: CityGMLAttribute> CityGMLAttribute for Option<T> {
+    fn parse_attr_value(value: &str) -> Result<Self, ParseError> {
+        Ok(Some(<T as CityGMLAttribute>::parse_attr_value(value)?))
     }
 }
