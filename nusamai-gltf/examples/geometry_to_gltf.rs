@@ -9,17 +9,18 @@
 //!
 //! このXMLのパース方法は本格的なパーザで使うことを意図していません。
 
+use byteorder::{ByteOrder, LittleEndian, WriteBytesExt};
 use clap::Parser;
-use nusamai_geometry::{Geometry, MultiPolygon3};
+use indexmap::IndexSet;
+use nusamai_geometry::MultiPolygon3;
 use nusamai_gltf::*;
 use quick_xml::{
     events::Event,
     name::{Namespace, ResolveResult::Bound},
     reader::NsReader,
 };
-
 use std::fs;
-use std::io::BufWriter;
+use std::io::Write;
 use thiserror::Error;
 
 const GML_NS: Namespace = Namespace(b"http://www.opengis.net/gml");
@@ -238,10 +239,95 @@ fn main() {
     //
     // ここから先は glTF 形式での出力を行う。
 
-    // 最初の要素のみを取り出して確認する
-    // let mpoly = &all_mpolys[0];
+    let mut features: Vec<MultiPolygon3> = Vec::new();
 
-    let gltf = GLTF::new();
-    let gltf_string = gltf.to_string().unwrap();
-    println!("{}", gltf_string);
+    for feature in all_mpolys.iter() {
+        // mpolyが1つのfeature（建物）で、複数のpolygon（面）を持っている
+        println!("\npolygon length {:?}", feature.len());
+
+        for polygon in feature.iter() {
+            println!("・exterior {:?}", polygon.exterior());
+            println!("・interiors");
+            for item in polygon.interiors() {
+                println!("interior {:?}", item);
+            }
+        }
+    }
+
+    // let mut gltf = GLTF::new();
+    // let gltf_string = gltf.to_string().unwrap();
+    // println!("{}", gltf_string);
+}
+
+fn write_features(mpolys: &[MultiPolygon3], mu_lng: f64, mu_lat: f64) {
+    use earcut_rs::{utils_3d::project3d_to_2d, Earcut};
+    let mut earcutter = Earcut::new();
+    let mut buf3d: Vec<f64> = Vec::new();
+    let mut buf2d: Vec<f64> = Vec::new();
+    let mut triangles_out: Vec<u32> = Vec::new();
+
+    let mut indices: Vec<u32> = Vec::new();
+    let mut vertices: IndexSet<[u32; 3]> = IndexSet::new();
+
+    for mpoly in mpolys {
+        for poly in mpoly {
+            let num_outer = match poly.hole_indices().first() {
+                Some(&v) => v as usize,
+                None => poly.coords().len() / 3,
+            };
+
+            buf3d.clear();
+            buf3d.extend(poly.coords().chunks_exact(3).flat_map(|v| {
+                let (lat, lng) = (v[0], v[1]);
+                [
+                    (lng - mu_lng) * (10000000. * lat.to_radians().cos() / 90.),
+                    (lat - mu_lat) * (10000000. / 90.),
+                    v[2],
+                ]
+            }));
+
+            if project3d_to_2d(&buf3d, num_outer, &mut buf2d) {
+                // earcut
+                earcutter.earcut(&buf2d, poly.hole_indices(), 2, &mut triangles_out);
+                // indices and vertices
+                indices.extend(triangles_out.iter().map(|idx| {
+                    let vbits = [
+                        (buf3d[*idx as usize * 3] as f32).to_bits(),
+                        (buf3d[*idx as usize * 3 + 1] as f32).to_bits(),
+                        (buf3d[*idx as usize * 3 + 2] as f32).to_bits(),
+                    ];
+                    let (index, _) = vertices.insert_full(vbits);
+                    index as u32
+                }));
+            } else {
+                println!("WARN: polygon does not have normal");
+            }
+        }
+    }
+
+    // println!("{:?} {:?}", vertices.len(), indices.len());
+    // let file = std::fs::File::create("out.ply").unwrap();
+    // let mut writer = std::io::BufWriter::new(file);
+
+    // writer
+    //     .write_all(
+    //         PLY_HEADER_TEMPLATE
+    //             .replace("{n_verts}", &vertices.len().to_string())
+    //             .replace("{n_faces}", &(indices.len() / 3).to_string())
+    //             .as_ref(),
+    //     )
+    //     .unwrap();
+
+    // let mut buf = [0; 12];
+    // vertices.iter().for_each(|v| {
+    //     LittleEndian::write_u32_into(v, &mut buf);
+    //     writer.write_all(&buf).unwrap();
+    // });
+    // indices.chunks_exact(3).for_each(|v| {
+    //     writer.write_u8(3).unwrap();
+    //     LittleEndian::write_u32_into(v, &mut buf);
+    //     writer.write_all(&buf).unwrap();
+    // });
+
+    // writer.flush().unwrap();
 }
