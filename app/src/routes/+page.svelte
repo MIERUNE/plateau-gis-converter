@@ -26,6 +26,24 @@
 		const res = await dialog.save();
 		outputPath = Array.isArray(res) ? res[0] : res;
 	}
+
+	async function convertAndSave() {
+		if (!inputPath) {
+			alert('入力ファイルを選択してください');
+			return;
+		}
+		if (!outputPath) {
+			alert('出力先を選択してください');
+			return;
+		}
+
+		await invoke('convert_and_save', {
+			inputPath,
+			outputPath,
+			filetype
+		});
+		alert(`${filetype}形式で、 ${outputPath} に出力しました 🚀`);
+	}
 </script>
 
 <div class="mx-auto max-w-xl">
@@ -124,7 +142,10 @@
 					<span>一括処理</span>
 				</button>
 
-				<button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full">
+				<button
+					on:click={convertAndSave}
+					class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full"
+				>
 					変換
 				</button>
 			</div>
