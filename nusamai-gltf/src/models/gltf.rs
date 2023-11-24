@@ -99,4 +99,8 @@ impl GLTF {
     pub fn new() -> Self {
         Default::default()
     }
+
+    pub fn to_string(&self) -> Result<String, serde_json::Error> {
+        serde_json::to_string(self)
+    }
 }

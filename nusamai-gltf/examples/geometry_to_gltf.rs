@@ -239,9 +239,9 @@ fn main() {
     // ここから先は glTF 形式での出力を行う。
 
     // 最初の要素のみを取り出して確認する
-    let mpoly = &all_mpolys[0];
-    println!("mpoly={:?}", mpoly);
+    // let mpoly = &all_mpolys[0];
 
     let gltf = GLTF::new();
-    println!("gltf={:?}", gltf);
+    let gltf_string = gltf.to_string().unwrap();
+    println!("{}", gltf_string);
 }
