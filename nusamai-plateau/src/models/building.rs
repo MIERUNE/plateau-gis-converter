@@ -24,7 +24,7 @@ pub struct Building {
 #[derive(Default, Debug, CityGMLElement)]
 pub enum BoundingSurface {
     #[default]
-    UnknownSurface,
+    Unknown,
     #[citygml(path = b"bldg:WallSurface")]
     WallSurface(WallSurface),
     #[citygml(path = b"bldg:RoofSurface")]

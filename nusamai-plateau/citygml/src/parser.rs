@@ -1,7 +1,5 @@
-use quick_xml::{
-    events::{BytesStart, Event},
-    name::{Namespace, ResolveResult},
-};
+use crate::namespace::normalize_ns_prefix;
+use quick_xml::events::{BytesStart, Event};
 use std::io::BufRead;
 use thiserror::Error;
 
@@ -33,6 +31,7 @@ struct InternalState {
 }
 
 impl CityGMLReader {
+    #[inline]
     pub fn new() -> Self {
         Self {
             state: InternalState {
@@ -48,9 +47,11 @@ impl CityGMLReader {
     pub fn start_root<'a, R: BufRead>(
         &'a mut self,
         reader: &'a mut quick_xml::NsReader<R>,
-    ) -> Result<Option<SubTreeReader<R>>, ParseError> {
+    ) -> Result<SubTreeReader<R>, ParseError> {
         let state = &mut self.state;
         reader.trim_text(true);
+        reader.expand_empty_elements(true);
+
         loop {
             match reader.read_event_into(&mut state.buf1) {
                 Ok(Event::Start(e)) => {
@@ -61,14 +62,17 @@ impl CityGMLReader {
                     state.path_buf.extend(ns);
                     state.path_buf.extend(localname.as_ref());
 
-                    return Ok(Some(SubTreeReader {
+                    return Ok(SubTreeReader {
                         reader,
                         state: &mut self.state,
                         path_head: 0,
-                        // current: e.into_owned(),
-                    }));
+                    });
                 }
-                Ok(Event::Eof) => return Ok(None),
+                Ok(Event::Eof) => {
+                    return Err(ParseError::XmlError(quick_xml::Error::UnexpectedEof(
+                        "Unexpected EOF".into(),
+                    )));
+                }
                 Err(e) => return Err(e.into()),
                 _ => (),
             }
@@ -79,47 +83,6 @@ impl CityGMLReader {
 impl Default for CityGMLReader {
     fn default() -> Self {
         Self::new()
-    }
-}
-
-fn normalize_ns_prefix<'a>(ns: &ResolveResult<'a>) -> &'a [u8] {
-    match ns {
-        ResolveResult::Bound(Namespace(name)) => match *name {
-            // GML
-            b"http://www.opengis.net/gml" => b"gml:",
-            // CityGML
-            b"http://www.opengis.net/citygml/2.0" => b"core:",
-            b"http://www.opengis.net/citygml/appearance/2.0" => b"app:",
-            b"http://www.opengis.net/citygml/building/2.0" => b"bldg:",
-            b"http://www.opengis.net/citygml/bridge/2.0" => b"brid:",
-            b"http://www.opengis.net/citygml/relief/2.0" => b"dem:",
-            b"http://www.opengis.net/citygml/cityfurniture/2.0" => b"frn:",
-            b"http://www.opengis.net/citygml/generics/2.0" => b"gen:",
-            b"http://www.opengis.net/citygml/cityobjectgroup/2.0" => b"grp:",
-            b"http://www.opengis.net/citygml/landuse/2.0" => b"luse:",
-            b"http://www.opengis.net/citygml/transportation/2.0" => b"tran:",
-            b"http://www.opengis.net/citygml/vegetation/2.0" => b"veg:",
-            b"http://www.opengis.net/citygml/waterbody/2.0" => b"wtr:",
-            b"http://www.opengis.net/citygml/tunnel/2.0" => b"tun:",
-            // PLATEAU 3.x
-            b"https://www.geospatial.jp/iur/uro/3.0" => b"uro:",
-            b"https://www.geospatial.jp/iur/urf/3.0" => b"urf:",
-            // PLATEAU 2.x
-            b"https://www.geospatial.jp/iur/uro/2.0" => b"uro:",
-            b"https://www.geospatial.jp/iur/urf/2.0" => b"urf:",
-            // PLATEAU 1.x
-            b"https://www.chisou.go.jp/tiiki/toshisaisei/itoshisaisei/iur/uro/1.5" => b"uro:",
-            b"https://www.chisou.go.jp/tiiki/toshisaisei/itoshisaisei/iur/urf/1.5" => b"urf:",
-            b"http://www.kantei.go.jp/jp/singi/tiiki/toshisaisei/itoshisaisei/iur/uro/1.4" => {
-                b"uro:"
-            }
-            b"http://www.kantei.go.jp/jp/singi/tiiki/toshisaisei/itoshisaisei/iur/urf/1.4" => {
-                b"urf:"
-            }
-            _ => name,
-        },
-        ResolveResult::Unbound => b"",
-        ResolveResult::Unknown(_name) => b"unknown:",
     }
 }
 
@@ -142,6 +105,7 @@ impl<R: BufRead> SubTreeReader<'_, R> {
         };
 
         loop {
+            st.state.current = None;
             match st.reader.read_event_into(&mut st.state.buf1) {
                 Ok(Event::Start(start)) => {
                     let (nsres, localname) = st.reader.resolve_element(start.name());
@@ -165,12 +129,6 @@ impl<R: BufRead> SubTreeReader<'_, R> {
                         logic(&mut st)?;
                     }
                 }
-                Ok(Event::Empty(_e)) => {
-                    st.state.current = None;
-                    return Err(ParseError::SchemaViolation(
-                        "Empty element is not allowed.".into(),
-                    ));
-                }
                 Ok(Event::End(_)) => {
                     st.state
                         .path_buf
@@ -186,6 +144,7 @@ impl<R: BufRead> SubTreeReader<'_, R> {
         }
     }
 
+    #[inline]
     pub fn parse_attributes(
         &mut self,
         mut logic: impl FnMut(&[u8], &[u8]) -> Result<(), ParseError>,
@@ -209,9 +168,10 @@ impl<R: BufRead> SubTreeReader<'_, R> {
     /// Expect a XML text content and return it.
     pub fn expect_text(&mut self) -> Result<&str, ParseError> {
         self.state.buf2.clear();
+        self.state.current = None;
         loop {
             match self.reader.read_event_into(&mut self.state.buf1) {
-                Ok(Event::Start(e) | Event::Empty(e)) => {
+                Ok(Event::Start(e)) => {
                     return Err(ParseError::SchemaViolation(format!(
                         "Text content is expected, but a <{}> element is found.",
                         std::str::from_utf8(e.local_name().as_ref()).unwrap()
@@ -233,6 +193,7 @@ impl<R: BufRead> SubTreeReader<'_, R> {
         }
     }
 
+    #[inline]
     pub fn skip_current_element(&mut self) -> Result<(), ParseError> {
         let Some(start) = &self.state.current else {
             panic!("skip_current_element() must be called immediately after encountering a new starting tag.");
@@ -246,6 +207,7 @@ impl<R: BufRead> SubTreeReader<'_, R> {
         Ok(())
     }
 
+    #[inline]
     pub fn current_path(&self) -> &[u8] {
         &self.state.path_buf[self.path_head + 1..]
     }

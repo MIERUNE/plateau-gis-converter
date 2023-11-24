@@ -6,6 +6,7 @@ pub trait CityGMLElement: Sized {
 }
 
 impl CityGMLElement for String {
+    #[inline]
     fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
         self.push_str(st.expect_text()?);
         Ok(())
@@ -13,6 +14,7 @@ impl CityGMLElement for String {
 }
 
 impl CityGMLElement for i32 {
+    #[inline]
     fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
         let text = st.expect_text()?;
         match text.parse() {
@@ -29,6 +31,7 @@ impl CityGMLElement for i32 {
 }
 
 impl CityGMLElement for f64 {
+    #[inline]
     fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
         let text = st.expect_text()?;
         match text.parse() {
@@ -45,6 +48,7 @@ impl CityGMLElement for f64 {
 }
 
 impl<T: CityGMLElement + Default> CityGMLElement for Option<T> {
+    #[inline]
     fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
         if self.is_some() {
             return Err(ParseError::SchemaViolation(
@@ -59,6 +63,7 @@ impl<T: CityGMLElement + Default> CityGMLElement for Option<T> {
 }
 
 impl<T: CityGMLElement + Default> CityGMLElement for Vec<T> {
+    #[inline]
     fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
         let mut v: T = Default::default();
         <T as CityGMLElement>::parse(&mut v, st)?;
@@ -72,12 +77,14 @@ pub trait CityGMLAttribute: Sized {
 }
 
 impl CityGMLAttribute for String {
+    #[inline]
     fn parse_attr_value(value: &str) -> Result<Self, ParseError> {
         Ok(value.to_string())
     }
 }
 
 impl<T: CityGMLAttribute> CityGMLAttribute for Option<T> {
+    #[inline]
     fn parse_attr_value(value: &str) -> Result<Self, ParseError> {
         Ok(Some(<T as CityGMLAttribute>::parse_attr_value(value)?))
     }
