@@ -1,6 +1,7 @@
 pub mod bridge;
 pub mod building;
 pub mod cityfurniture;
+pub mod cityobjectgroup;
 pub mod generics;
 pub mod iur;
 pub mod landuse;
@@ -14,6 +15,7 @@ pub mod waterbody;
 pub use bridge::Bridge;
 pub use building::Building;
 pub use cityfurniture::CityFurniture;
+pub use cityobjectgroup::CityObjectGroup;
 pub use generics::GenericCityObject;
 pub use iur::landslide::SedimentDisasterProneArea;
 pub use iur::underground_building::UndergroundBuilding;
@@ -26,8 +28,9 @@ pub use vegetation::{PlantCover, SolitaryVegetationObject};
 pub use waterbody::WaterBody;
 
 use citygml::CityGMLElement;
+use serde::{Deserialize, Serialize};
 
-#[derive(Default, Debug, CityGMLElement)]
+#[derive(Default, Debug, CityGMLElement, Deserialize, Serialize)]
 pub enum CityObject {
     #[default]
     Unknown,
@@ -44,6 +47,8 @@ pub enum CityObject {
     Track(Track),
     #[citygml(path = b"tran:Square")]
     Square(Square),
+    #[citygml(path = b"uro:Waterway")]
+    Waterway(Waterway),
     #[citygml(path = b"brid:Bridge")]
     Bridge(Bridge),
     #[citygml(path = b"frn:CityFurniture")]
@@ -62,13 +67,13 @@ pub enum CityObject {
     WaterBody(WaterBody),
     #[citygml(path = b"gen:GenericCityObject")]
     GenericCityObject(GenericCityObject),
+    #[citygml(path = b"grp:CityObjectGroup")]
+    CityObjectGroup(CityObjectGroup),
     //
     // i-UR urban objects
     //
     #[citygml(path = b"uro:OtherConstruction")]
     OtherConstruction(OtherConstruction),
-    #[citygml(path = b"uro:Waterway")]
-    Waterway(Waterway),
     #[citygml(path = b"uro:UndergroundBuilding")]
     UndergroundBuilding(UndergroundBuilding),
     //

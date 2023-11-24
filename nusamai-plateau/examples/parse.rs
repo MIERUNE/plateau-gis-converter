@@ -1,16 +1,37 @@
 use clap::Parser;
 
-use std::io::{BufRead, BufReader};
+use std::io::{BufRead, BufReader, Write};
 
 use citygml::{CityGMLElement, CityGMLReader, ParseError, SubTreeReader};
 use nusamai_plateau::models::CityObject;
 
 fn example_toplevel_dispatcher<R: BufRead>(st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
+    let bincode_config = bincode::config::standard();
+
     st.parse_children(|st| match st.current_path() {
         b"core:cityObjectMember" => {
             let mut cityobj: CityObject = Default::default();
             cityobj.parse(st)?;
-            println!("TLCO: {:?}", cityobj);
+
+            // print top-level city object
+            println!("TLCO: {:#?}", cityobj);
+
+            // serialize to bincode
+            let serialized = bincode::serde::encode_to_vec(cityobj, bincode_config).unwrap();
+
+            println!("bin_size={}", serialized.len());
+
+            let mut compressed = Vec::new();
+            flate2::write::GzEncoder::new(&mut compressed, flate2::Compression::fast())
+                .write_all(&serialized)
+                .unwrap();
+
+            println!(
+                "bin_size={} compressed={}",
+                serialized.len(),
+                compressed.len()
+            );
+
             Ok(())
         }
         _ => Ok(()),

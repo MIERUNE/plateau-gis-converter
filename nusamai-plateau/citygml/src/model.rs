@@ -47,7 +47,7 @@ impl CityGMLElement for f64 {
     }
 }
 
-impl<T: CityGMLElement + Default> CityGMLElement for Option<T> {
+impl<T: CityGMLElement + Default + std::fmt::Debug> CityGMLElement for Option<T> {
     #[inline]
     fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
         if self.is_some() {

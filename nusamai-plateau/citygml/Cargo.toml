@@ -6,4 +6,5 @@ edition = "2021"
 [dependencies]
 quick-xml = "0.31"
 thiserror = "1.0"
+nusamai-geometry = { path = "../../nusamai-geometry" }
 macros = { path = "./macros" }

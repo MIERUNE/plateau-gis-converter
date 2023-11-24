@@ -117,7 +117,10 @@ impl<R: BufRead> SubTreeReader<'_, R> {
                     st.state.path_buf.extend(ns);
                     st.state.path_buf.extend(localname.as_ref());
 
-                    if localname.as_ref().starts_with(b"lod")
+                    if localname.as_ref().starts_with(b"lod1")
+                        || localname.as_ref().starts_with(b"lod2")
+                        || localname.as_ref().starts_with(b"lod3")
+                        || localname.as_ref().starts_with(b"lod4")
                         || localname.as_ref() == b"appearanceMember"
                     {
                         // NOTE: Skip geometric elements for now to avoid unnecessary heavy traversal.
