@@ -11,6 +11,7 @@
 
 use byteorder::{ByteOrder, LittleEndian, WriteBytesExt};
 use clap::Parser;
+use earcut_rs::{utils_3d::project3d_to_2d, Earcut};
 use indexmap::IndexSet;
 use nusamai_geometry::MultiPolygon3;
 use nusamai_gltf::*;
@@ -254,13 +255,47 @@ fn main() {
         }
     }
 
+    // 中心の経緯度を求める
+    let (mu_lat, mu_lng) = {
+        let (mut mu_lat, mut mu_lng) = (0.0, 0.0);
+        let mut num_features = 0;
+        for mpoly in &all_mpolys {
+            let (mut feat_mu_lng, mut feat_mu_lat) = (0.0, 0.0);
+            let mut num_verts = 0;
+            for poly in mpoly {
+                for v in poly.coords().chunks_exact(3) {
+                    num_verts += 1;
+                    feat_mu_lng += v[0];
+                    feat_mu_lat += v[1];
+                }
+            }
+            if num_verts > 0 {
+                num_features += 1;
+                mu_lat += feat_mu_lng / num_verts as f64;
+                mu_lng += feat_mu_lat / num_verts as f64;
+            }
+        }
+        (mu_lat / num_features as f64, mu_lng / num_features as f64)
+    };
+    println!("{} {}", mu_lat, mu_lng);
+
+    let triangles = tessellation(&all_mpolys, mu_lng, mu_lat).unwrap();
+
+    println!("indices {:?}", triangles.0);
+    println!("vertices {:?}", triangles.1);
+
     // let mut gltf = GLTF::new();
     // let gltf_string = gltf.to_string().unwrap();
     // println!("{}", gltf_string);
 }
 
-fn write_features(mpolys: &[MultiPolygon3], mu_lng: f64, mu_lat: f64) {
-    use earcut_rs::{utils_3d::project3d_to_2d, Earcut};
+type Triangles = (Vec<u32>, IndexSet<[u32; 3]>);
+
+fn tessellation(
+    mpolys: &[MultiPolygon3],
+    mu_lng: f64,
+    mu_lat: f64,
+) -> Result<Triangles, Box<dyn std::error::Error>> {
     let mut earcutter = Earcut::new();
     let mut buf3d: Vec<f64> = Vec::new();
     let mut buf2d: Vec<f64> = Vec::new();
@@ -305,29 +340,5 @@ fn write_features(mpolys: &[MultiPolygon3], mu_lng: f64, mu_lat: f64) {
         }
     }
 
-    // println!("{:?} {:?}", vertices.len(), indices.len());
-    // let file = std::fs::File::create("out.ply").unwrap();
-    // let mut writer = std::io::BufWriter::new(file);
-
-    // writer
-    //     .write_all(
-    //         PLY_HEADER_TEMPLATE
-    //             .replace("{n_verts}", &vertices.len().to_string())
-    //             .replace("{n_faces}", &(indices.len() / 3).to_string())
-    //             .as_ref(),
-    //     )
-    //     .unwrap();
-
-    // let mut buf = [0; 12];
-    // vertices.iter().for_each(|v| {
-    //     LittleEndian::write_u32_into(v, &mut buf);
-    //     writer.write_all(&buf).unwrap();
-    // });
-    // indices.chunks_exact(3).for_each(|v| {
-    //     writer.write_u8(3).unwrap();
-    //     LittleEndian::write_u32_into(v, &mut buf);
-    //     writer.write_all(&buf).unwrap();
-    // });
-
-    // writer.flush().unwrap();
+    return Ok((indices, vertices));
 }
