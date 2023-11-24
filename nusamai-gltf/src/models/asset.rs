@@ -5,7 +5,7 @@ use std::collections::HashMap;
 use serde_json::Value;
 
 /// Metadata about the glTF asset.
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Default)]
 #[serde(rename_all = "camelCase")]
 #[serde(deny_unknown_fields)]
 pub struct Asset {
@@ -38,4 +38,13 @@ pub struct Asset {
 pub struct AssetExtensions {
     #[serde(flatten)]
     others: HashMap<String, Value>,
+}
+
+impl Asset {
+    pub fn new(version: String) -> Self {
+        Self {
+            version,
+            ..Default::default()
+        }
+    }
 }

@@ -4,7 +4,7 @@
 //! 使用例:
 //!
 //! ```bash
-//! cargo run --example citygml_polygons --release -- ~/path/to/PLATEAU/22203_numazu-shi_2021_citygml_4_op/udx/*/52385628_*_6697_op.gml
+//! cargo run --example geometry_to_gltf --release -- ~/path/to/PLATEAU/22203_numazu-shi_2021_citygml_4_op/udx/*/52385628_*_6697_op.gml
 //! ````
 //!
 //! このXMLのパース方法は本格的なパーザで使うことを意図していません。
@@ -237,4 +237,11 @@ fn main() {
     // NOTE: この時点で MultiPolygon にジオメトリデータが詰め込まれている状態
     //
     // ここから先は glTF 形式での出力を行う。
+
+    // 最初の要素のみを取り出して確認する
+    let mpoly = &all_mpolys[0];
+    println!("mpoly={:?}", mpoly);
+
+    let gltf = GLTF::new();
+    println!("gltf={:?}", gltf);
 }

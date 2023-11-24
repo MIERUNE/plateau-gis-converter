@@ -8,7 +8,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
 /// The root object for a glTF asset.
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Default)]
 #[serde(rename_all = "camelCase")]
 #[serde(deny_unknown_fields)]
 pub struct GLTF {
@@ -93,4 +93,10 @@ pub struct GLTF {
 pub struct GLTFExtensions {
     #[serde(flatten)]
     others: HashMap<String, Value>,
+}
+
+impl GLTF {
+    pub fn new() -> Self {
+        Default::default()
+    }
 }
