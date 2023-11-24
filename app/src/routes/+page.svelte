@@ -68,7 +68,8 @@
 						>選択</button
 					>
 					<div class={inputPath ? 'text-gray-800' : 'text-gray-500'}>
-						{inputPath || 'ファイルが選択されていません'}
+						{(inputPath.length < 36 ? inputPath : `... ${inputPath.slice(-36)}`) ||
+							'ファイルが選択されていません'}
 					</div>
 				</div>
 			</div>
@@ -91,7 +92,8 @@
 						>選択</button
 					>
 					<div class={outputPath ? 'text-gray-800' : 'text-gray-500'}>
-						{outputPath || 'ファイルが選択されていません'}
+						{(outputPath.length < 36 ? outputPath : `... ${outputPath.slice(-36)}`) ||
+							'ファイルが選択されていません'}
 					</div>
 				</div>
 			</div>
