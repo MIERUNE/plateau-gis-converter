@@ -7,9 +7,9 @@ edition = "2021"
 default = ["serde"]
 
 [dependencies]
-citygml = { path = "./citygml" }
 quick-xml = "0.31"
 serde = { version = "1.0.193", features = ["derive"], optional = true }
+citygml = { path = "./citygml", features = ["serde"]}
 
 [dev-dependencies]
 bincode = { version = "2.0.0-rc", default-features = false, features = ["std", "serde"] }

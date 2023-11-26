@@ -246,6 +246,7 @@ impl<R: BufRead> SubTreeReader<'_, R> {
         self.state
             .path_buf
             .truncate(self.state.path_stack_indices.pop().unwrap());
+        println!("{:?}", geomref);
         Ok(())
     }
 

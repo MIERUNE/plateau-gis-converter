@@ -41,6 +41,8 @@ impl GeometryReference {
 }
 
 /// Geometries in a toplevel city object and its children.
+#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
+#[derive(Debug)]
 pub struct Geometries {
     pub vertices: Vec<[f64; 3]>,
     pub polygons: MultiPolygon<'static, 1, u32>,
