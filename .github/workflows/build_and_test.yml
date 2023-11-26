@@ -29,11 +29,13 @@ jobs:
         # if: matrix.platform == 'ubuntu-20.04'
         run: |
           sudo apt-get update
-          sudo apt install -y libwebkit2gtk-4.0-dev build-essential curl wget file libssl-dev libgtk-3-dev libayatana-appindicator3-dev librsvg2-dev
+          sudo apt install -y libwebkit2gtk-4.0-dev libgtk-3-dev libayatana-appindicator3-dev librsvg2-dev
+      - name: Make Tauri build destination
+        run: mkdir -p app/build
       - name: Build
         run: cargo build --verbose --workspace
       - name: Test
-        run: cargo llvm-cov --workspace --lcov --output-path lcov.info
+        run: cargo llvm-cov --workspace --lcov --output-path lcov.info --all-features
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v3
         env:
