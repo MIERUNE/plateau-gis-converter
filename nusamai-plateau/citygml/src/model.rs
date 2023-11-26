@@ -8,7 +8,7 @@ pub trait CityGMLElement: Sized {
 impl CityGMLElement for String {
     #[inline]
     fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
-        self.push_str(st.expect_text()?);
+        self.push_str(st.parse_text()?);
         Ok(())
     }
 }
@@ -16,7 +16,7 @@ impl CityGMLElement for String {
 impl CityGMLElement for i32 {
     #[inline]
     fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
-        let text = st.expect_text()?;
+        let text = st.parse_text()?;
         match text.parse() {
             Ok(v) => {
                 *self = v;
@@ -33,7 +33,7 @@ impl CityGMLElement for i32 {
 impl CityGMLElement for f64 {
     #[inline]
     fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
-        let text = st.expect_text()?;
+        let text = st.parse_text()?;
         match text.parse() {
             Ok(v) => {
                 *self = v;

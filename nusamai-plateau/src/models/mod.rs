@@ -28,9 +28,9 @@ pub use vegetation::{PlantCover, SolitaryVegetationObject};
 pub use waterbody::WaterBody;
 
 use citygml::CityGMLElement;
-use serde::{Deserialize, Serialize};
 
-#[derive(Default, Debug, CityGMLElement, Deserialize, Serialize)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Default, Debug, CityGMLElement)]
 pub enum CityObject {
     #[default]
     Unknown,

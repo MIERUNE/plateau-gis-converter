@@ -3,8 +3,13 @@ name = "citygml"
 version = "0.1.0"
 edition = "2021"
 
+[features]
+default = ["serde"]
+
 [dependencies]
-quick-xml = "0.31"
-thiserror = "1.0"
-nusamai-geometry = { path = "../../nusamai-geometry" }
+indexmap = "2.1"
 macros = { path = "./macros" }
+nusamai-geometry = { path = "../../nusamai-geometry" }
+quick-xml = "0.31"
+serde = { version = "1.0", features = ["derive"], optional = true }
+thiserror = "1.0"

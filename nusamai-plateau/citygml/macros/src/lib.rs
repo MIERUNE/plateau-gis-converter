@@ -1,19 +1,19 @@
 extern crate proc_macro;
 
 use proc_macro2::TokenStream;
-use quote::quote;
-use syn::{parse_macro_input, DataEnum, DataStruct, DeriveInput, LitByteStr};
+use quote::{format_ident, quote};
+use syn::{parse_macro_input, Data, DataEnum, DataStruct, DeriveInput, Error, LitByteStr};
 
 const CITYGML_ATTR_IDENT: &str = "citygml";
 
 fn generate_citygml_struct_model(
     derive_input: &DeriveInput,
-    data_struct: &DataStruct,
-) -> Result<TokenStream, syn::Error> {
+    struct_data: &DataStruct,
+) -> Result<TokenStream, Error> {
     let mut attribute_arms = Vec::new();
     let mut chlid_arms = Vec::new();
 
-    for field in &data_struct.fields {
+    for field in &struct_data.fields {
         let Some(field_ident) = &field.ident else {
             continue;
         };
@@ -24,11 +24,10 @@ fn generate_citygml_struct_model(
             }
             attr.parse_nested_meta(|meta| {
                 if meta.path.is_ident("path") {
-                    let value = meta.value()?;
-                    let path: LitByteStr = value.parse()?;
+                    let path: LitByteStr = meta.value()?.parse()?;
 
                     if path.value().starts_with(b"@") {
-                        // xml attributes
+                        // XML attributes (e.g. @gml:id)
                         attribute_arms.push(quote! {
                             #path => {
                                 self.id = <#field_ty as citygml::CityGMLAttribute>::parse_attr_value(
@@ -38,13 +37,43 @@ fn generate_citygml_struct_model(
                             }
                         });
                     } else {
-                        // xml child elements
+                        // XML child elements (e.g. bldg:measuredHeight)
                         chlid_arms.push(quote! {
                             #path => <#field_ty as CityGMLElement>::parse(&mut self.#field_ident, st),
                         });
                     }
+                    Ok(())
                 }
-                Ok(())
+                else if meta.path.is_ident("auto_geom") {
+                    let prefix: LitByteStr = meta.value()?.parse()?;
+
+                    let mut add_arm = |lod: u8, name: &[u8], geomtype: &str  | {
+                        let mut c = prefix.value().clone();
+                        c.push(b':');
+                        c.extend(name);
+                        let pat = LitByteStr::new(c.as_ref(), prefix.span());
+                        let geomtype = format_ident!("{}", geomtype);
+
+                        chlid_arms.push(quote! {
+                            #pat => st.parse_geometric_attr(&mut self.#field_ident, #lod, ::citygml::geometric::GeometryType::#geomtype),
+                        });
+                    };
+
+                    add_arm(1, b"lod1Solid", "Solid");
+                    add_arm(1, b"lod1MultiSurface", "MultiSurface");
+                    add_arm(2, b"lod2MultiSurface", "MultiSurface");
+                    add_arm(3, b"lod3MultiSurface", "MultiSurface");
+                    add_arm(4, b"lod4MultiSurface", "MultiSurface");
+                    add_arm(1, b"lod1Geometry", "Geometry");
+                    add_arm(2, b"lod2Geometry", "Geometry");
+                    add_arm(3, b"lod3Geometry", "Geometry");
+                    add_arm(4, b"lod4Geometry", "Geometry");
+                    add_arm(1, b"tin", "Triangulated");
+
+                    Ok(())
+                } else {
+                    Err(meta.error("unrecognized attribute"))
+                }
             })?;
         }
     }
@@ -79,12 +108,12 @@ fn generate_citygml_struct_model(
 
 fn generate_citygml_enum_model(
     derive_input: &DeriveInput,
-    data_enum: &DataEnum,
-) -> Result<TokenStream, syn::Error> {
+    enum_data: &DataEnum,
+) -> Result<TokenStream, Error> {
     let mut child_arms = Vec::new();
-    for variant in &data_enum.variants {
+    for variant in &enum_data.variants {
         if variant.fields.len() > 1 {
-            return Err(syn::Error::new_spanned(
+            return Err(Error::new_spanned(
                 variant,
                 "variant must not have two or more fields",
             ));
@@ -139,11 +168,11 @@ fn generate_citygml_enum_model(
     Ok(tokens)
 }
 
-fn generate_citygml_model(derive_input: &DeriveInput) -> Result<TokenStream, syn::Error> {
+fn generate_citygml_model(derive_input: &DeriveInput) -> Result<TokenStream, Error> {
     match &derive_input.data {
-        syn::Data::Struct(data_sturct) => generate_citygml_struct_model(derive_input, data_sturct),
-        syn::Data::Enum(data_sturct) => generate_citygml_enum_model(derive_input, data_sturct),
-        _ => Err(syn::Error::new_spanned(
+        Data::Struct(data) => generate_citygml_struct_model(derive_input, data),
+        Data::Enum(data) => generate_citygml_enum_model(derive_input, data),
+        _ => Err(Error::new_spanned(
             derive_input,
             "target must be struct or enum",
         )),

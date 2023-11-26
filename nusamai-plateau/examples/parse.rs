@@ -12,14 +12,18 @@ fn example_toplevel_dispatcher<R: BufRead>(st: &mut SubTreeReader<R>) -> Result<
         b"core:cityObjectMember" => {
             let mut cityobj: CityObject = Default::default();
             cityobj.parse(st)?;
+            let geometries = st.collect_geometries();
+            println!(
+                "vertices={} polygons={}",
+                geometries.vertices.len(),
+                geometries.polygons.len()
+            );
 
             // print top-level city object
-            println!("TLCO: {:#?}", cityobj);
+            // println!("TLCO: {:#?}", cityobj);
 
             // serialize to bincode
             let serialized = bincode::serde::encode_to_vec(cityobj, bincode_config).unwrap();
-
-            println!("bin_size={}", serialized.len());
 
             let mut compressed = Vec::new();
             flate2::write::GzEncoder::new(&mut compressed, flate2::Compression::fast())
@@ -34,7 +38,11 @@ fn example_toplevel_dispatcher<R: BufRead>(st: &mut SubTreeReader<R>) -> Result<
 
             Ok(())
         }
-        _ => Ok(()),
+        other => {
+            println!("skipping {}", std::str::from_utf8(other).unwrap_or("???"));
+            st.skip_current_element()?;
+            Ok(())
+        }
     })
 }
 
