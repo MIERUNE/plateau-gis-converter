@@ -51,9 +51,10 @@ impl<T: CityGMLElement + Default + std::fmt::Debug> CityGMLElement for Option<T>
     #[inline]
     fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
         if self.is_some() {
-            return Err(ParseError::SchemaViolation(
-                "This attribute must not occur two or more times.".into(),
-            ));
+            return Err(ParseError::SchemaViolation(format!(
+                "{} must not occur two or more times.",
+                String::from_utf8_lossy(st.current_path()),
+            )));
         }
         let mut v: T = Default::default();
         T::parse(&mut v, st)?;

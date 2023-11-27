@@ -18,6 +18,9 @@ pub struct Building {
     #[citygml(path = b"bldg:measuredHeight")]
     pub measured_height: Option<f64>,
 
+    #[citygml(path = b"uro:buildingDisasterRiskAttribute")]
+    pub building_disaster_risk_attribute: Vec<BuildingDisasterRiskAttribute>,
+
     #[citygml(path = b"uro:buildingIDAttribute/uro:BuildingIDAttribute")]
     pub building_id_attribute: Option<BuildingIDAttribute>,
 
@@ -311,4 +314,31 @@ pub struct BuildingIDAttribute {
 pub struct BuildingDetailAttribute {
     #[citygml(path = b"uro:surveyYear")]
     pub survey_year: Option<String>,
+}
+
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Default, Debug, CityGMLElement)]
+pub enum BuildingDisasterRiskAttribute {
+    #[default]
+    Unknown,
+    #[citygml(path = b"uro:BuildingLandSlideRiskAttribute")]
+    BuildingLandSlideRiskAttribute(BuildingLandSlideRiskAttribute),
+}
+
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Default, Debug, CityGMLElement)]
+pub struct BuildingLandSlideRiskAttribute {
+    #[citygml(path = b"uro:description")]
+    pub description: Option<String>,
+    #[citygml(path = b"uro:areaType")]
+    pub area_type: Option<String>,
+}
+
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Default, Debug, CityGMLElement)]
+pub struct BuildingTsunamiRiskAttribute {
+    #[citygml(path = b"uro:description")]
+    pub description: Option<String>,
+    #[citygml(path = b"uro:areaType")]
+    pub area_type: Option<String>,
 }
