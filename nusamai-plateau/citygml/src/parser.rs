@@ -1,4 +1,6 @@
-use crate::geometric::{Geometries, GeometryCollector, GeometryReference, GeometryType};
+use crate::geometric::{
+    Geometries, GeometryCollector, GeometryParseType, GeometryRef, GeometryRefEntry, GeometryType,
+};
 use crate::namespace::normalize_ns_prefix;
 use quick_xml::events::{BytesStart, Event};
 use quick_xml::name::Namespace;
@@ -220,22 +222,17 @@ impl<R: BufRead> SubTreeReader<'_, R> {
     /// Expect a geometric attribute of CityGML
     pub fn parse_geometric_attr(
         &mut self,
-        geomref: &mut GeometryReference,
+        geomref: &mut GeometryRef,
         lod: u8,
-        geomtype: GeometryType,
+        geomtype: GeometryParseType,
     ) -> Result<(), ParseError> {
-        use GeometryType::*;
-        match (lod, geomtype) {
-            (1, Solid) => self.parse_solid_prop(&mut geomref.lod1_surfaces)?,
-            (1, MultiSurface) => self.parse_multi_surface_prop(&mut geomref.lod1_surfaces)?,
-            (2, MultiSurface) => self.parse_multi_surface_prop(&mut geomref.lod2_surfaces)?,
-            (3, MultiSurface) => self.parse_multi_surface_prop(&mut geomref.lod3_surfaces)?,
-            (4, MultiSurface) => self.parse_multi_surface_prop(&mut geomref.lod4_surfaces)?,
-            (0, Geometry) => self.parse_geometry_prop(&mut geomref.lod0_surfaces)?, // FIXME: not only surfaces
-            (2, Geometry) => self.parse_geometry_prop(&mut geomref.lod2_surfaces)?, // FIXME: not only surfaces
-            (3, Geometry) => self.parse_geometry_prop(&mut geomref.lod3_surfaces)?, // FIXME: not only surfaces
-            (4, Geometry) => self.parse_geometry_prop(&mut geomref.lod4_surfaces)?, // FIXME: not only surfaces
-            (1, Triangulated) => self.parse_triangulated_prop(&mut geomref.lod1_surfaces)?, // FIXME
+        use GeometryParseType::*;
+
+        match geomtype {
+            Solid => self.parse_solid_prop(geomref, lod)?,
+            MultiSurface => self.parse_multi_surface_prop(geomref, lod)?,
+            Geometry => self.parse_geometry_prop(geomref, lod)?, // FIXME: not only surfaces
+            Triangulated => self.parse_triangulated_prop(geomref, lod)?, // FIXME
             _ => {
                 return Err(ParseError::SchemaViolation(format!(
                     "Unsupported geometry type: lod={}, geomtype={:?}",
@@ -243,39 +240,80 @@ impl<R: BufRead> SubTreeReader<'_, R> {
                 )));
             }
         }
+
         self.state
             .path_buf
             .truncate(self.state.path_stack_indices.pop().unwrap());
-        println!("{:?}", geomref);
         Ok(())
     }
 
-    fn parse_multi_surface_prop(&mut self, geomidx: &mut Vec<u32>) -> Result<(), ParseError> {
+    fn parse_multi_surface_prop(
+        &mut self,
+        geomref: &mut GeometryRef,
+        lod: u8,
+    ) -> Result<(), ParseError> {
+        let poly_begin = self.state.geometry_collector.multi_polygon.len();
+
         if expect_start(self.reader, &mut self.state.buf1, GML_NS, b"MultiSurface")? {
-            self.parse_multi_surface(geomidx)?;
+            self.parse_multi_surface()?;
             expect_end(self.reader, &mut self.state.buf1)?;
+        }
+
+        let poly_end = self.state.geometry_collector.multi_polygon.len();
+        if poly_end - poly_begin > 0 {
+            geomref.entries.push(GeometryRefEntry {
+                geometry_type: GeometryType::Surface,
+                lod,
+                start_index: poly_begin as u32,
+                size: (poly_end - poly_begin) as u32,
+            });
         }
         Ok(())
     }
 
-    fn parse_solid_prop(&mut self, geomidx: &mut Vec<u32>) -> Result<(), ParseError> {
+    fn parse_solid_prop(&mut self, geomref: &mut GeometryRef, lod: u8) -> Result<(), ParseError> {
+        let poly_begin = self.state.geometry_collector.multi_polygon.len();
+
         if expect_start(self.reader, &mut self.state.buf1, GML_NS, b"Solid")? {
-            self.parse_solid(geomidx)?;
+            self.parse_solid()?;
             expect_end(self.reader, &mut self.state.buf1)?;
+        }
+
+        let poly_end = self.state.geometry_collector.multi_polygon.len();
+        if poly_end - poly_begin > 0 {
+            geomref.entries.push(GeometryRefEntry {
+                geometry_type: GeometryType::Solid,
+                lod,
+                start_index: poly_begin as u32,
+                size: (poly_end - poly_begin) as u32,
+            });
         }
         Ok(())
     }
 
-    fn parse_geometry_prop(&mut self, geomidx: &mut Vec<u32>) -> Result<(), ParseError> {
+    fn parse_geometry_prop(
+        &mut self,
+        geomref: &mut GeometryRef,
+        lod: u8,
+    ) -> Result<(), ParseError> {
         loop {
             match self.reader.read_event_into(&mut self.state.buf1) {
                 Ok(Event::Start(start)) => {
                     let (nsres, localname) = self.reader.resolve_element(start.name());
-                    match (nsres, localname.as_ref()) {
-                        (Bound(GML_NS), b"Solid") => self.parse_solid(geomidx)?,
-                        (Bound(GML_NS), b"MultiSurface") => self.parse_multi_surface(geomidx)?,
+                    let poly_begin = self.state.geometry_collector.multi_polygon.len();
+
+                    let geomtype = match (nsres, localname.as_ref()) {
+                        (Bound(GML_NS), b"Solid") => {
+                            self.parse_solid()?;
+                            GeometryType::Solid
+                        }
+                        (Bound(GML_NS), b"MultiSurface") => {
+                            self.parse_multi_surface()?;
+                            GeometryType::Surface
+                        }
                         (Bound(GML_NS), b"CompositeSurface") => {
-                            self.parse_composite_surface(geomidx)?
+                            self.parse_composite_surface()?;
+                            GeometryType::Surface
                         }
                         // (Bound(GML_NS), b"OrientableSurface") => ...
                         // (Bound(GML_NS), b"Polygon") => ...
@@ -287,9 +325,19 @@ impl<R: BufRead> SubTreeReader<'_, R> {
                                 String::from_utf8_lossy(localname.as_ref())
                             )))
                         }
+                    };
+
+                    let poly_end = self.state.geometry_collector.multi_polygon.len();
+                    if poly_end - poly_begin > 0 {
+                        geomref.entries.push(GeometryRefEntry {
+                            geometry_type: geomtype,
+                            lod,
+                            start_index: poly_begin as u32,
+                            size: (poly_end - poly_begin) as u32,
+                        });
                     }
                 }
-                Ok(Event::End(_)) => return Ok(()),
+                Ok(Event::End(_)) => break,
                 Ok(Event::Text(_)) => {
                     return Err(ParseError::SchemaViolation(
                         "Unexpected text content".into(),
@@ -299,18 +347,25 @@ impl<R: BufRead> SubTreeReader<'_, R> {
                 Err(e) => return Err(e.into()),
             }
         }
+        Ok(())
     }
 
-    fn parse_triangulated_prop(&mut self, geomidx: &mut Vec<u32>) -> Result<(), ParseError> {
+    fn parse_triangulated_prop(
+        &mut self,
+        geomref: &mut GeometryRef,
+        lod: u8,
+    ) -> Result<(), ParseError> {
+        let poly_begin = self.state.geometry_collector.multi_polygon.len();
+
         loop {
             match self.reader.read_event_into(&mut self.state.buf1) {
                 Ok(Event::Start(start)) => {
                     let (nsres, localname) = self.reader.resolve_element(start.name());
                     match (nsres, localname.as_ref()) {
                         (Bound(GML_NS), b"TriangulatedSurface") => {
-                            self.parse_triangulated_surface(geomidx)?
+                            self.parse_triangulated_surface()?
                         }
-                        (Bound(GML_NS), b"Tin") => self.parse_triangulated_surface(geomidx)?,
+                        (Bound(GML_NS), b"Tin") => self.parse_triangulated_surface()?,
                         _ => {
                             return Err(ParseError::SchemaViolation(format!(
                                 "Unexpected element <{}>",
@@ -319,7 +374,7 @@ impl<R: BufRead> SubTreeReader<'_, R> {
                         }
                     }
                 }
-                Ok(Event::End(_)) => return Ok(()),
+                Ok(Event::End(_)) => break,
                 Ok(Event::Text(_)) => {
                     return Err(ParseError::SchemaViolation(
                         "Unexpected text content".into(),
@@ -329,36 +384,47 @@ impl<R: BufRead> SubTreeReader<'_, R> {
                 Err(e) => return Err(e.into()),
             }
         }
+
+        let poly_end = self.state.geometry_collector.multi_polygon.len();
+        if poly_end - poly_begin > 0 {
+            geomref.entries.push(GeometryRefEntry {
+                geometry_type: GeometryType::Triangle,
+                lod,
+                start_index: poly_begin as u32,
+                size: (poly_end - poly_begin) as u32,
+            });
+        }
+        Ok(())
     }
 
-    fn parse_solid(&mut self, geomidx: &mut Vec<u32>) -> Result<(), ParseError> {
+    fn parse_solid(&mut self) -> Result<(), ParseError> {
         if expect_start(self.reader, &mut self.state.buf1, GML_NS, b"exterior")? {
-            self.parse_surface_prop(geomidx)?;
+            self.parse_surface_prop()?;
             expect_end(self.reader, &mut self.state.buf1)?;
         }
         Ok(())
     }
 
-    fn parse_triangulated_surface(&mut self, geomidx: &mut Vec<u32>) -> Result<(), ParseError> {
+    fn parse_triangulated_surface(&mut self) -> Result<(), ParseError> {
         if expect_start(
             self.reader,
             &mut self.state.buf1,
             GML_NS,
             b"trianglePatches",
         )? {
-            self.parse_triangle_patch_array(geomidx)?;
+            self.parse_triangle_patch_array()?;
             expect_end(self.reader, &mut self.state.buf1)?;
         }
         Ok(())
     }
 
-    fn parse_triangle_patch_array(&mut self, geomidx: &mut Vec<u32>) -> Result<(), ParseError> {
+    fn parse_triangle_patch_array(&mut self) -> Result<(), ParseError> {
         loop {
             match self.reader.read_event_into(&mut self.state.buf1) {
                 Ok(Event::Start(start)) => {
                     let (nsres, localname) = self.reader.resolve_element(start.name());
                     match (nsres, localname.as_ref()) {
-                        (Bound(GML_NS), b"Triangle") => self.parse_polygon(geomidx)?,
+                        (Bound(GML_NS), b"Triangle") => self.parse_polygon()?,
                         _ => {
                             return Err(ParseError::SchemaViolation(format!(
                                 "Unexpected element <{}>",
@@ -379,13 +445,13 @@ impl<R: BufRead> SubTreeReader<'_, R> {
         }
     }
 
-    fn parse_multi_surface(&mut self, geomidx: &mut Vec<u32>) -> Result<(), ParseError> {
+    fn parse_multi_surface(&mut self) -> Result<(), ParseError> {
         loop {
             match self.reader.read_event_into(&mut self.state.buf1) {
                 Ok(Event::Start(start)) => {
                     let (nsres, localname) = self.reader.resolve_element(start.name());
                     match (nsres, localname.as_ref()) {
-                        (Bound(GML_NS), b"surfaceMember") => self.parse_surface_prop(geomidx)?,
+                        (Bound(GML_NS), b"surfaceMember") => self.parse_surface_prop()?,
                         _ => return Err(ParseError::SchemaViolation("Unexpected element".into())),
                     }
                 }
@@ -401,13 +467,13 @@ impl<R: BufRead> SubTreeReader<'_, R> {
         }
     }
 
-    fn parse_composite_surface(&mut self, geomidx: &mut Vec<u32>) -> Result<(), ParseError> {
+    fn parse_composite_surface(&mut self) -> Result<(), ParseError> {
         loop {
             match self.reader.read_event_into(&mut self.state.buf1) {
                 Ok(Event::Start(start)) => {
                     let (nsres, localname) = self.reader.resolve_element(start.name());
                     match (nsres, localname.as_ref()) {
-                        (Bound(GML_NS), b"surfaceMember") => self.parse_surface_prop(geomidx)?,
+                        (Bound(GML_NS), b"surfaceMember") => self.parse_surface_prop()?,
                         _ => {
                             return Err(ParseError::SchemaViolation(format!(
                                 "Unexpected element <{}>",
@@ -428,16 +494,14 @@ impl<R: BufRead> SubTreeReader<'_, R> {
         }
     }
 
-    fn parse_surface_prop(&mut self, geomidx: &mut Vec<u32>) -> Result<(), ParseError> {
+    fn parse_surface_prop(&mut self) -> Result<(), ParseError> {
         loop {
             match self.reader.read_event_into(&mut self.state.buf1) {
                 Ok(Event::Start(start)) => {
                     let (nsres, localname) = self.reader.resolve_element(start.name());
                     match (nsres, localname.as_ref()) {
-                        (Bound(GML_NS), b"Polygon") => self.parse_polygon(geomidx)?,
-                        (Bound(GML_NS), b"CompositeSurface") => {
-                            self.parse_composite_surface(geomidx)?
-                        }
+                        (Bound(GML_NS), b"Polygon") => self.parse_polygon()?,
+                        (Bound(GML_NS), b"CompositeSurface") => self.parse_composite_surface()?,
                         // (Bound(GML_NS), b"OrientableSurface") =>
                         // (Bound(GML_NS), b"TriangulatedSurface") =>
                         // (Bound(GML_NS), b"Tin") =>
@@ -461,7 +525,7 @@ impl<R: BufRead> SubTreeReader<'_, R> {
         }
     }
 
-    fn parse_polygon(&mut self, geomidx: &mut Vec<u32>) -> Result<(), ParseError> {
+    fn parse_polygon(&mut self) -> Result<(), ParseError> {
         let mut depth = 1;
         let mut expect_exterior = true;
         let mut is_exterior = true;
@@ -560,7 +624,7 @@ impl<R: BufRead> SubTreeReader<'_, R> {
                         .map(|c| [c[0], c[1], c[2]]);
                     if is_exterior {
                         // add a new polygon
-                        geomidx.push(self.state.geometry_collector.add_exterior_ring(iter) as u32);
+                        self.state.geometry_collector.add_exterior_ring(iter);
                     } else {
                         // append an interior ring
                         self.state.geometry_collector.add_interior_ring(iter);

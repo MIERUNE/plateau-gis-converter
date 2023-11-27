@@ -1,10 +1,10 @@
-use citygml::{CityGMLElement, GeometryReference};
+use citygml::{CityGMLElement, GeometryRef};
 
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Default, Debug, CityGMLElement)]
 pub struct SolitaryVegetationObject {
     #[citygml(auto_geom = b"veg")]
-    pub geometries: GeometryReference,
+    pub geometries: GeometryRef,
 
     #[citygml(path = b"@gml:id")]
     id: Option<String>,
@@ -17,7 +17,7 @@ pub struct SolitaryVegetationObject {
 #[derive(Default, Debug, CityGMLElement)]
 pub struct PlantCover {
     #[citygml(auto_geom = b"veg")]
-    pub geometries: GeometryReference,
+    pub geometries: GeometryRef,
 
     #[citygml(path = b"@gml:id")]
     id: Option<String>,

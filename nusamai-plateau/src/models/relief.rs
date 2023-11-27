@@ -1,4 +1,4 @@
-use citygml::{CityGMLElement, GeometryReference};
+use citygml::{CityGMLElement, GeometryRef};
 
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Default, Debug, CityGMLElement)]
@@ -41,7 +41,7 @@ pub struct TINRelief {
     name: Option<String>,
 
     #[citygml(auto_geom = b"dem")]
-    geometries: GeometryReference,
+    geometries: GeometryRef,
 }
 
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]

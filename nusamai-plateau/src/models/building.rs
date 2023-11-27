@@ -1,10 +1,10 @@
-use citygml::{CityGMLElement, GeometryReference};
+use citygml::{CityGMLElement, GeometryRef};
 
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Default, Debug, CityGMLElement)]
 pub struct Building {
     #[citygml(auto_geom = b"bldg")]
-    pub geometries: GeometryReference,
+    pub geometries: GeometryRef,
 
     #[citygml(path = b"@gml:id")]
     id: Option<String>,
@@ -44,7 +44,7 @@ pub struct Building {
 #[derive(Default, Debug, CityGMLElement)]
 pub struct BuildingPart {
     #[citygml(auto_geom = b"bldg")]
-    pub geometries: GeometryReference,
+    pub geometries: GeometryRef,
 
     #[citygml(path = b"@gml:id")]
     id: Option<String>,
@@ -106,7 +106,7 @@ pub enum BoundingSurface {
 #[derive(Default, Debug, CityGMLElement)]
 pub struct WallSurface {
     #[citygml(auto_geom = b"bldg")]
-    pub geometries: GeometryReference,
+    pub geometries: GeometryRef,
 
     #[citygml(path = b"@gml:id")]
     id: Option<String>,
@@ -119,7 +119,7 @@ pub struct WallSurface {
 #[derive(Default, Debug, CityGMLElement)]
 pub struct RoofSurface {
     #[citygml(auto_geom = b"bldg")]
-    pub geometries: GeometryReference,
+    pub geometries: GeometryRef,
 
     #[citygml(path = b"@gml:id")]
     id: Option<String>,
@@ -132,7 +132,7 @@ pub struct RoofSurface {
 #[derive(Default, Debug, CityGMLElement)]
 pub struct GroundSurface {
     #[citygml(auto_geom = b"bldg")]
-    pub geometries: GeometryReference,
+    pub geometries: GeometryRef,
 
     #[citygml(path = b"@gml:id")]
     id: Option<String>,
@@ -145,7 +145,7 @@ pub struct GroundSurface {
 #[derive(Default, Debug, CityGMLElement)]
 pub struct OuterCeilingSurface {
     #[citygml(auto_geom = b"bldg")]
-    pub geometries: GeometryReference,
+    pub geometries: GeometryRef,
 
     #[citygml(path = b"@gml:id")]
     id: Option<String>,
@@ -158,7 +158,7 @@ pub struct OuterCeilingSurface {
 #[derive(Default, Debug, CityGMLElement)]
 pub struct OuterFloorSurface {
     #[citygml(auto_geom = b"bldg")]
-    pub geometries: GeometryReference,
+    pub geometries: GeometryRef,
 
     #[citygml(path = b"@gml:id")]
     id: Option<String>,
@@ -171,7 +171,7 @@ pub struct OuterFloorSurface {
 #[derive(Default, Debug, CityGMLElement)]
 pub struct ClosureSurface {
     #[citygml(auto_geom = b"bldg")]
-    pub geometries: GeometryReference,
+    pub geometries: GeometryRef,
 
     #[citygml(path = b"@gml:id")]
     id: Option<String>,
@@ -184,7 +184,7 @@ pub struct ClosureSurface {
 #[derive(Default, Debug, CityGMLElement)]
 pub struct CeilingSurface {
     #[citygml(auto_geom = b"bldg")]
-    pub geometries: GeometryReference,
+    pub geometries: GeometryRef,
 
     #[citygml(path = b"@gml:id")]
     id: Option<String>,
@@ -196,7 +196,7 @@ pub struct CeilingSurface {
 #[derive(Default, Debug, CityGMLElement)]
 pub struct FloorSurface {
     #[citygml(auto_geom = b"bldg")]
-    pub geometries: GeometryReference,
+    pub geometries: GeometryRef,
 
     #[citygml(path = b"@gml:id")]
     id: Option<String>,
@@ -208,7 +208,7 @@ pub struct FloorSurface {
 #[derive(Default, Debug, CityGMLElement)]
 pub struct InteriorWallSurface {
     #[citygml(auto_geom = b"bldg")]
-    pub geometries: GeometryReference,
+    pub geometries: GeometryRef,
 
     #[citygml(path = b"@gml:id")]
     id: Option<String>,
@@ -232,7 +232,7 @@ pub enum Opening {
 #[derive(Default, Debug, CityGMLElement)]
 pub struct Window {
     #[citygml(auto_geom = b"bldg")]
-    pub geometries: GeometryReference,
+    pub geometries: GeometryRef,
 
     #[citygml(path = b"@gml:id")]
     id: Option<String>,
@@ -242,7 +242,7 @@ pub struct Window {
 #[derive(Default, Debug, CityGMLElement)]
 pub struct Door {
     #[citygml(auto_geom = b"bldg")]
-    pub geometries: GeometryReference,
+    pub geometries: GeometryRef,
 
     #[citygml(path = b"@gml:id")]
     id: Option<String>,
@@ -252,7 +252,7 @@ pub struct Door {
 #[derive(Default, Debug, CityGMLElement)]
 pub struct Room {
     #[citygml(auto_geom = b"bldg")]
-    pub geometries: GeometryReference,
+    pub geometries: GeometryRef,
 
     #[citygml(path = b"@gml:id")]
     id: Option<String>,
@@ -271,7 +271,7 @@ pub struct Room {
 #[derive(Default, Debug, CityGMLElement)]
 pub struct BuildingInstallation {
     #[citygml(auto_geom = b"bldg")]
-    pub geometries: GeometryReference,
+    pub geometries: GeometryRef,
 
     #[citygml(path = b"@gml:id")]
     id: Option<String>,
@@ -284,7 +284,7 @@ pub struct BuildingInstallation {
 #[derive(Default, Debug, CityGMLElement)]
 pub struct BuildingFurniture {
     #[citygml(auto_geom = b"bldg")]
-    pub geometries: GeometryReference,
+    pub geometries: GeometryRef,
 
     #[citygml(path = b"@gml:id")]
     id: Option<String>,

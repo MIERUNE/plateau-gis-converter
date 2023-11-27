@@ -55,7 +55,7 @@ fn generate_citygml_struct_model(
                         let geomtype = format_ident!("{}", geomtype);
 
                         chlid_arms.push(quote! {
-                            #pat => st.parse_geometric_attr(&mut self.#field_ident, #lod, ::citygml::geometric::GeometryType::#geomtype),
+                            #pat => st.parse_geometric_attr(&mut self.#field_ident, #lod, ::citygml::geometric::GeometryParseType::#geomtype),
                         });
                     };
 

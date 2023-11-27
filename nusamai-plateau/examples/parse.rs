@@ -1,7 +1,7 @@
 use clap::Parser;
 
 use serde::{Deserialize, Serialize};
-use std::io::{BufRead, Write};
+use std::io::BufRead;
 
 use citygml::{CityGMLElement, CityGMLReader, ParseError, SubTreeReader};
 use nusamai_plateau::models::CityObject;
@@ -45,10 +45,8 @@ fn example_toplevel_dispatcher<R: BufRead>(
             let serialized =
                 bincode::serde::encode_to_vec(&toplevel_cityobj, bincode_config).unwrap();
 
-            let mut compressed = Vec::new();
-            flate2::write::GzEncoder::new(&mut compressed, flate2::Compression::fast())
-                .write_all(&serialized)
-                .unwrap();
+            let compressed =
+                zstd::stream::encode_all(std::io::Cursor::new(&serialized), 3).unwrap();
 
             println!(
                 "bin_size={} compressed={}",
@@ -89,10 +87,7 @@ fn main() {
             let Ok(xml_data) = std::fs::read(filename) else {
                 panic!("failed to open file {}", filename);
             };
-            let mut compressed = Vec::new();
-            flate2::write::GzEncoder::new(&mut compressed, flate2::Compression::fast())
-                .write_all(&xml_data)
-                .unwrap();
+            let compressed = zstd::stream::encode_all(std::io::Cursor::new(&xml_data), 3).unwrap();
             (
                 xml_data.len(),
                 compressed.len(),

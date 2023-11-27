@@ -1,10 +1,10 @@
-use citygml::{CityGMLElement, GeometryReference};
+use citygml::{CityGMLElement, GeometryRef};
 
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Default, Debug, CityGMLElement)]
 pub struct Road {
     #[citygml(auto_geom = b"tran")]
-    pub geometries: GeometryReference,
+    pub geometries: GeometryRef,
 
     #[citygml(path = b"@gml:id")]
     id: Option<String>,
@@ -20,7 +20,7 @@ pub struct Road {
 #[derive(Default, Debug, CityGMLElement)]
 pub struct Railway {
     #[citygml(auto_geom = b"tran")]
-    pub geometries: GeometryReference,
+    pub geometries: GeometryRef,
 
     #[citygml(path = b"@gml:id")]
     id: Option<String>,
@@ -36,7 +36,7 @@ pub struct Railway {
 #[derive(Default, Debug, CityGMLElement)]
 pub struct Track {
     #[citygml(auto_geom = b"tran")]
-    pub geometries: GeometryReference,
+    pub geometries: GeometryRef,
 
     #[citygml(path = b"@gml:id")]
     id: Option<String>,
@@ -52,7 +52,7 @@ pub struct Track {
 #[derive(Default, Debug, CityGMLElement)]
 pub struct Square {
     #[citygml(auto_geom = b"tran")]
-    pub geometries: GeometryReference,
+    pub geometries: GeometryRef,
 
     #[citygml(path = b"@gml:id")]
     id: Option<String>,
@@ -70,7 +70,7 @@ pub struct Square {
 #[derive(Default, Debug, CityGMLElement)]
 pub struct Waterway {
     #[citygml(auto_geom = b"tran")]
-    pub geometries: GeometryReference,
+    pub geometries: GeometryRef,
 
     #[citygml(path = b"@gml:id")]
     id: Option<String>,
@@ -86,7 +86,7 @@ pub struct Waterway {
 #[derive(Default, Debug, CityGMLElement)]
 pub struct TrafficArea {
     #[citygml(auto_geom = b"tran")]
-    pub geometries: GeometryReference,
+    pub geometries: GeometryRef,
 
     #[citygml(path = b"@gml:id")]
     id: Option<String>,
@@ -96,7 +96,7 @@ pub struct TrafficArea {
 #[derive(Default, Debug, CityGMLElement)]
 pub struct AuxiliaryTrafficArea {
     #[citygml(auto_geom = b"tran")]
-    pub geometries: GeometryReference,
+    pub geometries: GeometryRef,
 
     #[citygml(path = b"@gml:id")]
     id: Option<String>,

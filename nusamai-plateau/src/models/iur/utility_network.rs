@@ -16,3 +16,5 @@
 //!       - uro:ElectricityCable
 //!       - uro:TelecommunicationsCable
 //!     - uro:Duct
+
+// TODO: 未実装

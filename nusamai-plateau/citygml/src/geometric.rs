@@ -1,7 +1,8 @@
 use nusamai_geometry::{MultiLineString, MultiPolygon};
 
+#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 #[derive(Debug, Clone, Copy)]
-pub enum GeometryType {
+pub enum GeometryParseType {
     Geometry,
     Solid,
     MultiSurface,
@@ -10,39 +11,41 @@ pub enum GeometryType {
 }
 
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
-#[derive(Debug, Default)]
-pub struct GeometryReference {
-    // Note: Is it necessary to keep solid distinct from multisurface?
-    // pub lod1_solid: Vec<u32>,
-    // pub lod2_solid: Vec<u32>,
-    // pub lod3_solid: Vec<u32>,
-    // pub lod4_solid: Vec<u32>,
-    //
-    //
-    pub lod0_surfaces: Vec<u32>,
-    pub lod1_surfaces: Vec<u32>,
-    pub lod2_surfaces: Vec<u32>,
-    pub lod3_surfaces: Vec<u32>,
-    pub lod4_surfaces: Vec<u32>,
-    //
-    //
-    // pub lod0_curves: Vec<u32>,
-    // pub lod2_curves: Vec<u32>,
-    // pub lod3_curves: Vec<u32>,
-    // pub lod4_curves: Vec<u32>,
-    //
-    // pub lod0_point: Vec<u32>,
+#[derive(Debug, Clone, Copy, Default)]
+pub enum GeometryType {
+    #[default]
+    Unknown,
+    Solid,
+    Surface,
+    Triangle,
 }
 
-impl GeometryReference {
+#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
+#[derive(Debug, Default)]
+pub struct GeometryRefEntry {
+    pub geometry_type: GeometryType,
+    pub lod: u8,
+    pub start_index: u32,
+    pub size: u32,
+}
+
+#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
+#[derive(Debug, Default)]
+pub struct GeometryRef {
+    pub entries: Vec<GeometryRefEntry>,
+}
+
+impl GeometryRef {
     pub fn new() -> Self {
-        Self::default()
+        Self {
+            entries: Vec::new(),
+        }
     }
 }
 
 /// Geometries in a toplevel city object and its children.
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct Geometries {
     pub vertices: Vec<[f64; 3]>,
     pub polygons: MultiPolygon<'static, 1, u32>,
