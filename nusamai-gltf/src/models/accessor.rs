@@ -15,7 +15,6 @@ pub enum SparseIndicesComponentType {
 
 #[derive(Serialize_repr, Deserialize_repr, Debug, PartialEq, Eq, Clone, Copy)]
 #[repr(u16)]
-
 pub enum ComponentType {
     Byte = 5120,
     UnsignedByte = 5121,
@@ -136,6 +135,12 @@ pub struct Accessor {
     /// Application-specific data.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub extras: Option<HashMap<String, Value>>,
+}
+
+impl Accessor {
+    pub fn new() -> Self {
+        Default::default()
+    }
 }
 
 #[derive(Serialize, Deserialize, Debug)]

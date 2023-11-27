@@ -204,91 +204,6 @@ fn parse_body(reader: &mut NsReader<&[u8]>) -> Result<Vec<MultiPolygon3<'static>
     }
 }
 
-#[derive(Parser)]
-struct Args {
-    #[clap(required = true)]
-    filenames: Vec<String>,
-}
-
-fn main() {
-    let args = Args::parse();
-
-    let mut all_mpolys = Vec::new();
-
-    for filename in args.filenames {
-        let xml = fs::read_to_string(filename).unwrap();
-        let mut reader = NsReader::from_str(&xml);
-        reader.trim_text(true);
-        match parse_body(&mut reader) {
-            Ok(mpolys) => {
-                println!(
-                    "features={features} polygons={polygons}",
-                    features = mpolys.len(),
-                    polygons = mpolys.iter().flatten().count()
-                );
-                all_mpolys.extend(mpolys);
-            }
-            Err(e) => match e {
-                ParseError::XmlError(e) => {
-                    println!("Error at position {}: {:?}", reader.buffer_position(), e)
-                }
-            },
-        };
-    }
-
-    // NOTE: この時点で MultiPolygon にジオメトリデータが詰め込まれている状態
-    //
-    // ここから先は glTF 形式での出力を行う。
-
-    let mut features: Vec<MultiPolygon3> = Vec::new();
-
-    for feature in all_mpolys.iter() {
-        // mpolyが1つのfeature（建物）で、複数のpolygon（面）を持っている
-        println!("\npolygon length {:?}", feature.len());
-
-        for polygon in feature.iter() {
-            println!("・exterior {:?}", polygon.exterior());
-            println!("・interiors");
-            for item in polygon.interiors() {
-                println!("interior {:?}", item);
-            }
-        }
-    }
-
-    // 中心の経緯度を求める
-    let (mu_lat, mu_lng) = {
-        let (mut mu_lat, mut mu_lng) = (0.0, 0.0);
-        let mut num_features = 0;
-        for mpoly in &all_mpolys {
-            let (mut feat_mu_lng, mut feat_mu_lat) = (0.0, 0.0);
-            let mut num_verts = 0;
-            for poly in mpoly {
-                for v in poly.coords().chunks_exact(3) {
-                    num_verts += 1;
-                    feat_mu_lng += v[0];
-                    feat_mu_lat += v[1];
-                }
-            }
-            if num_verts > 0 {
-                num_features += 1;
-                mu_lat += feat_mu_lng / num_verts as f64;
-                mu_lng += feat_mu_lat / num_verts as f64;
-            }
-        }
-        (mu_lat / num_features as f64, mu_lng / num_features as f64)
-    };
-    println!("{} {}", mu_lat, mu_lng);
-
-    let triangles = tessellation(&all_mpolys, mu_lng, mu_lat).unwrap();
-
-    println!("indices {:?}", triangles.0);
-    println!("vertices {:?}", triangles.1);
-
-    // let mut gltf = GLTF::new();
-    // let gltf_string = gltf.to_string().unwrap();
-    // println!("{}", gltf_string);
-}
-
 type Triangles = (Vec<u32>, IndexSet<[u32; 3]>);
 
 fn tessellation(
@@ -341,4 +256,141 @@ fn tessellation(
     }
 
     return Ok((indices, vertices));
+}
+
+#[derive(Parser)]
+struct Args {
+    #[clap(required = true)]
+    filenames: Vec<String>,
+}
+
+fn main() {
+    let args = Args::parse();
+
+    let mut all_mpolys = Vec::new();
+
+    for filename in args.filenames {
+        let xml = fs::read_to_string(filename).unwrap();
+        let mut reader = NsReader::from_str(&xml);
+        reader.trim_text(true);
+        match parse_body(&mut reader) {
+            Ok(mpolys) => {
+                println!(
+                    "features={features} polygons={polygons}",
+                    features = mpolys.len(),
+                    polygons = mpolys.iter().flatten().count()
+                );
+                all_mpolys.extend(mpolys);
+            }
+            Err(e) => match e {
+                ParseError::XmlError(e) => {
+                    println!("Error at position {}: {:?}", reader.buffer_position(), e)
+                }
+            },
+        };
+    }
+
+    // NOTE: この時点で MultiPolygon にジオメトリデータが詰め込まれている状態
+    //
+    // ここから先は glTF 形式での出力を行う。
+
+    // 中心の経緯度を求める
+    let (mu_lat, mu_lng) = {
+        let (mut mu_lat, mut mu_lng) = (0.0, 0.0);
+        let mut num_features = 0;
+        for mpoly in &all_mpolys {
+            let (mut feat_mu_lng, mut feat_mu_lat) = (0.0, 0.0);
+            let mut num_verts = 0;
+            for poly in mpoly {
+                for v in poly.coords().chunks_exact(3) {
+                    num_verts += 1;
+                    feat_mu_lng += v[0];
+                    feat_mu_lat += v[1];
+                }
+            }
+            if num_verts > 0 {
+                num_features += 1;
+                mu_lat += feat_mu_lng / num_verts as f64;
+                mu_lng += feat_mu_lat / num_verts as f64;
+            }
+        }
+        (mu_lat / num_features as f64, mu_lng / num_features as f64)
+    };
+    println!("{} {}", mu_lat, mu_lng);
+
+    let (indices, vertices) = tessellation(&all_mpolys, mu_lng, mu_lat).unwrap();
+
+    println!("indices {:?}", indices);
+    println!("first vertices {:?}", vertices);
+
+    // バイナリ化
+    let mut bin = Vec::new();
+    for v in vertices {
+        bin.write_f32::<LittleEndian>(f32::from_bits(v[0])).unwrap();
+        bin.write_f32::<LittleEndian>(f32::from_bits(v[1])).unwrap();
+        bin.write_f32::<LittleEndian>(f32::from_bits(v[2])).unwrap();
+    }
+
+    // glTF のバッファを作成
+    let mut gltf = GLTF::new();
+    let mut buffer = Buffer::new();
+    buffer.byte_length = bin.len() as u32;
+    buffer.uri = Some("data.bin".to_string());
+
+    gltf.buffers = Some(vec![buffer]);
+
+    // glTF のバッファビューを作成
+    let mut buffer_view = BufferView::new();
+    buffer_view.buffer = 0;
+    buffer_view.byte_length = bin.len() as u32;
+    buffer_view.byte_offset = 0;
+    buffer_view.target = Some(BufferViewTarget::ArrayBuffer);
+    let mut accessor = Accessor::new();
+    accessor.buffer_view = Some(0);
+
+    // glTF のアクセサを作成
+    let mut accessor = Accessor::new();
+    accessor.buffer_view = 0;
+    accessor.byte_offset = 0;
+    accessor.component_type = Some(AccessorComponentType::Float);
+    accessor.count = vertices.len() as u32;
+    accessor.type_ = Some(AccessorType::Vec3);
+    gltf.accessors.push(accessor);
+
+    // glTF のメッシュを作成
+    let mut mesh = Mesh::new();
+    let mut primitive = Primitive::new();
+    primitive.attributes = {
+        let mut map = HashMap::new();
+        map.insert(Semantic::Positions, 0);
+        map
+    };
+    primitive.indices = Some(0);
+    primitive.mode = Some(MeshPrimitiveMode::Triangles);
+    mesh.primitives.push(primitive);
+    gltf.meshes.push(mesh);
+
+    // glTF のシーンを作成
+    let mut scene = Scene::new();
+    scene.nodes.push(0);
+    gltf.scenes.push(scene);
+
+    // glTF のノードを作成
+    let mut node = Node::new();
+    node.mesh = Some(0);
+    gltf.nodes.push(node);
+
+    // glTF のシーンを設定
+    gltf.scene = Some(0);
+
+    // glTF のバイナリを設定
+    gltf.buffers[0].data = Some(bin);
+
+    // glTF の JSON を出力
+    let gltf_string = gltf.to_string().unwrap();
+    println!("{}", gltf_string);
+
+    // glTF のバイナリを出力
+    let mut file = fs::File::create("data.bin").unwrap();
+    file.write_all(&bin).unwrap();
 }
