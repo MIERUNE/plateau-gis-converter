@@ -9,7 +9,7 @@
 //!
 //! このXMLのパース方法は本格的なパーザで使うことを意図していません。
 
-use byteorder::{ByteOrder, LittleEndian, WriteBytesExt};
+use byteorder::{LittleEndian, WriteBytesExt};
 use clap::Parser;
 use earcut_rs::{utils_3d::project3d_to_2d, Earcut};
 use indexmap::IndexSet;
@@ -318,21 +318,24 @@ fn main() {
     };
     println!("{} {}", mu_lat, mu_lng);
 
-    let (indices, vertices) = tessellation(&all_mpolys, mu_lng, mu_lat).unwrap();
-
-    println!("indices {:?}", indices);
-    println!("first vertices {:?}", vertices);
+    // 三角分割
+    // let (indices, vertices) = tessellation(&all_mpolys, mu_lng, mu_lat).unwrap();
+    let (_, vertices) = tessellation(&all_mpolys, mu_lng, mu_lat).unwrap();
+    // println!("indices {:?}", indices);
+    // println!("first vertices {:?}", vertices);
 
     // バイナリ化
     let mut bin = Vec::new();
-    for v in vertices {
+    for v in &vertices {
         bin.write_f32::<LittleEndian>(f32::from_bits(v[0])).unwrap();
         bin.write_f32::<LittleEndian>(f32::from_bits(v[1])).unwrap();
         bin.write_f32::<LittleEndian>(f32::from_bits(v[2])).unwrap();
     }
 
-    // glTF のバッファを作成
+    // glTF のモデルを作成
     let mut gltf = GLTF::new();
+
+    // glTF のバッファを作成
     let mut buffer = Buffer::new();
     buffer.byte_length = bin.len() as u32;
     buffer.uri = Some("data.bin".to_string());
@@ -345,52 +348,54 @@ fn main() {
     buffer_view.byte_length = bin.len() as u32;
     buffer_view.byte_offset = 0;
     buffer_view.target = Some(BufferViewTarget::ArrayBuffer);
-    let mut accessor = Accessor::new();
-    accessor.buffer_view = Some(0);
+
+    gltf.buffer_views = Some(vec![buffer_view]);
 
     // glTF のアクセサを作成
     let mut accessor = Accessor::new();
-    accessor.buffer_view = 0;
+    accessor.buffer_view = Some(0);
     accessor.byte_offset = 0;
-    accessor.component_type = Some(AccessorComponentType::Float);
+    accessor.component_type = ComponentType::Float;
     accessor.count = vertices.len() as u32;
-    accessor.type_ = Some(AccessorType::Vec3);
-    gltf.accessors.push(accessor);
+    accessor.type_ = AccessorType::Vec3;
 
-    // glTF のメッシュを作成
-    let mut mesh = Mesh::new();
-    let mut primitive = Primitive::new();
-    primitive.attributes = {
-        let mut map = HashMap::new();
-        map.insert(Semantic::Positions, 0);
-        map
-    };
-    primitive.indices = Some(0);
-    primitive.mode = Some(MeshPrimitiveMode::Triangles);
-    mesh.primitives.push(primitive);
-    gltf.meshes.push(mesh);
+    gltf.accessors = Some(vec![accessor]);
 
-    // glTF のシーンを作成
-    let mut scene = Scene::new();
-    scene.nodes.push(0);
-    gltf.scenes.push(scene);
+    // // glTF のメッシュを作成
+    // let mut mesh = Mesh::new();
+    // let mut primitive = Primitive::new();
+    // primitive.attributes = {
+    //     let mut map = HashMap::new();
+    //     map.insert(Semantic::Positions, 0);
+    //     map
+    // };
+    // primitive.indices = Some(0);
+    // primitive.mode = Some(MeshPrimitiveMode::Triangles);
+    // mesh.primitives.push(primitive);
+    // gltf.meshes.push(mesh);
 
-    // glTF のノードを作成
-    let mut node = Node::new();
-    node.mesh = Some(0);
-    gltf.nodes.push(node);
+    // // glTF のシーンを作成
+    // let mut scene = Scene::new();
+    // scene.nodes.push(0);
+    // gltf.scenes.push(scene);
 
-    // glTF のシーンを設定
-    gltf.scene = Some(0);
+    // // glTF のノードを作成
+    // let mut node = Node::new();
+    // node.mesh = Some(0);
+    // gltf.nodes.push(node);
 
-    // glTF のバイナリを設定
-    gltf.buffers[0].data = Some(bin);
+    // // glTF のシーンを設定
+    // gltf.scene = Some(0);
+
+    // // glTF のバイナリを設定
+    // gltf.buffers[0].data = Some(bin);
 
     // glTF の JSON を出力
     let gltf_string = gltf.to_string().unwrap();
-    println!("{}", gltf_string);
+    // println!("{}", gltf_string);
+    fs::write("./data/data.gltf", gltf_string).unwrap();
 
     // glTF のバイナリを出力
-    let mut file = fs::File::create("data.bin").unwrap();
+    let mut file = fs::File::create("./data/data.bin").unwrap();
     file.write_all(&bin).unwrap();
 }
