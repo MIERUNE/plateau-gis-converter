@@ -5,16 +5,18 @@ use std::collections::HashMap;
 
 use serde_json::Value;
 
-#[derive(Serialize_repr, Deserialize_repr, Debug, PartialEq, Eq, Clone, Copy)]
+#[derive(Serialize_repr, Deserialize_repr, Debug, PartialEq, Eq, Clone, Copy, Default)]
 #[repr(u16)]
 pub enum MagFilter {
+    #[default]
     Nearest = 9728,
     Linear = 9729,
 }
 
-#[derive(Serialize_repr, Deserialize_repr, Debug, PartialEq, Eq, Clone, Copy)]
+#[derive(Serialize_repr, Deserialize_repr, Debug, PartialEq, Eq, Clone, Copy, Default)]
 #[repr(u16)]
 pub enum MinFilter {
+    #[default]
     Nearest = 9728,
     Linear = 9729,
     NearestMipmapNearest = 9984,
@@ -76,7 +78,7 @@ pub struct Sampler {
     pub extras: Option<HashMap<String, Value>>,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct SamplerExtensions {
     #[serde(flatten)]

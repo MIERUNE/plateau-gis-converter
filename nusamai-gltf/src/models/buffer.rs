@@ -5,9 +5,10 @@ use std::collections::HashMap;
 
 use serde_json::Value;
 
-#[derive(Serialize_repr, Deserialize_repr, Debug, PartialEq, Eq, Clone, Copy)]
+#[derive(Serialize_repr, Deserialize_repr, Debug, PartialEq, Eq, Clone, Copy, Default)]
 #[repr(u16)]
 pub enum BufferViewTarget {
+    #[default]
     ArrayBuffer = 34962,
     ElementArrayBuffer = 34963,
 }
@@ -37,7 +38,7 @@ pub struct Buffer {
     pub extras: Option<HashMap<String, Value>>,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct BufferExtensions {
     #[serde(flatten)]

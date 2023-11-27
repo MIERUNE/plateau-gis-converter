@@ -5,17 +5,19 @@ use std::collections::HashMap;
 
 use serde_json::Value;
 
-#[derive(Serialize_repr, Deserialize_repr, Debug, PartialEq, Eq, Clone, Copy)]
+#[derive(Serialize_repr, Deserialize_repr, Debug, PartialEq, Eq, Clone, Copy, Default)]
 #[repr(u16)]
 pub enum SparseIndicesComponentType {
+    #[default]
     UnsignedByte = 5121,
     UnsignedShort = 5123,
     UnsignedInt = 5125,
 }
 
-#[derive(Serialize_repr, Deserialize_repr, Debug, PartialEq, Eq, Clone, Copy)]
+#[derive(Serialize_repr, Deserialize_repr, Debug, PartialEq, Eq, Clone, Copy, Default)]
 #[repr(u16)]
 pub enum ComponentType {
+    #[default]
     Byte = 5120,
     UnsignedByte = 5121,
     Short = 5122,
@@ -25,7 +27,7 @@ pub enum ComponentType {
 }
 
 /// An object pointing to a buffer view containing the indices of deviating accessor values. The number of indices is equal to `accessor.sparse.count`. Indices **MUST** strictly increase.
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Default)]
 #[serde(rename_all = "camelCase")]
 #[serde(deny_unknown_fields)]
 pub struct AccessorSparseIndices {
@@ -41,7 +43,7 @@ pub struct AccessorSparseIndices {
 }
 
 /// An object pointing to a buffer view containing the deviating accessor values. The number of elements is equal to `accessor.sparse.count` times number of components. The elements have the same component type as the base accessor. The elements are tightly packed. Data **MUST** be aligned following the same rules as the base accessor.
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Default)]
 #[serde(rename_all = "camelCase")]
 #[serde(deny_unknown_fields)]
 pub struct AccessorSparseValues {
@@ -54,7 +56,7 @@ pub struct AccessorSparseValues {
 }
 
 /// Sparse storage of accessor values that deviate from their initialization value.
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Default)]
 #[serde(rename_all = "camelCase")]
 #[serde(deny_unknown_fields)]
 pub struct AccessorSparse {
@@ -68,9 +70,10 @@ pub struct AccessorSparse {
     pub values: AccessorSparseValues,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Default)]
 #[serde(rename_all = "UPPERCASE")]
 pub enum AccessorType {
+    #[default]
     Scalar,
     Vec2,
     Vec3,
@@ -81,7 +84,7 @@ pub enum AccessorType {
 }
 
 /// Properties for an accessor. Accessors contain index or attribute data.
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Default)]
 #[serde[rename_all = "camelCase"]]
 #[serde(deny_unknown_fields)]
 pub struct Accessor {
@@ -143,7 +146,7 @@ impl Accessor {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct AccessorExtensions {
     #[serde(flatten)]

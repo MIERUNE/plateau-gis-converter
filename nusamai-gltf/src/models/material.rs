@@ -6,9 +6,10 @@ use serde_json::Value;
 use super::texture_info::TextureInfo;
 
 /// The material's alpha rendering mode enumeration specifying the interpretation of the alpha value of the base color.
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Default)]
 #[serde(rename_all = "UPPERCASE")]
 pub enum AlphaMode {
+    #[default]
     /// The alpha value is ignored, and the rendered output is fully opaque.
     Opaque,
     /// The rendered output is either fully opaque or fully transparent depending on the alpha value and the specified `alphaCutoff` value; the exact appearance of the edges **MAY** be subject to implementation-specific techniques such as "`Alpha-to-Coverage`".
@@ -17,7 +18,7 @@ pub enum AlphaMode {
     Blend,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Default)]
 #[serde(rename_all = "camelCase")]
 #[serde(deny_unknown_fields)]
 pub struct MaterialNormalTextureInfo {
@@ -41,7 +42,7 @@ pub struct MaterialNormalTextureInfo {
     pub extras: Option<HashMap<String, Value>>,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct MaterialNormalTextureInfoExtensions {
     #[serde(flatten)]
@@ -52,7 +53,7 @@ fn default_scale() -> f32 {
     1.0
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Default)]
 #[serde(rename_all = "camelCase")]
 #[serde(deny_unknown_fields)]
 pub struct MaterialOcclusionTextureInfo {
@@ -76,7 +77,7 @@ pub struct MaterialOcclusionTextureInfo {
     pub extras: Option<HashMap<String, Value>>,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct MaterialOcculusionTextureInfoExtensions {
     #[serde(flatten)]
@@ -188,7 +189,7 @@ impl Default for Material {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct MaterialExtensions {
     #[serde(flatten)]

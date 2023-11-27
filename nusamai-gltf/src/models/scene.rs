@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 /// The root nodes of a scene.
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Default)]
 #[serde[rename_all = "camelCase"]]
 #[serde(deny_unknown_fields)]
 pub struct Scene {

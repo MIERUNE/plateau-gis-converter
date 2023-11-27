@@ -17,9 +17,10 @@ impl Default for AnimationSamplerInterpolation {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, PartialEq, Clone, Copy)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Clone, Copy, Default)]
 #[serde(rename_all = "lowercase")]
 pub enum AnimationChannelTargetPath {
+    #[default]
     Translation,
     Rotation,
     Scale,
@@ -27,7 +28,7 @@ pub enum AnimationChannelTargetPath {
 }
 
 /// The descriptor of the animated property.
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct AnimationChannelTarget {
     /// The index of the node to animate. When undefined, the animated object **MAY** be defined by an extension.
@@ -38,7 +39,7 @@ pub struct AnimationChannelTarget {
 }
 
 /// An animation channel combines an animation sampler with a target property being animated.
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct AnimationChannel {
     /// The index of a sampler in this animation used to compute the value for the target, e.g., a node's translation, rotation, or scale (TRS).
@@ -48,7 +49,7 @@ pub struct AnimationChannel {
 }
 
 /// An animation sampler combines timestamps with a sequence of output values and defines an interpolation algorithm.
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct AnimationSampler {
     /// The index of an accessor containing keyframe timestamps. The accessor **MUST** be of scalar type with floating-point components.
@@ -61,7 +62,7 @@ pub struct AnimationSampler {
 }
 
 /// A keyframe animation.
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Default)]
 #[serde(rename_all = "camelCase")]
 #[serde(deny_unknown_fields)]
 pub struct Animation {
@@ -83,7 +84,7 @@ pub struct Animation {
     pub extras: Option<HashMap<String, Value>>,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct AnimationExtensions {
     #[serde(flatten)]

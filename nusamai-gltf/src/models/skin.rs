@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 /// Joints and matrices defining a skin.
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Default)]
 #[serde[rename_all = "camelCase"]]
 #[serde(deny_unknown_fields)]
 pub struct Skin {

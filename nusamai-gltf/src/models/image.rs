@@ -3,8 +3,9 @@ use std::collections::HashMap;
 
 use serde_json::Value;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Default)]
 pub enum MimeType {
+    #[default]
     #[serde(rename = "image/jpeg")]
     ImageJpeg,
     #[serde(rename = "image/png")]
@@ -14,7 +15,7 @@ pub enum MimeType {
 }
 
 /// Image data used to create a texture. Image MAY be referenced by an URI (or IRI) or a buffer view index.
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Default)]
 #[serde[rename_all = "camelCase"]]
 #[serde(deny_unknown_fields)]
 pub struct Image {
@@ -43,7 +44,7 @@ pub struct Image {
     pub extras: Option<HashMap<String, Value>>,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct ImageExtensions {
     #[serde(flatten)]
