@@ -17,7 +17,11 @@ pub trait CoordNum: Num + Copy + NumCast + PartialOrd + Default + Debug {}
 impl<T: Num + Copy + NumCast + PartialOrd + Default + Debug> CoordNum for T {}
 
 /// Computer-friendly Geometry
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(
+    feature = "serde",
+    derive(serde::Serialize, serde::Deserialize),
+    serde(tag = "type")
+)]
 #[derive(Debug, Clone)]
 pub enum Geometry<'a, const D: usize, T: CoordNum> {
     MultiPoint(MultiPoint<'a, D, T>),
