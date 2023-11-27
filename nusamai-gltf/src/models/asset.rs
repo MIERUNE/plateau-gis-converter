@@ -41,9 +41,8 @@ pub struct AssetExtensions {
 }
 
 impl Asset {
-    pub fn new(version: String) -> Self {
+    pub fn new() -> Self {
         Self {
-            version,
             ..Default::default()
         }
     }
