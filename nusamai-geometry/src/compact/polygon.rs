@@ -4,6 +4,7 @@ use super::linestring::LineString;
 use super::CoordNum;
 
 /// Computer-friendly Polygon
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Debug, Clone, Default)]
 pub struct Polygon<'a, const D: usize, T: CoordNum = f64> {
     /// 座標データ
@@ -12,8 +13,8 @@ pub struct Polygon<'a, const D: usize, T: CoordNum = f64> {
     hole_indices: Cow<'a, [u32]>,
 }
 
-pub type Polygon3<'a, T> = Polygon<'a, 3, T>;
-pub type Polygon2<'a, T> = Polygon<'a, 2, T>;
+pub type Polygon3<'a, T = f64> = Polygon<'a, 3, T>;
+pub type Polygon2<'a, T = f64> = Polygon<'a, 2, T>;
 
 impl<'a, const D: usize, T: CoordNum> Polygon<'a, D, T> {
     pub fn new() -> Self {

@@ -4,6 +4,7 @@ use super::linestring::LineString;
 use super::CoordNum;
 
 /// Computer-friendly MultiString
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Debug, Clone, Default)]
 pub struct MultiLineString<'a, const D: usize, T: CoordNum = f64> {
     /// すべての LineString の座標データを連結したもの
