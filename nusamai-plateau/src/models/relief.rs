@@ -16,7 +16,11 @@ pub struct ReliefFeature {
     relief_component: Vec<ReliefComponent>,
 }
 
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(
+    feature = "serde",
+    derive(serde::Serialize, serde::Deserialize),
+    serde(tag = "type")
+)]
 #[derive(Default, Debug, CityGMLElement)]
 pub enum ReliefComponent {
     #[default]

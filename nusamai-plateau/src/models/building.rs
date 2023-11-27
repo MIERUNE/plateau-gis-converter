@@ -80,7 +80,11 @@ pub struct BuildingPart {
     pub consists_of_building_part: Vec<BuildingPart>,
 }
 
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(
+    feature = "serde",
+    derive(serde::Serialize, serde::Deserialize),
+    serde(tag = "type")
+)]
 #[derive(Default, Debug, CityGMLElement)]
 pub enum BoundingSurface {
     #[default]
@@ -220,7 +224,11 @@ pub struct InteriorWallSurface {
     opening: Vec<Opening>,
 }
 
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(
+    feature = "serde",
+    derive(serde::Serialize, serde::Deserialize),
+    serde(tag = "type")
+)]
 #[derive(Default, Debug, CityGMLElement)]
 pub enum Opening {
     #[default]
@@ -316,13 +324,21 @@ pub struct BuildingDetailAttribute {
     pub survey_year: Option<String>,
 }
 
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(
+    feature = "serde",
+    derive(serde::Serialize, serde::Deserialize),
+    serde(tag = "type")
+)]
 #[derive(Default, Debug, CityGMLElement)]
 pub enum BuildingDisasterRiskAttribute {
     #[default]
     Unknown,
     #[citygml(path = b"uro:BuildingLandSlideRiskAttribute")]
     BuildingLandSlideRiskAttribute(BuildingLandSlideRiskAttribute),
+    #[citygml(path = b"uro:BuildingTsunamiRiskAttribute")]
+    BuildingTsunamiRiskAttribute(BuildingTsunamiRiskAttribute),
+    #[citygml(path = b"uro:BuildingRiverFloodingRiskAttribute")]
+    BuildingRiverFloodingRiskAttribute(BuildingRiverFloodingRiskAttribute),
 }
 
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
@@ -337,6 +353,15 @@ pub struct BuildingLandSlideRiskAttribute {
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Default, Debug, CityGMLElement)]
 pub struct BuildingTsunamiRiskAttribute {
+    #[citygml(path = b"uro:description")]
+    pub description: Option<String>,
+    #[citygml(path = b"uro:areaType")]
+    pub area_type: Option<String>,
+}
+
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Default, Debug, CityGMLElement)]
+pub struct BuildingRiverFloodingRiskAttribute {
     #[citygml(path = b"uro:description")]
     pub description: Option<String>,
     #[citygml(path = b"uro:areaType")]

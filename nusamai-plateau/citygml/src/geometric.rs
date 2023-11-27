@@ -21,27 +21,16 @@ pub enum GeometryType {
 }
 
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub struct GeometryRefEntry {
-    pub geometry_type: GeometryType,
+    #[serde(rename = "type")]
+    pub ty: GeometryType,
     pub lod: u8,
-    pub start_index: u32,
-    pub size: u32,
+    pub pos: u32,
+    pub len: u32,
 }
 
-#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
-#[derive(Debug, Default)]
-pub struct GeometryRef {
-    pub entries: Vec<GeometryRefEntry>,
-}
-
-impl GeometryRef {
-    pub fn new() -> Self {
-        Self {
-            entries: Vec::new(),
-        }
-    }
-}
+pub type GeometryRef = Vec<GeometryRefEntry>;
 
 /// Geometries in a toplevel city object and its children.
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]

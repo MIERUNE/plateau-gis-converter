@@ -29,7 +29,11 @@ pub use waterbody::WaterBody;
 
 use citygml::CityGMLElement;
 
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[cfg_attr(
+    feature = "serde",
+    derive(serde::Serialize, serde::Deserialize),
+    serde(tag = "type")
+)]
 #[derive(Default, Debug, CityGMLElement)]
 pub enum CityObject {
     #[default]

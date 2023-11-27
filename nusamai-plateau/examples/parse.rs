@@ -41,6 +41,8 @@ fn example_toplevel_dispatcher<R: BufRead>(
             // print top-level city object
             // println!("TLCO: {:#?}", toplevel_cityobj);
 
+            println!("{}", serde_json::to_string(&toplevel_cityobj).unwrap());
+
             // serialize to bincode
             let serialized =
                 bincode::serde::encode_to_vec(&toplevel_cityobj, bincode_config).unwrap();

@@ -249,7 +249,7 @@ impl<R: BufRead> SubTreeReader<'_, R> {
 
     fn parse_multi_surface_prop(
         &mut self,
-        geomref: &mut GeometryRef,
+        geomrefs: &mut GeometryRef,
         lod: u8,
     ) -> Result<(), ParseError> {
         let poly_begin = self.state.geometry_collector.multi_polygon.len();
@@ -261,17 +261,17 @@ impl<R: BufRead> SubTreeReader<'_, R> {
 
         let poly_end = self.state.geometry_collector.multi_polygon.len();
         if poly_end - poly_begin > 0 {
-            geomref.entries.push(GeometryRefEntry {
-                geometry_type: GeometryType::Surface,
+            geomrefs.push(GeometryRefEntry {
+                ty: GeometryType::Surface,
                 lod,
-                start_index: poly_begin as u32,
-                size: (poly_end - poly_begin) as u32,
+                pos: poly_begin as u32,
+                len: (poly_end - poly_begin) as u32,
             });
         }
         Ok(())
     }
 
-    fn parse_solid_prop(&mut self, geomref: &mut GeometryRef, lod: u8) -> Result<(), ParseError> {
+    fn parse_solid_prop(&mut self, geomrefs: &mut GeometryRef, lod: u8) -> Result<(), ParseError> {
         let poly_begin = self.state.geometry_collector.multi_polygon.len();
 
         if expect_start(self.reader, &mut self.state.buf1, GML_NS, b"Solid")? {
@@ -281,11 +281,11 @@ impl<R: BufRead> SubTreeReader<'_, R> {
 
         let poly_end = self.state.geometry_collector.multi_polygon.len();
         if poly_end - poly_begin > 0 {
-            geomref.entries.push(GeometryRefEntry {
-                geometry_type: GeometryType::Solid,
+            geomrefs.push(GeometryRefEntry {
+                ty: GeometryType::Solid,
                 lod,
-                start_index: poly_begin as u32,
-                size: (poly_end - poly_begin) as u32,
+                pos: poly_begin as u32,
+                len: (poly_end - poly_begin) as u32,
             });
         }
         Ok(())
@@ -293,7 +293,7 @@ impl<R: BufRead> SubTreeReader<'_, R> {
 
     fn parse_geometry_prop(
         &mut self,
-        geomref: &mut GeometryRef,
+        geomrefs: &mut GeometryRef,
         lod: u8,
     ) -> Result<(), ParseError> {
         loop {
@@ -329,11 +329,11 @@ impl<R: BufRead> SubTreeReader<'_, R> {
 
                     let poly_end = self.state.geometry_collector.multi_polygon.len();
                     if poly_end - poly_begin > 0 {
-                        geomref.entries.push(GeometryRefEntry {
-                            geometry_type: geomtype,
+                        geomrefs.push(GeometryRefEntry {
+                            ty: geomtype,
                             lod,
-                            start_index: poly_begin as u32,
-                            size: (poly_end - poly_begin) as u32,
+                            pos: poly_begin as u32,
+                            len: (poly_end - poly_begin) as u32,
                         });
                     }
                 }
@@ -352,7 +352,7 @@ impl<R: BufRead> SubTreeReader<'_, R> {
 
     fn parse_triangulated_prop(
         &mut self,
-        geomref: &mut GeometryRef,
+        geomrefs: &mut GeometryRef,
         lod: u8,
     ) -> Result<(), ParseError> {
         let poly_begin = self.state.geometry_collector.multi_polygon.len();
@@ -387,11 +387,11 @@ impl<R: BufRead> SubTreeReader<'_, R> {
 
         let poly_end = self.state.geometry_collector.multi_polygon.len();
         if poly_end - poly_begin > 0 {
-            geomref.entries.push(GeometryRefEntry {
-                geometry_type: GeometryType::Triangle,
+            geomrefs.push(GeometryRefEntry {
+                ty: GeometryType::Triangle,
                 lod,
-                start_index: poly_begin as u32,
-                size: (poly_end - poly_begin) as u32,
+                pos: poly_begin as u32,
+                len: (poly_end - poly_begin) as u32,
             });
         }
         Ok(())
