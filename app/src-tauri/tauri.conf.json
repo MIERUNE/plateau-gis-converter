@@ -12,7 +12,9 @@
 	},
 	"tauri": {
 		"allowlist": {
-			"all": false
+			"dialog": {
+				"all": true
+			}
 		},
 		"bundle": {
 			"active": true,
@@ -57,11 +59,11 @@
 			{
 				"fullscreen": false,
 				"height": 600,
-				"resizable":true,
+				"resizable": true,
 				"title": "BRIDGE 都市デジタルツイン・GISコンバータ",
 				"width": 600,
-				"minHeight":600,
-				"minWidth":600
+				"minHeight": 600,
+				"minWidth": 600
 			}
 		]
 	}
