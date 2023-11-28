@@ -319,12 +319,13 @@ fn main() {
     println!("{} {}", mu_lat, mu_lng);
 
     // 三角分割
+    // 要素はどちらも
     let (indices, vertices) = tessellation(&all_mpolys, mu_lng, mu_lat).unwrap();
     // let (_, vertices) = tessellation(&all_mpolys, mu_lng, mu_lat).unwrap();
     // println!("indices {:?}", indices);
     // println!("vertices {:?}", vertices);
-    println!("indices {}", indices.len());
-    println!("vertices {}", vertices.len());
+    // println!("indices {}", indices.len());
+    // println!("vertices {}", vertices.len());
 
     // バイナリバッファを作成
     let mut file = BufWriter::new(fs::File::create("./data/data.bin").unwrap());
@@ -334,11 +335,16 @@ fn main() {
     }
 
     for vertex in &vertices {
+        // println!("vertex: {:?}", vertex);
         for v in vertex {
+            // println!("bit v: {:?}", f32::from_bits(*v));
+            // println!("v: {:?}", v);
+            // glTFのバイナリはリトルエンディアン
             file.write_f32::<LittleEndian>(f32::from_bits(*v)).unwrap();
         }
     }
-    // ファイルをフラッシュ
+
+    // ファイルを書き込み
     let _ = file.flush();
 
     // glTF のモデルを作成
@@ -382,6 +388,9 @@ fn main() {
     accessor1.component_type = ComponentType::UnsignedInt;
     accessor1.count = indices.len() as u32;
     accessor1.type_ = AccessorType::Scalar;
+    let max_indices = indices.iter().max().unwrap();
+    accessor1.max = Some(vec![*max_indices as f32]);
+    accessor1.min = Some(vec![0.0]);
 
     let mut accessor2 = Accessor::new();
     accessor2.buffer_view = Some(1);
@@ -389,20 +398,42 @@ fn main() {
     accessor2.component_type = ComponentType::Float;
     accessor2.count = vertices.len() as u32;
     accessor2.type_ = AccessorType::Vec3;
+    let mut max_vertex: [f32; 3] = [f32::MIN; 3];
+    let mut min_vertex: [f32; 3] = [f32::MAX; 3];
+    for vertex in &vertices {
+        for (i, v) in vertex.iter().enumerate() {
+            let v = f32::from_bits(*v);
+            if v > max_vertex[i] {
+                max_vertex[i] = v;
+            } else if v < min_vertex[i] {
+                min_vertex[i] = v;
+            }
+        }
+    }
+    accessor2.max = Some(max_vertex.to_vec());
+    accessor2.min = Some(min_vertex.to_vec());
 
     gltf.accessors = Some(vec![accessor1, accessor2]);
 
     // glTF のメッシュを作成
     let mut mesh = Mesh::new();
-    let mut primitive = MeshPrimitive::new();
-    primitive.attributes = {
+    let mut primitive1 = MeshPrimitive::new();
+    let mut primitive2 = MeshPrimitive::new();
+    primitive1.indices = Some(0);
+    primitive1.mode = PrimitiveMode::Triangles;
+    primitive1.attributes = {
         let mut map = HashMap::new();
-        map.insert("POSITION".to_string(), 0);
+        map.insert("POSITION".to_string(), 1);
         map
     };
-    primitive.indices = Some(0);
-    primitive.mode = PrimitiveMode::Triangles;
-    mesh.primitives.push(primitive);
+    primitive2.mode = PrimitiveMode::Points;
+    primitive2.attributes = {
+        let mut map = HashMap::new();
+        map.insert("POSITION".to_string(), 1);
+        map
+    };
+
+    mesh.primitives = vec![primitive1, primitive2];
 
     gltf.meshes = Some(vec![mesh]);
 
