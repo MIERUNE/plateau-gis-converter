@@ -55,6 +55,14 @@ pub struct MeshPrimitive {
     pub extras: Option<HashMap<String, Value>>,
 }
 
+impl MeshPrimitive {
+    pub fn new() -> Self {
+        Self {
+            ..Default::default()
+        }
+    }
+}
+
 #[derive(Serialize, Deserialize, Debug, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct MeshPrimitiveExtensions {
@@ -92,4 +100,12 @@ pub struct Mesh {
 pub struct MeshExtensions {
     #[serde(flatten)]
     others: HashMap<String, Value>,
+}
+
+impl Mesh {
+    pub fn new() -> Self {
+        Self {
+            ..Default::default()
+        }
+    }
 }

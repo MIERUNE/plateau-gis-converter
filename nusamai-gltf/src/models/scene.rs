@@ -13,3 +13,11 @@ pub struct Scene {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub nodes: Option<Vec<u32>>,
 }
+
+impl Scene {
+    pub fn new() -> Self {
+        Self {
+            ..Default::default()
+        }
+    }
+}

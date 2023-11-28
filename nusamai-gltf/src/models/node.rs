@@ -63,3 +63,11 @@ pub struct NodeExtensions {
     #[serde(flatten)]
     others: HashMap<String, Value>,
 }
+
+impl Node {
+    pub fn new() -> Self {
+        Self {
+            ..Default::default()
+        }
+    }
+}
