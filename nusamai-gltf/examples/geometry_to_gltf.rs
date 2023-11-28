@@ -1,4 +1,4 @@
-//! CityGMLファイル (.gml) からポリゴンを読み込んで .geojson 形式で出力するデモ
+//! CityGMLファイル (.gml) からポリゴンを読み込んで .glTF 形式で出力するデモ
 //! nusamai-geometry/examples/citygml_polygons.rs を元にしています。
 //!
 //! 使用例:
@@ -319,13 +319,8 @@ fn main() {
     println!("{} {}", mu_lat, mu_lng);
 
     // 三角分割
-    // 要素はどちらも
+    // verticesは頂点の配列だが、u32のビットパターンで格納されている
     let (indices, vertices) = tessellation(&all_mpolys, mu_lng, mu_lat).unwrap();
-    // let (_, vertices) = tessellation(&all_mpolys, mu_lng, mu_lat).unwrap();
-    // println!("indices {:?}", indices);
-    // println!("vertices {:?}", vertices);
-    // println!("indices {}", indices.len());
-    // println!("vertices {}", vertices.len());
 
     // バイナリバッファを作成
     let mut file = BufWriter::new(fs::File::create("./data/data.bin").unwrap());
@@ -335,10 +330,7 @@ fn main() {
     }
 
     for vertex in &vertices {
-        // println!("vertex: {:?}", vertex);
         for v in vertex {
-            // println!("bit v: {:?}", f32::from_bits(*v));
-            // println!("v: {:?}", v);
             // glTFのバイナリはリトルエンディアン
             file.write_f32::<LittleEndian>(f32::from_bits(*v)).unwrap();
         }
