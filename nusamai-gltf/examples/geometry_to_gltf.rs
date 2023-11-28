@@ -446,5 +446,67 @@ fn main() {
 
     // glTF の JSON を出力
     let gltf_string = gltf.to_string().unwrap();
-    fs::write("./data/data.gltf", gltf_string).unwrap();
+    fs::write("./data/data.gltf", &gltf_string).unwrap();
+
+    // glbを作成
+
+    // JSONチャンクをバイナリに変換し、4の倍数に調整
+    let json_chunk = gltf_string.as_bytes();
+    let json_chunk_len = json_chunk.len();
+    let json_chunk_padded = {
+        let mut v = json_chunk.to_vec();
+        while v.len() % 4 != 0 {
+            v.push(0); // 4バイト境界に合わせるために0でパディング
+        }
+        v
+    };
+
+    // JSONチャンクヘッダー
+    // この長さはパディングを含まない元のJSONデータの長さ
+    let json_chunk_header = [
+        json_chunk_len as u32, // パディングなしの長さ
+        0x4E4F534A,            // JSON (リトルエンディアンで "JSON")
+    ];
+
+    // バイナリデータの読み込み
+    let binary_data = fs::read("./data/data.bin").unwrap();
+    let binary_len = binary_data.len();
+
+    // バイナリチャンクヘッダー
+    let bin_chunk_header = [
+        binary_len as u32,
+        0x004E4942, // BIN (リトルエンディアンで "BIN")
+    ];
+
+    // ファイル全体の長さ
+    // この長さはパディングを含む
+    let total_length = 12 + 8 + json_chunk_padded.len() + 8 + binary_len;
+
+    // GLBヘッダー
+    let glb_header = [
+        0x46546C67, // glTF (リトルエンディアンで "glTF")
+        2,
+        total_length as u32, // ファイル全体の長さ
+    ];
+
+    // ファイルを作成
+    let mut file = BufWriter::new(fs::File::create("./data/data.glb").unwrap());
+
+    // ヘッダーの書き込み
+    file.write_all(&glb_header[0].to_le_bytes());
+    file.write_all(&glb_header[1].to_le_bytes());
+    file.write_all(&glb_header[2].to_le_bytes());
+
+    // JSONチャンクの書き込み
+    file.write_u32::<LittleEndian>(json_chunk_header[0]);
+    file.write_u32::<LittleEndian>(json_chunk_header[1]);
+    file.write_all(&json_chunk_padded);
+
+    // バイナリチャンクの書き込み
+    file.write_u32::<LittleEndian>(bin_chunk_header[0]);
+    file.write_u32::<LittleEndian>(bin_chunk_header[1]);
+    file.write_all(&binary_data);
+
+    // ファイルのフラッシュ
+    file.flush();
 }
