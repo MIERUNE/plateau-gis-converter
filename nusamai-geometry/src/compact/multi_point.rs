@@ -3,6 +3,7 @@ use std::borrow::Cow;
 use super::CoordNum;
 
 /// Computer-friendly MultiPoint
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Debug, Clone, Default)]
 pub struct MultiPoint<'a, const D: usize, T: CoordNum = f64> {
     /// すべての Point の座標データを連結したもの
