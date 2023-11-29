@@ -18,7 +18,7 @@ fn main() -> io::Result<()> {
         extras: None,
     };
 
-    let mut gltf = Gltf {
+    let mut gltf = GLTF {
         extensions_used: None,
         extensions_required: None,
         accessors: None,

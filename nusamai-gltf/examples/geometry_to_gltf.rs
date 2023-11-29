@@ -340,7 +340,7 @@ fn main() {
     let _ = file.flush();
 
     // glTF のモデルを作成
-    let mut gltf = Gltf::new();
+    let mut gltf = GLTF::new();
 
     // glTF のアセットを作成
     let mut asset = Asset::new();
