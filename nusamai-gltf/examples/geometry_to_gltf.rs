@@ -513,6 +513,7 @@ fn main() {
     //
     // ここから先は glb 形式での出力を行う。
 
+    // 中心の経緯度を求める
     let (mu_lat, mu_lng) = calc_center(&all_mpolys);
 
     // 三角分割
@@ -523,7 +524,6 @@ fn main() {
     let gltf_string = make_gltf_json(&indices, &vertices);
 
     // glbを作成
-
     let glb = make_glb(gltf_string, indices, vertices);
 
     // ファイルを作成
