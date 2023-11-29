@@ -5,7 +5,7 @@
 //!
 //! ```bash
 //! cargo run --example geometry_to_gltf --release -- ~/path/to/PLATEAU/22203_numazu-shi_2021_citygml_4_op/udx/*/52385628_*_6697_op.gml
-//! ````
+//! ```
 //!
 //! このXMLのパース方法は本格的なパーザで使うことを意図していません。
 
