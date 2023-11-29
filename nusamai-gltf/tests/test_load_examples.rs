@@ -6,7 +6,7 @@ fn load_examples() {
         let path = path.unwrap();
         println!("loading {:?}", path);
         let src = std::fs::read_to_string(path).unwrap();
-        let a: GLTF = serde_json::from_str(&src).unwrap();
+        let a: Gltf = serde_json::from_str(&src).unwrap();
         println!("{:?}", a);
 
         // 'null' should not appear in output
