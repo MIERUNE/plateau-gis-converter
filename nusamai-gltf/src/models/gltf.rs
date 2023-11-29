@@ -11,7 +11,7 @@ use serde_json::Value;
 #[derive(Serialize, Deserialize, Debug, Default)]
 #[serde(rename_all = "camelCase")]
 #[serde(deny_unknown_fields)]
-pub struct GLTF {
+pub struct Gltf {
     /// Names of glTF extensions used in this asset.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub extensions_used: Option<Vec<String>>,
@@ -95,7 +95,7 @@ pub struct GLTFExtensions {
     others: HashMap<String, Value>,
 }
 
-impl GLTF {
+impl Gltf {
     pub fn new() -> Self {
         Default::default()
     }
