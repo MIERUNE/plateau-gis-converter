@@ -482,6 +482,7 @@ fn calc_center(all_mpolys: &Vec<nusamai_geometry::MultiPolygon<'_, 3>>) -> (f64,
     println!("{} {}", mu_lat, mu_lng);
     (mu_lat, mu_lng)
 }
+
 fn main() {
     let args = Args::parse();
 
