@@ -13,7 +13,7 @@ use byteorder::{LittleEndian, WriteBytesExt};
 use clap::Parser;
 use earcut_rs::{utils_3d::project3d_to_2d, Earcut};
 use indexmap::IndexSet;
-use nusamai_geometry::MultiPolygon3;
+use nusamai_geometry::{Geometry, MultiPolygon3};
 use nusamai_gltf::*;
 use quick_xml::{
     events::Event,
@@ -507,6 +507,14 @@ fn main() {
                 }
             },
         };
+    }
+
+    for geometry in all_mpolys.iter() {
+        match geometry {
+            Geometry::MultiPolygon(_) => {
+                println!("MultiPolygon");
+            }
+        }
     }
 
     // NOTE: この時点で MultiPolygon にジオメトリデータが詰め込まれている状態
