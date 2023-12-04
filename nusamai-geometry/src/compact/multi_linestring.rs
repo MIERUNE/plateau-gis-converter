@@ -86,6 +86,26 @@ impl<'a, const D: usize, T: CoordNum> MultiLineString<'a, D, T> {
         }
         self.all_coords.to_mut().extend(iter.into_iter().flatten());
     }
+
+    /// Create a new multipolygon by applying the given transformation to all coordinates in the MultiLineString.
+    pub fn transform(&self, f: impl Fn(&[T; D]) -> [T; D]) -> Self {
+        Self {
+            all_coords: self
+                .all_coords
+                .chunks_exact(D)
+                .flat_map(|v| f(&v.try_into().unwrap()))
+                .collect(),
+            ..self.clone()
+        }
+    }
+
+    /// Applies the given transformation to all coordinates in the MultiLineString.
+    pub fn transform_inplace(&mut self, f: impl Fn(&[T; D]) -> [T; D]) {
+        self.all_coords.to_mut().chunks_exact_mut(D).for_each(|c| {
+            let transformed = f(&c.try_into().unwrap());
+            c.copy_from_slice(&transformed);
+        });
+    }
 }
 
 impl<'a, const D: usize, T: CoordNum> IntoIterator for &'a MultiLineString<'_, D, T> {
@@ -193,6 +213,29 @@ mod tests {
                 2 => assert_eq!(line.coords(), &[6., 6., 7., 7., 8., 8., 9., 9.]),
                 _ => unreachable!(),
             }
+        }
+    }
+
+    #[test]
+    fn test_transform() {
+        {
+            let mut mlines: MultiLineString<'_, 2> = MultiLineString2::new();
+            mlines.add_linestring([[0., 0.], [5., 0.], [5., 5.], [0., 5.]]);
+            let new_mlines = mlines.transform(|[x, y]| [x + 2., y + 1.]);
+            assert_eq!(
+                new_mlines.iter().next().unwrap().coords(),
+                [2., 1., 7., 1., 7., 6., 2., 6.]
+            );
+        }
+
+        {
+            let mut mlines = MultiLineString2::new();
+            mlines.add_linestring([[0., 0.], [5., 0.], [5., 5.], [0., 5.]]);
+            mlines.transform_inplace(|[x, y]| [x + 2., y + 1.]);
+            assert_eq!(
+                mlines.iter().next().unwrap().coords(),
+                [2., 1., 7., 1., 7., 6., 2., 6.]
+            );
         }
     }
 
