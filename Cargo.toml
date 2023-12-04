@@ -3,6 +3,7 @@
 members = [
     "nusamai-geometry",
     "nusamai-geojson",
+    "nusamai-plateau",
     "app/src-tauri"
 ]
 resolver = "2"
