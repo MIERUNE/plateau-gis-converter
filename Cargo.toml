@@ -1,9 +1,10 @@
 [workspace]
 
 members = [
+    "app/src-tauri",
     "nusamai-geometry",
     "nusamai-geojson",
     "nusamai-plateau",
-    "app/src-tauri"
+    "nusamai-mvt",
 ]
 resolver = "2"
