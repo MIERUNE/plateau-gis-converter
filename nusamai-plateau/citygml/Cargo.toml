@@ -1,0 +1,16 @@
+[package]
+name = "citygml"
+version = "0.1.0"
+edition = "2021"
+
+[features]
+default = ["serde"]
+serde = ["dep:serde", "nusamai-geometry/serde"]
+
+[dependencies]
+indexmap = "2.1"
+macros = { path = "./macros" }
+nusamai-geometry = { path = "../../nusamai-geometry", features = ["serde"]}
+quick-xml = "0.31"
+serde = { version = "1.0", features = ["derive"], optional = true }
+thiserror = "1.0"
