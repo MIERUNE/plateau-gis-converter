@@ -13,7 +13,7 @@ use byteorder::{LittleEndian, WriteBytesExt};
 use clap::Parser;
 use earcut_rs::{utils_3d::project3d_to_2d, Earcut};
 use indexmap::IndexSet;
-use nusamai_geometry::{Geometry, MultiPolygon3};
+use nusamai_geometry::MultiPolygon3;
 use nusamai_gltf::*;
 use quick_xml::{
     events::Event,
@@ -327,19 +327,19 @@ fn make_glb(gltf_string: String, indices: Vec<u32>, vertices: IndexSet<[u32; 3]>
     let mut glb = Vec::new();
 
     // ヘッダーの書き込み
-    glb.write_all(&glb_header[0].to_le_bytes());
-    glb.write_all(&glb_header[1].to_le_bytes());
-    glb.write_all(&glb_header[2].to_le_bytes());
+    let _ = glb.write_all(&glb_header[0].to_le_bytes());
+    let _ = glb.write_all(&glb_header[1].to_le_bytes());
+    let _ = glb.write_all(&glb_header[2].to_le_bytes());
 
     // JSONチャンクの書き込み
-    glb.write_u32::<LittleEndian>(json_chunk_header[0]);
-    glb.write_u32::<LittleEndian>(json_chunk_header[1]);
-    glb.write_all(&json_chunk_padded);
+    let _ = glb.write_u32::<LittleEndian>(json_chunk_header[0]);
+    let _ = glb.write_u32::<LittleEndian>(json_chunk_header[1]);
+    let _ = glb.write_all(&json_chunk_padded);
 
     // バイナリチャンクの書き込み
-    glb.write_u32::<LittleEndian>(bin_chunk_header[0]);
-    glb.write_u32::<LittleEndian>(bin_chunk_header[1]);
-    glb.write_all(&binary_data);
+    let _ = glb.write_u32::<LittleEndian>(bin_chunk_header[0]);
+    let _ = glb.write_u32::<LittleEndian>(bin_chunk_header[1]);
+    let _ = glb.write_all(&binary_data);
 
     glb
 }
@@ -451,9 +451,8 @@ fn make_gltf_json(indices: &Vec<u32>, vertices: &IndexSet<[u32; 3]>) -> String {
     gltf.scene = Some(0);
 
     // glTF の JSON を出力
-    let gltf_string = gltf.to_string().unwrap();
     // fs::write("./data/data.gltf", &gltf_string).unwrap();
-    gltf_string
+    gltf.to_string().unwrap()
 }
 
 fn calc_center(all_mpolys: &Vec<nusamai_geometry::MultiPolygon<'_, 3>>) -> (f64, f64) {
@@ -509,14 +508,6 @@ fn main() {
         };
     }
 
-    for geometry in all_mpolys.iter() {
-        match geometry {
-            Geometry::MultiPolygon(_) => {
-                println!("MultiPolygon");
-            }
-        }
-    }
-
     // NOTE: この時点で MultiPolygon にジオメトリデータが詰め込まれている状態
     //
     // ここから先は glb 形式での出力を行う。
@@ -538,6 +529,6 @@ fn main() {
     let mut file = BufWriter::new(fs::File::create("./data/data.glb").unwrap());
 
     // ファイルの書き込み
-    file.write_all(&glb.as_slice());
-    file.flush();
+    let _ = file.write_all(glb.as_slice());
+    let _ = file.flush();
 }
