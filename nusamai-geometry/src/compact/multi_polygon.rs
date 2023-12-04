@@ -204,7 +204,7 @@ impl<'a, const D: usize, T: CoordNum> MultiPolygon<'a, D, T> {
         }
     }
 
-    /// Create a new multipolygon by applying the given transformation to all coordinates in the MultiPolygon.
+    /// Create a new MultiPolygon by applying the given transformation to all coordinates.
     pub fn transform(&self, f: impl Fn(&[T; D]) -> [T; D]) -> Self {
         Self {
             all_coords: self

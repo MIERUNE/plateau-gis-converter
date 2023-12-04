@@ -87,7 +87,7 @@ impl<'a, const D: usize, T: CoordNum> MultiLineString<'a, D, T> {
         self.all_coords.to_mut().extend(iter.into_iter().flatten());
     }
 
-    /// Create a new multipolygon by applying the given transformation to all coordinates in the MultiLineString.
+    /// Create a new MultiLineString by applying the given transformation to all coordinates.
     pub fn transform(&self, f: impl Fn(&[T; D]) -> [T; D]) -> Self {
         Self {
             all_coords: self

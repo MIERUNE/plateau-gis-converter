@@ -58,7 +58,7 @@ impl<'a, const D: usize, T: CoordNum> MultiPoint<'a, D, T> {
         self.coords.to_mut().clear();
     }
 
-    /// Create a new multipolygon by applying the given transformation to all coordinates in the MultiPoint.
+    /// Create a new MultiPoint by applying the given transformation to all coordinates.
     pub fn transform(&self, f: impl Fn(&[T; D]) -> [T; D]) -> Self {
         Self {
             coords: self
@@ -156,7 +156,7 @@ mod tests {
     #[test]
     fn test_transform() {
         {
-            let mut mpoints = MultiPoint2::from_raw([0., 0., 5., 0., 5., 5., 0., 5.][..].into());
+            let mpoints = MultiPoint2::from_raw([0., 0., 5., 0., 5., 5., 0., 5.][..].into());
             let new_mpoints = mpoints.transform(|[x, y]| [x + 2., y + 1.]);
             assert_eq!(new_mpoints.coords(), [2., 1., 7., 1., 7., 6., 2., 6.]);
         }
