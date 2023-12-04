@@ -29,7 +29,7 @@
 				"icons/icon.icns",
 				"icons/icon.ico"
 			],
-			"identifier": "mierune.tauri.dev",
+			"identifier": "jp.co.mierune.nusamai",
 			"longDescription": "",
 			"macOS": {
 				"entitlements": null,
