@@ -44,11 +44,11 @@ mod tests {
 
     #[test]
     fn null_island() {
-        {
-            let (lng, lat) = (0., 0.);
-            let (mx, my) = lnglat_to_web_mercator(lng, lat);
-            assert!((mx - 0.5).abs() < 1e-10);
-            assert!((my - 0.5).abs() < 1e-10);
-        }
+        // https://en.wikipedia.org/wiki/Null_Island
+        // (lng: 0, lat: 0) -> (mx: 0.5, my: 0.5)
+        let (lng, lat) = (0., 0.);
+        let (mx, my) = lnglat_to_web_mercator(lng, lat);
+        assert!((mx - 0.5).abs() < 1e-10);
+        assert!((my - 0.5).abs() < 1e-10);
     }
 }
