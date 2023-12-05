@@ -397,7 +397,6 @@ fn make_gltf_json(triangle: Triangles) -> String {
     // glTF のメッシュを作成
     let mut mesh = Mesh::new();
     let mut primitive1 = MeshPrimitive::new();
-    let mut primitive2 = MeshPrimitive::new();
     primitive1.indices = Some(0);
     primitive1.mode = PrimitiveMode::Triangles;
     primitive1.attributes = {
@@ -405,14 +404,8 @@ fn make_gltf_json(triangle: Triangles) -> String {
         map.insert("POSITION".to_string(), 1);
         map
     };
-    primitive2.mode = PrimitiveMode::Points;
-    primitive2.attributes = {
-        let mut map = HashMap::new();
-        map.insert("POSITION".to_string(), 1);
-        map
-    };
 
-    mesh.primitives = vec![primitive1, primitive2];
+    mesh.primitives = vec![primitive1];
 
     gltf.meshes = Some(vec![mesh]);
 
