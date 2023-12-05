@@ -20,7 +20,7 @@ use quick_xml::{
     name::{Namespace, ResolveResult::Bound},
     reader::NsReader,
 };
-use std::{clone::Clone, collections::HashMap, fs};
+use std::{clone::Clone, collections::HashMap, default::Default, fs};
 use std::{
     io::{BufWriter, Write},
     usize,
@@ -216,7 +216,7 @@ struct FeatureCollection {
     pub features: Vec<Feature>,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 struct Triangles {
     pub indices: Vec<u32>,
     pub vertices: IndexSet<[u32; 3]>,
@@ -224,6 +224,16 @@ struct Triangles {
     pub vertex_normals: Option<Vec<f32>>,
     pub vertex_colors: Option<Vec<f32>>,
     pub metadata: Option<HashMap<String, serde_json::Value>>,
+}
+
+impl Triangles {
+    pub fn new(indices: Vec<u32>, vertices: IndexSet<[u32; 3]>) -> Self {
+        Self {
+            indices,
+            vertices,
+            ..Default::default()
+        }
+    }
 }
 
 fn tessellation(
@@ -277,7 +287,7 @@ fn tessellation(
         }
     }
 
-    return Ok(Triangles { indices, vertices });
+    return Ok(Triangles::new(indices, vertices));
 }
 
 #[derive(Parser)]
