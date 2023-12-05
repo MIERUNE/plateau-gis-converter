@@ -212,6 +212,93 @@ struct Feature {
     pub geometries: MultiPolygon3<'static>,
 }
 
+impl Feature {
+    pub fn new(
+        properties: HashMap<String, serde_json::Value>,
+        geometries: MultiPolygon3<'static>,
+    ) -> Self {
+        Self {
+            properties,
+            geometries,
+        }
+    }
+
+    fn calc_center(&self) -> (f64, f64) {
+        // 中心の経緯度を求める
+        let (mu_lat, mu_lng) = {
+            let (mut mu_lat, mut mu_lng) = (0.0, 0.0);
+            let mut num_features = 0;
+
+            let (mut feat_mu_lng, mut feat_mu_lat) = (0.0, 0.0);
+            let mut num_verts = 0;
+            for poly in &self.geometries {
+                for v in poly.coords().chunks_exact(3) {
+                    num_verts += 1;
+                    feat_mu_lng += v[0];
+                    feat_mu_lat += v[1];
+                }
+            }
+            if num_verts > 0 {
+                num_features += 1;
+                mu_lat += feat_mu_lng / num_verts as f64;
+                mu_lng += feat_mu_lat / num_verts as f64;
+            }
+
+            (mu_lat / num_features as f64, mu_lng / num_features as f64)
+        };
+
+        (mu_lat, mu_lng)
+    }
+
+    pub fn to_triangles(&self) -> Result<Triangles, Box<dyn std::error::Error>> {
+        let mut earcutter = Earcut::new();
+        let mut buf3d: Vec<f64> = Vec::new();
+        let mut buf2d: Vec<f64> = Vec::new();
+        let mut triangles_out: Vec<u32> = Vec::new();
+
+        let mut indices: Vec<u32> = Vec::new();
+        let mut vertices: IndexSet<[u32; 3]> = IndexSet::new();
+
+        let (mu_lat, mu_lng) = self.calc_center();
+
+        for mpoly in self.geometries.iter() {
+            let num_outer = match mpoly.hole_indices().first() {
+                Some(&v) => v as usize,
+                None => mpoly.coords().len() / 3,
+            };
+
+            buf3d.clear();
+            buf3d.extend(mpoly.coords().chunks_exact(3).flat_map(|v| {
+                let (lat, lng) = (v[0], v[1]);
+                [
+                    (lng - mu_lng) * (10000000. * lat.to_radians().cos() / 90.),
+                    (lat - mu_lat) * (10000000. / 90.),
+                    v[2],
+                ]
+            }));
+
+            if project3d_to_2d(&buf3d, num_outer, &mut buf2d) {
+                // earcut
+                earcutter.earcut(&buf2d, mpoly.hole_indices(), 2, &mut triangles_out);
+                // indices and vertices
+                indices.extend(triangles_out.iter().map(|idx| {
+                    let vbits = [
+                        (buf3d[*idx as usize * 3] as f32).to_bits(),
+                        (buf3d[*idx as usize * 3 + 1] as f32).to_bits(),
+                        (buf3d[*idx as usize * 3 + 2] as f32).to_bits(),
+                    ];
+                    let (index, _) = vertices.insert_full(vbits);
+                    index as u32
+                }));
+            } else {
+                println!("WARN: polygon does not have normal");
+            }
+        }
+
+        return Ok(Triangles::new(indices, vertices));
+    }
+}
+
 struct FeatureCollection {
     pub features: Vec<Feature>,
 }
@@ -223,6 +310,7 @@ struct Triangles {
     pub face_normals: Option<Vec<f32>>,
     pub vertex_normals: Option<Vec<f32>>,
     pub vertex_colors: Option<Vec<f32>>,
+    pub vertex_ids: Option<Vec<u64>>,
     pub metadata: Option<HashMap<String, serde_json::Value>>,
 }
 
@@ -534,6 +622,24 @@ fn main() {
             },
         };
     }
+
+    // FeatureCollectionを作成
+    let feature_collection = FeatureCollection {
+        features: all_mpolys
+            .iter()
+            .map(|mpoly| Feature::new(HashMap::new(), mpoly.clone()))
+            .collect(),
+    };
+
+    // FeatureCollection内のFeatureを個別に三角形に変換し、Vecに格納
+    let triangles = feature_collection
+        .features
+        .iter()
+        .map(|feature| feature.to_triangles().unwrap())
+        .collect::<Vec<_>>();
+
+    // 最初の要素を取り出してprint
+    println!("{:?}", triangles[0]);
 
     // NOTE: この時点で MultiPolygon にジオメトリデータが詰め込まれている状態
     //
