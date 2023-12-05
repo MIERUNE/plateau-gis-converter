@@ -220,7 +220,7 @@ fn tessellation(
     mpolys: &[MultiPolygon3],
     mu_lng: f64,
     mu_lat: f64,
-) -> Result<Triangles, Box<dyn std::error::Error>> {
+) -> Result<Triangles<[u32; 3]>, Box<dyn std::error::Error>> {
     let mut earcutter = Earcut::new();
     let mut buf3d: Vec<f64> = Vec::new();
     let mut buf2d: Vec<f64> = Vec::new();
@@ -333,7 +333,7 @@ fn make_glb(gltf_string: String, binary_buffer: Vec<u8>) -> Vec<u8> {
     glb
 }
 
-fn make_gltf_json(triangle: Triangles) -> String {
+fn make_gltf_json(triangle: Triangles<[u32; 3]>) -> String {
     let (indices, vertices) = triangle;
 
     // glTF のモデルを作成
@@ -464,7 +464,7 @@ fn calc_center(all_mpolys: &Vec<nusamai_geometry::MultiPolygon<'_, 3>>) -> (f64,
     (mu_lat, mu_lng)
 }
 
-fn make_binary_buffer(triangle: Triangles) -> Vec<u8> {
+fn make_binary_buffer(triangle: Triangles<[u32; 3]>) -> Vec<u8> {
     let (indices, vertices) = triangle;
 
     let mut indices_buf = Vec::new();
