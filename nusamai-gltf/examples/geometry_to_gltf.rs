@@ -20,8 +20,11 @@ use quick_xml::{
     name::{Namespace, ResolveResult::Bound},
     reader::NsReader,
 };
-use std::io::{BufWriter, Write};
-use std::{collections::HashMap, fs};
+use std::{clone::Clone, collections::HashMap, fs};
+use std::{
+    io::{BufWriter, Write},
+    usize,
+};
 use thiserror::Error;
 
 const GML_NS: Namespace = Namespace(b"http://www.opengis.net/gml");
@@ -206,16 +209,21 @@ fn parse_body(reader: &mut NsReader<&[u8]>) -> Result<Vec<MultiPolygon3<'static>
 
 struct Feature {
     pub properties: HashMap<String, serde_json::Value>,
-    pub geometry: MultiPolygon3<'static>,
+    pub geometries: MultiPolygon3<'static>,
 }
 
 struct FeatureCollection {
     pub features: Vec<Feature>,
 }
 
+#[derive(Debug, Clone)]
 struct Triangles {
     pub indices: Vec<u32>,
     pub vertices: IndexSet<[u32; 3]>,
+    pub face_normals: Option<Vec<f32>>,
+    pub vertex_normals: Option<Vec<f32>>,
+    pub vertex_colors: Option<Vec<f32>>,
+    pub metadata: Option<HashMap<String, serde_json::Value>>,
 }
 
 fn tessellation(
@@ -230,8 +238,10 @@ fn tessellation(
 
     let mut indices: Vec<u32> = Vec::new();
     let mut vertices: IndexSet<[u32; 3]> = IndexSet::new();
+    let mut feature_ids: Vec<u32> = Vec::new();
 
-    for mpoly in mpolys {
+    for (index, mpoly) in mpolys.iter().enumerate() {
+        let feature_id = index as u32;
         for poly in mpoly {
             let num_outer = match poly.hole_indices().first() {
                 Some(&v) => v as usize,
@@ -521,6 +531,9 @@ fn main() {
 
     // 中心の経緯度を求める
     let (mu_lat, mu_lng) = calc_center(&all_mpolys);
+
+    // todo: 実装を進める
+    // テッセレーションのタイミングで頂点IDを振っていくしかないと思う
 
     // 三角分割
     // verticesは頂点の配列だが、u32のビットパターンで格納されている
