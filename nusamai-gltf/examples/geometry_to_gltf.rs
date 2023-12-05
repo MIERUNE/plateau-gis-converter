@@ -323,7 +323,9 @@ fn make_glb(gltf_string: String, binary_buffer: Vec<u8>) -> Vec<u8> {
     glb
 }
 
-fn make_gltf_json(indices: &Vec<u32>, vertices: &IndexSet<[u32; 3]>) -> String {
+fn make_gltf_json(triangle: Triangles) -> String {
+    let (indices, vertices) = triangle;
+
     // glTF のモデルを作成
     let mut gltf = Gltf::new();
 
@@ -459,7 +461,9 @@ fn calc_center(all_mpolys: &Vec<nusamai_geometry::MultiPolygon<'_, 3>>) -> (f64,
     (mu_lat, mu_lng)
 }
 
-fn make_binary_buffer(indices: Vec<u32>, vertices: IndexSet<[u32; 3]>) -> Vec<u8> {
+fn make_binary_buffer(triangle: Triangles) -> Vec<u8> {
+    let (indices, vertices) = triangle;
+
     let mut indices_buf = Vec::new();
     let mut vertices_buf = Vec::new();
 
@@ -516,11 +520,11 @@ fn main() {
     let (indices, vertices) = tessellation(&all_mpolys, mu_lng, mu_lat).unwrap();
 
     // バイナリバッファを作成
-    let binary_buffer = make_binary_buffer(indices.clone(), vertices.clone());
+    let binary_buffer = make_binary_buffer((indices.clone(), vertices.clone()));
     fs::write("./data/data.bin", &binary_buffer).unwrap();
 
     // glTFのJSON文字列を作成
-    let gltf_string = make_gltf_json(&indices, &vertices);
+    let gltf_string = make_gltf_json((indices.clone(), vertices.clone()));
     fs::write("./data/data.gltf", &gltf_string).unwrap();
 
     // glbを作成
