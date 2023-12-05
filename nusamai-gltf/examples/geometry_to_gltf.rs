@@ -264,7 +264,7 @@ struct Args {
     filenames: Vec<String>,
 }
 
-fn make_glb(gltf_string: String, indices: Vec<u32>, vertices: IndexSet<[u32; 3]>) -> Vec<u8> {
+fn make_glb(gltf_string: String, binary_buffer: Vec<u8>) -> Vec<u8> {
     // JSONチャンクをバイナリに変換し、4の倍数に調整
     let json_chunk = gltf_string.as_bytes();
     let json_chunk_len = json_chunk.len();
@@ -283,28 +283,7 @@ fn make_glb(gltf_string: String, indices: Vec<u32>, vertices: IndexSet<[u32; 3]>
         0x4E4F534A,            // JSON (リトルエンディアンで "JSON")
     ];
 
-    // バイナリデータの読み込み
-    // let binary_data = fs::read("./data/data.bin").unwrap();
-
-    // indicesとverticesをファイルに書き込まずメモリ上に保持する
-    let mut indices_buf = Vec::new();
-    let mut vertices_buf = Vec::new();
-
-    // glTFのバイナリはリトルエンディアン
-    for index in &indices {
-        indices_buf.write_u32::<LittleEndian>(*index).unwrap();
-    }
-
-    for vertex in &vertices {
-        for v in vertex {
-            vertices_buf
-                .write_f32::<LittleEndian>(f32::from_bits(*v))
-                .unwrap();
-        }
-    }
-
-    let binary_data = [&indices_buf[..], &vertices_buf[..]].concat();
-    let binary_len = indices_buf.len() + vertices_buf.len();
+    let binary_len = binary_buffer.len();
 
     // バイナリチャンクヘッダー
     let bin_chunk_header = [
@@ -339,7 +318,7 @@ fn make_glb(gltf_string: String, indices: Vec<u32>, vertices: IndexSet<[u32; 3]>
     // バイナリチャンクの書き込み
     let _ = glb.write_u32::<LittleEndian>(bin_chunk_header[0]);
     let _ = glb.write_u32::<LittleEndian>(bin_chunk_header[1]);
-    let _ = glb.write_all(&binary_data);
+    let _ = glb.write_all(&binary_buffer);
 
     glb
 }
@@ -450,8 +429,6 @@ fn make_gltf_json(indices: &Vec<u32>, vertices: &IndexSet<[u32; 3]>) -> String {
     // glTF のシーンを設定
     gltf.scene = Some(0);
 
-    // glTF の JSON を出力
-    // fs::write("./data/data.gltf", &gltf_string).unwrap();
     gltf.to_string().unwrap()
 }
 
@@ -482,6 +459,25 @@ fn calc_center(all_mpolys: &Vec<nusamai_geometry::MultiPolygon<'_, 3>>) -> (f64,
     (mu_lat, mu_lng)
 }
 
+fn make_binary_buffer(indices: Vec<u32>, vertices: IndexSet<[u32; 3]>) -> Vec<u8> {
+    let mut indices_buf = Vec::new();
+    let mut vertices_buf = Vec::new();
+
+    // glTFのバイナリはリトルエンディアン
+    for index in &indices {
+        indices_buf.write_u32::<LittleEndian>(*index).unwrap();
+    }
+
+    for vertex in &vertices {
+        for v in vertex {
+            vertices_buf
+                .write_f32::<LittleEndian>(f32::from_bits(*v))
+                .unwrap();
+        }
+    }
+
+    [&indices_buf[..], &vertices_buf[..]].concat()
+}
 fn main() {
     let args = Args::parse();
 
@@ -519,11 +515,16 @@ fn main() {
     // verticesは頂点の配列だが、u32のビットパターンで格納されている
     let (indices, vertices) = tessellation(&all_mpolys, mu_lng, mu_lat).unwrap();
 
+    // バイナリバッファを作成
+    let binary_buffer = make_binary_buffer(indices.clone(), vertices.clone());
+    fs::write("./data/data.bin", &binary_buffer).unwrap();
+
     // glTFのJSON文字列を作成
     let gltf_string = make_gltf_json(&indices, &vertices);
+    fs::write("./data/data.gltf", &gltf_string).unwrap();
 
     // glbを作成
-    let glb = make_glb(gltf_string, indices, vertices);
+    let glb = make_glb(gltf_string, binary_buffer);
 
     // ファイルを作成
     let mut file = BufWriter::new(fs::File::create("./data/data.glb").unwrap());
