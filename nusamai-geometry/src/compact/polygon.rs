@@ -89,6 +89,26 @@ impl<'a, const D: usize, T: CoordNum> Polygon<'a, D, T> {
         }
         self.coords.to_mut().extend(iter.into_iter().flatten());
     }
+
+    /// Create a new Polygon by applying the given transformation to all coordinates.
+    pub fn transform(&self, f: impl Fn(&[T; D]) -> [T; D]) -> Self {
+        Self {
+            coords: self
+                .coords
+                .chunks_exact(D)
+                .flat_map(|v| f(&v.try_into().unwrap()))
+                .collect(),
+            ..self.clone()
+        }
+    }
+
+    /// Applies the given transformation to all coordinates in the Polygon.
+    pub fn transform_inplace(&mut self, f: impl Fn(&[T; D]) -> [T; D]) {
+        self.coords.to_mut().chunks_exact_mut(D).for_each(|c| {
+            let transformed = f(&c.try_into().unwrap());
+            c.copy_from_slice(&transformed);
+        });
+    }
 }
 
 #[cfg(test)]
@@ -174,6 +194,26 @@ mod tests {
         polygon.add_ring([[0.0, 0.0], [1.0, 0.0], [0.0, 1.0]]);
         assert_eq!(polygon.exterior().len(), 3);
         assert_eq!(polygon.interiors().count(), 1);
+    }
+
+    #[test]
+    fn test_transform() {
+        {
+            let mut poly: Polygon<'_, 2> = Polygon2::new();
+            poly.add_ring([[0., 0.], [5., 0.], [5., 5.], [0., 5.]]);
+            let new_poly = poly.transform(|[x, y]| [x + 2., y + 1.]);
+            assert_eq!(
+                new_poly.exterior().coords(),
+                [2., 1., 7., 1., 7., 6., 2., 6.]
+            );
+        }
+
+        {
+            let mut poly = Polygon2::new();
+            poly.add_ring([[0., 0.], [5., 0.], [5., 5.], [0., 5.]]);
+            poly.transform_inplace(|[x, y]| [x + 2., y + 1.]);
+            assert_eq!(poly.exterior().coords(), [2., 1., 7., 1., 7., 6., 2., 6.]);
+        }
     }
 
     /// Currently, it does not check whether the exterior is valid (have at least three vertices) or not

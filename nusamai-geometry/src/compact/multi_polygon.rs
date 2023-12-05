@@ -203,6 +203,26 @@ impl<'a, const D: usize, T: CoordNum> MultiPolygon<'a, D, T> {
             self.all_coords.to_mut().truncate(tail - D);
         }
     }
+
+    /// Create a new MultiPolygon by applying the given transformation to all coordinates.
+    pub fn transform(&self, f: impl Fn(&[T; D]) -> [T; D]) -> Self {
+        Self {
+            all_coords: self
+                .all_coords
+                .chunks_exact(D)
+                .flat_map(|v| f(&v.try_into().unwrap()))
+                .collect(),
+            ..self.clone()
+        }
+    }
+
+    /// Applies the given transformation to all coordinates in the MultiPolygon.
+    pub fn transform_inplace(&mut self, f: impl Fn(&[T; D]) -> [T; D]) {
+        self.all_coords.to_mut().chunks_exact_mut(D).for_each(|c| {
+            let transformed = f(&c.try_into().unwrap());
+            c.copy_from_slice(&transformed);
+        });
+    }
 }
 
 impl<'a, const D: usize, T: CoordNum> IntoIterator for &'a MultiPolygon<'_, D, T> {
@@ -327,6 +347,23 @@ mod tests {
             [4, 8, 4, 4][..].into(),
             [2, 3][..].into(),
         );
+    }
+
+    #[test]
+    fn test_transform() {
+        {
+            let mut mpoly = MultiPolygon2::new();
+            mpoly.add_exterior([[0., 0.], [5., 0.], [5., 5.], [0., 5.]]);
+            let new_mpoly = mpoly.transform(|[x, y]| [x + 2., y + 1.]);
+            assert_eq!(new_mpoly.get(0).coords(), [2., 1., 7., 1., 7., 6., 2., 6.]);
+        }
+
+        {
+            let mut mpoly = MultiPolygon2::new();
+            mpoly.add_exterior([[0., 0.], [5., 0.], [5., 5.], [0., 5.]]);
+            mpoly.transform_inplace(|[x, y]| [x + 2., y + 1.]);
+            assert_eq!(mpoly.get(0).coords(), [2., 1., 7., 1., 7., 6., 2., 6.]);
+        }
     }
 
     #[test]
