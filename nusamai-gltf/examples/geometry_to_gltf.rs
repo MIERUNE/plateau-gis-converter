@@ -205,7 +205,6 @@ fn parse_body(reader: &mut NsReader<&[u8]>) -> Result<Vec<MultiPolygon3<'static>
 }
 
 struct Feature {
-    pub id: String,
     pub properties: HashMap<String, serde_json::Value>,
     pub geometry: MultiPolygon3<'static>,
 }
