@@ -204,7 +204,7 @@ fn parse_body(reader: &mut NsReader<&[u8]>) -> Result<Vec<MultiPolygon3<'static>
     }
 }
 
-type Triangles = (Vec<u32>, IndexSet<[u32; 3]>, Vec<u32>);
+type Triangles = (Vec<u32>, IndexSet<[u32; 3]>);
 
 fn tessellation(
     mpolys: &[MultiPolygon3],
@@ -218,9 +218,7 @@ fn tessellation(
 
     let mut indices: Vec<u32> = Vec::new();
     let mut vertices: IndexSet<[u32; 3]> = IndexSet::new();
-    let mut feature_ids: Vec<u32> = Vec::new();
 
-    let mut feature_id = 0;
     for mpoly in mpolys {
         for poly in mpoly {
             let num_outer = match poly.hole_indices().first() {
@@ -249,19 +247,15 @@ fn tessellation(
                         (buf3d[*idx as usize * 3 + 2] as f32).to_bits(),
                     ];
                     let (index, _) = vertices.insert_full(vbits);
-
-                    feature_ids.push(feature_id);
-
                     index as u32
                 }));
             } else {
                 println!("WARN: polygon does not have normal");
             }
         }
-        feature_id += 1;
     }
 
-    return Ok((indices, vertices, feature_ids));
+    return Ok((indices, vertices));
 }
 
 #[derive(Parser)]
@@ -329,11 +323,7 @@ fn make_glb(gltf_string: String, binary_buffer: Vec<u8>) -> Vec<u8> {
     glb
 }
 
-fn make_gltf_json(
-    indices: &Vec<u32>,
-    vertices: &IndexSet<[u32; 3]>,
-    feature_ids: &Vec<u32>,
-) -> String {
+fn make_gltf_json(indices: &Vec<u32>, vertices: &IndexSet<[u32; 3]>) -> String {
     // glTF のモデルを作成
     let mut gltf = Gltf::new();
 
@@ -345,11 +335,10 @@ fn make_gltf_json(
 
     // glTF のバッファを作成
     let mut buffer = Buffer::new();
-    // indicesはu32なので4バイト、verticesはf32x3なので12バイト, feature_idsはu32なので4バイト
+    // indicesはu32なので4バイト、verticesはf32x3なので12バイト
     let indices_byte_length = indices.len() as u32 * 4;
     let vertices_byte_length = vertices.len() as u32 * 12;
-    let feature_ids_byte_length = feature_ids.len() as u32 * 4;
-    buffer.byte_length = indices_byte_length + vertices_byte_length + feature_ids_byte_length;
+    buffer.byte_length = indices_byte_length + vertices_byte_length;
     buffer.uri = Some("data.bin".to_string());
 
     gltf.buffers = Some(vec![buffer]);
@@ -470,14 +459,9 @@ fn calc_center(all_mpolys: &Vec<nusamai_geometry::MultiPolygon<'_, 3>>) -> (f64,
     (mu_lat, mu_lng)
 }
 
-fn make_binary_buffer(
-    indices: Vec<u32>,
-    vertices: IndexSet<[u32; 3]>,
-    feature_ids: Vec<u32>,
-) -> Vec<u8> {
+fn make_binary_buffer(indices: Vec<u32>, vertices: IndexSet<[u32; 3]>) -> Vec<u8> {
     let mut indices_buf = Vec::new();
     let mut vertices_buf = Vec::new();
-    let mut feature_ids_buf = Vec::new();
 
     // glTFのバイナリはリトルエンディアン
     for index in &indices {
@@ -492,13 +476,7 @@ fn make_binary_buffer(
         }
     }
 
-    for feature_id in &feature_ids {
-        feature_ids_buf
-            .write_u32::<LittleEndian>(*feature_id)
-            .unwrap();
-    }
-
-    [&indices_buf[..], &vertices_buf[..], &feature_ids_buf[..]].concat()
+    [&indices_buf[..], &vertices_buf[..]].concat()
 }
 fn main() {
     let args = Args::parse();
@@ -535,14 +513,14 @@ fn main() {
 
     // 三角分割
     // verticesは頂点の配列だが、u32のビットパターンで格納されている
-    let (indices, vertices, feature_ids) = tessellation(&all_mpolys, mu_lng, mu_lat).unwrap();
+    let (indices, vertices) = tessellation(&all_mpolys, mu_lng, mu_lat).unwrap();
 
     // バイナリバッファを作成
-    let binary_buffer = make_binary_buffer(indices.clone(), vertices.clone(), feature_ids.clone());
+    let binary_buffer = make_binary_buffer(indices.clone(), vertices.clone());
     fs::write("./data/data.bin", &binary_buffer).unwrap();
 
     // glTFのJSON文字列を作成
-    let gltf_string = make_gltf_json(&indices, &vertices, &feature_ids);
+    let gltf_string = make_gltf_json(&indices, &vertices);
     fs::write("./data/data.gltf", &gltf_string).unwrap();
 
     // glbを作成
