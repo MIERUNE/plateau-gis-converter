@@ -1,7 +1,7 @@
 //! Objectify CityGML features and their thematic/geometric attributes
 
 use crate::geometric::GeometryRef;
-use crate::model::{Code, URI};
+use crate::values::{Code, Point, URI};
 use chrono::NaiveDate;
 use std::collections::HashMap;
 
@@ -23,7 +23,7 @@ pub enum ObjectValue<'a> {
     Boolean(bool),
     URI(&'a URI),
     Date(&'a NaiveDate),
-    // Point(Point),
+    Point(&'a Point),
     Array(Vec<ObjectValue<'a>>),
     FeatureOrData(FeatureOrData<'a>),
 }

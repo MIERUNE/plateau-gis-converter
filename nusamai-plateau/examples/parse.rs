@@ -123,6 +123,7 @@ fn main() {
             println!("elapsed time parsing: {:?}", parsing_time);
             total_parsing_time += parsing_time;
         }
+
         println!("total parsing time: {:?}", total_parsing_time);
     }
 

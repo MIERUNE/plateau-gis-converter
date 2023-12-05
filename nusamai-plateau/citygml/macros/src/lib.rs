@@ -89,6 +89,8 @@ fn generate_citygml_struct_model(
                         });
                     };
 
+                    add_arm(0, b"lod0RoofEdge", "MultiSurface");
+                    add_arm(0, b"lod0FootPrint", "MultiSurface");
                     add_arm(1, b"lod1Solid", "Solid");
                     add_arm(1, b"lod1MultiSurface", "MultiSurface");
                     add_arm(2, b"lod2MultiSurface", "MultiSurface");
