@@ -57,6 +57,25 @@ impl<'a, const D: usize, T: CoordNum> MultiPoint<'a, D, T> {
     pub fn clear(&mut self) {
         self.coords.to_mut().clear();
     }
+
+    /// Create a new MultiPoint by applying the given transformation to all coordinates.
+    pub fn transform(&self, f: impl Fn(&[T; D]) -> [T; D]) -> Self {
+        Self {
+            coords: self
+                .coords
+                .chunks_exact(D)
+                .flat_map(|v| f(&v.try_into().unwrap()))
+                .collect(),
+        }
+    }
+
+    /// Applies the given transformation to all coordinates in the MultiPoint.
+    pub fn transform_inplace(&mut self, f: impl Fn(&[T; D]) -> [T; D]) {
+        self.coords.to_mut().chunks_exact_mut(D).for_each(|c| {
+            let transformed = f(&c.try_into().unwrap());
+            c.copy_from_slice(&transformed);
+        });
+    }
 }
 
 impl<const D: usize, T: CoordNum> AsRef<[T]> for MultiPoint<'_, D, T> {
@@ -132,5 +151,20 @@ mod tests {
         let mpoints = MultiPoint2::from_raw([1.2, 2.1, 3.4, 4.3][..].into());
         assert_eq!(mpoints.as_ref(), [1.2, 2.1, 3.4, 4.3]);
         assert_eq!(mpoints.coords(), [1.2, 2.1, 3.4, 4.3]);
+    }
+
+    #[test]
+    fn test_transform() {
+        {
+            let mpoints = MultiPoint2::from_raw([0., 0., 5., 0., 5., 5., 0., 5.][..].into());
+            let new_mpoints = mpoints.transform(|[x, y]| [x + 2., y + 1.]);
+            assert_eq!(new_mpoints.coords(), [2., 1., 7., 1., 7., 6., 2., 6.]);
+        }
+
+        {
+            let mut mpoints = MultiPoint2::from_raw([0., 0., 5., 0., 5., 5., 0., 5.][..].into());
+            mpoints.transform_inplace(|[x, y]| [x + 2., y + 1.]);
+            assert_eq!(mpoints.coords(), [2., 1., 7., 1., 7., 6., 2., 6.]);
+        }
     }
 }
