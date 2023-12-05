@@ -204,7 +204,17 @@ fn parse_body(reader: &mut NsReader<&[u8]>) -> Result<Vec<MultiPolygon3<'static>
     }
 }
 
-type Triangles = (Vec<u32>, IndexSet<[u32; 3]>);
+// indicesはu32の配列
+type Indices = Vec<u32>;
+// verticesはu32のビットパターンで格納されているのが基本
+type Vertices<T> = IndexSet<T>;
+// type Vertices = Vertices<[u32; 3]>;
+// type VerticesIds = Vertices<[u32; 4]>;
+
+type Triangles<T> = (Indices, Vertices<T>);
+
+// Verticesはxyzのみの場合、xyzrgbの場合など複数のパターンがある
+// このため型定義はジェネリクス型を利用して柔軟に対応する
 
 fn tessellation(
     mpolys: &[MultiPolygon3],
