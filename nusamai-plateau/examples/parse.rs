@@ -25,6 +25,7 @@ fn example_toplevel_dispatcher<R: BufRead>(
                 let mut cityobj: CityObject = Default::default();
                 cityobj.parse(st)?;
                 let geometries = st.collect_geometries();
+                println!("{:#?}", cityobj.objectify());
 
                 TopLevelCityObject {
                     cityobj,
