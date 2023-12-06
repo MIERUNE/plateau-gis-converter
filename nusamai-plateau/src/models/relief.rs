@@ -10,7 +10,7 @@ pub struct ReliefFeature {
     name: Option<String>,
 
     #[citygml(path = b"dem:lod")]
-    lod: Option<i8>,
+    lod: Option<u64>,
 
     #[citygml(path = b"dem:reliefComponent")]
     relief_component: Vec<ReliefComponent>,

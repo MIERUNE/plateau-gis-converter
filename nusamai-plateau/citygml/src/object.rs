@@ -2,6 +2,7 @@
 
 use crate::geometric::GeometryRef;
 use crate::model::{Code, URI};
+use chrono::NaiveDate;
 use std::collections::HashMap;
 
 #[derive(Debug)]
@@ -14,16 +15,15 @@ pub struct FeatureOrData<'a> {
 
 #[derive(Debug)]
 pub enum ObjectValue<'a> {
-    Unknown,
-    Null,
     String(&'a str),
     Code(&'a Code),
     Integer(i64),
     Double(f64),
     Measure(f64),
-    Bool(bool),
+    Boolean(bool),
     URI(&'a URI),
-    // Date(Date),
+    Date(&'a NaiveDate),
+    // Point(Point),
     Array(Vec<ObjectValue<'a>>),
     FeatureOrData(FeatureOrData<'a>),
 }

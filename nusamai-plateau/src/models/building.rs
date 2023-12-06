@@ -1,4 +1,4 @@
-use citygml::{CityGMLElement, Code, GeometryRef, Measure};
+use citygml::{CityGMLElement, Code, GeometryRef, Measure, NaiveDate};
 
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Default, Debug, CityGMLElement)]
@@ -9,6 +9,12 @@ pub struct Building {
     #[citygml(path = b"@gml:id")]
     id: Option<String>,
 
+    #[citygml(path = b"core:creationDate")]
+    pub creation_date: Option<NaiveDate>,
+
+    #[citygml(path = b"core:terminationDate")]
+    pub termination_date: Option<NaiveDate>,
+
     #[citygml(path = b"bldg:class")]
     pub class: Option<Code>,
 
@@ -18,8 +24,23 @@ pub struct Building {
     #[citygml(path = b"bldg:usage")]
     pub usage: Vec<Code>,
 
+    #[citygml(path = b"bldg:yearOfConstruction")]
+    pub year_of_construction: Option<u64>,
+
+    #[citygml(path = b"bldg:yearOfDemolition")]
+    pub year_of_demolition: Option<u64>,
+
+    #[citygml(path = b"bldg:roofType")]
+    pub roof_type: Vec<Code>,
+
     #[citygml(path = b"bldg:measuredHeight")]
     pub measured_height: Option<Measure>,
+
+    #[citygml(path = b"bldg:storeysAboveGround")]
+    pub storeys_above_ground: Option<u64>,
+
+    #[citygml(path = b"bldg:storeysBelowGround")]
+    pub storeys_below_ground: Option<u64>,
 
     #[citygml(path = b"uro:buildingDisasterRiskAttribute")]
     pub building_disaster_risk_attribute: Vec<BuildingDisasterRiskAttribute>,
@@ -55,11 +76,38 @@ pub struct BuildingPart {
     #[citygml(path = b"@gml:id")]
     id: Option<String>,
 
+    #[citygml(path = b"core:creationDate")]
+    pub creation_date: Option<NaiveDate>,
+
+    #[citygml(path = b"core:terminationDate")]
+    pub termination_date: Option<NaiveDate>,
+
     #[citygml(path = b"bldg:class")]
     pub class: Option<Code>,
 
+    #[citygml(path = b"bldg:function")]
+    pub function: Vec<Code>,
+
+    #[citygml(path = b"bldg:usage")]
+    pub usage: Vec<Code>,
+
+    #[citygml(path = b"bldg:yearOfConstruction")]
+    pub year_of_construction: Option<u64>,
+
+    #[citygml(path = b"bldg:yearOfDemolition")]
+    pub year_of_demolition: Option<u64>,
+
+    #[citygml(path = b"bldg:roofType")]
+    pub roof_type: Vec<Code>,
+
     #[citygml(path = b"bldg:measuredHeight")]
     pub measured_height: Option<Measure>,
+
+    #[citygml(path = b"bldg:storeysAboveGround")]
+    pub storeys_above_ground: Option<u64>,
+
+    #[citygml(path = b"bldg:storeysBelowGround")]
+    pub storeys_below_ground: Option<u64>,
 
     #[citygml(path = b"uro:buildingIDAttribute/uro:BuildingIDAttribute")]
     pub building_id_attribute: Option<BuildingIDAttribute>,

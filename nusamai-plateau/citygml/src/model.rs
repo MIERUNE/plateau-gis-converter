@@ -1,5 +1,6 @@
 use crate::object::ObjectValue;
 use crate::parser::{ParseError, SubTreeReader};
+pub use chrono::NaiveDate;
 use std::io::BufRead;
 
 pub trait CityGMLElement: Sized {
@@ -75,7 +76,7 @@ impl CityGMLElement for i64 {
     }
 }
 
-impl CityGMLElement for i8 {
+impl CityGMLElement for u64 {
     #[inline]
     fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
         let text = st.parse_text()?;
@@ -117,6 +118,31 @@ impl CityGMLElement for f64 {
     }
 }
 
+impl CityGMLElement for bool {
+    #[inline]
+    fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
+        let text = st.parse_text()?.trim();
+        match text {
+            "1" | "true" | "True" | "TRUE" => {
+                *self = true;
+                Ok(())
+            }
+            "0" | "false" | "False" | "FALSE" => {
+                *self = true;
+                Ok(())
+            }
+            _ => Err(ParseError::InvalidValue(format!(
+                "Expected a boolean value, got {}",
+                text
+            ))),
+        }
+    }
+
+    fn objectify(&self) -> Option<ObjectValue> {
+        Some(ObjectValue::Boolean(*self))
+    }
+}
+
 #[derive(Debug, Default, serde::Serialize, serde::Deserialize)]
 pub struct Measure {
     value: f64,
@@ -141,6 +167,27 @@ impl CityGMLElement for Measure {
 
     fn objectify(&self) -> Option<ObjectValue> {
         Some(ObjectValue::Measure(self.value))
+    }
+}
+
+impl CityGMLElement for NaiveDate {
+    #[inline]
+    fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
+        let text = st.parse_text()?;
+        match NaiveDate::parse_from_str(text, "%Y-%m-%d") {
+            Ok(v) => {
+                *self = v;
+                Ok(())
+            }
+            Err(_) => Err(ParseError::InvalidValue(format!(
+                "Expected a date in the format YYYY-MM-DD, got {}",
+                text
+            ))),
+        }
+    }
+
+    fn objectify(&self) -> Option<ObjectValue> {
+        Some(ObjectValue::Date(self))
     }
 }
 
