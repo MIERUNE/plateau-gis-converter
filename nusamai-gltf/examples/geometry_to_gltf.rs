@@ -20,7 +20,7 @@ use quick_xml::{
     name::{Namespace, ResolveResult::Bound},
     reader::NsReader,
 };
-use std::{clone::Clone, collections::HashMap, default::Default, fs};
+use std::{clone::Clone, collections::HashMap, default::Default, fs, io::BufWriter};
 use std::{io::Write, usize};
 use thiserror::Error;
 
@@ -31,6 +31,28 @@ const TRANSPORTATION_NS: Namespace =
     Namespace(b"http://www.opengis.net/citygml/transportation/2.0");
 const BRIDGE_NS: Namespace = Namespace(b"http://www.opengis.net/citygml/bridge/2.0");
 const VEGETATION_NS: Namespace = Namespace(b"http://www.opengis.net/citygml/vegetation/2.0");
+
+// 暫定で構造体を定義
+#[derive(Debug, Clone, Default)]
+struct Triangles {
+    pub indices: Vec<u32>,
+    pub vertices: IndexSet<[u32; 3]>,
+    pub face_normals: Option<Vec<f32>>,
+    pub vertex_normals: Option<Vec<f32>>,
+    pub vertex_colors: Option<Vec<f32>>,
+    pub vertex_ids: Option<Vec<u64>>,
+    pub metadata: Option<HashMap<String, serde_json::Value>>,
+}
+
+impl Triangles {
+    pub fn new(indices: Vec<u32>, vertices: IndexSet<[u32; 3]>) -> Self {
+        Self {
+            indices,
+            vertices,
+            ..Default::default()
+        }
+    }
+}
 
 #[derive(Error, Debug)]
 pub enum ParseError {
@@ -202,50 +224,6 @@ fn parse_body(reader: &mut NsReader<&[u8]>) -> Result<Vec<MultiPolygon3<'static>
             Err(e) => return Err(ParseError::XmlError(e)),
         }
     }
-}
-
-// 暫定で構造体を定義
-// FeatureとFeatureCollectionは頭の整理のために作成しただけなので、後で消すと思う
-#[derive(Debug, Clone, Default)]
-struct Triangles {
-    pub indices: Vec<u32>,
-    pub vertices: IndexSet<[u32; 3]>,
-    pub face_normals: Option<Vec<f32>>,
-    pub vertex_normals: Option<Vec<f32>>,
-    pub vertex_colors: Option<Vec<f32>>,
-    pub vertex_ids: Option<Vec<u64>>,
-    pub metadata: Option<HashMap<String, serde_json::Value>>,
-}
-
-impl Triangles {
-    pub fn new(indices: Vec<u32>, vertices: IndexSet<[u32; 3]>) -> Self {
-        Self {
-            indices,
-            vertices,
-            ..Default::default()
-        }
-    }
-}
-
-struct Feature {
-    pub properties: HashMap<String, serde_json::Value>,
-    pub geometries: MultiPolygon3<'static>,
-}
-
-impl Feature {
-    pub fn new(
-        properties: HashMap<String, serde_json::Value>,
-        geometries: MultiPolygon3<'static>,
-    ) -> Self {
-        Self {
-            properties,
-            geometries,
-        }
-    }
-}
-
-struct FeatureCollection {
-    pub features: Vec<Feature>,
 }
 
 fn tessellation(
@@ -552,64 +530,9 @@ fn main() {
     // 中心の経緯度を求める
     let (mu_lat, mu_lng) = calc_center(&all_mpolys);
 
-    // テッセレーションのタイミングで頂点IDを振っていくしかないと思う
-
-    // FeatureCollectionを作成
-    let feature_collection = FeatureCollection {
-        features: all_mpolys
-            .iter()
-            .map(|mpoly| Feature::new(HashMap::new(), mpoly.clone()))
-            .collect(),
-    };
-
-    // Trianglesのコレクションを作成
+    // 三角分割
     // verticesは頂点の配列だが、u32のビットパターンで格納されている
-    let mut triangle_collection = Vec::new();
-    for (index, feature) in feature_collection.features.iter().enumerate() {
-        let mut t = tessellation(&[feature.geometries.clone()], mu_lng, mu_lat).unwrap();
-
-        // 頂点IDを振る
-        let mut triangles = Triangles::new(t.indices, t.vertices);
-        triangles.vertex_ids = Some(vec![index as u64; triangles.clone().vertices.len()]);
-
-        triangle_collection.push(triangles.clone());
-
-        println!("indices: {}", triangles.indices.len());
-        println!("vertices: {}", triangles.vertices.len());
-        println!(
-            "vertex_ids: {}",
-            triangles.vertex_ids.clone().unwrap().len()
-        );
-        println!("");
-    }
-
-    // triangle_collectionの情報を統合し、1つのTrianglesにする
-    let mut indices = Vec::new();
-    let mut vertices = IndexSet::new();
-    let mut vertex_ids = Vec::new();
-
-    for triangles in triangle_collection {
-        println!("triangle: {:?}", triangles);
-
-        let offset = vertices.len() as u32;
-
-        indices.extend(triangles.clone().indices.iter().map(|idx| idx + offset));
-
-        for vertex in triangles.clone().vertices {
-            let vbits = [
-                (vertex[0] as f32).to_bits(),
-                (vertex[1] as f32).to_bits(),
-                (vertex[2] as f32).to_bits(),
-            ];
-            vertices.insert(vbits);
-        }
-
-        vertex_ids.extend(triangles.clone().vertex_ids.unwrap());
-    }
-
-    // // 三角分割
-    // // verticesは頂点の配列だが、u32のビットパターンで格納されている
-    // let triangles = tessellation(&all_mpolys, mu_lng, mu_lat).unwrap();
+    let triangles = tessellation(&all_mpolys, mu_lng, mu_lat).unwrap();
 
     // バイナリバッファを作成
     let binary_buffer = make_binary_buffer(&triangles);
