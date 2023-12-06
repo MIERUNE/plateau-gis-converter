@@ -1,8 +1,11 @@
+use crate::object::ObjectValue;
 use crate::parser::{ParseError, SubTreeReader};
 use std::io::BufRead;
 
 pub trait CityGMLElement: Sized {
     fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError>;
+
+    fn objectify(&self) -> Option<ObjectValue>;
 }
 
 impl CityGMLElement for String {
@@ -11,9 +14,47 @@ impl CityGMLElement for String {
         self.push_str(st.parse_text()?);
         Ok(())
     }
+
+    fn objectify(&self) -> Option<ObjectValue> {
+        Some(ObjectValue::String(self.as_ref()))
+    }
 }
 
-impl CityGMLElement for i32 {
+#[derive(Debug, serde::Serialize, serde::Deserialize)]
+pub struct URI(String);
+impl CityGMLElement for URI {
+    #[inline]
+    fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
+        self.0.push_str(st.parse_text()?);
+        Ok(())
+    }
+
+    fn objectify(&self) -> Option<ObjectValue> {
+        Some(ObjectValue::String(self.0.as_ref()))
+    }
+}
+
+#[derive(Debug, Default, serde::Serialize, serde::Deserialize)]
+pub struct Code {
+    pub value: String,
+    pub code: String,
+    // pub code_space: Option<String>,
+}
+impl CityGMLElement for Code {
+    #[inline]
+    fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
+        let code = st.parse_text()?.to_string();
+        self.code = code.to_string();
+        self.value = code;
+        Ok(())
+    }
+
+    fn objectify(&self) -> Option<ObjectValue> {
+        Some(ObjectValue::Code(self))
+    }
+}
+
+impl CityGMLElement for i64 {
     #[inline]
     fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
         let text = st.parse_text()?;
@@ -27,6 +68,31 @@ impl CityGMLElement for i32 {
                 text
             ))),
         }
+    }
+
+    fn objectify(&self) -> Option<ObjectValue> {
+        Some(ObjectValue::Integer(*self))
+    }
+}
+
+impl CityGMLElement for i8 {
+    #[inline]
+    fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
+        let text = st.parse_text()?;
+        match text.parse() {
+            Ok(v) => {
+                *self = v;
+                Ok(())
+            }
+            Err(_) => Err(ParseError::InvalidValue(format!(
+                "Expected an integer, got {}",
+                text
+            ))),
+        }
+    }
+
+    fn objectify(&self) -> Option<ObjectValue> {
+        Some(ObjectValue::Integer(*self as i64))
     }
 }
 
@@ -45,6 +111,37 @@ impl CityGMLElement for f64 {
             ))),
         }
     }
+
+    fn objectify(&self) -> Option<ObjectValue> {
+        Some(ObjectValue::Double(*self))
+    }
+}
+
+#[derive(Debug, Default, serde::Serialize, serde::Deserialize)]
+pub struct Measure {
+    value: f64,
+    // uom: Option<String>,
+}
+
+impl CityGMLElement for Measure {
+    #[inline]
+    fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
+        let text = st.parse_text()?;
+        match text.parse() {
+            Ok(v) => {
+                self.value = v;
+                Ok(())
+            }
+            Err(_) => Err(ParseError::InvalidValue(format!(
+                "Expected a floating point number, got {}",
+                text
+            ))),
+        }
+    }
+
+    fn objectify(&self) -> Option<ObjectValue> {
+        Some(ObjectValue::Measure(self.value))
+    }
 }
 
 impl<T: CityGMLElement + Default + std::fmt::Debug> CityGMLElement for Option<T> {
@@ -61,6 +158,13 @@ impl<T: CityGMLElement + Default + std::fmt::Debug> CityGMLElement for Option<T>
         *self = Some(v);
         Ok(())
     }
+
+    fn objectify(&self) -> Option<ObjectValue> {
+        match self {
+            Some(v) => v.objectify(),
+            None => None,
+        }
+    }
 }
 
 impl<T: CityGMLElement + Default> CityGMLElement for Vec<T> {
@@ -70,6 +174,16 @@ impl<T: CityGMLElement + Default> CityGMLElement for Vec<T> {
         <T as CityGMLElement>::parse(&mut v, st)?;
         self.push(v);
         Ok(())
+    }
+
+    fn objectify(&self) -> Option<ObjectValue> {
+        if self.is_empty() {
+            None
+        } else {
+            Some(ObjectValue::Array(
+                self.iter().filter_map(|v| v.objectify()).collect(),
+            ))
+        }
     }
 }
 
