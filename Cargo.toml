@@ -3,6 +3,7 @@
 members = [
     "app/src-tauri",
     "nusamai-geometry",
+    "nusamai-gltf",
     "nusamai-geojson",
     "nusamai-plateau",
     "nusamai-mvt",

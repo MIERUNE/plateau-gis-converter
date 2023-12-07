@@ -1,4 +1,4 @@
-//! CityGMLファイル (.gml) からポリゴンを読み込んで .geojson 形式で出力するデモ   
+//! CityGMLファイル (.gml) からポリゴンを読み込んで .geojson 形式で出力するデモ
 //! nusamai-geometry/examples/citygml_polygons.rs を元にしています。
 //!
 //! 使用例:
