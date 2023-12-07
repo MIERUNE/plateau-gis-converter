@@ -8,6 +8,7 @@ default = ["serde"]
 serde = ["dep:serde", "nusamai-geometry/serde"]
 
 [dependencies]
+chrono = "0.4.31"
 indexmap = "2.1"
 macros = { path = "./macros" }
 nusamai-geometry = { path = "../../nusamai-geometry", features = ["serde"]}

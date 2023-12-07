@@ -10,7 +10,7 @@ pub struct ReliefFeature {
     name: Option<String>,
 
     #[citygml(path = b"dem:lod")]
-    lod: Option<i32>,
+    lod: Option<u64>,
 
     #[citygml(path = b"dem:reliefComponent")]
     relief_component: Vec<ReliefComponent>,
@@ -44,7 +44,7 @@ pub struct TINRelief {
     #[citygml(path = b"gml:name")]
     name: Option<String>,
 
-    #[citygml(auto_geom = b"dem")]
+    #[citygml(geom = b"dem")]
     geometries: GeometryRef,
 }
 
