@@ -37,32 +37,32 @@ pub type GeometryRef = Vec<GeometryRefEntry>;
 #[derive(Debug, Default)]
 pub struct Geometries {
     pub vertices: Vec<[f64; 3]>,
-    pub polygons: MultiPolygon<'static, 1, u32>,
-    pub linestrings: MultiLineString<'static, 1, u32>,
+    pub multipolygon: MultiPolygon<'static, 1, u32>,
+    pub multilinestring: MultiLineString<'static, 1, u32>,
 }
 
 /// Store for collecting vertices and polygons from GML.
 #[derive(Default)]
 pub struct GeometryCollector {
     pub vertices: indexmap::IndexSet<[u64; 3]>,
-    pub multi_polygon: MultiPolygon<'static, 1, u32>,
-    pub multi_linestring: MultiLineString<'static, 1, u32>,
+    pub multipolygon: MultiPolygon<'static, 1, u32>,
+    pub multilinestring: MultiLineString<'static, 1, u32>,
 }
 
 impl GeometryCollector {
     pub fn add_exterior_ring(&mut self, iter: impl Iterator<Item = [f64; 3]>) -> usize {
-        self.multi_polygon.add_exterior(iter.map(|v| {
+        self.multipolygon.add_exterior(iter.map(|v| {
             // ...
             let vbits = [v[0].to_bits(), v[1].to_bits(), v[2].to_bits()];
             let (index, _) = self.vertices.insert_full(vbits);
             [index as u32]
         }));
 
-        self.multi_polygon.len() - 1
+        self.multipolygon.len() - 1
     }
 
     pub fn add_interior_ring(&mut self, iter: impl Iterator<Item = [f64; 3]>) {
-        self.multi_polygon.add_interior(iter.map(|v| {
+        self.multipolygon.add_interior(iter.map(|v| {
             // ...
             let vbits = [v[0].to_bits(), v[1].to_bits(), v[2].to_bits()];
             let (index, _) = self.vertices.insert_full(vbits);
@@ -81,14 +81,14 @@ impl GeometryCollector {
         }
         Geometries {
             vertices,
-            polygons: self.multi_polygon.clone(),
-            linestrings: self.multi_linestring.clone(),
+            multipolygon: self.multipolygon.clone(),
+            multilinestring: self.multilinestring.clone(),
         }
     }
 
     pub fn clear(&mut self) {
         self.vertices.clear();
-        self.multi_polygon.clear();
-        self.multi_linestring.clear();
+        self.multipolygon.clear();
+        self.multilinestring.clear();
     }
 }
