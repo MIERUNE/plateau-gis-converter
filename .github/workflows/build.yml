@@ -1,4 +1,4 @@
-name: Build
+name: Build Tauri App
 
 on:
   push:
@@ -31,4 +31,4 @@ jobs:
       - name: Make Tauri build destination
         run: mkdir -p app/build
       - name: Build
-        run: cargo build --verbose --workspace
+        run: cargo build --verbose --package app
