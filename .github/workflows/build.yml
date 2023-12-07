@@ -1,4 +1,4 @@
-name: Test
+name: Build
 
 on:
   push:
@@ -15,16 +15,14 @@ permissions:
   contents: read
 
 jobs:
-  bulid_and_test:
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - name: Rustup
-        run: rustup update stable
+        run: rustup toolchain install stable --profile minimal
       - name: Rust Cache
         uses: Swatinem/rust-cache@v2
-      - name: Install cargo-llvm-cov
-        uses: taiki-e/install-action@cargo-llvm-cov
       - name: install dependencies
         # if: matrix.platform == 'ubuntu-20.04'
         run: |
@@ -34,12 +32,3 @@ jobs:
         run: mkdir -p app/build
       - name: Build
         run: cargo build --verbose --workspace
-      - name: Test
-        run: cargo llvm-cov --workspace --lcov --output-path lcov.info --all-features
-      - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@v3
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-        with:
-          files: lcov.info
-          fail_ci_if_error: false
