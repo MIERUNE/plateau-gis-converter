@@ -1,20 +1,29 @@
 use citygml::*;
+use nusamai_geometry::*;
 use std::collections::HashMap;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct TopLevelCityObject {
     cityobj: FeatureOrData<'static>,
-    geometries: citygml::Geometries,
+    geometries: Geometries,
 }
 
-#[derive(Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
+#[derive(Debug, Default, Clone)]
+pub struct Geometries {
+    pub vertices: Vec<[f64; 3]>,
+    pub multipolygon: MultiPolygon<'static, 1, u32>,
+    pub multilinestring: MultiPolygon<'static, 1, u32>,
+}
+
+#[derive(Debug, Clone)]
 pub struct FeatureOrData<'a> {
     pub typename: &'a str,
     pub id: Option<&'a str>,
     pub attributes: HashMap<String, ObjectValue<'a>>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum ObjectValue<'a> {
     String(&'a str),
     Code(&'a Code),
@@ -32,15 +41,24 @@ pub enum ObjectValue<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use nusamai_geometry::*;
     use std::collections::HashMap;
 
-    #[test]
-    fn test_hello() {
-        assert_eq!(2 + 2, 4);
+    fn generate_city_objects() -> Vec<TopLevelCityObject> {
+        let mut top_level_city_object1 = generate_top_level_city_object();
+        top_level_city_object1.cityobj.id = Some("bldg_test1");
+
+        let mut top_level_city_object2 = generate_top_level_city_object();
+        top_level_city_object2.cityobj.id = Some("bldg_test2");
+
+        let mut city_objects = vec![
+            top_level_city_object1.clone(),
+            top_level_city_object2.clone(),
+        ];
+
+        city_objects
     }
 
-    fn test_generate_top_level_city_object() {
+    fn generate_top_level_city_object() -> TopLevelCityObject {
         let type_ = "Building";
         let id_ = Some("bldg_test");
 
@@ -49,11 +67,15 @@ mod tests {
         let attribute_value = super::ObjectValue::String("bldg_test");
         attributes.insert(attribute_name.to_string(), attribute_value);
 
-        let geometries = citygml::Geometries {
+        let mut geometries = super::Geometries {
             vertices: Vec::new(),
             multipolygon: MultiPolygon::new(),
-            multilinestring: MultiLineString::new(),
+            multilinestring: MultiPolygon::new(),
         };
+        geometries.vertices.push([0.0, 0.0, 0.0]);
+        geometries.vertices.push([1.0, 0.0, 0.0]);
+        geometries.vertices.push([1.0, 1.0, 0.0]);
+        geometries.multipolygon.add_exterior(vec![[0], [1], [2]]);
 
         let cityobj = super::FeatureOrData {
             typename: type_,
@@ -61,9 +83,19 @@ mod tests {
             attributes,
         };
 
-        let top_level_city_object = super::TopLevelCityObject {
+        super::TopLevelCityObject {
             cityobj,
             geometries,
-        };
+        }
+    }
+
+    #[test]
+    fn test_generate_top_level_city_object() {
+        let city_objects = generate_city_objects();
+        let top_level_city_object1 = &city_objects[0];
+        let top_level_city_object2 = &city_objects[1];
+
+        assert_eq!(top_level_city_object1.cityobj.id, Some("bldg_test1"));
+        assert_eq!(top_level_city_object2.cityobj.id, Some("bldg_test2"));
     }
 }
