@@ -1,22 +1,46 @@
-use citygml::{CityGMLElement, GeometryRef};
+use citygml::{CityGMLElement, Code, GeometryRef, Measure, NaiveDate};
 
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Default, Debug, CityGMLElement)]
 pub struct Building {
-    #[citygml(auto_geom = b"bldg")]
+    #[citygml(geom = b"bldg")]
     pub geometries: GeometryRef,
 
     #[citygml(path = b"@gml:id")]
     id: Option<String>,
 
+    #[citygml(path = b"core:creationDate")]
+    pub creation_date: Option<NaiveDate>,
+
+    #[citygml(path = b"core:terminationDate")]
+    pub termination_date: Option<NaiveDate>,
+
     #[citygml(path = b"bldg:class")]
-    pub class: Option<String>,
+    pub class: Option<Code>,
 
     #[citygml(path = b"bldg:function")]
-    pub function: Vec<String>,
+    pub function: Vec<Code>,
+
+    #[citygml(path = b"bldg:usage")]
+    pub usage: Vec<Code>,
+
+    #[citygml(path = b"bldg:yearOfConstruction")]
+    pub year_of_construction: Option<u64>,
+
+    #[citygml(path = b"bldg:yearOfDemolition")]
+    pub year_of_demolition: Option<u64>,
+
+    #[citygml(path = b"bldg:roofType")]
+    pub roof_type: Vec<Code>,
 
     #[citygml(path = b"bldg:measuredHeight")]
-    pub measured_height: Option<f64>,
+    pub measured_height: Option<Measure>,
+
+    #[citygml(path = b"bldg:storeysAboveGround")]
+    pub storeys_above_ground: Option<u64>,
+
+    #[citygml(path = b"bldg:storeysBelowGround")]
+    pub storeys_below_ground: Option<u64>,
 
     #[citygml(path = b"uro:buildingDisasterRiskAttribute")]
     pub building_disaster_risk_attribute: Vec<BuildingDisasterRiskAttribute>,
@@ -46,17 +70,44 @@ pub struct Building {
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Default, Debug, CityGMLElement)]
 pub struct BuildingPart {
-    #[citygml(auto_geom = b"bldg")]
+    #[citygml(geom = b"bldg")]
     pub geometries: GeometryRef,
 
     #[citygml(path = b"@gml:id")]
     id: Option<String>,
 
+    #[citygml(path = b"core:creationDate")]
+    pub creation_date: Option<NaiveDate>,
+
+    #[citygml(path = b"core:terminationDate")]
+    pub termination_date: Option<NaiveDate>,
+
     #[citygml(path = b"bldg:class")]
-    pub class: Option<String>,
+    pub class: Option<Code>,
+
+    #[citygml(path = b"bldg:function")]
+    pub function: Vec<Code>,
+
+    #[citygml(path = b"bldg:usage")]
+    pub usage: Vec<Code>,
+
+    #[citygml(path = b"bldg:yearOfConstruction")]
+    pub year_of_construction: Option<u64>,
+
+    #[citygml(path = b"bldg:yearOfDemolition")]
+    pub year_of_demolition: Option<u64>,
+
+    #[citygml(path = b"bldg:roofType")]
+    pub roof_type: Vec<Code>,
 
     #[citygml(path = b"bldg:measuredHeight")]
-    pub measured_height: Option<f64>,
+    pub measured_height: Option<Measure>,
+
+    #[citygml(path = b"bldg:storeysAboveGround")]
+    pub storeys_above_ground: Option<u64>,
+
+    #[citygml(path = b"bldg:storeysBelowGround")]
+    pub storeys_below_ground: Option<u64>,
 
     #[citygml(path = b"uro:buildingIDAttribute/uro:BuildingIDAttribute")]
     pub building_id_attribute: Option<BuildingIDAttribute>,
@@ -112,7 +163,7 @@ pub enum BoundingSurface {
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Default, Debug, CityGMLElement)]
 pub struct WallSurface {
-    #[citygml(auto_geom = b"bldg")]
+    #[citygml(geom = b"bldg")]
     pub geometries: GeometryRef,
 
     #[citygml(path = b"@gml:id")]
@@ -125,7 +176,7 @@ pub struct WallSurface {
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Default, Debug, CityGMLElement)]
 pub struct RoofSurface {
-    #[citygml(auto_geom = b"bldg")]
+    #[citygml(geom = b"bldg")]
     pub geometries: GeometryRef,
 
     #[citygml(path = b"@gml:id")]
@@ -138,7 +189,7 @@ pub struct RoofSurface {
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Default, Debug, CityGMLElement)]
 pub struct GroundSurface {
-    #[citygml(auto_geom = b"bldg")]
+    #[citygml(geom = b"bldg")]
     pub geometries: GeometryRef,
 
     #[citygml(path = b"@gml:id")]
@@ -151,7 +202,7 @@ pub struct GroundSurface {
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Default, Debug, CityGMLElement)]
 pub struct OuterCeilingSurface {
-    #[citygml(auto_geom = b"bldg")]
+    #[citygml(geom = b"bldg")]
     pub geometries: GeometryRef,
 
     #[citygml(path = b"@gml:id")]
@@ -164,7 +215,7 @@ pub struct OuterCeilingSurface {
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Default, Debug, CityGMLElement)]
 pub struct OuterFloorSurface {
-    #[citygml(auto_geom = b"bldg")]
+    #[citygml(geom = b"bldg")]
     pub geometries: GeometryRef,
 
     #[citygml(path = b"@gml:id")]
@@ -177,7 +228,7 @@ pub struct OuterFloorSurface {
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Default, Debug, CityGMLElement)]
 pub struct ClosureSurface {
-    #[citygml(auto_geom = b"bldg")]
+    #[citygml(geom = b"bldg")]
     pub geometries: GeometryRef,
 
     #[citygml(path = b"@gml:id")]
@@ -190,7 +241,7 @@ pub struct ClosureSurface {
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Default, Debug, CityGMLElement)]
 pub struct CeilingSurface {
-    #[citygml(auto_geom = b"bldg")]
+    #[citygml(geom = b"bldg")]
     pub geometries: GeometryRef,
 
     #[citygml(path = b"@gml:id")]
@@ -202,7 +253,7 @@ pub struct CeilingSurface {
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Default, Debug, CityGMLElement)]
 pub struct FloorSurface {
-    #[citygml(auto_geom = b"bldg")]
+    #[citygml(geom = b"bldg")]
     pub geometries: GeometryRef,
 
     #[citygml(path = b"@gml:id")]
@@ -214,7 +265,7 @@ pub struct FloorSurface {
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Default, Debug, CityGMLElement)]
 pub struct InteriorWallSurface {
-    #[citygml(auto_geom = b"bldg")]
+    #[citygml(geom = b"bldg")]
     pub geometries: GeometryRef,
 
     #[citygml(path = b"@gml:id")]
@@ -242,7 +293,7 @@ pub enum Opening {
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Default, Debug, CityGMLElement)]
 pub struct Window {
-    #[citygml(auto_geom = b"bldg")]
+    #[citygml(geom = b"bldg")]
     pub geometries: GeometryRef,
 
     #[citygml(path = b"@gml:id")]
@@ -252,7 +303,7 @@ pub struct Window {
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Default, Debug, CityGMLElement)]
 pub struct Door {
-    #[citygml(auto_geom = b"bldg")]
+    #[citygml(geom = b"bldg")]
     pub geometries: GeometryRef,
 
     #[citygml(path = b"@gml:id")]
@@ -262,7 +313,7 @@ pub struct Door {
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Default, Debug, CityGMLElement)]
 pub struct Room {
-    #[citygml(auto_geom = b"bldg")]
+    #[citygml(geom = b"bldg")]
     pub geometries: GeometryRef,
 
     #[citygml(path = b"@gml:id")]
@@ -281,7 +332,7 @@ pub struct Room {
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Default, Debug, CityGMLElement)]
 pub struct BuildingInstallation {
-    #[citygml(auto_geom = b"bldg")]
+    #[citygml(geom = b"bldg")]
     pub geometries: GeometryRef,
 
     #[citygml(path = b"@gml:id")]
@@ -294,7 +345,7 @@ pub struct BuildingInstallation {
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Default, Debug, CityGMLElement)]
 pub struct BuildingFurniture {
-    #[citygml(auto_geom = b"bldg")]
+    #[citygml(geom = b"bldg")]
     pub geometries: GeometryRef,
 
     #[citygml(path = b"@gml:id")]
@@ -310,11 +361,17 @@ pub struct BuildingIDAttribute {
     #[citygml(path = b"uro:buildingID")]
     pub building_id: Option<String>,
 
+    #[citygml(path = b"uro:branchID")]
+    pub branch_id: Option<i64>,
+
+    #[citygml(path = b"uro:partID")]
+    pub part_id: Option<i64>,
+
     #[citygml(path = b"uro:city")]
-    pub city: Option<String>,
+    pub city: Option<Code>,
 
     #[citygml(path = b"uro:prefecture")]
-    pub prefecture: Option<String>,
+    pub prefecture: Option<Code>,
 }
 
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]

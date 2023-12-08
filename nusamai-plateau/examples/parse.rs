@@ -25,6 +25,7 @@ fn example_toplevel_dispatcher<R: BufRead>(
                 let mut cityobj: CityObject = Default::default();
                 cityobj.parse(st)?;
                 let geometries = st.collect_geometries();
+                println!("{:#?}", cityobj.objectify());
 
                 TopLevelCityObject {
                     cityobj,
@@ -122,6 +123,7 @@ fn main() {
             println!("elapsed time parsing: {:?}", parsing_time);
             total_parsing_time += parsing_time;
         }
+
         println!("total parsing time: {:?}", total_parsing_time);
     }
 

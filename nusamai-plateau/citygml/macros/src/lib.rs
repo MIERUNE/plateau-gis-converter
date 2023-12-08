@@ -12,11 +12,25 @@ fn generate_citygml_struct_model(
 ) -> Result<TokenStream, Error> {
     let mut attribute_arms = Vec::new();
     let mut chlid_arms = Vec::new();
+    let mut objectify_stmts = Vec::new();
+    let mut geom_objectify_expr = quote! { None };
+    let mut id_value = quote!(None);
 
     for field in &struct_data.fields {
         let Some(field_ident) = &field.ident else {
             continue;
         };
+
+        if field_ident == "id" {
+            id_value = quote! {
+                if let Some(id) = &self.id {
+                    Some(id.as_ref())
+                } else {
+                    None
+                }
+            };
+        };
+
         let field_ty = &field.ty;
         for attr in &field.attrs {
             if !attr.path().is_ident(CITYGML_ATTR_IDENT) {
@@ -30,21 +44,37 @@ fn generate_citygml_struct_model(
                         // XML attributes (e.g. @gml:id)
                         attribute_arms.push(quote! {
                             #path => {
-                                self.id = <#field_ty as citygml::CityGMLAttribute>::parse_attr_value(
+                                self.#field_ident = <#field_ty as citygml::CityGMLAttribute>::parse_attr_value(
                                     std::str::from_utf8(value).unwrap(),
                                 )?;
                                 Ok(())
                             }
                         });
+                        objectify_stmts.push(
+                            quote! {
+                                if let Some(v) = self.#field_ident.objectify() {
+                                    attributes.insert(stringify!(#field_ident).into(), v);
+                                }
+                            }
+                        )
                     } else {
                         // XML child elements (e.g. bldg:measuredHeight)
-                        chlid_arms.push(quote! {
-                            #path => <#field_ty as CityGMLElement>::parse(&mut self.#field_ident, st),
-                        });
+                        chlid_arms.push(
+                            quote! {
+                                #path => <#field_ty as CityGMLElement>::parse(&mut self.#field_ident, st),
+                            }
+                        );
+                        objectify_stmts.push(
+                            quote! {
+                                if let Some(v) = self.#field_ident.objectify() {
+                                    attributes.insert(stringify!(#field_ident).into(), v);
+                                }
+                            }
+                        )
                     }
                     Ok(())
                 }
-                else if meta.path.is_ident("auto_geom") {
+                else if meta.path.is_ident("geom") {
                     let prefix: LitByteStr = meta.value()?.parse()?;
 
                     let mut add_arm = |lod: u8, name: &[u8], geomtype: &str  | {
@@ -59,6 +89,8 @@ fn generate_citygml_struct_model(
                         });
                     };
 
+                    add_arm(0, b"lod0RoofEdge", "MultiSurface");
+                    add_arm(0, b"lod0FootPrint", "MultiSurface");
                     add_arm(1, b"lod1Solid", "Solid");
                     add_arm(1, b"lod1MultiSurface", "MultiSurface");
                     add_arm(2, b"lod2MultiSurface", "MultiSurface");
@@ -69,6 +101,10 @@ fn generate_citygml_struct_model(
                     add_arm(3, b"lod3Geometry", "Geometry");
                     add_arm(4, b"lod4Geometry", "Geometry");
                     add_arm(1, b"tin", "Triangulated");
+
+                    geom_objectify_expr = quote! {
+                        Some(&self.#field_ident)
+                    };
 
                     Ok(())
                 } else {
@@ -102,6 +138,22 @@ fn generate_citygml_struct_model(
                     }
                 })
             }
+
+            fn objectify(&self) -> Option<::citygml::object::ObjectValue> {
+                let attributes = {
+                    let mut attributes = ::std::collections::HashMap::new();
+                    #(#objectify_stmts)*
+                    attributes
+                };
+                Some(::citygml::ObjectValue::FeatureOrData(
+                    ::citygml::FeatureOrData {
+                        typename: stringify!(#struct_name).into(),
+                        id: #id_value,
+                        attributes,
+                        geometries: #geom_objectify_expr,
+                    }
+                ))
+            }
         }
     })
 }
@@ -111,6 +163,8 @@ fn generate_citygml_enum_model(
     enum_data: &DataEnum,
 ) -> Result<TokenStream, Error> {
     let mut child_arms = Vec::new();
+    let mut objectify_arms = Vec::new();
+
     for variant in &enum_data.variants {
         if variant.fields.len() > 1 {
             return Err(Error::new_spanned(
@@ -134,15 +188,17 @@ fn generate_citygml_enum_model(
                     let value = meta.value()?;
                     let path: LitByteStr = value.parse()?;
 
-                    let arm = quote! {
+                    child_arms.push(quote! {
                         #path => {
                             let mut v: #field_ty = Default::default();
                             <#field_ty as CityGMLElement>::parse(&mut v, st)?;
                             *self = Self::#variant_ident(v);
                             Ok(())
                         }
-                    };
-                    child_arms.push(arm);
+                    });
+                    objectify_arms.push(quote! {
+                        Self::#variant_ident(v) => v.objectify()
+                    });
                 }
                 Ok(())
             })?;
@@ -161,6 +217,13 @@ fn generate_citygml_enum_model(
                         _ => Ok(()),
                     }
                 })
+            }
+
+            fn objectify(&self) -> Option<::citygml::object::ObjectValue> {
+                match self {
+                    #(#objectify_arms,)*
+                    _ => None,
+                }
             }
         }
     };

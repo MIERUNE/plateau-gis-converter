@@ -3,7 +3,7 @@ use citygml::{CityGMLElement, GeometryRef};
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Default, Debug, CityGMLElement)]
 pub struct Road {
-    #[citygml(auto_geom = b"tran")]
+    #[citygml(geom = b"tran")]
     pub geometries: GeometryRef,
 
     #[citygml(path = b"@gml:id")]
@@ -19,7 +19,7 @@ pub struct Road {
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Default, Debug, CityGMLElement)]
 pub struct Railway {
-    #[citygml(auto_geom = b"tran")]
+    #[citygml(geom = b"tran")]
     pub geometries: GeometryRef,
 
     #[citygml(path = b"@gml:id")]
@@ -35,7 +35,7 @@ pub struct Railway {
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Default, Debug, CityGMLElement)]
 pub struct Track {
-    #[citygml(auto_geom = b"tran")]
+    #[citygml(geom = b"tran")]
     pub geometries: GeometryRef,
 
     #[citygml(path = b"@gml:id")]
@@ -51,7 +51,7 @@ pub struct Track {
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Default, Debug, CityGMLElement)]
 pub struct Square {
-    #[citygml(auto_geom = b"tran")]
+    #[citygml(geom = b"tran")]
     pub geometries: GeometryRef,
 
     #[citygml(path = b"@gml:id")]
@@ -69,7 +69,7 @@ pub struct Square {
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Default, Debug, CityGMLElement)]
 pub struct Waterway {
-    #[citygml(auto_geom = b"tran")]
+    #[citygml(geom = b"tran")]
     pub geometries: GeometryRef,
 
     #[citygml(path = b"@gml:id")]
@@ -85,7 +85,7 @@ pub struct Waterway {
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Default, Debug, CityGMLElement)]
 pub struct TrafficArea {
-    #[citygml(auto_geom = b"tran")]
+    #[citygml(geom = b"tran")]
     pub geometries: GeometryRef,
 
     #[citygml(path = b"@gml:id")]
@@ -95,7 +95,7 @@ pub struct TrafficArea {
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Default, Debug, CityGMLElement)]
 pub struct AuxiliaryTrafficArea {
-    #[citygml(auto_geom = b"tran")]
+    #[citygml(geom = b"tran")]
     pub geometries: GeometryRef,
 
     #[citygml(path = b"@gml:id")]

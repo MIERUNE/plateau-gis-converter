@@ -10,11 +10,12 @@ pub fn normalize_ns_prefix<'a>(ns: &ResolveResult<'a>) -> &'a [u8] {
             const IUR_PREFIX: &[u8] = b"https://www.geospatial.jp/iur/";
             if name.starts_with(OPENGIS_PREFIX) {
                 let s = &name[OPENGIS_PREFIX.len()..];
+                // GML 3.1.1
                 if s == b"gml" {
                     b"gml:"
                 } else if s.starts_with(b"citygml/") {
+                    // CityGML 2.0
                     match &s[b"citygml/".len()..] {
-                        // CityGML
                         b"2.0" => b"core:",
                         b"appearance/2.0" => b"app:",
                         b"building/2.0" => b"bldg:",

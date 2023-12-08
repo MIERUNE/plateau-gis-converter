@@ -252,14 +252,14 @@ impl<R: BufRead> SubTreeReader<'_, R> {
         geomrefs: &mut GeometryRef,
         lod: u8,
     ) -> Result<(), ParseError> {
-        let poly_begin = self.state.geometry_collector.multi_polygon.len();
+        let poly_begin = self.state.geometry_collector.multipolygon.len();
 
         if expect_start(self.reader, &mut self.state.buf1, GML_NS, b"MultiSurface")? {
             self.parse_multi_surface()?;
             expect_end(self.reader, &mut self.state.buf1)?;
         }
 
-        let poly_end = self.state.geometry_collector.multi_polygon.len();
+        let poly_end = self.state.geometry_collector.multipolygon.len();
         if poly_end - poly_begin > 0 {
             geomrefs.push(GeometryRefEntry {
                 ty: GeometryType::Surface,
@@ -272,14 +272,14 @@ impl<R: BufRead> SubTreeReader<'_, R> {
     }
 
     fn parse_solid_prop(&mut self, geomrefs: &mut GeometryRef, lod: u8) -> Result<(), ParseError> {
-        let poly_begin = self.state.geometry_collector.multi_polygon.len();
+        let poly_begin = self.state.geometry_collector.multipolygon.len();
 
         if expect_start(self.reader, &mut self.state.buf1, GML_NS, b"Solid")? {
             self.parse_solid()?;
             expect_end(self.reader, &mut self.state.buf1)?;
         }
 
-        let poly_end = self.state.geometry_collector.multi_polygon.len();
+        let poly_end = self.state.geometry_collector.multipolygon.len();
         if poly_end - poly_begin > 0 {
             geomrefs.push(GeometryRefEntry {
                 ty: GeometryType::Solid,
@@ -300,7 +300,7 @@ impl<R: BufRead> SubTreeReader<'_, R> {
             match self.reader.read_event_into(&mut self.state.buf1) {
                 Ok(Event::Start(start)) => {
                     let (nsres, localname) = self.reader.resolve_element(start.name());
-                    let poly_begin = self.state.geometry_collector.multi_polygon.len();
+                    let poly_begin = self.state.geometry_collector.multipolygon.len();
 
                     let geomtype = match (nsres, localname.as_ref()) {
                         (Bound(GML_NS), b"Solid") => {
@@ -315,10 +315,10 @@ impl<R: BufRead> SubTreeReader<'_, R> {
                             self.parse_composite_surface()?;
                             GeometryType::Surface
                         }
-                        // (Bound(GML_NS), b"OrientableSurface") => ...
-                        // (Bound(GML_NS), b"Polygon") => ...
-                        // (Bound(GML_NS), b"TriangulatedSurface") => ...
-                        // (Bound(GML_NS), b"Tin") => ...
+                        (Bound(GML_NS), b"OrientableSurface") => todo!(),
+                        (Bound(GML_NS), b"Polygon") => todo!(),
+                        (Bound(GML_NS), b"TriangulatedSurface") => todo!(),
+                        (Bound(GML_NS), b"Tin") => todo!(),
                         _ => {
                             return Err(ParseError::SchemaViolation(format!(
                                 "Unexpected element <{}>",
@@ -327,7 +327,7 @@ impl<R: BufRead> SubTreeReader<'_, R> {
                         }
                     };
 
-                    let poly_end = self.state.geometry_collector.multi_polygon.len();
+                    let poly_end = self.state.geometry_collector.multipolygon.len();
                     if poly_end - poly_begin > 0 {
                         geomrefs.push(GeometryRefEntry {
                             ty: geomtype,
@@ -355,7 +355,7 @@ impl<R: BufRead> SubTreeReader<'_, R> {
         geomrefs: &mut GeometryRef,
         lod: u8,
     ) -> Result<(), ParseError> {
-        let poly_begin = self.state.geometry_collector.multi_polygon.len();
+        let poly_begin = self.state.geometry_collector.multipolygon.len();
 
         loop {
             match self.reader.read_event_into(&mut self.state.buf1) {
@@ -385,7 +385,7 @@ impl<R: BufRead> SubTreeReader<'_, R> {
             }
         }
 
-        let poly_end = self.state.geometry_collector.multi_polygon.len();
+        let poly_end = self.state.geometry_collector.multipolygon.len();
         if poly_end - poly_begin > 0 {
             geomrefs.push(GeometryRefEntry {
                 ty: GeometryType::Triangle,
