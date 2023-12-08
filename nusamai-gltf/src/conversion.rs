@@ -90,7 +90,7 @@ mod tests {
     }
 
     #[test]
-    fn test_generate_top_level_city_object() {
+    fn test_generate_city_objects() {
         let city_objects = generate_city_objects();
         let top_level_city_object1 = &city_objects[0];
         let top_level_city_object2 = &city_objects[1];
@@ -98,4 +98,13 @@ mod tests {
         assert_eq!(top_level_city_object1.cityobj.id, Some("bldg_test1"));
         assert_eq!(top_level_city_object2.cityobj.id, Some("bldg_test2"));
     }
+
+    #[test]
+    fn test_make_buffer() {}
+
+    #[test]
+    fn test_make_gltf() {}
+
+    #[test]
+    fn test_make_glb() {}
 }
