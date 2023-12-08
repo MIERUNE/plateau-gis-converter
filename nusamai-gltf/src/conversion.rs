@@ -50,7 +50,7 @@ mod tests {
         let mut top_level_city_object2 = generate_top_level_city_object();
         top_level_city_object2.cityobj.id = Some("bldg_test2");
 
-        let mut city_objects = vec![
+        let city_objects = vec![
             top_level_city_object1.clone(),
             top_level_city_object2.clone(),
         ];
