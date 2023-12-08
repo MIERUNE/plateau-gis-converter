@@ -1,4 +1,4 @@
-name: Test
+name: Test Tauri App
 
 on:
   push:
@@ -7,35 +7,35 @@ on:
     tags:
       - "*"
   pull_request:
+    paths:
+      - "app/**"
 
 env: 
-  CARGO_TERM_COLOR: always    
+  CARGO_TERM_COLOR: always
 
 permissions:
   contents: read
 
 jobs:
-  bulid_and_test:
+  test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - name: Rustup
-        run: rustup update stable
+        run: rustup toolchain install stable --profile minimal
       - name: Rust Cache
         uses: Swatinem/rust-cache@v2
-      - name: Install cargo-llvm-cov
-        uses: taiki-e/install-action@cargo-llvm-cov
-      - name: install dependencies
+      - name: Install dependencies
         # if: matrix.platform == 'ubuntu-20.04'
         run: |
           sudo apt-get update
           sudo apt install -y libwebkit2gtk-4.0-dev libgtk-3-dev libayatana-appindicator3-dev librsvg2-dev
+      - name: Install cargo-llvm-cov
+        uses: taiki-e/install-action@cargo-llvm-cov
       - name: Make Tauri build destination
         run: mkdir -p app/build
-      - name: Build
-        run: cargo build --verbose --workspace
       - name: Test
-        run: cargo llvm-cov --workspace --lcov --output-path lcov.info --all-features
+        run: cargo llvm-cov --package app --lcov --output-path lcov.info --all-features
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v3
         env:
