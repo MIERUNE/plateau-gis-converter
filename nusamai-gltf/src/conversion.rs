@@ -307,7 +307,7 @@ fn calc_center(all_mpolys: &Vec<nusamai_geometry::MultiPolygon<'_, 3>>) -> (f64,
     // 中心の経緯度を求める
     let (mu_lat, mu_lng) = {
         let (mut mu_lat, mut mu_lng) = (0.0, 0.0);
-        let mut num_features = 0;
+        let mut num_features: i32 = 0;
         for mpoly in all_mpolys {
             let (mut feat_mu_lng, mut feat_mu_lat) = (0.0, 0.0);
             let mut num_verts = 0;
@@ -328,33 +328,6 @@ fn calc_center(all_mpolys: &Vec<nusamai_geometry::MultiPolygon<'_, 3>>) -> (f64,
     };
     println!("{} {}", mu_lat, mu_lng);
     (mu_lat, mu_lng)
-}
-
-fn main() {
-    // 中心の経緯度を求める
-    let (mu_lat, mu_lng) = calc_center(&all_mpolys);
-
-    // 三角分割
-    // verticesは頂点の配列だが、u32のビットパターンで格納されている
-    let triangles = tessellation(&all_mpolys, mu_lng, mu_lat).unwrap();
-
-    // バイナリバッファを作成
-    let binary_buffer = make_binary_buffer(&triangles);
-    fs::write("./data/data.bin", &binary_buffer).unwrap();
-
-    // glTFのJSON文字列を作成
-    let gltf_string = make_gltf_json(&triangles);
-    fs::write("./data/data.gltf", &gltf_string).unwrap();
-
-    // glbを作成
-    let glb = make_glb(gltf_string, binary_buffer);
-
-    // ファイルを作成
-    let mut file = BufWriter::new(fs::File::create("./data/data.glb").unwrap());
-
-    // ファイルの書き込み
-    let _ = file.write_all(glb.as_slice());
-    let _ = file.flush();
 }
 
 #[cfg(test)]
@@ -419,7 +392,33 @@ mod tests {
     }
 
     #[test]
-    fn test_make_binary_buffer() {}
+    fn test_make_binary_buffer() {
+        let city_objects = generate_city_objects();
+
+        // バイナリバッファは全てのcity_objectは統合する
+        let mut all_vertices = Vec::new();
+        let mut all_indices: Vec<u32> = Vec::new();
+
+        for city_object in city_objects {
+            all_vertices.extend(city_object.geometries.vertices);
+
+            let indices: Vec<u32> = Vec::new();
+            for polygon in city_object.geometries.multipolygon.iter() {
+                println!("{:?}", polygon);
+            }
+        }
+        println!("{:?}", all_vertices);
+
+        // // 中心の経緯度を求める
+        // let (mu_lat, mu_lng) = calc_center(&all_mpolys);
+
+        // // 三角分割
+        // // verticesは頂点の配列だが、u32のビットパターンで格納されている
+        // let triangles = tessellation(&all_mpolys, mu_lng, mu_lat).unwrap();
+
+        // // バイナリバッファを作成
+        // let binary_buffer = make_binary_buffer(&triangles);
+    }
 
     #[test]
     fn test_make_gltf() {}
