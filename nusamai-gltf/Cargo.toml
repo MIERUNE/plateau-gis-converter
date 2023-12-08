@@ -12,6 +12,9 @@ serde_json = { version = "1.0.108", features = ["float_roundtrip"] }
 serde_repr = "0.1.17"
 citygml = { path = "../nusamai-plateau/citygml", features = ["serde"]}
 nusamai-geometry = { path = "../nusamai-geometry" }
+earcut-rs = { git = "https://github.com/MIERUNE/earcut-rs.git" }
+indexmap = "2.1.0"
+byteorder = "1.5.0"
 
 [dev-dependencies]
 glob = "0.3.1"
@@ -19,6 +22,3 @@ clap = { version = "4.4.6", features = ["derive"] }
 elementtree = "1.2.3"
 quick-xml = "0.31.0"
 thiserror = "1.0.50"
-earcut-rs = { git = "https://github.com/MIERUNE/earcut-rs.git" }
-indexmap = "2.1.0"
-byteorder = "1.5.0"
