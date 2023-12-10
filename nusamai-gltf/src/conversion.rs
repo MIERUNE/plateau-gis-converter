@@ -399,15 +399,16 @@ mod tests {
         let mut all_vertices = Vec::new();
         let mut all_indices: Vec<u32> = Vec::new();
 
-        for city_object in city_objects {
+        for city_object in city_objects.clone() {
             all_vertices.extend(city_object.geometries.vertices);
+        }
+        println!("{:?}", all_vertices);
 
-            let indices: Vec<u32> = Vec::new();
+        for city_object in city_objects.clone() {
             for polygon in city_object.geometries.multipolygon.iter() {
                 println!("{:?}", polygon);
             }
         }
-        println!("{:?}", all_vertices);
 
         // // 中心の経緯度を求める
         // let (mu_lat, mu_lng) = calc_center(&all_mpolys);
