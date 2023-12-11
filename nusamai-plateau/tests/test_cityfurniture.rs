@@ -55,18 +55,19 @@ fn example_toplevel_dispatcher<R: BufRead>(
 
 #[test]
 fn test_cityfurniture() {
-    let reader = std::io::BufReader::new(
-        std::fs::File::open("./tests/data/52384698_frn_6697_op.gml").unwrap(),
-    );
+    // let test_file_path = "./tests/data/52384698_frn_6697_op.gml"; // 沼津市
+    let test_file_path = "./tests/data/53394525_frn_6697_op.gml"; // 東京都23区
+    let reader = std::io::BufReader::new(std::fs::File::open(test_file_path).unwrap());
 
     let mut xml_reader = quick_xml::NsReader::from_reader(reader);
     match CityGMLReader::new().start_root(&mut xml_reader) {
         Ok(mut st) => match example_toplevel_dispatcher(&mut st) {
             Ok(counter) => {
-                assert_eq!(counter.city_objects, 0);
-                assert_eq!(counter.appearances, 0);
-                assert_eq!(counter.multipolygons, 0);
-                assert_eq!(counter.cityobjectgroups, 0);
+                // assert_eq!(counter.city_objects, 0);
+                // assert_eq!(counter.appearances, 0);
+                // assert_eq!(counter.multipolygons, 0);
+                // assert_eq!(counter.cityobjectgroups, 0);
+                assert_eq!(counter.cityfurniture, 2);
             }
             Err(e) => panic!("Err: {:?}", e),
         },
