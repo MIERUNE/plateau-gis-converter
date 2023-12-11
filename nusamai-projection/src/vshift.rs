@@ -26,7 +26,6 @@ impl JGD2011ToWGS84 {
 
     /// JGD2011 Geographic 3D (EPSG:6697) to WGS84 Geographic 3D (EPSG:4979)
     pub fn convert(&self, lng: f64, lat: f64, height: f64) -> (f64, f64, f64) {
-        println!("H: {height}");
         let ellipsoid_height = self.geoid.get_height(lng, lat) + height;
         (lng, lat, ellipsoid_height)
     }
@@ -41,9 +40,9 @@ mod tests {
         let (lng_jgd, lat_jgd, elevation) = (138.2839817085188, 37.12378643088312, 0.);
         let jgd_to_wgs = JGD2011ToWGS84::from_embed_model();
         let (lng_wgs, lat_wgs, ellips_height) = jgd_to_wgs.convert(lng_jgd, lat_jgd, elevation);
-        // (lng, lat) must be same.
+        assert!((ellips_height - 39.47387115961899).abs() < 1e-8);
+        // (lng, lat) must not change.
         assert_eq!(lng_jgd, lng_wgs);
         assert_eq!(lat_jgd, lat_wgs);
-        assert!((ellips_height - 39.47387115961899).abs() < 1e-8);
     }
 }
