@@ -23,7 +23,10 @@ fn example_toplevel_dispatcher<R: BufRead>(
             cityobj.parse(st)?;
             match cityobj {
                 CityObject::CityObjectGroup(_) => counter.cityobjectgroups += 1,
-                CityObject::CityFurniture(_) => counter.cityfurniture += 1,
+                CityObject::CityFurniture(frn) => {
+                    println!("frn: {:?}", frn);
+                    counter.cityfurniture += 1;
+                }
                 e => panic!("Unexpected city object type: {:?}", e),
             }
             let geometries = st.collect_geometries();
