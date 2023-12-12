@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<core:CityModel xmlns:brid="http://www.opengis.net/citygml/bridge/2.0" xmlns:frn="http://www.opengis.net/citygml/cityfurniture/2.0" xmlns:tran="http://www.opengis.net/citygml/transportation/2.0" xmlns:wtr="http://www.opengis.net/citygml/waterbody/2.0" xmlns:sch="http://www.ascc.net/xml/schematron" xmlns:veg="http://www.opengis.net/citygml/vegetation/2.0" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:tun="http://www.opengis.net/citygml/tunnel/2.0" xmlns:tex="http://www.opengis.net/citygml/texturedsurface/2.0" xmlns:gml="http://www.opengis.net/gml" xmlns:gen="http://www.opengis.net/citygml/generics/2.0" xmlns:dem="http://www.opengis.net/citygml/relief/2.0" xmlns:app="http://www.opengis.net/citygml/appearance/2.0" xmlns:luse="http://www.opengis.net/citygml/landuse/2.0" xmlns:uro="https://www.chisou.go.jp/tiiki/toshisaisei/itoshisaisei/iur/uro/1.5" xmlns:xAL="urn:oasis:names:tc:ciq:xsdschema:xAL:2.0" xmlns:bldg="http://www.opengis.net/citygml/building/2.0" xmlns:smil20="http://www.w3.org/2001/SMIL20/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:smil20lang="http://www.w3.org/2001/SMIL20/Language" xmlns:pbase="http://www.opengis.net/citygml/profiles/base/2.0" xmlns:core="http://www.opengis.net/citygml/2.0" xmlns:grp="http://www.opengis.net/citygml/cityobjectgroup/2.0" xsi:schemaLocation="https://www.chisou.go.jp/tiiki/toshisaisei/itoshisaisei/iur/uro/1.5 https://www.chisou.go.jp/tiiki/toshisaisei/itoshisaisei/iur/schemas/uro/1.5/urbanObject.xsd http://www.opengis.net/citygml/2.0 http://schemas.opengis.net/citygml/2.0/cityGMLBase.xsd http://www.opengis.net/citygml/landuse/2.0 http://schemas.opengis.net/citygml/landuse/2.0/landUse.xsd http://www.opengis.net/citygml/building/2.0 http://schemas.opengis.net/citygml/building/2.0/building.xsd http://www.opengis.net/citygml/transportation/2.0 http://schemas.opengis.net/citygml/transportation/2.0/transportation.xsd http://www.opengis.net/citygml/generics/2.0 http://schemas.opengis.net/citygml/generics/2.0/generics.xsd http://www.opengis.net/citygml/cityobjectgroup/2.0 http://schemas.opengis.net/citygml/cityobjectgroup/2.0/cityObjectGroup.xsd http://www.opengis.net/gml http://schemas.opengis.net/gml/3.1.1/base/gml.xsd http://www.opengis.net/citygml/cityfurniture/2.0 http://schemas.opengis.net/citygml/cityfurniture/2.0/cityFurniture.xsd http://www.opengis.net/citygml/vegetation/2.0 http://schemas.opengis.net/citygml/vegetation/2.0/vegetation.xsd http://www.opengis.net/citygml/appearance/2.0 http://schemas.opengis.net/citygml/appearance/2.0/appearance.xsd">
+<core:CityModel xmlns:brid="http://www.opengis.net/citygml/bridge/2.0" xmlns:frn="http://www.opengis.net/citygml/cityfurniture/2.0" xmlns:tran="http://www.opengis.net/citygml/transportation/2.0" xmlns:wtr="http://www.opengis.net/citygml/waterbody/2.0" xmlns:sch="http://www.ascc.net/xml/schematron" xmlns:veg="http://www.opengis.net/citygml/vegetation/2.0" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:tun="http://www.opengis.net/citygml/tunnel/2.0" xmlns:tex="http://www.opengis.net/citygml/texturedsurface/2.0" xmlns:gml="http://www.opengis.net/gml" xmlns:gen="http://www.opengis.net/citygml/generics/2.0" xmlns:dem="http://www.opengis.net/citygml/relief/2.0" xmlns:app="http://www.opengis.net/citygml/appearance/2.0" xmlns:luse="http://www.opengis.net/citygml/landuse/2.0" xmlns:uro="https://www.geospatial.jp/iur/uro/2.0" xmlns:xAL="urn:oasis:names:tc:ciq:xsdschema:xAL:2.0" xmlns:bldg="http://www.opengis.net/citygml/building/2.0" xmlns:smil20="http://www.w3.org/2001/SMIL20/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:smil20lang="http://www.w3.org/2001/SMIL20/Language" xmlns:pbase="http://www.opengis.net/citygml/profiles/base/2.0" xmlns:core="http://www.opengis.net/citygml/2.0" xmlns:grp="http://www.opengis.net/citygml/cityobjectgroup/2.0" xsi:schemaLocation="https://www.geospatial.jp/iur/uro/2.0 ../../schemas/iur/uro/2.0/urbanObject.xsd http://www.opengis.net/citygml/2.0 http://schemas.opengis.net/citygml/2.0/cityGMLBase.xsd http://www.opengis.net/citygml/landuse/2.0 http://schemas.opengis.net/citygml/landuse/2.0/landUse.xsd http://www.opengis.net/citygml/building/2.0 http://schemas.opengis.net/citygml/building/2.0/building.xsd http://www.opengis.net/citygml/transportation/2.0 http://schemas.opengis.net/citygml/transportation/2.0/transportation.xsd http://www.opengis.net/citygml/generics/2.0 http://schemas.opengis.net/citygml/generics/2.0/generics.xsd http://www.opengis.net/citygml/cityobjectgroup/2.0 http://schemas.opengis.net/citygml/cityobjectgroup/2.0/cityObjectGroup.xsd http://www.opengis.net/gml http://schemas.opengis.net/gml/3.1.1/base/gml.xsd http://www.opengis.net/citygml/cityfurniture/2.0 http://schemas.opengis.net/citygml/cityfurniture/2.0/cityFurniture.xsd http://www.opengis.net/citygml/vegetation/2.0 http://schemas.opengis.net/citygml/vegetation/2.0/vegetation.xsd http://www.opengis.net/citygml/appearance/2.0 http://schemas.opengis.net/citygml/appearance/2.0/appearance.xsd">
 	<gml:boundedBy>
 		<gml:Envelope srsName="http://www.opengis.net/def/crs/EPSG/0/6697" srsDimension="3">
 			<gml:lowerCorner>35.08157803397818 138.85738103085123 1.7891267316401893</gml:lowerCorner>
@@ -8143,11 +8143,11 @@
 		</app:Appearance>
 	</app:appearanceMember>
 	<core:cityObjectMember>
-		<frn:CityFurniture gml:id="FRN_16309dc7-9bf6-49e5-a18d-c4e739f1226b">
+		<frn:CityFurniture gml:id="frn_16309dc7-9bf6-49e5-a18d-c4e739f1226b">
 			<frn:class codeSpace="../../codelists/CityFurniture_class.xml">1000</frn:class>
 			<frn:function codeSpace="../../codelists/CityFurniture_function.xml">1010</frn:function>
 			<frn:lod3Geometry>
-				<gml:CompositeSurface>
+				<gml:MultiSurface>
 					<gml:surfaceMember>
 						<gml:Polygon gml:id="fme-gen-2462f156-9328-4710-a18e-534219033483">
 							<gml:exterior>
@@ -8535,16 +8535,16 @@
 							</gml:exterior>
 						</gml:Polygon>
 					</gml:surfaceMember>
-				</gml:CompositeSurface>
+				</gml:MultiSurface>
 			</frn:lod3Geometry>
 		</frn:CityFurniture>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
-		<frn:CityFurniture gml:id="FRN_1c6d9960-4eff-4aeb-b9b8-eb3cca5c6e17">
+		<frn:CityFurniture gml:id="frn_1c6d9960-4eff-4aeb-b9b8-eb3cca5c6e17">
 			<frn:class codeSpace="../../codelists/CityFurniture_class.xml">1000</frn:class>
 			<frn:function codeSpace="../../codelists/CityFurniture_function.xml">1200</frn:function>
 			<frn:lod3Geometry>
-				<gml:CompositeSurface>
+				<gml:MultiSurface>
 					<gml:surfaceMember>
 						<gml:Polygon gml:id="fme-gen-46cbfa32-4b04-4a81-b7df-69ee9250e4ee">
 							<gml:exterior>
@@ -8554,16 +8554,16 @@
 							</gml:exterior>
 						</gml:Polygon>
 					</gml:surfaceMember>
-				</gml:CompositeSurface>
+				</gml:MultiSurface>
 			</frn:lod3Geometry>
 		</frn:CityFurniture>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
-		<frn:CityFurniture gml:id="FRN_4b661e24-d8e1-4025-895c-2603c5362d3f">
+		<frn:CityFurniture gml:id="frn_4b661e24-d8e1-4025-895c-2603c5362d3f">
 			<frn:class codeSpace="../../codelists/CityFurniture_class.xml">1000</frn:class>
 			<frn:function codeSpace="../../codelists/CityFurniture_function.xml">5620</frn:function>
 			<frn:lod3Geometry>
-				<gml:CompositeSurface>
+				<gml:MultiSurface>
 					<gml:surfaceMember>
 						<gml:Polygon gml:id="fme-gen-dee27b2a-cca6-4813-8e55-eb9894b51def">
 							<gml:exterior>
@@ -8771,16 +8771,16 @@
 							</gml:exterior>
 						</gml:Polygon>
 					</gml:surfaceMember>
-				</gml:CompositeSurface>
+				</gml:MultiSurface>
 			</frn:lod3Geometry>
 		</frn:CityFurniture>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
-		<frn:CityFurniture gml:id="FRN_9a6815f1-b520-4032-bdfc-26a90b11e41b">
+		<frn:CityFurniture gml:id="frn_9a6815f1-b520-4032-bdfc-26a90b11e41b">
 			<frn:class codeSpace="../../codelists/CityFurniture_class.xml">1000</frn:class>
 			<frn:function codeSpace="../../codelists/CityFurniture_function.xml">1040</frn:function>
 			<frn:lod3Geometry>
-				<gml:CompositeSurface>
+				<gml:MultiSurface>
 					<gml:surfaceMember>
 						<gml:Polygon gml:id="fme-gen-c25f6353-fde6-4d15-9dfb-1c12462019e1">
 							<gml:exterior>
@@ -11634,16 +11634,16 @@
 							</gml:exterior>
 						</gml:Polygon>
 					</gml:surfaceMember>
-				</gml:CompositeSurface>
+				</gml:MultiSurface>
 			</frn:lod3Geometry>
 		</frn:CityFurniture>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
-		<frn:CityFurniture gml:id="FRN_76c404c7-8fd9-4cb5-b4e5-4697ae40f707">
+		<frn:CityFurniture gml:id="frn_76c404c7-8fd9-4cb5-b4e5-4697ae40f707">
 			<frn:class codeSpace="../../codelists/CityFurniture_class.xml">1000</frn:class>
 			<frn:function codeSpace="../../codelists/CityFurniture_function.xml">5610</frn:function>
 			<frn:lod3Geometry>
-				<gml:CompositeSurface>
+				<gml:MultiSurface>
 					<gml:surfaceMember>
 						<gml:Polygon gml:id="fme-gen-f63c6ec4-a15e-455a-a961-98d9ed6f433e">
 							<gml:exterior>
@@ -11860,16 +11860,16 @@
 							</gml:exterior>
 						</gml:Polygon>
 					</gml:surfaceMember>
-				</gml:CompositeSurface>
+				</gml:MultiSurface>
 			</frn:lod3Geometry>
 		</frn:CityFurniture>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
-		<frn:CityFurniture gml:id="FRN_7b8ec176-c4cb-4cd5-aa08-3a902ebbac70">
+		<frn:CityFurniture gml:id="frn_7b8ec176-c4cb-4cd5-aa08-3a902ebbac70">
 			<frn:class codeSpace="../../codelists/CityFurniture_class.xml">1000</frn:class>
 			<frn:function codeSpace="../../codelists/CityFurniture_function.xml">1010</frn:function>
 			<frn:lod3Geometry>
-				<gml:CompositeSurface>
+				<gml:MultiSurface>
 					<gml:surfaceMember>
 						<gml:Polygon gml:id="fme-gen-17e9cfcb-85ae-446c-95a7-d3c1fbb67078">
 							<gml:exterior>
@@ -12221,16 +12221,16 @@
 							</gml:exterior>
 						</gml:Polygon>
 					</gml:surfaceMember>
-				</gml:CompositeSurface>
+				</gml:MultiSurface>
 			</frn:lod3Geometry>
 		</frn:CityFurniture>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
-		<frn:CityFurniture gml:id="FRN_884b2541-3ec7-469c-a988-ed292511c6fc">
+		<frn:CityFurniture gml:id="frn_884b2541-3ec7-469c-a988-ed292511c6fc">
 			<frn:class codeSpace="../../codelists/CityFurniture_class.xml">1000</frn:class>
 			<frn:function codeSpace="../../codelists/CityFurniture_function.xml">5610</frn:function>
 			<frn:lod3Geometry>
-				<gml:CompositeSurface>
+				<gml:MultiSurface>
 					<gml:surfaceMember>
 						<gml:Polygon gml:id="fme-gen-def1f91f-d1d9-4a8b-b52d-d842c73a215d">
 							<gml:exterior>
@@ -12510,16 +12510,16 @@
 							</gml:exterior>
 						</gml:Polygon>
 					</gml:surfaceMember>
-				</gml:CompositeSurface>
+				</gml:MultiSurface>
 			</frn:lod3Geometry>
 		</frn:CityFurniture>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
-		<frn:CityFurniture gml:id="FRN_a7449398-ed19-482c-9271-18a8a40c7af3">
+		<frn:CityFurniture gml:id="frn_a7449398-ed19-482c-9271-18a8a40c7af3">
 			<frn:class codeSpace="../../codelists/CityFurniture_class.xml">1000</frn:class>
 			<frn:function codeSpace="../../codelists/CityFurniture_function.xml">1010</frn:function>
 			<frn:lod3Geometry>
-				<gml:CompositeSurface>
+				<gml:MultiSurface>
 					<gml:surfaceMember>
 						<gml:Polygon gml:id="fme-gen-36f484fe-88fd-4169-bdee-b8bbf54b6e0e">
 							<gml:exterior>
@@ -12556,16 +12556,16 @@
 							</gml:exterior>
 						</gml:Polygon>
 					</gml:surfaceMember>
-				</gml:CompositeSurface>
+				</gml:MultiSurface>
 			</frn:lod3Geometry>
 		</frn:CityFurniture>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
-		<frn:CityFurniture gml:id="FRN_e2f5ff7a-9b46-4db1-bd7e-ca148fad4f62">
+		<frn:CityFurniture gml:id="frn_e2f5ff7a-9b46-4db1-bd7e-ca148fad4f62">
 			<frn:class codeSpace="../../codelists/CityFurniture_class.xml">1000</frn:class>
 			<frn:function codeSpace="../../codelists/CityFurniture_function.xml">5610</frn:function>
 			<frn:lod3Geometry>
-				<gml:CompositeSurface>
+				<gml:MultiSurface>
 					<gml:surfaceMember>
 						<gml:Polygon gml:id="fme-gen-89a47d9b-c9b7-4fd6-b0f8-339e4485374b">
 							<gml:exterior>
@@ -12809,16 +12809,16 @@
 							</gml:exterior>
 						</gml:Polygon>
 					</gml:surfaceMember>
-				</gml:CompositeSurface>
+				</gml:MultiSurface>
 			</frn:lod3Geometry>
 		</frn:CityFurniture>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
-		<frn:CityFurniture gml:id="FRN_d7e54a52-eb8a-4029-9190-5b6071590d90">
+		<frn:CityFurniture gml:id="frn_d7e54a52-eb8a-4029-9190-5b6071590d90">
 			<frn:class codeSpace="../../codelists/CityFurniture_class.xml">1000</frn:class>
 			<frn:function codeSpace="../../codelists/CityFurniture_function.xml">8020</frn:function>
 			<frn:lod3Geometry>
-				<gml:CompositeSurface>
+				<gml:MultiSurface>
 					<gml:surfaceMember>
 						<gml:Polygon gml:id="fme-gen-37f43b81-90f9-4701-a0c2-301be20851ed">
 							<gml:exterior>
@@ -13098,16 +13098,16 @@
 							</gml:exterior>
 						</gml:Polygon>
 					</gml:surfaceMember>
-				</gml:CompositeSurface>
+				</gml:MultiSurface>
 			</frn:lod3Geometry>
 		</frn:CityFurniture>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
-		<frn:CityFurniture gml:id="FRN_d26531cf-9637-4896-bfb9-42a918cac64f">
+		<frn:CityFurniture gml:id="frn_d26531cf-9637-4896-bfb9-42a918cac64f">
 			<frn:class codeSpace="../../codelists/CityFurniture_class.xml">1000</frn:class>
 			<frn:function codeSpace="../../codelists/CityFurniture_function.xml">1040</frn:function>
 			<frn:lod3Geometry>
-				<gml:CompositeSurface>
+				<gml:MultiSurface>
 					<gml:surfaceMember>
 						<gml:Polygon gml:id="fme-gen-00aa6aef-f0c3-4202-bd3a-bfba226011e4">
 							<gml:exterior>
@@ -15745,16 +15745,16 @@
 							</gml:exterior>
 						</gml:Polygon>
 					</gml:surfaceMember>
-				</gml:CompositeSurface>
+				</gml:MultiSurface>
 			</frn:lod3Geometry>
 		</frn:CityFurniture>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
-		<frn:CityFurniture gml:id="FRN_6057384d-aec8-49f1-a4ce-b27bf7bc0875">
+		<frn:CityFurniture gml:id="frn_6057384d-aec8-49f1-a4ce-b27bf7bc0875">
 			<frn:class codeSpace="../../codelists/CityFurniture_class.xml">1000</frn:class>
 			<frn:function codeSpace="../../codelists/CityFurniture_function.xml">1010</frn:function>
 			<frn:lod3Geometry>
-				<gml:CompositeSurface>
+				<gml:MultiSurface>
 					<gml:surfaceMember>
 						<gml:Polygon gml:id="fme-gen-4ce99615-dbb0-4b19-97b5-f6f5f3c228b6">
 							<gml:exterior>
@@ -15800,16 +15800,16 @@
 							</gml:exterior>
 						</gml:Polygon>
 					</gml:surfaceMember>
-				</gml:CompositeSurface>
+				</gml:MultiSurface>
 			</frn:lod3Geometry>
 		</frn:CityFurniture>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
-		<frn:CityFurniture gml:id="FRN_512878df-9301-49b9-9f72-79276bdd780b">
+		<frn:CityFurniture gml:id="frn_512878df-9301-49b9-9f72-79276bdd780b">
 			<frn:class codeSpace="../../codelists/CityFurniture_class.xml">1000</frn:class>
 			<frn:function codeSpace="../../codelists/CityFurniture_function.xml">1020</frn:function>
 			<frn:lod3Geometry>
-				<gml:CompositeSurface>
+				<gml:MultiSurface>
 					<gml:surfaceMember>
 						<gml:Polygon gml:id="fme-gen-768b7336-377b-4b79-9b8c-f75ae37cac70">
 							<gml:exterior>
@@ -16062,16 +16062,16 @@
 							</gml:exterior>
 						</gml:Polygon>
 					</gml:surfaceMember>
-				</gml:CompositeSurface>
+				</gml:MultiSurface>
 			</frn:lod3Geometry>
 		</frn:CityFurniture>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
-		<frn:CityFurniture gml:id="FRN_48ad9387-e8bc-4ee3-921f-59c7e09e0179">
+		<frn:CityFurniture gml:id="frn_48ad9387-e8bc-4ee3-921f-59c7e09e0179">
 			<frn:class codeSpace="../../codelists/CityFurniture_class.xml">1000</frn:class>
 			<frn:function codeSpace="../../codelists/CityFurniture_function.xml">1040</frn:function>
 			<frn:lod3Geometry>
-				<gml:CompositeSurface>
+				<gml:MultiSurface>
 					<gml:surfaceMember>
 						<gml:Polygon gml:id="fme-gen-bf9e5703-4c0c-4ecb-aef4-c349311c258f">
 							<gml:exterior>
@@ -16081,16 +16081,16 @@
 							</gml:exterior>
 						</gml:Polygon>
 					</gml:surfaceMember>
-				</gml:CompositeSurface>
+				</gml:MultiSurface>
 			</frn:lod3Geometry>
 		</frn:CityFurniture>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
-		<frn:CityFurniture gml:id="FRN_f7571375-5589-434d-8c9e-0132590822f6">
+		<frn:CityFurniture gml:id="frn_f7571375-5589-434d-8c9e-0132590822f6">
 			<frn:class codeSpace="../../codelists/CityFurniture_class.xml">1000</frn:class>
 			<frn:function codeSpace="../../codelists/CityFurniture_function.xml">5610</frn:function>
 			<frn:lod3Geometry>
-				<gml:CompositeSurface>
+				<gml:MultiSurface>
 					<gml:surfaceMember>
 						<gml:Polygon gml:id="fme-gen-6ee1a56a-d7cf-4c96-9bd4-1204a6fa4c5a">
 							<gml:exterior>
@@ -16343,16 +16343,16 @@
 							</gml:exterior>
 						</gml:Polygon>
 					</gml:surfaceMember>
-				</gml:CompositeSurface>
+				</gml:MultiSurface>
 			</frn:lod3Geometry>
 		</frn:CityFurniture>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
-		<frn:CityFurniture gml:id="FRN_5bb45f09-263f-4fb4-904b-5d85f78de809">
+		<frn:CityFurniture gml:id="frn_5bb45f09-263f-4fb4-904b-5d85f78de809">
 			<frn:class codeSpace="../../codelists/CityFurniture_class.xml">1000</frn:class>
 			<frn:function codeSpace="../../codelists/CityFurniture_function.xml">5610</frn:function>
 			<frn:lod3Geometry>
-				<gml:CompositeSurface>
+				<gml:MultiSurface>
 					<gml:surfaceMember>
 						<gml:Polygon gml:id="fme-gen-7e1f2953-746f-4f36-bb30-f79d2707ae14">
 							<gml:exterior>
@@ -16623,16 +16623,16 @@
 							</gml:exterior>
 						</gml:Polygon>
 					</gml:surfaceMember>
-				</gml:CompositeSurface>
+				</gml:MultiSurface>
 			</frn:lod3Geometry>
 		</frn:CityFurniture>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
-		<frn:CityFurniture gml:id="FRN_3469ffb4-df22-4c73-876e-cea3baf16595">
+		<frn:CityFurniture gml:id="frn_3469ffb4-df22-4c73-876e-cea3baf16595">
 			<frn:class codeSpace="../../codelists/CityFurniture_class.xml">1000</frn:class>
 			<frn:function codeSpace="../../codelists/CityFurniture_function.xml">1120</frn:function>
 			<frn:lod3Geometry>
-				<gml:CompositeSurface>
+				<gml:MultiSurface>
 					<gml:surfaceMember>
 						<gml:Polygon gml:id="fme-gen-0e188240-281c-49a0-b0e3-010e814d05d6">
 							<gml:exterior>
@@ -16642,16 +16642,16 @@
 							</gml:exterior>
 						</gml:Polygon>
 					</gml:surfaceMember>
-				</gml:CompositeSurface>
+				</gml:MultiSurface>
 			</frn:lod3Geometry>
 		</frn:CityFurniture>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
-		<frn:CityFurniture gml:id="FRN_582926ed-56bb-4d21-b128-bc454a226792">
+		<frn:CityFurniture gml:id="frn_582926ed-56bb-4d21-b128-bc454a226792">
 			<frn:class codeSpace="../../codelists/CityFurniture_class.xml">1000</frn:class>
 			<frn:function codeSpace="../../codelists/CityFurniture_function.xml">1040</frn:function>
 			<frn:lod3Geometry>
-				<gml:CompositeSurface>
+				<gml:MultiSurface>
 					<gml:surfaceMember>
 						<gml:Polygon gml:id="fme-gen-432a3604-e264-4254-aa21-202c4502fde9">
 							<gml:exterior>
@@ -18083,16 +18083,16 @@
 							</gml:exterior>
 						</gml:Polygon>
 					</gml:surfaceMember>
-				</gml:CompositeSurface>
+				</gml:MultiSurface>
 			</frn:lod3Geometry>
 		</frn:CityFurniture>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
-		<frn:CityFurniture gml:id="FRN_3156231a-4120-4a4a-8acb-e04efb35e1b0">
+		<frn:CityFurniture gml:id="frn_3156231a-4120-4a4a-8acb-e04efb35e1b0">
 			<frn:class codeSpace="../../codelists/CityFurniture_class.xml">1000</frn:class>
 			<frn:function codeSpace="../../codelists/CityFurniture_function.xml">5620</frn:function>
 			<frn:lod3Geometry>
-				<gml:CompositeSurface>
+				<gml:MultiSurface>
 					<gml:surfaceMember>
 						<gml:Polygon gml:id="fme-gen-fd47be73-e6e1-4e93-b86f-01324a7dcdea">
 							<gml:exterior>
@@ -18336,18 +18336,16 @@
 							</gml:exterior>
 						</gml:Polygon>
 					</gml:surfaceMember>
-				</gml:CompositeSurface>
+				</gml:MultiSurface>
 			</frn:lod3Geometry>
 		</frn:CityFurniture>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
-		<frn:CityFurniture gml:id="FRN_d95d8062-598b-4f99-8cd5-8da840637b58">
+		<frn:CityFurniture gml:id="frn_d95d8062-598b-4f99-8cd5-8da840637b58">
 			<frn:class codeSpace="../../codelists/CityFurniture_class.xml">1000</frn:class>
 			<frn:function codeSpace="../../codelists/CityFurniture_function.xml">2000</frn:function>
 			<frn:lod3Geometry>
-				<gml:MultiGeometry>
-					<gml:geometryMember>
-						<gml:CompositeSurface>
+						<gml:MultiSurface>
 							<gml:surfaceMember>
 								<gml:Polygon gml:id="fme-gen-92c0bd59-9dbc-488d-aabf-0fd3b0c95645">
 									<gml:exterior>
@@ -18402,20 +18400,16 @@
 									</gml:exterior>
 								</gml:Polygon>
 							</gml:surfaceMember>
-						</gml:CompositeSurface>
-					</gml:geometryMember>
-				</gml:MultiGeometry>
+						</gml:MultiSurface>
 			</frn:lod3Geometry>
 		</frn:CityFurniture>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
-		<frn:CityFurniture gml:id="FRN_a1fa2cd5-fd3b-446b-8ff6-52cb40f96431">
+		<frn:CityFurniture gml:id="frn_a1fa2cd5-fd3b-446b-8ff6-52cb40f96431">
 			<frn:class codeSpace="../../codelists/CityFurniture_class.xml">1000</frn:class>
 			<frn:function codeSpace="../../codelists/CityFurniture_function.xml">2000</frn:function>
 			<frn:lod3Geometry>
-				<gml:MultiGeometry>
-					<gml:geometryMember>
-						<gml:CompositeSurface>
+						<gml:MultiSurface>
 							<gml:surfaceMember>
 								<gml:Polygon gml:id="fme-gen-bc4536d6-6b6c-4ce8-82ec-06f309c266d4">
 									<gml:exterior>
@@ -18470,20 +18464,16 @@
 									</gml:exterior>
 								</gml:Polygon>
 							</gml:surfaceMember>
-						</gml:CompositeSurface>
-					</gml:geometryMember>
-				</gml:MultiGeometry>
+						</gml:MultiSurface>
 			</frn:lod3Geometry>
 		</frn:CityFurniture>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
-		<frn:CityFurniture gml:id="FRN_c4b47754-3e08-4b5c-9571-716103ca4760">
+		<frn:CityFurniture gml:id="frn_c4b47754-3e08-4b5c-9571-716103ca4760">
 			<frn:class codeSpace="../../codelists/CityFurniture_class.xml">1000</frn:class>
 			<frn:function codeSpace="../../codelists/CityFurniture_function.xml">9999</frn:function>
 			<frn:lod3Geometry>
-				<gml:MultiGeometry>
-					<gml:geometryMember>
-						<gml:CompositeSurface>
+						<gml:MultiSurface>
 							<gml:surfaceMember>
 								<gml:Polygon gml:id="fme-gen-58b7b494-9eb4-4569-8dd5-b77d63c6fee5">
 									<gml:exterior>
@@ -18538,20 +18528,16 @@
 									</gml:exterior>
 								</gml:Polygon>
 							</gml:surfaceMember>
-						</gml:CompositeSurface>
-					</gml:geometryMember>
-				</gml:MultiGeometry>
+						</gml:MultiSurface>
 			</frn:lod3Geometry>
 		</frn:CityFurniture>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
-		<frn:CityFurniture gml:id="FRN_9af48132-8780-4047-9024-68bf06e5524e">
+		<frn:CityFurniture gml:id="frn_9af48132-8780-4047-9024-68bf06e5524e">
 			<frn:class codeSpace="../../codelists/CityFurniture_class.xml">1000</frn:class>
 			<frn:function codeSpace="../../codelists/CityFurniture_function.xml">9999</frn:function>
 			<frn:lod3Geometry>
-				<gml:MultiGeometry>
-					<gml:geometryMember>
-						<gml:CompositeSurface>
+						<gml:MultiSurface>
 							<gml:surfaceMember>
 								<gml:Polygon gml:id="fme-gen-6ee0a139-afa3-4a45-97b4-97e94571d288">
 									<gml:exterior>
@@ -18606,20 +18592,16 @@
 									</gml:exterior>
 								</gml:Polygon>
 							</gml:surfaceMember>
-						</gml:CompositeSurface>
-					</gml:geometryMember>
-				</gml:MultiGeometry>
+						</gml:MultiSurface>
 			</frn:lod3Geometry>
 		</frn:CityFurniture>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
-		<frn:CityFurniture gml:id="FRN_4e71d4ae-6705-461c-b2ea-b4feb0b95372">
+		<frn:CityFurniture gml:id="frn_4e71d4ae-6705-461c-b2ea-b4feb0b95372">
 			<frn:class codeSpace="../../codelists/CityFurniture_class.xml">1000</frn:class>
 			<frn:function codeSpace="../../codelists/CityFurniture_function.xml">9999</frn:function>
 			<frn:lod3Geometry>
-				<gml:MultiGeometry>
-					<gml:geometryMember>
-						<gml:CompositeSurface>
+						<gml:MultiSurface>
 							<gml:surfaceMember>
 								<gml:Polygon gml:id="fme-gen-cf6dedc7-42d6-49fa-8732-0ebe107cd1ac">
 									<gml:exterior>
@@ -18674,20 +18656,16 @@
 									</gml:exterior>
 								</gml:Polygon>
 							</gml:surfaceMember>
-						</gml:CompositeSurface>
-					</gml:geometryMember>
-				</gml:MultiGeometry>
+						</gml:MultiSurface>
 			</frn:lod3Geometry>
 		</frn:CityFurniture>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
-		<frn:CityFurniture gml:id="FRN_a1ced551-fa50-40b0-a162-0b028addffca">
+		<frn:CityFurniture gml:id="frn_a1ced551-fa50-40b0-a162-0b028addffca">
 			<frn:class codeSpace="../../codelists/CityFurniture_class.xml">1000</frn:class>
 			<frn:function codeSpace="../../codelists/CityFurniture_function.xml">9999</frn:function>
 			<frn:lod3Geometry>
-				<gml:MultiGeometry>
-					<gml:geometryMember>
-						<gml:CompositeSurface>
+						<gml:MultiSurface>
 							<gml:surfaceMember>
 								<gml:Polygon gml:id="fme-gen-3279b366-da2b-4cf6-845b-0c3b775b8838">
 									<gml:exterior>
@@ -18823,20 +18801,16 @@
 									</gml:exterior>
 								</gml:Polygon>
 							</gml:surfaceMember>
-						</gml:CompositeSurface>
-					</gml:geometryMember>
-				</gml:MultiGeometry>
+						</gml:MultiSurface>
 			</frn:lod3Geometry>
 		</frn:CityFurniture>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
-		<frn:CityFurniture gml:id="FRN_05f31b22-609e-4cb2-8675-56fbfaea8e77">
+		<frn:CityFurniture gml:id="frn_05f31b22-609e-4cb2-8675-56fbfaea8e77">
 			<frn:class codeSpace="../../codelists/CityFurniture_class.xml">1000</frn:class>
 			<frn:function codeSpace="../../codelists/CityFurniture_function.xml">8030</frn:function>
 			<frn:lod3Geometry>
-				<gml:MultiGeometry>
-					<gml:geometryMember>
-						<gml:CompositeSurface>
+						<gml:MultiSurface>
 							<gml:surfaceMember>
 								<gml:Polygon gml:id="fme-gen-dcc57b42-a464-45f4-ad08-37c82fe15deb">
 									<gml:exterior>
@@ -18945,20 +18919,16 @@
 									</gml:exterior>
 								</gml:Polygon>
 							</gml:surfaceMember>
-						</gml:CompositeSurface>
-					</gml:geometryMember>
-				</gml:MultiGeometry>
+						</gml:MultiSurface>
 			</frn:lod3Geometry>
 		</frn:CityFurniture>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
-		<frn:CityFurniture gml:id="FRN_bcd06de2-7dc3-49a8-9a40-3f5ec2bcd39c">
+		<frn:CityFurniture gml:id="frn_bcd06de2-7dc3-49a8-9a40-3f5ec2bcd39c">
 			<frn:class codeSpace="../../codelists/CityFurniture_class.xml">1000</frn:class>
 			<frn:function codeSpace="../../codelists/CityFurniture_function.xml">8010</frn:function>
 			<frn:lod3Geometry>
-				<gml:MultiGeometry>
-					<gml:geometryMember>
-						<gml:CompositeSurface>
+						<gml:MultiSurface>
 							<gml:surfaceMember>
 								<gml:Polygon gml:id="fme-gen-d2be0356-becf-4b3d-8ff1-3e6bebc558aa">
 									<gml:exterior>
@@ -19382,20 +19352,16 @@
 									</gml:exterior>
 								</gml:Polygon>
 							</gml:surfaceMember>
-						</gml:CompositeSurface>
-					</gml:geometryMember>
-				</gml:MultiGeometry>
+						</gml:MultiSurface>
 			</frn:lod3Geometry>
 		</frn:CityFurniture>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
-		<frn:CityFurniture gml:id="FRN_d41da7ca-6196-40e1-949a-03c04dbc4b5a">
+		<frn:CityFurniture gml:id="frn_d41da7ca-6196-40e1-949a-03c04dbc4b5a">
 			<frn:class codeSpace="../../codelists/CityFurniture_class.xml">1000</frn:class>
 			<frn:function codeSpace="../../codelists/CityFurniture_function.xml">4840</frn:function>
 			<frn:lod3Geometry>
-				<gml:MultiGeometry>
-					<gml:geometryMember>
-						<gml:CompositeSurface>
+						<gml:MultiSurface>
 							<gml:surfaceMember>
 								<gml:Polygon gml:id="fme-gen-20086875-8854-4880-9705-1d6c28ae038d">
 									<gml:exterior>
@@ -19612,20 +19578,16 @@
 									</gml:exterior>
 								</gml:Polygon>
 							</gml:surfaceMember>
-						</gml:CompositeSurface>
-					</gml:geometryMember>
-				</gml:MultiGeometry>
+						</gml:MultiSurface>
 			</frn:lod3Geometry>
 		</frn:CityFurniture>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
-		<frn:CityFurniture gml:id="FRN_e6d1d552-854a-4a66-b8f8-f89e0e4d6ac0">
+		<frn:CityFurniture gml:id="frn_e6d1d552-854a-4a66-b8f8-f89e0e4d6ac0">
 			<frn:class codeSpace="../../codelists/CityFurniture_class.xml">1000</frn:class>
 			<frn:function codeSpace="../../codelists/CityFurniture_function.xml">4840</frn:function>
 			<frn:lod3Geometry>
-				<gml:MultiGeometry>
-					<gml:geometryMember>
-						<gml:CompositeSurface>
+						<gml:MultiSurface>
 							<gml:surfaceMember>
 								<gml:Polygon gml:id="fme-gen-2217318f-1406-48f1-95c7-d6268ac07463">
 									<gml:exterior>
@@ -19842,20 +19804,16 @@
 									</gml:exterior>
 								</gml:Polygon>
 							</gml:surfaceMember>
-						</gml:CompositeSurface>
-					</gml:geometryMember>
-				</gml:MultiGeometry>
+						</gml:MultiSurface>
 			</frn:lod3Geometry>
 		</frn:CityFurniture>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
-		<frn:CityFurniture gml:id="FRN_d77c4853-08f4-4469-84f4-672bdf168d54">
+		<frn:CityFurniture gml:id="frn_d77c4853-08f4-4469-84f4-672bdf168d54">
 			<frn:class codeSpace="../../codelists/CityFurniture_class.xml">1000</frn:class>
 			<frn:function codeSpace="../../codelists/CityFurniture_function.xml">4840</frn:function>
 			<frn:lod3Geometry>
-				<gml:MultiGeometry>
-					<gml:geometryMember>
-						<gml:CompositeSurface>
+						<gml:MultiSurface>
 							<gml:surfaceMember>
 								<gml:Polygon gml:id="fme-gen-8a13199d-e95b-45da-b9a3-dc148dde3452">
 									<gml:exterior>
@@ -20072,20 +20030,16 @@
 									</gml:exterior>
 								</gml:Polygon>
 							</gml:surfaceMember>
-						</gml:CompositeSurface>
-					</gml:geometryMember>
-				</gml:MultiGeometry>
+						</gml:MultiSurface>
 			</frn:lod3Geometry>
 		</frn:CityFurniture>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
-		<frn:CityFurniture gml:id="FRN_8f99ba0f-bd36-4497-9689-84debb07c59c">
+		<frn:CityFurniture gml:id="frn_8f99ba0f-bd36-4497-9689-84debb07c59c">
 			<frn:class codeSpace="../../codelists/CityFurniture_class.xml">1000</frn:class>
 			<frn:function codeSpace="../../codelists/CityFurniture_function.xml">4840</frn:function>
 			<frn:lod3Geometry>
-				<gml:MultiGeometry>
-					<gml:geometryMember>
-						<gml:CompositeSurface>
+						<gml:MultiSurface>
 							<gml:surfaceMember>
 								<gml:Polygon gml:id="fme-gen-0ac7c29a-d029-4c3d-ad18-b057466f8237">
 									<gml:exterior>
@@ -20248,20 +20202,16 @@
 									</gml:exterior>
 								</gml:Polygon>
 							</gml:surfaceMember>
-						</gml:CompositeSurface>
-					</gml:geometryMember>
-				</gml:MultiGeometry>
+						</gml:MultiSurface>
 			</frn:lod3Geometry>
 		</frn:CityFurniture>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
-		<frn:CityFurniture gml:id="FRN_4cdefffd-bd8e-4d51-81c9-58919abfb8bb">
+		<frn:CityFurniture gml:id="frn_4cdefffd-bd8e-4d51-81c9-58919abfb8bb">
 			<frn:class codeSpace="../../codelists/CityFurniture_class.xml">1000</frn:class>
 			<frn:function codeSpace="../../codelists/CityFurniture_function.xml">4840</frn:function>
 			<frn:lod3Geometry>
-				<gml:MultiGeometry>
-					<gml:geometryMember>
-						<gml:CompositeSurface>
+						<gml:MultiSurface>
 							<gml:surfaceMember>
 								<gml:Polygon gml:id="fme-gen-18c77d7e-f481-4b7a-863f-e6f87e44dfef">
 									<gml:exterior>
@@ -20640,20 +20590,16 @@
 									</gml:exterior>
 								</gml:Polygon>
 							</gml:surfaceMember>
-						</gml:CompositeSurface>
-					</gml:geometryMember>
-				</gml:MultiGeometry>
+						</gml:MultiSurface>
 			</frn:lod3Geometry>
 		</frn:CityFurniture>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
-		<frn:CityFurniture gml:id="FRN_52db849a-4619-4c79-bb46-cf52074a536c">
+		<frn:CityFurniture gml:id="frn_52db849a-4619-4c79-bb46-cf52074a536c">
 			<frn:class codeSpace="../../codelists/CityFurniture_class.xml">1000</frn:class>
 			<frn:function codeSpace="../../codelists/CityFurniture_function.xml">4840</frn:function>
 			<frn:lod3Geometry>
-				<gml:MultiGeometry>
-					<gml:geometryMember>
-						<gml:CompositeSurface>
+						<gml:MultiSurface>
 							<gml:surfaceMember>
 								<gml:Polygon gml:id="fme-gen-7e6220f0-2456-45a0-90a1-884c01905021">
 									<gml:exterior>
@@ -20942,20 +20888,16 @@
 									</gml:exterior>
 								</gml:Polygon>
 							</gml:surfaceMember>
-						</gml:CompositeSurface>
-					</gml:geometryMember>
-				</gml:MultiGeometry>
+						</gml:MultiSurface>
 			</frn:lod3Geometry>
 		</frn:CityFurniture>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
-		<frn:CityFurniture gml:id="FRN_c33d5882-3c8d-4f00-961c-46c6660ed7d5">
+		<frn:CityFurniture gml:id="frn_c33d5882-3c8d-4f00-961c-46c6660ed7d5">
 			<frn:class codeSpace="../../codelists/CityFurniture_class.xml">1000</frn:class>
 			<frn:function codeSpace="../../codelists/CityFurniture_function.xml">4840</frn:function>
 			<frn:lod3Geometry>
-				<gml:MultiGeometry>
-					<gml:geometryMember>
-						<gml:CompositeSurface>
+						<gml:MultiSurface>
 							<gml:surfaceMember>
 								<gml:Polygon gml:id="fme-gen-60082d76-8e53-4827-a80b-4c8a515f5498">
 									<gml:exterior>
@@ -21244,20 +21186,16 @@
 									</gml:exterior>
 								</gml:Polygon>
 							</gml:surfaceMember>
-						</gml:CompositeSurface>
-					</gml:geometryMember>
-				</gml:MultiGeometry>
+						</gml:MultiSurface>
 			</frn:lod3Geometry>
 		</frn:CityFurniture>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
-		<frn:CityFurniture gml:id="FRN_7a70d75d-13bb-49ab-8914-d2fb5768c55f">
+		<frn:CityFurniture gml:id="frn_7a70d75d-13bb-49ab-8914-d2fb5768c55f">
 			<frn:class codeSpace="../../codelists/CityFurniture_class.xml">1000</frn:class>
 			<frn:function codeSpace="../../codelists/CityFurniture_function.xml">4840</frn:function>
 			<frn:lod3Geometry>
-				<gml:MultiGeometry>
-					<gml:geometryMember>
-						<gml:CompositeSurface>
+						<gml:MultiSurface>
 							<gml:surfaceMember>
 								<gml:Polygon gml:id="fme-gen-2fe70670-a0f4-4b92-a8c5-b4f7c385250a">
 									<gml:exterior>
@@ -21546,20 +21484,16 @@
 									</gml:exterior>
 								</gml:Polygon>
 							</gml:surfaceMember>
-						</gml:CompositeSurface>
-					</gml:geometryMember>
-				</gml:MultiGeometry>
+						</gml:MultiSurface>
 			</frn:lod3Geometry>
 		</frn:CityFurniture>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
-		<frn:CityFurniture gml:id="FRN_4d87bc71-9bc0-4af5-b9cf-2fc57ea9868f">
+		<frn:CityFurniture gml:id="frn_4d87bc71-9bc0-4af5-b9cf-2fc57ea9868f">
 			<frn:class codeSpace="../../codelists/CityFurniture_class.xml">1000</frn:class>
 			<frn:function codeSpace="../../codelists/CityFurniture_function.xml">4840</frn:function>
 			<frn:lod3Geometry>
-				<gml:MultiGeometry>
-					<gml:geometryMember>
-						<gml:CompositeSurface>
+						<gml:MultiSurface>
 							<gml:surfaceMember>
 								<gml:Polygon gml:id="fme-gen-5e50ae2a-0e56-4aeb-8e33-b2148d744bce">
 									<gml:exterior>
@@ -21848,20 +21782,16 @@
 									</gml:exterior>
 								</gml:Polygon>
 							</gml:surfaceMember>
-						</gml:CompositeSurface>
-					</gml:geometryMember>
-				</gml:MultiGeometry>
+						</gml:MultiSurface>
 			</frn:lod3Geometry>
 		</frn:CityFurniture>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
-		<frn:CityFurniture gml:id="FRN_c9c8f807-4370-4cb9-b76d-03e9d3f9fd6c">
+		<frn:CityFurniture gml:id="frn_c9c8f807-4370-4cb9-b76d-03e9d3f9fd6c">
 			<frn:class codeSpace="../../codelists/CityFurniture_class.xml">1000</frn:class>
 			<frn:function codeSpace="../../codelists/CityFurniture_function.xml">4840</frn:function>
 			<frn:lod3Geometry>
-				<gml:MultiGeometry>
-					<gml:geometryMember>
-						<gml:CompositeSurface>
+						<gml:MultiSurface>
 							<gml:surfaceMember>
 								<gml:Polygon gml:id="fme-gen-2ed29057-c5e2-4aa6-857c-654264f1c9dc">
 									<gml:exterior>
@@ -22024,20 +21954,16 @@
 									</gml:exterior>
 								</gml:Polygon>
 							</gml:surfaceMember>
-						</gml:CompositeSurface>
-					</gml:geometryMember>
-				</gml:MultiGeometry>
+						</gml:MultiSurface>
 			</frn:lod3Geometry>
 		</frn:CityFurniture>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
-		<frn:CityFurniture gml:id="FRN_f8eb2da2-e153-4c12-b0a2-658411ca2ba1">
+		<frn:CityFurniture gml:id="frn_f8eb2da2-e153-4c12-b0a2-658411ca2ba1">
 			<frn:class codeSpace="../../codelists/CityFurniture_class.xml">1000</frn:class>
 			<frn:function codeSpace="../../codelists/CityFurniture_function.xml">8140</frn:function>
 			<frn:lod3Geometry>
-				<gml:MultiGeometry>
-					<gml:geometryMember>
-						<gml:CompositeSurface>
+						<gml:MultiSurface>
 							<gml:surfaceMember>
 								<gml:Polygon gml:id="fme-gen-5f05467f-8139-4ddd-887b-1455edec780f">
 									<gml:exterior>
@@ -22173,20 +22099,16 @@
 									</gml:exterior>
 								</gml:Polygon>
 							</gml:surfaceMember>
-						</gml:CompositeSurface>
-					</gml:geometryMember>
-				</gml:MultiGeometry>
+						</gml:MultiSurface>
 			</frn:lod3Geometry>
 		</frn:CityFurniture>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
-		<frn:CityFurniture gml:id="FRN_98346d47-6c04-4d2e-ab09-f0542247d48d">
+		<frn:CityFurniture gml:id="frn_98346d47-6c04-4d2e-ab09-f0542247d48d">
 			<frn:class codeSpace="../../codelists/CityFurniture_class.xml">1000</frn:class>
 			<frn:function codeSpace="../../codelists/CityFurniture_function.xml">4810</frn:function>
 			<frn:lod3Geometry>
-				<gml:MultiGeometry>
-					<gml:geometryMember>
-						<gml:CompositeSurface>
+						<gml:MultiSurface>
 							<gml:surfaceMember>
 								<gml:Polygon gml:id="fme-gen-437e66ed-52ba-42e6-82c5-91fd891cbab8">
 									<gml:exterior>
@@ -22331,20 +22253,16 @@
 									</gml:exterior>
 								</gml:Polygon>
 							</gml:surfaceMember>
-						</gml:CompositeSurface>
-					</gml:geometryMember>
-				</gml:MultiGeometry>
+						</gml:MultiSurface>
 			</frn:lod3Geometry>
 		</frn:CityFurniture>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
-		<frn:CityFurniture gml:id="FRN_670ca8a6-5174-4b66-8b61-8e857525ae61">
+		<frn:CityFurniture gml:id="frn_670ca8a6-5174-4b66-8b61-8e857525ae61">
 			<frn:class codeSpace="../../codelists/CityFurniture_class.xml">1000</frn:class>
 			<frn:function codeSpace="../../codelists/CityFurniture_function.xml">4810</frn:function>
 			<frn:lod3Geometry>
-				<gml:MultiGeometry>
-					<gml:geometryMember>
-						<gml:CompositeSurface>
+						<gml:MultiSurface>
 							<gml:surfaceMember>
 								<gml:Polygon gml:id="fme-gen-b6451e6e-9e90-4398-ba47-deff5b77cbd8">
 									<gml:exterior>
@@ -22489,20 +22407,16 @@
 									</gml:exterior>
 								</gml:Polygon>
 							</gml:surfaceMember>
-						</gml:CompositeSurface>
-					</gml:geometryMember>
-				</gml:MultiGeometry>
+						</gml:MultiSurface>
 			</frn:lod3Geometry>
 		</frn:CityFurniture>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
-		<frn:CityFurniture gml:id="FRN_1d9d9f52-3878-429f-915b-fcb2902097d6">
+		<frn:CityFurniture gml:id="frn_1d9d9f52-3878-429f-915b-fcb2902097d6">
 			<frn:class codeSpace="../../codelists/CityFurniture_class.xml">1000</frn:class>
 			<frn:function codeSpace="../../codelists/CityFurniture_function.xml">4810</frn:function>
 			<frn:lod3Geometry>
-				<gml:MultiGeometry>
-					<gml:geometryMember>
-						<gml:CompositeSurface>
+						<gml:MultiSurface>
 							<gml:surfaceMember>
 								<gml:Polygon gml:id="fme-gen-c86d5b9a-0461-4113-8d41-d17141b0356f">
 									<gml:exterior>
@@ -22647,20 +22561,16 @@
 									</gml:exterior>
 								</gml:Polygon>
 							</gml:surfaceMember>
-						</gml:CompositeSurface>
-					</gml:geometryMember>
-				</gml:MultiGeometry>
+						</gml:MultiSurface>
 			</frn:lod3Geometry>
 		</frn:CityFurniture>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
-		<frn:CityFurniture gml:id="FRN_1a75af41-93c6-4721-b37a-23905ddbea9d">
+		<frn:CityFurniture gml:id="frn_1a75af41-93c6-4721-b37a-23905ddbea9d">
 			<frn:class codeSpace="../../codelists/CityFurniture_class.xml">1000</frn:class>
 			<frn:function codeSpace="../../codelists/CityFurniture_function.xml">4810</frn:function>
 			<frn:lod3Geometry>
-				<gml:MultiGeometry>
-					<gml:geometryMember>
-						<gml:CompositeSurface>
+						<gml:MultiSurface>
 							<gml:surfaceMember>
 								<gml:Polygon gml:id="fme-gen-349ea78f-c281-475c-9bbd-1476c8041e86">
 									<gml:exterior>
@@ -22715,20 +22625,16 @@
 									</gml:exterior>
 								</gml:Polygon>
 							</gml:surfaceMember>
-						</gml:CompositeSurface>
-					</gml:geometryMember>
-				</gml:MultiGeometry>
+						</gml:MultiSurface>
 			</frn:lod3Geometry>
 		</frn:CityFurniture>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
-		<frn:CityFurniture gml:id="FRN_16864de8-ed92-4b2d-b3d3-2152182aaf23">
+		<frn:CityFurniture gml:id="frn_16864de8-ed92-4b2d-b3d3-2152182aaf23">
 			<frn:class codeSpace="../../codelists/CityFurniture_class.xml">1000</frn:class>
 			<frn:function codeSpace="../../codelists/CityFurniture_function.xml">4810</frn:function>
 			<frn:lod3Geometry>
-				<gml:MultiGeometry>
-					<gml:geometryMember>
-						<gml:CompositeSurface>
+						<gml:MultiSurface>
 							<gml:surfaceMember>
 								<gml:Polygon gml:id="fme-gen-585aabf4-fe5b-4156-a3a9-e34609eaccc9">
 									<gml:exterior>
@@ -22873,20 +22779,16 @@
 									</gml:exterior>
 								</gml:Polygon>
 							</gml:surfaceMember>
-						</gml:CompositeSurface>
-					</gml:geometryMember>
-				</gml:MultiGeometry>
+						</gml:MultiSurface>
 			</frn:lod3Geometry>
 		</frn:CityFurniture>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
-		<frn:CityFurniture gml:id="FRN_954504e5-7972-482c-bc5e-b997ab9a2283">
+		<frn:CityFurniture gml:id="frn_954504e5-7972-482c-bc5e-b997ab9a2283">
 			<frn:class codeSpace="../../codelists/CityFurniture_class.xml">1000</frn:class>
 			<frn:function codeSpace="../../codelists/CityFurniture_function.xml">4810</frn:function>
 			<frn:lod3Geometry>
-				<gml:MultiGeometry>
-					<gml:geometryMember>
-						<gml:CompositeSurface>
+						<gml:MultiSurface>
 							<gml:surfaceMember>
 								<gml:Polygon gml:id="fme-gen-222c3779-42e6-4fa8-9b2b-bdd39e7fc161">
 									<gml:exterior>
@@ -23031,9 +22933,7 @@
 									</gml:exterior>
 								</gml:Polygon>
 							</gml:surfaceMember>
-						</gml:CompositeSurface>
-					</gml:geometryMember>
-				</gml:MultiGeometry>
+						</gml:MultiSurface>
 			</frn:lod3Geometry>
 		</frn:CityFurniture>
 	</core:cityObjectMember>
