@@ -70,8 +70,8 @@ fn test_cityfurniture() {
     assert_eq!(
         frn.function,
         vec![Code {
-            value: "1000".to_string(),
-            code: "1000".to_string(),
+            value: "1010".to_string(),
+            code: "1010".to_string(),
         }]
     );
 }
