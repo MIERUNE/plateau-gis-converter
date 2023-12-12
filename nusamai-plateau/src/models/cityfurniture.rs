@@ -10,7 +10,7 @@ pub struct CityFurniture {
     id: Option<String>,
 
     #[citygml(path = b"frn:class")]
-    pub class: Option<String>,
+    pub class: Option<Code>,
 
     #[citygml(path = b"frn:function")]
     pub function: Vec<Code>,

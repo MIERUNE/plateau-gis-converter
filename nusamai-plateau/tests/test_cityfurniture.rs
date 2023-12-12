@@ -66,7 +66,13 @@ fn test_cityfurniture() {
     );
 
     let frn = parsed_data.cityfurnitures.get(0).unwrap();
-    assert_eq!(frn.class, Some("1000".to_string()));
+    assert_eq!(
+        frn.class,
+        Some(Code {
+            value: "1000".to_string(),
+            code: "1000".to_string(),
+        })
+    );
     assert_eq!(
         frn.function,
         vec![Code {
