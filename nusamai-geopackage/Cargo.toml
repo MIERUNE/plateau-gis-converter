@@ -6,3 +6,10 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+nusamai-geometry = { path = "../nusamai-geometry" }
+nusamai-plateau = { path = "../nusamai-plateau" }
+citygml = {path = "../nusamai-plateau/citygml" }
+
+[dev-dependencies]
+clap = { version = "4.4.11", features = ["derive"] }
+quick-xml = "0.31.0"
