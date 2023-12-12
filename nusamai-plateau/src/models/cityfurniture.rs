@@ -14,4 +14,7 @@ pub struct CityFurniture {
 
     #[citygml(path = b"frn:function")]
     pub function: Vec<Code>,
+
+    #[citygml(path = b"frn:usage")]
+    pub usage: Vec<Code>,
 }
