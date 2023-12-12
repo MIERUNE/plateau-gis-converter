@@ -1,17 +1,16 @@
 use std::io::BufRead;
 
-use citygml::{CityGMLElement, CityGMLReader, Geometries, ParseError, SubTreeReader};
+use citygml::{CityGMLElement, CityGMLReader, Code, Geometries, ParseError, SubTreeReader};
+use nusamai_plateau::models::cityfurniture::CityFurniture;
 use nusamai_plateau::models::CityObject;
 
 #[derive(Default, Debug)]
 struct ParsedData {
-    cityfurnitures: Vec<CityObject>,
+    cityfurnitures: Vec<CityFurniture>,
     geometries: Vec<Geometries>,
 }
 
-fn example_toplevel_dispatcher<R: BufRead>(
-    st: &mut SubTreeReader<R>,
-) -> Result<ParsedData, ParseError> {
+fn toplevel_dispatcher<R: BufRead>(st: &mut SubTreeReader<R>) -> Result<ParsedData, ParseError> {
     let mut parsed_data = ParsedData::default();
 
     match st.parse_children(|st| match st.current_path() {
@@ -20,9 +19,7 @@ fn example_toplevel_dispatcher<R: BufRead>(
             cityobj.parse(st)?;
             match cityobj {
                 CityObject::CityFurniture(frn) => {
-                    parsed_data
-                        .cityfurnitures
-                        .push(CityObject::CityFurniture(frn));
+                    parsed_data.cityfurnitures.push(frn);
                 }
                 CityObject::CityObjectGroup(_) => (),
                 e => panic!("Unexpected city object type: {:?}", e),
@@ -31,11 +28,7 @@ fn example_toplevel_dispatcher<R: BufRead>(
             parsed_data.geometries.push(geometries);
             Ok(())
         }
-        b"gml:boundedBy" => {
-            st.skip_current_element()?;
-            Ok(())
-        }
-        b"app:appearanceMember" => {
+        b"gml:boundedBy" | b"app:appearanceMember" => {
             st.skip_current_element()?;
             Ok(())
         }
@@ -58,15 +51,27 @@ fn test_cityfurniture() {
 
     let reader = std::io::BufReader::new(std::fs::File::open(test_file_path).unwrap());
     let mut xml_reader = quick_xml::NsReader::from_reader(reader);
-
-    match CityGMLReader::new().start_root(&mut xml_reader) {
-        Ok(mut st) => match example_toplevel_dispatcher(&mut st) {
-            Ok(parsed_data) => {
-                assert_eq!(parsed_data.geometries.len(), 44);
-                assert_eq!(parsed_data.cityfurnitures.len(), 44);
-            }
+    let parsed_data = match CityGMLReader::new().start_root(&mut xml_reader) {
+        Ok(mut st) => match toplevel_dispatcher(&mut st) {
+            Ok(parsed_data) => parsed_data,
             Err(e) => panic!("Err: {:?}", e),
         },
         Err(e) => panic!("Err: {:?}", e),
     };
+
+    assert_eq!(parsed_data.cityfurnitures.len(), 44);
+    assert_eq!(
+        parsed_data.cityfurnitures.len(),
+        parsed_data.geometries.len()
+    );
+
+    let frn = parsed_data.cityfurnitures.get(0).unwrap();
+    assert_eq!(frn.class, Some("1000".to_string()));
+    assert_eq!(
+        frn.function,
+        vec![Code {
+            value: "1000".to_string(),
+            code: "1000".to_string(),
+        }]
+    );
 }
