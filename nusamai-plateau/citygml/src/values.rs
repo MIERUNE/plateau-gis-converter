@@ -30,7 +30,7 @@ impl CityGMLElement for URI {
     }
 }
 
-#[derive(Debug, Default, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Default, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub struct Code {
     pub value: String,
     pub code: String,
