@@ -5,6 +5,7 @@ members = [
     "nusamai-geometry",
     "nusamai-gltf",
     "nusamai-geojson",
+    "nusamai-geopackage",
     "nusamai-plateau",
     "nusamai-mvt",
     "nusamai-projection",
