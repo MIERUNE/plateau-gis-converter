@@ -1,37 +1,34 @@
 use std::io::BufRead;
 
-use citygml::{CityGMLElement, CityGMLReader, ParseError, SubTreeReader};
+use citygml::{CityGMLElement, CityGMLReader, Geometries, ParseError, SubTreeReader};
 use nusamai_plateau::models::CityObject;
 
 #[derive(Default, Debug)]
-struct Counter {
-    city_objects: usize,
-    appearances: usize,
-    multipolygons: usize,
-    cityobjectgroups: usize,
-    cityfurniture: usize,
+struct ParsedData {
+    cityfurnitures: Vec<CityObject>,
+    geometries: Vec<Geometries>,
 }
 
 fn example_toplevel_dispatcher<R: BufRead>(
     st: &mut SubTreeReader<R>,
-) -> Result<Counter, ParseError> {
-    let mut counter = Counter::default();
+) -> Result<ParsedData, ParseError> {
+    let mut parsed_data = ParsedData::default();
 
     match st.parse_children(|st| match st.current_path() {
         b"core:cityObjectMember" => {
             let mut cityobj: CityObject = Default::default();
             cityobj.parse(st)?;
             match cityobj {
-                CityObject::CityObjectGroup(_) => counter.cityobjectgroups += 1,
                 CityObject::CityFurniture(frn) => {
-                    println!("frn: {:?}", frn);
-                    counter.cityfurniture += 1;
+                    parsed_data
+                        .cityfurnitures
+                        .push(CityObject::CityFurniture(frn));
                 }
+                CityObject::CityObjectGroup(_) => (),
                 e => panic!("Unexpected city object type: {:?}", e),
             }
             let geometries = st.collect_geometries();
-            counter.city_objects += 1;
-            counter.multipolygons += geometries.multipolygon.len();
+            parsed_data.geometries.push(geometries);
             Ok(())
         }
         b"gml:boundedBy" => {
@@ -40,7 +37,6 @@ fn example_toplevel_dispatcher<R: BufRead>(
         }
         b"app:appearanceMember" => {
             st.skip_current_element()?;
-            counter.appearances += 1;
             Ok(())
         }
         other => Err(ParseError::SchemaViolation(format!(
@@ -48,7 +44,7 @@ fn example_toplevel_dispatcher<R: BufRead>(
             String::from_utf8_lossy(other)
         ))),
     }) {
-        Ok(_) => Ok(counter),
+        Ok(_) => Ok(parsed_data),
         Err(e) => {
             println!("Err: {:?}", e);
             Err(e)
@@ -58,19 +54,16 @@ fn example_toplevel_dispatcher<R: BufRead>(
 
 #[test]
 fn test_cityfurniture() {
-    // let test_file_path = "./tests/data/52384698_frn_6697_op.gml"; // 沼津市
-    let test_file_path = "./tests/data/53394525_frn_6697_op.gml"; // 東京都23区
-    let reader = std::io::BufReader::new(std::fs::File::open(test_file_path).unwrap());
+    let test_file_path = "./tests/data/52384698_frn_6697_op.gml";
 
+    let reader = std::io::BufReader::new(std::fs::File::open(test_file_path).unwrap());
     let mut xml_reader = quick_xml::NsReader::from_reader(reader);
+
     match CityGMLReader::new().start_root(&mut xml_reader) {
         Ok(mut st) => match example_toplevel_dispatcher(&mut st) {
-            Ok(counter) => {
-                // assert_eq!(counter.city_objects, 0);
-                // assert_eq!(counter.appearances, 0);
-                // assert_eq!(counter.multipolygons, 0);
-                // assert_eq!(counter.cityobjectgroups, 0);
-                assert_eq!(counter.cityfurniture, 2);
+            Ok(parsed_data) => {
+                assert_eq!(parsed_data.geometries.len(), 44);
+                assert_eq!(parsed_data.cityfurnitures.len(), 44);
             }
             Err(e) => panic!("Err: {:?}", e),
         },

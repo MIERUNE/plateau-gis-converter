@@ -1,7 +1,6 @@
 テスト用データ出典
 
 - `53393680_bldg_6697_lod4.2_op.gml`: 「3D都市モデル（Project PLATEAU）東京都23区　ポートシティ竹芝　建築物モデル（LOD4）（2022年度）」 (https://www.geospatial.jp/ckan/dataset/plateau-tokyo23ku-2023-lod4)
-- `53394525_frn_6697_op.gml`: [3D都市モデル（Project PLATEAU）東京23区（2022年度） - CityGML（v2）](https://www.geospatial.jp/ckan/dataset/plateau-tokyo23ku-2022/resource/55c72dd0-32eb-4107-9526-71fc0af8d50f)
 - `52384698_frn_6697_op.gml`: [3D都市モデル（Project PLATEAU）沼津市（2021年度） - データセット](https://www.geospatial.jp/ckan/dataset/plateau-22203-numazu-shi-2021)
 
 
