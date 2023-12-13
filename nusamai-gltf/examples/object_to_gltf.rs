@@ -44,30 +44,28 @@ fn toplevel_dispatcher<R: BufRead>(
     }
 }
 
-fn extract_indices(first_obj: &TopLevelCityObject<'_>) -> (Vec<u32>, Vec<u32>, Vec<u32>) {
+fn extract_indices(first_obj: &TopLevelCityObject<'_>) -> (Vec<u32>, Vec<u32>, Vec<u32>, Vec<u32>) {
     let mut all_coords: Vec<u32> = Vec::new();
     let mut coords_spans: Vec<u32> = Vec::new();
     let mut all_hole_indices: Vec<u32> = Vec::new();
+    let mut holes_spans: Vec<u32> = Vec::new();
 
+    // todo: ロジックがひどいのでそのうち修正する
     for polygon in first_obj.geometries.multipolygon.iter() {
         all_coords.extend(polygon.coords());
-        // todo: ロジックがひどいのでそのうち修正する
-        // coords_spansに格納されている最後の値に、polygon.coords()の長さを足したものを追加する
-        // ただし、最初のpolygonの場合は、coords_spansに何も入っていないので、0を追加する
-        coords_spans.push(
-            coords_spans
-                .last()
-                .map(|x| x + polygon.coords().len() as u32)
-                .unwrap_or(0),
-        );
-        // todo: holeを考慮する必要がある
+
+        coords_spans.push(all_coords.len() as u32);
+
         for hole in polygon.hole_indices() {
             all_hole_indices.push(*hole);
         }
+
+        holes_spans.push(all_hole_indices.len() as u32);
     }
-    // coords_spansの先頭の0を削除する
-    coords_spans.remove(0);
-    (all_coords, coords_spans, all_hole_indices)
+    // 最後のcoords_spansを削除
+    coords_spans.pop();
+
+    (all_coords, coords_spans, all_hole_indices, holes_spans)
 }
 
 fn main() {
@@ -120,14 +118,15 @@ fn main() {
 
     let properties = &first_obj.cityobj;
     let vertices = &first_obj.geometries.vertices;
-    let (indices, coords_spans, all_hole_indices) = extract_indices(first_obj);
+    let (indices, coords_spans, all_hole_indices, holes_spans) = extract_indices(first_obj);
 
     // 一つのCityObject(TopLevelCityObject・Feature)に必要な情報
-    println!("properties: {:?}\n", properties);
-    println!("vertices: {:?}\n", vertices);
-    println!("indices: {:?}\n", indices);
+    // println!("properties: {:?}\n", properties);
+    // println!("vertices: {:?}\n", vertices);
+    // println!("indices: {:?}\n", indices);
     println!("coords_spans: {:?}\n", coords_spans);
     println!("all_hole_indices: {:?}\n", all_hole_indices);
+    println!("holes_spans: {:?}\n", holes_spans);
 
     // todo
     // holeも考慮する
