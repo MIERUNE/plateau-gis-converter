@@ -37,6 +37,8 @@ impl<'a, const D: usize, T: CoordNum> MultiPolygon<'a, D, T> {
         all_hole_indices: Cow<'a, [u32]>,
         holes_spans: Cow<'a, [u32]>,
     ) -> Self {
+        println!("all_coords: {:?}", all_coords.len());
+        println!("all_coords: {:?}", all_coords.len() % D != 0);
         if all_coords.len() % D != 0 {
             panic!("all_coords.len() must be a multiple of D")
         }
@@ -62,7 +64,12 @@ impl<'a, const D: usize, T: CoordNum> MultiPolygon<'a, D, T> {
                     panic!("invalid holes_spans");
                 }
                 // check polygon
+                println!(
+                    "cs_start: {}, cs_end: {}, hs_start: {}, hs_end: {}",
+                    cs_start, cs_end, hs_start, hs_end
+                );
                 let coords = &all_coords[cs_start as usize * D..cs_end as usize * D];
+                println!("coords: {:?}", coords);
                 let hole_indices = &all_hole_indices[hs_start as usize..hs_end as usize];
                 if let Some(&last) = hole_indices.last() {
                     let len = (coords.len() / D) as u32;
