@@ -34,7 +34,7 @@ pub type GeometryRef = Vec<GeometryRefEntry>;
 
 /// Geometries in a toplevel city object and its children.
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct Geometries {
     pub vertices: Vec<[f64; 3]>,
     pub multipolygon: MultiPolygon<'static, 1, u32>,
