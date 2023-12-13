@@ -395,30 +395,42 @@ mod tests {
     fn test_make_binary_buffer() {
         let city_objects = generate_city_objects();
 
-        // バイナリバッファは全てのcity_objectは統合する
+        // バイナリバッファは全てのcity_objectは統合する必要がある
+        // なのでcity_objectのgeometriesのverticesを全て統合する
         let mut all_vertices = Vec::new();
-        let mut all_indices: Vec<u32> = Vec::new();
 
         for city_object in city_objects.clone() {
             all_vertices.extend(city_object.geometries.vertices);
         }
         println!("{:?}", all_vertices);
 
+        // indexも全て統合する必要がある
+        // city_object.geometry.multipolygonのall_coordsには、立体の頂点のindexが格納されている
+        // このmultipolygonには1つの建物しか入っていないので、そのまま使えるはず
+        // だが、フィールドがパブリックになっていない
+        let mut all_indices: Vec<u32> = Vec::new();
+
         for city_object in city_objects.clone() {
-            for polygon in city_object.geometries.multipolygon.iter() {
-                println!("{:?}", polygon);
+            for polygon in city_object.geometries.multipolygon.into_iter() {
+                let indices = polygon.coords();
+                let mut indices_len = all_indices.len();
+
+                for index in indices {
+                    all_indices.push(index + indices_len as u32);
+                }
             }
         }
+        println!("{:?}", all_indices);
 
-        // // 中心の経緯度を求める
-        // let (mu_lat, mu_lng) = calc_center(&all_mpolys);
+        // 中心の経緯度を求める
+        let (mu_lat, mu_lng) = calc_center(&all_mpolys);
 
-        // // 三角分割
-        // // verticesは頂点の配列だが、u32のビットパターンで格納されている
-        // let triangles = tessellation(&all_mpolys, mu_lng, mu_lat).unwrap();
+        // 三角分割
+        // verticesは頂点の配列だが、u32のビットパターンで格納されている
+        let triangles = tessellation(&all_mpolys, mu_lng, mu_lat).unwrap();
 
-        // // バイナリバッファを作成
-        // let binary_buffer = make_binary_buffer(&triangles);
+        // バイナリバッファを作成
+        let binary_buffer = make_binary_buffer(&triangles);
     }
 
     #[test]
