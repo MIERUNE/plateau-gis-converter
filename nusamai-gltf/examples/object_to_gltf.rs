@@ -69,7 +69,7 @@ fn toplevel_dispatcher<R: BufRead>(
     }
 }
 
-fn extract_indices(cityobj: &TopLevelCityObject<'_>) -> MultiPolygon3<'static> {
+fn make_mpoly3(cityobj: &TopLevelCityObject<'_>) -> MultiPolygon3<'static> {
     let mut all_coords: Vec<u32> = Vec::new();
     let mut coords_spans: Vec<u32> = Vec::new();
     let mut all_hole_indices: Vec<u32> = Vec::new();
@@ -139,7 +139,7 @@ fn main() {
     // 17番目とかがholeを持っていた
     let first_obj = &tlc_objs[17];
 
-    let first_mpoly = extract_indices(first_obj);
+    let first_mpoly = make_mpoly3(first_obj);
     println!("first_mpoly: {:?}\n", first_mpoly);
 
     // todo
