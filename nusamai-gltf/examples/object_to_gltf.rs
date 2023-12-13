@@ -114,12 +114,27 @@ fn main() {
     println!("holes_spans: {:?}\n", holes_spans);
 
     // todo
-    // holeも考慮する
     // 地物の中心座標を求める
+    let (mu_lat, mu_lng) = calc_center(vertices.clone());
     // 地物ごとに三角分割
     // 頂点にIDを付与
     // 地物ごとにバイナリバッファを作成
     // 地物ごとにバイナリバッファをファイルに書き出し
 
     // EXT_structural_metadata
+}
+
+fn calc_center(vertices: Vec<[f64; 3]>) -> (f64, f64) {
+    let mut x_sum = 0.0;
+    let mut y_sum = 0.0;
+
+    for v in &vertices {
+        x_sum += v[0];
+        y_sum += v[1];
+    }
+
+    let x_center = x_sum / vertices.len() as f64;
+    let y_center = y_sum / vertices.len() as f64;
+
+    (x_center, y_center)
 }
