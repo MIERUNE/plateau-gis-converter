@@ -1,10 +1,25 @@
+use byteorder::{LittleEndian, WriteBytesExt};
 use citygml::{CityGMLElement, CityGMLReader, Geometries, ParseError, SubTreeReader};
 use clap::Parser;
 use earcut_rs::{utils_3d::project3d_to_2d, Earcut};
 use indexmap::IndexSet;
 use nusamai_geometry::MultiPolygon3;
+use nusamai_gltf::*;
 use nusamai_plateau::models::CityObject;
-use std::{borrow::Cow, collections::HashMap, io::BufRead};
+use quick_xml::{
+    events::Event,
+    name::{Namespace, ResolveResult::Bound},
+    reader::NsReader,
+};
+use std::{
+    borrow::Cow,
+    collections::HashMap,
+    fs,
+    io::{BufRead, BufWriter},
+};
+use std::{clone::Clone, default::Default};
+use std::{io::Write, usize};
+use thiserror::Error;
 
 #[derive(Parser)]
 struct Args {
@@ -107,52 +122,191 @@ fn make_mpoly3(cityobj: &TopLevelCityObject<'_>) -> MultiPolygon3<'static> {
     )
 }
 
-fn main() {
-    let args = Args::parse();
-
-    let reader = std::io::BufReader::new(std::fs::File::open(args.filename).unwrap());
-    let mut xml_reader = quick_xml::NsReader::from_reader(reader);
-
-    let items = match CityGMLReader::new().start_root(&mut xml_reader) {
-        Ok(mut st) => match toplevel_dispatcher(&mut st) {
-            Ok(items) => items,
-            Err(e) => panic!("Err: {:?}", e),
-        },
-        Err(e) => panic!("Err: {:?}", e),
+fn make_glb(gltf_string: String, binary_buffer: Vec<u8>) -> Vec<u8> {
+    // JSONチャンクをバイナリに変換し、4の倍数に調整
+    let json_chunk = gltf_string.as_bytes();
+    let json_chunk_len = json_chunk.len();
+    let json_chunk_padded = {
+        let mut v = json_chunk.to_vec();
+        while v.len() % 4 != 0 {
+            v.push(0); // 4バイト境界に合わせるために0でパディング
+        }
+        v
     };
 
-    let tlc_objs: Vec<_> = items
-        .iter()
-        .map(|(o, g)| {
-            let cityobj = match o.objectify().unwrap() {
-                citygml::object::ObjectValue::FeatureOrData(fod) => fod,
-                _ => panic!("Not a FeatureOrData"),
-            };
+    // JSONチャンクヘッダー
+    // この長さはパディングを含まない元のJSONデータの長さ
+    let json_chunk_header = [
+        json_chunk_len as u32, // パディングなしの長さ
+        0x4E4F534A,            // JSON (リトルエンディアンで "JSON")
+    ];
 
-            TopLevelCityObject {
-                cityobj,
-                geometries: g.clone(),
+    let binary_len = binary_buffer.len();
+
+    // バイナリチャンクヘッダー
+    let bin_chunk_header = [
+        binary_len as u32,
+        0x004E4942, // BIN (リトルエンディアンで "BIN")
+    ];
+
+    // ファイル全体の長さ
+    // この長さはパディングを含む
+    let total_length = 12 + 8 + json_chunk_padded.len() + 8 + binary_len;
+
+    // GLBヘッダー
+    let glb_header = [
+        0x46546C67, // glTF (リトルエンディアンで "glTF")
+        2,
+        total_length as u32, // ファイル全体の長さ
+    ];
+
+    // ファイル作成前にバイナリを作成
+    let mut glb = Vec::new();
+
+    // ヘッダーの書き込み
+    let _ = glb.write_all(&glb_header[0].to_le_bytes());
+    let _ = glb.write_all(&glb_header[1].to_le_bytes());
+    let _ = glb.write_all(&glb_header[2].to_le_bytes());
+
+    // JSONチャンクの書き込み
+    let _ = glb.write_u32::<LittleEndian>(json_chunk_header[0]);
+    let _ = glb.write_u32::<LittleEndian>(json_chunk_header[1]);
+    let _ = glb.write_all(&json_chunk_padded);
+
+    // バイナリチャンクの書き込み
+    let _ = glb.write_u32::<LittleEndian>(bin_chunk_header[0]);
+    let _ = glb.write_u32::<LittleEndian>(bin_chunk_header[1]);
+    let _ = glb.write_all(&binary_buffer);
+
+    glb
+}
+
+fn make_gltf_json(triangles: &Triangles) -> String {
+    let indices = &triangles.indices;
+    let vertices = &triangles.vertices;
+
+    // glTF のモデルを作成
+    let mut gltf = Gltf::new();
+
+    // glTF のアセットを作成
+    let mut asset = Asset::new();
+    asset.version = "2.0".to_string();
+
+    gltf.asset = asset;
+
+    // glTF のバッファを作成
+    let mut buffer = Buffer::new();
+    // indicesはu32なので4バイト、verticesはf32x3なので12バイト
+    let indices_byte_length = indices.len() as u32 * 4;
+    let vertices_byte_length = vertices.len() as u32 * 12;
+    buffer.byte_length = indices_byte_length + vertices_byte_length;
+    buffer.uri = Some("data.bin".to_string());
+
+    gltf.buffers = Some(vec![buffer]);
+
+    // glTF のバッファビューを作成
+    let mut buffer_view1 = BufferView::new();
+    buffer_view1.buffer = 0;
+    buffer_view1.byte_length = indices_byte_length;
+    buffer_view1.byte_offset = 0;
+    buffer_view1.target = Some(BufferViewTarget::ElementArrayBuffer);
+
+    let mut buffer_view2 = BufferView::new();
+    buffer_view2.buffer = 0;
+    buffer_view2.byte_length = vertices_byte_length;
+    buffer_view2.byte_offset = indices_byte_length;
+    buffer_view2.target = Some(BufferViewTarget::ArrayBuffer);
+
+    gltf.buffer_views = Some(vec![buffer_view1, buffer_view2]);
+
+    // glTF のアクセサを作成
+    let mut accessor1 = Accessor::new();
+    accessor1.buffer_view = Some(0);
+    accessor1.byte_offset = 0;
+    accessor1.component_type = ComponentType::UnsignedInt;
+    accessor1.count = indices.len() as u32;
+    accessor1.type_ = AccessorType::Scalar;
+    let max_indices = indices.iter().max().unwrap();
+    accessor1.max = Some(vec![*max_indices as f32]);
+    accessor1.min = Some(vec![0.0]);
+
+    let mut accessor2 = Accessor::new();
+    accessor2.buffer_view = Some(1);
+    accessor2.byte_offset = 0;
+    accessor2.component_type = ComponentType::Float;
+    accessor2.count = vertices.len() as u32;
+    accessor2.type_ = AccessorType::Vec3;
+    let mut max_vertex: [f32; 3] = [f32::MIN; 3];
+    let mut min_vertex: [f32; 3] = [f32::MAX; 3];
+    for vertex in vertices {
+        for (i, v) in vertex.iter().enumerate() {
+            let v = f32::from_bits(*v);
+            if v > max_vertex[i] {
+                max_vertex[i] = v;
+            } else if v < min_vertex[i] {
+                min_vertex[i] = v;
             }
-        })
-        .collect();
+        }
+    }
+    accessor2.max = Some(max_vertex.to_vec());
+    accessor2.min = Some(min_vertex.to_vec());
 
-    // 17番目とかがholeを持っていた
-    let first_obj = &tlc_objs[17];
+    gltf.accessors = Some(vec![accessor1, accessor2]);
 
-    let first_mpoly = make_mpoly3(first_obj);
-    println!("first_mpoly: {:?}\n", first_mpoly);
+    // glTF のメッシュを作成
+    let mut mesh = Mesh::new();
+    let mut primitive1 = MeshPrimitive::new();
+    primitive1.indices = Some(0);
+    primitive1.mode = PrimitiveMode::Triangles;
+    primitive1.attributes = {
+        let mut map = HashMap::new();
+        map.insert("POSITION".to_string(), 1);
+        map
+    };
 
-    // todo
-    // 地物の中心座標を求める
-    let (mu_lat, mu_lng) = calc_center(&vec![first_mpoly.clone()]);
+    mesh.primitives = vec![primitive1];
 
-    // 地物ごとに三角分割
-    let triangles = tessellation(&[first_mpoly.clone()], mu_lng, mu_lat).unwrap();
-    // 頂点にIDを付与
-    // 地物ごとにバイナリバッファを作成
-    // 地物ごとにバイナリバッファをファイルに書き出し
+    gltf.meshes = Some(vec![mesh]);
 
-    // EXT_structural_metadata
+    // glTF のシーンを作成
+    let mut scene = Scene::new();
+    scene.nodes = Some(vec![0]);
+
+    gltf.scenes = Some(vec![scene]);
+
+    // glTF のノードを作成
+    let mut node = Node::new();
+    node.mesh = Some(0);
+
+    gltf.nodes = Some(vec![node]);
+
+    // glTF のシーンを設定
+    gltf.scene = Some(0);
+
+    gltf.to_string().unwrap()
+}
+
+fn make_binary_buffer(triangles: &Triangles) -> Vec<u8> {
+    let indices = &triangles.indices;
+    let vertices = &triangles.vertices;
+
+    let mut indices_buf = Vec::new();
+    let mut vertices_buf = Vec::new();
+
+    // glTFのバイナリはリトルエンディアン
+    for index in indices {
+        indices_buf.write_u32::<LittleEndian>(*index).unwrap();
+    }
+
+    for vertex in vertices {
+        for v in vertex {
+            vertices_buf
+                .write_f32::<LittleEndian>(f32::from_bits(*v))
+                .unwrap();
+        }
+    }
+
+    [&indices_buf[..], &vertices_buf[..]].concat()
 }
 
 fn tessellation(
@@ -233,4 +387,69 @@ fn calc_center(all_mpolys: &Vec<nusamai_geometry::MultiPolygon<'_, 3>>) -> (f64,
     };
     println!("{} {}", mu_lat, mu_lng);
     (mu_lat, mu_lng)
+}
+
+fn main() {
+    let args = Args::parse();
+
+    let reader = std::io::BufReader::new(std::fs::File::open(args.filename).unwrap());
+    let mut xml_reader = quick_xml::NsReader::from_reader(reader);
+
+    let items = match CityGMLReader::new().start_root(&mut xml_reader) {
+        Ok(mut st) => match toplevel_dispatcher(&mut st) {
+            Ok(items) => items,
+            Err(e) => panic!("Err: {:?}", e),
+        },
+        Err(e) => panic!("Err: {:?}", e),
+    };
+
+    let tlc_objs: Vec<_> = items
+        .iter()
+        .map(|(o, g)| {
+            let cityobj = match o.objectify().unwrap() {
+                citygml::object::ObjectValue::FeatureOrData(fod) => fod,
+                _ => panic!("Not a FeatureOrData"),
+            };
+
+            TopLevelCityObject {
+                cityobj,
+                geometries: g.clone(),
+            }
+        })
+        .collect();
+
+    // 17番目とかがholeを持っていた
+    let first_obj = &tlc_objs[17];
+
+    let first_mpoly = make_mpoly3(first_obj);
+    println!("first_mpoly: {:?}\n", first_mpoly);
+
+    // todo
+    // 地物の中心座標を求める
+    let (mu_lat, mu_lng) = calc_center(&vec![first_mpoly.clone()]);
+
+    // 地物ごとに三角分割
+    let triangles = tessellation(&[first_mpoly.clone()], mu_lng, mu_lat).unwrap();
+
+    // 頂点にIDを付与
+    // 地物ごとにバイナリバッファを作成
+    // 地物ごとにバイナリバッファをファイルに書き出し
+
+    // バイナリバッファを作成
+    let binary_buffer = make_binary_buffer(&triangles);
+    fs::write("./data/data.bin", &binary_buffer).unwrap();
+
+    // glTFのJSON文字列を作成
+    let gltf_string = make_gltf_json(&triangles);
+    fs::write("./data/data.gltf", &gltf_string).unwrap();
+
+    // glbを作成
+    let glb = make_glb(gltf_string, binary_buffer);
+
+    // ファイルを作成
+    let mut file = BufWriter::new(fs::File::create("./data/data.glb").unwrap());
+
+    // ファイルの書き込み
+    let _ = file.write_all(glb.as_slice());
+    let _ = file.flush();
 }
