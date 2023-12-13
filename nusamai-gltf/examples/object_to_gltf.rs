@@ -1,5 +1,6 @@
 use citygml::{CityGMLElement, CityGMLReader, Geometries, ParseError, SubTreeReader};
 use clap::Parser;
+use nusamai_geometry::MultiPolygon;
 use nusamai_plateau::models::CityObject;
 use std::io::BufRead;
 
@@ -44,6 +45,28 @@ fn toplevel_dispatcher<R: BufRead>(
     }
 }
 
+fn extract_indices(first_obj: &TopLevelCityObject<'_>) -> (Vec<u32>, Vec<u32>) {
+    let mut all_coords: Vec<u32> = Vec::new();
+    let mut coords_spans: Vec<u32> = Vec::new();
+
+    for polygon in first_obj.geometries.multipolygon.iter() {
+        all_coords.extend(polygon.coords());
+        // todo: ロジックがひどいのでそのうち修正する
+        // coords_spansに格納されている最後の値に、polygon.coords()の長さを足したものを追加する
+        // ただし、最初のpolygonの場合は、coords_spansに何も入っていないので、0を追加する
+        coords_spans.push(
+            coords_spans
+                .last()
+                .map(|x| x + polygon.coords().len() as u32)
+                .unwrap_or(0),
+        );
+        // todo: holeを考慮する必要がある
+    }
+    // coords_spansの先頭の0を削除する
+    coords_spans.remove(0);
+    (all_coords, coords_spans)
+}
+
 fn main() {
     let args = Args::parse();
 
@@ -73,6 +96,15 @@ fn main() {
         })
         .collect();
 
-    println!("first object: {:?}", tlc_objs[0].cityobj);
-    println!("first object: {:?}", tlc_objs[0].geometries);
+    let first_obj = &tlc_objs[0];
+
+    let properties = &first_obj.cityobj;
+    let vertices = &first_obj.geometries.vertices;
+    let (indices, coords_spans) = extract_indices(first_obj);
+
+    // 一つのCityObjectに必要な情報
+    println!("properties: {:?}\n", properties);
+    println!("vertices: {:?}\n", vertices);
+    println!("indices: {:?}\n", indices);
+    println!("coords_spans: {:?}\n", coords_spans);
 }
