@@ -97,33 +97,18 @@ fn main() {
         })
         .collect();
 
-    // for (i, tlc_obj) in tlc_objs.iter().enumerate() {
-    //     let properties = &tlc_obj.cityobj;
-    //     let vertices = &tlc_obj.geometries.vertices;
-    //     let (indices, coords_spans, all_hole_indices) = extract_indices(tlc_obj);
-
-    //     if !all_hole_indices.is_empty() {
-    //         println!("i: {}", i);
-    //         println!("properties: {:?}\n", properties);
-    //         println!("vertices: {:?}\n", vertices);
-    //         println!("indices: {:?}\n", indices);
-    //         println!("coords_spans: {:?}\n", coords_spans);
-    //         println!("all_hole_indices: {:?}\n", all_hole_indices);
-    //     }
-    // }
-
     // 17番目とかがholeを持っていた
     let first_obj = &tlc_objs[17];
-    println!("first_obj: {:?}\n", first_obj.geometries);
+    // println!("first_obj: {:?}\n", first_obj.geometries);
 
     let properties = &first_obj.cityobj;
     let vertices = &first_obj.geometries.vertices;
     let (indices, coords_spans, all_hole_indices, holes_spans) = extract_indices(first_obj);
 
     // 一つのCityObject(TopLevelCityObject・Feature)に必要な情報
-    // println!("properties: {:?}\n", properties);
-    // println!("vertices: {:?}\n", vertices);
-    // println!("indices: {:?}\n", indices);
+    println!("properties: {:?}\n", properties);
+    println!("vertices: {:?}\n", vertices);
+    println!("indices: {:?}\n", indices);
     println!("coords_spans: {:?}\n", coords_spans);
     println!("all_hole_indices: {:?}\n", all_hole_indices);
     println!("holes_spans: {:?}\n", holes_spans);
