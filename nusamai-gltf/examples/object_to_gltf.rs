@@ -463,6 +463,14 @@ fn main() {
     }
     triangles.vertex_ids = Some(vertex_ids);
 
+    // cityobjから主題属性を取得してJSONにする
+    let cityobj = &first_obj.cityobj;
+
+    // EXT_structural_metadataをJSONパートのトップレベルのextensionsに追加
+    // extensionsに主題属性を加工したschemaを追加
+    // extensionsにpropertyTablesを追加
+    // バイナリバッファに主題属性を格納
+
     // バイナリバッファを作成
     let binary_buffer = make_binary_buffer(&triangles);
     fs::write("./data/data.bin", &binary_buffer).unwrap();
