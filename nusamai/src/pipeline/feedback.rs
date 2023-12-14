@@ -1,3 +1,5 @@
+//! Feedback messages from the pipeline components.
+
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 
