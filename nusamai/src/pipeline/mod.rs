@@ -11,12 +11,11 @@ pub use source::*;
 pub use transform::*;
 
 use std::sync::mpsc;
-use std::sync::mpsc::channel;
 
-pub type Sender = mpsc::Sender<Percel>;
+pub type Sender = mpsc::SyncSender<Percel>;
 pub type Receiver = mpsc::Receiver<Percel>;
 
-/// TODO: Move to citygml(plateau) crate
+/// Message passing through pipeline stages
 #[derive(Debug)]
 pub struct Percel {
     pub dummy_value: i32,

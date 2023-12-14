@@ -1,7 +1,7 @@
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 
-use crate::pipeline::channel;
+const FEEDBACK_CHANNEL_BOUND: usize = 10000;
 
 #[derive(Debug)]
 pub struct FeedbackMessage {
@@ -15,16 +15,18 @@ pub struct FeedbackMessage {
 #[derive(Clone)]
 pub struct Feedback {
     cancelled: Arc<AtomicBool>,
-    sender: std::sync::mpsc::Sender<FeedbackMessage>,
+    sender: std::sync::mpsc::SyncSender<FeedbackMessage>,
 }
 
 impl Feedback {
     /// Checks if the pipeline is requested to be cancelled
+    #[inline]
     pub fn is_cancelled(&self) -> bool {
         self.cancelled.load(Ordering::Relaxed)
     }
 
     /// Send a message to the feedback channel
+    #[inline]
     pub fn send(&self, msg: FeedbackMessage) {
         // don't care if the receiver is dropped.
         let _ = self.sender.send(msg);
@@ -57,7 +59,7 @@ impl Canceller {
 
 pub(crate) fn watcher() -> (Watcher, Feedback, Canceller) {
     let cancelled = Arc::new(AtomicBool::new(false));
-    let (sender, receiver) = channel();
+    let (sender, receiver) = std::sync::mpsc::sync_channel(FEEDBACK_CHANNEL_BOUND);
     let watcher = Watcher { receiver };
     let canceller = Canceller {
         cancelled: cancelled.clone(),

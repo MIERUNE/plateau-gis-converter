@@ -1,16 +1,21 @@
+use std::sync::mpsc::sync_channel;
+
+use rayon::prelude::*;
+
 use super::{
     feedback::{watcher, Feedback, Watcher},
     Canceller,
 };
-use rayon::prelude::*;
+use crate::pipeline::{Receiver, Sink, Source, Transformer};
 
-use crate::pipeline::{channel, Receiver, Sink, Source, Transformer};
+const SOURCE_OUTPUT_CHANNEL_BOUND: usize = 10000;
+const TRANSFORMER_OUTPUT_CHANNEL_BOUND: usize = 10000;
 
 fn start_source_thread(
     mut source: Box<dyn Source>,
     feedback: Feedback,
 ) -> (std::thread::JoinHandle<()>, Receiver) {
-    let (sender, receiver) = channel();
+    let (sender, receiver) = sync_channel(SOURCE_OUTPUT_CHANNEL_BOUND);
     let handle = std::thread::spawn(move || {
         source.run(sender, &feedback);
     });
@@ -22,14 +27,18 @@ fn start_transformer_thread(
     upstream_receiver: Receiver,
     feedback: Feedback,
 ) -> (std::thread::JoinHandle<()>, Receiver) {
-    let (sender, receiver) = channel();
+    let (sender, receiver) = sync_channel(TRANSFORMER_OUTPUT_CHANNEL_BOUND);
     let handle = std::thread::spawn(move || {
         let _ = upstream_receiver
             .into_iter()
             .par_bridge()
             .try_for_each(|mut obj| {
                 transformer.transform(&mut obj, &feedback);
-                sender.send(obj)
+                if sender.send(obj).is_err() || feedback.is_cancelled() {
+                    Err(())
+                } else {
+                    Ok(())
+                }
             });
     });
     (handle, receiver)
@@ -42,6 +51,9 @@ fn start_sink_thread(
 ) -> std::thread::JoinHandle<()> {
     std::thread::spawn(move || {
         for obj in receiver {
+            if feedback.is_cancelled() {
+                break;
+            }
             sink.feed(obj, &mut feedback);
         }
     })
@@ -64,9 +76,7 @@ impl PipelineHandle {
 
 /// Run the pipeline
 ///
-/// ````
-/// [Source] ==> [Transformer] ==> [Sink]
-/// ````
+/// `[Source] ==> [Transformer] ==> [Sink]`
 pub fn run(
     source: Box<dyn Source>,
     transformer: Box<dyn Transformer>,

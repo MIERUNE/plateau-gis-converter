@@ -1,5 +1,5 @@
+use crate::configuration::Config;
 use crate::pipeline::{Feedback, Percel};
-use crate::Config;
 
 pub struct SinkInfo {
     pub name: String,

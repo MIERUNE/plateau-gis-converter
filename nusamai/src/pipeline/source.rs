@@ -1,5 +1,5 @@
+use crate::configuration::Config;
 use crate::pipeline::{Feedback, Sender};
-use crate::Config;
 
 pub struct SourceInfo {
     pub name: String,
