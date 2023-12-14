@@ -289,9 +289,11 @@ fn make_gltf_json(triangles: &Triangles) -> String {
 fn make_binary_buffer(triangles: &Triangles) -> Vec<u8> {
     let indices = &triangles.indices;
     let vertices = &triangles.vertices;
+    let vertex_ids = &triangles.vertex_ids;
 
     let mut indices_buf = Vec::new();
     let mut vertices_buf = Vec::new();
+    let mut vertex_ids_buf = Vec::new();
 
     // glTFのバイナリはリトルエンディアン
     for index in indices {
@@ -306,7 +308,14 @@ fn make_binary_buffer(triangles: &Triangles) -> Vec<u8> {
         }
     }
 
-    [&indices_buf[..], &vertices_buf[..]].concat()
+    if let Some(vertex_ids) = vertex_ids {
+        for vertex_id in vertex_ids {
+            vertex_ids_buf
+                .write_u64::<LittleEndian>(*vertex_id)
+                .unwrap();
+        }
+    }
+    [&indices_buf[..], &vertices_buf[..], &vertex_ids_buf[..]].concat()
 }
 
 fn tessellation(
