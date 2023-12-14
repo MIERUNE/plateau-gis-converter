@@ -1,4 +1,6 @@
 use citygml::{CityGMLElement, Code, GeometryRef};
+use super::iur::city_furniture::{CityFurnitureDetailAttribute, CityFurnitureDataQualityAttribute};
+use super::iur::urban_object::{FacilityTypeAttribute,FacilityIdAttribute};
 
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Default, Debug, CityGMLElement)]
@@ -17,4 +19,28 @@ pub struct CityFurniture {
 
     #[citygml(path = b"frn:usage")]
     pub usage: Vec<Code>,
+
+    #[citygml(path = b"uro:cityFurnitureDetailAttribute")]
+    pub city_furniture_detail_attribute: Vec<CityFurnitureDetailAttribute>,
+
+    #[citygml(path = b"uro:cityFurnitureDataQualityAttribute")]
+    pub city_furniture_data_quality_attribute: Option<CityFurnitureDataQualityAttribute>,
+
+    #[citygml(path = b"uro:frnFacilityTypeAttribute")]
+    pub frn_facility_type_attribute: Vec<FacilityTypeAttribute>,
+
+    #[citygml(path = b"uro:frnFacilityIdAttribute")]
+    pub frn_facility_id_attribute: Option<FacilityIdAttribute>,
+
+    // #[citygml(path = b"uro:frnFacilityAttribute")]
+    // pub frn_facility_attribute: Vec<FacilityAttribute>,
+
+    // #[citygml(path = b"uro:frnDmAttribute")]
+    // pub frn_dm_attribute: Vec<DmAttribute>,
 }
+
+
+
+
+
+
