@@ -9,6 +9,7 @@ Notion: [BRIDGE 都市デジタルツイン・GISコンバータの開発](https
 
 - アプリケーション：
     - [`app`](./app/) &mdash; Tauri による GUI アプリケーション
+    - [`nusamai`](./nusamai/) &mdash; アプリケーションのバックエンド (およびCLI実装？)
 - 基盤：
     - [`nusamai-geometry`](./nusamai-geometry/) &mdash; ジオメトリ型
     - [`nusamai-plateau`](./nusamai-plateau/) &mdash; PLATEAU CityGML パーサ
