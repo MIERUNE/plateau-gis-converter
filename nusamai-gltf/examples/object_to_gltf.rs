@@ -424,16 +424,20 @@ fn main() {
     let first_mpoly = make_mpoly3(first_obj);
     println!("first_mpoly: {:?}\n", first_mpoly);
 
-    // todo
     // 地物の中心座標を求める
     let (mu_lat, mu_lng) = calc_center(&vec![first_mpoly.clone()]);
 
     // 地物ごとに三角分割
-    let triangles = tessellation(&[first_mpoly.clone()], mu_lng, mu_lat).unwrap();
+    let mut triangles = tessellation(&[first_mpoly.clone()], mu_lng, mu_lat).unwrap();
 
     // 頂点にIDを付与
-    // 地物ごとにバイナリバッファを作成
-    // 地物ごとにバイナリバッファをファイルに書き出し
+    // 一つの地物は全て同じ頂点idを持つことにする
+    // （本来は窓などは頂点IDが分かれる）
+    let mut vertex_ids = Vec::new();
+    for _ in 0..triangles.vertices.len() {
+        vertex_ids.push(0);
+    }
+    triangles.vertex_ids = Some(vertex_ids);
 
     // バイナリバッファを作成
     let binary_buffer = make_binary_buffer(&triangles);
