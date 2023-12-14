@@ -9,7 +9,7 @@ use rand::prelude::*;
 pub struct DummySourceProvider {}
 
 impl SourceProvider for DummySourceProvider {
-    fn create(&self) -> Box<dyn Source> {
+    fn create(&self, _config: &Config) -> Box<dyn Source> {
         Box::new(DummySource {})
     }
 
@@ -19,7 +19,7 @@ impl SourceProvider for DummySourceProvider {
         }
     }
 
-    fn configuration(&self) -> Config {
+    fn config(&self) -> Config {
         Config::default()
     }
 }
@@ -61,7 +61,7 @@ impl Transformer for DummyTransformer {
 struct DummySinkProvider {}
 
 impl SinkProvider for DummySinkProvider {
-    fn create(&self) -> Box<dyn Sink> {
+    fn create(&self, _config: &Config) -> Box<dyn Sink> {
         Box::new(DummySink {})
     }
 
@@ -71,7 +71,7 @@ impl SinkProvider for DummySinkProvider {
         }
     }
 
-    fn configuration(&self) -> Config {
+    fn config(&self) -> Config {
         Config::default()
     }
 }
@@ -94,9 +94,9 @@ fn test_run_pipeline() {
     let input_driver_factory: Box<dyn SourceProvider> = Box::new(DummySourceProvider {});
     let output_driver_factory: Box<dyn SinkProvider> = Box::new(DummySinkProvider {});
 
-    let input_driver = input_driver_factory.create();
+    let input_driver = input_driver_factory.create(&input_driver_factory.config());
     let transformer = Box::new(DummyTransformer {});
-    let output_driver = output_driver_factory.create();
+    let output_driver = output_driver_factory.create(&input_driver_factory.config());
 
     // start the pipeline
     let (handle, watcher, canceller) = pipeline::run(input_driver, transformer, output_driver);

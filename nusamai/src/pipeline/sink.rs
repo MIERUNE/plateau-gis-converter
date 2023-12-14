@@ -7,13 +7,13 @@ pub struct SinkInfo {
 
 pub trait SinkProvider {
     /// Creates a sink instance.
-    fn create(&self) -> Box<dyn Sink>;
+    fn create(&self, config: &Config) -> Box<dyn Sink>;
 
     /// Gets basic information about the sink.
     fn info(&self) -> SinkInfo;
 
-    /// Gets the configuration for the sink.
-    fn configuration(&self) -> Config;
+    /// Gets the configurable parameters of the sink.
+    fn config(&self) -> Config;
 }
 
 pub trait Sink: Send {

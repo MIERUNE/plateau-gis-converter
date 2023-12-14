@@ -8,13 +8,13 @@ pub struct SourceInfo {
 
 pub trait SourceProvider {
     /// Creates a source instance.
-    fn create(&self) -> Box<dyn Source>;
+    fn create(&self, config: &Config) -> Box<dyn Source>;
 
     /// Gets basic information about the sink.
     fn info(&self) -> SourceInfo;
 
-    /// Gets the configuration for the source.
-    fn configuration(&self) -> Config;
+    /// Gets the configurable parameters of the source.
+    fn config(&self) -> Config;
 }
 
 pub trait Source: Send {
