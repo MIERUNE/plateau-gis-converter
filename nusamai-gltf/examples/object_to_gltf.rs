@@ -6,11 +6,6 @@ use indexmap::IndexSet;
 use nusamai_geometry::MultiPolygon3;
 use nusamai_gltf::*;
 use nusamai_plateau::models::CityObject;
-use quick_xml::{
-    events::Event,
-    name::{Namespace, ResolveResult::Bound},
-    reader::NsReader,
-};
 use std::{
     borrow::Cow,
     collections::HashMap,
@@ -19,7 +14,6 @@ use std::{
 };
 use std::{clone::Clone, default::Default};
 use std::{io::Write, usize};
-use thiserror::Error;
 
 #[derive(Parser)]
 struct Args {
@@ -40,7 +34,7 @@ struct Triangles {
     pub face_normals: Option<Vec<f32>>,
     pub vertex_normals: Option<Vec<f32>>,
     pub vertex_colors: Option<Vec<f32>>,
-    pub vertex_ids: Option<Vec<u64>>,
+    pub vertex_ids: Option<Vec<u32>>,
     pub metadata: Option<HashMap<String, serde_json::Value>>,
 }
 
@@ -184,6 +178,7 @@ fn make_glb(gltf_string: String, binary_buffer: Vec<u8>) -> Vec<u8> {
 fn make_gltf_json(triangles: &Triangles) -> String {
     let indices = &triangles.indices;
     let vertices = &triangles.vertices;
+    let vertex_ids = &triangles.vertex_ids;
 
     // glTF のモデルを作成
     let mut gltf = Gltf::new();
@@ -196,10 +191,12 @@ fn make_gltf_json(triangles: &Triangles) -> String {
 
     // glTF のバッファを作成
     let mut buffer = Buffer::new();
-    // indicesはu32なので4バイト、verticesはf32x3なので12バイト
+    // indicesはu32なので4バイト、verticesはf32x3なので12バイト, vertex_idsはu32なので4バイト
     let indices_byte_length = indices.len() as u32 * 4;
     let vertices_byte_length = vertices.len() as u32 * 12;
-    buffer.byte_length = indices_byte_length + vertices_byte_length;
+    let vertex_ids_byte_length = vertex_ids.as_ref().unwrap().len() as u32 * 4;
+
+    buffer.byte_length = indices_byte_length + vertices_byte_length + vertex_ids_byte_length;
     buffer.uri = Some("data.bin".to_string());
 
     gltf.buffers = Some(vec![buffer]);
@@ -217,7 +214,13 @@ fn make_gltf_json(triangles: &Triangles) -> String {
     buffer_view2.byte_offset = indices_byte_length;
     buffer_view2.target = Some(BufferViewTarget::ArrayBuffer);
 
-    gltf.buffer_views = Some(vec![buffer_view1, buffer_view2]);
+    let mut buffer_view3 = BufferView::new();
+    buffer_view3.buffer = 0;
+    buffer_view3.byte_length = vertex_ids_byte_length;
+    buffer_view3.byte_offset = indices_byte_length + vertices_byte_length;
+    buffer_view3.target = Some(BufferViewTarget::ArrayBuffer);
+
+    gltf.buffer_views = Some(vec![buffer_view1, buffer_view2, buffer_view3]);
 
     // glTF のアクセサを作成
     let mut accessor1 = Accessor::new();
@@ -251,7 +254,17 @@ fn make_gltf_json(triangles: &Triangles) -> String {
     accessor2.max = Some(max_vertex.to_vec());
     accessor2.min = Some(min_vertex.to_vec());
 
-    gltf.accessors = Some(vec![accessor1, accessor2]);
+    let mut accessor3 = Accessor::new();
+    accessor3.buffer_view = Some(2);
+    accessor3.byte_offset = 0;
+    accessor3.component_type = ComponentType::Float;
+    accessor3.count = vertex_ids.as_ref().unwrap().len() as u32;
+    accessor3.type_ = AccessorType::Scalar;
+    let max_vertex_ids = vertex_ids.as_ref().unwrap().iter().max().unwrap();
+    accessor3.max = Some(vec![*max_vertex_ids as f32]);
+    accessor3.min = Some(vec![0.0]);
+
+    gltf.accessors = Some(vec![accessor1, accessor2, accessor3]);
 
     // glTF のメッシュを作成
     let mut mesh = Mesh::new();
@@ -261,6 +274,7 @@ fn make_gltf_json(triangles: &Triangles) -> String {
     primitive1.attributes = {
         let mut map = HashMap::new();
         map.insert("POSITION".to_string(), 1);
+        map.insert("_FEATURE_ID_0".to_string(), 2);
         map
     };
 
@@ -311,10 +325,11 @@ fn make_binary_buffer(triangles: &Triangles) -> Vec<u8> {
     if let Some(vertex_ids) = vertex_ids {
         for vertex_id in vertex_ids {
             vertex_ids_buf
-                .write_u64::<LittleEndian>(*vertex_id)
+                .write_u32::<LittleEndian>(*vertex_id)
                 .unwrap();
         }
     }
+
     [&indices_buf[..], &vertices_buf[..], &vertex_ids_buf[..]].concat()
 }
 
@@ -442,7 +457,7 @@ fn main() {
     // 頂点にIDを付与
     // 一つの地物は全て同じ頂点idを持つことにする
     // （本来は窓などは頂点IDが分かれる）
-    let mut vertex_ids = Vec::new();
+    let mut vertex_ids: Vec<u32> = Vec::new();
     for _ in 0..triangles.vertices.len() {
         vertex_ids.push(0);
     }
