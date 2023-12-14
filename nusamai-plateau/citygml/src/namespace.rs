@@ -2,7 +2,7 @@ use quick_xml::name::{Namespace, ResolveResult};
 
 /// Normalize a XML namaespace URI to a well-known prefix.
 ///
-/// e.g. "http://www.opengis.net/citygml/2.0" -> "core:"
+/// e.g. `"http://www.opengis.net/citygml/2.0"` -> `"core:"`
 pub fn normalize_ns_prefix<'a>(ns: &ResolveResult<'a>) -> &'a [u8] {
     match ns {
         ResolveResult::Bound(Namespace(name)) => {
