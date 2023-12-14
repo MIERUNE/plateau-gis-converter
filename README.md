@@ -3,8 +3,10 @@
 [![Test Tauri App](https://github.com/MIERUNE/nusamai/actions/workflows/test_app.yml/badge.svg)](https://github.com/MIERUNE/nusamai/actions/workflows/test_app.yml)
 [![Test Libraries](https://github.com/MIERUNE/nusamai/actions/workflows/test_libs.yml/badge.svg)](https://github.com/MIERUNE/nusamai/actions/workflows/test_libs.yml)
 [![codecov](https://codecov.io/gh/MIERUNE/nusamai/graph/badge.svg?token=oa62wDWoqu)](https://codecov.io/gh/MIERUNE/nusamai)
+[![Docs](https://github.com/MIERUNE/nusamai/actions/workflows/doc.yml/badge.svg)](https://mierune.github.io/nusamai/app/)
 
-Notion: [BRIDGE 都市デジタルツイン・GISコンバータの開発](https://www.notion.so/mierune/BRIDGE-GIS-461ba0355b3041619ed3f303a8b0166f)
+- Notion: [BRIDGE 都市デジタルツイン・GISコンバータの開発](https://www.notion.so/mierune/BRIDGE-GIS-461ba0355b3041619ed3f303a8b0166f)
+- Rustdoc: https://mierune.github.io/nusamai/app/ 
 
 ## リポジトリ構成
 
