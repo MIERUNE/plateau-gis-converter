@@ -42,11 +42,11 @@ pub struct FeatureId {
 
     /// An attribute containing feature IDs.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub attribute: Option<Value>, // featureIdAttribute.schema.json
+    pub attribute: Option<FeatureIdAttribute>,
 
     /// A texture containing feature IDs.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub texture: Option<Value>, // featureIdTexture.schema.json
+    pub texture: Option<FeatureIdTexture>,
 
     /// The index of the property table containing per-feature property values.
     #[serde(skip_serializing_if = "Option::is_none")]

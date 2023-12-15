@@ -183,6 +183,9 @@ fn make_gltf_json(triangles: &Triangles) -> String {
     // glTF のモデルを作成
     let mut gltf = Gltf::new();
 
+    // glTFの拡張を定義
+    gltf.extensions_used = Some(vec!["EXT_mesh_features".to_string()]);
+
     // glTF のアセットを作成
     let mut asset = Asset::new();
     asset.version = "2.0".to_string();
@@ -277,6 +280,30 @@ fn make_gltf_json(triangles: &Triangles) -> String {
         map.insert("_FEATURE_ID_0".to_string(), 2);
         map
     };
+    // extensions
+    //こんな構造を追加したい
+    // "extensions": {
+    //     "EXT_mesh_features": {
+    //         "featureIds": [
+    //             {
+    //                 "featureCount": 4,
+    //                 "attribute": 0
+    //             }
+    //         ]
+    //     }
+    // }
+    let mut extensions = MeshPrimitiveExtensions {
+        ..Default::default()
+    };
+    let mut feature_ids = Vec::new();
+    let mut feature_id = FeatureId {
+        ..Default::default()
+    };
+    feature_id.feature_count = 1;
+    feature_id.attribute = Some(0);
+    feature_ids.push(feature_id);
+
+    primitive1.extensions = Some(extensions);
 
     mesh.primitives = vec![primitive1];
 
