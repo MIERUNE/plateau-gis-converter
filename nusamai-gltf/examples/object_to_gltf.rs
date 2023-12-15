@@ -292,18 +292,30 @@ fn make_gltf_json(triangles: &Triangles) -> String {
     //         ]
     //     }
     // }
-    let mut extensions = MeshPrimitiveExtensions {
-        ..Default::default()
-    };
-    let mut feature_ids = Vec::new();
-    let mut feature_id = FeatureId {
-        ..Default::default()
-    };
-    feature_id.feature_count = 1;
-    feature_id.attribute = Some(0);
-    feature_ids.push(feature_id);
+    let mut extensions = MeshPrimitiveExtMeshFeatures::default();
+    let mut feature_id = FeatureId::default();
 
-    primitive1.extensions = Some(extensions);
+    // vertex_idsをユニークにする
+    let mut vertex_ids_unique = vertex_ids.as_ref().unwrap().clone();
+    vertex_ids_unique.sort();
+    vertex_ids_unique.dedup();
+    let feature_count = vertex_ids_unique.len();
+
+    feature_id.feature_count = feature_count as u32;
+
+    let feature_id_attribute = FeatureIdAttribute { set_index: 0 };
+    feature_id.attribute = Some(feature_id_attribute);
+    extensions.feature_ids = vec![feature_id];
+
+    let mut ext_mesh_features = HashMap::new();
+    let ext_mesh_features_json = serde_json::to_value(extensions).unwrap();
+    ext_mesh_features.insert("EXT_mesh_features".to_string(), ext_mesh_features_json);
+
+    let mesh_primitive_extensions = MeshPrimitiveExtensions {
+        others: ext_mesh_features,
+    };
+
+    primitive1.extensions = Some(mesh_primitive_extensions);
 
     mesh.primitives = vec![primitive1];
 
