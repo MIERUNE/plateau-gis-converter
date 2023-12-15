@@ -298,37 +298,25 @@ fn setup_exact(phi0: f64, k0: f64, ellips: &Ellipsoid) -> PoderEngsager {
 
 // Helper functions for "exact" transverse mercator
 fn gatg(p1: &Coeffs, b: f64, cos_2b: f64, sin_2b: f64) -> f64 {
-    let mut h = 0f64;
     let mut h2 = 0f64;
-
     let two_cos_2b: f64 = 2. * cos_2b;
-    let mut p = p1.len();
-    p -= 1;
-    let mut h1 = p1[p];
-    while p > 0 {
-        p -= 1;
-        h = -h2 + two_cos_2b * h1 + p1[p];
-        h2 = h1;
-        h1 = h;
+    let mut h = p1[p1.len() - 1];
+    for v in p1[..p1.len() - 1].iter().rev() {
+        (h, h2) = (-h2 + two_cos_2b * h + v, h);
     }
     b + h * sin_2b
 }
 
 // Real Clenshaw summation
 fn clens(a: &Coeffs, arg_r: f64) -> f64 {
-    let mut p = a.len();
     let cos_arg_r = arg_r.cos();
     let r = 2. * cos_arg_r;
 
     /* summation loop */
     let mut hr1 = 0.;
-    p -= 1;
-    let mut hr = a[p];
-    while p > 0 {
-        let hr2 = hr1;
-        hr1 = hr;
-        p -= 1;
-        hr = -hr2 + r * hr1 + a[p];
+    let mut hr = a[a.len() - 1];
+    for v in a[..a.len() - 1].iter().rev() {
+        (hr, hr1) = (-hr1 + r * hr + v, hr);
     }
     arg_r.sin() * hr
 }
@@ -342,24 +330,17 @@ fn clen_s(
     cosh_arg_i: f64,
 ) -> (f64, f64) {
     /* arguments */
-    let mut p = a.len();
     let r = 2. * cos_arg_r * cosh_arg_i;
     let i = -2. * sin_arg_r * sinh_arg_i;
 
     /* summation loop */
-    let mut hi1 = 0f64;
-    let mut hr1 = 0f64;
-    let mut hi = 0f64;
-    p -= 1;
-    let mut hr = a[p];
-
-    while p > 0 {
-        let hr2 = hr1;
-        let hi2 = hi1;
-        hr1 = hr;
-        hi1 = hi;
-        p -= 1;
-        hr = -hr2 + r * hr1 - i * hi1 + a[p];
+    let (mut hi1, mut hr1) = (0., 0.);
+    let mut hi = 0.;
+    let mut hr = a[a.len() - 1];
+    for v in a[..a.len() - 1].iter().rev() {
+        let (hr2, hi2) = (hr1, hi1);
+        (hr1, hi1) = (hr, hi);
+        hr = -hr2 + r * hr1 - i * hi1 + v;
         hi = -hi2 + i * hr1 + r * hi1;
     }
 
