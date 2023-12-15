@@ -67,11 +67,9 @@ fn parse_polygon(
                         .map(|v| v.parse::<f64>().unwrap()),
                 );
                 if is_interior {
-                    mpoly.add_interior(buf.chunks_exact(3).map(|c| [c[1], c[0], c[2]]));
-                // lon, lat, height
+                    mpoly.add_interior(buf.chunks_exact(3).map(|c| [c[0], c[1], c[2]]));
                 } else {
-                    mpoly.add_exterior(buf.chunks_exact(3).map(|c| [c[1], c[0], c[2]]));
-                    // lon, lat, height
+                    mpoly.add_exterior(buf.chunks_exact(3).map(|c| [c[0], c[1], c[2]]));
                 }
             }
             Ok(_) => (),
@@ -251,6 +249,5 @@ fn main() {
     let geojson = geojson::GeoJson::from(geojson_feature_collection);
 
     let mut file = fs::File::create("out.geojson").unwrap();
-    let mut writer = BufWriter::new(&mut file);
-    serde_json::to_writer(&mut writer, &geojson).unwrap();
+    file.write_all(geojson.to_string().as_bytes()).unwrap();
 }
