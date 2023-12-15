@@ -16,10 +16,16 @@ comment:
 component_management:
   individual_components:
     - component_id: app
-      name: tauri-app
+      name: GUI
       paths:
         - app/**
+
+    - component_id: core
+      name: Backend
+      paths:
+        - nusamai/**
+
     - component_id: nusamai-*
-      name: nusamai-*
+      name: Libraries
       paths:
         - nusamai-*/**
