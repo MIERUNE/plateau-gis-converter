@@ -64,13 +64,6 @@ impl MeshPrimitive {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, Default)]
-#[serde(rename_all = "camelCase")]
-pub struct MeshPrimitiveExtensions {
-    #[serde(flatten)]
-    pub others: HashMap<String, Value>,
-}
-
 /// A set of primitives to be rendered.  Its global transform is defined by a node that references it.
 #[derive(Serialize, Deserialize, Debug, Default)]
 #[serde[rename_all = "camelCase"]]
