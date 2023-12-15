@@ -57,13 +57,13 @@ impl Ellipsoid {
     }
 }
 
-/// WGS84 Eliipsoid
+/// WGS84 Ellipsoid
 #[inline]
 pub fn wgs84() -> Ellipsoid {
     Ellipsoid::new(6378137., 298.257223563)
 }
 
-/// GRS80 Eliipsoid
+/// GRS80 Ellipsoid
 #[inline]
 pub fn grs80() -> Ellipsoid {
     Ellipsoid::new(6378137., 298.257222101)
