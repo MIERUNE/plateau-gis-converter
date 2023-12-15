@@ -34,8 +34,8 @@ pub struct ExtendedTransverseMercatorProjection {
 }
 
 impl ExtendedTransverseMercatorProjection {
-    pub fn new(lng0: f64, lat0: f64, k0: f64, ellips: &Ellipsoid) -> Self {
-        let q = setup_exact(lat0.to_radians(), k0, ellips);
+    pub fn new(lng0: f64, lat0: f64, k: f64, ellips: &Ellipsoid) -> Self {
+        let q = setup_exact(lat0.to_radians(), k, ellips);
         Self {
             q,
             lam0: lng0.to_radians(),
@@ -192,7 +192,7 @@ impl ExtendedTransverseMercatorProjection {
     }
 }
 
-fn setup_exact(phi0: f64, k0: f64, ellips: &Ellipsoid) -> PoderEngsager {
+fn setup_exact(phi0: f64, k: f64, ellips: &Ellipsoid) -> PoderEngsager {
     let mut q = PoderEngsager {
         q_n: 0.,
         z_b: 0.,
@@ -203,7 +203,7 @@ fn setup_exact(phi0: f64, k0: f64, ellips: &Ellipsoid) -> PoderEngsager {
     };
 
     // third flattening
-    let n: f64 = (ellips.a() - ellips.b()) / (ellips.a() + ellips.b());
+    let n: f64 = ellips.f() / (2. - ellips.f());
 
     let mut np: f64 = n;
 
@@ -246,7 +246,7 @@ fn setup_exact(phi0: f64, k0: f64, ellips: &Ellipsoid) -> PoderEngsager {
     np = n * n;
 
     // Norm. mer. quad, K&W p.50 (96), p.19 (38b), p.5 (2)
-    q.q_n = k0 / (1. + n) * (1. + np * (1. / 4. + np * (1. / 64. + np / 256.)));
+    q.q_n = k / (1. + n) * (1. + np * (1. / 4. + np * (1. / 64. + np / 256.)));
 
     // coef of trig series
     // utg := ell. N, E -> sph. N, E,  KW p194 (65)
@@ -363,13 +363,13 @@ mod tests {
 
         let lat0 = 36.0;
         let lng0 = 138.5;
-        let k0 = 0.9999;
+        let k = 0.9999;
 
         let lng = 138.19318970050347;
         let lat = 36.65209371778363;
 
         let ellips = grs80();
-        let tmerc = ExtendedTransverseMercatorProjection::new(lng0, lat0, k0, &ellips);
+        let tmerc = ExtendedTransverseMercatorProjection::new(lng0, lat0, k, &ellips);
 
         let Ok((x, y)) = tmerc.project_forward(lng, lat) else {
             panic!("error");

@@ -24,24 +24,23 @@ pub enum JPRZone {
     Zone19,
 }
 
-pub struct JPRParams {
+const JPR_K: f64 = 0.9999;
+
+pub struct JPRZoneParams {
     /// Central longitude
     lng0: f64,
     /// Central latitude
     lat0: f64,
-    /// Zone number
-    zone: u8,
 }
 
-impl JPRParams {
+impl JPRZoneParams {
+    /// Central longitude
     pub fn lng0(&self) -> f64 {
         self.lng0
     }
+    /// Central latitude
     pub fn lat0(&self) -> f64 {
         self.lat0
-    }
-    pub fn zone(&self) -> usize {
-        self.zone as usize
     }
 }
 
@@ -49,105 +48,162 @@ impl JPRZone {
     /// Gets the transverse mercator projection for the zone.
     pub fn projection(&self) -> ExtendedTransverseMercatorProjection {
         let params = self.params();
-        ExtendedTransverseMercatorProjection::new(params.lng0(), params.lat0(), 0.9999, &grs80())
+        ExtendedTransverseMercatorProjection::new(params.lng0(), params.lat0(), JPR_K, &grs80())
     }
 
-    pub fn params(&self) -> JPRParams {
+    /// Get the zone from the zone number.
+    pub const fn from_number(no: usize) -> Self {
+        match no {
+            1 => JPRZone::Zone1,
+            2 => JPRZone::Zone2,
+            3 => JPRZone::Zone3,
+            4 => JPRZone::Zone4,
+            5 => JPRZone::Zone5,
+            6 => JPRZone::Zone6,
+            7 => JPRZone::Zone7,
+            8 => JPRZone::Zone8,
+            9 => JPRZone::Zone9,
+            10 => JPRZone::Zone10,
+            11 => JPRZone::Zone11,
+            12 => JPRZone::Zone12,
+            13 => JPRZone::Zone13,
+            14 => JPRZone::Zone14,
+            15 => JPRZone::Zone15,
+            16 => JPRZone::Zone16,
+            17 => JPRZone::Zone17,
+            18 => JPRZone::Zone18,
+            19 => JPRZone::Zone19,
+            _ => panic!("invalid zone number"),
+        }
+    }
+
+    /// Gets the zone number.
+    pub const fn zone_number(&self) -> usize {
         match self {
-            JPRZone::Zone1 => JPRParams {
+            JPRZone::Zone1 => 1,
+            JPRZone::Zone2 => 2,
+            JPRZone::Zone3 => 3,
+            JPRZone::Zone4 => 4,
+            JPRZone::Zone5 => 5,
+            JPRZone::Zone6 => 6,
+            JPRZone::Zone7 => 7,
+            JPRZone::Zone8 => 8,
+            JPRZone::Zone9 => 9,
+            JPRZone::Zone10 => 10,
+            JPRZone::Zone11 => 11,
+            JPRZone::Zone12 => 12,
+            JPRZone::Zone13 => 13,
+            JPRZone::Zone14 => 14,
+            JPRZone::Zone15 => 15,
+            JPRZone::Zone16 => 16,
+            JPRZone::Zone17 => 17,
+            JPRZone::Zone18 => 18,
+            JPRZone::Zone19 => 19,
+        }
+    }
+
+    /// Gets the roman number of the zone.
+    pub const fn zone_roman(&self) -> &str {
+        match self {
+            JPRZone::Zone1 => "I",
+            JPRZone::Zone2 => "II",
+            JPRZone::Zone3 => "III",
+            JPRZone::Zone4 => "IV",
+            JPRZone::Zone5 => "V",
+            JPRZone::Zone6 => "VI",
+            JPRZone::Zone7 => "VII",
+            JPRZone::Zone8 => "VIII",
+            JPRZone::Zone9 => "IX",
+            JPRZone::Zone10 => "X",
+            JPRZone::Zone11 => "XI",
+            JPRZone::Zone12 => "XII",
+            JPRZone::Zone13 => "XIII",
+            JPRZone::Zone14 => "XIV",
+            JPRZone::Zone15 => "XV",
+            JPRZone::Zone16 => "XVI",
+            JPRZone::Zone17 => "XVII",
+            JPRZone::Zone18 => "XVIII",
+            JPRZone::Zone19 => "XIX",
+        }
+    }
+
+    pub const fn params(&self) -> JPRZoneParams {
+        match self {
+            JPRZone::Zone1 => JPRZoneParams {
                 lng0: 129.5,
                 lat0: 33.0,
-                zone: 1,
             },
-            JPRZone::Zone2 => JPRParams {
+            JPRZone::Zone2 => JPRZoneParams {
                 lng0: 131.0,
                 lat0: 33.0,
-                zone: 2,
             },
-            JPRZone::Zone3 => JPRParams {
+            JPRZone::Zone3 => JPRZoneParams {
                 lng0: 132.166_666_666_666_67,
                 lat0: 36.0,
-                zone: 3,
             },
-            JPRZone::Zone4 => JPRParams {
+            JPRZone::Zone4 => JPRZoneParams {
                 lng0: 133.5,
                 lat0: 36.0,
-                zone: 4,
             },
-            JPRZone::Zone5 => JPRParams {
+            JPRZone::Zone5 => JPRZoneParams {
                 lng0: 134.333_333_333_333_33,
                 lat0: 36.0,
-                zone: 5,
             },
-            JPRZone::Zone6 => JPRParams {
+            JPRZone::Zone6 => JPRZoneParams {
                 lng0: 136.5,
                 lat0: 36.0,
-                zone: 6,
             },
-            JPRZone::Zone7 => JPRParams {
+            JPRZone::Zone7 => JPRZoneParams {
                 lng0: 137.133_333_333_333_33,
                 lat0: 36.0,
-                zone: 7,
             },
-            JPRZone::Zone8 => JPRParams {
+            JPRZone::Zone8 => JPRZoneParams {
                 lng0: 138.5,
                 lat0: 36.0,
-                zone: 8,
             },
-            JPRZone::Zone9 => JPRParams {
+            JPRZone::Zone9 => JPRZoneParams {
                 lng0: 139.833_333_333_333_33,
                 lat0: 36.0,
-                zone: 9,
             },
-            JPRZone::Zone10 => JPRParams {
+            JPRZone::Zone10 => JPRZoneParams {
                 lng0: 140.833_333_333_333_33,
                 lat0: 40.0,
-                zone: 10,
             },
-            JPRZone::Zone11 => JPRParams {
+            JPRZone::Zone11 => JPRZoneParams {
                 lng0: 140.25,
                 lat0: 44.0,
-                zone: 11,
             },
-            JPRZone::Zone12 => JPRParams {
+            JPRZone::Zone12 => JPRZoneParams {
                 lng0: 142.25,
                 lat0: 44.0,
-                zone: 12,
             },
-            JPRZone::Zone13 => JPRParams {
+            JPRZone::Zone13 => JPRZoneParams {
                 lng0: 144.25,
                 lat0: 44.0,
-                zone: 13,
             },
-            JPRZone::Zone14 => JPRParams {
+            JPRZone::Zone14 => JPRZoneParams {
                 lng0: 142.0,
                 lat0: 26.0,
-                zone: 14,
             },
-            JPRZone::Zone15 => JPRParams {
+            JPRZone::Zone15 => JPRZoneParams {
                 lng0: 127.5,
                 lat0: 26.0,
-                zone: 15,
             },
-            JPRZone::Zone16 => JPRParams {
+            JPRZone::Zone16 => JPRZoneParams {
                 lng0: 124.0,
                 lat0: 26.0,
-                zone: 16,
             },
-            JPRZone::Zone17 => JPRParams {
+            JPRZone::Zone17 => JPRZoneParams {
                 lng0: 131.5,
                 lat0: 26.0,
-                zone: 17,
             },
-            JPRZone::Zone18 => JPRParams {
+            JPRZone::Zone18 => JPRZoneParams {
                 lng0: 136.5,
                 lat0: 20.0,
-                zone: 18,
             },
-            JPRZone::Zone19 => JPRParams {
+            JPRZone::Zone19 => JPRZoneParams {
                 lng0: 154.5,
                 lat0: 26.0,
-                zone: 19,
             },
         }
     }
@@ -164,7 +220,11 @@ mod tests {
         // 36.65209371778363 138.19318970050347 0
         // 72396.23	-27430.91 0.00
 
-        let tmerc = JPRZone::Zone8.projection();
+        let zone = JPRZone::Zone8;
+        assert_eq!(zone.zone_number(), 8);
+        assert_eq!(zone.zone_roman(), "VIII");
+
+        let tmerc = zone.projection();
         let lng = 138.19318970050347;
         let lat = 36.65209371778363;
 
@@ -179,5 +239,26 @@ mod tests {
         };
         assert!((lng - lng2).abs() < 1e-10);
         assert!((lat - lat2).abs() < 1e-10);
+    }
+
+    #[test]
+    fn zones() {
+        for i in 1..=19 {
+            let zone = JPRZone::from_number(i);
+            assert_eq!(zone.zone_number(), i);
+            assert!(!zone.zone_roman().is_empty());
+        }
+    }
+
+    #[test]
+    #[should_panic]
+    fn invalid_zone_0() {
+        let _ = JPRZone::from_number(0);
+    }
+
+    #[test]
+    #[should_panic]
+    fn invalid_zone_20() {
+        let _ = JPRZone::from_number(20);
     }
 }
