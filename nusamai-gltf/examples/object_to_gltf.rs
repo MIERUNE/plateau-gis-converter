@@ -4,7 +4,10 @@ use clap::Parser;
 use earcut_rs::{utils_3d::project3d_to_2d, Earcut};
 use indexmap::IndexSet;
 use nusamai_geometry::MultiPolygon3;
-use nusamai_gltf::*;
+use nusamai_gltf::{
+    extensions, Accessor, AccessorType, Asset, Buffer, BufferView, BufferViewTarget, ComponentType,
+    Gltf, Mesh, MeshPrimitive, Node, PrimitiveMode, Scene,
+};
 use nusamai_plateau::models::CityObject;
 use std::{
     borrow::Cow,
@@ -280,40 +283,21 @@ fn make_gltf_json(triangles: &Triangles) -> String {
         map.insert("_FEATURE_ID_0".to_string(), 2);
         map
     };
-    // extensions
-    //こんな構造を追加したい
-    // "extensions": {
-    //     "EXT_mesh_features": {
-    //         "featureIds": [
-    //             {
-    //                 "featureCount": 4,
-    //                 "attribute": 0
-    //             }
-    //         ]
-    //     }
-    // }
-    let mut extensions = MeshPrimitiveExtMeshFeatures::default();
-    let mut feature_id = FeatureId::default();
 
-    // vertex_idsをユニークにする
+    // EXT_mesh_featuresを追加
     let mut vertex_ids_unique = vertex_ids.as_ref().unwrap().clone();
     vertex_ids_unique.sort();
     vertex_ids_unique.dedup();
     let feature_count = vertex_ids_unique.len();
 
-    feature_id.feature_count = feature_count as u32;
-
-    let feature_id_attribute = FeatureIdAttribute { set_index: 0 };
-    feature_id.attribute = Some(feature_id_attribute);
-    extensions.feature_ids = vec![feature_id];
-
-    let mut ext_mesh_features = HashMap::new();
-    let ext_mesh_features_json = serde_json::to_value(extensions).unwrap();
-    ext_mesh_features.insert("EXT_mesh_features".to_string(), ext_mesh_features_json);
-
-    let mesh_primitive_extensions = MeshPrimitiveExtensions {
-        others: ext_mesh_features,
+    let mut mesh_primitive_extensions = extensions::Primitive::default();
+    let feature_id_attribute = extensions::FeatureIdAttribute { set_index: 0 };
+    let feature_id = extensions::FeatureId {
+        feature_count: feature_count as u32,
+        attribute: Some(feature_id_attribute),
+        ..Default::default()
     };
+    mesh_primitive_extensions.ext_mesh_features.feature_ids = vec![feature_id];
 
     primitive1.extensions = Some(mesh_primitive_extensions);
 
