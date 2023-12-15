@@ -143,18 +143,18 @@ impl JPRZone {
             },
             JPRZone::Zone4 => JPRZoneParams {
                 lng0: 133.5,
-                lat0: 36.0,
+                lat0: 33.0,
             },
             JPRZone::Zone5 => JPRZoneParams {
                 lng0: 134.333_333_333_333_33,
                 lat0: 36.0,
             },
             JPRZone::Zone6 => JPRZoneParams {
-                lng0: 136.5,
+                lng0: 136.0,
                 lat0: 36.0,
             },
             JPRZone::Zone7 => JPRZoneParams {
-                lng0: 137.133_333_333_333_33,
+                lng0: 137.166_666_666_666_67,
                 lat0: 36.0,
             },
             JPRZone::Zone8 => JPRZoneParams {
@@ -214,39 +214,54 @@ mod tests {
     use super::*;
 
     #[test]
-    fn round_trip() {
-        // Japan Plane Rectangular CS VIII
-        // $ cs2cs epsg:6668 epsg:6676
-        // 36.65209371778363 138.19318970050347 0
-        // 72396.23	-27430.91 0.00
-
-        let zone = JPRZone::Zone8;
-        assert_eq!(zone.zone_number(), 8);
-        assert_eq!(zone.zone_roman(), "VIII");
-
-        let tmerc = zone.projection();
-        let lng = 138.19318970050347;
-        let lat = 36.65209371778363;
-
-        let Ok((x, y)) = tmerc.project_forward(lng, lat) else {
-            panic!("error");
-        };
-        assert!((x - -27430.911753676937).abs() < 1e-9);
-        assert!((y - 72396.2255270589).abs() < 1e-9);
-
-        let Ok((lng2, lat2)) = tmerc.project_inverse(x, y) else {
-            panic!("error");
-        };
-        assert!((lng - lng2).abs() < 1e-10);
-        assert!((lat - lat2).abs() < 1e-10);
-    }
-
-    #[test]
     fn zones() {
-        for i in 1..=19 {
-            let zone = JPRZone::from_number(i);
-            assert_eq!(zone.zone_number(), i);
+        // test fixtures made with PROJ
+        const DATA: [(f64, f64); 19] = [
+            (129.5001070162252, 33.00009017667281),
+            (131.00042806620712, 33.00036070613305),
+            (132.1676649612675, 36.00081118731552),
+            (133.501712285731, 33.001442815599916),
+            (134.3361064243794, 36.002253277312406),
+            (136.0039933010935, 36.00324469874967),
+            (137.172102073566, 36.0044163624128),
+            (138.50709942815922, 36.005768260190365),
+            (139.8423187209358, 36.00730038272098),
+            (140.84504648774808, 40.00900650080927),
+            (140.26509038599607, 44.01088997134999),
+            (142.26795943105512, 44.01295973802651),
+            (144.27107818464975, 44.01520940180659),
+            (142.01958184674254, 26.017691869346883),
+            (127.52247965928949, 26.020309314749657),
+            (124.02557746313299, 26.023107208243783),
+            (131.02887528672798, 26.02608553672523),
+            (136.03097002921405, 20.029267328281904),
+            (154.03607111621068, 26.032583441961588),
+        ];
+
+        for zone_no in 1..=19 {
+            let zone = JPRZone::from_number(zone_no);
+            assert_eq!(zone.zone_number(), zone_no);
             assert!(!zone.zone_roman().is_empty());
+
+            let proj = zone.projection();
+
+            // (x: 0, y: 0) => zone origin (lng0, lat0)
+            let (lng, lat, _) = proj.project_inverse(0., 0., 0.).unwrap();
+            let params = zone.params();
+            assert!((params.lng0 - lng).abs() < 1e-12);
+            assert!((params.lat0 - lat).abs() < 1e-12);
+
+            // (x: 10 * zone_no * zone_no, y: 10 * zone_no * zone_no) => DATA[zone_no - 1]
+            let x = (10 * zone_no * zone_no) as f64;
+            let y = (10 * zone_no * zone_no) as f64;
+            let (lng, lat, _) = proj.project_inverse(x, y, 0.).unwrap();
+            assert!((DATA[zone_no - 1].0 - lng).abs() < 1e-12);
+            assert!((DATA[zone_no - 1].1 - lat).abs() < 1e-12);
+
+            // round-trip
+            let (x2, y2, _) = proj.project_forward(lng, lat, 0.).unwrap();
+            assert!((x - x2).abs() < 1e-8);
+            assert!((y - y2).abs() < 1e-8);
         }
     }
 

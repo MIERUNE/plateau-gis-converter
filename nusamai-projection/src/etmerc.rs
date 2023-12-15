@@ -43,16 +43,31 @@ impl ExtendedTransverseMercatorProjection {
         }
     }
 
-    pub fn project_forward(&self, lng: f64, lat: f64) -> Result<(f64, f64), TransformError> {
-        self.project_forward_radians(lng.to_radians(), lat.to_radians())
+    pub fn project_forward(
+        &self,
+        lng: f64,
+        lat: f64,
+        z: f64,
+    ) -> Result<(f64, f64, f64), TransformError> {
+        self.project_forward_radians(lng.to_radians(), lat.to_radians(), z)
     }
 
-    pub fn project_inverse(&self, x: f64, y: f64) -> Result<(f64, f64), TransformError> {
-        let (lam, phi) = self.project_inverse_radians(x, y)?;
-        Ok((lam.to_degrees(), phi.to_degrees()))
+    pub fn project_inverse(
+        &self,
+        x: f64,
+        y: f64,
+        z: f64,
+    ) -> Result<(f64, f64, f64), TransformError> {
+        let (lam, phi, z) = self.project_inverse_radians(x, y, z)?;
+        Ok((lam.to_degrees(), phi.to_degrees(), z))
     }
 
-    fn project_forward_radians(&self, lam: f64, phi: f64) -> Result<(f64, f64), TransformError> {
+    fn project_forward_radians(
+        &self,
+        lam: f64,
+        phi: f64,
+        z: f64,
+    ) -> Result<(f64, f64, f64), TransformError> {
         let lam = lam - self.lam0;
         let q = &self.q;
 
@@ -123,13 +138,18 @@ impl ExtendedTransverseMercatorProjection {
         if ce.abs() <= 2.623395162778 {
             let y = q.q_n * cn + q.z_b; /* Northing */
             let x = q.q_n * ce; /* Easting  */
-            Ok((x * self.a, y * self.a))
+            Ok((x * self.a, y * self.a, z))
         } else {
             Err(TransformError::OutsideProjectionDomain)
         }
     }
 
-    fn project_inverse_radians(&self, x: f64, y: f64) -> Result<(f64, f64), TransformError> {
+    fn project_inverse_radians(
+        &self,
+        x: f64,
+        y: f64,
+        z: f64,
+    ) -> Result<(f64, f64, f64), TransformError> {
         let q = &self.q;
         let x = x / self.a;
         let y = y / self.a;
@@ -185,7 +205,7 @@ impl ExtendedTransverseMercatorProjection {
 
             let phi = gatg(&q.cgb, cn, cos_2_cn, sin_2_cn);
             let lam = ce;
-            Ok((lam + self.lam0, phi))
+            Ok((lam + self.lam0, phi, z))
         } else {
             Err(TransformError::OutsideProjectionDomain)
         }
@@ -371,15 +391,11 @@ mod tests {
         let ellips = grs80();
         let tmerc = ExtendedTransverseMercatorProjection::new(lng0, lat0, k, &ellips);
 
-        let Ok((x, y)) = tmerc.project_forward(lng, lat) else {
-            panic!("error");
-        };
+        let (x, y, _z) = tmerc.project_forward(lng, lat, 0.).unwrap();
         assert!((x - -27430.911753676937).abs() < 1e-9);
         assert!((y - 72396.2255270589).abs() < 1e-9);
 
-        let Ok((lng2, lat2)) = tmerc.project_inverse(x, y) else {
-            panic!("error");
-        };
+        let (lng2, lat2, _z) = tmerc.project_inverse(x, y, 0.).unwrap();
         assert!((lng - lng2).abs() < 1e-10);
         assert!((lat - lat2).abs() < 1e-10);
     }
