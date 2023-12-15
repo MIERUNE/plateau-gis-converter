@@ -61,11 +61,9 @@ fn parse_polygon(
                         .map(|v| v.parse::<f64>().unwrap()),
                 );
                 if is_interior {
-                    mpoly.add_interior(buf.chunks_exact(3).map(|c| [c[1], c[0], c[2]]));
-                // lon, lat, height
+                    mpoly.add_interior(buf.chunks_exact(3).map(|c| [c[0], c[1], c[2]]));
                 } else {
-                    mpoly.add_exterior(buf.chunks_exact(3).map(|c| [c[1], c[0], c[2]]));
-                    // lon, lat, height
+                    mpoly.add_exterior(buf.chunks_exact(3).map(|c| [c[0], c[1], c[2]]));
                 }
             }
             Ok(_) => (),
