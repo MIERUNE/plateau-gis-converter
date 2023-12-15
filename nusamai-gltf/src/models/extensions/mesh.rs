@@ -1,4 +1,4 @@
-use super::super::texture_info::TextureInfo;
+use crate::models::texture_info::TextureInfo;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::collections::HashMap;
@@ -90,8 +90,8 @@ fn default_channels() -> Vec<u32> {
 
 /// EXT_mesh_features glTF Mesh Primitive extension
 #[derive(Serialize, Deserialize, Debug, Default)]
-#[serde(rename_all = "camelCase")]
-pub struct MeshPrimitiveExtMeshFeatures {
+#[serde(rename = "ext_mesh_features", rename_all = "camelCase")]
+pub struct Primitive {
     /// An array of feature ID sets.
     pub feature_ids: Vec<FeatureId>,
 

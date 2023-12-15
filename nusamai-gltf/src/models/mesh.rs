@@ -1,3 +1,4 @@
+use crate::extensions;
 use serde::{Deserialize, Serialize};
 use serde_repr::*;
 use std::collections::HashMap;
@@ -48,7 +49,7 @@ pub struct MeshPrimitive {
 
     /// JSON object with extension-specific objects.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub extensions: Option<MeshPrimitiveExtensions>,
+    pub extensions: Option<extensions::Primitive>,
 
     /// Application-specific data.
     #[serde(skip_serializing_if = "Option::is_none")]

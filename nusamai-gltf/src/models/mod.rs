@@ -1,9 +1,10 @@
+pub mod extensions;
+
 mod accessor;
 mod animation;
 mod asset;
 mod buffer;
 mod camera;
-mod extentions;
 mod gltf;
 mod image;
 mod material;
@@ -20,7 +21,6 @@ pub use animation::*;
 pub use asset::*;
 pub use buffer::*;
 pub use camera::*;
-pub use extentions::*;
 pub use gltf::*;
 pub use image::*;
 pub use material::*;
