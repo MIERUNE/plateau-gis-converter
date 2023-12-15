@@ -194,15 +194,15 @@ impl JPRZone {
                 lat0: 26.0,
             },
             JPRZone::Zone17 => JPRZoneParams {
-                lng0: 131.5,
+                lng0: 131.0,
                 lat0: 26.0,
             },
             JPRZone::Zone18 => JPRZoneParams {
-                lng0: 136.5,
+                lng0: 136.0,
                 lat0: 20.0,
             },
             JPRZone::Zone19 => JPRZoneParams {
-                lng0: 154.5,
+                lng0: 154.0,
                 lat0: 26.0,
             },
         }
