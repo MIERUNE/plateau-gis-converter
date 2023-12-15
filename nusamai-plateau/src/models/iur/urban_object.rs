@@ -2,7 +2,7 @@ use citygml::{CityGMLElement, Code};
 
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Default, Debug, CityGMLElement)]
-pub struct FacilityTypeAttribute{
+pub struct FacilityTypeAttribute {
     #[citygml(path = b"uro:class")]
     pub class: Option<Code>,
 
@@ -12,7 +12,7 @@ pub struct FacilityTypeAttribute{
 
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Default, Debug, CityGMLElement)]
-pub struct FacilityIdAttribute{
+pub struct FacilityIdAttribute {
     #[citygml(path = b"uro:id")]
     pub id: Option<String>,
 
@@ -45,10 +45,21 @@ pub struct FacilityIdAttribute{
 
     #[citygml(path = b"uro:alternativeName")]
     pub alternative_name: Vec<String>,
+}
 
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Default, Debug, CityGMLElement)]
+pub struct DmAttribute {
+    #[citygml(path = b"uro:dmCode")]
+    pub dm_code: Code,
 
+    #[citygml(path = b"uro:meshCode")]
+    pub mesh_code: Vec<Code>,
+}
 
-
-
-
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[derive(Default, Debug, CityGMLElement)]
+pub struct FacilityAttribute {
+    #[citygml(path = b"uro:facilityId")]
+    pub facility_id: Option<String>,
 }
