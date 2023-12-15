@@ -187,7 +187,10 @@ fn make_gltf_json(triangles: &Triangles) -> String {
     let mut gltf = Gltf::new();
 
     // glTFの拡張を定義
-    gltf.extensions_used = Some(vec!["EXT_mesh_features".to_string()]);
+    gltf.extensions_used = Some(vec![
+        "EXT_mesh_features".to_string(),
+        "EXT_structural_metadata".to_string(),
+    ]);
 
     // glTF のアセットを作成
     let mut asset = Asset::new();

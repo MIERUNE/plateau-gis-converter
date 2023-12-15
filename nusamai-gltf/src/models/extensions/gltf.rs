@@ -12,6 +12,7 @@ pub struct Gltf {
 pub struct ExtStructuralMetadata {
     /// A dictionary object, where each key is the ID of the schema and each value is an object defining the schema.
     pub schemas: Schema,
+    pub propertyTables: Vec<PropertyTable>,
 }
 
 /// Schema in EXT_structural_metadata
@@ -251,4 +252,92 @@ pub struct EnumValue {
     /// Application-specific data.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub extras: Option<Value>,
+}
+
+/// Property Table in EXT_structural_metadata
+#[derive(Serialize, Deserialize, Debug, Default)]
+pub struct PropertyTable {
+    /// The name of the property table, e.g. for display purposes.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub name: Option<String>,
+
+    /// The class that property values conform to.
+    pub class: String,
+
+    /// The number of elements in each property array.
+    pub count: u32,
+
+    /// A dictionary, where each key corresponds to a property ID and each value is an object describing where property values are stored.
+    pub properties: HashMap<String, PropertyTableProperty>,
+
+    /// JSON object with extension-specific objects.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub extensions: Option<Value>,
+
+    /// Application-specific data.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub extras: Option<Value>,
+}
+
+/// OffsetType enumeration
+#[derive(Serialize, Deserialize, Debug, Default)]
+#[serde(rename_all = "UPPERCASE")]
+pub enum OffsetType {
+    #[default]
+    Uint8,
+    Uint16,
+    Uint32,
+    Uint64,
+    // Add other types as needed
+}
+
+/// Property Table Property in EXT_structural_metadata
+#[derive(Serialize, Deserialize, Debug, Default)]
+pub struct PropertyTableProperty {
+    /// The index of the buffer view containing property values.
+    pub values: Value, // Adjust the type if necessary
+
+    /// The index of the buffer view containing offsets for variable-length arrays.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub array_offsets: Option<Value>, // Adjust the type if necessary
+
+    /// The index of the buffer view containing offsets for strings.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub string_offsets: Option<Value>, // Adjust the type if necessary
+
+    /// The type of values in `arrayOffsets`.
+    #[serde(default = "default_offset_type")]
+    pub array_offset_type: OffsetType,
+
+    /// The type of values in `stringOffsets`.
+    #[serde(default = "default_offset_type")]
+    pub string_offset_type: OffsetType,
+
+    /// An offset to apply to property values.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub offset: Option<Value>, // Adjust the type if necessary
+
+    /// A scale to apply to property values.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub scale: Option<Value>, // Adjust the type if necessary
+
+    /// Maximum value present in the property values.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub max: Option<Value>, // Adjust the type if necessary
+
+    /// Minimum value present in the property values.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub min: Option<Value>, // Adjust the type if necessary
+
+    /// JSON object with extension-specific objects.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub extensions: Option<Value>,
+
+    /// Application-specific data.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub extras: Option<Value>,
+}
+
+fn default_offset_type() -> OffsetType {
+    OffsetType::Uint32
 }
