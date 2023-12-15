@@ -3,12 +3,6 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::collections::HashMap;
 
-/// glTFProperty (Placeholder, update with actual structure)
-#[derive(Serialize, Deserialize, Debug, Default)]
-pub struct GlTFProperty {
-    // Structure fields go here
-}
-
 /// Feature ID Attribute in EXT_mesh_features
 #[derive(Serialize, Deserialize, Debug, Default)]
 pub struct FeatureIdAttribute {
