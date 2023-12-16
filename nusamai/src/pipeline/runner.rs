@@ -1,6 +1,6 @@
 use std::sync::mpsc::sync_channel;
 
-use rayon::prelude::*;
+use rayon::{prelude::*, ThreadPoolBuilder};
 
 use super::{
     feedback::{watcher, Feedback, Watcher},
@@ -17,7 +17,9 @@ fn start_source_thread(
 ) -> (std::thread::JoinHandle<()>, Receiver) {
     let (sender, receiver) = sync_channel(SOURCE_OUTPUT_CHANNEL_BOUND);
     let handle = std::thread::spawn(move || {
+        println!("Started source thread");
         source.run(sender, &feedback);
+        println!("Finished source thread");
     });
     (handle, receiver)
 }
@@ -29,17 +31,24 @@ fn start_transformer_thread(
 ) -> (std::thread::JoinHandle<()>, Receiver) {
     let (sender, receiver) = sync_channel(TRANSFORMER_OUTPUT_CHANNEL_BOUND);
     let handle = std::thread::spawn(move || {
-        let _ = upstream_receiver
-            .into_iter()
-            .par_bridge()
-            .try_for_each(|mut obj| {
-                transformer.transform(&mut obj, &feedback);
-                if sender.send(obj).is_err() || feedback.is_cancelled() {
-                    Err(())
-                } else {
-                    Ok(())
-                }
-            });
+        let pool = ThreadPoolBuilder::new().build().unwrap();
+        pool.install(|| {
+            println!("Started transformer threads");
+            let _ = upstream_receiver
+                .into_iter()
+                .par_bridge()
+                .try_for_each(|obj| {
+                    if feedback.is_cancelled() {
+                        return Err(());
+                    }
+                    if transformer.transform(obj, &sender, &feedback).is_err() {
+                        Err(())
+                    } else {
+                        Ok(())
+                    }
+                });
+            println!("Finished transformer threads");
+        });
     });
     (handle, receiver)
 }
@@ -50,12 +59,18 @@ fn start_sink_thread(
     mut feedback: Feedback,
 ) -> std::thread::JoinHandle<()> {
     std::thread::spawn(move || {
+        println!("Started sink thread");
         for obj in receiver {
             if feedback.is_cancelled() {
                 break;
             }
-            sink.feed(obj, &mut feedback);
+            sink.receive(obj, &mut feedback);
         }
+        if feedback.is_cancelled() {
+            return;
+        }
+        sink.finalize(&mut feedback);
+        println!("Finished sink thread");
     })
 }
 

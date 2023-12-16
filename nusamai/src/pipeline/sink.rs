@@ -17,5 +17,6 @@ pub trait SinkProvider {
 }
 
 pub trait Sink: Send {
-    fn feed(&mut self, obj: Percel, feedback: &mut Feedback);
+    fn receive(&mut self, percel: Percel, feedback: &mut Feedback);
+    fn finalize(&mut self, feedback: &mut Feedback);
 }

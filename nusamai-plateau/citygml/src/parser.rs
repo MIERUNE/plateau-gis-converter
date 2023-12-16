@@ -1,4 +1,4 @@
-use crate::geometric::{
+use crate::geometry::{
     Geometries, GeometryCollector, GeometryParseType, GeometryRef, GeometryRefEntry, GeometryType,
 };
 use crate::namespace::normalize_ns_prefix;
@@ -68,11 +68,17 @@ impl CityGMLReader {
                     state.path_buf.push(b'/');
                     state.path_buf.extend(normalize_ns_prefix(&nsres));
                     state.path_buf.extend(localname.as_ref());
+                    state.current_start = Some(start.into_owned());
                     return Ok(SubTreeReader {
                         reader,
                         state,
                         path_start: 0,
                     });
+                }
+                Ok(Event::Eof) => {
+                    return Err(ParseError::XmlError(quick_xml::Error::UnexpectedEof(
+                        "Unexpected EOF".into(),
+                    )))
                 }
                 Ok(_) => (),
                 Err(e) => return Err(e.into()),
@@ -214,9 +220,8 @@ impl<R: BufRead> SubTreeReader<'_, R> {
     }
 
     pub fn collect_geometries(&mut self) -> Geometries {
-        let geometries: Geometries = self.state.geometry_collector.to_geometries();
-        self.state.geometry_collector.clear();
-        geometries
+        let collector = std::mem::take(&mut self.state.geometry_collector);
+        collector.into_geometries()
     }
 
     /// Expect a geometric attribute of CityGML

@@ -18,6 +18,5 @@ pub type Receiver = mpsc::Receiver<Percel>;
 /// Message passing through pipeline stages
 #[derive(Debug)]
 pub struct Percel {
-    pub dummy_value: i32,
-    // pub cityobj: TopLevelCityObject
+    pub cityobj: nusamai_plateau::TopLevelCityObject,
 }

@@ -1,9 +1,10 @@
 use nusamai::configuration::Config;
-use nusamai::pipeline;
+use nusamai::pipeline::{self, TransformError};
 use nusamai::pipeline::{
     feedback, Feedback, FeedbackMessage, Percel, Sender, Sink, SinkInfo, SinkProvider, Source,
     SourceInfo, SourceProvider, Transformer,
 };
+use nusamai_plateau::TopLevelCityObject;
 use rand::prelude::*;
 
 pub struct DummySourceProvider {}
@@ -28,14 +29,19 @@ pub struct DummySource {}
 
 impl Source for DummySource {
     fn run(&mut self, sink: Sender, feedback: &Feedback) {
-        for i in 0..100 {
+        for _i in 0..100 {
             if feedback.is_cancelled() {
                 break;
             }
             std::thread::sleep(std::time::Duration::from_millis(
                 (5.0 + random::<f32>() * 10.0) as u64,
             ));
-            let obj = Percel { dummy_value: i };
+            let obj = Percel {
+                cityobj: TopLevelCityObject {
+                    root: citygml::ObjectValue::Double(0.),
+                    geometries: Default::default(),
+                },
+            };
             feedback.send(FeedbackMessage {
                 message: format!("generating: {:?}", obj),
             });
@@ -46,17 +52,18 @@ impl Source for DummySource {
     }
 }
 
-struct DummyTransformer {}
+struct NoopTransformer {}
 
-impl Transformer for DummyTransformer {
-    fn transform(&self, obj: &mut Percel, feedback: &feedback::Feedback) {
-        std::thread::sleep(std::time::Duration::from_millis(
-            (5.0 + random::<f32>() * 10.0) as u64,
-        ));
-        obj.dummy_value *= 5;
-        feedback.send(FeedbackMessage {
-            message: format!("transformed object: {:?}", obj),
-        })
+impl Transformer for NoopTransformer {
+    fn transform(
+        &self,
+        percel: Percel,
+        sender: &Sender,
+        _feedback: &feedback::Feedback,
+    ) -> Result<(), TransformError> {
+        // no-op
+        sender.send(percel)?;
+        Ok(())
     }
 }
 
@@ -81,13 +88,17 @@ impl SinkProvider for DummySinkProvider {
 struct DummySink {}
 
 impl Sink for DummySink {
-    fn feed(&mut self, percel: Percel, feedback: &mut Feedback) {
+    fn receive(&mut self, percel: Percel, feedback: &mut Feedback) {
         std::thread::sleep(std::time::Duration::from_millis(
             (5.0 + random::<f32>() * 20.0) as u64,
         ));
         feedback.send(FeedbackMessage {
             message: format!("dummy sink received: {:?}", percel),
         })
+    }
+
+    fn finalize(&mut self, _feedback: &mut Feedback) {
+        // no-op
     }
 }
 
@@ -97,7 +108,7 @@ fn test_run_pipeline() {
     let output_driver_factory: Box<dyn SinkProvider> = Box::new(DummySinkProvider {});
 
     let input_driver = input_driver_factory.create(&input_driver_factory.config());
-    let transformer = Box::new(DummyTransformer {});
+    let transformer = Box::new(NoopTransformer {});
     let output_driver = output_driver_factory.create(&input_driver_factory.config());
 
     // start the pipeline

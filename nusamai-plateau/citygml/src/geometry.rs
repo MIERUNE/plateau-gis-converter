@@ -1,4 +1,4 @@
-use nusamai_geometry::{MultiLineString, MultiPolygon};
+use nusamai_geometry::{MultiLineString, MultiPoint, MultiPolygon};
 
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 #[derive(Debug, Clone, Copy)]
@@ -39,6 +39,7 @@ pub struct Geometries {
     pub vertices: Vec<[f64; 3]>,
     pub multipolygon: MultiPolygon<'static, 1, u32>,
     pub multilinestring: MultiLineString<'static, 1, u32>,
+    pub multipoint: MultiPoint<'static, 1, u32>,
 }
 
 /// Store for collecting vertices and polygons from GML.
@@ -47,6 +48,7 @@ pub struct GeometryCollector {
     pub vertices: indexmap::IndexSet<[u64; 3]>,
     pub multipolygon: MultiPolygon<'static, 1, u32>,
     pub multilinestring: MultiLineString<'static, 1, u32>,
+    pub multipoint: MultiPoint<'static, 1, u32>,
 }
 
 impl GeometryCollector {
@@ -70,7 +72,7 @@ impl GeometryCollector {
         }));
     }
 
-    pub fn to_geometries(&self) -> Geometries {
+    pub fn into_geometries(self) -> Geometries {
         let mut vertices = Vec::with_capacity(self.vertices.len());
         for vbits in &self.vertices {
             vertices.push([
@@ -81,14 +83,9 @@ impl GeometryCollector {
         }
         Geometries {
             vertices,
-            multipolygon: self.multipolygon.clone(),
-            multilinestring: self.multilinestring.clone(),
+            multipolygon: self.multipolygon,
+            multilinestring: self.multilinestring,
+            multipoint: self.multipoint,
         }
-    }
-
-    pub fn clear(&mut self) {
-        self.vertices.clear();
-        self.multipolygon.clear();
-        self.multilinestring.clear();
     }
 }

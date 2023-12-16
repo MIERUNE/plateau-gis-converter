@@ -7,6 +7,11 @@ edition = "2021"
 indexmap = { version = "2.1.0", features = ["serde"] }
 rayon = "1.8.0"
 serde = { version = "1.0.193", features = ["derive"] }
+nusamai-plateau = { path = "../nusamai-plateau" }
+citygml = { path = "../nusamai-plateau/citygml" }
+quick-xml = "0.31.0"
+clap = { version = "4.4.11", features = ["derive"] }
+thiserror = "1.0.51"
 
 [dev-dependencies]
 rand = "0.8.5"
