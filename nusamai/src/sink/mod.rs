@@ -1,13 +1,16 @@
+pub mod noop;
+pub mod serde;
+
 use crate::configuration::Config;
-use crate::pipeline::{Feedback, Percel};
+use crate::pipeline::{Feedback, Receiver};
 
 pub struct SinkInfo {
     pub name: String,
 }
 
-pub trait SinkProvider {
+pub trait DataSinkProvider {
     /// Creates a sink instance.
-    fn create(&self, config: &Config) -> Box<dyn Sink>;
+    fn create(&self, config: &Config) -> Box<dyn DataSink>;
 
     /// Gets basic information about the sink.
     fn info(&self) -> SinkInfo;
@@ -16,7 +19,6 @@ pub trait SinkProvider {
     fn config(&self) -> Config;
 }
 
-pub trait Sink: Send {
-    fn receive(&mut self, percel: Percel, feedback: &mut Feedback);
-    fn finalize(&mut self, feedback: &mut Feedback);
+pub trait DataSink: Send {
+    fn run(&mut self, upstream: Receiver, feedback: &mut Feedback);
 }

@@ -1,16 +1,15 @@
 use nusamai::configuration::Config;
-use nusamai::pipeline::{self, TransformError};
-use nusamai::pipeline::{
-    feedback, Feedback, FeedbackMessage, Percel, Sender, Sink, SinkInfo, SinkProvider, Source,
-    SourceInfo, SourceProvider, Transformer,
-};
+use nusamai::pipeline::{self, Parcel, Receiver, TransformError};
+use nusamai::pipeline::{feedback, Feedback, FeedbackMessage, Sender, Transformer};
+use nusamai::sink::{DataSink, DataSinkProvider, SinkInfo};
+use nusamai::source::{DataSource, DataSourceProvider, SourceInfo};
 use nusamai_plateau::TopLevelCityObject;
 use rand::prelude::*;
 
 pub struct DummySourceProvider {}
 
-impl SourceProvider for DummySourceProvider {
-    fn create(&self, _config: &Config) -> Box<dyn Source> {
+impl DataSourceProvider for DummySourceProvider {
+    fn create(&self, _config: &Config) -> Box<dyn DataSource> {
         Box::new(DummySource {})
     }
 
@@ -27,7 +26,7 @@ impl SourceProvider for DummySourceProvider {
 
 pub struct DummySource {}
 
-impl Source for DummySource {
+impl DataSource for DummySource {
     fn run(&mut self, sink: Sender, feedback: &Feedback) {
         for _i in 0..100 {
             if feedback.is_cancelled() {
@@ -36,13 +35,13 @@ impl Source for DummySource {
             std::thread::sleep(std::time::Duration::from_millis(
                 (5.0 + random::<f32>() * 10.0) as u64,
             ));
-            let obj = Percel {
+            let obj = Parcel {
                 cityobj: TopLevelCityObject {
                     root: citygml::ObjectValue::Double(0.),
                     geometries: Default::default(),
                 },
             };
-            feedback.send(FeedbackMessage {
+            feedback.feedback(FeedbackMessage {
                 message: format!("generating: {:?}", obj),
             });
             if sink.send(obj).is_err() {
@@ -57,20 +56,20 @@ struct NoopTransformer {}
 impl Transformer for NoopTransformer {
     fn transform(
         &self,
-        percel: Percel,
+        parcel: Parcel,
         sender: &Sender,
         _feedback: &feedback::Feedback,
     ) -> Result<(), TransformError> {
         // no-op
-        sender.send(percel)?;
+        sender.send(parcel)?;
         Ok(())
     }
 }
 
 struct DummySinkProvider {}
 
-impl SinkProvider for DummySinkProvider {
-    fn create(&self, _config: &Config) -> Box<dyn Sink> {
+impl DataSinkProvider for DummySinkProvider {
+    fn create(&self, _config: &Config) -> Box<dyn DataSink> {
         Box::new(DummySink {})
     }
 
@@ -87,25 +86,27 @@ impl SinkProvider for DummySinkProvider {
 
 struct DummySink {}
 
-impl Sink for DummySink {
-    fn receive(&mut self, percel: Percel, feedback: &mut Feedback) {
-        std::thread::sleep(std::time::Duration::from_millis(
-            (5.0 + random::<f32>() * 20.0) as u64,
-        ));
-        feedback.send(FeedbackMessage {
-            message: format!("dummy sink received: {:?}", percel),
-        })
-    }
+impl DataSink for DummySink {
+    fn run(&mut self, upstream: Receiver, feedback: &mut Feedback) {
+        for parcel in upstream {
+            if feedback.is_cancelled() {
+                return;
+            }
 
-    fn finalize(&mut self, _feedback: &mut Feedback) {
-        // no-op
+            std::thread::sleep(std::time::Duration::from_millis(
+                (5.0 + random::<f32>() * 20.0) as u64,
+            ));
+            feedback.feedback(FeedbackMessage {
+                message: format!("dummy sink received: {:?}", parcel),
+            })
+        }
     }
 }
 
 #[test]
 fn test_run_pipeline() {
-    let input_driver_factory: Box<dyn SourceProvider> = Box::new(DummySourceProvider {});
-    let output_driver_factory: Box<dyn SinkProvider> = Box::new(DummySinkProvider {});
+    let input_driver_factory: Box<dyn DataSourceProvider> = Box::new(DummySourceProvider {});
+    let output_driver_factory: Box<dyn DataSinkProvider> = Box::new(DummySinkProvider {});
 
     let input_driver = input_driver_factory.create(&input_driver_factory.config());
     let transformer = Box::new(NoopTransformer {});

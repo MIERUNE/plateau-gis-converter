@@ -1,6 +1,7 @@
 pub mod models;
+use serde::{Deserialize, Serialize};
 
-#[derive(Debug)]
+#[derive(Debug, Deserialize, Serialize)]
 pub struct TopLevelCityObject {
     pub root: citygml::object::ObjectValue,
     pub geometries: citygml::geometry::Geometries,

@@ -20,6 +20,8 @@ pub enum ParseError {
     SchemaViolation(String),
     #[error("Invalid value: {0}")]
     InvalidValue(String),
+    #[error("cancelled")]
+    Cancelled,
 }
 
 pub struct CityGMLReader {
