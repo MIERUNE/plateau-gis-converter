@@ -11,3 +11,4 @@ nusamai-geometry = { path = "../nusamai-geometry" }
 nusamai-plateau = { path = "../nusamai-plateau" }
 
 [dev-dependencies]
+citygml = {path = "../nusamai-plateau/citygml" }
