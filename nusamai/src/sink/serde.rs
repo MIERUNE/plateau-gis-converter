@@ -16,7 +16,7 @@ pub struct SerdeSinkProvider {}
 
 impl DataSinkProvider for SerdeSinkProvider {
     fn create(&self, _config: &Config) -> Box<dyn DataSink> {
-        Box::new(SerdeSink {})
+        Box::<SerdeSink>::default()
     }
 
     fn info(&self) -> SinkInfo {
@@ -30,7 +30,11 @@ impl DataSinkProvider for SerdeSinkProvider {
     }
 }
 
-pub struct SerdeSink {}
+#[derive(Default)]
+pub struct SerdeSink {
+    features_written: usize,
+    bytes_written: usize,
+}
 
 impl DataSink for SerdeSink {
     fn run(&mut self, upstream: Receiver, feedback: &mut Feedback) {
@@ -66,7 +70,15 @@ impl DataSink for SerdeSink {
                         .unwrap();
                     // compressed data
                     writer.write_all(&compressed).unwrap();
+
+                    self.features_written += 1;
+                    self.bytes_written += 4 + compressed.len();
                 }
+
+                println!(
+                    "Wrote {} features ({} bytes)",
+                    self.features_written, self.bytes_written
+                );
             },
         );
     }
