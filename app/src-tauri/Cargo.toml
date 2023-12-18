@@ -20,7 +20,8 @@ serde = { version = "1.0", features = ["derive"] }
 tauri = { version = "1.5.2", features = ["dialog-all"] }
 nusamai-geometry = { path = "../../nusamai-geometry" }
 nusamai-geojson = { path = "../../nusamai-geojson" }
-earcut-rs = { git = "https://github.com/MIERUNE/earcut-rs.git" }
+nusamai-plateau = { path = "../nusamai-plateau" }
+citygml = {path = "../nusamai-plateau/citygml" }
 quick-xml = "0.31.0"
 thiserror = "1.0.50"
 geojson = "0.24.1"
