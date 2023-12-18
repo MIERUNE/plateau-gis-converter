@@ -1,5 +1,6 @@
 //! デモ用
 //! nusamai-geojson の exmaple/gml2geojson を元にした、暫定的な処理
+
 use citygml::{CityGMLElement, CityGMLReader, ParseError, SubTreeReader};
 use nusamai_geojson::toplevel_cityobj_to_geojson_features;
 use nusamai_plateau::models::CityObject;
