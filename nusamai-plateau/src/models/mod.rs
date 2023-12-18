@@ -5,7 +5,6 @@ pub mod cityobjectgroup;
 pub mod generics;
 pub mod iur;
 pub mod landuse;
-pub mod other_construction;
 pub mod relief;
 pub mod transportation;
 pub mod tunnel;
@@ -17,10 +16,9 @@ pub use building::Building;
 pub use cityfurniture::CityFurniture;
 pub use cityobjectgroup::CityObjectGroup;
 pub use generics::GenericCityObject;
-pub use iur::landslide::SedimentDisasterProneArea;
-pub use iur::underground_building::UndergroundBuilding;
+pub use iur::urf;
+pub use iur::uro;
 pub use landuse::LandUse;
-pub use other_construction::OtherConstruction;
 pub use relief::ReliefFeature;
 pub use transportation::{Railway, Road, Square, Track, Waterway};
 pub use tunnel::Tunnel;
@@ -77,14 +75,14 @@ pub enum CityObject {
     // i-UR urban objects
     //
     #[citygml(path = b"uro:OtherConstruction")]
-    OtherConstruction(OtherConstruction),
+    OtherConstruction(uro::OtherConstruction),
     #[citygml(path = b"uro:UndergroundBuilding")]
-    UndergroundBuilding(UndergroundBuilding),
+    UndergroundBuilding(uro::UndergroundBuilding),
     //
     // i-UR urban functions
     //
     #[citygml(path = b"urf:SedimentDisasterProneArea")]
-    SedimentDisasterProneArea(SedimentDisasterProneArea),
+    SedimentDisasterProneArea(urf::SedimentDisasterProneArea),
     //
     // and more ...
 }

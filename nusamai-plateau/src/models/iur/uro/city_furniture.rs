@@ -26,5 +26,5 @@ pub struct CityFurnitureDataQualityAttribute {
     pub appearance_src_desc: Vec<Code>,
 
     #[citygml(path = b"uro:lodType")]
-    pub lod_type: Option<String>, // uro:CityFurnitureLODType(enumerations)
+    pub lod_type: Option<String>, // TODO: uro:CityFurnitureLODType(enumerations)
 }
