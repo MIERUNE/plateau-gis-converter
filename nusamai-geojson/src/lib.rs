@@ -1,5 +1,9 @@
 mod conversion;
 
+use conversion::{
+    multilinestring_to_geojson_geometry, multipoint_to_geojson_geometry,
+    multipolygon_to_geojson_geometry,
+};
 use nusamai_plateau::TopLevelCityObject;
 
 /// Create GeoJSON features from a TopLevelCityObject
@@ -8,7 +12,7 @@ pub fn toplevel_cityobj_to_geojson_features(obj: &TopLevelCityObject) -> Vec<geo
     let mut geojson_features: Vec<geojson::Feature> = vec![];
 
     if !obj.geometries.multipolygon.is_empty() {
-        let mpoly_geojson_geom = conversion::multipolygon_to_geojson_geometry(
+        let mpoly_geojson_geom = multipolygon_to_geojson_geometry(
             &obj.geometries.vertices,
             &obj.geometries.multipolygon,
         );
@@ -23,7 +27,7 @@ pub fn toplevel_cityobj_to_geojson_features(obj: &TopLevelCityObject) -> Vec<geo
     }
 
     if !obj.geometries.multilinestring.is_empty() {
-        let mls_geojson_geom: geojson::Geometry = conversion::multilinestring_to_geojson_geometry(
+        let mls_geojson_geom = multilinestring_to_geojson_geometry(
             &obj.geometries.vertices,
             &obj.geometries.multilinestring,
         );
@@ -38,10 +42,8 @@ pub fn toplevel_cityobj_to_geojson_features(obj: &TopLevelCityObject) -> Vec<geo
     }
 
     if !obj.geometries.multipoint.is_empty() {
-        let mpoint_geojson_geom = conversion::multipoint_to_geojson_geometry(
-            &obj.geometries.vertices,
-            &obj.geometries.multipoint,
-        );
+        let mpoint_geojson_geom =
+            multipoint_to_geojson_geometry(&obj.geometries.vertices, &obj.geometries.multipoint);
         let mpoint_geojson_feat = geojson::Feature {
             bbox: None,
             geometry: Some(mpoint_geojson_geom),
