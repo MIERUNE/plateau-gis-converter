@@ -3,21 +3,6 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::collections::HashMap;
 
-/// Feature ID Attribute in EXT_mesh_features
-#[derive(Serialize, Deserialize, Debug, Default)]
-pub struct FeatureIdAttribute {
-    /// An integer value used to construct a string in the format `_FEATURE_ID_<set index>`
-    #[serde(rename = "_feature_id")]
-    pub set_index: u32,
-}
-
-impl FeatureIdAttribute {
-    /// Converts the feature ID to the corresponding string format.
-    pub fn to_string_format(&self) -> String {
-        format!("_FEATURE_ID_{}", self.set_index)
-    }
-}
-
 /// Feature ID in EXT_mesh_features
 #[derive(Serialize, Deserialize, Debug, Default)]
 #[serde(rename_all = "camelCase")]
@@ -36,7 +21,7 @@ pub struct FeatureId {
 
     /// An attribute containing feature IDs.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub attribute: Option<FeatureIdAttribute>,
+    pub attribute: Option<u32>,
 
     /// A texture containing feature IDs.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -93,6 +78,7 @@ pub struct Primitive {
 #[serde(rename_all = "camelCase")]
 pub struct ExtMeshFeatures {
     /// An array of feature ID sets.
+    #[serde(rename = "featureIds")]
     pub feature_ids: Vec<FeatureId>,
 
     /// Additional properties (details not provided in the schema)
