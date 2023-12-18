@@ -95,10 +95,6 @@ pub struct ExtMeshFeatures {
     /// An array of feature ID sets.
     pub feature_ids: Vec<FeatureId>,
 
-    /// Refer to glTFProperty.schema.json
-    #[serde(flatten)]
-    pub gltf_property: GlTFProperty,
-
     /// Additional properties (details not provided in the schema)
     #[serde(skip_serializing_if = "Option::is_none")]
     pub extensions: Option<HashMap<String, Value>>,
