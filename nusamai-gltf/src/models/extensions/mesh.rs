@@ -85,8 +85,8 @@ fn default_channels() -> Vec<u32> {
 /// EXT_mesh_features glTF Mesh Primitive extension
 #[derive(Serialize, Deserialize, Debug, Default)]
 pub struct Primitive {
-    #[serde(rename = "EXT_mesh_features")]
-    pub ext_mesh_features: ExtMeshFeatures,
+    #[serde(skip_serializing_if = "Option::is_none", rename = "EXT_mesh_features")]
+    pub ext_mesh_features: Option<ExtMeshFeatures>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Default)]
