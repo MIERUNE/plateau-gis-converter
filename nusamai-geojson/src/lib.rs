@@ -37,7 +37,20 @@ pub fn toplevel_cityobj_to_geojson_features(obj: &TopLevelCityObject) -> Vec<geo
         geojson_features.push(mls_geojson_feat);
     }
 
-    // TODO: handle multipoint
+    if !obj.geometries.multipoint.is_empty() {
+        let mpoint_geojson_geom = conversion::multipoint_to_geojson_geometry(
+            &obj.geometries.vertices,
+            &obj.geometries.multipoint,
+        );
+        let mpoint_geojson_feat = geojson::Feature {
+            bbox: None,
+            geometry: Some(mpoint_geojson_geom),
+            id: None,
+            properties: None, // TODO: from `obj.root``
+            foreign_members: None,
+        };
+        geojson_features.push(mpoint_geojson_feat);
+    }
 
     geojson_features
 }

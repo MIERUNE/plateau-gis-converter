@@ -1,4 +1,4 @@
-use nusamai_geometry::{MultiLineString, MultiPolygon, Polygon};
+use nusamai_geometry::{MultiLineString, MultiPoint, MultiPolygon, Polygon};
 
 /// Create a GeoJSON geometry from nusamai_plateau::TopLevelCityObject's `multipolygon` geometry
 pub fn multipolygon_to_geojson_geometry(
@@ -45,6 +45,18 @@ pub fn multilinestring_to_geojson_geometry(
         })
         .collect();
     geojson::Geometry::new(geojson::Value::MultiLineString(mls_coords))
+}
+
+/// Create a GeoJSON geometry from nusamai_plateau::TopLevelCityObject's `multipoint` geometry
+pub fn multipoint_to_geojson_geometry(
+    vertices: &[[f64; 3]],
+    mpoint: &MultiPoint<1, u32>,
+) -> geojson::Geometry {
+    let mpoint_coords: Vec<geojson::PointType> = mpoint
+        .iter()
+        .map(|p| vertices[p[0] as usize].to_vec()) // Get the actual coord values
+        .collect();
+    geojson::Geometry::new(geojson::Value::MultiPoint(mpoint_coords))
 }
 
 #[cfg(test)]
@@ -236,6 +248,39 @@ mod tests {
             }
         } else {
             unreachable!("The result is not a GeoJSON MultiLineString");
+        }
+    }
+
+    #[test]
+    fn test_multipoint() {
+        let vertices = vec![[0., 0., 111.], [1., 2., 222.], [3., 4., 333.]];
+        let mut mpoint = MultiPoint::<1, u32>::new();
+        mpoint.push(&[0]);
+        mpoint.push(&[1]);
+        mpoint.push(&[2]);
+
+        let geojson_geometry = multipoint_to_geojson_geometry(&vertices, &mpoint);
+
+        assert!(geojson_geometry.bbox.is_none());
+        assert!(geojson_geometry.foreign_members.is_none());
+        if let geojson::Value::MultiPoint(point_list) = geojson_geometry.value {
+            assert_eq!(point_list.len(), mpoint.len());
+            for (i, point) in point_list.iter().enumerate() {
+                match i {
+                    0 => {
+                        assert_eq!(*point, vec![0., 0., 111.]);
+                    }
+                    1 => {
+                        assert_eq!(*point, vec![1., 2., 222.]);
+                    }
+                    2 => {
+                        assert_eq!(*point, vec![3., 4., 333.]);
+                    }
+                    _ => unreachable!("Unexpected number of points"),
+                }
+            }
+        } else {
+            unreachable!("The result is not a GeoJSON MultiPoint");
         }
     }
 }
