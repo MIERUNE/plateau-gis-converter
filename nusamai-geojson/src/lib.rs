@@ -8,6 +8,7 @@ pub struct TopLevelCityObject<'a> {
     pub geometries: Geometries,
 }
 
+/// Create a vector of GeoJSON features from a Top Level City Object
 // TODO: Handle properties (`tlco.cityobj` -> `geojson::Feature.properties`)
 pub fn toplevel_city_object_to_geojson_features(
     tlco: &TopLevelCityObject,

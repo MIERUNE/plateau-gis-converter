@@ -1,5 +1,6 @@
 use nusamai_geometry::{MultiLineString, MultiPolygon, Polygon};
 
+/// Create a GeoJSON geometry from a Top Level City Object's `multipolygon` geometry
 pub fn multipolygon_to_geojson_geometry(
     vertices: &[[f64; 3]],
     mpoly: &MultiPolygon<1, u32>,
@@ -28,6 +29,7 @@ fn polygon_to_rings(vertices: &[[f64; 3]], poly: &Polygon<1, u32>) -> geojson::P
     rings
 }
 
+/// Create a GeoJSON geometry from a Top Level City Object's `multilinestring` geometry
 pub fn multilinestring_to_geojson_geometry(
     vertices: &[[f64; 3]],
     mls: &MultiLineString<1, u32>,
@@ -37,7 +39,7 @@ pub fn multilinestring_to_geojson_geometry(
         .map(|ls| {
             let coords: Vec<_> = ls
                 .iter()
-                .map(|idx| vertices[idx[0] as usize].to_vec()) // Get the actual coord values;
+                .map(|idx| vertices[idx[0] as usize].to_vec()) // Get the actual coord values
                 .collect();
             coords
         })
