@@ -1,6 +1,8 @@
 use citygml::{CityGMLElement, CityGMLReader, Geometries, ParseError, SubTreeReader};
 use clap::Parser;
-use nusamai_geojson::{geojson_geometry_to_feature, nusamai_to_geojson_geometry};
+use nusamai_geojson::{
+    geojson_geometry_to_feature, nusamai_to_geojson_geometry, TopLevelCityObject,
+};
 use nusamai_geometry::{Geometry, MultiPolygon3};
 use nusamai_plateau::models::CityObject;
 use std::borrow::Cow;
@@ -12,11 +14,6 @@ use std::io::BufWriter;
 struct Args {
     #[clap(required = true)]
     filename: String,
-}
-
-struct TopLevelCityObject<'a> {
-    cityobj: citygml::object::FeatureOrData<'a>,
-    geometries: Geometries,
 }
 
 fn make_mpoly3(cityobj: &TopLevelCityObject<'_>) -> MultiPolygon3<'static> {
