@@ -3,12 +3,11 @@ use clap::Parser;
 use serde::{Deserialize, Serialize};
 use std::{io::BufRead, time::Instant};
 
-use citygml::{CityGMLElement, CityGMLReader, ParseError, SubTreeReader};
-use nusamai_plateau::models::CityObject;
+use citygml::{CityGMLElement, CityGMLReader, ObjectValue, ParseError, SubTreeReader};
 
 #[derive(Debug, Deserialize, Serialize)]
 struct TopLevelCityObject {
-    cityobj: CityObject,
+    root: ObjectValue,
     geometries: citygml::Geometries,
 }
 
@@ -21,32 +20,27 @@ fn example_toplevel_dispatcher<R: BufRead>(
 
     match st.parse_children(|st| match st.current_path() {
         b"core:cityObjectMember" => {
-            let toplevel_cityobj = {
-                let mut cityobj: CityObject = Default::default();
-                cityobj.parse(st)?;
-                let geometries = st.collect_geometries();
-                println!("{:#?}", cityobj.objectify());
+            let mut cityobj: nusamai_plateau::models::CityObject = Default::default();
+            cityobj.parse(st)?;
+            let geometries = st.collect_geometries();
 
-                TopLevelCityObject {
-                    cityobj,
-                    geometries,
-                }
-            };
+            if let Some(root) = cityobj.into_object() {
+                let obj = self::TopLevelCityObject { root, geometries };
 
-            // print top-level city object
-            // println!(
-            //     "vertices={} polygons={}",
-            //     toplevel_cityobj.geometries.vertices.len(),
-            //     toplevel_cityobj.geometries.polygons.len()
-            // );
-            // println!("TLCO: {:#?}", toplevel_cityobj);
-            // println!("{}", serde_json::to_string(&toplevel_cityobj).unwrap());
+                // print top-level city object
+                // println!(
+                //     "vertices={} polygons={}",
+                //     toplevel_cityobj.geometries.vertices.len(),
+                //     toplevel_cityobj.geometries.polygons.len()
+                // );
+                // println!("TLCO: {:#?}", toplevel_cityobj);
+                // println!("{}", serde_json::to_string(&toplevel_cityobj).unwrap());
 
-            // serialize with bincode
-            let start = encoded_data.len();
-            bincode::serde::encode_into_std_write(toplevel_cityobj, encoded_data, bincode_config)
-                .unwrap();
-            encoded_sizes.push(encoded_data.len() - start);
+                // serialize with bincode
+                let start = encoded_data.len();
+                bincode::serde::encode_into_std_write(obj, encoded_data, bincode_config).unwrap();
+                encoded_sizes.push(encoded_data.len() - start);
+            }
 
             Ok(())
         }

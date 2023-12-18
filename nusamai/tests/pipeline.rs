@@ -1,15 +1,15 @@
 use nusamai::configuration::Config;
-use nusamai::pipeline;
-use nusamai::pipeline::{
-    feedback, Feedback, FeedbackMessage, Percel, Sender, Sink, SinkInfo, SinkProvider, Source,
-    SourceInfo, SourceProvider, Transformer,
-};
+use nusamai::pipeline::{self, Parcel, Receiver, TransformError};
+use nusamai::pipeline::{feedback, Feedback, FeedbackMessage, Sender, Transformer};
+use nusamai::sink::{DataSink, DataSinkProvider, SinkInfo};
+use nusamai::source::{DataSource, DataSourceProvider, SourceInfo};
+use nusamai_plateau::TopLevelCityObject;
 use rand::prelude::*;
 
 pub struct DummySourceProvider {}
 
-impl SourceProvider for DummySourceProvider {
-    fn create(&self, _config: &Config) -> Box<dyn Source> {
+impl DataSourceProvider for DummySourceProvider {
+    fn create(&self, _config: &Config) -> Box<dyn DataSource> {
         Box::new(DummySource {})
     }
 
@@ -26,17 +26,22 @@ impl SourceProvider for DummySourceProvider {
 
 pub struct DummySource {}
 
-impl Source for DummySource {
+impl DataSource for DummySource {
     fn run(&mut self, sink: Sender, feedback: &Feedback) {
-        for i in 0..100 {
+        for _i in 0..100 {
             if feedback.is_cancelled() {
                 break;
             }
             std::thread::sleep(std::time::Duration::from_millis(
                 (5.0 + random::<f32>() * 10.0) as u64,
             ));
-            let obj = Percel { dummy_value: i };
-            feedback.send(FeedbackMessage {
+            let obj = Parcel {
+                cityobj: TopLevelCityObject {
+                    root: citygml::ObjectValue::Double(0.),
+                    geometries: Default::default(),
+                },
+            };
+            feedback.feedback(FeedbackMessage {
                 message: format!("generating: {:?}", obj),
             });
             if sink.send(obj).is_err() {
@@ -46,24 +51,25 @@ impl Source for DummySource {
     }
 }
 
-struct DummyTransformer {}
+struct NoopTransformer {}
 
-impl Transformer for DummyTransformer {
-    fn transform(&self, obj: &mut Percel, feedback: &feedback::Feedback) {
-        std::thread::sleep(std::time::Duration::from_millis(
-            (5.0 + random::<f32>() * 10.0) as u64,
-        ));
-        obj.dummy_value *= 5;
-        feedback.send(FeedbackMessage {
-            message: format!("transformed object: {:?}", obj),
-        })
+impl Transformer for NoopTransformer {
+    fn transform(
+        &self,
+        parcel: Parcel,
+        sender: &Sender,
+        _feedback: &feedback::Feedback,
+    ) -> Result<(), TransformError> {
+        // no-op
+        sender.send(parcel)?;
+        Ok(())
     }
 }
 
 struct DummySinkProvider {}
 
-impl SinkProvider for DummySinkProvider {
-    fn create(&self, _config: &Config) -> Box<dyn Sink> {
+impl DataSinkProvider for DummySinkProvider {
+    fn create(&self, _config: &Config) -> Box<dyn DataSink> {
         Box::new(DummySink {})
     }
 
@@ -80,28 +86,34 @@ impl SinkProvider for DummySinkProvider {
 
 struct DummySink {}
 
-impl Sink for DummySink {
-    fn feed(&mut self, percel: Percel, feedback: &mut Feedback) {
-        std::thread::sleep(std::time::Duration::from_millis(
-            (5.0 + random::<f32>() * 20.0) as u64,
-        ));
-        feedback.send(FeedbackMessage {
-            message: format!("dummy sink received: {:?}", percel),
-        })
+impl DataSink for DummySink {
+    fn run(&mut self, upstream: Receiver, feedback: &mut Feedback) {
+        for parcel in upstream {
+            if feedback.is_cancelled() {
+                return;
+            }
+
+            std::thread::sleep(std::time::Duration::from_millis(
+                (5.0 + random::<f32>() * 20.0) as u64,
+            ));
+            feedback.feedback(FeedbackMessage {
+                message: format!("dummy sink received: {:?}", parcel),
+            })
+        }
     }
 }
 
 #[test]
 fn test_run_pipeline() {
-    let input_driver_factory: Box<dyn SourceProvider> = Box::new(DummySourceProvider {});
-    let output_driver_factory: Box<dyn SinkProvider> = Box::new(DummySinkProvider {});
+    let source_provider: Box<dyn DataSourceProvider> = Box::new(DummySourceProvider {});
+    let sink_provider: Box<dyn DataSinkProvider> = Box::new(DummySinkProvider {});
 
-    let input_driver = input_driver_factory.create(&input_driver_factory.config());
-    let transformer = Box::new(DummyTransformer {});
-    let output_driver = output_driver_factory.create(&input_driver_factory.config());
+    let source = source_provider.create(&source_provider.config());
+    let transformer = Box::new(NoopTransformer {});
+    let sink = sink_provider.create(&source_provider.config());
 
     // start the pipeline
-    let (handle, watcher, canceller) = pipeline::run(input_driver, transformer, output_driver);
+    let (handle, watcher, canceller) = pipeline::run(source, transformer, sink);
 
     std::thread::scope(|scope| {
         // cancel the pipeline
