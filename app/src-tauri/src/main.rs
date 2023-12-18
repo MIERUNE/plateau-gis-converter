@@ -18,9 +18,6 @@ fn convert_and_save(input_path: String, output_path: String, filetype: String) {
         "GeoJSON" => {
             example::citygml_to_geojson(&input_path, &output_path);
         }
-        "PLY" => {
-            example::citygml_to_ply(&input_path, &output_path);
-        }
         _ => {
             println!("Unknown filetype: {}", filetype);
         }
