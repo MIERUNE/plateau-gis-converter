@@ -25,7 +25,7 @@ pub struct CityFurniture {
     #[citygml(path = b"uro:cityFurnitureDetailAttribute")]
     pub city_furniture_detail_attribute: Vec<CityFurnitureDetailAttribute>,
 
-    #[citygml(path = b"uro:cityFurnitureDataQualityAttribute")]
+    #[citygml(path = b"uro:cityFurnitureDataQualityAttribute/uro:CityFurnitureDataQualityAttribute")]
     pub city_furniture_data_quality_attribute: Option<CityFurnitureDataQualityAttribute>,
 
     #[citygml(path = b"uro:frnFacilityTypeAttribute")]
