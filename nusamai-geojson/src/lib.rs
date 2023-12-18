@@ -2,7 +2,6 @@ mod conversion;
 
 use citygml::object::FeatureOrData;
 use citygml::Geometries;
-pub use conversion::nusamai_to_geojson_geometry;
 
 pub struct TopLevelCityObject<'a> {
     pub cityobj: FeatureOrData<'a>,
