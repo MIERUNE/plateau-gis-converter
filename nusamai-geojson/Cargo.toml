@@ -12,3 +12,6 @@ nusamai-plateau = { path = "../nusamai-plateau" }
 
 [dev-dependencies]
 citygml = {path = "../nusamai-plateau/citygml" }
+clap = { version = "4.4.8", features = ["derive"] }
+quick-xml = "0.31.0"
+serde_json = "1.0.108"
