@@ -1,6 +1,6 @@
 use nusamai_geometry::{MultiPolygon, Polygon};
 
-fn multipolygon_to_geojson_geometry(
+pub fn multipolygon_to_geojson_geometry(
     vertices: &[[f64; 3]],
     mpoly: &MultiPolygon<1, u32>,
 ) -> geojson::Geometry {

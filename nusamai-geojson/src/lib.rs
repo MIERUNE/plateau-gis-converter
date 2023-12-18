@@ -8,12 +8,18 @@ pub struct TopLevelCityObject<'a> {
     pub geometries: Geometries,
 }
 
-/// An intermediate function to create a "geojson feature" from a "geojson geometry"
-// TODO: Handle properties
-pub fn geojson_geometry_to_feature(geojson_geom: geojson::Geometry) -> geojson::Feature {
+pub fn toplevel_city_object_to_geojson_feature(tlco: &TopLevelCityObject) -> geojson::Feature {
+    let mpoly_geojson_geom = conversion::multipolygon_to_geojson_geometry(
+        &tlco.geometries.vertices,
+        &tlco.geometries.multipolygon,
+    );
+
+    // TODO: Handle `tlco.geometries.multilinestring`
+
+    // TODO: Handle properties (`tlco.cityobj` -> `geojson::Feature.properties`)
     geojson::Feature {
         bbox: None,
-        geometry: Some(geojson_geom),
+        geometry: Some(mpoly_geojson_geom),
         id: None,
         properties: None,
         foreign_members: None,
