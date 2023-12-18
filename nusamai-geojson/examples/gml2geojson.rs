@@ -1,3 +1,5 @@
+//! This example converts a CityGML file to GeoJSON and outputs it to a file
+
 use citygml::{CityGMLElement, CityGMLReader, ParseError, SubTreeReader};
 use clap::Parser;
 use nusamai_geojson::toplevel_cityobj_to_geojson_features;

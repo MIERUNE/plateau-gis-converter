@@ -7,6 +7,7 @@ use conversion::{
 use nusamai_plateau::TopLevelCityObject;
 
 /// Create GeoJSON features from a TopLevelCityObject
+/// Each feature for MultiPolygon, MultiLineString, and MultiPoint will be created (if it exists)
 // TODO: Handle properties (`obj.root` -> `geojson::Feature.properties`)
 pub fn toplevel_cityobj_to_geojson_features(obj: &TopLevelCityObject) -> Vec<geojson::Feature> {
     let mut geojson_features: Vec<geojson::Feature> = vec![];
