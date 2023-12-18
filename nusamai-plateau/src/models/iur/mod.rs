@@ -1,8 +1,5 @@
-pub mod landslide;
-pub mod underground_building;
-pub mod utility_network;
-pub mod city_furniture;
-pub mod urban_object;
+//! i-UR (i-Urban Revitalization) Urban Planning ADE
+//!
 
-pub use landslide::SedimentDisasterProneArea;
-pub use underground_building::UndergroundBuilding;
+pub mod urf;
+pub mod uro;
