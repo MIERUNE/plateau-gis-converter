@@ -1,6 +1,6 @@
 use citygml::{CityGMLElement, CityGMLReader, Geometries, ParseError, SubTreeReader};
 use clap::Parser;
-use nusamai_geojson::{toplevel_city_object_to_geojson_feature, TopLevelCityObject};
+use nusamai_geojson::{toplevel_city_object_to_geojson_features, TopLevelCityObject};
 use nusamai_plateau::models::CityObject;
 use std::fs;
 use std::io::BufRead;
@@ -73,11 +73,11 @@ fn main() {
 
     // e.g.,
     // cargo run --example object_to_gltcf ~/Desktop/plateau/22203_numazu-shi_2021_citygml_4_op/udx/bldg/52385628_*_6697_op.gml
-    let geojson_feature = toplevel_city_object_to_geojson_feature(&tlc_objs[17]);
+    let geojson_features = toplevel_city_object_to_geojson_features(&tlc_objs[17]);
 
     let geojson_feature_collection = geojson::FeatureCollection {
         bbox: None,
-        features: vec![geojson_feature],
+        features: geojson_features,
         foreign_members: None,
     };
     let geojson = geojson::GeoJson::from(geojson_feature_collection);

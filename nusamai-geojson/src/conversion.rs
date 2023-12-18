@@ -1,4 +1,4 @@
-use nusamai_geometry::{MultiPolygon, Polygon};
+use nusamai_geometry::{MultiLineString, MultiPolygon, Polygon};
 
 pub fn multipolygon_to_geojson_geometry(
     vertices: &[[f64; 3]],
@@ -19,13 +19,30 @@ fn polygon_to_rings(vertices: &[[f64; 3]], poly: &Polygon<1, u32>) -> geojson::P
         .map(|ls| {
             let coords: Vec<_> = ls
                 .iter_closed()
-                .map(|idx| vertices[idx[0] as usize].to_vec()) // Get the actual coord values from `vertices`
+                .map(|idx| vertices[idx[0] as usize].to_vec()) // Get the actual coord values
                 .collect();
             coords
         })
         .collect();
 
     rings
+}
+
+pub fn multilinestring_to_geojson_geometry(
+    vertices: &[[f64; 3]],
+    mls: &MultiLineString<1, u32>,
+) -> geojson::Geometry {
+    let mls_coords: Vec<geojson::LineStringType> = mls
+        .iter()
+        .map(|ls| {
+            let coords: Vec<_> = ls
+                .iter()
+                .map(|idx| vertices[idx[0] as usize].to_vec()) // Get the actual coord values;
+                .collect();
+            coords
+        })
+        .collect();
+    geojson::Geometry::new(geojson::Value::MultiLineString(mls_coords))
 }
 
 #[cfg(test)]
@@ -166,5 +183,57 @@ mod tests {
         } else {
             unreachable!("The result is not a GeoJSON MultiPolygon");
         };
+    }
+
+    #[test]
+    fn test_multilinestring() {
+        let vertices = vec![
+            // 1st linestring
+            [0., 0., 111.],
+            [1., 1., 111.],
+            // 2nd linestring
+            [2., 3., 222.],
+            [4., 5., 222.],
+            // 3rd linestring
+            [6., 7., 333.],
+            [8., 9., 333.],
+            [10., 11., 333.],
+        ];
+
+        let mut mls = MultiLineString::<1, u32>::new();
+        mls.add_linestring([[0], [1]]);
+        mls.add_linestring([[2], [3]]);
+        mls.add_linestring([[4], [5], [6]]);
+
+        let geojson_geometry = multilinestring_to_geojson_geometry(&vertices, &mls);
+
+        assert!(geojson_geometry.bbox.is_none());
+        assert!(geojson_geometry.foreign_members.is_none());
+        if let geojson::Value::MultiLineString(lines) = geojson_geometry.value {
+            assert_eq!(lines.len(), mls.len());
+            for (i, li) in lines.iter().enumerate() {
+                match i {
+                    0 => {
+                        assert_eq!(li.len(), 2);
+                        assert_eq!(li[0], [0., 0., 111.]);
+                        assert_eq!(li[1], [1., 1., 111.]);
+                    }
+                    1 => {
+                        assert_eq!(li.len(), 2);
+                        assert_eq!(li[0], [2., 3., 222.]);
+                        assert_eq!(li[1], [4., 5., 222.]);
+                    }
+                    2 => {
+                        assert_eq!(li.len(), 3);
+                        assert_eq!(li[0], [6., 7., 333.]);
+                        assert_eq!(li[1], [8., 9., 333.]);
+                        assert_eq!(li[2], [10., 11., 333.]);
+                    }
+                    _ => unreachable!("Unexpected number of lines"),
+                }
+            }
+        } else {
+            unreachable!("The result is not a GeoJSON MultiLineString");
+        }
     }
 }
