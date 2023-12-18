@@ -71,9 +71,10 @@ fn main() {
         })
         .collect();
 
-    // e.g.,
-    // cargo run --example object_to_gltcf ~/Desktop/plateau/22203_numazu-shi_2021_citygml_4_op/udx/bldg/52385628_*_6697_op.gml
-    let geojson_features = toplevel_city_object_to_geojson_features(&tlc_objs[17]);
+    let geojson_features: Vec<geojson::Feature> = tlc_objs
+        .iter()
+        .flat_map(toplevel_city_object_to_geojson_features)
+        .collect();
 
     let geojson_feature_collection = geojson::FeatureCollection {
         bbox: None,
