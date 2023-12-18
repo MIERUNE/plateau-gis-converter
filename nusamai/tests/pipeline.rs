@@ -105,15 +105,15 @@ impl DataSink for DummySink {
 
 #[test]
 fn test_run_pipeline() {
-    let input_driver_factory: Box<dyn DataSourceProvider> = Box::new(DummySourceProvider {});
-    let output_driver_factory: Box<dyn DataSinkProvider> = Box::new(DummySinkProvider {});
+    let source_provider: Box<dyn DataSourceProvider> = Box::new(DummySourceProvider {});
+    let sink_provider: Box<dyn DataSinkProvider> = Box::new(DummySinkProvider {});
 
-    let input_driver = input_driver_factory.create(&input_driver_factory.config());
+    let source = source_provider.create(&source_provider.config());
     let transformer = Box::new(NoopTransformer {});
-    let output_driver = output_driver_factory.create(&input_driver_factory.config());
+    let sink = sink_provider.create(&source_provider.config());
 
     // start the pipeline
-    let (handle, watcher, canceller) = pipeline::run(input_driver, transformer, output_driver);
+    let (handle, watcher, canceller) = pipeline::run(source, transformer, sink);
 
     std::thread::scope(|scope| {
         // cancel the pipeline
