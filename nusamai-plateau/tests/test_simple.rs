@@ -1,7 +1,7 @@
 use std::io::BufRead;
 
 use citygml::{CityGMLElement, CityGMLReader, ParseError, SubTreeReader};
-use nusamai_plateau::models::CityObject;
+use nusamai_plateau::models::TopLevelCityObject;
 
 #[derive(Default, Debug)]
 struct Counter {
@@ -19,11 +19,11 @@ fn example_toplevel_dispatcher<R: BufRead>(
 
     match st.parse_children(|st| match st.current_path() {
         b"core:cityObjectMember" => {
-            let mut cityobj: CityObject = Default::default();
+            let mut cityobj: TopLevelCityObject = Default::default();
             cityobj.parse(st)?;
             match cityobj {
-                CityObject::Building(_) => counter.buildings += 1,
-                CityObject::CityObjectGroup(_) => counter.cityobjectgroups += 1,
+                TopLevelCityObject::Building(_) => counter.buildings += 1,
+                TopLevelCityObject::CityObjectGroup(_) => counter.cityobjectgroups += 1,
                 e => panic!("Unexpected city object type: {:?}", e),
             }
             let geometries = st.collect_geometries();

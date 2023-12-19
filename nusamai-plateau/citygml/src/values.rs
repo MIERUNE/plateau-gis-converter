@@ -2,7 +2,10 @@ use crate::object::ObjectValue;
 use crate::parser::{ParseError, SubTreeReader};
 use crate::CityGMLElement;
 pub use chrono::NaiveDate;
+use serde::{Deserialize, Serialize};
 use std::io::BufRead;
+
+pub type Date = chrono::NaiveDate;
 
 impl CityGMLElement for String {
     #[inline]
@@ -11,8 +14,8 @@ impl CityGMLElement for String {
         Ok(())
     }
 
-    fn objectify(&self) -> Option<ObjectValue> {
-        Some(ObjectValue::String(self.as_ref()))
+    fn into_object(self) -> Option<ObjectValue> {
+        Some(ObjectValue::String(self))
     }
 }
 
@@ -25,8 +28,8 @@ impl CityGMLElement for URI {
         Ok(())
     }
 
-    fn objectify(&self) -> Option<ObjectValue> {
-        Some(ObjectValue::String(self.0.as_ref()))
+    fn into_object(self) -> Option<ObjectValue> {
+        Some(ObjectValue::String(self.0))
     }
 }
 
@@ -46,7 +49,7 @@ impl CityGMLElement for Code {
         Ok(())
     }
 
-    fn objectify(&self) -> Option<ObjectValue> {
+    fn into_object(self) -> Option<ObjectValue> {
         Some(ObjectValue::Code(self))
     }
 }
@@ -67,8 +70,8 @@ impl CityGMLElement for i64 {
         }
     }
 
-    fn objectify(&self) -> Option<ObjectValue> {
-        Some(ObjectValue::Integer(*self))
+    fn into_object(self) -> Option<ObjectValue> {
+        Some(ObjectValue::Integer(self))
     }
 }
 
@@ -88,8 +91,8 @@ impl CityGMLElement for u64 {
         }
     }
 
-    fn objectify(&self) -> Option<ObjectValue> {
-        Some(ObjectValue::Integer(*self as i64))
+    fn into_object(self) -> Option<ObjectValue> {
+        Some(ObjectValue::Integer(self as i64))
     }
 }
 
@@ -109,8 +112,8 @@ impl CityGMLElement for f64 {
         }
     }
 
-    fn objectify(&self) -> Option<ObjectValue> {
-        Some(ObjectValue::Double(*self))
+    fn into_object(self) -> Option<ObjectValue> {
+        Some(ObjectValue::Double(self))
     }
 }
 
@@ -134,8 +137,8 @@ impl CityGMLElement for bool {
         }
     }
 
-    fn objectify(&self) -> Option<ObjectValue> {
-        Some(ObjectValue::Boolean(*self))
+    fn into_object(self) -> Option<ObjectValue> {
+        Some(ObjectValue::Boolean(self))
     }
 }
 
@@ -161,16 +164,16 @@ impl CityGMLElement for Measure {
         }
     }
 
-    fn objectify(&self) -> Option<ObjectValue> {
+    fn into_object(self) -> Option<ObjectValue> {
         Some(ObjectValue::Measure(self.value))
     }
 }
 
-impl CityGMLElement for NaiveDate {
+impl CityGMLElement for Date {
     #[inline]
     fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
         let text = st.parse_text()?;
-        match NaiveDate::parse_from_str(text, "%Y-%m-%d") {
+        match Date::parse_from_str(text, "%Y-%m-%d") {
             Ok(v) => {
                 *self = v;
                 Ok(())
@@ -182,12 +185,12 @@ impl CityGMLElement for NaiveDate {
         }
     }
 
-    fn objectify(&self) -> Option<ObjectValue> {
+    fn into_object(self) -> Option<ObjectValue> {
         Some(ObjectValue::Date(self))
     }
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Deserialize, Serialize)]
 pub struct Point {
     // TODO
 }
@@ -199,7 +202,7 @@ impl CityGMLElement for Point {
         todo!();
     }
 
-    fn objectify(&self) -> Option<ObjectValue> {
+    fn into_object(self) -> Option<ObjectValue> {
         Some(ObjectValue::Point(self))
     }
 }
@@ -219,9 +222,9 @@ impl<T: CityGMLElement + Default + std::fmt::Debug> CityGMLElement for Option<T>
         Ok(())
     }
 
-    fn objectify(&self) -> Option<ObjectValue> {
+    fn into_object(self) -> Option<ObjectValue> {
         match self {
-            Some(v) => v.objectify(),
+            Some(v) => v.into_object(),
             None => None,
         }
     }
@@ -236,12 +239,12 @@ impl<T: CityGMLElement + Default> CityGMLElement for Vec<T> {
         Ok(())
     }
 
-    fn objectify(&self) -> Option<ObjectValue> {
+    fn into_object(self) -> Option<ObjectValue> {
         if self.is_empty() {
             None
         } else {
             Some(ObjectValue::Array(
-                self.iter().filter_map(|v| v.objectify()).collect(),
+                self.into_iter().filter_map(|v| v.into_object()).collect(),
             ))
         }
     }

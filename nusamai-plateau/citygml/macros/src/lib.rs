@@ -12,23 +12,13 @@ fn generate_citygml_struct_model(
 ) -> Result<TokenStream, Error> {
     let mut attribute_arms = Vec::new();
     let mut chlid_arms = Vec::new();
-    let mut objectify_stmts = Vec::new();
-    let mut geom_objectify_expr = quote! { None };
+    let mut into_object_stmts = Vec::new();
+    let mut geom_into_object_expr = quote! { None };
     let mut id_value = quote!(None);
 
     for field in &struct_data.fields {
         let Some(field_ident) = &field.ident else {
             continue;
-        };
-
-        if field_ident == "id" {
-            id_value = quote! {
-                if let Some(id) = &self.id {
-                    Some(id.as_ref())
-                } else {
-                    None
-                }
-            };
         };
 
         let field_ty = &field.ty;
@@ -50,13 +40,19 @@ fn generate_citygml_struct_model(
                                 Ok(())
                             }
                         });
-                        objectify_stmts.push(
-                            quote! {
-                                if let Some(v) = self.#field_ident.objectify() {
-                                    attributes.insert(stringify!(#field_ident).into(), v);
+                        if field_ident == "id" {
+                            id_value = quote! {
+                                self.id
+                            };
+                        } else {
+                            into_object_stmts.push(
+                                quote! {
+                                    if let Some(v) = self.#field_ident.into_object() {
+                                        attributes.insert(stringify!(#field_ident).into(), v);
+                                    }
                                 }
-                            }
-                        )
+                            )
+                        }
                     } else {
                         // XML child elements (e.g. bldg:measuredHeight)
                         chlid_arms.push(
@@ -64,9 +60,9 @@ fn generate_citygml_struct_model(
                                 #path => <#field_ty as CityGMLElement>::parse(&mut self.#field_ident, st),
                             }
                         );
-                        objectify_stmts.push(
+                        into_object_stmts.push(
                             quote! {
-                                if let Some(v) = self.#field_ident.objectify() {
+                                if let Some(v) = self.#field_ident.into_object() {
                                     attributes.insert(stringify!(#field_ident).into(), v);
                                 }
                             }
@@ -85,7 +81,7 @@ fn generate_citygml_struct_model(
                         let geomtype = format_ident!("{}", geomtype);
 
                         chlid_arms.push(quote! {
-                            #pat => st.parse_geometric_attr(&mut self.#field_ident, #lod, ::citygml::geometric::GeometryParseType::#geomtype),
+                            #pat => st.parse_geometric_attr(&mut self.#field_ident, #lod, ::citygml::geometry::GeometryParseType::#geomtype),
                         });
                     };
 
@@ -96,14 +92,15 @@ fn generate_citygml_struct_model(
                     add_arm(2, b"lod2MultiSurface", "MultiSurface");
                     add_arm(3, b"lod3MultiSurface", "MultiSurface");
                     add_arm(4, b"lod4MultiSurface", "MultiSurface");
+                    add_arm(0, b"lod0Geometry", "Geometry"); // for uro:lod0Geometry
                     add_arm(1, b"lod1Geometry", "Geometry");
                     add_arm(2, b"lod2Geometry", "Geometry");
                     add_arm(3, b"lod3Geometry", "Geometry");
                     add_arm(4, b"lod4Geometry", "Geometry");
                     add_arm(1, b"tin", "Triangulated");
 
-                    geom_objectify_expr = quote! {
-                        Some(&self.#field_ident)
+                    geom_into_object_expr = quote! {
+                        Some(self.#field_ident)
                     };
 
                     Ok(())
@@ -139,18 +136,17 @@ fn generate_citygml_struct_model(
                 })
             }
 
-            fn objectify(&self) -> Option<::citygml::object::ObjectValue> {
-                let attributes = {
-                    let mut attributes = ::std::collections::HashMap::new();
-                    #(#objectify_stmts)*
-                    attributes
-                };
+            fn into_object(self) -> Option<::citygml::object::ObjectValue> {
                 Some(::citygml::ObjectValue::FeatureOrData(
                     ::citygml::FeatureOrData {
                         typename: stringify!(#struct_name).into(),
                         id: #id_value,
-                        attributes,
-                        geometries: #geom_objectify_expr,
+                        attributes: {
+                            let mut attributes = ::std::collections::HashMap::new();
+                            #(#into_object_stmts)*
+                            attributes
+                        },
+                        geometries: #geom_into_object_expr,
                     }
                 ))
             }
@@ -163,7 +159,7 @@ fn generate_citygml_enum_model(
     enum_data: &DataEnum,
 ) -> Result<TokenStream, Error> {
     let mut child_arms = Vec::new();
-    let mut objectify_arms = Vec::new();
+    let mut into_object_arms = Vec::new();
 
     for variant in &enum_data.variants {
         if variant.fields.len() > 1 {
@@ -196,8 +192,8 @@ fn generate_citygml_enum_model(
                             Ok(())
                         }
                     });
-                    objectify_arms.push(quote! {
-                        Self::#variant_ident(v) => v.objectify()
+                    into_object_arms.push(quote! {
+                        Self::#variant_ident(v) => v.into_object()
                     });
                 }
                 Ok(())
@@ -219,9 +215,9 @@ fn generate_citygml_enum_model(
                 })
             }
 
-            fn objectify(&self) -> Option<::citygml::object::ObjectValue> {
+            fn into_object(self) -> Option<::citygml::object::ObjectValue> {
                 match self {
-                    #(#objectify_arms,)*
+                    #(#into_object_arms,)*
                     _ => None,
                 }
             }

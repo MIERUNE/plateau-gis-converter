@@ -30,6 +30,7 @@ pub enum AnimationChannelTargetPath {
 /// The descriptor of the animated property.
 #[derive(Serialize, Deserialize, Debug, Default)]
 #[serde(rename_all = "camelCase")]
+#[serde(deny_unknown_fields)]
 pub struct AnimationChannelTarget {
     /// The index of the node to animate. When undefined, the animated object **MAY** be defined by an extension.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -41,6 +42,7 @@ pub struct AnimationChannelTarget {
 /// An animation channel combines an animation sampler with a target property being animated.
 #[derive(Serialize, Deserialize, Debug, Default)]
 #[serde(rename_all = "camelCase")]
+#[serde(deny_unknown_fields)]
 pub struct AnimationChannel {
     /// The index of a sampler in this animation used to compute the value for the target, e.g., a node's translation, rotation, or scale (TRS).
     pub sampler: u32,
@@ -51,6 +53,7 @@ pub struct AnimationChannel {
 /// An animation sampler combines timestamps with a sequence of output values and defines an interpolation algorithm.
 #[derive(Serialize, Deserialize, Debug, Default)]
 #[serde(rename_all = "camelCase")]
+#[serde(deny_unknown_fields)]
 pub struct AnimationSampler {
     /// The index of an accessor containing keyframe timestamps. The accessor **MUST** be of scalar type with floating-point components.
     pub input: u32,
