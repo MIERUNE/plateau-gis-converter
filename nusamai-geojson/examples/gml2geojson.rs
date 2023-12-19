@@ -3,7 +3,6 @@
 use citygml::{CityGMLElement, CityGMLReader, ParseError, SubTreeReader};
 use clap::Parser;
 use nusamai_geojson::toplevel_cityobj_to_geojson_features;
-use nusamai_plateau::models::CityObject;
 use nusamai_plateau::TopLevelCityObject;
 use std::fs;
 use std::io::BufRead;
@@ -22,7 +21,7 @@ fn toplevel_dispatcher<R: BufRead>(
 
     match st.parse_children(|st| match st.current_path() {
         b"core:cityObjectMember" => {
-            let mut cityobj: CityObject = Default::default();
+            let mut cityobj: nusamai_plateau::models::TopLevelCityObject = Default::default();
             cityobj.parse(st)?;
             let geometries = st.collect_geometries();
 
