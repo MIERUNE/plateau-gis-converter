@@ -5,6 +5,8 @@ pub use chrono::NaiveDate;
 use serde::{Deserialize, Serialize};
 use std::io::BufRead;
 
+pub type Date = chrono::NaiveDate;
+
 impl CityGMLElement for String {
     #[inline]
     fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
@@ -167,11 +169,11 @@ impl CityGMLElement for Measure {
     }
 }
 
-impl CityGMLElement for NaiveDate {
+impl CityGMLElement for Date {
     #[inline]
     fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
         let text = st.parse_text()?;
-        match NaiveDate::parse_from_str(text, "%Y-%m-%d") {
+        match Date::parse_from_str(text, "%Y-%m-%d") {
             Ok(v) => {
                 *self = v;
                 Ok(())

@@ -20,7 +20,7 @@ fn example_toplevel_dispatcher<R: BufRead>(
 
     match st.parse_children(|st| match st.current_path() {
         b"core:cityObjectMember" => {
-            let mut cityobj: nusamai_plateau::models::CityObject = Default::default();
+            let mut cityobj: nusamai_plateau::models::TopLevelCityObject = Default::default();
             cityobj.parse(st)?;
             let geometries = st.collect_geometries();
 
