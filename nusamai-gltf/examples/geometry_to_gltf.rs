@@ -37,11 +37,11 @@ const VEGETATION_NS: Namespace = Namespace(b"http://www.opengis.net/citygml/vege
 struct Triangles {
     pub indices: Vec<u32>,
     pub vertices: IndexSet<[u32; 3]>,
-    pub face_normals: Option<Vec<f32>>,
-    pub vertex_normals: Option<Vec<f32>>,
-    pub vertex_colors: Option<Vec<f32>>,
-    pub vertex_ids: Option<Vec<u64>>,
-    pub metadata: Option<HashMap<String, serde_json::Value>>,
+    // pub face_normals: Option<Vec<f32>>,
+    // pub vertex_normals: Option<Vec<f32>>,
+    // pub vertex_colors: Option<Vec<f32>>,
+    // pub vertex_ids: Option<Vec<u64>>,
+    // pub metadata: Option<HashMap<String, serde_json::Value>>,
 }
 
 impl Triangles {
