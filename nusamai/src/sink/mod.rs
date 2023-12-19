@@ -1,3 +1,4 @@
+pub mod geojson;
 pub mod noop;
 pub mod serde;
 

@@ -3,7 +3,9 @@ use std::sync::{Arc, Mutex};
 use clap::Parser;
 
 use nusamai::pipeline::Canceller;
-use nusamai::sink::{noop::NoopSinkProvider, serde::SerdeSinkProvider};
+use nusamai::sink::{
+    geojson::GeoJsonSinkProvider, noop::NoopSinkProvider, serde::SerdeSinkProvider,
+};
 use nusamai::sink::{DataSink, DataSinkProvider};
 use nusamai::source::citygml::CityGMLSourceProvider;
 use nusamai::source::{DataSource, DataSourceProvider};
@@ -23,6 +25,7 @@ struct Args {
 enum SinkChoice {
     Noop,
     Serde,
+    Geojson,
 }
 
 impl SinkChoice {
@@ -30,6 +33,7 @@ impl SinkChoice {
         match self {
             SinkChoice::Noop => Box::new(NoopSinkProvider {}),
             SinkChoice::Serde => Box::new(SerdeSinkProvider {}),
+            SinkChoice::Geojson => Box::new(GeoJsonSinkProvider {}),
         }
     }
 }
