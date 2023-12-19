@@ -71,7 +71,7 @@ fn toplevel_dispatcher<R: BufRead>(
                 Ok(())
             }
             b"core:cityObjectMember" => {
-                let mut cityobj: nusamai_plateau::models::CityObject = Default::default();
+                let mut cityobj: nusamai_plateau::models::TopLevelCityObject = Default::default();
                 cityobj.parse(st)?;
                 let geometries = st.collect_geometries();
 

@@ -49,8 +49,8 @@ pub struct CityFurniture {
     pub frn_facility_id_attribute: Option<uro::FacilityIdAttribute>,
 
     #[citygml(path = b"uro:frnFacilityAttribute")]
-    pub frn_facility_attribute: Vec<uro::FacilityAttribute>,
+    pub frn_facility_attribute: Vec<uro::FacilityAttributeProperty>,
 
     #[citygml(path = b"uro:frnDmAttribute")]
-    pub frn_dm_attribute: Vec<uro::DmAttribute>,
+    pub frn_dm_attribute: Vec<uro::DmAttributeProperty>,
 }
