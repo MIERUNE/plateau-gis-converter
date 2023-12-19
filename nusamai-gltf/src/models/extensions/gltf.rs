@@ -9,11 +9,28 @@ pub struct Gltf {
 }
 
 #[derive(Serialize, Deserialize, Debug, Default)]
+#[serde(rename_all = "camelCase")]
 #[serde(deny_unknown_fields)]
 pub struct ExtStructuralMetadata {
-    /// A dictionary object, where each key is the ID of the schema and each value is an object defining the schema.
-    pub schemas: Schema,
-    pub property_tables: Vec<PropertyTable>,
+    /// An object defining classes and enums.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub schema: Option<Schema>,
+
+    /// The URI (or IRI) of the external schema file.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub schema_uri: Option<String>,
+
+    /// An array of property table definitions, which may be referenced by index.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub property_tables: Option<Vec<PropertyTable>>,
+
+    /// An array of indexes of property textures in the root `EXT_structural_metadata` object.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub property_textures: Option<Vec<PropertyTexture>>,
+
+    /// An array of indexes of property attributes in the root `EXT_structural_metadata` object.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub property_attributes: Option<Vec<PropertyAttribute>>,
 }
 
 /// Schema in EXT_structural_metadata
@@ -38,10 +55,12 @@ pub struct Schema {
 
     /// A dictionary, where each key is a class ID and each value is an object defining the class.
     #[serde(skip_serializing_if = "HashMap::is_empty")]
+    #[serde(default)]
     pub classes: HashMap<String, Class>,
 
     /// A dictionary, where each key is an enum ID and each value is an object defining the values for the enum.
     #[serde(skip_serializing_if = "HashMap::is_empty")]
+    #[serde(default)]
     pub enums: HashMap<String, EnumMetadata>,
 
     /// JSON object with extension-specific objects.
@@ -101,13 +120,13 @@ pub enum ElementType {
 #[serde(rename_all = "UPPERCASE")]
 pub enum ComponentType {
     Int8,
-    Uint8,
+    UInt8,
     Int16,
-    Uint16,
+    UInt16,
     Int32,
-    Uint32,
+    UInt32,
     Int64,
-    Uint64,
+    UInt64,
     Float32,
     Float64,
     // Add other types as needed
@@ -116,6 +135,7 @@ pub enum ComponentType {
 /// Class Property in EXT_structural_metadata
 #[derive(Serialize, Deserialize, Debug, Default)]
 #[serde(deny_unknown_fields)]
+#[serde(rename_all = "camelCase")]
 pub struct ClassProperty {
     /// The name of the property, e.g. for display purposes.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -126,7 +146,8 @@ pub struct ClassProperty {
     pub description: Option<String>,
 
     /// The element type.
-    pub element_type: ElementType,
+    #[serde(rename = "type")]
+    pub type_: ElementType,
 
     /// The datatype of the element's components.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -195,18 +216,19 @@ pub struct ClassProperty {
 pub enum ValueType {
     #[default]
     Int8,
-    Uint8,
+    UInt8,
     Int16,
-    Uint16,
+    UInt16,
     Int32,
-    Uint32,
+    UInt32,
     Int64,
-    Uint64,
+    UInt64,
     // Add other types as needed
 }
 
 /// Enum in EXT_structural_metadata
 #[derive(Serialize, Deserialize, Debug, Default)]
+#[serde(rename_all = "camelCase")]
 #[serde(deny_unknown_fields)]
 pub struct EnumMetadata {
     /// The name of the enum, e.g. for display purposes.
@@ -234,11 +256,12 @@ pub struct EnumMetadata {
 }
 
 fn default_value_type() -> ValueType {
-    ValueType::Uint16
+    ValueType::UInt16
 }
 
 /// Enum Value in EXT_structural_metadata
 #[derive(Serialize, Deserialize, Debug, Default)]
+#[serde(rename_all = "camelCase")]
 #[serde(deny_unknown_fields)]
 pub struct EnumValue {
     /// The name of the enum value.
@@ -262,6 +285,7 @@ pub struct EnumValue {
 
 /// Property Table in EXT_structural_metadata
 #[derive(Serialize, Deserialize, Debug, Default)]
+#[serde(rename_all = "camelCase")]
 #[serde(deny_unknown_fields)]
 pub struct PropertyTable {
     /// The name of the property table, e.g. for display purposes.
@@ -286,20 +310,101 @@ pub struct PropertyTable {
     pub extras: Option<Value>,
 }
 
+#[derive(Serialize, Deserialize, Debug, Default)]
+pub struct PropertyTexture {
+    /// The name of the property attribute, e.g. for display purposes.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    name: Option<String>,
+
+    /// The class that property values conform to. The value must be a class ID declared in the `classes` dictionary.
+    class: String,
+
+    /// A dictionary, where each key corresponds to a property ID in the class' `properties` dictionary and each value is an object describing where property values are stored. Required properties must be included in this dictionary.
+    properties: HashMap<String, PropertyTextureProperty>,
+}
+
+/// A texture containing property values.
+#[derive(Serialize, Deserialize, Debug, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct PropertyTextureProperty {
+    /// Texture channels containing property values, identified by index. The values may be packed into multiple channels if a single channel does not have sufficient bit depth. The values are packed in little-endian order."
+    #[serde(default = "default_channels")]
+    pub channels: Vec<u32>,
+
+    /// An offset to apply to property values. Only applicable when the component type is `FLOAT32` or `FLOAT64`, or when the property is `normalized`. Overrides the class property's `offset` if both are defined.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    offset: Option<Value>, // FIXME:
+
+    /// A scale to apply to property values. Only applicable when the component type is `FLOAT32` or `FLOAT64`, or when the property is `normalized`. Overrides the class property's `scale` if both are defined.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    scale: Option<Value>, // FIXME:
+
+    /// Maximum value present in the property values. Only applicable to `SCALAR`, `VECN`, and `MATN` types. This is the maximum of all property values, after the transforms based on the `normalized`, `offset`, and `scale` properties have been applied."
+    #[serde(skip_serializing_if = "Option::is_none")]
+    max: Option<Value>, // FIXME:
+
+    /// Minimum value present in the property values. Only applicable to `SCALAR`, `VECN`, and `MATN` types. This is the minimum of all property values, after the transforms based on the `normalized`, `offset`, and `scale` properties have been applied.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    min: Option<Value>, // FIXME:
+}
+
+fn default_channels() -> Vec<u32> {
+    vec![0]
+}
+
+#[derive(Serialize, Deserialize, Debug, Default)]
+#[serde(rename_all = "camelCase")]
+#[serde(deny_unknown_fields)]
+pub struct PropertyAttribute {
+    /// The name of the property attribute, e.g. for display purposes.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    name: Option<String>,
+
+    /// The class that property values conform to. The value must be a class ID declared in the `classes` dictionary.
+    class: String,
+
+    /// A dictionary, where each key corresponds to a property ID in the class' `properties` dictionary and each value is an object describing where property values are stored. Required properties must be included in this dictionary.
+    properties: HashMap<String, PropertyAttributeProperty>,
+}
+
+#[derive(Serialize, Deserialize, Debug, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct PropertyAttributeProperty {
+    /// The name of the attribute containing property values.
+    attribute: String,
+
+    /// An offset to apply to property values. Only applicable when the component type is `FLOAT32` or `FLOAT64`, or when the property is `normalized`. Overrides the class property's `offset` if both are defined.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    offset: Option<Value>, // FIXME:
+
+    /// A scale to apply to property values. Only applicable when the component type is `FLOAT32` or `FLOAT64`, or when the property is `normalized`. Overrides the class property's `scale` if both are defined.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    scale: Option<Value>, // FIXME:
+
+    /// Maximum value present in the property values. Only applicable to `SCALAR`, `VECN`, and `MATN` types. This is the maximum of all property values, after the transforms based on the `normalized`, `offset`, and `scale` properties have been applied.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    max: Option<Value>, // FIXME:
+
+    /// Minimum value present in the property values. Only applicable to `SCALAR`, `VECN`, and `MATN` types. This is the minimum of all property values, after the transforms based on the `normalized`, `offset`, and `scale` properties have been applied."
+    #[serde(skip_serializing_if = "Option::is_none")]
+    min: Option<Value>, // FIXME:
+}
+
 /// OffsetType enumeration
 #[derive(Serialize, Deserialize, Debug, Default)]
 #[serde(rename_all = "UPPERCASE")]
 pub enum OffsetType {
     #[default]
-    Uint8,
-    Uint16,
-    Uint32,
-    Uint64,
+    UInt8,
+    UInt16,
+    UInt32,
+    UInt64,
     // Add other types as needed
 }
 
 /// Property Table Property in EXT_structural_metadata
 #[derive(Serialize, Deserialize, Debug, Default)]
+#[serde(rename_all = "camelCase")]
 #[serde(deny_unknown_fields)]
 pub struct PropertyTableProperty {
     /// The index of the buffer view containing property values.
@@ -347,5 +452,5 @@ pub struct PropertyTableProperty {
 }
 
 fn default_offset_type() -> OffsetType {
-    OffsetType::Uint32
+    OffsetType::UInt32
 }
