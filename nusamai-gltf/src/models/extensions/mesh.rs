@@ -111,12 +111,12 @@ pub struct MeshPrimitiveExtMeshFeatures {
 #[derive(Serialize, Deserialize, Debug, Default)]
 pub struct MeshPrimitiveExtStructuralMetadata {
     /// An array of indexes of property textures in the root `EXT_structural_metadata` object.
-    #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub property_textures: Vec<u32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub property_textures: Option<Vec<u32>>,
 
     /// An array of indexes of property attributes in the root `EXT_structural_metadata` object.
-    #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub property_attributes: Vec<u32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub property_attributes: Option<Vec<u32>>,
 
     /// JSON object with extension-specific objects.
     #[serde(skip_serializing_if = "Option::is_none")]
