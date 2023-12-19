@@ -2,7 +2,7 @@ use std::io::BufRead;
 
 use citygml::{CityGMLElement, CityGMLReader, Code, Geometries, ParseError, SubTreeReader};
 use nusamai_plateau::models::cityfurniture::CityFurniture;
-use nusamai_plateau::models::CityObject;
+use nusamai_plateau::models::TopLevelCityObject;
 
 #[derive(Default, Debug)]
 struct ParsedData {
@@ -15,13 +15,13 @@ fn toplevel_dispatcher<R: BufRead>(st: &mut SubTreeReader<R>) -> Result<ParsedDa
 
     match st.parse_children(|st| match st.current_path() {
         b"core:cityObjectMember" => {
-            let mut cityobj: CityObject = Default::default();
+            let mut cityobj: TopLevelCityObject = Default::default();
             cityobj.parse(st)?;
             match cityobj {
-                CityObject::CityFurniture(frn) => {
+                TopLevelCityObject::CityFurniture(frn) => {
                     parsed_data.cityfurnitures.push(frn);
                 }
-                CityObject::CityObjectGroup(_) => (),
+                TopLevelCityObject::CityObjectGroup(_) => (),
                 e => panic!("Unexpected city object type: {:?}", e),
             }
             let geometries = st.collect_geometries();
@@ -65,7 +65,7 @@ fn test_cityfurniture() {
         parsed_data.geometries.len()
     );
 
-    let frn = parsed_data.cityfurnitures.get(0).unwrap();
+    let frn = parsed_data.cityfurnitures.first().unwrap();
     assert_eq!(
         frn.function,
         vec![Code {
@@ -75,11 +75,13 @@ fn test_cityfurniture() {
     );
 
     assert_eq!(
-        frn.city_furniture_data_quality_attribute.as_ref().unwrap().src_scale,
+        frn.city_furniture_data_quality_attribute
+            .as_ref()
+            .unwrap()
+            .src_scale,
         vec![Code {
             value: "3".to_string(),
             code: "3".to_string(),
         }]
     );
-
 }
