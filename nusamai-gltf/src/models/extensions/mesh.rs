@@ -74,6 +74,18 @@ fn default_channels() -> Vec<u32> {
 pub struct Primitive {
     #[serde(skip_serializing_if = "Option::is_none", rename = "EXT_mesh_features")]
     pub ext_mesh_features: Option<ExtMeshFeatures>,
+    #[serde(
+        skip_serializing_if = "Option::is_none",
+        rename = "KHR_materials_variants"
+    )]
+    pub khr_materials_variants: Option<KhrMaterialsVariants>,
+}
+
+// TODO: Implement KHR_materials_variants
+#[derive(Serialize, Deserialize, Debug, Default)]
+pub struct KhrMaterialsVariants {
+    #[serde(flatten)]
+    pub others: HashMap<String, Value>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Default)]
