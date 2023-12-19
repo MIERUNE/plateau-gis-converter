@@ -1,3 +1,5 @@
+pub mod extensions;
+
 mod accessor;
 mod animation;
 mod asset;
