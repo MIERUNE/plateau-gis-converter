@@ -2,7 +2,7 @@ use std::io::BufRead;
 
 use citygml::{CityGMLElement, CityGMLReader, Code, Geometries, ParseError, SubTreeReader};
 use nusamai_plateau::models::cityfurniture::CityFurniture;
-use nusamai_plateau::models::CityObject;
+use nusamai_plateau::models::TopLevelCityObject;
 
 #[derive(Default, Debug)]
 struct ParsedData {
@@ -15,13 +15,13 @@ fn toplevel_dispatcher<R: BufRead>(st: &mut SubTreeReader<R>) -> Result<ParsedDa
 
     match st.parse_children(|st| match st.current_path() {
         b"core:cityObjectMember" => {
-            let mut cityobj: CityObject = Default::default();
+            let mut cityobj: TopLevelCityObject = Default::default();
             cityobj.parse(st)?;
             match cityobj {
-                CityObject::CityFurniture(frn) => {
+                TopLevelCityObject::CityFurniture(frn) => {
                     parsed_data.cityfurnitures.push(frn);
                 }
-                CityObject::CityObjectGroup(_) => (),
+                TopLevelCityObject::CityObjectGroup(_) => (),
                 e => panic!("Unexpected city object type: {:?}", e),
             }
             let geometries = st.collect_geometries();
@@ -47,7 +47,7 @@ fn toplevel_dispatcher<R: BufRead>(st: &mut SubTreeReader<R>) -> Result<ParsedDa
 
 #[test]
 fn test_cityfurniture() {
-    let test_file_path = "./tests/data/52384698_frn_6697_op.gml";
+    let test_file_path = "./tests/data/53391597_frn_6697_op.gml";
 
     let reader = std::io::BufReader::new(std::fs::File::open(test_file_path).unwrap());
     let mut xml_reader = quick_xml::NsReader::from_reader(reader);
@@ -59,25 +59,29 @@ fn test_cityfurniture() {
         Err(e) => panic!("Err: {:?}", e),
     };
 
-    assert_eq!(parsed_data.cityfurnitures.len(), 44);
+    assert_eq!(parsed_data.cityfurnitures.len(), 28);
     assert_eq!(
         parsed_data.cityfurnitures.len(),
         parsed_data.geometries.len()
     );
 
-    let frn = parsed_data.cityfurnitures.get(0).unwrap();
-    assert_eq!(
-        frn.class,
-        Some(Code {
-            value: "1000".to_string(),
-            code: "1000".to_string(),
-        })
-    );
+    let frn = parsed_data.cityfurnitures.first().unwrap();
     assert_eq!(
         frn.function,
         vec![Code {
-            value: "1010".to_string(),
-            code: "1010".to_string(),
+            value: "4800".to_string(),
+            code: "4800".to_string(),
+        }]
+    );
+
+    assert_eq!(
+        frn.city_furniture_data_quality_attribute
+            .as_ref()
+            .unwrap()
+            .src_scale,
+        vec![Code {
+            value: "3".to_string(),
+            code: "3".to_string(),
         }]
     );
 }

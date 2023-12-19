@@ -1,5 +1,17 @@
-use super::{feedback, Percel};
+use super::{feedback, Parcel, Sender};
+use thiserror::Error;
+
+#[derive(Error, Debug)]
+pub enum TransformError {
+    #[error("transform error")]
+    SendError(#[from] std::sync::mpsc::SendError<Parcel>),
+}
 
 pub trait Transformer: Send + Sync {
-    fn transform(&self, obj: &mut Percel, feedback: &feedback::Feedback);
+    fn transform(
+        &self,
+        parcel: Parcel,
+        sink: &Sender,
+        feedback: &feedback::Feedback,
+    ) -> Result<(), TransformError>;
 }

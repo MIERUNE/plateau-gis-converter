@@ -29,7 +29,7 @@ impl Feedback {
 
     /// Send a message to the feedback channel
     #[inline]
-    pub fn send(&self, msg: FeedbackMessage) {
+    pub fn feedback(&self, msg: FeedbackMessage) {
         // don't care if the receiver is dropped.
         let _ = self.sender.send(msg);
     }
@@ -48,6 +48,7 @@ impl IntoIterator for Watcher {
     }
 }
 
+#[derive(Clone, Default)]
 pub struct Canceller {
     cancelled: Arc<AtomicBool>,
 }
@@ -56,6 +57,11 @@ impl Canceller {
     /// Cancel the pipeline
     pub fn cancel(&self) {
         self.cancelled.store(true, Ordering::Relaxed);
+    }
+
+    /// Checks if the pipeline is cancelled
+    pub fn is_cancelled(&self) -> bool {
+        self.cancelled.load(Ordering::Relaxed)
     }
 }
 

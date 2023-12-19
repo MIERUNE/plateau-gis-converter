@@ -32,16 +32,16 @@
 // const BRIDGE_NS: Namespace = Namespace(b"http://www.opengis.net/citygml/bridge/2.0");
 // const VEGETATION_NS: Namespace = Namespace(b"http://www.opengis.net/citygml/vegetation/2.0");
 
-// // 暫定で構造体を定義
+// 暫定で構造体を定義
 // #[derive(Debug, Clone, Default)]
 // struct Triangles {
-//     pub indices: Vec<u32>,
-//     pub vertices: IndexSet<[u32; 3]>,
-//     pub face_normals: Option<Vec<f32>>,
-//     pub vertex_normals: Option<Vec<f32>>,
-//     pub vertex_colors: Option<Vec<f32>>,
-//     pub vertex_ids: Option<Vec<u64>>,
-//     pub metadata: Option<HashMap<String, serde_json::Value>>,
+// pub indices: Vec<u32>,
+// pub vertices: IndexSet<[u32; 3]>,
+// pub face_normals: Option<Vec<f32>>,
+// pub vertex_normals: Option<Vec<f32>>,
+// pub vertex_colors: Option<Vec<f32>>,
+// pub vertex_ids: Option<Vec<u64>>,
+// pub metadata: Option<HashMap<String, serde_json::Value>>,
 // }
 
 // impl Triangles {
