@@ -12,7 +12,7 @@ pub struct Gltf {
 pub struct ExtStructuralMetadata {
     /// A dictionary object, where each key is the ID of the schema and each value is an object defining the schema.
     pub schemas: Schema,
-    pub propertyTables: Vec<PropertyTable>,
+    pub property_tables: Vec<PropertyTable>,
 }
 
 /// Schema in EXT_structural_metadata
