@@ -83,6 +83,4 @@ pub enum TopLevelCityObject {
     //
     #[citygml(path = b"urf:SedimentDisasterProneArea")]
     SedimentDisasterProneArea(urf::SedimentDisasterProneArea),
-    //
-    // and more ...
 }
