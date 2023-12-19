@@ -44,13 +44,11 @@ impl DataSink for GeoJsonSink {
                 // Convert TopLevelCityObjects to GeoJSON objects
 
                 let _ = upstream.into_iter().par_bridge().try_for_each_with(
-                    (sender, Vec::<Feature>::new()),
-                    |(sender, buf), parcel| {
+                    sender,
+                    |sender, parcel| {
                         if feedback.is_cancelled() {
                             return Err(());
                         }
-
-                        buf.clear();
 
                         let features = toplevel_cityobj_to_geojson_features(&parcel.cityobj);
 
