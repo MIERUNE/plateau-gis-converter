@@ -42,6 +42,7 @@ impl DataSink for GeoJsonSink {
         rayon::join(
             || {
                 // Convert TopLevelCityObjects to GeoJSON objects
+
                 let _ = upstream.into_iter().par_bridge().try_for_each_with(
                     (sender, Vec::<Feature>::new()),
                     |(sender, buf), parcel| {
