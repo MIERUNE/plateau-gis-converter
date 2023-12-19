@@ -1,255 +1,115 @@
-use nusamai_geometry::{CoordNum, Geometry, MultiPolygon, Polygon};
+use nusamai_geometry::{MultiLineString, MultiPoint, MultiPolygon, Polygon};
 
-/// A wrapper to convert an arbitrary "nusamai geometry" to a "geojson geometry"
-// TODO: implementations for all geometry variants
-pub fn nusamai_to_geojson_geometry<const D: usize, T: CoordNum>(
-    geometry: &Geometry<D, T>,
+/// Create a GeoJSON geometry from nusamai_plateau::TopLevelCityObject's `multipolygon` geometry
+pub fn multipolygon_to_geojson_geometry(
+    vertices: &[[f64; 3]],
+    mpoly: &MultiPolygon<1, u32>,
 ) -> geojson::Geometry {
-    match geometry {
-        Geometry::MultiPoint(geom) => multi_point_to_geojson_geometry(geom),
-        Geometry::LineString(geom) => linestring_to_geojson_geometry(geom),
-        Geometry::MultiLineString(geom) => multi_linestring_to_geojson_geometry(geom),
-        Geometry::Polygon(geom) => polygon_to_geojson_geometry(geom),
-        Geometry::MultiPolygon(geom) => multi_polygon_to_geojson_geometry(geom),
-    }
-}
-
-fn multi_point_to_geojson_geometry<const D: usize, T: CoordNum>(
-    mpoint: &nusamai_geometry::MultiPoint<D, T>,
-) -> geojson::Geometry {
-    let point_list: Vec<geojson::PointType> = mpoint
+    let ring_list: Vec<geojson::PolygonType> = mpoly
         .iter()
-        .map(|point| point.iter().map(|&t| t.to_f64().unwrap()).collect())
+        .map(|poly| polygon_to_rings(vertices, &poly))
         .collect();
-    geojson::Geometry::new(geojson::Value::MultiPoint(point_list))
-}
 
-fn linestring_to_geojson_geometry<const D: usize, T: CoordNum>(
-    linestring: &nusamai_geometry::LineString<D, T>,
-) -> geojson::Geometry {
-    let point_list: geojson::LineStringType = linestring
-        .iter()
-        .map(|point| point.iter().map(|&t| t.to_f64().unwrap()).collect())
-        .collect();
-    geojson::Geometry::new(geojson::Value::LineString(point_list))
-}
-
-fn multi_linestring_to_geojson_geometry<const D: usize, T: CoordNum>(
-    mlinestring: &nusamai_geometry::MultiLineString<D, T>,
-) -> geojson::Geometry {
-    let line_list: Vec<geojson::LineStringType> = mlinestring
-        .iter()
-        .map(|linestring| {
-            linestring
-                .iter()
-                .map(|point| point.iter().map(|&t| t.to_f64().unwrap()).collect())
-                .collect()
-        })
-        .collect();
-    geojson::Geometry::new(geojson::Value::MultiLineString(line_list))
-}
-
-fn polygon_to_geojson_geometry<const D: usize, T: CoordNum>(
-    poly: &Polygon<D, T>,
-) -> geojson::Geometry {
-    let rings = polygon_to_rings(poly);
-    geojson::Geometry::new(geojson::Value::Polygon(rings))
-}
-
-fn multi_polygon_to_geojson_geometry<const D: usize, T: CoordNum>(
-    mpoly: &MultiPolygon<D, T>,
-) -> geojson::Geometry {
-    let ring_list: Vec<geojson::PolygonType> =
-        mpoly.iter().map(|poly| polygon_to_rings(&poly)).collect();
     geojson::Geometry::new(geojson::Value::MultiPolygon(ring_list))
 }
 
-fn polygon_to_rings<const D: usize, T: CoordNum>(poly: &Polygon<D, T>) -> geojson::PolygonType {
-    let rings = std::iter::once(poly.exterior())
-        .chain(poly.interiors())
-        .map(|linestring| {
-            linestring
+fn polygon_to_rings(vertices: &[[f64; 3]], poly: &Polygon<1, u32>) -> geojson::PolygonType {
+    let linestrings = std::iter::once(poly.exterior()).chain(poly.interiors());
+
+    let rings: Vec<_> = linestrings
+        .map(|ls| {
+            let coords: Vec<_> = ls
                 .iter_closed()
-                .map(|slice| slice.iter().map(|&t| t.to_f64().unwrap()).collect())
-                .collect()
+                .map(|idx| vertices[idx[0] as usize].to_vec()) // Get the actual coord values
+                .collect();
+            coords
         })
         .collect();
+
     rings
+}
+
+/// Create a GeoJSON geometry from nusamai_plateau::TopLevelCityObject's `multilinestring` geometry
+pub fn multilinestring_to_geojson_geometry(
+    vertices: &[[f64; 3]],
+    mls: &MultiLineString<1, u32>,
+) -> geojson::Geometry {
+    let mls_coords: Vec<geojson::LineStringType> = mls
+        .iter()
+        .map(|ls| {
+            let coords: Vec<_> = ls
+                .iter()
+                .map(|idx| vertices[idx[0] as usize].to_vec()) // Get the actual coord values
+                .collect();
+            coords
+        })
+        .collect();
+    geojson::Geometry::new(geojson::Value::MultiLineString(mls_coords))
+}
+
+/// Create a GeoJSON geometry from nusamai_plateau::TopLevelCityObject's `multipoint` geometry
+pub fn multipoint_to_geojson_geometry(
+    vertices: &[[f64; 3]],
+    mpoint: &MultiPoint<1, u32>,
+) -> geojson::Geometry {
+    let mpoint_coords: Vec<geojson::PointType> = mpoint
+        .iter()
+        .map(|p| vertices[p[0] as usize].to_vec()) // Get the actual coord values
+        .collect();
+    geojson::Geometry::new(geojson::Value::MultiPoint(mpoint_coords))
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use nusamai_geometry::{MultiLineString2, MultiPoint2, MultiPolygon2, Polygon2, Polygon3};
 
     #[test]
-    fn test_multi_point_basic() {
-        let mut mpoint = MultiPoint2::new();
-        mpoint.push(&[0., 0.]);
-        mpoint.push(&[1., 1.]);
-        mpoint.push(&[2., 2.]);
+    fn test_multipolygon() {
+        let vertices: Vec<[f64; 3]> = vec![
+            // 1st polygon, exterior (vertex 0~3)
+            [0., 0., 111.],
+            [5., 0., 111.],
+            [5., 5., 111.],
+            [0., 5., 111.],
+            // 1st polygon, interior 1 (vertex 4~7)
+            [1., 1., 111.],
+            [2., 1., 111.],
+            [2., 2., 111.],
+            [1., 2., 111.],
+            // 1st polygon, interior 2 (vertex 8~11)
+            [3., 3., 111.],
+            [4., 3., 111.],
+            [4., 4., 111.],
+            [3., 4., 111.],
+            // 2nd polygon, exterior (vertex 12~15)
+            [4., 0., 222.],
+            [7., 0., 222.],
+            [7., 3., 222.],
+            [4., 3., 222.],
+            // 2nd polygon, interior (vertex 16~19)
+            [5., 1., 222.],
+            [6., 1., 222.],
+            [6., 2., 222.],
+            [5., 2., 222.],
+            // 3rd polygon, exterior (vertex 20~23)
+            [4., 0., 333.],
+            [7., 0., 333.],
+            [7., 3., 333.],
+            [4., 3., 333.],
+        ];
 
-        let geojson_geometry = multi_point_to_geojson_geometry(&mpoint);
-
-        assert!(geojson_geometry.bbox.is_none());
-        assert!(geojson_geometry.foreign_members.is_none());
-
-        if let geojson::Value::MultiPoint(points) = geojson_geometry.value {
-            assert_eq!(points.len(), mpoint.len());
-            assert_eq!(points[0], vec![0., 0.]);
-            assert_eq!(points[1], vec![1., 1.]);
-            assert_eq!(points[2], vec![2., 2.]);
-        } else {
-            unreachable!("The result is not a GeoJSON MultiPoint");
-        };
-    }
-
-    #[test]
-    fn test_linestring_basic() {
-        let mut linestring = nusamai_geometry::LineString2::new();
-        linestring.push(&[0., 0.]);
-        linestring.push(&[1., 1.]);
-        linestring.push(&[2., 2.]);
-
-        let geojson_geometry = linestring_to_geojson_geometry(&linestring);
-
-        assert!(geojson_geometry.bbox.is_none());
-        assert!(geojson_geometry.foreign_members.is_none());
-
-        if let geojson::Value::LineString(points) = geojson_geometry.value {
-            assert_eq!(points.len(), linestring.len());
-            assert_eq!(points[0], vec![0., 0.]);
-            assert_eq!(points[1], vec![1., 1.]);
-            assert_eq!(points[2], vec![2., 2.]);
-        } else {
-            unreachable!("The result is not a GeoJSON LineString");
-        };
-    }
-
-    #[test]
-    fn test_multi_linestring_basic() {
-        let mut mls = MultiLineString2::new();
-        mls.add_linestring(vec![[0., 0.], [1., 1.]]);
-        mls.add_linestring(vec![[2., 2.], [3., 3.]]);
-        mls.add_linestring(vec![[4., 4.], [5., 5.], [6., 6.]]);
-
-        let geojson_geometry = multi_linestring_to_geojson_geometry(&mls);
-
-        assert!(geojson_geometry.bbox.is_none());
-        assert!(geojson_geometry.foreign_members.is_none());
-
-        if let geojson::Value::MultiLineString(lines) = geojson_geometry.value {
-            assert_eq!(lines.len(), mls.len());
-            assert_eq!(lines[0], vec![[0., 0.], [1., 1.]]);
-            assert_eq!(lines[1], vec![[2., 2.], [3., 3.]]);
-            assert_eq!(lines[2], vec![[4., 4.], [5., 5.], [6., 6.]]);
-        } else {
-            unreachable!("The result is not a GeoJSON MultiLineString");
-        };
-    }
-
-    #[test]
-    fn test_polygon_basic() {
-        let mut poly = Polygon2::new();
-        poly.add_ring([[0., 0.], [5., 0.], [5., 5.], [0., 5.]]);
-        poly.add_ring([[1., 1.], [2., 1.], [2., 2.], [1., 2.]]);
-        poly.add_ring([[3., 3.], [4., 3.], [4., 4.], [3., 4.]]);
-
-        let geojson_geometry = polygon_to_geojson_geometry(&poly);
-
-        assert!(geojson_geometry.bbox.is_none());
-        assert!(geojson_geometry.foreign_members.is_none());
-        if let geojson::Value::Polygon(rings) = geojson_geometry.value {
-            assert_eq!(rings.len(), 3);
-            assert_eq!(rings[0].len(), 5);
-            assert_eq!(rings[1].len(), 5);
-            assert_eq!(rings[2].len(), 5);
-            assert_eq!(
-                rings[0],
-                vec![[0., 0.], [5., 0.], [5., 5.], [0., 5.], [0., 0.]]
-            );
-            assert_eq!(
-                rings[1],
-                vec![[1., 1.], [2., 1.], [2., 2.], [1., 2.], [1., 1.]]
-            );
-            assert_eq!(
-                rings[2],
-                vec![[3., 3.], [4., 3.], [4., 4.], [3., 4.], [3., 3.]]
-            );
-        } else {
-            unreachable!("The result is not a GeoJSON Polygon");
-        };
-    }
-
-    #[test]
-    fn test_polygon_basic_3d() {
-        let mut poly = Polygon3::new();
-        poly.add_ring([[0., 0., 99.], [5., 0., 99.], [5., 5., 99.], [0., 5., 99.]]);
-        poly.add_ring([[1., 1., 99.], [2., 1., 99.], [2., 2., 99.], [1., 2., 99.]]);
-        poly.add_ring([[3., 3., 99.], [4., 3., 99.], [4., 4., 99.], [3., 4., 99.]]);
-
-        let geojson_geometry = polygon_to_geojson_geometry(&poly);
-
-        assert!(geojson_geometry.bbox.is_none());
-        assert!(geojson_geometry.foreign_members.is_none());
-        if let geojson::Value::Polygon(rings) = geojson_geometry.value {
-            assert_eq!(rings.len(), 3);
-            assert_eq!(rings[0].len(), 5);
-            assert_eq!(rings[1].len(), 5);
-            assert_eq!(rings[2].len(), 5);
-            assert_eq!(
-                rings[0],
-                vec![
-                    [0., 0., 99.],
-                    [5., 0., 99.],
-                    [5., 5., 99.],
-                    [0., 5., 99.],
-                    [0., 0., 99.]
-                ]
-            );
-            assert_eq!(
-                rings[1],
-                vec![
-                    [1., 1., 99.],
-                    [2., 1., 99.],
-                    [2., 2., 99.],
-                    [1., 2., 99.],
-                    [1., 1., 99.]
-                ]
-            );
-            assert_eq!(
-                rings[2],
-                vec![
-                    [3., 3., 99.],
-                    [4., 3., 99.],
-                    [4., 4., 99.],
-                    [3., 4., 99.],
-                    [3., 3., 99.]
-                ]
-            );
-        } else {
-            unreachable!("The result is not a GeoJSON Polygon");
-        };
-    }
-
-    #[test]
-    fn test_multi_polygon_basic() {
-        let mut mpoly = MultiPolygon2::new();
-
+        let mut mpoly = MultiPolygon::<'_, 1, u32>::new();
         // 1st polygon
-        mpoly.add_exterior([[0., 0.], [5., 0.], [5., 5.], [0., 5.], [0., 0.]]);
-        mpoly.add_interior([[1., 1.], [2., 1.], [2., 2.], [1., 2.], [1., 1.]]);
-        mpoly.add_interior([[3., 3.], [4., 3.], [4., 4.], [3., 4.], [3., 3.]]);
-
+        mpoly.add_exterior([[0], [1], [2], [3], [0]]);
+        mpoly.add_interior([[4], [5], [6], [7], [4]]);
+        mpoly.add_interior([[8], [9], [10], [11], [8]]);
         // 2nd polygon
-        mpoly.add_exterior([[4., 0.], [7., 0.], [7., 3.], [4., 3.], [4., 0.]]);
-        mpoly.add_interior([[5., 1.], [6., 1.], [6., 2.], [5., 2.], [5., 1.]]);
-
+        mpoly.add_exterior([[12], [13], [14], [15], [12]]);
+        mpoly.add_interior([[16], [17], [18], [19], [16]]);
         // 3rd polygon
-        mpoly.add_exterior([[4., 0.], [7., 0.], [7., 3.], [4., 3.], [4., 0.]]);
-        mpoly.add_interior([[5., 1.], [6., 1.], [6., 2.], [5., 2.], [5., 1.]]);
+        mpoly.add_exterior([[20], [21], [22], [23], [20]]);
 
-        let geojson_geometry = multi_polygon_to_geojson_geometry(&mpoly);
+        let geojson_geometry = multipolygon_to_geojson_geometry(&vertices, &mpoly);
 
         assert!(geojson_geometry.bbox.is_none());
         assert!(geojson_geometry.foreign_members.is_none());
@@ -263,15 +123,33 @@ mod tests {
                         assert_eq!(rings[2].len(), 5);
                         assert_eq!(
                             rings[0],
-                            vec![[0., 0.], [5., 0.], [5., 5.], [0., 5.], [0., 0.]]
+                            vec![
+                                [0., 0., 111.],
+                                [5., 0., 111.],
+                                [5., 5., 111.],
+                                [0., 5., 111.],
+                                [0., 0., 111.]
+                            ]
                         );
                         assert_eq!(
                             rings[1],
-                            vec![[1., 1.], [2., 1.], [2., 2.], [1., 2.], [1., 1.]]
+                            vec![
+                                [1., 1., 111.],
+                                [2., 1., 111.],
+                                [2., 2., 111.],
+                                [1., 2., 111.],
+                                [1., 1., 111.]
+                            ]
                         );
                         assert_eq!(
                             rings[2],
-                            vec![[3., 3.], [4., 3.], [4., 4.], [3., 4.], [3., 3.]]
+                            vec![
+                                [3., 3., 111.],
+                                [4., 3., 111.],
+                                [4., 4., 111.],
+                                [3., 4., 111.],
+                                [3., 3., 111.]
+                            ]
                         );
                     }
                     1 => {
@@ -280,31 +158,129 @@ mod tests {
                         assert_eq!(rings[1].len(), 5);
                         assert_eq!(
                             rings[0],
-                            vec![[4., 0.], [7., 0.], [7., 3.], [4., 3.], [4., 0.]]
+                            vec![
+                                [4., 0., 222.],
+                                [7., 0., 222.],
+                                [7., 3., 222.],
+                                [4., 3., 222.],
+                                [4., 0., 222.]
+                            ]
                         );
                         assert_eq!(
                             rings[1],
-                            vec![[5., 1.], [6., 1.], [6., 2.], [5., 2.], [5., 1.]]
+                            vec![
+                                [5., 1., 222.],
+                                [6., 1., 222.],
+                                [6., 2., 222.],
+                                [5., 2., 222.],
+                                [5., 1., 222.]
+                            ]
                         );
                     }
                     2 => {
-                        assert_eq!(rings.len(), 2);
+                        assert_eq!(rings.len(), 1);
                         assert_eq!(rings[0].len(), 5);
-                        assert_eq!(rings[1].len(), 5);
                         assert_eq!(
                             rings[0],
-                            vec![[4., 0.], [7., 0.], [7., 3.], [4., 3.], [4., 0.]]
-                        );
-                        assert_eq!(
-                            rings[1],
-                            vec![[5., 1.], [6., 1.], [6., 2.], [5., 2.], [5., 1.]]
+                            vec![
+                                [4., 0., 333.],
+                                [7., 0., 333.],
+                                [7., 3., 333.],
+                                [4., 3., 333.],
+                                [4., 0., 333.]
+                            ]
                         );
                     }
-                    _ => unreachable!(),
+                    _ => unreachable!("Unexpected number of polygons"),
                 }
             }
         } else {
             unreachable!("The result is not a GeoJSON MultiPolygon");
         };
+    }
+
+    #[test]
+    fn test_multilinestring() {
+        let vertices = vec![
+            // 1st linestring
+            [0., 0., 111.],
+            [1., 1., 111.],
+            // 2nd linestring
+            [2., 3., 222.],
+            [4., 5., 222.],
+            // 3rd linestring
+            [6., 7., 333.],
+            [8., 9., 333.],
+            [10., 11., 333.],
+        ];
+
+        let mut mls = MultiLineString::<1, u32>::new();
+        mls.add_linestring([[0], [1]]);
+        mls.add_linestring([[2], [3]]);
+        mls.add_linestring([[4], [5], [6]]);
+
+        let geojson_geometry = multilinestring_to_geojson_geometry(&vertices, &mls);
+
+        assert!(geojson_geometry.bbox.is_none());
+        assert!(geojson_geometry.foreign_members.is_none());
+        if let geojson::Value::MultiLineString(lines) = geojson_geometry.value {
+            assert_eq!(lines.len(), mls.len());
+            for (i, li) in lines.iter().enumerate() {
+                match i {
+                    0 => {
+                        assert_eq!(li.len(), 2);
+                        assert_eq!(li[0], [0., 0., 111.]);
+                        assert_eq!(li[1], [1., 1., 111.]);
+                    }
+                    1 => {
+                        assert_eq!(li.len(), 2);
+                        assert_eq!(li[0], [2., 3., 222.]);
+                        assert_eq!(li[1], [4., 5., 222.]);
+                    }
+                    2 => {
+                        assert_eq!(li.len(), 3);
+                        assert_eq!(li[0], [6., 7., 333.]);
+                        assert_eq!(li[1], [8., 9., 333.]);
+                        assert_eq!(li[2], [10., 11., 333.]);
+                    }
+                    _ => unreachable!("Unexpected number of lines"),
+                }
+            }
+        } else {
+            unreachable!("The result is not a GeoJSON MultiLineString");
+        }
+    }
+
+    #[test]
+    fn test_multipoint() {
+        let vertices = vec![[0., 0., 111.], [1., 2., 222.], [3., 4., 333.]];
+        let mut mpoint = MultiPoint::<1, u32>::new();
+        mpoint.push(&[0]);
+        mpoint.push(&[1]);
+        mpoint.push(&[2]);
+
+        let geojson_geometry = multipoint_to_geojson_geometry(&vertices, &mpoint);
+
+        assert!(geojson_geometry.bbox.is_none());
+        assert!(geojson_geometry.foreign_members.is_none());
+        if let geojson::Value::MultiPoint(point_list) = geojson_geometry.value {
+            assert_eq!(point_list.len(), mpoint.len());
+            for (i, point) in point_list.iter().enumerate() {
+                match i {
+                    0 => {
+                        assert_eq!(*point, vec![0., 0., 111.]);
+                    }
+                    1 => {
+                        assert_eq!(*point, vec![1., 2., 222.]);
+                    }
+                    2 => {
+                        assert_eq!(*point, vec![3., 4., 333.]);
+                    }
+                    _ => unreachable!("Unexpected number of points"),
+                }
+            }
+        } else {
+            unreachable!("The result is not a GeoJSON MultiPoint");
+        }
     }
 }

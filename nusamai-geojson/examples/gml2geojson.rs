@@ -1,12 +1,19 @@
-//! デモ用
-//! nusamai-geojson の exmaple/gml2geojson を元にした、暫定的な処理
+//! This example converts a CityGML file to GeoJSON and outputs it to a file
 
 use citygml::{CityGMLElement, CityGMLReader, ParseError, SubTreeReader};
+use clap::Parser;
 use nusamai_geojson::toplevel_cityobj_to_geojson_features;
+use nusamai_plateau::models::CityObject;
 use nusamai_plateau::TopLevelCityObject;
 use std::fs;
 use std::io::BufRead;
 use std::io::BufWriter;
+
+#[derive(Parser)]
+struct Args {
+    #[clap(required = true)]
+    filename: String,
+}
 
 fn toplevel_dispatcher<R: BufRead>(
     st: &mut SubTreeReader<R>,
@@ -15,7 +22,7 @@ fn toplevel_dispatcher<R: BufRead>(
 
     match st.parse_children(|st| match st.current_path() {
         b"core:cityObjectMember" => {
-            let mut cityobj: nusamai_plateau::models::TopLevelCityObject = Default::default();
+            let mut cityobj: CityObject = Default::default();
             cityobj.parse(st)?;
             let geometries = st.collect_geometries();
 
@@ -43,8 +50,10 @@ fn toplevel_dispatcher<R: BufRead>(
     }
 }
 
-pub fn citygml_to_geojson(input_path: &str, output_path: &str) {
-    let reader = std::io::BufReader::new(std::fs::File::open(input_path).unwrap());
+fn main() {
+    let args = Args::parse();
+
+    let reader = std::io::BufReader::new(std::fs::File::open(args.filename).unwrap());
     let mut xml_reader = quick_xml::NsReader::from_reader(reader);
 
     let cityobjs = match CityGMLReader::new().start_root(&mut xml_reader) {
@@ -67,7 +76,7 @@ pub fn citygml_to_geojson(input_path: &str, output_path: &str) {
     };
     let geojson = geojson::GeoJson::from(geojson_feature_collection);
 
-    let mut file = fs::File::create(output_path).unwrap();
+    let mut file = fs::File::create("out.geojson").unwrap();
     let mut writer = BufWriter::new(&mut file);
     serde_json::to_writer(&mut writer, &geojson).unwrap();
 }
