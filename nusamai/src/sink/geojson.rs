@@ -1,7 +1,7 @@
 //! GeoJSON sink
 
 use std::fs::File;
-use std::io::BufWriter;
+use std::io::{BufWriter, Write};
 
 use rayon::prelude::*;
 
@@ -9,7 +9,6 @@ use crate::configuration::Config;
 use crate::pipeline::{Feedback, Receiver};
 use crate::sink::{DataSink, DataSinkProvider, SinkInfo};
 
-use geojson::{Feature, FeatureCollection, GeoJson};
 use nusamai_geojson::toplevel_cityobj_to_geojson_features;
 
 pub struct GeoJsonSinkProvider {}
@@ -64,20 +63,26 @@ impl DataSink for GeoJsonSink {
             || {
                 // Write GeoJSON to a file
 
-                let all_features: Vec<Feature> = receiver.into_iter().flatten().collect();
-                self.n_features = all_features.len();
-
-                let feature_collection = FeatureCollection {
-                    bbox: None,
-                    features: all_features,
-                    foreign_members: None,
-                };
-                let geojson_obj = GeoJson::from(feature_collection);
-
                 // TODO: Handle output file path
                 let mut file = File::create("output.geojson").unwrap();
                 let mut writer = BufWriter::new(&mut file);
-                serde_json::to_writer(&mut writer, &geojson_obj).unwrap();
+
+                // Write the FeatureCollection header
+                writer.write_all(b"{\"features\":[").unwrap();
+
+                // Write each Feature
+                let mut iter = receiver.into_iter().flatten().peekable();
+                while let Some(feat) = iter.next() {
+                    serde_json::to_writer(&mut writer, &feat).unwrap();
+                    if iter.peek().is_some() {
+                        writer.write_all(b",").unwrap();
+                    };
+                }
+
+                // Write the FeautureCollection footer and EOL
+                writer
+                    .write_all(b"],\"type\":\"FeatureCollection\"}\n")
+                    .unwrap();
 
                 println!("Wrote {} features", self.n_features);
             },
