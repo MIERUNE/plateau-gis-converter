@@ -43,6 +43,7 @@ pub struct FeatureId {
 /// Feature ID Texture in EXT_mesh_features
 #[derive(Serialize, Deserialize, Debug, Default)]
 #[serde(rename_all = "camelCase")]
+#[serde(deny_unknown_fields)]
 pub struct FeatureIdTexture {
     /// Texture channels containing feature IDs.
     #[serde(default = "default_channels")]
@@ -69,6 +70,7 @@ fn default_channels() -> Vec<u32> {
 
 /// EXT_mesh_features glTF Mesh Primitive extension
 #[derive(Serialize, Deserialize, Debug, Default)]
+#[serde(deny_unknown_fields)]
 pub struct Primitive {
     #[serde(skip_serializing_if = "Option::is_none", rename = "EXT_mesh_features")]
     pub ext_mesh_features: Option<ExtMeshFeatures>,
@@ -76,6 +78,7 @@ pub struct Primitive {
 
 #[derive(Serialize, Deserialize, Debug, Default)]
 #[serde(rename_all = "camelCase")]
+#[serde(deny_unknown_fields)]
 pub struct ExtMeshFeatures {
     /// An array of feature ID sets.
     pub feature_ids: Vec<FeatureId>,

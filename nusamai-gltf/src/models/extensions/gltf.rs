@@ -9,6 +9,7 @@ pub struct Gltf {
 }
 
 #[derive(Serialize, Deserialize, Debug, Default)]
+#[serde(deny_unknown_fields)]
 pub struct ExtStructuralMetadata {
     /// A dictionary object, where each key is the ID of the schema and each value is an object defining the schema.
     pub schemas: Schema,
@@ -18,6 +19,7 @@ pub struct ExtStructuralMetadata {
 /// Schema in EXT_structural_metadata
 #[derive(Serialize, Deserialize, Debug, Default)]
 #[serde(rename_all = "camelCase")]
+#[serde(deny_unknown_fields)]
 pub struct Schema {
     /// Unique identifier for the schema.
     pub id: String,
@@ -53,6 +55,7 @@ pub struct Schema {
 
 /// Class in EXT_structural_metadata
 #[derive(Serialize, Deserialize, Debug, Default)]
+#[serde(deny_unknown_fields)]
 pub struct Class {
     /// The name of the class, e.g. for display purposes.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -112,6 +115,7 @@ pub enum ComponentType {
 
 /// Class Property in EXT_structural_metadata
 #[derive(Serialize, Deserialize, Debug, Default)]
+#[serde(deny_unknown_fields)]
 pub struct ClassProperty {
     /// The name of the property, e.g. for display purposes.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -203,6 +207,7 @@ pub enum ValueType {
 
 /// Enum in EXT_structural_metadata
 #[derive(Serialize, Deserialize, Debug, Default)]
+#[serde(deny_unknown_fields)]
 pub struct EnumMetadata {
     /// The name of the enum, e.g. for display purposes.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -234,6 +239,7 @@ fn default_value_type() -> ValueType {
 
 /// Enum Value in EXT_structural_metadata
 #[derive(Serialize, Deserialize, Debug, Default)]
+#[serde(deny_unknown_fields)]
 pub struct EnumValue {
     /// The name of the enum value.
     pub name: String,
@@ -256,6 +262,7 @@ pub struct EnumValue {
 
 /// Property Table in EXT_structural_metadata
 #[derive(Serialize, Deserialize, Debug, Default)]
+#[serde(deny_unknown_fields)]
 pub struct PropertyTable {
     /// The name of the property table, e.g. for display purposes.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -293,6 +300,7 @@ pub enum OffsetType {
 
 /// Property Table Property in EXT_structural_metadata
 #[derive(Serialize, Deserialize, Debug, Default)]
+#[serde(deny_unknown_fields)]
 pub struct PropertyTableProperty {
     /// The index of the buffer view containing property values.
     pub values: Value, // Adjust the type if necessary
