@@ -68,7 +68,9 @@ impl DataSink for GeoJsonSink {
                 let mut writer = BufWriter::new(&mut file);
 
                 // Write the FeatureCollection header
-                writer.write_all(b"{\"features\":[").unwrap();
+                writer
+                    .write_all(b"{\"type\":\"FeatureCollection\",\"features\":[")
+                    .unwrap();
 
                 // Write each Feature
                 let mut iter = receiver.into_iter().flatten().peekable();
@@ -80,9 +82,7 @@ impl DataSink for GeoJsonSink {
                 }
 
                 // Write the FeautureCollection footer and EOL
-                writer
-                    .write_all(b"],\"type\":\"FeatureCollection\"}\n")
-                    .unwrap();
+                writer.write_all(b"]}\n").unwrap();
 
                 println!("Wrote {} features", self.n_features);
             },
