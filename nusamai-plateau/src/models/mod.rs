@@ -33,7 +33,7 @@ use citygml::CityGMLElement;
     serde(tag = "type")
 )]
 #[derive(Default, Debug, CityGMLElement)]
-pub enum CityObject {
+pub enum TopLevelCityObject {
     #[default]
     Unknown,
     //

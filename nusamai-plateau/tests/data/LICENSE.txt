@@ -1,6 +1,6 @@
 テスト用データ出典
 
-- `53393680_bldg_6697_lod4.2_op.gml`: 「3D都市モデル（Project PLATEAU）東京都23区　ポートシティ竹芝　建築物モデル（LOD4）（2022年度）」 (https://www.geospatial.jp/ckan/dataset/plateau-tokyo23ku-2023-lod4)
+- `53393680_bldg_6697_lod4.2_op.gml`: [3D都市モデル（Project PLATEAU）東京都23区　ポートシティ竹芝　建築物モデル（LOD4）（2022年度）](https://www.geospatial.jp/ckan/dataset/plateau-tokyo23ku-2023-lod4)
 - `52363550_frn_6697_op.gml`: [3D都市モデル（Project PLATEAU）川崎市（2022年度）](https://www.geospatial.jp/ckan/dataset/plateau-14130-kawasaki-shi-2022)
 
 

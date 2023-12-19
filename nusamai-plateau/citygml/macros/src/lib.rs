@@ -92,6 +92,7 @@ fn generate_citygml_struct_model(
                     add_arm(2, b"lod2MultiSurface", "MultiSurface");
                     add_arm(3, b"lod3MultiSurface", "MultiSurface");
                     add_arm(4, b"lod4MultiSurface", "MultiSurface");
+                    add_arm(0, b"lod0Geometry", "Geometry"); // for uro:lod0Geometry
                     add_arm(1, b"lod1Geometry", "Geometry");
                     add_arm(2, b"lod2Geometry", "Geometry");
                     add_arm(3, b"lod3Geometry", "Geometry");
