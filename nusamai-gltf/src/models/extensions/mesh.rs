@@ -50,7 +50,7 @@ pub struct FeatureIdTexture {
 
     /// Refer to textureInfo.schema.json
     #[serde(flatten)]
-    pub texture_info: TextureInfo,
+    pub texture_info: Option<TextureInfo>,
 
     /// Additional properties (details not provided in the schema)
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -78,7 +78,6 @@ pub struct Primitive {
 #[serde(rename_all = "camelCase")]
 pub struct ExtMeshFeatures {
     /// An array of feature ID sets.
-    #[serde(rename = "featureIds")]
     pub feature_ids: Vec<FeatureId>,
 
     /// Additional properties (details not provided in the schema)
