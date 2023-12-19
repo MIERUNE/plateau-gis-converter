@@ -3,11 +3,18 @@
 use crate::ellipsoid::Ellipsoid;
 
 /// Convert from geographic to geocentric coordinate system.
-pub fn geographic_to_geocentric<E: Ellipsoid>(lng: f64, lat: f64, height: f64) -> (f64, f64, f64) {
+pub fn geographic_to_geocentric(
+    ellips: &Ellipsoid,
+    lng: f64,
+    lat: f64,
+    height: f64,
+) -> (f64, f64, f64) {
     let (lng_rad, lat_rad) = (lng.to_radians(), lat.to_radians());
-    let tan_psi = (1. - E::E_SQ) * lat_rad.tan();
-    let z = E::A * (1. / (1. / (tan_psi * tan_psi) + 1. / ((1. - E::F) * (1. - E::F)))).sqrt();
-    let r = E::A * (1. / (1. + (tan_psi * tan_psi) / ((1. - E::F) * (1. - E::F)))).sqrt();
+    let tan_psi = (1. - ellips.e_sq()) * lat_rad.tan();
+    let z = ellips.a()
+        * (1. / (1. / (tan_psi * tan_psi) + 1. / ((1. - ellips.f()) * (1. - ellips.f())))).sqrt();
+    let r = ellips.a()
+        * (1. / (1. + (tan_psi * tan_psi) / ((1. - ellips.f()) * (1. - ellips.f())))).sqrt();
     let x = r * lng_rad.cos();
     let y = r * lng_rad.sin();
     let dhz = lat_rad.sin();
@@ -17,7 +24,7 @@ pub fn geographic_to_geocentric<E: Ellipsoid>(lng: f64, lat: f64, height: f64) -
 }
 
 /// Convert from geocentric to geographic coordinate system.
-pub fn geocentric_to_geographic<E: Ellipsoid>(x: f64, y: f64, z: f64) -> (f64, f64, f64) {
+pub fn geocentric_to_geographic(x: f64, y: f64, z: f64, _ellips: &Ellipsoid) -> (f64, f64, f64) {
     println!("not implemented: {:?}", (x, y, z));
     todo!();
 }
@@ -25,12 +32,13 @@ pub fn geocentric_to_geographic<E: Ellipsoid>(x: f64, y: f64, z: f64) -> (f64, f
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::ellipsoid::WGS84;
 
     #[test]
     fn fixtures() {
+        let wgs84 = crate::ellipsoid::wgs84();
+
         {
-            let (x, y, z) = geographic_to_geocentric::<WGS84>(140., 37., 50.);
+            let (x, y, z) = geographic_to_geocentric(&wgs84, 140., 37., 50.);
             assert!((x - -3906851.9770472576).abs() < 1e-9);
             assert!((y - 3278238.0530045824).abs() < 1e-9);
             assert!((z - 3817423.251099322).abs() < 1e-9);
@@ -39,17 +47,17 @@ mod tests {
         // north pole
         {
             let height = 150.;
-            let (x, y, z) = geographic_to_geocentric::<WGS84>(123., 90., 150.);
+            let (x, y, z) = geographic_to_geocentric(&wgs84, 123., 90., 150.);
             assert!((x - 0.).abs() < 1e-9);
             assert!((y - 0.).abs() < 1e-9);
-            assert!((z - (WGS84::B + height)).abs() < 1e-9);
+            assert!((z - (wgs84.b() + height)).abs() < 1e-9);
         }
 
         // null island
         {
             let height = 100.;
-            let (x, y, z) = geographic_to_geocentric::<WGS84>(0., 0., height);
-            assert!((x - (WGS84::A + height)).abs() < 1e-9);
+            let (x, y, z) = geographic_to_geocentric(&wgs84, 0., 0., height);
+            assert!((x - (wgs84.a() + height)).abs() < 1e-9);
             assert!((y - 0.).abs() < 1e-9);
             assert!((z - 0.).abs() < 1e-9);
         }

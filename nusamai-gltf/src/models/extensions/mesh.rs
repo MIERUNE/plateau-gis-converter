@@ -3,21 +3,6 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::collections::HashMap;
 
-/// Feature ID Attribute in EXT_mesh_features
-#[derive(Serialize, Deserialize, Debug, Default)]
-pub struct FeatureIdAttribute {
-    /// An integer value used to construct a string in the format `_FEATURE_ID_<set index>`
-    #[serde(rename = "_feature_id")]
-    pub set_index: u32,
-}
-
-impl FeatureIdAttribute {
-    /// Converts the feature ID to the corresponding string format.
-    pub fn to_string_format(&self) -> String {
-        format!("_FEATURE_ID_{}", self.set_index)
-    }
-}
-
 /// Feature ID in EXT_mesh_features
 #[derive(Serialize, Deserialize, Debug, Default)]
 #[serde(rename_all = "camelCase")]
@@ -36,7 +21,7 @@ pub struct FeatureId {
 
     /// An attribute containing feature IDs.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub attribute: Option<FeatureIdAttribute>,
+    pub attribute: Option<u32>,
 
     /// A texture containing feature IDs.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -65,7 +50,7 @@ pub struct FeatureIdTexture {
 
     /// Refer to textureInfo.schema.json
     #[serde(flatten)]
-    pub texture_info: TextureInfo,
+    pub texture_info: Option<TextureInfo>,
 
     /// Additional properties (details not provided in the schema)
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -85,8 +70,8 @@ fn default_channels() -> Vec<u32> {
 /// EXT_mesh_features glTF Mesh Primitive extension
 #[derive(Serialize, Deserialize, Debug, Default)]
 pub struct Primitive {
-    #[serde(rename = "EXT_mesh_features")]
-    pub ext_mesh_features: ExtMeshFeatures,
+    #[serde(skip_serializing_if = "Option::is_none", rename = "EXT_mesh_features")]
+    pub ext_mesh_features: Option<ExtMeshFeatures>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Default)]
@@ -94,10 +79,6 @@ pub struct Primitive {
 pub struct ExtMeshFeatures {
     /// An array of feature ID sets.
     pub feature_ids: Vec<FeatureId>,
-
-    /// Refer to glTFProperty.schema.json
-    #[serde(flatten)]
-    pub gltf_property: GlTFProperty,
 
     /// Additional properties (details not provided in the schema)
     #[serde(skip_serializing_if = "Option::is_none")]

@@ -1,28 +1,70 @@
 /// Ellipsoid parameters
-pub trait Ellipsoid {
+pub struct Ellipsoid {
     /// Semi-major axis
-    const A: f64;
+    a: f64,
     /// Inverse flattening
-    const INV_F: f64;
+    inv_f: f64,
 
     /// Flattening
-    const F: f64 = 1. / Self::INV_F;
+    f: f64,
     /// Semi-minor axis
-    const B: f64 = Self::A * (1. - Self::F);
+    b: f64,
     /// Eccentricity squared
-    const E_SQ: f64 = Self::F * (2. - Self::F);
+    e_sq: f64,
 }
 
-/// WGS84 Eliipsoid
-pub struct WGS84 {}
-impl Ellipsoid for WGS84 {
-    const A: f64 = 6378137.;
-    const INV_F: f64 = 298.257223563;
+impl Ellipsoid {
+    #[inline]
+    pub fn new(a: f64, inv_f: f64) -> Self {
+        let f = 1. / inv_f;
+        Self {
+            a,
+            inv_f,
+            f,
+            b: a * (1. - f),
+            e_sq: f * (2. - f),
+        }
+    }
+
+    /// Semi-major axis
+    #[inline]
+    pub fn a(&self) -> f64 {
+        self.a
+    }
+
+    /// Inverse flattening
+    #[inline]
+    pub fn inv_f(&self) -> f64 {
+        self.inv_f
+    }
+
+    /// Flattening
+    #[inline]
+    pub fn b(&self) -> f64 {
+        self.b
+    }
+
+    /// Semi-minor axis
+    #[inline]
+    pub fn f(&self) -> f64 {
+        self.f
+    }
+
+    /// Eccentricity squared
+    #[inline]
+    pub fn e_sq(&self) -> f64 {
+        self.e_sq
+    }
 }
 
-/// GRS80 Eliipsoid
-pub struct GRS80 {}
-impl Ellipsoid for GRS80 {
-    const A: f64 = 6378137.;
-    const INV_F: f64 = 298.257222101;
+/// WGS84 Ellipsoid
+#[inline]
+pub fn wgs84() -> Ellipsoid {
+    Ellipsoid::new(6378137., 298.257223563)
+}
+
+/// GRS80 Ellipsoid
+#[inline]
+pub fn grs80() -> Ellipsoid {
+    Ellipsoid::new(6378137., 298.257222101)
 }

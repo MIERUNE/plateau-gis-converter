@@ -39,7 +39,9 @@ impl Source for DummySource {
             feedback.send(FeedbackMessage {
                 message: format!("generating: {:?}", obj),
             });
-            sink.send(obj).unwrap();
+            if sink.send(obj).is_err() {
+                break;
+            }
         }
     }
 }
