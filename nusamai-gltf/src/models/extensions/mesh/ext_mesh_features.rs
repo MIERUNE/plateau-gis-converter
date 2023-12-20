@@ -1,6 +1,27 @@
+//! EXT_mesh_features
+//!
+//! https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_mesh_features
+
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::collections::HashMap;
+
+/// EXT_mesh_features glTF Mesh Primitive extension
+#[derive(Serialize, Deserialize, Debug, Default)]
+#[serde(rename_all = "camelCase")]
+#[serde(deny_unknown_fields)]
+pub struct ExtMeshFeatures {
+    /// An array of feature ID sets.
+    pub feature_ids: Vec<FeatureId>,
+
+    /// JSON object with extension-specific objects.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub extensions: Option<HashMap<String, Value>>,
+
+    /// Application-specific data.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub extras: Option<Value>,
+}
 
 /// Feature ID in EXT_mesh_features
 #[derive(Serialize, Deserialize, Debug, Default)]
@@ -36,7 +57,7 @@ pub struct FeatureId {
 
     /// Application-specific data.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub extras: Option<HashMap<String, Value>>,
+    pub extras: Option<Value>,
 }
 
 /// Feature ID Texture in EXT_mesh_features
@@ -61,72 +82,9 @@ pub struct FeatureIdTexture {
 
     /// Application-specific data.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub extras: Option<HashMap<String, Value>>,
+    pub extras: Option<Value>,
 }
 
 fn default_channels() -> Vec<u32> {
     vec![0]
-}
-
-/// EXT_mesh_features glTF Mesh Primitive extension
-#[derive(Serialize, Deserialize, Debug, Default)]
-#[serde(deny_unknown_fields)]
-pub struct Primitive {
-    #[serde(skip_serializing_if = "Option::is_none", rename = "EXT_mesh_features")]
-    pub ext_mesh_features: Option<ExtMeshFeatures>,
-
-    #[serde(
-        skip_serializing_if = "Option::is_none",
-        rename = "EXT_structural_metadata"
-    )]
-    pub ext_structural_metadata: Option<ExtStructuralMetadata>,
-
-    #[serde(
-        skip_serializing_if = "Option::is_none",
-        rename = "KHR_materials_variants"
-    )]
-    pub khr_materials_variants: Option<KhrMaterialsVariants>,
-}
-
-// TODO: Implement KHR_materials_variants
-#[derive(Serialize, Deserialize, Debug, Default)]
-pub struct KhrMaterialsVariants {
-    #[serde(flatten)]
-    pub others: HashMap<String, Value>,
-}
-
-#[derive(Serialize, Deserialize, Debug, Default)]
-#[serde(rename_all = "camelCase")]
-#[serde(deny_unknown_fields)]
-pub struct ExtMeshFeatures {
-    /// An array of feature ID sets.
-    pub feature_ids: Vec<FeatureId>,
-
-    /// JSON object with extension-specific objects.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub extensions: Option<HashMap<String, Value>>,
-
-    /// Application-specific data.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub extras: Option<HashMap<String, Value>>,
-}
-
-/// EXT_structural_metadata glTF Mesh Primitive extension
-#[derive(Serialize, Deserialize, Debug, Default)]
-pub struct ExtStructuralMetadata {
-    /// An array of indexes of property textures in the root `EXT_structural_metadata` object.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub property_textures: Option<Vec<u32>>,
-
-    /// An array of indexes of property attributes in the root `EXT_structural_metadata` object.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub property_attributes: Option<Vec<u32>>,
-
-    /// JSON object with extension-specific objects.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub extensions: Option<HashMap<String, Value>>,
-
-    /// Application-specific data.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub extras: Option<HashMap<String, Value>>,
 }

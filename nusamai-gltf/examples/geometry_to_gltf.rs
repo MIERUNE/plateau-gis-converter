@@ -46,11 +46,7 @@ struct Triangles {
 
 impl Triangles {
     pub fn new(indices: Vec<u32>, vertices: IndexSet<[u32; 3]>) -> Self {
-        Self {
-            indices,
-            vertices,
-            ..Default::default()
-        }
+        Self { indices, vertices }
     }
 }
 
@@ -364,7 +360,7 @@ fn make_gltf_json(triangles: &Triangles) -> String {
     buffer.byte_length = indices_byte_length + vertices_byte_length;
     buffer.uri = Some("data.bin".to_string());
 
-    gltf.buffers = Some(vec![buffer]);
+    gltf.buffers = vec![buffer];
 
     // glTF のバッファビューを作成
     let mut buffer_view1 = BufferView::new();
@@ -379,7 +375,7 @@ fn make_gltf_json(triangles: &Triangles) -> String {
     buffer_view2.byte_offset = indices_byte_length;
     buffer_view2.target = Some(BufferViewTarget::ArrayBuffer);
 
-    gltf.buffer_views = Some(vec![buffer_view1, buffer_view2]);
+    gltf.buffer_views = vec![buffer_view1, buffer_view2];
 
     // glTF のアクセサを作成
     let mut accessor1 = Accessor::new();
@@ -389,8 +385,8 @@ fn make_gltf_json(triangles: &Triangles) -> String {
     accessor1.count = indices.len() as u32;
     accessor1.type_ = AccessorType::Scalar;
     let max_indices = indices.iter().max().unwrap();
-    accessor1.max = Some(vec![*max_indices as f32]);
-    accessor1.min = Some(vec![0.0]);
+    accessor1.max = vec![*max_indices as f32].into();
+    accessor1.min = vec![0.0].into();
 
     let mut accessor2 = Accessor::new();
     accessor2.buffer_view = Some(1);
@@ -413,7 +409,7 @@ fn make_gltf_json(triangles: &Triangles) -> String {
     accessor2.max = Some(max_vertex.to_vec());
     accessor2.min = Some(min_vertex.to_vec());
 
-    gltf.accessors = Some(vec![accessor1, accessor2]);
+    gltf.accessors = vec![accessor1, accessor2];
 
     // glTF のメッシュを作成
     let mut mesh = Mesh::new();
@@ -428,19 +424,19 @@ fn make_gltf_json(triangles: &Triangles) -> String {
 
     mesh.primitives = vec![primitive1];
 
-    gltf.meshes = Some(vec![mesh]);
+    gltf.meshes = vec![mesh];
 
     // glTF のシーンを作成
     let mut scene = Scene::new();
     scene.nodes = Some(vec![0]);
 
-    gltf.scenes = Some(vec![scene]);
+    gltf.scenes = vec![scene];
 
     // glTF のノードを作成
     let mut node = Node::new();
     node.mesh = Some(0);
 
-    gltf.nodes = Some(vec![node]);
+    gltf.nodes = vec![node];
 
     // glTF のシーンを設定
     gltf.scene = Some(0);

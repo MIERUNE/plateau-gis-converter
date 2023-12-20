@@ -75,7 +75,7 @@ pub struct Sampler {
 
     /// Application-specific data.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub extras: Option<HashMap<String, Value>>,
+    pub extras: Option<Value>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Default)]

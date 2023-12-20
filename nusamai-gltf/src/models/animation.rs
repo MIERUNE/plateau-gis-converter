@@ -75,6 +75,7 @@ pub struct Animation {
 
     /// An array of animation channels. An animation channel combines an animation sampler with a target property being animated.
     pub channels: Vec<AnimationChannel>,
+
     /// An array of animation samplers. An animation sampler combines timestamps with a sequence of output values and defines an interpolation algorithm.
     pub samplers: Vec<AnimationSampler>,
 
@@ -84,7 +85,7 @@ pub struct Animation {
 
     /// Application-specific data.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub extras: Option<HashMap<String, Value>>,
+    pub extras: Option<Value>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Default)]

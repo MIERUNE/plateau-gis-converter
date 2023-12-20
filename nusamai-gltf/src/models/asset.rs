@@ -18,6 +18,7 @@ pub struct Asset {
     pub generator: Option<String>,
 
     /// The glTF version in the form of `<major>.<minor>` that this asset targets.
+    #[serde(default = "default_version")]
     pub version: String,
 
     /// The minimum glTF version in the form of `<major>.<minor>` that this asset targets. This property **MUST NOT** be greater than the asset version.
@@ -30,7 +31,11 @@ pub struct Asset {
 
     /// Application-specific data.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub extras: Option<HashMap<String, Value>>,
+    pub extras: Option<Value>,
+}
+
+fn default_version() -> String {
+    "2.0".to_string()
 }
 
 #[derive(Serialize, Deserialize, Debug, Default)]

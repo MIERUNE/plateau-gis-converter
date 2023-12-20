@@ -29,7 +29,7 @@ impl Default for PrimitiveMode {
 #[serde(deny_unknown_fields)]
 pub struct MeshPrimitive {
     /// A plain JSON object, where each key corresponds to a mesh attribute semantic and each value is the index of the accessor containing attribute's data.
-    pub attributes: HashMap<String, u32>,
+    pub attributes: HashMap<String, u32>, // required
 
     /// The index of the accessor that contains the vertex indices.  When this is undefined, the primitive defines non-indexed geometry.  When defined, the accessor **MUST** have `SCALAR` type and an unsigned integer component type.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -49,11 +49,11 @@ pub struct MeshPrimitive {
 
     /// JSON object with extension-specific objects.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub extensions: Option<extensions::mesh::Primitive>,
+    pub extensions: Option<extensions::mesh::MeshPrimitive>,
 
     /// Application-specific data.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub extras: Option<HashMap<String, Value>>,
+    pub extras: Option<Value>,
 }
 
 impl MeshPrimitive {
@@ -86,7 +86,7 @@ pub struct Mesh {
 
     /// Application-specific data.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub extras: Option<HashMap<String, Value>>,
+    pub extras: Option<Value>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Default)]
