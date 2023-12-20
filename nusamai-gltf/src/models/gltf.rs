@@ -1,3 +1,5 @@
+use crate::extensions;
+
 use super::{
     Accessor, Animation, Asset, Buffer, BufferView, Camera, Image, Material, Mesh, Node, Sampler,
     Scene, Skin, Texture,
@@ -91,6 +93,12 @@ pub struct Gltf {
 #[derive(Serialize, Deserialize, Debug, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct GLTFExtensions {
+    #[serde(
+        skip_serializing_if = "Option::is_none",
+        rename = "EXT_structural_metadata"
+    )]
+    pub ext_structural_metadata: Option<extensions::gltf::ExtStructuralMetadata>,
+
     #[serde(flatten)]
     others: HashMap<String, Value>,
 }
