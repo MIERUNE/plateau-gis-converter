@@ -1,3 +1,4 @@
+use super::iur::uro;
 use citygml::{CityGMLElement, GeometryRef};
 
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
@@ -14,6 +15,27 @@ pub struct Road {
 
     #[citygml(path = b"tran:auxiliaryTrafficArea/tran:AuxiliaryTrafficArea")]
     auxiliary_traffic_area: Vec<AuxiliaryTrafficArea>,
+
+    #[citygml(path = b"uro:tranDmAttribute")]
+    pub tran_dm_attribute: Vec<uro::DmAttributeProperty>,
+
+    #[citygml(path = b"uro:tranFacilityTypeAttribute")]
+    pub tran_facility_type_attribute: Vec<uro::FacilityTypeAttribute>,
+
+    #[citygml(path = b"uro:tranFacilityIdAttribute")]
+    pub tran_facility_id_attribute: Option<uro::FacilityIdAttribute>,
+
+    #[citygml(path = b"uro:tranFacilityAttribute")]
+    pub tran_facility_attribute: Vec<uro::FacilityAttributeProperty>,
+
+    #[citygml(path = b"uro:tranDataQualityAttribute/uro:TranDataQualityAttribute")]
+    pub tran_data_quality_attribute: Option<uro::TransportationDataQualityAttribute>,
+
+    #[citygml(path = b"uro:roadStructureAttribute")]
+    pub road_structure_attribute: Vec<uro::RoadStructureAttribute>,
+
+    #[citygml(path = b"uro:trafficVolumeAttribute")]
+    pub traffic_volume_attribute: Vec<uro::TrafficVolumeAttribute>,
 }
 
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
