@@ -49,7 +49,7 @@ pub struct MeshPrimitive {
 
     /// JSON object with extension-specific objects.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub extensions: Option<extensions::Primitive>,
+    pub extensions: Option<extensions::mesh::Primitive>,
 
     /// Application-specific data.
     #[serde(skip_serializing_if = "Option::is_none")]

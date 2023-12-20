@@ -1,5 +1,2 @@
-mod gltf;
-mod mesh;
-
-pub use gltf::*;
-pub use mesh::*;
+pub mod gltf;
+pub mod mesh;
