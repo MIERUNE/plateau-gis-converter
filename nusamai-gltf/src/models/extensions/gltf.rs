@@ -65,11 +65,11 @@ pub struct Schema {
 
     /// JSON object with extension-specific objects.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub extensions: Option<Value>,
+    pub extensions: Option<HashMap<String, Value>>,
 
     /// Application-specific data.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub extras: Option<Value>,
+    pub extras: Option<HashMap<String, Value>>,
 }
 
 /// Class in EXT_structural_metadata
@@ -90,11 +90,11 @@ pub struct Class {
 
     /// JSON object with extension-specific objects.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub extensions: Option<Value>,
+    pub extensions: Option<HashMap<String, Value>>,
 
     /// Application-specific data.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub extras: Option<Value>,
+    pub extras: Option<HashMap<String, Value>>,
 }
 
 /// ElementType enumeration
@@ -149,65 +149,65 @@ pub struct ClassProperty {
     #[serde(rename = "type")]
     pub type_: ElementType,
 
-    /// The datatype of the element's components.
+    /// The datatype of the element's components. Only applicable to `SCALAR`, `VECN`, and `MATN` types."
     #[serde(skip_serializing_if = "Option::is_none")]
     pub component_type: Option<ComponentType>,
 
-    /// Enum ID as declared in the `enums` dictionary.
+    /// Enum ID as declared in the `enums` dictionary. Required when `type` is `ENUM`.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub enum_type: Option<String>,
 
-    /// Whether the property is an array.
+    /// Whether the property is an array. When `count` is defined the property is a fixed-length array. Otherwise the property is a variable-length array.
     #[serde(default)]
     pub array: bool,
 
-    /// The number of array elements.
+    /// The number of array elements. May only be defined when `array` is true.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub count: Option<u32>,
 
-    /// Specifies whether integer values are normalized.
+    /// Specifies whether integer values are normalized. Only applicable to `SCALAR`, `VECN`, and `MATN` types with integer component types. For unsigned integer component types, values are normalized between `[0.0, 1.0]`. For signed integer component types, values are normalized between `[-1.0, 1.0]`. For all other component types, this property must be false.
     #[serde(default)]
     pub normalized: bool,
 
-    /// An offset to apply to property values.
+    /// An offset to apply to property values. Only applicable to `SCALAR`, `VECN`, and `MATN` types when the component type is `FLOAT32` or `FLOAT64`, or when the property is `normalized`.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub offset: Option<Value>,
+    pub offset: Option<Value>, // definitions.schema.json#/definitions/numericValue
 
-    /// A scale to apply to property values.
+    /// A scale to apply to property values. Only applicable to `SCALAR`, `VECN`, and `MATN` types when the component type is `FLOAT32` or `FLOAT64`, or when the property is `normalized`.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub scale: Option<Value>,
+    pub scale: Option<Value>, // definitions.schema.json#/definitions/numericValue
 
-    /// Maximum allowed value for the property.
+    /// Maximum allowed value for the property. Only applicable to `SCALAR`, `VECN`, and `MATN` types. This is the maximum of all property values, after the transforms based on the `normalized`, `offset`, and `scale` properties have been applied."
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub max: Option<Value>,
+    pub max: Option<Value>, // definitions.schema.json#/definitions/numericValue
 
-    /// Minimum allowed value for the property.
+    /// Minimum allowed value for the property. Only applicable to `SCALAR`, `VECN`, and `MATN` types. This is the minimum of all property values, after the transforms based on the `normalized`, `offset`, and `scale` properties have been applied."
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub min: Option<Value>,
+    pub min: Option<Value>, // definitions.schema.json#/definitions/numericValue
 
-    /// If required, the property must be present in every entity.
+    /// If required, the property must be present in every entity conforming to the class. If not required, individual entities may include `noData` values, or the entire property may be omitted. As a result, `noData` has no effect on a required property. Client implementations may use required properties to make performance optimizations.
     #[serde(default)]
     pub required: bool,
 
-    /// A `noData` value represents missing data.
+    /// A `noData` value represents missing data — also known as a sentinel value — wherever it appears. `BOOLEAN` properties may not specify `noData` values. This is given as the plain property value, without the transforms from the `normalized`, `offset`, and `scale` properties. Must not be defined if `required` is true.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub no_data: Option<Value>,
+    pub no_data: Option<Value>, // definitions.schema.json#/definitions/noDataValue
 
-    /// A default value to use when encountering a `noData` value or an omitted property.
+    /// A default value to use when encountering a `noData` value or an omitted property. The value is given in its final form, taking the effect of `normalized`, `offset`, and `scale` properties into account. Must not be defined if `required` is true.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub default: Option<Value>,
+    pub default: Option<Value>, // definitions.schema.json#/definitions/anyValue
 
-    /// An identifier that describes how this property should be interpreted.
+    /// An identifier that describes how this property should be interpreted. The semantic cannot be used by other properties in the class.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub semantic: Option<String>,
 
     /// JSON object with extension-specific objects.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub extensions: Option<Value>,
+    pub extensions: Option<HashMap<String, Value>>,
 
     /// Application-specific data.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub extras: Option<Value>,
+    pub extras: Option<HashMap<String, Value>>,
 }
 
 /// ValueType enumeration
@@ -248,11 +248,11 @@ pub struct EnumMetadata {
 
     /// JSON object with extension-specific objects.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub extensions: Option<Value>,
+    pub extensions: Option<HashMap<String, Value>>,
 
     /// Application-specific data.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub extras: Option<Value>,
+    pub extras: Option<HashMap<String, Value>>,
 }
 
 fn default_value_type() -> ValueType {
@@ -272,15 +272,15 @@ pub struct EnumValue {
     pub description: Option<String>,
 
     /// The integer enum value.
-    pub value: i32, // Adjust the integer type if necessary
+    pub value: i32,
 
     /// JSON object with extension-specific objects.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub extensions: Option<Value>,
+    pub extensions: Option<HashMap<String, Value>>,
 
     /// Application-specific data.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub extras: Option<Value>,
+    pub extras: Option<HashMap<String, Value>>,
 }
 
 /// Property Table in EXT_structural_metadata
@@ -303,11 +303,11 @@ pub struct PropertyTable {
 
     /// JSON object with extension-specific objects.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub extensions: Option<Value>,
+    pub extensions: Option<HashMap<String, Value>>,
 
     /// Application-specific data.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub extras: Option<Value>,
+    pub extras: Option<HashMap<String, Value>>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Default)]
@@ -408,15 +408,15 @@ pub enum OffsetType {
 #[serde(deny_unknown_fields)]
 pub struct PropertyTableProperty {
     /// The index of the buffer view containing property values.
-    pub values: Value, // Adjust the type if necessary
+    pub values: u32,
 
     /// The index of the buffer view containing offsets for variable-length arrays.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub array_offsets: Option<Value>, // Adjust the type if necessary
+    pub array_offsets: Option<u32>,
 
     /// The index of the buffer view containing offsets for strings.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub string_offsets: Option<Value>, // Adjust the type if necessary
+    pub string_offsets: Option<u32>,
 
     /// The type of values in `arrayOffsets`.
     #[serde(default = "default_offset_type")]
@@ -428,27 +428,27 @@ pub struct PropertyTableProperty {
 
     /// An offset to apply to property values.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub offset: Option<Value>, // Adjust the type if necessary
+    pub offset: Option<Value>, // definitions.schema.json#/definitions/numericValue
 
     /// A scale to apply to property values.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub scale: Option<Value>, // Adjust the type if necessary
+    pub scale: Option<Value>, // definitions.schema.json#/definitions/numericValue
 
     /// Maximum value present in the property values.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub max: Option<Value>, // Adjust the type if necessary
+    pub max: Option<Value>, // definitions.schema.json#/definitions/numericValue
 
     /// Minimum value present in the property values.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub min: Option<Value>, // Adjust the type if necessary
+    pub min: Option<Value>, // definitions.schema.json#/definitions/numericValue
 
     /// JSON object with extension-specific objects.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub extensions: Option<Value>,
+    pub extensions: Option<HashMap<String, Value>>,
 
     /// Application-specific data.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub extras: Option<Value>,
+    pub extras: Option<HashMap<String, Value>>,
 }
 
 fn default_offset_type() -> OffsetType {

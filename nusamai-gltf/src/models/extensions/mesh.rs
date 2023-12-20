@@ -14,11 +14,11 @@ pub struct FeatureId {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub null_feature_id: Option<u32>,
 
-    /// A label assigned to this feature ID set.
+    /// A label assigned to this feature ID set. Labels must be alphanumeric identifiers matching the regular expression `^[a-zA-Z_][a-zA-Z0-9_]*$`.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub label: Option<String>,
 
-    /// An attribute containing feature IDs.
+    /// An attribute containing feature IDs. When `attribute` and `texture` are omitted the feature IDs are assigned to vertices by their index.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub attribute: Option<u32>,
 
@@ -26,7 +26,7 @@ pub struct FeatureId {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub texture: Option<FeatureIdTexture>,
 
-    /// The index of the property table containing per-feature property values.
+    /// The index of the property table containing per-feature property values. Only applicable when using the `EXT_structural_metadata` extension.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub property_table: Option<u32>,
 
@@ -36,7 +36,7 @@ pub struct FeatureId {
 
     /// Application-specific data.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub extras: Option<Value>,
+    pub extras: Option<HashMap<String, Value>>,
 }
 
 /// Feature ID Texture in EXT_mesh_features
@@ -49,12 +49,11 @@ pub struct FeatureIdTexture {
     pub channels: Vec<u32>,
 
     /// The index of the texture.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub index: Option<Value>,
+    pub index: u32,
 
     /// This integer value is used to construct a string in the format `TEXCOORD_<set index>` which is a reference to a key in `mesh.primitives.attributes` (e.g. a value of `0` corresponds to `TEXCOORD_0`). A mesh primitive **MUST** have the corresponding texture coordinate attributes for the material to be applicable to it.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub tex_coord: Option<Value>,
+    #[serde(default)]
+    pub tex_coord: u32,
 
     /// JSON object with extension-specific objects.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -62,7 +61,7 @@ pub struct FeatureIdTexture {
 
     /// Application-specific data.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub extras: Option<Value>,
+    pub extras: Option<HashMap<String, Value>>,
 }
 
 fn default_channels() -> Vec<u32> {
@@ -103,11 +102,13 @@ pub struct ExtMeshFeatures {
     /// An array of feature ID sets.
     pub feature_ids: Vec<FeatureId>,
 
-    /// Additional properties (details not provided in the schema)
+    /// JSON object with extension-specific objects.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub extensions: Option<HashMap<String, Value>>,
+
+    /// Application-specific data.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub extras: Option<Value>,
+    pub extras: Option<HashMap<String, Value>>,
 }
 
 /// EXT_structural_metadata glTF Mesh Primitive extension
@@ -123,9 +124,9 @@ pub struct ExtStructuralMetadata {
 
     /// JSON object with extension-specific objects.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub extensions: Option<Value>,
+    pub extensions: Option<HashMap<String, Value>>,
 
     /// Application-specific data.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub extras: Option<Value>,
+    pub extras: Option<HashMap<String, Value>>,
 }
