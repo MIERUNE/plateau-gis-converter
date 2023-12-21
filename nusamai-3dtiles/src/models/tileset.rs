@@ -1,3 +1,5 @@
+//! Tileset JSON
+
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
@@ -15,10 +17,13 @@ pub struct Asset {
     #[serde(skip_serializing_if = "Option::is_none")]
     tileset_version: Option<String>,
 
-    #[serde(skip_serializing_if = "Option::is_none")]
-    extra: Option<HashMap<String, Value>>,
+    /// Dictionary object with extension-specific objects.
     #[serde(skip_serializing_if = "Option::is_none")]
     extensions: Option<HashMap<String, Value>>,
+
+    /// Application-specific data.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    extra: Option<Value>,
 }
 
 /// An object containing a reference to a class from a metadata schema, and property values that conform to the properties of that class.
@@ -34,10 +39,13 @@ pub struct MetadataEntity {
     #[serde(skip_serializing_if = "Option::is_none")]
     properties: Option<HashMap<String, Value>>,
 
-    #[serde(skip_serializing_if = "Option::is_none")]
-    extra: Option<HashMap<String, Value>>,
+    /// Dictionary object with extension-specific objects.
     #[serde(skip_serializing_if = "Option::is_none")]
     extensions: Option<HashMap<String, Value>>,
+
+    /// Application-specific data.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    extra: Option<Value>,
 }
 
 /// A bounding volume that encloses a tile or its content. At least one bounding volume property is required. Bounding volumes include `box`, `region`, or `sphere`.
@@ -58,10 +66,13 @@ pub struct BoundingVolume {
     #[serde(skip_serializing_if = "Option::is_none")]
     sphere: Option<[f64; 4]>,
 
-    #[serde(skip_serializing_if = "Option::is_none")]
-    extra: Option<HashMap<String, Value>>,
+    /// Dictionary object with extension-specific objects.
     #[serde(skip_serializing_if = "Option::is_none")]
     extensions: Option<HashMap<String, Value>>,
+
+    /// Application-specific data.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    extra: Option<Value>,
 }
 
 /// An object describing the location of subtree files.
@@ -72,9 +83,11 @@ pub struct Subtrees {
     /// A template URI pointing to subtree files. A subtree is a fixed-depth (defined by `subtreeLevels`) portion of the tree to keep memory use bounded. The URI of each file is substituted with the subtree root's global level, x, and y. For subdivision scheme `OCTREE`, z shall also be given. Relative paths are relative to the tileset JSON.
     uri: String,
 
+    /// Application-specific data.
     #[serde(skip_serializing_if = "Option::is_none")]
-    extra: Option<HashMap<String, Value>>,
+    extra: Option<Value>,
 
+    /// Application-specific data.
     #[serde(skip_serializing_if = "Option::is_none")]
     extensions: Option<HashMap<String, Value>>,
 }
@@ -104,9 +117,11 @@ pub struct ImplicitTiling {
     /// An object describing the location of subtree files.
     subtrees: Subtrees,
 
+    /// Dictionary object with extension-specific objects.
     #[serde(skip_serializing_if = "Option::is_none")]
-    extra: Option<HashMap<String, Value>>,
+    extra: Option<Value>,
 
+    /// Application-specific data.
     #[serde(skip_serializing_if = "Option::is_none")]
     extensions: Option<HashMap<String, Value>>,
 }
@@ -131,10 +146,13 @@ pub struct Content {
     #[serde(skip_serializing_if = "Option::is_none")]
     group: Option<u32>,
 
-    #[serde(skip_serializing_if = "Option::is_none")]
-    extra: Option<HashMap<String, Value>>,
+    /// Dictionary object with extension-specific objects.
     #[serde(skip_serializing_if = "Option::is_none")]
     extensions: Option<HashMap<String, Value>>,
+
+    /// Application-specific data.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    extra: Option<Value>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -187,10 +205,13 @@ pub struct Tile {
     #[serde(skip_serializing_if = "Option::is_none")]
     children: Option<Vec<Tile>>,
 
-    #[serde(skip_serializing_if = "Option::is_none")]
-    extra: Option<HashMap<String, Value>>,
+    /// Dictionary object with extension-specific objects.
     #[serde(skip_serializing_if = "Option::is_none")]
     extensions: Option<HashMap<String, Value>>,
+
+    /// Application-specific data.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    extra: Option<Value>,
 }
 
 /// An object containing metadata about a group.
@@ -206,10 +227,13 @@ struct GroupMetadata {
     #[serde(skip_serializing_if = "Option::is_none")]
     properties: Option<HashMap<String, Value>>,
 
-    #[serde(skip_serializing_if = "Option::is_none")]
-    extra: Option<HashMap<String, Value>>,
+    /// Dictionary object with extension-specific objects.
     #[serde(skip_serializing_if = "Option::is_none")]
     extensions: Option<HashMap<String, Value>>,
+
+    /// Application-specific data.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    extra: Option<Value>,
 }
 
 /// A 3D Tiles tileset.
@@ -259,10 +283,13 @@ pub struct Tileset {
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     extensions_required: Vec<String>,
 
-    #[serde(skip_serializing_if = "Option::is_none")]
-    extra: Option<HashMap<String, Value>>,
+    /// Dictionary object with extension-specific objects.
     #[serde(skip_serializing_if = "Option::is_none")]
     extensions: Option<HashMap<String, Value>>,
+
+    /// Application-specific data.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    extra: Option<Value>,
 }
 
 /// Statistics about entities.
@@ -271,10 +298,17 @@ pub struct Tileset {
 #[serde(deny_unknown_fields)]
 pub struct Statistics {
     /// A dictionary, where each key corresponds to a class ID in the `classes` dictionary of the metatata schema that was defined for the tileset that contains these statistics. Each value is an object containing statistics about entities that conform to the class.
-    classes: HashMap<String, StatisticsClass>,
 
-    extra: Option<HashMap<String, Value>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    classes: Option<HashMap<String, StatisticsClass>>,
+
+    /// Dictionary object with extension-specific objects.
+    #[serde(skip_serializing_if = "Option::is_none")]
     extensions: Option<HashMap<String, Value>>,
+
+    /// Application-specific data.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    extra: Option<Value>,
 }
 
 /// Statistics about entities that conform to a class that was defined in a metadata schema.
@@ -283,13 +317,20 @@ pub struct Statistics {
 #[serde(deny_unknown_fields)]
 pub struct StatisticsClass {
     /// The number of entities that conform to the class.
+    #[serde(skip_serializing_if = "Option::is_none")]
     count: Option<u32>,
 
     /// A dictionary, where each key corresponds to a property ID in the class' `properties` dictionary and each value is an object containing statistics about property values.
-    properties: HashMap<String, StatisticsProperty>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    properties: Option<HashMap<String, StatisticsProperty>>,
 
-    extra: Option<HashMap<String, Value>>,
+    /// Dictionary object with extension-specific objects.
+    #[serde(skip_serializing_if = "Option::is_none")]
     extensions: Option<HashMap<String, Value>>,
+
+    /// Application-specific data.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    extra: Option<Value>,
 }
 
 /// Statistics about property values.
@@ -321,6 +362,11 @@ pub struct StatisticsProperty {
     /// A dictionary, where each key corresponds to an enum `name` and each value is the number of occurrences of that enum. Only applicable when `type` is `ENUM`. For fixed-length arrays, this is an array of component-wise occurrences.
     occurrences: Option<Value>, // integer or array of integer
 
-    extra: Option<HashMap<String, Value>>,
+    /// Dictionary object with extension-specific objects.
+    #[serde(skip_serializing_if = "Option::is_none")]
     extensions: Option<HashMap<String, Value>>,
+
+    /// Application-specific data.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    extra: Option<Value>,
 }
