@@ -39,7 +39,7 @@ pub struct MaterialNormalTextureInfo {
 
     /// Application-specific data.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub extras: Option<HashMap<String, Value>>,
+    pub extras: Option<Value>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Default)]
@@ -74,7 +74,7 @@ pub struct MaterialOcclusionTextureInfo {
 
     /// Application-specific data.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub extras: Option<HashMap<String, Value>>,
+    pub extras: Option<Value>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Default)]
@@ -168,7 +168,7 @@ pub struct Material {
 
     /// Application-specific data.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub extras: Option<HashMap<String, Value>>,
+    pub extras: Option<Value>,
 }
 
 impl Default for Material {

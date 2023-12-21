@@ -1,12 +1,10 @@
+//! EXT_structural_metadata
+//!
+//! https://github.com/CesiumGS/glTF/tree/3d-tiles-next/extensions/2.0/Vendor/EXT_structural_metadata
+
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::collections::HashMap;
-
-#[derive(Serialize, Deserialize, Debug, Default)]
-pub struct Gltf {
-    #[serde(rename = "EXT_structural_metadata")]
-    pub ext_structural_metadata: ExtStructuralMetadata,
-}
 
 #[derive(Serialize, Deserialize, Debug, Default)]
 #[serde(rename_all = "camelCase")]
@@ -21,15 +19,15 @@ pub struct ExtStructuralMetadata {
     pub schema_uri: Option<String>,
 
     /// An array of property table definitions, which may be referenced by index.
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub property_tables: Option<Vec<PropertyTable>>,
 
     /// An array of indexes of property textures in the root `EXT_structural_metadata` object.
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub property_textures: Option<Vec<PropertyTexture>>,
 
     /// An array of indexes of property attributes in the root `EXT_structural_metadata` object.
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub property_attributes: Option<Vec<PropertyAttribute>>,
 }
 
@@ -54,14 +52,12 @@ pub struct Schema {
     pub version: Option<String>,
 
     /// A dictionary, where each key is a class ID and each value is an object defining the class.
-    #[serde(skip_serializing_if = "HashMap::is_empty")]
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
     pub classes: HashMap<String, Class>,
 
     /// A dictionary, where each key is an enum ID and each value is an object defining the values for the enum.
-    #[serde(skip_serializing_if = "HashMap::is_empty")]
-    #[serde(default)]
-    pub enums: HashMap<String, EnumMetadata>,
+    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
+    pub enums: HashMap<String, Enum>,
 
     /// JSON object with extension-specific objects.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -69,7 +65,7 @@ pub struct Schema {
 
     /// Application-specific data.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub extras: Option<HashMap<String, Value>>,
+    pub extras: Option<Value>,
 }
 
 /// Class in EXT_structural_metadata
@@ -85,7 +81,7 @@ pub struct Class {
     pub description: Option<String>,
 
     /// A dictionary, where each key is a property ID and each value is an object defining the property.
-    #[serde(skip_serializing_if = "HashMap::is_empty")]
+    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
     pub properties: HashMap<String, ClassProperty>,
 
     /// JSON object with extension-specific objects.
@@ -94,13 +90,13 @@ pub struct Class {
 
     /// Application-specific data.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub extras: Option<HashMap<String, Value>>,
+    pub extras: Option<Value>,
 }
 
 /// ElementType enumeration
 #[derive(Serialize, Deserialize, Debug, Default)]
 #[serde(rename_all = "UPPERCASE")]
-pub enum ElementType {
+pub enum ClassPropertyType {
     #[default]
     Scalar,
     Vec2,
@@ -112,13 +108,12 @@ pub enum ElementType {
     String,
     Boolean,
     Enum,
-    // Add other types as needed
 }
 
 /// ComponentType enumeration
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "UPPERCASE")]
-pub enum ComponentType {
+pub enum ClassPropertyComponentType {
     Int8,
     UInt8,
     Int16,
@@ -129,7 +124,6 @@ pub enum ComponentType {
     UInt64,
     Float32,
     Float64,
-    // Add other types as needed
 }
 
 /// Class Property in EXT_structural_metadata
@@ -147,11 +141,11 @@ pub struct ClassProperty {
 
     /// The element type.
     #[serde(rename = "type")]
-    pub type_: ElementType,
+    pub type_: ClassPropertyType,
 
     /// The datatype of the element's components. Only applicable to `SCALAR`, `VECN`, and `MATN` types."
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub component_type: Option<ComponentType>,
+    pub component_type: Option<ClassPropertyComponentType>,
 
     /// Enum ID as declared in the `enums` dictionary. Required when `type` is `ENUM`.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -207,30 +201,29 @@ pub struct ClassProperty {
 
     /// Application-specific data.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub extras: Option<HashMap<String, Value>>,
+    pub extras: Option<Value>,
 }
 
 /// ValueType enumeration
 #[derive(Serialize, Deserialize, Debug, Default)]
 #[serde(rename_all = "UPPERCASE")]
-pub enum ValueType {
-    #[default]
+pub enum EnumValueType {
     Int8,
     UInt8,
     Int16,
+    #[default]
     UInt16,
     Int32,
     UInt32,
     Int64,
     UInt64,
-    // Add other types as needed
 }
 
 /// Enum in EXT_structural_metadata
 #[derive(Serialize, Deserialize, Debug, Default)]
 #[serde(rename_all = "camelCase")]
 #[serde(deny_unknown_fields)]
-pub struct EnumMetadata {
+pub struct Enum {
     /// The name of the enum, e.g. for display purposes.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub name: Option<String>,
@@ -240,8 +233,8 @@ pub struct EnumMetadata {
     pub description: Option<String>,
 
     /// The type of the integer enum value.
-    #[serde(default = "default_value_type")]
-    pub value_type: ValueType,
+    #[serde(default)]
+    pub value_type: EnumValueType,
 
     /// An array of enum values.
     pub values: Vec<EnumValue>,
@@ -252,11 +245,7 @@ pub struct EnumMetadata {
 
     /// Application-specific data.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub extras: Option<HashMap<String, Value>>,
-}
-
-fn default_value_type() -> ValueType {
-    ValueType::UInt16
+    pub extras: Option<Value>,
 }
 
 /// Enum Value in EXT_structural_metadata
@@ -280,7 +269,7 @@ pub struct EnumValue {
 
     /// Application-specific data.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub extras: Option<HashMap<String, Value>>,
+    pub extras: Option<Value>,
 }
 
 /// Property Table in EXT_structural_metadata
@@ -299,6 +288,7 @@ pub struct PropertyTable {
     pub count: u32,
 
     /// A dictionary, where each key corresponds to a property ID and each value is an object describing where property values are stored.
+    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
     pub properties: HashMap<String, PropertyTableProperty>,
 
     /// JSON object with extension-specific objects.
@@ -307,7 +297,7 @@ pub struct PropertyTable {
 
     /// Application-specific data.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub extras: Option<HashMap<String, Value>>,
+    pub extras: Option<Value>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Default)]
@@ -320,6 +310,7 @@ pub struct PropertyTexture {
     class: String,
 
     /// A dictionary, where each key corresponds to a property ID in the class' `properties` dictionary and each value is an object describing where property values are stored. Required properties must be included in this dictionary.
+    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
     properties: HashMap<String, PropertyTextureProperty>,
 }
 
@@ -364,6 +355,7 @@ pub struct PropertyAttribute {
     class: String,
 
     /// A dictionary, where each key corresponds to a property ID in the class' `properties` dictionary and each value is an object describing where property values are stored. Required properties must be included in this dictionary.
+    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
     properties: HashMap<String, PropertyAttributeProperty>,
 }
 
@@ -394,12 +386,11 @@ pub struct PropertyAttributeProperty {
 #[derive(Serialize, Deserialize, Debug, Default)]
 #[serde(rename_all = "UPPERCASE")]
 pub enum OffsetType {
-    #[default]
     UInt8,
     UInt16,
+    #[default]
     UInt32,
     UInt64,
-    // Add other types as needed
 }
 
 /// Property Table Property in EXT_structural_metadata
@@ -419,11 +410,11 @@ pub struct PropertyTableProperty {
     pub string_offsets: Option<u32>,
 
     /// The type of values in `arrayOffsets`.
-    #[serde(default = "default_offset_type")]
+    #[serde(default)]
     pub array_offset_type: OffsetType,
 
     /// The type of values in `stringOffsets`.
-    #[serde(default = "default_offset_type")]
+    #[serde(default)]
     pub string_offset_type: OffsetType,
 
     /// An offset to apply to property values.
@@ -448,9 +439,5 @@ pub struct PropertyTableProperty {
 
     /// Application-specific data.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub extras: Option<HashMap<String, Value>>,
-}
-
-fn default_offset_type() -> OffsetType {
-    OffsetType::UInt32
+    pub extras: Option<Value>,
 }
