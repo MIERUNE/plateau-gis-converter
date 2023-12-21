@@ -9,5 +9,6 @@ members = [
     "nusamai-mvt",
     "nusamai",
     "nusamai-projection",
+    "nusamai-3dtiles",
 ]
 resolver = "2"

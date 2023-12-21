@@ -25,18 +25,13 @@ pub enum MinFilter {
     LinearMipmapLinear = 9987,
 }
 
-#[derive(Serialize_repr, Deserialize_repr, Debug, PartialEq, Eq, Clone, Copy)]
+#[derive(Serialize_repr, Deserialize_repr, Debug, PartialEq, Eq, Clone, Copy, Default)]
 #[repr(u16)]
 pub enum WrappingMode {
     ClampToEdge = 33071,
     MirroredRepeat = 33648,
+    #[default]
     Repeat = 10497,
-}
-
-impl Default for WrappingMode {
-    fn default() -> Self {
-        Self::Repeat
-    }
 }
 
 fn is_default_wrapping_mode(mode: &WrappingMode) -> bool {
@@ -75,7 +70,7 @@ pub struct Sampler {
 
     /// Application-specific data.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub extras: Option<HashMap<String, Value>>,
+    pub extras: Option<Value>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Default)]

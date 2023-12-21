@@ -18,9 +18,10 @@
     - [`nusamai-plateau`](./nusamai-plateau/) &mdash; PLATEAU CityGML パーサ
     - [`nusamai-projection`](./nusamai-projection/) &mdash; 投影法変換
 - 変換先形式：
-    - [`nusamai-geojson`](./nusamai-geojson/) &mdash; GeoJSON
+    - [`nusamai-3dtiles`](./nusamai-3dtiles/) &mdash; 3D Tiles
     - [`nusamai-mvt`](./nusamai-mvt/) &mdash; Mapbox Vector Tile (MVT)
     - [`nusamai-gltf`](./nusamai-gltf/) &mdash; glTF
+    - [`nusamai-geojson`](./nusamai-geojson/) &mdash; GeoJSON
 
 ### 外部リポジトリ
 

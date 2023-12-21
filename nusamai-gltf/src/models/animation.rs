@@ -3,18 +3,13 @@ use std::collections::HashMap;
 
 use serde_json::Value;
 
-#[derive(Serialize, Deserialize, Debug, PartialEq, Clone, Copy)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Clone, Copy, Default)]
 #[serde(rename_all = "UPPERCASE")]
 pub enum AnimationSamplerInterpolation {
+    #[default]
     Linear,
     Step,
     CubicSpline,
-}
-
-impl Default for AnimationSamplerInterpolation {
-    fn default() -> Self {
-        Self::Linear
-    }
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Clone, Copy, Default)]
@@ -75,6 +70,7 @@ pub struct Animation {
 
     /// An array of animation channels. An animation channel combines an animation sampler with a target property being animated.
     pub channels: Vec<AnimationChannel>,
+
     /// An array of animation samplers. An animation sampler combines timestamps with a sequence of output values and defines an interpolation algorithm.
     pub samplers: Vec<AnimationSampler>,
 
@@ -84,7 +80,7 @@ pub struct Animation {
 
     /// Application-specific data.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub extras: Option<HashMap<String, Value>>,
+    pub extras: Option<Value>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Default)]
