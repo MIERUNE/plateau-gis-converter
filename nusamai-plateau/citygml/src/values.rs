@@ -42,9 +42,35 @@ pub struct Code {
 impl CityGMLElement for Code {
     #[inline]
     fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
+        // TODO: optimization
+        // - Avoid using parse_attributes? -> parse_attribute_raw
+        // - Avoid allocation?
+
+        let code_space = st.find_codespace_attr();
         let code = st.parse_text()?.to_string();
-        self.code = code.to_string();
-        // TODO: values must be resolved with external codelists
+        self.code = code.clone();
+
+        if let Some(code_space) = code_space {
+            if let Some(base_url) = st.context().source_url() {
+                match st
+                    .context()
+                    .code_resolver()
+                    .resolve(base_url, &code_space, &code)
+                {
+                    Ok(Some(v)) => {
+                        self.value = v;
+                        return Ok(());
+                    }
+                    Ok(None) => {}
+                    Err(_) => {
+                        return Err(ParseError::InvalidValue(format!(
+                            "Failed to resolve code: {} {}",
+                            code_space, code
+                        )));
+                    }
+                }
+            }
+        }
         self.value = code;
         Ok(())
     }

@@ -57,13 +57,17 @@ fn example_toplevel_dispatcher<R: BufRead>(
 fn simple_read() {
     let reader = std::io::BufReader::new(
         zstd::stream::Decoder::new(
-            std::fs::File::open("./tests/data/53393680_bldg_6697_lod4.2_op.gml.zst").unwrap(),
+            std::fs::File::open(
+                "./tests/data/tokyo23-ku/udx/bldg/53393680_bldg_6697_lod4.2_op.gml.zst",
+            )
+            .unwrap(),
         )
         .unwrap(),
     );
 
     let mut xml_reader = quick_xml::NsReader::from_reader(reader);
-    match CityGMLReader::new().start_root(&mut xml_reader) {
+    let context = citygml::ParseContext::default();
+    match CityGMLReader::new(context).start_root(&mut xml_reader) {
         Ok(mut st) => match example_toplevel_dispatcher(&mut st) {
             Ok(counter) => {
                 assert_eq!(counter.city_objects, 1527);

@@ -15,3 +15,4 @@ nusamai-geometry = { path = "../../nusamai-geometry", features = ["serde"]}
 quick-xml = "0.31"
 serde = { version = "1.0", features = ["derive"], optional = true }
 thiserror = "1.0"
+url = "2.5.0"

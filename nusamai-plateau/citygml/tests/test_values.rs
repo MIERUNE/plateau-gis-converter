@@ -1,5 +1,5 @@
 use chrono::NaiveDate;
-use citygml::{CityGMLElement, CityGMLReader};
+use citygml::{CityGMLElement, CityGMLReader, ParseContext};
 
 #[test]
 fn parse_date() {
@@ -12,7 +12,8 @@ fn parse_date() {
     let mut xml_reader = quick_xml::NsReader::from_reader(std::io::Cursor::new(
         r#"<root><date>2019-03-21</date></root>"#,
     ));
-    match CityGMLReader::new().start_root(&mut xml_reader) {
+    let context = ParseContext::default();
+    match CityGMLReader::new(context).start_root(&mut xml_reader) {
         Ok(mut st) => {
             let mut root = Root::default();
             root.parse(&mut st).unwrap();
@@ -45,7 +46,8 @@ fn parse_boolean() {
         </root>
         "#,
     ));
-    match CityGMLReader::new().start_root(&mut xml_reader) {
+    let context = ParseContext::default();
+    match CityGMLReader::new(context).start_root(&mut xml_reader) {
         Ok(mut st) => {
             let mut root = Root::default();
             root.parse(&mut st).unwrap();

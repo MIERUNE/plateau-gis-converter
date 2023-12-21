@@ -19,7 +19,7 @@ impl Definition {
     }
 }
 
-pub fn expect_text<R: BufRead>(
+fn expect_text<R: BufRead>(
     reader: &mut quick_xml::NsReader<R>,
     buf: &mut Vec<u8>,
 ) -> Result<String, ParseError> {
@@ -51,7 +51,7 @@ pub fn expect_text<R: BufRead>(
     }
 }
 
-pub fn parse_definition<R: BufRead>(
+fn parse_definition<R: BufRead>(
     reader: &mut quick_xml::NsReader<R>,
     definitions: &mut HashMap<String, Definition>,
     buf: &mut Vec<u8>,
