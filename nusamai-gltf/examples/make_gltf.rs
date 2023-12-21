@@ -1,4 +1,3 @@
-use std::collections::HashMap;
 /// glTFを生成するサンプル
 ///
 /// % cargo run --example make_gltf --release
@@ -9,46 +8,16 @@ use std::vec;
 use nusamai_gltf::*;
 
 fn main() -> io::Result<()> {
-    let asset = Asset {
-        version: "2.0".to_string(),
-        copyright: None,
-        generator: None,
-        min_version: None,
-        extensions: None,
-        extras: None,
-    };
-
     let mut gltf = Gltf {
-        extensions_used: None,
-        extensions_required: None,
-        accessors: None,
-        animations: None,
-        asset,
-        buffers: None,
-        buffer_views: None,
-        cameras: None,
-        images: None,
-        materials: None,
-        meshes: None,
-        nodes: None,
-        samplers: None,
-        scene: None,
-        scenes: None,
-        skins: None,
-        textures: None,
-        extensions: None,
-        extras: None,
+        ..Default::default()
     };
 
     let byte_length = 44;
     let mut buffer = Buffer {
-        name: None,
         byte_length,
-        uri: None,
-        extensions: None,
-        extras: None,
+        ..Default::default()
     };
-    buffer.uri = Some("data:application/octet-stream;base64,AAABAAIAAAAAAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAA=".to_string());
+    buffer.uri = "data:application/octet-stream;base64,AAABAAIAAAAAAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAA=".to_string().into();
 
     let buffer_view1 = BufferView {
         name: None,
@@ -69,81 +38,54 @@ fn main() -> io::Result<()> {
     };
 
     let accessor1 = Accessor {
-        name: None,
         buffer_view: Some(0),
-        byte_offset: 0,
         component_type: ComponentType::UnsignedShort,
         count: 3,
         type_: AccessorType::Scalar,
-        max: Some(vec![2.0]),
-        min: Some(vec![0.0]),
-        sparse: None,
-        normalized: None,
-        extensions: None,
-        extras: None,
+        max: vec![2.0].into(),
+        min: vec![0.0].into(),
+        ..Default::default()
     };
 
     let accessor2 = Accessor {
-        name: None,
         buffer_view: Some(1),
-        byte_offset: 0,
         component_type: ComponentType::Float,
         count: 3,
         type_: AccessorType::Vec3,
-        max: Some(vec![1.0, 1.0, 0.0]),
-        min: Some(vec![0.0, 0.0, 0.0]),
-        sparse: None,
-        normalized: None,
-        extensions: None,
-        extras: None,
+        max: vec![1.0, 1.0, 0.0].into(),
+        min: vec![0.0, 0.0, 0.0].into(),
+        ..Default::default()
     };
 
     let mut primitive = MeshPrimitive {
-        attributes: HashMap::new(),
         indices: Some(0),
-        material: None,
         mode: PrimitiveMode::Triangles,
-        targets: None,
-        extensions: None,
-        extras: None,
+        ..Default::default()
     };
     primitive.attributes.insert("POSITION".to_string(), 1);
 
     let mesh = Mesh {
         primitives: vec![primitive],
-        weights: None,
-        name: None,
-        extensions: None,
-        extras: None,
+        ..Default::default()
     };
 
     let node = Node {
-        camera: None,
-        children: None,
-        skin: None,
-        matrix: None,
         mesh: Some(0),
-        rotation: None,
-        scale: None,
-        translation: None,
-        weights: None,
-        name: None,
-        extensions: None,
-        extras: None,
+        ..Default::default()
     };
 
     let scene = Scene {
         name: None,
-        nodes: Some(vec![0]),
+        nodes: vec![0].into(),
     };
 
-    gltf.buffers = Some(vec![buffer]);
-    gltf.buffer_views = Some(vec![buffer_view1, buffer_view2]);
-    gltf.accessors = Some(vec![accessor1, accessor2]);
-    gltf.meshes = Some(vec![mesh]);
-    gltf.nodes = Some(vec![node]);
-    gltf.scenes = Some(vec![scene]);
-    gltf.scene = Some(0);
+    gltf.buffers = vec![buffer];
+    gltf.buffer_views = vec![buffer_view1, buffer_view2];
+    gltf.accessors = vec![accessor1, accessor2];
+    gltf.meshes = vec![mesh];
+    gltf.nodes = vec![node];
+    gltf.scenes = vec![scene];
+    gltf.scene = 0.into();
 
     println!("gltf: {:?}", gltf);
 
