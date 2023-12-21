@@ -19,15 +19,15 @@ pub struct ExtStructuralMetadata {
     pub schema_uri: Option<String>,
 
     /// An array of property table definitions, which may be referenced by index.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub property_tables: Option<Vec<PropertyTable>>,
 
     /// An array of indexes of property textures in the root `EXT_structural_metadata` object.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub property_textures: Option<Vec<PropertyTexture>>,
 
     /// An array of indexes of property attributes in the root `EXT_structural_metadata` object.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub property_attributes: Option<Vec<PropertyAttribute>>,
 }
 
