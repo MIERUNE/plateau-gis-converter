@@ -5,22 +5,17 @@ use std::collections::HashMap;
 
 use serde_json::Value;
 
-#[derive(Serialize_repr, Deserialize_repr, Debug, PartialEq, Eq, Clone, Copy)]
+#[derive(Serialize_repr, Deserialize_repr, Debug, PartialEq, Eq, Clone, Copy, Default)]
 #[repr(u8)]
 pub enum PrimitiveMode {
     Points = 0,
     Lines = 1,
     LineLoop = 2,
     LineStrip = 3,
+    #[default]
     Triangles = 4,
     TriangleStrip = 5,
     TriangleFan = 6,
-}
-
-impl Default for PrimitiveMode {
-    fn default() -> Self {
-        Self::Triangles
-    }
 }
 
 /// Geometry to be rendered with the given material.

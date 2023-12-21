@@ -9,6 +9,7 @@ use serde_json::Value;
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 #[serde(deny_unknown_fields)]
+#[serde(default)]
 struct Style {
     /// A dictionary object of `expression` strings mapped to a variable name key that may be referenced throughout the style. If an expression references a defined variable, it is replaced with the evaluated result of the corresponding expression.
     #[serde(skip_serializing_if = "Option::is_none")]

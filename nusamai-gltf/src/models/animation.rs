@@ -3,18 +3,13 @@ use std::collections::HashMap;
 
 use serde_json::Value;
 
-#[derive(Serialize, Deserialize, Debug, PartialEq, Clone, Copy)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Clone, Copy, Default)]
 #[serde(rename_all = "UPPERCASE")]
 pub enum AnimationSamplerInterpolation {
+    #[default]
     Linear,
     Step,
     CubicSpline,
-}
-
-impl Default for AnimationSamplerInterpolation {
-    fn default() -> Self {
-        Self::Linear
-    }
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq, Clone, Copy, Default)]
