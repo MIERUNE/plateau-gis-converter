@@ -1,4 +1,4 @@
-mod ext_structural_metadata;
+pub mod ext_structural_metadata;
 
 use std::collections::HashMap;
 
