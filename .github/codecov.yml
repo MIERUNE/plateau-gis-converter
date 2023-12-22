@@ -2,12 +2,12 @@ coverage:
   status:
     project:
       default:
-        # allows a 7% drop from the previous base commit coverage
-        threshold: 7%
+        # allows a 5% drop from the previous base commit coverage
+        threshold: 5%
     patch:
       default:
-        # allows a 7% drop from the previous base commit coverage
-        threshold: 7%
+        target: 60%
+        threshold: 5%
 
 comment:
   layout: "condensed_header, condensed_files, components, condensed_footer"
