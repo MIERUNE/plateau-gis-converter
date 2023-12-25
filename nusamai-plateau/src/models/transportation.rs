@@ -78,7 +78,6 @@ pub struct Waterway {
     auxiliary_traffic_area: Vec<AuxiliaryTrafficArea>,
 }
 
-
 #[citygml_feature(name = "tran:TrafficArea")]
 pub struct TrafficArea {
     #[citygml(path = b"tran:class")]
@@ -86,6 +85,9 @@ pub struct TrafficArea {
 
     #[citygml(path = b"tran:function")]
     pub function: Vec<Code>,
+
+    #[citygml(path = b"tran:usage")]
+    pub usage: Vec<Code>,
 
     #[citygml(path = b"tran:surfaceMaterial")]
     pub surface_material: Option<Code>,
@@ -101,6 +103,12 @@ pub struct AuxiliaryTrafficArea {
 
     #[citygml(path = b"tran:function")]
     pub function: Vec<Code>,
+
+    #[citygml(path = b"tran:usage")]
+    pub usage: Vec<Code>,
+
+    #[citygml(path = b"tran:surfaceMaterial")]
+    pub surface_material: Option<Code>,
 
     #[citygml(path = b"uro:tranDmAttribute")]
     pub tran_dm_attribute: Vec<uro::DmAttributeProperty>,
