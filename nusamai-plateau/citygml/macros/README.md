@@ -2,6 +2,10 @@
 
 ## Attribute macros
 
+- `#[citygml_feature(...)]`
+- `#[citygml_data(...)]`
+- `#[citygml_property(...)]`
+
 ### `#[citygml_feature(...)]`
 
 When you write:
@@ -87,5 +91,6 @@ pub enum FooBarProperty {
 
 ### `#[derive(CityGMLElement)]`
 
-This derive macro automatically implements the CityGMLElement trait for the target struct, enabling it to parse corresponding CityGML fragments.
+It automatically implements the CityGMLElement trait for the target struct, enabling it to parse corresponding CityGML fragments.
 
+In many cases, you should use the attribute macros above instead of directly applying this derive macro.
