@@ -1,4 +1,7 @@
 use std::io::BufRead;
+use std::path::Path;
+
+use url::Url;
 
 use citygml::{CityGMLElement, CityGMLReader, Code, Geometries, ParseError, SubTreeReader};
 use nusamai_plateau::models::Road;
@@ -47,11 +50,17 @@ fn toplevel_dispatcher<R: BufRead>(st: &mut SubTreeReader<R>) -> Result<ParsedDa
 
 #[test]
 fn test_road() {
-    let test_file_path = "./tests/data/52385608_tran_6697_op.gml";
+    let filename = "./tests/data/numazu-shi/udx/tran/52385608_tran_6697_op.gml";
 
-    let reader = std::io::BufReader::new(std::fs::File::open(test_file_path).unwrap());
+    let reader = std::io::BufReader::new(std::fs::File::open(filename).unwrap());
     let mut xml_reader = quick_xml::NsReader::from_reader(reader);
-    let parsed_data = match CityGMLReader::new().start_root(&mut xml_reader) {
+
+    let code_resolver = nusamai_plateau::codelist::Resolver::new();
+    let source_url =
+        Url::from_file_path(std::fs::canonicalize(Path::new(filename)).unwrap()).unwrap();
+    let context = citygml::ParseContext::new(source_url, &code_resolver);
+
+    let parsed_data = match CityGMLReader::new(context).start_root(&mut xml_reader) {
         Ok(mut st) => match toplevel_dispatcher(&mut st) {
             Ok(parsed_data) => parsed_data,
             Err(e) => panic!("Err: {:?}", e),
@@ -60,37 +69,36 @@ fn test_road() {
     };
 
     assert_eq!(parsed_data.roads.len(), 549);
-    assert_eq!(
-        parsed_data.roads.len(),
-        parsed_data.geometries.len()
-    );
+    assert_eq!(parsed_data.roads.len(), parsed_data.geometries.len());
 
     let road = parsed_data.roads.first().unwrap();
 
     assert_eq!(
         road.function,
         vec![Code {
-            value: "3".to_string(),
+            value: "都道府県道".to_string(),
             code: "3".to_string(),
         }]
     );
 
     assert_eq!(
         road.usage,
-        vec![Code {
-            value: "3".to_string(),
-            code: "3".to_string(),
-        },
-        Code {
-            value: "5".to_string(),
-            code: "5".to_string(),
-        },]
+        vec![
+            Code {
+                value: "緊急輸送道路（第三次緊急輸送道路）".to_string(),
+                code: "3".to_string(),
+            },
+            Code {
+                value: "避難路／避難道路".to_string(),
+                code: "5".to_string(),
+            },
+        ]
     );
 
     assert_eq!(
         road.traffic_area.first().unwrap().function,
         vec![Code {
-            value: "2020".to_string(),
+            value: "歩道".to_string(),
             code: "2020".to_string(),
         }]
     );
@@ -98,7 +106,7 @@ fn test_road() {
     assert_eq!(
         road.auxiliary_traffic_area.first().unwrap().function,
         vec![Code {
-            value: "2000".to_string(),
+            value: "歩道部の段差".to_string(),
             code: "2000".to_string(),
         }]
     );
@@ -109,7 +117,10 @@ fn test_road() {
     );
 
     assert_eq!(
-        road.traffic_volume_attribute.first().unwrap().weekday12hour_traffic_volume,
+        road.traffic_volume_attribute
+            .first()
+            .unwrap()
+            .weekday12hour_traffic_volume,
         Some(8170),
     );
 }

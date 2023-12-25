@@ -52,7 +52,9 @@ async fn main() {
 
     let reader = std::io::BufReader::new(std::fs::File::open(args.filename).unwrap());
     let mut xml_reader = quick_xml::NsReader::from_reader(reader);
-    let _cityobjs = match CityGMLReader::new().start_root(&mut xml_reader) {
+
+    let context = citygml::ParseContext::default();
+    let _cityobjs = match CityGMLReader::new(context).start_root(&mut xml_reader) {
         Ok(mut st) => match toplevel_dispatcher(&mut st) {
             Ok(items) => items,
             Err(e) => panic!("Err: {:?}", e),
