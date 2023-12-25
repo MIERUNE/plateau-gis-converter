@@ -12,14 +12,18 @@
 
 - アプリケーション：
     - [`app`](./app/) &mdash; Tauri による GUI アプリケーション
-    - [`nusamai`](./nusamai/) &mdash; アプリケーションのバックエンド (およびCLI実装？)
-- 基盤：
+    - [`nusamai`](./nusamai/) &mdash; アプリケーションのバックエンド (およびCLI実装)
+- 基盤・ユーティリティ：
     - [`nusamai-geometry`](./nusamai-geometry/) &mdash; ジオメトリ型
-    - [`nusamai-plateau`](./nusamai-plateau/) &mdash; PLATEAU CityGML パーサ
     - [`nusamai-projection`](./nusamai-projection/) &mdash; 投影法変換
-- 変換先形式：
+- データソース：
+    - [`nusamai-plateau`](./nusamai-plateau/) &mdash; PLATEAU CityGML モデル
+        - [`citygml`](./nusamai-plateau/citygml/) &mdash; CityGML パーサ
+            - [`macros`](./nusamai-plateau/citygml/macros/) &mdash; パーサ導出用の proc macros
+- 変換先形式のためのライブラリ：
     - [`nusamai-3dtiles`](./nusamai-3dtiles/) &mdash; 3D Tiles
     - [`nusamai-mvt`](./nusamai-mvt/) &mdash; Mapbox Vector Tile (MVT)
+    - [`nusamai-gpkg`](./nusamai-gpkg/) &mdash; GeoPackage
     - [`nusamai-gltf`](./nusamai-gltf/) &mdash; glTF
     - [`nusamai-geojson`](./nusamai-geojson/) &mdash; GeoJSON
 
@@ -32,3 +36,4 @@
 
 - [MIERUNE/plateau-qgis-plugin](https://github.com/MIERUNE/plateau-qgis-plugin) &mdash; PLATEAU QGIS Plugin の実装
 - [MIERUNE/plateau-schema-experiment](https://github.com/MIERUNE/plateau-schema-experiment) &mdash; CityGML 2.0 と i-UR の XML Schema を解析する実験コード群。QGIS Pluginの属性列挙に使用。
+- [MIERUNE/3dtiles-research](https://github.com/MIERUNE/3dtiles-research) &mdash; 3D Tiles / glTF の実験コード群
