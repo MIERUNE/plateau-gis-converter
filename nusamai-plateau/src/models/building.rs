@@ -1,15 +1,7 @@
-use citygml::{
-    citygml_data, citygml_feature, citygml_property, CityGMLElement, Code, Measure, NaiveDate,
-};
+use citygml::{citygml_data, citygml_feature, citygml_property, CityGMLElement, Code, Measure};
 
 #[citygml_feature(name = "bldg:Building")]
 pub struct Building {
-    #[citygml(path = b"core:creationDate")]
-    pub creation_date: Option<NaiveDate>,
-
-    #[citygml(path = b"core:terminationDate")]
-    pub termination_date: Option<NaiveDate>,
-
     #[citygml(path = b"bldg:class")]
     pub class: Option<Code>,
 
@@ -64,12 +56,6 @@ pub struct Building {
 
 #[citygml_feature(name = "bldg:BuildingPart")]
 pub struct BuildingPart {
-    #[citygml(path = b"core:creationDate")]
-    pub creation_date: Option<NaiveDate>,
-
-    #[citygml(path = b"core:terminationDate")]
-    pub termination_date: Option<NaiveDate>,
-
     #[citygml(path = b"bldg:class")]
     pub class: Option<Code>,
 

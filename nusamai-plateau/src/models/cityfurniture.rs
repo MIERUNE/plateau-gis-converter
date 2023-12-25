@@ -1,14 +1,8 @@
 use super::iur::uro;
-use citygml::{citygml_feature, CityGMLElement, Code, Date};
+use citygml::{citygml_feature, CityGMLElement, Code};
 
 #[citygml_feature(name = "frn:CityFurniture")]
 pub struct CityFurniture {
-    #[citygml(path = b"core:creationDate")]
-    creation_date: Option<Date>,
-
-    #[citygml(path = b"core:terminationDate")]
-    termination_date: Option<Date>,
-
     #[citygml(path = b"frn:class")]
     pub class: Option<Code>,
 
