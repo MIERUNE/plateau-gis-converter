@@ -19,8 +19,9 @@ impl CityGMLElement for String {
     }
 }
 
-#[derive(Debug, serde::Serialize, serde::Deserialize)]
-pub struct URI(String);
+#[derive(Debug, serde::Serialize, serde::Deserialize, Default)]
+pub struct URI(pub String);
+
 impl CityGMLElement for URI {
     #[inline]
     fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
@@ -170,8 +171,8 @@ impl CityGMLElement for bool {
 
 #[derive(Debug, Default, serde::Serialize, serde::Deserialize)]
 pub struct Measure {
-    value: f64,
-    // uom: Option<String>,
+    pub value: f64,
+    // pub uom: Option<String>,
 }
 
 impl CityGMLElement for Measure {
