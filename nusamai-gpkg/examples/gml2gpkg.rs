@@ -1,7 +1,6 @@
 use citygml::{CityGMLElement, CityGMLReader, ParseError, SubTreeReader};
 use clap::Parser;
 use nusamai_plateau::TopLevelCityObject;
-use sqlx::Row;
 use std::io::BufRead;
 
 #[derive(Parser)]
@@ -47,6 +46,8 @@ fn toplevel_dispatcher<R: BufRead>(
 
 #[tokio::main]
 async fn main() {
+    // Parse CityGML
+
     let args = Args::parse();
 
     let reader = std::io::BufReader::new(std::fs::File::open(args.filename).unwrap());
@@ -59,21 +60,9 @@ async fn main() {
         Err(e) => panic!("Err: {:?}", e),
     };
 
+    // GeoPackage
+
     let output_path = "output.gpkg";
-    let db_url: &str = &format!("sqlite://{}", output_path);
-
-    let pool = nusamai_gpkg::init_gpkg(db_url).await.unwrap();
-
-    let result = sqlx::query(
-        "SELECT name
-         FROM sqlite_schema
-         WHERE type ='table'
-         AND name NOT LIKE 'sqlite_%';",
-    )
-    .fetch_all(&pool)
-    .await
-    .unwrap();
-    for (idx, row) in result.iter().enumerate() {
-        println!("[{}]: {:?}", idx, row.get::<String, &str>("name"));
-    }
+    let _handler = nusamai_gpkg::GpkgHandler::init(output_path).await.unwrap();
+    // TODO: handler.add_objects(&cityobjs).await;
 }
