@@ -1,0 +1,466 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<gml:Dictionary xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:gml="http://www.opengis.net/gml" xsi:schemaLocation="http://www.opengis.net/gml http://schemas.opengis.net/gml/3.1.1/profiles/SimpleDictionary/1.0.0/gmlSimpleDictionaryProfile.xsd" gml:id="cl_97139503-e015-415f-9a4a-b1957e7fc1ad">
+	<gml:name>CityFurniture_function</gml:name>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id1000">
+			<gml:description>道路標示</gml:description>
+			<gml:name>1000</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id1010">
+			<gml:description>区画線</gml:description>
+			<gml:name>1010</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id1020">
+			<gml:description>車道中央線</gml:description>
+			<gml:name>1020</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id1030">
+			<gml:description>車線境界線</gml:description>
+			<gml:name>1030</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id1040">
+			<gml:description>車道外側線</gml:description>
+			<gml:name>1040</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id1100">
+			<gml:description>指示標示</gml:description>
+			<gml:name>1100</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id1110">
+			<gml:description>横断歩道</gml:description>
+			<gml:name>1110</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id1120">
+			<gml:description>停止線</gml:description>
+			<gml:name>1120</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id1200">
+			<gml:description>規制標示</gml:description>
+			<gml:name>1200</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id2000">
+			<gml:description>柵・壁</gml:description>
+			<gml:name>2000</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id3000">
+			<gml:description>道路標識</gml:description>
+			<gml:name>3000</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id3110">
+			<gml:description>案内標識</gml:description>
+			<gml:name>3110</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id3120">
+			<gml:description>警戒標識</gml:description>
+			<gml:name>3120</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id3130">
+			<gml:description>規制標識</gml:description>
+			<gml:name>3130</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id3140">
+			<gml:description>指示標識</gml:description>
+			<gml:name>3140</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id3150">
+			<gml:description>補助標識</gml:description>
+			<gml:name>3150</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id4000">
+			<gml:description>建造物</gml:description>
+			<gml:name>4000</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id4010">
+			<gml:description>上屋</gml:description>
+			<gml:name>4010</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id4020">
+			<gml:description>地下出入口</gml:description>
+			<gml:name>4020</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id4100">
+			<gml:description>視線誘導標</gml:description>
+			<gml:name>4100</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id4120">
+			<gml:description>道路反射鏡</gml:description>
+			<gml:name>4120</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id4200">
+			<gml:description>照明施設</gml:description>
+			<gml:name>4200</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id4300">
+			<gml:description>道路情報管理施設</gml:description>
+			<gml:name>4300</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id4400">
+			<gml:description>災害検知器</gml:description>
+			<gml:name>4400</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id4500">
+			<gml:description>気象観測装置</gml:description>
+			<gml:name>4500</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id4600">
+			<gml:description>道路情報板</gml:description>
+			<gml:name>4600</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id4700">
+			<gml:description>光ファイバー</gml:description>
+			<gml:name>4700</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id4800">
+			<gml:description>柱</gml:description>
+			<gml:name>4800</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id4810">
+			<gml:description>路側</gml:description>
+			<gml:name>4810</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id4820">
+			<gml:description>片持</gml:description>
+			<gml:name>4820</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id4830">
+			<gml:description>門型</gml:description>
+			<gml:name>4830</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id4840">
+			<gml:description>電柱</gml:description>
+			<gml:name>4840</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id4900">
+			<gml:description>交通信号機</gml:description>
+			<gml:name>4900</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id5000">
+			<gml:description>階段</gml:description>
+			<gml:name>5000</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id5010">
+			<gml:description>通路</gml:description>
+			<gml:name>5010</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id5020">
+			<gml:description>エレベータ</gml:description>
+			<gml:name>5020</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id5030">
+			<gml:description>エスカレータ</gml:description>
+			<gml:name>5030</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id5100">
+			<gml:description>管理用地上施設</gml:description>
+			<gml:name>5100</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id5200">
+			<gml:description>電線共同溝</gml:description>
+			<gml:name>5200</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id5300">
+			<gml:description>CAB</gml:description>
+			<gml:name>5300</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id5400">
+			<gml:description>情報BOX</gml:description>
+			<gml:name>5400</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id5500">
+			<gml:description>管路</gml:description>
+			<gml:name>5500</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id5600">
+			<gml:description>管理用開口部</gml:description>
+			<gml:name>5600</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id5610">
+			<gml:description>マンホール</gml:description>
+			<gml:name>5610</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id5620">
+			<gml:description>ハンドホール</gml:description>
+			<gml:name>5620</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id5630">
+			<gml:description>入孔</gml:description>
+			<gml:name>5630</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id6000">
+			<gml:description>距離標</gml:description>
+			<gml:name>6000</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id6010">
+			<gml:description>境界標識</gml:description>
+			<gml:name>6010</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id6020">
+			<gml:description>道路元標・里程標</gml:description>
+			<gml:name>6020</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id6100">
+			<gml:description>料金徴収施設</gml:description>
+			<gml:name>6100</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id6200">
+			<gml:description>融雪施設</gml:description>
+			<gml:name>6200</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id7000">
+			<gml:description>排水施設</gml:description>
+			<gml:name>7000</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id7100">
+			<gml:description>集水桝</gml:description>
+			<gml:name>7100</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id7200">
+			<gml:description>排水溝</gml:description>
+			<gml:name>7200</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id7300">
+			<gml:description>側溝</gml:description>
+			<gml:name>7300</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id7400">
+			<gml:description>排水管</gml:description>
+			<gml:name>7400</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id7500">
+			<gml:description>排水ポンプ</gml:description>
+			<gml:name>7500</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id8010">
+			<gml:description>停留所</gml:description>
+			<gml:name>8010</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id8020">
+			<gml:description>消火栓</gml:description>
+			<gml:name>8020</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id8030">
+			<gml:description>郵便ポスト</gml:description>
+			<gml:name>8030</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id8040">
+			<gml:description>電話ボックス</gml:description>
+			<gml:name>8040</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id8050">
+			<gml:description>輸送管</gml:description>
+			<gml:name>8050</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id8060">
+			<gml:description>軌道</gml:description>
+			<gml:name>8060</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id8070">
+			<gml:description>架空線</gml:description>
+			<gml:name>8070</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id8080">
+			<gml:description>自動販売機</gml:description>
+			<gml:name>8080</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id8090">
+			<gml:description>墓碑</gml:description>
+			<gml:name>8090</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id8100">
+			<gml:description>記念碑</gml:description>
+			<gml:name>8100</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id8110">
+			<gml:description>立像</gml:description>
+			<gml:name>8110</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id8120">
+			<gml:description>噴水</gml:description>
+			<gml:name>8120</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id8130">
+			<gml:description>井戸</gml:description>
+			<gml:name>8130</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id8140">
+			<gml:description>掲示板</gml:description>
+			<gml:name>8140</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id8150">
+			<gml:description>点字ブロック</gml:description>
+			<gml:name>8150</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id8160">
+			<gml:description>ベンチ</gml:description>
+			<gml:name>8160</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id8170">
+			<gml:description>テーブル</gml:description>
+			<gml:name>8170</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id9999">
+			<gml:description>その他</gml:description>
+			<gml:name>9999</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id9001">
+			<gml:description>看板（自立式）</gml:description>
+			<gml:name>9001</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id9002">
+			<gml:description>水飲み</gml:description>
+			<gml:name>9002</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+</gml:Dictionary>
