@@ -1,29 +1,85 @@
 mod conversion;
 
+use std::collections::HashMap;
+
+use citygml::{FeatureOrData, ObjectValue};
+// use citygml::object;
 use conversion::{
     multilinestring_to_geojson_geometry, multipoint_to_geojson_geometry,
     multipolygon_to_geojson_geometry,
 };
 use nusamai_plateau::TopLevelCityObject;
+use serde_json::Value;
+
+fn object_value_to_value(object: &ObjectValue) -> Value {
+    match object {
+        ObjectValue::String(s) => Value::String(s.clone()),
+        ObjectValue::Code(c) => Value::String(c.value.to_string()),
+        ObjectValue::Integer(i) => Value::Number(serde_json::Number::from(*i)),
+        ObjectValue::Double(d) => Value::Number(serde_json::Number::from_f64(*d).unwrap()),
+        ObjectValue::Measure(m) => Value::Number(serde_json::Number::from_f64(*m).unwrap()),
+        ObjectValue::Boolean(b) => Value::Bool(*b),
+        ObjectValue::URI(u) => Value::String(serde_json::to_string(u).unwrap()),
+        ObjectValue::Date(d) => Value::String(d.to_string()),
+        // ObjectValue::Point(p) => Value::Array(vec![
+        //     Value::Number(serde_json::Number::from_f64(p.x).unwrap()),
+        //     Value::Number(serde_json::Number::from_f64(p.y).unwrap()),
+        //     Value::Number(serde_json::Number::from_f64(p.z).unwrap()),
+        // ]),
+        ObjectValue::Array(a) => Value::Array(a.iter().map(object_value_to_value).collect()),
+        ObjectValue::FeatureOrData(fod) => {
+            let attributes = attribute_to_json(fod);
+            let attributes_map: serde_json::Map<String, Value> = attributes.into_iter().collect();
+            Value::Object(attributes_map)
+        }
+        _ => Value::Null,
+    }
+}
+
+fn attribute_to_json(fod: &FeatureOrData) -> HashMap<String, Value> {
+    let mut map = HashMap::new();
+
+    if let Some(id) = &fod.id {
+        map.insert("id".to_string(), Value::String(id.clone()));
+    }
+
+    for (k, v) in &fod.attributes {
+        map.insert(k.clone(), object_value_to_value(v));
+    }
+
+    map
+}
+
+fn parse_attributes(obj: &TopLevelCityObject) -> HashMap<String, Value> {
+    let mut attributes = HashMap::new();
+
+    if let citygml::ObjectValue::FeatureOrData(fod) = &obj.root {
+        let a = attribute_to_json(fod);
+        attributes.extend(a);
+    }
+
+    attributes
+}
 
 /// Create GeoJSON features from a TopLevelCityObject
 /// Each feature for MultiPolygon, MultiLineString, and MultiPoint will be created (if it exists)
 // TODO: Handle properties (`obj.root` -> `geojson::Feature.properties`)
 // TODO: We may want to traverse the tree and create features for each semantic child in the future
-// TODO: Assigning subject attributes
 pub fn toplevel_cityobj_to_geojson_features(obj: &TopLevelCityObject) -> Vec<geojson::Feature> {
     let mut geojson_features: Vec<geojson::Feature> = vec![];
+    let attributes = parse_attributes(obj);
 
     if !obj.geometries.multipolygon.is_empty() {
         let mpoly_geojson_geom = multipolygon_to_geojson_geometry(
             &obj.geometries.vertices,
             &obj.geometries.multipolygon,
         );
+
         let mpoly_geojson_feat = geojson::Feature {
             bbox: None,
             geometry: Some(mpoly_geojson_geom),
             id: None,
-            properties: None, // TODO: from `obj.root`
+            properties: Some(attributes.clone().into_iter().collect()),
             foreign_members: None,
         };
         geojson_features.push(mpoly_geojson_feat);
@@ -38,7 +94,7 @@ pub fn toplevel_cityobj_to_geojson_features(obj: &TopLevelCityObject) -> Vec<geo
             bbox: None,
             geometry: Some(mls_geojson_geom),
             id: None,
-            properties: None, // TODO: from `obj.root``
+            properties: Some(attributes.clone().into_iter().collect()),
             foreign_members: None,
         };
         geojson_features.push(mls_geojson_feat);
@@ -51,7 +107,7 @@ pub fn toplevel_cityobj_to_geojson_features(obj: &TopLevelCityObject) -> Vec<geo
             bbox: None,
             geometry: Some(mpoint_geojson_geom),
             id: None,
-            properties: None, // TODO: from `obj.root``
+            properties: Some(attributes.clone().into_iter().collect()),
             foreign_members: None,
         };
         geojson_features.push(mpoint_geojson_feat);
