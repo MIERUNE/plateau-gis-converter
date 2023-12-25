@@ -91,12 +91,10 @@ mod tests {
 
     #[tokio::test]
     async fn test_init_connect() {
-        let path = Path::new("test.gpkg");
-        if path.exists() {
-            panic!("The test file '{}' already exists", path.display());
-        }
-
         let test_file_path = "test.gpkg";
+        if Path::new(test_file_path).exists() {
+            panic!("The test file '{}' already exists", test_file_path);
+        }
 
         let handler = GpkgHandler::init(test_file_path).await.unwrap();
         let _handler2 = GpkgHandler::connect(test_file_path).await.unwrap();
