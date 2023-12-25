@@ -90,7 +90,7 @@ mod tests {
         let geojson_features = toplevel_cityobj_to_geojson_features(&obj);
         assert_eq!(geojson_features.len(), 1);
 
-        let mpoly_geojson = geojson_features.get(0).unwrap();
+        let mpoly_geojson = geojson_features.first().unwrap();
         assert!(mpoly_geojson.bbox.is_none());
         assert!(mpoly_geojson.foreign_members.is_none());
         if let geojson::Value::MultiPolygon(rings_list) =

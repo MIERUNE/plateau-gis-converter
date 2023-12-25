@@ -1,8 +1,6 @@
-use citygml::CityGMLElement;
+use citygml::{citygml_feature, CityGMLElement};
 
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[derive(Default, Debug, CityGMLElement)]
+#[citygml_feature(name = "grp:CityObjectGroup")]
 pub struct CityObjectGroup {
-    #[citygml(path = b"@gml:id")]
-    id: Option<String>,
+    // ..
 }

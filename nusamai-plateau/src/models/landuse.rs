@@ -1,11 +1,6 @@
-use citygml::{CityGMLElement, GeometryRef};
+use citygml::{citygml_feature, CityGMLElement};
 
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[derive(Default, Debug, CityGMLElement)]
+#[citygml_feature(name = "luse:LandUse")]
 pub struct LandUse {
-    #[citygml(geom = b"luse")]
-    pub geometries: GeometryRef,
-
-    #[citygml(path = b"@gml:id")]
-    id: Option<String>,
+    // ...
 }

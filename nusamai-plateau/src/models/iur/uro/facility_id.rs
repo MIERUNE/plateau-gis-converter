@@ -1,11 +1,7 @@
-use citygml::{CityGMLElement, Code, Measure};
+use citygml::{citygml_data, citygml_property, CityGMLElement, Code, Measure};
 
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[derive(Default, Debug, CityGMLElement)]
+#[citygml_property(name = "uro:FacilityIdAttributeProperty")]
 pub enum FacilityIdAttributeProperty {
-    #[default]
-    Unknown,
-
     #[citygml(path = b"uro:FacilityIdAttribute")]
     FacilityIdAttribute(FacilityIdAttribute),
 
@@ -13,8 +9,7 @@ pub enum FacilityIdAttributeProperty {
     RiverFacilityIdAttribute(RiverFacilityIdAttribute),
 }
 
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[derive(Default, Debug, CityGMLElement)]
+#[citygml_data(name = "uro:FacilityIdAttribute")]
 pub struct FacilityIdAttribute {
     #[citygml(path = b"uro:id")]
     pub id: Option<String>,
@@ -50,8 +45,7 @@ pub struct FacilityIdAttribute {
     pub alternative_name: Vec<String>,
 }
 
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[derive(Default, Debug, CityGMLElement)]
+#[citygml_data(name = "uro:RiverFacilityIdAttribute")]
 pub struct RiverFacilityIdAttribute {
     #[citygml(path = b"uro:id")]
     pub id: Option<String>,

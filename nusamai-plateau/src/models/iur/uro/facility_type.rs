@@ -1,7 +1,6 @@
-use citygml::{CityGMLElement, Code};
+use citygml::{citygml_data, CityGMLElement, Code};
 
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[derive(Default, Debug, CityGMLElement)]
+#[citygml_data(name = "uro:FacilityTypeAttribute")]
 pub struct FacilityTypeAttribute {
     #[citygml(path = b"uro:class")]
     pub class: Option<Code>,
