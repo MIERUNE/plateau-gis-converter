@@ -1,7 +1,6 @@
-use citygml::{CityGMLElement, Code};
+use citygml::{citygml_data, CityGMLElement, Code};
 
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[derive(Default, Debug, CityGMLElement)]
+#[citygml_data(name = "uro:CityFurnitureDetailAttribute")]
 pub struct CityFurnitureDetailAttribute {
     #[citygml(path = b"uro:facilityType")]
     pub facility_type: Option<Code>,
@@ -10,8 +9,7 @@ pub struct CityFurnitureDetailAttribute {
     pub description: Option<String>,
 }
 
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[derive(Default, Debug, CityGMLElement)]
+#[citygml_data(name = "uro:CityFurnitureDataQualityAttribute")]
 pub struct CityFurnitureDataQualityAttribute {
     #[citygml(path = b"uro:srcScale")]
     pub src_scale: Vec<Code>,

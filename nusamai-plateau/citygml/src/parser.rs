@@ -509,7 +509,12 @@ impl<R: BufRead> SubTreeReader<'_, R> {
                     match (nsres, localname.as_ref()) {
                         (Bound(GML_NS), b"Polygon") => self.parse_polygon()?,
                         (Bound(GML_NS), b"CompositeSurface") => self.parse_composite_surface()?,
-                        // (Bound(GML_NS), b"OrientableSurface") =>
+                        (Bound(GML_NS), b"OrientableSurface") => {
+                            // TODO: OrientableSurface
+                            println!("OrientableSurface is not supported");
+                            self.reader
+                                .read_to_end_into(start.name(), &mut self.state.buf2)?;
+                        }
                         // (Bound(GML_NS), b"TriangulatedSurface") =>
                         // (Bound(GML_NS), b"Tin") =>
                         _ => {

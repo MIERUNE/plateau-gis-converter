@@ -35,7 +35,7 @@ pub struct Buffer {
 
     /// Application-specific data.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub extras: Option<HashMap<String, Value>>,
+    pub extras: Option<Value>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Default)]
@@ -72,7 +72,7 @@ pub struct BufferView {
 
     /// The stride, in bytes, between vertex attributes.  When this is not defined, data is tightly packed. When two or more accessors use the same buffer view, this field MUST be defined.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub byte_stride: Option<u32>,
+    pub byte_stride: Option<u8>,
 
     /// The hint representing the intended GPU buffer type to use with this buffer view.
     #[serde(skip_serializing_if = "Option::is_none")]

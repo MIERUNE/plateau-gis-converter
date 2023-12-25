@@ -1,30 +1,8 @@
 use super::iur::uro;
-use citygml::{CityGMLElement, Code, Date, GeometryRef};
+use citygml::{citygml_feature, CityGMLElement, Code};
 
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[derive(Default, Debug, CityGMLElement)]
+#[citygml_feature(name = "frn:CityFurniture")]
 pub struct CityFurniture {
-    #[citygml(geom = b"frn")]
-    pub geometries: GeometryRef,
-
-    #[citygml(path = b"@gml:id")]
-    id: Option<String>,
-
-    #[citygml(path = b"gml:identifier")]
-    identifier: Option<String>,
-
-    #[citygml(path = b"gml:name")]
-    name: Option<String>,
-
-    #[citygml(path = b"gml:description")]
-    description: Option<String>,
-
-    #[citygml(path = b"core:creationDate")]
-    creation_date: Option<Date>,
-
-    #[citygml(path = b"core:terminationDate")]
-    termination_date: Option<Date>,
-
     #[citygml(path = b"frn:class")]
     pub class: Option<Code>,
 

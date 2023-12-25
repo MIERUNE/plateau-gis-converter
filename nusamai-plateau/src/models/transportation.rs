@@ -1,14 +1,16 @@
+
 use super::iur::uro;
 use citygml::{CityGMLElement, Date, GeometryRef, Code};
+
 
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Default, Debug, CityGMLElement)]
 pub struct Road {
     #[citygml(geom = b"tran")]
-    pub geometries: GeometryRef,
+    geometries: GeometryRef,
 
     #[citygml(path = b"@gml:id")]
-    pub id: Option<String>,
+    id: Option<String>,
 
     #[citygml(path = b"core:creationDate")]
     creation_date: Option<Date>,
@@ -56,7 +58,7 @@ pub struct Road {
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Default, Debug, CityGMLElement)]
 pub struct Railway {
-    #[citygml(geom = b"tran")]
+#[citygml(geom = b"tran")]
     pub geometries: GeometryRef,
 
     #[citygml(path = b"@gml:id")]
@@ -72,7 +74,7 @@ pub struct Railway {
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Default, Debug, CityGMLElement)]
 pub struct Track {
-    #[citygml(geom = b"tran")]
+#[citygml(geom = b"tran")]
     pub geometries: GeometryRef,
 
     #[citygml(path = b"@gml:id")]
@@ -88,7 +90,7 @@ pub struct Track {
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Default, Debug, CityGMLElement)]
 pub struct Square {
-    #[citygml(geom = b"tran")]
+#[citygml(geom = b"tran")]
     pub geometries: GeometryRef,
 
     #[citygml(path = b"@gml:id")]
@@ -106,7 +108,7 @@ pub struct Square {
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Default, Debug, CityGMLElement)]
 pub struct Waterway {
-    #[citygml(geom = b"tran")]
+#[citygml(geom = b"tran")]
     pub geometries: GeometryRef,
 
     #[citygml(path = b"@gml:id")]

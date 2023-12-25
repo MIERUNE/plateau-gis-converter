@@ -1,3 +1,4 @@
+pub mod codelist;
 pub mod models;
 use serde::{Deserialize, Serialize};
 

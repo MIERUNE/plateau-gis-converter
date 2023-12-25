@@ -1,18 +1,14 @@
-use citygml::{CityGMLElement, Code, GeometryRef, Measure};
+use citygml::{citygml_data, citygml_property, CityGMLElement, Code, GeometryRef, Measure};
 
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[derive(Default, Debug, CityGMLElement)]
+#[citygml_property(name = "uro:DmAttributeProperty")]
 pub enum DmAttributeProperty {
-    #[default]
-    Unknown,
     #[citygml(path = b"uro:DmAnnotation")]
     DmAnnotation(DmAnnotation),
     #[citygml(path = b"uro:DmGeometricAttribute")]
     DmGeometricAttribute(DmGeometricAttribute),
 }
 
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[derive(Default, Debug, CityGMLElement)]
+#[citygml_data(name = "uro:DmAnnotation")]
 pub struct DmAnnotation {
     #[citygml(path = b"uro:dmCode")]
     pub dm_code: Option<Code>,
@@ -51,8 +47,7 @@ pub struct DmAnnotation {
     // pub lod0anchorPoint: GeometryPropertyType
 }
 
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[derive(Default, Debug, CityGMLElement)]
+#[citygml_data(name = "uro:DmGeometricAttribute")]
 pub struct DmGeometricAttribute {
     #[citygml(geom = b"uro")]
     pub geometry: GeometryRef,
@@ -100,8 +95,7 @@ pub struct DmGeometricAttribute {
     // pub lod0anchorPoint: GeometryPropertyType
 }
 
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[derive(Default, Debug, CityGMLElement)]
+#[citygml_data(name = "uro:DmElement")]
 pub struct DmElement {
     #[citygml(path = b"uro:locationType")]
     pub location_type: Option<Code>,
