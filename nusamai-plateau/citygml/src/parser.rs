@@ -1,3 +1,8 @@
+use crate::codelist::{self, CodeResolver};
+use std::io::BufRead;
+use std::str;
+use url::Url;
+
 use crate::geometry::{
     Geometries, GeometryCollector, GeometryParseType, GeometryRef, GeometryRefEntry, GeometryType,
 };
@@ -6,8 +11,6 @@ use quick_xml::events::{BytesStart, Event};
 use quick_xml::name::Namespace;
 use quick_xml::name::ResolveResult::Bound;
 use quick_xml::NsReader;
-use std::io::BufRead;
-use std::str;
 use thiserror::Error;
 
 const GML_NS: Namespace = Namespace(b"http://www.opengis.net/gml");
@@ -20,16 +23,17 @@ pub enum ParseError {
     SchemaViolation(String),
     #[error("Invalid value: {0}")]
     InvalidValue(String),
+    #[error("Codelist error: {0}")]
+    CodelistError(String),
     #[error("cancelled")]
     Cancelled,
 }
 
-pub struct CityGMLReader {
-    state: InternalState,
+pub struct CityGMLReader<'a> {
+    state: InternalState<'a>,
 }
 
-#[derive(Default)]
-struct InternalState {
+struct InternalState<'a> {
     /// Buffer holding the current path
     path_buf: Vec<u8>,
     /// Stack of indices of slashes '/' in `path_buf`
@@ -42,21 +46,71 @@ struct InternalState {
     fp_buf: Vec<f64>,
     /// Data of last start tag
     current_start: Option<BytesStart<'static>>,
+
     /// Current geometry store
     geometry_collector: GeometryCollector,
+
+    /// URI of the source file
+    context: ParseContext<'a>,
 }
 
-impl CityGMLReader {
-    #[inline]
-    pub fn new() -> Self {
+impl<'a> InternalState<'a> {
+    fn new(context: ParseContext<'a>) -> Self {
         Self {
-            state: InternalState::default(),
+            path_buf: Vec::new(),
+            path_stack_indices: Vec::new(),
+            buf1: Vec::new(),
+            buf2: Vec::new(),
+            fp_buf: Vec::new(),
+            current_start: None,
+            geometry_collector: GeometryCollector::default(),
+            context,
+        }
+    }
+}
+
+pub struct ParseContext<'a> {
+    source_uri: Option<Url>,
+    code_resolver: &'a dyn CodeResolver,
+}
+
+impl<'a> ParseContext<'a> {
+    pub fn new(source_uri: Url, code_resolver: &'a dyn CodeResolver) -> Self {
+        Self {
+            source_uri: Some(source_uri),
+            code_resolver,
         }
     }
 
-    pub fn start_root<'a, R: BufRead>(
+    pub fn source_url(&self) -> Option<&Url> {
+        self.source_uri.as_ref()
+    }
+
+    pub fn code_resolver(&self) -> &dyn CodeResolver {
+        self.code_resolver
+    }
+}
+
+impl<'a> Default for ParseContext<'a> {
+    fn default() -> Self {
+        Self {
+            source_uri: None,
+            code_resolver: &codelist::NoopResolver {},
+        }
+    }
+}
+
+impl<'a> CityGMLReader<'a> {
+    #[inline]
+    pub fn new(context: ParseContext<'a>) -> Self {
+        Self {
+            state: InternalState::new(context),
+        }
+    }
+
+    pub fn start_root<'b: 'a, R: BufRead>(
         &'a mut self,
-        reader: &'a mut quick_xml::NsReader<R>,
+        reader: &'b mut quick_xml::NsReader<R>,
     ) -> Result<SubTreeReader<R>, ParseError> {
         reader.trim_text(true);
         reader.expand_empty_elements(true);
@@ -89,19 +143,13 @@ impl CityGMLReader {
     }
 }
 
-impl Default for CityGMLReader {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
-pub struct SubTreeReader<'a, R> {
+pub struct SubTreeReader<'a, 'b, R> {
     reader: &'a mut quick_xml::NsReader<R>,
-    state: &'a mut InternalState,
+    state: &'a mut InternalState<'b>,
     path_start: usize,
 }
 
-impl<R: BufRead> SubTreeReader<'_, R> {
+impl<R: BufRead> SubTreeReader<'_, '_, R> {
     pub fn parse_children(
         &mut self,
         logic: impl FnMut(&mut SubTreeReader<R>) -> Result<(), ParseError>,
@@ -178,6 +226,18 @@ impl<R: BufRead> SubTreeReader<'_, R> {
         Ok(())
     }
 
+    pub fn find_codespace_attr(&mut self) -> Option<String> {
+        let Some(start) = &self.state.current_start else {
+            panic!("find_codespace() must be called immediately after encountering a start tag.");
+        };
+        for attr in start.attributes().flatten() {
+            if attr.key.as_ref() == b"codeSpace" {
+                return Some(String::from_utf8_lossy(attr.value.as_ref()).into_owned());
+            }
+        }
+        None
+    }
+
     pub fn skip_current_element(&mut self) -> Result<(), ParseError> {
         let Some(start) = &self.state.current_start else {
             panic!("skip_current_element() must be called immediately after encountering a new starting tag.");
@@ -219,6 +279,10 @@ impl<R: BufRead> SubTreeReader<'_, R> {
                 _ => (),
             }
         }
+    }
+
+    pub fn context(&self) -> &ParseContext {
+        &self.state.context
     }
 
     pub fn collect_geometries(&mut self) -> Geometries {

@@ -39,6 +39,7 @@ impl DataSink for NoopSink {
                 println!("sink cancelled");
                 return;
             }
+
             self.num_features += 1;
             self.num_vertices += parcel.cityobj.geometries.vertices.len();
 
