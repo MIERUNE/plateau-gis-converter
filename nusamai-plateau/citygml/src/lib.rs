@@ -10,7 +10,7 @@ pub use object::*;
 pub use parser::*;
 pub use values::*;
 
-pub use macros::CityGMLElement;
+pub use macros::*;
 
 pub trait CityGMLElement: Sized {
     fn parse<R: std::io::BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError>;

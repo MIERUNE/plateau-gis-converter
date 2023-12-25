@@ -7,6 +7,8 @@ pub enum GeometryParseType {
     Solid,
     MultiSurface,
     MultiCurve,
+    MultiPoint,
+    Point,
     Triangulated,
 }
 
@@ -17,6 +19,8 @@ pub enum GeometryType {
     Unknown,
     Solid,
     Surface,
+    Curve,
+    Point,
     Triangle,
 }
 

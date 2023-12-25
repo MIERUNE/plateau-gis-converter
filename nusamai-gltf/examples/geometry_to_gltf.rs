@@ -271,7 +271,7 @@ fn tessellation(
         }
     }
 
-    return Ok(Triangles::new(indices, vertices));
+    Ok(Triangles::new(indices, vertices))
 }
 
 #[derive(Parser)]

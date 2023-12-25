@@ -1,10 +1,7 @@
-use citygml::CityGMLElement;
+use citygml::citygml_property;
 
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[derive(Default, Debug, CityGMLElement)]
+#[citygml_property(name = "uro:FacilityAttributeProperty")]
 pub enum FacilityAttributeProperty {
-    #[default]
-    Unknown,
     // TODO:
     // #[citygml(path = b"uro:CargoHandlingFacility")]
     // CargoHandlingFacility(CargoHandlingFacility),

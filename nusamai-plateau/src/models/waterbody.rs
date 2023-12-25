@@ -1,11 +1,6 @@
-use citygml::{CityGMLElement, GeometryRef};
+use citygml::{citygml_feature, CityGMLElement};
 
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[derive(Default, Debug, CityGMLElement)]
+#[citygml_feature(name = "wtr:WaterBody")]
 pub struct WaterBody {
-    #[citygml(geom = b"wtr")]
-    pub geometries: GeometryRef,
-
-    #[citygml(path = b"@gml:id")]
-    id: Option<String>,
+    // ...
 }

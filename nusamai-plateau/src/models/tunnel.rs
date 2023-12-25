@@ -1,14 +1,9 @@
-use citygml::{CityGMLElement, GeometryRef};
+use citygml::{citygml_feature, CityGMLElement};
 
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[derive(Default, Debug, CityGMLElement)]
+#[citygml_feature(name = "tun:Tunnel")]
 pub struct Tunnel {
-    #[citygml(geom = b"tun")]
-    pub geometries: GeometryRef,
-
-    #[citygml(path = b"@gml:id")]
-    id: Option<String>,
-
     #[citygml(path = b"tun:class")]
     pub class: Option<String>,
 }
+
+// TODO: Building と類似の構造を持つ
