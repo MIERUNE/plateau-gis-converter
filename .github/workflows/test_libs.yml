@@ -11,6 +11,7 @@ on:
       - "nusamai/**"
       - "nusamai-*/**"
       - ".github/**"
+      - "*"
 
 env: 
   CARGO_TERM_COLOR: always
