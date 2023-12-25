@@ -1,6 +1,7 @@
 use nusamai_plateau::TopLevelCityObject;
 use sqlx::Row;
 use sqlx::{migrate::MigrateDatabase, Pool, Sqlite, SqlitePool};
+use std::path::Path;
 use thiserror::Error;
 
 pub struct GpkgHandler {
@@ -9,26 +10,20 @@ pub struct GpkgHandler {
 
 #[derive(Error, Debug)]
 pub enum GpkgError {
-    #[error("Database already exists: {0}")]
+    #[error("Database file already exists: {0}")]
     DatabaseExists(String),
-    #[error("Database does not exist: {0}")]
-    DatabaseDoesNotExist(String),
     #[error("SQLx error: {0}")]
     SqlxError(#[from] sqlx::Error),
 }
 
 impl GpkgHandler {
-    async fn database_exists(db_url: &str) -> Result<bool, sqlx::Error> {
-        Sqlite::database_exists(db_url).await
-    }
-
     /// Create and initialize new GeoPackage database
     pub async fn init(path: &str) -> Result<Self, GpkgError> {
-        let db_url = format!("sqlite://{}", path);
-
-        if Self::database_exists(&db_url).await? {
+        if Path::new(path).exists() {
             return Err(GpkgError::DatabaseExists(path.to_string()));
         }
+
+        let db_url = format!("sqlite://{}", path);
 
         Sqlite::create_database(&db_url).await?;
         let pool = SqlitePool::connect(&db_url).await?;
@@ -43,12 +38,7 @@ impl GpkgHandler {
     /// Connect to an existing GeoPackage database
     pub async fn connect(path: &str) -> Result<Self, GpkgError> {
         let db_url = format!("sqlite://{}", path);
-        if !Self::database_exists(&db_url).await? {
-            return Err(GpkgError::DatabaseDoesNotExist(path.to_string()));
-        }
-
         let pool = SqlitePool::connect(&db_url).await?;
-
         Ok(Self { pool })
     }
 
@@ -86,18 +76,11 @@ impl GpkgHandler {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::fs::remove_file;
-    use std::path::Path;
 
     #[tokio::test]
     async fn test_init_connect() {
-        let test_file_path = "test.gpkg";
-        if Path::new(test_file_path).exists() {
-            panic!("The test file '{}' already exists", test_file_path);
-        }
-
-        let handler = GpkgHandler::init(test_file_path).await.unwrap();
-        let _handler2 = GpkgHandler::connect(test_file_path).await.unwrap();
+        let handler = GpkgHandler::init("sqlite::memory:").await.unwrap();
+        let _handler2 = GpkgHandler::connect("sqlite::memory:").await.unwrap();
 
         let table_names = handler.table_names().await;
         assert_eq!(
@@ -111,9 +94,5 @@ mod tests {
                 "gpkg_tile_matrix_set"
             ]
         );
-
-        remove_file(test_file_path).unwrap();
-        remove_file(format!("{}-shm", test_file_path)).unwrap();
-        remove_file(format!("{}-wal", test_file_path)).unwrap();
     }
 }
