@@ -47,7 +47,8 @@ pub fn citygml_to_geojson(input_path: &str, output_path: &str) {
     let reader = std::io::BufReader::new(std::fs::File::open(input_path).unwrap());
     let mut xml_reader = quick_xml::NsReader::from_reader(reader);
 
-    let cityobjs = match CityGMLReader::new().start_root(&mut xml_reader) {
+    let context = citygml::ParseContext::default();
+    let cityobjs = match CityGMLReader::new(context).start_root(&mut xml_reader) {
         Ok(mut st) => match toplevel_dispatcher(&mut st) {
             Ok(items) => items,
             Err(e) => panic!("Err: {:?}", e),

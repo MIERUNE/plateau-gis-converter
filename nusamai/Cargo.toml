@@ -18,6 +18,7 @@ lz4_flex = "0.11.1"
 nusamai-geojson = { path = "../nusamai-geojson" }
 geojson = "0.24.1"
 serde_json = "1.0.108"
+url = "2.5.0"
 
 [dev-dependencies]
 rand = "0.8.5"

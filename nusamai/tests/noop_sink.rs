@@ -7,7 +7,9 @@ use nusamai::transform::NoopTransformer;
 #[test]
 fn test_noop_sink() {
     let source_provider: Box<dyn DataSourceProvider> = Box::new(CityGMLSourceProvider {
-        filenames: vec!["../nusamai-plateau/tests/data/52384698_frn_6697_op.gml".to_string()],
+        filenames: vec![
+            "../nusamai-plateau/tests/data/numazu-shi/udx/frn/53391597_frn_6697_op.gml".to_string(),
+        ],
     });
     let sink_provider: Box<dyn DataSinkProvider> = Box::new(NoopSinkProvider {});
 

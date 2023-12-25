@@ -9,6 +9,7 @@ on:
   pull_request:
     paths:
       - "app/**"
+      - ".github/**"
 
 env: 
   CARGO_TERM_COLOR: always

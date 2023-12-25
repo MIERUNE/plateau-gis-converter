@@ -1,4 +1,7 @@
+use std::fs;
 use std::io::BufRead;
+use std::path::Path;
+use url::Url;
 
 use rayon::prelude::*;
 
@@ -37,6 +40,8 @@ pub struct CityGMLSource {
 
 impl DataSource for CityGMLSource {
     fn run(&mut self, downstream: Sender, feedback: &Feedback) {
+        let code_resolver = nusamai_plateau::codelist::Resolver::new();
+
         let _ = self.filenames.par_iter().try_for_each(|filename| {
             println!("loading city objects from: {} ...", filename);
             let Ok(file) = std::fs::File::open(filename) else {
@@ -44,7 +49,13 @@ impl DataSource for CityGMLSource {
             };
             let reader = std::io::BufReader::new(file);
             let mut xml_reader = quick_xml::NsReader::from_reader(reader);
-            match CityGMLReader::new().start_root(&mut xml_reader) {
+            let source_url =
+                Url::from_file_path(fs::canonicalize(Path::new(filename)).unwrap()).unwrap();
+
+            let context = citygml::ParseContext::new(source_url, &code_resolver);
+            let mut citygml_reader = CityGMLReader::new(context);
+
+            match citygml_reader.start_root(&mut xml_reader) {
                 Ok(mut st) => match toplevel_dispatcher(&mut st, &downstream, feedback) {
                     Ok(_) => Ok(()),
                     Err(e) => Err(e),

@@ -100,7 +100,8 @@ fn main() {
 
             let inst = Instant::now();
             let mut xml_reader = quick_xml::NsReader::from_reader(reader);
-            match CityGMLReader::new().start_root(&mut xml_reader) {
+            let context = citygml::ParseContext::default();
+            match CityGMLReader::new(context).start_root(&mut xml_reader) {
                 Ok(mut st) => {
                     match example_toplevel_dispatcher(
                         &mut st,

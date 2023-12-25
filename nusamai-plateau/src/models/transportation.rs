@@ -1,14 +1,7 @@
-use citygml::{CityGMLElement, GeometryRef};
+use citygml::{citygml_feature, CityGMLElement};
 
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[derive(Default, Debug, CityGMLElement)]
+#[citygml_feature(name = "tran:Road")]
 pub struct Road {
-    #[citygml(geom = b"tran")]
-    pub geometries: GeometryRef,
-
-    #[citygml(path = b"@gml:id")]
-    id: Option<String>,
-
     #[citygml(path = b"tran:trafficArea/tran:TrafficArea")]
     traffic_area: Vec<TrafficArea>,
 
@@ -16,15 +9,8 @@ pub struct Road {
     auxiliary_traffic_area: Vec<AuxiliaryTrafficArea>,
 }
 
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[derive(Default, Debug, CityGMLElement)]
+#[citygml_feature(name = "tran:Railway")]
 pub struct Railway {
-    #[citygml(geom = b"tran")]
-    pub geometries: GeometryRef,
-
-    #[citygml(path = b"@gml:id")]
-    id: Option<String>,
-
     #[citygml(path = b"tran:trafficArea/tran:TrafficArea")]
     traffic_area: Vec<TrafficArea>,
 
@@ -32,15 +18,8 @@ pub struct Railway {
     auxiliary_traffic_area: Vec<AuxiliaryTrafficArea>,
 }
 
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[derive(Default, Debug, CityGMLElement)]
+#[citygml_feature(name = "tran:Track")]
 pub struct Track {
-    #[citygml(geom = b"tran")]
-    pub geometries: GeometryRef,
-
-    #[citygml(path = b"@gml:id")]
-    id: Option<String>,
-
     #[citygml(path = b"tran:trafficArea/tran:TrafficArea")]
     traffic_area: Vec<TrafficArea>,
 
@@ -48,15 +27,8 @@ pub struct Track {
     auxiliary_traffic_area: Vec<AuxiliaryTrafficArea>,
 }
 
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[derive(Default, Debug, CityGMLElement)]
+#[citygml_feature(name = "tran:Square")]
 pub struct Square {
-    #[citygml(geom = b"tran")]
-    pub geometries: GeometryRef,
-
-    #[citygml(path = b"@gml:id")]
-    id: Option<String>,
-
     #[citygml(path = b"tran:trafficArea/tran:TrafficArea")]
     traffic_area: Vec<TrafficArea>,
 
@@ -66,15 +38,8 @@ pub struct Square {
 
 /// uro:Waterway (PLATEAU, CityGML 2.x)
 /// tran:Waterway (CityGML 3.x)
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[derive(Default, Debug, CityGMLElement)]
+#[citygml_feature(name = "uro:Waterway")]
 pub struct Waterway {
-    #[citygml(geom = b"tran")]
-    pub geometries: GeometryRef,
-
-    #[citygml(path = b"@gml:id")]
-    id: Option<String>,
-
     #[citygml(path = b"tran:trafficArea/tran:TrafficArea")]
     traffic_area: Vec<TrafficArea>,
 
@@ -82,22 +47,12 @@ pub struct Waterway {
     auxiliary_traffic_area: Vec<AuxiliaryTrafficArea>,
 }
 
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[derive(Default, Debug, CityGMLElement)]
+#[citygml_feature(name = "tran:TrafficArea")]
 pub struct TrafficArea {
-    #[citygml(geom = b"tran")]
-    pub geometries: GeometryRef,
-
-    #[citygml(path = b"@gml:id")]
-    id: Option<String>,
+    // ...
 }
 
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[derive(Default, Debug, CityGMLElement)]
+#[citygml_feature(name = "tran:AuxiliaryTrafficArea")]
 pub struct AuxiliaryTrafficArea {
-    #[citygml(geom = b"tran")]
-    pub geometries: GeometryRef,
-
-    #[citygml(path = b"@gml:id")]
-    id: Option<String>,
+    // ...
 }
