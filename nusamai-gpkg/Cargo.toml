@@ -1,0 +1,15 @@
+[package]
+name = "nusamai-gpkg"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+sqlx = { version = "0.7.3", features = ["sqlite", "runtime-tokio"] }
+tokio = { version = "1.35.1", features = ["full"] }
+nusamai-plateau = { path = "../nusamai-plateau" }
+thiserror = "1.0.51"
+
+[dev-dependencies]
+citygml = {path = "../nusamai-plateau/citygml" }
+clap = { version = "4.4.8", features = ["derive"] }
+quick-xml = "0.31.0"
