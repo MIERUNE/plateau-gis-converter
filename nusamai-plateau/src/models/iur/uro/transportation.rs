@@ -1,7 +1,6 @@
-use citygml::{CityGMLElement, Code};
+use citygml::{citygml_data, CityGMLElement, Code};
 
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[derive(Default, Debug, CityGMLElement)]
+#[citygml_data(name = "uro:TransportationDataQualityAttribute")]
 pub struct TransportationDataQualityAttribute {
     #[citygml(path = b"uro:srcScale")]
     pub src_scale: Vec<Code>,
@@ -18,9 +17,7 @@ pub struct TransportationDataQualityAttribute {
     #[citygml(path = b"uro:lodType")]
     pub lod_type: Option<String>, // TODO: uro:CityFurnitureLODType(enumerations)
 }
-
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[derive(Default, Debug, CityGMLElement)]
+#[citygml_data(name = "uro:RoadStructureAttribute")]
 pub struct RoadStructureAttribute{
     #[citygml(path = b"uro:widthType")]
     pub width_type: Option<Code>,
@@ -35,8 +32,7 @@ pub struct RoadStructureAttribute{
     pub section_type: Option<Code>,
 }
 
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[derive(Default, Debug, CityGMLElement)]
+#[citygml_data(name = "uro:TrafficVolumeAttribute")]
 pub struct TrafficVolumeAttribute{
     #[citygml(path = b"uro:sectionID")]
     pub section_type: Option<String>,
