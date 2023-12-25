@@ -1,9 +1,4 @@
 use japan_geoid::{Geoid, MemoryGrid};
-use rust_embed::RustEmbed;
-
-#[derive(RustEmbed)]
-#[folder = "examples/data/"]
-struct Asset;
 
 /// Convert from JGD 2011 Geograhpic 3D (EPSG:6697) to WGS84 Geograhpic 3D (EPSG:4979)
 pub struct JGD2011ToWGS84 {
@@ -13,10 +8,8 @@ pub struct JGD2011ToWGS84 {
 impl JGD2011ToWGS84 {
     /// Create a new instance with the embed geoid model data.
     pub fn from_embed_model() -> Self {
-        let Some(embed_file) = Asset::get("gsigeo2011_ver2_2.bin.lz4") else {
-            panic!("Failed to load embedded model file");
-        };
-        let decompressed = &lz4_flex::decompress_size_prepended(&embed_file.data).unwrap();
+        const EMBEDDED_MODEL: &[u8] = include_bytes!("../examples/data/gsigeo2011_ver2_2.bin.lz4");
+        let decompressed = &lz4_flex::decompress_size_prepended(EMBEDDED_MODEL).unwrap();
         let mut reader = std::io::Cursor::new(decompressed);
 
         Self {
