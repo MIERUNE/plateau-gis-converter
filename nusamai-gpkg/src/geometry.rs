@@ -27,8 +27,12 @@ fn polygon_to_rings(vertices: &[[f64; 3]], poly: &Polygon<1, u32>) -> Vec<Vec<Ve
     rings
 }
 
-pub fn multipolygon_to_bytes(vertices: &[[f64; 3]], mpoly: &MultiPolygon<'_, 1, u32>) -> Vec<u8> {
-    let mut bytes: Vec<u8> = geometry_header(4326);
+pub fn multipolygon_to_bytes(
+    vertices: &[[f64; 3]],
+    mpoly: &MultiPolygon<'_, 1, u32>,
+    srs_id: i32,
+) -> Vec<u8> {
+    let mut bytes: Vec<u8> = geometry_header(srs_id);
 
     // Byte order: Little endian
     bytes.push(0x01);
@@ -152,13 +156,13 @@ mod tests {
         mpoly.add_exterior([[0], [1], [2], [3], [0]]);
         mpoly.add_interior([[4], [5], [6], [7], [4]]);
 
-        let bytes = multipolygon_to_bytes(&vertices, &mpoly);
+        let bytes = multipolygon_to_bytes(&vertices, &mpoly, 1234);
 
         assert_eq!(bytes.len(), 274);
 
         // header
         assert_eq!(bytes[0..=3].to_vec(), vec![0x47, 0x50, 0x00, 0b00000001]);
-        assert_eq!(bytes[4..=7].to_vec(), &i32::to_le_bytes(4326));
+        assert_eq!(bytes[4..=7].to_vec(), &i32::to_le_bytes(1234));
 
         // Byte order: Little endian
         assert_eq!(bytes[8], 0x01);

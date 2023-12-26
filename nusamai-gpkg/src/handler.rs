@@ -89,7 +89,7 @@ impl GpkgHandler {
     pub async fn add_object(&self, obj: &TopLevelCityObject) {
         if !obj.geometries.multipolygon.is_empty() {
             let bytes =
-                multipolygon_to_bytes(&obj.geometries.vertices, &obj.geometries.multipolygon);
+                multipolygon_to_bytes(&obj.geometries.vertices, &obj.geometries.multipolygon, 4326);
 
             sqlx::query("INSERT INTO mpoly3d (geometry) VALUES (?)")
                 .bind(bytes)
