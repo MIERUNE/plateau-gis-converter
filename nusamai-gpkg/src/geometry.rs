@@ -131,4 +131,57 @@ mod tests {
             }
         }
     }
+
+    #[test]
+    fn test_multipolygon_to_bytes() {
+        let vertices: Vec<[f64; 3]> = vec![
+            // 1st polygon, exterior (vertex 0~3)
+            [0., 0., 111.],
+            [5., 0., 111.],
+            [5., 5., 111.],
+            [0., 5., 111.],
+            // 1st polygon, interior 1 (vertex 4~7)
+            [1., 1., 111.],
+            [2., 1., 111.],
+            [2., 2., 111.],
+            [1., 2., 111.],
+            // 1st polygon, interior 2 (vertex 8~11)
+            [3., 3., 111.],
+            [4., 3., 111.],
+            [4., 4., 111.],
+            [3., 4., 111.],
+            // 2nd polygon, exterior (vertex 12~15)
+            [4., 0., 222.],
+            [7., 0., 222.],
+            [7., 3., 222.],
+            [4., 3., 222.],
+            // 2nd polygon, interior (vertex 16~19)
+            [5., 1., 222.],
+            [6., 1., 222.],
+            [6., 2., 222.],
+            [5., 2., 222.],
+            // 3rd polygon, exterior (vertex 20~23)
+            [4., 0., 333.],
+            [7., 0., 333.],
+            [7., 3., 333.],
+            [4., 3., 333.],
+        ];
+
+        let mut mpoly = MultiPolygon::<'_, 1, u32>::new();
+        // 1st polygon
+        mpoly.add_exterior([[0], [1], [2], [3], [0]]);
+        mpoly.add_interior([[4], [5], [6], [7], [4]]);
+        mpoly.add_interior([[8], [9], [10], [11], [8]]);
+        // 2nd polygon
+        mpoly.add_exterior([[12], [13], [14], [15], [12]]);
+        mpoly.add_interior([[16], [17], [18], [19], [16]]);
+        // 3rd polygon
+        mpoly.add_exterior([[20], [21], [22], [23], [20]]);
+
+        let bytes = multipolygon_to_bytes(&vertices, &mpoly);
+
+        // header
+        assert_eq!(bytes[0..=3].to_vec(), vec![0x47, 0x50, 0x00, 0b00000001]);
+        assert_eq!(bytes[4..=7].to_vec(), &i32::to_le_bytes(4326));
+    }
 }
