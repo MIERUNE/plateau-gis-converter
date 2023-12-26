@@ -1,10 +1,21 @@
 mod conversion;
-
+use citygml::attribute_to_json;
 use conversion::{
     multilinestring_to_geojson_geometry, multipoint_to_geojson_geometry,
     multipolygon_to_geojson_geometry,
 };
 use nusamai_plateau::TopLevelCityObject;
+use serde_json::Value;
+
+fn extract_attributes(obj: &TopLevelCityObject) -> serde_json::Map<String, Value> {
+    let mut attributes = serde_json::Map::new();
+
+    if let citygml::ObjectValue::FeatureOrData(fod) = &obj.root {
+        let a = attribute_to_json(fod);
+        attributes = a.as_object().unwrap().clone();
+    }
+    attributes
+}
 
 /// Create GeoJSON features from a TopLevelCityObject
 /// Each feature for MultiPolygon, MultiLineString, and MultiPoint will be created (if it exists)
@@ -12,17 +23,19 @@ use nusamai_plateau::TopLevelCityObject;
 // TODO: We may want to traverse the tree and create features for each semantic child in the future
 pub fn toplevel_cityobj_to_geojson_features(obj: &TopLevelCityObject) -> Vec<geojson::Feature> {
     let mut geojson_features: Vec<geojson::Feature> = vec![];
+    let attributes = extract_attributes(obj);
 
     if !obj.geometries.multipolygon.is_empty() {
         let mpoly_geojson_geom = multipolygon_to_geojson_geometry(
             &obj.geometries.vertices,
             &obj.geometries.multipolygon,
         );
+
         let mpoly_geojson_feat = geojson::Feature {
             bbox: None,
             geometry: Some(mpoly_geojson_geom),
             id: None,
-            properties: None, // TODO: from `obj.root`
+            properties: Some(attributes.clone().into_iter().collect()),
             foreign_members: None,
         };
         geojson_features.push(mpoly_geojson_feat);
@@ -37,7 +50,7 @@ pub fn toplevel_cityobj_to_geojson_features(obj: &TopLevelCityObject) -> Vec<geo
             bbox: None,
             geometry: Some(mls_geojson_geom),
             id: None,
-            properties: None, // TODO: from `obj.root``
+            properties: Some(attributes.clone().into_iter().collect()),
             foreign_members: None,
         };
         geojson_features.push(mls_geojson_feat);
@@ -50,7 +63,7 @@ pub fn toplevel_cityobj_to_geojson_features(obj: &TopLevelCityObject) -> Vec<geo
             bbox: None,
             geometry: Some(mpoint_geojson_geom),
             id: None,
-            properties: None, // TODO: from `obj.root``
+            properties: Some(attributes.clone().into_iter().collect()),
             foreign_members: None,
         };
         geojson_features.push(mpoint_geojson_feat);
