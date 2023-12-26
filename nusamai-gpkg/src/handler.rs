@@ -107,9 +107,19 @@ impl GpkgHandler {
     pub async fn test_insert(&self) {
         let mut bytes: Vec<u8> = Self::geometry_header();
 
-        bytes.push(0x01); // Little endian
+        // Byte order: Little endian
+        bytes.push(0x01);
 
-        // Geometry type = WKBPolygonZ
+        // Geometry type: wkbMultiPolygonZ (1006)
+        bytes.extend_from_slice(&1006_u32.to_le_bytes());
+
+        // numPolygons
+        bytes.extend_from_slice(&1_u32.to_le_bytes());
+
+        // Byte order: Little endian
+        bytes.push(0x01);
+
+        // Geometry type: wkbPolygonZ (1003)
         bytes.extend_from_slice(&1003_u32.to_le_bytes());
 
         // numRings

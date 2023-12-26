@@ -36,10 +36,8 @@ VALUES
     (
         'mpoly3d',
         'geometry',
-        -- Geometry Type: https://www.geopackage.org/spec130/#geometry_types_core
-        'POLYGON',
+        'MULTIPOLYGON',
         4326,
-        -- 3D
         1,
         0
     );
