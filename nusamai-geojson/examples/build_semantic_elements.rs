@@ -1,5 +1,6 @@
 //! This example is extract the geometry and attribute for each semantic child element of a CityGML file.
 
+use citygml::FeatureOrData;
 use citygml::{CityGMLElement, CityGMLReader, ParseError, SubTreeReader};
 use clap::Parser;
 use nusamai_geojson::toplevel_cityobj_to_geojson_features;
@@ -64,19 +65,21 @@ fn main() {
         Err(e) => panic!("Err: {:?}", e),
     };
 
-    let geojson_features: Vec<geojson::Feature> = cityobjs
-        .iter()
-        .flat_map(toplevel_cityobj_to_geojson_features)
-        .collect();
+    for obj in cityobjs {
+        // println!("{:?}", obj.geometries);
 
-    let geojson_feature_collection = geojson::FeatureCollection {
-        bbox: None,
-        features: geojson_features,
-        foreign_members: None,
-    };
-    let geojson = geojson::GeoJson::from(geojson_feature_collection);
+        let root = obj.root;
+        if let citygml::object::ObjectValue::FeatureOrData(fod) = root {
+            // println!("{:?}", fod.geometries);
 
-    let mut file = fs::File::create("out.geojson").unwrap();
-    let mut writer = BufWriter::new(&mut file);
-    serde_json::to_writer(&mut writer, &geojson).unwrap();
+            // GeometryRefEntryは、Geometries.multipolygonを参照している
+            // Geometries.multipolygonをiterして、lenの分だけ取得するような実装が良い？
+
+            if fod.id == Some("bldg_d6ae568b-e0b7-4fa5-abab-4d257ff9ab90".to_string()) {
+                println!("{:?}\n", fod.id);
+                println!("{:?}\n", obj.geometries);
+                println!("{:?}\n", fod.attributes);
+            }
+        }
+    }
 }
