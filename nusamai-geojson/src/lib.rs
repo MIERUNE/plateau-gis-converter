@@ -5,10 +5,9 @@ use conversion::{
 };
 use nusamai_plateau::TopLevelCityObject;
 use serde_json::Value;
-use std::collections::HashMap;
 
-fn extract_attributes(obj: &TopLevelCityObject) -> HashMap<String, Value> {
-    let mut attributes = HashMap::new();
+fn extract_attributes(obj: &TopLevelCityObject) -> serde_json::Map<String, Value> {
+    let mut attributes = serde_json::Map::new();
 
     if let citygml::ObjectValue::FeatureOrData(fod) = &obj.root {
         let a = &obj.root.attribute_to_json(fod);
