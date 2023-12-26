@@ -68,3 +68,67 @@ pub fn multipolygon_to_bytes(vertices: &[[f64; 3]], mpoly: &MultiPolygon<'_, 1, 
 
     bytes
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_polygon_to_rings() {
+        let vertices: Vec<[f64; 3]> = vec![
+            // exterior (vertex 0~3)
+            [0., 0., 111.],
+            [5., 0., 111.],
+            [5., 5., 111.],
+            [0., 5., 111.],
+            // interior 1 (vertex 4~7)
+            [1., 1., 111.],
+            [2., 1., 111.],
+            [2., 2., 111.],
+            [1., 2., 111.],
+            // interior 2 (vertex 8~11)
+            [3., 3., 111.],
+            [4., 3., 111.],
+            [4., 4., 111.],
+            [3., 4., 111.],
+        ];
+
+        let mut poly = Polygon::<'_, 1, u32>::new();
+        poly.add_ring([[0], [1], [2], [3]]);
+        poly.add_ring([[4], [5], [6], [7]]);
+        poly.add_ring([[8], [9], [10], [11]]);
+
+        let rings = polygon_to_rings(&vertices, &poly);
+
+        assert_eq!(rings.len(), 3);
+
+        for (i, ri) in rings.iter().enumerate() {
+            match i {
+                0 => {
+                    assert_eq!(ri.len(), 5);
+                    assert_eq!(ri[0], vec![0., 0., 111.]);
+                    assert_eq!(ri[1], vec![5., 0., 111.]);
+                    assert_eq!(ri[2], vec![5., 5., 111.]);
+                    assert_eq!(ri[3], vec![0., 5., 111.]);
+                    assert_eq!(ri[4], vec![0., 0., 111.]);
+                }
+                1 => {
+                    assert_eq!(ri.len(), 5);
+                    assert_eq!(ri[0], vec![1., 1., 111.]);
+                    assert_eq!(ri[1], vec![2., 1., 111.]);
+                    assert_eq!(ri[2], vec![2., 2., 111.]);
+                    assert_eq!(ri[3], vec![1., 2., 111.]);
+                    assert_eq!(ri[4], vec![1., 1., 111.]);
+                }
+                2 => {
+                    assert_eq!(ri.len(), 5);
+                    assert_eq!(ri[0], vec![3., 3., 111.]);
+                    assert_eq!(ri[1], vec![4., 3., 111.]);
+                    assert_eq!(ri[2], vec![4., 4., 111.]);
+                    assert_eq!(ri[3], vec![3., 4., 111.]);
+                }
+                _ => panic!("Unexpected ring index"),
+            }
+        }
+    }
+}
