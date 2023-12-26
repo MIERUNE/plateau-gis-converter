@@ -1,8 +1,8 @@
 -- https://opengeospatial.github.io/e-learning/geopackage/text/basic.html
--- GPKG v1.2
+-- GPKG v1.3.1
 PRAGMA application_id = 1196444487;
 
-PRAGMA user_vesrion = 10200;
+PRAGMA user_vesrion = 10301;
 
 CREATE TABLE gpkg_spatial_ref_sys (
     srs_name TEXT NOT NULL,
