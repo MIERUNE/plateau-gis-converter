@@ -1,4 +1,5 @@
 mod conversion;
+use citygml::attribute_to_json;
 use conversion::{
     multilinestring_to_geojson_geometry, multipoint_to_geojson_geometry,
     multipolygon_to_geojson_geometry,
@@ -10,8 +11,8 @@ fn extract_attributes(obj: &TopLevelCityObject) -> serde_json::Map<String, Value
     let mut attributes = serde_json::Map::new();
 
     if let citygml::ObjectValue::FeatureOrData(fod) = &obj.root {
-        let a = &obj.root.attribute_to_json(fod);
-        attributes.extend(a.clone());
+        let a = attribute_to_json(fod);
+        attributes = a.as_object().unwrap().clone();
     }
     attributes
 }
