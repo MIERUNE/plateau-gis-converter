@@ -43,7 +43,7 @@ impl ObjectValue {
                 serde_json::Value::Number(serde_json::Number::from_f64(*m).unwrap())
             }
             ObjectValue::Boolean(b) => serde_json::Value::Bool(*b),
-            ObjectValue::URI(u) => serde_json::Value::String(serde_json::to_string(u).unwrap()),
+            ObjectValue::URI(u) => serde_json::Value::String(u.to_string()),
             ObjectValue::Date(d) => serde_json::Value::String(d.to_string()),
             // TODO: Handle Point
             // ObjectValue::Point(p) => Value::Array(vec![
@@ -128,7 +128,7 @@ mod tests {
             serde_json::Value::String("http://example.com".to_string())
         );
 
-        let obj = ObjectValue::Date(NaiveDate::from_ymd(2020, 1, 1));
+        let obj = ObjectValue::Date(NaiveDate::from_ymd_opt(2020, 1, 1).unwrap());
         let value = obj.to_value();
         assert_eq!(value, serde_json::Value::String("2020-01-01".to_string()));
 
@@ -145,20 +145,38 @@ mod tests {
             ])
         );
 
+        let mut attributes = HashMap::new();
+        attributes.insert(
+            "String".to_string(),
+            ObjectValue::String("test".to_string()),
+        );
+        attributes.insert("Integer".to_string(), ObjectValue::Integer(1));
         let obj = ObjectValue::FeatureOrData(FeatureOrData {
             typename: "test".to_string(),
             id: Some("test".to_string()),
-            attributes: HashMap::new(),
+            attributes,
             geometries: None,
         });
+
         let value = obj.to_value();
+        println!("{:?}", value);
         assert_eq!(
             value,
             serde_json::Value::Object(
-                vec![(
-                    "id".to_string(),
-                    serde_json::Value::String("test".to_string())
-                )]
+                vec![
+                    (
+                        "id".to_string(),
+                        serde_json::Value::String("test".to_string())
+                    ),
+                    (
+                        "String".to_string(),
+                        serde_json::Value::String("test".to_string())
+                    ),
+                    (
+                        "Integer".to_string(),
+                        serde_json::Value::Number(serde_json::Number::from(1))
+                    ),
+                ]
                 .into_iter()
                 .collect()
             )
