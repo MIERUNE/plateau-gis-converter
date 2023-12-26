@@ -63,14 +63,24 @@ fn main() {
 
     for obj in cityobjs {
         let root = obj.root;
-        let mpolys = &obj.geometries.multipolygon.into_iter().collect::<Vec<_>>();
+        let polygons = &obj.geometries.multipolygon.into_iter().collect::<Vec<_>>();
 
         if let citygml::object::ObjectValue::FeatureOrData(fod) = root {
             println!("id: {:?}\n", fod.id);
             println!("vertices: {:?}\n", obj.geometries.vertices);
-            println!("mpolys: {:?}\n", mpolys);
+            println!("polygons: {:?}\n", polygons);
             println!("attributes: {:?}\n", fod.attributes);
             println!("geometries: {:?}\n", fod.geometries);
+
+            // TODO:
+            // LODごとに分離してFeatureを作成したい
+            // まずgeometriesを取り出す
+            // GeometryReefEntryのlodが0のものを取り出す
+            // pos 〜 pos + lenまでのを取り出すpolygonsを取り出す
+            // polygonsのcoordsとverticesを利用し、Feature.geometriesを復元
+            // （polygonのメソッドを利用できるとよい）
+            // attributesはほぼそのままpropertiesに突っ込む
+            // 完成！
 
             // if fod.id == Some("bldg_eaaf7f0f-ed24-424d-aa92-3d811b327ccc".to_string()) {
             //     println!("{:?}\n", fod.id);
