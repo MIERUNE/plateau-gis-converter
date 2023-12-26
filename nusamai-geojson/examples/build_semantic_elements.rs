@@ -1,13 +1,9 @@
 //! This example is extract the geometry and attribute for each semantic child element of a CityGML file.
 
-use citygml::FeatureOrData;
 use citygml::{CityGMLElement, CityGMLReader, ParseError, SubTreeReader};
 use clap::Parser;
-use nusamai_geojson::toplevel_cityobj_to_geojson_features;
 use nusamai_plateau::TopLevelCityObject;
-use std::fs;
 use std::io::BufRead;
-use std::io::BufWriter;
 
 #[derive(Parser)]
 struct Args {
@@ -66,20 +62,28 @@ fn main() {
     };
 
     for obj in cityobjs {
-        // println!("{:?}", obj.geometries);
-
         let root = obj.root;
+        let mpolys = &obj.geometries.multipolygon.into_iter().collect::<Vec<_>>();
+
         if let citygml::object::ObjectValue::FeatureOrData(fod) = root {
-            // println!("{:?}", fod.geometries);
+            println!("id: {:?}\n", fod.id);
+            println!("vertices: {:?}\n", obj.geometries.vertices);
+            println!("mpolys: {:?}\n", mpolys);
+            println!("attributes: {:?}\n", fod.attributes);
+            println!("geometries: {:?}\n", fod.geometries);
 
-            // GeometryRefEntryは、Geometries.multipolygonを参照している
-            // Geometries.multipolygonをiterして、lenの分だけ取得するような実装が良い？
-
-            if fod.id == Some("bldg_d6ae568b-e0b7-4fa5-abab-4d257ff9ab90".to_string()) {
-                println!("{:?}\n", fod.id);
-                println!("{:?}\n", obj.geometries);
-                println!("{:?}\n", fod.attributes);
-            }
+            // if fod.id == Some("bldg_eaaf7f0f-ed24-424d-aa92-3d811b327ccc".to_string()) {
+            //     println!("{:?}\n", fod.id);
+            //     println!("{:?}\n", obj.geometries);
+            //     println!("{:?}\n", fod.attributes);
+            // }
         }
     }
+}
+
+// 仮実装
+#[derive(Debug, Clone, Default)]
+struct Feature {
+    geometries: Vec<[f64; 3]>,
+    properties: serde_json::Map<String, serde_json::Value>,
 }
