@@ -26,6 +26,8 @@ CREATE TABLE gpkg_spatial_ref_sys (
     description TEXT
 );
 
+-- Essential spatial reference systems
+-- cf. https://opengeospatial.github.io/e-learning/geopackage/text/contents.html
 INSERT INTO gpkg_spatial_ref_sys (srs_name, srs_id, organization, organization_coordsys_id, definition) VALUES
 (
     'WGS84',
