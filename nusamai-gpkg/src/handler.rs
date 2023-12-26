@@ -101,11 +101,6 @@ impl GpkgHandler {
         // TODO: MultiLineString
         // TODO: MultiPoint
     }
-
-    /// Add multiple TopLevelCityObjects to the GeoPackage database
-    pub async fn add_objects(&self, _objects: &[TopLevelCityObject]) {
-        todo!();
-    }
 }
 
 #[cfg(test)]
