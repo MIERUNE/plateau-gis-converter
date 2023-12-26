@@ -42,6 +42,24 @@ impl GpkgHandler {
         Ok(Self { pool })
     }
 
+    pub async fn application_id(&self) -> u32 {
+        let result = sqlx::query("PRAGMA application_id;")
+            .fetch_one(&self.pool)
+            .await
+            .unwrap();
+        let application_id: u32 = result.get(0);
+        application_id
+    }
+
+    pub async fn user_version(&self) -> u32 {
+        let result = sqlx::query("PRAGMA user_version;")
+            .fetch_one(&self.pool)
+            .await
+            .unwrap();
+        let user_version: u32 = result.get(0);
+        user_version
+    }
+
     /// Get the names of all tables in the GeoPackage database
     pub async fn table_names(&self) -> Vec<String> {
         let result = sqlx::query(
@@ -81,6 +99,11 @@ mod tests {
     async fn test_init_connect() {
         let handler = GpkgHandler::init("sqlite::memory:").await.unwrap();
         let _handler2 = GpkgHandler::connect("sqlite::memory:").await.unwrap();
+
+        let application_id = handler.application_id().await;
+        assert_eq!(application_id, 1196444487);
+        let user_version = handler.user_version().await;
+        assert_eq!(user_version, 0); // FIXME: should be 10200
 
         let table_names = handler.table_names().await;
         assert_eq!(

@@ -1,3 +1,8 @@
+-- https://opengeospatial.github.io/e-learning/geopackage/text/basic.html
+-- GPKG v1.2
+PRAGMA application_id = 1196444487;
+PRAGMA user_vesrion = 10200;
+
 CREATE TABLE gpkg_contents (
     table_name TEXT NOT NULL PRIMARY KEY,
     data_type TEXT NOT NULL,
