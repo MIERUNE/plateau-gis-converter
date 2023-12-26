@@ -145,43 +145,96 @@ mod tests {
             [2., 1., 111.],
             [2., 2., 111.],
             [1., 2., 111.],
-            // 1st polygon, interior 2 (vertex 8~11)
-            [3., 3., 111.],
-            [4., 3., 111.],
-            [4., 4., 111.],
-            [3., 4., 111.],
-            // 2nd polygon, exterior (vertex 12~15)
-            [4., 0., 222.],
-            [7., 0., 222.],
-            [7., 3., 222.],
-            [4., 3., 222.],
-            // 2nd polygon, interior (vertex 16~19)
-            [5., 1., 222.],
-            [6., 1., 222.],
-            [6., 2., 222.],
-            [5., 2., 222.],
-            // 3rd polygon, exterior (vertex 20~23)
-            [4., 0., 333.],
-            [7., 0., 333.],
-            [7., 3., 333.],
-            [4., 3., 333.],
         ];
 
         let mut mpoly = MultiPolygon::<'_, 1, u32>::new();
         // 1st polygon
         mpoly.add_exterior([[0], [1], [2], [3], [0]]);
         mpoly.add_interior([[4], [5], [6], [7], [4]]);
-        mpoly.add_interior([[8], [9], [10], [11], [8]]);
-        // 2nd polygon
-        mpoly.add_exterior([[12], [13], [14], [15], [12]]);
-        mpoly.add_interior([[16], [17], [18], [19], [16]]);
-        // 3rd polygon
-        mpoly.add_exterior([[20], [21], [22], [23], [20]]);
 
         let bytes = multipolygon_to_bytes(&vertices, &mpoly);
+
+        assert_eq!(bytes.len(), 274);
 
         // header
         assert_eq!(bytes[0..=3].to_vec(), vec![0x47, 0x50, 0x00, 0b00000001]);
         assert_eq!(bytes[4..=7].to_vec(), &i32::to_le_bytes(4326));
+
+        // Byte order: Little endian
+        assert_eq!(bytes[8], 0x01);
+
+        // Geometry type: wkbMultiPolygonZ (1006)
+        assert_eq!(bytes[9..=12].to_vec(), &1006_u32.to_le_bytes());
+
+        // numPolygons
+        assert_eq!(bytes[13..=16].to_vec(), &1_u32.to_le_bytes());
+
+        // 1st polygon
+        // Byte order: Little endian
+        assert_eq!(bytes[17], 0x01);
+
+        // Geometry type: wkbPolygonZ (1003)
+        assert_eq!(bytes[18..=21].to_vec(), &1003_u32.to_le_bytes());
+
+        // numRings
+        assert_eq!(bytes[22..=25].to_vec(), &2_u32.to_le_bytes());
+
+        // exterior
+        // numPoints
+        assert_eq!(bytes[26..=29].to_vec(), &5_u32.to_le_bytes());
+
+        // 1st point
+        assert_eq!(bytes[30..=37].to_vec(), &0_f64.to_le_bytes());
+        assert_eq!(bytes[38..=45].to_vec(), &0_f64.to_le_bytes());
+        assert_eq!(bytes[46..=53].to_vec(), &111_f64.to_le_bytes());
+
+        // 2nd point
+        assert_eq!(bytes[54..=61].to_vec(), &0_f64.to_le_bytes());
+        assert_eq!(bytes[62..=69].to_vec(), &5_f64.to_le_bytes());
+        assert_eq!(bytes[70..=77].to_vec(), &111_f64.to_le_bytes());
+
+        // 3rd point
+        assert_eq!(bytes[78..=85].to_vec(), &5_f64.to_le_bytes());
+        assert_eq!(bytes[86..=93].to_vec(), &5_f64.to_le_bytes());
+        assert_eq!(bytes[94..=101].to_vec(), &111_f64.to_le_bytes());
+
+        // 4th point
+        assert_eq!(bytes[102..=109].to_vec(), &5_f64.to_le_bytes());
+        assert_eq!(bytes[110..=117].to_vec(), &0_f64.to_le_bytes());
+        assert_eq!(bytes[118..=125].to_vec(), &111_f64.to_le_bytes());
+
+        // 5th point
+        assert_eq!(bytes[126..=133].to_vec(), &0_f64.to_le_bytes());
+        assert_eq!(bytes[134..=141].to_vec(), &0_f64.to_le_bytes());
+        assert_eq!(bytes[142..=149].to_vec(), &111_f64.to_le_bytes());
+
+        // interior
+        // numPoints
+        assert_eq!(bytes[150..=153].to_vec(), &5_u32.to_le_bytes());
+
+        // 1st point
+        assert_eq!(bytes[154..=161].to_vec(), &1_f64.to_le_bytes());
+        assert_eq!(bytes[162..=169].to_vec(), &1_f64.to_le_bytes());
+        assert_eq!(bytes[170..=177].to_vec(), &111_f64.to_le_bytes());
+
+        // 2nd point
+        assert_eq!(bytes[178..=185].to_vec(), &1_f64.to_le_bytes());
+        assert_eq!(bytes[186..=193].to_vec(), &2_f64.to_le_bytes());
+        assert_eq!(bytes[194..=201].to_vec(), &111_f64.to_le_bytes());
+
+        // 3rd point
+        assert_eq!(bytes[202..=209].to_vec(), &2_f64.to_le_bytes());
+        assert_eq!(bytes[210..=217].to_vec(), &2_f64.to_le_bytes());
+        assert_eq!(bytes[218..=225].to_vec(), &111_f64.to_le_bytes());
+
+        // 4th point
+        assert_eq!(bytes[226..=233].to_vec(), &2_f64.to_le_bytes());
+        assert_eq!(bytes[234..=241].to_vec(), &1_f64.to_le_bytes());
+        assert_eq!(bytes[242..=249].to_vec(), &111_f64.to_le_bytes());
+
+        // 5th point
+        assert_eq!(bytes[250..=257].to_vec(), &1_f64.to_le_bytes());
+        assert_eq!(bytes[258..=265].to_vec(), &1_f64.to_le_bytes());
+        assert_eq!(bytes[266..=273].to_vec(), &111_f64.to_le_bytes());
     }
 }
