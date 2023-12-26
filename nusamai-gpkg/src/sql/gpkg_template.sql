@@ -1,7 +1,50 @@
 -- https://opengeospatial.github.io/e-learning/geopackage/text/basic.html
 -- GPKG v1.2
 PRAGMA application_id = 1196444487;
+
 PRAGMA user_vesrion = 10200;
+
+CREATE TABLE gpkg_spatial_ref_sys (
+    srs_name TEXT NOT NULL,
+    srs_id INTEGER NOT NULL PRIMARY KEY,
+    organization TEXT NOT NULL,
+    organization_coordsys_id INTEGER NOT NULL,
+    definition TEXT NOT NULL,
+    description TEXT
+);
+
+-- Essential spatial reference systems
+-- cf. https://opengeospatial.github.io/e-learning/geopackage/text/contents.html
+INSERT INTO
+    gpkg_spatial_ref_sys (
+        srs_name,
+        srs_id,
+        organization,
+        organization_coordsys_id,
+        definition
+    )
+VALUES
+    (
+        'WGS84',
+        4326,
+        'EPSG',
+        4326,
+        'GEOGCS["WGS 84",DATUM["WGS_1984",SPHEROID["WGS 84",6378137,298.257223563,AUTHORITY["EPSG","7030"]],AUTHORITY["EPSG","6326"]],PRIMEM["Greenwich",0,AUTHORITY["EPSG","8901"]],UNIT["degree",0.0174532925199433,AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","4326"]]'
+    ),
+    (
+        'Undefined Geographic',
+        0,
+        'NONE',
+        0,
+        'Undefined'
+    ),
+    (
+        'undefined Cartesian',
+        -1,
+        'NONE',
+        -1,
+        'Undefined'
+    );
 
 CREATE TABLE gpkg_contents (
     table_name TEXT NOT NULL PRIMARY KEY,
@@ -17,39 +60,29 @@ CREATE TABLE gpkg_contents (
     CONSTRAINT fk_gc_r_srs_id FOREIGN KEY (srs_id) REFERENCES gpkg_spatial_ref_sys(srs_id)
 );
 
-CREATE TABLE gpkg_spatial_ref_sys (
-    srs_name TEXT NOT NULL,
-    srs_id INTEGER NOT NULL PRIMARY KEY,
-    organization TEXT NOT NULL,
-    organization_coordsys_id INTEGER NOT NULL,
-    definition TEXT NOT NULL,
-    description TEXT
-);
-
--- Essential spatial reference systems
--- cf. https://opengeospatial.github.io/e-learning/geopackage/text/contents.html
-INSERT INTO gpkg_spatial_ref_sys (srs_name, srs_id, organization, organization_coordsys_id, definition) VALUES
-(
-    'WGS84',
-    4326,
-    'EPSG',
-    4326,
-    'GEOGCS["WGS 84",DATUM["WGS_1984",SPHEROID["WGS 84",6378137,298.257223563,AUTHORITY["EPSG","7030"]],AUTHORITY["EPSG","6326"]],PRIMEM["Greenwich",0,AUTHORITY["EPSG","8901"]],UNIT["degree",0.0174532925199433,AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","4326"]]'
-),
-(
-    'Undefined Geographic',
-    0,
-    'NONE',
-    0,
-    'Undefined'
-),
-(
-    'undefined Cartesian',
-    -1,
-    'NONE',
-    -1,
-    'Undefined'
-);
+INSERT INTO
+    gpkg_contents (
+        table_name,
+        data_type,
+        identifier,
+        min_x,
+        min_y,
+        max_x,
+        max_y,
+        srs_id
+    )
+VALUES
+    (
+        'mpoly3d',
+        'features',
+        '3D MultiPolygons',
+        -- TODO: set from data
+        139.933333,
+        42.333333,
+        140.033333,
+        42.433333,
+        4326
+    );
 
 CREATE TABLE gpkg_geometry_columns (
     table_name TEXT NOT NULL,
@@ -61,4 +94,28 @@ CREATE TABLE gpkg_geometry_columns (
     CONSTRAINT pk_geom_cols PRIMARY KEY (table_name, column_name),
     CONSTRAINT fk_gc_tn FOREIGN KEY (table_name) REFERENCES gpkg_contents(table_name),
     CONSTRAINT fk_gc_srs FOREIGN KEY (srs_id) REFERENCES gpkg_spatial_ref_sys (srs_id)
+);
+
+INSERT INTO
+    gpkg_geometry_columns(
+        table_name,
+        column_name,
+        geometry_type_name,
+        srs_id,
+        z,
+        m
+    )
+VALUES
+    (
+        'mpoly3d',
+        'geometry',
+        'MULTIPOLYGON',
+        4326,
+        1,
+        0
+    );
+
+CREATE TABLE mpoly3d (
+    id INTEGER NOT NULL PRIMARY KEY,
+    geometry BLOB NOT NULL
 );
