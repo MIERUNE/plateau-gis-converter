@@ -106,12 +106,35 @@ impl GpkgHandler {
     /// https://www.geopackage.org/spec130/#gpb_format
     pub async fn test_insert(&self) {
         let mut bytes: Vec<u8> = Self::geometry_header();
+
         bytes.push(0x01); // Little endian
-        bytes.extend_from_slice(&1_u32.to_le_bytes()); // Geometry type = 2D Point
-        let x = f64::to_le_bytes(141.34694444);
-        bytes.extend_from_slice(&x);
-        let y = f64::to_le_bytes(43.06416667);
-        bytes.extend_from_slice(&y);
+
+        // Geometry type = WKBPolygonZ
+        bytes.extend_from_slice(&1003_u32.to_le_bytes());
+
+        // numRings
+        bytes.extend_from_slice(&1_u32.to_le_bytes());
+
+        // LinearRingZ
+        let coords = [
+            (140., 43., 99.),
+            (140., 42., 99.),
+            (141., 42., 99.),
+            (141., 43., 99.),
+            (140., 43., 99.),
+        ];
+
+        // numPoints
+        bytes.extend_from_slice(&(coords.len() as u32).to_le_bytes());
+
+        for c in coords {
+            let x = f64::to_le_bytes(c.0);
+            bytes.extend_from_slice(&x);
+            let y = f64::to_le_bytes(c.1);
+            bytes.extend_from_slice(&y);
+            let z = f64::to_le_bytes(c.2);
+            bytes.extend_from_slice(&z);
+        }
 
         sqlx::query("INSERT INTO mpoly3d (geometry) VALUES (?)")
             .bind(bytes)

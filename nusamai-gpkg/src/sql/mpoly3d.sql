@@ -36,9 +36,11 @@ VALUES
     (
         'mpoly3d',
         'geometry',
-        'POINT',
+        -- Geometry Type: https://www.geopackage.org/spec130/#geometry_types_core
+        'POLYGON',
         4326,
-        0,
+        -- 3D
+        1,
         0
     );
 
