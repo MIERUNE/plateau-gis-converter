@@ -29,8 +29,12 @@ impl GpkgHandler {
         let pool = SqlitePool::connect(&db_url).await?;
 
         // Initialize the database with minimum GeoPackage schema
-        let create_query = include_str!("sql/gpkg_template.sql");
+        let create_query = include_str!("sql/init.sql");
         sqlx::query(create_query).execute(&pool).await?;
+
+        // For 3D MultiPolygon features
+        let mpoly3d_query = include_str!("sql/mpoly3d.sql");
+        sqlx::query(mpoly3d_query).execute(&pool).await?;
 
         Ok(Self { pool })
     }
@@ -90,26 +94,26 @@ impl GpkgHandler {
         todo!();
     }
 
+    fn geometry_header() -> Vec<u8> {
+        let mut header: Vec<u8> = vec![];
+        header.extend_from_slice(&[0x47, 0x50]); // Magic number
+        header.push(0x00); // Version
+        header.push(0b00000001); // Flags
+        header.extend_from_slice(&i32::to_le_bytes(4326)); // SRS ID
+        header
+    }
+
     /// https://www.geopackage.org/spec130/#gpb_format
     pub async fn test_insert(&self) {
-        let mut bytes: Vec<u8> = vec![];
-
-        // Header
-        bytes.extend_from_slice(&[0x47, 0x50]); // Magic number
-        bytes.push(0x00); // Version
-        bytes.push(0b00000001); // Flags
-        bytes.extend_from_slice(&i32::to_le_bytes(4326)); // SRS ID
-
-        // Geometry
+        let mut bytes: Vec<u8> = Self::geometry_header();
         bytes.push(0x01); // Little endian
         bytes.extend_from_slice(&1_u32.to_le_bytes()); // Geometry type = 2D Point
-        let x = f64::to_le_bytes(10.0);
+        let x = f64::to_le_bytes(141.34694444);
         bytes.extend_from_slice(&x);
-        let y = f64::to_le_bytes(20.0);
+        let y = f64::to_le_bytes(43.06416667);
         bytes.extend_from_slice(&y);
 
-        sqlx::query("INSERT INTO point2d (name, geometry) VALUES (?, ?)")
-            .bind("test-gpkg")
+        sqlx::query("INSERT INTO mpoly3d (geometry) VALUES (?)")
             .bind(bytes)
             .execute(&self.pool)
             .await
@@ -138,6 +142,7 @@ mod tests {
                 "gpkg_contents",
                 "gpkg_geometry_columns",
                 "gpkg_spatial_ref_sys",
+                "mpoly3d"
             ]
         );
     }
