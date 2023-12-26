@@ -115,7 +115,7 @@ mod tests {
         let application_id = handler.application_id().await;
         assert_eq!(application_id, 1196444487);
         let user_version = handler.user_version().await;
-        assert_eq!(user_version, 0); // FIXME: should be 10200
+        assert_eq!(user_version, 0); // FIXME: should be 10301
 
         let table_names = handler.table_names().await;
         assert_eq!(
