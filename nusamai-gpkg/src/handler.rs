@@ -1,4 +1,4 @@
-use nusamai_geometry::Polygon;
+use nusamai_geometry::{MultiPolygon, Polygon};
 use nusamai_plateau::TopLevelCityObject;
 use sqlx::Row;
 use sqlx::{migrate::MigrateDatabase, Pool, Sqlite, SqlitePool};
@@ -87,13 +87,30 @@ impl GpkgHandler {
 
     /// Add a TopLevelCityObjects to the GeoPackage database
     pub async fn add_object(&self, obj: &TopLevelCityObject) {
-        if obj.geometries.multipolygon.is_empty() {
-            return;
+        if !obj.geometries.multipolygon.is_empty() {
+            self.add_multipolygon(&obj.geometries.vertices, &obj.geometries.multipolygon)
+                .await;
         };
 
-        let vertices = &obj.geometries.vertices;
-        let mpoly = &obj.geometries.multipolygon;
+        // TODO: MultiLineString
+        // TODO: MultiPoint
+    }
 
+    /// Add TopLevelCityObjects to the GeoPackage database
+    pub async fn add_objects(&self, _objects: &[TopLevelCityObject]) {
+        todo!();
+    }
+
+    fn geometry_header() -> Vec<u8> {
+        let mut header: Vec<u8> = vec![];
+        header.extend_from_slice(&[0x47, 0x50]); // Magic number
+        header.push(0x00); // Version
+        header.push(0b00000001); // Flags
+        header.extend_from_slice(&i32::to_le_bytes(4326)); // SRS ID
+        header
+    }
+
+    async fn add_multipolygon(&self, vertices: &[[f64; 3]], mpoly: &MultiPolygon<'_, 1, u32>) {
         let mut bytes: Vec<u8> = Self::geometry_header();
 
         // Byte order: Little endian
@@ -138,23 +155,6 @@ impl GpkgHandler {
             .execute(&self.pool)
             .await
             .unwrap();
-
-        // TODO: MultiLineString
-        // TODO: MultiPoint
-    }
-
-    /// Add TopLevelCityObjects to the GeoPackage database
-    pub async fn add_objects(&self, _objects: &[TopLevelCityObject]) {
-        todo!();
-    }
-
-    fn geometry_header() -> Vec<u8> {
-        let mut header: Vec<u8> = vec![];
-        header.extend_from_slice(&[0x47, 0x50]); // Magic number
-        header.push(0x00); // Version
-        header.push(0b00000001); // Flags
-        header.extend_from_slice(&i32::to_le_bytes(4326)); // SRS ID
-        header
     }
 
     fn polygon_to_rings(vertices: &[[f64; 3]], poly: &Polygon<1, u32>) -> Vec<Vec<Vec<f64>>> {
