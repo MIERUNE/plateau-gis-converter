@@ -1,15 +1,12 @@
 mod conversion;
-
-use std::collections::HashMap;
-
 use citygml::{FeatureOrData, ObjectValue};
-// use citygml::object;
 use conversion::{
     multilinestring_to_geojson_geometry, multipoint_to_geojson_geometry,
     multipolygon_to_geojson_geometry,
 };
 use nusamai_plateau::TopLevelCityObject;
 use serde_json::Value;
+use std::collections::HashMap;
 
 fn object_value_to_value(object: &ObjectValue) -> Value {
     match object {
@@ -21,6 +18,7 @@ fn object_value_to_value(object: &ObjectValue) -> Value {
         ObjectValue::Boolean(b) => Value::Bool(*b),
         ObjectValue::URI(u) => Value::String(serde_json::to_string(u).unwrap()),
         ObjectValue::Date(d) => Value::String(d.to_string()),
+        // TODO: Handle Point
         // ObjectValue::Point(p) => Value::Array(vec![
         //     Value::Number(serde_json::Number::from_f64(p.x).unwrap()),
         //     Value::Number(serde_json::Number::from_f64(p.y).unwrap()),
@@ -50,7 +48,7 @@ fn attribute_to_json(fod: &FeatureOrData) -> HashMap<String, Value> {
     map
 }
 
-fn parse_attributes(obj: &TopLevelCityObject) -> HashMap<String, Value> {
+fn extract_attributes(obj: &TopLevelCityObject) -> HashMap<String, Value> {
     let mut attributes = HashMap::new();
 
     if let citygml::ObjectValue::FeatureOrData(fod) = &obj.root {
@@ -67,7 +65,7 @@ fn parse_attributes(obj: &TopLevelCityObject) -> HashMap<String, Value> {
 // TODO: We may want to traverse the tree and create features for each semantic child in the future
 pub fn toplevel_cityobj_to_geojson_features(obj: &TopLevelCityObject) -> Vec<geojson::Feature> {
     let mut geojson_features: Vec<geojson::Feature> = vec![];
-    let attributes = parse_attributes(obj);
+    let attributes = extract_attributes(obj);
 
     if !obj.geometries.multipolygon.is_empty() {
         let mpoly_geojson_geom = multipolygon_to_geojson_geometry(
