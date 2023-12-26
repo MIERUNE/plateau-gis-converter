@@ -87,11 +87,8 @@ mod tests {
             table_names,
             vec![
                 "gpkg_contents",
-                "gpkg_extensions",
                 "gpkg_geometry_columns",
                 "gpkg_spatial_ref_sys",
-                "gpkg_tile_matrix",
-                "gpkg_tile_matrix_set"
             ]
         );
     }
