@@ -89,6 +89,32 @@ impl GpkgHandler {
     pub async fn add_objects(&self, _objects: &[TopLevelCityObject]) {
         todo!();
     }
+
+    /// https://www.geopackage.org/spec130/#gpb_format
+    pub async fn test_insert(&self) {
+        let mut bytes: Vec<u8> = vec![];
+
+        // Header
+        bytes.extend_from_slice(&[0x47, 0x50]); // Magic number
+        bytes.push(0x00); // Version
+        bytes.push(0b00000001); // Flags
+        bytes.extend_from_slice(&i32::to_le_bytes(4326)); // SRS ID
+
+        // Geometry
+        bytes.push(0x01); // Little endian
+        bytes.extend_from_slice(&1_u32.to_le_bytes()); // Geometry type = 2D Point
+        let x = f64::to_le_bytes(10.0);
+        bytes.extend_from_slice(&x);
+        let y = f64::to_le_bytes(20.0);
+        bytes.extend_from_slice(&y);
+
+        sqlx::query("INSERT INTO point2d (name, geometry) VALUES (?, ?)")
+            .bind("test-gpkg")
+            .bind(bytes)
+            .execute(&self.pool)
+            .await
+            .unwrap();
+    }
 }
 
 #[cfg(test)]

@@ -65,6 +65,7 @@ async fn main() {
     // GeoPackage
 
     let output_path = "output.gpkg";
-    let _handler = nusamai_gpkg::GpkgHandler::init(output_path).await.unwrap();
+    let handler = nusamai_gpkg::GpkgHandler::init(output_path).await.unwrap();
     // TODO: handler.add_objects(&cityobjs).await;
+    handler.test_insert().await;
 }

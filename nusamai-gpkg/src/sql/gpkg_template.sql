@@ -60,30 +60,6 @@ CREATE TABLE gpkg_contents (
     CONSTRAINT fk_gc_r_srs_id FOREIGN KEY (srs_id) REFERENCES gpkg_spatial_ref_sys(srs_id)
 );
 
-INSERT INTO
-    gpkg_contents (
-        table_name,
-        data_type,
-        identifier,
-        min_x,
-        min_y,
-        max_x,
-        max_y,
-        srs_id
-    )
-VALUES
-    (
-        'mpoly3d',
-        'features',
-        '3D MultiPolygons',
-        -- TODO: set from data
-        139.933333,
-        42.333333,
-        140.033333,
-        42.433333,
-        4326
-    );
-
 CREATE TABLE gpkg_geometry_columns (
     table_name TEXT NOT NULL,
     column_name TEXT NOT NULL,
@@ -97,7 +73,30 @@ CREATE TABLE gpkg_geometry_columns (
 );
 
 INSERT INTO
-    gpkg_geometry_columns(
+    gpkg_contents (
+        table_name,
+        data_type,
+        identifier,
+        min_x,
+        min_y,
+        max_x,
+        max_y,
+        srs_id
+    )
+VALUES
+    (
+        'point2d',
+        'features',
+        '2D Point',
+        0,
+        1000,
+        0,
+        1000,
+        4326
+    );
+
+INSERT INTO
+    gpkg_geometry_columns (
         table_name,
         column_name,
         geometry_type_name,
@@ -107,15 +106,16 @@ INSERT INTO
     )
 VALUES
     (
-        'mpoly3d',
+        'point2d',
         'geometry',
-        'MULTIPOLYGON',
+        'POINT',
         4326,
-        1,
+        0,
         0
     );
 
-CREATE TABLE mpoly3d (
+CREATE TABLE point2d (
     id INTEGER NOT NULL PRIMARY KEY,
+    name TEXT NOT NULL,
     geometry BLOB NOT NULL
 );
