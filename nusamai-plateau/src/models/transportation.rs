@@ -1,12 +1,43 @@
-use citygml::{citygml_feature, CityGMLElement};
+use super::iur::uro;
+use citygml::{citygml_feature, CityGMLElement, Code};
 
 #[citygml_feature(name = "tran:Road")]
 pub struct Road {
+    #[citygml(path = b"tran:class")]
+    pub class: Option<Code>,
+
+    #[citygml(path = b"tran:function")]
+    pub function: Vec<Code>,
+
+    #[citygml(path = b"tran:usage")]
+    pub usage: Vec<Code>,
+
     #[citygml(path = b"tran:trafficArea/tran:TrafficArea")]
-    traffic_area: Vec<TrafficArea>,
+    pub traffic_area: Vec<TrafficArea>,
 
     #[citygml(path = b"tran:auxiliaryTrafficArea/tran:AuxiliaryTrafficArea")]
-    auxiliary_traffic_area: Vec<AuxiliaryTrafficArea>,
+    pub auxiliary_traffic_area: Vec<AuxiliaryTrafficArea>,
+
+    #[citygml(path = b"uro:tranDmAttribute")]
+    pub tran_dm_attribute: Vec<uro::DmAttributeProperty>,
+
+    #[citygml(path = b"uro:tranFacilityTypeAttribute")]
+    pub tran_facility_type_attribute: Vec<uro::FacilityTypeAttribute>,
+
+    #[citygml(path = b"uro:tranFacilityIdAttribute")]
+    pub tran_facility_id_attribute: Option<uro::FacilityIdAttribute>,
+
+    #[citygml(path = b"uro:tranFacilityAttribute")]
+    pub tran_facility_attribute: Vec<uro::FacilityAttributeProperty>,
+
+    #[citygml(path = b"uro:tranDataQualityAttribute/uro:TranDataQualityAttribute")]
+    pub tran_data_quality_attribute: Option<uro::TransportationDataQualityAttribute>,
+
+    #[citygml(path = b"uro:roadStructureAttribute/uro:RoadStructureAttribute")]
+    pub road_structure_attribute: Vec<uro::RoadStructureAttribute>,
+
+    #[citygml(path = b"uro:trafficVolumeAttribute/uro:TrafficVolumeAttribute")]
+    pub traffic_volume_attribute: Vec<uro::TrafficVolumeAttribute>,
 }
 
 #[citygml_feature(name = "tran:Railway")]
@@ -49,10 +80,36 @@ pub struct Waterway {
 
 #[citygml_feature(name = "tran:TrafficArea")]
 pub struct TrafficArea {
-    // ...
+    #[citygml(path = b"tran:class")]
+    pub class: Option<Code>,
+
+    #[citygml(path = b"tran:function")]
+    pub function: Vec<Code>,
+
+    #[citygml(path = b"tran:usage")]
+    pub usage: Vec<Code>,
+
+    #[citygml(path = b"tran:surfaceMaterial")]
+    pub surface_material: Option<Code>,
+
+    #[citygml(path = b"uro:tranDmAttribute")]
+    pub tran_dm_attribute: Vec<uro::DmAttributeProperty>,
 }
 
 #[citygml_feature(name = "tran:AuxiliaryTrafficArea")]
 pub struct AuxiliaryTrafficArea {
-    // ...
+    #[citygml(path = b"tran:class")]
+    pub class: Option<Code>,
+
+    #[citygml(path = b"tran:function")]
+    pub function: Vec<Code>,
+
+    #[citygml(path = b"tran:usage")]
+    pub usage: Vec<Code>,
+
+    #[citygml(path = b"tran:surfaceMaterial")]
+    pub surface_material: Option<Code>,
+
+    #[citygml(path = b"uro:tranDmAttribute")]
+    pub tran_dm_attribute: Vec<uro::DmAttributeProperty>,
 }
