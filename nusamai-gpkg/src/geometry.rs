@@ -39,7 +39,6 @@ pub fn multipolygon_to_bytes(vertices: &[[f64; 3]], mpoly: &MultiPolygon<'_, 1, 
     // numPolygons
     bytes.extend_from_slice(&(mpoly.len() as u32).to_le_bytes());
 
-    // wkbPolygonZ
     for poly in mpoly {
         // Byte order: Little endian
         bytes.push(0x01);
@@ -57,9 +56,9 @@ pub fn multipolygon_to_bytes(vertices: &[[f64; 3]], mpoly: &MultiPolygon<'_, 1, 
             bytes.extend_from_slice(&(ring.len() as u32).to_le_bytes());
 
             for coord in ring {
-                let x = f64::to_le_bytes(coord[1]); // FIX: lon lat order to be formatted in Transformer
+                let x = f64::to_le_bytes(coord[1]); // FIXME: lon,lat order
                 bytes.extend_from_slice(&x);
-                let y = f64::to_le_bytes(coord[0]); // FIX: lon lat order to be formatted in Transformer
+                let y = f64::to_le_bytes(coord[0]); // FIXME: lon,lat order
                 bytes.extend_from_slice(&y);
                 let z = f64::to_le_bytes(coord[2]);
                 bytes.extend_from_slice(&z);
