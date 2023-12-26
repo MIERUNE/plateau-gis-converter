@@ -78,3 +78,90 @@ impl ObjectValue {
         map
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_to_value() {
+        let obj = ObjectValue::String("test".to_string());
+        let value = obj.to_value();
+        assert_eq!(value, serde_json::Value::String("test".to_string()));
+
+        let obj = ObjectValue::Code(Code {
+            value: "12345".to_string(),
+            code: "12345".to_string(),
+        });
+        let value = obj.to_value();
+        assert_eq!(value, serde_json::Value::String("12345".to_string()));
+
+        let obj = ObjectValue::Integer(12345);
+        let value = obj.to_value();
+        assert_eq!(
+            value,
+            serde_json::Value::Number(serde_json::Number::from(12345))
+        );
+
+        let obj = ObjectValue::Double(1.0);
+        let value = obj.to_value();
+        assert_eq!(
+            value,
+            serde_json::Value::Number(serde_json::Number::from_f64(1.0).unwrap())
+        );
+
+        let obj = ObjectValue::Measure(1.0);
+        let value = obj.to_value();
+        assert_eq!(
+            value,
+            serde_json::Value::Number(serde_json::Number::from_f64(1.0).unwrap())
+        );
+
+        let obj = ObjectValue::Boolean(true);
+        let value = obj.to_value();
+        assert_eq!(value, serde_json::Value::Bool(true));
+
+        let obj = ObjectValue::URI(URI("http://example.com".to_string()));
+        let value = obj.to_value();
+        assert_eq!(
+            value,
+            serde_json::Value::String("http://example.com".to_string())
+        );
+
+        let obj = ObjectValue::Date(NaiveDate::from_ymd(2020, 1, 1));
+        let value = obj.to_value();
+        assert_eq!(value, serde_json::Value::String("2020-01-01".to_string()));
+
+        let obj = ObjectValue::Array(vec![
+            ObjectValue::String("test".to_string()),
+            ObjectValue::Integer(1),
+        ]);
+        let value = obj.to_value();
+        assert_eq!(
+            value,
+            serde_json::Value::Array(vec![
+                serde_json::Value::String("test".to_string()),
+                serde_json::Value::Number(serde_json::Number::from(1)),
+            ])
+        );
+
+        let obj = ObjectValue::FeatureOrData(FeatureOrData {
+            typename: "test".to_string(),
+            id: Some("test".to_string()),
+            attributes: HashMap::new(),
+            geometries: None,
+        });
+        let value = obj.to_value();
+        assert_eq!(
+            value,
+            serde_json::Value::Object(
+                vec![(
+                    "id".to_string(),
+                    serde_json::Value::String("test".to_string())
+                )]
+                .into_iter()
+                .collect()
+            )
+        );
+    }
+}
