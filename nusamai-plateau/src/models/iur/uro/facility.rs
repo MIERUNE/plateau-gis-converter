@@ -1,4 +1,4 @@
-use citygml::citygml_property;
+use nusamai_citygml::citygml_property;
 
 #[citygml_property(name = "uro:FacilityAttributeProperty")]
 pub enum FacilityAttributeProperty {

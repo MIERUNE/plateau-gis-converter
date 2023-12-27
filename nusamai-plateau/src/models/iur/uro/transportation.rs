@@ -1,4 +1,4 @@
-use citygml::{citygml_data, CityGMLElement, Code};
+use nusamai_citygml::{citygml_data, CityGMLElement, Code};
 
 #[citygml_data(name = "uro:TransportationDataQualityAttribute")]
 pub struct TransportationDataQualityAttribute {
@@ -18,7 +18,7 @@ pub struct TransportationDataQualityAttribute {
     pub lod_type: Option<String>, // TODO: uro:CityFurnitureLODType(enumerations)
 }
 #[citygml_data(name = "uro:RoadStructureAttribute")]
-pub struct RoadStructureAttribute{
+pub struct RoadStructureAttribute {
     #[citygml(path = b"uro:widthType")]
     pub width_type: Option<Code>,
 
@@ -33,7 +33,7 @@ pub struct RoadStructureAttribute{
 }
 
 #[citygml_data(name = "uro:TrafficVolumeAttribute")]
-pub struct TrafficVolumeAttribute{
+pub struct TrafficVolumeAttribute {
     #[citygml(path = b"uro:sectionID")]
     pub section_type: Option<String>,
 

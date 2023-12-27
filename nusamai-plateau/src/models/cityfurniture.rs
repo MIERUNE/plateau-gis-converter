@@ -1,5 +1,5 @@
 use super::iur::uro;
-use citygml::{citygml_feature, CityGMLElement, Code};
+use nusamai_citygml::{citygml_feature, CityGMLElement, Code};
 
 #[citygml_feature(name = "frn:CityFurniture")]
 pub struct CityFurniture {

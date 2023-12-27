@@ -8,7 +8,7 @@ use rayon::prelude::*;
 use crate::configuration::Config;
 use crate::pipeline::{Feedback, Parcel, Sender};
 use crate::source::{DataSource, DataSourceProvider, SourceInfo};
-use citygml::{CityGMLElement, CityGMLReader, ParseError, SubTreeReader};
+use nusamai_citygml::{CityGMLElement, CityGMLReader, ParseError, SubTreeReader};
 use nusamai_plateau::TopLevelCityObject;
 
 pub struct CityGMLSourceProvider {
@@ -52,7 +52,7 @@ impl DataSource for CityGMLSource {
             let source_url =
                 Url::from_file_path(fs::canonicalize(Path::new(filename)).unwrap()).unwrap();
 
-            let context = citygml::ParseContext::new(source_url, &code_resolver);
+            let context = nusamai_citygml::ParseContext::new(source_url, &code_resolver);
             let mut citygml_reader = CityGMLReader::new(context);
 
             match citygml_reader.start_root(&mut xml_reader) {

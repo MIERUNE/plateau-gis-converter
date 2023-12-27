@@ -1,5 +1,5 @@
 [package]
-name = "citygml"
+name = "nusamai-citygml"
 version = "0.1.0"
 edition = "2021"
 
@@ -11,7 +11,7 @@ serde = ["dep:serde", "nusamai-geometry/serde"]
 chrono = { version = "0.4.31", features = ["serde"], default-features = false }
 indexmap = "2.1"
 macros = { path = "./macros" }
-nusamai-geometry = { path = "../../nusamai-geometry", features = ["serde"]}
+nusamai-geometry = { path = "../nusamai-geometry", features = ["serde"]}
 quick-xml = "0.31"
 serde = { version = "1.0", features = ["derive"], optional = true }
 serde_json = "1.0.108"

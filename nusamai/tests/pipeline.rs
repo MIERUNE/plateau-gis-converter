@@ -37,7 +37,7 @@ impl DataSource for DummySource {
             ));
             let obj = Parcel {
                 cityobj: TopLevelCityObject {
-                    root: citygml::ObjectValue::Double(0.),
+                    root: nusamai_citygml::ObjectValue::Double(0.),
                     geometries: Default::default(),
                 },
             };

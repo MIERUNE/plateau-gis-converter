@@ -1,8 +1,8 @@
 use std::{collections::HashMap, path::PathBuf};
 
 use super::xml::{parse_dictionary, Definition};
-use citygml::codelist::CodeResolver;
-use citygml::ParseError;
+use nusamai_citygml::codelist::CodeResolver;
+use nusamai_citygml::ParseError;
 use stretto::Cache;
 use url::Url;
 
@@ -30,7 +30,7 @@ impl CodeResolver for Resolver {
         base_url: &Url,
         code_space: &str,
         code: &str,
-    ) -> Result<Option<String>, citygml::ParseError> {
+    ) -> Result<Option<String>, nusamai_citygml::ParseError> {
         let Ok(abs_url) = base_url.join(code_space) else {
             return Err(ParseError::CodelistError(format!(
                 "failed to join url: {:?} + {:?}",
