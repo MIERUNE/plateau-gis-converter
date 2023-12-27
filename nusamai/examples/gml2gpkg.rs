@@ -67,6 +67,11 @@ async fn main() {
     let output_path = "output.gpkg";
     let handler = nusamai_gpkg::GpkgHandler::init(output_path).await.unwrap();
     for obj in &cityobjs {
-        handler.add_object(obj).await;
+        let geometries = &obj.geometries;
+        if !geometries.multipolygon.is_empty() {
+            handler
+                .add_multi_polygon_feature(&geometries.vertices, &geometries.multipolygon)
+                .await;
+        }
     }
 }

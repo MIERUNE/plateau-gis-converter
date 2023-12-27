@@ -22,4 +22,6 @@ url = "2.5.0"
 
 [dev-dependencies]
 rand = "0.8.5"
+tokio = { version = "1.35.1", features = ["full"] }
 nusamai-geometry = { path = "../nusamai-geometry" }
+nusamai-gpkg = { path = "../nusamai-gpkg" }
