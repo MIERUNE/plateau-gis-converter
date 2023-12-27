@@ -51,7 +51,7 @@ pub enum TopLevelCityObject {
     SolitaryVegetationObject(SolitaryVegetationObject),
     #[citygml(path = b"veg:PlantCover")]
     PlantCover(PlantCover),
-    #[citygml(path = b"veg:LandUse")]
+    #[citygml(path = b"luse:LandUse")]
     LandUse(LandUse),
     #[citygml(path = b"tun:Tunnel")]
     Tunnel(Tunnel),
