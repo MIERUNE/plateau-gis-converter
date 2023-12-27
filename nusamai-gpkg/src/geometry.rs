@@ -3,7 +3,7 @@
 use nusamai_geometry::{MultiPolygon, Polygon};
 
 fn geometry_header(srs_id: i32) -> Vec<u8> {
-    let mut header: Vec<u8> = vec![];
+    let mut header: Vec<u8> = Vec::with_capacity(8);
     header.extend_from_slice(&[0x47, 0x50]); // Magic number
     header.push(0x00); // Version
     header.push(0b00000001); // Flags
