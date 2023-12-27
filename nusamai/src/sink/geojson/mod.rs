@@ -9,7 +9,7 @@ use crate::configuration::Config;
 use crate::pipeline::{Feedback, Receiver};
 use crate::sink::{DataSink, DataSinkProvider, SinkInfo};
 
-use citygml::attribute_to_json;
+use nusamai_citygml::attribute_to_json;
 use nusamai_geojson::conversion::{
     multilinestring_to_geojson_geometry, multipoint_to_geojson_geometry,
     multipolygon_to_geojson_geometry,
@@ -99,7 +99,7 @@ impl DataSink for GeoJsonSink {
 fn extract_attributes(obj: &TopLevelCityObject) -> serde_json::Map<String, Value> {
     let mut attributes = serde_json::Map::new();
 
-    if let citygml::ObjectValue::FeatureOrData(fod) = &obj.root {
+    if let nusamai_citygml::ObjectValue::FeatureOrData(fod) = &obj.root {
         let a = attribute_to_json(fod);
         attributes = a.as_object().unwrap().clone();
     }
@@ -164,7 +164,7 @@ pub fn toplevel_cityobj_to_geojson_features(obj: &TopLevelCityObject) -> Vec<geo
 #[cfg(test)]
 mod tests {
     use super::*;
-    use citygml::ObjectValue;
+    use nusamai_citygml::ObjectValue;
     use nusamai_geometry::MultiPolygon;
 
     #[test]
@@ -177,7 +177,7 @@ mod tests {
         ];
         let mut mpoly = MultiPolygon::<'_, 1, u32>::new();
         mpoly.add_exterior([[0], [1], [2], [3], [0]]);
-        let geometries = citygml::Geometries {
+        let geometries = nusamai_citygml::Geometries {
             vertices,
             multipolygon: mpoly,
             multilinestring: Default::default(),

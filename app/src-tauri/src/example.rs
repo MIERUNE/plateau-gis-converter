@@ -1,8 +1,8 @@
 //! デモ用
 //! nusamai-geojson の exmaple/gml2geojson を元にした、暫定的な処理
 
-use citygml::{CityGMLElement, CityGMLReader, ParseError, SubTreeReader};
 use nusamai::sink::geojson::toplevel_cityobj_to_geojson_features;
+use nusamai_citygml::{CityGMLElement, CityGMLReader, ParseError, SubTreeReader};
 use nusamai_plateau::TopLevelCityObject;
 use std::fs;
 use std::io::BufRead;
@@ -47,7 +47,7 @@ pub fn citygml_to_geojson(input_path: &str, output_path: &str) {
     let reader = std::io::BufReader::new(std::fs::File::open(input_path).unwrap());
     let mut xml_reader = quick_xml::NsReader::from_reader(reader);
 
-    let context = citygml::ParseContext::default();
+    let context = nusamai_citygml::ParseContext::default();
     let cityobjs = match CityGMLReader::new(context).start_root(&mut xml_reader) {
         Ok(mut st) => match toplevel_dispatcher(&mut st) {
             Ok(items) => items,

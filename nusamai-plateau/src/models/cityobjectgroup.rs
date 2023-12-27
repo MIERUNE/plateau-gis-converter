@@ -1,4 +1,4 @@
-use citygml::{citygml_feature, CityGMLElement};
+use nusamai_citygml::{citygml_feature, CityGMLElement};
 
 #[citygml_feature(name = "grp:CityObjectGroup")]
 pub struct CityObjectGroup {

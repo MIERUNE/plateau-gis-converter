@@ -8,8 +8,8 @@
 //!
 //! This example converts a CityGML file to GeoJSON and outputs it to a file
 
-use citygml::{CityGMLElement, CityGMLReader, ParseError, SubTreeReader};
 use clap::Parser;
+use nusamai_citygml::{CityGMLElement, CityGMLReader, ParseError, SubTreeReader};
 use nusamai_geometry::{MultiPolygon3, Polygon3};
 use nusamai_plateau::TopLevelCityObject;
 use std::fs;
@@ -288,7 +288,7 @@ fn main() {
     let reader = std::io::BufReader::new(std::fs::File::open(args.filename).unwrap());
     let mut xml_reader = quick_xml::NsReader::from_reader(reader);
 
-    let context = citygml::ParseContext::default();
+    let context = nusamai_citygml::ParseContext::default();
     let cityobjs = match CityGMLReader::new(context).start_root(&mut xml_reader) {
         Ok(mut st) => match toplevel_dispatcher(&mut st) {
             Ok(items) => items,

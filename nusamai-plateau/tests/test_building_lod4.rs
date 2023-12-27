@@ -1,6 +1,6 @@
 use std::io::BufRead;
 
-use citygml::{CityGMLElement, CityGMLReader, ParseError, SubTreeReader};
+use nusamai_citygml::{CityGMLElement, CityGMLReader, ParseError, SubTreeReader};
 use nusamai_plateau::models::TopLevelCityObject;
 
 #[derive(Default, Debug)]
@@ -66,7 +66,7 @@ fn simple_read() {
     );
 
     let mut xml_reader = quick_xml::NsReader::from_reader(reader);
-    let context = citygml::ParseContext::default();
+    let context = nusamai_citygml::ParseContext::default();
     match CityGMLReader::new(context).start_root(&mut xml_reader) {
         Ok(mut st) => match example_toplevel_dispatcher(&mut st) {
             Ok(counter) => {

@@ -71,7 +71,7 @@ fn generate_citygml_impl_for_struct(
                         // XML attributes (e.g. @gml:id)
                         attribute_arms.push(quote! {
                             #path => {
-                                self.#field_ident = <#field_ty as citygml::CityGMLAttribute>::parse_attr_value(
+                                self.#field_ident = <#field_ty as nusamai_citygml::CityGMLAttribute>::parse_attr_value(
                                     std::str::from_utf8(value).unwrap(),
                                 )?;
                                 Ok(())
@@ -125,7 +125,7 @@ fn generate_citygml_impl_for_struct(
                         let geomtype = format_ident!("{}", geomtype);
 
                         chlid_arms.push(quote! {
-                            #pat => st.parse_geometric_attr(&mut self.#field_ident, #lod, ::citygml::geometry::GeometryParseType::#geomtype),
+                            #pat => st.parse_geometric_attr(&mut self.#field_ident, #lod, ::nusamai_citygml::geometry::GeometryParseType::#geomtype),
                         });
                     };
 
@@ -176,8 +176,8 @@ fn generate_citygml_impl_for_struct(
     });
 
     Ok(quote! {
-        impl #impl_generics ::citygml::CityGMLElement for #struct_ident #ty_generics #where_clause {
-            fn parse<R: std::io::BufRead>(&mut self, st: &mut ::citygml::SubTreeReader<R>) -> Result<(), ::citygml::ParseError> {
+        impl #impl_generics ::nusamai_citygml::CityGMLElement for #struct_ident #ty_generics #where_clause {
+            fn parse<R: std::io::BufRead>(&mut self, st: &mut ::nusamai_citygml::SubTreeReader<R>) -> Result<(), ::nusamai_citygml::ParseError> {
                 #attr_parsing
 
                 st.parse_children(|st| {
@@ -188,9 +188,9 @@ fn generate_citygml_impl_for_struct(
                 })
             }
 
-            fn into_object(self) -> Option<::citygml::object::ObjectValue> {
-                Some(::citygml::ObjectValue::FeatureOrData(
-                    ::citygml::FeatureOrData {
+            fn into_object(self) -> Option<::nusamai_citygml::object::ObjectValue> {
+                Some(::nusamai_citygml::ObjectValue::FeatureOrData(
+                    ::nusamai_citygml::FeatureOrData {
                         typename: #typename.into(),
                         id: #id_value,
                         attributes: {
@@ -258,8 +258,8 @@ fn generate_citygml_impl_for_enum(
     let struct_name = &derive_input.ident;
 
     let tokens = quote! {
-        impl #impl_generics ::citygml::CityGMLElement for #struct_name #ty_generics #where_clause {
-            fn parse<R: ::std::io::BufRead>(&mut self, st: &mut ::citygml::SubTreeReader<R>) -> Result<(), ::citygml::ParseError> {
+        impl #impl_generics ::nusamai_citygml::CityGMLElement for #struct_name #ty_generics #where_clause {
+            fn parse<R: ::std::io::BufRead>(&mut self, st: &mut ::nusamai_citygml::SubTreeReader<R>) -> Result<(), ::nusamai_citygml::ParseError> {
                 st.parse_children(|st| {
                     match st.current_path() {
                         #(#child_arms)*
@@ -268,7 +268,7 @@ fn generate_citygml_impl_for_enum(
                 })
             }
 
-            fn into_object(self) -> Option<::citygml::object::ObjectValue> {
+            fn into_object(self) -> Option<::nusamai_citygml::object::ObjectValue> {
                 match self {
                     #(#into_object_arms,)*
                     _ => None,

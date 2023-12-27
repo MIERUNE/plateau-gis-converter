@@ -17,9 +17,9 @@
     - [`nusamai-geometry`](./nusamai-geometry/) &mdash; ジオメトリ型
     - [`nusamai-projection`](./nusamai-projection/) &mdash; 投影法変換
 - データソース：
-    - [`nusamai-plateau`](./nusamai-plateau/) &mdash; PLATEAU CityGML モデル
-        - [`citygml`](./nusamai-plateau/citygml/) &mdash; CityGML パーサ
-            - [`macros`](./nusamai-plateau/citygml/macros/) &mdash; パーサ導出用の proc macros
+    - [`nusamai-citygml`](./nusamai-plateau/citygml/) &mdash; CityGML パーサ
+    - [`nusamai-plateau`](./nusamai-plateau/) &mdash; PLATEAU 用の CityGML モデル
+        - [`macros`](./nusamai-plateau/citygml/macros/) &mdash; パーサ導出用の proc macros
 - 変換先形式のためのライブラリ：
     - [`nusamai-3dtiles`](./nusamai-3dtiles/) &mdash; 3D Tiles
     - [`nusamai-mvt`](./nusamai-mvt/) &mdash; Mapbox Vector Tile (MVT)

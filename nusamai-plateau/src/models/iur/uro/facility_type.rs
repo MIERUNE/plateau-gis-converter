@@ -1,4 +1,4 @@
-use citygml::{citygml_data, CityGMLElement, Code};
+use nusamai_citygml::{citygml_data, CityGMLElement, Code};
 
 #[citygml_data(name = "uro:FacilityTypeAttribute")]
 pub struct FacilityTypeAttribute {
