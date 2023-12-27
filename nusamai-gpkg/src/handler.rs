@@ -1,5 +1,4 @@
 use crate::geometry::multipolygon_to_bytes;
-use nusamai_plateau::TopLevelCityObject;
 use sqlx::Row;
 use sqlx::{migrate::MigrateDatabase, Pool, Sqlite, SqlitePool};
 use std::path::Path;
@@ -85,18 +84,21 @@ impl GpkgHandler {
         table_names
     }
 
-    /// Add a TopLevelCityObjects to the GeoPackage database
-    pub async fn add_object(&self, obj: &TopLevelCityObject) {
-        if !obj.geometries.multipolygon.is_empty() {
-            let bytes =
-                multipolygon_to_bytes(&obj.geometries.vertices, &obj.geometries.multipolygon, 4326);
+    /// Add a MultiPolygonZ feature to the GeoPackage database
+    ///
+    /// Note: とりあえず地物を挿入してみるための実装です。参考にしないでください。
+    pub async fn add_multi_polygon_feature(
+        &self,
+        vertices: &[[f64; 3]],
+        mpoly: &nusamai_geometry::MultiPolygon<'_, 1, u32>,
+    ) {
+        let bytes = multipolygon_to_bytes(vertices, mpoly, 4326);
 
-            sqlx::query("INSERT INTO mpoly3d (geometry) VALUES (?)")
-                .bind(bytes)
-                .execute(&self.pool)
-                .await
-                .unwrap();
-        };
+        sqlx::query("INSERT INTO mpoly3d (geometry) VALUES (?)")
+            .bind(bytes)
+            .execute(&self.pool)
+            .await
+            .unwrap();
 
         // TODO: MultiLineString
         // TODO: MultiPoint
