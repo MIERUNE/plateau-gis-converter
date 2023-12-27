@@ -53,6 +53,7 @@ impl<'a, const D: usize, T: CoordNum> Polygon<'a, D, T> {
         self.hole_indices.as_ref()
     }
 
+    /// Returns the exterior ring of the polygon.
     pub fn exterior(&self) -> LineString<D, T> {
         LineString::from_raw(if self.hole_indices.is_empty() {
             self.coords[..].into()
@@ -61,6 +62,7 @@ impl<'a, const D: usize, T: CoordNum> Polygon<'a, D, T> {
         })
     }
 
+    /// Returns an iterator over the interior rings of the polygon.
     pub fn interiors(&self) -> impl Iterator<Item = LineString<D, T>> {
         self.hole_indices
             .windows(2)
@@ -75,6 +77,7 @@ impl<'a, const D: usize, T: CoordNum> Polygon<'a, D, T> {
             .map(|(start, end)| LineString::from_raw(self.coords[start..end].into()))
     }
 
+    /// Returns an iterator over the exterior and interior rings of the polygon.
     pub fn rings(&self) -> impl Iterator<Item = LineString<D, T>> {
         std::iter::once(self.exterior()).chain(self.interiors())
     }

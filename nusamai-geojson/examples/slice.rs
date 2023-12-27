@@ -232,7 +232,7 @@ pub fn toplevel_cityobj_to_geojson_features(obj: &TopLevelCityObject) -> Vec<geo
             .iter()
             .map(|poly| {
                 poly.rings()
-                    .map(|c| c.iter().map(|v| v.to_vec()).collect())
+                    .map(|c| c.iter().map(|v| vec![v[2], v[1], v[0]]).collect())
                     .collect::<Vec<_>>()
             })
             .collect();
