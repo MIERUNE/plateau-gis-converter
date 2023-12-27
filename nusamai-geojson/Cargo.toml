@@ -8,10 +8,4 @@ edition = "2021"
 [dependencies]
 geojson = "0.24.1"
 nusamai-geometry = { path = "../nusamai-geometry" }
-nusamai-plateau = { path = "../nusamai-plateau" }
-citygml = {path = "../nusamai-plateau/citygml" }
 serde_json = "1.0.108"
-
-[dev-dependencies]
-clap = { version = "4.4.8", features = ["derive"] }
-quick-xml = "0.31.0"

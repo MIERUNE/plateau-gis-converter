@@ -2,7 +2,7 @@
 
 use citygml::{CityGMLElement, CityGMLReader, ParseError, SubTreeReader};
 use clap::Parser;
-use nusamai_geojson::toplevel_cityobj_to_geojson_features;
+use nusamai::sink::geojson::toplevel_cityobj_to_geojson_features;
 use nusamai_plateau::TopLevelCityObject;
 use std::fs;
 use std::io::BufRead;
