@@ -75,6 +75,10 @@ impl<'a, const D: usize, T: CoordNum> Polygon<'a, D, T> {
             .map(|(start, end)| LineString::from_raw(self.coords[start..end].into()))
     }
 
+    pub fn rings(&self) -> impl Iterator<Item = LineString<D, T>> {
+        std::iter::once(self.exterior()).chain(self.interiors())
+    }
+
     pub fn clear(&mut self) {
         self.coords.to_mut().clear();
         self.hole_indices.to_mut().clear();

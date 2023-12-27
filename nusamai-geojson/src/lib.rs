@@ -1,4 +1,4 @@
-mod conversion;
+pub mod conversion;
 use citygml::attribute_to_json;
 use conversion::{
     multilinestring_to_geojson_geometry, multipoint_to_geojson_geometry,
