@@ -1,3 +1,4 @@
+use crate::geometry::multipolygon_to_bytes;
 use nusamai_plateau::TopLevelCityObject;
 use sqlx::Row;
 use sqlx::{migrate::MigrateDatabase, Pool, Sqlite, SqlitePool};
@@ -29,8 +30,12 @@ impl GpkgHandler {
         let pool = SqlitePool::connect(&db_url).await?;
 
         // Initialize the database with minimum GeoPackage schema
-        let create_query = include_str!("sql/gpkg_template.sql");
+        let create_query = include_str!("sql/init.sql");
         sqlx::query(create_query).execute(&pool).await?;
+
+        // For 3D MultiPolygon features
+        let mpoly3d_query = include_str!("sql/mpoly3d.sql");
+        sqlx::query(mpoly3d_query).execute(&pool).await?;
 
         Ok(Self { pool })
     }
@@ -40,6 +45,24 @@ impl GpkgHandler {
         let db_url = format!("sqlite://{}", path);
         let pool = SqlitePool::connect(&db_url).await?;
         Ok(Self { pool })
+    }
+
+    pub async fn application_id(&self) -> u32 {
+        let result = sqlx::query("PRAGMA application_id;")
+            .fetch_one(&self.pool)
+            .await
+            .unwrap();
+        let application_id: u32 = result.get(0);
+        application_id
+    }
+
+    pub async fn user_version(&self) -> u32 {
+        let result = sqlx::query("PRAGMA user_version;")
+            .fetch_one(&self.pool)
+            .await
+            .unwrap();
+        let user_version: u32 = result.get(0);
+        user_version
     }
 
     /// Get the names of all tables in the GeoPackage database
@@ -63,13 +86,20 @@ impl GpkgHandler {
     }
 
     /// Add a TopLevelCityObjects to the GeoPackage database
-    pub async fn add_object(&self, _object: &TopLevelCityObject) {
-        todo!();
-    }
+    pub async fn add_object(&self, obj: &TopLevelCityObject) {
+        if !obj.geometries.multipolygon.is_empty() {
+            let bytes =
+                multipolygon_to_bytes(&obj.geometries.vertices, &obj.geometries.multipolygon, 4326);
 
-    /// Add TopLevelCityObjects to the GeoPackage database
-    pub async fn add_objects(&self, _objects: &[TopLevelCityObject]) {
-        todo!();
+            sqlx::query("INSERT INTO mpoly3d (geometry) VALUES (?)")
+                .bind(bytes)
+                .execute(&self.pool)
+                .await
+                .unwrap();
+        };
+
+        // TODO: MultiLineString
+        // TODO: MultiPoint
     }
 }
 
@@ -82,16 +112,19 @@ mod tests {
         let handler = GpkgHandler::init("sqlite::memory:").await.unwrap();
         let _handler2 = GpkgHandler::connect("sqlite::memory:").await.unwrap();
 
+        let application_id = handler.application_id().await;
+        assert_eq!(application_id, 1196444487);
+        let user_version = handler.user_version().await;
+        assert_eq!(user_version, 0); // FIXME: should be 10301
+
         let table_names = handler.table_names().await;
         assert_eq!(
             table_names,
             vec![
                 "gpkg_contents",
-                "gpkg_extensions",
                 "gpkg_geometry_columns",
                 "gpkg_spatial_ref_sys",
-                "gpkg_tile_matrix",
-                "gpkg_tile_matrix_set"
+                "mpoly3d"
             ]
         );
     }

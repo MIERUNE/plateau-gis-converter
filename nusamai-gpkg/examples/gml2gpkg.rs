@@ -54,7 +54,7 @@ async fn main() {
     let mut xml_reader = quick_xml::NsReader::from_reader(reader);
 
     let context = citygml::ParseContext::default();
-    let _cityobjs = match CityGMLReader::new(context).start_root(&mut xml_reader) {
+    let cityobjs = match CityGMLReader::new(context).start_root(&mut xml_reader) {
         Ok(mut st) => match toplevel_dispatcher(&mut st) {
             Ok(items) => items,
             Err(e) => panic!("Err: {:?}", e),
@@ -65,6 +65,8 @@ async fn main() {
     // GeoPackage
 
     let output_path = "output.gpkg";
-    let _handler = nusamai_gpkg::GpkgHandler::init(output_path).await.unwrap();
-    // TODO: handler.add_objects(&cityobjs).await;
+    let handler = nusamai_gpkg::GpkgHandler::init(output_path).await.unwrap();
+    for obj in &cityobjs {
+        handler.add_object(obj).await;
+    }
 }
