@@ -66,11 +66,11 @@ fn main() {
         let polygons = &obj.geometries.multipolygon.into_iter().collect::<Vec<_>>();
 
         if let citygml::object::ObjectValue::FeatureOrData(fod) = root {
-            println!("id: {:?}\n", fod.id);
-            println!("vertices: {:?}\n", obj.geometries.vertices);
-            println!("polygons: {:?}\n", polygons);
-            println!("attributes: {:?}\n", fod.attributes);
-            println!("geometries: {:?}\n", fod.geometries);
+            // println!("id: {:?}\n", fod.id);
+            // println!("vertices: {:?}\n", obj.geometries.vertices);
+            // println!("polygons: {:?}\n", polygons);
+            // println!("attributes: {:?}\n", fod.attributes);
+            // println!("geometries: {:?}\n", fod.geometries);
 
             // TODO:
             // LODごとに分離してFeatureを作成したい
@@ -82,18 +82,19 @@ fn main() {
             // attributesはほぼそのままpropertiesに突っ込む
             // 完成！
 
-            // if fod.id == Some("bldg_eaaf7f0f-ed24-424d-aa92-3d811b327ccc".to_string()) {
-            //     println!("{:?}\n", fod.id);
-            //     println!("{:?}\n", obj.geometries);
-            //     println!("{:?}\n", fod.attributes);
-            // }
+            if fod.id == Some("bldg_eaaf7f0f-ed24-424d-aa92-3d811b327ccc".to_string()) {
+                println!("id: {:?}\n", fod.id);
+                println!("vertices: {:?}\n", obj.geometries.vertices);
+                println!("polygons: {:?}\n", polygons);
+                println!("attributes: {:?}\n", fod.attributes);
+                println!("geometries: {:?}\n", fod.geometries);
+            }
         }
     }
 }
 
-// 仮実装
 #[derive(Debug, Clone, Default)]
 struct Feature {
-    geometries: Vec<[f64; 3]>,
+    geometry: Vec<[f64; 3]>,
     properties: serde_json::Map<String, serde_json::Value>,
 }
