@@ -13,15 +13,15 @@ pub enum FacilityAttributeProperty {
 
     #[citygml(path = b"uro:FishingPortFacilityAttribute")]
     FishingPortFacilityAttribute(FishingPortFacilityAttribute),
-    // TODO:
-    // #[citygml(path = b"uro:FishingPortCapacity")]
-    // FishingPortAttribute(FishingPortAttribute),
-    // TODO:
+
+    #[citygml(path = b"uro:FishingPortCapacity")]
+    FishingPortAttribute(FishingPortAttribute),
+
     // #[citygml(path = b"uro:FishingPortFacility")]
     // FishingPortFacility(FishingPortFacility),
-    // TODO:
-    // #[citygml(path = b"uro:HarborFacility")]
-    // HarborFacility(HarborFacility),
+
+    #[citygml(path = b"uro:HarborFacility")]
+    HarborFacility(HarborFacility),
     // TODO:
     // #[citygml(path = b"uro:MaintenanceHistoryAttribute")]
     // MaintenanceHistoryAttribute(MaintenanceHistoryAttribute),
@@ -503,5 +503,76 @@ pub struct FishingPortCapacityAttribute {
 
     #[citygml(path = b"uro:other")]
     pub other: Option<String>,
+}
 
+#[citygml_data(name = "uro:HarborFacility")]
+pub struct HarborFacility {
+    #[citygml(path = b"uro:facilityId")]
+    pub facility_id: Option<String>,
+
+    #[citygml(path = b"uro:facilityDetailType")]
+    pub facility_detail_type: Code,
+
+    #[citygml(path = b"uro:portName")]
+    pub port_name: String,
+
+    #[citygml(path = b"uro:portStatus")]
+    pub port_status: Option<Code>,
+
+    #[citygml(path = b"uro:district")]
+    pub district: Option<String>,
+
+    #[citygml(path = b"uro:grantType")]
+    pub grant_type: Option<Code>,
+
+    #[citygml(path = b"uro:isDesignated")]
+    pub is_designated: Option<bool>,
+
+    #[citygml(path = b"uro:degradationLevel")]
+    pub degradation_level: Option<u64>,
+
+    #[citygml(path = b"uro:geologicalType")]
+    pub geological_type: Option<Code>,
+
+    #[citygml(path = b"uro:obstructingStructures")]
+    pub obstructing_structures: Option<String>,
+
+    #[citygml(path = b"uro:structuralLimitations")]
+    pub structural_limitations: Option<Measure>,
+
+    #[citygml(path = b"uro:length")]
+    pub length: Option<Measure>,
+
+    #[citygml(path = b"uro:minimumWidth")]
+    pub minimum_width: Option<Measure>,
+
+    #[citygml(path = b"uro:maximumWidth")]
+    pub maximum_width: Option<Measure>,
+
+    #[citygml(path = b"uro:plannedDepth")]
+    pub planned_depth: Option<Measure>,
+
+    #[citygml(path = b"uro:currentDepth")]
+    pub current_depth: Option<Measure>,
+
+    #[citygml(path = b"uro:isDredged")]
+    pub is_dredged: Option<bool>,
+
+    #[citygml(path = b"uro:areaType")]
+    pub area_type: Option<Code>,
+
+    #[citygml(path = b"uro:innerArea")]
+    pub inner_area: Option<Measure>,
+
+    #[citygml(path = b"uro:outerArea")]
+    pub outer_area: Option<Measure>,
+
+    #[citygml(path = b"uro:totalCost")]
+    pub total_cost: Option<u64>,
+
+    #[citygml(path = b"uro:subsidy")]
+    pub subsidy: Option<u64>,
+
+    #[citygml(path = b"uro:note")]
+    pub note: Vec<String>,
 }
