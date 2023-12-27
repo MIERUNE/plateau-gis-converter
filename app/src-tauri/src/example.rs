@@ -2,16 +2,16 @@
 //! nusamai-geojson の exmaple/gml2geojson を元にした、暫定的な処理
 
 use nusamai::sink::geojson::toplevel_cityobj_to_geojson_features;
+use nusamai_citygml::object::CityObject;
 use nusamai_citygml::{CityGMLElement, CityGMLReader, ParseError, SubTreeReader};
-use nusamai_plateau::TopLevelCityObject;
 use std::fs;
 use std::io::BufRead;
 use std::io::BufWriter;
 
 fn toplevel_dispatcher<R: BufRead>(
     st: &mut SubTreeReader<R>,
-) -> Result<Vec<TopLevelCityObject>, ParseError> {
-    let mut cityobjs: Vec<TopLevelCityObject> = vec![];
+) -> Result<Vec<CityObject>, ParseError> {
+    let mut cityobjs: Vec<CityObject> = vec![];
 
     match st.parse_children(|st| match st.current_path() {
         b"core:cityObjectMember" => {
@@ -20,7 +20,7 @@ fn toplevel_dispatcher<R: BufRead>(
             let geometries = st.collect_geometries();
 
             if let Some(root) = cityobj.into_object() {
-                let obj = TopLevelCityObject { root, geometries };
+                let obj = CityObject { root, geometries };
                 cityobjs.push(obj);
             }
 

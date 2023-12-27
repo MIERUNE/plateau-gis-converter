@@ -1,6 +1,6 @@
-use crate::object::ObjectValue;
+use crate::object::Value;
 use crate::parser::{ParseError, SubTreeReader};
-use crate::CityGMLElement;
+use crate::{CityGMLElement, ElementType};
 pub use chrono::NaiveDate;
 use serde::{Deserialize, Serialize};
 use std::fmt;
@@ -9,14 +9,16 @@ use std::io::BufRead;
 pub type Date = chrono::NaiveDate;
 
 impl CityGMLElement for String {
+    const ELEMENT_TYPE: ElementType = ElementType::BasicType;
+
     #[inline]
     fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
         self.push_str(st.parse_text()?);
         Ok(())
     }
 
-    fn into_object(self) -> Option<ObjectValue> {
-        Some(ObjectValue::String(self))
+    fn into_object(self) -> Option<Value> {
+        Some(Value::String(self))
     }
 }
 
@@ -29,14 +31,16 @@ impl fmt::Display for URI {
 }
 
 impl CityGMLElement for URI {
+    const ELEMENT_TYPE: ElementType = ElementType::BasicType;
+
     #[inline]
     fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
         self.0.push_str(st.parse_text()?);
         Ok(())
     }
 
-    fn into_object(self) -> Option<ObjectValue> {
-        Some(ObjectValue::String(self.0))
+    fn into_object(self) -> Option<Value> {
+        Some(Value::String(self.0))
     }
 }
 
@@ -47,12 +51,10 @@ pub struct Code {
     // pub code_space: Option<String>,
 }
 impl CityGMLElement for Code {
+    const ELEMENT_TYPE: ElementType = ElementType::BasicType;
+
     #[inline]
     fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
-        // TODO: optimization
-        // - Avoid using parse_attributes? -> parse_attribute_raw
-        // - Avoid allocation?
-
         let code_space = st.find_codespace_attr();
         let code = st.parse_text()?.to_string();
         self.code = code.clone();
@@ -82,12 +84,14 @@ impl CityGMLElement for Code {
         Ok(())
     }
 
-    fn into_object(self) -> Option<ObjectValue> {
-        Some(ObjectValue::Code(self))
+    fn into_object(self) -> Option<Value> {
+        Some(Value::Code(self))
     }
 }
 
 impl CityGMLElement for i64 {
+    const ELEMENT_TYPE: ElementType = ElementType::BasicType;
+
     #[inline]
     fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
         let text = st.parse_text()?;
@@ -103,12 +107,14 @@ impl CityGMLElement for i64 {
         }
     }
 
-    fn into_object(self) -> Option<ObjectValue> {
-        Some(ObjectValue::Integer(self))
+    fn into_object(self) -> Option<Value> {
+        Some(Value::Integer(self))
     }
 }
 
 impl CityGMLElement for u64 {
+    const ELEMENT_TYPE: ElementType = ElementType::BasicType;
+
     #[inline]
     fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
         let text = st.parse_text()?;
@@ -124,12 +130,14 @@ impl CityGMLElement for u64 {
         }
     }
 
-    fn into_object(self) -> Option<ObjectValue> {
-        Some(ObjectValue::Integer(self as i64))
+    fn into_object(self) -> Option<Value> {
+        Some(Value::Integer(self as i64))
     }
 }
 
 impl CityGMLElement for f64 {
+    const ELEMENT_TYPE: ElementType = ElementType::BasicType;
+
     #[inline]
     fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
         let text = st.parse_text()?;
@@ -145,12 +153,14 @@ impl CityGMLElement for f64 {
         }
     }
 
-    fn into_object(self) -> Option<ObjectValue> {
-        Some(ObjectValue::Double(self))
+    fn into_object(self) -> Option<Value> {
+        Some(Value::Double(self))
     }
 }
 
 impl CityGMLElement for bool {
+    const ELEMENT_TYPE: ElementType = ElementType::BasicType;
+
     #[inline]
     fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
         let text = st.parse_text()?.trim();
@@ -170,8 +180,8 @@ impl CityGMLElement for bool {
         }
     }
 
-    fn into_object(self) -> Option<ObjectValue> {
-        Some(ObjectValue::Boolean(self))
+    fn into_object(self) -> Option<Value> {
+        Some(Value::Boolean(self))
     }
 }
 
@@ -182,6 +192,8 @@ pub struct Measure {
 }
 
 impl CityGMLElement for Measure {
+    const ELEMENT_TYPE: ElementType = ElementType::BasicType;
+
     #[inline]
     fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
         let text = st.parse_text()?;
@@ -197,12 +209,14 @@ impl CityGMLElement for Measure {
         }
     }
 
-    fn into_object(self) -> Option<ObjectValue> {
-        Some(ObjectValue::Measure(self.value))
+    fn into_object(self) -> Option<Value> {
+        Some(Value::Measure(self.value))
     }
 }
 
 impl CityGMLElement for Date {
+    const ELEMENT_TYPE: ElementType = ElementType::BasicType;
+
     #[inline]
     fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
         let text = st.parse_text()?;
@@ -218,8 +232,8 @@ impl CityGMLElement for Date {
         }
     }
 
-    fn into_object(self) -> Option<ObjectValue> {
-        Some(ObjectValue::Date(self))
+    fn into_object(self) -> Option<Value> {
+        Some(Value::Date(self))
     }
 }
 
@@ -229,18 +243,22 @@ pub struct Point {
 }
 
 impl CityGMLElement for Point {
+    const ELEMENT_TYPE: ElementType = ElementType::BasicType;
+
     #[inline]
     fn parse<R: BufRead>(&mut self, _st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
         // TODO
         todo!();
     }
 
-    fn into_object(self) -> Option<ObjectValue> {
-        Some(ObjectValue::Point(self))
+    fn into_object(self) -> Option<Value> {
+        Some(Value::Point(self))
     }
 }
 
 impl<T: CityGMLElement + Default + std::fmt::Debug> CityGMLElement for Option<T> {
+    const ELEMENT_TYPE: ElementType = ElementType::BasicType;
+
     #[inline]
     fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
         if self.is_some() {
@@ -255,7 +273,7 @@ impl<T: CityGMLElement + Default + std::fmt::Debug> CityGMLElement for Option<T>
         Ok(())
     }
 
-    fn into_object(self) -> Option<ObjectValue> {
+    fn into_object(self) -> Option<Value> {
         match self {
             Some(v) => v.into_object(),
             None => None,
@@ -264,6 +282,8 @@ impl<T: CityGMLElement + Default + std::fmt::Debug> CityGMLElement for Option<T>
 }
 
 impl<T: CityGMLElement + Default> CityGMLElement for Vec<T> {
+    const ELEMENT_TYPE: ElementType = ElementType::BasicType;
+
     #[inline]
     fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
         let mut v: T = Default::default();
@@ -272,11 +292,11 @@ impl<T: CityGMLElement + Default> CityGMLElement for Vec<T> {
         Ok(())
     }
 
-    fn into_object(self) -> Option<ObjectValue> {
+    fn into_object(self) -> Option<Value> {
         if self.is_empty() {
             None
         } else {
-            Some(ObjectValue::Array(
+            Some(Value::Array(
                 self.into_iter().filter_map(|v| v.into_object()).collect(),
             ))
         }

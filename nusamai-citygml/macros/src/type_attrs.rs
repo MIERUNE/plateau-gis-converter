@@ -1,11 +1,11 @@
-extern crate proc_macro;
-
+use crate::ElementType;
 use proc_macro2::TokenStream;
 use quote::quote;
 use syn::meta::ParseNestedMeta;
 use syn::{parse::Parser, parse_macro_input, Data, DeriveInput, Error, LitStr};
 use syn::{parse_quote, LitByteStr};
 
+/// Arguments for `#[citygml_feature(...)]` and `#[citygml_data(...)]`
 #[derive(Default)]
 struct FeatureArgs {
     name: Option<LitStr>,       // "bldg:Building"
@@ -26,13 +26,6 @@ impl FeatureArgs {
             Err(meta.error("unsupported property"))
         }
     }
-}
-
-#[derive(Clone, Copy)]
-pub(crate) enum ElementType {
-    Feature,
-    Data,
-    Property,
 }
 
 pub(crate) fn citygml_type(
@@ -74,9 +67,21 @@ fn modify(ty: &ElementType, args: &FeatureArgs, input: &mut DeriveInput) -> Resu
         None => return Err(Error::new_spanned(input, "name is required")),
     };
 
+    input.attrs.push(match &ty {
+        ElementType::Feature => {
+            syn::parse_quote! { #[citygml(type = feature)] }
+        }
+        ElementType::Data => {
+            syn::parse_quote! { #[citygml(type = feature)] }
+        }
+        ElementType::Property => {
+            syn::parse_quote! { #[citygml(type = feature)] }
+        }
+    });
+
     match &mut input.data {
         Data::Struct(data) => {
-            // #[citygml_feature], #[citygml_data]
+            // for #[citygml_feature] and #[citygml_data]
 
             match ty {
                 ElementType::Feature | ElementType::Data => {}
@@ -85,7 +90,7 @@ fn modify(ty: &ElementType, args: &FeatureArgs, input: &mut DeriveInput) -> Resu
 
             if let syn::Fields::Named(ref mut fields) = data.fields {
                 if let ElementType::Feature = ty {
-                    // #[citygml_feature]
+                    // for #[citygml_feature]
 
                     let prefix = args.prefix.as_ref().unwrap();
                     add_named_field(
@@ -157,7 +162,7 @@ fn modify(ty: &ElementType, args: &FeatureArgs, input: &mut DeriveInput) -> Resu
         }
         Data::Enum(_data) => match ty {
             ElementType::Property => {
-                // #[citygml_property]
+                // for #[citygml_property]
                 _data.variants.push(parse_quote! {
                     #[default]
                     Unknown

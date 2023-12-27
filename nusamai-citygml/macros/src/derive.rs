@@ -1,10 +1,10 @@
 //! CityGMLElement derive macro
 
-extern crate proc_macro;
-
-use proc_macro2::TokenStream;
+use proc_macro2::{Ident, TokenStream};
 use quote::{format_ident, quote};
 use syn::{parse_macro_input, Data, DataEnum, DataStruct, DeriveInput, Error, LitByteStr, LitStr};
+
+use crate::ElementType;
 
 const CITYGML_ATTR_IDENT: &str = "citygml";
 
@@ -38,6 +38,7 @@ fn generate_citygml_impl_for_struct(
     let mut id_value = quote!(None);
     let struct_ident = &derive_input.ident;
     let mut typename = String::from(stringify!(derive_input.ident));
+    let mut ty = ElementType::Feature;
 
     for attr in &derive_input.attrs {
         if !attr.path().is_ident(CITYGML_ATTR_IDENT) {
@@ -47,6 +48,16 @@ fn generate_citygml_impl_for_struct(
             if meta.path.is_ident("name") {
                 let name: LitStr = meta.value()?.parse()?;
                 typename = name.value();
+            }
+            if meta.path.is_ident("type") {
+                let ty_ident: Ident = meta.value()?.parse()?;
+                ty = match ty_ident.to_string().as_str() {
+                    "feature" => ElementType::Feature,
+                    "data" => ElementType::Data,
+                    _ => {
+                        return Err(meta.error("feature or data expected"));
+                    }
+                };
             }
             Ok(())
         })?;
@@ -175,8 +186,50 @@ fn generate_citygml_impl_for_struct(
         }
     });
 
+    let into_object_impl = match ty {
+        ElementType::Feature => {
+            quote! {
+                Some(::nusamai_citygml::object::Value::Feature(
+                    ::nusamai_citygml::object::Feature {
+                        typeid: #typename.into(),
+                        id: #id_value,
+                        attributes: {
+                            let mut attributes = ::std::collections::HashMap::new();
+                            #(#into_object_stmts)*
+                            attributes
+                        },
+                        geometries: #geom_into_object_expr,
+                    }
+                ))
+            }
+        }
+        ElementType::Data => {
+            quote! {
+                Some(::nusamai_citygml::object::Value::Data(
+                    ::nusamai_citygml::object::Data {
+                        typeid: #typename.into(),
+                        attributes: {
+                            let mut attributes = ::std::collections::HashMap::new();
+                            #(#into_object_stmts)*
+                            attributes
+                        },
+                    }
+                ))
+            }
+        }
+        _ => unreachable!(),
+    };
+
+    let element_type = match ty {
+        ElementType::Feature => quote! { ::nusamai_citygml::ElementType::FeatureType },
+        ElementType::Data => quote! { ::nusamai_citygml::ElementType::DataType },
+        _ => unreachable!(),
+    };
+
     Ok(quote! {
         impl #impl_generics ::nusamai_citygml::CityGMLElement for #struct_ident #ty_generics #where_clause {
+            const ELEMENT_TYPE: ::nusamai_citygml::ElementType = #element_type;
+
             fn parse<R: std::io::BufRead>(&mut self, st: &mut ::nusamai_citygml::SubTreeReader<R>) -> Result<(), ::nusamai_citygml::ParseError> {
                 #attr_parsing
 
@@ -188,19 +241,8 @@ fn generate_citygml_impl_for_struct(
                 })
             }
 
-            fn into_object(self) -> Option<::nusamai_citygml::object::ObjectValue> {
-                Some(::nusamai_citygml::ObjectValue::FeatureOrData(
-                    ::nusamai_citygml::FeatureOrData {
-                        typename: #typename.into(),
-                        id: #id_value,
-                        attributes: {
-                            let mut attributes = ::std::collections::HashMap::new();
-                            #(#into_object_stmts)*
-                            attributes
-                        },
-                        geometries: #geom_into_object_expr,
-                    }
-                ))
+            fn into_object(self) -> Option<::nusamai_citygml::object::Value> {
+                #into_object_impl
             }
         }
     })
@@ -257,8 +299,10 @@ fn generate_citygml_impl_for_enum(
     let (impl_generics, ty_generics, where_clause) = &derive_input.generics.split_for_impl();
     let struct_name = &derive_input.ident;
 
-    let tokens = quote! {
+    Ok(quote! {
         impl #impl_generics ::nusamai_citygml::CityGMLElement for #struct_name #ty_generics #where_clause {
+            const ELEMENT_TYPE: ::nusamai_citygml::ElementType = ::nusamai_citygml::ElementType::PropertyType;
+
             fn parse<R: ::std::io::BufRead>(&mut self, st: &mut ::nusamai_citygml::SubTreeReader<R>) -> Result<(), ::nusamai_citygml::ParseError> {
                 st.parse_children(|st| {
                     match st.current_path() {
@@ -268,14 +312,12 @@ fn generate_citygml_impl_for_enum(
                 })
             }
 
-            fn into_object(self) -> Option<::nusamai_citygml::object::ObjectValue> {
+            fn into_object(self) -> Option<::nusamai_citygml::object::Value> {
                 match self {
                     #(#into_object_arms,)*
                     _ => None,
                 }
             }
         }
-    };
-
-    Ok(tokens)
+    })
 }

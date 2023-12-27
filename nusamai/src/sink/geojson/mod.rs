@@ -9,13 +9,12 @@ use crate::configuration::Config;
 use crate::pipeline::{Feedback, Receiver};
 use crate::sink::{DataSink, DataSinkProvider, SinkInfo};
 
-use nusamai_citygml::attribute_to_json;
+use nusamai_citygml::object::attribute_to_json;
+use nusamai_citygml::object::CityObject;
 use nusamai_geojson::conversion::{
     multilinestring_to_geojson_geometry, multipoint_to_geojson_geometry,
     multipolygon_to_geojson_geometry,
 };
-use nusamai_plateau::TopLevelCityObject;
-use serde_json::Value;
 
 pub struct GeoJsonSinkProvider {}
 
@@ -96,10 +95,10 @@ impl DataSink for GeoJsonSink {
     }
 }
 
-fn extract_attributes(obj: &TopLevelCityObject) -> serde_json::Map<String, Value> {
+fn extract_attributes(obj: &CityObject) -> serde_json::Map<String, serde_json::Value> {
     let mut attributes = serde_json::Map::new();
 
-    if let nusamai_citygml::ObjectValue::FeatureOrData(fod) = &obj.root {
+    if let nusamai_citygml::Value::Feature(fod) = &obj.root {
         let a = attribute_to_json(fod);
         attributes = a.as_object().unwrap().clone();
     }
@@ -110,7 +109,7 @@ fn extract_attributes(obj: &TopLevelCityObject) -> serde_json::Map<String, Value
 /// Each feature for MultiPolygon, MultiLineString, and MultiPoint will be created (if it exists)
 // TODO: Handle properties (`obj.root` -> `geojson::Feature.properties`)
 // TODO: We may want to traverse the tree and create features for each semantic child in the future
-pub fn toplevel_cityobj_to_geojson_features(obj: &TopLevelCityObject) -> Vec<geojson::Feature> {
+pub fn toplevel_cityobj_to_geojson_features(obj: &CityObject) -> Vec<geojson::Feature> {
     let mut geojson_features: Vec<geojson::Feature> = vec![];
     let attributes = extract_attributes(obj);
 
@@ -164,7 +163,7 @@ pub fn toplevel_cityobj_to_geojson_features(obj: &TopLevelCityObject) -> Vec<geo
 #[cfg(test)]
 mod tests {
     use super::*;
-    use nusamai_citygml::ObjectValue;
+    use nusamai_citygml::Value;
     use nusamai_geometry::MultiPolygon;
 
     #[test]
@@ -184,8 +183,8 @@ mod tests {
             multipoint: Default::default(),
         };
 
-        let obj = TopLevelCityObject {
-            root: ObjectValue::String("test".to_string()),
+        let obj = CityObject {
+            root: Value::String("test".to_string()),
             geometries,
         };
 

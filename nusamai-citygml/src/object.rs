@@ -1,21 +1,33 @@
-//! Objectified representation of the city objects.
+//! Object representation of the city objects.
 
-use crate::geometry::GeometryRef;
+use crate::geometry::{self, GeometryRef};
 use crate::values::{Code, Point, URI};
 use chrono::NaiveDate;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
+#[derive(Debug, Deserialize, Serialize)]
+pub struct CityObject {
+    pub root: Value,
+    pub geometries: geometry::Geometries,
+}
+
 #[derive(Debug, Serialize, Deserialize)]
-pub struct FeatureOrData {
-    pub typename: String,
+pub struct Feature {
+    pub typeid: String,
     pub id: Option<String>,
-    pub attributes: HashMap<String, ObjectValue>,
+    pub attributes: HashMap<String, Value>,
     pub geometries: Option<GeometryRef>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub enum ObjectValue {
+pub struct Data {
+    pub typeid: String,
+    pub attributes: HashMap<String, Value>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub enum Value {
     String(String),
     Code(Code),
     Integer(i64),
@@ -25,11 +37,12 @@ pub enum ObjectValue {
     URI(URI),
     Date(NaiveDate),
     Point(Point),
-    Array(Vec<ObjectValue>),
-    FeatureOrData(FeatureOrData),
+    Array(Vec<Value>),
+    Feature(Feature),
+    Data(Data),
 }
 
-pub fn attribute_to_json(fod: &FeatureOrData) -> serde_json::Value {
+pub fn attribute_to_json(fod: &Feature) -> serde_json::Value {
     let mut map = serde_json::Map::new();
 
     if let Some(id) = &fod.id {
@@ -43,31 +56,32 @@ pub fn attribute_to_json(fod: &FeatureOrData) -> serde_json::Value {
     serde_json::Value::Object(map)
 }
 
-impl ObjectValue {
+#[cfg(feature = "serde_json")]
+impl Value {
     pub fn to_json_value(&self) -> serde_json::Value {
         match self {
-            ObjectValue::String(s) => serde_json::Value::String(s.clone()),
-            ObjectValue::Code(c) => serde_json::Value::String(c.value.to_string()),
-            ObjectValue::Integer(i) => serde_json::Value::Number(serde_json::Number::from(*i)),
-            ObjectValue::Double(d) => {
+            Value::String(s) => serde_json::Value::String(s.clone()),
+            Value::Code(c) => serde_json::Value::String(c.value.to_string()),
+            Value::Integer(i) => serde_json::Value::Number(serde_json::Number::from(*i)),
+            Value::Double(d) => {
                 serde_json::Value::Number(serde_json::Number::from_f64(*d).unwrap())
             }
-            ObjectValue::Measure(m) => {
+            Value::Measure(m) => {
                 serde_json::Value::Number(serde_json::Number::from_f64(*m).unwrap())
             }
-            ObjectValue::Boolean(b) => serde_json::Value::Bool(*b),
-            ObjectValue::URI(u) => serde_json::Value::String(u.to_string()),
-            ObjectValue::Date(d) => serde_json::Value::String(d.to_string()),
+            Value::Boolean(b) => serde_json::Value::Bool(*b),
+            Value::URI(u) => serde_json::Value::String(u.to_string()),
+            Value::Date(d) => serde_json::Value::String(d.to_string()),
             // TODO: Handle Point
             // ObjectValue::Point(p) => Value::Array(vec![
             //     Value::Number(serde_json::Number::from_f64(p.x).unwrap()),
             //     Value::Number(serde_json::Number::from_f64(p.y).unwrap()),
             //     Value::Number(serde_json::Number::from_f64(p.z).unwrap()),
             // ]),
-            ObjectValue::Array(a) => {
-                serde_json::Value::Array(a.iter().map(ObjectValue::to_json_value).collect())
+            Value::Array(a) => {
+                serde_json::Value::Array(a.iter().map(Value::to_json_value).collect())
             }
-            ObjectValue::FeatureOrData(fod) => {
+            Value::Feature(fod) => {
                 let attributes = attribute_to_json(fod);
                 serde_json::Value::Object(attributes.as_object().unwrap().clone())
             }
@@ -82,57 +96,54 @@ mod tests {
 
     #[test]
     fn test_to_value() {
-        let obj = ObjectValue::String("test".to_string());
+        let obj = Value::String("test".to_string());
         let value = obj.to_json_value();
         assert_eq!(value, serde_json::Value::String("test".to_string()));
 
-        let obj = ObjectValue::Code(Code {
+        let obj = Value::Code(Code {
             value: "12345".to_string(),
             code: "12345".to_string(),
         });
         let value = obj.to_json_value();
         assert_eq!(value, serde_json::Value::String("12345".to_string()));
 
-        let obj = ObjectValue::Integer(12345);
+        let obj = Value::Integer(12345);
         let value = obj.to_json_value();
         assert_eq!(
             value,
             serde_json::Value::Number(serde_json::Number::from(12345))
         );
 
-        let obj = ObjectValue::Double(1.0);
+        let obj = Value::Double(1.0);
         let value = obj.to_json_value();
         assert_eq!(
             value,
             serde_json::Value::Number(serde_json::Number::from_f64(1.0).unwrap())
         );
 
-        let obj = ObjectValue::Measure(1.0);
+        let obj = Value::Measure(1.0);
         let value = obj.to_json_value();
         assert_eq!(
             value,
             serde_json::Value::Number(serde_json::Number::from_f64(1.0).unwrap())
         );
 
-        let obj = ObjectValue::Boolean(true);
+        let obj = Value::Boolean(true);
         let value = obj.to_json_value();
         assert_eq!(value, serde_json::Value::Bool(true));
 
-        let obj = ObjectValue::URI(URI("http://example.com".to_string()));
+        let obj = Value::URI(URI("http://example.com".to_string()));
         let value = obj.to_json_value();
         assert_eq!(
             value,
             serde_json::Value::String("http://example.com".to_string())
         );
 
-        let obj = ObjectValue::Date(NaiveDate::from_ymd_opt(2020, 1, 1).unwrap());
+        let obj = Value::Date(NaiveDate::from_ymd_opt(2020, 1, 1).unwrap());
         let value = obj.to_json_value();
         assert_eq!(value, serde_json::Value::String("2020-01-01".to_string()));
 
-        let obj = ObjectValue::Array(vec![
-            ObjectValue::String("test".to_string()),
-            ObjectValue::Integer(1),
-        ]);
+        let obj = Value::Array(vec![Value::String("test".to_string()), Value::Integer(1)]);
         let value = obj.to_json_value();
         assert_eq!(
             value,
@@ -143,13 +154,10 @@ mod tests {
         );
 
         let mut attributes = HashMap::new();
-        attributes.insert(
-            "String".to_string(),
-            ObjectValue::String("test".to_string()),
-        );
-        attributes.insert("Integer".to_string(), ObjectValue::Integer(1));
-        let obj = ObjectValue::FeatureOrData(FeatureOrData {
-            typename: "test".to_string(),
+        attributes.insert("String".to_string(), Value::String("test".to_string()));
+        attributes.insert("Integer".to_string(), Value::Integer(1));
+        let obj = Value::Feature(Feature {
+            typeid: "test".to_string(),
             id: Some("test".to_string()),
             attributes,
             geometries: None,
