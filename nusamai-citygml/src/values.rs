@@ -3,6 +3,7 @@ use crate::parser::{ParseError, SubTreeReader};
 use crate::CityGMLElement;
 pub use chrono::NaiveDate;
 use serde::{Deserialize, Serialize};
+use std::fmt;
 use std::io::BufRead;
 
 pub type Date = chrono::NaiveDate;
@@ -21,6 +22,11 @@ impl CityGMLElement for String {
 
 #[derive(Debug, serde::Serialize, serde::Deserialize, Default)]
 pub struct URI(pub String);
+impl fmt::Display for URI {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
 
 impl CityGMLElement for URI {
     #[inline]

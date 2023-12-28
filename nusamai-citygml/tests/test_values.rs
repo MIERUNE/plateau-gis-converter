@@ -1,4 +1,6 @@
-use citygml::{CityGMLElement, CityGMLReader, Date, Measure, ParseContext, ParseError, URI};
+use nusamai_citygml::{
+    CityGMLElement, CityGMLReader, Date, Measure, ParseContext, ParseError, URI,
+};
 
 #[test]
 fn parse_date() {

@@ -25,7 +25,7 @@ It expands to:
 #[citygml(name = "abc:FooBarFeature")]
 pub struct FooBarFeature {
     #[citygml(geom = b"abc")]
-    geometries: citygml::GeometryRef,
+    geometries: nusamai_citygml::GeometryRef,
 
     #[citygml(path = b"@gml:id")]
     id: Option<String>,
@@ -37,16 +37,16 @@ pub struct FooBarFeature {
     description: Option<String>,
 
     #[citygml(path = b"gml:creationDate")]
-    pub creation_date: Option<citygml::Date>
+    pub creation_date: Option<nusamai_citygml::Date>
 
     #[citygml(path = b"gml:terminationDate")]
-    pub termination_date: Option<citygml::Date>
+    pub termination_date: Option<nusamai_citygml::Date>
 
     #[citygml(path = b"gml:validFrom")]
-    pub valid_from: Option<citygml::Date>
+    pub valid_from: Option<nusamai_citygml::Date>
 
     #[citygml(path = b"gml:validTo")]
-    pub valid_to: Option<citygml::Date>
+    pub valid_to: Option<nusamai_citygml::Date>
 
     // ..,
 }

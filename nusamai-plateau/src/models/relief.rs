@@ -1,4 +1,4 @@
-use citygml::{citygml_feature, citygml_property, CityGMLElement};
+use nusamai_citygml::{citygml_feature, citygml_property, CityGMLElement};
 
 #[citygml_feature(name = "dem:ReliefFeature")]
 pub struct ReliefFeature {

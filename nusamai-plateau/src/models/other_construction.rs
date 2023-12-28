@@ -1,7 +1,7 @@
 //! uro:OtherConstruction (PLATEAU, CityGML 2.x)
 //! con:OtherConstruction (CityGML 3.x)
 
-use citygml::{citygml_feature, CityGMLElement};
+use nusamai_citygml::{citygml_feature, CityGMLElement};
 
 #[citygml_feature(name = "uro:OtherConstruction")]
 pub struct OtherConstruction {

@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::io::BufRead;
 
-use citygml::ParseError;
+use nusamai_citygml::ParseError;
 use quick_xml::events::Event;
 use quick_xml::name::Namespace;
 use quick_xml::name::ResolveResult::Bound;

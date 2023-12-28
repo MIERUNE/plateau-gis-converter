@@ -18,10 +18,11 @@ tauri-build = { version = "1.5.0", features = [] }
 serde_json = "1.0"
 serde = { version = "1.0", features = ["derive"] }
 tauri = { version = "1.5.2", features = ["dialog-all"] }
+nusamai = { path = "../../nusamai" }
 nusamai-geometry = { path = "../../nusamai-geometry" }
 nusamai-geojson = { path = "../../nusamai-geojson" }
 nusamai-plateau = { path = "../../nusamai-plateau" }
-citygml = {path = "../../nusamai-plateau/citygml" }
+nusamai-citygml = {path = "../../nusamai-citygml" }
 quick-xml = "0.31.0"
 geojson = "0.24.1"
 

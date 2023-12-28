@@ -15,12 +15,12 @@ pub mod waterbody;
 pub use bridge::Bridge;
 pub use building::Building;
 pub use cityfurniture::CityFurniture;
-use citygml::{citygml_property, CityGMLElement};
 pub use cityobjectgroup::CityObjectGroup;
 pub use generics::GenericCityObject;
 pub use iur::urf;
 pub use iur::uro;
 pub use landuse::LandUse;
+use nusamai_citygml::{citygml_property, CityGMLElement};
 pub use other_construction::OtherConstruction;
 pub use relief::ReliefFeature;
 pub use transportation::{Railway, Road, Square, Track, Waterway};
@@ -51,7 +51,7 @@ pub enum TopLevelCityObject {
     SolitaryVegetationObject(SolitaryVegetationObject),
     #[citygml(path = b"veg:PlantCover")]
     PlantCover(PlantCover),
-    #[citygml(path = b"veg:LandUse")]
+    #[citygml(path = b"luse:LandUse")]
     LandUse(LandUse),
     #[citygml(path = b"tun:Tunnel")]
     Tunnel(Tunnel),

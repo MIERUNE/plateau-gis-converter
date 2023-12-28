@@ -52,7 +52,7 @@ pub(crate) fn citygml_type(
 
     quote! {
         #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize), serde(tag = "type"))]
-        #[derive(Default, Debug, citygml::CityGMLElement)]
+        #[derive(Default, Debug, nusamai_citygml::CityGMLElement)]
         #input
     }
     .into()
@@ -92,7 +92,7 @@ fn modify(ty: &ElementType, args: &FeatureArgs, input: &mut DeriveInput) -> Resu
                         fields,
                         quote! {
                             #[citygml(geom = #prefix)]
-                            pub geometries: citygml::GeometryRef
+                            pub geometries: nusamai_citygml::GeometryRef
                         },
                     );
                     add_named_field(
@@ -128,28 +128,28 @@ fn modify(ty: &ElementType, args: &FeatureArgs, input: &mut DeriveInput) -> Resu
                         fields,
                         quote! {
                             #[citygml(path = b"gml:creationDate")]
-                            pub creation_date: Option<citygml::Date> // TODO: DateTime (CityGML 3.0)
+                            pub creation_date: Option<nusamai_citygml::Date> // TODO: DateTime (CityGML 3.0)
                         },
                     );
                     add_named_field(
                         fields,
                         quote! {
                             #[citygml(path = b"gml:terminationDate")]
-                            pub termination_date: Option<citygml::Date> // TODO: DateTime (CityGML 3.0)
+                            pub termination_date: Option<nusamai_citygml::Date> // TODO: DateTime (CityGML 3.0)
                         },
                     );
                     add_named_field(
                         fields,
                         quote! {
                             #[citygml(path = b"gml:validFrom")]
-                            pub valid_from: Option<citygml::Date> // TODO: DateTime (CityGML 3.0)
+                            pub valid_from: Option<nusamai_citygml::Date> // TODO: DateTime (CityGML 3.0)
                         },
                     );
                     add_named_field(
                         fields,
                         quote! {
                             #[citygml(path = b"gml:validTo")]
-                            pub valid_to: Option<citygml::Date> // TODO: DateTime (CityGML 3.0)
+                            pub valid_to: Option<nusamai_citygml::Date> // TODO: DateTime (CityGML 3.0)
                         },
                     );
                 }

@@ -3,7 +3,7 @@ use std::path::Path;
 
 use url::Url;
 
-use citygml::{CityGMLElement, CityGMLReader, Code, Geometries, ParseError, SubTreeReader};
+use nusamai_citygml::{CityGMLElement, CityGMLReader, Code, Geometries, ParseError, SubTreeReader};
 use nusamai_plateau::models::cityfurniture::CityFurniture;
 use nusamai_plateau::models::TopLevelCityObject;
 
@@ -58,7 +58,7 @@ fn test_cityfurniture() {
     let code_resolver = nusamai_plateau::codelist::Resolver::new();
     let source_url =
         Url::from_file_path(std::fs::canonicalize(Path::new(filename)).unwrap()).unwrap();
-    let context = citygml::ParseContext::new(source_url, &code_resolver);
+    let context = nusamai_citygml::ParseContext::new(source_url, &code_resolver);
 
     let parsed_data = match CityGMLReader::new(context).start_root(&mut xml_reader) {
         Ok(mut st) => match toplevel_dispatcher(&mut st) {
