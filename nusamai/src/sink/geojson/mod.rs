@@ -44,7 +44,7 @@ impl DataSink for GeoJsonSink {
 
         rayon::join(
             || {
-                // Convert TopLevelCityObjects to GeoJSON objects
+                // Convert CityObjects to GeoJSON objects
 
                 let _ = upstream.into_iter().par_bridge().try_for_each_with(
                     sender,
@@ -184,7 +184,7 @@ mod tests {
 
         let obj = CityObject {
             root: Value::Feature(Feature {
-                typeid: "dummy".into(),
+                typename: "dummy".into(),
                 id: None,
                 attributes: Default::default(),
                 geometries: None,

@@ -1,6 +1,6 @@
 use nusamai_geometry::{MultiLineString, MultiPoint, MultiPolygon, Polygon};
 
-/// Create a GeoJSON geometry from nusamai_citygml::TopLevelCityObject's `multipolygon` geometry
+/// Create a GeoJSON geometry from nusamai_citygml::CityObject's `multipolygon` geometry
 pub fn multipolygon_to_geojson_geometry(
     vertices: &[[f64; 3]],
     mpoly: &MultiPolygon<1, u32>,
@@ -29,7 +29,7 @@ fn polygon_to_rings(vertices: &[[f64; 3]], poly: &Polygon<1, u32>) -> geojson::P
     rings
 }
 
-/// Create a GeoJSON geometry from nusamai_citygml::TopLevelCityObject's `multilinestring` geometry
+/// Create a GeoJSON geometry from nusamai_citygml::CityObject's `multilinestring` geometry
 pub fn multilinestring_to_geojson_geometry(
     vertices: &[[f64; 3]],
     mls: &MultiLineString<1, u32>,
@@ -47,7 +47,7 @@ pub fn multilinestring_to_geojson_geometry(
     geojson::Geometry::new(geojson::Value::MultiLineString(mls_coords))
 }
 
-/// Create a GeoJSON geometry from nusamai_citygml::TopLevelCityObject's `multipoint` geometry
+/// Create a GeoJSON geometry from nusamai_citygml::CityObject's `multipoint` geometry
 pub fn multipoint_to_geojson_geometry(
     vertices: &[[f64; 3]],
     mpoint: &MultiPoint<1, u32>,

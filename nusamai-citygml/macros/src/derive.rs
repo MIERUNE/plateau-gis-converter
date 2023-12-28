@@ -191,7 +191,7 @@ fn generate_citygml_impl_for_struct(
             quote! {
                 Some(::nusamai_citygml::object::Value::Feature(
                     ::nusamai_citygml::object::Feature {
-                        typeid: #typename.into(),
+                        typename: #typename.into(),
                         id: #id_value,
                         attributes: {
                             let mut attributes = ::std::collections::HashMap::new();
@@ -207,7 +207,7 @@ fn generate_citygml_impl_for_struct(
             quote! {
                 Some(::nusamai_citygml::object::Value::Data(
                     ::nusamai_citygml::object::Data {
-                        typeid: #typename.into(),
+                        typename: #typename.into(),
                         attributes: {
                             let mut attributes = ::std::collections::HashMap::new();
                             #(#into_object_stmts)*

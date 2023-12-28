@@ -15,7 +15,7 @@ pub struct CityObject {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Feature {
-    pub typeid: String,
+    pub typename: String,
     pub id: Option<String>,
     pub attributes: HashMap<String, Value>,
     pub geometries: Option<GeometryRef>,
@@ -23,7 +23,7 @@ pub struct Feature {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Data {
-    pub typeid: String,
+    pub typename: String,
     pub attributes: HashMap<String, Value>,
 }
 
@@ -74,7 +74,7 @@ impl Value {
                     .iter()
                     .map(|(k, v)| (k.clone(), v.to_attribute_json()))
                     .chain(
-                        iter::once(("type".into(), feat.typeid.clone().into()))
+                        iter::once(("type".into(), feat.typename.clone().into()))
                             .chain(iter::once(("id".into(), feat.id.clone().into()))),
                     ),
             ),
@@ -82,7 +82,7 @@ impl Value {
                 feat.attributes
                     .iter()
                     .map(|(k, v)| (k.clone(), v.to_attribute_json()))
-                    .chain(iter::once(("type".into(), feat.typeid.clone().into()))),
+                    .chain(iter::once(("type".into(), feat.typename.clone().into()))),
             ),
         }
     }
@@ -136,7 +136,7 @@ mod tests {
         attributes.insert("String".into(), Value::String("test".into()));
         attributes.insert("Integer".into(), Value::Integer(1));
         let obj = Value::Feature(Feature {
-            typeid: "test".into(),
+            typename: "test".into(),
             id: Some("test".into()),
             attributes,
             geometries: None,
@@ -158,7 +158,7 @@ mod tests {
         attributes.insert("String".into(), Value::String("test".into()));
         attributes.insert("Integer".into(), Value::Integer(1));
         let obj = Value::Data(Data {
-            typeid: "test".into(),
+            typename: "test".into(),
             attributes,
         });
         let value = obj.to_attribute_json();
