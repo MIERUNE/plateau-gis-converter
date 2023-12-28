@@ -19,9 +19,9 @@ nusamai-geojson = { path = "../nusamai-geojson" }
 geojson = "0.24.1"
 serde_json = "1.0.108"
 url = "2.5.0"
+nusamai-gpkg = { path = "../nusamai-gpkg" }
 
 [dev-dependencies]
 rand = "0.8.5"
 tokio = { version = "1.35.1", features = ["full"] }
 nusamai-geometry = { path = "../nusamai-geometry" }
-nusamai-gpkg = { path = "../nusamai-gpkg" }
