@@ -32,10 +32,6 @@ pub struct GpkgSink {
     n_features: usize,
 }
 
-async fn async_function() -> Result<(), ()> {
-    Ok(())
-}
-
 impl DataSink for GpkgSink {
     fn run(&mut self, upstream: Receiver, feedback: &mut Feedback) {
         let (sender, receiver) = std::sync::mpsc::sync_channel(100);
