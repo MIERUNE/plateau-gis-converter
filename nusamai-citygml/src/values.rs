@@ -3,7 +3,6 @@ use crate::parser::{ParseError, SubTreeReader};
 use crate::{CityGMLElement, ElementType};
 pub use chrono::NaiveDate;
 use serde::{Deserialize, Serialize};
-use std::fmt;
 use std::io::BufRead;
 
 pub type Date = chrono::NaiveDate;
@@ -23,10 +22,14 @@ impl CityGMLElement for String {
 }
 
 #[derive(Debug, serde::Serialize, serde::Deserialize, Default)]
-pub struct URI(pub String);
-impl fmt::Display for URI {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.0)
+pub struct URI(String);
+
+impl URI {
+    pub fn new(s: String) -> Self {
+        Self(s)
+    }
+    pub fn value(&self) -> &String {
+        &self.0
     }
 }
 
@@ -46,10 +49,23 @@ impl CityGMLElement for URI {
 
 #[derive(Debug, Default, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub struct Code {
-    pub value: String,
-    pub code: String,
+    value: String,
+    code: String,
     // pub code_space: Option<String>,
 }
+
+impl Code {
+    pub fn new(value: String, code: String) -> Self {
+        Self { value, code }
+    }
+    pub fn value(&self) -> &str {
+        &self.value
+    }
+    pub fn code(&self) -> &str {
+        &self.code
+    }
+}
+
 impl CityGMLElement for Code {
     const ELEMENT_TYPE: ElementType = ElementType::BasicType;
 
