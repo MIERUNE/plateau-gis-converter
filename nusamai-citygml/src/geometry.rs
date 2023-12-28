@@ -1,6 +1,5 @@
 use nusamai_geometry::{MultiLineString, MultiPoint, MultiPolygon};
 
-#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 #[derive(Debug, Clone, Copy)]
 pub enum GeometryParseType {
     Geometry,

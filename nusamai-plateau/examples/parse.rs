@@ -3,11 +3,11 @@ use clap::Parser;
 use serde::{Deserialize, Serialize};
 use std::{io::BufRead, time::Instant};
 
-use nusamai_citygml::{CityGMLElement, CityGMLReader, ObjectValue, ParseError, SubTreeReader};
+use nusamai_citygml::{object::Value, CityGMLElement, CityGMLReader, ParseError, SubTreeReader};
 
 #[derive(Debug, Deserialize, Serialize)]
 struct TopLevelCityObject {
-    root: ObjectValue,
+    root: Value,
     geometries: nusamai_citygml::Geometries,
 }
 
