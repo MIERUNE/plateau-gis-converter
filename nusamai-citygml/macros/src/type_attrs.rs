@@ -72,10 +72,10 @@ fn modify(ty: &ElementType, args: &FeatureArgs, input: &mut DeriveInput) -> Resu
             syn::parse_quote! { #[citygml(type = feature)] }
         }
         ElementType::Data => {
-            syn::parse_quote! { #[citygml(type = feature)] }
+            syn::parse_quote! { #[citygml(type = data)] }
         }
         ElementType::Property => {
-            syn::parse_quote! { #[citygml(type = feature)] }
+            syn::parse_quote! { #[citygml(type = property)] }
         }
     });
 
