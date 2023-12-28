@@ -162,7 +162,7 @@ pub fn toplevel_cityobj_to_geojson_features(obj: &CityObject) -> Vec<geojson::Fe
 #[cfg(test)]
 mod tests {
     use super::*;
-    use nusamai_citygml::Value;
+    use nusamai_citygml::{object::Feature, Value};
     use nusamai_geometry::MultiPolygon;
 
     #[test]
@@ -183,7 +183,12 @@ mod tests {
         };
 
         let obj = CityObject {
-            root: Value::String("test".to_string()),
+            root: Value::Feature(Feature {
+                typeid: "dummy".into(),
+                id: None,
+                attributes: Default::default(),
+                geometries: None,
+            }),
             geometries,
         };
 

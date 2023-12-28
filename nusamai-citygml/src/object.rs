@@ -141,7 +141,6 @@ mod tests {
             attributes,
             geometries: None,
         });
-
         let value = obj.to_attribute_json();
         assert_eq!(
             value,
@@ -149,6 +148,25 @@ mod tests {
                 {
                     "type": "test",
                     "id": "test",
+                    "String": "test",
+                    "Integer": 1
+                }
+            }
+        );
+
+        let mut attributes = HashMap::new();
+        attributes.insert("String".into(), Value::String("test".into()));
+        attributes.insert("Integer".into(), Value::Integer(1));
+        let obj = Value::Data(Data {
+            typeid: "test".into(),
+            attributes,
+        });
+        let value = obj.to_attribute_json();
+        assert_eq!(
+            value,
+            json! {
+                {
+                    "type": "test",
                     "String": "test",
                     "Integer": 1
                 }
