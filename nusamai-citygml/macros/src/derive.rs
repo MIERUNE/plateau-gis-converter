@@ -75,7 +75,16 @@ fn generate_citygml_impl_for_struct(
                 continue;
             }
             attr.parse_nested_meta(|meta| {
-                if meta.path.is_ident("path") {
+                if meta.path.is_ident("required") {
+                    // TODO: required
+                    Ok(())
+                }
+                else if meta.path.is_ident("codelist") {
+                    // TODO: codelist
+                    let _codelist: LitStr = meta.value()?.parse()?;
+                    Ok(())
+                }
+                else if meta.path.is_ident("path") {
                     let path: LitByteStr = meta.value()?.parse()?;
 
                     if path.value().starts_with(b"@") {

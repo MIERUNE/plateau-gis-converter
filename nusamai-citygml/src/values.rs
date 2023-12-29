@@ -6,6 +6,11 @@ use serde::{Deserialize, Serialize};
 use std::io::BufRead;
 
 pub type Date = chrono::NaiveDate;
+pub type GYear = String; // TODO?
+pub type GYearMonth = String; // TODO?
+pub type MeasureOrNullList = String; // TODO?
+pub type BuildingLODType = String; // TODO?
+pub type DoubleList = String; // TODO?
 
 impl CityGMLElement for String {
     const ELEMENT_TYPE: ElementType = ElementType::BasicType;
@@ -201,11 +206,13 @@ impl CityGMLElement for bool {
     }
 }
 
-#[derive(Debug, Default, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Default, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Measure {
     pub value: f64,
     // pub uom: Option<String>,
 }
+
+pub type Length = Measure;
 
 impl CityGMLElement for Measure {
     const ELEMENT_TYPE: ElementType = ElementType::BasicType;
