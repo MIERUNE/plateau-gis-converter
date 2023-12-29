@@ -4,7 +4,6 @@ use nusamai_citygml::{citygml_data, citygml_property, CityGMLElement, Code, Meas
 pub enum FacilityIdAttributeProperty {
     #[citygml(path = b"uro:FacilityIdAttribute")]
     FacilityIdAttribute(FacilityIdAttribute),
-
     #[citygml(path = b"uro:RiverFacilityIdAttribute")]
     RiverFacilityIdAttribute(RiverFacilityIdAttribute),
 }
@@ -80,13 +79,13 @@ pub struct RiverFacilityIdAttribute {
     #[citygml(path = b"uro:alternativeName")]
     pub alternative_name: Vec<String>,
 
-    #[citygml(path = b"uro:riverCode")]
+    #[citygml(path = b"uro:riverCode", required)]
     pub river_code: Option<Code>,
 
     #[citygml(path = b"uro:riverName")]
     pub river_name: Option<String>,
 
-    #[citygml(path = b"uro:sideType")]
+    #[citygml(path = b"uro:sideType", required)]
     pub side_type: Option<Code>,
 
     #[citygml(path = b"uro:leftPost")]
@@ -107,17 +106,17 @@ pub struct RiverFacilityIdAttribute {
     #[citygml(path = b"uro:leftStartDistance")]
     pub left_start_distance: Option<Measure>,
 
+    #[citygml(path = b"uro:leftEndPost")]
+    pub left_end_post: Option<Measure>,
+
+    #[citygml(path = b"uro:lefEndDistance")]
+    pub lef_end_distance: Option<Measure>,
+
     #[citygml(path = b"uro:rightStartPost")]
     pub right_start_post: Option<Measure>,
 
     #[citygml(path = b"uro:rightStartDistance")]
     pub right_start_distance: Option<Measure>,
-
-    #[citygml(path = b"uro:leftEndPost")]
-    pub left_end_post: Option<Measure>,
-
-    #[citygml(path = b"uro:leftEndDistance")]
-    pub left_end_distance: Option<Measure>,
 
     #[citygml(path = b"uro:rightEndPost")]
     pub right_end_post: Option<Measure>,
