@@ -39,7 +39,7 @@ fn generate_citygml_impl_for_struct(
     let struct_ident = &derive_input.ident;
     let mut typename = String::from(stringify!(derive_input.ident));
     let mut ty = StereoType::Feature;
-    let mut allow_extra = true; // FIXME
+    let mut allow_extra = false;
 
     for attr in &derive_input.attrs {
         if !attr.path().is_ident(CITYGML_ATTR_IDENT) {
@@ -202,6 +202,17 @@ fn generate_citygml_impl_for_struct(
                         Some(self.#field_ident)
                     };
 
+                    Ok(())
+                } else if meta.path.is_ident("generics") {
+                    chlid_arms.push(quote! {
+                        b"gen:dateAttribute" => st.skip_current_element(),
+                        b"gen:doubleAttribute" => st.skip_current_element(),
+                        b"gen:genericAttributeSet" => st.skip_current_element(),
+                        b"gen:intAttribute" => st.skip_current_element(),
+                        b"gen:measureAttribute" => st.skip_current_element(),
+                        b"gen:stringAttribute" => st.skip_current_element(),
+                        b"gen:uriAttribute" => st.skip_current_element(),
+                    });
                     Ok(())
                 } else {
                     Err(meta.error("unrecognized argument"))
