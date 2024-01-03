@@ -1,4 +1,4 @@
-use crate::object::{self, Value};
+use crate::object::Value;
 use crate::parser::{ParseError, SubTreeReader};
 use crate::{CityGMLElement, ElementType};
 pub use chrono::NaiveDate;
