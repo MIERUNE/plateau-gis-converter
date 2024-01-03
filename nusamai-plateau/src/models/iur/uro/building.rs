@@ -151,6 +151,9 @@ pub struct BuildingDataQualityAttribute {
     #[citygml(path = b"uro:appearanceSrcDesc")]
     pub appearance_src_desc: Vec<Code>,
 
+    #[citygml(path = b"uro:lod1HeightType", required)]
+    pub lod1_height_type: Option<Code>,
+
     #[citygml(path = b"uro:lodType")]
     pub lod_type: Vec<Code>,
 }

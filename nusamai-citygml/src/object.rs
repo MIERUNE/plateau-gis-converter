@@ -2,10 +2,12 @@
 
 use crate::geometry::{self, GeometryRef};
 use crate::values::{Code, Point, URI};
+use crate::Measure;
 use chrono::NaiveDate;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 use std::iter;
+
+pub type Map = std::collections::HashMap<String, Value>;
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct CityObject {
@@ -13,28 +15,28 @@ pub struct CityObject {
     pub geometries: geometry::Geometries,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, PartialEq)]
 pub struct Feature {
     pub typename: String,
     pub id: Option<String>,
-    pub attributes: HashMap<String, Value>,
+    pub attributes: Map,
     pub geometries: Option<GeometryRef>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, PartialEq)]
 pub struct Data {
     pub typename: String,
-    pub attributes: HashMap<String, Value>,
+    pub attributes: Map,
 }
 
 /// Nodes for the "Object" representation of the city object.
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, PartialEq)]
 pub enum Value {
     String(String),
     Code(Code),
     Integer(i64),
     Double(f64),
-    Measure(f64),
+    Measure(Measure),
     Boolean(bool),
     URI(URI),
     Date(NaiveDate),
@@ -54,7 +56,7 @@ impl Value {
             Code(c) => serde_json::Value::String(c.value().to_owned()),
             Integer(i) => serde_json::Value::Number((*i).into()),
             Double(d) => serde_json::Value::Number(serde_json::Number::from_f64(*d).unwrap()),
-            Measure(m) => serde_json::Value::Number(serde_json::Number::from_f64(*m).unwrap()),
+            Measure(m) => serde_json::Value::Number(serde_json::Number::from_f64(m.value).unwrap()),
             Boolean(b) => serde_json::Value::Bool(*b),
             URI(u) => serde_json::Value::String(u.value().clone()),
             Date(d) => serde_json::Value::String(d.to_string()), // ISO 8601
@@ -112,7 +114,7 @@ mod tests {
         let value = obj.to_attribute_json();
         assert_eq!(value, json!(1.0));
 
-        let obj = Value::Measure(1.0);
+        let obj = Value::Measure(Measure { value: 1.0 });
         let value = obj.to_attribute_json();
         assert_eq!(value, json!(1.0));
 
@@ -132,7 +134,7 @@ mod tests {
         let value = obj.to_attribute_json();
         assert_eq!(value, json!(["test", 1]));
 
-        let mut attributes = HashMap::new();
+        let mut attributes = Map::new();
         attributes.insert("String".into(), Value::String("test".into()));
         attributes.insert("Integer".into(), Value::Integer(1));
         let obj = Value::Feature(Feature {
@@ -154,7 +156,7 @@ mod tests {
             }
         );
 
-        let mut attributes = HashMap::new();
+        let mut attributes = Map::new();
         attributes.insert("String".into(), Value::String("test".into()));
         attributes.insert("Integer".into(), Value::Integer(1));
         let obj = Value::Data(Data {

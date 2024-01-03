@@ -22,6 +22,7 @@ pub struct Road {
     pub auxiliary_traffic_area: Vec<AuxiliaryTrafficArea>,
 
     #[citygml(path = b"uro:tranDataQualityAttribute/uro:TransportationDataQualityAttribute")]
+    #[citygml(path = b"uro:roadDataQualityAttribute/uro:RoadDataQualityAttribute")]
     pub tran_data_quality_attribute: Option<uro::TransportationDataQualityAttribute>,
 
     #[citygml(path = b"uro:tranFacilityAttribute")]

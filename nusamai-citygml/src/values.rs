@@ -5,7 +5,9 @@ pub use chrono::NaiveDate;
 use serde::{Deserialize, Serialize};
 use std::io::BufRead;
 
+// type aliases
 pub type Date = chrono::NaiveDate;
+pub type Length = Measure; // Length is almost same as Measure
 pub type GYear = String; // TODO?
 pub type GYearMonth = String; // TODO?
 pub type MeasureOrNullList = String; // TODO?
@@ -26,12 +28,12 @@ impl CityGMLElement for String {
     }
 }
 
-#[derive(Debug, serde::Serialize, serde::Deserialize, Default)]
+#[derive(Debug, serde::Serialize, serde::Deserialize, Default, PartialEq, Eq)]
 pub struct URI(String);
 
 impl URI {
-    pub fn new(s: String) -> Self {
-        Self(s)
+    pub fn new(s: &str) -> Self {
+        Self(s.into())
     }
     pub fn value(&self) -> &String {
         &self.0
@@ -212,8 +214,6 @@ pub struct Measure {
     // pub uom: Option<String>,
 }
 
-pub type Length = Measure;
-
 impl CityGMLElement for Measure {
     const ELEMENT_TYPE: ElementType = ElementType::BasicType;
 
@@ -233,7 +233,7 @@ impl CityGMLElement for Measure {
     }
 
     fn into_object(self) -> Option<Value> {
-        Some(Value::Measure(self.value))
+        Some(Value::Measure(self))
     }
 }
 
@@ -260,7 +260,7 @@ impl CityGMLElement for Date {
     }
 }
 
-#[derive(Debug, Default, Deserialize, Serialize)]
+#[derive(Debug, Default, Deserialize, Serialize, PartialEq)]
 pub struct Point {
     // TODO
 }
@@ -323,23 +323,5 @@ impl<T: CityGMLElement + Default> CityGMLElement for Vec<T> {
                 self.into_iter().filter_map(|v| v.into_object()).collect(),
             ))
         }
-    }
-}
-
-pub trait CityGMLAttribute: Sized {
-    fn parse_attr_value(value: &str) -> Result<Self, ParseError>;
-}
-
-impl CityGMLAttribute for String {
-    #[inline]
-    fn parse_attr_value(value: &str) -> Result<Self, ParseError> {
-        Ok(value.to_string())
-    }
-}
-
-impl<T: CityGMLAttribute> CityGMLAttribute for Option<T> {
-    #[inline]
-    fn parse_attr_value(value: &str) -> Result<Self, ParseError> {
-        Ok(Some(<T as CityGMLAttribute>::parse_attr_value(value)?))
     }
 }
