@@ -205,13 +205,13 @@ fn generate_citygml_impl_for_struct(
                     Ok(())
                 } else if meta.path.is_ident("generics") {
                     chlid_arms.push(quote! {
-                        b"gen:dateAttribute" => st.skip_current_element(),
-                        b"gen:doubleAttribute" => st.skip_current_element(),
-                        b"gen:genericAttributeSet" => st.skip_current_element(),
-                        b"gen:intAttribute" => st.skip_current_element(),
-                        b"gen:measureAttribute" => st.skip_current_element(),
-                        b"gen:stringAttribute" => st.skip_current_element(),
-                        b"gen:uriAttribute" => st.skip_current_element(),
+                        b"gen:dateAttribute" => <#field_ty as CityGMLElement>::parse(&mut self.#field_ident, st),
+                        b"gen:doubleAttribute" => <#field_ty as CityGMLElement>::parse(&mut self.#field_ident, st),
+                        b"gen:genericAttributeSet" => <#field_ty as CityGMLElement>::parse(&mut self.#field_ident, st),
+                        b"gen:intAttribute" => <#field_ty as CityGMLElement>::parse(&mut self.#field_ident, st),
+                        b"gen:measureAttribute" => <#field_ty as CityGMLElement>::parse(&mut self.#field_ident, st),
+                        b"gen:stringAttribute" => <#field_ty as CityGMLElement>::parse(&mut self.#field_ident, st),
+                        b"gen:uriAttribute" => <#field_ty as CityGMLElement>::parse(&mut self.#field_ident, st),
                     });
                     Ok(())
                 } else {

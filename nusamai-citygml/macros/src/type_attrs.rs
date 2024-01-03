@@ -166,7 +166,7 @@ fn modify(ty: &StereoType, args: &FeatureArgs, input: &mut DeriveInput) -> Resul
                         fields,
                         quote! {
                             #[citygml(generics)]
-                            pub generic_attribute: Option<i32> // FIXME:
+                            pub generic_attribute: nusamai_citygml::GenericAttribute
                         },
                     );
                 }
