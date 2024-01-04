@@ -122,7 +122,7 @@ mod tests {
         let value = obj.to_attribute_json();
         assert_eq!(value, json!(true));
 
-        let obj = Value::URI(URI::new("http://example.com".into()));
+        let obj = Value::URI(URI::new("http://example.com"));
         let value = obj.to_attribute_json();
         assert_eq!(value, json!("http://example.com"));
 
