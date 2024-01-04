@@ -1,7 +1,6 @@
 //! GeoPackage sink
 
 use rayon::prelude::*;
-use tokio;
 
 use crate::configuration::Config;
 use crate::pipeline::{Feedback, Receiver};
@@ -19,7 +18,7 @@ impl DataSinkProvider for GpkgSinkProvider {
 
     fn info(&self) -> SinkInfo {
         SinkInfo {
-            name: "GeoPackage Sink".to_string(),
+            name: "GeoPackage".to_string(),
         }
     }
 

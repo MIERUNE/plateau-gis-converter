@@ -1,6 +1,8 @@
-use sqlx::{migrate::MigrateDatabase, Pool, Sqlite, SqlitePool};
+use sqlx::sqlite::*;
 use sqlx::{Acquire, Row};
+use sqlx::{Pool, Sqlite, SqlitePool};
 use std::path::Path;
+use std::str::FromStr;
 use thiserror::Error;
 
 pub struct GpkgHandler {
@@ -24,7 +26,11 @@ impl GpkgHandler {
 
         let db_url = format!("sqlite://{}", path);
 
-        Sqlite::create_database(&db_url).await?;
+        let conn_opts = SqliteConnectOptions::from_str(&db_url)?
+            .create_if_missing(true)
+            .synchronous(SqliteSynchronous::Normal)
+            .journal_mode(SqliteJournalMode::Wal);
+        SqlitePoolOptions::new().connect_with(conn_opts).await?;
         let pool = SqlitePool::connect(&db_url).await?;
 
         // Initialize the database with minimum GeoPackage schema
@@ -86,6 +92,17 @@ impl GpkgHandler {
     pub async fn begin(&mut self) -> Result<GpkgTransaction, GpkgError> {
         Ok(GpkgTransaction::new(self.pool.begin().await?))
     }
+}
+
+pub async fn insert_feature(pool: &Pool<Sqlite>, bytes: &[u8]) {
+    sqlx::query("INSERT INTO mpoly3d (geometry) VALUES (?)")
+        .bind(bytes)
+        .execute(pool)
+        .await
+        .unwrap();
+
+    // TODO: MultiLineString
+    // TODO: MultiPoint
 }
 
 pub struct GpkgTransaction<'c> {
