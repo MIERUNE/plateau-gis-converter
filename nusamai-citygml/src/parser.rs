@@ -313,12 +313,9 @@ impl<R: BufRead> SubTreeReader<'_, '_, R> {
             MultiSurface => self.parse_multi_surface_prop(geomref, lod)?,
             Geometry => self.parse_geometry_prop(geomref, lod)?, // FIXME: not only surfaces
             Triangulated => self.parse_triangulated_prop(geomref, lod)?, // FIXME
-            _ => {
-                return Err(ParseError::SchemaViolation(format!(
-                    "Unsupported geometry type: lod={}, geomtype={:?}",
-                    lod, &geomtype
-                )));
-            }
+            Point => todo!(),
+            MultiPoint => todo!(),
+            MultiCurve => todo!(),
         }
 
         self.state
@@ -767,5 +764,43 @@ fn expect_end<R: BufRead>(reader: &mut NsReader<R>, buf: &mut Vec<u8>) -> Result
             Ok(_) => (),
             Err(e) => return Err(e.into()),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn parse(doc: &str, f: impl Fn(&mut SubTreeReader<std::io::Cursor<&str>>)) {
+        let mut reader = quick_xml::NsReader::from_reader(std::io::Cursor::new(doc));
+        let mut citygml_reader = CityGMLReader::new(ParseContext::default());
+        let mut subtree_reader = citygml_reader
+            .start_root(&mut reader)
+            .expect("Failed to start root");
+        f(&mut subtree_reader);
+    }
+
+    #[test]
+    fn parse_text() {
+        parse(
+            r#"
+            <foo>bar</foo>
+        "#,
+            |sr| {
+                assert_eq!(sr.parse_text().unwrap(), "bar");
+            },
+        );
+    }
+
+    #[test]
+    fn parse_text_invalid() {
+        parse(
+            r#"
+            <foo><unexpected></unexpected></foo>
+        "#,
+            |sr| {
+                sr.parse_text().expect_err("error expected");
+            },
+        );
     }
 }

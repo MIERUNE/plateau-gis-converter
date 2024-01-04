@@ -5,7 +5,6 @@ use crate::values::{Code, Point, URI};
 use crate::Measure;
 use chrono::NaiveDate;
 use serde::{Deserialize, Serialize};
-use std::iter;
 
 pub type Map = indexmap::IndexMap<String, Value>;
 
@@ -76,15 +75,18 @@ impl Value {
                     .iter()
                     .map(|(k, v)| (k.clone(), v.to_attribute_json()))
                     .chain(
-                        iter::once(("type".into(), feat.typename.clone().into()))
-                            .chain(iter::once(("id".into(), feat.id.clone().into()))),
+                        std::iter::once(("type".into(), feat.typename.clone().into()))
+                            .chain(std::iter::once(("id".into(), feat.id.clone().into()))),
                     ),
             ),
             Data(feat) => serde_json::Value::from_iter(
                 feat.attributes
                     .iter()
                     .map(|(k, v)| (k.clone(), v.to_attribute_json()))
-                    .chain(iter::once(("type".into(), feat.typename.clone().into()))),
+                    .chain(std::iter::once((
+                        "type".into(),
+                        feat.typename.clone().into(),
+                    ))),
             ),
         }
     }
@@ -122,7 +124,7 @@ mod tests {
         let value = obj.to_attribute_json();
         assert_eq!(value, json!(true));
 
-        let obj = Value::URI(URI::new("http://example.com".into()));
+        let obj = Value::URI(URI::new("http://example.com"));
         let value = obj.to_attribute_json();
         assert_eq!(value, json!("http://example.com"));
 

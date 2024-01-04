@@ -6,6 +6,7 @@ use serde::{Deserialize, Serialize};
 use std::io::BufRead;
 
 // type aliases
+// type aliases
 pub type Date = chrono::NaiveDate;
 pub type Length = Measure; // Length is almost same as Measure
 pub type GYear = String; // TODO?
@@ -13,6 +14,7 @@ pub type GYearMonth = String; // TODO?
 pub type MeasureOrNullList = String; // TODO?
 pub type BuildingLODType = String; // TODO?
 pub type DoubleList = String; // TODO?
+pub type LODType = u64; // TODO?
 
 impl CityGMLElement for String {
     const ELEMENT_TYPE: ElementType = ElementType::BasicType;
