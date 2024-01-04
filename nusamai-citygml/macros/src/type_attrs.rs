@@ -118,15 +118,15 @@ fn modify(ty: &ElementType, args: &FeatureArgs, input: &mut DeriveInput) -> Resu
                     add_named_field(
                         fields,
                         quote! {
-                            #[citygml(path = b"gml:name")]
-                            pub name: Vec<String>
+                            #[citygml(path = b"gml:description")]
+                            pub description: Option<String>
                         },
                     );
                     add_named_field(
                         fields,
                         quote! {
-                            #[citygml(path = b"gml:description")]
-                            pub description: Option<String>
+                            #[citygml(path = b"gml:name")]
+                            pub name: Vec<String>
                         },
                     );
                     add_named_field(
