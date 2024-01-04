@@ -173,7 +173,7 @@ pub struct CargoHandlingFacility {
     pub is_designated: Option<bool>,
 
     #[citygml(path = b"uro:degradationLevel")]
-    pub degradation_level: Option<u64>,
+    pub degradation_level: Option<i64>,
 
     #[citygml(path = b"uro:mainCargo")]
     pub main_cargo: Option<Code>,
@@ -185,7 +185,7 @@ pub struct CargoHandlingFacility {
     pub liftable_load: Option<Measure>,
 
     #[citygml(path = b"uro:ability")]
-    pub ability: Option<u64>,
+    pub ability: Option<i64>,
 
     #[citygml(path = b"uro:packingName")]
     pub packing_name: Option<Code>,
@@ -209,7 +209,7 @@ pub struct CargoHandlingFacility {
     pub main_material: Option<Code>,
 
     #[citygml(path = b"uro:totalCost")]
-    pub total_cost: Option<u64>,
+    pub total_cost: Option<i64>,
 
     #[citygml(path = b"uro:note")]
     pub note: Option<String>,
@@ -239,7 +239,7 @@ pub struct CyberportMarinaAndPBS{
     pub is_designated: Option<bool>,
 
     #[citygml(path = b"uro:degradationLevel")]
-    pub degradation_level: Option<u64>,
+    pub degradation_level: Option<i64>,
 
     #[citygml(path = b"uro:geologicalType")]
     pub geological_type: Option<Code>,
@@ -305,28 +305,28 @@ pub struct CyberportMarinaAndPBS{
     pub mooring_post_weight: Option<Measure>,
 
     #[citygml(path = b"uro:numberOfMooringPosts")]
-    pub number_of_mooring_posts: Option<u64>,
+    pub number_of_mooring_posts: Option<i64>,
 
     #[citygml(path = b"uro:resistantMaterial")]
-    pub resistant_material: Option<u64>,
+    pub resistant_material: Option<i64>,
 
     #[citygml(path = b"uro:lighting")]
-    pub lighting: Option<u64>,
+    pub lighting: Option<i64>,
 
     #[citygml(path = b"uro:stairs")]
-    pub stairs: Option<u64>,
+    pub stairs: Option<i64>,
 
     #[citygml(path = b"uro:lifesaving")]
     pub lifesaving: Option<String>,
 
     #[citygml(path = b"uro:lifesavingNumber")]
-    pub lifesaving_number: Option<u64>,
+    pub lifesaving_number: Option<i64>,
 
     #[citygml(path = b"uro:bumper")]
     pub bumper: Option<Measure>,
 
     #[citygml(path = b"uro:numberOfVehicleBoardings")]
-    pub number_of_vehicle_boardings: Option<u64>,
+    pub number_of_vehicle_boardings: Option<i64>,
 
     #[citygml(path = b"uro:vehicleBoardingWidth")]
     pub vehicle_boarding_width: Option<Measure>,
@@ -335,13 +335,13 @@ pub struct CyberportMarinaAndPBS{
     pub ship_type: Option<String>,
 
     #[citygml(path = b"uro:numberOfSeats")]
-    pub number_of_seats: Option<u64>,
+    pub number_of_seats: Option<i64>,
 
     #[citygml(path = b"uro:mainCargo")]
     pub main_cargo: Option<Code>,
 
     #[citygml(path = b"uro:storageCapacity")]
-    pub storage_capacity: Option<u64>,
+    pub storage_capacity: Option<i64>,
 
     #[citygml(path = b"uro:storageCapacityUnit")]
     pub storage_capacity_unit: Option<Code>,
@@ -353,10 +353,10 @@ pub struct CyberportMarinaAndPBS{
     pub main_material: Option<Code>,
 
     #[citygml(path = b"uro:totalCost")]
-    pub total_cost: Option<u64>,
+    pub total_cost: Option<i64>,
 
     #[citygml(path = b"uro:subsidy")]
-    pub subsidy: Option<u64>,
+    pub subsidy: Option<i64>,
 
     #[citygml(path = b"uro:note")]
     pub note: Option<String>,
@@ -431,7 +431,7 @@ pub struct FishingPortFacilityAttribute {
     pub date_of_construction_or_acquisition: Option<Date>,
 
     #[citygml(path = b"uro:cost")]
-    pub cost: Option<u64>,
+    pub cost: Option<i64>,
 
     #[citygml(path = b"uro:note")]
     pub note: Option<String>,
@@ -449,10 +449,10 @@ pub struct FishingPortCapacityAttribute {
     pub weight_capacity: Option<Measure>,
 
     #[citygml(path = b"uro:hullForm")]
-    pub hull_form: Option<u64>,
+    pub hull_form: Option<i64>,
 
     #[citygml(path = b"uro:shipNumber")]
-    pub ship_number: Option<u64>,
+    pub ship_number: Option<i64>,
 
     #[citygml(path = b"uro:waterDepth-2m")]
     pub water_depth_2m: Option<Measure>,
@@ -479,7 +479,7 @@ pub struct FishingPortCapacityAttribute {
     pub luminous_color: Option<String>,
 
     #[citygml(path = b"uro:candlePower")]
-    pub candle_power: Option<u64>,
+    pub candle_power: Option<i64>,
 
     #[citygml(path = b"uro:lightType")]
     pub light_type: Option<String>,
@@ -488,19 +488,19 @@ pub struct FishingPortCapacityAttribute {
     pub period: Option<String>,
 
     #[citygml(path = b"uro:maximumGroundingWeight")]
-    pub maximum_grounding_weight: Option<u64>,
+    pub maximum_grounding_weight: Option<i64>,
 
     #[citygml(path = b"uro:handleablePower")]
-    pub handleable_power: Option<u64>,
+    pub handleable_power: Option<i64>,
 
     #[citygml(path = b"uro:maximumWaterSupply")]
-    pub maximum_water_supply: Option<u64>,
+    pub maximum_water_supply: Option<i64>,
 
     #[citygml(path = b"uro:maximumRefueling")]
     pub maximum_refueling: Option<String>,
 
     #[citygml(path = b"uro:people")]
-    pub people: Option<u64>,
+    pub people: Option<i64>,
 
     #[citygml(path = b"uro:other")]
     pub other: Option<String>,
@@ -530,7 +530,7 @@ pub struct HarborFacility {
     pub is_designated: Option<bool>,
 
     #[citygml(path = b"uro:degradationLevel")]
-    pub degradation_level: Option<u64>,
+    pub degradation_level: Option<i64>,
 
     #[citygml(path = b"uro:geologicalType")]
     pub geological_type: Option<Code>,
@@ -569,10 +569,10 @@ pub struct HarborFacility {
     pub outer_area: Option<Measure>,
 
     #[citygml(path = b"uro:totalCost")]
-    pub total_cost: Option<u64>,
+    pub total_cost: Option<i64>,
 
     #[citygml(path = b"uro:subsidy")]
-    pub subsidy: Option<u64>,
+    pub subsidy: Option<i64>,
 
     #[citygml(path = b"uro:note")]
     pub note: Vec<String>,
@@ -626,7 +626,7 @@ pub struct MooringFacility {
     pub is_designated: Option<bool>,
 
     #[citygml(path = b"uro:degradationLevel")]
-    pub degradation_level: Option<u64>,
+    pub degradation_level: Option<i64>,
 
     #[citygml(path = b"uro:mainPartLength")]
     pub main_part_length: Option<Measure>,
@@ -665,28 +665,28 @@ pub struct MooringFacility {
     pub mooring_post_weight: Option<Measure>,
 
     #[citygml(path = b"uro:numberOfMooringPosts")]
-    pub number_of_mooring_posts: Option<u64>,
+    pub number_of_mooring_posts: Option<i64>,
 
     #[citygml(path = b"uro:resistantMaterial")]
-    pub resistant_material: Option<u64>,
+    pub resistant_material: Option<i64>,
 
     #[citygml(path = b"uro:lighting")]
-    pub lighting: Option<u64>,
+    pub lighting: Option<i64>,
 
     #[citygml(path = b"uro:stairs")]
-    pub stairs: Option<u64>,
+    pub stairs: Option<i64>,
 
     #[citygml(path = b"uro:lifesavingAppliances")]
     pub lifesaving_appliances: Option<String>,
 
     #[citygml(path = b"uro:numberOfLifesavingAppliances")]
-    pub number_of_lifesaving_appliances: Option<u64>,
+    pub number_of_lifesaving_appliances: Option<i64>,
 
     #[citygml(path = b"uro:bumper")]
     pub bumper: Option<Measure>,
 
     #[citygml(path = b"uro:numberOfVehicleBoardings")]
-    pub number_of_vehicle_boardings: Option<u64>,
+    pub number_of_vehicle_boardings: Option<i64>,
 
     #[citygml(path = b"uro:vehicleBoardingWidth")]
     pub vehicle_boarding_width: Option<Measure>,
@@ -695,7 +695,7 @@ pub struct MooringFacility {
     pub ship_type: Option<String>,
 
     #[citygml(path = b"uro:numberOfSeats")]
-    pub number_of_seats: Option<u64>,
+    pub number_of_seats: Option<i64>,
 
     #[citygml(path = b"uro:mainCargo")]
     pub main_cargo: Option<Code>,
@@ -707,10 +707,10 @@ pub struct MooringFacility {
     pub main_material: Option<Code>,
 
     #[citygml(path = b"uro:totalCost")]
-    pub total_cost: Option<u64>,
+    pub total_cost: Option<i64>,
 
     #[citygml(path = b"uro:subsidy")]
-    pub subsidy: Option<u64>,
+    pub subsidy: Option<i64>,
 
     #[citygml(path = b"uro:note")]
     pub note: Option<String>,
@@ -740,10 +740,10 @@ pub struct NavigationAssistanceFacility {
     pub is_designated: Option<bool>,
 
     #[citygml(path = b"uro:degradationLevel")]
-    pub degradation_level: Option<u64>,
+    pub degradation_level: Option<i64>,
 
     #[citygml(path = b"uro:totalCost")]
-    pub total_cost: Option<u64>,
+    pub total_cost: Option<i64>,
 
     #[citygml(path = b"uro:subsidy")]
     pub subsidy: Option<String>,
@@ -776,7 +776,7 @@ pub struct PortEnvironmentalImprovementFacility{
     pub is_designated: Option<bool>,
 
     #[citygml(path = b"uro:degradationLevel")]
-    pub degradation_level: Option<u64>,
+    pub degradation_level: Option<i64>,
 
     #[citygml(path = b"uro:usage")]
     pub usage: Option<String>,
@@ -791,10 +791,10 @@ pub struct PortEnvironmentalImprovementFacility{
     pub total_foor_area: Option<Measure>,
 
     #[citygml(path = b"uro:totalCost")]
-    pub total_cost: Option<u64>,
+    pub total_cost: Option<i64>,
 
     #[citygml(path = b"uro:subsidy")]
-    pub subsidy: Option<u64>,
+    pub subsidy: Option<i64>,
 
     #[citygml(path = b"uro:note")]
     pub note: Option<String>,
@@ -824,7 +824,7 @@ pub struct PortPassengerFacility{
     pub is_designated: Option<bool>,
 
     #[citygml(path = b"uro:degradationLevel")]
-    pub degradation_level: Option<u64>,
+    pub degradation_level: Option<i64>,
 
     #[citygml(path = b"uro:length")]
     pub length: Option<Measure>,
@@ -842,7 +842,7 @@ pub struct PortPassengerFacility{
     pub acquisition_year: Option<String>,
 
     #[citygml(path = b"uro:totalCost")]
-    pub total_cost: Option<u64>,
+    pub total_cost: Option<i64>,
 
     #[citygml(path = b"uro:note")]
     pub note: Option<String>,
@@ -872,7 +872,7 @@ pub struct PortPollutionControlFacility{
     pub is_designated: Option<bool>,
 
     #[citygml(path = b"uro:degradationLevel")]
-    pub degradation_level: Option<u64>,
+    pub degradation_level: Option<i64>,
 
     #[citygml(path = b"uro:length")]
     pub length: Option<Measure>,
@@ -893,10 +893,10 @@ pub struct PortPollutionControlFacility{
     pub main_material: Option<Code>,
 
     #[citygml(path = b"uro:totalCost")]
-    pub total_cost: Option<u64>,
+    pub total_cost: Option<i64>,
 
     #[citygml(path = b"uro:subsidy")]
-    pub subsidy: Option<u64>,
+    pub subsidy: Option<i64>,
 
     #[citygml(path = b"uro:note")]
     pub note: Option<String>,
@@ -926,7 +926,7 @@ pub struct PortProtectiveFacility{
     pub is_designated: Option<bool>,
 
     #[citygml(path = b"uro:degradationLevel")]
-    pub degradation_level: Option<u64>,
+    pub degradation_level: Option<i64>,
 
     #[citygml(path = b"uro:structureType")]
     pub structure_type: Option<Code>,
@@ -935,10 +935,10 @@ pub struct PortProtectiveFacility{
     pub main_material: Option<Code>,
 
     #[citygml(path = b"uro:totalCost")]
-    pub total_cost: Option<u64>,
+    pub total_cost: Option<i64>,
 
     #[citygml(path = b"uro:subsidy")]
-    pub subsidy: Option<u64>,
+    pub subsidy: Option<i64>,
 
     #[citygml(path = b"uro:note")]
     pub note: Vec<String>,
@@ -968,7 +968,7 @@ pub struct PortStorageFacility{
     pub is_designated: Option<bool>,
 
     #[citygml(path = b"uro:degradationLevel")]
-    pub degradation_level: Option<u64>,
+    pub degradation_level: Option<i64>,
 
     #[citygml(path = b"uro:innerTotalFloorArea")]
     pub inner_total_floor_area: Option<Measure>,
@@ -986,7 +986,7 @@ pub struct PortStorageFacility{
     pub main_cargo: Option<Code>,
 
     #[citygml(path = b"uro:storageCapacity")]
-    pub storage_capacity: Option<u64>,
+    pub storage_capacity: Option<i64>,
 
     #[citygml(path = b"uro:storageCapacityUnit")]
     pub storage_capacity_unit: Option<Code>,
@@ -995,7 +995,7 @@ pub struct PortStorageFacility{
     pub main_material: Option<Code>,
 
     #[citygml(path = b"uro:totalCost")]
-    pub total_cost: Option<u64>,
+    pub total_cost: Option<i64>,
 
     #[citygml(path = b"uro:note")]
     pub note: Option<String>,
@@ -1025,7 +1025,7 @@ pub struct PortTransportationFacility{
     pub is_designated: Option<bool>,
 
     #[citygml(path = b"uro:degradationLevel")]
-    pub degradation_level: Option<u64>,
+    pub degradation_level: Option<i64>,
 
     #[citygml(path = b"uro:structureType")]
     pub structure_type: Option<Code>,
@@ -1043,13 +1043,13 @@ pub struct PortTransportationFacility{
     pub bedding_width: Option<Measure>,
 
     #[citygml(path = b"uro:numberOfLanes")]
-    pub number_of_lanes: Option<u64>,
+    pub number_of_lanes: Option<i64>,
 
     #[citygml(path = b"uro:parkingLotCapacityOfBus")]
-    pub parking_lot_capacity_of_bus: Option<u64>,
+    pub parking_lot_capacity_of_bus: Option<i64>,
 
     #[citygml(path = b"uro:parkingLotCapacityOfCars")]
-    pub parking_lot_capacity_of_cars: Option<u64>,
+    pub parking_lot_capacity_of_cars: Option<i64>,
 
     #[citygml(path = b"uro:routeType")]
     pub route_type: Option<Code>,
@@ -1067,7 +1067,7 @@ pub struct PortTransportationFacility{
     pub minimum_depth: Option<Measure>,
 
     #[citygml(path = b"uro:numberOfAircraftParkingSpaces")]
-    pub number_of_aircraft_parking_spaces: Option<u64>,
+    pub number_of_aircraft_parking_spaces: Option<i64>,
 
     #[citygml(path = b"uro:pavementType")]
     pub pavement_type: Option<Code>,
@@ -1076,10 +1076,10 @@ pub struct PortTransportationFacility{
     pub main_cargo: Option<Code>,
 
     #[citygml(path = b"uro:totalCost")]
-    pub total_cost: Option<u64>,
+    pub total_cost: Option<i64>,
 
     #[citygml(path = b"uro:subsidy")]
-    pub subsidy: Option<u64>,
+    pub subsidy: Option<i64>,
 
     #[citygml(path = b"uro:note")]
     pub note: Option<String>,
@@ -1109,7 +1109,7 @@ pub struct PortWasteTreatmentFacility{
     pub is_designated: Option<bool>,
 
     #[citygml(path = b"uro:degradationLevel")]
-    pub degradation_level: Option<u64>,
+    pub degradation_level: Option<i64>,
 
     #[citygml(path = b"uro:structureType")]
     pub structure_type: Option<Code>,
@@ -1139,10 +1139,10 @@ pub struct PortWasteTreatmentFacility{
     pub planned_disposal_area: Option<Measure>,
 
     #[citygml(path = b"uro:plannedDisposalAmount")]
-    pub planned_disposal_amount: Option<u64>,
+    pub planned_disposal_amount: Option<i64>,
 
     #[citygml(path = b"uro:receivingCapacity")]
-    pub receiving_capacity: Option<u64>,
+    pub receiving_capacity: Option<i64>,
 
     #[citygml(path = b"uro:shipType")]
     pub ship_type: Option<String>,
@@ -1154,10 +1154,10 @@ pub struct PortWasteTreatmentFacility{
     pub acquisition_year: Option<String>,
 
     #[citygml(path = b"uro:totalCost")]
-    pub total_cost: Option<u64>,
+    pub total_cost: Option<i64>,
 
     #[citygml(path = b"uro:subsidy")]
-    pub subsidy: Option<u64>,
+    pub subsidy: Option<i64>,
 
     #[citygml(path = b"uro:note")]
     pub note: Option<String>,
@@ -1186,13 +1186,13 @@ pub struct ShipServiceFacility{
     pub is_designated: Option<bool>,
 
     #[citygml(path = b"uro:degradationLevel")]
-    pub degradation_level: Option<u64>,
+    pub degradation_level: Option<i64>,
 
     #[citygml(path = b"uro:shipType")]
     pub ship_type: Option<String>,
 
     #[citygml(path = b"uro:supplyAbility")]
-    pub supply_ability: Option<u64>,
+    pub supply_ability: Option<i64>,
 
     #[citygml(path = b"uro:supplyAbilityUnit")]
     pub supply_ability_unit: Option<Code>,
@@ -1213,7 +1213,7 @@ pub struct ShipServiceFacility{
     pub acquisition_year: Option<String>,
 
     #[citygml(path = b"uro:totalCost")]
-    pub total_cost: Option<u64>,
+    pub total_cost: Option<i64>,
 
     #[citygml(path = b"uro:note")]
     pub note: Option<String>,
@@ -1243,19 +1243,19 @@ pub struct PortManagementFacility{
     pub is_designated: Option<bool>,
 
     #[citygml(path = b"uro:degradationLevel")]
-    pub degradation_level: Option<u64>,
+    pub degradation_level: Option<i64>,
 
     #[citygml(path = b"uro:totalFloorArea")]
     pub total_floor_area: Option<Measure>,
 
     #[citygml(path = b"uro:numberOfShipTypes")]
-    pub number_of_ship_types: Option<u64>,
+    pub number_of_ship_types: Option<i64>,
 
     #[citygml(path = b"uro:unitOfShipType")]
     pub unit_of_ship_type: Option<Code>,
 
     #[citygml(path = b"uro:loadingCapacity")]
-    pub loading_capacity: Option<u64>,
+    pub loading_capacity: Option<i64>,
 
     #[citygml(path = b"uro:acquisitionYear")]
     pub acquisition_year: Option<String>,
@@ -1264,10 +1264,10 @@ pub struct PortManagementFacility{
     pub usage: Option<String>,
 
     #[citygml(path = b"uro:totalCost")]
-    pub total_cost: Option<u64>,
+    pub total_cost: Option<i64>,
 
     #[citygml(path = b"uro:subsidy")]
-    pub subsidy: Option<u64>,
+    pub subsidy: Option<i64>,
 
     #[citygml(path = b"uro:note")]
     pub note: Option<String>,
@@ -1297,13 +1297,13 @@ pub struct PortWelfareFacility{
     pub is_designated: Option<bool>,
 
     #[citygml(path = b"uro:degradationLevel")]
-    pub degradation_level: Option<u64>,
+    pub degradation_level: Option<i64>,
 
     #[citygml(path = b"uro:totalFloorArea")]
     pub total_floor_area: Option<Measure>,
 
     #[citygml(path = b"uro:totalCost")]
-    pub total_cost: Option<u64>,
+    pub total_cost: Option<i64>,
 
     #[citygml(path = b"uro:note")]
     pub note: Option<String>,
@@ -1321,10 +1321,10 @@ pub struct FishingPortCapacity {
     pub weight_capacity: Option<Measure>,
 
     #[citygml(path = b"uro:hullForm")]
-    pub hull_form: Option<u64>,
+    pub hull_form: Option<i64>,
 
     #[citygml(path = b"uro:shipNumber")]
-    pub ship_number: Option<u64>,
+    pub ship_number: Option<i64>,
 
     #[citygml(path = b"uro:waterDepth-2m")]
     pub water_depth_2m: Option<Measure>,
@@ -1351,7 +1351,7 @@ pub struct FishingPortCapacity {
     pub luminous_color: Option<String>,
 
     #[citygml(path = b"uro:candlePower")]
-    pub candle_power: Option<u64>,
+    pub candle_power: Option<i64>,
 
     #[citygml(path = b"uro:lightType")]
     pub light_type: Option<String>,
@@ -1360,19 +1360,19 @@ pub struct FishingPortCapacity {
     pub period: Option<String>,
 
     #[citygml(path = b"uro:maximumGroundingWeight")]
-    pub maximum_grounding_weight: Option<u64>,
+    pub maximum_grounding_weight: Option<i64>,
 
     #[citygml(path = b"uro:handleablePower")]
-    pub handleable_power: Option<u64>,
+    pub handleable_power: Option<i64>,
 
     #[citygml(path = b"uro:maximumWaterSupply")]
-    pub maximum_water_supply: Option<u64>,
+    pub maximum_water_supply: Option<i64>,
 
     #[citygml(path = b"uro:maximumRefueling")]
     pub maximum_refueling: Option<String>,
 
     #[citygml(path = b"uro:people")]
-    pub people: Option<u64>,
+    pub people: Option<i64>,
 
     #[citygml(path = b"uro:other")]
     pub other: Option<String>,
@@ -1447,7 +1447,7 @@ pub struct FishingPortFacility {
     pub date_of_construction_or_acquisition: Option<Date>,
 
     #[citygml(path = b"uro:cost")]
-    pub cost: Option<u64>,
+    pub cost: Option<i64>,
 
     #[citygml(path = b"uro:note")]
     pub note: Option<String>,
