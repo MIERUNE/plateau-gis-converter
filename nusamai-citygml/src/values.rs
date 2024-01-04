@@ -13,6 +13,7 @@ pub type GYearMonth = String; // TODO?
 pub type MeasureOrNullList = String; // TODO?
 pub type BuildingLODType = String; // TODO?
 pub type DoubleList = String; // TODO?
+pub type LODType = u64; // TODO?
 
 impl CityGMLElement for String {
     const ELEMENT_TYPE: ElementType = ElementType::BasicType;
