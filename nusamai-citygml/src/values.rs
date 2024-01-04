@@ -387,12 +387,6 @@ impl CityGMLElement for GenericAttribute {
                 .map(|(k, v)| (k, Value::Double(v))),
         );
         map.extend(
-            self.date_attrs
-                .into_iter()
-                .map(|(k, v)| (k, Value::Date(v))),
-        );
-        map.extend(self.uri_attrs.into_iter().map(|(k, v)| (k, Value::URI(v))));
-        map.extend(
             self.measure_attrs
                 .into_iter()
                 .map(|(k, v)| (k, Value::Measure(v))),
@@ -402,6 +396,12 @@ impl CityGMLElement for GenericAttribute {
                 .into_iter()
                 .map(|(k, v)| (k, Value::Code(v))),
         );
+        map.extend(
+            self.date_attrs
+                .into_iter()
+                .map(|(k, v)| (k, Value::Date(v))),
+        );
+        map.extend(self.uri_attrs.into_iter().map(|(k, v)| (k, Value::URI(v))));
         map.extend(
             self.generic_attr_set
                 .into_iter()

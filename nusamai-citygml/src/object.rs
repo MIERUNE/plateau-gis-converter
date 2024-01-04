@@ -7,7 +7,7 @@ use chrono::NaiveDate;
 use serde::{Deserialize, Serialize};
 use std::iter;
 
-pub type Map = std::collections::HashMap<String, Value>;
+pub type Map = indexmap::IndexMap<String, Value>;
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct CityObject {
