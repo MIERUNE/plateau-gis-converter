@@ -1,12 +1,11 @@
 use std::collections::HashMap;
 use std::io::BufRead;
 
-use nusamai_citygml::ParseError;
 use quick_xml::events::Event;
-use quick_xml::name::Namespace;
 use quick_xml::name::ResolveResult::Bound;
 
-const GML_NS: Namespace = Namespace(b"http://www.opengis.net/gml");
+use nusamai_citygml::namespace::GML31_NS;
+use nusamai_citygml::ParseError;
 
 #[derive(Debug)]
 pub struct Definition {
@@ -66,11 +65,11 @@ fn parse_definition<R: BufRead>(
                 depth += 1;
                 let (nsres, localname) = reader.resolve_element(start.name());
                 match (depth, nsres, localname.as_ref()) {
-                    (2, Bound(GML_NS), b"name") => {
+                    (2, Bound(GML31_NS), b"name") => {
                         identifier = Some(expect_text(reader, buf)?);
                         depth -= 1;
                     }
-                    (2, Bound(GML_NS), b"description") => {
+                    (2, Bound(GML31_NS), b"description") => {
                         value = Some(expect_text(reader, buf)?);
                         depth -= 1;
                     }
@@ -122,20 +121,20 @@ pub fn parse_dictionary<R: BufRead>(
                 depth += 1;
                 let (nsres, localname) = reader.resolve_element(start.name());
                 match (depth, nsres, localname.as_ref()) {
-                    (1, Bound(GML_NS), b"Dictionary") => {}
+                    (1, Bound(GML31_NS), b"Dictionary") => {}
                     (1, _, _) => {
                         return Err(ParseError::SchemaViolation(format!(
                             "<Dictionary> is expected, but found {}",
                             String::from_utf8_lossy(localname.as_ref())
                         )))
                     }
-                    (2, Bound(GML_NS), b"name") => {
+                    (2, Bound(GML31_NS), b"name") => {
                         // Just ignore it for now.
                         let _name = expect_text(&mut reader, &mut buf)?;
                         depth -= 1;
                     }
-                    (2, Bound(GML_NS), b"dictionaryEntry") => {}
-                    (3, Bound(GML_NS), b"Definition") => {
+                    (2, Bound(GML31_NS), b"dictionaryEntry") => {}
+                    (3, Bound(GML31_NS), b"Definition") => {
                         parse_definition(&mut reader, &mut definitions, &mut buf, &mut buf2)?;
                         depth -= 1;
                     }
