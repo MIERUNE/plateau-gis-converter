@@ -104,13 +104,13 @@ pub struct RiverFacilityIdAttribute {
     pub alternative_name: Vec<String>,
 
     #[citygml(path = b"uro:riverCode")]
-    pub river_code: Code,
+    pub river_code: Option<Code>,
 
     #[citygml(path = b"uro:riverName")]
     pub river_name: Option<String>,
 
     #[citygml(path = b"uro:sideType")]
-    pub side_type: Code,
+    pub side_type: Option<Code>,
 
     #[citygml(path = b"uro:leftPost")]
     pub left_post: Option<Measure>,
@@ -155,10 +155,10 @@ pub struct CargoHandlingFacility {
     pub facility_id: Option<String>,
 
     #[citygml(path = b"uro:portFacilityDetailsType")]
-    pub port_facility_details_type: Code,//スキーマに存在しない
+    pub port_facility_details_type: Option<Code>,//スキーマに存在しない
 
     #[citygml(path = b"uro:portName")]
-    pub port_name: String,
+    pub port_name: Option<String>,
 
     #[citygml(path = b"uro:portStatus")]
     pub port_status: Option<Code>,
@@ -221,10 +221,10 @@ pub struct CyberportMarinaAndPBS{
     pub facility_id: Option<String>,
 
     #[citygml(path = b"uro:portFacilityDetailsType")]
-    pub port_facility_details_type: Code,//仕様書間違い
+    pub port_facility_details_type: Option<Code>,//仕様書間違い
 
     #[citygml(path = b"uro:portName")]
-    pub port_name: String,
+    pub port_name: Option<String>,
 
     #[citygml(path = b"uro:portStatus")]
     pub port_status: Option<Code>,
@@ -368,19 +368,19 @@ pub struct FishingPortFacilityAttribute {
     pub facility_id: Option<String>,
 
     #[citygml(path = b"uro:facilityDetailsType")]
-    pub facility_details_type: Code,
+    pub facility_details_type: Option<Code>,
 
     #[citygml(path = b"uro:portName")]
-    pub port_name: String,
+    pub port_name: Option<String>,
 
     #[citygml(path = b"uro:portTpye")]
-    pub port_type: Code,
+    pub port_type: Option<Code>,
 
     #[citygml(path = b"uro:address")]
-    pub address: String,
+    pub address: Option<String>,
 
     #[citygml(path = b"uro:designatedArea")]
-    pub designated_area: String,
+    pub designated_area: Option<String>,
 
     #[citygml(path = b"uro:designation")]
     pub designation: Vec<String>,
@@ -512,10 +512,10 @@ pub struct HarborFacility {
     pub facility_id: Option<String>,
 
     #[citygml(path = b"uro:portFacilityDetailsType")]//仕様書間違い
-    pub port_facility_details_type: Code,
+    pub port_facility_details_type: Option<Code>,
 
     #[citygml(path = b"uro:portName")]
-    pub port_name: String,
+    pub port_name: Option<String>,
 
     #[citygml(path = b"uro:portStatus")]
     pub port_status: Option<Code>,
@@ -584,7 +584,7 @@ pub struct MaintenanceHistoryAttribute {
     pub facility_id: Option<String>,
 
     #[citygml(path = b"uro:maintenanceType")]
-    pub maintenance_type: Code,
+    pub maintenance_type: Option<Code>,
 
     #[citygml(path = b"uro:maintenanceFiscalYear")]
     pub maintenance_fiscal_year: Option<String>,
@@ -608,10 +608,10 @@ pub struct MooringFacility {
     pub facility_id: Option<String>,
 
     #[citygml(path = b"uro:portFacilityDetailsType")]//仕様書間違い
-    pub port_facility_details_type: Code, 
+    pub port_facility_details_type: Option<Code>, 
 
     #[citygml(path = b"uro:portName")]
-    pub port_name: String,
+    pub port_name: Option<String>,
 
     #[citygml(path = b"uro:portStatus")]
     pub port_status: Option<Code>,
@@ -722,10 +722,10 @@ pub struct NavigationAssistanceFacility {
     pub facility_id: Option<String>,
 
     #[citygml(path = b"uro:portFacilityDetailsType")]
-    pub port_facility_details_type: Code,//仕様書間違い
+    pub port_facility_details_type: Option<Code>,//仕様書間違い
 
     #[citygml(path = b"uro:portName")]
-    pub port_name: String,
+    pub port_name: Option<String>,
 
     #[citygml(path = b"uro:portStatus")]
     pub port_status: Option<Code>,
@@ -758,10 +758,10 @@ pub struct PortEnvironmentalImprovementFacility{
     pub facility_id: Option<String>,
 
     #[citygml(path = b"uro:portFacilityDetailsType")]
-    pub port_facility_details_type: Code,//仕様書間違い
+    pub port_facility_details_type: Option<Code>,//仕様書間違い
 
     #[citygml(path = b"uro:portName")]
-    pub port_name: String,
+    pub port_name: Option<String>,
 
     #[citygml(path = b"uro:portStatus")]
     pub port_status: Option<Code>,
@@ -806,10 +806,10 @@ pub struct PortPassengerFacility{
     pub facility_id: Option<String>,
 
     #[citygml(path = b"uro:portFacilityDetailsType")]
-    pub port_facility_details_type: Code,//仕様書間違い
+    pub port_facility_details_type: Option<Code>,//仕様書間違い
 
     #[citygml(path = b"uro:portName")]
-    pub port_name: String,
+    pub port_name: Option<String>,
 
     #[citygml(path = b"uro:portStatus")]
     pub port_status: Option<Code>,
@@ -854,10 +854,10 @@ pub struct PortPollutionControlFacility{
     pub facility_id: Option<String>,
 
     #[citygml(path = b"uro:portFacilityDetailsType")]
-    pub port_facility_details_type: Code,//仕様書間違い
+    pub port_facility_details_type: Option<Code>,//仕様書間違い
 
     #[citygml(path = b"uro:portName")]
-    pub port_name: String,
+    pub port_name: Option<String>,
 
     #[citygml(path = b"uro:portStatus")]
     pub port_status: Option<Code>,
@@ -908,10 +908,10 @@ pub struct PortProtectiveFacility{
     pub facility_id: Option<String>,
 
     #[citygml(path = b"uro:portFacilityDetailsType")]
-    pub port_facility_details_type: Code,//仕様書間違い
+    pub port_facility_details_type: Option<Code>,//仕様書間違い
 
     #[citygml(path = b"uro:portName")]
-    pub port_name: String,
+    pub port_name: Option<String>,
 
     #[citygml(path = b"uro:portStatus")]
     pub port_status: Option<Code>,
@@ -950,10 +950,10 @@ pub struct PortStorageFacility{
     pub facility_id: Option<String>,
 
     #[citygml(path = b"uro:portFacilityDetailsType")]
-    pub port_facility_details_type: Code,
+    pub port_facility_details_type: Option<Code>,
 
     #[citygml(path = b"uro:portName")]
-    pub port_name: String,
+    pub port_name: Option<String>,
 
     #[citygml(path = b"uro:portStatus")]
     pub port_status: Option<Code>,
@@ -1007,10 +1007,10 @@ pub struct PortTransportationFacility{
     pub facility_id: Option<String>,
 
     #[citygml(path = b"uro:portFacilityDetailsType")]
-    pub port_facility_details_type: Code,
+    pub port_facility_details_type: Option<Code>,
 
     #[citygml(path = b"uro:portName")]
-    pub port_name: String,
+    pub port_name: Option<String>,
 
     #[citygml(path = b"uro:portStatus")]
     pub port_status: Option<Code>,
@@ -1091,10 +1091,10 @@ pub struct PortWasteTreatmentFacility{
     pub facility_id: Option<String>,
 
     #[citygml(path = b"uro:portFacilityDetailsType")]
-    pub port_facility_details_type: Code,
+    pub port_facility_details_type: Option<Code>,
 
     #[citygml(path = b"uro:portName")]
-    pub port_name: String,
+    pub port_name: Option<String>,
 
     #[citygml(path = b"uro:portStatus")]
     pub port_status: Option<Code>,
@@ -1168,10 +1168,10 @@ pub struct ShipServiceFacility{
     pub facility_id: Option<String>,
 
     #[citygml(path = b"uro:portFacilityDetailsType")]
-    pub port_facility_details_type: Code,
+    pub port_facility_details_type: Option<Code>,
 
     #[citygml(path = b"uro:portName")]
-    pub port_name: String,
+    pub port_name: Option<String>,
 
     #[citygml(path = b"uro:portStatus")]
     pub port_status: Option<Code>,
@@ -1225,10 +1225,10 @@ pub struct PortManagementFacility{
     pub facility_id: Option<String>,
 
     #[citygml(path = b"uro:portFacilityDetailsType")]
-    pub port_facility_details_type: Code,
+    pub port_facility_details_type: Option<Code>,
 
     #[citygml(path = b"uro:portName")]
-    pub port_name: String,
+    pub port_name: Option<String>,
 
     #[citygml(path = b"uro:portStatus")]
     pub port_status: Option<Code>,
@@ -1279,10 +1279,10 @@ pub struct PortWelfareFacility{
     pub facility_id: Option<String>,
 
     #[citygml(path = b"uro:portFacilityDetailsType")]
-    pub port_facility_details_type: Code,
+    pub port_facility_details_type: Option<Code>,
 
     #[citygml(path = b"uro:portName")]
-    pub port_name: String,
+    pub port_name: Option<String>,
 
     #[citygml(path = b"uro:portStatus")]
     pub port_status: Option<Code>,
@@ -1384,19 +1384,19 @@ pub struct FishingPortFacility {
     pub facility_id: Option<String>,
 
     #[citygml(path = b"uro:facilityDetailsType")]
-    pub facility_details_type: Code,
+    pub facility_details_type: Option<Code>,
 
     #[citygml(path = b"uro:portName")]
-    pub port_name: String,
+    pub port_name: Option<String>,
 
     #[citygml(path = b"uro:portType")]
-    pub port_type: Code,
+    pub port_type: Option<Code>,
 
     #[citygml(path = b"uro:address")]
-    pub address: String,
+    pub address: Option<String>,
 
     #[citygml(path = b"uro:designatedArea")]
-    pub designated_area: String,
+    pub designated_area: Option<String>,
 
     #[citygml(path = b"uro:designation")]
     pub designation: Vec<String>,
