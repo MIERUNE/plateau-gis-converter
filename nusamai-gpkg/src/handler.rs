@@ -1,7 +1,8 @@
-use crate::geometry::multipolygon_to_bytes;
-use sqlx::Row;
-use sqlx::{migrate::MigrateDatabase, Pool, Sqlite, SqlitePool};
+use sqlx::sqlite::*;
+use sqlx::{Acquire, Row};
+use sqlx::{Pool, Sqlite, SqlitePool};
 use std::path::Path;
+use std::str::FromStr;
 use thiserror::Error;
 
 pub struct GpkgHandler {
@@ -25,7 +26,11 @@ impl GpkgHandler {
 
         let db_url = format!("sqlite://{}", path);
 
-        Sqlite::create_database(&db_url).await?;
+        let conn_opts = SqliteConnectOptions::from_str(&db_url)?
+            .create_if_missing(true)
+            .synchronous(SqliteSynchronous::Normal)
+            .journal_mode(SqliteJournalMode::Wal);
+        SqlitePoolOptions::new().connect_with(conn_opts).await?;
         let pool = SqlitePool::connect(&db_url).await?;
 
         // Initialize the database with minimum GeoPackage schema
@@ -84,19 +89,44 @@ impl GpkgHandler {
         table_names
     }
 
+    pub async fn begin(&mut self) -> Result<GpkgTransaction, GpkgError> {
+        Ok(GpkgTransaction::new(self.pool.begin().await?))
+    }
+}
+
+pub async fn insert_feature(pool: &Pool<Sqlite>, bytes: &[u8]) {
+    sqlx::query("INSERT INTO mpoly3d (geometry) VALUES (?)")
+        .bind(bytes)
+        .execute(pool)
+        .await
+        .unwrap();
+
+    // TODO: MultiLineString
+    // TODO: MultiPoint
+}
+
+pub struct GpkgTransaction<'c> {
+    tx: sqlx::Transaction<'c, Sqlite>,
+}
+
+impl<'c> GpkgTransaction<'c> {
+    pub fn new(tx: sqlx::Transaction<'c, Sqlite>) -> Self {
+        Self { tx }
+    }
+
+    pub async fn commit(self) -> Result<(), GpkgError> {
+        Ok(self.tx.commit().await?)
+    }
+
     /// Add a MultiPolygonZ feature to the GeoPackage database
     ///
     /// Note: とりあえず地物を挿入してみるための実装です。参考にしないでください。
-    pub async fn add_multi_polygon_feature(
-        &self,
-        vertices: &[[f64; 3]],
-        mpoly: &nusamai_geometry::MultiPolygon<'_, 1, u32>,
-    ) {
-        let bytes = multipolygon_to_bytes(vertices, mpoly, 4326);
+    pub async fn insert_feature(&mut self, bytes: &[u8]) {
+        let executor = self.tx.acquire().await.unwrap();
 
         sqlx::query("INSERT INTO mpoly3d (geometry) VALUES (?)")
             .bind(bytes)
-            .execute(&self.pool)
+            .execute(&mut *executor)
             .await
             .unwrap();
 
