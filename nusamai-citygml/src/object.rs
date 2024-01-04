@@ -5,9 +5,8 @@ use crate::values::{Code, Point, URI};
 use crate::Measure;
 use chrono::NaiveDate;
 use serde::{Deserialize, Serialize};
-use std::iter;
 
-pub type Map = std::collections::HashMap<String, Value>;
+pub type Map = indexmap::IndexMap<String, Value>;
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct CityObject {
@@ -76,15 +75,18 @@ impl Value {
                     .iter()
                     .map(|(k, v)| (k.clone(), v.to_attribute_json()))
                     .chain(
-                        iter::once(("type".into(), feat.typename.clone().into()))
-                            .chain(iter::once(("id".into(), feat.id.clone().into()))),
+                        std::iter::once(("type".into(), feat.typename.clone().into()))
+                            .chain(std::iter::once(("id".into(), feat.id.clone().into()))),
                     ),
             ),
             Data(feat) => serde_json::Value::from_iter(
                 feat.attributes
                     .iter()
                     .map(|(k, v)| (k.clone(), v.to_attribute_json()))
-                    .chain(iter::once(("type".into(), feat.typename.clone().into()))),
+                    .chain(std::iter::once((
+                        "type".into(),
+                        feat.typename.clone().into(),
+                    ))),
             ),
         }
     }

@@ -1,10 +1,11 @@
-use crate::object::Value;
+use crate::object::{self, Value};
 use crate::parser::{ParseError, SubTreeReader};
 use crate::{CityGMLElement, ElementType};
 pub use chrono::NaiveDate;
 use serde::{Deserialize, Serialize};
 use std::io::BufRead;
 
+// type aliases
 // type aliases
 pub type Date = chrono::NaiveDate;
 pub type Length = Measure; // Length is almost same as Measure
@@ -324,5 +325,168 @@ impl<T: CityGMLElement + Default> CityGMLElement for Vec<T> {
                 self.into_iter().filter_map(|v| v.into_object()).collect(),
             ))
         }
+    }
+}
+
+#[derive(Debug, Default, Deserialize, Serialize)]
+pub struct GenericAttribute {
+    pub string_attrs: Vec<(String, String)>,
+    pub int_attrs: Vec<(String, i64)>,
+    pub double_attrs: Vec<(String, f64)>,
+    pub measure_attrs: Vec<(String, Measure)>,
+    pub code_attrs: Vec<(String, Code)>,
+    pub date_attrs: Vec<(String, Date)>,
+    pub uri_attrs: Vec<(String, URI)>,
+    pub generic_attr_set: Vec<(String, GenericAttribute)>,
+}
+
+impl CityGMLElement for GenericAttribute {
+    const ELEMENT_TYPE: ElementType = ElementType::DataType;
+
+    fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
+        match st.current_path() {
+            b"gen:stringAttribute" | b"gen:StringAttribute" => {
+                self.string_attrs.push(parse_value(st)?)
+            }
+            b"gen:intAttribute" | b"gen:IntAttribute" => self.int_attrs.push(parse_value(st)?),
+            b"gen:doubleAttribute" | b"gen:DoubleAttribute" => {
+                self.double_attrs.push(parse_value(st)?)
+            }
+            b"gen:measureAttribute" | b"gen:MeasureAttribute" => {
+                self.measure_attrs.push(parse_value(st)?)
+            }
+            b"gen:codeAttribute" | b"gen:CodeAttribute" => self.code_attrs.push(parse_value(st)?),
+            b"gen:dateAttribute" | b"gen:DateAttribute" => self.date_attrs.push(parse_value(st)?),
+            b"gen:uriAttribute" | b"gen:UriAttribute" => self.uri_attrs.push(parse_value(st)?),
+            b"gen:genericAttributeSet" | b"gen:GenericAttributeSet" => {
+                self.generic_attr_set.push(parse_generic_set(st)?)
+            }
+            _ => {
+                return Err(ParseError::SchemaViolation(format!(
+                    "generic attributes are expected but found {}",
+                    String::from_utf8_lossy(st.current_path()),
+                )))
+            }
+        }
+        Ok(())
+    }
+
+    fn into_object(self) -> Option<Value> {
+        let mut map = object::Map::new();
+        map.extend(
+            self.string_attrs
+                .into_iter()
+                .map(|(k, v)| (k, Value::String(v))),
+        );
+        map.extend(
+            self.int_attrs
+                .into_iter()
+                .map(|(k, v)| (k, Value::Integer(v))),
+        );
+        map.extend(
+            self.double_attrs
+                .into_iter()
+                .map(|(k, v)| (k, Value::Double(v))),
+        );
+        map.extend(
+            self.measure_attrs
+                .into_iter()
+                .map(|(k, v)| (k, Value::Measure(v))),
+        );
+        map.extend(
+            self.code_attrs
+                .into_iter()
+                .map(|(k, v)| (k, Value::Code(v))),
+        );
+        map.extend(
+            self.date_attrs
+                .into_iter()
+                .map(|(k, v)| (k, Value::Date(v))),
+        );
+        map.extend(self.uri_attrs.into_iter().map(|(k, v)| (k, Value::URI(v))));
+        map.extend(
+            self.generic_attr_set
+                .into_iter()
+                .flat_map(|(k, v)| match v.into_object() {
+                    Some(Value::Data(data)) => Some((k, Value::Data(data))),
+                    _ => None,
+                }),
+        );
+        Some(Value::Data(object::Data {
+            typename: "gen:genericAttribute".to_string(),
+            attributes: map,
+        }))
+    }
+}
+
+fn parse_value<T, R: BufRead>(st: &mut SubTreeReader<R>) -> Result<(String, T), ParseError>
+where
+    T: CityGMLElement + Default,
+{
+    let mut name = None;
+    let mut value = None;
+    st.parse_attributes(|k, v| {
+        if k == b"@name" {
+            name = Some(String::from_utf8_lossy(v).into());
+        }
+        Ok(())
+    })?;
+    st.parse_children(|st| {
+        match st.current_path() {
+            b"gen:name" => {
+                name = Some(st.parse_text()?.to_string());
+            }
+            b"gen:value" => {
+                let mut v: T = Default::default();
+                v.parse(st)?;
+                value = Some(v);
+            }
+            _ => {}
+        }
+        Ok(())
+    })?;
+
+    match (name, value) {
+        (Some(name), Some(value)) => Ok((name, value)),
+        _ => Err(ParseError::SchemaViolation(
+            "generic attribute must have both name and value.".to_string(),
+        )),
+    }
+}
+
+fn parse_generic_set<R: BufRead>(
+    st: &mut SubTreeReader<R>,
+) -> Result<(String, GenericAttribute), ParseError> {
+    let mut name = None;
+    let mut value: Option<GenericAttribute> = None;
+    st.parse_attributes(|k, v| {
+        if k == b"@name" {
+            name = Some(String::from_utf8_lossy(v).into());
+        }
+        Ok(())
+    })?;
+    st.parse_children(|st| {
+        match st.current_path() {
+            b"gen:name" => {
+                name = Some(st.parse_text()?.to_string());
+            }
+            b"gen:codeSpace" => {
+                // TODO
+            }
+            _ => {
+                if value.is_none() {
+                    value = Some(Default::default());
+                }
+                value.as_mut().unwrap().parse(st)?;
+            }
+        };
+        Ok(())
+    })?;
+
+    match (name, value) {
+        (Some(name), Some(value)) => Ok((name, value)),
+        _ => Err(ParseError::SchemaViolation(
+            "GenericAttributeSet must have a name and at least one value.".to_string(),
+        )),
     }
 }
