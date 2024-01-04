@@ -12,7 +12,7 @@ pub enum GeometryParseType {
 }
 
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
-#[derive(Debug, Clone, Copy, Default)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub enum GeometryType {
     #[default]
     Unknown,
@@ -24,7 +24,7 @@ pub enum GeometryType {
 }
 
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct GeometryRefEntry {
     #[serde(rename = "type")]
     pub ty: GeometryType,

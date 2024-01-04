@@ -1,10 +1,12 @@
 use quick_xml::name::{Namespace, ResolveResult};
 
+pub const GML31_NS: Namespace = Namespace(b"http://www.opengis.net/gml");
+
 /// Normalize a XML namaespace URI to a well-known prefix.
 ///
 /// e.g. `"http://www.opengis.net/citygml/2.0"` -> `"core:"`
 #[inline]
-pub fn normalize_ns_prefix<'a>(ns: &ResolveResult<'a>) -> &'a [u8] {
+pub fn wellknown_prefix_from_nsres<'a>(ns: &ResolveResult<'a>) -> &'a [u8] {
     match ns {
         ResolveResult::Bound(Namespace(name)) => {
             const OPENGIS_PREFIX: &[u8] = b"http://www.opengis.net/";

@@ -1,4 +1,4 @@
-use nusamai_citygml::{citygml_data, citygml_property, CityGMLElement, Code, GeometryRef, Measure};
+use nusamai_citygml::{citygml_data, citygml_property, CityGMLElement, Code, GYearMonth, Length};
 
 #[citygml_property(name = "uro:DmAttributeProperty")]
 pub enum DmAttributeProperty {
@@ -10,64 +10,58 @@ pub enum DmAttributeProperty {
 
 #[citygml_data(name = "uro:DmAnnotation")]
 pub struct DmAnnotation {
-    #[citygml(path = b"uro:dmCode")]
+    #[citygml(path = b"uro:dmCode", required)]
     pub dm_code: Option<Code>,
 
     #[citygml(path = b"uro:meshCode")]
-    pub mesh_code: Vec<Code>,
+    pub mesh_code: Option<Code>,
 
     #[citygml(path = b"uro:dmElement/uro:DmElement")]
     pub dm_element: Option<DmElement>,
 
-    #[citygml(path = b"uro:geometryType")]
+    #[citygml(path = b"uro:geometryType", required)]
     pub geometry_type: Option<Code>,
 
-    #[citygml(path = b"uro:shapeType")]
+    #[citygml(path = b"uro:shapeType", required)]
     pub shape_type: Option<Code>,
 
-    #[citygml(path = b"uro:label")]
-    pub label: Option<Code>,
+    #[citygml(path = b"uro:label", required)]
+    pub label: Option<String>,
 
-    #[citygml(path = b"uro:isVertical")]
+    #[citygml(path = b"uro:isVertical", required)]
     pub is_vertical: Option<bool>,
 
-    #[citygml(path = b"uro:size")]
+    #[citygml(path = b"uro:size", required)]
     pub size: Option<i64>,
 
-    #[citygml(path = b"uro:orientation")]
+    #[citygml(path = b"uro:orientation", required)]
     pub orientation: Option<i64>,
 
-    #[citygml(path = b"uro:linewidth")]
+    #[citygml(path = b"uro:linewidth", required)]
     pub linewidth: Option<i64>,
 
-    #[citygml(path = b"uro:spacing")]
+    #[citygml(path = b"uro:spacing", required)]
     pub spacing: Option<i64>,
-    // TODO:
-    // #[citygml(path = b"uro:lod0anchorPoint")]
-    // pub lod0anchorPoint: GeometryPropertyType
 }
 
 #[citygml_data(name = "uro:DmGeometricAttribute")]
 pub struct DmGeometricAttribute {
-    #[citygml(geom = b"uro")]
-    pub geometry: GeometryRef,
-
-    #[citygml(path = b"uro:dmCode")]
+    #[citygml(path = b"uro:dmCode", required)]
     pub dm_code: Option<Code>,
 
     #[citygml(path = b"uro:meshCode")]
-    pub mesh_code: Vec<Code>,
+    pub mesh_code: Option<Code>,
 
     #[citygml(path = b"uro:dmElement/uro:DmElement")]
     pub dm_element: Option<DmElement>,
 
-    #[citygml(path = b"uro:geometryType")]
+    #[citygml(path = b"uro:geometryType", required)]
     pub geometry_type: Option<Code>,
 
-    #[citygml(path = b"uro:mapLevel")]
+    #[citygml(path = b"uro:mapLevel", required)]
     pub map_level: Option<Code>,
 
-    #[citygml(path = b"uro:shapeType")]
+    #[citygml(path = b"uro:shapeType", required)]
     pub shape_type: Option<Code>,
 
     #[citygml(path = b"uro:visibility")]
@@ -89,12 +83,8 @@ pub struct DmGeometricAttribute {
     pub angle: Option<f64>,
 
     #[citygml(path = b"uro:elevation")]
-    pub elevation: Option<Measure>,
-    // TODO:
-    // #[citygml(path = b"uro:lod0Geometry")]
-    // pub lod0anchorPoint: GeometryPropertyType
+    pub elevation: Option<Length>,
 }
-
 #[citygml_data(name = "uro:DmElement")]
 pub struct DmElement {
     #[citygml(path = b"uro:locationType")]
@@ -134,13 +124,13 @@ pub struct DmElement {
     pub attribute_value_type: Option<String>,
 
     #[citygml(path = b"uro:creationDate")]
-    pub creation_date: Option<String>, // TODO: xs:gYearMonth
+    pub creation_date: Option<GYearMonth>,
 
     #[citygml(path = b"uro:updateDate")]
-    pub update_date: Option<String>, // TODO: xs:gYearMonth
+    pub update_date: Option<GYearMonth>,
 
     #[citygml(path = b"uro:terminationDate")]
-    pub termination_date: Option<String>, // TODO: xs:gYearMonth
+    pub termination_date: Option<GYearMonth>,
 
     #[citygml(path = b"uro:freeSpace")]
     pub free_space: Option<String>,

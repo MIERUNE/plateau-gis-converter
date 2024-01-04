@@ -1,3 +1,4 @@
+pub mod attribute;
 pub mod codelist;
 pub mod geometry;
 pub mod namespace;
@@ -5,6 +6,7 @@ pub mod object;
 pub mod parser;
 pub mod values;
 
+pub use attribute::*;
 pub use geometry::*;
 pub use macros::*;
 pub use namespace::*;

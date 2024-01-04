@@ -54,7 +54,7 @@ fn example_toplevel_dispatcher<R: BufRead>(
 }
 
 #[test]
-fn simple_read() {
+fn read_building_lod4() {
     let reader = std::io::BufReader::new(
         zstd::stream::Decoder::new(
             std::fs::File::open(

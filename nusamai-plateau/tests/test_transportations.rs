@@ -3,7 +3,9 @@ use std::path::Path;
 
 use url::Url;
 
-use nusamai_citygml::{CityGMLElement, CityGMLReader, Code, Geometries, ParseError, SubTreeReader};
+use nusamai_citygml::{
+    CityGMLElement, CityGMLReader, Code, Geometries, Measure, ParseError, SubTreeReader,
+};
 use nusamai_plateau::models::Road;
 use nusamai_plateau::models::TopLevelCityObject;
 
@@ -101,7 +103,7 @@ fn test_road() {
 
     assert_eq!(
         road.road_structure_attribute.first().unwrap().width,
-        Some(22.0),
+        Some(Measure { value: 22.0 }),
     );
 
     assert_eq!(

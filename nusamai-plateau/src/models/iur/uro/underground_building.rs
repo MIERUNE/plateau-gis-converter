@@ -1,8 +1,98 @@
-use nusamai_citygml::{citygml_feature, CityGMLElement};
+use nusamai_citygml::{citygml_feature, CityGMLElement, Code, GYear, Length, MeasureOrNullList};
+
+use crate::models::building::*;
+use crate::models::core::Address;
+use crate::models::iur::uro::*;
 
 #[citygml_feature(name = "uro:UndergroundBuilding")]
 pub struct UndergroundBuilding {
-    // ...
-}
+    #[citygml(path = b"bldg:class")]
+    pub class: Option<Code>,
 
-// TODO: Building と類似の構造を持つ
+    #[citygml(path = b"bldg:function")]
+    pub function: Vec<Code>,
+
+    #[citygml(path = b"bldg:usage")]
+    pub usage: Vec<Code>,
+
+    #[citygml(path = b"bldg:yearOfConstruction")]
+    pub year_of_construction: Option<GYear>,
+
+    #[citygml(path = b"bldg:yearOfDemolition")]
+    pub year_of_demolition: Option<GYear>,
+
+    #[citygml(path = b"bldg:roofType")]
+    pub roof_type: Option<Code>,
+
+    #[citygml(path = b"bldg:measuredHeight")]
+    pub measured_height: Option<Length>,
+
+    #[citygml(path = b"bldg:storeysAboveGround")]
+    pub storeys_above_ground: Option<u64>,
+
+    #[citygml(path = b"bldg:storeysBelowGround")]
+    pub storeys_below_ground: Option<u64>,
+
+    #[citygml(path = b"bldg:storeyHeightsAboveGround")]
+    pub storey_heights_above_ground: Option<MeasureOrNullList>,
+
+    #[citygml(path = b"bldg:storeyHeightsBelowGround")]
+    pub storey_heights_below_ground: Option<MeasureOrNullList>,
+
+    #[citygml(path = b"bldg:outerBuildingInstallation/bldg:BuildingInstallation")]
+    pub outer_building_installation: Vec<BuildingInstallation>,
+
+    #[citygml(path = b"bldg:interiorBuildingInstallation/bldg:IntBuildingInstallation")]
+    pub interior_building_installation: Vec<BuildingInstallation>,
+
+    #[citygml(path = b"bldg:boundedBy")]
+    pub bounded_by: Vec<BoundarySurfaceProperty>, // -> bldg:_BoundarySurface
+
+    #[citygml(path = b"bldg:interiorRoom/bldg:Room")]
+    pub interior_room: Vec<Room>,
+
+    #[citygml(path = b"bldg:consistsOfBuildingPart/bldg:BuildingPart")]
+    pub consists_of_building_part: Vec<BuildingPart>,
+
+    #[citygml(path = b"bldg:address/core:Address")]
+    pub address: Vec<Address>,
+
+    #[citygml(path = b"uro:bldgDmAttribute")]
+    pub bldg_dm_attribute: Vec<DmAttributeProperty>, // -> uro:DmAttribute
+
+    #[citygml(path = b"uro:bldgFacilityAttribute")]
+    pub bldg_facility_attribute: Vec<FacilityAttributeProperty>, // -> uro:FacilityAttribute
+
+    #[citygml(path = b"uro:bldgFacilityIdAttribute")]
+    pub bldg_facility_id_attribute: Option<FacilityIdAttributeProperty>, // -> uro:FacilityIdAttribute
+
+    #[citygml(path = b"uro:bldgFacilityTypeAttribute/uro:FacilityTypeAttribute")]
+    pub bldg_facility_type_attribute: Vec<FacilityTypeAttribute>,
+
+    #[citygml(path = b"uro:bldgRealEstateIDAttribute/uro:RealEstateIDAttribute")]
+    pub bldg_real_estate_id_attribute: Option<RealEstateIDAttribute>,
+
+    #[citygml(path = b"uro:buildingDataQualityAttribute/uro:BuildingDataQualityAttribute")]
+    pub building_data_quality_attribute: Option<BuildingDataQualityAttribute>,
+
+    #[citygml(path = b"uro:buildingDetailAttribute/uro:BuildingDetailAttribute")]
+    pub building_detail_attribute: Vec<BuildingDetailAttribute>,
+
+    #[citygml(path = b"uro:buildingDisasterRiskAttribute")]
+    pub building_disaster_risk_attribute: Vec<BuildingDisasterRiskAttributeProperty>, // -> uro:BuildingDisasterRiskAttribute
+
+    #[citygml(path = b"uro:buildingIDAttribute/uro:BuildingIDAttribute")]
+    pub building_id_attribute: Vec<BuildingIDAttribute>,
+
+    #[citygml(path = b"uro:ifcBuildingAttribute")]
+    pub ifc_building_attribute: Vec<IfcAttributeProperty>, // -> uro:IfcAttribute
+
+    #[citygml(path = b"uro:indoorBuildingAttribute")]
+    pub indoor_building_attribute: Vec<IndoorAttributeProperty>, // -> uro:IndoorAttribute
+
+    #[citygml(path = b"uro:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<KeyValuePairAttribute>,
+
+    #[citygml(path = b"uro:largeCustomerFacilityAttribute/uro:LargeCustomerFacilityAttribute")]
+    pub large_customer_facility_attribute: Vec<LargeCustomerFacilityAttribute>,
+}
