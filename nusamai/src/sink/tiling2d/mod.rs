@@ -1,67 +1,109 @@
-//! ポリゴンをタイル状にスライスしてGeoJSONとして出力するデモ
+//! 2D Tiling sink (タイリングの実験をするための一時的なSink)
 //!
-//! 使用例:
-//!
-//! ```bash
-//! cargo run --example slice --release -- ~/path/to/PLATEAU/22203_numazu-shi_2021_citygml_4_op/udx/*/52385628_*_6697_op.gml
-//! ````
-//!
-//! This example converts a CityGML file to GeoJSON and outputs it to a file
 
-use clap::Parser;
+use std::fs::File;
+use std::io::{BufWriter, Write};
+
+use rayon::prelude::*;
+
+use crate::configuration::Config;
+use crate::pipeline::{Feedback, Receiver};
+use crate::sink::{DataSink, DataSinkProvider, SinkInfo};
+
 use nusamai_citygml::object::CityObject;
-use nusamai_citygml::{CityGMLElement, CityGMLReader, ParseError, SubTreeReader};
-use nusamai_geometry::{MultiPolygon3, Polygon3};
-use std::fs;
-use std::io::BufRead;
-use std::io::BufWriter;
-
 use nusamai_geojson::conversion::{
     multilinestring_to_geojson_geometry, multipoint_to_geojson_geometry,
 };
+use nusamai_geometry::{MultiPolygon3, Polygon3};
 
-#[derive(Parser)]
-struct Args {
-    #[clap(required = true)]
-    filename: String,
-}
+pub struct Tiling2DSinkProvider {}
 
-fn toplevel_dispatcher<R: BufRead>(
-    st: &mut SubTreeReader<R>,
-) -> Result<Vec<CityObject>, ParseError> {
-    let mut cityobjs: Vec<CityObject> = vec![];
+impl DataSinkProvider for Tiling2DSinkProvider {
+    fn create(&self, _config: &Config) -> Box<dyn DataSink> {
+        Box::<Tiling2DSink>::default()
+    }
 
-    match st.parse_children(|st| match st.current_path() {
-        b"core:cityObjectMember" => {
-            let mut cityobj: nusamai_plateau::models::TopLevelCityObject = Default::default();
-            cityobj.parse(st)?;
-            let geometries = st.collect_geometries();
-
-            if let Some(root) = cityobj.into_object() {
-                let obj = CityObject { root, geometries };
-                cityobjs.push(obj);
-            }
-
-            Ok(())
+    fn info(&self) -> SinkInfo {
+        SinkInfo {
+            name: "2D Tiling".to_string(),
         }
-        b"gml:boundedBy" | b"app:appearanceMember" => {
-            st.skip_current_element()?;
-            Ok(())
-        }
-        other => Err(ParseError::SchemaViolation(format!(
-            "Unrecognized element {}",
-            String::from_utf8_lossy(other)
-        ))),
-    }) {
-        Ok(_) => Ok(cityobjs),
-        Err(e) => {
-            println!("Err: {:?}", e);
-            Err(e)
-        }
+    }
+
+    fn config(&self) -> Config {
+        Config::default()
     }
 }
 
-// --------------------
+#[derive(Default)]
+pub struct Tiling2DSink {}
+
+impl DataSink for Tiling2DSink {
+    fn run(&mut self, upstream: Receiver, feedback: &mut Feedback) {
+        let (sender, receiver) = std::sync::mpsc::sync_channel(100);
+
+        rayon::join(
+            || {
+                // Convert CityObjects to Slicing objects
+
+                let _ = upstream.into_iter().par_bridge().try_for_each_with(
+                    sender,
+                    |sender, parcel| {
+                        if feedback.is_cancelled() {
+                            return Err(());
+                        }
+
+                        let features = toplevel_cityobj_to_geojson_features(&parcel.cityobj);
+                        for feature in features {
+                            let Ok(bytes) = serde_json::to_vec(&feature) else {
+                                // TODO: fatal error
+                                return Err(());
+                            };
+                            if sender.send(bytes).is_err() {
+                                println!("sink cancelled");
+                                return Err(());
+                            };
+                        }
+                        Ok(())
+                    },
+                );
+            },
+            || {
+                // Write Slicing to a file
+
+                // TODO: Handle output file path
+                let mut file = File::create("output.geojson").unwrap();
+                let mut writer = BufWriter::new(&mut file);
+
+                // Write the FeatureCollection header
+                writer
+                    .write_all(b"{\"type\":\"FeatureCollection\",\"features\":[")
+                    .unwrap();
+
+                // Write each Feature
+                let mut iter = receiver.into_iter().peekable();
+                while let Some(bytes) = iter.next() {
+                    writer.write_all(&bytes).unwrap();
+                    if iter.peek().is_some() {
+                        writer.write_all(b",").unwrap();
+                    };
+                }
+
+                // Write the FeautureCollection footer and EOL
+                writer.write_all(b"]}\n").unwrap();
+            },
+        );
+    }
+}
+
+fn extract_properties(tree: &nusamai_citygml::object::Value) -> Option<geojson::JsonObject> {
+    match &tree {
+        feat @ nusamai_citygml::Value::Feature(_) => match feat.to_attribute_json() {
+            serde_json::Value::Object(map) => Some(map),
+            _ => unreachable!(),
+        },
+        _ => panic!("Root value type must be Feature, but found {:?}", tree),
+    }
+}
 
 fn slice_polygon(poly: &Polygon3, out: &mut MultiPolygon3) {
     const STEP: f64 = 5.0 / 1000.0;
@@ -212,6 +254,7 @@ fn slice_polygon(poly: &Polygon3, out: &mut MultiPolygon3) {
 // TODO: We may want to traverse the tree and create features for each semantic child in the future
 pub fn toplevel_cityobj_to_geojson_features(obj: &CityObject) -> Vec<geojson::Feature> {
     let mut geojson_features: Vec<geojson::Feature> = vec![];
+    let properties = extract_properties(&obj.root);
 
     if !obj.geometries.multipolygon.is_empty() {
         // sliceする
@@ -224,9 +267,6 @@ pub fn toplevel_cityobj_to_geojson_features(obj: &CityObject) -> Vec<geojson::Fe
             });
             slice_polygon(&new_poly, &mut new_mpoly);
         });
-
-        println!("mpoly: {:?}", mpolys.len());
-        println!("split mpoly: {:?}", new_mpoly.len());
 
         let mpoly = new_mpoly
             .iter()
@@ -245,71 +285,40 @@ pub fn toplevel_cityobj_to_geojson_features(obj: &CityObject) -> Vec<geojson::Fe
                 foreign_members: None,
             }),
             id: None,
-            properties: None,
+            properties: properties.clone(),
             foreign_members: None,
         };
         geojson_features.push(mpoly_geojson_feat);
     }
 
-    if !obj.geometries.multilinestring.is_empty() {
-        let mls_geojson_geom = multilinestring_to_geojson_geometry(
-            &obj.geometries.vertices,
-            &obj.geometries.multilinestring,
-        );
-        let mls_geojson_feat = geojson::Feature {
-            bbox: None,
-            geometry: Some(mls_geojson_geom),
-            id: None,
-            properties: None,
-            foreign_members: None,
-        };
-        geojson_features.push(mls_geojson_feat);
-    }
+    // NOTE: Not supported (yet)
+    // if !obj.geometries.multilinestring.is_empty() {
+    //     let mls_geojson_geom = multilinestring_to_geojson_geometry(
+    //         &obj.geometries.vertices,
+    //         &obj.geometries.multilinestring,
+    //     );
+    //     let mls_geojson_feat = geojson::Feature {
+    //         bbox: None,
+    //         geometry: Some(mls_geojson_geom),
+    //         id: None,
+    //         properties: properties.clone(),
+    //         foreign_members: None,
+    //     };
+    //     geojson_features.push(mls_geojson_feat);
+    // }
 
-    if !obj.geometries.multipoint.is_empty() {
-        let mpoint_geojson_geom =
-            multipoint_to_geojson_geometry(&obj.geometries.vertices, &obj.geometries.multipoint);
-        let mpoint_geojson_feat = geojson::Feature {
-            bbox: None,
-            geometry: Some(mpoint_geojson_geom),
-            id: None,
-            properties: None,
-            foreign_members: None,
-        };
-        geojson_features.push(mpoint_geojson_feat);
-    }
+    // if !obj.geometries.multipoint.is_empty() {
+    //     let mpoint_geojson_geom =
+    //         multipoint_to_geojson_geometry(&obj.geometries.vertices, &obj.geometries.multipoint);
+    //     let mpoint_geojson_feat = geojson::Feature {
+    //         bbox: None,
+    //         geometry: Some(mpoint_geojson_geom),
+    //         id: None,
+    //         properties,
+    //         foreign_members: None,
+    //     };
+    //     geojson_features.push(mpoint_geojson_feat);
+    // }
 
     geojson_features
-}
-
-fn main() {
-    let args = Args::parse();
-
-    let reader = std::io::BufReader::new(std::fs::File::open(args.filename).unwrap());
-    let mut xml_reader = quick_xml::NsReader::from_reader(reader);
-
-    let context = nusamai_citygml::ParseContext::default();
-    let cityobjs = match CityGMLReader::new(context).start_root(&mut xml_reader) {
-        Ok(mut st) => match toplevel_dispatcher(&mut st) {
-            Ok(items) => items,
-            Err(e) => panic!("Err: {:?}", e),
-        },
-        Err(e) => panic!("Err: {:?}", e),
-    };
-
-    let geojson_features: Vec<geojson::Feature> = cityobjs
-        .iter()
-        .flat_map(toplevel_cityobj_to_geojson_features)
-        .collect();
-
-    let geojson_feature_collection = geojson::FeatureCollection {
-        bbox: None,
-        features: geojson_features,
-        foreign_members: None,
-    };
-    let geojson = geojson::GeoJson::from(geojson_feature_collection);
-
-    let mut file = fs::File::create("out.geojson").unwrap();
-    let mut writer = BufWriter::new(&mut file);
-    serde_json::to_writer(&mut writer, &geojson).unwrap();
 }
