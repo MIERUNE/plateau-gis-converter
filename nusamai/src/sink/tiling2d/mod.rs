@@ -6,20 +6,17 @@ use std::io::{BufWriter, Write};
 
 use rayon::prelude::*;
 
-use crate::configuration::Config;
+use crate::parameters::Parameters;
 use crate::pipeline::{Feedback, Receiver};
 use crate::sink::{DataSink, DataSinkProvider, SinkInfo};
 
 use nusamai_citygml::object::CityObject;
-use nusamai_geojson::conversion::{
-    multilinestring_to_geojson_geometry, multipoint_to_geojson_geometry,
-};
 use nusamai_geometry::{MultiPolygon3, Polygon3};
 
 pub struct Tiling2DSinkProvider {}
 
 impl DataSinkProvider for Tiling2DSinkProvider {
-    fn create(&self, _config: &Config) -> Box<dyn DataSink> {
+    fn create(&self, _params: &Parameters) -> Box<dyn DataSink> {
         Box::<Tiling2DSink>::default()
     }
 
@@ -29,8 +26,8 @@ impl DataSinkProvider for Tiling2DSinkProvider {
         }
     }
 
-    fn config(&self) -> Config {
-        Config::default()
+    fn parameters(&self) -> Parameters {
+        Parameters::default()
     }
 }
 

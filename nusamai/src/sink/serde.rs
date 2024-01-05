@@ -8,14 +8,14 @@ use std::io::{BufWriter, Write};
 use bincode;
 use rayon::prelude::*;
 
-use crate::configuration::Config;
+use crate::parameters::Parameters;
 use crate::pipeline::{Feedback, Receiver};
 use crate::sink::{DataSink, DataSinkProvider, SinkInfo};
 
 pub struct SerdeSinkProvider {}
 
 impl DataSinkProvider for SerdeSinkProvider {
-    fn create(&self, _config: &Config) -> Box<dyn DataSink> {
+    fn create(&self, _params: &Parameters) -> Box<dyn DataSink> {
         Box::<SerdeSink>::default()
     }
 
@@ -25,8 +25,8 @@ impl DataSinkProvider for SerdeSinkProvider {
         }
     }
 
-    fn config(&self) -> Config {
-        Config::default()
+    fn parameters(&self) -> Parameters {
+        Parameters::default()
     }
 }
 

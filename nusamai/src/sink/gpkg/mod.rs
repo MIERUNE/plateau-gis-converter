@@ -2,7 +2,7 @@
 
 use rayon::prelude::*;
 
-use crate::configuration::Config;
+use crate::parameters::Parameters;
 use crate::pipeline::{Feedback, Receiver};
 use crate::sink::{DataSink, DataSinkProvider, SinkInfo};
 
@@ -12,7 +12,7 @@ use nusamai_gpkg::GpkgHandler;
 pub struct GpkgSinkProvider {}
 
 impl DataSinkProvider for GpkgSinkProvider {
-    fn create(&self, _config: &Config) -> Box<dyn DataSink> {
+    fn create(&self, _params: &Parameters) -> Box<dyn DataSink> {
         Box::<GpkgSink>::default()
     }
 
@@ -22,8 +22,8 @@ impl DataSinkProvider for GpkgSinkProvider {
         }
     }
 
-    fn config(&self) -> Config {
-        Config::default()
+    fn parameters(&self) -> Parameters {
+        Parameters::default()
     }
 }
 

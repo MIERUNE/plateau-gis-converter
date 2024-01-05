@@ -2,14 +2,14 @@
 //!
 //! This is a demo sync that only counts the number of features and vertices and does not generate any output.
 
-use crate::configuration::Config;
+use crate::parameters::Parameters;
 use crate::pipeline::{Feedback, Receiver};
 use crate::sink::{DataSink, DataSinkProvider, SinkInfo};
 
 pub struct NoopSinkProvider {}
 
 impl DataSinkProvider for NoopSinkProvider {
-    fn create(&self, _config: &Config) -> Box<dyn DataSink> {
+    fn create(&self, _params: &Parameters) -> Box<dyn DataSink> {
         Box::new(NoopSink {
             num_features: 0,
             num_vertices: 0,
@@ -22,8 +22,8 @@ impl DataSinkProvider for NoopSinkProvider {
         }
     }
 
-    fn config(&self) -> Config {
-        Config::default()
+    fn parameters(&self) -> Parameters {
+        Parameters::default()
     }
 }
 

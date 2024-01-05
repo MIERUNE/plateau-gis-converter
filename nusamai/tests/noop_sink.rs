@@ -14,9 +14,9 @@ fn test_noop_sink() {
     });
     let sink_provider: Box<dyn DataSinkProvider> = Box::new(NoopSinkProvider {});
 
-    let source = source_provider.create(&source_provider.config());
+    let source = source_provider.create(&source_provider.parameters());
     let transformer = Box::new(NoopTransformer {});
-    let sink = sink_provider.create(&sink_provider.config());
+    let sink = sink_provider.create(&sink_provider.parameters());
 
     // start the pipeline
     let (handle, _watcher, _canceller) = nusamai::pipeline::run(source, transformer, sink);
