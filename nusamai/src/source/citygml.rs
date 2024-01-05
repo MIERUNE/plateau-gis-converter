@@ -5,7 +5,7 @@ use url::Url;
 
 use rayon::prelude::*;
 
-use crate::configuration::Config;
+use crate::parameters::Parameters;
 use crate::pipeline::{Feedback, Parcel, Sender};
 use crate::source::{DataSource, DataSourceProvider, SourceInfo};
 use nusamai_citygml::object::CityObject;
@@ -17,7 +17,7 @@ pub struct CityGMLSourceProvider {
 }
 
 impl DataSourceProvider for CityGMLSourceProvider {
-    fn create(&self, _config: &Config) -> Box<dyn DataSource> {
+    fn create(&self, _params: &Parameters) -> Box<dyn DataSource> {
         Box::new(CityGMLSource {
             filenames: self.filenames.clone(),
         })
@@ -29,8 +29,8 @@ impl DataSourceProvider for CityGMLSourceProvider {
         }
     }
 
-    fn config(&self) -> Config {
-        Config::default()
+    fn parameters(&self) -> Parameters {
+        Parameters::default()
     }
 }
 

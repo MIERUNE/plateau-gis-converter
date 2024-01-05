@@ -2,10 +2,12 @@
 
 use std::fs::File;
 use std::io::{BufWriter, Write};
+use std::path::PathBuf;
 
 use rayon::prelude::*;
 
-use crate::configuration::Config;
+use crate::get_parameter_value;
+use crate::parameters::*;
 use crate::pipeline::{Feedback, Receiver};
 use crate::sink::{DataSink, DataSinkProvider, SinkInfo};
 
@@ -18,23 +20,41 @@ use nusamai_geojson::conversion::{
 pub struct GeoJsonSinkProvider {}
 
 impl DataSinkProvider for GeoJsonSinkProvider {
-    fn create(&self, _config: &Config) -> Box<dyn DataSink> {
-        Box::<GeoJsonSink>::default()
-    }
-
     fn info(&self) -> SinkInfo {
         SinkInfo {
             name: "GeoJSON".to_string(),
         }
     }
 
-    fn config(&self) -> Config {
-        Config::default()
+    fn parameters(&self) -> Parameters {
+        let mut params = Parameters::new();
+        params.define(
+            "@output".into(),
+            ParameterEntry {
+                description: "Output file path".into(),
+                required: true,
+                parameter: ParameterType::FileSystemPath(FileSystemPathParameter {
+                    value: None,
+                    must_exist: false,
+                }),
+            },
+        );
+        params
+    }
+
+    fn create(&self, params: &Parameters) -> Box<dyn DataSink> {
+        let output_path = get_parameter_value!(params, "@output", FileSystemPath);
+
+        Box::<GeoJsonSink>::new(GeoJsonSink {
+            output_path: output_path.unwrap().into(),
+        })
     }
 }
 
 #[derive(Default)]
-pub struct GeoJsonSink {}
+pub struct GeoJsonSink {
+    output_path: PathBuf,
+}
 
 impl DataSink for GeoJsonSink {
     fn run(&mut self, upstream: Receiver, feedback: &mut Feedback) {
@@ -70,7 +90,7 @@ impl DataSink for GeoJsonSink {
                 // Write GeoJSON to a file
 
                 // TODO: Handle output file path
-                let mut file = File::create("output.geojson").unwrap();
+                let mut file = File::create(&self.output_path).unwrap();
                 let mut writer = BufWriter::new(&mut file);
 
                 // Write the FeatureCollection header

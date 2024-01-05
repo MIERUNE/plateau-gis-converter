@@ -16,7 +16,7 @@ fn example_toplevel_dispatcher<R: BufRead>(
     encoded_data: &mut Vec<u8>,
     encoded_sizes: &mut Vec<usize>,
 ) -> Result<(), ParseError> {
-    let bincode_config = bincode::config::standard();
+    let bincode_params = bincode::config::standard();
 
     match st.parse_children(|st| match st.current_path() {
         b"core:cityObjectMember" => {
@@ -38,7 +38,7 @@ fn example_toplevel_dispatcher<R: BufRead>(
 
                 // serialize with bincode
                 let start = encoded_data.len();
-                bincode::serde::encode_into_std_write(obj, encoded_data, bincode_config).unwrap();
+                bincode::serde::encode_into_std_write(obj, encoded_data, bincode_params).unwrap();
                 encoded_sizes.push(encoded_data.len() - start);
             }
 
