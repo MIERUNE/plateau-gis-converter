@@ -4,6 +4,7 @@ pub mod geometry;
 pub mod namespace;
 pub mod object;
 pub mod parser;
+pub mod schema;
 pub mod values;
 
 pub use attribute::*;
