@@ -24,7 +24,7 @@ impl DataSinkProvider for GeoJsonSinkProvider {
 
     fn info(&self) -> SinkInfo {
         SinkInfo {
-            name: "GeoJSON Sink".to_string(),
+            name: "GeoJSON".to_string(),
         }
     }
 
@@ -34,9 +34,7 @@ impl DataSinkProvider for GeoJsonSinkProvider {
 }
 
 #[derive(Default)]
-pub struct GeoJsonSink {
-    n_features: usize,
-}
+pub struct GeoJsonSink {}
 
 impl DataSink for GeoJsonSink {
     fn run(&mut self, upstream: Receiver, feedback: &mut Feedback) {
@@ -54,12 +52,16 @@ impl DataSink for GeoJsonSink {
                         }
 
                         let features = toplevel_cityobj_to_geojson_features(&parcel.cityobj);
-
-                        if sender.send(features).is_err() {
-                            println!("sink cancelled");
-                            return Err(());
-                        };
-
+                        for feature in features {
+                            let Ok(bytes) = serde_json::to_vec(&feature) else {
+                                // TODO: fatal error
+                                return Err(());
+                            };
+                            if sender.send(bytes).is_err() {
+                                println!("sink cancelled");
+                                return Err(());
+                            };
+                        }
                         Ok(())
                     },
                 );
@@ -77,9 +79,9 @@ impl DataSink for GeoJsonSink {
                     .unwrap();
 
                 // Write each Feature
-                let mut iter = receiver.into_iter().flatten().peekable();
-                while let Some(feat) = iter.next() {
-                    serde_json::to_writer(&mut writer, &feat).unwrap();
+                let mut iter = receiver.into_iter().peekable();
+                while let Some(bytes) = iter.next() {
+                    writer.write_all(&bytes).unwrap();
                     if iter.peek().is_some() {
                         writer.write_all(b",").unwrap();
                     };
@@ -87,8 +89,6 @@ impl DataSink for GeoJsonSink {
 
                 // Write the FeautureCollection footer and EOL
                 writer.write_all(b"]}\n").unwrap();
-
-                println!("Wrote {} features", self.n_features);
             },
         );
     }
@@ -109,7 +109,7 @@ fn extract_properties(tree: &nusamai_citygml::object::Value) -> Option<geojson::
 // TODO: Handle properties (`obj.root` -> `geojson::Feature.properties`)
 // TODO: We may want to traverse the tree and create features for each semantic child in the future
 pub fn toplevel_cityobj_to_geojson_features(obj: &CityObject) -> Vec<geojson::Feature> {
-    let mut geojson_features: Vec<geojson::Feature> = vec![];
+    let mut geojson_features: Vec<geojson::Feature> = Vec::with_capacity(1);
     let properties = extract_properties(&obj.root);
 
     if !obj.geometries.multipolygon.is_empty() {
