@@ -4,7 +4,8 @@ use clap::Parser;
 
 use nusamai::pipeline::Canceller;
 use nusamai::sink::{
-    geojson::GeoJsonSinkProvider, noop::NoopSinkProvider, serde::SerdeSinkProvider,
+    geojson::GeoJsonSinkProvider, gpkg::GpkgSinkProvider, noop::NoopSinkProvider,
+    serde::SerdeSinkProvider,
 };
 use nusamai::sink::{DataSink, DataSinkProvider};
 use nusamai::source::citygml::CityGMLSourceProvider;
@@ -26,6 +27,7 @@ enum SinkChoice {
     Noop,
     Serde,
     Geojson,
+    Gpkg,
 }
 
 impl SinkChoice {
@@ -34,6 +36,7 @@ impl SinkChoice {
             SinkChoice::Noop => Box::new(NoopSinkProvider {}),
             SinkChoice::Serde => Box::new(SerdeSinkProvider {}),
             SinkChoice::Geojson => Box::new(GeoJsonSinkProvider {}),
+            SinkChoice::Gpkg => Box::new(GpkgSinkProvider {}),
         }
     }
 }

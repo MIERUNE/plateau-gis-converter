@@ -1,4 +1,5 @@
 pub mod geojson;
+pub mod gpkg;
 pub mod noop;
 pub mod serde;
 
