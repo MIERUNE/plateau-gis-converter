@@ -3,7 +3,9 @@ use std::path::Path;
 
 use url::Url;
 
-use nusamai_citygml::{CityGMLElement, CityGMLReader, Code, Geometries, ParseError, SubTreeReader};
+use nusamai_citygml::{
+    CityGMLElement, CityGMLReader, Code, Geometries, Measure, ParseError, SubTreeReader,
+};
 use nusamai_plateau::models::Road;
 use nusamai_plateau::models::TopLevelCityObject;
 
@@ -75,45 +77,33 @@ fn test_road() {
 
     assert_eq!(
         road.function,
-        vec![Code {
-            value: "都道府県道".to_string(),
-            code: "3".to_string(),
-        }]
+        vec![Code::new("都道府県道".to_string(), "3".to_string(),)]
     );
 
     assert_eq!(
         road.usage,
         vec![
-            Code {
-                value: "緊急輸送道路（第三次緊急輸送道路）".to_string(),
-                code: "3".to_string(),
-            },
-            Code {
-                value: "避難路／避難道路".to_string(),
-                code: "5".to_string(),
-            },
+            Code::new(
+                "緊急輸送道路（第三次緊急輸送道路）".to_string(),
+                "3".to_string(),
+            ),
+            Code::new("避難路／避難道路".to_string(), "5".to_string(),),
         ]
     );
 
     assert_eq!(
         road.traffic_area.first().unwrap().function,
-        vec![Code {
-            value: "歩道".to_string(),
-            code: "2020".to_string(),
-        }]
+        vec![Code::new("歩道".to_string(), "2020".to_string(),)]
     );
 
     assert_eq!(
         road.auxiliary_traffic_area.first().unwrap().function,
-        vec![Code {
-            value: "歩道部の段差".to_string(),
-            code: "2000".to_string(),
-        }]
+        vec![Code::new("歩道部の段差".to_string(), "2000".to_string(),)]
     );
 
     assert_eq!(
         road.road_structure_attribute.first().unwrap().width,
-        Some(22.0),
+        Some(Measure { value: 22.0 }),
     );
 
     assert_eq!(

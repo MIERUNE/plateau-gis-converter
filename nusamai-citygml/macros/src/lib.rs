@@ -1,11 +1,11 @@
-extern crate proc_macro;
+//! Parsing utilities for CityGML 2.0 (and possibly 3.0)
 
-use proc_macro::TokenStream;
+extern crate proc_macro;
 
 mod derive;
 mod type_attrs;
 
-use type_attrs::ElementType;
+use proc_macro::TokenStream;
 
 #[proc_macro_derive(CityGMLElement, attributes(citygml))]
 pub fn derive_citygml_element(token: TokenStream) -> TokenStream {
@@ -14,15 +14,22 @@ pub fn derive_citygml_element(token: TokenStream) -> TokenStream {
 
 #[proc_macro_attribute]
 pub fn citygml_feature(args: TokenStream, input: TokenStream) -> TokenStream {
-    type_attrs::citygml_type(ElementType::Feature, args, input)
+    type_attrs::citygml_type(StereoType::Feature, args, input)
 }
 
 #[proc_macro_attribute]
 pub fn citygml_data(args: TokenStream, input: TokenStream) -> TokenStream {
-    type_attrs::citygml_type(ElementType::Data, args, input)
+    type_attrs::citygml_type(StereoType::Data, args, input)
 }
 
 #[proc_macro_attribute]
 pub fn citygml_property(args: TokenStream, input: TokenStream) -> TokenStream {
-    type_attrs::citygml_type(ElementType::Property, args, input)
+    type_attrs::citygml_type(StereoType::Property, args, input)
+}
+
+#[derive(Clone, Copy)]
+pub(crate) enum StereoType {
+    Feature,
+    Data,
+    Property,
 }

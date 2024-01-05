@@ -1,58 +1,85 @@
-use crate::object::ObjectValue;
+use crate::object::{self, Value};
 use crate::parser::{ParseError, SubTreeReader};
-use crate::CityGMLElement;
+use crate::{CityGMLElement, ElementType};
 pub use chrono::NaiveDate;
 use serde::{Deserialize, Serialize};
-use std::fmt;
 use std::io::BufRead;
 
+// type aliases
+// type aliases
 pub type Date = chrono::NaiveDate;
+pub type Length = Measure; // Length is almost same as Measure
+pub type GYear = String; // TODO?
+pub type GYearMonth = String; // TODO?
+pub type MeasureOrNullList = String; // TODO?
+pub type BuildingLODType = String; // TODO?
+pub type DoubleList = String; // TODO?
+pub type LODType = u64; // TODO?
 
 impl CityGMLElement for String {
+    const ELEMENT_TYPE: ElementType = ElementType::BasicType;
+
     #[inline]
     fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
         self.push_str(st.parse_text()?);
         Ok(())
     }
 
-    fn into_object(self) -> Option<ObjectValue> {
-        Some(ObjectValue::String(self))
+    fn into_object(self) -> Option<Value> {
+        Some(Value::String(self))
     }
 }
 
-#[derive(Debug, serde::Serialize, serde::Deserialize, Default)]
-pub struct URI(pub String);
-impl fmt::Display for URI {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.0)
+#[derive(Debug, serde::Serialize, serde::Deserialize, Default, PartialEq, Eq)]
+pub struct URI(String);
+
+impl URI {
+    pub fn new(s: &str) -> Self {
+        Self(s.into())
+    }
+    pub fn value(&self) -> &String {
+        &self.0
     }
 }
 
 impl CityGMLElement for URI {
+    const ELEMENT_TYPE: ElementType = ElementType::BasicType;
+
     #[inline]
     fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
         self.0.push_str(st.parse_text()?);
         Ok(())
     }
 
-    fn into_object(self) -> Option<ObjectValue> {
-        Some(ObjectValue::String(self.0))
+    fn into_object(self) -> Option<Value> {
+        Some(Value::String(self.0))
     }
 }
 
 #[derive(Debug, Default, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub struct Code {
-    pub value: String,
-    pub code: String,
+    value: String,
+    code: String,
     // pub code_space: Option<String>,
 }
+
+impl Code {
+    pub fn new(value: String, code: String) -> Self {
+        Self { value, code }
+    }
+    pub fn value(&self) -> &str {
+        &self.value
+    }
+    pub fn code(&self) -> &str {
+        &self.code
+    }
+}
+
 impl CityGMLElement for Code {
+    const ELEMENT_TYPE: ElementType = ElementType::BasicType;
+
     #[inline]
     fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
-        // TODO: optimization
-        // - Avoid using parse_attributes? -> parse_attribute_raw
-        // - Avoid allocation?
-
         let code_space = st.find_codespace_attr();
         let code = st.parse_text()?.to_string();
         self.code = code.clone();
@@ -82,12 +109,14 @@ impl CityGMLElement for Code {
         Ok(())
     }
 
-    fn into_object(self) -> Option<ObjectValue> {
-        Some(ObjectValue::Code(self))
+    fn into_object(self) -> Option<Value> {
+        Some(Value::Code(self))
     }
 }
 
 impl CityGMLElement for i64 {
+    const ELEMENT_TYPE: ElementType = ElementType::BasicType;
+
     #[inline]
     fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
         let text = st.parse_text()?;
@@ -103,12 +132,14 @@ impl CityGMLElement for i64 {
         }
     }
 
-    fn into_object(self) -> Option<ObjectValue> {
-        Some(ObjectValue::Integer(self))
+    fn into_object(self) -> Option<Value> {
+        Some(Value::Integer(self))
     }
 }
 
 impl CityGMLElement for u64 {
+    const ELEMENT_TYPE: ElementType = ElementType::BasicType;
+
     #[inline]
     fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
         let text = st.parse_text()?;
@@ -124,12 +155,14 @@ impl CityGMLElement for u64 {
         }
     }
 
-    fn into_object(self) -> Option<ObjectValue> {
-        Some(ObjectValue::Integer(self as i64))
+    fn into_object(self) -> Option<Value> {
+        Some(Value::Integer(self as i64))
     }
 }
 
 impl CityGMLElement for f64 {
+    const ELEMENT_TYPE: ElementType = ElementType::BasicType;
+
     #[inline]
     fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
         let text = st.parse_text()?;
@@ -145,12 +178,14 @@ impl CityGMLElement for f64 {
         }
     }
 
-    fn into_object(self) -> Option<ObjectValue> {
-        Some(ObjectValue::Double(self))
+    fn into_object(self) -> Option<Value> {
+        Some(Value::Double(self))
     }
 }
 
 impl CityGMLElement for bool {
+    const ELEMENT_TYPE: ElementType = ElementType::BasicType;
+
     #[inline]
     fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
         let text = st.parse_text()?.trim();
@@ -170,18 +205,20 @@ impl CityGMLElement for bool {
         }
     }
 
-    fn into_object(self) -> Option<ObjectValue> {
-        Some(ObjectValue::Boolean(self))
+    fn into_object(self) -> Option<Value> {
+        Some(Value::Boolean(self))
     }
 }
 
-#[derive(Debug, Default, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Default, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Measure {
     pub value: f64,
     // pub uom: Option<String>,
 }
 
 impl CityGMLElement for Measure {
+    const ELEMENT_TYPE: ElementType = ElementType::BasicType;
+
     #[inline]
     fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
         let text = st.parse_text()?;
@@ -197,12 +234,14 @@ impl CityGMLElement for Measure {
         }
     }
 
-    fn into_object(self) -> Option<ObjectValue> {
-        Some(ObjectValue::Measure(self.value))
+    fn into_object(self) -> Option<Value> {
+        Some(Value::Measure(self))
     }
 }
 
 impl CityGMLElement for Date {
+    const ELEMENT_TYPE: ElementType = ElementType::BasicType;
+
     #[inline]
     fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
         let text = st.parse_text()?;
@@ -218,29 +257,33 @@ impl CityGMLElement for Date {
         }
     }
 
-    fn into_object(self) -> Option<ObjectValue> {
-        Some(ObjectValue::Date(self))
+    fn into_object(self) -> Option<Value> {
+        Some(Value::Date(self))
     }
 }
 
-#[derive(Debug, Default, Deserialize, Serialize)]
+#[derive(Debug, Default, Deserialize, Serialize, PartialEq)]
 pub struct Point {
     // TODO
 }
 
 impl CityGMLElement for Point {
+    const ELEMENT_TYPE: ElementType = ElementType::BasicType;
+
     #[inline]
     fn parse<R: BufRead>(&mut self, _st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
         // TODO
         todo!();
     }
 
-    fn into_object(self) -> Option<ObjectValue> {
-        Some(ObjectValue::Point(self))
+    fn into_object(self) -> Option<Value> {
+        Some(Value::Point(self))
     }
 }
 
 impl<T: CityGMLElement + Default + std::fmt::Debug> CityGMLElement for Option<T> {
+    const ELEMENT_TYPE: ElementType = ElementType::BasicType;
+
     #[inline]
     fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
         if self.is_some() {
@@ -255,7 +298,7 @@ impl<T: CityGMLElement + Default + std::fmt::Debug> CityGMLElement for Option<T>
         Ok(())
     }
 
-    fn into_object(self) -> Option<ObjectValue> {
+    fn into_object(self) -> Option<Value> {
         match self {
             Some(v) => v.into_object(),
             None => None,
@@ -264,6 +307,8 @@ impl<T: CityGMLElement + Default + std::fmt::Debug> CityGMLElement for Option<T>
 }
 
 impl<T: CityGMLElement + Default> CityGMLElement for Vec<T> {
+    const ELEMENT_TYPE: ElementType = ElementType::BasicType;
+
     #[inline]
     fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
         let mut v: T = Default::default();
@@ -272,31 +317,176 @@ impl<T: CityGMLElement + Default> CityGMLElement for Vec<T> {
         Ok(())
     }
 
-    fn into_object(self) -> Option<ObjectValue> {
+    fn into_object(self) -> Option<Value> {
         if self.is_empty() {
             None
         } else {
-            Some(ObjectValue::Array(
+            Some(Value::Array(
                 self.into_iter().filter_map(|v| v.into_object()).collect(),
             ))
         }
     }
 }
 
-pub trait CityGMLAttribute: Sized {
-    fn parse_attr_value(value: &str) -> Result<Self, ParseError>;
+#[derive(Debug, Default, Deserialize, Serialize)]
+pub struct GenericAttribute {
+    pub string_attrs: Vec<(String, String)>,
+    pub int_attrs: Vec<(String, i64)>,
+    pub double_attrs: Vec<(String, f64)>,
+    pub measure_attrs: Vec<(String, Measure)>,
+    pub code_attrs: Vec<(String, Code)>,
+    pub date_attrs: Vec<(String, Date)>,
+    pub uri_attrs: Vec<(String, URI)>,
+    pub generic_attr_set: Vec<(String, GenericAttribute)>,
 }
 
-impl CityGMLAttribute for String {
-    #[inline]
-    fn parse_attr_value(value: &str) -> Result<Self, ParseError> {
-        Ok(value.to_string())
+impl CityGMLElement for GenericAttribute {
+    const ELEMENT_TYPE: ElementType = ElementType::DataType;
+
+    fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
+        match st.current_path() {
+            b"gen:stringAttribute" | b"gen:StringAttribute" => {
+                self.string_attrs.push(parse_value(st)?)
+            }
+            b"gen:intAttribute" | b"gen:IntAttribute" => self.int_attrs.push(parse_value(st)?),
+            b"gen:doubleAttribute" | b"gen:DoubleAttribute" => {
+                self.double_attrs.push(parse_value(st)?)
+            }
+            b"gen:measureAttribute" | b"gen:MeasureAttribute" => {
+                self.measure_attrs.push(parse_value(st)?)
+            }
+            b"gen:codeAttribute" | b"gen:CodeAttribute" => self.code_attrs.push(parse_value(st)?),
+            b"gen:dateAttribute" | b"gen:DateAttribute" => self.date_attrs.push(parse_value(st)?),
+            b"gen:uriAttribute" | b"gen:UriAttribute" => self.uri_attrs.push(parse_value(st)?),
+            b"gen:genericAttributeSet" | b"gen:GenericAttributeSet" => {
+                self.generic_attr_set.push(parse_generic_set(st)?)
+            }
+            _ => {
+                return Err(ParseError::SchemaViolation(format!(
+                    "generic attributes are expected but found {}",
+                    String::from_utf8_lossy(st.current_path()),
+                )))
+            }
+        }
+        Ok(())
+    }
+
+    fn into_object(self) -> Option<Value> {
+        let mut map = object::Map::new();
+        map.extend(
+            self.string_attrs
+                .into_iter()
+                .map(|(k, v)| (k, Value::String(v))),
+        );
+        map.extend(
+            self.int_attrs
+                .into_iter()
+                .map(|(k, v)| (k, Value::Integer(v))),
+        );
+        map.extend(
+            self.double_attrs
+                .into_iter()
+                .map(|(k, v)| (k, Value::Double(v))),
+        );
+        map.extend(
+            self.measure_attrs
+                .into_iter()
+                .map(|(k, v)| (k, Value::Measure(v))),
+        );
+        map.extend(
+            self.code_attrs
+                .into_iter()
+                .map(|(k, v)| (k, Value::Code(v))),
+        );
+        map.extend(
+            self.date_attrs
+                .into_iter()
+                .map(|(k, v)| (k, Value::Date(v))),
+        );
+        map.extend(self.uri_attrs.into_iter().map(|(k, v)| (k, Value::URI(v))));
+        map.extend(
+            self.generic_attr_set
+                .into_iter()
+                .flat_map(|(k, v)| match v.into_object() {
+                    Some(Value::Data(data)) => Some((k, Value::Data(data))),
+                    _ => None,
+                }),
+        );
+        Some(Value::Data(object::Data {
+            typename: "gen:genericAttribute".to_string(),
+            attributes: map,
+        }))
     }
 }
 
-impl<T: CityGMLAttribute> CityGMLAttribute for Option<T> {
-    #[inline]
-    fn parse_attr_value(value: &str) -> Result<Self, ParseError> {
-        Ok(Some(<T as CityGMLAttribute>::parse_attr_value(value)?))
+fn parse_value<T, R: BufRead>(st: &mut SubTreeReader<R>) -> Result<(String, T), ParseError>
+where
+    T: CityGMLElement + Default,
+{
+    let mut name = None;
+    let mut value = None;
+    st.parse_attributes(|k, v| {
+        if k == b"@name" {
+            name = Some(String::from_utf8_lossy(v).into());
+        }
+        Ok(())
+    })?;
+    st.parse_children(|st| {
+        match st.current_path() {
+            b"gen:name" => {
+                name = Some(st.parse_text()?.to_string());
+            }
+            b"gen:value" => {
+                let mut v: T = Default::default();
+                v.parse(st)?;
+                value = Some(v);
+            }
+            _ => {}
+        }
+        Ok(())
+    })?;
+
+    match (name, value) {
+        (Some(name), Some(value)) => Ok((name, value)),
+        _ => Err(ParseError::SchemaViolation(
+            "generic attribute must have both name and value.".to_string(),
+        )),
+    }
+}
+
+fn parse_generic_set<R: BufRead>(
+    st: &mut SubTreeReader<R>,
+) -> Result<(String, GenericAttribute), ParseError> {
+    let mut name = None;
+    let mut value: Option<GenericAttribute> = None;
+    st.parse_attributes(|k, v| {
+        if k == b"@name" {
+            name = Some(String::from_utf8_lossy(v).into());
+        }
+        Ok(())
+    })?;
+    st.parse_children(|st| {
+        match st.current_path() {
+            b"gen:name" => {
+                name = Some(st.parse_text()?.to_string());
+            }
+            b"gen:codeSpace" => {
+                // TODO
+            }
+            _ => {
+                if value.is_none() {
+                    value = Some(Default::default());
+                }
+                value.as_mut().unwrap().parse(st)?;
+            }
+        };
+        Ok(())
+    })?;
+
+    match (name, value) {
+        (Some(name), Some(value)) => Ok((name, value)),
+        _ => Err(ParseError::SchemaViolation(
+            "GenericAttributeSet must have a name and at least one value.".to_string(),
+        )),
     }
 }

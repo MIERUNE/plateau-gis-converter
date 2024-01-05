@@ -21,7 +21,7 @@ impl DataSinkProvider for SerdeSinkProvider {
 
     fn info(&self) -> SinkInfo {
         SinkInfo {
-            name: "Serde Sink".to_string(),
+            name: "Serde (bincode)".to_string(),
         }
     }
 

@@ -8,8 +8,8 @@ use rayon::prelude::*;
 use crate::configuration::Config;
 use crate::pipeline::{Feedback, Parcel, Sender};
 use crate::source::{DataSource, DataSourceProvider, SourceInfo};
+use nusamai_citygml::object::CityObject;
 use nusamai_citygml::{CityGMLElement, CityGMLReader, ParseError, SubTreeReader};
-use nusamai_plateau::TopLevelCityObject;
 
 pub struct CityGMLSourceProvider {
     // FIXME: Use the configuration mechanism
@@ -87,7 +87,7 @@ fn toplevel_dispatcher<R: BufRead>(
                 let geometries = st.collect_geometries();
 
                 if let Some(root) = cityobj.into_object() {
-                    let cityobj = TopLevelCityObject { root, geometries };
+                    let cityobj = CityObject { root, geometries };
                     if sink.send(Parcel { cityobj }).is_err() {
                         return Ok(());
                     }

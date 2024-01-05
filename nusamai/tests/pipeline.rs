@@ -3,7 +3,7 @@ use nusamai::pipeline::{self, Parcel, Receiver, TransformError};
 use nusamai::pipeline::{feedback, Feedback, FeedbackMessage, Sender, Transformer};
 use nusamai::sink::{DataSink, DataSinkProvider, SinkInfo};
 use nusamai::source::{DataSource, DataSourceProvider, SourceInfo};
-use nusamai_plateau::TopLevelCityObject;
+use nusamai_citygml::object::CityObject;
 use rand::prelude::*;
 
 pub struct DummySourceProvider {}
@@ -36,8 +36,8 @@ impl DataSource for DummySource {
                 (5.0 + random::<f32>() * 10.0) as u64,
             ));
             let obj = Parcel {
-                cityobj: TopLevelCityObject {
-                    root: nusamai_citygml::ObjectValue::Double(0.),
+                cityobj: CityObject {
+                    root: nusamai_citygml::Value::Double(0.),
                     geometries: Default::default(),
                 },
             };

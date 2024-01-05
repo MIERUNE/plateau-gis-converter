@@ -102,6 +102,7 @@ pub enum FooBarProperty {
 }
 ```
 
+
 ## Derive macros
 
 ### `#[derive(CityGMLElement)]`
@@ -109,3 +110,12 @@ pub enum FooBarProperty {
 It automatically implements the `CityGMLElement` trait for the target struct/enum, enabling it to parse corresponding CityGML fragments.
 
 In most cases, you should use the attribute macros above instead of directly applying this derive macro.
+
+
+## Check the result of macro expansion
+
+```bash
+cargo install cargo-expand
+cd ./nusamai-plateau/
+cargo expand models::building --no-default-features
+```

@@ -77,10 +77,7 @@ fn test_cityfurniture() {
     let frn = parsed_data.cityfurnitures.first().unwrap();
     assert_eq!(
         frn.function,
-        vec![Code {
-            value: "柱".to_string(),
-            code: "4800".to_string(),
-        }]
+        vec![Code::new("柱".to_string(), "4800".to_string())]
     );
 
     assert_eq!(
@@ -88,9 +85,6 @@ fn test_cityfurniture() {
             .as_ref()
             .unwrap()
             .src_scale,
-        vec![Code {
-            value: "地図情報レベル500".to_string(),
-            code: "3".to_string(),
-        }]
+        vec![Code::new("地図情報レベル500".to_string(), "3".to_string(),)]
     );
 }
