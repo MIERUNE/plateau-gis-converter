@@ -1,4 +1,4 @@
-mod geometry;
+pub mod geometry;
 mod handler;
 
-pub use handler::GpkgHandler;
+pub use handler::*;

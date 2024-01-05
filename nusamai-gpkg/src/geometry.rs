@@ -1,5 +1,7 @@
 //! Convert geometries to GeoPackage SQL Geometry Binary Format
-/// cf. https://www.geopackage.org/spec130/#gpb_format
+//!
+//! cf. https://www.geopackage.org/spec130/#gpb_format
+
 use nusamai_geometry::{MultiPolygon, Polygon};
 
 fn geometry_header(srs_id: i32) -> Vec<u8> {
