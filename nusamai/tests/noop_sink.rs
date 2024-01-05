@@ -5,7 +5,7 @@ use nusamai::source::DataSourceProvider;
 use nusamai::transform::NoopTransformer;
 
 #[test]
-fn test_noop_sink() {
+fn run_noop_sink() {
     let source_provider: Box<dyn DataSourceProvider> = Box::new(CityGMLSourceProvider {
         filenames: vec![
             "../nusamai-plateau/tests/data/kawasaki-shi/udx/frn/53391597_frn_6697_op.gml"
