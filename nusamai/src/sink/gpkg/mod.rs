@@ -1,21 +1,21 @@
 //! GeoPackage sink
 
+use std::path::PathBuf;
+
 use rayon::prelude::*;
 
 use crate::parameters::Parameters;
 use crate::pipeline::{Feedback, Receiver};
 use crate::sink::{DataSink, DataSinkProvider, SinkInfo};
 
+use crate::get_parameter_value;
+use crate::parameters::*;
 use nusamai_gpkg::geometry::multipolygon_to_bytes;
 use nusamai_gpkg::GpkgHandler;
 
 pub struct GpkgSinkProvider {}
 
 impl DataSinkProvider for GpkgSinkProvider {
-    fn create(&self, _params: &Parameters) -> Box<dyn DataSink> {
-        Box::<GpkgSink>::default()
-    }
-
     fn info(&self) -> SinkInfo {
         SinkInfo {
             name: "GeoPackage".to_string(),
@@ -23,16 +23,40 @@ impl DataSinkProvider for GpkgSinkProvider {
     }
 
     fn parameters(&self) -> Parameters {
-        Parameters::default()
+        let mut params = Parameters::new();
+        params.define(
+            "@output".into(),
+            ParameterEntry {
+                description: "Output file path".into(),
+                required: true,
+                parameter: ParameterType::FileSystemPath(FileSystemPathParameter {
+                    value: None,
+                    must_exist: false,
+                }),
+            },
+        );
+        params
+    }
+
+    fn create(&self, params: &Parameters) -> Box<dyn DataSink> {
+        let output_path = get_parameter_value!(params, "@output", FileSystemPath);
+
+        Box::<GpkgSink>::new(GpkgSink {
+            output_path: output_path.unwrap().into(),
+        })
     }
 }
 
 #[derive(Default)]
-pub struct GpkgSink {}
+pub struct GpkgSink {
+    output_path: PathBuf,
+}
 
 impl GpkgSink {
     pub async fn run_async(&mut self, upstream: Receiver, feedback: &mut Feedback) {
-        let mut handler = GpkgHandler::init("output.gpkg").await.unwrap();
+        let mut handler = GpkgHandler::init(self.output_path.to_str().unwrap())
+            .await
+            .unwrap();
 
         let (sender, mut receiver) = tokio::sync::mpsc::channel(100);
 

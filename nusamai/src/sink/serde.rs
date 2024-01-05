@@ -4,21 +4,19 @@
 
 use std::fs::File;
 use std::io::{BufWriter, Write};
+use std::path::PathBuf;
 
 use bincode;
 use rayon::prelude::*;
 
-use crate::parameters::Parameters;
+use crate::get_parameter_value;
+use crate::parameters::*;
 use crate::pipeline::{Feedback, Receiver};
 use crate::sink::{DataSink, DataSinkProvider, SinkInfo};
 
 pub struct SerdeSinkProvider {}
 
 impl DataSinkProvider for SerdeSinkProvider {
-    fn create(&self, _params: &Parameters) -> Box<dyn DataSink> {
-        Box::<SerdeSink>::default()
-    }
-
     fn info(&self) -> SinkInfo {
         SinkInfo {
             name: "Serde (bincode)".to_string(),
@@ -26,12 +24,34 @@ impl DataSinkProvider for SerdeSinkProvider {
     }
 
     fn parameters(&self) -> Parameters {
-        Parameters::default()
+        let mut params = Parameters::new();
+        params.define(
+            "@output".into(),
+            ParameterEntry {
+                description: "Output file path".into(),
+                required: true,
+                parameter: ParameterType::FileSystemPath(FileSystemPathParameter {
+                    value: None,
+                    must_exist: false,
+                }),
+            },
+        );
+        params
+    }
+
+    fn create(&self, params: &Parameters) -> Box<dyn DataSink> {
+        let output_path = get_parameter_value!(params, "@output", FileSystemPath);
+
+        Box::<SerdeSink>::new(SerdeSink {
+            output_path: output_path.unwrap().into(),
+            ..Default::default()
+        })
     }
 }
 
 #[derive(Default)]
 pub struct SerdeSink {
+    output_path: PathBuf,
     features_written: usize,
     bytes_written: usize,
 }
@@ -62,7 +82,7 @@ impl DataSink for SerdeSink {
             },
             || {
                 // Write to file
-                let mut writer = BufWriter::new(File::create("output.bin").unwrap());
+                let mut writer = BufWriter::new(File::create(&self.output_path).unwrap());
                 for compressed in receiver {
                     // size
                     writer
