@@ -35,10 +35,19 @@ pub struct GeometryRefEntry {
 
 pub type GeometryRef = Vec<GeometryRefEntry>;
 
+#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
+#[derive(Debug, Default)]
+pub enum CRS {
+    #[default]
+    WGS84,
+    JGD2011,
+}
+
 /// Geometries in a toplevel city object and its children.
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 #[derive(Debug, Default)]
-pub struct Geometries {
+pub struct GeometryStore {
+    pub crs: CRS,
     pub vertices: Vec<[f64; 3]>,
     pub multipolygon: MultiPolygon<'static, 1, u32>,
     pub multilinestring: MultiLineString<'static, 1, u32>,
@@ -75,7 +84,7 @@ impl GeometryCollector {
         }));
     }
 
-    pub fn into_geometries(self) -> Geometries {
+    pub fn into_geometries(self) -> GeometryStore {
         let mut vertices = Vec::with_capacity(self.vertices.len());
         for vbits in &self.vertices {
             vertices.push([
@@ -84,7 +93,8 @@ impl GeometryCollector {
                 f64::from_bits(vbits[2]),
             ]);
         }
-        Geometries {
+        GeometryStore {
+            crs: CRS::JGD2011,
             vertices,
             multipolygon: self.multipolygon,
             multilinestring: self.multilinestring,

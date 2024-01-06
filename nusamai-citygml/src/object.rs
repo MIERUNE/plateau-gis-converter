@@ -11,7 +11,7 @@ pub type Map = indexmap::IndexMap<String, Value>;
 #[derive(Debug, Deserialize, Serialize)]
 pub struct CityObject {
     pub root: Value,
-    pub geometries: geometry::Geometries,
+    pub geometries: geometry::GeometryStore,
 }
 
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
