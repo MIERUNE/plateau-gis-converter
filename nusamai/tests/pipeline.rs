@@ -57,11 +57,11 @@ impl Transformer for NoopTransformer {
     fn transform(
         &self,
         parcel: Parcel,
-        sender: &Sender,
+        downstream: &Sender,
         _feedback: &feedback::Feedback,
     ) -> Result<(), TransformError> {
         // no-op
-        sender.send(parcel)?;
+        downstream.send(parcel)?;
         Ok(())
     }
 }

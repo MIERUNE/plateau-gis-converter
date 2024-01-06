@@ -79,7 +79,9 @@ impl PipelineHandle {
     // Wait for the pipeline to terminate
     pub fn join(self) {
         self.thread_handles.into_iter().for_each(|handle| {
-            handle.join().unwrap();
+            if let Err(err) = handle.join() {
+                eprintln!("Error: {:#?}", err);
+            }
         });
     }
 }

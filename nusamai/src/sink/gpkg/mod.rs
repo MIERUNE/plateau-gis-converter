@@ -2,6 +2,8 @@
 
 use std::path::PathBuf;
 
+use url::Url;
+
 use rayon::prelude::*;
 
 use crate::parameters::Parameters;
@@ -39,10 +41,10 @@ impl DataSinkProvider for GpkgSinkProvider {
     }
 
     fn create(&self, params: &Parameters) -> Box<dyn DataSink> {
-        let output_path = get_parameter_value!(params, "@output", FileSystemPath);
+        let output_path = get_parameter_value!(params, "@output", FileSystemPath).unwrap();
 
         Box::<GpkgSink>::new(GpkgSink {
-            output_path: output_path.unwrap().into(),
+            output_path: output_path.clone(),
         })
     }
 }
@@ -54,9 +56,17 @@ pub struct GpkgSink {
 
 impl GpkgSink {
     pub async fn run_async(&mut self, upstream: Receiver, feedback: &mut Feedback) {
-        let mut handler = GpkgHandler::init(self.output_path.to_str().unwrap())
+        let mut handler = if self.output_path.to_string_lossy().starts_with("sqlite:") {
+            GpkgHandler::from_url(&Url::parse(self.output_path.to_str().unwrap()).unwrap())
+                .await
+                .unwrap()
+        } else {
+            GpkgHandler::from_url(
+                &Url::parse(&format!("sqlite://{}", self.output_path.to_str().unwrap())).unwrap(),
+            )
             .await
-            .unwrap();
+            .unwrap()
+        };
 
         let (sender, mut receiver) = tokio::sync::mpsc::channel(100);
 
