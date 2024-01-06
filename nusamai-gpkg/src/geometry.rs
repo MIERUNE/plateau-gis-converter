@@ -231,8 +231,8 @@ mod tests {
         assert_eq!(bytes[46..=53].to_vec(), &111_f64.to_le_bytes());
 
         // 2nd point
-        assert_eq!(bytes[54..=61].to_vec(), &0_f64.to_le_bytes());
-        assert_eq!(bytes[62..=69].to_vec(), &5_f64.to_le_bytes());
+        assert_eq!(bytes[54..=61].to_vec(), &5_f64.to_le_bytes());
+        assert_eq!(bytes[62..=69].to_vec(), &0_f64.to_le_bytes());
         assert_eq!(bytes[70..=77].to_vec(), &111_f64.to_le_bytes());
 
         // 3rd point
@@ -241,8 +241,8 @@ mod tests {
         assert_eq!(bytes[94..=101].to_vec(), &111_f64.to_le_bytes());
 
         // 4th point
-        assert_eq!(bytes[102..=109].to_vec(), &5_f64.to_le_bytes());
-        assert_eq!(bytes[110..=117].to_vec(), &0_f64.to_le_bytes());
+        assert_eq!(bytes[102..=109].to_vec(), &0_f64.to_le_bytes());
+        assert_eq!(bytes[110..=117].to_vec(), &5_f64.to_le_bytes());
         assert_eq!(bytes[118..=125].to_vec(), &111_f64.to_le_bytes());
 
         // 5th point
@@ -260,8 +260,8 @@ mod tests {
         assert_eq!(bytes[170..=177].to_vec(), &111_f64.to_le_bytes());
 
         // 2nd point
-        assert_eq!(bytes[178..=185].to_vec(), &1_f64.to_le_bytes());
-        assert_eq!(bytes[186..=193].to_vec(), &2_f64.to_le_bytes());
+        assert_eq!(bytes[178..=185].to_vec(), &2_f64.to_le_bytes());
+        assert_eq!(bytes[186..=193].to_vec(), &1_f64.to_le_bytes());
         assert_eq!(bytes[194..=201].to_vec(), &111_f64.to_le_bytes());
 
         // 3rd point
@@ -270,8 +270,8 @@ mod tests {
         assert_eq!(bytes[218..=225].to_vec(), &111_f64.to_le_bytes());
 
         // 4th point
-        assert_eq!(bytes[226..=233].to_vec(), &2_f64.to_le_bytes());
-        assert_eq!(bytes[234..=241].to_vec(), &1_f64.to_le_bytes());
+        assert_eq!(bytes[226..=233].to_vec(), &1_f64.to_le_bytes());
+        assert_eq!(bytes[234..=241].to_vec(), &2_f64.to_le_bytes());
         assert_eq!(bytes[242..=249].to_vec(), &111_f64.to_le_bytes());
 
         // 5th point
