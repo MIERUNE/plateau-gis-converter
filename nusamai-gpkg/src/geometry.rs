@@ -14,9 +14,8 @@ fn geometry_header(srs_id: i32) -> Vec<u8> {
 }
 
 fn polygon_to_rings(vertices: &[[f64; 3]], poly: &Polygon<1, u32>) -> Vec<Vec<Vec<f64>>> {
-    let linestrings = std::iter::once(poly.exterior()).chain(poly.interiors());
-
-    let rings: Vec<_> = linestrings
+    let rings: Vec<_> = poly
+        .rings()
         .map(|ls| {
             let coords: Vec<_> = ls
                 .iter_closed()

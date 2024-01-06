@@ -12,6 +12,7 @@ use crate::pipeline::{Feedback, Receiver};
 use crate::sink::{DataSink, DataSinkProvider, SinkInfo};
 
 use nusamai_citygml::object::CityObject;
+use nusamai_geojson::conversion::multipolygon_to_geometry;
 use nusamai_geometry::{MultiPolygon3, Polygon3};
 
 pub struct Tiling2DSinkProvider {}
@@ -284,27 +285,14 @@ pub fn toplevel_cityobj_to_geojson_features(obj: &CityObject) -> Vec<geojson::Fe
             slice_polygon(&new_poly, &mut new_mpoly);
         });
 
-        let mpoly = new_mpoly
-            .iter()
-            .map(|poly| {
-                poly.rings()
-                    .map(|c| c.iter().map(|v| vec![v[1], v[0], v[2]]).collect())
-                    .collect::<Vec<_>>()
-            })
-            .collect();
-
-        let mpoly_geojson_feat = geojson::Feature {
+        let geometry = multipolygon_to_geometry(&new_mpoly);
+        geojson_features.push(geojson::Feature {
             bbox: None,
-            geometry: Some(geojson::Geometry {
-                bbox: None,
-                value: geojson::Value::MultiPolygon(mpoly),
-                foreign_members: None,
-            }),
+            geometry: Some(geometry),
             id: None,
             properties: properties.clone(),
             foreign_members: None,
-        };
-        geojson_features.push(mpoly_geojson_feat);
+        });
     }
 
     // NOTE: Not supported (yet)

@@ -13,8 +13,8 @@ use crate::sink::{DataSink, DataSinkProvider, SinkInfo};
 
 use nusamai_citygml::object::CityObject;
 use nusamai_geojson::conversion::{
-    multilinestring_to_geojson_geometry, multipoint_to_geojson_geometry,
-    multipolygon_to_geojson_geometry,
+    indexed_multilinestring_to_geometry, indexed_multipoint_to_geometry,
+    indexed_multipolygon_to_geometry,
 };
 
 pub struct GeoJsonSinkProvider {}
@@ -133,7 +133,7 @@ pub fn toplevel_cityobj_to_geojson_features(obj: &CityObject) -> Vec<geojson::Fe
     let properties = extract_properties(&obj.root);
 
     if !obj.geometries.multipolygon.is_empty() {
-        let mpoly_geojson_geom = multipolygon_to_geojson_geometry(
+        let mpoly_geojson_geom = indexed_multipolygon_to_geometry(
             &obj.geometries.vertices,
             &obj.geometries.multipolygon,
         );
@@ -149,7 +149,7 @@ pub fn toplevel_cityobj_to_geojson_features(obj: &CityObject) -> Vec<geojson::Fe
     }
 
     if !obj.geometries.multilinestring.is_empty() {
-        let mls_geojson_geom = multilinestring_to_geojson_geometry(
+        let mls_geojson_geom = indexed_multilinestring_to_geometry(
             &obj.geometries.vertices,
             &obj.geometries.multilinestring,
         );
@@ -165,7 +165,7 @@ pub fn toplevel_cityobj_to_geojson_features(obj: &CityObject) -> Vec<geojson::Fe
 
     if !obj.geometries.multipoint.is_empty() {
         let mpoint_geojson_geom =
-            multipoint_to_geojson_geometry(&obj.geometries.vertices, &obj.geometries.multipoint);
+            indexed_multipoint_to_geometry(&obj.geometries.vertices, &obj.geometries.multipoint);
         let mpoint_geojson_feat = geojson::Feature {
             bbox: None,
             geometry: Some(mpoint_geojson_geom),
