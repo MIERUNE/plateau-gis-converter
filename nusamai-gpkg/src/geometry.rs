@@ -4,6 +4,46 @@
 
 use nusamai_geometry::{MultiPolygon, Polygon};
 
+#[repr(u8)]
+pub enum WkbByteOrder {
+    // Big endian (XDR)
+    BigEndian = 0,
+    // Little endian (NDR)
+    LittleEndian = 1,
+}
+
+#[repr(u32)]
+pub enum WkbGeometryType {
+    Point = 1,
+    LineString = 2,
+    Polygon = 3,
+    MultiPoint = 4,
+    MultiLineString = 5,
+    MultiPolygon = 6,
+    GeometryCollection = 7,
+    PointZ = 1001,
+    LineStringZ = 1002,
+    PolygonZ = 1003,
+    MultiPointZ = 1004,
+    MultiLineStringZ = 1005,
+    MultiPolygonZ = 1006,
+    GeometryCollectionZ = 1007,
+    PointM = 2001,
+    LineStringM = 2002,
+    PolygonM = 2003,
+    MultiPointM = 2004,
+    MultiLineStringM = 2005,
+    MultiPolygonM = 2006,
+    GeometryCollectionM = 2007,
+    PointZM = 3001,
+    LineStringZM = 3002,
+    PolygonZM = 3003,
+    MultiPointZM = 3004,
+    MultiLineStringZM = 3005,
+    MultiPolygonZM = 3006,
+    GeometryCollectionZM = 3007,
+}
+
 fn geometry_header(srs_id: i32) -> Vec<u8> {
     let mut header: Vec<u8> = Vec::with_capacity(8);
     header.extend_from_slice(&[0x47, 0x50]); // Magic number
@@ -35,21 +75,21 @@ pub fn multipolygon_to_bytes(
 ) -> Vec<u8> {
     let mut bytes: Vec<u8> = geometry_header(srs_id);
 
-    // Byte order: Little endian
-    bytes.push(0x01);
+    // Byte order: Little endian (1)
+    bytes.push(WkbByteOrder::LittleEndian as u8);
 
     // Geometry type: wkbMultiPolygonZ (1006)
-    bytes.extend_from_slice(&1006_u32.to_le_bytes());
+    bytes.extend_from_slice(&(WkbGeometryType::MultiPolygonZ as u32).to_le_bytes());
 
     // numPolygons
     bytes.extend_from_slice(&(mpoly.len() as u32).to_le_bytes());
 
     for poly in mpoly {
-        // Byte order: Little endian
-        bytes.push(0x01);
+        // Byte order: Little endian (1)
+        bytes.push(WkbByteOrder::LittleEndian as u8);
 
         // Geometry type: wkbPolygonZ (1003)
-        bytes.extend_from_slice(&1003_u32.to_le_bytes());
+        bytes.extend_from_slice(&(WkbGeometryType::PolygonZ as u32).to_le_bytes());
 
         let rings = polygon_to_rings(vertices, &poly);
 
@@ -61,12 +101,9 @@ pub fn multipolygon_to_bytes(
             bytes.extend_from_slice(&(ring.len() as u32).to_le_bytes());
 
             for coord in ring {
-                let x = f64::to_le_bytes(coord[1]); // FIXME: lon,lat order
-                bytes.extend_from_slice(&x);
-                let y = f64::to_le_bytes(coord[0]); // FIXME: lon,lat order
-                bytes.extend_from_slice(&y);
-                let z = f64::to_le_bytes(coord[2]);
-                bytes.extend_from_slice(&z);
+                bytes.extend_from_slice(&f64::to_le_bytes(coord[0]));
+                bytes.extend_from_slice(&f64::to_le_bytes(coord[1]));
+                bytes.extend_from_slice(&f64::to_le_bytes(coord[2]));
             }
         }
     }
