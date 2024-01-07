@@ -2,7 +2,8 @@
 //!
 //! cf. https://www.geopackage.org/spec130/#gpb_format
 
-use nusamai_geometry::{MultiPolygon, Polygon};
+use nusamai_geometry::{CoordNum, MultiPolygon, Polygon};
+use std::io::Write;
 
 #[repr(u8)]
 pub enum WkbByteOrder {
@@ -44,135 +45,79 @@ pub enum WkbGeometryType {
     GeometryCollectionZM = 3007,
 }
 
-fn geometry_header(srs_id: i32) -> Vec<u8> {
-    let mut header: Vec<u8> = Vec::with_capacity(8);
-    header.extend_from_slice(&[0x47, 0x50]); // Magic number
-    header.push(0x00); // Version
-    header.push(0b00000001); // Flags
-    header.extend_from_slice(&i32::to_le_bytes(srs_id)); // SRS ID
-    header
+fn write_geometry_header<W: Write>(writer: &mut W, srs_id: i32) -> std::io::Result<()> {
+    writer.write_all(&[0x47, 0x50])?; // Magic number
+    writer.write_all(&[
+        0x00,       // Version
+        0b00000001, // Flags
+    ])?;
+    writer.write_all(&i32::to_le_bytes(srs_id))?; // SRS ID
+    Ok(())
 }
 
-fn polygon_to_rings(vertices: &[[f64; 3]], poly: &Polygon<1, u32>) -> Vec<Vec<Vec<f64>>> {
-    let rings: Vec<_> = poly
-        .rings()
-        .map(|ls| {
-            let coords: Vec<_> = ls
-                .iter_closed()
-                .map(|idx| vertices[idx[0] as usize].to_vec()) // Get the actual coord values
-                .collect();
-            coords
-        })
-        .collect();
+fn write_polygon_body<W: Write, const D: usize, T: CoordNum>(
+    writer: &mut W,
+    poly: &Polygon<D, T>,
+    mapping: impl Fn(&[T]) -> [f64; 3],
+) -> std::io::Result<()> {
+    // Byte order: Little endian (1)
+    writer.write_all(&[WkbByteOrder::LittleEndian as u8])?;
 
-    rings
+    // Geometry type: wkbPolygonZ (1003)
+    writer.write_all(&(WkbGeometryType::PolygonZ as u32).to_le_bytes())?;
+
+    // numRings
+    writer.write_all(&(poly.rings().count() as u32).to_le_bytes())?;
+
+    for ring in poly.rings() {
+        // numPoints
+        writer.write_all(&(ring.iter_closed().count() as u32).to_le_bytes())?;
+
+        for idx in ring.iter_closed() {
+            let [x, y, z] = mapping(idx);
+            writer.write_all(&f64::to_le_bytes(x))?;
+            writer.write_all(&f64::to_le_bytes(y))?;
+            writer.write_all(&f64::to_le_bytes(z))?;
+        }
+    }
+    Ok(())
 }
 
-pub fn multipolygon_to_bytes(
+pub fn write_indexed_multipolygon<W: Write>(
+    writer: &mut W,
     vertices: &[[f64; 3]],
     mpoly: &MultiPolygon<'_, 1, u32>,
     srs_id: i32,
-) -> Vec<u8> {
-    let mut bytes: Vec<u8> = geometry_header(srs_id);
+) -> std::io::Result<()> {
+    write_geometry_header(writer, srs_id)?;
+    write_multipolygon_body(writer, mpoly, |idx| vertices[idx[0] as usize])?;
+    Ok(())
+}
 
+fn write_multipolygon_body<W: Write, const D: usize, T: CoordNum>(
+    writer: &mut W,
+    mpoly: &MultiPolygon<'_, D, T>,
+    mapping: impl Fn(&[T]) -> [f64; 3],
+) -> std::io::Result<()> {
     // Byte order: Little endian (1)
-    bytes.push(WkbByteOrder::LittleEndian as u8);
+    writer.write_all(&[WkbByteOrder::LittleEndian as u8])?;
 
     // Geometry type: wkbMultiPolygonZ (1006)
-    bytes.extend_from_slice(&(WkbGeometryType::MultiPolygonZ as u32).to_le_bytes());
+    writer.write_all(&(WkbGeometryType::MultiPolygonZ as u32).to_le_bytes())?;
 
     // numPolygons
-    bytes.extend_from_slice(&(mpoly.len() as u32).to_le_bytes());
+    writer.write_all(&(mpoly.len() as u32).to_le_bytes())?;
 
     for poly in mpoly {
-        // Byte order: Little endian (1)
-        bytes.push(WkbByteOrder::LittleEndian as u8);
-
-        // Geometry type: wkbPolygonZ (1003)
-        bytes.extend_from_slice(&(WkbGeometryType::PolygonZ as u32).to_le_bytes());
-
-        let rings = polygon_to_rings(vertices, &poly);
-
-        // numRings
-        bytes.extend_from_slice(&(rings.len() as u32).to_le_bytes());
-
-        for ring in rings {
-            // numPoints
-            bytes.extend_from_slice(&(ring.len() as u32).to_le_bytes());
-
-            for coord in ring {
-                bytes.extend_from_slice(&f64::to_le_bytes(coord[0]));
-                bytes.extend_from_slice(&f64::to_le_bytes(coord[1]));
-                bytes.extend_from_slice(&f64::to_le_bytes(coord[2]));
-            }
-        }
+        write_polygon_body(writer, &poly, &mapping)?;
     }
 
-    bytes
+    Ok(())
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[test]
-    fn test_polygon_to_rings() {
-        let vertices: Vec<[f64; 3]> = vec![
-            // exterior (vertex 0~3)
-            [0., 0., 111.],
-            [5., 0., 111.],
-            [5., 5., 111.],
-            [0., 5., 111.],
-            // interior 1 (vertex 4~7)
-            [1., 1., 111.],
-            [2., 1., 111.],
-            [2., 2., 111.],
-            [1., 2., 111.],
-            // interior 2 (vertex 8~11)
-            [3., 3., 111.],
-            [4., 3., 111.],
-            [4., 4., 111.],
-            [3., 4., 111.],
-        ];
-
-        let mut poly = Polygon::<'_, 1, u32>::new();
-        poly.add_ring([[0], [1], [2], [3]]);
-        poly.add_ring([[4], [5], [6], [7]]);
-        poly.add_ring([[8], [9], [10], [11]]);
-
-        let rings = polygon_to_rings(&vertices, &poly);
-
-        assert_eq!(rings.len(), 3);
-
-        for (i, ri) in rings.iter().enumerate() {
-            match i {
-                0 => {
-                    assert_eq!(ri.len(), 5);
-                    assert_eq!(ri[0], vec![0., 0., 111.]);
-                    assert_eq!(ri[1], vec![5., 0., 111.]);
-                    assert_eq!(ri[2], vec![5., 5., 111.]);
-                    assert_eq!(ri[3], vec![0., 5., 111.]);
-                    assert_eq!(ri[4], vec![0., 0., 111.]);
-                }
-                1 => {
-                    assert_eq!(ri.len(), 5);
-                    assert_eq!(ri[0], vec![1., 1., 111.]);
-                    assert_eq!(ri[1], vec![2., 1., 111.]);
-                    assert_eq!(ri[2], vec![2., 2., 111.]);
-                    assert_eq!(ri[3], vec![1., 2., 111.]);
-                    assert_eq!(ri[4], vec![1., 1., 111.]);
-                }
-                2 => {
-                    assert_eq!(ri.len(), 5);
-                    assert_eq!(ri[0], vec![3., 3., 111.]);
-                    assert_eq!(ri[1], vec![4., 3., 111.]);
-                    assert_eq!(ri[2], vec![4., 4., 111.]);
-                    assert_eq!(ri[3], vec![3., 4., 111.]);
-                }
-                _ => panic!("Unexpected ring index"),
-            }
-        }
-    }
 
     #[test]
     fn test_multipolygon_to_bytes() {
@@ -194,7 +139,8 @@ mod tests {
         mpoly.add_exterior([[0], [1], [2], [3], [0]]);
         mpoly.add_interior([[4], [5], [6], [7], [4]]);
 
-        let bytes = multipolygon_to_bytes(&vertices, &mpoly, 1234);
+        let mut bytes = Vec::new();
+        write_indexed_multipolygon(&mut bytes, &vertices, &mpoly, 1234).unwrap();
 
         assert_eq!(bytes.len(), 274);
 
