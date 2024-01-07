@@ -1,71 +1,91 @@
-use nusamai_geometry::{MultiLineString, MultiPoint, MultiPolygon, Polygon};
+use nusamai_geometry::{CoordNum, MultiLineString, MultiPoint, MultiPolygon};
 
-/// Create a GeoJSON geometry from `nusamai_geometry::MultiPolygon`
+/// Create a GeoJSON MultiPolygon from `nusamai_geometry::MultiPolygon`.
 pub fn multipolygon_to_geometry(mpoly: &MultiPolygon<3>) -> geojson::Geometry {
-    let rings_list = mpoly
+    multipolygon_to_geometry_with_mapping(mpoly, |c| c.to_vec())
+}
+
+/// Create a GeoJSON MultiPolygon from vertices and indices.
+pub fn indexed_multipolygon_to_geometry(
+    vertices: &[[f64; 3]],
+    mpoly_idx: &MultiPolygon<1, u32>,
+) -> geojson::Geometry {
+    multipolygon_to_geometry_with_mapping(mpoly_idx, |idx| vertices[idx[0] as usize].to_vec())
+}
+
+/// Create a GeoJSON MultiPolygon from `nusamai_geometry::MultiPolygon` with a mapping function.
+pub fn multipolygon_to_geometry_with_mapping<const D: usize, T: CoordNum>(
+    mpoly: &MultiPolygon<D, T>,
+    mapping: impl Fn(&[T]) -> Vec<f64>,
+) -> geojson::Geometry {
+    let coords: Vec<geojson::PolygonType> = mpoly
         .iter()
         .map(|poly| {
             poly.rings()
-                .map(|c| c.iter_closed().map(|v| v.to_vec()).collect())
+                .map(|ls| {
+                    ls.iter_closed()
+                        .map(&mapping) // Get the actual coord values
+                        .collect()
+                })
                 .collect::<Vec<_>>()
         })
         .collect();
-    geojson::Value::MultiPolygon(rings_list).into()
+    geojson::Value::MultiPolygon(coords).into()
 }
 
-/// Create a GeoJSON geometry from vertices and MultiPolygon indices.
-pub fn indexed_multipolygon_to_geometry(
-    vertices: &[[f64; 3]],
-    mpoly: &MultiPolygon<1, u32>,
-) -> geojson::Geometry {
-    let rings_list: Vec<geojson::PolygonType> = mpoly
-        .iter()
-        .map(|poly| indexed_polygon_to_rings(vertices, &poly))
-        .collect();
-    geojson::Value::MultiPolygon(rings_list).into()
+/// Create a GeoJSON MultiLineString from `nusamai_geometry::MultiLineString`.
+pub fn multilinestring_to_geometry(mls: &MultiLineString<3>) -> geojson::Geometry {
+    multilinestring_to_geometry_with_mapping(mls, |c| c.to_vec())
 }
 
-fn indexed_polygon_to_rings(
-    vertices: &[[f64; 3]],
-    poly_idx: &Polygon<1, u32>,
-) -> geojson::PolygonType {
-    poly_idx
-        .rings()
-        .map(|ls| {
-            ls.iter_closed()
-                .map(|idx| vertices[idx[0] as usize].to_vec()) // Get the actual coord values
-                .collect()
-        })
-        .collect()
-}
-
-/// Create a GeoJSON geometry from vertices and MultiLineString indices.
+/// Create a GeoJSON MultiLineString from vertices and indices.
 pub fn indexed_multilinestring_to_geometry(
     vertices: &[[f64; 3]],
     mls_idx: &MultiLineString<1, u32>,
 ) -> geojson::Geometry {
-    let mls_coords = mls_idx
+    multilinestring_to_geometry_with_mapping(mls_idx, |idx| vertices[idx[0] as usize].to_vec())
+}
+
+/// Create a GeoJSON MultiLineString from `nusamai_geometry::MultiPolygon` with a mapping function.
+pub fn multilinestring_to_geometry_with_mapping<const D: usize, T: CoordNum>(
+    mls: &MultiLineString<D, T>,
+    mapping: impl Fn(&[T]) -> Vec<f64>,
+) -> geojson::Geometry {
+    let coords = mls
         .iter()
         .map(|ls_idx| {
             ls_idx
                 .iter()
-                .map(|idx| vertices[idx[0] as usize].to_vec()) // Get the actual coord values
+                .map(&mapping) // Get the actual coord values
                 .collect()
         })
         .collect();
-    geojson::Value::MultiLineString(mls_coords).into()
+    geojson::Value::MultiLineString(coords).into()
 }
 
-/// Create a GeoJSON geometry from vertices and MultiPoint indices.
+/// Create a GeoJSON MultiPoint from `nusamai_geometry::MultiPoint`.
+pub fn multipoint_to_geometry(mpoint: &MultiPoint<3>) -> geojson::Geometry {
+    multipoint_to_geometry_with_mapping(mpoint, |c| c.to_vec())
+}
+
+/// Create a GeoJSON MultiPoint from vertices and indices.
 pub fn indexed_multipoint_to_geometry(
     vertices: &[[f64; 3]],
-    mpoint: &MultiPoint<1, u32>,
+    mpoint_idx: &MultiPoint<1, u32>,
 ) -> geojson::Geometry {
-    let mpoint_coords = mpoint
+    multipoint_to_geometry_with_mapping(mpoint_idx, |idx| vertices[idx[0] as usize].to_vec())
+}
+
+/// Create a GeoJSON MultiPoint from `nusamai_geometry::MultiPoint` with a mapping function.
+pub fn multipoint_to_geometry_with_mapping<const D: usize, T: CoordNum>(
+    mpoint: &MultiPoint<D, T>,
+    mapping: impl Fn(&[T]) -> Vec<f64>,
+) -> geojson::Geometry {
+    let coords = mpoint
         .iter()
-        .map(|p| vertices[p[0] as usize].to_vec()) // Get the actual coord values
+        .map(&mapping) // Get the actual coord values
         .collect();
-    geojson::Value::MultiPoint(mpoint_coords).into()
+    geojson::Value::MultiPoint(coords).into()
 }
 
 #[cfg(test)]
@@ -267,6 +287,33 @@ mod tests {
     }
 
     #[test]
+    fn test_multilinestring() {
+        let mut mls = MultiLineString::<3>::new();
+        mls.add_linestring([[11., 12., 13.], [21., 22., 23.], [31., 32., 33.]]);
+        mls.add_linestring([[111., 112., 113.], [121., 122., 123.], [131., 132., 133.]]);
+
+        let geom = multilinestring_to_geometry(&mls);
+        let geojson::Value::MultiLineString(mls) = geom.value else {
+            panic!("The result is not a GeoJSON MultiPolygon");
+        };
+        assert_eq!(
+            mls,
+            vec![
+                vec![
+                    vec![11., 12., 13.],
+                    vec![21., 22., 23.],
+                    vec![31., 32., 33.],
+                ],
+                vec![
+                    vec![111., 112., 113.],
+                    vec![121., 122., 123.],
+                    vec![131., 132., 133.],
+                ],
+            ]
+        );
+    }
+
+    #[test]
     fn test_indexed_multilinestring() {
         let vertices = vec![
             // 1st linestring
@@ -316,6 +363,27 @@ mod tests {
         } else {
             unreachable!("The result is not a GeoJSON MultiLineString");
         }
+    }
+
+    #[test]
+    fn test_multipoint() {
+        let mut mpoint = MultiPoint::<3>::new();
+        mpoint.push(&[11., 12., 13.]);
+        mpoint.push(&[21., 22., 23.]);
+        mpoint.push(&[31., 32., 33.]);
+
+        let geom = multipoint_to_geometry(&mpoint);
+        let geojson::Value::MultiPoint(mpoint) = geom.value else {
+            panic!("The result is not a GeoJSON MultiPolygon");
+        };
+        assert_eq!(
+            mpoint,
+            vec![
+                vec![11., 12., 13.],
+                vec![21., 22., 23.],
+                vec![31., 32., 33.],
+            ]
+        );
     }
 
     #[test]
