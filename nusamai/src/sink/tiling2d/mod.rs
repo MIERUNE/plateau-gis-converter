@@ -49,7 +49,6 @@ impl DataSinkProvider for Tiling2DSinkProvider {
     }
 }
 
-#[derive(Default)]
 pub struct Tiling2DSink {
     output_path: PathBuf,
 }

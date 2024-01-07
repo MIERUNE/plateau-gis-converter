@@ -49,7 +49,6 @@ impl DataSinkProvider for GpkgSinkProvider {
     }
 }
 
-#[derive(Default)]
 pub struct GpkgSink {
     output_path: PathBuf,
 }

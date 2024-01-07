@@ -51,7 +51,6 @@ impl DataSinkProvider for GeoJsonSinkProvider {
     }
 }
 
-#[derive(Default)]
 pub struct GeoJsonSink {
     output_path: PathBuf,
 }
