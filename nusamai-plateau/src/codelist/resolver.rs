@@ -9,7 +9,7 @@ use nusamai_citygml::codelist::CodeResolver;
 use nusamai_citygml::ParseError;
 
 pub struct Resolver {
-    cache: Cache<PathBuf, HashMap<String, Definition>>,
+    cache: Cache<PathBuf, Map>,
 }
 
 impl Resolver {
