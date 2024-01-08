@@ -12,7 +12,7 @@ use crate::sink::{DataSink, DataSinkProvider, SinkInfo};
 
 use crate::get_parameter_value;
 use crate::parameters::*;
-use nusamai_gpkg::geometry::multipolygon_to_bytes;
+use nusamai_gpkg::geometry::write_indexed_multipolygon;
 use nusamai_gpkg::GpkgHandler;
 
 pub struct GpkgSinkProvider {}
@@ -49,7 +49,6 @@ impl DataSinkProvider for GpkgSinkProvider {
     }
 }
 
-#[derive(Default)]
 pub struct GpkgSink {
     output_path: PathBuf,
 }
@@ -81,11 +80,18 @@ impl GpkgSink {
                         }
                         let cityobj = parcel.cityobj;
                         if !cityobj.geometries.multipolygon.is_empty() {
-                            let bytes = multipolygon_to_bytes(
+                            let mut bytes = Vec::new();
+                            if write_indexed_multipolygon(
+                                &mut bytes,
                                 &cityobj.geometries.vertices,
                                 &cityobj.geometries.multipolygon,
                                 4326,
-                            );
+                            )
+                            .is_err()
+                            {
+                                // TODO: fatal error
+                            }
+
                             if sender.blocking_send(bytes).is_err() {
                                 return Err(());
                             };

@@ -13,8 +13,8 @@ use crate::sink::{DataSink, DataSinkProvider, SinkInfo};
 
 use nusamai_citygml::object::CityObject;
 use nusamai_geojson::conversion::{
-    multilinestring_to_geojson_geometry, multipoint_to_geojson_geometry,
-    multipolygon_to_geojson_geometry,
+    indexed_multilinestring_to_geometry, indexed_multipoint_to_geometry,
+    indexed_multipolygon_to_geometry,
 };
 
 pub struct GeoJsonSinkProvider {}
@@ -51,7 +51,6 @@ impl DataSinkProvider for GeoJsonSinkProvider {
     }
 }
 
-#[derive(Default)]
 pub struct GeoJsonSink {
     output_path: PathBuf,
 }
@@ -133,7 +132,7 @@ pub fn toplevel_cityobj_to_geojson_features(obj: &CityObject) -> Vec<geojson::Fe
     let properties = extract_properties(&obj.root);
 
     if !obj.geometries.multipolygon.is_empty() {
-        let mpoly_geojson_geom = multipolygon_to_geojson_geometry(
+        let mpoly_geojson_geom = indexed_multipolygon_to_geometry(
             &obj.geometries.vertices,
             &obj.geometries.multipolygon,
         );
@@ -149,7 +148,7 @@ pub fn toplevel_cityobj_to_geojson_features(obj: &CityObject) -> Vec<geojson::Fe
     }
 
     if !obj.geometries.multilinestring.is_empty() {
-        let mls_geojson_geom = multilinestring_to_geojson_geometry(
+        let mls_geojson_geom = indexed_multilinestring_to_geometry(
             &obj.geometries.vertices,
             &obj.geometries.multilinestring,
         );
@@ -165,7 +164,7 @@ pub fn toplevel_cityobj_to_geojson_features(obj: &CityObject) -> Vec<geojson::Fe
 
     if !obj.geometries.multipoint.is_empty() {
         let mpoint_geojson_geom =
-            multipoint_to_geojson_geometry(&obj.geometries.vertices, &obj.geometries.multipoint);
+            indexed_multipoint_to_geometry(&obj.geometries.vertices, &obj.geometries.multipoint);
         let mpoint_geojson_feat = geojson::Feature {
             bbox: None,
             geometry: Some(mpoint_geojson_geom),
@@ -184,6 +183,7 @@ mod tests {
     use super::*;
     use nusamai_citygml::{object::Feature, Value};
     use nusamai_geometry::MultiPolygon;
+    use nusamai_projection::crs::EPSG_JGD2011_GEOGRAPHIC_3D;
 
     #[test]
     fn test_toplevel_cityobj_multipolygon() {
@@ -196,7 +196,7 @@ mod tests {
         let mut mpoly = MultiPolygon::<'_, 1, u32>::new();
         mpoly.add_exterior([[0], [1], [2], [3], [0]]);
         let geometries = nusamai_citygml::GeometryStore {
-            crs: nusamai_citygml::CRS::WGS84,
+            epsg: EPSG_JGD2011_GEOGRAPHIC_3D,
             vertices,
             multipolygon: mpoly,
             multilinestring: Default::default(),
