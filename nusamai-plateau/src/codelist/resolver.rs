@@ -6,8 +6,10 @@ use nusamai_citygml::ParseError;
 use stretto::Cache;
 use url::Url;
 
+type Map = HashMap<String, Definition, ahash::RandomState>;
+
 pub struct Resolver {
-    cache: Cache<PathBuf, HashMap<String, Definition>>,
+    cache: Cache<PathBuf, Map>,
 }
 
 impl Resolver {
