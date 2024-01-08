@@ -227,7 +227,7 @@ mod tests {
     #[test]
     fn test_transform() {
         {
-            let mut poly: Polygon<'_, 2> = Polygon2::new();
+            let mut poly: Polygon<2> = Polygon2::new();
             poly.add_ring([[0., 0.], [5., 0.], [5., 5.], [0., 5.]]);
             let new_poly = poly.transform(|[x, y]| [x + 2., y + 1.]);
             assert_eq!(

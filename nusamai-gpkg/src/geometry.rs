@@ -96,7 +96,7 @@ pub fn write_indexed_multipolygon<W: Write>(
 
 fn write_multipolygon_body<W: Write, const D: usize, T: CoordNum>(
     writer: &mut W,
-    mpoly: &MultiPolygon<'_, D, T>,
+    mpoly: &MultiPolygon<D, T>,
     mapping: impl Fn(&[T]) -> [f64; 3],
 ) -> std::io::Result<()> {
     // Byte order: Little endian (1)
