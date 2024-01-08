@@ -1,4 +1,5 @@
 use nusamai_geometry::{MultiLineString, MultiPoint, MultiPolygon};
+use nusamai_projection::crs::*;
 
 #[derive(Debug, Clone, Copy)]
 pub enum GeometryParseType {
@@ -35,28 +36,24 @@ pub struct GeometryRefEntry {
 
 pub type GeometryRef = Vec<GeometryRefEntry>;
 
-#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
-#[derive(Debug, Default)]
-pub enum CRS {
-    #[default]
-    WGS84,
-    JGD2011,
-}
-
-/// Geometries in a toplevel city object and its children.
+/// Geometries in a city object and all its children.
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 #[derive(Debug, Default)]
 pub struct GeometryStore {
-    pub crs: CRS,
+    /// EPSG code of the Coordinate Reference System (CRS)
+    pub epsg: EPSGCode,
+    /// Shared vertex buffer for all geometries
     pub vertices: Vec<[f64; 3]>,
+    /// All polygons, referenced by `GeometryRef`
     pub multipolygon: MultiPolygon<'static, 1, u32>,
+    /// All line-strings of , referenced by `GeometryRef`
     pub multilinestring: MultiLineString<'static, 1, u32>,
+    /// All points, referenced by `GeometryRef`
     pub multipoint: MultiPoint<'static, 1, u32>,
 }
 
-/// Store for collecting vertices and polygons from GML.
 #[derive(Default)]
-pub struct GeometryCollector {
+pub(crate) struct GeometryCollector {
     pub vertices: indexmap::IndexSet<[u64; 3]>,
     pub multipolygon: MultiPolygon<'static, 1, u32>,
     pub multilinestring: MultiLineString<'static, 1, u32>,
@@ -94,7 +91,7 @@ impl GeometryCollector {
             ]);
         }
         GeometryStore {
-            crs: CRS::JGD2011,
+            epsg: EPSG_JGD2011_GEOGRAPHIC_3D,
             vertices,
             multipolygon: self.multipolygon,
             multilinestring: self.multilinestring,

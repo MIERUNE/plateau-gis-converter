@@ -183,6 +183,7 @@ mod tests {
     use super::*;
     use nusamai_citygml::{object::Feature, Value};
     use nusamai_geometry::MultiPolygon;
+    use nusamai_projection::crs::EPSG_JGD2011_GEOGRAPHIC_3D;
 
     #[test]
     fn test_toplevel_cityobj_multipolygon() {
@@ -195,7 +196,7 @@ mod tests {
         let mut mpoly = MultiPolygon::<'_, 1, u32>::new();
         mpoly.add_exterior([[0], [1], [2], [3], [0]]);
         let geometries = nusamai_citygml::GeometryStore {
-            crs: nusamai_citygml::CRS::WGS84,
+            epsg: EPSG_JGD2011_GEOGRAPHIC_3D,
             vertices,
             multipolygon: mpoly,
             multilinestring: Default::default(),
