@@ -86,7 +86,7 @@ fn write_polygon_body<W: Write, const D: usize, T: CoordNum>(
 pub fn write_indexed_multipolygon<W: Write>(
     writer: &mut W,
     vertices: &[[f64; 3]],
-    mpoly: &MultiPolygon<'_, 1, u32>,
+    mpoly: &MultiPolygon<1, u32>,
     srs_id: i32,
 ) -> std::io::Result<()> {
     write_geometry_header(writer, srs_id)?;
@@ -134,7 +134,7 @@ mod tests {
             [1., 2., 111.],
         ];
 
-        let mut mpoly = MultiPolygon::<'_, 1, u32>::new();
+        let mut mpoly = MultiPolygon::<1, u32>::new();
         // 1st polygon
         mpoly.add_exterior([[0], [1], [2], [3], [0]]);
         mpoly.add_interior([[4], [5], [6], [7], [4]]);

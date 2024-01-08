@@ -70,24 +70,25 @@ impl Value {
                 // }
             }
             Array(a) => serde_json::Value::Array(a.iter().map(Value::to_attribute_json).collect()),
-            Feature(feat) => serde_json::Value::from_iter(
-                feat.attributes
-                    .iter()
-                    .map(|(k, v)| (k.clone(), v.to_attribute_json()))
-                    .chain(
-                        std::iter::once(("type".into(), feat.typename.clone().into()))
-                            .chain(std::iter::once(("id".into(), feat.id.clone().into()))),
-                    ),
-            ),
-            Data(feat) => serde_json::Value::from_iter(
-                feat.attributes
-                    .iter()
-                    .map(|(k, v)| (k.clone(), v.to_attribute_json()))
-                    .chain(std::iter::once((
-                        "type".into(),
-                        feat.typename.clone().into(),
-                    ))),
-            ),
+            Feature(feat) => {
+                let mut m = serde_json::Map::from_iter(
+                    feat.attributes
+                        .iter()
+                        .map(|(k, v)| (k.clone(), v.to_attribute_json())),
+                );
+                m.insert("type".into(), feat.typename.clone().into());
+                m.insert("id".into(), feat.id.clone().into());
+                serde_json::Value::Object(m)
+            }
+            Data(feat) => {
+                let mut m = serde_json::Map::from_iter(
+                    feat.attributes
+                        .iter()
+                        .map(|(k, v)| (k.clone(), v.to_attribute_json())),
+                );
+                m.insert("type".into(), feat.typename.clone().into());
+                serde_json::Value::Object(m)
+            }
         }
     }
 }

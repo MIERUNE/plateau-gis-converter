@@ -1,4 +1,4 @@
-//! Japan Plane Reculangular Coordinate Systems
+//! Japan Plane Rectangular Coordinate Systems
 
 use crate::{ellipsoid::grs80, etmerc::ExtendedTransverseMercatorProjection};
 

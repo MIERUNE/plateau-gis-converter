@@ -193,7 +193,7 @@ mod tests {
             [5., 5., 111.],
             [0., 5., 111.],
         ];
-        let mut mpoly = MultiPolygon::<'_, 1, u32>::new();
+        let mut mpoly = MultiPolygon::<1, u32>::new();
         mpoly.add_exterior([[0], [1], [2], [3], [0]]);
         let geometries = nusamai_citygml::GeometryStore {
             epsg: EPSG_JGD2011_GEOGRAPHIC_3D,
