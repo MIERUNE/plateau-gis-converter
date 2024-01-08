@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use hashbrown::HashMap;
 use std::io::BufRead;
 
 use quick_xml::events::Event;
@@ -113,7 +113,7 @@ pub fn parse_dictionary<R: BufRead>(
     let mut depth = 0;
     let mut buf = Vec::new();
     let mut buf2 = Vec::new();
-    let mut definitions = HashMap::new();
+    let mut definitions = HashMap::default();
 
     loop {
         match reader.read_event_into(&mut buf) {

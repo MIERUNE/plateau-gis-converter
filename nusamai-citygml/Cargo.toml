@@ -8,6 +8,7 @@ default = ["serde"]
 serde = ["dep:serde", "serde_json", "nusamai-geometry/serde"]
 
 [dependencies]
+ahash = "0.8.7"
 chrono = { version = "0.4.31", features = ["serde"], default-features = false }
 indexmap = { version = "2.1", features = ["serde"] }
 macros = { path = "./macros" }
@@ -15,6 +16,6 @@ nusamai-geometry = { path = "../nusamai-geometry", features = ["serde"]}
 nusamai-projection = { path = "../nusamai-projection"}
 quick-xml = "0.31"
 serde = { version = "1.0", features = ["derive"], optional = true }
-serde_json = { version = "1.0.108", optional = true }
+serde_json = { version = "1.0.108", features = ["indexmap"], optional = true }
 thiserror = "1.0"
 url = "2.5.0"

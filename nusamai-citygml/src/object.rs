@@ -6,7 +6,7 @@ use crate::Measure;
 use chrono::NaiveDate;
 use serde::{Deserialize, Serialize};
 
-pub type Map = indexmap::IndexMap<String, Value>;
+pub type Map = indexmap::IndexMap<String, Value, ahash::RandomState>;
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct CityObject {
@@ -136,7 +136,7 @@ mod tests {
         let value = obj.to_attribute_json();
         assert_eq!(value, json!(["test", 1]));
 
-        let mut attributes = Map::new();
+        let mut attributes = Map::default();
         attributes.insert("String".into(), Value::String("test".into()));
         attributes.insert("Integer".into(), Value::Integer(1));
         let obj = Value::Feature(Feature {
@@ -158,7 +158,7 @@ mod tests {
             }
         );
 
-        let mut attributes = Map::new();
+        let mut attributes = Map::default();
         attributes.insert("String".into(), Value::String("test".into()));
         attributes.insert("Integer".into(), Value::Integer(1));
         let obj = Value::Data(Data {

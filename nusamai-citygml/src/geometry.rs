@@ -54,7 +54,7 @@ pub struct GeometryStore {
 
 #[derive(Default)]
 pub(crate) struct GeometryCollector {
-    pub vertices: indexmap::IndexSet<[u64; 3]>,
+    pub vertices: indexmap::IndexSet<[u64; 3], ahash::RandomState>,
     pub multipolygon: MultiPolygon<'static, 1, u32>,
     pub multilinestring: MultiLineString<'static, 1, u32>,
     pub multipoint: MultiPoint<'static, 1, u32>,
