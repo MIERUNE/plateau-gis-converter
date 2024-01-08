@@ -63,23 +63,13 @@ impl<'a, const D: usize, T: CoordNum> Polygon<'a, D, T> {
     }
 
     /// Returns an iterator over the interior rings of the polygon.
-    pub fn interiors(&self) -> impl Iterator<Item = LineString<D, T>> {
-        self.hole_indices
-            .windows(2)
-            .map(|a| (a[0] as usize * D, a[1] as usize * D))
-            .chain(match self.hole_indices.is_empty() {
-                true => None,
-                false => Some((
-                    self.hole_indices[self.hole_indices.len() - 1] as usize * D,
-                    self.coords.len(),
-                )),
-            })
-            .map(|(start, end)| LineString::from_raw(self.coords[start..end].into()))
+    pub fn interiors(&self) -> Iter<D, T> {
+        Iter { poly: self, pos: 1 }
     }
 
     /// Returns an iterator over the exterior and interior rings of the polygon.
-    pub fn rings(&self) -> impl Iterator<Item = LineString<D, T>> {
-        std::iter::once(self.exterior()).chain(self.interiors())
+    pub fn rings(&self) -> Iter<D, T> {
+        Iter { poly: self, pos: 0 }
     }
 
     pub fn clear(&mut self) {
@@ -115,6 +105,37 @@ impl<'a, const D: usize, T: CoordNum> Polygon<'a, D, T> {
             let transformed = f(&c.try_into().unwrap());
             c.copy_from_slice(&transformed);
         });
+    }
+}
+
+pub struct Iter<'a, const D: usize, T: CoordNum> {
+    poly: &'a Polygon<'a, D, T>,
+    pos: usize,
+}
+
+impl<'a, const D: usize, T: CoordNum> Iterator for Iter<'a, D, T> {
+    type Item = LineString<'a, D, T>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.pos < self.poly.hole_indices.len() + 1 {
+            let start = if self.pos == 0 {
+                0
+            } else {
+                self.poly.hole_indices[self.pos - 1] as usize * D
+            };
+
+            let end = if self.pos == self.poly.hole_indices.len() {
+                self.poly.coords.len()
+            } else {
+                self.poly.hole_indices[self.pos] as usize * D
+            };
+
+            let line = LineString::from_raw(self.poly.coords[start..end].into());
+            self.pos += 1;
+            Some(line)
+        } else {
+            None
+        }
     }
 }
 
@@ -206,7 +227,7 @@ mod tests {
     #[test]
     fn test_transform() {
         {
-            let mut poly: Polygon<'_, 2> = Polygon2::new();
+            let mut poly: Polygon<2> = Polygon2::new();
             poly.add_ring([[0., 0.], [5., 0.], [5., 5.], [0., 5.]]);
             let new_poly = poly.transform(|[x, y]| [x + 2., y + 1.]);
             assert_eq!(

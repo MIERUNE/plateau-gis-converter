@@ -185,7 +185,7 @@ mod tests {
             [4., 3., 333.],
         ];
 
-        let mut mpoly = MultiPolygon::<'_, 1, u32>::new();
+        let mut mpoly = MultiPolygon::<1, u32>::new();
         // 1st polygon
         mpoly.add_exterior([[0], [1], [2], [3], [0]]);
         mpoly.add_interior([[4], [5], [6], [7], [4]]);
