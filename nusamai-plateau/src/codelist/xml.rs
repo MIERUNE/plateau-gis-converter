@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use hashbrown::HashMap;
 use std::io::BufRead;
 
 use quick_xml::events::Event;
@@ -6,8 +6,6 @@ use quick_xml::name::ResolveResult::Bound;
 
 use nusamai_citygml::namespace::GML31_NS;
 use nusamai_citygml::ParseError;
-
-type Map = HashMap<String, Definition, ahash::RandomState>;
 
 #[derive(Debug)]
 pub struct Definition {
@@ -54,7 +52,7 @@ fn expect_text<R: BufRead>(
 
 fn parse_definition<R: BufRead>(
     reader: &mut quick_xml::NsReader<R>,
-    definitions: &mut Map,
+    definitions: &mut HashMap<String, Definition>,
     buf: &mut Vec<u8>,
     buf2: &mut Vec<u8>,
 ) -> Result<(), ParseError> {
@@ -106,14 +104,16 @@ fn parse_definition<R: BufRead>(
     }
 }
 
-pub fn parse_dictionary<R: BufRead>(src_reader: R) -> Result<Map, ParseError> {
+pub fn parse_dictionary<R: BufRead>(
+    src_reader: R,
+) -> Result<HashMap<String, Definition>, ParseError> {
     let mut reader = quick_xml::NsReader::from_reader(src_reader);
     reader.trim_text(true);
     reader.expand_empty_elements(true);
     let mut depth = 0;
     let mut buf = Vec::new();
     let mut buf2 = Vec::new();
-    let mut definitions = Map::default();
+    let mut definitions = HashMap::default();
 
     loop {
         match reader.read_event_into(&mut buf) {

@@ -1,15 +1,15 @@
-use std::{collections::HashMap, path::PathBuf};
+use std::path::PathBuf;
 
 use super::xml::{parse_dictionary, Definition};
-use nusamai_citygml::codelist::CodeResolver;
-use nusamai_citygml::ParseError;
+use hashbrown::HashMap;
 use stretto::Cache;
 use url::Url;
 
-type Map = HashMap<String, Definition, ahash::RandomState>;
+use nusamai_citygml::codelist::CodeResolver;
+use nusamai_citygml::ParseError;
 
 pub struct Resolver {
-    cache: Cache<PathBuf, Map>,
+    cache: Cache<PathBuf, HashMap<String, Definition>>,
 }
 
 impl Resolver {
