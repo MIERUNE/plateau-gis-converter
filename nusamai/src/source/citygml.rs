@@ -1,3 +1,5 @@
+//! CityGML (.gml) Source Provider
+
 use std::fs;
 use std::io::BufRead;
 use std::path::Path;
@@ -5,7 +7,7 @@ use url::Url;
 
 use rayon::prelude::*;
 
-use crate::configuration::Config;
+use crate::parameters::Parameters;
 use crate::pipeline::{Feedback, Parcel, Sender};
 use crate::source::{DataSource, DataSourceProvider, SourceInfo};
 use nusamai_citygml::object::CityObject;
@@ -17,7 +19,7 @@ pub struct CityGMLSourceProvider {
 }
 
 impl DataSourceProvider for CityGMLSourceProvider {
-    fn create(&self, _config: &Config) -> Box<dyn DataSource> {
+    fn create(&self, _params: &Parameters) -> Box<dyn DataSource> {
         Box::new(CityGMLSource {
             filenames: self.filenames.clone(),
         })
@@ -25,12 +27,12 @@ impl DataSourceProvider for CityGMLSourceProvider {
 
     fn info(&self) -> SourceInfo {
         SourceInfo {
-            name: "Dummy Source".to_string(),
+            name: "CityGML".to_string(),
         }
     }
 
-    fn config(&self) -> Config {
-        Config::default()
+    fn parameters(&self) -> Parameters {
+        Parameters::default()
     }
 }
 
@@ -68,10 +70,10 @@ impl DataSource for CityGMLSource {
 
 fn toplevel_dispatcher<R: BufRead>(
     st: &mut SubTreeReader<R>,
-    sink: &Sender,
+    downstream: &Sender,
     feedback: &Feedback,
 ) -> Result<(), ParseError> {
-    match st.parse_children(|st| {
+    let result = st.parse_children(|st| {
         if feedback.is_cancelled() {
             return Err(ParseError::Cancelled);
         }
@@ -88,7 +90,8 @@ fn toplevel_dispatcher<R: BufRead>(
 
                 if let Some(root) = cityobj.into_object() {
                     let cityobj = CityObject { root, geometries };
-                    if sink.send(Parcel { cityobj }).is_err() {
+                    if downstream.send(Parcel { cityobj }).is_err() {
+                        feedback.cancel();
                         return Ok(());
                     }
                 }
@@ -103,7 +106,8 @@ fn toplevel_dispatcher<R: BufRead>(
                 String::from_utf8_lossy(other)
             ))),
         }
-    }) {
+    });
+    match result {
         Ok(_) => Ok(()),
         Err(e) => {
             println!("Err: {:?}", e);

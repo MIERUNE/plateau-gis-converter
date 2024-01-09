@@ -2,8 +2,9 @@ pub mod geojson;
 pub mod gpkg;
 pub mod noop;
 pub mod serde;
+pub mod tiling2d;
 
-use crate::configuration::Config;
+use crate::parameters::Parameters;
 use crate::pipeline::{Feedback, Receiver};
 
 pub struct SinkInfo {
@@ -11,14 +12,14 @@ pub struct SinkInfo {
 }
 
 pub trait DataSinkProvider {
-    /// Creates a sink instance.
-    fn create(&self, config: &Config) -> Box<dyn DataSink>;
-
     /// Gets basic information about the sink.
     fn info(&self) -> SinkInfo;
 
     /// Gets the configurable parameters of the sink.
-    fn config(&self) -> Config;
+    fn parameters(&self) -> Parameters;
+
+    /// Creates a sink instance.
+    fn create(&self, config: &Parameters) -> Box<dyn DataSink>;
 }
 
 pub trait DataSink: Send {

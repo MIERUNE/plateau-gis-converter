@@ -1,38 +1,71 @@
 //! GeoPackage sink
 
+use std::path::PathBuf;
+
+use url::Url;
+
 use rayon::prelude::*;
 
-use crate::configuration::Config;
+use crate::parameters::Parameters;
 use crate::pipeline::{Feedback, Receiver};
 use crate::sink::{DataSink, DataSinkProvider, SinkInfo};
 
-use nusamai_gpkg::geometry::multipolygon_to_bytes;
+use crate::get_parameter_value;
+use crate::parameters::*;
+use nusamai_gpkg::geometry::write_indexed_multipolygon;
 use nusamai_gpkg::GpkgHandler;
 
 pub struct GpkgSinkProvider {}
 
 impl DataSinkProvider for GpkgSinkProvider {
-    fn create(&self, _config: &Config) -> Box<dyn DataSink> {
-        Box::<GpkgSink>::default()
-    }
-
     fn info(&self) -> SinkInfo {
         SinkInfo {
             name: "GeoPackage".to_string(),
         }
     }
 
-    fn config(&self) -> Config {
-        Config::default()
+    fn parameters(&self) -> Parameters {
+        let mut params = Parameters::new();
+        params.define(
+            "@output".into(),
+            ParameterEntry {
+                description: "Output file path".into(),
+                required: true,
+                parameter: ParameterType::FileSystemPath(FileSystemPathParameter {
+                    value: None,
+                    must_exist: false,
+                }),
+            },
+        );
+        params
+    }
+
+    fn create(&self, params: &Parameters) -> Box<dyn DataSink> {
+        let output_path = get_parameter_value!(params, "@output", FileSystemPath).unwrap();
+
+        Box::<GpkgSink>::new(GpkgSink {
+            output_path: output_path.clone(),
+        })
     }
 }
 
-#[derive(Default)]
-pub struct GpkgSink {}
+pub struct GpkgSink {
+    output_path: PathBuf,
+}
 
 impl GpkgSink {
     pub async fn run_async(&mut self, upstream: Receiver, feedback: &mut Feedback) {
-        let mut handler = GpkgHandler::init("output.gpkg").await.unwrap();
+        let mut handler = if self.output_path.to_string_lossy().starts_with("sqlite:") {
+            GpkgHandler::from_url(&Url::parse(self.output_path.to_str().unwrap()).unwrap())
+                .await
+                .unwrap()
+        } else {
+            GpkgHandler::from_url(
+                &Url::parse(&format!("sqlite://{}", self.output_path.to_str().unwrap())).unwrap(),
+            )
+            .await
+            .unwrap()
+        };
 
         let (sender, mut receiver) = tokio::sync::mpsc::channel(100);
 
@@ -47,11 +80,18 @@ impl GpkgSink {
                         }
                         let cityobj = parcel.cityobj;
                         if !cityobj.geometries.multipolygon.is_empty() {
-                            let bytes = multipolygon_to_bytes(
+                            let mut bytes = Vec::new();
+                            if write_indexed_multipolygon(
+                                &mut bytes,
                                 &cityobj.geometries.vertices,
                                 &cityobj.geometries.multipolygon,
                                 4326,
-                            );
+                            )
+                            .is_err()
+                            {
+                                // TODO: fatal error
+                            }
+
                             if sender.blocking_send(bytes).is_err() {
                                 return Err(());
                             };

@@ -31,7 +31,7 @@ impl<'a, const D: usize, T: CoordNum> MultiPoint<'a, D, T> {
         self.as_ref()
     }
 
-    pub fn iter(&self) -> Iter<'_, D, T> {
+    pub fn iter(&self) -> Iter<D, T> {
         Iter {
             slice: &self.coords,
             pos: 0,

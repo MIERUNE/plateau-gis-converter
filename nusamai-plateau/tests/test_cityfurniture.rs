@@ -3,14 +3,16 @@ use std::path::Path;
 
 use url::Url;
 
-use nusamai_citygml::{CityGMLElement, CityGMLReader, Code, Geometries, ParseError, SubTreeReader};
+use nusamai_citygml::{
+    CityGMLElement, CityGMLReader, Code, GeometryStore, ParseError, SubTreeReader,
+};
 use nusamai_plateau::models::cityfurniture::CityFurniture;
 use nusamai_plateau::models::TopLevelCityObject;
 
 #[derive(Default, Debug)]
 struct ParsedData {
     cityfurnitures: Vec<CityFurniture>,
-    geometries: Vec<Geometries>,
+    geometries: Vec<GeometryStore>,
 }
 
 fn toplevel_dispatcher<R: BufRead>(st: &mut SubTreeReader<R>) -> Result<ParsedData, ParseError> {

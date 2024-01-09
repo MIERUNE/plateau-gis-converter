@@ -7,7 +7,7 @@ pub struct JGD2011ToWGS84 {
 
 impl JGD2011ToWGS84 {
     /// Create a new instance with the embed geoid model data.
-    pub fn from_embed_model() -> Self {
+    pub fn from_embedded_model() -> Self {
         const EMBEDDED_MODEL: &[u8] = include_bytes!("../examples/data/gsigeo2011_ver2_2.bin.lz4");
         let decompressed = &lz4_flex::decompress_size_prepended(EMBEDDED_MODEL).unwrap();
         let mut reader = std::io::Cursor::new(decompressed);
@@ -31,7 +31,7 @@ mod tests {
     #[test]
     fn fixtures() {
         let (lng_jgd, lat_jgd, elevation) = (138.2839817085188, 37.12378643088312, 0.);
-        let jgd_to_wgs = JGD2011ToWGS84::from_embed_model();
+        let jgd_to_wgs = JGD2011ToWGS84::from_embedded_model();
         let (lng_wgs, lat_wgs, ellips_height) = jgd_to_wgs.convert(lng_jgd, lat_jgd, elevation);
         assert!((ellips_height - 39.47387115961899).abs() < 1e-8);
         // (lng, lat) must not change.

@@ -27,6 +27,12 @@ impl Feedback {
         self.cancelled.load(Ordering::Relaxed)
     }
 
+    /// Request the pipeline to be cancelled
+    #[inline]
+    pub fn cancel(&self) {
+        self.cancelled.store(true, Ordering::Relaxed)
+    }
+
     /// Send a message to the feedback channel
     #[inline]
     pub fn feedback(&self, msg: FeedbackMessage) {

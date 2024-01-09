@@ -5,12 +5,12 @@ use clap::Parser;
 use nusamai::pipeline::Canceller;
 use nusamai::sink::{
     geojson::GeoJsonSinkProvider, gpkg::GpkgSinkProvider, noop::NoopSinkProvider,
-    serde::SerdeSinkProvider,
+    serde::SerdeSinkProvider, tiling2d::Tiling2DSinkProvider,
 };
 use nusamai::sink::{DataSink, DataSinkProvider};
 use nusamai::source::citygml::CityGMLSourceProvider;
 use nusamai::source::{DataSource, DataSourceProvider};
-use nusamai::transform::NoopTransformer;
+use nusamai::transform::DummyTransformer;
 
 #[derive(clap::Parser)]
 #[command(author, version, about, long_about = None)]
@@ -20,6 +20,22 @@ struct Args {
 
     #[arg()]
     filenames: Vec<String>,
+
+    #[arg(short = 'i', value_parser = parse_key_val)]
+    sourceopt: Vec<(String, String)>,
+
+    #[arg(short = 'o', value_parser = parse_key_val)]
+    sinkopt: Vec<(String, String)>,
+
+    #[arg(long)]
+    output: Option<String>,
+}
+
+fn parse_key_val(s: &str) -> Result<(String, String), String> {
+    let pos = s
+        .find('=')
+        .ok_or_else(|| format!("invalid KEY=value: no `=` found in `{s}`"))?;
+    Ok((s[..pos].into(), s[pos + 1..].into()))
 }
 
 #[derive(clap::ValueEnum, Clone)]
@@ -28,6 +44,7 @@ enum SinkChoice {
     Serde,
     Geojson,
     Gpkg,
+    Tiling2d,
 }
 
 impl SinkChoice {
@@ -37,12 +54,19 @@ impl SinkChoice {
             SinkChoice::Serde => Box::new(SerdeSinkProvider {}),
             SinkChoice::Geojson => Box::new(GeoJsonSinkProvider {}),
             SinkChoice::Gpkg => Box::new(GpkgSinkProvider {}),
+            SinkChoice::Tiling2d => Box::new(Tiling2DSinkProvider {}),
         }
     }
 }
 
 fn main() {
-    let args = Args::parse();
+    let args = {
+        let mut args = Args::parse();
+        if let Some(output) = &args.output {
+            args.sinkopt.push(("@output".into(), output.into()));
+        }
+        args
+    };
 
     let mut canceller = Arc::new(Mutex::new(Canceller::default()));
     {
@@ -54,13 +78,35 @@ fn main() {
         .expect("Error setting Ctrl-C handler");
     }
 
-    let source_provider: Box<dyn DataSourceProvider> = Box::new(CityGMLSourceProvider {
-        filenames: args.filenames,
-    });
-    let sink_provider = args.sink.create();
+    let source = {
+        let source_provider: Box<dyn DataSourceProvider> = Box::new(CityGMLSourceProvider {
+            filenames: args.filenames,
+        });
+        let mut source_params = source_provider.parameters();
+        if let Err(err) = source_params.update_values_with_str(&args.sourceopt) {
+            eprintln!("Error parsing source parameters: {:?}", err);
+            return;
+        };
+        if let Err(err) = source_params.validate() {
+            eprintln!("Error validating source parameters: {:?}", err);
+            return;
+        }
+        source_provider.create(&source_params)
+    };
 
-    let source = source_provider.create(&source_provider.config());
-    let sink = sink_provider.create(&sink_provider.config());
+    let sink = {
+        let sink_provider = args.sink.create();
+        let mut sink_params = sink_provider.parameters();
+        if let Err(err) = sink_params.update_values_with_str(&args.sinkopt) {
+            eprintln!("Error parsing sink options: {:?}", err);
+            return;
+        };
+        if let Err(err) = sink_params.validate() {
+            eprintln!("Error validating source parameters: {:?}", err);
+            return;
+        }
+        sink_provider.create(&sink_params)
+    };
 
     run(source, sink, &mut canceller);
 }
@@ -70,7 +116,7 @@ fn run(
     sink: Box<dyn DataSink>,
     canceller: &mut Arc<Mutex<Canceller>>,
 ) {
-    let transformer = Box::new(NoopTransformer {});
+    let transformer = Box::<DummyTransformer>::default();
 
     // start the pipeline
     let (handle, watcher, inner_canceller) = nusamai::pipeline::run(source, transformer, sink);

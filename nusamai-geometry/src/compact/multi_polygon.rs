@@ -113,7 +113,7 @@ impl<'a, const D: usize, T: CoordNum> MultiPolygon<'a, D, T> {
     }
 
     /// Returns an iterator over the polygons
-    pub fn iter(&self) -> Iter<'_, D, T> {
+    pub fn iter(&self) -> Iter<D, T> {
         Iter {
             mpoly: self,
             pos: 0,

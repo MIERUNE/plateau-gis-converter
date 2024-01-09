@@ -1,4 +1,4 @@
-use nusamai::configuration::Config;
+use nusamai::parameters::Parameters;
 use nusamai::pipeline::{self, Parcel, Receiver, TransformError};
 use nusamai::pipeline::{feedback, Feedback, FeedbackMessage, Sender, Transformer};
 use nusamai::sink::{DataSink, DataSinkProvider, SinkInfo};
@@ -9,7 +9,7 @@ use rand::prelude::*;
 pub struct DummySourceProvider {}
 
 impl DataSourceProvider for DummySourceProvider {
-    fn create(&self, _config: &Config) -> Box<dyn DataSource> {
+    fn create(&self, _params: &Parameters) -> Box<dyn DataSource> {
         Box::new(DummySource {})
     }
 
@@ -19,8 +19,8 @@ impl DataSourceProvider for DummySourceProvider {
         }
     }
 
-    fn config(&self) -> Config {
-        Config::default()
+    fn parameters(&self) -> Parameters {
+        Parameters::default()
     }
 }
 
@@ -57,11 +57,11 @@ impl Transformer for NoopTransformer {
     fn transform(
         &self,
         parcel: Parcel,
-        sender: &Sender,
+        downstream: &Sender,
         _feedback: &feedback::Feedback,
     ) -> Result<(), TransformError> {
         // no-op
-        sender.send(parcel)?;
+        downstream.send(parcel)?;
         Ok(())
     }
 }
@@ -69,7 +69,7 @@ impl Transformer for NoopTransformer {
 struct DummySinkProvider {}
 
 impl DataSinkProvider for DummySinkProvider {
-    fn create(&self, _config: &Config) -> Box<dyn DataSink> {
+    fn create(&self, _params: &Parameters) -> Box<dyn DataSink> {
         Box::new(DummySink {})
     }
 
@@ -79,8 +79,8 @@ impl DataSinkProvider for DummySinkProvider {
         }
     }
 
-    fn config(&self) -> Config {
-        Config::default()
+    fn parameters(&self) -> Parameters {
+        Parameters::default()
     }
 }
 
@@ -108,9 +108,9 @@ fn test_run_pipeline() {
     let source_provider: Box<dyn DataSourceProvider> = Box::new(DummySourceProvider {});
     let sink_provider: Box<dyn DataSinkProvider> = Box::new(DummySinkProvider {});
 
-    let source = source_provider.create(&source_provider.config());
+    let source = source_provider.create(&source_provider.parameters());
     let transformer = Box::new(NoopTransformer {});
-    let sink = sink_provider.create(&source_provider.config());
+    let sink = sink_provider.create(&source_provider.parameters());
 
     // start the pipeline
     let (handle, watcher, canceller) = pipeline::run(source, transformer, sink);
