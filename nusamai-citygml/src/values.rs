@@ -413,7 +413,7 @@ impl CityGMLElement for GenericAttribute {
                 }),
         );
         Some(Value::Data(object::Data {
-            typename: "gen:genericAttribute".to_string(),
+            typename: "gen:genericAttribute".into(),
             attributes: map,
         }))
     }
