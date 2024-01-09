@@ -372,7 +372,7 @@ impl CityGMLElement for GenericAttribute {
     }
 
     fn into_object(self) -> Option<Value> {
-        let mut map = object::Map::new();
+        let mut map = object::Map::default();
         map.extend(
             self.string_attrs
                 .into_iter()
@@ -413,7 +413,7 @@ impl CityGMLElement for GenericAttribute {
                 }),
         );
         Some(Value::Data(object::Data {
-            typename: "gen:genericAttribute".to_string(),
+            typename: "gen:genericAttribute".into(),
             attributes: map,
         }))
     }

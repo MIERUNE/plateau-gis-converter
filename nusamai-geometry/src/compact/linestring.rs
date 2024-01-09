@@ -32,7 +32,7 @@ impl<'a, const D: usize, T: CoordNum> LineString<'a, D, T> {
     }
 
     /// この LineString の座標列のイテレータを得る
-    pub fn iter(&self) -> Iter<'_, D, T> {
+    pub fn iter(&self) -> Iter<D, T> {
         Iter {
             slice: &self.coords,
             pos: 0,
@@ -41,7 +41,7 @@ impl<'a, const D: usize, T: CoordNum> LineString<'a, D, T> {
     }
 
     /// 始点と終点を閉じた座標列のイテレータを得る
-    pub fn iter_closed(&self) -> Iter<'_, D, T> {
+    pub fn iter_closed(&self) -> Iter<D, T> {
         Iter {
             slice: &self.coords,
             pos: 0,
