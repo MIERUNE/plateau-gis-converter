@@ -4,6 +4,7 @@ use std::fs::File;
 use std::io::{BufWriter, Write};
 use std::path::PathBuf;
 
+use hashbrown::HashMap;
 use rayon::prelude::*;
 
 use crate::get_parameter_value;
@@ -123,95 +124,100 @@ fn extract_properties(tree: &nusamai_citygml::object::Value) -> Option<geojson::
     }
 }
 
-fn slice_polygon(zoom: u32, poly: &Polygon3, out: &mut MultiPolygon3) {
+fn slice_polygon(zoom: u8, poly: &Polygon3, out: &mut HashMap<(u8, u32, u32), MultiPolygon3>) {
     if poly.exterior().is_empty() {
         return;
     }
 
     // Slice along X-axis
-    let (min_x, max_x) = poly
-        .exterior()
-        .iter()
-        .fold((f64::MAX, f64::MIN), |(min_x, max_x), c| {
-            (min_x.min(c[0]), max_x.max(c[0]))
-        });
-    let size_x = (max_x.ceil() - min_x.floor()) as usize;
+    let x_range = {
+        let (min_x, max_x) = poly
+            .exterior()
+            .iter()
+            .fold((f64::MAX, f64::MIN), |(min_x, max_x), c| {
+                (min_x.min(c[0]), max_x.max(c[0]))
+            });
+        min_x.floor() as u32..max_x.ceil() as u32
+    };
 
-    let mut x_sliced_polys: Vec<(u32, Polygon3)> = vec![Default::default(); size_x];
-    {
-        for (i, (xi, x_sliced_poly)) in x_sliced_polys.iter_mut().enumerate() {
-            let k1 = (min_x + i as f64).floor();
-            let k2 = (min_x + (i + 1) as f64).floor();
-            *xi = k1 as u32;
+    let mut x_sliced_polys: Vec<_> = x_range.map(|xi| (xi, Polygon3::new())).collect();
 
-            // todo?: check interior bbox to optimize
+    for (xi, x_sliced_poly) in x_sliced_polys.iter_mut() {
+        let k1 = *xi as f64;
+        let k2 = (*xi + 1) as f64;
 
-            for ring in poly.rings() {
-                if ring.coords().is_empty() {
-                    continue;
-                }
-                let mut new_ring = Vec::with_capacity(ring.coords().len());
+        // todo?: check interior bbox to optimize
 
-                let last_a = ring
-                    .iter_closed()
-                    .fold(None, |a, b| {
-                        let Some(a) = a else { return Some(b) };
+        for ring in poly.rings() {
+            if ring.coords().is_empty() {
+                continue;
+            }
+            let mut new_ring = Vec::with_capacity(ring.coords().len());
 
-                        if a[0] < k1 {
-                            if b[0] > k1 {
-                                let y = (b[1] - a[1]) * (k1 - a[0]) / (b[0] - a[0]) + a[1];
-                                let z = (b[2] - a[2]) * (k1 - a[0]) / (b[0] - a[0]) + a[2];
-                                new_ring.extend([k1, y, z])
-                            }
-                        } else if a[0] > k2 {
-                            if b[0] < k2 {
-                                let y = (b[1] - a[1]) * (k2 - a[0]) / (b[0] - a[0]) + a[1];
-                                let z = (b[2] - a[2]) * (k2 - a[0]) / (b[0] - a[0]) + a[2];
-                                new_ring.extend([k2, y, z])
-                            }
-                        } else {
-                            new_ring.extend(a)
-                        }
+            let last_a = ring
+                .iter_closed()
+                .fold(None, |a, b| {
+                    let Some(a) = a else { return Some(b) };
 
-                        if b[0] < k1 && a[0] >= k1 {
+                    if a[0] < k1 {
+                        if b[0] > k1 {
                             let y = (b[1] - a[1]) * (k1 - a[0]) / (b[0] - a[0]) + a[1];
                             let z = (b[2] - a[2]) * (k1 - a[0]) / (b[0] - a[0]) + a[2];
                             new_ring.extend([k1, y, z])
-                        } else if b[0] > k2 && a[0] <= k2 {
+                        }
+                    } else if a[0] > k2 {
+                        if b[0] < k2 {
                             let y = (b[1] - a[1]) * (k2 - a[0]) / (b[0] - a[0]) + a[1];
                             let z = (b[2] - a[2]) * (k2 - a[0]) / (b[0] - a[0]) + a[2];
                             new_ring.extend([k2, y, z])
                         }
+                    } else {
+                        new_ring.extend(a)
+                    }
 
-                        Some(b)
-                    })
-                    .unwrap();
+                    if b[0] < k1 && a[0] >= k1 {
+                        let y = (b[1] - a[1]) * (k1 - a[0]) / (b[0] - a[0]) + a[1];
+                        let z = (b[2] - a[2]) * (k1 - a[0]) / (b[0] - a[0]) + a[2];
+                        new_ring.extend([k1, y, z])
+                    } else if b[0] > k2 && a[0] <= k2 {
+                        let y = (b[1] - a[1]) * (k2 - a[0]) / (b[0] - a[0]) + a[1];
+                        let z = (b[2] - a[2]) * (k2 - a[0]) / (b[0] - a[0]) + a[2];
+                        new_ring.extend([k2, y, z])
+                    }
 
-                if k1 <= last_a[0] && last_a[0] <= k2 {
-                    new_ring.extend(last_a)
-                }
+                    Some(b)
+                })
+                .unwrap();
 
-                x_sliced_poly.add_ring(new_ring.chunks_exact(3).map(|c| [c[0], c[1], c[2]]));
+            if k1 <= last_a[0] && last_a[0] <= k2 {
+                new_ring.extend(last_a)
             }
+
+            x_sliced_poly.add_ring(new_ring.chunks_exact(3).map(|c| [c[0], c[1], c[2]]));
         }
     }
 
     // Slice along Y-axis
     for (xi, x_sliced_poly) in &x_sliced_polys {
-        let (min_y, max_y) = x_sliced_poly
-            .exterior()
-            .iter()
-            .fold((f64::MAX, f64::MIN), |(min_y, max_y), c| {
-                (min_y.min(c[1]), max_y.max(c[1]))
-            });
-        let size_y = (max_y.ceil() - min_y.floor()) as usize;
+        let y_range = {
+            let (min_y, max_y) = x_sliced_poly
+                .exterior()
+                .iter()
+                .fold((f64::MAX, f64::MIN), |(min_y, max_y), c| {
+                    (min_y.min(c[1]), max_y.max(c[1]))
+                });
+            min_y.floor() as u32..max_y.ceil() as u32
+        };
 
-        for i in 0..size_y {
-            let k1 = (min_y + i as f64).floor();
-            let k2 = (min_y + (i + 1) as f64).floor();
-            let yi = k1 as u32;
+        for yi in y_range {
+            let k1 = yi as f64;
+            let k2 = (yi + 1) as f64;
 
             // todo?: check interior bbox to optimize
+
+            let tile_mpoly = out
+                .entry((zoom, *xi, yi))
+                .or_insert_with(MultiPolygon3::new);
 
             for (ri, ring) in x_sliced_poly.rings().enumerate() {
                 if ring.coords().is_empty() {
@@ -262,8 +268,8 @@ fn slice_polygon(zoom: u32, poly: &Polygon3, out: &mut MultiPolygon3) {
 
                 let iter = new_ring.chunks_exact(3).map(|c| [c[0], c[1], c[2]]);
                 match ri {
-                    0 => out.add_exterior(iter),
-                    _ => out.add_interior(iter),
+                    0 => tile_mpoly.add_exterior(iter),
+                    _ => tile_mpoly.add_interior(iter),
                 };
             }
         }
@@ -281,9 +287,10 @@ pub fn toplevel_cityobj_to_geojson_features(obj: &CityObject) -> Vec<geojson::Fe
     if !obj.geometries.multipolygon.is_empty() {
         // sliceする
         let mpolys = &obj.geometries.multipolygon;
-        let mut new_mpoly = MultiPolygon3::new();
 
-        let zoom = 13;
+        let mut tiled_mpolys = HashMap::new();
+
+        let zoom = 14;
         let zoom_scale = 2i32.pow(zoom) as f64;
         mpolys.iter().for_each(|poly| {
             let mut new_poly = Polygon3::new();
@@ -294,23 +301,27 @@ pub fn toplevel_cityobj_to_geojson_features(obj: &CityObject) -> Vec<geojson::Fe
                     [mx * zoom_scale, my * zoom_scale, height]
                 }))
             });
-            slice_polygon(zoom, &new_poly, &mut new_mpoly);
+            slice_polygon(zoom as u8, &new_poly, &mut tiled_mpolys);
         });
 
-        new_mpoly.transform_inplace(|c| {
-            let (mx, my, height) = (c[0] / zoom_scale, c[1] / zoom_scale, c[2]);
-            let (lng, lat) = web_mercator_to_lnglat(mx, my);
-            [lng, lat, height]
-        });
+        for ((z, x, y), mpoly) in &mut tiled_mpolys {
+            mpoly.transform_inplace(|c| {
+                let (mx, my, height) = (c[0] / zoom_scale, c[1] / zoom_scale, c[2]);
+                let (lng, lat) = web_mercator_to_lnglat(mx, my);
+                [lng, lat, height]
+            });
 
-        let geometry = multipolygon_to_geometry(&new_mpoly);
-        geojson_features.push(geojson::Feature {
-            bbox: None,
-            geometry: Some(geometry),
-            id: None,
-            properties: properties.clone(),
-            foreign_members: None,
-        });
+            let geometry = multipolygon_to_geometry(mpoly);
+            let mut props = properties.clone().unwrap_or_default();
+            props.insert("tile".into(), format!("{z}/{x}/{y}").into());
+            geojson_features.push(geojson::Feature {
+                bbox: None,
+                geometry: Some(geometry),
+                id: None,
+                properties: Some(props),
+                foreign_members: None,
+            });
+        }
     }
 
     // NOTE: Not supported (yet)
