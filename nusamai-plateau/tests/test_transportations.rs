@@ -4,7 +4,7 @@ use std::path::Path;
 use url::Url;
 
 use nusamai_citygml::{
-    CityGMLElement, CityGMLReader, Code, Geometries, Measure, ParseError, SubTreeReader,
+    CityGMLElement, CityGMLReader, Code, GeometryStore, Measure, ParseError, SubTreeReader,
 };
 use nusamai_plateau::models::Road;
 use nusamai_plateau::models::TopLevelCityObject;
@@ -12,7 +12,7 @@ use nusamai_plateau::models::TopLevelCityObject;
 #[derive(Default, Debug)]
 struct ParsedData {
     roads: Vec<Road>,
-    geometries: Vec<Geometries>,
+    geometries: Vec<GeometryStore>,
 }
 
 fn toplevel_dispatcher<R: BufRead>(st: &mut SubTreeReader<R>) -> Result<ParsedData, ParseError> {

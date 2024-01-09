@@ -10,7 +10,8 @@ use url::Url;
 
 use crate::codelist::{self, CodeResolver};
 use crate::geometry::{
-    Geometries, GeometryCollector, GeometryParseType, GeometryRef, GeometryRefEntry, GeometryType,
+    GeometryCollector, GeometryParseType, GeometryRef, GeometryRefEntry, GeometryStore,
+    GeometryType,
 };
 use crate::namespace::{wellknown_prefix_from_nsres, GML31_NS};
 
@@ -294,7 +295,7 @@ impl<R: BufRead> SubTreeReader<'_, '_, R> {
         &self.state.context
     }
 
-    pub fn collect_geometries(&mut self) -> Geometries {
+    pub fn collect_geometries(&mut self) -> GeometryStore {
         let collector = std::mem::take(&mut self.state.geometry_collector);
         collector.into_geometries()
     }

@@ -52,7 +52,7 @@ impl<'a, const D: usize, T: CoordNum> MultiLineString<'a, D, T> {
         }
     }
 
-    pub fn iter(&self) -> Iter<'_, D, T> {
+    pub fn iter(&self) -> Iter<D, T> {
         Iter {
             all_coords: &self.all_coords,
             coords_spans: &self.coords_spans,
@@ -219,7 +219,7 @@ mod tests {
     #[test]
     fn test_transform() {
         {
-            let mut mlines: MultiLineString<'_, 2> = MultiLineString2::new();
+            let mut mlines: MultiLineString<2> = MultiLineString2::new();
             mlines.add_linestring([[0., 0.], [5., 0.], [5., 5.], [0., 5.]]);
             let new_mlines = mlines.transform(|[x, y]| [x + 2., y + 1.]);
             assert_eq!(

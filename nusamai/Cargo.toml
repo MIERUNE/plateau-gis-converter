@@ -18,8 +18,9 @@ lz4_flex = "0.11.1"
 nusamai-geojson = { path = "../nusamai-geojson" }
 nusamai-gltf = { path = "../nusamai-gltf" }
 nusamai-geometry = { path = "../nusamai-geometry" }
+nusamai-projection = { path = "../nusamai-projection" }
 geojson = "0.24.1"
-serde_json = "1.0.108"
+serde_json = { version = "1.0.108", features = ["indexmap"] }
 url = "2.5.0"
 nusamai-gpkg = { path = "../nusamai-gpkg" }
 tokio = { version = "1.35.1", features = ["full"] }

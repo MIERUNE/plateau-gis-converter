@@ -10,7 +10,7 @@ use nusamai::sink::{
 use nusamai::sink::{DataSink, DataSinkProvider};
 use nusamai::source::citygml::CityGMLSourceProvider;
 use nusamai::source::{DataSource, DataSourceProvider};
-use nusamai::transform::NoopTransformer;
+use nusamai::transform::DummyTransformer;
 
 #[derive(clap::Parser)]
 #[command(author, version, about, long_about = None)]
@@ -116,7 +116,7 @@ fn run(
     sink: Box<dyn DataSink>,
     canceller: &mut Arc<Mutex<Canceller>>,
 ) {
-    let transformer = Box::new(NoopTransformer {});
+    let transformer = Box::<DummyTransformer>::default();
 
     // start the pipeline
     let (handle, watcher, inner_canceller) = nusamai::pipeline::run(source, transformer, sink);

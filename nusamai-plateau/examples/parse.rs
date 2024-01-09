@@ -8,7 +8,7 @@ use nusamai_citygml::{object::Value, CityGMLElement, CityGMLReader, ParseError, 
 #[derive(Debug, Deserialize, Serialize)]
 struct TopLevelCityObject {
     root: Value,
-    geometries: nusamai_citygml::Geometries,
+    geometries: nusamai_citygml::GeometryStore,
 }
 
 fn example_toplevel_dispatcher<R: BufRead>(
