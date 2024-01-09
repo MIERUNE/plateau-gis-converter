@@ -18,6 +18,7 @@ lz4_flex = "0.11.1"
 nusamai-geojson = { path = "../nusamai-geojson" }
 nusamai-geometry = { path = "../nusamai-geometry" }
 nusamai-projection = { path = "../nusamai-projection" }
+nusamai-mvt = { path = "../nusamai-mvt" }
 geojson = "0.24.1"
 serde_json = { version = "1.0.108", features = ["indexmap"] }
 url = "2.5.0"

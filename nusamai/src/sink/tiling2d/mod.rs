@@ -14,6 +14,7 @@ use crate::sink::{DataSink, DataSinkProvider, SinkInfo};
 use nusamai_citygml::object::CityObject;
 use nusamai_geojson::conversion::multipolygon_to_geometry;
 use nusamai_geometry::{MultiPolygon3, Polygon3};
+use nusamai_mvt::webmercator::{lnglat_to_web_mercator, web_mercator_to_lnglat};
 
 pub struct Tiling2DSinkProvider {}
 
@@ -69,6 +70,7 @@ impl DataSink for Tiling2DSink {
                         }
 
                         let features = toplevel_cityobj_to_geojson_features(&parcel.cityobj);
+
                         for feature in features {
                             let Ok(bytes) = serde_json::to_vec(&feature) else {
                                 // TODO: fatal error
@@ -121,8 +123,7 @@ fn extract_properties(tree: &nusamai_citygml::object::Value) -> Option<geojson::
     }
 }
 
-fn slice_polygon(poly: &Polygon3, out: &mut MultiPolygon3) {
-    const STEP: f64 = 5.0 / 1000.0;
+fn slice_polygon(zoom: u32, poly: &Polygon3, out: &mut MultiPolygon3) {
     if poly.exterior().is_empty() {
         return;
     }
@@ -134,12 +135,14 @@ fn slice_polygon(poly: &Polygon3, out: &mut MultiPolygon3) {
         .fold((f64::MAX, f64::MIN), |(min_x, max_x), c| {
             (min_x.min(c[0]), max_x.max(c[0]))
         });
-    let size_x = ((max_x / STEP).ceil() - (min_x / STEP).floor()) as usize;
-    let mut x_sliced_polys: Vec<Polygon3> = vec![Polygon3::new(); size_x];
+    let size_x = (max_x.ceil() - min_x.floor()) as usize;
+
+    let mut x_sliced_polys: Vec<(u32, Polygon3)> = vec![Default::default(); size_x];
     {
-        for (i, x_sliced_poly) in x_sliced_polys.iter_mut().enumerate() {
-            let k1 = (min_x / STEP + i as f64).floor() * STEP;
-            let k2 = (min_x / STEP + (i + 1) as f64).floor() * STEP;
+        for (i, (xi, x_sliced_poly)) in x_sliced_polys.iter_mut().enumerate() {
+            let k1 = (min_x + i as f64).floor();
+            let k2 = (min_x + (i + 1) as f64).floor();
+            *xi = k1 as u32;
 
             // todo?: check interior bbox to optimize
 
@@ -194,18 +197,19 @@ fn slice_polygon(poly: &Polygon3, out: &mut MultiPolygon3) {
     }
 
     // Slice along Y-axis
-    for x_sliced_poly in &x_sliced_polys {
+    for (xi, x_sliced_poly) in &x_sliced_polys {
         let (min_y, max_y) = x_sliced_poly
             .exterior()
             .iter()
             .fold((f64::MAX, f64::MIN), |(min_y, max_y), c| {
                 (min_y.min(c[1]), max_y.max(c[1]))
             });
-        let size_y = ((max_y / STEP).ceil() - (min_y / STEP).floor()) as usize;
+        let size_y = (max_y.ceil() - min_y.floor()) as usize;
 
         for i in 0..size_y {
-            let k1 = (min_y / STEP + i as f64).floor() * STEP;
-            let k2 = (min_y / STEP + (i + 1) as f64).floor() * STEP;
+            let k1 = (min_y + i as f64).floor();
+            let k2 = (min_y + (i + 1) as f64).floor();
+            let yi = k1 as u32;
 
             // todo?: check interior bbox to optimize
 
@@ -254,6 +258,8 @@ fn slice_polygon(poly: &Polygon3, out: &mut MultiPolygon3) {
                     new_ring.extend(last_a)
                 }
 
+                println!("{}/{}/{}", zoom, xi, yi);
+
                 let iter = new_ring.chunks_exact(3).map(|c| [c[0], c[1], c[2]]);
                 match ri {
                     0 => out.add_exterior(iter),
@@ -276,12 +282,25 @@ pub fn toplevel_cityobj_to_geojson_features(obj: &CityObject) -> Vec<geojson::Fe
         // sliceする
         let mpolys = &obj.geometries.multipolygon;
         let mut new_mpoly = MultiPolygon3::new();
+
+        let zoom = 13;
+        let zoom_scale = 2i32.pow(zoom) as f64;
         mpolys.iter().for_each(|poly| {
             let mut new_poly = Polygon3::new();
-            poly.rings().for_each(|r| {
-                new_poly.add_ring(r.iter().map(|c| obj.geometries.vertices[c[0] as usize]))
+            poly.rings().for_each(|ring| {
+                new_poly.add_ring(ring.iter().map(|c| {
+                    let [lng, lat, height] = obj.geometries.vertices[c[0] as usize];
+                    let (mx, my) = lnglat_to_web_mercator(lng, lat);
+                    [mx * zoom_scale, my * zoom_scale, height]
+                }))
             });
-            slice_polygon(&new_poly, &mut new_mpoly);
+            slice_polygon(zoom, &new_poly, &mut new_mpoly);
+        });
+
+        new_mpoly.transform_inplace(|c| {
+            let (mx, my, height) = (c[0] / zoom_scale, c[1] / zoom_scale, c[2]);
+            let (lng, lat) = web_mercator_to_lnglat(mx, my);
+            [lng, lat, height]
         });
 
         let geometry = multipolygon_to_geometry(&new_mpoly);
