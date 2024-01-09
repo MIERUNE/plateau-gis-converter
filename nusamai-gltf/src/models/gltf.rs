@@ -90,8 +90,19 @@ pub struct Gltf {
 }
 
 impl Gltf {
-    pub fn new() -> Self {
+    fn new() -> Self {
         Default::default()
+    }
+
+    pub fn construct() -> Gltf{
+        let mut gltf = Gltf::new();
+        gltf.initialize();
+        gltf
+    }
+
+    pub fn initialize(&mut self){
+        self.asset.version = "2.0".to_string();
+        self.asset.generator = Some("nusamai-gltf".to_string());
     }
 
     pub fn to_string(&self) -> Result<String, serde_json::Error> {
