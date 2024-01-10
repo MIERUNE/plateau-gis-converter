@@ -60,6 +60,8 @@ impl SinkChoice {
 }
 
 fn main() {
+    pretty_env_logger::init();
+
     let args = {
         let mut args = Args::parse();
         if let Some(output) = &args.output {

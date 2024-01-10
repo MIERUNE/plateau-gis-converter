@@ -1,7 +1,7 @@
 use nusamai_geometry::{CoordNum, MultiLineString, MultiPoint, MultiPolygon};
 
 /// Create a GeoJSON MultiPolygon from `nusamai_geometry::MultiPolygon`.
-pub fn multipolygon_to_geometry(mpoly: &MultiPolygon<3>) -> geojson::Geometry {
+pub fn multipolygon_to_geometry<const D: usize>(mpoly: &MultiPolygon<D>) -> geojson::Geometry {
     multipolygon_to_geometry_with_mapping(mpoly, |c| c.to_vec())
 }
 
