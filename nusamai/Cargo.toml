@@ -25,6 +25,7 @@ nusamai-gpkg = { path = "../nusamai-gpkg" }
 tokio = { version = "1.35.1", features = ["full"] }
 log = "0.4.20"
 pretty_env_logger = "0.5.0"
+ahash = "0.8.7"
 
 [dev-dependencies]
 rand = "0.8.5"
