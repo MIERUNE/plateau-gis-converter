@@ -30,7 +30,7 @@ impl CityGMLElement for String {
     }
 }
 
-#[derive(Debug, serde::Serialize, serde::Deserialize, Default, PartialEq, Eq)]
+#[derive(Debug, serde::Serialize, serde::Deserialize, Default, PartialEq, Eq, Clone)]
 pub struct URI(String);
 
 impl URI {
@@ -56,7 +56,7 @@ impl CityGMLElement for URI {
     }
 }
 
-#[derive(Debug, Default, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Default, PartialEq, Eq, serde::Serialize, serde::Deserialize, Clone)]
 pub struct Code {
     value: String,
     code: String,
@@ -210,7 +210,7 @@ impl CityGMLElement for bool {
     }
 }
 
-#[derive(Debug, Default, PartialEq, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Default, PartialEq, serde::Serialize, serde::Deserialize, Clone)]
 pub struct Measure {
     pub value: f64,
     // pub uom: Option<String>,
@@ -262,7 +262,7 @@ impl CityGMLElement for Date {
     }
 }
 
-#[derive(Debug, Default, Deserialize, Serialize, PartialEq)]
+#[derive(Debug, Default, Deserialize, Serialize, PartialEq, Clone)]
 pub struct Point {
     // TODO
 }

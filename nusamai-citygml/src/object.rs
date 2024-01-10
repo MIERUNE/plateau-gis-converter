@@ -16,7 +16,7 @@ pub struct CityObject {
     pub geometries: geometry::GeometryStore,
 }
 
-#[derive(Debug, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
 pub struct Feature {
     pub typename: Cow<'static, str>,
     pub id: Option<String>,
@@ -24,7 +24,7 @@ pub struct Feature {
     pub geometries: Option<GeometryRef>,
 }
 
-#[derive(Debug, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
 pub struct Data {
     pub typename: Cow<'static, str>,
     pub attributes: Map,
