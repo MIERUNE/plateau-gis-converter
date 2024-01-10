@@ -45,7 +45,7 @@ impl DataSource for CityGMLSource {
         let code_resolver = nusamai_plateau::codelist::Resolver::new();
 
         let _ = self.filenames.par_iter().try_for_each(|filename| {
-            println!("loading city objects from: {} ...", filename);
+            log::info!("loading city objects from: {} ...", filename);
             let Ok(file) = std::fs::File::open(filename) else {
                 panic!("failed to open file {}", filename);
             };
@@ -110,7 +110,7 @@ fn toplevel_dispatcher<R: BufRead>(
     match result {
         Ok(_) => Ok(()),
         Err(e) => {
-            println!("Err: {:?}", e);
+            log::error!("{:?}", e);
             Err(e)
         }
     }

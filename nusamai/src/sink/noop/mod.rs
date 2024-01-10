@@ -36,20 +36,20 @@ impl DataSink for NoopSink {
     fn run(&mut self, upstream: Receiver, feedback: &mut Feedback) {
         for parcel in upstream {
             if feedback.is_cancelled() {
-                println!("sink cancelled");
+                log::info!("sink cancelled");
                 return;
             }
 
             self.num_features += 1;
             self.num_vertices += parcel.cityobj.geometries.vertices.len();
 
-            println!("feature: {:?}", parcel.cityobj.root);
+            log::info!("feature: {:?}", parcel.cityobj.root);
         }
 
         if feedback.is_cancelled() {
             return;
         }
-        println!("total number of features: {:#?}", self.num_features);
-        println!("total vertices: {}", self.num_vertices);
+        log::info!("total number of features: {:#?}", self.num_features);
+        log::info!("total vertices: {}", self.num_vertices);
     }
 }

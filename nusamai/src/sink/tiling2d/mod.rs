@@ -116,7 +116,7 @@ impl DataSink for Tiling2DSink {
                             };
 
                             if sender.send(sfeat).is_err() {
-                                println!("sink cancelled");
+                                log::info!("sink cancelled");
                                 return Err(());
                             };
                         }

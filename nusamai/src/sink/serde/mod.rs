@@ -73,7 +73,7 @@ impl DataSink for SerdeSink {
                         buf.clear();
                         bincode::serialize_into(buf as &mut Vec<u8>, &parcel.cityobj).unwrap();
                         if sender.send(lz4_flex::compress_prepend_size(buf)).is_err() {
-                            println!("sink cancelled");
+                            log::info!("sink cancelled");
                             return Err(());
                         };
                         Ok(())
@@ -95,9 +95,10 @@ impl DataSink for SerdeSink {
                     self.bytes_written += 4 + compressed.len();
                 }
 
-                println!(
+                log::info!(
                     "Wrote {} features ({} bytes)",
-                    self.features_written, self.bytes_written
+                    self.features_written,
+                    self.bytes_written
                 );
             },
         );
