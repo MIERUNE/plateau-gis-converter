@@ -316,7 +316,7 @@ impl<R: BufRead> SubTreeReader<'_, '_, R> {
             Triangulated => self.parse_triangulated_prop(geomref, lod)?, // FIXME
             Point => todo!(),                                    // FIXME
             MultiPoint => todo!(),                               // FIXME
-            MultiCurve => {}                                     // FIXME
+            MultiCurve => self.skip_current_element()?,          // FIXME
         }
 
         self.state
