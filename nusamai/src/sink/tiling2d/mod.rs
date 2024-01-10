@@ -1,25 +1,25 @@
 //! 2D Tiling sink (タイリングの実験をするための一時的なSink)
 //!
-use std::fs::File;
-use std::io::{BufWriter, Write};
+use std::path;
 use std::path::PathBuf;
 
 use ext_sort::{buffer::mem::MemoryLimitedBufferBuilder, ExternalSorter, ExternalSorterBuilder};
 use hashbrown::HashMap;
 use itertools::Itertools;
+use prost::Message;
 use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
-use std::path;
+use std::fs;
 
 use crate::get_parameter_value;
 use crate::parameters::*;
-use crate::pipeline::{feedback, Feedback, Receiver};
+use crate::pipeline::{Feedback, Receiver};
 use crate::sink::{DataSink, DataSinkProvider, SinkInfo};
 
 use nusamai_citygml::object::CityObject;
-use nusamai_geojson::conversion::multipolygon_to_geometry;
 use nusamai_geometry::{MultiPolygon, Polygon2};
 use nusamai_mvt::tileid::TileIdMethod;
+use nusamai_mvt::vector_tile;
 use nusamai_mvt::webmercator::{lnglat_to_web_mercator, web_mercator_to_lnglat};
 
 pub struct Tiling2DSinkProvider {}
@@ -193,23 +193,40 @@ impl DataSink for Tiling2DSink {
                                     [lng, lat]
                                 });
 
-                                let geometry = multipolygon_to_geometry(&mpoly);
-                                let mut props =
-                                    extract_properties(&feat.properties).unwrap_or_default();
-                                props.insert("tile".into(), format!("{zoom}/{x}/{y}").into());
-                                // println!("{:?}", props);
-                                let geojson_feat = geojson::Feature {
-                                    bbox: None,
-                                    geometry: Some(geometry),
+                                let encoded_geom: Vec<u32> = Vec::new();
+
+                                // TODO: encode geometry
+
+                                let feature = vector_tile::tile::Feature {
                                     id: None,
-                                    properties: Some(props),
-                                    foreign_members: None,
+                                    tags: vec![],
+                                    r#type: Some(vector_tile::tile::GeomType::Polygon as i32),
+                                    geometry: encoded_geom,
                                 };
 
-                                let Ok(bytes) = serde_json::to_vec(&geojson_feat) else {
-                                    // TODO: fatal error
-                                    return Err(());
+                                let layer = vector_tile::tile::Layer {
+                                    name: "cityobj".to_string(),
+                                    features: vec![feature],
+                                    keys: vec![],
+                                    values: vec![],
+                                    extent: Some(extent),
+                                    ..Default::default()
                                 };
+                                let tile = vector_tile::Tile {
+                                    layers: vec![layer],
+                                };
+
+                                let path = self
+                                    .output_path
+                                    .join(path::Path::new(&format!("{}/{}/{}.pbf", zoom, x, y)));
+
+                                if let Some(dir) = path.parent() {
+                                    if let Err(e) = fs::create_dir_all(dir) {
+                                        panic!("Fatal error: {:?}", e); // FIXME
+                                    }
+                                }
+
+                                fs::write(path, tile.encode_to_vec()).unwrap();
                             }
                             Ok(())
                         });
