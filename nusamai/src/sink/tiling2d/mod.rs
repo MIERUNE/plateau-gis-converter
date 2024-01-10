@@ -13,7 +13,7 @@ use std::path;
 
 use crate::get_parameter_value;
 use crate::parameters::*;
-use crate::pipeline::{Feedback, Receiver};
+use crate::pipeline::{feedback, Feedback, Receiver};
 use crate::sink::{DataSink, DataSinkProvider, SinkInfo};
 
 use nusamai_citygml::object::CityObject;
@@ -98,49 +98,42 @@ impl DataSink for Tiling2DSink {
         let tileid_conv = TileIdMethod::Hilbert;
 
         std::thread::scope(|s| {
+            // Splitting geometry along the tile boundaries
+            let feedback2 = feedback.clone();
             s.spawn(move || {
-                let pool = rayon::ThreadPoolBuilder::new().build().unwrap();
-                pool.install(|| {
-                    // Convert CityObjects to Slicing objects
-                    let _ = upstream.into_iter().par_bridge().try_for_each_with(
-                        (sender, Vec::new()),
-                        |(sender, buf), parcel| {
-                            if feedback.is_cancelled() {
+                let feedback = feedback2;
+                //let pool = rayon::ThreadPoolBuilder::new().build().unwrap();
+                //pool.install(|| {
+                // Convert CityObjects to Sliced features
+                let _ = upstream.into_iter().par_bridge().try_for_each_with(
+                    (sender, Vec::new()),
+                    |(sender, buf), parcel| {
+                        if feedback.is_cancelled() {
+                            return Err(());
+                        }
+
+                        buf.clear();
+                        cityobj_to_tiled_features(&parcel.cityobj, buf);
+
+                        for ((z, x, y), feature) in buf {
+                            let bytes = bincode::serialize(feature).unwrap();
+                            let sfeat = SerializedSlicedFeature {
+                                tile_id: tileid_conv.zxy_to_id(*z, *x, *y),
+                                body: bytes,
+                            };
+
+                            if sender.send(sfeat).is_err() {
+                                log::info!("sink cancelled");
                                 return Err(());
-                            }
-
-                            buf.clear();
-                            cityobj_to_tiled_features(&parcel.cityobj, buf);
-
-                            for ((z, x, y), feature) in buf {
-                                let bytes = bincode::serialize(feature).unwrap();
-                                let sfeat = SerializedSlicedFeature {
-                                    tile_id: tileid_conv.zxy_to_id(*z, *x, *y),
-                                    body: bytes,
-                                };
-
-                                println!("splitter send...");
-                                if sender.send(sfeat).is_err() {
-                                    log::info!("sink cancelled");
-                                    return Err(());
-                                };
-                            }
-                            Ok(())
-                        },
-                    );
-                    println!("splitter done")
-                });
+                            };
+                        }
+                        Ok(())
+                    },
+                );
             });
 
+            // Sort features by tile_id (using external sorter)
             s.spawn(move || {
-                let mut file = File::create(&self.output_path).unwrap();
-                let mut writer = BufWriter::new(&mut file);
-
-                // Write the FeatureCollection header
-                writer
-                    .write_all(b"{\"type\":\"FeatureCollection\",\"features\":[")
-                    .unwrap();
-
                 let sorter: ExternalSorter<
                     SerializedSlicedFeature,
                     std::io::Error,
@@ -162,23 +155,23 @@ impl DataSink for Tiling2DSink {
                 for (tile_id, sfeats) in &sorted.map(Result::unwrap).group_by(|sfeat| sfeat.tile_id)
                 {
                     let sfeats: Vec<_> = sfeats.collect();
-                    println!("distributing...");
                     if sender2.send((tile_id, sfeats)).is_err() {
                         log::info!("sink cancelled?");
                         return;
                     };
                 }
-                println!("distribution done");
             });
 
+            //
+            let feedback2 = feedback.clone();
             s.spawn(move || {
+                let feedback = feedback2;
                 let pool = rayon::ThreadPoolBuilder::new().build().unwrap();
                 pool.install(|| {
                     let _ = receiver2
                         .into_iter()
                         .par_bridge()
                         .try_for_each(|(tile_id, sfeats)| {
-                            println!("receiving...");
                             if feedback.is_cancelled() {
                                 return Err(());
                             }
@@ -220,7 +213,6 @@ impl DataSink for Tiling2DSink {
                             }
                             Ok(())
                         });
-                    println!("receiving done");
                 });
             });
         });
