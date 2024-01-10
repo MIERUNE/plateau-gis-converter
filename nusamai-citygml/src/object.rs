@@ -31,7 +31,7 @@ pub struct Data {
 }
 
 /// Nodes for the "Object" representation of the city object.
-#[derive(Debug, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
 pub enum Value {
     String(String),
     Code(Code),
