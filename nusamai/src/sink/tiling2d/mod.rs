@@ -75,7 +75,7 @@ impl DataSink for Tiling2DSink {
                                 return Err(());
                             };
                             if sender.send(bytes).is_err() {
-                                println!("sink cancelled");
+                                log::info!("sink cancelled");
                                 return Err(());
                             };
                         }

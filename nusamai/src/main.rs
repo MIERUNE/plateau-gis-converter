@@ -1,3 +1,4 @@
+use std::env;
 use std::sync::{Arc, Mutex};
 
 use clap::Parser;
@@ -60,6 +61,11 @@ impl SinkChoice {
 }
 
 fn main() {
+    if env::var("RUST_LOG").is_err() {
+        env::set_var("RUST_LOG", "info")
+    }
+    pretty_env_logger::init();
+
     let args = {
         let mut args = Args::parse();
         if let Some(output) = &args.output {
@@ -72,7 +78,7 @@ fn main() {
     {
         let canceller = canceller.clone();
         ctrlc::set_handler(move || {
-            println!("request cancellation");
+            log::info!("request cancellation");
             canceller.lock().unwrap().cancel();
         })
         .expect("Error setting Ctrl-C handler");
@@ -84,11 +90,11 @@ fn main() {
         });
         let mut source_params = source_provider.parameters();
         if let Err(err) = source_params.update_values_with_str(&args.sourceopt) {
-            eprintln!("Error parsing source parameters: {:?}", err);
+            log::error!("Error parsing source parameters: {:?}", err);
             return;
         };
         if let Err(err) = source_params.validate() {
-            eprintln!("Error validating source parameters: {:?}", err);
+            log::error!("Error validating source parameters: {:?}", err);
             return;
         }
         source_provider.create(&source_params)
@@ -98,11 +104,11 @@ fn main() {
         let sink_provider = args.sink.create();
         let mut sink_params = sink_provider.parameters();
         if let Err(err) = sink_params.update_values_with_str(&args.sinkopt) {
-            eprintln!("Error parsing sink options: {:?}", err);
+            log::error!("Error parsing sink options: {:?}", err);
             return;
         };
         if let Err(err) = sink_params.validate() {
-            eprintln!("Error validating source parameters: {:?}", err);
+            log::error!("Error validating source parameters: {:?}", err);
             return;
         }
         sink_provider.create(&sink_params)
@@ -126,7 +132,7 @@ fn run(
         // log watcher
         scope.spawn(move || {
             for msg in watcher {
-                println!("Feedback message from the pipeline {:?}", msg);
+                log::info!("Feedback message from the pipeline {:?}", msg);
             }
         });
     });
@@ -134,6 +140,6 @@ fn run(
     // wait for the pipeline to finish
     handle.join();
     if canceller.lock().unwrap().is_cancelled() {
-        println!("Pipeline cancelled");
+        log::info!("Pipeline cancelled");
     }
 }
