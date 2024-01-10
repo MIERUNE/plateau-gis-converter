@@ -314,9 +314,9 @@ impl<R: BufRead> SubTreeReader<'_, '_, R> {
             MultiSurface => self.parse_multi_surface_prop(geomref, lod)?,
             Geometry => self.parse_geometry_prop(geomref, lod)?, // FIXME: not only surfaces
             Triangulated => self.parse_triangulated_prop(geomref, lod)?, // FIXME
-            Point => todo!(),
-            MultiPoint => todo!(),
-            MultiCurve => todo!(),
+            Point => todo!(),                                    // FIXME
+            MultiPoint => todo!(),                               // FIXME
+            MultiCurve => {}                                     // FIXME
         }
 
         self.state
