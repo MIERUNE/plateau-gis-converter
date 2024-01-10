@@ -6,6 +6,7 @@ use std::path::PathBuf;
 
 use ext_sort::{buffer::mem::MemoryLimitedBufferBuilder, ExternalSorter, ExternalSorterBuilder};
 use hashbrown::HashMap;
+use itertools::Itertools;
 use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::path;
@@ -92,39 +93,46 @@ type TileZXY = (u8, u32, u32);
 impl DataSink for Tiling2DSink {
     fn run(&mut self, upstream: Receiver, feedback: &mut Feedback) {
         let (sender, receiver) = std::sync::mpsc::sync_channel(100);
+        let (sender2, receiver2) = std::sync::mpsc::sync_channel(100);
 
         let tileid_conv = TileIdMethod::Hilbert;
 
         std::thread::scope(|s| {
-            s.spawn(|| {
-                // Convert CityObjects to Slicing objects
-                let _ = upstream.into_iter().par_bridge().try_for_each_with(
-                    (sender, Vec::new()),
-                    |(sender, buf), parcel| {
-                        if feedback.is_cancelled() {
-                            return Err(());
-                        }
-
-                        buf.clear();
-                        cityobj_to_tiled_features(&parcel.cityobj, buf);
-
-                        for ((z, x, y), feature) in buf {
-                            let bytes = bincode::serialize(feature).unwrap();
-                            let sfeat = SerializedSlicedFeature {
-                                tile_id: tileid_conv.zxy_to_id(*z, *x, *y),
-                                body: bytes,
-                            };
-
-                            if sender.send(sfeat).is_err() {
-                                log::info!("sink cancelled");
+            s.spawn(move || {
+                let pool = rayon::ThreadPoolBuilder::new().build().unwrap();
+                pool.install(|| {
+                    // Convert CityObjects to Slicing objects
+                    let _ = upstream.into_iter().par_bridge().try_for_each_with(
+                        (sender, Vec::new()),
+                        |(sender, buf), parcel| {
+                            if feedback.is_cancelled() {
                                 return Err(());
-                            };
-                        }
-                        Ok(())
-                    },
-                );
+                            }
+
+                            buf.clear();
+                            cityobj_to_tiled_features(&parcel.cityobj, buf);
+
+                            for ((z, x, y), feature) in buf {
+                                let bytes = bincode::serialize(feature).unwrap();
+                                let sfeat = SerializedSlicedFeature {
+                                    tile_id: tileid_conv.zxy_to_id(*z, *x, *y),
+                                    body: bytes,
+                                };
+
+                                println!("splitter send...");
+                                if sender.send(sfeat).is_err() {
+                                    log::info!("sink cancelled");
+                                    return Err(());
+                                };
+                            }
+                            Ok(())
+                        },
+                    );
+                    println!("splitter done")
+                });
             });
-            s.spawn(|| {
+
+            s.spawn(move || {
                 let mut file = File::create(&self.output_path).unwrap();
                 let mut writer = BufWriter::new(&mut file);
 
@@ -140,7 +148,7 @@ impl DataSink for Tiling2DSink {
                     // TODO: Use Binpack instead of RMP ?
                 > = ExternalSorterBuilder::new()
                     .with_tmp_dir(path::Path::new("./"))
-                    .with_buffer(MemoryLimitedBufferBuilder::new(500 * 1024 * 1024)) // TODO
+                    .with_buffer(MemoryLimitedBufferBuilder::new(150 * 1024 * 1024)) // TODO
                     .with_threads_number(8) // TODO
                     .build()
                     .unwrap();
@@ -151,52 +159,69 @@ impl DataSink for Tiling2DSink {
                     })
                     .unwrap();
 
-                let mut iter = sorted.map(Result::unwrap).peekable();
-                while let Some(sfeat) = iter.next() {
-                    if feedback.is_cancelled() {
+                for (tile_id, sfeats) in &sorted.map(Result::unwrap).group_by(|sfeat| sfeat.tile_id)
+                {
+                    let sfeats: Vec<_> = sfeats.collect();
+                    println!("distributing...");
+                    if sender2.send((tile_id, sfeats)).is_err() {
+                        log::info!("sink cancelled?");
                         return;
-                    }
-
-                    println!("tile_id: {}", sfeat.tile_id);
-                    let (zoom, x, y) = tileid_conv.id_to_zxy(sfeat.tile_id);
-
-                    // let feat: SlicedFeature = bincode::deserialize(&sfeat.body).unwrap();
-                    // let extent = 4096;
-                    // let zoom_scale = 2i32.pow(zoom as u32) as f64;
-
-                    // let mpoly = feat.geometry.transform(|c| {
-                    //     let (tx, ty) = (c[0], c[1]);
-                    //     let mx: f64 = (tx as f64 / extent as f64 + x as f64) / zoom_scale;
-                    //     let my: f64 = (ty as f64 / extent as f64 + y as f64) / zoom_scale;
-                    //     let (lng, lat) = web_mercator_to_lnglat(mx, my);
-                    //     [lng, lat]
-                    // });
-
-                    // let geometry = multipolygon_to_geometry(&mpoly);
-                    // let mut props = extract_properties(&feat.properties).unwrap_or_default();
-                    // props.insert("tile".into(), format!("{zoom}/{x}/{y}").into());
-                    // // println!("{:?}", props);
-                    // let geojson_feat = geojson::Feature {
-                    //     bbox: None,
-                    //     geometry: Some(geometry),
-                    //     id: None,
-                    //     properties: Some(props),
-                    //     foreign_members: None,
-                    // };
-
-                    // let Ok(bytes) = serde_json::to_vec(&geojson_feat) else {
-                    //     // TODO: fatal error
-                    //     return;
-                    // };
-                    // writer.write_all(&bytes).unwrap();
-
-                    // if iter.peek().is_some() {
-                    //     writer.write_all(b",").unwrap();
-                    // };
+                    };
                 }
+                println!("distribution done");
+            });
 
-                // Write the FeautureCollection footer and EOL
-                writer.write_all(b"]}\n").unwrap();
+            s.spawn(move || {
+                let pool = rayon::ThreadPoolBuilder::new().build().unwrap();
+                pool.install(|| {
+                    let _ = receiver2
+                        .into_iter()
+                        .par_bridge()
+                        .try_for_each(|(tile_id, sfeats)| {
+                            println!("receiving...");
+                            if feedback.is_cancelled() {
+                                return Err(());
+                            }
+                            let (zoom, x, y) = tileid_conv.id_to_zxy(tile_id);
+                            println!("{}/{}/{}", zoom, x, y);
+                            for sfeat in sfeats {
+                                let feat: SlicedFeature =
+                                    bincode::deserialize(&sfeat.body).unwrap();
+                                let extent = 4096;
+                                let zoom_scale = 2i32.pow(zoom as u32) as f64;
+
+                                let mpoly = feat.geometry.transform(|c| {
+                                    let (tx, ty) = (c[0], c[1]);
+                                    let mx: f64 =
+                                        (tx as f64 / extent as f64 + x as f64) / zoom_scale;
+                                    let my: f64 =
+                                        (ty as f64 / extent as f64 + y as f64) / zoom_scale;
+                                    let (lng, lat) = web_mercator_to_lnglat(mx, my);
+                                    [lng, lat]
+                                });
+
+                                let geometry = multipolygon_to_geometry(&mpoly);
+                                let mut props =
+                                    extract_properties(&feat.properties).unwrap_or_default();
+                                props.insert("tile".into(), format!("{zoom}/{x}/{y}").into());
+                                // println!("{:?}", props);
+                                let geojson_feat = geojson::Feature {
+                                    bbox: None,
+                                    geometry: Some(geometry),
+                                    id: None,
+                                    properties: Some(props),
+                                    foreign_members: None,
+                                };
+
+                                let Ok(bytes) = serde_json::to_vec(&geojson_feat) else {
+                                    // TODO: fatal error
+                                    return Err(());
+                                };
+                            }
+                            Ok(())
+                        });
+                    println!("receiving done");
+                });
             });
         });
     }
