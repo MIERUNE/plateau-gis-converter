@@ -4,7 +4,7 @@ use std::path::Path;
 use url::Url;
 
 use nusamai_citygml::{
-    CityGMLElement, CityGMLReader, GeometryStore, ParseError, SubTreeReader,
+    CityGMLElement, CityGMLReader, GeometryStore, ParseError, SubTreeReader, Code
 };
 use nusamai_plateau::models::bridge::Bridge;
 use nusamai_plateau::models::{TopLevelCityObject};
@@ -71,6 +71,34 @@ fn test_bridge() {
         Err(e) => panic!("Err: {:?}", e),
     };
 
-    // print!("{:?}", parsed_data.bridges);
-    // assert_eq!(parsed_data.bridges.len(), 225);
+    let brid = parsed_data.bridges.first().unwrap();
+
+    assert_eq!(
+        brid.class,
+        Some(Code::new("アーチ橋".to_string(), "03".to_string()))
+    );
+
+    assert_eq!(
+        brid.function,
+        vec![Code::new("道路橋".to_string(), "01".to_string())]
+    );
+
+    assert_eq!(
+        brid.year_of_construction,
+        Some("1962".to_string())
+    );
+
+    assert_eq!(
+        brid.is_movable,
+        Some(false)
+    );
+
+    assert_eq!(
+        brid.outer_bridge_construction[0].function,
+        vec![Code::new("アーチ".to_string(), "04".to_string())]
+    )
+
+
+
+    
 }
