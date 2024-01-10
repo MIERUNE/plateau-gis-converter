@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gml:Dictionary xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:gml="http://www.opengis.net/gml" xsi:schemaLocation="http://www.opengis.net/gml http://schemas.opengis.net/gml/3.1.1/profiles/SimpleDictionary/1.0.0/gmlSimpleDictionaryProfile.xsd" gml:id="cl_6293124c-801c-11ec-a8a3-0243ac120002">
+	<gml:name>AuxiliaryTrafficArea_function</gml:name>
+<gml:dictionaryEntry><gml:Definition gml:id="id1"><gml:description>roadway</gml:description><gml:name>1000</gml:name>
+  </gml:Definition>
+ </gml:dictionaryEntry>
+<gml:dictionaryEntry><gml:Definition gml:id="id2"><gml:description>normal lane</gml:description><gml:name>1010</gml:name>
+  </gml:Definition>
+ </gml:dictionaryEntry>
+<gml:dictionaryEntry><gml:Definition gml:id="id3"><gml:description>intersection</gml:description><gml:name>1020</gml:name>
+  </gml:Definition>
+ </gml:dictionaryEntry>
+<gml:dictionaryEntry><gml:Definition gml:id="id4"><gml:description>Section of lane increase/decrease</gml:description><gml:name>1030</gml:name>
+  </gml:Definition>
+ </gml:dictionaryEntry>
+<gml:dictionaryEntry><gml:Definition gml:id="id5"><gml:description>railroad crossing</gml:description><gml:name>1040</gml:name>
+  </gml:Definition>
+ </gml:dictionaryEntry>
+<gml:dictionaryEntry><gml:Definition gml:id="id6"><gml:description>tramway truck</gml:description><gml:name>1050</gml:name>
+  </gml:Definition>
+ </gml:dictionaryEntry>
+<gml:dictionaryEntry><gml:Definition gml:id="id7"><gml:description>passing-place</gml:description><gml:name>1070</gml:name>
+  </gml:Definition>
+ </gml:dictionaryEntry>
+<gml:dictionaryEntry><gml:Definition gml:id="id8"><gml:description>side road</gml:description><gml:name>1130</gml:name>
+  </gml:Definition>
+ </gml:dictionaryEntry>
+<gml:dictionaryEntry><gml:Definition gml:id="id9"><gml:description>sidwalk</gml:description><gml:name>2000</gml:name>
+  </gml:Definition>
+ </gml:dictionaryEntry>
+<gml:dictionaryEntry><gml:Definition gml:id="id10"><gml:description>bicycle and pedestrian path</gml:description><gml:name>2010</gml:name>
+  </gml:Definition>
+ </gml:dictionaryEntry>
+<gml:dictionaryEntry><gml:Definition gml:id="id11"><gml:description>pedestrian path</gml:description><gml:name>2020</gml:name>
+  </gml:Definition>
+ </gml:dictionaryEntry>
+<gml:dictionaryEntry><gml:Definition gml:id="id12"><gml:description>bicycle path</gml:description><gml:name>2030</gml:name>
+  </gml:Definition>
+ </gml:dictionaryEntry>
+<gml:dictionaryEntry><gml:Definition gml:id="id13"><gml:description>cycle parking lane</gml:description><gml:name>6000</gml:name>
+  </gml:Definition>
+ </gml:dictionaryEntry>
+<gml:dictionaryEntry><gml:Definition gml:id="id14"><gml:description>car parking lane</gml:description><gml:name>7000</gml:name>
+  </gml:Definition>
+ </gml:dictionaryEntry>
+
+</gml:Dictionary>

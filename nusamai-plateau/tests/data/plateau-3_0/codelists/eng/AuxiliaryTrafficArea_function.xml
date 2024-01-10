@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gml:Dictionary xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:gml="http://www.opengis.net/gml" xsi:schemaLocation="http://www.opengis.net/gml http://schemas.opengis.net/gml/3.1.1/profiles/SimpleDictionary/1.0.0/gmlSimpleDictionaryProfile.xsd" gml:id="cl_6292124c-801c-11ec-a8a3-0243ac120002">
+	<gml:name>TrafficArea_function</gml:name>
+<gml:dictionaryEntry><gml:Definition gml:id="id1"><gml:description>roadway</gml:description><gml:name>1000</gml:name>
+  </gml:Definition>
+ </gml:dictionaryEntry>
+<gml:dictionaryEntry><gml:Definition gml:id="id2"><gml:description>emergency parking space</gml:description><gml:name>1060</gml:name>
+  </gml:Definition>
+ </gml:dictionaryEntry>
+<gml:dictionaryEntry><gml:Definition gml:id="id3"><gml:description>center strip</gml:description><gml:name>1080</gml:name>
+  </gml:Definition>
+ </gml:dictionaryEntry>
+<gml:dictionaryEntry><gml:Definition gml:id="id4"><gml:description>marginal strip</gml:description><gml:name>1090</gml:name>
+  </gml:Definition>
+ </gml:dictionaryEntry>
+<gml:dictionaryEntry><gml:Definition gml:id="id5"><gml:description>shoulder</gml:description><gml:name>1100</gml:name>
+  </gml:Definition>
+ </gml:dictionaryEntry>
+<gml:dictionaryEntry><gml:Definition gml:id="id6"><gml:description>lay-by</gml:description><gml:name>1110</gml:name>
+  </gml:Definition>
+ </gml:dictionaryEntry>
+<gml:dictionaryEntry><gml:Definition gml:id="id7"><gml:description>bus station</gml:description><gml:name>1120</gml:name>
+  </gml:Definition>
+ </gml:dictionaryEntry>
+<gml:dictionaryEntry><gml:Definition gml:id="id8"><gml:description>sidewalk step</gml:description><gml:name>2000</gml:name>
+  </gml:Definition>
+ </gml:dictionaryEntry>
+<gml:dictionaryEntry><gml:Definition gml:id="id9"><gml:description>island</gml:description><gml:name>3000</gml:name>
+  </gml:Definition>
+ </gml:dictionaryEntry>
+<gml:dictionaryEntry><gml:Definition gml:id="id10"><gml:description>traffic island</gml:description><gml:name>3010</gml:name>
+  </gml:Definition>
+ </gml:dictionaryEntry>
+<gml:dictionaryEntry><gml:Definition gml:id="id11"><gml:description>separator</gml:description><gml:name>3020</gml:name>
+  </gml:Definition>
+ </gml:dictionaryEntry>
+<gml:dictionaryEntry><gml:Definition gml:id="id12"><gml:description>tramway stop</gml:description><gml:name>4000</gml:name>
+  </gml:Definition>
+ </gml:dictionaryEntry>
+<gml:dictionaryEntry><gml:Definition gml:id="id13"><gml:description>vegetation</gml:description><gml:name>5000</gml:name>
+  </gml:Definition>
+ </gml:dictionaryEntry>
+<gml:dictionaryEntry><gml:Definition gml:id="id14"><gml:description>planting zone </gml:description><gml:name>5010</gml:name>
+  </gml:Definition>
+ </gml:dictionaryEntry>
+<gml:dictionaryEntry><gml:Definition gml:id="id15"><gml:description>tree plantin box</gml:description><gml:name>5020</gml:name>
+  </gml:Definition>
+ </gml:dictionaryEntry>
+<gml:dictionaryEntry><gml:Definition gml:id="id16"><gml:description>cycle parking lot</gml:description><gml:name>6000</gml:name>
+  </gml:Definition>
+ </gml:dictionaryEntry>
+<gml:dictionaryEntry><gml:Definition gml:id="id17"><gml:description>car parking lot</gml:description><gml:name>7000</gml:name>
+  </gml:Definition>
+ </gml:dictionaryEntry>
+</gml:Dictionary>

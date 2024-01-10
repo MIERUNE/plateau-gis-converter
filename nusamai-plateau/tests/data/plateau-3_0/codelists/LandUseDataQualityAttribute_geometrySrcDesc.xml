@@ -1,0 +1,34 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<gml:Dictionary xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:gml="http://www.opengis.net/gml" xsi:schemaLocation="http://www.opengis.net/gml http://schemas.opengis.net/gml/3.1.1/profiles/SimpleDictionary/1.0.0/gmlSimpleDictionaryProfile.xsd" gml:id="cl_5a4452dd-f5f4-45f3-ad26-0edc7ef773a0">
+<gml:name>LandUseDataQualityAttribute_geometrySrcDesc</gml:name>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="LandUseDataQualityAttribute_geometrySrcDesc_1">
+<gml:description>地積測量図</gml:description>
+<gml:name>1</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="LandUseDataQualityAttribute_geometrySrcDesc_2">
+<gml:description>公図</gml:description>
+<gml:name>2</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="LandUseDataQualityAttribute_geometrySrcDesc_3">
+<gml:description>建築確認申請書</gml:description>
+<gml:name>3</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="LandUseDataQualityAttribute_geometrySrcDesc_4">
+<gml:description>地番図</gml:description>
+<gml:name>4</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="LandUseDataQualityAttribute_geometrySrcDesc_5">
+<gml:description>航空写真</gml:description>
+<gml:name>5</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+</gml:Dictionary>

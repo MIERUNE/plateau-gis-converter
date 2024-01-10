@@ -1,0 +1,82 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<gml:Dictionary xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:gml="http://www.opengis.net/gml" xsi:schemaLocation="http://www.opengis.net/gml http://schemas.opengis.net/gml/3.1.1/profiles/SimpleDictionary/1.0.0/gmlSimpleDictionaryProfile.xsd" gml:id="cl_9e14ce5e-8dbf-4d13-9898-ce359dec3093">
+<gml:name>IntBuildingInstallation_function</gml:name>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="IntBuildingInstallation_function_1">
+<gml:description>Wall and barrier elements</gml:description>
+<gml:name>EF_25</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="IntBuildingInstallation_function_2">
+<gml:description>Roofs, floor and paving elements</gml:description>
+<gml:name>EF_30</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="IntBuildingInstallation_function_3">
+<gml:description>Stairs and ramps</gml:description>
+<gml:name>EF_35</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="IntBuildingInstallation_function_4">
+<gml:description>Tunnel, vessel and tower elements</gml:description>
+<gml:name>EF_37</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="IntBuildingInstallation_function_5">
+<gml:description>Signage, fittings, furnishings and equipment</gml:description>
+<gml:name>EF_40</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="IntBuildingInstallation_function_6">
+<gml:description>Flora and fauna elements</gml:description>
+<gml:name>EF_45</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="IntBuildingInstallation_function_7">
+<gml:description>Waste disposal functions</gml:description>
+<gml:name>EF_50</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="IntBuildingInstallation_function_8">
+<gml:description>Piped supply functions</gml:description>
+<gml:name>EF_55</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="IntBuildingInstallation_function_9">
+<gml:description>Heating, cooling and refrigeration functions</gml:description>
+<gml:name>EF_60</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="IntBuildingInstallation_function_10">
+<gml:description>Ventilation and air conditioning functions</gml:description>
+<gml:name>EF_65</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="IntBuildingInstallation_function_11">
+<gml:description>Electrical power and lighting functions</gml:description>
+<gml:name>EF_70</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="IntBuildingInstallation_function_12">
+<gml:description>Communications, security, safety and protection functions</gml:description>
+<gml:name>EF_75</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="IntBuildingInstallation_function_13">
+<gml:description>Transport functions</gml:description>
+<gml:name>EF_80</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+</gml:Dictionary>

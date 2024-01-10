@@ -1,0 +1,16 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<gml:Dictionary xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:gml="http://www.opengis.net/gml" xsi:schemaLocation="http://www.opengis.net/gml http://schemas.opengis.net/gml/3.1.1/profiles/SimpleDictionary/1.0.0/gmlSimpleDictionaryProfile.xsd" gml:id="cl_d90b2107-9bca-47d4-8bcb-e8c9999e7fbe">
+<gml:name>CityObjectGroup_function</gml:name>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="CityObjectGroup_function_1">
+<gml:description>lod4Storey</gml:description>
+<gml:name>1030</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="CityObjectGroup_function_2">
+<gml:description>zone</gml:description>
+<gml:name>1040</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+</gml:Dictionary>

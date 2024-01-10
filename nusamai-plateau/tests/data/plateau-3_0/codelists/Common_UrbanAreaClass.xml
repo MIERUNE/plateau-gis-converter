@@ -1,0 +1,64 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<gml:Dictionary xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:gml="http://www.opengis.net/gml" xsi:schemaLocation="http://www.opengis.net/gml http://schemas.opengis.net/gml/3.1.1/profiles/SimpleDictionary/1.0.0/gmlSimpleDictionaryProfile.xsd" gml:id="cl_dc3ec7e3-2f1b-47b3-a6dc-a2c343e7fb1f">
+<gml:name>Common_UrbanAreaClass</gml:name>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="Common_UrbanAreaClass_1">
+<gml:description>行政区域</gml:description>
+<gml:name>0</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="Common_UrbanAreaClass_2">
+<gml:description>都市計画区域</gml:description>
+<gml:name>21</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="Common_UrbanAreaClass_3">
+<gml:description>市街化区域</gml:description>
+<gml:name>22</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="Common_UrbanAreaClass_4">
+<gml:description>市街化調整区域</gml:description>
+<gml:name>23</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="Common_UrbanAreaClass_5">
+<gml:description>非線引き用途地域</gml:description>
+<gml:name>24</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="Common_UrbanAreaClass_6">
+<gml:description>非線引き用途白地</gml:description>
+<gml:name>25</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="Common_UrbanAreaClass_7">
+<gml:description>準都市計画区域</gml:description>
+<gml:name>26</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="Common_UrbanAreaClass_8">
+<gml:description>都市計画区域外</gml:description>
+<gml:name>27</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="Common_UrbanAreaClass_9">
+<gml:description>居住誘導区域</gml:description>
+<gml:name>31</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="Common_UrbanAreaClass_10">
+<gml:description>都市機能誘導区域</gml:description>
+<gml:name>32</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+</gml:Dictionary>

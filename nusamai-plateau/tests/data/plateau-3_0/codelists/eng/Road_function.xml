@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gml:Dictionary xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:gml="http://www.opengis.net/gml" xsi:schemaLocation="http://www.opengis.net/gml http://schemas.opengis.net/gml/3.1.1/profiles/SimpleDictionary/1.0.0/gmlSimpleDictionaryProfile.xsd" gml:id="cl_6292123c-801c-11ec-a8a3-0242ac120002">
+	<gml:name>Road_function</gml:name>
+<gml:dictionaryEntry><gml:Definition gml:id="id1"><gml:description>freeway/motorway</gml:description><gml:name>1</gml:name>
+  </gml:Definition>
+ </gml:dictionaryEntry>
+<gml:dictionaryEntry><gml:Definition gml:id="id2"><gml:description>highway/national primary road</gml:description><gml:name>2</gml:name>
+  </gml:Definition>
+ </gml:dictionaryEntry>
+<gml:dictionaryEntry><gml:Definition gml:id="id3"><gml:description>prefectural road</gml:description><gml:name>3</gml:name>
+  </gml:Definition>
+ </gml:dictionaryEntry>
+<gml:dictionaryEntry><gml:Definition gml:id="id4"><gml:description>municipal road</gml:description><gml:name>4</gml:name>
+  </gml:Definition>
+ </gml:dictionaryEntry>
+<gml:dictionaryEntry><gml:Definition gml:id="id5"><gml:description>road provided for provided for in paragraph (1), Article 42, items (ii) of the Building Standards Act</gml:description><gml:name>10</gml:name>
+  </gml:Definition>
+ </gml:dictionaryEntry>
+<gml:dictionaryEntry><gml:Definition gml:id="id6"><gml:description>road provided for provided for in paragraph (1), Article 42, items (iii) of the Building Standards Act</gml:description><gml:name>11</gml:name>
+  </gml:Definition>
+ </gml:dictionaryEntry>
+<gml:dictionaryEntry><gml:Definition gml:id="id7"><gml:description>road provided for provided for in paragraph (1), Article 42, items (iv) of the Building Standards Act</gml:description><gml:name>12</gml:name>
+  </gml:Definition>
+ </gml:dictionaryEntry>
+<gml:dictionaryEntry><gml:Definition gml:id="id8"><gml:description>road provided for provided for in paragraph (1), Article 42, items (v) of the Building Standards Act</gml:description><gml:name>13</gml:name>
+  </gml:Definition>
+ </gml:dictionaryEntry>
+<gml:dictionaryEntry><gml:Definition gml:id="id9"><gml:description>road provided for provided for in paragraph (2), Article 42 of the Building Standards Act</gml:description><gml:name>14</gml:name>
+  </gml:Definition>
+ </gml:dictionaryEntry>
+<gml:dictionaryEntry><gml:Definition gml:id="id10"><gml:description>road provided for provided for in paragraph (1), Article 43 of the Building Standards Act</gml:description><gml:name>15</gml:name>
+  </gml:Definition>
+ </gml:dictionaryEntry>
+<gml:dictionaryEntry><gml:Definition gml:id="id11"><gml:description>unexamined</gml:description><gml:name>9000</gml:name>
+  </gml:Definition>
+ </gml:dictionaryEntry>
+<gml:dictionaryEntry><gml:Definition gml:id="id12"><gml:description>exception</gml:description><gml:name>9010</gml:name>
+  </gml:Definition>
+ </gml:dictionaryEntry>
+<gml:dictionaryEntry><gml:Definition gml:id="id13"><gml:description>unknown</gml:description><gml:name>9020</gml:name>
+  </gml:Definition>
+ </gml:dictionaryEntry>
+</gml:Dictionary>
