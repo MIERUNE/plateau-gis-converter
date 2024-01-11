@@ -20,7 +20,7 @@ use nusamai_citygml::object::CityObject;
 use nusamai_geometry::{MultiPolygon, Polygon2};
 use nusamai_mvt::tileid::TileIdMethod;
 use nusamai_mvt::vector_tile;
-use nusamai_mvt::webmercator::{lnglat_to_web_mercator, web_mercator_to_lnglat};
+use nusamai_mvt::webmercator::lnglat_to_web_mercator;
 
 pub struct Tiling2DSinkProvider {}
 
@@ -104,6 +104,8 @@ impl DataSink for Tiling2DSink {
 
         let tileid_conv = TileIdMethod::Hilbert;
 
+        // TODO: refactoring
+
         std::thread::scope(|s| {
             // Splitting geometry along the tile boundaries
             let feedback2 = feedback.clone();
@@ -183,7 +185,6 @@ impl DataSink for Tiling2DSink {
                             }
                             let (zoom, x, y) = tileid_conv.id_to_zxy(tile_id);
                             let extent = 4096;
-                            println!("{}/{}/{}", zoom, x, y);
                             let mut features = Vec::new();
 
                             for sfeat in sfeats {
@@ -194,64 +195,78 @@ impl DataSink for Tiling2DSink {
                                 let mut prev_x = 0;
                                 let mut prev_y = 0;
 
-                                // TODO: encode geometry
-                                let mut encoded_geom: Vec<u32> = vec![0];
+                                // encode geometry
+                                // TODO: Refactor this as GeometryEncoder.
+                                let mut encoded_geom: Vec<u32> = Vec::new();
                                 for poly in &mpoly {
                                     let exterior = poly.exterior();
-                                    if exterior.ring_area() > 0.0 && !poly.exterior().is_ccw() {
-                                        let mut iter = exterior.into_iter();
-                                        let &[first_x, first_y] = iter.next().unwrap() else {
-                                            unreachable!("polygon must be 2D");
-                                        };
-                                        let dx = (first_x - prev_x) as i32;
-                                        let dy = (first_y - prev_y) as i32;
-                                        (prev_x, prev_y) = (first_x, first_y);
-
-                                        // move to
-                                        encoded_geom.push(GEOM_COMMAND_MOVE_TO_WITH_COUNT1);
-                                        encoded_geom.push(((dx << 1) ^ (dx >> 31)) as u32);
-                                        encoded_geom.push(((dy << 1) ^ (dy >> 31)) as u32);
-
-                                        // line to
-                                        encoded_geom.push(GEOM_COMMAND_LINE_TO); // length will be updated later
-                                        let lineto_cmd_pos = encoded_geom.len();
-                                        let mut count = 0;
-                                        for coord in iter {
-                                            let &[x, y] = coord else {
-                                                unreachable!("polygon must be 2D");
-                                            };
-                                            let dx = (x - prev_x) as i32;
-                                            let dy = (y - prev_y) as i32;
-                                            (prev_x, prev_y) = (x, y);
-
-                                            if dx != 0 || dy != 0 {
-                                                encoded_geom.push(((dx << 1) ^ (dx >> 31)) as u32);
-                                                encoded_geom.push(((dy << 1) ^ (dy >> 31)) as u32);
-                                                count += 1;
-                                            }
-                                        }
-                                        encoded_geom[lineto_cmd_pos] |= count << 3;
-
-                                        // close path
-                                        encoded_geom.push(GEOM_COMMAND_CLOSE_PATH_WITH_COUNT1);
+                                    if exterior.ring_area() == 0.0 || poly.exterior().is_ccw() {
+                                        continue;
                                     }
+
+                                    let mut iter = exterior.into_iter();
+                                    let &[first_x, first_y] = iter.next().unwrap() else {
+                                        unreachable!("polygon must be 2D");
+                                    };
+                                    let dx = (first_x - prev_x) as i32;
+                                    let dy = (first_y - prev_y) as i32;
+                                    (prev_x, prev_y) = (first_x, first_y);
+
+                                    // move to
+                                    encoded_geom.push(GEOM_COMMAND_MOVE_TO_WITH_COUNT1);
+                                    encoded_geom.push(((dx << 1) ^ (dx >> 31)) as u32);
+                                    encoded_geom.push(((dy << 1) ^ (dy >> 31)) as u32);
+
+                                    // line to
+                                    encoded_geom.push(GEOM_COMMAND_LINE_TO); // length will be updated later
+                                    let lineto_cmd_pos = encoded_geom.len();
+                                    let mut count = 0;
+                                    for coord in iter {
+                                        let &[x, y] = coord else {
+                                            unreachable!("polygon must be 2D")
+                                        };
+                                        let dx = (x - prev_x) as i32;
+                                        let dy = (y - prev_y) as i32;
+                                        (prev_x, prev_y) = (x, y);
+
+                                        if dx != 0 || dy != 0 {
+                                            encoded_geom.push(((dx << 1) ^ (dx >> 31)) as u32);
+                                            encoded_geom.push(((dy << 1) ^ (dy >> 31)) as u32);
+                                            count += 1;
+                                        }
+                                    }
+                                    assert!(count >= 2);
+                                    encoded_geom[lineto_cmd_pos] =
+                                        GEOM_COMMAND_LINE_TO | count << 3;
+
+                                    // close path
+                                    encoded_geom.push(GEOM_COMMAND_CLOSE_PATH_WITH_COUNT1);
                                 }
 
-                                features.push(vector_tile::tile::Feature {
-                                    id: None,
-                                    tags: vec![],
-                                    r#type: Some(vector_tile::tile::GeomType::Polygon as i32),
-                                    geometry: encoded_geom,
-                                });
+                                if !encoded_geom.is_empty() {
+                                    let encoded_geom = vec![];
+
+                                    features.push(vector_tile::tile::Feature {
+                                        id: None,
+                                        tags: vec![],
+                                        r#type: Some(vector_tile::tile::GeomType::Polygon as i32),
+                                        geometry: encoded_geom,
+                                    });
+                                }
+                            }
+
+                            // skip if no features
+                            if features.is_empty() {
+                                return Ok(());
                             }
 
                             let layer = vector_tile::tile::Layer {
-                                name: "cityobj".to_string(),
-                                features,
+                                version: 2,
+                                name: "dummy-layer".to_string(),
+                                features: features,
                                 keys: vec![],
                                 values: vec![],
                                 extent: Some(extent),
-                                ..Default::default()
                             };
                             let tile = vector_tile::Tile {
                                 layers: vec![layer],
@@ -260,6 +275,7 @@ impl DataSink for Tiling2DSink {
                             let path = self
                                 .output_path
                                 .join(path::Path::new(&format!("{}/{}/{}.pbf", zoom, x, y)));
+                            log::info!("Writing a tile: {:?}", path);
 
                             if let Some(dir) = path.parent() {
                                 if let Err(e) = fs::create_dir_all(dir) {
