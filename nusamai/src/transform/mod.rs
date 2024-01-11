@@ -59,6 +59,13 @@ pub struct LayerManager {
     layers: Option<Vec<Layer>>,
 }
 
+impl LayerManager {
+    pub fn merge(&mut self) {
+        // 同じレイヤー名のレイヤーをマージする
+        todo!()
+    }
+}
+
 pub struct Settings {
     load_semantic_parts: bool,
     target_lods: Vec<bool>,
