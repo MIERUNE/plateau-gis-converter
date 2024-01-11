@@ -4,17 +4,15 @@ use std::fs::File;
 use std::io::{BufWriter, Write};
 use std::path::PathBuf;
 
-use ahash::random_state::RandomState;
-use indexmap::IndexMap;
-use nusamai_citygml::{geometry, Value};
 use rayon::prelude::*;
 
 use crate::get_parameter_value;
 use crate::parameters::*;
 use crate::pipeline::{Feedback, Receiver};
 use crate::sink::{DataSink, DataSinkProvider, SinkInfo};
+use crate::transform::ObjectController;
 
-use nusamai_citygml::object::{CityObject, Feature, Map};
+use nusamai_citygml::object::CityObject;
 use nusamai_geojson::conversion::{
     indexed_multilinestring_to_geometry, indexed_multipoint_to_geometry,
     indexed_multipolygon_to_geometry,
@@ -58,68 +56,6 @@ pub struct GeoJsonSink {
     output_path: PathBuf,
 }
 
-struct layer {
-    id: String,
-    typename: String,
-    objects: Vec<CityObject>,
-}
-
-fn parse_feature(feature: &Feature) -> Vec<Feature> {
-    let id = &feature.id;
-    let typename = &feature.typename;
-    let attributes = &feature.attributes;
-
-    let geometries = feature.geometries.as_ref().unwrap();
-
-    // 空のattributesを作成
-    let mut a: Map = IndexMap::with_hasher(RandomState::new());
-
-    // attributesの中身を見て、Value::Array, Value::Data, Value::Feature以外のものをresultsに入れる
-    for (k, v) in attributes.iter() {
-        if !matches!(v, Value::Array(_) | Value::Data(_) | Value::Feature(_)) {
-            a.insert(k.clone(), v.clone());
-        }
-    }
-
-    let mut features = Vec::new();
-
-    for geometry in geometries {
-        features.push(Feature {
-            typename: typename.clone(),
-            id: id.clone(),
-            attributes: a.clone(),
-            geometries: Some(vec![geometry.clone()]),
-        });
-    }
-
-    // 返す
-    features
-}
-
-fn parse_array() {}
-
-fn parse_data() {}
-
-fn parse_cityobj(cityobj: &CityObject) -> Vec<layer> {
-    let root = &cityobj.root;
-
-    let features = match root {
-        Value::Feature(f) => parse_feature(f),
-        _ => todo!(),
-    };
-    println!("{:?}", features);
-
-    let attributes = match root {
-        Value::Array(a) => {
-            todo!();
-        }
-        Value::Data(d) => {
-            todo!();
-        }
-        _ => todo!(),
-    };
-}
-
 impl DataSink for GeoJsonSink {
     fn run(&mut self, upstream: Receiver, feedback: &mut Feedback) {
         let (sender, receiver) = std::sync::mpsc::sync_channel(100);
@@ -137,7 +73,8 @@ impl DataSink for GeoJsonSink {
 
                         // todo: parse attributes
                         let obj = &parcel.cityobj;
-                        let _ = parse_cityobj(obj);
+                        let object_controller = ObjectController { settings: None };
+                        let _ = object_controller.to_tabular(obj);
 
                         let features = toplevel_cityobj_to_geojson_features(&parcel.cityobj);
                         for feature in features {
