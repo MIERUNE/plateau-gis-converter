@@ -69,8 +69,8 @@ struct SerializedSlicedFeature {
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 
-struct SlicedFeature {
-    geometry: MultiPolygon<'static, 2, i16>,
+struct SlicedFeature<'a> {
+    geometry: MultiPolygon<'a, 2, i16>,
     properties: nusamai_citygml::object::Value,
 }
 
@@ -99,8 +99,8 @@ const GEOM_COMMAND_CLOSE_PATH_WITH_COUNT1: u32 = 1 << 3 | GEOM_COMMAND_CLOSE_PAT
 
 impl DataSink for Tiling2DSink {
     fn run(&mut self, upstream: Receiver, feedback: &mut Feedback) {
-        let (sender, receiver) = std::sync::mpsc::sync_channel(100);
-        let (sender2, receiver2) = std::sync::mpsc::sync_channel(100);
+        let (sender, receiver) = std::sync::mpsc::sync_channel(2000);
+        let (sender2, receiver2) = std::sync::mpsc::sync_channel(2000);
 
         let tileid_conv = TileIdMethod::Hilbert;
 
@@ -113,19 +113,20 @@ impl DataSink for Tiling2DSink {
                 let feedback = feedback2;
                 // Convert CityObjects to Sliced features
                 let _ = upstream.into_iter().par_bridge().try_for_each_with(
-                    (sender, Vec::new()),
-                    |(sender, buf), parcel| {
+                    sender,
+                    |sender, parcel| {
                         if feedback.is_cancelled() {
                             return Err(());
                         }
 
-                        buf.clear();
-                        cityobj_to_tiled_features(&parcel.cityobj, buf);
-
-                        for ((z, x, y), feature) in buf {
-                            let bytes = bincode::serialize(feature).unwrap();
+                        cityobj_to_tiled_geom(&parcel.cityobj, 7, 15, |(z, x, y), mpoly| {
+                            let feature = SlicedFeature {
+                                geometry: mpoly.to_owned(),
+                                properties: parcel.cityobj.root.clone(),
+                            };
+                            let bytes = bincode::serialize(&feature).unwrap();
                             let sfeat = SerializedSlicedFeature {
-                                tile_id: tileid_conv.zxy_to_id(*z, *x, *y),
+                                tile_id: tileid_conv.zxy_to_id(z, x, y),
                                 body: bytes,
                             };
 
@@ -133,8 +134,8 @@ impl DataSink for Tiling2DSink {
                                 log::info!("sink cancelled");
                                 return Err(());
                             };
-                        }
-                        Ok(())
+                            Ok(())
+                        })
                     },
                 );
             });
@@ -148,8 +149,8 @@ impl DataSink for Tiling2DSink {
                     // TODO: Use Binpack instead of RMP ?
                 > = ExternalSorterBuilder::new()
                     .with_tmp_dir(path::Path::new("./"))
-                    .with_buffer(MemoryLimitedBufferBuilder::new(150 * 1024 * 1024)) // TODO
-                    .with_threads_number(8) // TODO
+                    .with_buffer(MemoryLimitedBufferBuilder::new(200 * 1024 * 1024)) // TODO
+                    .with_threads_number(12) // TODO
                     .build()
                     .unwrap();
 
@@ -200,7 +201,7 @@ impl DataSink for Tiling2DSink {
                                 let mut encoded_geom: Vec<u32> = Vec::new();
                                 for poly in &mpoly {
                                     let exterior = poly.exterior();
-                                    if exterior.ring_area() == 0.0 || poly.exterior().is_ccw() {
+                                    if !poly.exterior().is_ccw() {
                                         continue;
                                     }
 
@@ -218,8 +219,8 @@ impl DataSink for Tiling2DSink {
                                     encoded_geom.push(((dy << 1) ^ (dy >> 31)) as u32);
 
                                     // line to
-                                    encoded_geom.push(GEOM_COMMAND_LINE_TO); // length will be updated later
                                     let lineto_cmd_pos = encoded_geom.len();
+                                    encoded_geom.push(GEOM_COMMAND_LINE_TO); // length will be updated later
                                     let mut count = 0;
                                     for coord in iter {
                                         let &[x, y] = coord else {
@@ -244,8 +245,6 @@ impl DataSink for Tiling2DSink {
                                 }
 
                                 if !encoded_geom.is_empty() {
-                                    let encoded_geom = vec![];
-
                                     features.push(vector_tile::tile::Feature {
                                         id: None,
                                         tags: vec![],
@@ -263,7 +262,7 @@ impl DataSink for Tiling2DSink {
                             let layer = vector_tile::tile::Layer {
                                 version: 2,
                                 name: "dummy-layer".to_string(),
-                                features: features,
+                                features,
                                 keys: vec![],
                                 values: vec![],
                                 extent: Some(extent),
@@ -275,15 +274,21 @@ impl DataSink for Tiling2DSink {
                             let path = self
                                 .output_path
                                 .join(path::Path::new(&format!("{}/{}/{}.pbf", zoom, x, y)));
-                            log::info!("Writing a tile: {:?}", path);
 
                             if let Some(dir) = path.parent() {
                                 if let Err(e) = fs::create_dir_all(dir) {
                                     panic!("Fatal error: {:?}", e); // FIXME
                                 }
                             }
+                            let bytes = tile.encode_to_vec();
+                            fs::write(&path, &bytes).unwrap();
 
-                            fs::write(path, tile.encode_to_vec()).unwrap();
+                            log::info!(
+                                "Wrote a tile: {:?} ({:?} KB)",
+                                &path,
+                                bytesize::to_string(bytes.len() as u64, true)
+                            );
+
                             Ok(())
                         });
                 });
@@ -292,9 +297,13 @@ impl DataSink for Tiling2DSink {
     }
 }
 
-fn cityobj_to_tiled_features(obj: &CityObject, out: &mut Vec<(TileZXY, SlicedFeature)>) {
-    // let mut geojson_features: Vec<geojson::Feature> = vec![];
-    // let properties = extract_properties(&obj.root);
+fn cityobj_to_tiled_geom(
+    obj: &CityObject,
+    min_z: u8,
+    max_z: u8,
+    f: impl Fn(TileZXY, MultiPolygon<2, i16>) -> Result<(), ()>,
+) -> Result<(), ()> {
+    assert!(max_z > min_z, "max_z must be greater than min_z");
 
     if !obj.geometries.multipolygon.is_empty() {
         // sliceする
@@ -303,42 +312,41 @@ fn cityobj_to_tiled_features(obj: &CityObject, out: &mut Vec<(TileZXY, SlicedFea
         let mut tiled_mpolys = HashMap::new();
 
         let extent = 4096;
-        let zoom = 14;
-        let zoom_scale = 2i32.pow(zoom) as f64;
         mpolys.iter().for_each(|poly| {
-            let mut new_poly = Polygon2::new();
-            poly.rings().for_each(|ring| {
-                new_poly.add_ring(ring.iter().map(|c| {
-                    let [lng, lat, _height] = obj.geometries.vertices[c[0] as usize];
-                    let (mx, my) = lnglat_to_web_mercator(lng, lat);
-                    [mx * zoom_scale, my * zoom_scale]
-                }))
-            });
-            slice_polygon(zoom as u8, extent, 80, &new_poly, &mut tiled_mpolys);
+            for zoom in min_z..=max_z {
+                let zoom_scale = 2i32.pow(zoom as u32) as f64;
+                let mut new_poly = Polygon2::new();
+                poly.rings().for_each(|ring| {
+                    new_poly.add_ring(ring.iter().map(|c| {
+                        let [lng, lat, _height] = obj.geometries.vertices[c[0] as usize];
+                        let (mx, my) = lnglat_to_web_mercator(lng, lat);
+                        [mx * zoom_scale, my * zoom_scale]
+                    }))
+                });
+                slice_polygon(zoom, extent, 80, &new_poly, &mut tiled_mpolys);
+            }
         });
 
         for ((z, x, y), mpoly) in tiled_mpolys {
-            out.push((
-                (z, x, y),
-                SlicedFeature {
-                    geometry: mpoly,
-                    properties: obj.root.clone(),
-                },
-            ));
+            if mpoly.iter().any(|poly| poly.area() > 0.0) {
+                f((z, x, y), mpoly)?;
+            }
         }
     }
+
+    Ok(())
     // TODO: linestring, point
 }
 
-fn extract_properties(tree: &nusamai_citygml::object::Value) -> Option<geojson::JsonObject> {
-    match &tree {
-        feat @ nusamai_citygml::Value::Feature(_) => match feat.to_attribute_json() {
-            serde_json::Value::Object(map) => Some(map),
-            _ => unreachable!(),
-        },
-        _ => panic!("Root value type must be Feature, but found {:?}", tree),
-    }
-}
+// fn extract_properties(tree: &nusamai_citygml::object::Value) -> Option<geojson::JsonObject> {
+//     match &tree {
+//         feat @ nusamai_citygml::Value::Feature(_) => match feat.to_attribute_json() {
+//             serde_json::Value::Object(map) => Some(map),
+//             _ => unreachable!(),
+//         },
+//         _ => panic!("Root value type must be Feature, but found {:?}", tree),
+//     }
+// }
 
 fn slice_polygon(
     zoom: u8,

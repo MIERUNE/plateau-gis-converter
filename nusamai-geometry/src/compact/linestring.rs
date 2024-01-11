@@ -118,6 +118,11 @@ impl<'a, T: CoordNum> LineString<'a, 2, T> {
         self.signed_ring_area() > 0.0
     }
 
+    /// Returns true if the ring is clockwise.
+    pub fn is_cw(&self) -> bool {
+        self.signed_ring_area() < 0.0
+    }
+
     /// Calculates the area of this LineString as a ring.
     pub fn ring_area(&self) -> f64 {
         self.signed_ring_area().abs()
@@ -255,12 +260,15 @@ mod tests {
     fn test_winding_order() {
         let line = LineString2::from_raw(vec![0.0, 0.0, 3.0, 0.0, 3.0, 3.0, 0.0, 3.0].into());
         assert!(line.is_ccw());
+        assert!(!line.is_cw());
 
         let line = LineString2::from_raw(vec![0.0, 0.0, 0.0, 3.0, 3.0, 3.0, 3.0, 0.0].into());
         assert!(!line.is_ccw());
+        assert!(line.is_cw());
 
         let line = LineString2::from_raw(vec![0.0, 0.0, 0.0, 0.0].into());
         assert!(!line.is_ccw());
+        assert!(!line.is_cw());
     }
 
     #[test]

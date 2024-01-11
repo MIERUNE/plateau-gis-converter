@@ -122,6 +122,8 @@ fn run(
     sink: Box<dyn DataSink>,
     canceller: &mut Arc<Mutex<Canceller>>,
 ) {
+    let total_time = std::time::Instant::now();
+
     let transformer = Box::<DummyTransformer>::default();
 
     // start the pipeline
@@ -142,4 +144,6 @@ fn run(
     if canceller.lock().unwrap().is_cancelled() {
         log::info!("Pipeline cancelled");
     }
+
+    log::info!("Total processing time: {:?}", total_time.elapsed());
 }
