@@ -5,8 +5,11 @@ use std::env;
 use std::sync::{Arc, Mutex};
 
 use nusamai::pipeline::Canceller;
-use nusamai::sink::geojson::GeoJsonSinkProvider;
 use nusamai::sink::DataSinkProvider;
+use nusamai::sink::{
+    geojson::GeoJsonSinkProvider, gpkg::GpkgSinkProvider, serde::SerdeSinkProvider,
+    tiling2d::Tiling2DSinkProvider,
+};
 use nusamai::source::citygml::CityGMLSourceProvider;
 use nusamai::source::DataSourceProvider;
 use nusamai::transform::DummyTransformer;
@@ -30,7 +33,7 @@ fn run(input_path: String, output_path: String, filetype: String) {
     let sinkopt: Vec<(String, String)> = vec![("@output".into(), output_path)];
 
     // TODO: set cancellation handler
-    let mut canceller = Arc::new(Mutex::new(Canceller::default()));
+    let canceller = Arc::new(Mutex::new(Canceller::default()));
 
     let source = {
         let source_provider: Box<dyn DataSourceProvider> =
@@ -44,7 +47,17 @@ fn run(input_path: String, output_path: String, filetype: String) {
     };
 
     let sink = {
-        let sink_provider = Box::new(GeoJsonSinkProvider {});
+        let sink_provider: Box<dyn DataSinkProvider> = match &*filetype {
+            "GeoJSON" => Box::new(GeoJsonSinkProvider {}),
+            "GeoPackage" => Box::new(GpkgSinkProvider {}),
+            "Serde" => Box::new(SerdeSinkProvider {}),
+            "Tiling2D" => Box::new(Tiling2DSinkProvider {}),
+            _ => {
+                log::error!("Unknown filetype: {}", filetype);
+                return;
+            }
+        };
+
         let mut sink_params = sink_provider.parameters();
         if let Err(err) = sink_params.update_values_with_str(&sinkopt) {
             log::error!("Error parsing sink options: {:?}", err);
