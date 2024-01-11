@@ -18,28 +18,17 @@ fn main() {
 
 #[tauri::command]
 fn run(input_path: String, output_path: String, filetype: String) {
+    // TODO: handle multiple files
     let filenames = vec![input_path];
-
     let sinkopt: Vec<(String, String)> = vec![("@output".into(), output_path)];
 
+    // TODO: set cancellation handler
     let mut canceller = Arc::new(Mutex::new(Canceller::default()));
-    // {
-    //     let canceller = canceller.clone();
-    //     ctrlc::set_handler(move || {
-    //         println!("request cancellation");
-    //         canceller.lock().unwrap().cancel();
-    //     })
-    //     .expect("Error setting Ctrl-C handler");
-    // }
 
     let source = {
         let source_provider: Box<dyn DataSourceProvider> =
             Box::new(CityGMLSourceProvider { filenames });
         let mut source_params = source_provider.parameters();
-        // if let Err(err) = source_params.update_values_with_str(&args.sourceopt) {
-        //     eprintln!("Error parsing source parameters: {:?}", err);
-        //     return;
-        // };
         if let Err(err) = source_params.validate() {
             eprintln!("Error validating source parameters: {:?}", err);
             return;
@@ -48,7 +37,7 @@ fn run(input_path: String, output_path: String, filetype: String) {
     };
 
     let sink = {
-        let sink_provider = Box::new(GeoJsonSinkProvider {}); //args.sink.create();
+        let sink_provider = Box::new(GeoJsonSinkProvider {});
         let mut sink_params = sink_provider.parameters();
         if let Err(err) = sink_params.update_values_with_str(&sinkopt) {
             eprintln!("Error parsing sink options: {:?}", err);
