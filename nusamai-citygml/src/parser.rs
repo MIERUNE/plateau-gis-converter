@@ -314,9 +314,9 @@ impl<R: BufRead> SubTreeReader<'_, '_, R> {
             MultiSurface => self.parse_multi_surface_prop(geomref, lod)?,
             Geometry => self.parse_geometry_prop(geomref, lod)?, // FIXME: not only surfaces
             Triangulated => self.parse_triangulated_prop(geomref, lod)?, // FIXME
-            Point => todo!(),
-            MultiPoint => todo!(),
-            MultiCurve => todo!(),
+            Point => todo!(),                                    // FIXME
+            MultiPoint => todo!(),                               // FIXME
+            MultiCurve => todo!(),                               // FIXME
         }
 
         self.state
@@ -397,6 +397,18 @@ impl<R: BufRead> SubTreeReader<'_, '_, R> {
                         (Bound(GML31_NS), b"Polygon") => todo!(),
                         (Bound(GML31_NS), b"TriangulatedSurface") => todo!(),
                         (Bound(GML31_NS), b"Tin") => todo!(),
+                        (Bound(GML31_NS), b"LineString") => {
+                            // FIXME, TODO
+                            log::warn!("LineString is not supported yet.");
+                            self.skip_current_element()?; // FIXME, TODO
+                            GeometryType::Curve
+                        } // FIXME:
+                        (Bound(GML31_NS), b"MultiCurve") => {
+                            // FIXME, TODO
+                            log::warn!("MultiCurve is not supported yet.");
+                            self.skip_current_element()?; // FIXME, TODO
+                            GeometryType::Curve
+                        } // FIXME:
                         _ => {
                             return Err(ParseError::SchemaViolation(format!(
                                 "Unexpected element <{}>",
@@ -581,8 +593,9 @@ impl<R: BufRead> SubTreeReader<'_, '_, R> {
                         (Bound(GML31_NS), b"Polygon") => self.parse_polygon()?,
                         (Bound(GML31_NS), b"CompositeSurface") => self.parse_composite_surface()?,
                         (Bound(GML31_NS), b"OrientableSurface") => {
+                            // FIXME:
                             // TODO: OrientableSurface
-                            println!("OrientableSurface is not supported");
+                            log::warn!("OrientableSurface is not supported yet.");
                             self.reader
                                 .read_to_end_into(start.name(), &mut self.state.buf2)?;
                         }
