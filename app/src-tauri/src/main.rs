@@ -8,7 +8,7 @@ use nusamai::pipeline::Canceller;
 use nusamai::sink::geojson::GeoJsonSinkProvider;
 use nusamai::sink::DataSinkProvider;
 use nusamai::source::citygml::CityGMLSourceProvider;
-use nusamai::source::{DataSource, DataSourceProvider};
+use nusamai::source::DataSourceProvider;
 use nusamai::transform::DummyTransformer;
 
 fn main() {
