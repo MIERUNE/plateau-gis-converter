@@ -24,8 +24,11 @@ serde_json = { version = "1.0.108", features = ["indexmap"] }
 url = "2.5.0"
 nusamai-gpkg = { path = "../nusamai-gpkg" }
 tokio = { version = "1.35.1", features = ["full"] }
+byteorder = "1.5.0"
 
 [dev-dependencies]
 rand = "0.8.5"
 tokio = { version = "1.35.1", features = ["full"] }
 nusamai-geometry = { path = "../nusamai-geometry" }
+byteorder = "1.5.0"
+earcut-rs = { git = "https://github.com/MIERUNE/earcut-rs.git" }
