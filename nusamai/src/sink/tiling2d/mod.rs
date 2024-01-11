@@ -76,6 +76,13 @@ struct SlicedFeature {
 
 type TileZXY = (u8, u32, u32);
 
+const GEOM_COMMAND_MOVE_TO: u32 = 1;
+const GEOM_COMMAND_LINE_TO: u32 = 2;
+const GEOM_COMMAND_CLOSE_PATH: u32 = 7;
+
+const GEOM_COMMAND_MOVE_TO_WITH_COUNT1: u32 = 1 << 3 | GEOM_COMMAND_MOVE_TO;
+const GEOM_COMMAND_CLOSE_PATH_WITH_COUNT1: u32 = 1 << 3 | GEOM_COMMAND_CLOSE_PATH;
+
 // Pipeline
 //
 // ---
@@ -102,8 +109,6 @@ impl DataSink for Tiling2DSink {
             let feedback2 = feedback.clone();
             s.spawn(move || {
                 let feedback = feedback2;
-                //let pool = rayon::ThreadPoolBuilder::new().build().unwrap();
-                //pool.install(|| {
                 // Convert CityObjects to Sliced features
                 let _ = upstream.into_iter().par_bridge().try_for_each_with(
                     (sender, Vec::new()),
@@ -162,10 +167,11 @@ impl DataSink for Tiling2DSink {
                 }
             });
 
-            //
+            // Tile writer
             let feedback2 = feedback.clone();
             s.spawn(move || {
                 let feedback = feedback2;
+                // Run in a separate thread pool to avoid deadlocks
                 let pool = rayon::ThreadPoolBuilder::new().build().unwrap();
                 pool.install(|| {
                     let _ = receiver2
@@ -176,58 +182,92 @@ impl DataSink for Tiling2DSink {
                                 return Err(());
                             }
                             let (zoom, x, y) = tileid_conv.id_to_zxy(tile_id);
+                            let extent = 4096;
                             println!("{}/{}/{}", zoom, x, y);
+                            let mut features = Vec::new();
+
                             for sfeat in sfeats {
                                 let feat: SlicedFeature =
                                     bincode::deserialize(&sfeat.body).unwrap();
-                                let extent = 4096;
-                                let zoom_scale = 2i32.pow(zoom as u32) as f64;
 
-                                let mpoly = feat.geometry.transform(|c| {
-                                    let (tx, ty) = (c[0], c[1]);
-                                    let mx: f64 =
-                                        (tx as f64 / extent as f64 + x as f64) / zoom_scale;
-                                    let my: f64 =
-                                        (ty as f64 / extent as f64 + y as f64) / zoom_scale;
-                                    let (lng, lat) = web_mercator_to_lnglat(mx, my);
-                                    [lng, lat]
-                                });
-
-                                let encoded_geom: Vec<u32> = Vec::new();
+                                let mpoly = feat.geometry;
+                                let mut prev_x = 0;
+                                let mut prev_y = 0;
 
                                 // TODO: encode geometry
+                                let mut encoded_geom: Vec<u32> = vec![0];
+                                for poly in &mpoly {
+                                    let exterior = poly.exterior();
+                                    if exterior.ring_area() > 0.0 && !poly.exterior().is_ccw() {
+                                        let mut iter = exterior.into_iter();
+                                        let &[first_x, first_y] = iter.next().unwrap() else {
+                                            unreachable!("polygon must be 2D");
+                                        };
+                                        let dx = (first_x - prev_x) as i32;
+                                        let dy = (first_y - prev_y) as i32;
+                                        (prev_x, prev_y) = (first_x, first_y);
 
-                                let feature = vector_tile::tile::Feature {
+                                        // move to
+                                        encoded_geom.push(GEOM_COMMAND_MOVE_TO_WITH_COUNT1);
+                                        encoded_geom.push(((dx << 1) ^ (dx >> 31)) as u32);
+                                        encoded_geom.push(((dy << 1) ^ (dy >> 31)) as u32);
+
+                                        // line to
+                                        encoded_geom.push(GEOM_COMMAND_LINE_TO); // length will be updated later
+                                        let lineto_cmd_pos = encoded_geom.len();
+                                        let mut count = 0;
+                                        for coord in iter {
+                                            let &[x, y] = coord else {
+                                                unreachable!("polygon must be 2D");
+                                            };
+                                            let dx = (x - prev_x) as i32;
+                                            let dy = (y - prev_y) as i32;
+                                            (prev_x, prev_y) = (x, y);
+
+                                            if dx != 0 || dy != 0 {
+                                                encoded_geom.push(((dx << 1) ^ (dx >> 31)) as u32);
+                                                encoded_geom.push(((dy << 1) ^ (dy >> 31)) as u32);
+                                                count += 1;
+                                            }
+                                        }
+                                        encoded_geom[lineto_cmd_pos] |= count << 3;
+
+                                        // close path
+                                        encoded_geom.push(GEOM_COMMAND_CLOSE_PATH_WITH_COUNT1);
+                                    }
+                                }
+
+                                features.push(vector_tile::tile::Feature {
                                     id: None,
                                     tags: vec![],
                                     r#type: Some(vector_tile::tile::GeomType::Polygon as i32),
                                     geometry: encoded_geom,
-                                };
-
-                                let layer = vector_tile::tile::Layer {
-                                    name: "cityobj".to_string(),
-                                    features: vec![feature],
-                                    keys: vec![],
-                                    values: vec![],
-                                    extent: Some(extent),
-                                    ..Default::default()
-                                };
-                                let tile = vector_tile::Tile {
-                                    layers: vec![layer],
-                                };
-
-                                let path = self
-                                    .output_path
-                                    .join(path::Path::new(&format!("{}/{}/{}.pbf", zoom, x, y)));
-
-                                if let Some(dir) = path.parent() {
-                                    if let Err(e) = fs::create_dir_all(dir) {
-                                        panic!("Fatal error: {:?}", e); // FIXME
-                                    }
-                                }
-
-                                fs::write(path, tile.encode_to_vec()).unwrap();
+                                });
                             }
+
+                            let layer = vector_tile::tile::Layer {
+                                name: "cityobj".to_string(),
+                                features,
+                                keys: vec![],
+                                values: vec![],
+                                extent: Some(extent),
+                                ..Default::default()
+                            };
+                            let tile = vector_tile::Tile {
+                                layers: vec![layer],
+                            };
+
+                            let path = self
+                                .output_path
+                                .join(path::Path::new(&format!("{}/{}/{}.pbf", zoom, x, y)));
+
+                            if let Some(dir) = path.parent() {
+                                if let Err(e) = fs::create_dir_all(dir) {
+                                    panic!("Fatal error: {:?}", e); // FIXME
+                                }
+                            }
+
+                            fs::write(path, tile.encode_to_vec()).unwrap();
                             Ok(())
                         });
                 });
