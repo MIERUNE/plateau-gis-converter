@@ -1,4 +1,4 @@
-use nusamai_citygml::{citygml_data, citygml_property, CityGMLElement, Code, Measure, Length, Date, GYear};
+use nusamai_citygml::{citygml_data, CityGMLElement, Code, Measure, Length};
 
 #[citygml_data(name = "uro:TunnelFunctionalAttribute")]
 pub struct TunnelFunctionalAttribute {
@@ -7,7 +7,7 @@ pub struct TunnelFunctionalAttribute {
 
     #[citygml(path = b"uro:userType")]
     pub user_type: Option<Code>,
-    
+
 }
 
 #[citygml_data(name = "uro:TunnelStructureAttribute")]
@@ -40,3 +40,4 @@ pub struct TunnelStructureAttribute {
     pub slope_type: Option<Code>,
 
 }
+
