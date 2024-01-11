@@ -4,7 +4,7 @@ use std::path::Path;
 use url::Url;
 
 use nusamai_citygml::{
-    CityGMLElement, CityGMLReader, GeometryStore, ParseError, SubTreeReader
+    CityGMLElement, CityGMLReader, GeometryStore, ParseError, SubTreeReader, Code
 };
 use nusamai_plateau::models::tunnel::Tunnel;
 use nusamai_plateau::models::{TopLevelCityObject};
@@ -71,35 +71,30 @@ fn test_tunnel() {
         Err(e) => panic!("Err: {:?}", e),
     };
 
-    // let tun = parsed_data.tunnels.first().unwrap();
-    print!("{:?}", parsed_data);
+    let tun = parsed_data.tunnels.first().unwrap();
 
-    // assert_eq!(
-    //     brid.class,
-    //     Some(Code::new("アーチ橋".to_string(), "03".to_string()))
-    // );
+    assert_eq!(
+        tun.class,
+        Some(Code::new("交通".to_string(), "1000".to_string()))
+    );
 
-    // assert_eq!(
-    //     brid.function,
-    //     vec![Code::new("道路橋".to_string(), "01".to_string())]
-    // );
+    assert_eq!(
+        tun.function,
+        vec![Code::new("道路用トンネル".to_string(), "1010".to_string())]
+    );
 
-    // assert_eq!(
-    //     brid.year_of_construction,
-    //     Some("1962".to_string())
-    // );
+    assert_eq!(
+        tun.year_of_construction,
+        Some("1989".to_string())
+    );
 
-    // assert_eq!(
-    //     brid.is_movable,
-    //     Some(false)
-    // );
+    assert_eq!(
+        tun.outer_tunnel_installation[0].function,
+        vec![Code::new("その他".to_string(), "90".to_string())]
+    );
 
-    // assert_eq!(
-    //     brid.outer_bridge_construction[0].function,
-    //     vec![Code::new("アーチ".to_string(), "04".to_string())]
-    // )
-
-
-
-    
+    assert_eq!(
+        tun.outer_tunnel_installation[0].function,
+        vec![Code::new("その他".to_string(), "90".to_string())]
+    );    
 }
