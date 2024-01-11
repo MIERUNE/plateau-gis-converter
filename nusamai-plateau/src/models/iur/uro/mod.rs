@@ -17,6 +17,7 @@ mod vegetation;
 mod waterbody;
 mod landuse;
 mod bridge;
+mod tunnel;
 
 pub use building::*;
 pub use city_furniture::*;
@@ -36,3 +37,4 @@ pub use waterbody::*;
 // pub use utility_network::*;
 pub use landuse::*;
 pub use bridge::*;
+pub use tunnel::*;

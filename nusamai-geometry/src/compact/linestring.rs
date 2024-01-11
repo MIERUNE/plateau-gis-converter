@@ -115,16 +115,16 @@ impl<'a, const D: usize, T: CoordNum> LineString<'a, D, T> {
 impl<'a, T: CoordNum> LineString<'a, 2, T> {
     /// Returns true if the ring is counter-clockwise.
     pub fn is_ccw(&self) -> bool {
-        self.ring_signed_area() > 0.0
+        self.signed_ring_area() > 0.0
     }
 
     /// Calculates the area of this LineString as a ring.
     pub fn ring_area(&self) -> f64 {
-        self.ring_signed_area().abs()
+        self.signed_ring_area().abs()
     }
 
     /// Calculates the signed area of this LineString as a ring.
-    fn ring_signed_area(&self) -> f64 {
+    fn signed_ring_area(&self) -> f64 {
         if self.is_empty() {
             return 0.0;
         }
