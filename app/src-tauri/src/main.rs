@@ -47,6 +47,7 @@ fn run(input_path: String, output_path: String, filetype: String) {
     };
 
     let sink = {
+        // TODO: share with the frontend types (src/lib/settings.ts)
         let sink_provider: Box<dyn DataSinkProvider> = match &*filetype {
             "GeoJSON" => Box::new(GeoJsonSinkProvider {}),
             "GeoPackage" => Box::new(GpkgSinkProvider {}),
