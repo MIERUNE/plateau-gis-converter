@@ -108,6 +108,18 @@ impl<'a, const D: usize, T: CoordNum> Polygon<'a, D, T> {
     }
 }
 
+// 2-dimensional only
+impl<'a, T: CoordNum> Polygon<'a, 2, T> {
+    pub fn area(&self) -> f64 {
+        let mut area = 0.0;
+        area += self.exterior().ring_area();
+        for interior in self.interiors() {
+            area -= interior.ring_area();
+        }
+        area
+    }
+}
+
 pub struct Iter<'a, const D: usize, T: CoordNum> {
     poly: &'a Polygon<'a, D, T>,
     pos: usize,
@@ -287,5 +299,22 @@ mod tests {
         let coords: Vec<f64> = (0..15).flat_map(|i| vec![i as f64, i as f64]).collect();
         let hole_indices: Vec<u32> = vec![6, 3]; // not monotonically increasing
         let _polygon: Polygon2<f64> = Polygon2::from_raw(coords.into(), hole_indices.into());
+    }
+
+    #[test]
+    fn test_area() {
+        let mut polygon = Polygon2::new();
+        assert_eq!(polygon.area(), 0.0);
+        polygon.add_ring([[0.0, 0.0], [3.0, 0.0], [3.0, 3.0], [0.0, 3.0]]);
+        assert_eq!(polygon.area(), 9.0);
+        polygon.add_ring([[1.0, 1.0], [1.0, 2.0], [2.0, 2.0], [2.0, 1.0]]);
+        assert_eq!(polygon.area(), 8.0);
+
+        // winding order should not matter
+        let mut polygon = Polygon2::new();
+        polygon.add_ring([[0.0, 0.0], [0.0, 3.0], [3.0, 3.0], [3.0, 0.0]]);
+        assert_eq!(polygon.area(), 9.0);
+        polygon.add_ring([[1.0, 1.0], [2.0, 1.0], [2.0, 2.0], [1.0, 2.0]]);
+        assert_eq!(polygon.area(), 8.0);
     }
 }

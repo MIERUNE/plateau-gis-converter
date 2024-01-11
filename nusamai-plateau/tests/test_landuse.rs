@@ -8,7 +8,6 @@ use nusamai_citygml::{
 };
 use nusamai_plateau::models::landuse::LandUse;
 use nusamai_plateau::models::TopLevelCityObject;
-use nusamai_plateau::models::iur::uro;
 
 #[derive(Default, Debug)]
 struct ParsedData {

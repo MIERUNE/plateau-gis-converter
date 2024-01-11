@@ -314,9 +314,9 @@ impl<R: BufRead> SubTreeReader<'_, '_, R> {
             MultiSurface => self.parse_multi_surface_prop(geomref, lod)?,
             Geometry => self.parse_geometry_prop(geomref, lod)?, // FIXME: not only surfaces
             Triangulated => self.parse_triangulated_prop(geomref, lod)?, // FIXME
-            Point => todo!(),
-            MultiPoint => todo!(),
-            MultiCurve => todo!(),
+            Point => todo!(),                                    // FIXME
+            MultiPoint => todo!(),                               // FIXME
+            MultiCurve => todo!(),                               // FIXME
         }
 
         self.state
@@ -397,6 +397,11 @@ impl<R: BufRead> SubTreeReader<'_, '_, R> {
                         (Bound(GML31_NS), b"Polygon") => todo!(),
                         (Bound(GML31_NS), b"TriangulatedSurface") => todo!(),
                         (Bound(GML31_NS), b"Tin") => todo!(),
+                        (Bound(GML31_NS), b"MultiCurve") => {
+                            // FIXME, TODO
+                            self.skip_current_element()?; // FIXME, TODO
+                            GeometryType::Curve
+                        } // FIXME:
                         _ => {
                             return Err(ParseError::SchemaViolation(format!(
                                 "Unexpected element <{}>",

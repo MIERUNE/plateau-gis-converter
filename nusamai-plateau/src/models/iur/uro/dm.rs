@@ -46,6 +46,9 @@ pub struct DmAnnotation {
 
 #[citygml_data(name = "uro:DmGeometricAttribute")]
 pub struct DmGeometricAttribute {
+    #[citygml(geom = b"uro")]
+    pub geometries: nusamai_citygml::GeometryRef,
+
     #[citygml(path = b"uro:dmCode", required)]
     pub dm_code: Option<Code>,
 

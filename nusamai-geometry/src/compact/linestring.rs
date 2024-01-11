@@ -83,6 +83,61 @@ impl<'a, const D: usize, T: CoordNum> LineString<'a, D, T> {
             c.copy_from_slice(&transformed);
         });
     }
+
+    /// Reverses the coordinates in the LineString.
+    pub fn reverse(&mut self) {
+        let len = self.coords.len();
+        if len > 0 {
+            let data = self.coords.to_mut();
+            for i in 0..data.len() / D / 2 {
+                for j in 0..D {
+                    data.swap(i * D + j, len - (i + 1) * D + j);
+                }
+            }
+        }
+    }
+
+    /// Reverses the winding order of the coordinates in the ring, preserving the first coordinate.
+    pub fn ring_reverse(&mut self) {
+        let len = self.coords.len();
+        if len > D {
+            let data = self.coords.to_mut();
+            for i in 1..(data.len() / D + 1) / 2 {
+                for j in 0..D {
+                    data.swap(i * D + j, len - i * D + j);
+                }
+            }
+        }
+    }
+}
+
+// 2-dimensional only
+impl<'a, T: CoordNum> LineString<'a, 2, T> {
+    /// Returns true if the ring is counter-clockwise.
+    pub fn is_ccw(&self) -> bool {
+        self.ring_signed_area() > 0.0
+    }
+
+    /// Calculates the area of this LineString as a ring.
+    pub fn ring_area(&self) -> f64 {
+        self.ring_signed_area().abs()
+    }
+
+    /// Calculates the signed area of this LineString as a ring.
+    fn ring_signed_area(&self) -> f64 {
+        if self.is_empty() {
+            return 0.0;
+        }
+        let mut area = 0.0;
+        let mut ring_iter = self.iter_closed();
+        let mut prev = ring_iter.next().unwrap();
+        for coord in ring_iter {
+            area += (prev[0].to_f64().unwrap() * coord[1].to_f64().unwrap())
+                - (prev[1].to_f64().unwrap() * coord[0].to_f64().unwrap());
+            prev = coord;
+        }
+        area / 2.0
+    }
 }
 
 impl<const D: usize, T: CoordNum> AsRef<[T]> for LineString<'_, D, T> {
@@ -194,5 +249,57 @@ mod tests {
             line.transform_inplace(|[x, y]| [x + 2., y + 1.]);
             assert_eq!(line.coords(), [2., 1., 7., 1., 7., 6., 2., 6.]);
         }
+    }
+
+    #[test]
+    fn test_winding_order() {
+        let line = LineString2::from_raw(vec![0.0, 0.0, 3.0, 0.0, 3.0, 3.0, 0.0, 3.0].into());
+        assert!(line.is_ccw());
+
+        let line = LineString2::from_raw(vec![0.0, 0.0, 0.0, 3.0, 3.0, 3.0, 3.0, 0.0].into());
+        assert!(!line.is_ccw());
+
+        let line = LineString2::from_raw(vec![0.0, 0.0, 0.0, 0.0].into());
+        assert!(!line.is_ccw());
+    }
+
+    #[test]
+    fn test_reverse() {
+        let mut line = LineString2::from_raw(
+            vec![0.0, 0.0, 3.0, 0.0, 3.0, 1.0, 3.0, 3.0, 1.0, 3.0, 0.0, 3.0].into(),
+        );
+        line.reverse();
+        assert_eq!(
+            line.coords(),
+            vec![0.0, 3.0, 1.0, 3.0, 3.0, 3.0, 3.0, 1.0, 3.0, 0.0, 0.0, 0.0]
+        );
+
+        let mut line =
+            LineString2::from_raw(vec![0.0, 0.0, 3.0, 0.0, 6.0, 0.0, 6.0, 3.0, 3.0, 3.0].into());
+        line.reverse();
+        assert_eq!(
+            line.coords(),
+            vec![3.0, 3.0, 6.0, 3.0, 6.0, 0.0, 3.0, 0.0, 0.0, 0.0]
+        );
+    }
+
+    #[test]
+    fn test_ring_reverse() {
+        let mut line = LineString2::from_raw(
+            vec![0.0, 0.0, 3.0, 0.0, 3.0, 1.0, 3.0, 3.0, 1.0, 3.0, 0.0, 3.0].into(),
+        );
+        line.ring_reverse();
+        assert_eq!(
+            line.coords(),
+            vec![0.0, 0.0, 0.0, 3.0, 1.0, 3.0, 3.0, 3.0, 3.0, 1.0, 3.0, 0.0]
+        );
+
+        let mut line =
+            LineString2::from_raw(vec![0.0, 0.0, 3.0, 0.0, 6.0, 0.0, 6.0, 3.0, 3.0, 3.0].into());
+        line.ring_reverse();
+        assert_eq!(
+            line.coords(),
+            vec![0.0, 0.0, 3.0, 3.0, 6.0, 3.0, 6.0, 0.0, 3.0, 0.0]
+        );
     }
 }
