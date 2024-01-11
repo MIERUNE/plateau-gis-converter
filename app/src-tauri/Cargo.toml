@@ -25,6 +25,8 @@ nusamai-plateau = { path = "../../nusamai-plateau" }
 nusamai-citygml = {path = "../../nusamai-citygml" }
 quick-xml = "0.31.0"
 geojson = "0.24.1"
+log = "0.4.20"
+pretty_env_logger = "0.5.0"
 
 
 [features]
