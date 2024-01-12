@@ -37,7 +37,7 @@
 			return;
 		}
 
-		await invoke('convert_and_save', {
+		await invoke('run', {
 			inputPath,
 			outputPath,
 			filetype
