@@ -5,8 +5,8 @@ use clap::Parser;
 
 use nusamai::pipeline::Canceller;
 use nusamai::sink::{
-    geojson::GeoJsonSinkProvider, gpkg::GpkgSinkProvider, noop::NoopSinkProvider,
-    serde::SerdeSinkProvider, tiling2d::Tiling2DSinkProvider,
+    geojson::GeoJsonSinkProvider, gpkg::GpkgSinkProvider, mvt::MVTSinkProvider,
+    noop::NoopSinkProvider, serde::SerdeSinkProvider,
 };
 use nusamai::sink::{DataSink, DataSinkProvider};
 use nusamai::source::citygml::CityGMLSourceProvider;
@@ -45,7 +45,7 @@ enum SinkChoice {
     Serde,
     Geojson,
     Gpkg,
-    Tiling2d,
+    Mvt,
 }
 
 impl SinkChoice {
@@ -55,7 +55,7 @@ impl SinkChoice {
             SinkChoice::Serde => Box::new(SerdeSinkProvider {}),
             SinkChoice::Geojson => Box::new(GeoJsonSinkProvider {}),
             SinkChoice::Gpkg => Box::new(GpkgSinkProvider {}),
-            SinkChoice::Tiling2d => Box::new(Tiling2DSinkProvider {}),
+            SinkChoice::Mvt => Box::new(MVTSinkProvider {}),
         }
     }
 }

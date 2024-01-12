@@ -85,7 +85,7 @@ impl<'a, const D: usize, T: CoordNum> LineString<'a, D, T> {
     }
 
     /// Reverses the coordinates in the LineString.
-    pub fn reverse(&mut self) {
+    pub fn reverse_inplace(&mut self) {
         let len = self.coords.len();
         if len > 0 {
             let data = self.coords.to_mut();
@@ -98,7 +98,7 @@ impl<'a, const D: usize, T: CoordNum> LineString<'a, D, T> {
     }
 
     /// Reverses the winding order of the coordinates in the ring, preserving the first coordinate.
-    pub fn ring_reverse(&mut self) {
+    pub fn reverse_ring_inplace(&mut self) {
         let len = self.coords.len();
         if len > D {
             let data = self.coords.to_mut();
@@ -276,7 +276,7 @@ mod tests {
         let mut line = LineString2::from_raw(
             vec![0.0, 0.0, 3.0, 0.0, 3.0, 1.0, 3.0, 3.0, 1.0, 3.0, 0.0, 3.0].into(),
         );
-        line.reverse();
+        line.reverse_inplace();
         assert_eq!(
             line.coords(),
             vec![0.0, 3.0, 1.0, 3.0, 3.0, 3.0, 3.0, 1.0, 3.0, 0.0, 0.0, 0.0]
@@ -284,7 +284,7 @@ mod tests {
 
         let mut line =
             LineString2::from_raw(vec![0.0, 0.0, 3.0, 0.0, 6.0, 0.0, 6.0, 3.0, 3.0, 3.0].into());
-        line.reverse();
+        line.reverse_inplace();
         assert_eq!(
             line.coords(),
             vec![3.0, 3.0, 6.0, 3.0, 6.0, 0.0, 3.0, 0.0, 0.0, 0.0]
@@ -296,7 +296,7 @@ mod tests {
         let mut line = LineString2::from_raw(
             vec![0.0, 0.0, 3.0, 0.0, 3.0, 1.0, 3.0, 3.0, 1.0, 3.0, 0.0, 3.0].into(),
         );
-        line.ring_reverse();
+        line.reverse_ring_inplace();
         assert_eq!(
             line.coords(),
             vec![0.0, 0.0, 0.0, 3.0, 1.0, 3.0, 3.0, 3.0, 3.0, 1.0, 3.0, 0.0]
@@ -304,7 +304,7 @@ mod tests {
 
         let mut line =
             LineString2::from_raw(vec![0.0, 0.0, 3.0, 0.0, 6.0, 0.0, 6.0, 3.0, 3.0, 3.0].into());
-        line.ring_reverse();
+        line.reverse_ring_inplace();
         assert_eq!(
             line.coords(),
             vec![0.0, 0.0, 3.0, 3.0, 6.0, 3.0, 6.0, 0.0, 3.0, 0.0]

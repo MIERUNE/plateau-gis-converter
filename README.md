@@ -22,7 +22,7 @@
         - [`macros`](./nusamai-plateau/citygml/macros/) &mdash; パーサ導出用の proc macros
 - 変換先形式のためのライブラリ：
     - [`nusamai-3dtiles`](./nusamai-3dtiles/) &mdash; 3D Tiles
-    - [`nusamai-mvt`](./nusamai-mvt/) &mdash; Mapbox Vector Tile (MVT)
+    - [`nusamai-mvt`](./nusamai-mvt/) &mdash; Mapbox Vector Tiles (MVT)
     - [`nusamai-gpkg`](./nusamai-gpkg/) &mdash; GeoPackage
     - [`nusamai-gltf`](./nusamai-gltf/) &mdash; glTF
     - [`nusamai-geojson`](./nusamai-geojson/) &mdash; GeoJSON

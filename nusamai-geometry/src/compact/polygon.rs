@@ -88,14 +88,17 @@ impl<'a, const D: usize, T: CoordNum> Polygon<'a, D, T> {
     }
 
     /// Create a new Polygon by applying the given transformation to all coordinates.
-    pub fn transform(&self, f: impl Fn(&[T; D]) -> [T; D]) -> Self {
-        Self {
+    pub fn transform<const D2: usize, T2: CoordNum>(
+        &self,
+        f: impl Fn(&[T; D]) -> [T2; D2],
+    ) -> Polygon<D2, T2> {
+        Polygon {
             coords: self
                 .coords
                 .chunks_exact(D)
                 .flat_map(|v| f(&v.try_into().unwrap()))
                 .collect(),
-            ..self.clone()
+            hole_indices: self.hole_indices.clone(),
         }
     }
 
