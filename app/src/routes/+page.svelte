@@ -2,7 +2,6 @@
 	import { invoke } from '@tauri-apps/api/tauri';
 	import { dialog } from '@tauri-apps/api';
 	import { fileTypeOptions } from '$lib/settings';
-	import Icon from '@iconify/svelte';
 
 	import InputSelector from './InputSelector.svelte';
 
@@ -36,8 +35,6 @@
 
 <div class="grid place-items-center h-screen">
 	<InputSelector bind:inputPath />
-
-	<Icon icon="mdi-light:home" />
 
 	<div class="">
 		<label for="filetype-select" class="mr-11">出力形式</label>
