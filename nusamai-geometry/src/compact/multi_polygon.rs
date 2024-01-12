@@ -205,14 +205,19 @@ impl<'a, const D: usize, T: CoordNum> MultiPolygon<'a, D, T> {
     }
 
     /// Create a new MultiPolygon by applying the given transformation to all coordinates.
-    pub fn transform(&self, f: impl Fn(&[T; D]) -> [T; D]) -> Self {
-        Self {
+    pub fn transform<const D2: usize, T2: CoordNum>(
+        &self,
+        f: impl Fn(&[T; D]) -> [T2; D2],
+    ) -> MultiPolygon<D2, T2> {
+        MultiPolygon {
             all_coords: self
                 .all_coords
                 .chunks_exact(D)
                 .flat_map(|v| f(&v.try_into().unwrap()))
                 .collect(),
-            ..self.clone()
+            coords_spans: self.coords_spans.clone(),
+            all_hole_indices: self.all_hole_indices.clone(),
+            holes_spans: self.holes_spans.clone(),
         }
     }
 

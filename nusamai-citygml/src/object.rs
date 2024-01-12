@@ -16,7 +16,7 @@ pub struct CityObject {
     pub geometries: geometry::GeometryStore,
 }
 
-#[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct Feature {
     pub typename: Cow<'static, str>,
     pub id: Option<String>,
@@ -24,14 +24,14 @@ pub struct Feature {
     pub geometries: Option<GeometryRef>,
 }
 
-#[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct Data {
     pub typename: Cow<'static, str>,
     pub attributes: Map,
 }
 
 /// Nodes for the "Object" representation of the city object.
-#[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub enum Value {
     String(String),
     Code(Code),
