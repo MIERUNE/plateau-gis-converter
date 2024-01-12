@@ -51,7 +51,7 @@ fn toplevel_dispatcher<R: BufRead>(st: &mut SubTreeReader<R>) -> Result<ParsedDa
 }
 
 #[test]
-fn test_track() {
+fn test_railway() {
     let filename = "./tests/data/plateau-3_0/udx/rwy/53395518_rwy_6697.gml";
 
     let reader = std::io::BufReader::new(std::fs::File::open(filename).unwrap());
