@@ -1,5 +1,5 @@
 use super::iur::uro;
-use nusamai_citygml::{citygml_feature, citygml_property, CityGMLElement, Code, GYear};
+use nusamai_citygml::{citygml_feature, citygml_property, citygml_data, CityGMLElement, Code, GYear, Measure, URI, Date, Length};
 
 #[citygml_feature(name = "urf:UrbanPlanningArea")]
 pub struct UrbanPlanningArea {
@@ -5222,6 +5222,16 @@ pub struct SupplyFacility {
 
 }
 
+#[citygml_data(name = "urf:WaterWorksAttribute")]
+pub struct WaterWorksAttribute {
+    #[citygml(path = b"urf:startLocation")]
+    pub start_location: Option<String>,
+
+    #[citygml(path = b"urf:endLocation")]
+    pub end_location: Option<String>,
+
+}
+
 #[citygml_feature(name = "urf:TelecommunicationFacility")]
 pub struct TelecommunicationFacility {
     #[citygml(path = b"urf:class")]
@@ -5516,6 +5526,101 @@ pub struct TrafficFacility {
 
 }
 
+#[citygml_data(name = "urf:ParkingPlaceAttribute")]
+pub struct ParkingPlaceAttribute {
+    #[citygml(path = b"urf:storeysAboveGround", required)]
+    pub storeys_above_ground: Option<u64>,
+
+    #[citygml(path = b"urf:storeysBelowGround", required)]
+    pub storeys_below_ground: Option<u64>,
+
+}
+
+#[citygml_data(name = "urf:UrbanRapidTransitRailroadAttribute")]
+pub struct UrbanRapidTransitRailroadAttribute {
+    #[citygml(path = b"urf:structureType")]
+    pub structure_type: Option<Code>,
+
+    #[citygml(path = b"urf:crossType")]
+    pub cross_type: Option<Code>,
+
+    #[citygml(path = b"urf:structuralDetails/urf:StructureDetails")]
+    pub structural_details: Vec<StructureDetails>,
+
+}
+
+#[citygml_data(name = "urf:VehicleTerminalAttribute")]
+pub struct VehicleTerminalAttribute {
+    #[citygml(path = b"urf:terminalType", required)]
+    pub terminal_type: Option<Code>,
+
+}
+
+#[citygml_data(name = "urf:StructureDetails")]
+pub struct StructureDetails {
+    #[citygml(path = b"urf:startLocation", required)]
+    pub start_location: Option<String>,
+
+    #[citygml(path = b"urf:endLocation", required)]
+    pub end_location: Option<String>,
+
+    #[citygml(path = b"urf:viaLocations")]
+    pub via_locations: Option<String>,
+
+    #[citygml(path = b"urf:length")]
+    pub length: Option<Length>,
+
+    #[citygml(path = b"urf:structureType")]
+    pub structure_type: Option<Code>,
+
+    #[citygml(path = b"urf:minimumWidth")]
+    pub minimum_width: Option<Length>,
+
+    #[citygml(path = b"urf:maximumWidth")]
+    pub maximum_width: Option<Length>,
+
+    #[citygml(path = b"urf:standardWidth")]
+    pub standard_width: Option<Length>,
+
+    #[citygml(path = b"urf:crossType")]
+    pub cross_type: Option<Code>,
+
+}
+
+#[citygml_data(name = "urf:UrbanRoadAttribute")]
+pub struct UrbanRoadAttribute {
+    #[citygml(path = b"urf:routeTypeNumber")]
+    pub route_type_number: Option<Code>,
+
+    #[citygml(path = b"urf:routeSizeNumber")]
+    pub route_size_number: Option<Code>,
+
+    #[citygml(path = b"urf:routeSerialNumber")]
+    pub route_serial_number: Option<String>,
+
+    #[citygml(path = b"urf:roadType")]
+    pub road_type: Option<Code>,
+
+    #[citygml(path = b"urf:numberOfLanes")]
+    pub number_of_lanes: Option<i64>,
+
+    #[citygml(path = b"urf:roadStructure")]
+    pub road_structure: Option<String>,
+
+    #[citygml(path = b"urf:structureType")]
+    pub structure_type: Option<Code>,
+
+    #[citygml(path = b"urf:crossType")]
+    pub cross_type: Option<Code>,
+
+    #[citygml(path = b"urf:trafficPlazas")]
+    pub traffic_plazas: Option<Code>,
+
+    #[citygml(path = b"urf:structuralDetails/urf:StructureDetails")]
+    pub structural_details: Vec<StructureDetails>,
+
+}
+
 #[citygml_feature(name = "urf:TreatmentFacility")]
 pub struct TreatmentFacility {
     #[citygml(path = b"urf:class")]
@@ -5601,6 +5706,22 @@ pub struct TreatmentFacility {
 
     #[citygml(path = b"urf:sewerSystemsAttribute/urf:SewerSystemAttribute")]
     pub sewer_systems_attribute: Option<SewerSystemAttribute>,
+
+}
+
+#[citygml_data(name = "urf:SewerSystemAttribute")]
+pub struct SewerSystemAttribute {
+    #[citygml(path = b"urf:startLocation")]
+    pub start_location: Option<String>,
+
+    #[citygml(path = b"urf:endLocation")]
+    pub end_location: Option<String>,
+
+    #[citygml(path = b"urf:systemType")]
+    pub system_type: Option<Code>,
+
+    #[citygml(path = b"urf:drainageArea")]
+    pub drainage_area: Option<String>,
 
 }
 
@@ -9070,8 +9191,17 @@ pub struct Boundary {
 
     #[citygml(path = b"urf:offsetDirection")]
     pub offset_direction: Option<String>,
+}
 
-    #[citygml(path = b"urf:location/gml:MultiCurve")]
-    pub location: Option<MultiCurve>,
+#[citygml_data(name = "urf:ParkAttribute")]
+pub struct ParkAttribute {
+    #[citygml(path = b"urf:parkTypeNumber")]
+    pub park_type_number: Option<Code>,
+
+    #[citygml(path = b"urf:parkSizeNumber")]
+    pub park_size_number: Option<Code>,
+
+    #[citygml(path = b"urf:parkSerialNumber")]
+    pub park_serial_number: Option<String>,
 
 }
