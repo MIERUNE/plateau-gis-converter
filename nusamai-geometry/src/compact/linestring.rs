@@ -129,7 +129,7 @@ impl<'a, T: CoordNum> LineString<'a, 2, T> {
     }
 
     /// Calculates the signed area of this LineString as a ring.
-    fn signed_ring_area(&self) -> f64 {
+    pub fn signed_ring_area(&self) -> f64 {
         if self.is_empty() {
             return 0.0;
         }
@@ -152,7 +152,7 @@ impl<const D: usize, T: CoordNum> AsRef<[T]> for LineString<'_, D, T> {
 }
 
 impl<'a, const D: usize, T: CoordNum> IntoIterator for &'a LineString<'_, D, T> {
-    type Item = &'a [T];
+    type Item = [T; D];
     type IntoIter = Iter<'a, D, T>;
 
     fn into_iter(self) -> Self::IntoIter {
@@ -167,14 +167,14 @@ pub struct Iter<'a, const D: usize, T: CoordNum> {
 }
 
 impl<'a, const D: usize, T: CoordNum> Iterator for Iter<'a, D, T> {
-    type Item = &'a [T];
+    type Item = [T; D];
 
     fn next(&mut self) -> Option<Self::Item> {
         self.pos += D;
         if self.pos <= self.slice.len() {
-            Some(&self.slice[self.pos - D..self.pos])
+            Some(self.slice[self.pos - D..self.pos].try_into().unwrap())
         } else if self.close && self.slice.len() >= D && self.pos == self.slice.len() + D {
-            Some(&self.slice[..D])
+            Some(self.slice[..D].try_into().unwrap())
         } else {
             None
         }
@@ -193,10 +193,10 @@ mod tests {
         assert!(!line.is_empty());
         for (i, coord) in line.iter().enumerate() {
             match i {
-                0 => assert_eq!(coord, &[0., 1.]),
-                1 => assert_eq!(coord, &[2., 3.]),
-                2 => assert_eq!(coord, &[4., 5.]),
-                3 => assert_eq!(coord, &[6., 7.]),
+                0 => assert_eq!(coord, [0., 1.]),
+                1 => assert_eq!(coord, [2., 3.]),
+                2 => assert_eq!(coord, [4., 5.]),
+                3 => assert_eq!(coord, [6., 7.]),
                 _ => unreachable!(),
             }
         }
@@ -232,10 +232,10 @@ mod tests {
         assert!(!line.is_empty());
         for (i, coord) in line.iter_closed().enumerate() {
             match i {
-                0 => assert_eq!(coord, &[0., 1.]),
-                1 => assert_eq!(coord, &[2., 3.]),
-                2 => assert_eq!(coord, &[4., 5.]),
-                3 => assert_eq!(coord, &[0., 1.]),
+                0 => assert_eq!(coord, [0., 1.]),
+                1 => assert_eq!(coord, [2., 3.]),
+                2 => assert_eq!(coord, [4., 5.]),
+                3 => assert_eq!(coord, [0., 1.]),
                 _ => unreachable!(),
             }
         }

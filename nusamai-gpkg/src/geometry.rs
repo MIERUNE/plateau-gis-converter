@@ -58,7 +58,7 @@ fn write_geometry_header<W: Write>(writer: &mut W, srs_id: i32) -> std::io::Resu
 fn write_polygon_body<W: Write, const D: usize, T: CoordNum>(
     writer: &mut W,
     poly: &Polygon<D, T>,
-    mapping: impl Fn(&[T]) -> [f64; 3],
+    mapping: impl Fn([T; D]) -> [f64; 3],
 ) -> std::io::Result<()> {
     // Byte order: Little endian (1)
     writer.write_all(&[WkbByteOrder::LittleEndian as u8])?;
@@ -97,7 +97,7 @@ pub fn write_indexed_multipolygon<W: Write>(
 fn write_multipolygon_body<W: Write, const D: usize, T: CoordNum>(
     writer: &mut W,
     mpoly: &MultiPolygon<D, T>,
-    mapping: impl Fn(&[T]) -> [f64; 3],
+    mapping: impl Fn([T; D]) -> [f64; 3],
 ) -> std::io::Result<()> {
     // Byte order: Little endian (1)
     writer.write_all(&[WkbByteOrder::LittleEndian as u8])?;

@@ -16,7 +16,7 @@ pub fn indexed_multipolygon_to_geometry(
 /// Create a GeoJSON MultiPolygon from `nusamai_geometry::MultiPolygon` with a mapping function.
 pub fn multipolygon_to_geometry_with_mapping<const D: usize, T: CoordNum>(
     mpoly: &MultiPolygon<D, T>,
-    mapping: impl Fn(&[T]) -> Vec<f64>,
+    mapping: impl Fn([T; D]) -> Vec<f64>,
 ) -> geojson::Geometry {
     let coords: Vec<geojson::PolygonType> = mpoly
         .iter()
@@ -49,7 +49,7 @@ pub fn indexed_multilinestring_to_geometry(
 /// Create a GeoJSON MultiLineString from `nusamai_geometry::MultiPolygon` with a mapping function.
 pub fn multilinestring_to_geometry_with_mapping<const D: usize, T: CoordNum>(
     mls: &MultiLineString<D, T>,
-    mapping: impl Fn(&[T]) -> Vec<f64>,
+    mapping: impl Fn([T; D]) -> Vec<f64>,
 ) -> geojson::Geometry {
     let coords = mls
         .iter()
@@ -79,7 +79,7 @@ pub fn indexed_multipoint_to_geometry(
 /// Create a GeoJSON MultiPoint from `nusamai_geometry::MultiPoint` with a mapping function.
 pub fn multipoint_to_geometry_with_mapping<const D: usize, T: CoordNum>(
     mpoint: &MultiPoint<D, T>,
-    mapping: impl Fn(&[T]) -> Vec<f64>,
+    mapping: impl Fn([T; D]) -> Vec<f64>,
 ) -> geojson::Geometry {
     let coords = mpoint
         .iter()
