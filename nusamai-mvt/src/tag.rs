@@ -36,7 +36,7 @@ impl TagsEncoder {
     }
 }
 
-/// Wrapper for tile::Value
+/// Wrapper for MVT Value
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum Value {
     String(String),
@@ -135,5 +135,89 @@ impl From<f64> for Value {
 impl From<bool> for Value {
     fn from(v: bool) -> Self {
         Value::Bool(v)
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn tags_encoder() {
+        let mut encoder = TagsEncoder::new();
+        assert_eq!(encoder.add("k0", "v0".into()), [0, 0]);
+        assert_eq!(encoder.add("k0", "v0".into()), [0, 0]);
+        assert_eq!(encoder.add("k1", "v0".into()), [1, 0]);
+        assert_eq!(encoder.add("k1", "v1".into()), [1, 1]);
+        assert_eq!(encoder.add("k0", "v0".into()), [0, 0]);
+        assert_eq!(encoder.add("k0", "v2".into()), [0, 2]);
+        assert_eq!(encoder.add("k1", "v2".into()), [1, 2]);
+        assert_eq!(encoder.add("k2", "v0".to_string().into()), [2, 0]);
+        assert_eq!(encoder.add("k1", "v1".into()), [1, 1]);
+        assert_eq!(encoder.add("k1", "v1".to_string().into()), [1, 1]);
+        assert_eq!(encoder.add("k1", 10i32.into()), [1, 3]);
+        assert_eq!(encoder.add("k2", 10.5f64.into()), [2, 4]);
+        assert_eq!(encoder.add("k3", 10u32.into()), [3, 3]);
+        assert_eq!(encoder.add("k3", (-10i32).into()), [3, 5]);
+        assert_eq!(encoder.add("k3", true.into()), [3, 6]);
+        assert_eq!(encoder.add("k3", 1.into()), [3, 7]);
+        assert_eq!(encoder.add("k2", 10.5f32.into()), [2, 8]);
+        assert_eq!(encoder.add("k4", 10.5f64.into()), [4, 4]);
+        assert_eq!(encoder.add("k3", (-10i64).into()), [3, 5]);
+        assert_eq!(encoder.add("k3", 10u64.into()), [3, 3]);
+        assert_eq!(encoder.add("k5", Value::Int(11)), [5, 9]);
+        assert_eq!(encoder.add("k5", 12i64.into()), [5, 10]);
+
+        let (keys, values) = encoder.into_keys_and_values();
+        assert_eq!(keys, vec!["k0", "k1", "k2", "k3", "k4", "k5"]);
+        assert_eq!(
+            values,
+            vec![
+                tile::Value {
+                    string_value: Some("v0".to_string()),
+                    ..Default::default()
+                },
+                tile::Value {
+                    string_value: Some("v1".to_string()),
+                    ..Default::default()
+                },
+                tile::Value {
+                    string_value: Some("v2".to_string()),
+                    ..Default::default()
+                },
+                tile::Value {
+                    uint_value: Some(10),
+                    ..Default::default()
+                },
+                tile::Value {
+                    double_value: Some(10.5),
+                    ..Default::default()
+                },
+                tile::Value {
+                    sint_value: Some(-10),
+                    ..Default::default()
+                },
+                tile::Value {
+                    bool_value: Some(true),
+                    ..Default::default()
+                },
+                tile::Value {
+                    uint_value: Some(1),
+                    ..Default::default()
+                },
+                tile::Value {
+                    float_value: Some(10.5),
+                    ..Default::default()
+                },
+                tile::Value {
+                    int_value: Some(11),
+                    ..Default::default()
+                },
+                tile::Value {
+                    uint_value: Some(12),
+                    ..Default::default()
+                },
+            ]
+        );
     }
 }

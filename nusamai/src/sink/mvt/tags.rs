@@ -21,7 +21,7 @@ pub fn traverse_properties(
             tags.extend(tags_enc.add(&name, (*v).into()));
         }
         nusamai_citygml::Value::Measure(v) => {
-            tags.extend(tags_enc.add(&name, v.value.into()));
+            tags.extend(tags_enc.add(&name, v.value().into()));
         }
         nusamai_citygml::Value::Boolean(v) => {
             tags.extend(tags_enc.add(&name, (*v).into()));
@@ -32,8 +32,8 @@ pub fn traverse_properties(
         nusamai_citygml::Value::Date(v) => {
             tags.extend(tags_enc.add(&name, v.to_string().into()));
         }
-        nusamai_citygml::Value::Point(_) => {
-            // ...
+        nusamai_citygml::Value::Point(v) => {
+            tags.extend(tags_enc.add(&name, format!("{:?}", v).into())); // FIXME
         }
         nusamai_citygml::Value::Array(arr) => {
             arr.iter().enumerate().for_each(|(i, v)| {
@@ -49,8 +49,12 @@ pub fn traverse_properties(
                 tags.extend(tags_enc.add("id", id.clone().into()));
             }
             feat.attributes.iter().for_each(|(k, v)| {
+                let k = match k.split_once(':') {
+                    Some((_, k)) => k,
+                    None => k,
+                };
                 if name.is_empty() {
-                    traverse_properties(tags, tags_enc, k.clone(), v);
+                    traverse_properties(tags, tags_enc, k.into(), v);
                 } else {
                     traverse_properties(tags, tags_enc, format!("{}.{}", name, k), v);
                 }
@@ -58,8 +62,12 @@ pub fn traverse_properties(
         }
         nusamai_citygml::Value::Data(data) => {
             data.attributes.iter().for_each(|(k, v)| {
+                let k = match k.split_once(':') {
+                    Some((_, k)) => k,
+                    None => k,
+                };
                 if name.is_empty() {
-                    traverse_properties(tags, tags_enc, k.clone(), v);
+                    traverse_properties(tags, tags_enc, k.into(), v);
                 } else {
                     traverse_properties(tags, tags_enc, format!("{}.{}", name, k), v);
                 }

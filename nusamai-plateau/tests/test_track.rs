@@ -4,10 +4,10 @@ use std::path::Path;
 use url::Url;
 
 use nusamai_citygml::{
-    CityGMLElement, CityGMLReader, Code, GeometryStore, Measure, ParseError, SubTreeReader,
+    CityGMLElement, CityGMLReader, Code, GeometryStore, ParseError, SubTreeReader,
 };
-use nusamai_plateau::models::Track;
 use nusamai_plateau::models::TopLevelCityObject;
+use nusamai_plateau::models::Track;
 
 #[derive(Default, Debug)]
 struct ParsedData {
@@ -75,14 +75,17 @@ fn test_track() {
 
     let track = parsed_data.tracks.first().unwrap();
 
-
     assert_eq!(
         track.function,
         vec![Code::new("徒歩道".to_string(), "1".to_string(),)]
     );
 
     assert_eq!(
-        track.tran_data_quality_attribute.as_ref().unwrap().geometry_src_desc,
+        track
+            .tran_data_quality_attribute
+            .as_ref()
+            .unwrap()
+            .geometry_src_desc,
         vec![Code::new("既成図数値化".to_string(), "6".to_string())]
     );
 

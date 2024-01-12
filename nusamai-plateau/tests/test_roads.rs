@@ -103,7 +103,7 @@ fn test_road() {
 
     assert_eq!(
         road.road_structure_attribute.first().unwrap().width,
-        Some(Measure { value: 22.0 }),
+        Some(Measure::new(22.0)),
     );
 
     assert_eq!(
