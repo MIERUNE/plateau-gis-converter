@@ -84,7 +84,14 @@ impl<'a, const D: usize, T: CoordNum> Polygon<'a, D, T> {
                 .to_mut()
                 .push((self.coords.len() / D) as u32);
         }
+        let head = self.coords.len();
         self.coords.to_mut().extend(iter.into_iter().flatten());
+
+        // remove closing point if exists
+        let tail = self.coords.len();
+        if tail > head + 2 * D && self.coords[head..head + D] == self.coords[tail - D..] {
+            self.coords.to_mut().truncate(tail - D);
+        }
     }
 
     /// Create a new Polygon by applying the given transformation to all coordinates.
@@ -237,6 +244,11 @@ mod tests {
         polygon.add_ring([[0.0, 0.0], [1.0, 0.0], [0.0, 1.0]]);
         assert_eq!(polygon.exterior().len(), 3);
         assert_eq!(polygon.interiors().count(), 1);
+
+        let mut polygon = Polygon2::new();
+        polygon.add_ring([[0.0, 0.0], [1.0, 0.0], [0.0, 1.0], [0.0, 0.0]]);
+        assert_eq!(polygon.exterior().len(), 3);
+        assert_eq!(polygon.interiors().count(), 0);
     }
 
     #[test]

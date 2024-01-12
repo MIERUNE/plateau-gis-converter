@@ -212,6 +212,8 @@ fn tile_writing_stage(
                     if poly.exterior().is_ccw() {
                         geom_enc.add_ring(exterior.into_iter().map(|c| [c[0], c[1]]));
                     }
+
+                    // TODO: interior rings
                 }
 
                 let geometry = geom_enc.into_vec();
@@ -278,6 +280,7 @@ fn slice_cityobj_geoms(
     let mut tiled_mpolys = HashMap::new();
 
     let extent = 4096;
+    let buffer = 80;
     idx_mpoly.iter().for_each(|idx_poly| {
         let poly = idx_poly.transform(|c| {
             let [lng, lat, _height] = obj.geometries.vertices[c[0] as usize];
@@ -285,20 +288,24 @@ fn slice_cityobj_geoms(
             [mx, my]
         });
 
-        // Accept only front-facing polygons
+        // Early rejection of polygons that are not front-facing.
         if !poly.exterior().is_cw() {
             return;
         }
         debug_assert!(poly.exterior().ring_area() > 0.0);
 
+        // Slice for each zoom level
         for zoom in min_z..=max_z {
-            let zoom_scale = 2i32.pow(zoom as u32) as f64;
-            let scaled_poly = poly.transform(|c| [c[0] * zoom_scale, c[1] * zoom_scale]);
-            slice_polygon(zoom, extent, 80, &scaled_poly, &mut tiled_mpolys);
+            let z_scale = 2i32.pow(zoom as u32) as f64;
+            let scaled_poly = poly.transform(|c| [(c[0] * z_scale), (c[1] * z_scale)]);
+            slice_polygon(zoom, extent, buffer, &scaled_poly, &mut tiled_mpolys);
         }
     });
 
     for ((z, x, y), mpoly) in tiled_mpolys {
+        if mpoly.is_empty() {
+            continue;
+        }
         if mpoly.iter().any(|poly| poly.area() > 0.0) {
             f((z, x, y), mpoly)?;
         }
@@ -358,8 +365,7 @@ fn slice_polygon(
             ring.reverse_ring_inplace();
             let mut new_ring = Vec::with_capacity(ring.coords().len());
 
-            let last_a = ring
-                .iter_closed()
+            ring.iter_closed()
                 .fold(None, |a, b| {
                     let Some(a) = a else { return Some(b) };
 
@@ -392,13 +398,6 @@ fn slice_polygon(
                     Some(b)
                 })
                 .unwrap();
-
-            if k1 <= last_a[0] && last_a[0] <= k2 {
-                new_ring.extend(last_a)
-            }
-
-            assert!(new_ring[0] == new_ring[new_ring.len() - 2]);
-            assert!(new_ring[1] == new_ring[new_ring.len() - 1]);
 
             x_sliced_poly.add_ring(new_ring.chunks_exact(2).map(|c| [c[0], c[1]]));
         }
@@ -435,8 +434,7 @@ fn slice_polygon(
 
                 let mut new_ring = Vec::with_capacity(ring.coords().len());
 
-                let last_a = ring
-                    .iter_closed()
+                ring.iter_closed()
                     .fold(None, |a, b| {
                         let Some(a) = a else { return Some(b) };
 
@@ -469,10 +467,6 @@ fn slice_polygon(
                         Some(b)
                     })
                     .unwrap();
-
-                if k1 <= last_a[1] && last_a[1] <= k2 {
-                    new_ring.extend(last_a)
-                }
 
                 let iter = new_ring.chunks_exact(2).map(|c| {
                     let (x, y) = (c[0], c[1]);
