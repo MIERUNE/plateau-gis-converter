@@ -12,7 +12,6 @@ pub mod transportation;
 pub mod tunnel;
 pub mod vegetation;
 pub mod waterbody;
-pub mod urban_planning_area;
 
 pub use bridge::Bridge;
 pub use building::Building;
@@ -29,7 +28,6 @@ pub use transportation::{Railway, Road, Square, Track, Waterway};
 pub use tunnel::Tunnel;
 pub use vegetation::{PlantCover, SolitaryVegetationObject};
 pub use waterbody::WaterBody;
-pub use urban_planning_area::{AreaClassification};
 
 #[citygml_property(name = "_:TopLevelFeatureProperty")]
 pub enum TopLevelCityObject {
