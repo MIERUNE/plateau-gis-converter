@@ -139,7 +139,7 @@ fn parse_cityobj(
                         depth += 1;
                     }
                 }
-                b"lod2Geometry" | b"lod2MultiSurface"=> {
+                b"lod2Geometry" | b"lod2MultiSurface" => {
                     if max_lod < 2 {
                         max_lod = 2;
                         mpoly.clear();
