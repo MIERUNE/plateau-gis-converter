@@ -198,6 +198,8 @@ fn generate_citygml_impl_for_struct(
                     add_arm(4, b"lod4Geometry", "Geometry"); // only in CityGML 2.0
                     add_arm(0, b"tin", "Triangulated");
 
+                    
+
                     geom_into_object_expr = quote! {
                         Some(self.#field_ident)
                     };
