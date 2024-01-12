@@ -214,3 +214,28 @@ pub struct VerticalCurveType {
     #[citygml(path = b"uro:verticalDistance", required)]
     pub vertical_distance: Option<Length>,
 }
+
+#[citygml_data(name = "uro:TrackAttribute")]
+pub struct TrackAttribute {
+    #[citygml(path = b"uro:alternativeName")]
+    pub alternative_name: Vec<String>,
+
+    #[citygml(path = b"uro:adminType")]
+    pub admin_type: Option<Code>,
+
+    #[citygml(path = b"uro:relativeLevel")]
+    pub relative_level: Option<i64>,
+
+    #[citygml(path = b"uro:widthType")]
+    pub width_type: Option<Code>,
+
+    #[citygml(path = b"uro:structureType")]
+    pub structure_type: Option<Code>,
+
+    #[citygml(path = b"uro:isTollRoad")]
+    pub is_toll_road: Option<bool>,
+
+    #[citygml(path = b"uro:separator")]
+    pub separator: Option<Length>,
+
+}
