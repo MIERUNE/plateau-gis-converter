@@ -109,6 +109,9 @@ pub struct RoadType {
 
 #[citygml_data(name = "uro:RailwayTrackAttribute")]
 pub struct RailwayTrackAttribute {
+    #[citygml(geom = b"uro")]
+    geometries: nusamai_citygml::GeometryRef,
+
     #[citygml(path = b"uro:routeName")]
     pub route_name: Option<String>,
 
@@ -237,7 +240,6 @@ pub struct TrackAttribute {
 
     #[citygml(path = b"uro:separator")]
     pub separator: Option<Length>,
-
 }
 
 #[citygml_data(name = "uro:RailwayRouteAttribute")]
@@ -259,7 +261,4 @@ pub struct RailwayRouteAttribute {
 
     #[citygml(path = b"uro:endStation", required)]
     pub end_station: Option<String>,
-
 }
-
-
