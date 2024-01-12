@@ -1,4 +1,4 @@
-//! Mapbox Vector Tile (MVT) sink
+//! Mapbox Vector Tiles (MVT) sink
 
 use std::fs;
 use std::path;
