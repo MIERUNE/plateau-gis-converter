@@ -1,4 +1,5 @@
 pub mod geometry;
+pub mod tag;
 pub mod tileid;
 pub mod vector_tile;
 pub mod webmercator;
