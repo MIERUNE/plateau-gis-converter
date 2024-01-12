@@ -90,22 +90,23 @@ pub struct Gltf {
 }
 
 impl Gltf {
-    fn new() -> Self {
+    pub fn new() -> Self {
         Default::default()
-    }
-
-    pub fn construct() -> Gltf{
-        let mut gltf = Gltf::new();
-        gltf.initialize();
-        gltf
-    }
-
-    pub fn initialize(&mut self){
-        self.asset.version = "2.0".to_string();
-        self.asset.generator = Some("nusamai-gltf".to_string());
     }
 
     pub fn to_string(&self) -> Result<String, serde_json::Error> {
         serde_json::to_string(self)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn gltf_default() {
+        let gltf = Gltf::new();
+        assert_eq!(gltf.asset.version, "2.0");
+        assert_eq!(gltf.asset.generator, Some("nusamai-gltf".into()));
     }
 }
