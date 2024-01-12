@@ -26,6 +26,12 @@ impl Default for Resolver {
     }
 }
 
+impl Drop for Resolver {
+    fn drop(&mut self) {
+        self.cache.close().unwrap();
+    }
+}
+
 impl CodeResolver for Resolver {
     fn resolve(
         &self,

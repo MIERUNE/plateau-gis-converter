@@ -56,6 +56,6 @@ fn run_gpkg_sink() {
 }
 
 #[test]
-fn run_tiling2d_sink() {
-    simple_run_sink(sink::tiling2d::Tiling2DSinkProvider {}, "/dev/null".into());
+fn run_mvt_sink() {
+    simple_run_sink(sink::mvt::MVTSinkProvider {}, "/dev/null".into());
 }
