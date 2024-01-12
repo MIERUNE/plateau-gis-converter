@@ -70,31 +70,24 @@ fn test_track() {
         Err(e) => panic!("Err: {:?}", e),
     };
 
-    print!("{:?}", parsed_data.railways.len());
+    assert_eq!(parsed_data.railways.len(), 1);
+    assert_eq!(parsed_data.railways.len(), parsed_data.geometries.len());
 
-//     assert_eq!(parsed_data.tracks.len(), 125);
-//     assert_eq!(parsed_data.tracks.len(), parsed_data.geometries.len());
-
-//     let track = parsed_data.tracks.first().unwrap();
+    let railway = parsed_data.railways.first().unwrap();
 
 
-//     assert_eq!(
-//         track.function,
-//         vec![Code::new("徒歩道".to_string(), "1".to_string(),)]
-//     );
+    assert_eq!(
+        railway.id,
+        Some("rwy_58634d44-b0bd-4b22-bb6b-fafadda9203f".to_string())
+    );
 
-//     assert_eq!(
-//         track.tran_data_quality_attribute.as_ref().unwrap().geometry_src_desc,
-//         vec![Code::new("既成図数値化".to_string(), "6".to_string())]
-//     );
+    assert_eq!(
+        railway.name,
+        vec!["東北線".to_string()]
+    );
 
-//     assert_eq!(
-//         track.auxiliary_traffic_area.first().unwrap().function,
-//         vec![Code::new("島".to_string(), "3000".to_string())]
-//     );
-
-//     assert_eq!(
-//         track.track_attribute.first().unwrap().admin_type,
-//         Some(Code::new("市区町村".to_string(), "3".to_string()))
-//     );
+    assert_eq!(
+        railway.traffic_area.first().unwrap().function,
+        vec![Code::new("軌道中心線".to_string(), "8000".to_string())]
+    );
 }
