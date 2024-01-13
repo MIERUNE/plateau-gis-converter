@@ -4,17 +4,16 @@ use std::path::Path;
 use url::Url;
 
 use nusamai_citygml::{
-    CityGMLElement, CityGMLReader, GeometryStore, ParseError, SubTreeReader, Code
+    CityGMLElement, CityGMLReader, Code, GeometryStore, ParseError, SubTreeReader,
 };
 use nusamai_plateau::models::tunnel::Tunnel;
-use nusamai_plateau::models::{TopLevelCityObject};
+use nusamai_plateau::models::TopLevelCityObject;
 
 #[derive(Default, Debug)]
 struct ParsedData {
     tunnels: Vec<Tunnel>,
     geometries: Vec<GeometryStore>,
 }
-
 
 fn toplevel_dispatcher<R: BufRead>(st: &mut SubTreeReader<R>) -> Result<ParsedData, ParseError> {
     let mut parsed_data = ParsedData::default();
@@ -73,28 +72,22 @@ fn test_tunnel() {
 
     let tun = parsed_data.tunnels.first().unwrap();
 
-    assert_eq!(
-        tun.class,
-        Some(Code::new("交通".to_string(), "1000".to_string()))
-    );
+    assert_eq!(tun.class, Some(Code::new("交通".into(), "1000".into())));
 
     assert_eq!(
         tun.function,
-        vec![Code::new("道路用トンネル".to_string(), "1010".to_string())]
+        vec![Code::new("道路用トンネル".into(), "1010".into())]
     );
 
+    assert_eq!(tun.year_of_construction, Some("1989".into()));
+
     assert_eq!(
-        tun.year_of_construction,
-        Some("1989".to_string())
+        tun.outer_tunnel_installation[0].function,
+        vec![Code::new("その他".into(), "90".into())]
     );
 
     assert_eq!(
         tun.outer_tunnel_installation[0].function,
-        vec![Code::new("その他".to_string(), "90".to_string())]
+        vec![Code::new("その他".into(), "90".into())]
     );
-
-    assert_eq!(
-        tun.outer_tunnel_installation[0].function,
-        vec![Code::new("その他".to_string(), "90".to_string())]
-    );    
 }

@@ -97,10 +97,9 @@ impl CityGMLElement for Code {
                     }
                     Ok(None) => {}
                     Err(_) => {
-                        return Err(ParseError::InvalidValue(format!(
-                            "Failed to resolve code: {} {}",
-                            code_space, code
-                        )));
+                        // FIXME
+                        log::warn!("Failed to lookup code {} form {}", code, code_space);
+                        return Ok(());
                     }
                 }
             }
@@ -212,8 +211,17 @@ impl CityGMLElement for bool {
 
 #[derive(Debug, Clone, Default, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Measure {
-    pub value: f64,
+    value: f64,
     // pub uom: Option<String>,
+}
+
+impl Measure {
+    pub fn new(value: f64) -> Self {
+        Self { value }
+    }
+    pub fn value(&self) -> f64 {
+        self.value
+    }
 }
 
 impl CityGMLElement for Measure {

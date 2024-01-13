@@ -77,16 +77,13 @@ fn test_cityfurniture() {
     );
 
     let frn = parsed_data.cityfurnitures.first().unwrap();
-    assert_eq!(
-        frn.function,
-        vec![Code::new("柱".to_string(), "4800".to_string())]
-    );
+    assert_eq!(frn.function, vec![Code::new("柱".into(), "4800".into())]);
 
     assert_eq!(
         frn.city_furniture_data_quality_attribute
             .as_ref()
             .unwrap()
             .src_scale,
-        vec![Code::new("地図情報レベル500".to_string(), "3".to_string(),)]
+        vec![Code::new("地図情報レベル500".into(), "3".into(),)]
     );
 }
