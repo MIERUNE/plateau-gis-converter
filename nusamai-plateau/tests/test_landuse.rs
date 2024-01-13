@@ -15,7 +15,6 @@ struct ParsedData {
     geometries: Vec<GeometryStore>,
 }
 
-
 fn toplevel_dispatcher<R: BufRead>(st: &mut SubTreeReader<R>) -> Result<ParsedData, ParseError> {
     let mut parsed_data = ParsedData::default();
 
@@ -72,20 +71,17 @@ fn test_landuse() {
     };
 
     assert_eq!(parsed_data.landuses.len(), 225);
-    assert_eq!(
-        parsed_data.landuses.len(),
-        parsed_data.geometries.len()
-    );
+    assert_eq!(parsed_data.landuses.len(), parsed_data.geometries.len());
 
     let luse = parsed_data.landuses.first().unwrap();
 
     assert_eq!(
         luse.land_use_detail_attribute[0].prefecture,
-        Some(Code::new("静岡県".to_string(), "22".to_string()))
+        Some(Code::new("静岡県".into(), "22".into()))
     );
 
     assert_eq!(
         luse.land_use_detail_attribute[0].city,
-        Some(Code::new("静岡県沼津市".to_string(), "22203".to_string()))
+        Some(Code::new("静岡県沼津市".into(), "22203".into()))
     );
 }

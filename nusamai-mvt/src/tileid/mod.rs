@@ -1,3 +1,5 @@
+//! Tile ID to/from XYZ tile coordinate.
+
 pub mod hilbert;
 
 /// Tile ID calculation method

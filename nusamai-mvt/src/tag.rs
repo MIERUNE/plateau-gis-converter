@@ -1,3 +1,5 @@
+//! Attribute encoder for MVT.
+
 use crate::vector_tile::tile;
 use ahash::RandomState;
 use indexmap::IndexSet;
@@ -8,11 +10,13 @@ pub struct TagsEncoder {
     values: IndexSet<Value, RandomState>,
 }
 
+/// Utility for encoding MVT attributes (tags).
 impl TagsEncoder {
     pub fn new() -> Self {
         Default::default()
     }
 
+    #[inline]
     pub fn add(&mut self, key: &str, value: Value) -> [u32; 2] {
         let key_idx = match self.keys.get_index_of(key) {
             None => self.keys.insert_full(key.to_string()).0,
@@ -25,6 +29,7 @@ impl TagsEncoder {
         [key_idx as u32, value_idx as u32]
     }
 
+    #[inline]
     pub fn into_keys_and_values(self) -> (Vec<String>, Vec<tile::Value>) {
         let keys = self.keys.into_iter().collect();
         let values = self
@@ -36,7 +41,7 @@ impl TagsEncoder {
     }
 }
 
-/// Wrapper for MVT Value
+/// Wrapper for MVT Values
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum Value {
     String(String),

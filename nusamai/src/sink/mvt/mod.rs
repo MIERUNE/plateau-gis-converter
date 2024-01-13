@@ -1,6 +1,7 @@
 //! Mapbox Vector Tiles (MVT) sink
 
 mod slice;
+mod sort;
 mod tags;
 
 use std::fs;
@@ -8,6 +9,7 @@ use std::path::{Path, PathBuf};
 use std::sync::mpsc;
 
 use ext_sort::{buffer::mem::MemoryLimitedBufferBuilder, ExternalSorter, ExternalSorterBuilder};
+use hashbrown::HashMap;
 use itertools::Itertools;
 use nusamai_mvt::geometry::GeometryEncoder;
 use nusamai_mvt::tag::TagsEncoder;
@@ -24,6 +26,7 @@ use crate::parameters::*;
 use crate::pipeline::{Feedback, Receiver};
 use crate::sink::{DataSink, DataSinkProvider, SinkInfo};
 use slice::slice_cityobj_geoms;
+use sort::BincodeExternalChunk;
 use tags::traverse_properties;
 
 pub struct MVTSinkProvider {}
@@ -126,29 +129,38 @@ fn geometry_slicing_stage(
     tile_id_conv: TileIdMethod,
     sender_sliced: mpsc::SyncSender<SerializedSlicedFeature>,
 ) {
-    // Convert CityObjects to Sliced features
+    // Convert CityObjects to sliced features
     let _ = upstream.into_iter().par_bridge().try_for_each(|parcel| {
         if feedback.is_cancelled() {
             return Err(());
         }
 
-        slice_cityobj_geoms(&parcel.cityobj, 7, 15, |(z, x, y), mpoly| {
-            let feature = SlicedFeature {
-                geometry: mpoly,
-                properties: parcel.cityobj.root.clone(),
-            };
-            let bytes = bincode::serialize(&feature).unwrap();
-            let sfeat = SerializedSlicedFeature {
-                tile_id: tile_id_conv.zxy_to_id(z, x, y),
-                body: bytes,
-            };
+        let max_detail = 12;
+        let buffer_pixels = 5;
+        slice_cityobj_geoms(
+            &parcel.cityobj,
+            7,
+            15,
+            max_detail,
+            buffer_pixels,
+            |(z, x, y), mpoly| {
+                let feature = SlicedFeature {
+                    geometry: mpoly,
+                    properties: parcel.cityobj.root.clone(),
+                };
+                let bytes = bincode::serialize(&feature).unwrap();
+                let sfeat = SerializedSlicedFeature {
+                    tile_id: tile_id_conv.zxy_to_id(z, x, y),
+                    body: bytes,
+                };
 
-            if sender_sliced.send(sfeat).is_err() {
-                log::info!("sink cancelled");
-                return Err(());
-            };
-            Ok(())
-        })
+                if sender_sliced.send(sfeat).is_err() {
+                    log::info!("sink cancelled");
+                    return Err(());
+                };
+                Ok(())
+            },
+        )
     });
 }
 
@@ -160,6 +172,7 @@ fn feature_sorting_stage(
         SerializedSlicedFeature,
         std::io::Error,
         MemoryLimitedBufferBuilder,
+        BincodeExternalChunk<_>,
         // TODO: Use Binpack instead of RMP ?
         // TODO: Implement an external sorter by ourselves?
     > = ExternalSorterBuilder::new()
@@ -186,6 +199,12 @@ fn feature_sorting_stage(
     }
 }
 
+#[derive(Default)]
+struct LayerData {
+    pub features: Vec<vector_tile::tile::Feature>,
+    pub tags_enc: TagsEncoder,
+}
+
 fn tile_writing_stage(
     output_path: &Path,
     feedback: Feedback,
@@ -203,9 +222,8 @@ fn tile_writing_stage(
                 return Err(());
             }
             let (zoom, x, y) = tile_id_conv.id_to_zxy(tile_id);
-            let mut features = Vec::new();
 
-            let mut tags_enc = TagsEncoder::new();
+            let mut layers: HashMap<String, LayerData> = HashMap::new();
 
             for ser_feat in sfeats {
                 let feat: SlicedFeature = bincode::deserialize(&ser_feat.body).unwrap();
@@ -215,52 +233,71 @@ fn tile_writing_stage(
                 let mut geom_enc = GeometryEncoder::new();
                 for poly in &mpoly {
                     let exterior = poly.exterior();
-                    if poly.exterior().is_ccw() {
-                        geom_enc.add_ring(exterior.into_iter().map(|c| [c[0], c[1]]));
+                    if exterior.is_ccw() {
+                        geom_enc.add_ring(&exterior);
                     }
                     for interior in poly.interiors() {
                         if interior.is_cw() {
-                            geom_enc.add_ring(interior.into_iter().map(|c| [c[0], c[1]]));
+                            geom_enc.add_ring(&interior);
                         }
                     }
                 }
+                let geometry = geom_enc.into_vec();
+                if geometry.is_empty() {
+                    continue;
+                }
 
+                let mut id = None;
                 let mut tags: Vec<u32> = Vec::new();
-                if let value @ object::Value::Feature(_) = &feat.properties {
-                    traverse_properties(&mut tags, &mut tags_enc, String::new(), value);
+
+                let layer = if let value @ object::Value::Feature(feat) = &feat.properties {
+                    let layer = layers.entry_ref(feat.typename.as_ref()).or_default();
+
+                    // Encode attributes as MVT tags
+                    traverse_properties(&mut tags, &mut layer.tags_enc, String::new(), value);
+
+                    // Make a MVT feature id (u64) by hashing the original feature id string.
+                    if let Some(id_str) = &feat.id {
+                        id = Some(
+                            id_str
+                                .as_bytes()
+                                .iter()
+                                .fold(5381u64, |a, c| a.wrapping_mul(33) ^ *c as u64),
+                        );
+                    }
+
+                    layer
+                } else {
+                    layers.entry_ref("Unknown").or_default()
                 };
 
-                let geometry = geom_enc.into_vec();
-                if !geometry.is_empty() {
-                    features.push(vector_tile::tile::Feature {
-                        id: None,
-                        tags,
-                        r#type: Some(vector_tile::tile::GeomType::Polygon as i32),
-                        geometry,
-                    });
-                }
+                layer.features.push(vector_tile::tile::Feature {
+                    id,
+                    tags,
+                    r#type: Some(vector_tile::tile::GeomType::Polygon as i32),
+                    geometry,
+                });
             }
 
-            // skip if no features
-            if features.is_empty() {
-                return Ok(());
-            }
+            let layers = layers
+                .into_iter()
+                .flat_map(|(name, layer_data)| {
+                    if layer_data.features.is_empty() {
+                        return None;
+                    }
+                    let (keys, values) = layer_data.tags_enc.into_keys_and_values();
+                    Some(vector_tile::tile::Layer {
+                        version: 2,
+                        name: name.to_string(),
+                        features: layer_data.features,
+                        keys,
+                        values,
+                        extent: Some(extent),
+                    })
+                })
+                .collect();
 
-            let layer = {
-                let (keys, values) = tags_enc.into_keys_and_values();
-                vector_tile::tile::Layer {
-                    version: 2,
-                    name: "dummy-layer".to_string(),
-                    features,
-                    keys,
-                    values,
-                    extent: Some(extent),
-                }
-            };
-
-            let tile = vector_tile::Tile {
-                layers: vec![layer],
-            };
+            let tile = vector_tile::Tile { layers };
 
             let path = output_path.join(Path::new(&format!("{}/{}/{}.pbf", zoom, x, y)));
 
@@ -270,13 +307,14 @@ fn tile_writing_stage(
                 }
             }
             let bytes = tile.encode_to_vec();
-            fs::write(&path, &bytes).unwrap();
 
             log::info!(
-                "Wrote a tile: {} ({})",
+                "Writing a tile: {} ({})",
                 &path.to_string_lossy(),
                 bytesize::to_string(bytes.len() as u64, true)
             );
+
+            fs::write(&path, &bytes).unwrap();
 
             Ok(())
         });

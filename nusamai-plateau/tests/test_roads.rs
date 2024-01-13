@@ -77,28 +77,25 @@ fn test_road() {
 
     assert_eq!(
         road.function,
-        vec![Code::new("都道府県道".to_string(), "3".to_string(),)]
+        vec![Code::new("都道府県道".into(), "3".into(),)]
     );
 
     assert_eq!(
         road.usage,
         vec![
-            Code::new(
-                "緊急輸送道路（第三次緊急輸送道路）".to_string(),
-                "3".to_string(),
-            ),
-            Code::new("避難路／避難道路".to_string(), "5".to_string(),),
+            Code::new("緊急輸送道路（第三次緊急輸送道路）".into(), "3".into()),
+            Code::new("避難路／避難道路".into(), "5".into()),
         ]
     );
 
     assert_eq!(
         road.traffic_area.first().unwrap().function,
-        vec![Code::new("歩道".to_string(), "2020".to_string(),)]
+        vec![Code::new("歩道".into(), "2020".into())]
     );
 
     assert_eq!(
         road.auxiliary_traffic_area.first().unwrap().function,
-        vec![Code::new("歩道部の段差".to_string(), "2000".to_string(),)]
+        vec![Code::new("歩道部の段差".into(), "2000".into())]
     );
 
     assert_eq!(
