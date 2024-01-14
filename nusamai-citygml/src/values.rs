@@ -275,6 +275,8 @@ pub struct Point {
     // TODO
 }
 
+pub type Vector = Point;
+
 impl CityGMLElement for Point {
     const ELEMENT_TYPE: ElementType = ElementType::BasicType;
 

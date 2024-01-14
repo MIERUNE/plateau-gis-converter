@@ -1,5 +1,6 @@
 //! Urban Object Module
 
+mod bridge;
 mod building;
 mod city_furniture;
 mod common;
@@ -10,15 +11,16 @@ mod facility_type;
 mod ifc;
 mod indoor;
 mod keyvalue;
+mod landuse;
+mod other_construction;
 mod transportation;
+mod tunnel;
 mod underground_building;
 mod utility_network;
 mod vegetation;
 mod waterbody;
-mod landuse;
-mod bridge;
-mod tunnel;
 
+pub use bridge::*;
 pub use building::*;
 pub use city_furniture::*;
 pub use common::*;
@@ -29,12 +31,12 @@ pub use facility_type::*;
 pub use ifc::*;
 pub use indoor::*;
 pub use keyvalue::*;
+pub use landuse::*;
+pub use other_construction::*;
 pub use transportation::*;
+pub use tunnel::*;
 pub use underground_building::*;
 pub use utility_network::*;
 pub use vegetation::*;
 pub use waterbody::*;
 // pub use utility_network::*;
-pub use landuse::*;
-pub use bridge::*;
-pub use tunnel::*;

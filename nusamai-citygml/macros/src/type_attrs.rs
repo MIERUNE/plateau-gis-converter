@@ -97,10 +97,18 @@ fn modify(ty: &StereoType, args: &FeatureArgs, input: &mut DeriveInput) -> Resul
                     // for #[citygml_feature]
 
                     let prefix = args.prefix.as_ref().unwrap();
+
+                    // hack
+                    let geom_prefix = match args.name.as_ref().unwrap().value().as_str() {
+                        "uro:UndergroundBuilding" => LitByteStr::new(b"bldg", prefix.span()),
+                        "uro:Waterway" => LitByteStr::new(b"tran", prefix.span()),
+                        _ => prefix.clone(),
+                    };
+
                     add_named_field(
                         fields,
                         quote! {
-                            #[citygml(geom = #prefix)]
+                            #[citygml(geom = #geom_prefix)]
                             pub geometries: nusamai_citygml::GeometryRef
                         },
                     );

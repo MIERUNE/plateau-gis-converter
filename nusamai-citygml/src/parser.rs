@@ -317,14 +317,16 @@ impl<R: BufRead> SubTreeReader<'_, '_, R> {
             Point => todo!(),                                    // FIXME
             MultiPoint => todo!(),                               // FIXME
             MultiCurve => {
-                self.skip_current_element()?;
                 log::warn!("CompositeCurve is not supported yet.");
+                self.skip_current_element()?;
+                return Ok(());
             } // FIXME
         }
 
         self.state
             .path_buf
             .truncate(self.state.path_stack_indices.pop().unwrap());
+
         Ok(())
     }
 
@@ -397,25 +399,29 @@ impl<R: BufRead> SubTreeReader<'_, '_, R> {
                             GeometryType::Surface
                         }
                         (Bound(GML31_NS), b"OrientableSurface") => todo!(),
-                        (Bound(GML31_NS), b"Polygon") => todo!(),
+                        (Bound(GML31_NS), b"Polygon") => {
+                            self.parse_polygon()?;
+                            GeometryType::Surface
+                        }
                         (Bound(GML31_NS), b"TriangulatedSurface") => todo!(),
                         (Bound(GML31_NS), b"Tin") => todo!(),
-                        (Bound(GML31_NS), b"LineString") => {
+                        (
+                            Bound(GML31_NS),
+                            b"Point" | b"CompositeCurve" | b"MultiCurve" | b"LineString",
+                        ) => {
                             // FIXME, TODO
-                            log::warn!("LineString is not supported yet.");
-                            self.skip_current_element()?; // FIXME, TODO
-                            GeometryType::Curve
-                        } // FIXME:
-                        (Bound(GML31_NS), b"MultiCurve") => {
-                            // FIXME, TODO
-                            log::warn!("MultiCurve is not supported yet.");
-                            self.skip_current_element()?; // FIXME, TODO
+                            log::warn!(
+                                "Point|CompositeCurve|MultiCurve|LineString is not supported yet."
+                            );
+                            self.reader
+                                .read_to_end_into(start.name(), &mut self.state.buf2)?;
+
                             GeometryType::Curve
                         } // FIXME:
                         _ => {
                             return Err(ParseError::SchemaViolation(format!(
-                                "Unexpected element <{}>",
-                                String::from_utf8_lossy(localname.as_ref())
+                                "Unexpected geometry elements <{}>",
+                                String::from_utf8_lossy(start.name().as_ref())
                             )))
                         }
                     };
