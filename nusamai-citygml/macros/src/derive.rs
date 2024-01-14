@@ -211,8 +211,8 @@ fn generate_citygml_impl_for_struct(
                             }
                         }
                         b"wtr" => {
-                            add_arm( 2, b"lod2Surface", "MultiSurface");
-                            add_arm( 3, b"lod3Surface", "MultiSurface");
+                            add_arm( 2, b"lod2Surface", "Surface");
+                            add_arm( 3, b"lod3Surface", "Surface");
                         }
                         b"dem" => {
                             add_arm( 0, b"tin", "Triangulated");

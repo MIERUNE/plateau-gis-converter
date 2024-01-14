@@ -312,10 +312,11 @@ impl<R: BufRead> SubTreeReader<'_, '_, R> {
         match geomtype {
             Solid => self.parse_solid_prop(geomref, lod)?,
             MultiSurface => self.parse_multi_surface_prop(geomref, lod)?,
+            Surface => self.parse_surface_prop(geomref, lod)?, // FIXME
             Geometry => self.parse_geometry_prop(geomref, lod)?, // FIXME: not only surfaces
             Triangulated => self.parse_triangulated_prop(geomref, lod)?, // FIXME
-            Point => todo!(),                                    // FIXME
-            MultiPoint => todo!(),                               // FIXME
+            Point => todo!(),                                  // FIXME
+            MultiPoint => todo!(),                             // FIXME
             MultiCurve => {
                 log::warn!("CompositeCurve is not supported yet.");
                 self.skip_current_element()?;
@@ -342,6 +343,25 @@ impl<R: BufRead> SubTreeReader<'_, '_, R> {
             expect_end(self.reader, &mut self.state.buf1)?;
         }
 
+        let poly_end = self.state.geometry_collector.multipolygon.len();
+        if poly_end - poly_begin > 0 {
+            geomrefs.push(GeometryRefEntry {
+                ty: GeometryType::Surface,
+                lod,
+                pos: poly_begin as u32,
+                len: (poly_end - poly_begin) as u32,
+            });
+        }
+        Ok(())
+    }
+
+    fn parse_surface_prop(
+        &mut self,
+        geomrefs: &mut GeometryRef,
+        lod: u8,
+    ) -> Result<(), ParseError> {
+        let poly_begin = self.state.geometry_collector.multipolygon.len();
+        self.parse_surface()?;
         let poly_end = self.state.geometry_collector.multipolygon.len();
         if poly_end - poly_begin > 0 {
             geomrefs.push(GeometryRefEntry {
@@ -498,7 +518,7 @@ impl<R: BufRead> SubTreeReader<'_, '_, R> {
 
     fn parse_solid(&mut self) -> Result<(), ParseError> {
         if expect_start(self.reader, &mut self.state.buf1, GML31_NS, b"exterior")? {
-            self.parse_surface_prop()?;
+            self.parse_surface()?;
             expect_end(self.reader, &mut self.state.buf1)?;
         }
         Ok(())
@@ -550,7 +570,7 @@ impl<R: BufRead> SubTreeReader<'_, '_, R> {
                 Ok(Event::Start(start)) => {
                     let (nsres, localname) = self.reader.resolve_element(start.name());
                     match (nsres, localname.as_ref()) {
-                        (Bound(GML31_NS), b"surfaceMember") => self.parse_surface_prop()?,
+                        (Bound(GML31_NS), b"surfaceMember") => self.parse_surface()?,
                         _ => return Err(ParseError::SchemaViolation("Unexpected element".into())),
                     }
                 }
@@ -572,7 +592,7 @@ impl<R: BufRead> SubTreeReader<'_, '_, R> {
                 Ok(Event::Start(start)) => {
                     let (nsres, localname) = self.reader.resolve_element(start.name());
                     match (nsres, localname.as_ref()) {
-                        (Bound(GML31_NS), b"surfaceMember") => self.parse_surface_prop()?,
+                        (Bound(GML31_NS), b"surfaceMember") => self.parse_surface()?,
                         _ => {
                             return Err(ParseError::SchemaViolation(format!(
                                 "Unexpected element <{}>",
@@ -593,7 +613,7 @@ impl<R: BufRead> SubTreeReader<'_, '_, R> {
         }
     }
 
-    fn parse_surface_prop(&mut self) -> Result<(), ParseError> {
+    fn parse_surface(&mut self) -> Result<(), ParseError> {
         loop {
             match self.reader.read_event_into(&mut self.state.buf1) {
                 Ok(Event::Start(start)) => {

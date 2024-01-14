@@ -14,6 +14,9 @@ fn test_load_waterbody_example() {
 
     assert_eq!(
         waterbody.class,
-        Some(Code::new("交通".into(), "1000".into()))
+        Some(Code::new(
+            "river / stream（河川/小川）".into(),
+            "1030".into()
+        ))
     );
 }
