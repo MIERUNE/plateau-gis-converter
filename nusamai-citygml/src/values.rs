@@ -99,6 +99,7 @@ impl CityGMLElement for Code {
                     Err(_) => {
                         // FIXME
                         log::warn!("Failed to lookup code {} form {}", code, code_space);
+                        self.value = code;
                         return Ok(());
                     }
                 }
