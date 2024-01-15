@@ -20,14 +20,14 @@ pub struct TypeDef {
     pub any: bool,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, PartialEq)]
 pub enum StereoType {
     Data,
     Feature,
     // Object
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, PartialEq, Eq)]
 pub struct TypeRef {
     #[serde(rename = "type")]
     pub ty: Type,
@@ -56,7 +56,7 @@ impl Default for TypeRef {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Eq, PartialEq)]
 pub enum Type {
     Unknown,
     String,
