@@ -29,11 +29,11 @@ pub struct Settings {
     load_upper_lods: bool,
 }
 
-pub struct ObjectController {
+pub struct ObjectSeparator {
     pub settings: Option<Settings>,
 }
 
-impl ObjectController {
+impl ObjectSeparator {
     fn extract_features(&self, value: Value) -> Vec<Feature> {
         match value {
             Value::Array(vec) => vec
