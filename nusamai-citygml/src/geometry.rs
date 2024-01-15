@@ -8,6 +8,7 @@ pub enum GeometryParseType {
     MultiSurface,
     MultiCurve,
     MultiPoint,
+    Surface,
     Point,
     Triangulated,
 }

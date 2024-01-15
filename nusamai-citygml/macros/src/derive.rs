@@ -176,8 +176,6 @@ fn generate_citygml_impl_for_struct(
                     };
 
                     add_arm(0, b"lod0Point", "Point");
-                    add_arm(0, b"lod0RoofEdge", "MultiSurface"); // only in CityGML 2.0
-                    add_arm(0, b"lod0FootPrint", "MultiSurface"); // only in CityGML 2.0
                     add_arm(0, b"lod0MultiCurve", "MultiCurve");
                     add_arm(2, b"lod2MultiCurve", "MultiCurve");
                     add_arm(3, b"lod3MultiCurve", "MultiCurve");
@@ -197,17 +195,30 @@ fn generate_citygml_impl_for_struct(
                     add_arm(3, b"lod3Geometry", "Geometry"); // only in CityGML 2.0
                     add_arm(4, b"lod4Geometry", "Geometry"); // only in CityGML 2.0
 
+                    // only in CityGML 2.0
                     match &prefix.value()[..] {
+                        b"bldg" => {
+                            add_arm(0, b"lod0RoofEdge", "MultiSurface");
+                            add_arm(0, b"lod0FootPrint", "MultiSurface");
+                        }
                         b"tran" => {
-                            add_arm(0, b"lod0Network", "MultiCurve");
+                            add_arm( 0, b"lod0Network", "MultiCurve");
                         }
                         b"uro" => {
-                            add_arm(2, b"lod2Network", "MultiCurve");
-                            add_arm(3, b"lod3Network", "MultiCurve");
+                            if typename.as_str() == "uro:RailwayTrackAttribute" {
+                                add_arm(2, b"lod2Network", "MultiCurve");
+                                add_arm(3, b"lod3Network", "MultiCurve");
+                            }
+                        }
+                        b"wtr" => {
+                            add_arm( 2, b"lod2Surface", "Surface");
+                            add_arm( 3, b"lod3Surface", "Surface");
                         }
                         b"dem" => {
-                            add_arm(0, b"tin", "Triangulated");
+                            add_arm( 0, b"tin", "Triangulated");
                         }
+                        // lod*TerrainIntersection
+                        // lod*ImplicitRepresentation
                         _ => {}
                     }
 
@@ -296,7 +307,7 @@ fn generate_citygml_impl_for_struct(
         true => quote! { Ok(()) },
         false => quote! {
             Err(::nusamai_citygml::ParseError::SchemaViolation(
-                format!("unexpected element: {}", String::from_utf8_lossy(st.current_path())),
+                format!("unexpected element: {}", String::from_utf8_lossy(st.current_absolute_path())),
             ))
         },
     };
