@@ -30,7 +30,7 @@ impl CityGMLElement for String {
     }
 }
 
-#[derive(Debug, serde::Serialize, serde::Deserialize, Default, PartialEq, Eq)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, Default, PartialEq, Eq)]
 pub struct URI(String);
 
 impl URI {
@@ -56,7 +56,7 @@ impl CityGMLElement for URI {
     }
 }
 
-#[derive(Debug, Default, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Default, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 pub struct Code {
     value: String,
     code: String,
@@ -97,10 +97,10 @@ impl CityGMLElement for Code {
                     }
                     Ok(None) => {}
                     Err(_) => {
-                        return Err(ParseError::InvalidValue(format!(
-                            "Failed to resolve code: {} {}",
-                            code_space, code
-                        )));
+                        // FIXME
+                        log::warn!("Failed to lookup code {} form {}", code, code_space);
+                        self.value = code;
+                        return Ok(());
                     }
                 }
             }
@@ -210,10 +210,19 @@ impl CityGMLElement for bool {
     }
 }
 
-#[derive(Debug, Default, PartialEq, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Clone, Default, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Measure {
-    pub value: f64,
+    value: f64,
     // pub uom: Option<String>,
+}
+
+impl Measure {
+    pub fn new(value: f64) -> Self {
+        Self { value }
+    }
+    pub fn value(&self) -> f64 {
+        self.value
+    }
 }
 
 impl CityGMLElement for Measure {
@@ -262,10 +271,12 @@ impl CityGMLElement for Date {
     }
 }
 
-#[derive(Debug, Default, Deserialize, Serialize, PartialEq)]
+#[derive(Debug, Clone, Default, Deserialize, Serialize, PartialEq)]
 pub struct Point {
     // TODO
 }
+
+pub type Vector = Point;
 
 impl CityGMLElement for Point {
     const ELEMENT_TYPE: ElementType = ElementType::BasicType;
@@ -325,6 +336,20 @@ impl<T: CityGMLElement + Default> CityGMLElement for Vec<T> {
                 self.into_iter().filter_map(|v| v.into_object()).collect(),
             ))
         }
+    }
+}
+
+impl<T: CityGMLElement + Default> CityGMLElement for Box<T> {
+    const ELEMENT_TYPE: ElementType = ElementType::BasicType;
+
+    #[inline]
+    fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
+        <T as CityGMLElement>::parse(self, st)?;
+        Ok(())
+    }
+
+    fn into_object(self) -> Option<Value> {
+        (*self).into_object()
     }
 }
 

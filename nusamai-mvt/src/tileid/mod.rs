@@ -1,6 +1,9 @@
+//! Tile ID to/from XYZ tile coordinate.
+
 pub mod hilbert;
 
 /// Tile ID calculation method
+#[derive(Clone, Copy, Debug)]
 pub enum TileIdMethod {
     /// Tile ID based on Hilbert curve (compliant with PMTiles)
     Hilbert,

@@ -5,41 +5,41 @@ use nusamai_citygml::{
 #[citygml_property(name = "uro:FacilityAttributeProperty")]
 pub enum FacilityAttributeProperty {
     #[citygml(path = b"uro:CargoHandlingFacility")]
-    CargoHandlingFacility(CargoHandlingFacility),
+    CargoHandlingFacility(Box<CargoHandlingFacility>),
     #[citygml(path = b"uro:CyberportMarinaAndPBS")]
-    CyberportMarinaAndPBS(CyberportMarinaAndPBS),
+    CyberportMarinaAndPBS(Box<CyberportMarinaAndPBS>),
     #[citygml(path = b"uro:FishingPortCapacity")]
-    FishingPortCapacity(FishingPortCapacity),
+    FishingPortCapacity(Box<FishingPortCapacity>),
     #[citygml(path = b"uro:FishingPortFacility")]
-    FishingPortFacility(FishingPortFacility),
+    FishingPortFacility(Box<FishingPortFacility>),
     #[citygml(path = b"uro:HarborFacility")]
-    HarborFacility(HarborFacility),
+    HarborFacility(Box<HarborFacility>),
     #[citygml(path = b"uro:MaintenanceHistoryAttribute")]
-    MaintenanceHistoryAttribute(MaintenanceHistoryAttribute),
+    MaintenanceHistoryAttribute(Box<MaintenanceHistoryAttribute>),
     #[citygml(path = b"uro:MooringFacility")]
-    MooringFacility(MooringFacility),
+    MooringFacility(Box<MooringFacility>),
     #[citygml(path = b"uro:NavigationAssistanceFacility")]
-    NavigationAssistanceFacility(NavigationAssistanceFacility),
+    NavigationAssistanceFacility(Box<NavigationAssistanceFacility>),
     #[citygml(path = b"uro:PortEnvironmentalImprovementFacility")]
-    PortEnvironmentalImprovementFacility(PortEnvironmentalImprovementFacility),
+    PortEnvironmentalImprovementFacility(Box<PortEnvironmentalImprovementFacility>),
     #[citygml(path = b"uro:PortManagementFacility")]
-    PortManagementFacility(PortManagementFacility),
+    PortManagementFacility(Box<PortManagementFacility>),
     #[citygml(path = b"uro:PortPassengerFacility")]
-    PortPassengerFacility(PortPassengerFacility),
+    PortPassengerFacility(Box<PortPassengerFacility>),
     #[citygml(path = b"uro:PortPollutionControlFacility")]
-    PortPollutionControlFacility(PortPollutionControlFacility),
+    PortPollutionControlFacility(Box<PortPollutionControlFacility>),
     #[citygml(path = b"uro:PortProtectiveFacility")]
-    PortProtectiveFacility(PortProtectiveFacility),
+    PortProtectiveFacility(Box<PortProtectiveFacility>),
     #[citygml(path = b"uro:PortStorageFacility")]
-    PortStorageFacility(PortStorageFacility),
+    PortStorageFacility(Box<PortStorageFacility>),
     #[citygml(path = b"uro:PortTransportationFacility")]
-    PortTransportationFacility(PortTransportationFacility),
+    PortTransportationFacility(Box<PortTransportationFacility>),
     #[citygml(path = b"uro:PortWasteTreatmentFacility")]
-    PortWasteTreatmentFacility(PortWasteTreatmentFacility),
+    PortWasteTreatmentFacility(Box<PortWasteTreatmentFacility>),
     #[citygml(path = b"uro:PortWelfareFacility")]
-    PortWelfareFacility(PortWelfareFacility),
+    PortWelfareFacility(Box<PortWelfareFacility>),
     #[citygml(path = b"uro:ShipServiceFacility")]
-    ShipServiceFacility(ShipServiceFacility),
+    ShipServiceFacility(Box<ShipServiceFacility>),
 }
 
 #[citygml_data(name = "uro:CargoHandlingFacility")]

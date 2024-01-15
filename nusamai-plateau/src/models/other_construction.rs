@@ -1,11 +1,116 @@
 //! uro:OtherConstruction (PLATEAU, CityGML 2.x)
 //! con:OtherConstruction (CityGML 3.x)
 
-use nusamai_citygml::{citygml_feature, CityGMLElement};
+use super::iur::uro;
+use nusamai_citygml::{citygml_feature, citygml_property, CityGMLElement, Code, Date};
+
+type ConditionOfConstructionValue = String;
 
 #[citygml_feature(name = "uro:OtherConstruction")]
 pub struct OtherConstruction {
-    // ...
+    #[citygml(path = b"uro:conditionOfConstruction")]
+    pub condition_of_construction: Option<ConditionOfConstructionValue>,
+
+    #[citygml(path = b"uro:dateOfConstruction")]
+    pub date_of_construction: Option<Date>,
+
+    #[citygml(path = b"uro:dateOfDemolition")]
+    pub date_of_demolition: Option<Date>,
+
+    #[citygml(path = b"uro:constructionEvent/uro:ConstructionEvent")]
+    pub construction_event: Vec<uro::ConstructionEvent>,
+
+    #[citygml(path = b"uro:elevation/uro:Elevation")]
+    pub elevation: Vec<uro::Elevation>,
+
+    #[citygml(path = b"uro:height/uro:Height")]
+    pub height: Vec<uro::Height>,
+
+    #[citygml(path = b"uro:occupancy/uro:Occupancy")]
+    pub occupancy: Vec<uro::Occupancy>,
+
+    #[citygml(path = b"uro:consFacilityTypeAttribute/uro:FacilityTypeAttribute")]
+    pub cons_facility_type_attribute: Vec<uro::FacilityTypeAttribute>,
+
+    #[citygml(path = b"uro:consFacilityIdAttribute")]
+    pub cons_facility_id_attribute: Option<uro::FacilityIdAttributeProperty>, // -> uro:FacilityIdAttribute
+
+    #[citygml(path = b"uro:consFacilityAttribute")]
+    pub cons_facility_attribute: Vec<uro::FacilityAttributeProperty>, // -> uro:FacilityAttribute
+
+    #[citygml(path = b"uro:consBaseAttribute/uro:ConstructionBaseAttribute")]
+    pub cons_base_attribute: Option<uro::ConstructionBaseAttribute>,
+
+    #[citygml(path = b"uro:consStructureAttribute")]
+    pub cons_structure_attribute: Option<uro::ConstructionStructureAttributeProperty>, // -> uro:ConstructionStructureAttribute
+
+    #[citygml(path = b"uro:consDisasterRiskAttribute")]
+    pub cons_disaster_risk_attribute: Vec<uro::DisasterRiskAttributeProperty>, // -> uro:DisasterRiskAttribute
+
+    #[citygml(path = b"uro:consDmAttribute")]
+    pub cons_dm_attribute: Vec<uro::DmAttributeProperty>, // -> uro:DmAttribute
+
+    #[citygml(path = b"uro:consDataQualityAttribute/uro:ConstructionDataQualityAttribute")]
+    pub cons_data_quality_attribute: Option<uro::ConstructionDataQualityAttribute>,
+
+    #[citygml(path = b"uro:boundedBy")]
+    pub bounded_by: Vec<BoundarySurfaceProperty>, // -> uro:_BoundarySurface
+
+    #[citygml(path = b"uro:constructionInstallation/uro:ConstructionInstallation")]
+    pub construction_installation: Vec<ConstructionInstallation>,
+
+    #[citygml(path = b"uro:class")]
+    pub class: Option<Code>,
+
+    #[citygml(path = b"uro:function")]
+    pub function: Vec<Code>,
+
+    #[citygml(path = b"uro:usage")]
+    pub usage: Vec<Code>,
 }
 
-// TODO: Building と類似の構造を持つ
+#[citygml_property(name = "uro:_BoundarySurfaceProperty")]
+pub enum BoundarySurfaceProperty {
+    #[citygml(path = b"uro:ClosureSurface")]
+    ClosureSurface(ClosureSurface),
+    #[citygml(path = b"uro:GroundSurface")]
+    GroundSurface(GroundSurface),
+    #[citygml(path = b"uro:OuterCeilingSurface")]
+    OuterCeilingSurface(OuterCeilingSurface),
+    #[citygml(path = b"uro:OuterFloorSurface")]
+    OuterFloorSurface(OuterFloorSurface),
+    #[citygml(path = b"uro:RoofSurface")]
+    RoofSurface(RoofSurface),
+    #[citygml(path = b"uro:WallSurface")]
+    WallSurface(WallSurface),
+}
+
+#[citygml_feature(name = "uro:ClosureSurface")]
+pub struct ClosureSurface {}
+
+#[citygml_feature(name = "uro:GroundSurface")]
+pub struct GroundSurface {}
+
+#[citygml_feature(name = "uro:OuterCeilingSurface")]
+pub struct OuterCeilingSurface {}
+
+#[citygml_feature(name = "uro:OuterFloorSurface")]
+pub struct OuterFloorSurface {}
+
+#[citygml_feature(name = "uro:RoofSurface")]
+pub struct RoofSurface {}
+
+#[citygml_feature(name = "uro:WallSurface")]
+pub struct WallSurface {}
+
+#[citygml_feature(name = "uro:ConstructionInstallation")]
+pub struct ConstructionInstallation {
+    #[citygml(path = b"uro:class")]
+    pub class: Option<Code>,
+
+    #[citygml(path = b"uro:function")]
+    pub function: Vec<Code>,
+
+    #[citygml(path = b"uro:usage")]
+    pub usage: Vec<Code>,
+}

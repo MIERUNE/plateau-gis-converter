@@ -8,6 +8,7 @@ pub enum GeometryParseType {
     MultiSurface,
     MultiCurve,
     MultiPoint,
+    Surface,
     Point,
     Triangulated,
 }
@@ -25,7 +26,7 @@ pub enum GeometryType {
 }
 
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct GeometryRefEntry {
     #[serde(rename = "type")]
     pub ty: GeometryType,
