@@ -385,20 +385,6 @@ impl<T: CityGMLElement + Default> CityGMLElement for Box<T> {
     }
 }
 
-impl<T: CityGMLElement + Default> CityGMLElement for Box<T> {
-    const ELEMENT_TYPE: ElementType = ElementType::BasicType;
-
-    #[inline]
-    fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
-        <T as CityGMLElement>::parse(self, st)?;
-        Ok(())
-    }
-
-    fn into_object(self) -> Option<Value> {
-        (*self).into_object()
-    }
-}
-
 #[derive(Debug, Default, Deserialize, Serialize)]
 pub struct GenericAttribute {
     pub string_attrs: Vec<(String, String)>,
