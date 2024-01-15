@@ -16,16 +16,7 @@ pub use values::*;
 
 pub use object::Value;
 
-pub enum ElementType {
-    BasicType,
-    FeatureType,
-    DataType,
-    PropertyType,
-}
-
 pub trait CityGMLElement: Sized {
-    const ELEMENT_TYPE: ElementType;
-
     /// Parse a XML fragment into this element.
     fn parse<R: std::io::BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError>;
 

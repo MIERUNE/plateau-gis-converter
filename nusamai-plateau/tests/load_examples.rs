@@ -283,7 +283,10 @@ fn load_railway_example() {
         railway.id,
         Some("rwy_f087faa5-f548-4188-aa2e-03c7a5f2d3b9".to_string())
     );
-    assert_eq!(railway.name, vec!["東北線".to_string()]);
+    assert_eq!(
+        railway.name,
+        vec![Code::new("東北線".into(), "東北線".into())]
+    );
     assert_eq!(railway.traffic_area.len(), 7);
     assert_eq!(
         railway.traffic_area.first().unwrap().function,

@@ -1,7 +1,7 @@
 use crate::object::{self, Value};
 use crate::parser::{ParseError, SubTreeReader};
 use crate::schema;
-use crate::{CityGMLElement, ElementType};
+use crate::CityGMLElement;
 pub use chrono::NaiveDate;
 use serde::{Deserialize, Serialize};
 use std::io::BufRead;
@@ -18,8 +18,6 @@ pub type DoubleList = String; // TODO?
 pub type LODType = u64; // TODO?
 
 impl CityGMLElement for String {
-    const ELEMENT_TYPE: ElementType = ElementType::BasicType;
-
     #[inline]
     fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
         self.push_str(st.parse_text()?);
@@ -48,8 +46,6 @@ impl URI {
 }
 
 impl CityGMLElement for URI {
-    const ELEMENT_TYPE: ElementType = ElementType::BasicType;
-
     #[inline]
     fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
         self.0.push_str(st.parse_text()?);
@@ -85,8 +81,6 @@ impl Code {
 }
 
 impl CityGMLElement for Code {
-    const ELEMENT_TYPE: ElementType = ElementType::BasicType;
-
     #[inline]
     fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
         let code_space = st.find_codespace_attr();
@@ -128,8 +122,6 @@ impl CityGMLElement for Code {
 }
 
 impl CityGMLElement for i64 {
-    const ELEMENT_TYPE: ElementType = ElementType::BasicType;
-
     #[inline]
     fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
         let text = st.parse_text()?;
@@ -155,8 +147,6 @@ impl CityGMLElement for i64 {
 }
 
 impl CityGMLElement for u64 {
-    const ELEMENT_TYPE: ElementType = ElementType::BasicType;
-
     #[inline]
     fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
         let text = st.parse_text()?;
@@ -182,8 +172,6 @@ impl CityGMLElement for u64 {
 }
 
 impl CityGMLElement for f64 {
-    const ELEMENT_TYPE: ElementType = ElementType::BasicType;
-
     #[inline]
     fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
         let text = st.parse_text()?;
@@ -209,8 +197,6 @@ impl CityGMLElement for f64 {
 }
 
 impl CityGMLElement for bool {
-    const ELEMENT_TYPE: ElementType = ElementType::BasicType;
-
     #[inline]
     fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
         let text = st.parse_text()?.trim();
@@ -255,8 +241,6 @@ impl Measure {
 }
 
 impl CityGMLElement for Measure {
-    const ELEMENT_TYPE: ElementType = ElementType::BasicType;
-
     #[inline]
     fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
         let text = st.parse_text()?;
@@ -282,8 +266,6 @@ impl CityGMLElement for Measure {
 }
 
 impl CityGMLElement for Date {
-    const ELEMENT_TYPE: ElementType = ElementType::BasicType;
-
     #[inline]
     fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
         let text = st.parse_text()?;
@@ -316,8 +298,6 @@ pub struct Point {
 pub type Vector = Point;
 
 impl CityGMLElement for Point {
-    const ELEMENT_TYPE: ElementType = ElementType::BasicType;
-
     #[inline]
     fn parse<R: BufRead>(&mut self, _st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
         // TODO
@@ -334,8 +314,6 @@ impl CityGMLElement for Point {
 }
 
 impl<T: CityGMLElement + Default + std::fmt::Debug> CityGMLElement for Option<T> {
-    const ELEMENT_TYPE: ElementType = ElementType::BasicType;
-
     #[inline]
     fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
         if self.is_some() {
@@ -365,8 +343,6 @@ impl<T: CityGMLElement + Default + std::fmt::Debug> CityGMLElement for Option<T>
 }
 
 impl<T: CityGMLElement + Default> CityGMLElement for Vec<T> {
-    const ELEMENT_TYPE: ElementType = ElementType::BasicType;
-
     #[inline]
     fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
         let mut v: T = Default::default();
@@ -394,8 +370,6 @@ impl<T: CityGMLElement + Default> CityGMLElement for Vec<T> {
 }
 
 impl<T: CityGMLElement + Default> CityGMLElement for Box<T> {
-    const ELEMENT_TYPE: ElementType = ElementType::BasicType;
-
     #[inline]
     fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
         <T as CityGMLElement>::parse(self, st)?;
@@ -424,8 +398,6 @@ pub struct GenericAttribute {
 }
 
 impl CityGMLElement for GenericAttribute {
-    const ELEMENT_TYPE: ElementType = ElementType::DataType;
-
     fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
         match st.current_path() {
             b"gen:stringAttribute" | b"gen:StringAttribute" => {
@@ -502,16 +474,18 @@ impl CityGMLElement for GenericAttribute {
     }
 
     fn collect_schema(schema: &mut schema::Schema) -> schema::TypeRef {
-        let key = "gen:genericAttribute".to_string();
-        schema
-            .types
-            .entry(key.clone())
-            .or_insert_with(|| schema::TypeDef {
-                stereo_type: schema::StereoType::Data,
-                attributes: Default::default(),
-                any: true,
-            });
-        schema::TypeRef::new(schema::Type::Ref(key))
+        let key = "gen:genericAttribute";
+        if schema.types.get(key).is_none() {
+            schema.types.insert(
+                key.into(),
+                schema::TypeDef {
+                    stereo_type: schema::StereoType::Data,
+                    attributes: Default::default(),
+                    any: true,
+                },
+            );
+        }
+        schema::TypeRef::new(schema::Type::Ref(key.into()))
     }
 }
 
@@ -522,6 +496,7 @@ where
     let mut name = None;
     let mut value = None;
     st.parse_attributes(|k, v| {
+        // CityGML 2.0
         if k == b"@name" {
             name = Some(String::from_utf8_lossy(v).into());
         }
@@ -529,6 +504,7 @@ where
     })?;
     st.parse_children(|st| {
         match st.current_path() {
+            // CityGML 3.0
             b"gen:name" => {
                 name = Some(st.parse_text()?.to_string());
             }
