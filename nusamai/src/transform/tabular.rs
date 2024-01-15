@@ -2,26 +2,8 @@ use indexmap::IndexMap;
 
 use nusamai_citygml::object::{CityObject, Data, Feature};
 use nusamai_citygml::Value;
-use rayon::array;
 
 // 以下、仮実装
-pub struct Layer {
-    id: String,
-    layer_name: String,
-    objects: Vec<CityObject>,
-}
-
-pub struct LayerManager {
-    layers: Option<Vec<Layer>>,
-}
-
-impl LayerManager {
-    pub fn merge(&mut self) {
-        // 同じレイヤー名のレイヤーをマージする
-        todo!()
-    }
-}
-
 pub struct Settings {
     load_semantic_parts: bool,
     target_lods: Vec<bool>,
@@ -137,7 +119,7 @@ impl ObjectSeparator {
         println!();
     }
 
-    pub fn to_tabular(&self, cityobj: &CityObject) -> Vec<Layer> {
+    pub fn to_tabular(&self, cityobj: &CityObject) -> Vec<CityObject> {
         let toplevel_feature: &Feature = match &cityobj.root {
             Value::Feature(f) => f,
             _ => panic!(
