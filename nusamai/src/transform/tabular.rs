@@ -64,7 +64,7 @@ impl ObjectSeparator {
         let mut primitive_attributes: IndexMap<String, Value> = IndexMap::new();
         let mut features: IndexMap<String, Vec<Feature>> = IndexMap::new();
         let mut data_list: IndexMap<String, Vec<Data>> = IndexMap::new();
-        let mut other_layer_data: IndexMap<String, Value> = IndexMap::new();
+        let mut other_layer_data: IndexMap<String, Vec<Value>> = IndexMap::new();
 
         // フラット化されたdataとfeatureを取得
         // それ以外の情報も取得
@@ -74,10 +74,14 @@ impl ObjectSeparator {
                     for v in a.iter() {
                         match v {
                             Value::Data(_) => {
-                                other_layer_data.insert(key.clone(), v.clone());
+                                if other_layer_data.contains_key(key) {
+                                    other_layer_data.get_mut(key).unwrap().push(v.clone());
+                                } else {
+                                    other_layer_data.insert(key.clone(), vec![v.clone()]);
+                                }
                             }
                             Value::Feature(f) => {
-                                other_layer_data.insert(key.clone(), v.clone());
+                                features.insert(key.clone(), vec![f.clone()]);
                             }
                             _ => {
                                 primitive_attributes.insert(key.clone(), value.clone());
@@ -140,8 +144,11 @@ impl ObjectSeparator {
         println!("other_layer_data: ");
         for (key, value) in other_layer_data.iter() {
             println!(" key: {:?}", key);
-            println!(" value: {:?}", value);
+            // println!(" value: {:?}", value);
+            serde_json::to_writer_pretty(std::io::stdout(), value).unwrap();
         }
+
+        // ここまでで、primitive_attributesにData、とData以外の属性が格納されたArrayと、それ以外のValueが集められた
 
         println!();
     }
