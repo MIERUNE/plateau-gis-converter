@@ -6,12 +6,12 @@ use url::Url;
 use nusamai_citygml::{
     CityGMLElement, CityGMLReader, Code, GeometryStore, ParseError, SubTreeReader,
 };
-use nusamai_plateau::models::landuse::LandUse;
 use nusamai_plateau::models::TopLevelCityObject;
+use nusamai_plateau::models::Track;
 
 #[derive(Default, Debug)]
 struct ParsedData {
-    landuses: Vec<LandUse>,
+    tracks: Vec<Track>,
     geometries: Vec<GeometryStore>,
 }
 
@@ -23,8 +23,8 @@ fn toplevel_dispatcher<R: BufRead>(st: &mut SubTreeReader<R>) -> Result<ParsedDa
             let mut cityobj: TopLevelCityObject = Default::default();
             cityobj.parse(st)?;
             match cityobj {
-                TopLevelCityObject::LandUse(frn) => {
-                    parsed_data.landuses.push(frn);
+                TopLevelCityObject::Track(trk) => {
+                    parsed_data.tracks.push(trk);
                 }
                 TopLevelCityObject::CityObjectGroup(_) => (),
                 e => panic!("Unexpected city object type: {:?}", e),
@@ -51,8 +51,8 @@ fn toplevel_dispatcher<R: BufRead>(st: &mut SubTreeReader<R>) -> Result<ParsedDa
 }
 
 #[test]
-fn test_landuse() {
-    let filename = "./tests/data/numazu-shi/udx/luse/523836_luse_6668_op.gml";
+fn test_track() {
+    let filename = "./tests/data/plateau-3_0/udx/trk/53361601_trk_6697.gml";
 
     let reader = std::io::BufReader::new(std::fs::File::open(filename).unwrap());
     let mut xml_reader = quick_xml::NsReader::from_reader(reader);
@@ -70,18 +70,29 @@ fn test_landuse() {
         Err(e) => panic!("Err: {:?}", e),
     };
 
-    assert_eq!(parsed_data.landuses.len(), 225);
-    assert_eq!(parsed_data.landuses.len(), parsed_data.geometries.len());
+    assert_eq!(parsed_data.tracks.len(), 125);
+    assert_eq!(parsed_data.tracks.len(), parsed_data.geometries.len());
 
-    let luse = parsed_data.landuses.first().unwrap();
+    let track = parsed_data.tracks.first().unwrap();
+
+    assert_eq!(track.function, vec![Code::new("徒歩道".into(), "1".into())]);
 
     assert_eq!(
-        luse.land_use_detail_attribute[0].prefecture,
-        Some(Code::new("静岡県".into(), "22".into()))
+        track
+            .tran_data_quality_attribute
+            .as_ref()
+            .unwrap()
+            .geometry_src_desc,
+        vec![Code::new("既成図数値化".into(), "6".into())]
     );
 
     assert_eq!(
-        luse.land_use_detail_attribute[0].city,
-        Some(Code::new("静岡県沼津市".into(), "22203".into()))
+        track.auxiliary_traffic_area.first().unwrap().function,
+        vec![Code::new("島".into(), "3000".into())]
+    );
+
+    assert_eq!(
+        track.track_attribute.first().unwrap().admin_type,
+        Some(Code::new("市区町村".into(), "3".into()))
     );
 }

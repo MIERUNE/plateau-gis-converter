@@ -4,14 +4,14 @@ use std::path::Path;
 use url::Url;
 
 use nusamai_citygml::{
-    CityGMLElement, CityGMLReader, Code, GeometryStore, ParseError, SubTreeReader,
+    CityGMLElement, CityGMLReader, Code, GeometryStore, Measure, ParseError, SubTreeReader,
 };
-use nusamai_plateau::models::landuse::LandUse;
+use nusamai_plateau::models::Road;
 use nusamai_plateau::models::TopLevelCityObject;
 
 #[derive(Default, Debug)]
 struct ParsedData {
-    landuses: Vec<LandUse>,
+    roads: Vec<Road>,
     geometries: Vec<GeometryStore>,
 }
 
@@ -23,8 +23,8 @@ fn toplevel_dispatcher<R: BufRead>(st: &mut SubTreeReader<R>) -> Result<ParsedDa
             let mut cityobj: TopLevelCityObject = Default::default();
             cityobj.parse(st)?;
             match cityobj {
-                TopLevelCityObject::LandUse(frn) => {
-                    parsed_data.landuses.push(frn);
+                TopLevelCityObject::Road(road) => {
+                    parsed_data.roads.push(road);
                 }
                 TopLevelCityObject::CityObjectGroup(_) => (),
                 e => panic!("Unexpected city object type: {:?}", e),
@@ -51,8 +51,8 @@ fn toplevel_dispatcher<R: BufRead>(st: &mut SubTreeReader<R>) -> Result<ParsedDa
 }
 
 #[test]
-fn test_landuse() {
-    let filename = "./tests/data/numazu-shi/udx/luse/523836_luse_6668_op.gml";
+fn test_road() {
+    let filename = "./tests/data/numazu-shi/udx/tran/52385608_tran_6697_op.gml";
 
     let reader = std::io::BufReader::new(std::fs::File::open(filename).unwrap());
     let mut xml_reader = quick_xml::NsReader::from_reader(reader);
@@ -70,18 +70,44 @@ fn test_landuse() {
         Err(e) => panic!("Err: {:?}", e),
     };
 
-    assert_eq!(parsed_data.landuses.len(), 225);
-    assert_eq!(parsed_data.landuses.len(), parsed_data.geometries.len());
+    assert_eq!(parsed_data.roads.len(), 549);
+    assert_eq!(parsed_data.roads.len(), parsed_data.geometries.len());
 
-    let luse = parsed_data.landuses.first().unwrap();
+    let road = parsed_data.roads.first().unwrap();
 
     assert_eq!(
-        luse.land_use_detail_attribute[0].prefecture,
-        Some(Code::new("静岡県".into(), "22".into()))
+        road.function,
+        vec![Code::new("都道府県道".into(), "3".into(),)]
     );
 
     assert_eq!(
-        luse.land_use_detail_attribute[0].city,
-        Some(Code::new("静岡県沼津市".into(), "22203".into()))
+        road.usage,
+        vec![
+            Code::new("緊急輸送道路（第三次緊急輸送道路）".into(), "3".into()),
+            Code::new("避難路／避難道路".into(), "5".into()),
+        ]
+    );
+
+    assert_eq!(
+        road.traffic_area.first().unwrap().function,
+        vec![Code::new("歩道".into(), "2020".into())]
+    );
+
+    assert_eq!(
+        road.auxiliary_traffic_area.first().unwrap().function,
+        vec![Code::new("歩道部の段差".into(), "2000".into())]
+    );
+
+    assert_eq!(
+        road.road_structure_attribute.first().unwrap().width,
+        Some(Measure::new(22.0)),
+    );
+
+    assert_eq!(
+        road.traffic_volume_attribute
+            .first()
+            .unwrap()
+            .weekday12hour_traffic_volume,
+        Some(8170),
     );
 }

@@ -26,6 +26,15 @@ impl Default for Resolver {
     }
 }
 
+impl Drop for Resolver {
+    fn drop(&mut self) {
+        // FIXME
+        self.cache.wait().unwrap();
+        self.cache.close().unwrap();
+        self.cache.wait().unwrap();
+    }
+}
+
 impl CodeResolver for Resolver {
     fn resolve(
         &self,

@@ -7,8 +7,8 @@ use std::sync::{Arc, Mutex};
 use nusamai::pipeline::Canceller;
 use nusamai::sink::DataSinkProvider;
 use nusamai::sink::{
-    geojson::GeoJsonSinkProvider, gpkg::GpkgSinkProvider, serde::SerdeSinkProvider,
-    tiling2d::Tiling2DSinkProvider,
+    geojson::GeoJsonSinkProvider, gpkg::GpkgSinkProvider, mvt::MVTSinkProvider,
+    serde::SerdeSinkProvider,
 };
 use nusamai::source::citygml::CityGMLSourceProvider;
 use nusamai::source::DataSourceProvider;
@@ -52,7 +52,7 @@ fn run(input_path: String, output_path: String, filetype: String) {
             "GeoJSON" => Box::new(GeoJsonSinkProvider {}),
             "GeoPackage" => Box::new(GpkgSinkProvider {}),
             "Serde" => Box::new(SerdeSinkProvider {}),
-            "Tiling2D" => Box::new(Tiling2DSinkProvider {}),
+            "Vector Tiles" => Box::new(MVTSinkProvider {}),
             _ => {
                 log::error!("Unknown filetype: {}", filetype);
                 return;

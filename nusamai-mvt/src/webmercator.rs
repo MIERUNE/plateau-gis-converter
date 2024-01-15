@@ -1,3 +1,5 @@
+//! Web Mercator projection utilities.
+
 use std::f64::consts::FRAC_PI_2;
 
 /// Converts geographic coordinate (lng, lat) to Web Mercator coordinate (mx, my).

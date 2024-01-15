@@ -316,7 +316,10 @@ impl<R: BufRead> SubTreeReader<'_, '_, R> {
             Triangulated => self.parse_triangulated_prop(geomref, lod)?, // FIXME
             Point => todo!(),                                    // FIXME
             MultiPoint => todo!(),                               // FIXME
-            MultiCurve => todo!(),                               // FIXME
+            MultiCurve => {
+                self.skip_current_element()?;
+                log::warn!("CompositeCurve is not supported yet.");
+            } // FIXME
         }
 
         self.state

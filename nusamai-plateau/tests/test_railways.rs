@@ -4,14 +4,14 @@ use std::path::Path;
 use url::Url;
 
 use nusamai_citygml::{
-    CityGMLElement, CityGMLReader, Code, GeometryStore, Measure, ParseError, SubTreeReader,
+    CityGMLElement, CityGMLReader, Code, GeometryStore, ParseError, SubTreeReader,
 };
-use nusamai_plateau::models::Road;
+use nusamai_plateau::models::Railway;
 use nusamai_plateau::models::TopLevelCityObject;
 
 #[derive(Default, Debug)]
 struct ParsedData {
-    roads: Vec<Road>,
+    railways: Vec<Railway>,
     geometries: Vec<GeometryStore>,
 }
 
@@ -23,8 +23,8 @@ fn toplevel_dispatcher<R: BufRead>(st: &mut SubTreeReader<R>) -> Result<ParsedDa
             let mut cityobj: TopLevelCityObject = Default::default();
             cityobj.parse(st)?;
             match cityobj {
-                TopLevelCityObject::Road(road) => {
-                    parsed_data.roads.push(road);
+                TopLevelCityObject::Railway(rwy) => {
+                    parsed_data.railways.push(rwy);
                 }
                 TopLevelCityObject::CityObjectGroup(_) => (),
                 e => panic!("Unexpected city object type: {:?}", e),
@@ -51,8 +51,8 @@ fn toplevel_dispatcher<R: BufRead>(st: &mut SubTreeReader<R>) -> Result<ParsedDa
 }
 
 #[test]
-fn test_road() {
-    let filename = "./tests/data/numazu-shi/udx/tran/52385608_tran_6697_op.gml";
+fn test_track() {
+    let filename = "./tests/data/plateau-3_0/udx/rwy/53395518_rwy_6697.gml";
 
     let reader = std::io::BufReader::new(std::fs::File::open(filename).unwrap());
     let mut xml_reader = quick_xml::NsReader::from_reader(reader);
@@ -70,47 +70,20 @@ fn test_road() {
         Err(e) => panic!("Err: {:?}", e),
     };
 
-    assert_eq!(parsed_data.roads.len(), 549);
-    assert_eq!(parsed_data.roads.len(), parsed_data.geometries.len());
+    assert_eq!(parsed_data.railways.len(), 1);
+    assert_eq!(parsed_data.railways.len(), parsed_data.geometries.len());
 
-    let road = parsed_data.roads.first().unwrap();
+    let railway = parsed_data.railways.first().unwrap();
 
     assert_eq!(
-        road.function,
-        vec![Code::new("都道府県道".to_string(), "3".to_string(),)]
+        railway.id,
+        Some("rwy_58634d44-b0bd-4b22-bb6b-fafadda9203f".to_string())
     );
 
-    assert_eq!(
-        road.usage,
-        vec![
-            Code::new(
-                "緊急輸送道路（第三次緊急輸送道路）".to_string(),
-                "3".to_string(),
-            ),
-            Code::new("避難路／避難道路".to_string(), "5".to_string(),),
-        ]
-    );
+    assert_eq!(railway.name, vec!["東北線".to_string()]);
 
     assert_eq!(
-        road.traffic_area.first().unwrap().function,
-        vec![Code::new("歩道".to_string(), "2020".to_string(),)]
-    );
-
-    assert_eq!(
-        road.auxiliary_traffic_area.first().unwrap().function,
-        vec![Code::new("歩道部の段差".to_string(), "2000".to_string(),)]
-    );
-
-    assert_eq!(
-        road.road_structure_attribute.first().unwrap().width,
-        Some(Measure { value: 22.0 }),
-    );
-
-    assert_eq!(
-        road.traffic_volume_attribute
-            .first()
-            .unwrap()
-            .weekday12hour_traffic_volume,
-        Some(8170),
+        railway.traffic_area.first().unwrap().function,
+        vec![Code::new("軌道中心線".to_string(), "8000".to_string())]
     );
 }
