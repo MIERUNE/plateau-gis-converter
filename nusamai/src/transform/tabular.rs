@@ -115,11 +115,10 @@ impl ObjectSeparator {
         println!("other_layer_data: ");
         for (key, value) in other_layer_data.iter() {
             println!(" key: {:?}", key);
-            // println!(" value: {:?}", value);
             serde_json::to_writer_pretty(std::io::stdout(), value).unwrap();
         }
 
-        // ここまでで、primitive_attributesにData、とData以外の属性が格納されたArrayと、それ以外のValueが集められた
+        // ここまでで、primitive_attributesにData、とData以外の属性が格納されたArrayと、それ以外のValueが集められたはず
 
         println!();
     }
