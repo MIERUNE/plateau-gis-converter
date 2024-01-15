@@ -31,7 +31,7 @@ pub struct FooBarFeature {
     id: Option<String>,
 
     #[citygml(path = b"gml:name")]
-    name: Vec<String>,
+    name: Vec<Code>,
 
     #[citygml(path = b"gml:description")]
     description: Option<String>,

@@ -99,6 +99,7 @@ impl CityGMLElement for Code {
                     Err(_) => {
                         // FIXME
                         log::warn!("Failed to lookup code {} form {}", code, code_space);
+                        self.value = code;
                         return Ok(());
                     }
                 }
@@ -275,6 +276,8 @@ pub struct Point {
     // TODO
 }
 
+pub type Vector = Point;
+
 impl CityGMLElement for Point {
     const ELEMENT_TYPE: ElementType = ElementType::BasicType;
 
@@ -333,6 +336,20 @@ impl<T: CityGMLElement + Default> CityGMLElement for Vec<T> {
                 self.into_iter().filter_map(|v| v.into_object()).collect(),
             ))
         }
+    }
+}
+
+impl<T: CityGMLElement + Default> CityGMLElement for Box<T> {
+    const ELEMENT_TYPE: ElementType = ElementType::BasicType;
+
+    #[inline]
+    fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
+        <T as CityGMLElement>::parse(self, st)?;
+        Ok(())
+    }
+
+    fn into_object(self) -> Option<Value> {
+        (*self).into_object()
     }
 }
 

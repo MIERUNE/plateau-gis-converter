@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
-<gml:Dictionary xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:gml="http://www.opengis.net/gml" xsi:schemaLocation="http://www.opengis.net/gml http://schemas.opengis.net/gml/3.1.1/profiles/SimpleDictionary/1.0.0/gmlSimpleDictionaryProfile.xsd" gml:id="cl_9f03ed32-4a69-4ccd-83ea-b26a553152bd">
+<gml:Dictionary xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:gml="http://www.opengis.net/gml" xsi:schemaLocation="http://www.opengis.net/gml http://schemas.opengis.net/gml/3.1.1/profiles/SimpleDictionary/1.0.0/gmlSimpleDictionaryProfile.xsd" gml:id="cl_f6c5cb18-c9d1-499d-91b3-096cd2be86d3">
 <gml:name>Common_dmCode</gml:name>
 <gml:dictionaryEntry>
 <gml:Definition gml:id="Common_dmCode_1">
@@ -73,14 +73,6 @@
 <gml:name>2205</gml:name>
 </gml:Definition>
 </gml:dictionaryEntry>
-<!-- 追加↓ -->
-<gml:dictionaryEntry>
-<gml:Definition gml:id="Common_dmCode_2210">
-<gml:description>ペデストリアンデッキ</gml:description>
-<gml:name>2210</gml:name>
-</gml:Definition>
-</gml:dictionaryEntry>
-<!-- 追加↑ -->
 <gml:dictionaryEntry>
 <gml:Definition gml:id="Common_dmCode_13">
 <gml:description>横断歩道橋</gml:description>
@@ -287,13 +279,13 @@
 </gml:dictionaryEntry>
 <gml:dictionaryEntry>
 <gml:Definition gml:id="Common_dmCode_47">
-<gml:description>独立樹　（広葉樹）</gml:description>
+<gml:description>独立樹（広葉樹）</gml:description>
 <gml:name>4221</gml:name>
 </gml:Definition>
 </gml:dictionaryEntry>
 <gml:dictionaryEntry>
 <gml:Definition gml:id="Common_dmCode_48">
-<gml:description>独立樹　（針葉樹）</gml:description>
+<gml:description>独立樹（針葉樹）</gml:description>
 <gml:name>4222</gml:name>
 </gml:Definition>
 </gml:dictionaryEntry>
@@ -353,13 +345,13 @@
 </gml:dictionaryEntry>
 <gml:dictionaryEntry>
 <gml:Definition gml:id="Common_dmCode_58">
-<gml:description>輸送管　（地上）</gml:description>
+<gml:description>輸送管（地上）</gml:description>
 <gml:name>4261</gml:name>
 </gml:Definition>
 </gml:dictionaryEntry>
 <gml:dictionaryEntry>
 <gml:Definition gml:id="Common_dmCode_59">
-<gml:description>輸送管　（空間）</gml:description>
+<gml:description>輸送管（空間）</gml:description>
 <gml:name>4262</gml:name>
 </gml:Definition>
 </gml:dictionaryEntry>

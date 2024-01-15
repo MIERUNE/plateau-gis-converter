@@ -1,0 +1,258 @@
+use nusamai_citygml::{
+    citygml_feature, values, CityGMLElement, CityGMLReader, Date, Measure, ParseContext,
+    ParseError, Value, URI,
+};
+
+#[test]
+fn parse_date() {
+    #[derive(CityGMLElement, Default)]
+    struct Root {
+        #[citygml(path = b"date")]
+        date: Option<chrono::NaiveDate>,
+    }
+
+    let mut xml_reader = quick_xml::NsReader::from_reader(std::io::Cursor::new(
+        r#"<root><date>2019-03-21</date></root>"#,
+    ));
+    let context = ParseContext::default();
+    match CityGMLReader::new(context).start_root(&mut xml_reader) {
+        Ok(mut st) => {
+            let mut root = Root::default();
+            root.parse(&mut st).unwrap();
+            assert!(root.date.is_some());
+            assert_eq!(root.date, Date::from_ymd_opt(2019, 3, 21));
+        }
+        Err(e) => panic!("Err: {:?}", e),
+    }
+}
+
+#[test]
+fn parse_boolean() {
+    #[derive(CityGMLElement, Default)]
+    struct Root {
+        #[citygml(path = b"boolean")]
+        bools: Vec<bool>,
+    }
+
+    let mut xml_reader = quick_xml::NsReader::from_reader(std::io::Cursor::new(
+        r#"
+        <root>
+            <boolean>true</boolean>
+            <boolean>True</boolean>
+            <boolean>TRUE</boolean>
+            <boolean>1</boolean>
+            <boolean>false</boolean>
+            <boolean>False</boolean>
+            <boolean>FALSE</boolean>
+            <boolean>0</boolean>
+        </root>
+        "#,
+    ));
+    let context = ParseContext::default();
+    match CityGMLReader::new(context).start_root(&mut xml_reader) {
+        Ok(mut st) => {
+            let mut root = Root::default();
+            root.parse(&mut st).unwrap();
+            assert_eq!(
+                root.bools,
+                [true, true, true, true, false, false, false, false]
+            );
+        }
+        Err(e) => panic!("Err: {:?}", e),
+    }
+}
+
+#[test]
+fn parse_basic_types() {
+    #[derive(CityGMLElement, Default)]
+    struct Root {
+        #[citygml(path = b"int")]
+        int: Option<i64>,
+        #[citygml(path = b"uint")]
+        uint: Option<u64>,
+        #[citygml(path = b"string")]
+        string: Option<String>,
+        #[citygml(path = b"float")]
+        float: Option<f64>,
+        #[citygml(path = b"bool")]
+        bool: Option<bool>,
+        #[citygml(path = b"measure")]
+        measure: Option<Measure>,
+        #[citygml(path = b"uri")]
+        uri: Option<URI>,
+        #[citygml(path = b"date")]
+        date: Option<Date>,
+    }
+
+    let mut xml_reader = quick_xml::NsReader::from_reader(std::io::Cursor::new(
+        r#"
+        <root>
+            <int>-1234567</int>
+            <uint>1234567</uint>
+            <float>1234.567</float>
+            <string>hello</string>
+            <bool>true</bool>
+            <measure>3.4</measure>
+            <date>2000-12-25</date>
+            <uri>https://example.com/foo?bar=2000</uri>
+        </root>
+        "#,
+    ));
+    let context = ParseContext::default();
+    match CityGMLReader::new(context).start_root(&mut xml_reader) {
+        Ok(mut st) => {
+            let mut root = Root::default();
+            root.parse(&mut st).unwrap();
+            assert_eq!(root.int.unwrap(), -1234567);
+            assert_eq!(root.uint.unwrap(), 1234567);
+            assert!((root.float.unwrap() - 1234.567).abs() < 1e-15);
+            assert!((root.measure.as_ref().unwrap().value() - 3.4).abs() < 1e-15);
+            assert_eq!(root.string.as_ref().unwrap(), "hello");
+            assert_eq!(
+                root.uri.as_ref().unwrap().value(),
+                "https://example.com/foo?bar=2000"
+            );
+            assert!(root.bool.unwrap());
+            root.into_object();
+        }
+        Err(e) => panic!("Err: {:?}", e),
+    }
+}
+
+fn expect_invalid<T: CityGMLElement + Default>(xml: &str) {
+    let mut xml_reader = quick_xml::NsReader::from_reader(std::io::Cursor::new(xml));
+    let context = ParseContext::default();
+    match CityGMLReader::new(context).start_root(&mut xml_reader) {
+        Ok(mut st) => {
+            let mut root = T::default();
+            match root.parse(&mut st) {
+                Err(ParseError::InvalidValue(_)) => {}
+                _ => panic!("Should be invalid value"),
+            }
+        }
+        Err(e) => panic!("Err: {:?}", e),
+    }
+}
+
+#[test]
+fn parse_basic_types_invalid() {
+    expect_invalid::<u64>(r#"<root>123.456</root>"#); // not integer
+    expect_invalid::<u64>(r#"<root>-123</root>"#); // not unsigned
+    expect_invalid::<i64>(r#"<root>123.456</root>"#); // not integer
+    expect_invalid::<f64>(r#"<root>foo</root>"#); // not float
+    expect_invalid::<bool>(r#"<root>123</root>"#); // not boolean
+    expect_invalid::<Measure>(r#"<root>foo</root>"#); // not float
+    expect_invalid::<Date>(r#"<root>2022-13-00</root>"#); // not valid date
+}
+
+#[test]
+fn parse_duplicate_content() {
+    let mut xml_reader = quick_xml::NsReader::from_reader(std::io::Cursor::new(
+        r#"
+    <root>
+        <only_once>123</only_once>
+        <only_once>234</only_once>
+    </root>
+    "#,
+    ));
+
+    #[derive(CityGMLElement, Default)]
+    struct Root {
+        #[citygml(path = b"only_once")]
+        only_once: Option<i64>,
+    }
+    let context = ParseContext::default();
+    match CityGMLReader::new(context).start_root(&mut xml_reader) {
+        Ok(mut st) => {
+            let mut root = Root::default();
+            match root.parse(&mut st) {
+                Err(ParseError::SchemaViolation(_)) => {}
+                _ => panic!("Should be schema violation"),
+            }
+        }
+        Err(e) => panic!("Err: {:?}", e),
+    }
+}
+
+#[test]
+fn generics() {
+    #[citygml_feature(name = "foo:foo")]
+    struct Demo {
+        // The field `generic_attributes` will be automatically generated.
+    }
+
+    let data = r#"
+        <foo xmlns:gen="http://www.opengis.net/citygml/generics/2.0">
+            <gen:stringAttribute name="s1">
+                <gen:value>foo</gen:value>
+            </gen:stringAttribute>
+            <gen:stringAttribute>
+                <gen:name>s2</gen:name>
+                <gen:value>bar</gen:value>
+            </gen:stringAttribute>
+            <gen:intAttribute name="i1">
+                <gen:value>10</gen:value>
+            </gen:intAttribute>
+            <gen:doubleAttribute name="d1">
+                <gen:value>10.2</gen:value>
+            </gen:doubleAttribute>
+            <gen:measureAttribute name="m1">
+                <gen:value>15.1</gen:value>
+            </gen:measureAttribute>
+            <gen:dateAttribute name="date1">
+                <gen:value>2011-11-12</gen:value>
+            </gen:dateAttribute>
+            <gen:uriAttribute name="u1">
+                <gen:value>https://foo.com/hoge</gen:value>
+            </gen:uriAttribute>
+            <gen:genericAttributeSet name="set1">
+                <gen:stringAttribute>
+                    <gen:name>fizz</gen:name>
+                    <gen:value>buzz</gen:value>
+                </gen:stringAttribute>
+                <gen:doubleAttribute name="d1">
+                    <gen:value>123.45</gen:value>
+                </gen:doubleAttribute>
+            </gen:genericAttributeSet>
+        </foo>
+    "#;
+
+    let reader = std::io::BufReader::new(std::io::Cursor::new(data));
+    let mut xml_reader = quick_xml::NsReader::from_reader(reader);
+    let context = nusamai_citygml::ParseContext::default();
+    let mut demo = Demo::default();
+    match nusamai_citygml::CityGMLReader::new(context).start_root(&mut xml_reader) {
+        Ok(mut st) => {
+            demo.parse(&mut st).unwrap();
+        }
+        Err(e) => panic!("Err: {:?}", e),
+    };
+
+    let obj = demo.generic_attribute.into_object().unwrap();
+    if let Value::Data(data) = obj {
+        assert_eq!(data.attributes["s1"], Value::String("foo".to_string()));
+        assert_eq!(data.attributes["s2"], Value::String("bar".to_string()));
+        assert_eq!(data.attributes["i1"], Value::Integer(10));
+        assert_eq!(data.attributes["d1"], Value::Double(10.2));
+        assert_eq!(
+            data.attributes["date1"],
+            Value::Date(values::Date::from_ymd_opt(2011, 11, 12).unwrap())
+        );
+        assert_eq!(
+            data.attributes["m1"],
+            Value::Measure(values::Measure::new(15.1))
+        );
+        assert_eq!(
+            data.attributes["u1"],
+            Value::URI(values::URI::new("https://foo.com/hoge"))
+        );
+
+        let Value::Data(set1) = &data.attributes["set1"] else {
+            panic!("expected data");
+        };
+        assert_eq!(set1.attributes["fizz"], Value::String("buzz".to_string()));
+        assert_eq!(set1.attributes["d1"], Value::Double(123.45));
+    } else {
+        panic!("expected data");
+    }
+}
