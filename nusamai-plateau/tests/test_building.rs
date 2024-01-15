@@ -1,8 +1,8 @@
-mod utils;
+pub mod common;
 
 use nusamai_plateau::models::TopLevelCityObject;
 
-use utils::load_cityobjs_from_zstd;
+use common::load_cityobjs_from_zstd;
 
 #[test]
 fn test_load_building_lod4_example() {

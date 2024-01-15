@@ -1,8 +1,8 @@
-mod utils;
+pub mod common;
 
+use common::load_cityobjs;
 use nusamai_citygml::{Code, Measure};
 use nusamai_plateau::models::{uro, waterbody, TopLevelCityObject};
-use utils::load_cityobjs;
 
 #[test]
 fn test_load_urf_example() {

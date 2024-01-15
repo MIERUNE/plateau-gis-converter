@@ -1,8 +1,8 @@
-mod utils;
+pub mod common;
 
+use common::load_cityobjs;
 use nusamai_citygml::{Code, Measure};
 use nusamai_plateau::models::TopLevelCityObject;
-use utils::load_cityobjs;
 
 #[test]
 fn test_load_road_example() {

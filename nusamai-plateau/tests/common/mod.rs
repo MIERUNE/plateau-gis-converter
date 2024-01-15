@@ -45,7 +45,7 @@ fn toplevel_dispatcher<R: BufRead>(
 pub fn load_cityobjs_from_reader(reader: impl BufRead, path: &Path) -> Vec<CityObject> {
     let mut xml_reader = quick_xml::NsReader::from_reader(reader);
     let code_resolver = nusamai_plateau::codelist::Resolver::new();
-    let source_url = Url::from_file_path(std::fs::canonicalize(&path).unwrap()).unwrap();
+    let source_url = Url::from_file_path(std::fs::canonicalize(path).unwrap()).unwrap();
     let context = nusamai_citygml::ParseContext::new(source_url, &code_resolver);
 
     let cityobjs = match CityGMLReader::new(context).start_root(&mut xml_reader) {
@@ -60,7 +60,7 @@ pub fn load_cityobjs_from_reader(reader: impl BufRead, path: &Path) -> Vec<CityO
 
 pub fn load_cityobjs(path: impl AsRef<Path>) -> Vec<CityObject> {
     let reader = std::io::BufReader::new(std::fs::File::open(&path).unwrap());
-    load_cityobjs_from_reader(reader, path.as_ref().into())
+    load_cityobjs_from_reader(reader, path.as_ref())
 }
 
 pub fn load_cityobjs_from_zstd(path: impl AsRef<Path>) -> Vec<CityObject> {
