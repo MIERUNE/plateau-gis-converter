@@ -2,6 +2,7 @@ use indexmap::IndexMap;
 
 use nusamai_citygml::object::{CityObject, Data, Feature};
 use nusamai_citygml::Value;
+use rayon::array;
 
 // 以下、仮実装
 pub struct Layer {
@@ -59,24 +60,36 @@ impl ObjectSeparator {
         }
     }
 
-    fn attribute_parser(&self, feature: &Feature, gml_id: String) -> Vec<Feature> {
+    fn attribute_parser(&self, feature: &Feature, gml_id: String) -> () {
         let mut primitive_attributes: IndexMap<String, Value> = IndexMap::new();
-        let mut features: Vec<Feature> = Vec::new();
-        let mut data_list: Vec<Data> = Vec::new();
-        let mut array_list: Vec<Vec<Value>> = Vec::new();
+        let mut features: IndexMap<String, Vec<Feature>> = IndexMap::new();
+        let mut data_list: IndexMap<String, Vec<Data>> = IndexMap::new();
+        let mut other_layer_data: IndexMap<String, Value> = IndexMap::new();
 
         // フラット化されたdataとfeatureを取得
         // それ以外の情報も取得
         for (key, value) in feature.attributes.iter() {
             match value {
                 Value::Array(a) => {
-                    array_list.push(a.clone());
+                    for v in a.iter() {
+                        match v {
+                            Value::Data(_) => {
+                                other_layer_data.insert(key.clone(), v.clone());
+                            }
+                            Value::Feature(f) => {
+                                other_layer_data.insert(key.clone(), v.clone());
+                            }
+                            _ => {
+                                primitive_attributes.insert(key.clone(), value.clone());
+                            }
+                        }
+                    }
                 }
                 Value::Data(d) => {
-                    data_list.push(d.clone());
+                    data_list.insert(key.clone(), vec![d.clone()]);
                 }
                 Value::Feature(f) => {
-                    features.push(f.clone());
+                    features.insert(key.clone(), vec![f.clone()]);
                 }
                 _ => {
                     primitive_attributes.insert(key.clone(), value.clone());
@@ -101,16 +114,36 @@ impl ObjectSeparator {
         // ・FeatureはFeatureをまとめて1つの地物にする
         // トップレベルのtypenameが異なるなら、別のレイヤーにする
 
-        println!("primitive_attributes: {:?}", primitive_attributes);
-        println!("data_list: {:?}", data_list);
-        println!("features: {:?}", features);
-        println!("array_list: {:?}", array_list);
+        // dataを全てprimitive_attributesに突っ込む
+        for (key, value) in data_list.iter() {
+            for v in value.iter() {
+                primitive_attributes.insert(key.clone(), Value::Data(v.clone()));
+            }
+        }
 
-        // featuresが無い→attribute内に子要素がなかった→トップレベルのジオメトリを利用
+        // Arrayの中にDataが入っていたら、別テーブル？
+
+        // Dataのattributesは基本的にはフラットに展開してあげる？
+        // でも中にはArrayが入っているものもあるからなー
+
+        // Featureは子要素なので、そのまま取り出した方が良さそう
+        // 一旦FeatureのArrayにしてしまって、後で全部まとめるか、意味的子要素に分割するか決める
+        // GeometryRefのLODごとに分割とかはしてあげる必要がありそうだが…
+
+        // 一旦、割り切ってしまうのはあり
+        // オブションは後でつけるなりするとして
+
+        // 仮実装としてとりあえず、Arrayのフィールドがあって、尚且つDataなら、別のレイヤーにする
+
+        println!("primitive_attributes: {:?}", primitive_attributes);
+        println!("features: {:?}", features);
+        println!("other_layer_data: ");
+        for (key, value) in other_layer_data.iter() {
+            println!(" key: {:?}", key);
+            println!(" value: {:?}", value);
+        }
 
         println!();
-
-        features
     }
 
     pub fn to_tabular(&self, cityobj: &CityObject) -> Vec<Layer> {
@@ -125,7 +158,7 @@ impl ObjectSeparator {
         let typename = &toplevel_feature.typename;
         println!("{:?}, {:?}", parent_gml_id, typename);
 
-        let features = &self.attribute_parser(toplevel_feature, parent_gml_id.clone().unwrap());
+        &self.attribute_parser(toplevel_feature, parent_gml_id.clone().unwrap());
 
         // テスト用の出力
         let file = std::fs::File::create("/Users/satoru/Downloads/output/test.json").unwrap();
