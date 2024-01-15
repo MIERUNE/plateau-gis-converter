@@ -119,6 +119,20 @@ impl ObjectSeparator {
         }
 
         // ここまでで、primitive_attributesにData、とData以外の属性が格納されたArrayと、それ以外のValueが集められたはず
+        let primitive_file =
+            std::fs::File::create("/Users/satoru/Downloads/output/primitive.json").unwrap();
+        let primitive_writer = std::io::BufWriter::new(primitive_file);
+        serde_json::to_writer_pretty(primitive_writer, &primitive_attributes).unwrap();
+
+        let features_file =
+            std::fs::File::create("/Users/satoru/Downloads/output/features.json").unwrap();
+        let features_writer = std::io::BufWriter::new(features_file);
+        serde_json::to_writer_pretty(features_writer, &features).unwrap();
+
+        let other_layer_data_file =
+            std::fs::File::create("/Users/satoru/Downloads/output/other_layer_data.json").unwrap();
+        let other_layer_data_writer = std::io::BufWriter::new(other_layer_data_file);
+        serde_json::to_writer_pretty(other_layer_data_writer, &other_layer_data).unwrap();
 
         println!();
     }
