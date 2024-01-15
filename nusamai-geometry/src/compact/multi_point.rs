@@ -31,7 +31,7 @@ impl<'a, const D: usize, T: CoordNum> MultiPoint<'a, D, T> {
         self.as_ref()
     }
 
-    pub fn iter(&self) -> Iter<'_, D, T> {
+    pub fn iter(&self) -> Iter<D, T> {
         Iter {
             slice: &self.coords,
             pos: 0,
@@ -85,7 +85,7 @@ impl<const D: usize, T: CoordNum> AsRef<[T]> for MultiPoint<'_, D, T> {
 }
 
 impl<'a, const D: usize, T: CoordNum> IntoIterator for &'a MultiPoint<'_, D, T> {
-    type Item = &'a [T];
+    type Item = [T; D];
     type IntoIter = Iter<'a, D, T>;
 
     fn into_iter(self) -> Self::IntoIter {
@@ -99,12 +99,12 @@ pub struct Iter<'a, const D: usize, T: CoordNum> {
 }
 
 impl<'a, const D: usize, T: CoordNum> Iterator for Iter<'a, D, T> {
-    type Item = &'a [T];
+    type Item = [T; D];
 
     fn next(&mut self) -> Option<Self::Item> {
         self.pos += D;
         if self.pos <= self.slice.len() {
-            Some(&self.slice[self.pos - D..self.pos])
+            Some(self.slice[self.pos - D..self.pos].try_into().unwrap())
         } else {
             None
         }
@@ -134,8 +134,8 @@ mod tests {
 
         for (i, point) in mpoints.iter().enumerate() {
             match i {
-                0 => assert_eq!(point, &[0.0, 0.0]),
-                1 => assert_eq!(point, &[1.0, 1.0]),
+                0 => assert_eq!(point, [0.0, 0.0]),
+                1 => assert_eq!(point, [1.0, 1.0]),
                 _ => unreachable!(),
             }
         }

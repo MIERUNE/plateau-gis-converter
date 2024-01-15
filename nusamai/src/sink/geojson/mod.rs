@@ -2,43 +2,62 @@
 
 use std::fs::File;
 use std::io::{BufWriter, Write};
+use std::path::PathBuf;
 
 use rayon::prelude::*;
 
-use crate::configuration::Config;
+use crate::get_parameter_value;
+use crate::parameters::*;
 use crate::pipeline::{Feedback, Receiver};
 use crate::sink::{DataSink, DataSinkProvider, SinkInfo};
 
 use nusamai_citygml::object::CityObject;
 use nusamai_geojson::conversion::{
-    multilinestring_to_geojson_geometry, multipoint_to_geojson_geometry,
-    multipolygon_to_geojson_geometry,
+    indexed_multilinestring_to_geometry, indexed_multipoint_to_geometry,
+    indexed_multipolygon_to_geometry,
 };
 
 pub struct GeoJsonSinkProvider {}
 
 impl DataSinkProvider for GeoJsonSinkProvider {
-    fn create(&self, _config: &Config) -> Box<dyn DataSink> {
-        Box::<GeoJsonSink>::default()
-    }
-
     fn info(&self) -> SinkInfo {
         SinkInfo {
             name: "GeoJSON".to_string(),
         }
     }
 
-    fn config(&self) -> Config {
-        Config::default()
+    fn parameters(&self) -> Parameters {
+        let mut params = Parameters::new();
+        params.define(
+            "@output".into(),
+            ParameterEntry {
+                description: "Output file path".into(),
+                required: true,
+                parameter: ParameterType::FileSystemPath(FileSystemPathParameter {
+                    value: None,
+                    must_exist: false,
+                }),
+            },
+        );
+        params
+    }
+
+    fn create(&self, params: &Parameters) -> Box<dyn DataSink> {
+        let output_path = get_parameter_value!(params, "@output", FileSystemPath);
+
+        Box::<GeoJsonSink>::new(GeoJsonSink {
+            output_path: output_path.unwrap().into(),
+        })
     }
 }
 
-#[derive(Default)]
-pub struct GeoJsonSink {}
+pub struct GeoJsonSink {
+    output_path: PathBuf,
+}
 
 impl DataSink for GeoJsonSink {
     fn run(&mut self, upstream: Receiver, feedback: &mut Feedback) {
-        let (sender, receiver) = std::sync::mpsc::sync_channel(100);
+        let (sender, receiver) = std::sync::mpsc::sync_channel(1000);
 
         rayon::join(
             || {
@@ -58,7 +77,7 @@ impl DataSink for GeoJsonSink {
                                 return Err(());
                             };
                             if sender.send(bytes).is_err() {
-                                println!("sink cancelled");
+                                log::info!("sink cancelled");
                                 return Err(());
                             };
                         }
@@ -70,7 +89,7 @@ impl DataSink for GeoJsonSink {
                 // Write GeoJSON to a file
 
                 // TODO: Handle output file path
-                let mut file = File::create("output.geojson").unwrap();
+                let mut file = File::create(&self.output_path).unwrap();
                 let mut writer = BufWriter::new(&mut file);
 
                 // Write the FeatureCollection header
@@ -113,7 +132,7 @@ pub fn toplevel_cityobj_to_geojson_features(obj: &CityObject) -> Vec<geojson::Fe
     let properties = extract_properties(&obj.root);
 
     if !obj.geometries.multipolygon.is_empty() {
-        let mpoly_geojson_geom = multipolygon_to_geojson_geometry(
+        let mpoly_geojson_geom = indexed_multipolygon_to_geometry(
             &obj.geometries.vertices,
             &obj.geometries.multipolygon,
         );
@@ -129,7 +148,7 @@ pub fn toplevel_cityobj_to_geojson_features(obj: &CityObject) -> Vec<geojson::Fe
     }
 
     if !obj.geometries.multilinestring.is_empty() {
-        let mls_geojson_geom = multilinestring_to_geojson_geometry(
+        let mls_geojson_geom = indexed_multilinestring_to_geometry(
             &obj.geometries.vertices,
             &obj.geometries.multilinestring,
         );
@@ -145,7 +164,7 @@ pub fn toplevel_cityobj_to_geojson_features(obj: &CityObject) -> Vec<geojson::Fe
 
     if !obj.geometries.multipoint.is_empty() {
         let mpoint_geojson_geom =
-            multipoint_to_geojson_geometry(&obj.geometries.vertices, &obj.geometries.multipoint);
+            indexed_multipoint_to_geometry(&obj.geometries.vertices, &obj.geometries.multipoint);
         let mpoint_geojson_feat = geojson::Feature {
             bbox: None,
             geometry: Some(mpoint_geojson_geom),
@@ -164,6 +183,7 @@ mod tests {
     use super::*;
     use nusamai_citygml::{object::Feature, Value};
     use nusamai_geometry::MultiPolygon;
+    use nusamai_projection::crs::EPSG_JGD2011_GEOGRAPHIC_3D;
 
     #[test]
     fn test_toplevel_cityobj_multipolygon() {
@@ -173,9 +193,10 @@ mod tests {
             [5., 5., 111.],
             [0., 5., 111.],
         ];
-        let mut mpoly = MultiPolygon::<'_, 1, u32>::new();
+        let mut mpoly = MultiPolygon::<1, u32>::new();
         mpoly.add_exterior([[0], [1], [2], [3], [0]]);
-        let geometries = nusamai_citygml::Geometries {
+        let geometries = nusamai_citygml::GeometryStore {
+            epsg: EPSG_JGD2011_GEOGRAPHIC_3D,
             vertices,
             multipolygon: mpoly,
             multilinestring: Default::default(),

@@ -1,10 +1,12 @@
-use std::{collections::HashMap, path::PathBuf};
+use std::path::PathBuf;
 
 use super::xml::{parse_dictionary, Definition};
-use nusamai_citygml::codelist::CodeResolver;
-use nusamai_citygml::ParseError;
+use hashbrown::HashMap;
 use stretto::Cache;
 use url::Url;
+
+use nusamai_citygml::codelist::CodeResolver;
+use nusamai_citygml::ParseError;
 
 pub struct Resolver {
     cache: Cache<PathBuf, HashMap<String, Definition>>,
@@ -21,6 +23,12 @@ impl Resolver {
 impl Default for Resolver {
     fn default() -> Self {
         Self::new()
+    }
+}
+
+impl Drop for Resolver {
+    fn drop(&mut self) {
+        self.cache.close().unwrap();
     }
 }
 

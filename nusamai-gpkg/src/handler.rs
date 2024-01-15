@@ -1,8 +1,9 @@
-use crate::geometry::multipolygon_to_bytes;
-use sqlx::Row;
-use sqlx::{migrate::MigrateDatabase, Pool, Sqlite, SqlitePool};
+use sqlx::{sqlite::*, ConnectOptions};
+use sqlx::{Acquire, Row};
+use sqlx::{Pool, Sqlite};
 use std::path::Path;
 use thiserror::Error;
+use url::Url;
 
 pub struct GpkgHandler {
     pool: Pool<Sqlite>,
@@ -17,16 +18,22 @@ pub enum GpkgError {
 }
 
 impl GpkgHandler {
-    /// Create and initialize new GeoPackage database
-    pub async fn init(path: &str) -> Result<Self, GpkgError> {
-        if Path::new(path).exists() {
-            return Err(GpkgError::DatabaseExists(path.to_string()));
+    /// Create and initialize new GeoPackage database at the specified path
+    pub async fn from_path(path: &Path) -> Result<Self, GpkgError> {
+        if path.exists() {
+            return Err(GpkgError::DatabaseExists(format!("{:?}", path)));
         }
+        let url = Url::parse(&format!("sqlite://{}", path.to_str().unwrap())).unwrap();
+        Self::from_url(&url).await
+    }
 
-        let db_url = format!("sqlite://{}", path);
-
-        Sqlite::create_database(&db_url).await?;
-        let pool = SqlitePool::connect(&db_url).await?;
+    /// Create and initialize new GeoPackage database at the specified URL
+    pub async fn from_url(url: &Url) -> Result<Self, GpkgError> {
+        let conn_opts = SqliteConnectOptions::from_url(url)?
+            .create_if_missing(true)
+            .synchronous(SqliteSynchronous::Normal)
+            .journal_mode(SqliteJournalMode::Wal);
+        let pool = SqlitePoolOptions::new().connect_with(conn_opts).await?;
 
         // Initialize the database with minimum GeoPackage schema
         let create_query = include_str!("sql/init.sql");
@@ -39,12 +46,12 @@ impl GpkgHandler {
         Ok(Self { pool })
     }
 
-    /// Connect to an existing GeoPackage database
-    pub async fn connect(path: &str) -> Result<Self, GpkgError> {
-        let db_url = format!("sqlite://{}", path);
-        let pool = SqlitePool::connect(&db_url).await?;
-        Ok(Self { pool })
-    }
+    ///// Connect to an existing GeoPackage database
+    //pub async fn connect(path: &str) -> Result<Self, GpkgError> {
+    //    let db_url = format!("sqlite://{}", path);
+    //    let pool = SqlitePool::connect(&db_url).await?;
+    //    Ok(Self { pool })
+    //}
 
     pub async fn application_id(&self) -> u32 {
         let result = sqlx::query("PRAGMA application_id;")
@@ -84,19 +91,33 @@ impl GpkgHandler {
         table_names
     }
 
+    pub async fn begin(&mut self) -> Result<GpkgTransaction, GpkgError> {
+        Ok(GpkgTransaction::new(self.pool.begin().await?))
+    }
+}
+
+pub struct GpkgTransaction<'c> {
+    tx: sqlx::Transaction<'c, Sqlite>,
+}
+
+impl<'c> GpkgTransaction<'c> {
+    pub fn new(tx: sqlx::Transaction<'c, Sqlite>) -> Self {
+        Self { tx }
+    }
+
+    pub async fn commit(self) -> Result<(), GpkgError> {
+        Ok(self.tx.commit().await?)
+    }
+
     /// Add a MultiPolygonZ feature to the GeoPackage database
     ///
     /// Note: とりあえず地物を挿入してみるための実装です。参考にしないでください。
-    pub async fn add_multi_polygon_feature(
-        &self,
-        vertices: &[[f64; 3]],
-        mpoly: &nusamai_geometry::MultiPolygon<'_, 1, u32>,
-    ) {
-        let bytes = multipolygon_to_bytes(vertices, mpoly, 4326);
+    pub async fn insert_feature(&mut self, bytes: &[u8]) {
+        let executor = self.tx.acquire().await.unwrap();
 
         sqlx::query("INSERT INTO mpoly3d (geometry) VALUES (?)")
             .bind(bytes)
-            .execute(&self.pool)
+            .execute(&mut *executor)
             .await
             .unwrap();
 
@@ -111,8 +132,9 @@ mod tests {
 
     #[tokio::test]
     async fn test_init_connect() {
-        let handler = GpkgHandler::init("sqlite::memory:").await.unwrap();
-        let _handler2 = GpkgHandler::connect("sqlite::memory:").await.unwrap();
+        let handler = GpkgHandler::from_url(&Url::parse("sqlite::memory:").unwrap())
+            .await
+            .unwrap();
 
         let application_id = handler.application_id().await;
         assert_eq!(application_id, 1196444487);

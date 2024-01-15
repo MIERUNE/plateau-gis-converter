@@ -1,140 +1,123 @@
 //! Convert geometries to GeoPackage SQL Geometry Binary Format
-/// cf. https://www.geopackage.org/spec130/#gpb_format
-use nusamai_geometry::{MultiPolygon, Polygon};
+//!
+//! cf. https://www.geopackage.org/spec130/#gpb_format
 
-fn geometry_header(srs_id: i32) -> Vec<u8> {
-    let mut header: Vec<u8> = Vec::with_capacity(8);
-    header.extend_from_slice(&[0x47, 0x50]); // Magic number
-    header.push(0x00); // Version
-    header.push(0b00000001); // Flags
-    header.extend_from_slice(&i32::to_le_bytes(srs_id)); // SRS ID
-    header
+use nusamai_geometry::{CoordNum, MultiPolygon, Polygon};
+use std::io::Write;
+
+#[repr(u8)]
+pub enum WkbByteOrder {
+    // Big endian (XDR)
+    BigEndian = 0,
+    // Little endian (NDR)
+    LittleEndian = 1,
 }
 
-fn polygon_to_rings(vertices: &[[f64; 3]], poly: &Polygon<1, u32>) -> Vec<Vec<Vec<f64>>> {
-    let linestrings = std::iter::once(poly.exterior()).chain(poly.interiors());
-
-    let rings: Vec<_> = linestrings
-        .map(|ls| {
-            let coords: Vec<_> = ls
-                .iter_closed()
-                .map(|idx| vertices[idx[0] as usize].to_vec()) // Get the actual coord values
-                .collect();
-            coords
-        })
-        .collect();
-
-    rings
+#[repr(u32)]
+pub enum WkbGeometryType {
+    Point = 1,
+    LineString = 2,
+    Polygon = 3,
+    MultiPoint = 4,
+    MultiLineString = 5,
+    MultiPolygon = 6,
+    GeometryCollection = 7,
+    PointZ = 1001,
+    LineStringZ = 1002,
+    PolygonZ = 1003,
+    MultiPointZ = 1004,
+    MultiLineStringZ = 1005,
+    MultiPolygonZ = 1006,
+    GeometryCollectionZ = 1007,
+    PointM = 2001,
+    LineStringM = 2002,
+    PolygonM = 2003,
+    MultiPointM = 2004,
+    MultiLineStringM = 2005,
+    MultiPolygonM = 2006,
+    GeometryCollectionM = 2007,
+    PointZM = 3001,
+    LineStringZM = 3002,
+    PolygonZM = 3003,
+    MultiPointZM = 3004,
+    MultiLineStringZM = 3005,
+    MultiPolygonZM = 3006,
+    GeometryCollectionZM = 3007,
 }
 
-pub fn multipolygon_to_bytes(
-    vertices: &[[f64; 3]],
-    mpoly: &MultiPolygon<'_, 1, u32>,
-    srs_id: i32,
-) -> Vec<u8> {
-    let mut bytes: Vec<u8> = geometry_header(srs_id);
+fn write_geometry_header<W: Write>(writer: &mut W, srs_id: i32) -> std::io::Result<()> {
+    writer.write_all(&[0x47, 0x50])?; // Magic number
+    writer.write_all(&[
+        0x00,       // Version
+        0b00000001, // Flags
+    ])?;
+    writer.write_all(&i32::to_le_bytes(srs_id))?; // SRS ID
+    Ok(())
+}
 
-    // Byte order: Little endian
-    bytes.push(0x01);
+fn write_polygon_body<W: Write, const D: usize, T: CoordNum>(
+    writer: &mut W,
+    poly: &Polygon<D, T>,
+    mapping: impl Fn([T; D]) -> [f64; 3],
+) -> std::io::Result<()> {
+    // Byte order: Little endian (1)
+    writer.write_all(&[WkbByteOrder::LittleEndian as u8])?;
 
-    // Geometry type: wkbMultiPolygonZ (1006)
-    bytes.extend_from_slice(&1006_u32.to_le_bytes());
+    // Geometry type: wkbPolygonZ (1003)
+    writer.write_all(&(WkbGeometryType::PolygonZ as u32).to_le_bytes())?;
 
-    // numPolygons
-    bytes.extend_from_slice(&(mpoly.len() as u32).to_le_bytes());
+    // numRings
+    writer.write_all(&(poly.rings().count() as u32).to_le_bytes())?;
 
-    for poly in mpoly {
-        // Byte order: Little endian
-        bytes.push(0x01);
+    for ring in poly.rings() {
+        // numPoints
+        writer.write_all(&(ring.iter_closed().count() as u32).to_le_bytes())?;
 
-        // Geometry type: wkbPolygonZ (1003)
-        bytes.extend_from_slice(&1003_u32.to_le_bytes());
-
-        let rings = polygon_to_rings(vertices, &poly);
-
-        // numRings
-        bytes.extend_from_slice(&(rings.len() as u32).to_le_bytes());
-
-        for ring in rings {
-            // numPoints
-            bytes.extend_from_slice(&(ring.len() as u32).to_le_bytes());
-
-            for coord in ring {
-                let x = f64::to_le_bytes(coord[1]); // FIXME: lon,lat order
-                bytes.extend_from_slice(&x);
-                let y = f64::to_le_bytes(coord[0]); // FIXME: lon,lat order
-                bytes.extend_from_slice(&y);
-                let z = f64::to_le_bytes(coord[2]);
-                bytes.extend_from_slice(&z);
-            }
+        for idx in ring.iter_closed() {
+            let [x, y, z] = mapping(idx);
+            writer.write_all(&f64::to_le_bytes(x))?;
+            writer.write_all(&f64::to_le_bytes(y))?;
+            writer.write_all(&f64::to_le_bytes(z))?;
         }
     }
+    Ok(())
+}
 
-    bytes
+pub fn write_indexed_multipolygon<W: Write>(
+    writer: &mut W,
+    vertices: &[[f64; 3]],
+    mpoly: &MultiPolygon<1, u32>,
+    srs_id: i32,
+) -> std::io::Result<()> {
+    write_geometry_header(writer, srs_id)?;
+    write_multipolygon_body(writer, mpoly, |idx| vertices[idx[0] as usize])?;
+    Ok(())
+}
+
+fn write_multipolygon_body<W: Write, const D: usize, T: CoordNum>(
+    writer: &mut W,
+    mpoly: &MultiPolygon<D, T>,
+    mapping: impl Fn([T; D]) -> [f64; 3],
+) -> std::io::Result<()> {
+    // Byte order: Little endian (1)
+    writer.write_all(&[WkbByteOrder::LittleEndian as u8])?;
+
+    // Geometry type: wkbMultiPolygonZ (1006)
+    writer.write_all(&(WkbGeometryType::MultiPolygonZ as u32).to_le_bytes())?;
+
+    // numPolygons
+    writer.write_all(&(mpoly.len() as u32).to_le_bytes())?;
+
+    for poly in mpoly {
+        write_polygon_body(writer, &poly, &mapping)?;
+    }
+
+    Ok(())
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[test]
-    fn test_polygon_to_rings() {
-        let vertices: Vec<[f64; 3]> = vec![
-            // exterior (vertex 0~3)
-            [0., 0., 111.],
-            [5., 0., 111.],
-            [5., 5., 111.],
-            [0., 5., 111.],
-            // interior 1 (vertex 4~7)
-            [1., 1., 111.],
-            [2., 1., 111.],
-            [2., 2., 111.],
-            [1., 2., 111.],
-            // interior 2 (vertex 8~11)
-            [3., 3., 111.],
-            [4., 3., 111.],
-            [4., 4., 111.],
-            [3., 4., 111.],
-        ];
-
-        let mut poly = Polygon::<'_, 1, u32>::new();
-        poly.add_ring([[0], [1], [2], [3]]);
-        poly.add_ring([[4], [5], [6], [7]]);
-        poly.add_ring([[8], [9], [10], [11]]);
-
-        let rings = polygon_to_rings(&vertices, &poly);
-
-        assert_eq!(rings.len(), 3);
-
-        for (i, ri) in rings.iter().enumerate() {
-            match i {
-                0 => {
-                    assert_eq!(ri.len(), 5);
-                    assert_eq!(ri[0], vec![0., 0., 111.]);
-                    assert_eq!(ri[1], vec![5., 0., 111.]);
-                    assert_eq!(ri[2], vec![5., 5., 111.]);
-                    assert_eq!(ri[3], vec![0., 5., 111.]);
-                    assert_eq!(ri[4], vec![0., 0., 111.]);
-                }
-                1 => {
-                    assert_eq!(ri.len(), 5);
-                    assert_eq!(ri[0], vec![1., 1., 111.]);
-                    assert_eq!(ri[1], vec![2., 1., 111.]);
-                    assert_eq!(ri[2], vec![2., 2., 111.]);
-                    assert_eq!(ri[3], vec![1., 2., 111.]);
-                    assert_eq!(ri[4], vec![1., 1., 111.]);
-                }
-                2 => {
-                    assert_eq!(ri.len(), 5);
-                    assert_eq!(ri[0], vec![3., 3., 111.]);
-                    assert_eq!(ri[1], vec![4., 3., 111.]);
-                    assert_eq!(ri[2], vec![4., 4., 111.]);
-                    assert_eq!(ri[3], vec![3., 4., 111.]);
-                }
-                _ => panic!("Unexpected ring index"),
-            }
-        }
-    }
 
     #[test]
     fn test_multipolygon_to_bytes() {
@@ -151,12 +134,13 @@ mod tests {
             [1., 2., 111.],
         ];
 
-        let mut mpoly = MultiPolygon::<'_, 1, u32>::new();
+        let mut mpoly = MultiPolygon::<1, u32>::new();
         // 1st polygon
         mpoly.add_exterior([[0], [1], [2], [3], [0]]);
         mpoly.add_interior([[4], [5], [6], [7], [4]]);
 
-        let bytes = multipolygon_to_bytes(&vertices, &mpoly, 1234);
+        let mut bytes = Vec::new();
+        write_indexed_multipolygon(&mut bytes, &vertices, &mpoly, 1234).unwrap();
 
         assert_eq!(bytes.len(), 274);
 
@@ -193,8 +177,8 @@ mod tests {
         assert_eq!(bytes[46..=53].to_vec(), &111_f64.to_le_bytes());
 
         // 2nd point
-        assert_eq!(bytes[54..=61].to_vec(), &0_f64.to_le_bytes());
-        assert_eq!(bytes[62..=69].to_vec(), &5_f64.to_le_bytes());
+        assert_eq!(bytes[54..=61].to_vec(), &5_f64.to_le_bytes());
+        assert_eq!(bytes[62..=69].to_vec(), &0_f64.to_le_bytes());
         assert_eq!(bytes[70..=77].to_vec(), &111_f64.to_le_bytes());
 
         // 3rd point
@@ -203,8 +187,8 @@ mod tests {
         assert_eq!(bytes[94..=101].to_vec(), &111_f64.to_le_bytes());
 
         // 4th point
-        assert_eq!(bytes[102..=109].to_vec(), &5_f64.to_le_bytes());
-        assert_eq!(bytes[110..=117].to_vec(), &0_f64.to_le_bytes());
+        assert_eq!(bytes[102..=109].to_vec(), &0_f64.to_le_bytes());
+        assert_eq!(bytes[110..=117].to_vec(), &5_f64.to_le_bytes());
         assert_eq!(bytes[118..=125].to_vec(), &111_f64.to_le_bytes());
 
         // 5th point
@@ -222,8 +206,8 @@ mod tests {
         assert_eq!(bytes[170..=177].to_vec(), &111_f64.to_le_bytes());
 
         // 2nd point
-        assert_eq!(bytes[178..=185].to_vec(), &1_f64.to_le_bytes());
-        assert_eq!(bytes[186..=193].to_vec(), &2_f64.to_le_bytes());
+        assert_eq!(bytes[178..=185].to_vec(), &2_f64.to_le_bytes());
+        assert_eq!(bytes[186..=193].to_vec(), &1_f64.to_le_bytes());
         assert_eq!(bytes[194..=201].to_vec(), &111_f64.to_le_bytes());
 
         // 3rd point
@@ -232,8 +216,8 @@ mod tests {
         assert_eq!(bytes[218..=225].to_vec(), &111_f64.to_le_bytes());
 
         // 4th point
-        assert_eq!(bytes[226..=233].to_vec(), &2_f64.to_le_bytes());
-        assert_eq!(bytes[234..=241].to_vec(), &1_f64.to_le_bytes());
+        assert_eq!(bytes[226..=233].to_vec(), &1_f64.to_le_bytes());
+        assert_eq!(bytes[234..=241].to_vec(), &2_f64.to_le_bytes());
         assert_eq!(bytes[242..=249].to_vec(), &111_f64.to_le_bytes());
 
         // 5th point

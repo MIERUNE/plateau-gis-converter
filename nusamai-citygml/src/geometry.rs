@@ -1,4 +1,5 @@
 use nusamai_geometry::{MultiLineString, MultiPoint, MultiPolygon};
+use nusamai_projection::crs::*;
 
 #[derive(Debug, Clone, Copy)]
 pub enum GeometryParseType {
@@ -24,7 +25,7 @@ pub enum GeometryType {
 }
 
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct GeometryRefEntry {
     #[serde(rename = "type")]
     pub ty: GeometryType,
@@ -35,20 +36,25 @@ pub struct GeometryRefEntry {
 
 pub type GeometryRef = Vec<GeometryRefEntry>;
 
-/// Geometries in a toplevel city object and its children.
+/// Geometries in a city object and all its children.
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 #[derive(Debug, Default)]
-pub struct Geometries {
+pub struct GeometryStore {
+    /// EPSG code of the Coordinate Reference System (CRS)
+    pub epsg: EPSGCode,
+    /// Shared vertex buffer for all geometries
     pub vertices: Vec<[f64; 3]>,
+    /// All polygons, referenced by `GeometryRef`
     pub multipolygon: MultiPolygon<'static, 1, u32>,
+    /// All line-strings of , referenced by `GeometryRef`
     pub multilinestring: MultiLineString<'static, 1, u32>,
+    /// All points, referenced by `GeometryRef`
     pub multipoint: MultiPoint<'static, 1, u32>,
 }
 
-/// Store for collecting vertices and polygons from GML.
 #[derive(Default)]
-pub struct GeometryCollector {
-    pub vertices: indexmap::IndexSet<[u64; 3]>,
+pub(crate) struct GeometryCollector {
+    pub vertices: indexmap::IndexSet<[u64; 3], ahash::RandomState>,
     pub multipolygon: MultiPolygon<'static, 1, u32>,
     pub multilinestring: MultiLineString<'static, 1, u32>,
     pub multipoint: MultiPoint<'static, 1, u32>,
@@ -75,7 +81,7 @@ impl GeometryCollector {
         }));
     }
 
-    pub fn into_geometries(self) -> Geometries {
+    pub fn into_geometries(self) -> GeometryStore {
         let mut vertices = Vec::with_capacity(self.vertices.len());
         for vbits in &self.vertices {
             vertices.push([
@@ -84,7 +90,8 @@ impl GeometryCollector {
                 f64::from_bits(vbits[2]),
             ]);
         }
-        Geometries {
+        GeometryStore {
+            epsg: EPSG_JGD2011_GEOGRAPHIC_3D,
             vertices,
             multipolygon: self.multipolygon,
             multilinestring: self.multilinestring,

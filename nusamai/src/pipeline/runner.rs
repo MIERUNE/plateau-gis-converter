@@ -19,12 +19,12 @@ fn run_source_thread(
 ) -> (std::thread::JoinHandle<()>, Receiver) {
     let (sender, receiver) = sync_channel(SOURCE_OUTPUT_CHANNEL_BOUND);
     let handle = std::thread::spawn(move || {
-        println!("Source thread started.");
+        log::info!("Source thread started.");
         let pool = ThreadPoolBuilder::new().build().unwrap();
         pool.install(|| {
             source.run(sender, &feedback);
         });
-        println!("Source thread finished.");
+        log::info!("Source thread finished.");
     });
     (handle, receiver)
 }
@@ -38,10 +38,10 @@ fn run_transformer_thread(
     let handle = std::thread::spawn(move || {
         let pool = ThreadPoolBuilder::new().build().unwrap();
         pool.install(|| {
-            println!("Transformer threads started.");
+            log::info!("Transformer threads started.");
             let _ = upstream.into_iter().par_bridge().try_for_each(|parcel| {
                 if feedback.is_cancelled() {
-                    println!("transformer cancelled");
+                    log::info!("transformer cancelled");
                     return Err(());
                 }
                 if transformer.transform(parcel, &sender, &feedback).is_err() {
@@ -50,7 +50,7 @@ fn run_transformer_thread(
                     Ok(())
                 }
             });
-            println!("Transformer threads finished.");
+            log::info!("Transformer threads finished.");
         });
     });
     (handle, receiver)
@@ -62,12 +62,12 @@ fn run_sink_thread(
     mut feedback: Feedback,
 ) -> std::thread::JoinHandle<()> {
     std::thread::spawn(move || {
-        println!("Sink thread started.");
+        log::info!("Sink thread started.");
         let pool = ThreadPoolBuilder::new().build().unwrap();
         pool.install(|| {
             sink.run(upstream, &mut feedback);
         });
-        println!("Sink thread finished.");
+        log::info!("Sink thread finished.");
     })
 }
 
@@ -79,7 +79,9 @@ impl PipelineHandle {
     // Wait for the pipeline to terminate
     pub fn join(self) {
         self.thread_handles.into_iter().for_each(|handle| {
-            handle.join().unwrap();
+            if let Err(err) = handle.join() {
+                log::error!("Error: {:#?}", err);
+            }
         });
     }
 }
