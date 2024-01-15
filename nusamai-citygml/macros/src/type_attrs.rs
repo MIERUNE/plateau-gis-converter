@@ -125,6 +125,7 @@ fn modify(ty: &StereoType, args: &FeatureArgs, input: &mut DeriveInput) -> Resul
                         quote! {
                             #[citygml(geom = #geom_prefix)]
                             pub geometries: ::nusamai_citygml::GeometryRef
+
                         },
                     );
                     pos += 1;
