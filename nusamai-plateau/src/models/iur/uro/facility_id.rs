@@ -3,9 +3,9 @@ use nusamai_citygml::{citygml_data, citygml_property, CityGMLElement, Code, Meas
 #[citygml_property(name = "uro:FacilityIdAttributeProperty")]
 pub enum FacilityIdAttributeProperty {
     #[citygml(path = b"uro:FacilityIdAttribute")]
-    FacilityIdAttribute(FacilityIdAttribute),
+    FacilityIdAttribute(Box<FacilityIdAttribute>),
     #[citygml(path = b"uro:RiverFacilityIdAttribute")]
-    RiverFacilityIdAttribute(RiverFacilityIdAttribute),
+    RiverFacilityIdAttribute(Box<RiverFacilityIdAttribute>),
 }
 
 #[citygml_data(name = "uro:FacilityIdAttribute")]

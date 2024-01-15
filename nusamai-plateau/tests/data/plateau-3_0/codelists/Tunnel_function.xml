@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
-<gml:Dictionary xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:gml="http://www.opengis.net/gml" xsi:schemaLocation="http://www.opengis.net/gml http://schemas.opengis.net/gml/3.1.1/profiles/SimpleDictionary/1.0.0/gmlSimpleDictionaryProfile.xsd" gml:id="cl_4630c1f7-a54e-409b-8718-c54eccf32a8e">
+<gml:Dictionary xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:gml="http://www.opengis.net/gml" xsi:schemaLocation="http://www.opengis.net/gml http://schemas.opengis.net/gml/3.1.1/profiles/SimpleDictionary/1.0.0/gmlSimpleDictionaryProfile.xsd" gml:id="cl_6314c985-4deb-49ae-b119-412892ea812a">
 <gml:name>Tunnel_function</gml:name>
 <gml:dictionaryEntry>
 <gml:Definition gml:id="Tunnel_function_1">
@@ -23,6 +23,24 @@
 <gml:Definition gml:id="Tunnel_function_4">
 <gml:description>歩行者用トンネル</gml:description>
 <gml:name>1030</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="Tunnel_function_5">
+<gml:description>避難誘導設備</gml:description>
+<gml:name>09</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="Tunnel_function_6">
+<gml:description>避難連絡坑</gml:description>
+<gml:name>10</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="Tunnel_function_7">
+<gml:description>その他</gml:description>
+<gml:name>90</gml:name>
 </gml:Definition>
 </gml:dictionaryEntry>
 </gml:Dictionary>

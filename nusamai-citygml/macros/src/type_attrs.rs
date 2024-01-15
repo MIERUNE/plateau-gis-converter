@@ -97,10 +97,30 @@ fn modify(ty: &StereoType, args: &FeatureArgs, input: &mut DeriveInput) -> Resul
                     // for #[citygml_feature]
 
                     let prefix = args.prefix.as_ref().unwrap();
+
+                    // temporary hack
+                    let geom_prefix = match args.name.as_ref().unwrap().value().as_str() {
+                        "uro:UndergroundBuilding" => LitByteStr::new(b"bldg", prefix.span()),
+                        "uro:Waterway" => LitByteStr::new(b"tran", prefix.span()),
+                        "uro:Appurtenance" => LitByteStr::new(b"frn", prefix.span()),
+                        "uro:Manhole" => LitByteStr::new(b"frn", prefix.span()),
+                        "uro:Handhole" => LitByteStr::new(b"frn", prefix.span()),
+                        "uro:Pipe" => LitByteStr::new(b"frn", prefix.span()),
+                        "uro:WaterPipe" => LitByteStr::new(b"frn", prefix.span()),
+                        "uro:SewerPipe" => LitByteStr::new(b"frn", prefix.span()),
+                        "uro:OilGasChemicalsPipe" => LitByteStr::new(b"frn", prefix.span()),
+                        "uro:ThermalPipe" => LitByteStr::new(b"frn", prefix.span()),
+                        "uro:Cable" => LitByteStr::new(b"frn", prefix.span()),
+                        "uro:ElectricityCable" => LitByteStr::new(b"frn", prefix.span()),
+                        "uro:TelecommunicationsCable" => LitByteStr::new(b"frn", prefix.span()),
+                        "uro:Duct" => LitByteStr::new(b"frn", prefix.span()),
+                        _ => prefix.clone(),
+                    };
+
                     add_named_field(
                         fields,
                         quote! {
-                            #[citygml(geom = #prefix)]
+                            #[citygml(geom = #geom_prefix)]
                             pub geometries: nusamai_citygml::GeometryRef
                         },
                     );
