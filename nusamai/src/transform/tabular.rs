@@ -1,6 +1,7 @@
+use ahash::RandomState;
 use indexmap::IndexMap;
 
-use nusamai_citygml::object::{CityObject, Data, Feature};
+use nusamai_citygml::object::{CityObject, Data, Feature, Map};
 use nusamai_citygml::Value;
 
 // 以下、仮実装
@@ -32,13 +33,105 @@ impl ObjectSeparator for SemanticObjectSeparator {
         let typename = &toplevel_feature.typename;
         println!("{:?}, {:?}", parent_gml_id, typename);
 
-        &self.attribute_parser(toplevel_feature, parent_gml_id.clone().unwrap());
+        let mut primitives: IndexMap<String, Value, RandomState> =
+            IndexMap::with_hasher(RandomState::new());
+        let mut features: IndexMap<String, Vec<Feature>> = IndexMap::new();
+        let mut data_list: IndexMap<String, Vec<Data>> = IndexMap::new();
+        let mut other_layer_data: IndexMap<String, Vec<Data>> = IndexMap::new();
+        let mut other_layer_attributes: IndexMap<String, Vec<IndexMap<String, Value>>> =
+            IndexMap::new();
+
+        for (key, value) in toplevel_feature.attributes.iter() {
+            match value {
+                Value::Array(_) | Value::Feature(_) | Value::Data(_) => {}
+                _ => {
+                    primitives.insert(key.clone(), value.clone());
+                }
+            }
+        }
+
+        for (key, value) in toplevel_feature.attributes.iter() {
+            if let Value::Data(d) = value {
+                data_list.insert(key.clone(), vec![d.clone()]);
+            }
+        }
+
+        for (key, value) in toplevel_feature.attributes.iter() {
+            if let Value::Feature(f) = value {
+                features.insert(key.clone(), vec![f.clone()]);
+            }
+        }
+
+        for (key, value) in toplevel_feature.attributes.iter() {
+            if let Value::Array(a) = value {
+                for v in a.iter() {
+                    match v {
+                        Value::Data(d) => {
+                            if other_layer_data.contains_key(key) {
+                                other_layer_data.get_mut(key).unwrap().push(d.clone());
+                            } else {
+                                other_layer_data.insert(key.clone(), vec![d.clone()]);
+                            }
+                        }
+                        Value::Feature(f) => {
+                            features.insert(key.clone(), vec![f.clone()]);
+                        }
+                        _ => {
+                            primitives.insert(key.clone(), value.clone());
+                        }
+                    }
+                }
+            }
+        }
+
+        for (key, value) in data_list.iter() {
+            for d in value.iter() {
+                let attributes = &d.attributes;
+                for (k, v) in attributes.iter() {
+                    primitives.insert(k.clone(), v.clone());
+                }
+            }
+        }
+
+        for (key, value) in other_layer_data.iter() {
+            let mut other: IndexMap<String, Value> = IndexMap::new();
+            for d in value.iter() {
+                let attributes = &d.attributes;
+                for (k, v) in attributes.iter() {
+                    other.insert(k.clone(), v.clone());
+                }
+            }
+            if other_layer_attributes.contains_key(key) {
+                other_layer_attributes.get_mut(key).unwrap().push(other);
+            } else {
+                other_layer_attributes.insert(key.clone(), vec![other]);
+            }
+        }
+
+        // primitivesのみを持つCityObjectを作成
+        let mut objects: Vec<CityObject> = Vec::new();
+        if let Some(geometries) = &toplevel_feature.geometries {
+            for g in geometries {
+                let feature = Feature {
+                    id: parent_gml_id.clone(),
+                    typename: typename.clone(),
+                    attributes: primitives.clone(),
+                    geometries: Some(vec![g.clone()]),
+                };
+                let city_object = CityObject {
+                    root: Value::Feature(feature),
+                    geometries: cityobj.geometries.clone(),
+                };
+                objects.push(city_object);
+            }
+        }
 
         // テスト用の出力
         let file = std::fs::File::create("/Users/satoru/Downloads/output/test.json").unwrap();
         let writer = std::io::BufWriter::new(file);
         serde_json::to_writer_pretty(writer, &cityobj.root).unwrap();
-        todo!("CityObject to Vec<Layer>")
+
+        objects
     }
 }
 
@@ -159,6 +252,8 @@ impl SemanticObjectSeparator {
                 .unwrap();
         let others_writer = std::io::BufWriter::new(other_layer_attributes_file);
         serde_json::to_writer_pretty(others_writer, &other_layer_attributes).unwrap();
+
+        // 属性抽出の概要はなんとなく整理できたので、CityObjectを返すように変更していく、もしくはどんどんCityObjectを作っていくようにする
 
         // 何かしらの設定ファイルを受け取り、以下のような設定ができると嬉しい
         // ・Arrayはjson文字列に変換する
