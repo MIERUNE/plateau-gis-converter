@@ -47,7 +47,7 @@ pub struct GeometryStore {
     pub vertices: Vec<[f64; 3]>,
     /// All polygons, referenced by `GeometryRef`
     pub multipolygon: MultiPolygon<'static, 1, u32>,
-    /// All line-strings of , referenced by `GeometryRef`
+    /// All line-strings, referenced by `GeometryRef`
     pub multilinestring: MultiLineString<'static, 1, u32>,
     /// All points, referenced by `GeometryRef`
     pub multipoint: MultiPoint<'static, 1, u32>,

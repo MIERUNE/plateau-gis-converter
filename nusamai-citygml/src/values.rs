@@ -1,5 +1,6 @@
 use crate::object::{self, Value};
 use crate::parser::{ParseError, SubTreeReader};
+use crate::schema;
 use crate::{CityGMLElement, ElementType};
 pub use chrono::NaiveDate;
 use serde::{Deserialize, Serialize};
@@ -28,6 +29,10 @@ impl CityGMLElement for String {
     fn into_object(self) -> Option<Value> {
         Some(Value::String(self))
     }
+
+    fn collect_schema(_schema: &mut schema::Schema) -> schema::TypeRef {
+        schema::TypeRef::new(schema::Type::String)
+    }
 }
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize, Default, PartialEq, Eq)]
@@ -53,6 +58,10 @@ impl CityGMLElement for URI {
 
     fn into_object(self) -> Option<Value> {
         Some(Value::String(self.0))
+    }
+
+    fn collect_schema(_schema: &mut schema::Schema) -> schema::TypeRef {
+        schema::TypeRef::new(schema::Type::URI)
     }
 }
 
@@ -112,6 +121,10 @@ impl CityGMLElement for Code {
     fn into_object(self) -> Option<Value> {
         Some(Value::Code(self))
     }
+
+    fn collect_schema(_schema: &mut schema::Schema) -> schema::TypeRef {
+        schema::TypeRef::new(schema::Type::Code)
+    }
 }
 
 impl CityGMLElement for i64 {
@@ -134,6 +147,10 @@ impl CityGMLElement for i64 {
 
     fn into_object(self) -> Option<Value> {
         Some(Value::Integer(self))
+    }
+
+    fn collect_schema(_schema: &mut schema::Schema) -> schema::TypeRef {
+        schema::TypeRef::new(schema::Type::Integer)
     }
 }
 
@@ -158,6 +175,10 @@ impl CityGMLElement for u64 {
     fn into_object(self) -> Option<Value> {
         Some(Value::Integer(self as i64))
     }
+
+    fn collect_schema(_schema: &mut schema::Schema) -> schema::TypeRef {
+        schema::TypeRef::new(schema::Type::NonNegativeInteger)
+    }
 }
 
 impl CityGMLElement for f64 {
@@ -180,6 +201,10 @@ impl CityGMLElement for f64 {
 
     fn into_object(self) -> Option<Value> {
         Some(Value::Double(self))
+    }
+
+    fn collect_schema(_schema: &mut schema::Schema) -> schema::TypeRef {
+        schema::TypeRef::new(schema::Type::Double)
     }
 }
 
@@ -207,6 +232,10 @@ impl CityGMLElement for bool {
 
     fn into_object(self) -> Option<Value> {
         Some(Value::Boolean(self))
+    }
+
+    fn collect_schema(_schema: &mut schema::Schema) -> schema::TypeRef {
+        schema::TypeRef::new(schema::Type::Boolean)
     }
 }
 
@@ -246,6 +275,10 @@ impl CityGMLElement for Measure {
     fn into_object(self) -> Option<Value> {
         Some(Value::Measure(self))
     }
+
+    fn collect_schema(_schema: &mut schema::Schema) -> schema::TypeRef {
+        schema::TypeRef::new(schema::Type::Measure)
+    }
 }
 
 impl CityGMLElement for Date {
@@ -269,6 +302,10 @@ impl CityGMLElement for Date {
     fn into_object(self) -> Option<Value> {
         Some(Value::Date(self))
     }
+
+    fn collect_schema(_schema: &mut schema::Schema) -> schema::TypeRef {
+        schema::TypeRef::new(schema::Type::Date)
+    }
 }
 
 #[derive(Debug, Clone, Default, Deserialize, Serialize, PartialEq)]
@@ -289,6 +326,10 @@ impl CityGMLElement for Point {
 
     fn into_object(self) -> Option<Value> {
         Some(Value::Point(self))
+    }
+
+    fn collect_schema(_schema: &mut schema::Schema) -> schema::TypeRef {
+        schema::TypeRef::new(schema::Type::Point)
     }
 }
 
@@ -315,6 +356,12 @@ impl<T: CityGMLElement + Default + std::fmt::Debug> CityGMLElement for Option<T>
             None => None,
         }
     }
+
+    fn collect_schema(schema: &mut schema::Schema) -> schema::TypeRef {
+        let mut ty_ref = T::collect_schema(schema);
+        ty_ref.min_occurs = 0;
+        ty_ref
+    }
 }
 
 impl<T: CityGMLElement + Default> CityGMLElement for Vec<T> {
@@ -337,6 +384,13 @@ impl<T: CityGMLElement + Default> CityGMLElement for Vec<T> {
             ))
         }
     }
+
+    fn collect_schema(schema: &mut schema::Schema) -> schema::TypeRef {
+        let mut ty_ref = T::collect_schema(schema);
+        ty_ref.min_occurs = 0;
+        ty_ref.max_occurs = None;
+        ty_ref
+    }
 }
 
 impl<T: CityGMLElement + Default> CityGMLElement for Box<T> {
@@ -350,6 +404,10 @@ impl<T: CityGMLElement + Default> CityGMLElement for Box<T> {
 
     fn into_object(self) -> Option<Value> {
         (*self).into_object()
+    }
+
+    fn collect_schema(schema: &mut schema::Schema) -> schema::TypeRef {
+        T::collect_schema(schema)
     }
 }
 
@@ -441,6 +499,19 @@ impl CityGMLElement for GenericAttribute {
             typename: "gen:genericAttribute".into(),
             attributes: map,
         }))
+    }
+
+    fn collect_schema(schema: &mut schema::Schema) -> schema::TypeRef {
+        let key = "gen:genericAttribute".to_string();
+        schema
+            .types
+            .entry(key.clone())
+            .or_insert_with(|| schema::TypeDef {
+                stereo_type: schema::StereoType::Data,
+                attributes: Default::default(),
+                any: true,
+            });
+        schema::TypeRef::new(schema::Type::Ref(key))
     }
 }
 
