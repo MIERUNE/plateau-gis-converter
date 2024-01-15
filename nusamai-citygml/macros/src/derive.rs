@@ -226,6 +226,13 @@ fn generate_citygml_impl_for_struct(
                         b"gen:stringAttribute" => <#field_ty as CityGMLElement>::parse(&mut self.#field_ident, st),
                         b"gen:uriAttribute" => <#field_ty as CityGMLElement>::parse(&mut self.#field_ident, st),
                     });
+                    into_object_stmts.push(
+                        quote! {
+                            if let Some(v) = self.#field_ident.into_object() {
+                                attributes.insert("gen:genericAttribute".into(), v);
+                            }
+                        }
+                    );
                     Ok(())
                 } else {
                     Err(meta.error("unrecognized argument"))

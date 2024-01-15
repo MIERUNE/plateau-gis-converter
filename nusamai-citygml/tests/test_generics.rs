@@ -72,7 +72,7 @@ fn generics() {
         );
         assert_eq!(
             data.attributes["m1"],
-            Value::Measure(values::Measure { value: 15.1 })
+            Value::Measure(values::Measure::new(15.1))
         );
         assert_eq!(
             data.attributes["u1"],

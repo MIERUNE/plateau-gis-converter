@@ -75,16 +75,12 @@ fn test_track() {
 
     let railway = parsed_data.railways.first().unwrap();
 
-
     assert_eq!(
         railway.id,
         Some("rwy_58634d44-b0bd-4b22-bb6b-fafadda9203f".to_string())
     );
 
-    assert_eq!(
-        railway.name,
-        vec!["東北線".to_string()]
-    );
+    assert_eq!(railway.name, vec!["東北線".to_string()]);
 
     assert_eq!(
         railway.traffic_area.first().unwrap().function,

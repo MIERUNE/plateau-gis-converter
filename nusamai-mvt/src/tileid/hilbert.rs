@@ -1,4 +1,4 @@
-//! TileID conversion based on Hilbert curve (compliant with PMTiles)
+//! Tile ID conversion based on Hilbert curve (compliant with PMTiles)
 
 pub fn id_to_zxy(id: u64) -> (u8, u32, u32) {
     let z = (u64::BITS / 2 - (3 * id + 1).leading_zeros() / 2 - 1) as u8;
