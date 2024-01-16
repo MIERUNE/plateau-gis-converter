@@ -90,9 +90,9 @@ impl ObjectSeparator for SemanticObjectSeparator {
 
         // 仮の設定を作成する
         let mut settings = Settings::default();
-        settings.load_semantic_parts = false;
 
         // 設定に応じてfeaturesをセマンティックごとに分割する
+        settings.load_semantic_parts = false;
         if settings.load_semantic_parts {
             for f in &child_features {
                 let obj = CityObject {
@@ -150,12 +150,10 @@ impl ObjectSeparator for SemanticObjectSeparator {
 
         // 入れ子の属性を割するか否か
         settings.to_tabular = true;
-
         if settings.to_tabular {}
 
-        // Array・Data・featureは全てJSON文字列に変換する
+        // Array・Data・featureは全てJSON文字列に変換するかどうか
         settings.to_json_string = true;
-
         if settings.to_json_string {
             for _ in 0..objects.len() {
                 let object = objects.remove(0);
