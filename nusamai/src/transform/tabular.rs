@@ -169,7 +169,7 @@ impl ObjectSeparator for SemanticObjectSeparator {
 
         // 仮の設定を作成する
         let mut settings = Settings::default();
-        settings.load_semantic_parts = true;
+        settings.load_semantic_parts = false;
 
         // 設定に応じてfeaturesをセマンティックごとに分割する
         if settings.load_semantic_parts {
@@ -207,7 +207,47 @@ impl ObjectSeparator for SemanticObjectSeparator {
         // Array・Data・featureは全てJSON文字列に変換する
         settings.to_json_string = true;
 
-        if settings.to_json_string {}
+        if settings.to_json_string {
+            for _ in 0..objects.len() {
+                let object = objects.remove(0);
+                let mut attributes = IndexMap::with_hasher(RandomState::new());
+                if let Value::Feature(f) = &object.root {
+                    for (key, value) in f.attributes.iter() {
+                        match value {
+                            Value::Array(a) => {
+                                let json_array = serde_json::to_string(a).unwrap();
+                                attributes.insert(key.clone(), Value::String(json_array));
+                            }
+                            Value::Data(d) => {
+                                let json_data = serde_json::to_string(&d.attributes).unwrap();
+                                attributes.insert(key.clone(), Value::String(json_data));
+                            }
+                            Value::Feature(f) => {
+                                let json_feature = serde_json::to_string(&f.attributes).unwrap();
+                                attributes.insert(key.clone(), Value::String(json_feature));
+                            }
+                            _ => {
+                                attributes.insert(key.clone(), value.clone());
+                            }
+                        }
+                    }
+
+                    let feature = Feature {
+                        id: f.id.clone(),
+                        typename: f.typename.clone(),
+                        attributes,
+                        geometries: f.geometries.clone(),
+                    };
+
+                    let obj = CityObject {
+                        root: Value::Feature(feature),
+                        geometries: object.geometries,
+                    };
+
+                    objects.push(obj);
+                }
+            }
+        }
 
         println!("{:?}", objects.len());
         for o in &objects {
@@ -215,6 +255,13 @@ impl ObjectSeparator for SemanticObjectSeparator {
                 println!("{:?}", f.geometries);
             }
         }
+
+        if objects.len() > 2 {
+            let file = std::fs::File::create("/Users/satoru/Downloads/output/test.json").unwrap();
+            let mut writer = std::io::BufWriter::new(file);
+            serde_json::to_writer_pretty(writer, &objects).unwrap();
+        }
+
         println!();
 
         objects
