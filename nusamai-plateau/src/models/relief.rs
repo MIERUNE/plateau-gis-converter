@@ -109,7 +109,7 @@ pub struct RectifiedGridDomain {
     pub rectified_grid: Option<RectifiedGrid>,
 }
 
-#[citygml_data(name = "gml:coverageFunction")]
+#[citygml_data(name = "gml:CoverageFunction")]
 pub struct CoverageFunction {
     #[citygml(path = b"gml:MappingRule", required)]
     pub mapping_rule: Option<String>,

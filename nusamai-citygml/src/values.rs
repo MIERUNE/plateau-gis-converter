@@ -1,6 +1,7 @@
 use crate::object::{self, Value};
 use crate::parser::{ParseError, SubTreeReader};
-use crate::{CityGMLElement, ElementType};
+use crate::schema;
+use crate::CityGMLElement;
 pub use chrono::NaiveDate;
 use serde::{Deserialize, Serialize};
 use std::io::BufRead;
@@ -17,8 +18,6 @@ pub type DoubleList = String; // TODO?
 pub type LODType = u64; // TODO?
 
 impl CityGMLElement for String {
-    const ELEMENT_TYPE: ElementType = ElementType::BasicType;
-
     #[inline]
     fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
         self.push_str(st.parse_text()?);
@@ -27,6 +26,10 @@ impl CityGMLElement for String {
 
     fn into_object(self) -> Option<Value> {
         Some(Value::String(self))
+    }
+
+    fn collect_schema(_schema: &mut schema::Schema) -> schema::Attribute {
+        schema::Attribute::new(schema::TypeRef::String)
     }
 }
 
@@ -43,8 +46,6 @@ impl URI {
 }
 
 impl CityGMLElement for URI {
-    const ELEMENT_TYPE: ElementType = ElementType::BasicType;
-
     #[inline]
     fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
         self.0.push_str(st.parse_text()?);
@@ -53,6 +54,10 @@ impl CityGMLElement for URI {
 
     fn into_object(self) -> Option<Value> {
         Some(Value::String(self.0))
+    }
+
+    fn collect_schema(_schema: &mut schema::Schema) -> schema::Attribute {
+        schema::Attribute::new(schema::TypeRef::URI)
     }
 }
 
@@ -76,8 +81,6 @@ impl Code {
 }
 
 impl CityGMLElement for Code {
-    const ELEMENT_TYPE: ElementType = ElementType::BasicType;
-
     #[inline]
     fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
         let code_space = st.find_codespace_attr();
@@ -112,11 +115,13 @@ impl CityGMLElement for Code {
     fn into_object(self) -> Option<Value> {
         Some(Value::Code(self))
     }
+
+    fn collect_schema(_schema: &mut schema::Schema) -> schema::Attribute {
+        schema::Attribute::new(schema::TypeRef::Code)
+    }
 }
 
 impl CityGMLElement for i64 {
-    const ELEMENT_TYPE: ElementType = ElementType::BasicType;
-
     #[inline]
     fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
         let text = st.parse_text()?;
@@ -135,11 +140,13 @@ impl CityGMLElement for i64 {
     fn into_object(self) -> Option<Value> {
         Some(Value::Integer(self))
     }
+
+    fn collect_schema(_schema: &mut schema::Schema) -> schema::Attribute {
+        schema::Attribute::new(schema::TypeRef::Integer)
+    }
 }
 
 impl CityGMLElement for u64 {
-    const ELEMENT_TYPE: ElementType = ElementType::BasicType;
-
     #[inline]
     fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
         let text = st.parse_text()?;
@@ -158,11 +165,13 @@ impl CityGMLElement for u64 {
     fn into_object(self) -> Option<Value> {
         Some(Value::Integer(self as i64))
     }
+
+    fn collect_schema(_schema: &mut schema::Schema) -> schema::Attribute {
+        schema::Attribute::new(schema::TypeRef::NonNegativeInteger)
+    }
 }
 
 impl CityGMLElement for f64 {
-    const ELEMENT_TYPE: ElementType = ElementType::BasicType;
-
     #[inline]
     fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
         let text = st.parse_text()?;
@@ -181,11 +190,13 @@ impl CityGMLElement for f64 {
     fn into_object(self) -> Option<Value> {
         Some(Value::Double(self))
     }
+
+    fn collect_schema(_schema: &mut schema::Schema) -> schema::Attribute {
+        schema::Attribute::new(schema::TypeRef::Double)
+    }
 }
 
 impl CityGMLElement for bool {
-    const ELEMENT_TYPE: ElementType = ElementType::BasicType;
-
     #[inline]
     fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
         let text = st.parse_text()?.trim();
@@ -208,6 +219,10 @@ impl CityGMLElement for bool {
     fn into_object(self) -> Option<Value> {
         Some(Value::Boolean(self))
     }
+
+    fn collect_schema(_schema: &mut schema::Schema) -> schema::Attribute {
+        schema::Attribute::new(schema::TypeRef::Boolean)
+    }
 }
 
 #[derive(Debug, Clone, Default, PartialEq, serde::Serialize, serde::Deserialize)]
@@ -226,8 +241,6 @@ impl Measure {
 }
 
 impl CityGMLElement for Measure {
-    const ELEMENT_TYPE: ElementType = ElementType::BasicType;
-
     #[inline]
     fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
         let text = st.parse_text()?;
@@ -246,11 +259,13 @@ impl CityGMLElement for Measure {
     fn into_object(self) -> Option<Value> {
         Some(Value::Measure(self))
     }
+
+    fn collect_schema(_schema: &mut schema::Schema) -> schema::Attribute {
+        schema::Attribute::new(schema::TypeRef::Measure)
+    }
 }
 
 impl CityGMLElement for Date {
-    const ELEMENT_TYPE: ElementType = ElementType::BasicType;
-
     #[inline]
     fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
         let text = st.parse_text()?;
@@ -269,6 +284,10 @@ impl CityGMLElement for Date {
     fn into_object(self) -> Option<Value> {
         Some(Value::Date(self))
     }
+
+    fn collect_schema(_schema: &mut schema::Schema) -> schema::Attribute {
+        schema::Attribute::new(schema::TypeRef::Date)
+    }
 }
 
 #[derive(Debug, Clone, Default, Deserialize, Serialize, PartialEq)]
@@ -279,8 +298,6 @@ pub struct Point {
 pub type Vector = Point;
 
 impl CityGMLElement for Point {
-    const ELEMENT_TYPE: ElementType = ElementType::BasicType;
-
     #[inline]
     fn parse<R: BufRead>(&mut self, _st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
         // TODO
@@ -290,11 +307,13 @@ impl CityGMLElement for Point {
     fn into_object(self) -> Option<Value> {
         Some(Value::Point(self))
     }
+
+    fn collect_schema(_schema: &mut schema::Schema) -> schema::Attribute {
+        schema::Attribute::new(schema::TypeRef::Point)
+    }
 }
 
 impl<T: CityGMLElement + Default + std::fmt::Debug> CityGMLElement for Option<T> {
-    const ELEMENT_TYPE: ElementType = ElementType::BasicType;
-
     #[inline]
     fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
         if self.is_some() {
@@ -315,11 +334,15 @@ impl<T: CityGMLElement + Default + std::fmt::Debug> CityGMLElement for Option<T>
             None => None,
         }
     }
+
+    fn collect_schema(schema: &mut schema::Schema) -> schema::Attribute {
+        let mut ty_ref = T::collect_schema(schema);
+        ty_ref.min_occurs = 0;
+        ty_ref
+    }
 }
 
 impl<T: CityGMLElement + Default> CityGMLElement for Vec<T> {
-    const ELEMENT_TYPE: ElementType = ElementType::BasicType;
-
     #[inline]
     fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
         let mut v: T = Default::default();
@@ -337,11 +360,16 @@ impl<T: CityGMLElement + Default> CityGMLElement for Vec<T> {
             ))
         }
     }
+
+    fn collect_schema(schema: &mut schema::Schema) -> schema::Attribute {
+        let mut ty_ref = T::collect_schema(schema);
+        ty_ref.min_occurs = 0;
+        ty_ref.max_occurs = None;
+        ty_ref
+    }
 }
 
 impl<T: CityGMLElement + Default> CityGMLElement for Box<T> {
-    const ELEMENT_TYPE: ElementType = ElementType::BasicType;
-
     #[inline]
     fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
         <T as CityGMLElement>::parse(self, st)?;
@@ -350,6 +378,10 @@ impl<T: CityGMLElement + Default> CityGMLElement for Box<T> {
 
     fn into_object(self) -> Option<Value> {
         (*self).into_object()
+    }
+
+    fn collect_schema(schema: &mut schema::Schema) -> schema::Attribute {
+        T::collect_schema(schema)
     }
 }
 
@@ -366,8 +398,6 @@ pub struct GenericAttribute {
 }
 
 impl CityGMLElement for GenericAttribute {
-    const ELEMENT_TYPE: ElementType = ElementType::DataType;
-
     fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
         match st.current_path() {
             b"gen:stringAttribute" | b"gen:StringAttribute" => {
@@ -442,6 +472,20 @@ impl CityGMLElement for GenericAttribute {
             attributes: map,
         }))
     }
+
+    fn collect_schema(schema: &mut schema::Schema) -> schema::Attribute {
+        let key = "gen:genericAttribute";
+        if schema.types.get(key).is_none() {
+            schema.types.insert(
+                key.into(),
+                schema::TypeDef::Data(schema::DataTypeDef {
+                    attributes: Default::default(),
+                    any: true,
+                }),
+            );
+        }
+        schema::Attribute::new(schema::TypeRef::Named(key.into()))
+    }
 }
 
 fn parse_value<T, R: BufRead>(st: &mut SubTreeReader<R>) -> Result<(String, T), ParseError>
@@ -451,6 +495,7 @@ where
     let mut name = None;
     let mut value = None;
     st.parse_attributes(|k, v| {
+        // CityGML 2.0
         if k == b"@name" {
             name = Some(String::from_utf8_lossy(v).into());
         }
@@ -458,6 +503,7 @@ where
     })?;
     st.parse_children(|st| {
         match st.current_path() {
+            // CityGML 3.0
             b"gen:name" => {
                 name = Some(st.parse_text()?.to_string());
             }

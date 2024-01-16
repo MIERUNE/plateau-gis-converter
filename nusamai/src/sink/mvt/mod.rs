@@ -257,14 +257,12 @@ fn tile_writing_stage(
                     traverse_properties(&mut tags, &mut layer.tags_enc, String::new(), value);
 
                     // Make a MVT feature id (u64) by hashing the original feature id string.
-                    if let Some(id_str) = &feat.id {
-                        id = Some(
-                            id_str
-                                .as_bytes()
-                                .iter()
-                                .fold(5381u64, |a, c| a.wrapping_mul(33) ^ *c as u64),
-                        );
-                    }
+                    id = Some(
+                        feat.id
+                            .as_bytes()
+                            .iter()
+                            .fold(5381u64, |a, c| a.wrapping_mul(33) ^ *c as u64),
+                    );
 
                     layer
                 } else {
