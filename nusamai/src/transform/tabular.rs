@@ -84,6 +84,13 @@ impl ObjectSeparator for SemanticObjectSeparator {
             child_features.extend(features);
         }
 
+        // attributes内のData（子要素）を全て取り出す
+        let mut child_data = Vec::new();
+        for (key, value) in toplevel_feature.attributes.iter() {
+            let data = self.extract_data(value);
+            child_data.extend(data);
+        }
+
         // 仮の設定を作成する
         let mut settings = Settings::default();
 
