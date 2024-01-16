@@ -4,27 +4,37 @@ use indexmap::IndexMap;
 
 use serde::{Deserialize, Serialize};
 
-pub type Map = IndexMap<String, TypeRef, ahash::RandomState>;
-
 #[derive(Debug, Serialize, Deserialize, Default)]
 pub struct Schema {
     pub types: IndexMap<String, TypeDef, ahash::RandomState>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct TypeDef {
-    #[serde(rename = "stereoType")]
-    pub stereotype: StereoType,
+#[derive(Debug, Serialize, Deserialize, PartialEq)]
+pub enum TypeDef {
+    Data(DataTypeDef),
+    Feature(FeatureTypeDef),
+    Property(PropertyTypeDef),
+}
+
+pub type Map = IndexMap<String, TypeRef, ahash::RandomState>;
+
+#[derive(Debug, Serialize, Deserialize, PartialEq)]
+pub struct DataTypeDef {
     pub attributes: Map,
     #[serde(default, skip_serializing_if = "is_false")]
     pub any: bool,
 }
 
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
-pub enum StereoType {
-    Data,
-    Feature,
-    // Object
+pub struct FeatureTypeDef {
+    pub attributes: Map,
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub any: bool,
+}
+
+#[derive(Debug, Serialize, Deserialize, PartialEq)]
+pub struct PropertyTypeDef {
+    pub members: Vec<TypeRef>,
 }
 
 #[derive(Debug, Serialize, Deserialize, PartialEq, Eq)]
@@ -71,7 +81,6 @@ pub enum Type {
     Measure,
     Point,
     Ref(String),
-    Property(Vec<TypeRef>),
 }
 
 fn is_false(n: &bool) -> bool {

@@ -10,7 +10,7 @@ fn render_schema() {
         let building = &schema.types["bldg:Building"];
         assert_eq!(
             schema.types["bldg:Building"].stereotype,
-            schema::StereoType::Feature
+            schema::TypeDef::Feature
         );
         let class = &building.attributes["bldg:class"];
         assert_eq!(class.ty, schema::Type::Code);

@@ -478,11 +478,10 @@ impl CityGMLElement for GenericAttribute {
         if schema.types.get(key).is_none() {
             schema.types.insert(
                 key.into(),
-                schema::TypeDef {
-                    stereotype: schema::StereoType::Data,
+                schema::TypeDef::Data(schema::DataTypeDef {
                     attributes: Default::default(),
                     any: true,
-                },
+                }),
             );
         }
         schema::TypeRef::new(schema::Type::Ref(key.into()))

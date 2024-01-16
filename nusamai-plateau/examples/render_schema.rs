@@ -13,7 +13,7 @@ fn main() {
         schema
             .types
             .iter()
-            .filter(|(_, v)| v.stereotype == schema::StereoType::Feature)
+            .filter(|(_, v)| matches!(v, schema::TypeDef::Feature(_)))
             .count()
     );
     eprintln!(
@@ -21,7 +21,15 @@ fn main() {
         schema
             .types
             .iter()
-            .filter(|(_, v)| v.stereotype == schema::StereoType::Data)
+            .filter(|(_, v)| matches!(v, schema::TypeDef::Data(_)))
+            .count()
+    );
+    eprintln!(
+        "{} Property types",
+        schema
+            .types
+            .iter()
+            .filter(|(_, v)| matches!(v, schema::TypeDef::Property(_)))
             .count()
     );
 }

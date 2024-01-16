@@ -338,6 +338,11 @@ fn generate_citygml_impl_for_struct(
         StereoType::Data => quote! { Data },
         _ => unreachable!(),
     };
+    let stereotypedef = match ty {
+        StereoType::Feature => quote! { FeatureTypeDef },
+        StereoType::Data => quote! { DataTypeDef },
+        _ => unreachable!(),
+    };
 
     Ok(quote! {
         impl #impl_generics ::nusamai_citygml::CityGMLElement for #struct_ident #ty_generics #where_clause {
@@ -362,14 +367,17 @@ fn generate_citygml_impl_for_struct(
                     // TODO: use entry API
                     schema.types.insert(
                         key.into(),
-                        ::nusamai_citygml::schema::TypeDef {
-                            stereotype: ::nusamai_citygml::schema::StereoType::#stereotype,
+                        ::nusamai_citygml::schema::TypeDef::#stereotype(::nusamai_citygml::schema::#stereotypedef {
                             attributes: Default::default(),
                             any: false,
-                        });
+                        })
+                    );
                     let mut attributes = ::nusamai_citygml::schema::Map::default();
                     #(#prop_stmts)*
-                    schema.types.get_mut(key).unwrap().attributes = attributes;
+                    match schema.types.get_mut(key).unwrap() {
+                        ::nusamai_citygml::schema::TypeDef::#stereotype(t) => t.attributes = attributes,
+                        _ => unreachable!(),
+                    }
                 }
                 ::nusamai_citygml::schema::TypeRef::new(::nusamai_citygml::schema::Type::Ref(key.into()))
             }
@@ -384,6 +392,26 @@ fn generate_citygml_impl_for_enum(
     let mut child_arms = Vec::new();
     let mut into_object_arms = Vec::new();
     let mut choice_types = Vec::new();
+
+    let mut typename = String::from(stringify!(derive_input.ident));
+
+    for attr in &derive_input.attrs {
+        if !attr.path().is_ident(CITYGML_ATTR_IDENT) {
+            continue;
+        }
+        attr.parse_nested_meta(|meta| {
+            if meta.path.is_ident("name") {
+                let name: LitStr = meta.value()?.parse()?;
+                typename = name.value();
+                Ok(())
+            } else if meta.path.is_ident("type") {
+                let _: Ident = meta.value()?.parse()?;
+                Ok(())
+            } else {
+                Ok(())
+            }
+        })?;
+    }
 
     // Scan enum variants
     for variant in &enum_data.variants {
@@ -452,11 +480,20 @@ fn generate_citygml_impl_for_enum(
             }
 
             fn collect_schema(schema: &mut ::nusamai_citygml::schema::Schema) -> ::nusamai_citygml::schema::TypeRef {
-                ::nusamai_citygml::schema::TypeRef::new(::nusamai_citygml::schema::Type::Property(
-                    vec![
+                let key = #typename;
+                if schema.types.get(key).is_none() {
+                    // TODO: use entry API
+                    let members = vec![
                         #(#choice_types)*
-                    ]
-                ))
+                    ];
+                    schema.types.insert(
+                        key.into(),
+                        ::nusamai_citygml::schema::TypeDef::Property(::nusamai_citygml::schema::PropertyTypeDef {
+                            members
+                        })
+                    );
+                }
+                ::nusamai_citygml::schema::TypeRef::new(::nusamai_citygml::schema::Type::Ref(key.into()))
             }
         }
     })
