@@ -47,10 +47,6 @@ impl ObjectSeparator for SemanticObjectSeparator {
         let typename = &toplevel_feature.typename;
         println!("{:?}, {:?}", root_gml_id, typename);
 
-        let toplevel_geometries = &cityobj.geometry_store;
-        let toplevel_geometry_ref = &toplevel_feature.geometries;
-        let toplevel_attributes = &toplevel_feature.attributes;
-
         // ここから処理を書いていく
         // 何かしらの設定ファイルを受け取り、以下のような設定ができると嬉しい
         // ・Arrayはjson文字列に変換する
