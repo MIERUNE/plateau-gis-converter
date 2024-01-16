@@ -247,6 +247,8 @@ impl ObjectSeparator for SemanticObjectSeparator {
                     objects.push(obj);
                 }
             }
+        } else {
+            // todo: JSON化しない場合は、テーブル分割される
         }
 
         println!("{:?}", objects.len());
