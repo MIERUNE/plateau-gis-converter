@@ -3,7 +3,7 @@ use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
 
 use nusamai_citygml::object::{CityObject, Feature};
-use nusamai_citygml::Value;
+use nusamai_citygml::{GeometryRefEntry, Value};
 
 // 以下、仮実装
 #[derive(Debug, Default, Serialize, Deserialize)]
@@ -183,22 +183,54 @@ impl ObjectSeparator for SemanticObjectSeparator {
             let mut child_geometry_refs = Vec::new();
             for f in &child_features {
                 if let Some(geometry_refs) = &f.geometries {
+                    // lodを確認する
                     child_geometry_refs.extend(geometry_refs.clone());
                 }
             }
 
-            // todo: さらに、LODごとに分割する必要がある
-
             if !child_geometry_refs.is_empty() {
+                let mut lods: IndexMap<usize, Vec<GeometryRefEntry>> = IndexMap::new();
+
+                for g in &child_geometry_refs {
+                    if g.lod == 0 {
+                        lods.entry(0).or_insert_with(Vec::new).push(g.clone());
+                    } else if g.lod == 1 {
+                        lods.entry(1).or_insert_with(Vec::new).push(g.clone());
+                    } else if g.lod == 2 {
+                        lods.entry(2).or_insert_with(Vec::new).push(g.clone());
+                    } else if g.lod == 3 {
+                        lods.entry(3).or_insert_with(Vec::new).push(g.clone());
+                    } else if g.lod == 4 {
+                        lods.entry(4).or_insert_with(Vec::new).push(g.clone());
+                    }
+                }
+
                 let mut root = toplevel_feature.clone();
-                root.geometries = Some(child_geometry_refs);
 
-                let obj = CityObject {
-                    root: Value::Feature(root),
-                    geometry_store: cityobj.geometry_store.clone(),
-                };
+                for (lod, geometry_refs) in lods.iter() {
+                    let feature = Feature {
+                        id: root.id.clone(),
+                        typename: root.typename.clone(),
+                        attributes: root.attributes.clone(),
+                        geometries: Some(geometry_refs.clone()),
+                    };
 
-                objects.push(obj);
+                    let obj = CityObject {
+                        root: Value::Feature(feature),
+                        geometry_store: cityobj.geometry_store.clone(),
+                    };
+
+                    objects.push(obj);
+                }
+
+                // root.geometries = Some(child_geometry_refs);
+
+                // let obj = CityObject {
+                //     root: Value::Feature(root),
+                //     geometry_store: cityobj.geometry_store.clone(),
+                // };
+
+                // objects.push(obj);
             }
         }
 
@@ -246,17 +278,17 @@ impl ObjectSeparator for SemanticObjectSeparator {
                 }
             }
         } else {
-            // todo: JSON化しない場合は、テーブル分割される
+            // todo: JSON化しない場合は、テーブル分割されるようにする
         }
 
         println!("{:?}", objects.len());
-        for o in &objects {
-            if let Value::Feature(f) = &o.root {
-                println!("{:?}", f.geometries);
+        if objects.len() >= 4 {
+            for o in &objects {
+                if let Value::Feature(f) = &o.root {
+                    println!("{:?}", f.geometries);
+                }
             }
-        }
 
-        if objects.len() > 2 {
             let file = std::fs::File::create("/Users/satoru/Downloads/output/test.json").unwrap();
             let mut writer = std::io::BufWriter::new(file);
             serde_json::to_writer_pretty(writer, &objects).unwrap();
