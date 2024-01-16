@@ -222,15 +222,6 @@ impl ObjectSeparator for SemanticObjectSeparator {
 
                     objects.push(obj);
                 }
-
-                // root.geometries = Some(child_geometry_refs);
-
-                // let obj = CityObject {
-                //     root: Value::Feature(root),
-                //     geometry_store: cityobj.geometry_store.clone(),
-                // };
-
-                // objects.push(obj);
             }
         }
 
