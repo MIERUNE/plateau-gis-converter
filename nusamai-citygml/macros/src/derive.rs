@@ -34,8 +34,10 @@ fn generate_citygml_impl_for_struct(
     let mut attribute_arms = Vec::new();
     let mut chlid_arms = Vec::new();
     let mut into_object_stmts = Vec::new();
-    let mut geom_into_object_expr = quote! { None };
-    let mut id_value = quote!(None);
+    let mut prop_stmts = Vec::new();
+
+    let mut geom_into_object_stmt = quote! { None };
+    let mut id_value = quote!(String::new());
     let struct_ident = &derive_input.ident;
     let mut typename = String::from(stringify!(derive_input.ident));
     let mut ty = StereoType::Feature;
@@ -72,6 +74,7 @@ fn generate_citygml_impl_for_struct(
     // Scan struct fields
     for field in &struct_data.fields {
         let mut into_obj_generated = false;
+        let mut required = false;
 
         let Some(field_ident) = &field.ident else {
             continue;
@@ -82,9 +85,12 @@ fn generate_citygml_impl_for_struct(
             if !attr.path().is_ident(CITYGML_ATTR_IDENT) {
                 continue;
             }
+
+            let mut path: Option<LitByteStr> = None;
+
             attr.parse_nested_meta(|meta| {
                 if meta.path.is_ident("required") {
-                    // TODO: required
+                    required = true;
                     Ok(())
                 }
                 else if meta.path.is_ident("codelist") {
@@ -93,71 +99,11 @@ fn generate_citygml_impl_for_struct(
                     Ok(())
                 }
                 else if meta.path.is_ident("path") {
-                    let path: LitByteStr = meta.value()?.parse()?;
-
-                    if path.value().iter().filter(|c| c == &&b'/').count() > 1 {
+                    let p: LitByteStr = meta.value()?.parse()?;
+                    if p.value().iter().filter(|c| c == &&b'/').count() > 1 {
                         return Err(meta.error("path must not contain more than one '/'"));
                     }
-
-                    if path.value().starts_with(b"@") {
-                        // XML attributes (e.g. @gml:id)
-                        attribute_arms.push(quote! {
-                            #path => {
-                                self.#field_ident = <#field_ty as nusamai_citygml::CityGMLAttribute>::parse_attr_value(
-                                    std::str::from_utf8(value).unwrap(),
-                                )?;
-                                Ok(())
-                            }
-                        });
-                        if field_ident == "id" {
-                            id_value = quote! {
-                                self.id
-                            };
-                        } else {
-                            into_object_stmts.push(
-                                quote! {
-                                    if let Some(v) = self.#field_ident.into_object() {
-                                        attributes.insert(stringify!(#field_ident).into(), v);
-                                    }
-                                }
-                            )
-                        }
-                    } else {
-                        // XML child elements (e.g. bldg:measuredHeight)
-
-                        // if the path contains '/', add the first path as a 'noop' arm.
-                        if let Some(pos) = path.value().iter().position(|&x| x == b'/') {
-                            let prefix = LitByteStr::new(&path.value()[..pos], path.span());
-                            chlid_arms.push(
-                                quote! {
-                                    #prefix => Ok(()),
-                                }
-                            );
-                        };
-
-                        chlid_arms.push(
-                            quote! {
-                                #path => <#field_ty as CityGMLElement>::parse(&mut self.#field_ident, st),
-                            }
-                        );
-
-                        if !into_obj_generated {
-                            // Use the first path component as the attribute name
-                            // e.g. "bldg:interiorRoom/bldg:Room" -> "bldg:interiorRoom"
-                            let path_value = path.value();
-                            let pos_slash = path_value.iter().position(|&x| x == b'/').unwrap_or(path_value.len());
-                            let name = std::str::from_utf8(&path_value[..pos_slash]).unwrap();
-
-                            into_object_stmts.push(
-                                quote! {
-                                    if let Some(v) = self.#field_ident.into_object() {
-                                        attributes.insert(#name.into(), v);
-                                    }
-                                }
-                            );
-                            into_obj_generated = true;
-                        }
-                    }
+                    path = Some(p);
                     Ok(())
                 }
                 else if meta.path.is_ident("geom") {
@@ -176,8 +122,6 @@ fn generate_citygml_impl_for_struct(
                     };
 
                     add_arm(0, b"lod0Point", "Point");
-                    add_arm(0, b"lod0RoofEdge", "MultiSurface"); // only in CityGML 2.0
-                    add_arm(0, b"lod0FootPrint", "MultiSurface"); // only in CityGML 2.0
                     add_arm(0, b"lod0MultiCurve", "MultiCurve");
                     add_arm(2, b"lod2MultiCurve", "MultiCurve");
                     add_arm(3, b"lod3MultiCurve", "MultiCurve");
@@ -197,21 +141,34 @@ fn generate_citygml_impl_for_struct(
                     add_arm(3, b"lod3Geometry", "Geometry"); // only in CityGML 2.0
                     add_arm(4, b"lod4Geometry", "Geometry"); // only in CityGML 2.0
 
+                    // only in CityGML 2.0
                     match &prefix.value()[..] {
+                        b"bldg" => {
+                            add_arm(0, b"lod0RoofEdge", "MultiSurface");
+                            add_arm(0, b"lod0FootPrint", "MultiSurface");
+                        }
                         b"tran" => {
-                            add_arm(0, b"lod0Network", "MultiCurve");
+                            add_arm( 0, b"lod0Network", "MultiCurve");
                         }
                         b"uro" => {
-                            add_arm(2, b"lod2Network", "MultiCurve");
-                            add_arm(3, b"lod3Network", "MultiCurve");
+                            if typename.as_str() == "uro:RailwayTrackAttribute" {
+                                add_arm(2, b"lod2Network", "MultiCurve");
+                                add_arm(3, b"lod3Network", "MultiCurve");
+                            }
+                        }
+                        b"wtr" => {
+                            add_arm( 2, b"lod2Surface", "Surface");
+                            add_arm( 3, b"lod3Surface", "Surface");
                         }
                         b"dem" => {
-                            add_arm(0, b"tin", "Triangulated");
+                            add_arm( 0, b"tin", "Triangulated");
                         }
+                        // lod*TerrainIntersection
+                        // lod*ImplicitRepresentation
                         _ => {}
                     }
 
-                    geom_into_object_expr = quote! {
+                    geom_into_object_stmt = quote! {
                         Some(self.#field_ident)
                     };
 
@@ -233,11 +190,92 @@ fn generate_citygml_impl_for_struct(
                             }
                         }
                     );
+                    prop_stmts.push(
+                        quote! {
+                            attributes.insert("gen:genericAttribute".into(), <#field_ty as CityGMLElement>::collect_schema(schema));
+                        }
+                    );
                     Ok(())
                 } else {
                     Err(meta.error("unrecognized argument"))
                 }
             })?;
+
+            if let Some(path) = path {
+                let path_value = path.value();
+
+                if path_value.starts_with(b"@") {
+                    // XML attributes (e.g. @gml:id)
+                    attribute_arms.push(quote! {
+                        #path => {
+                            self.#field_ident = <#field_ty as nusamai_citygml::CityGMLAttribute>::parse_attr_value(
+                                std::str::from_utf8(value).unwrap(),
+                            )?;
+                            Ok(())
+                        }
+                    });
+                    if field_ident == "id" {
+                        id_value = quote! {
+                            self.id
+                        };
+                    } else {
+                        let name = std::str::from_utf8(&path_value).unwrap();
+                        into_object_stmts.push(quote! {
+                            if let Some(v) = self.#field_ident.into_object() {
+                                attributes.insert(stringify!(#field_ident).into(), v);
+                            }
+                        });
+                        prop_stmts.push(
+                            quote! {
+                                attributes.insert(#name.into(), <#field_ty as CityGMLElement>::collect_schema(schema));
+                            }
+                        );
+                    }
+                } else {
+                    // XML child elements (e.g. bldg:measuredHeight)
+
+                    // if the path contains '/', add the first path as a 'noop' arm.
+                    if let Some(pos) = path_value.iter().position(|&x| x == b'/') {
+                        let prefix = LitByteStr::new(&path_value[..pos], path.span());
+                        chlid_arms.push(quote! {
+                            #prefix => Ok(()),
+                        });
+                    };
+
+                    chlid_arms.push(quote! {
+                        #path => <#field_ty as CityGMLElement>::parse(&mut self.#field_ident, st),
+                    });
+
+                    if !into_obj_generated {
+                        // Use the first path component as the attribute name
+                        // e.g. "bldg:interiorRoom/bldg:Room" -> "bldg:interiorRoom"
+                        let pos_slash = path_value
+                            .iter()
+                            .position(|&x| x == b'/')
+                            .unwrap_or(path_value.len());
+                        let name = std::str::from_utf8(&path_value[..pos_slash]).unwrap();
+
+                        into_object_stmts.push(quote! {
+                            if let Some(v) = self.#field_ident.into_object() {
+                                attributes.insert(#name.into(), v);
+                            }
+                        });
+                        prop_stmts.push(
+                            match required {
+                                true => quote! {
+                                    let mut ty_ref = <#field_ty as CityGMLElement>::collect_schema(schema);
+                                    if ty_ref.min_occurs == 0 { ty_ref.min_occurs = 1; }
+                                    attributes.insert(#name.into(), ty_ref);
+                                },
+                                false => quote! {
+                                    attributes.insert(#name.into(), <#field_ty as CityGMLElement>::collect_schema(schema));
+                                }
+                            }
+                        );
+                        into_obj_generated = true;
+                    }
+                }
+            }
         }
     }
 
@@ -264,7 +302,7 @@ fn generate_citygml_impl_for_struct(
                             #(#into_object_stmts)*
                             attributes
                         },
-                        geometries: #geom_into_object_expr,
+                        geometries: #geom_into_object_stmt,
                     }
                 ))
             }
@@ -286,25 +324,28 @@ fn generate_citygml_impl_for_struct(
         _ => unreachable!(),
     };
 
-    let element_type = match ty {
-        StereoType::Feature => quote! { ::nusamai_citygml::ElementType::FeatureType },
-        StereoType::Data => quote! { ::nusamai_citygml::ElementType::DataType },
-        _ => unreachable!(),
-    };
-
     let extra_arm = match allow_extra {
         true => quote! { Ok(()) },
         false => quote! {
             Err(::nusamai_citygml::ParseError::SchemaViolation(
-                format!("unexpected element: {}", String::from_utf8_lossy(st.current_path())),
+                format!("unexpected element: {}", String::from_utf8_lossy(st.current_absolute_path())),
             ))
         },
     };
 
+    let stereotype = match ty {
+        StereoType::Feature => quote! { Feature },
+        StereoType::Data => quote! { Data },
+        _ => unreachable!(),
+    };
+    let stereotypedef = match ty {
+        StereoType::Feature => quote! { FeatureTypeDef },
+        StereoType::Data => quote! { DataTypeDef },
+        _ => unreachable!(),
+    };
+
     Ok(quote! {
         impl #impl_generics ::nusamai_citygml::CityGMLElement for #struct_ident #ty_generics #where_clause {
-            const ELEMENT_TYPE: ::nusamai_citygml::ElementType = #element_type;
-
             fn parse<R: std::io::BufRead>(&mut self, st: &mut ::nusamai_citygml::SubTreeReader<R>) -> Result<(), ::nusamai_citygml::ParseError> {
                 #attr_parsing
 
@@ -319,6 +360,27 @@ fn generate_citygml_impl_for_struct(
             fn into_object(self) -> Option<::nusamai_citygml::object::Value> {
                 #into_object_impl
             }
+
+            fn collect_schema(schema: &mut ::nusamai_citygml::schema::Schema) -> ::nusamai_citygml::schema::Attribute {
+                let key = #typename;
+                if schema.types.get(key).is_none() {
+                    // TODO: use entry API
+                    schema.types.insert(
+                        key.into(),
+                        ::nusamai_citygml::schema::TypeDef::#stereotype(::nusamai_citygml::schema::#stereotypedef {
+                            attributes: Default::default(),
+                            any: false,
+                        })
+                    );
+                    let mut attributes = ::nusamai_citygml::schema::Map::default();
+                    #(#prop_stmts)*
+                    match schema.types.get_mut(key).unwrap() {
+                        ::nusamai_citygml::schema::TypeDef::#stereotype(t) => t.attributes = attributes,
+                        _ => unreachable!(),
+                    }
+                }
+                ::nusamai_citygml::schema::Attribute::new(::nusamai_citygml::schema::TypeRef::Named(key.into()))
+            }
         }
     })
 }
@@ -329,6 +391,27 @@ fn generate_citygml_impl_for_enum(
 ) -> Result<TokenStream, Error> {
     let mut child_arms = Vec::new();
     let mut into_object_arms = Vec::new();
+    let mut choice_types = Vec::new();
+
+    let mut typename = String::from(stringify!(derive_input.ident));
+
+    for attr in &derive_input.attrs {
+        if !attr.path().is_ident(CITYGML_ATTR_IDENT) {
+            continue;
+        }
+        attr.parse_nested_meta(|meta| {
+            if meta.path.is_ident("name") {
+                let name: LitStr = meta.value()?.parse()?;
+                typename = name.value();
+                Ok(())
+            } else if meta.path.is_ident("type") {
+                let _: Ident = meta.value()?.parse()?;
+                Ok(())
+            } else {
+                Ok(())
+            }
+        })?;
+    }
 
     // Scan enum variants
     for variant in &enum_data.variants {
@@ -344,6 +427,9 @@ fn generate_citygml_impl_for_enum(
         let field = variant.fields.iter().next().unwrap();
         let field_ty = &field.ty;
         let variant_ident = &variant.ident;
+        choice_types.push(quote! {
+            <#field_ty as CityGMLElement>::collect_schema(schema),
+        });
 
         for attr in &variant.attrs {
             if !attr.path().is_ident(CITYGML_ATTR_IDENT) {
@@ -362,6 +448,7 @@ fn generate_citygml_impl_for_enum(
                             Ok(())
                         }
                     });
+
                     into_object_arms.push(quote! {
                         Self::#variant_ident(v) => v.into_object()
                     });
@@ -376,8 +463,6 @@ fn generate_citygml_impl_for_enum(
 
     Ok(quote! {
         impl #impl_generics ::nusamai_citygml::CityGMLElement for #struct_name #ty_generics #where_clause {
-            const ELEMENT_TYPE: ::nusamai_citygml::ElementType = ::nusamai_citygml::ElementType::PropertyType;
-
             fn parse<R: ::std::io::BufRead>(&mut self, st: &mut ::nusamai_citygml::SubTreeReader<R>) -> Result<(), ::nusamai_citygml::ParseError> {
                 st.parse_children(|st| {
                     match st.current_path() {
@@ -392,6 +477,23 @@ fn generate_citygml_impl_for_enum(
                     #(#into_object_arms,)*
                     _ => None,
                 }
+            }
+
+            fn collect_schema(schema: &mut ::nusamai_citygml::schema::Schema) -> ::nusamai_citygml::schema::Attribute {
+                let key = #typename;
+                if schema.types.get(key).is_none() {
+                    // TODO: use entry API
+                    let members = vec![
+                        #(#choice_types)*
+                    ];
+                    schema.types.insert(
+                        key.into(),
+                        ::nusamai_citygml::schema::TypeDef::Property(::nusamai_citygml::schema::PropertyTypeDef {
+                            members
+                        })
+                    );
+                }
+                ::nusamai_citygml::schema::Attribute::new(::nusamai_citygml::schema::TypeRef::Named(key.into()))
             }
         }
     })

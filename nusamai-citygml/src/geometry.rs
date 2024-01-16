@@ -8,6 +8,7 @@ pub enum GeometryParseType {
     MultiSurface,
     MultiCurve,
     MultiPoint,
+    Surface,
     Point,
     Triangulated,
 }
@@ -17,11 +18,16 @@ pub enum GeometryParseType {
 pub enum GeometryType {
     #[default]
     Unknown,
+    /// Polygons (solids)
     Solid,
+    /// Polygons (surfaces)
     Surface,
-    Curve,
-    Point,
+    /// Polygons (triangles)
     Triangle,
+    /// Line-strings
+    Curve,
+    /// Points
+    Point,
 }
 
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
@@ -36,17 +42,17 @@ pub struct GeometryRefEntry {
 
 pub type GeometryRef = Vec<GeometryRefEntry>;
 
-/// Geometries in a city object and all its children.
+/// Geometries in a single city object and all its children.
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 #[derive(Debug, Default, Clone)]
 pub struct GeometryStore {
-    /// EPSG code of the Coordinate Reference System (CRS)
+    /// EPSG code of the Coordinate Reference System (CRS) for this geometry
     pub epsg: EPSGCode,
     /// Shared vertex buffer for all geometries
     pub vertices: Vec<[f64; 3]>,
     /// All polygons, referenced by `GeometryRef`
     pub multipolygon: MultiPolygon<'static, 1, u32>,
-    /// All line-strings of , referenced by `GeometryRef`
+    /// All line-strings, referenced by `GeometryRef`
     pub multilinestring: MultiLineString<'static, 1, u32>,
     /// All points, referenced by `GeometryRef`
     pub multipoint: MultiPoint<'static, 1, u32>,

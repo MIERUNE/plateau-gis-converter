@@ -38,7 +38,7 @@ impl DataSource for DummySource {
             let obj = Parcel {
                 cityobj: CityObject {
                     root: nusamai_citygml::Value::Double(0.),
-                    geometries: Default::default(),
+                    geometry_store: Default::default(),
                 },
             };
             feedback.feedback(FeedbackMessage {

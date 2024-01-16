@@ -139,10 +139,10 @@ pub fn toplevel_cityobj_to_geojson_features(obj: &CityObject) -> Vec<geojson::Fe
     let mut geojson_features: Vec<geojson::Feature> = Vec::with_capacity(1);
     let properties = extract_properties(&obj.root);
 
-    if !obj.geometries.multipolygon.is_empty() {
+    if !obj.geometry_store.multipolygon.is_empty() {
         let mpoly_geojson_geom = indexed_multipolygon_to_geometry(
-            &obj.geometries.vertices,
-            &obj.geometries.multipolygon,
+            &obj.geometry_store.vertices,
+            &obj.geometry_store.multipolygon,
         );
 
         let mpoly_geojson_feat = geojson::Feature {
@@ -155,10 +155,10 @@ pub fn toplevel_cityobj_to_geojson_features(obj: &CityObject) -> Vec<geojson::Fe
         geojson_features.push(mpoly_geojson_feat);
     }
 
-    if !obj.geometries.multilinestring.is_empty() {
+    if !obj.geometry_store.multilinestring.is_empty() {
         let mls_geojson_geom = indexed_multilinestring_to_geometry(
-            &obj.geometries.vertices,
-            &obj.geometries.multilinestring,
+            &obj.geometry_store.vertices,
+            &obj.geometry_store.multilinestring,
         );
         let mls_geojson_feat = geojson::Feature {
             bbox: None,
@@ -170,9 +170,11 @@ pub fn toplevel_cityobj_to_geojson_features(obj: &CityObject) -> Vec<geojson::Fe
         geojson_features.push(mls_geojson_feat);
     }
 
-    if !obj.geometries.multipoint.is_empty() {
-        let mpoint_geojson_geom =
-            indexed_multipoint_to_geometry(&obj.geometries.vertices, &obj.geometries.multipoint);
+    if !obj.geometry_store.multipoint.is_empty() {
+        let mpoint_geojson_geom = indexed_multipoint_to_geometry(
+            &obj.geometry_store.vertices,
+            &obj.geometry_store.multipoint,
+        );
         let mpoint_geojson_feat = geojson::Feature {
             bbox: None,
             geometry: Some(mpoint_geojson_geom),
@@ -214,11 +216,11 @@ mod tests {
         let obj = CityObject {
             root: Value::Feature(Feature {
                 typename: "dummy".into(),
-                id: None,
+                id: "dummy".into(),
                 attributes: Default::default(),
                 geometries: None,
             }),
-            geometries,
+            geometry_store: geometries,
         };
 
         let geojson_features = toplevel_cityobj_to_geojson_features(&obj);

@@ -13,7 +13,7 @@ pub struct WaterBody {
     pub usage: Vec<Code>,
 
     #[citygml(path = b"wtr:boundedBy")]
-    pub bounded_by: Vec<BoundedByWaterSurfaceProperty>, // -> wtr:_WaterBoundarySurface
+    pub bounded_by: Vec<WaterBoundarySurfaceProperty>, // -> wtr:_WaterBoundarySurface
 
     #[citygml(path = b"uro:floodingRiskAttribute")]
     pub flooding_risk_attribute: Vec<uro::WaterBodyFloodingRiskAttributeProperty>, // -> uro:WaterBodyFloodingRiskAttribute
@@ -35,7 +35,7 @@ pub struct WaterBody {
 }
 
 #[citygml_property(name = "wtr:_WaterBoundarySurfaceProperty")]
-pub enum BoundedByWaterSurfaceProperty {
+pub enum WaterBoundarySurfaceProperty {
     #[citygml(path = b"wtr:WaterClosureSurface")]
     WaterClosureSurface(WaterClosureSurface),
     #[citygml(path = b"wtr:WaterGroundSurface")]

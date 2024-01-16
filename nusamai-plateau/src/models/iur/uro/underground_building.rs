@@ -1,8 +1,8 @@
 use nusamai_citygml::{citygml_feature, CityGMLElement, Code, GYear, Length, MeasureOrNullList};
 
-use crate::models::building::*;
-use crate::models::core::Address;
-use crate::models::iur::uro::*;
+use crate::models::building as bldg;
+use crate::models::core;
+use crate::models::iur::uro;
 
 #[citygml_feature(name = "uro:UndergroundBuilding")]
 pub struct UndergroundBuilding {
@@ -40,59 +40,59 @@ pub struct UndergroundBuilding {
     pub storey_heights_below_ground: Option<MeasureOrNullList>,
 
     #[citygml(path = b"bldg:outerBuildingInstallation/bldg:BuildingInstallation")]
-    pub outer_building_installation: Vec<BuildingInstallation>,
+    pub outer_building_installation: Vec<bldg::BuildingInstallation>,
 
     #[citygml(path = b"bldg:interiorBuildingInstallation/bldg:IntBuildingInstallation")]
-    pub interior_building_installation: Vec<BuildingInstallation>,
+    pub interior_building_installation: Vec<bldg::BuildingInstallation>,
 
     #[citygml(path = b"bldg:boundedBy")]
-    pub bounded_by: Vec<BoundarySurfaceProperty>, // -> bldg:_BoundarySurface
+    pub bounded_by: Vec<bldg::BoundarySurfaceProperty>, // -> bldg:_BoundarySurface
 
     #[citygml(path = b"bldg:interiorRoom/bldg:Room")]
-    pub interior_room: Vec<Room>,
+    pub interior_room: Vec<bldg::Room>,
 
     #[citygml(path = b"bldg:consistsOfBuildingPart/bldg:BuildingPart")]
-    pub consists_of_building_part: Vec<BuildingPart>,
+    pub consists_of_building_part: Vec<bldg::BuildingPart>,
 
     #[citygml(path = b"bldg:address/core:Address")]
-    pub address: Vec<Address>,
+    pub address: Vec<core::Address>,
 
     #[citygml(path = b"uro:bldgDmAttribute")]
-    pub bldg_dm_attribute: Vec<DmAttributeProperty>, // -> uro:DmAttribute
+    pub bldg_dm_attribute: Vec<uro::DmAttributeProperty>, // -> uro:DmAttribute
 
     #[citygml(path = b"uro:bldgFacilityAttribute")]
-    pub bldg_facility_attribute: Vec<FacilityAttributeProperty>, // -> uro:FacilityAttribute
+    pub bldg_facility_attribute: Vec<uro::FacilityAttributeProperty>, // -> uro:FacilityAttribute
 
     #[citygml(path = b"uro:bldgFacilityIdAttribute")]
-    pub bldg_facility_id_attribute: Option<FacilityIdAttributeProperty>, // -> uro:FacilityIdAttribute
+    pub bldg_facility_id_attribute: Option<uro::FacilityIdAttributeProperty>, // -> uro:FacilityIdAttribute
 
     #[citygml(path = b"uro:bldgFacilityTypeAttribute/uro:FacilityTypeAttribute")]
-    pub bldg_facility_type_attribute: Vec<FacilityTypeAttribute>,
+    pub bldg_facility_type_attribute: Vec<uro::FacilityTypeAttribute>,
 
     #[citygml(path = b"uro:bldgRealEstateIDAttribute/uro:RealEstateIDAttribute")]
-    pub bldg_real_estate_id_attribute: Option<RealEstateIDAttribute>,
+    pub bldg_real_estate_id_attribute: Option<uro::RealEstateIDAttribute>,
 
     #[citygml(path = b"uro:buildingDataQualityAttribute/uro:BuildingDataQualityAttribute")]
-    pub building_data_quality_attribute: Option<BuildingDataQualityAttribute>,
+    pub building_data_quality_attribute: Option<uro::BuildingDataQualityAttribute>,
 
     #[citygml(path = b"uro:buildingDetailAttribute/uro:BuildingDetailAttribute")]
-    pub building_detail_attribute: Vec<BuildingDetailAttribute>,
+    pub building_detail_attribute: Vec<uro::BuildingDetailAttribute>,
 
     #[citygml(path = b"uro:buildingDisasterRiskAttribute")]
-    pub building_disaster_risk_attribute: Vec<BuildingDisasterRiskAttributeProperty>, // -> uro:BuildingDisasterRiskAttribute
+    pub building_disaster_risk_attribute: Vec<uro::BuildingDisasterRiskAttributeProperty>, // -> uro:BuildingDisasterRiskAttribute
 
     #[citygml(path = b"uro:buildingIDAttribute/uro:BuildingIDAttribute")]
-    pub building_id_attribute: Vec<BuildingIDAttribute>,
+    pub building_id_attribute: Vec<uro::BuildingIDAttribute>,
 
     #[citygml(path = b"uro:ifcBuildingAttribute")]
-    pub ifc_building_attribute: Vec<IfcAttributeProperty>, // -> uro:IfcAttribute
+    pub ifc_building_attribute: Vec<uro::IfcAttributeProperty>, // -> uro:IfcAttribute
 
     #[citygml(path = b"uro:indoorBuildingAttribute")]
-    pub indoor_building_attribute: Vec<IndoorAttributeProperty>, // -> uro:IndoorAttribute
+    pub indoor_building_attribute: Vec<uro::IndoorAttributeProperty>, // -> uro:IndoorAttribute
 
     #[citygml(path = b"uro:keyValuePairAttribute/uro:KeyValuePairAttribute")]
-    pub key_value_pair_attribute: Vec<KeyValuePairAttribute>,
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
 
     #[citygml(path = b"uro:largeCustomerFacilityAttribute/uro:LargeCustomerFacilityAttribute")]
-    pub large_customer_facility_attribute: Vec<LargeCustomerFacilityAttribute>,
+    pub large_customer_facility_attribute: Vec<uro::LargeCustomerFacilityAttribute>,
 }

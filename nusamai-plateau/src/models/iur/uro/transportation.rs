@@ -1,5 +1,5 @@
 use nusamai_citygml::{
-    citygml_data, citygml_property, CityGMLElement, Code, Date, GYear, Length, Point,
+    citygml_data, citygml_property, CityGMLElement, Code, Date, GYear, Length, Measure, Point,
 };
 
 #[citygml_data(name = "uro:TransportationDataQualityAttribute")]
@@ -261,4 +261,239 @@ pub struct RailwayRouteAttribute {
 
     #[citygml(path = b"uro:endStation", required)]
     pub end_station: Option<String>,
+}
+
+#[citygml_property(name = "uro:SquareUrbanPlanAttributeProperty")]
+pub enum SquareUrbanPlanAttributeProperty {
+    #[citygml(path = b"uro:SquareUrbanPlanAttribute")]
+    SquareUrbanPlanAttribute(SquareUrbanPlanAttribute),
+    #[citygml(path = b"uro:StationSquareAttribute")]
+    StationSquareAttribute(StationSquareAttribute),
+    #[citygml(path = b"uro:TerminalAttribute")]
+    TerminalAttribute(TerminalAttribute),
+}
+
+#[citygml_data(name = "uro:SquareUrbanPlanAttribute")]
+pub struct SquareUrbanPlanAttribute {
+    #[citygml(path = b"uro:prefecture")]
+    pub prefecture: Option<Code>,
+
+    #[citygml(path = b"uro:city")]
+    pub city: Option<Code>,
+
+    #[citygml(path = b"uro:urbanPlanningAreaName")]
+    pub urban_planning_area_name: Option<String>,
+
+    #[citygml(path = b"uro:enforcer")]
+    pub enforcer: Vec<String>,
+
+    #[citygml(path = b"uro:dateOfDecision")]
+    pub date_of_decision: Option<Date>,
+
+    #[citygml(path = b"uro:dateOfRevision")]
+    pub date_of_revision: Vec<Date>,
+
+    #[citygml(path = b"uro:areaPlanned")]
+    pub area_planned: Option<Measure>,
+
+    #[citygml(path = b"uro:areaInService")]
+    pub area_in_service: Option<Measure>,
+
+    #[citygml(path = b"uro:remarks")]
+    pub remarks: Option<String>,
+
+    #[citygml(path = b"uro:status")]
+    pub status: Option<Code>,
+
+    #[citygml(path = b"uro:areaImproved")]
+    pub area_improved: Option<Measure>,
+
+    #[citygml(path = b"uro:areaCompleted")]
+    pub area_completed: Option<Measure>,
+
+    #[citygml(path = b"uro:projectStartDate")]
+    pub project_start_date: Option<Date>,
+
+    #[citygml(path = b"uro:projectEndDate")]
+    pub project_end_date: Option<Date>,
+
+    #[citygml(path = b"uro:isCompleted")]
+    pub is_completed: Option<bool>,
+
+    #[citygml(path = b"uro:isAuthorized")]
+    pub is_authorized: Option<bool>,
+
+    #[citygml(path = b"uro:purpose")]
+    pub purpose: Option<String>,
+
+    #[citygml(path = b"uro:note")]
+    pub note: Option<String>,
+}
+
+#[citygml_data(name = "uro:StationSquareAttribute")]
+pub struct StationSquareAttribute {
+    #[citygml(path = b"uro:prefecture")]
+    pub prefecture: Option<Code>,
+
+    #[citygml(path = b"uro:city")]
+    pub city: Option<Code>,
+
+    #[citygml(path = b"uro:urbanPlanningAreaName")]
+    pub urban_planning_area_name: Option<String>,
+
+    #[citygml(path = b"uro:enforcer")]
+    pub enforcer: Vec<String>,
+
+    #[citygml(path = b"uro:dateOfDecision")]
+    pub date_of_decision: Option<Date>,
+
+    #[citygml(path = b"uro:dateOfRevision")]
+    pub date_of_revision: Vec<Date>,
+
+    #[citygml(path = b"uro:areaPlanned")]
+    pub area_planned: Option<Measure>,
+
+    #[citygml(path = b"uro:areaInService")]
+    pub area_in_service: Option<Measure>,
+
+    #[citygml(path = b"uro:remarks")]
+    pub remarks: Option<String>,
+
+    #[citygml(path = b"uro:status")]
+    pub status: Option<Code>,
+
+    #[citygml(path = b"uro:areaImproved")]
+    pub area_improved: Option<Measure>,
+
+    #[citygml(path = b"uro:areaCompleted")]
+    pub area_completed: Option<Measure>,
+
+    #[citygml(path = b"uro:projectStartDate")]
+    pub project_start_date: Option<Date>,
+
+    #[citygml(path = b"uro:projectEndDate")]
+    pub project_end_date: Option<Date>,
+
+    #[citygml(path = b"uro:isCompleted")]
+    pub is_completed: Option<bool>,
+
+    #[citygml(path = b"uro:isAuthorized")]
+    pub is_authorized: Option<bool>,
+
+    #[citygml(path = b"uro:purpose")]
+    pub purpose: Option<String>,
+
+    #[citygml(path = b"uro:note")]
+    pub note: Option<String>,
+
+    #[citygml(path = b"uro:station")]
+    pub station: Vec<String>,
+
+    #[citygml(path = b"uro:route")]
+    pub route: Vec<String>,
+
+    #[citygml(path = b"uro:railwayType")]
+    pub railway_type: Vec<Code>,
+}
+
+#[citygml_data(name = "uro:TerminalAttribute")]
+pub struct TerminalAttribute {
+    #[citygml(path = b"uro:prefecture")]
+    pub prefecture: Option<Code>,
+
+    #[citygml(path = b"uro:city")]
+    pub city: Option<Code>,
+
+    #[citygml(path = b"uro:urbanPlanningAreaName")]
+    pub urban_planning_area_name: Option<String>,
+
+    #[citygml(path = b"uro:enforcer")]
+    pub enforcer: Vec<String>,
+
+    #[citygml(path = b"uro:dateOfDecision")]
+    pub date_of_decision: Option<Date>,
+
+    #[citygml(path = b"uro:dateOfRevision")]
+    pub date_of_revision: Vec<Date>,
+
+    #[citygml(path = b"uro:areaPlanned")]
+    pub area_planned: Option<Measure>,
+
+    #[citygml(path = b"uro:areaInService")]
+    pub area_in_service: Option<Measure>,
+
+    #[citygml(path = b"uro:remarks")]
+    pub remarks: Option<String>,
+
+    #[citygml(path = b"uro:status")]
+    pub status: Option<Code>,
+
+    #[citygml(path = b"uro:areaImproved")]
+    pub area_improved: Option<Measure>,
+
+    #[citygml(path = b"uro:areaCompleted")]
+    pub area_completed: Option<Measure>,
+
+    #[citygml(path = b"uro:projectStartDate")]
+    pub project_start_date: Option<Date>,
+
+    #[citygml(path = b"uro:projectEndDate")]
+    pub project_end_date: Option<Date>,
+
+    #[citygml(path = b"uro:isCompleted")]
+    pub is_completed: Option<bool>,
+
+    #[citygml(path = b"uro:isAuthorized")]
+    pub is_authorized: Option<bool>,
+
+    #[citygml(path = b"uro:purpose")]
+    pub purpose: Option<String>,
+
+    #[citygml(path = b"uro:note")]
+    pub note: Option<String>,
+
+    #[citygml(path = b"uro:terminalType")]
+    pub terminal_type: Option<Code>,
+
+    #[citygml(path = b"uro:structure")]
+    pub structure: Option<String>,
+
+    #[citygml(path = b"uro:numberOfBerthsPlanned")]
+    pub number_of_berths_planned: Option<i64>,
+
+    #[citygml(path = b"uro:numberOfBerthsInService")]
+    pub number_of_berths_in_service: Option<i64>,
+
+    #[citygml(path = b"uro:userType")]
+    pub user_type: Option<Code>,
+}
+
+#[citygml_data(name = "uro:WaterwayDetailAttribute")]
+pub struct WaterwayDetailAttribute {
+    #[citygml(path = b"uro:routeId", required)]
+    pub route_id: Option<String>,
+
+    #[citygml(path = b"uro:routeDirection")]
+    pub route_direction: Option<Code>,
+
+    #[citygml(path = b"uro:minimumWidth")]
+    pub minimum_width: Option<Length>,
+
+    #[citygml(path = b"uro:maximumWidth")]
+    pub maximum_width: Option<Length>,
+
+    #[citygml(path = b"uro:length")]
+    pub length: Option<Length>,
+
+    #[citygml(path = b"uro:navigation")]
+    pub navigation: Option<String>,
+
+    #[citygml(path = b"uro:plannedDepth")]
+    pub planned_depth: Option<Length>,
+
+    #[citygml(path = b"uro:speedLimit")]
+    pub speed_limit: Option<Measure>,
+
+    #[citygml(path = b"uro:targetShipType")]
+    pub target_ship_type: Vec<String>,
 }
