@@ -158,7 +158,8 @@ impl ObjectSeparator for SemanticObjectSeparator {
             }
         }
 
-        // 入れ子の属性を割するか否か
+        // todo: 入れ子の属性を割するか否か
+        // other_layer_data_listを利用する
         settings.to_tabular = true;
         if settings.to_tabular {}
 
