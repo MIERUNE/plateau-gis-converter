@@ -1,11 +1,9 @@
-use std::default;
-
 use ahash::RandomState;
 use indexmap::IndexMap;
-
-use nusamai_citygml::object::{self, CityObject, Data, Feature, Map};
-use nusamai_citygml::Value;
 use serde::{Deserialize, Serialize};
+
+use nusamai_citygml::object::{CityObject, Feature};
+use nusamai_citygml::Value;
 
 // 以下、仮実装
 #[derive(Debug, Default, Serialize, Deserialize)]
@@ -49,7 +47,7 @@ impl ObjectSeparator for SemanticObjectSeparator {
         let typename = &toplevel_feature.typename;
         println!("{:?}, {:?}", root_gml_id, typename);
 
-        let toplevel_geometries = &cityobj.geometries;
+        let toplevel_geometries = &cityobj.geometry_store;
         let toplevel_geometry_ref = &toplevel_feature.geometries;
         let toplevel_attributes = &toplevel_feature.attributes;
 
@@ -153,7 +151,7 @@ impl ObjectSeparator for SemanticObjectSeparator {
 
                 let obj = CityObject {
                     root: Value::Feature(toplevel_feature),
-                    geometries: cityobj.geometries.clone(),
+                    geometry_store: cityobj.geometry_store.clone(),
                 };
 
                 objects.push(obj);
@@ -176,7 +174,7 @@ impl ObjectSeparator for SemanticObjectSeparator {
             for f in &child_features {
                 let obj = CityObject {
                     root: Value::Feature(f.clone()),
-                    geometries: cityobj.geometries.clone(),
+                    geometry_store: cityobj.geometry_store.clone(),
                 };
                 objects.push(obj);
             }
@@ -197,7 +195,7 @@ impl ObjectSeparator for SemanticObjectSeparator {
 
                 let obj = CityObject {
                     root: Value::Feature(root),
-                    geometries: cityobj.geometries.clone(),
+                    geometry_store: cityobj.geometry_store.clone(),
                 };
 
                 objects.push(obj);
@@ -241,7 +239,7 @@ impl ObjectSeparator for SemanticObjectSeparator {
 
                     let obj = CityObject {
                         root: Value::Feature(feature),
-                        geometries: object.geometries,
+                        geometry_store: object.geometry_store,
                     };
 
                     objects.push(obj);
