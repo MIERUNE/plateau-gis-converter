@@ -84,11 +84,18 @@ impl ObjectSeparator for SemanticObjectSeparator {
             child_features.extend(features);
         }
 
-        // attributes内のData（子要素）を全て取り出す
-        let mut child_data = Vec::new();
+        // attributes内のArrayを取り出し、中身がData（子要素）で、なおかつattributesが複数のkeyを持つものを全て取り出す
+        let mut other_layer_data_list = Vec::new();
         for (key, value) in toplevel_feature.attributes.iter() {
-            let data = self.extract_data(value);
-            child_data.extend(data);
+            let array = self.extract_array(value);
+            for v in array {
+                let data_list = self.extract_data(&v);
+                for d in &data_list {
+                    if d.attributes.len() >= 2 {
+                        other_layer_data_list.push(d.clone());
+                    }
+                }
+            }
         }
 
         // 仮の設定を作成する
@@ -238,6 +245,13 @@ impl SemanticObjectSeparator {
             Value::Data(data) => {
                 vec![data.clone()]
             }
+            _ => Vec::new(),
+        }
+    }
+
+    fn extract_array(&self, value: &Value) -> Vec<Value> {
+        match value {
+            Value::Array(vec) => vec.clone(),
             _ => Vec::new(),
         }
     }
