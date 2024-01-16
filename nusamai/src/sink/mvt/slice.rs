@@ -19,11 +19,11 @@ pub fn slice_cityobj_geoms(
         "max_z must be greater than or equal to min_z"
     );
 
-    if obj.geometries.multipolygon.is_empty() {
+    if obj.geometry_store.multipolygon.is_empty() {
         return Ok(());
     }
 
-    let idx_mpoly = &obj.geometries.multipolygon;
+    let idx_mpoly = &obj.geometry_store.multipolygon;
     let mut tiled_mpolys = HashMap::new();
 
     let extent = 2u32.pow(max_detail);
@@ -31,7 +31,7 @@ pub fn slice_cityobj_geoms(
 
     idx_mpoly.iter().for_each(|idx_poly| {
         let poly = idx_poly.transform(|c| {
-            let [lng, lat, _height] = obj.geometries.vertices[c[0] as usize];
+            let [lng, lat, _height] = obj.geometry_store.vertices[c[0] as usize];
             let (mx, my) = lnglat_to_web_mercator(lng, lat);
             [mx, my]
         });

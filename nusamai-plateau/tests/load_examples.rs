@@ -343,7 +343,7 @@ fn load_railway_example() {
 
     assert_eq!(
         railway.id,
-        Some("rwy_f087faa5-f548-4188-aa2e-03c7a5f2d3b9".to_string())
+        "rwy_f087faa5-f548-4188-aa2e-03c7a5f2d3b9".to_string()
     );
 
     assert_eq!(

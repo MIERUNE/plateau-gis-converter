@@ -14,7 +14,7 @@ pub struct Schema {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct TypeDef {
     #[serde(rename = "stereoType")]
-    pub stereo_type: StereoType,
+    pub stereotype: StereoType,
     pub attributes: Map,
     #[serde(default, skip_serializing_if = "is_false")]
     pub any: bool,

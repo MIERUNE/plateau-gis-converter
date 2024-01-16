@@ -13,13 +13,13 @@ pub type Map = indexmap::IndexMap<String, Value, ahash::RandomState>;
 #[derive(Debug, Deserialize, Serialize)]
 pub struct CityObject {
     pub root: Value,
-    pub geometries: geometry::GeometryStore,
+    pub geometry_store: geometry::GeometryStore,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct Feature {
     pub typename: Cow<'static, str>,
-    pub id: Option<String>,
+    pub id: String,
     pub attributes: Map,
     pub geometries: Option<GeometryRef>,
 }
@@ -137,7 +137,7 @@ mod tests {
         attributes.insert("Integer".into(), Value::Integer(1));
         let obj = Value::Feature(Feature {
             typename: "test".into(),
-            id: Some("test".into()),
+            id: "test".into(),
             attributes,
             geometries: None,
         });

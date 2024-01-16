@@ -135,7 +135,7 @@ fn modify(ty: &StereoType, args: &FeatureArgs, input: &mut DeriveInput) -> Resul
                         fields,
                         quote! {
                             #[citygml(path = b"@gml:id", required)]
-                            pub id: Option<String>
+                            pub id: String
                         },
                     );
                     pos += 1;

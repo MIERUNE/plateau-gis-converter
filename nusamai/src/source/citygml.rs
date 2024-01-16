@@ -89,7 +89,10 @@ fn toplevel_dispatcher<R: BufRead>(
                 let geometries = st.collect_geometries();
 
                 if let Some(root) = cityobj.into_object() {
-                    let cityobj = CityObject { root, geometries };
+                    let cityobj = CityObject {
+                        root,
+                        geometry_store: geometries,
+                    };
                     if downstream.send(Parcel { cityobj }).is_err() {
                         feedback.cancel();
                         return Ok(());

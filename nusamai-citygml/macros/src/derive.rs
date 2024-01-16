@@ -37,7 +37,7 @@ fn generate_citygml_impl_for_struct(
     let mut prop_stmts = Vec::new();
 
     let mut geom_into_object_stmt = quote! { None };
-    let mut id_value = quote!(None);
+    let mut id_value = quote!(String::new());
     let struct_ident = &derive_input.ident;
     let mut typename = String::from(stringify!(derive_input.ident));
     let mut ty = StereoType::Feature;
@@ -333,7 +333,7 @@ fn generate_citygml_impl_for_struct(
         },
     };
 
-    let stereo_type = match ty {
+    let stereotype = match ty {
         StereoType::Feature => quote! { Feature },
         StereoType::Data => quote! { Data },
         _ => unreachable!(),
@@ -363,7 +363,7 @@ fn generate_citygml_impl_for_struct(
                     schema.types.insert(
                         key.into(),
                         ::nusamai_citygml::schema::TypeDef {
-                            stereo_type: ::nusamai_citygml::schema::StereoType::#stereo_type,
+                            stereotype: ::nusamai_citygml::schema::StereoType::#stereotype,
                             attributes: Default::default(),
                             any: false,
                         });
