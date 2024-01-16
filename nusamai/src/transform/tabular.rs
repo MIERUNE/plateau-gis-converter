@@ -5,9 +5,10 @@ use indexmap::IndexMap;
 
 use nusamai_citygml::object::{self, CityObject, Data, Feature, Map};
 use nusamai_citygml::Value;
+use serde::{Deserialize, Serialize};
 
 // 以下、仮実装
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Serialize, Deserialize)]
 enum SettingValue {
     Json(String),
     Separate(bool),
@@ -15,7 +16,7 @@ enum SettingValue {
     None,
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Serialize, Deserialize)]
 pub struct Settings {
     load_semantic_parts: bool,
     to_json_string: bool,
