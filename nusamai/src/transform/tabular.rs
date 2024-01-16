@@ -1,3 +1,5 @@
+use std::default;
+
 use ahash::RandomState;
 use indexmap::IndexMap;
 
@@ -6,11 +8,21 @@ use nusamai_citygml::Value;
 
 // 以下、仮実装
 #[derive(Debug, Default)]
+enum SettingValue {
+    Json(String),
+    Separate(bool),
+    #[default]
+    None,
+}
+
+#[derive(Debug, Default)]
 pub struct Settings {
     load_semantic_parts: bool,
+    to_json_string: bool,
     target_lods: Vec<bool>,
     load_lower_lods: bool,
     load_upper_lods: bool,
+    mapping: IndexMap<String, SettingValue, RandomState>,
 }
 
 pub trait ObjectSeparator {
@@ -154,9 +166,12 @@ impl ObjectSeparator for SemanticObjectSeparator {
             child_features.extend(features);
         }
 
+        // 仮の設定を作成する
+        let mut settings = Settings::default();
+        settings.load_semantic_parts = true;
+
         // 設定に応じてfeaturesをセマンティックごとに分割する
-        // if self.settings.load_semantic_parts {
-        if false {
+        if settings.load_semantic_parts {
             for f in &child_features {
                 let obj = CityObject {
                     root: Value::Feature(f.clone()),
@@ -187,6 +202,11 @@ impl ObjectSeparator for SemanticObjectSeparator {
                 objects.push(obj);
             }
         }
+
+        // Array・Data・featureは全てJSON文字列に変換する
+        settings.to_json_string = true;
+
+        if settings.to_json_string {}
 
         println!("{:?}", objects.len());
         for o in &objects {
