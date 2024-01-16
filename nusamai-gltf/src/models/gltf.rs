@@ -31,13 +31,13 @@ pub struct Gltf {
     /// Metadata about the glTF asset.
     pub asset: Asset,
 
-    /// An array of buffers. A buffer points to binary geometry, animation, or skins.
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
-    pub buffers: Vec<Buffer>,
-
     /// An array of bufferViews. A bufferView is a view into a buffer generally representing a subset of the buffer.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub buffer_views: Vec<BufferView>,
+
+    /// An array of buffers. A buffer points to binary geometry, animation, or skins.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub buffers: Vec<Buffer>,
 
     /// An array of cameras. A camera defines a projection matrix.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
@@ -96,5 +96,17 @@ impl Gltf {
 
     pub fn to_string(&self) -> Result<String, serde_json::Error> {
         serde_json::to_string(self)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn gltf_default() {
+        let gltf = Gltf::new();
+        assert_eq!(gltf.asset.version, "2.0");
+        assert_eq!(gltf.asset.generator, Some("nusamai-gltf".into()));
     }
 }
