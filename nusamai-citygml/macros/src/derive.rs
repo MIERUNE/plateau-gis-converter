@@ -379,7 +379,7 @@ fn generate_citygml_impl_for_struct(
                         _ => unreachable!(),
                     }
                 }
-                ::nusamai_citygml::schema::Attribute::new(::nusamai_citygml::schema::TypeRef::Ref(key.into()))
+                ::nusamai_citygml::schema::Attribute::new(::nusamai_citygml::schema::TypeRef::Named(key.into()))
             }
         }
     })
@@ -493,7 +493,7 @@ fn generate_citygml_impl_for_enum(
                         })
                     );
                 }
-                ::nusamai_citygml::schema::Attribute::new(::nusamai_citygml::schema::TypeRef::Ref(key.into()))
+                ::nusamai_citygml::schema::Attribute::new(::nusamai_citygml::schema::TypeRef::Named(key.into()))
             }
         }
     })

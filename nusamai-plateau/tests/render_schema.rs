@@ -22,11 +22,11 @@ fn render_schema() {
 
         assert_eq!(
             building.attributes["bldg:interiorBuildingInstallation"].type_ref,
-            schema::TypeRef::Ref("bldg:BuildingInstallation".to_string())
+            schema::TypeRef::Named("bldg:BuildingInstallation".to_string())
         );
 
         // property stereo type
-        let schema::TypeRef::Ref(name) = &building.attributes["bldg:boundedBy"].type_ref else {
+        let schema::TypeRef::Named(name) = &building.attributes["bldg:boundedBy"].type_ref else {
             panic!("bldg:boundedBy is property type")
         };
         let schema::TypeDef::Property(_boundary) = &schema.types[name] else {

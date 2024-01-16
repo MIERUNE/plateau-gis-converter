@@ -81,7 +81,7 @@ pub enum TypeRef {
     DataTime,
     Measure,
     Point,
-    Ref(String),
+    Named(String),
 }
 
 fn is_false(n: &bool) -> bool {

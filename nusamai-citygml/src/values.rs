@@ -484,7 +484,7 @@ impl CityGMLElement for GenericAttribute {
                 }),
             );
         }
-        schema::Attribute::new(schema::TypeRef::Ref(key.into()))
+        schema::Attribute::new(schema::TypeRef::Named(key.into()))
     }
 }
 
