@@ -10,9 +10,10 @@ pub struct Schema {
 }
 
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
+#[serde(tag = "type")]
 pub enum TypeDef {
-    Data(DataTypeDef),
     Feature(FeatureTypeDef),
+    Data(DataTypeDef),
     Property(PropertyTypeDef),
 }
 

@@ -7,11 +7,9 @@ fn render_schema() {
     TopLevelCityObject::collect_schema(&mut schema);
 
     {
-        let building = &schema.types["bldg:Building"];
-        assert_eq!(
-            schema.types["bldg:Building"].stereotype,
-            schema::TypeDef::Feature
-        );
+        let schema::TypeDef::Feature(building) = &schema.types["bldg:Building"] else {
+            panic!("bldg:Building should be a feature type")
+        };
         let class = &building.attributes["bldg:class"];
         assert_eq!(class.ty, schema::Type::Code);
         assert_eq!(class.min_occurs, 0);
@@ -28,15 +26,22 @@ fn render_schema() {
         );
 
         // property stereo type
-        let schema::Type::Property(_) = building.attributes["bldg:boundedBy"].ty else {
-            panic!("bldg:boundedBy should be a property")
+        let schema::Type::Ref(name) = &building.attributes["bldg:boundedBy"].ty else {
+            panic!("bldg:boundedBy is property type")
+        };
+        let schema::TypeDef::Property(_boundary) = &schema.types[name] else {
+            panic!("bldg:boundedBy is property type")
         };
     }
 
     {
         // required attributes
-        let building_id = &schema.types["uro:BuildingIDAttribute"].attributes["uro:buildingID"];
-        assert_eq!(building_id.min_occurs, 1);
-        assert_eq!(building_id.max_occurs, Some(1));
+        let schema::TypeDef::Data(building_id_attr) = &schema.types["uro:BuildingIDAttribute"]
+        else {
+            panic!("uro:BuildingIDAttribute should be a data type")
+        };
+        let building_id_ref = &building_id_attr.attributes["uro:buildingID"];
+        assert_eq!(building_id_ref.min_occurs, 1);
+        assert_eq!(building_id_ref.max_occurs, Some(1));
     }
 }
