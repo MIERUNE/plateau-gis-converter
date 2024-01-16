@@ -73,9 +73,10 @@ impl DataSink for GeoJsonSink {
 
                         // todo: parse attributes
                         let obj = &parcel.cityobj;
-                        let object_separator = SemanticObjectSeparator { settings: None };
+                        let object_separator = SemanticObjectSeparator {
+                            settings: Default::default(),
+                        };
                         let objects = object_separator.separate(obj);
-                        println!("objects: {:?}\n", objects);
 
                         let features = toplevel_cityobj_to_geojson_features(&parcel.cityobj);
                         for feature in features {
