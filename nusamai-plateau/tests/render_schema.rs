@@ -11,22 +11,22 @@ fn render_schema() {
             panic!("bldg:Building should be a feature type")
         };
         let class = &building.attributes["bldg:class"];
-        assert_eq!(class.ty, schema::Type::Code);
+        assert_eq!(class.type_ref, schema::TypeRef::Code);
         assert_eq!(class.min_occurs, 0);
         assert_eq!(class.max_occurs, Some(1));
 
         let function = &building.attributes["bldg:function"];
-        assert_eq!(function.ty, schema::Type::Code);
+        assert_eq!(function.type_ref, schema::TypeRef::Code);
         assert_eq!(function.min_occurs, 0);
         assert_eq!(function.max_occurs, None);
 
         assert_eq!(
-            building.attributes["bldg:interiorBuildingInstallation"].ty,
-            schema::Type::Ref("bldg:BuildingInstallation".to_string())
+            building.attributes["bldg:interiorBuildingInstallation"].type_ref,
+            schema::TypeRef::Ref("bldg:BuildingInstallation".to_string())
         );
 
         // property stereo type
-        let schema::Type::Ref(name) = &building.attributes["bldg:boundedBy"].ty else {
+        let schema::TypeRef::Ref(name) = &building.attributes["bldg:boundedBy"].type_ref else {
             panic!("bldg:boundedBy is property type")
         };
         let schema::TypeDef::Property(_boundary) = &schema.types[name] else {

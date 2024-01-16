@@ -17,7 +17,7 @@ pub enum TypeDef {
     Property(PropertyTypeDef),
 }
 
-pub type Map = IndexMap<String, TypeRef, ahash::RandomState>;
+pub type Map = IndexMap<String, Attribute, ahash::RandomState>;
 
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
 pub struct DataTypeDef {
@@ -35,32 +35,32 @@ pub struct FeatureTypeDef {
 
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
 pub struct PropertyTypeDef {
-    pub members: Vec<TypeRef>,
+    pub members: Vec<Attribute>,
 }
 
 #[derive(Debug, Serialize, Deserialize, PartialEq, Eq)]
-pub struct TypeRef {
-    #[serde(rename = "type")]
-    pub ty: Type,
+pub struct Attribute {
+    #[serde(rename = "ref")]
+    pub type_ref: TypeRef,
     #[serde(default, skip_serializing_if = "is_one")]
     pub min_occurs: u16,
     #[serde(default, skip_serializing_if = "is_some_one")]
     pub max_occurs: Option<u16>,
 }
 
-impl TypeRef {
-    pub fn new(ty: Type) -> Self {
+impl Attribute {
+    pub fn new(ty: TypeRef) -> Self {
         Self {
-            ty,
+            type_ref: ty,
             ..Default::default()
         }
     }
 }
 
-impl Default for TypeRef {
+impl Default for Attribute {
     fn default() -> Self {
         Self {
-            ty: Type::Unknown,
+            type_ref: TypeRef::Unknown,
             min_occurs: 1,
             max_occurs: Some(1),
         }
@@ -68,7 +68,7 @@ impl Default for TypeRef {
 }
 
 #[derive(Debug, Serialize, Deserialize, Eq, PartialEq)]
-pub enum Type {
+pub enum TypeRef {
     Unknown,
     String,
     Code,

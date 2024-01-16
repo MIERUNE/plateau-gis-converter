@@ -361,7 +361,7 @@ fn generate_citygml_impl_for_struct(
                 #into_object_impl
             }
 
-            fn collect_schema(schema: &mut ::nusamai_citygml::schema::Schema) -> ::nusamai_citygml::schema::TypeRef {
+            fn collect_schema(schema: &mut ::nusamai_citygml::schema::Schema) -> ::nusamai_citygml::schema::Attribute {
                 let key = #typename;
                 if schema.types.get(key).is_none() {
                     // TODO: use entry API
@@ -379,7 +379,7 @@ fn generate_citygml_impl_for_struct(
                         _ => unreachable!(),
                     }
                 }
-                ::nusamai_citygml::schema::TypeRef::new(::nusamai_citygml::schema::Type::Ref(key.into()))
+                ::nusamai_citygml::schema::Attribute::new(::nusamai_citygml::schema::TypeRef::Ref(key.into()))
             }
         }
     })
@@ -479,7 +479,7 @@ fn generate_citygml_impl_for_enum(
                 }
             }
 
-            fn collect_schema(schema: &mut ::nusamai_citygml::schema::Schema) -> ::nusamai_citygml::schema::TypeRef {
+            fn collect_schema(schema: &mut ::nusamai_citygml::schema::Schema) -> ::nusamai_citygml::schema::Attribute {
                 let key = #typename;
                 if schema.types.get(key).is_none() {
                     // TODO: use entry API
@@ -493,7 +493,7 @@ fn generate_citygml_impl_for_enum(
                         })
                     );
                 }
-                ::nusamai_citygml::schema::TypeRef::new(::nusamai_citygml::schema::Type::Ref(key.into()))
+                ::nusamai_citygml::schema::Attribute::new(::nusamai_citygml::schema::TypeRef::Ref(key.into()))
             }
         }
     })

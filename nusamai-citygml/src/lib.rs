@@ -24,5 +24,5 @@ pub trait CityGMLElement: Sized {
     fn into_object(self) -> Option<object::Value>;
 
     /// Gets the schema fragment of this element.
-    fn collect_schema(schema: &mut schema::Schema) -> schema::TypeRef;
+    fn collect_schema(schema: &mut schema::Schema) -> schema::Attribute;
 }

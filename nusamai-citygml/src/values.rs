@@ -28,8 +28,8 @@ impl CityGMLElement for String {
         Some(Value::String(self))
     }
 
-    fn collect_schema(_schema: &mut schema::Schema) -> schema::TypeRef {
-        schema::TypeRef::new(schema::Type::String)
+    fn collect_schema(_schema: &mut schema::Schema) -> schema::Attribute {
+        schema::Attribute::new(schema::TypeRef::String)
     }
 }
 
@@ -56,8 +56,8 @@ impl CityGMLElement for URI {
         Some(Value::String(self.0))
     }
 
-    fn collect_schema(_schema: &mut schema::Schema) -> schema::TypeRef {
-        schema::TypeRef::new(schema::Type::URI)
+    fn collect_schema(_schema: &mut schema::Schema) -> schema::Attribute {
+        schema::Attribute::new(schema::TypeRef::URI)
     }
 }
 
@@ -116,8 +116,8 @@ impl CityGMLElement for Code {
         Some(Value::Code(self))
     }
 
-    fn collect_schema(_schema: &mut schema::Schema) -> schema::TypeRef {
-        schema::TypeRef::new(schema::Type::Code)
+    fn collect_schema(_schema: &mut schema::Schema) -> schema::Attribute {
+        schema::Attribute::new(schema::TypeRef::Code)
     }
 }
 
@@ -141,8 +141,8 @@ impl CityGMLElement for i64 {
         Some(Value::Integer(self))
     }
 
-    fn collect_schema(_schema: &mut schema::Schema) -> schema::TypeRef {
-        schema::TypeRef::new(schema::Type::Integer)
+    fn collect_schema(_schema: &mut schema::Schema) -> schema::Attribute {
+        schema::Attribute::new(schema::TypeRef::Integer)
     }
 }
 
@@ -166,8 +166,8 @@ impl CityGMLElement for u64 {
         Some(Value::Integer(self as i64))
     }
 
-    fn collect_schema(_schema: &mut schema::Schema) -> schema::TypeRef {
-        schema::TypeRef::new(schema::Type::NonNegativeInteger)
+    fn collect_schema(_schema: &mut schema::Schema) -> schema::Attribute {
+        schema::Attribute::new(schema::TypeRef::NonNegativeInteger)
     }
 }
 
@@ -191,8 +191,8 @@ impl CityGMLElement for f64 {
         Some(Value::Double(self))
     }
 
-    fn collect_schema(_schema: &mut schema::Schema) -> schema::TypeRef {
-        schema::TypeRef::new(schema::Type::Double)
+    fn collect_schema(_schema: &mut schema::Schema) -> schema::Attribute {
+        schema::Attribute::new(schema::TypeRef::Double)
     }
 }
 
@@ -220,8 +220,8 @@ impl CityGMLElement for bool {
         Some(Value::Boolean(self))
     }
 
-    fn collect_schema(_schema: &mut schema::Schema) -> schema::TypeRef {
-        schema::TypeRef::new(schema::Type::Boolean)
+    fn collect_schema(_schema: &mut schema::Schema) -> schema::Attribute {
+        schema::Attribute::new(schema::TypeRef::Boolean)
     }
 }
 
@@ -260,8 +260,8 @@ impl CityGMLElement for Measure {
         Some(Value::Measure(self))
     }
 
-    fn collect_schema(_schema: &mut schema::Schema) -> schema::TypeRef {
-        schema::TypeRef::new(schema::Type::Measure)
+    fn collect_schema(_schema: &mut schema::Schema) -> schema::Attribute {
+        schema::Attribute::new(schema::TypeRef::Measure)
     }
 }
 
@@ -285,8 +285,8 @@ impl CityGMLElement for Date {
         Some(Value::Date(self))
     }
 
-    fn collect_schema(_schema: &mut schema::Schema) -> schema::TypeRef {
-        schema::TypeRef::new(schema::Type::Date)
+    fn collect_schema(_schema: &mut schema::Schema) -> schema::Attribute {
+        schema::Attribute::new(schema::TypeRef::Date)
     }
 }
 
@@ -308,8 +308,8 @@ impl CityGMLElement for Point {
         Some(Value::Point(self))
     }
 
-    fn collect_schema(_schema: &mut schema::Schema) -> schema::TypeRef {
-        schema::TypeRef::new(schema::Type::Point)
+    fn collect_schema(_schema: &mut schema::Schema) -> schema::Attribute {
+        schema::Attribute::new(schema::TypeRef::Point)
     }
 }
 
@@ -335,7 +335,7 @@ impl<T: CityGMLElement + Default + std::fmt::Debug> CityGMLElement for Option<T>
         }
     }
 
-    fn collect_schema(schema: &mut schema::Schema) -> schema::TypeRef {
+    fn collect_schema(schema: &mut schema::Schema) -> schema::Attribute {
         let mut ty_ref = T::collect_schema(schema);
         ty_ref.min_occurs = 0;
         ty_ref
@@ -361,7 +361,7 @@ impl<T: CityGMLElement + Default> CityGMLElement for Vec<T> {
         }
     }
 
-    fn collect_schema(schema: &mut schema::Schema) -> schema::TypeRef {
+    fn collect_schema(schema: &mut schema::Schema) -> schema::Attribute {
         let mut ty_ref = T::collect_schema(schema);
         ty_ref.min_occurs = 0;
         ty_ref.max_occurs = None;
@@ -380,7 +380,7 @@ impl<T: CityGMLElement + Default> CityGMLElement for Box<T> {
         (*self).into_object()
     }
 
-    fn collect_schema(schema: &mut schema::Schema) -> schema::TypeRef {
+    fn collect_schema(schema: &mut schema::Schema) -> schema::Attribute {
         T::collect_schema(schema)
     }
 }
@@ -473,7 +473,7 @@ impl CityGMLElement for GenericAttribute {
         }))
     }
 
-    fn collect_schema(schema: &mut schema::Schema) -> schema::TypeRef {
+    fn collect_schema(schema: &mut schema::Schema) -> schema::Attribute {
         let key = "gen:genericAttribute";
         if schema.types.get(key).is_none() {
             schema.types.insert(
@@ -484,7 +484,7 @@ impl CityGMLElement for GenericAttribute {
                 }),
             );
         }
-        schema::TypeRef::new(schema::Type::Ref(key.into()))
+        schema::Attribute::new(schema::TypeRef::Ref(key.into()))
     }
 }
 
