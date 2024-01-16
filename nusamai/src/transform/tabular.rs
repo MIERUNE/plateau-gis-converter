@@ -2,8 +2,10 @@ use ahash::RandomState;
 use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
 
-use nusamai_citygml::object::{CityObject, Feature};
-use nusamai_citygml::{GeometryRefEntry, Value};
+use nusamai_citygml::{
+    object::{CityObject, Data, Feature},
+    GeometryRefEntry, Value,
+};
 
 // 以下、仮実装
 #[derive(Debug, Default, Serialize, Deserialize)]
@@ -18,9 +20,7 @@ enum SettingValue {
 pub struct Settings {
     load_semantic_parts: bool,
     to_json_string: bool,
-    target_lods: Vec<bool>,
-    load_lower_lods: bool,
-    load_upper_lods: bool,
+    to_tabular: bool,
     mapping: IndexMap<String, SettingValue, RandomState>,
 }
 
@@ -148,6 +148,11 @@ impl ObjectSeparator for SemanticObjectSeparator {
             }
         }
 
+        // 入れ子の属性を割するか否か
+        settings.to_tabular = true;
+
+        if settings.to_tabular {}
+
         // Array・Data・featureは全てJSON文字列に変換する
         settings.to_json_string = true;
 
@@ -191,9 +196,9 @@ impl ObjectSeparator for SemanticObjectSeparator {
                     objects.push(obj);
                 }
             }
-        } else {
-            // todo: JSON化しない場合は、テーブル分割されるようにする
         }
+
+        // todo: attributesにFeatureがあれば消す
 
         println!("{:?}", objects.len());
         if objects.len() >= 4 {
@@ -221,6 +226,16 @@ impl SemanticObjectSeparator {
             Value::Array(vec) => vec.iter().flat_map(|v| self.extract_features(v)).collect(),
             Value::Feature(feature) => {
                 vec![feature.clone()]
+            }
+            _ => Vec::new(),
+        }
+    }
+
+    fn extract_data(&self, value: &Value) -> Vec<Data> {
+        match value {
+            Value::Array(vec) => vec.iter().flat_map(|v| self.extract_data(v)).collect(),
+            Value::Data(data) => {
+                vec![data.clone()]
             }
             _ => Vec::new(),
         }
