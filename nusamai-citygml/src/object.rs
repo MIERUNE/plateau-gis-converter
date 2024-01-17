@@ -10,7 +10,7 @@ use serde::{Deserialize, Serialize};
 
 pub type Map = indexmap::IndexMap<String, Value, ahash::RandomState>;
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, PartialEq)]
 pub struct CityObject {
     pub root: Value,
     pub geometry_store: geometry::GeometryStore,

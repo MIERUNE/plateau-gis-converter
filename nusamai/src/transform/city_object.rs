@@ -25,26 +25,21 @@ pub struct Settings {
 }
 
 trait Transformer {
-    fn transform(&self, city_objects: Vec<CityObject>) -> Vec<CityObject>;
+    fn transform(&self, city_object: CityObject) -> Vec<CityObject>;
 }
 
 struct FeatureCollectTransformer {}
 impl Transformer for FeatureCollectTransformer {
-    fn transform(&self, city_objects: Vec<CityObject>) -> Vec<CityObject> {
+    fn transform(&self, city_object: CityObject) -> Vec<CityObject> {
         let mut results = Vec::new();
         let mut child_geometry_refs = Vec::new();
         let mut child_features = Vec::new();
 
-        // 仮実装: 渡されるcity_objectsは、元々同じCityObjectであるため、すべて同じroot_gml_idを持つ
-        if city_objects.is_empty() {
-            return city_objects;
-        }
-        let toplevel_city_object = &city_objects[0];
-        let toplevel_feature = match &toplevel_city_object.root {
+        let toplevel_feature = match &city_object.root {
             Value::Feature(f) => f.clone(),
             _ => panic!(
                 "Root value type must be Feature, but found {:?}",
-                city_objects[0].root
+                city_object
             ),
         };
 
@@ -57,16 +52,17 @@ impl Transformer for FeatureCollectTransformer {
         );
 
         // attributes内のFeature（子要素）を全て取り出す
-        for o in &city_objects {
-            let feature_ref = match &o.root {
-                Value::Feature(f) => f,
-                _ => panic!("Root value type must be Feature, but found {:?}", o.root),
-            };
+        let feature_ref = match &city_object.root {
+            Value::Feature(f) => f,
+            _ => panic!(
+                "Root value type must be Feature, but found {:?}",
+                city_object.root
+            ),
+        };
 
-            for (_, value) in feature_ref.attributes.iter() {
-                let features = extract_features(value);
-                child_features.extend(features);
-            }
+        for (_, value) in feature_ref.attributes.iter() {
+            let features = extract_features(value);
+            child_features.extend(features);
         }
 
         // child_features内のgeometriesを全て取り出して、toplevel_featureのgeometriesに追加する
@@ -96,7 +92,7 @@ impl Transformer for FeatureCollectTransformer {
 
         let obj = CityObject {
             root: Value::Feature(feature),
-            geometry_store: toplevel_city_object.geometry_store.clone(),
+            geometry_store: city_object.geometry_store.clone(),
         };
         results.push(obj);
 
@@ -106,7 +102,7 @@ impl Transformer for FeatureCollectTransformer {
 
 struct SemanticSplitTransformer {}
 impl Transformer for SemanticSplitTransformer {
-    fn transform(&self, city_objects: Vec<CityObject>) -> Vec<CityObject> {
+    fn transform(&self, city_objects: CityObject) -> Vec<CityObject> {
         let mut results = Vec::new();
 
         // SeparateLodTransformerとは両立できない
@@ -159,7 +155,7 @@ impl Transformer for SemanticSplitTransformer {
 
 struct DataCollectTransformer {}
 impl Transformer for DataCollectTransformer {
-    fn transform(&self, city_objects: Vec<CityObject>) -> Vec<CityObject> {
+    fn transform(&self, city_objects: CityObject) -> Vec<CityObject> {
         let mut results = Vec::new();
         let mut other_layer_data_list = Vec::new();
 
@@ -239,7 +235,7 @@ impl Transformer for DataCollectTransformer {
 
 struct SeparateLodTransformer {}
 impl Transformer for SeparateLodTransformer {
-    fn transform(&self, city_objects: Vec<CityObject>) -> Vec<CityObject> {
+    fn transform(&self, city_objects: CityObject) -> Vec<CityObject> {
         let mut results = Vec::new();
 
         for o in &city_objects {
@@ -291,21 +287,21 @@ impl Transformer for SeparateLodTransformer {
 
 struct FilterFeaturesTransformer {}
 impl Transformer for FilterFeaturesTransformer {
-    fn transform(&self, city_objects: Vec<CityObject>) -> Vec<CityObject> {
+    fn transform(&self, city_objects: CityObject) -> Vec<CityObject> {
         todo!();
     }
 }
 
 struct FilterAttributesTransformer {}
 impl Transformer for FilterAttributesTransformer {
-    fn transform(&self, city_objects: Vec<CityObject>) -> Vec<CityObject> {
+    fn transform(&self, city_objects: CityObject) -> Vec<CityObject> {
         todo!();
     }
 }
 
 struct AttributesTransformer {}
 impl Transformer for AttributesTransformer {
-    fn transform(&self, city_objects: Vec<CityObject>) -> Vec<CityObject> {
+    fn transform(&self, city_objects: CityObject) -> Vec<CityObject> {
         todo!();
     }
 }
@@ -322,12 +318,21 @@ impl TransformerPipeline {
         self.transformers.push(transformer);
     }
 
-    fn transform(&self, city_objects: Vec<CityObject>) -> Vec<CityObject> {
-        let mut objects = city_objects;
+    fn transform(&self, city_object: CityObject) -> Vec<CityObject> {
+        let mut results = Vec::new();
         for transformer in &self.transformers {
-            objects = transformer.transform(objects);
+            let objects = transformer.transform(city_object);
+            results.extend(objects)
         }
-        objects
+
+        let results: Vec<CityObject> = results.into_iter().fold(Vec::new(), |mut acc, x| {
+            if !acc.contains(&x) {
+                acc.push(x);
+            }
+            acc
+        });
+
+        results
     }
 }
 
@@ -372,7 +377,7 @@ impl ObjectTransformer {
             root: Value::Feature(toplevel_feature),
             geometry_store: cityobj.geometry_store.clone(),
         };
-        let mut objects = transformer_pipeline.transform(vec![obj]);
+        let mut objects = transformer_pipeline.transform(obj);
 
         // Array・Data・featureは全てJSON文字列に変換するかどうか
         // if settings.to_json_string {
