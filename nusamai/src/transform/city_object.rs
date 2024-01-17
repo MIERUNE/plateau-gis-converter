@@ -102,31 +102,27 @@ impl Transformer for FeatureCollectTransformer {
 
 struct SemanticSplitTransformer {}
 impl Transformer for SemanticSplitTransformer {
-    fn transform(&self, city_objects: CityObject) -> Vec<CityObject> {
+    fn transform(&self, city_object: CityObject) -> Vec<CityObject> {
         let mut results = Vec::new();
 
         // SeparateLodTransformerとは両立できない
-        // todo: 親要素が消えるので修正する
-
-        let toplevel_geometry_store = &city_objects[0].geometry_store;
 
         let mut child_features = Vec::new();
-        for o in &city_objects {
-            if let Value::Feature(feature_lef) = &o.root {
-                // attributes内のFeature（子要素）を全て取り出す
-                for (_, value) in feature_lef.attributes.iter() {
-                    match value {
-                        Value::Array(array) => {
-                            for v in array {
-                                let features = extract_features(v);
-                                child_features.extend(features);
-                            }
+
+        if let Value::Feature(feature_lef) = &city_object.root {
+            // attributes内のFeature（子要素）を全て取り出す
+            for (_, value) in feature_lef.attributes.iter() {
+                match value {
+                    Value::Array(array) => {
+                        for v in array {
+                            let features = extract_features(v);
+                            child_features.extend(features);
                         }
-                        Value::Feature(f) => {
-                            child_features.push(f.clone());
-                        }
-                        _ => {}
                     }
+                    Value::Feature(f) => {
+                        child_features.push(f.clone());
+                    }
+                    _ => {}
                 }
             }
         }
@@ -144,7 +140,7 @@ impl Transformer for SemanticSplitTransformer {
         for f in &child_features {
             let obj = CityObject {
                 root: Value::Feature(f.clone()),
-                geometry_store: toplevel_geometry_store.clone(),
+                geometry_store: city_object.geometry_store.clone(),
             };
             results.push(obj);
         }
@@ -304,7 +300,11 @@ impl TransformerPipeline {
     fn transform(&self, city_object: CityObject) -> Vec<CityObject> {
         let mut results = Vec::new();
         for transformer in &self.transformers {
-            let objects = transformer.transform(city_object);
+            let obj = CityObject {
+                root: city_object.root.clone(),
+                geometry_store: Default::default(),
+            };
+            let objects = transformer.transform(obj);
             results.extend(objects)
         }
 
