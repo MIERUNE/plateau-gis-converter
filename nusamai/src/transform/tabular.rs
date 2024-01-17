@@ -158,10 +158,30 @@ impl ObjectSeparator for SemanticObjectSeparator {
             }
         }
 
-        // todo: 入れ子の属性を割するか否か
         // other_layer_data_listを利用する
         settings.to_tabular = true;
-        if settings.to_tabular {}
+        if settings.to_tabular {
+            for d in &other_layer_data_list {
+                let mut attributes = IndexMap::with_hasher(RandomState::new());
+                for (key, value) in d.attributes.iter() {
+                    attributes.insert(key.clone(), value.clone());
+                }
+
+                let feature = Feature {
+                    id: root_gml_id.clone(),
+                    typename: d.typename.clone(),
+                    attributes,
+                    geometries: None,
+                };
+
+                let obj = CityObject {
+                    root: Value::Feature(feature),
+                    geometry_store: cityobj.geometry_store.clone(),
+                };
+
+                objects.push(obj);
+            }
+        }
 
         // Array・Data・featureは全てJSON文字列に変換するかどうか
         settings.to_json_string = true;
@@ -208,13 +228,12 @@ impl ObjectSeparator for SemanticObjectSeparator {
         }
 
         // todo: attributesにFeatureがあれば消す
+        // todo: attributesにArrayがあれば消す
+        // todo: attributesにDataがあれば消す
 
-        println!("{:?}", objects.len());
-        if objects.len() >= 4 {
-            for o in &objects {
-                if let Value::Feature(f) = &o.root {
-                    println!("{:?}", f.geometries);
-                }
+        for o in &objects {
+            if let Value::Feature(f) = &o.root {
+                println!("{:?}: {:?}", f.id, f.geometries);
             }
 
             let file = std::fs::File::create("/Users/satoru/Downloads/output/test.json").unwrap();
