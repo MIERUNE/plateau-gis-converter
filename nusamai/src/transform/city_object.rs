@@ -158,22 +158,19 @@ impl Transformer for FlattenTreeTransformer {
         let root_gml_id = &toplevel_feature.id;
         let geometry_store = city_objects[0].geometry_store.clone();
 
-        // attributes内のArrayを取り出し、中身がData（子要素）で、なおかつattributesが複数のkeyを持つものを全て取り出す
+        // attributes内のArrayを取り出し、中身がData（子要素）で持つものを全て取り出す
         for o in &city_objects {
             let feature_ref = match &o.root {
                 Value::Feature(f) => f,
                 _ => panic!("Root value type must be Feature, but found {:?}", o.root),
             };
-            let root_gml_id = &feature_ref.id;
 
             for (_, value) in feature_ref.attributes.iter() {
                 let array = extract_array(value);
                 for v in array {
                     let data_list = extract_data(&v);
                     for d in &data_list {
-                        if d.attributes.len() >= 2 {
-                            other_layer_data_list.push(d.clone());
-                        }
+                        other_layer_data_list.push(d.clone());
                     }
                 }
             }
@@ -189,7 +186,6 @@ impl Transformer for FlattenTreeTransformer {
                     }
                     acc
                 });
-        // println!("other_layer_data_list: {:?}", other_layer_data_list);
 
         // other_layer_data_listを利用して、city_objectsを再構築する
         for d in &other_layer_data_list {
@@ -336,8 +332,6 @@ impl ObjectTransformer {
                 cityobj.root
             ),
         };
-        let root_gml_id = &toplevel_feature.id;
-        let typename = &toplevel_feature.typename;
 
         // 仮の設定を作成する
         let mut settings = Settings::default();
@@ -355,9 +349,9 @@ impl ObjectTransformer {
         // } else {
         //     transformer_pipeline.add(Box::new(SeparateLodTransformer {}));
         // }
-        // if settings.to_tabular {
-        //     transformer_pipeline.add(Box::new(FlattenTreeTransformer {}));
-        // }
+        if settings.to_tabular {
+            transformer_pipeline.add(Box::new(FlattenTreeTransformer {}));
+        }
 
         let obj = CityObject {
             root: Value::Feature(toplevel_feature),
