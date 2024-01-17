@@ -227,9 +227,9 @@ impl ObjectSeparator for SemanticObjectSeparator {
             }
         }
 
-        // todo: attributesにFeatureがあれば消す
-        // todo: attributesにArrayがあれば消す
-        // todo: attributesにDataがあれば消す
+        // todo: 特定の属性のみ形状を変換するような構造を組み込む
+        // todo: 上記の設定の内容を検討する
+        // todo: プログラムをもう少し構造化する
 
         for o in &objects {
             if let Value::Feature(f) = &o.root {
