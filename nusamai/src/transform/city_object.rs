@@ -24,11 +24,11 @@ pub struct Settings {
     mappings: IndexMap<String, SettingValue, RandomState>,
 }
 
-pub trait Transformer {
+trait Transformer {
     fn transform(&self, city_objects: Vec<CityObject>) -> Vec<CityObject>;
 }
 
-pub struct FeatureCollectTransformer {}
+struct FeatureCollectTransformer {}
 impl Transformer for FeatureCollectTransformer {
     fn transform(&self, city_objects: Vec<CityObject>) -> Vec<CityObject> {
         let mut results = Vec::new();
@@ -104,41 +104,47 @@ impl Transformer for FeatureCollectTransformer {
     }
 }
 
-pub struct SemanticSplitTransformer {}
+struct SemanticSplitTransformer {}
 impl Transformer for SemanticSplitTransformer {
     fn transform(&self, city_objects: Vec<CityObject>) -> Vec<CityObject> {
         let mut results = Vec::new();
 
-        // 仮実装: FeatureCollectTransformerとは両立しない
+        // SeparateLodTransformerとは両立できない
+
+        // 最初のオブジェクトを取り出し、その中の子要素を取り出す
+        if city_objects.is_empty() {
+            return city_objects;
+        }
+        let toplevel_city_object = &city_objects[0];
+        let toplevel_feature = match &toplevel_city_object.root {
+            Value::Feature(f) => f.clone(),
+            _ => panic!(
+                "Root value type must be Feature, but found {:?}",
+                city_objects[0].root
+            ),
+        };
 
         // attributes内のFeature（子要素）を全て取り出す
-        for o in &city_objects {
-            let feature_ref = match &o.root {
-                Value::Feature(f) => f,
-                _ => panic!("Root value type must be Feature, but found {:?}", o.root),
+        let mut child_features = Vec::new();
+        for (_, value) in toplevel_feature.attributes.iter() {
+            let features = extract_features(value);
+            child_features.extend(features);
+        }
+
+        // featuresをセマンティックごとに分割する
+        for f in &child_features {
+            let obj = CityObject {
+                root: Value::Feature(f.clone()),
+                geometry_store: toplevel_city_object.geometry_store.clone(),
             };
-
-            let mut child_features = Vec::new();
-            for (_, value) in feature_ref.attributes.iter() {
-                let features = extract_features(value);
-                child_features.extend(features);
-            }
-
-            // featuresをセマンティックごとに分割する
-            for f in &child_features {
-                let obj = CityObject {
-                    root: Value::Feature(f.clone()),
-                    geometry_store: o.geometry_store.clone(),
-                };
-                results.push(obj);
-            }
+            results.push(obj);
         }
 
         results
     }
 }
 
-pub struct FlattenTreeTransformer {}
+struct FlattenTreeTransformer {}
 impl Transformer for FlattenTreeTransformer {
     fn transform(&self, city_objects: Vec<CityObject>) -> Vec<CityObject> {
         let mut results = Vec::new();
@@ -332,7 +338,7 @@ impl ObjectTransformer {
 
         // 仮の設定を作成する
         let mut settings = Settings::default();
-        settings.load_semantic_parts = false;
+        settings.load_semantic_parts = true;
         settings.to_tabular = true;
         settings.to_json_string = true;
 
@@ -344,11 +350,11 @@ impl ObjectTransformer {
         if settings.to_tabular {
             transformer_pipeline.add(Box::new(FlattenTreeTransformer {}));
         }
-        if settings.load_semantic_parts {
-            transformer_pipeline.add(Box::new(SemanticSplitTransformer {}));
-        } else {
-            transformer_pipeline.add(Box::new(SeparateLodTransformer {}));
-        }
+        // if settings.load_semantic_parts {
+        //     transformer_pipeline.add(Box::new(SemanticSplitTransformer {}));
+        // } else {
+        //     transformer_pipeline.add(Box::new(SeparateLodTransformer {}));
+        // }
 
         let obj = CityObject {
             root: Value::Feature(toplevel_feature),
@@ -403,18 +409,18 @@ impl ObjectTransformer {
         // todo: 上記の設定の内容を検討する
         // todo: プログラムをもう少し構造化する
 
-        // if objects.len() > 0 {
-        //     for o in &objects {
-        //         if let Value::Feature(f) = &o.root {
-        //             println!("{:?}: {:?}", f.id, f.geometries);
-        //         }
+        if objects.len() >= 3 {
+            for o in &objects {
+                if let Value::Feature(f) = &o.root {
+                    println!("{:?}: {:?}", f.id, f.geometries);
+                }
 
-        //         let file =
-        //             std::fs::File::create("/Users/satoru/Downloads/output/test.json").unwrap();
-        //         let writer = std::io::BufWriter::new(file);
-        //         serde_json::to_writer_pretty(writer, &objects).unwrap();
-        //     }
-        // }
+                let file =
+                    std::fs::File::create("/Users/satoru/Downloads/output/test.json").unwrap();
+                let writer = std::io::BufWriter::new(file);
+                serde_json::to_writer_pretty(writer, &objects).unwrap();
+            }
+        }
 
         // println!();
 

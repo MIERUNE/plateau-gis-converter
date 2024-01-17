@@ -10,7 +10,7 @@ use crate::get_parameter_value;
 use crate::parameters::*;
 use crate::pipeline::{Feedback, Receiver};
 use crate::sink::{DataSink, DataSinkProvider, SinkInfo};
-use crate::transform::city_object::{ObjectTransformer, Transformer};
+use crate::transform::city_object::ObjectTransformer;
 
 use nusamai_citygml::object::CityObject;
 use nusamai_geojson::conversion::{
