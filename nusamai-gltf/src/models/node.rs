@@ -70,14 +70,6 @@ pub struct NodeExtensions {
     others: HashMap<String, Value>,
 }
 
-impl Node {
-    pub fn new() -> Self {
-        Self {
-            ..Default::default()
-        }
-    }
-}
-
 fn default_matrix() -> [f32; 16] {
     [
         1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0,

@@ -45,12 +45,6 @@ pub struct BufferExtensions {
     others: HashMap<String, Value>,
 }
 
-impl Buffer {
-    pub fn new() -> Self {
-        Default::default()
-    }
-}
-
 /// A view into a buffer generally representing a subset of the buffer.
 #[derive(Serialize, Deserialize, Debug, Default)]
 #[serde(rename_all = "camelCase")]
@@ -77,12 +71,6 @@ pub struct BufferView {
     /// The hint representing the intended GPU buffer type to use with this buffer view.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub target: Option<BufferViewTarget>,
-}
-
-impl BufferView {
-    pub fn new() -> Self {
-        Default::default()
-    }
 }
 
 fn is_default<T: Default + PartialEq>(value: &T) -> bool {

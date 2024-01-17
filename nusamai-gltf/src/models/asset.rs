@@ -40,14 +40,6 @@ pub struct AssetExtensions {
     others: HashMap<String, Value>,
 }
 
-impl Asset {
-    pub fn new() -> Self {
-        Self {
-            ..Default::default()
-        }
-    }
-}
-
 impl Default for Asset {
     fn default() -> Self {
         Self {

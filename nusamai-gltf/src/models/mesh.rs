@@ -51,14 +51,6 @@ pub struct MeshPrimitive {
     pub extras: Option<Value>,
 }
 
-impl MeshPrimitive {
-    pub fn new() -> Self {
-        Self {
-            ..Default::default()
-        }
-    }
-}
-
 /// A set of primitives to be rendered.  Its global transform is defined by a node that references it.
 #[derive(Serialize, Deserialize, Debug, Default)]
 #[serde[rename_all = "camelCase"]]
@@ -89,14 +81,6 @@ pub struct Mesh {
 pub struct MeshExtensions {
     #[serde(flatten)]
     others: HashMap<String, Value>,
-}
-
-impl Mesh {
-    pub fn new() -> Self {
-        Self {
-            ..Default::default()
-        }
-    }
 }
 
 fn is_default<T: Default + PartialEq>(value: &T) -> bool {
