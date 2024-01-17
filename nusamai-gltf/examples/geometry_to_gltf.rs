@@ -374,22 +374,26 @@ fn make_gltf_json(triangles: &Triangles) -> String {
     gltf.buffer_views = vec![buffer_view1, buffer_view2];
 
     // glTF のアクセサを作成
-    let mut accessor1 = Accessor::new();
-    accessor1.buffer_view = Some(0);
-    accessor1.byte_offset = 0;
-    accessor1.component_type = ComponentType::UnsignedInt;
-    accessor1.count = indices.len() as u32;
-    accessor1.type_ = AccessorType::Scalar;
+    let mut accessor1 = Accessor {
+        buffer_view: Some(0),
+        byte_offset: 0,
+        component_type: ComponentType::UnsignedInt,
+        count: indices.len() as u32,
+        type_: AccessorType::Scalar,
+        ..Default::default()
+    };
     let max_indices = indices.iter().max().unwrap();
     accessor1.max = vec![*max_indices as f32].into();
     accessor1.min = vec![0.0].into();
 
-    let mut accessor2 = Accessor::new();
-    accessor2.buffer_view = Some(1);
-    accessor2.byte_offset = 0;
-    accessor2.component_type = ComponentType::Float;
-    accessor2.count = vertices.len() as u32;
-    accessor2.type_ = AccessorType::Vec3;
+    let mut accessor2 = Accessor {
+        buffer_view: Some(1),
+        byte_offset: 0,
+        component_type: ComponentType::Float,
+        count: vertices.len() as u32,
+        type_: AccessorType::Vec3,
+        ..Default::default()
+    };
     let mut max_vertex: [f32; 3] = [f32::MIN; 3];
     let mut min_vertex: [f32; 3] = [f32::MAX; 3];
     for vertex in vertices {

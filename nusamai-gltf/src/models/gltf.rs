@@ -65,7 +65,6 @@ pub struct Gltf {
 
     /// The index of the default scene. This property MUST NOT be defined, when scenes is undefined.
     #[serde(skip_serializing_if = "Option::is_none")]
-    #[serde(default)]
     pub scene: Option<u32>,
 
     /// An array of scenes.

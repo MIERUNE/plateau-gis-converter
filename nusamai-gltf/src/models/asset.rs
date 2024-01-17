@@ -18,7 +18,6 @@ pub struct Asset {
     pub generator: Option<String>,
 
     /// The glTF version in the form of `<major>.<minor>` that this asset targets.
-    #[serde(default)]
     pub version: String,
 
     /// The minimum glTF version in the form of `<major>.<minor>` that this asset targets. This property **MUST NOT** be greater than the asset version.
