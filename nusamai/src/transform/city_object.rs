@@ -33,6 +33,7 @@ impl Transformer for FeatureCollectTransformer {
     fn transform(&self, city_objects: Vec<CityObject>) -> Vec<CityObject> {
         let mut results = Vec::new();
         let mut child_geometry_refs = Vec::new();
+        let mut child_features = Vec::new();
 
         // 仮実装: 渡されるcity_objectsは、元々同じCityObjectであるため、すべて同じroot_gml_idを持つ
         if city_objects.is_empty() {
@@ -47,6 +48,14 @@ impl Transformer for FeatureCollectTransformer {
             ),
         };
 
+        // まずは元々のcity_objectsの地物を取り出す
+        child_geometry_refs.extend(
+            toplevel_feature
+                .geometries
+                .clone()
+                .unwrap_or_else(|| Vec::new()),
+        );
+
         // attributes内のFeature（子要素）を全て取り出す
         for o in &city_objects {
             let feature_ref = match &o.root {
@@ -54,17 +63,16 @@ impl Transformer for FeatureCollectTransformer {
                 _ => panic!("Root value type must be Feature, but found {:?}", o.root),
             };
 
-            let mut child_features = Vec::new();
             for (_, value) in feature_ref.attributes.iter() {
                 let features = extract_features(value);
                 child_features.extend(features);
             }
+        }
 
-            // child_features内のgeometriesを全て取り出して、toplevel_featureのgeometriesに追加する
-            for f in &child_features {
-                if let Some(geometry_refs) = &f.geometries {
-                    child_geometry_refs.extend(geometry_refs.clone());
-                }
+        // child_features内のgeometriesを全て取り出して、toplevel_featureのgeometriesに追加する
+        for f in &child_features {
+            if let Some(geometry_refs) = &f.geometries {
+                child_geometry_refs.extend(geometry_refs.clone());
             }
         }
 
