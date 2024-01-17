@@ -24,15 +24,9 @@ pub struct Settings {
     mappings: IndexMap<String, SettingValue, RandomState>,
 }
 
-trait Transformer {
-    fn transform(&self, city_object: CityObject) -> Vec<CityObject>;
-}
-
-struct FeatureCollectTransformer {}
-impl Transformer for FeatureCollectTransformer {
-    fn transform(&self, city_object: CityObject) -> Vec<CityObject> {
-        let mut results = Vec::new();
-
+struct FeatureCollector {}
+impl FeatureCollector {
+    fn collect(&self, city_object: CityObject) -> CityObject {
         // attributes内のFeature（子要素）を全て取り出す
         let feature_ref = match &city_object.root {
             Value::Feature(f) => f.clone(),
@@ -85,10 +79,13 @@ impl Transformer for FeatureCollectTransformer {
             root: Value::Feature(feature),
             geometry_store: city_object.geometry_store.clone(),
         };
-        results.push(obj);
 
-        results
+        obj
     }
+}
+
+trait Transformer {
+    fn transform(&self, city_object: CityObject) -> Vec<CityObject>;
 }
 
 struct SemanticSplitTransformer {}
@@ -322,7 +319,7 @@ impl ObjectTransformer {
         };
 
         // 仮の設定を作成する
-        let mut settings = Settings {
+        let settings = Settings {
             load_semantic_parts: false,
             to_tabular: true,
             to_json_string: true,
@@ -332,23 +329,22 @@ impl ObjectTransformer {
         let mut transformer_pipeline = TransformerPipeline {
             transformers: Vec::new(),
         };
-
-        transformer_pipeline.add(Box::new(FeatureCollectTransformer {}));
         if settings.to_tabular {
             transformer_pipeline.add(Box::new(DataCollectTransformer {}));
         }
-        // if settings.load_semantic_parts {
-        //     transformer_pipeline.add(Box::new(SemanticSplitTransformer {}));
-        // } else {
-        //     transformer_pipeline.add(Box::new(SeparateLodTransformer {}));
-        // }
+        if settings.load_semantic_parts {
+            transformer_pipeline.add(Box::new(SemanticSplitTransformer {}));
+        } else {
+            transformer_pipeline.add(Box::new(SeparateLodTransformer {}));
+        }
 
         let obj = CityObject {
             root: Value::Feature(toplevel_feature),
             geometry_store: cityobj.geometry_store.clone(),
         };
+        let obj = FeatureCollector {}.collect(obj);
 
-        let mut objects = transformer_pipeline.transform(obj);
+        let objects = transformer_pipeline.transform(obj);
 
         // Array・Data・featureは全てJSON文字列に変換するかどうか
         // if settings.to_json_string {
@@ -396,8 +392,7 @@ impl ObjectTransformer {
         // todo: 特定の属性のみ形状を変換するような構造を組み込む
         // todo: 上記の設定の内容を検討する
 
-        println!("objects.len(): {}", objects.len());
-        if objects.len() >= 2 {
+        if objects.len() >= 8 {
             for o in &objects {
                 // if let Value::Feature(f) = &o.root {
                 //     println!("{:?}: {:?}", f.id, f.geometries);
@@ -406,7 +401,7 @@ impl ObjectTransformer {
                 let file =
                     std::fs::File::create("/Users/satoru/Downloads/output/test.json").unwrap();
                 let writer = std::io::BufWriter::new(file);
-                serde_json::to_writer_pretty(writer, &objects).unwrap();
+                serde_json::to_writer(writer, &objects).unwrap();
             }
         }
 
