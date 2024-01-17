@@ -32,43 +32,34 @@ struct FeatureCollectTransformer {}
 impl Transformer for FeatureCollectTransformer {
     fn transform(&self, city_object: CityObject) -> Vec<CityObject> {
         let mut results = Vec::new();
-        let mut child_geometry_refs = Vec::new();
-        let mut child_features = Vec::new();
-
-        let toplevel_feature = match &city_object.root {
-            Value::Feature(f) => f.clone(),
-            _ => panic!(
-                "Root value type must be Feature, but found {:?}",
-                city_object
-            ),
-        };
-
-        // まずは元々のcity_objectsの地物を取り出す
-        child_geometry_refs.extend(
-            toplevel_feature
-                .geometries
-                .clone()
-                .unwrap_or_else(|| Vec::new()),
-        );
 
         // attributes内のFeature（子要素）を全て取り出す
         let feature_ref = match &city_object.root {
-            Value::Feature(f) => f,
+            Value::Feature(f) => f.clone(),
             _ => panic!(
                 "Root value type must be Feature, but found {:?}",
                 city_object.root
             ),
         };
 
+        let mut child_features = Vec::new();
         for (_, value) in feature_ref.attributes.iter() {
             let features = extract_features(value);
             child_features.extend(features);
         }
 
+        // トップレベルのcity_objectsの地物を取り出す
+        let mut child_geometry_refs = Vec::new();
+        for g in &feature_ref.geometries {
+            child_geometry_refs.extend(g.clone());
+        }
+
         // child_features内のgeometriesを全て取り出して、toplevel_featureのgeometriesに追加する
         for f in &child_features {
             if let Some(geometry_refs) = &f.geometries {
-                child_geometry_refs.extend(geometry_refs.clone());
+                for g in geometry_refs {
+                    child_geometry_refs.push(g.clone());
+                }
             }
         }
 
@@ -84,9 +75,9 @@ impl Transformer for FeatureCollectTransformer {
                 });
 
         let feature = Feature {
-            id: toplevel_feature.id.clone(),
-            typename: toplevel_feature.typename.clone(),
-            attributes: toplevel_feature.attributes.clone(),
+            id: feature_ref.id.clone(),
+            typename: feature_ref.typename.clone(),
+            attributes: feature_ref.attributes.clone(),
             geometries: Some(child_geometry_refs.clone()),
         };
 
@@ -289,10 +280,6 @@ struct TransformerPipeline {
     transformers: Vec<Box<dyn Transformer>>,
 }
 impl TransformerPipeline {
-    fn new(transformers: Vec<Box<dyn Transformer>>) -> Self {
-        Self { transformers }
-    }
-
     fn add(&mut self, transformer: Box<dyn Transformer>) {
         self.transformers.push(transformer);
     }
@@ -302,7 +289,7 @@ impl TransformerPipeline {
         for transformer in &self.transformers {
             let obj = CityObject {
                 root: city_object.root.clone(),
-                geometry_store: Default::default(),
+                geometry_store: city_object.geometry_store.clone(),
             };
             let objects = transformer.transform(obj);
             results.extend(objects)
@@ -347,19 +334,20 @@ impl ObjectTransformer {
         };
 
         transformer_pipeline.add(Box::new(FeatureCollectTransformer {}));
-        if settings.to_tabular {
-            transformer_pipeline.add(Box::new(DataCollectTransformer {}));
-        }
-        if settings.load_semantic_parts {
-            transformer_pipeline.add(Box::new(SemanticSplitTransformer {}));
-        } else {
-            transformer_pipeline.add(Box::new(SeparateLodTransformer {}));
-        }
+        // if settings.to_tabular {
+        //     transformer_pipeline.add(Box::new(DataCollectTransformer {}));
+        // }
+        // if settings.load_semantic_parts {
+        //     transformer_pipeline.add(Box::new(SemanticSplitTransformer {}));
+        // } else {
+        //     transformer_pipeline.add(Box::new(SeparateLodTransformer {}));
+        // }
 
         let obj = CityObject {
             root: Value::Feature(toplevel_feature),
             geometry_store: cityobj.geometry_store.clone(),
         };
+
         let mut objects = transformer_pipeline.transform(obj);
 
         // Array・Data・featureは全てJSON文字列に変換するかどうか
