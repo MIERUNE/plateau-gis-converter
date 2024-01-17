@@ -213,25 +213,6 @@ impl ObjectTransformer {
         let typename = &toplevel_feature.typename;
         println!("{:?}, {:?}", root_gml_id, typename);
 
-        // // デフォルトで、LODごとに分割してobjectsに追加する
-        // if let Some(f) = &toplevel_feature.geometries {
-        //     for g in f.iter() {
-        //         let toplevel_feature = Feature {
-        //             id: toplevel_feature.id.clone(),
-        //             typename: toplevel_feature.typename.clone(),
-        //             attributes: toplevel_feature.attributes.clone(),
-        //             geometries: Some(vec![g.clone()]),
-        //         };
-
-        //         let obj = CityObject {
-        //             root: Value::Feature(toplevel_feature),
-        //             geometry_store: cityobj.geometry_store.clone(),
-        //         };
-
-        //         objects.push(obj);
-        //     }
-        // }
-
         // 仮の設定を作成する
         let mut settings = Settings::default();
         settings.load_semantic_parts = false;
@@ -242,70 +223,6 @@ impl ObjectTransformer {
             settings: settings.clone(),
         };
         let mut objects = transformer.transform(vec![cityobj]);
-
-        // attributes内のFeature（子要素）を全て取り出す
-        // let mut child_features = Vec::new();
-        // for (key, value) in toplevel_feature.attributes.iter() {
-        //     let features = extract_features(value);
-        //     child_features.extend(features);
-        // }
-
-        // 設定に応じてfeaturesをセマンティックごとに分割する
-        // settings.load_semantic_parts = false;
-        // if settings.load_semantic_parts {
-        //     for f in &child_features {
-        //         let obj = CityObject {
-        //             root: Value::Feature(f.clone()),
-        //             geometry_store: cityobj.geometry_store.clone(),
-        //         };
-        //         objects.push(obj);
-        //     }
-        // } else {
-        //     // セマンティックごとに分割しない場合は、child_features内のgeometriesを全て取り出して、toplevel_featureのgeometriesに追加する
-        //     let mut child_geometry_refs = Vec::new();
-        //     for f in &child_features {
-        //         if let Some(geometry_refs) = &f.geometries {
-        //             // lodを確認する
-        //             child_geometry_refs.extend(geometry_refs.clone());
-        //         }
-        //     }
-
-        //     if !child_geometry_refs.is_empty() {
-        //         let mut lods: IndexMap<usize, Vec<GeometryRefEntry>> = IndexMap::new();
-
-        //         for g in &child_geometry_refs {
-        //             if g.lod == 0 {
-        //                 lods.entry(0).or_insert_with(Vec::new).push(g.clone());
-        //             } else if g.lod == 1 {
-        //                 lods.entry(1).or_insert_with(Vec::new).push(g.clone());
-        //             } else if g.lod == 2 {
-        //                 lods.entry(2).or_insert_with(Vec::new).push(g.clone());
-        //             } else if g.lod == 3 {
-        //                 lods.entry(3).or_insert_with(Vec::new).push(g.clone());
-        //             } else if g.lod == 4 {
-        //                 lods.entry(4).or_insert_with(Vec::new).push(g.clone());
-        //             }
-        //         }
-
-        //         let mut root = toplevel_feature.clone();
-
-        //         for (lod, geometry_refs) in lods.iter() {
-        //             let feature = Feature {
-        //                 id: root.id.clone(),
-        //                 typename: root.typename.clone(),
-        //                 attributes: root.attributes.clone(),
-        //                 geometries: Some(geometry_refs.clone()),
-        //             };
-
-        //             let obj = CityObject {
-        //                 root: Value::Feature(feature),
-        //                 geometry_store: cityobj.geometry_store.clone(),
-        //             };
-
-        //             objects.push(obj);
-        //         }
-        //     }
-        // }
 
         // attributes内のArrayを取り出し、中身がData（子要素）で、なおかつattributesが複数のkeyを持つものを全て取り出す
         let mut other_layer_data_list = Vec::new();
