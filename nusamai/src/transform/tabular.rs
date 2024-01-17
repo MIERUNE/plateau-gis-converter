@@ -24,6 +24,17 @@ pub struct Settings {
     mappings: IndexMap<String, SettingValue, RandomState>,
 }
 
+pub trait ObjectTreeTraversal {
+    fn collect(&self, cityobj: &CityObject) -> Vec<CityObject>;
+}
+
+pub struct FeatureTraversal {}
+impl ObjectTreeTraversal for FeatureTraversal {
+    fn collect(&self, cityobj: &CityObject) -> Vec<CityObject> {
+        todo!();
+    }
+}
+
 pub trait Transformer {
     fn transform(&self, cityobj: &CityObject) -> Vec<CityObject>;
 }
