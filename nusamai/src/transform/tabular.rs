@@ -24,7 +24,7 @@ pub struct Settings {
     mappings: IndexMap<String, SettingValue, RandomState>,
 }
 
-trait Transformer {
+pub trait Transformer {
     fn transform(&self, cityobj: &CityObject) -> Vec<CityObject>;
 }
 
@@ -133,16 +133,16 @@ impl Transformer for SemanticObjectSeparator {
         // attributes内のFeature（子要素）を全て取り出す
         let mut child_features = Vec::new();
         for (key, value) in toplevel_feature.attributes.iter() {
-            let features = self.extract_features(value);
+            let features = extract_features(value);
             child_features.extend(features);
         }
 
         // attributes内のArrayを取り出し、中身がData（子要素）で、なおかつattributesが複数のkeyを持つものを全て取り出す
         let mut other_layer_data_list = Vec::new();
         for (key, value) in toplevel_feature.attributes.iter() {
-            let array = self.extract_array(value);
+            let array = extract_array(value);
             for v in array {
-                let data_list = self.extract_data(&v);
+                let data_list = extract_data(&v);
                 for d in &data_list {
                     if d.attributes.len() >= 2 {
                         other_layer_data_list.push(d.clone());
@@ -300,48 +300,30 @@ impl Transformer for SemanticObjectSeparator {
     }
 }
 
-impl SemanticObjectSeparator {
-    // 子要素収集のためのユーティリティ
-    fn extract_features(&self, value: &Value) -> Vec<Feature> {
-        match value {
-            Value::Array(vec) => vec.iter().flat_map(|v| self.extract_features(v)).collect(),
-            Value::Feature(feature) => {
-                vec![feature.clone()]
-            }
-            _ => Vec::new(),
+// 子要素収集のためのユーティリティ
+fn extract_features(value: &Value) -> Vec<Feature> {
+    match value {
+        Value::Array(vec) => vec.iter().flat_map(|v| extract_features(v)).collect(),
+        Value::Feature(feature) => {
+            vec![feature.clone()]
         }
+        _ => Vec::new(),
     }
+}
 
-    fn extract_data(&self, value: &Value) -> Vec<Data> {
-        match value {
-            Value::Array(vec) => vec.iter().flat_map(|v| self.extract_data(v)).collect(),
-            Value::Data(data) => {
-                vec![data.clone()]
-            }
-            _ => Vec::new(),
+fn extract_data(value: &Value) -> Vec<Data> {
+    match value {
+        Value::Array(vec) => vec.iter().flat_map(|v| extract_data(v)).collect(),
+        Value::Data(data) => {
+            vec![data.clone()]
         }
+        _ => Vec::new(),
     }
+}
 
-    fn extract_array(&self, value: &Value) -> Vec<Value> {
-        match value {
-            Value::Array(vec) => vec.clone(),
-            _ => Vec::new(),
-        }
-    }
-
-    fn jsonify(&self, objects: Vec<&CityObject>) -> Vec<CityObject> {
-        todo!();
-    }
-
-    fn separate_semantics(&self, objects: Vec<&CityObject>) -> Vec<CityObject> {
-        todo!();
-    }
-
-    fn separate_layers(&self, objects: Vec<&CityObject>) -> Vec<CityObject> {
-        todo!();
-    }
-
-    fn change_attribute_name(&self, objects: Vec<&CityObject>) -> Vec<CityObject> {
-        todo!();
+fn extract_array(value: &Value) -> Vec<Value> {
+    match value {
+        Value::Array(vec) => vec.clone(),
+        _ => Vec::new(),
     }
 }
