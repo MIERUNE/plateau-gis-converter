@@ -21,11 +21,46 @@ pub struct Settings {
     load_semantic_parts: bool,
     to_json_string: bool,
     to_tabular: bool,
-    mapping: IndexMap<String, SettingValue, RandomState>,
+    mappings: IndexMap<String, SettingValue, RandomState>,
 }
 
-pub trait ObjectSeparator {
-    fn separate(&self, cityobj: &CityObject) -> Vec<CityObject>;
+trait Transformer {
+    fn transform(&self, cityobj: &CityObject) -> Vec<CityObject>;
+}
+
+struct FlattenTreeTransformer {}
+impl Transformer for FlattenTreeTransformer {
+    fn transform(&self, cityobj: &CityObject) -> Vec<CityObject> {
+        todo!();
+    }
+}
+
+struct FilterFeaturesTransformer {}
+impl Transformer for FilterFeaturesTransformer {
+    fn transform(&self, cityobj: &CityObject) -> Vec<CityObject> {
+        todo!();
+    }
+}
+
+struct FilterAttributesTransformer {}
+impl Transformer for FilterAttributesTransformer {
+    fn transform(&self, cityobj: &CityObject) -> Vec<CityObject> {
+        todo!();
+    }
+}
+
+struct AttributesTransformer {}
+impl Transformer for AttributesTransformer {
+    fn transform(&self, cityobj: &CityObject) -> Vec<CityObject> {
+        todo!();
+    }
+}
+
+struct FilterLODTransformer {}
+impl Transformer for FilterLODTransformer {
+    fn transform(&self, cityobj: &CityObject) -> Vec<CityObject> {
+        todo!();
+    }
 }
 
 #[derive(Debug, Default)]
@@ -33,8 +68,8 @@ pub struct SemanticObjectSeparator {
     pub settings: Settings,
 }
 
-impl ObjectSeparator for SemanticObjectSeparator {
-    fn separate(&self, cityobj: &CityObject) -> Vec<CityObject> {
+impl Transformer for SemanticObjectSeparator {
+    fn transform(&self, cityobj: &CityObject) -> Vec<CityObject> {
         // パフォーマンスなどを無視し、わかりやすさのためにコピーしたデータを用意しておく
         let toplevel_feature = match &cityobj.root {
             Value::Feature(f) => f.clone(),
