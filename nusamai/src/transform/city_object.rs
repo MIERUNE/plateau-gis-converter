@@ -111,25 +111,40 @@ impl Transformer for SemanticSplitTransformer {
 
         // SeparateLodTransformerとは両立できない
 
-        // 最初のオブジェクトを取り出し、その中の子要素を取り出す
-        if city_objects.is_empty() {
-            return city_objects;
-        }
         let toplevel_city_object = &city_objects[0];
-        let toplevel_feature = match &toplevel_city_object.root {
-            Value::Feature(f) => f.clone(),
-            _ => panic!(
-                "Root value type must be Feature, but found {:?}",
-                city_objects[0].root
-            ),
-        };
 
-        // attributes内のFeature（子要素）を全て取り出す
         let mut child_features = Vec::new();
-        for (_, value) in toplevel_feature.attributes.iter() {
-            let features = extract_features(value);
-            child_features.extend(features);
+        for o in &city_objects {
+            let feature_ref = match &o.root {
+                Value::Feature(f) => f,
+                _ => panic!("Root value type must be Feature, but found {:?}", o.root),
+            };
+
+            // attributes内のFeature（子要素）を全て取り出す
+            for (_, value) in feature_ref.attributes.iter() {
+                match value {
+                    Value::Array(array) => {
+                        for v in array {
+                            let features = extract_features(v);
+                            child_features.extend(features);
+                        }
+                    }
+                    Value::Feature(f) => {
+                        child_features.push(f.clone());
+                    }
+                    _ => {}
+                }
+            }
         }
+
+        // child_featuresの重複を除去する
+        let child_features: Vec<Feature> =
+            child_features.into_iter().fold(Vec::new(), |mut acc, x| {
+                if !acc.contains(&x) {
+                    acc.push(x);
+                }
+                acc
+            });
 
         // featuresをセマンティックごとに分割する
         for f in &child_features {
@@ -161,7 +176,6 @@ impl Transformer for FlattenTreeTransformer {
                 city_objects[0].root
             ),
         };
-        let root_gml_id = &toplevel_feature.id;
         let geometry_store = city_objects[0].geometry_store.clone();
 
         // attributes内のArrayを取り出し、中身がData（子要素）で持つものを全て取り出す
@@ -200,15 +214,13 @@ impl Transformer for FlattenTreeTransformer {
                 attributes.insert(key.clone(), value.clone());
             }
 
-            let feature = Feature {
-                id: root_gml_id.clone(),
+            let data = Data {
                 typename: d.typename.clone(),
                 attributes,
-                geometries: None,
             };
 
             let obj = CityObject {
-                root: Value::Feature(feature),
+                root: Value::Data(data),
                 geometry_store: geometry_store.clone(),
             };
 
@@ -337,10 +349,12 @@ impl ObjectTransformer {
         };
 
         // 仮の設定を作成する
-        let mut settings = Settings::default();
-        settings.load_semantic_parts = true;
-        settings.to_tabular = true;
-        settings.to_json_string = true;
+        let mut settings = Settings {
+            load_semantic_parts: false,
+            to_tabular: true,
+            to_json_string: true,
+            mappings: IndexMap::with_hasher(RandomState::new()),
+        };
 
         let mut transformer_pipeline = TransformerPipeline {
             transformers: Vec::new(),
@@ -350,11 +364,11 @@ impl ObjectTransformer {
         if settings.to_tabular {
             transformer_pipeline.add(Box::new(FlattenTreeTransformer {}));
         }
-        // if settings.load_semantic_parts {
-        //     transformer_pipeline.add(Box::new(SemanticSplitTransformer {}));
-        // } else {
-        //     transformer_pipeline.add(Box::new(SeparateLodTransformer {}));
-        // }
+        if settings.load_semantic_parts {
+            transformer_pipeline.add(Box::new(SemanticSplitTransformer {}));
+        } else {
+            transformer_pipeline.add(Box::new(SeparateLodTransformer {}));
+        }
 
         let obj = CityObject {
             root: Value::Feature(toplevel_feature),
@@ -363,53 +377,54 @@ impl ObjectTransformer {
         let mut objects = transformer_pipeline.transform(vec![obj]);
 
         // Array・Data・featureは全てJSON文字列に変換するかどうか
-        if settings.to_json_string {
-            for _ in 0..objects.len() {
-                let object = objects.remove(0);
-                let mut attributes = IndexMap::with_hasher(RandomState::new());
-                if let Value::Feature(f) = &object.root {
-                    for (key, value) in f.attributes.iter() {
-                        match value {
-                            Value::Array(a) => {
-                                let json_array = serde_json::to_string(a).unwrap();
-                                attributes.insert(key.clone(), Value::String(json_array));
-                            }
-                            Value::Data(d) => {
-                                let json_data = serde_json::to_string(&d.attributes).unwrap();
-                                attributes.insert(key.clone(), Value::String(json_data));
-                            }
-                            Value::Feature(f) => {
-                                let json_feature = serde_json::to_string(&f.attributes).unwrap();
-                                attributes.insert(key.clone(), Value::String(json_feature));
-                            }
-                            _ => {
-                                attributes.insert(key.clone(), value.clone());
-                            }
-                        }
-                    }
+        // if settings.to_json_string {
+        //     for _ in 0..objects.len() {
+        //         let object = objects.remove(0);
+        //         let mut attributes = IndexMap::with_hasher(RandomState::new());
+        //         if let Value::Feature(f) = &object.root {
+        //             for (key, value) in f.attributes.iter() {
+        //                 match value {
+        //                     Value::Array(a) => {
+        //                         let json_array = serde_json::to_string(a).unwrap();
+        //                         attributes.insert(key.clone(), Value::String(json_array));
+        //                     }
+        //                     Value::Data(d) => {
+        //                         let json_data = serde_json::to_string(&d.attributes).unwrap();
+        //                         attributes.insert(key.clone(), Value::String(json_data));
+        //                     }
+        //                     Value::Feature(f) => {
+        //                         let json_feature = serde_json::to_string(&f.attributes).unwrap();
+        //                         attributes.insert(key.clone(), Value::String(json_feature));
+        //                     }
+        //                     _ => {
+        //                         attributes.insert(key.clone(), value.clone());
+        //                     }
+        //                 }
+        //             }
 
-                    let feature = Feature {
-                        id: f.id.clone(),
-                        typename: f.typename.clone(),
-                        attributes,
-                        geometries: f.geometries.clone(),
-                    };
+        //             let feature = Feature {
+        //                 id: f.id.clone(),
+        //                 typename: f.typename.clone(),
+        //                 attributes,
+        //                 geometries: f.geometries.clone(),
+        //             };
 
-                    let obj = CityObject {
-                        root: Value::Feature(feature),
-                        geometry_store: object.geometry_store,
-                    };
+        //             let obj = CityObject {
+        //                 root: Value::Feature(feature),
+        //                 geometry_store: object.geometry_store,
+        //             };
 
-                    objects.push(obj);
-                }
-            }
-        }
+        //             objects.push(obj);
+        //         }
+        //     }
+        // }
 
         // todo: 特定の属性のみ形状を変換するような構造を組み込む
         // todo: 上記の設定の内容を検討する
         // todo: プログラムをもう少し構造化する
 
-        if objects.len() >= 3 {
+        println!("objects.len(): {}", objects.len());
+        if objects.len() >= 1 {
             for o in &objects {
                 if let Value::Feature(f) = &o.root {
                     println!("{:?}: {:?}", f.id, f.geometries);
