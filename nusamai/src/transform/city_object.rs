@@ -111,7 +111,7 @@ impl Transformer for SemanticSplitTransformer {
 
         // SeparateLodTransformerとは両立できない
 
-        let toplevel_city_object = &city_objects[0];
+        let toplevel_geometry_store = &city_objects[0].geometry_store;
 
         let mut child_features = Vec::new();
         for o in &city_objects {
@@ -150,7 +150,7 @@ impl Transformer for SemanticSplitTransformer {
         for f in &child_features {
             let obj = CityObject {
                 root: Value::Feature(f.clone()),
-                geometry_store: toplevel_city_object.geometry_store.clone(),
+                geometry_store: toplevel_geometry_store.clone(),
             };
             results.push(obj);
         }
