@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 
 use nusamai_citygml::{
     object::{CityObject, Data, Feature},
-    GeometryRefEntry, Value,
+    GeometryRefEntry, GeometryStore, Value,
 };
 
 // 以下、仮実装
@@ -190,13 +190,13 @@ impl Transformer for DataCollectTransformer {
 
             let obj = CityObject {
                 root: Value::Data(data),
-                geometry_store: city_object.geometry_store.clone(),
+                geometry_store: GeometryStore {
+                    ..Default::default()
+                },
             };
 
             results.push(obj);
         }
-
-        results.push(city_object);
 
         results
     }
@@ -334,9 +334,9 @@ impl ObjectTransformer {
         };
 
         transformer_pipeline.add(Box::new(FeatureCollectTransformer {}));
-        // if settings.to_tabular {
-        //     transformer_pipeline.add(Box::new(DataCollectTransformer {}));
-        // }
+        if settings.to_tabular {
+            transformer_pipeline.add(Box::new(DataCollectTransformer {}));
+        }
         // if settings.load_semantic_parts {
         //     transformer_pipeline.add(Box::new(SemanticSplitTransformer {}));
         // } else {
@@ -395,14 +395,13 @@ impl ObjectTransformer {
 
         // todo: 特定の属性のみ形状を変換するような構造を組み込む
         // todo: 上記の設定の内容を検討する
-        // todo: プログラムをもう少し構造化する
 
         println!("objects.len(): {}", objects.len());
-        if objects.len() >= 1 {
+        if objects.len() >= 2 {
             for o in &objects {
-                if let Value::Feature(f) = &o.root {
-                    println!("{:?}: {:?}", f.id, f.geometries);
-                }
+                // if let Value::Feature(f) = &o.root {
+                //     println!("{:?}: {:?}", f.id, f.geometries);
+                // }
 
                 let file =
                     std::fs::File::create("/Users/satoru/Downloads/output/test.json").unwrap();
