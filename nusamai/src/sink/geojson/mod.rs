@@ -79,7 +79,7 @@ impl DataSink for GeoJsonSink {
                         let objects = object_transformer.transform(obj);
 
                         // let features = toplevel_cityobj_to_geojson_features(&parcel.cityobj);
-                        let features = toplevel_cityobj_to_geojson_features(&objects[0]);
+                        let features = toplevel_cityobj_to_geojson_features(&parcel.cityobj);
                         for feature in features {
                             let Ok(bytes) = serde_json::to_vec(&feature) else {
                                 // TODO: fatal error
