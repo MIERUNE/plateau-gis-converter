@@ -266,21 +266,21 @@ impl Transformer for SeparateLodTransformer {
 
 struct FilterFeaturesTransformer {}
 impl Transformer for FilterFeaturesTransformer {
-    fn transform(&self, city_objects: CityObject) -> Vec<CityObject> {
+    fn transform(&self, city_object: CityObject) -> Vec<CityObject> {
         todo!();
     }
 }
 
 struct FilterAttributesTransformer {}
 impl Transformer for FilterAttributesTransformer {
-    fn transform(&self, city_objects: CityObject) -> Vec<CityObject> {
+    fn transform(&self, city_object: CityObject) -> Vec<CityObject> {
         todo!();
     }
 }
 
 struct AttributesTransformer {}
 impl Transformer for AttributesTransformer {
-    fn transform(&self, city_objects: CityObject) -> Vec<CityObject> {
+    fn transform(&self, city_object: CityObject) -> Vec<CityObject> {
         todo!();
     }
 }
