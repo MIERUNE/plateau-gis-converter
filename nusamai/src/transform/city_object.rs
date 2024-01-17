@@ -159,8 +159,8 @@ impl Transformer for SemanticSplitTransformer {
     }
 }
 
-struct FlattenTreeTransformer {}
-impl Transformer for FlattenTreeTransformer {
+struct DataCollectTransformer {}
+impl Transformer for DataCollectTransformer {
     fn transform(&self, city_objects: Vec<CityObject>) -> Vec<CityObject> {
         let mut results = Vec::new();
         let mut other_layer_data_list = Vec::new();
@@ -362,7 +362,7 @@ impl ObjectTransformer {
 
         transformer_pipeline.add(Box::new(FeatureCollectTransformer {}));
         if settings.to_tabular {
-            transformer_pipeline.add(Box::new(FlattenTreeTransformer {}));
+            transformer_pipeline.add(Box::new(DataCollectTransformer {}));
         }
         if settings.load_semantic_parts {
             transformer_pipeline.add(Box::new(SemanticSplitTransformer {}));
