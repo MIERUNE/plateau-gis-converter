@@ -273,6 +273,53 @@ impl Transformer for AttributesTransformer {
     }
 }
 
+trait Traversal {
+    fn traverse(&self, city_object: CityObject) -> CityObject;
+}
+
+struct JsonStringTraversal {}
+impl Traversal for JsonStringTraversal {
+    fn traverse(&self, city_object: CityObject) -> CityObject {
+        // Array・Data・featureは全てJSON文字列に変換するかどうか
+        let mut attributes = IndexMap::with_hasher(RandomState::new());
+        if let Value::Feature(f) = &city_object.root {
+            for (key, value) in f.attributes.iter() {
+                match value {
+                    Value::Array(a) => {
+                        let json_array = serde_json::to_string(a).unwrap();
+                        attributes.insert(key.clone(), Value::String(json_array));
+                    }
+                    Value::Data(d) => {
+                        let json_data = serde_json::to_string(&d.attributes).unwrap();
+                        attributes.insert(key.clone(), Value::String(json_data));
+                    }
+                    Value::Feature(f) => {
+                        let json_feature = serde_json::to_string(&f.attributes).unwrap();
+                        attributes.insert(key.clone(), Value::String(json_feature));
+                    }
+                    _ => {
+                        attributes.insert(key.clone(), value.clone());
+                    }
+                }
+            }
+
+            let feature = Feature {
+                id: f.id.clone(),
+                typename: f.typename.clone(),
+                attributes,
+                geometries: f.geometries.clone(),
+            };
+
+            let obj = CityObject {
+                root: Value::Feature(feature),
+                geometry_store: city_object.geometry_store,
+            };
+            return obj;
+        }
+        city_object
+    }
+}
+
 struct TransformerPipeline {
     transformers: Vec<Box<dyn Transformer>>,
 }
@@ -326,6 +373,7 @@ impl ObjectTransformer {
             mappings: IndexMap::with_hasher(RandomState::new()),
         };
 
+        // CityObject->Vec<CityObject>を行うTransformerと、属性の変換などを行うCityObject->CityObjectを行うTraversalは分離した方が良いかも
         let mut transformer_pipeline = TransformerPipeline {
             transformers: Vec::new(),
         };
@@ -342,55 +390,15 @@ impl ObjectTransformer {
             root: Value::Feature(toplevel_feature),
             geometry_store: cityobj.geometry_store.clone(),
         };
+        // attributes内の子要素（feature）を収集して、トップレベルに引き上げる
         let obj = FeatureCollector {}.collect(obj);
 
         let objects = transformer_pipeline.transform(obj);
 
-        // Array・Data・featureは全てJSON文字列に変換するかどうか
-        // if settings.to_json_string {
-        //     for _ in 0..objects.len() {
-        //         let object = objects.remove(0);
-        //         let mut attributes = IndexMap::with_hasher(RandomState::new());
-        //         if let Value::Feature(f) = &object.root {
-        //             for (key, value) in f.attributes.iter() {
-        //                 match value {
-        //                     Value::Array(a) => {
-        //                         let json_array = serde_json::to_string(a).unwrap();
-        //                         attributes.insert(key.clone(), Value::String(json_array));
-        //                     }
-        //                     Value::Data(d) => {
-        //                         let json_data = serde_json::to_string(&d.attributes).unwrap();
-        //                         attributes.insert(key.clone(), Value::String(json_data));
-        //                     }
-        //                     Value::Feature(f) => {
-        //                         let json_feature = serde_json::to_string(&f.attributes).unwrap();
-        //                         attributes.insert(key.clone(), Value::String(json_feature));
-        //                     }
-        //                     _ => {
-        //                         attributes.insert(key.clone(), value.clone());
-        //                     }
-        //                 }
-        //             }
-
-        //             let feature = Feature {
-        //                 id: f.id.clone(),
-        //                 typename: f.typename.clone(),
-        //                 attributes,
-        //                 geometries: f.geometries.clone(),
-        //             };
-
-        //             let obj = CityObject {
-        //                 root: Value::Feature(feature),
-        //                 geometry_store: object.geometry_store,
-        //             };
-
-        //             objects.push(obj);
-        //         }
-        //     }
-        // }
+        let t = JsonStringTraversal {};
+        let objects: Vec<CityObject> = objects.into_iter().map(|o| t.traverse(o)).collect();
 
         // todo: 特定の属性のみ形状を変換するような構造を組み込む
-        // todo: 上記の設定の内容を検討する
 
         if objects.len() >= 8 {
             for o in &objects {
