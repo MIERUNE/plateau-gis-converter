@@ -24,15 +24,11 @@ pub struct Settings {
     mappings: IndexMap<String, SettingValue, RandomState>,
 }
 
-pub trait ObjectTreeTraversal {
-    fn collect(&self, cityobj: Vec<&CityObject>) -> Vec<CityObject>;
-}
-
-pub struct FeatureTraversal {
+pub struct FeatureCollectTransformer {
     settings: Settings,
 }
-impl ObjectTreeTraversal for FeatureTraversal {
-    fn collect(&self, city_objects: Vec<&CityObject>) -> Vec<CityObject> {
+impl Transformer for FeatureCollectTransformer {
+    fn transform(&self, city_objects: Vec<&CityObject>) -> Vec<CityObject> {
         let mut results = Vec::new();
 
         for o in &city_objects {
@@ -138,40 +134,40 @@ impl ObjectTreeTraversal for FeatureTraversal {
 }
 
 pub trait Transformer {
-    fn transform(&self, cityobj: &CityObject) -> Vec<CityObject>;
+    fn transform(&self, city_objects: Vec<&CityObject>) -> Vec<CityObject>;
 }
 
 struct FlattenTreeTransformer {}
 impl Transformer for FlattenTreeTransformer {
-    fn transform(&self, cityobj: &CityObject) -> Vec<CityObject> {
+    fn transform(&self, city_objects: Vec<&CityObject>) -> Vec<CityObject> {
         todo!();
     }
 }
 
 struct FilterFeaturesTransformer {}
 impl Transformer for FilterFeaturesTransformer {
-    fn transform(&self, cityobj: &CityObject) -> Vec<CityObject> {
+    fn transform(&self, city_objects: Vec<&CityObject>) -> Vec<CityObject> {
         todo!();
     }
 }
 
 struct FilterAttributesTransformer {}
 impl Transformer for FilterAttributesTransformer {
-    fn transform(&self, cityobj: &CityObject) -> Vec<CityObject> {
+    fn transform(&self, city_objects: Vec<&CityObject>) -> Vec<CityObject> {
         todo!();
     }
 }
 
 struct AttributesTransformer {}
 impl Transformer for AttributesTransformer {
-    fn transform(&self, cityobj: &CityObject) -> Vec<CityObject> {
+    fn transform(&self, city_objects: Vec<&CityObject>) -> Vec<CityObject> {
         todo!();
     }
 }
 
 struct FilterLODTransformer {}
 impl Transformer for FilterLODTransformer {
-    fn transform(&self, cityobj: &CityObject) -> Vec<CityObject> {
+    fn transform(&self, city_objects: Vec<&CityObject>) -> Vec<CityObject> {
         todo!();
     }
 }
@@ -188,27 +184,23 @@ impl TransformerPipeline {
         }
     }
 
-    fn transform(&self, cityobj: CityObject) -> Vec<CityObject> {
-        let mut objects = vec![cityobj];
+    fn transform(&self, city_objects: Vec<&CityObject>) -> Vec<CityObject> {
+        let mut results = Vec::new();
         for transformer in &self.transformers {
-            let mut new_objects = Vec::new();
-            for o in &objects {
-                let mut transformed_objects = transformer.transform(o);
-                new_objects.append(&mut transformed_objects);
-            }
-            objects = new_objects;
+            let mut new_objects = transformer.transform(city_objects.clone());
+            results = new_objects;
         }
-        objects
+        results
     }
 }
 
 #[derive(Debug, Default)]
-pub struct SemanticObjectSeparator {
+pub struct ObjectTransformer {
     pub settings: Settings,
 }
 
-impl Transformer for SemanticObjectSeparator {
-    fn transform(&self, cityobj: &CityObject) -> Vec<CityObject> {
+impl ObjectTransformer {
+    pub fn transform(&self, cityobj: &CityObject) -> Vec<CityObject> {
         // パフォーマンスなどを無視し、わかりやすさのためにコピーしたデータを用意しておく
         let toplevel_feature = match &cityobj.root {
             Value::Feature(f) => f.clone(),
@@ -246,10 +238,10 @@ impl Transformer for SemanticObjectSeparator {
         settings.to_tabular = true;
         settings.to_json_string = true;
 
-        let traversal = FeatureTraversal {
+        let transformer = FeatureCollectTransformer {
             settings: settings.clone(),
         };
-        let mut objects = traversal.collect(vec![cityobj]);
+        let mut objects = transformer.transform(vec![cityobj]);
 
         // attributes内のFeature（子要素）を全て取り出す
         // let mut child_features = Vec::new();
