@@ -47,14 +47,6 @@ impl ObjectSeparator for SemanticObjectSeparator {
         let typename = &toplevel_feature.typename;
         println!("{:?}, {:?}", root_gml_id, typename);
 
-        // ここから処理を書いていく
-        // 何かしらの設定ファイルを受け取り、以下のような設定ができると嬉しい
-        // ・Arrayはjson文字列に変換する
-        // ・Arrayの中身がDataなら、別のレイヤーにする
-        // ・Arrayの中身がFeatureなら、別のレイヤーにする
-        // ・特定の属性のみ形状を変換する
-        // 最終的には上記のように改修されたVec<CityObject>を返す
-
         // 返却用の入れ物を用意する
         let mut objects = Vec::new();
 
