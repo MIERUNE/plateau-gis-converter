@@ -233,41 +233,38 @@ impl Transformer for SeparateLodTransformer {
             };
 
             // feature.geometriesから、lodごとに分割して、objectsに追加する
-            if let Value::Feature(f) = &o.root {
-                if let Some(geometry_ref_list) = &f.geometries {
-                    for g in geometry_ref_list.iter() {
-                        let mut lods: IndexMap<usize, Vec<GeometryRefEntry>> = IndexMap::new();
-
-                        if g.lod == 0 {
-                            lods.entry(0).or_insert_with(Vec::new).push(g.clone());
-                        } else if g.lod == 1 {
-                            lods.entry(1).or_insert_with(Vec::new).push(g.clone());
-                        } else if g.lod == 2 {
-                            lods.entry(2).or_insert_with(Vec::new).push(g.clone());
-                        } else if g.lod == 3 {
-                            lods.entry(3).or_insert_with(Vec::new).push(g.clone());
-                        } else if g.lod == 4 {
-                            lods.entry(4).or_insert_with(Vec::new).push(g.clone());
-                        }
-
-                        let root = feature_ref.clone();
-
-                        for (_, geometry_refs) in lods.iter() {
-                            let feature = Feature {
-                                id: root.id.clone(),
-                                typename: root.typename.clone(),
-                                attributes: root.attributes.clone(),
-                                geometries: Some(geometry_refs.clone()),
-                            };
-
-                            let obj = CityObject {
-                                root: Value::Feature(feature),
-                                geometry_store: o.geometry_store.clone(),
-                            };
-
-                            results.push(obj);
-                        }
+            let mut lods: IndexMap<usize, Vec<GeometryRefEntry>> = IndexMap::new();
+            if let Some(geometry_ref_list) = &feature_ref.geometries {
+                for g in geometry_ref_list.iter() {
+                    if g.lod == 0 {
+                        lods.entry(0).or_insert_with(Vec::new).push(g.clone());
+                    } else if g.lod == 1 {
+                        lods.entry(1).or_insert_with(Vec::new).push(g.clone());
+                    } else if g.lod == 2 {
+                        lods.entry(2).or_insert_with(Vec::new).push(g.clone());
+                    } else if g.lod == 3 {
+                        lods.entry(3).or_insert_with(Vec::new).push(g.clone());
+                    } else if g.lod == 4 {
+                        lods.entry(4).or_insert_with(Vec::new).push(g.clone());
                     }
+                }
+
+                let feature = feature_ref.clone();
+
+                for (_, geometry_refs) in lods.iter() {
+                    let feature = Feature {
+                        id: feature.id.clone(),
+                        typename: feature.typename.clone(),
+                        attributes: feature.attributes.clone(),
+                        geometries: Some(geometry_refs.clone()),
+                    };
+
+                    let obj = CityObject {
+                        root: Value::Feature(feature),
+                        geometry_store: o.geometry_store.clone(),
+                    };
+
+                    results.push(obj);
                 }
             }
         }
@@ -344,14 +341,15 @@ impl ObjectTransformer {
         };
 
         transformer_pipeline.add(Box::new(FeatureCollectTransformer {}));
+        if settings.to_tabular {
+            transformer_pipeline.add(Box::new(FlattenTreeTransformer {}));
+        }
+        transformer_pipeline.add(Box::new(SeparateLodTransformer {}));
         // if settings.load_semantic_parts {
         //     transformer_pipeline.add(Box::new(SemanticSplitTransformer {}));
         // } else {
         //     transformer_pipeline.add(Box::new(SeparateLodTransformer {}));
         // }
-        if settings.to_tabular {
-            transformer_pipeline.add(Box::new(FlattenTreeTransformer {}));
-        }
 
         let obj = CityObject {
             root: Value::Feature(toplevel_feature),
