@@ -1,4 +1,4 @@
-pub mod tabular;
+pub mod city_object;
 
 use crate::pipeline::{Feedback, Parcel, Sender, TransformError, Transformer};
 
