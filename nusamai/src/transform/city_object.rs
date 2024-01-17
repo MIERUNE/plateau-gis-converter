@@ -110,29 +110,27 @@ impl Transformer for SemanticSplitTransformer {
         let mut results = Vec::new();
 
         // SeparateLodTransformerとは両立できない
+        // todo: 親要素が消えるので修正する
 
         let toplevel_geometry_store = &city_objects[0].geometry_store;
 
         let mut child_features = Vec::new();
         for o in &city_objects {
-            let feature_ref = match &o.root {
-                Value::Feature(f) => f,
-                _ => panic!("Root value type must be Feature, but found {:?}", o.root),
-            };
-
-            // attributes内のFeature（子要素）を全て取り出す
-            for (_, value) in feature_ref.attributes.iter() {
-                match value {
-                    Value::Array(array) => {
-                        for v in array {
-                            let features = extract_features(v);
-                            child_features.extend(features);
+            if let Value::Feature(feature_lef) = &o.root {
+                // attributes内のFeature（子要素）を全て取り出す
+                for (_, value) in feature_lef.attributes.iter() {
+                    match value {
+                        Value::Array(array) => {
+                            for v in array {
+                                let features = extract_features(v);
+                                child_features.extend(features);
+                            }
                         }
+                        Value::Feature(f) => {
+                            child_features.push(f.clone());
+                        }
+                        _ => {}
                     }
-                    Value::Feature(f) => {
-                        child_features.push(f.clone());
-                    }
-                    _ => {}
                 }
             }
         }
