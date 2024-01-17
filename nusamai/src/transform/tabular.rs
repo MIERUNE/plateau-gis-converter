@@ -141,29 +141,15 @@ impl Transformer for SemanticObjectSeparator {
             }
         }
 
+        // 仮の設定を作成する
+        let mut settings = Settings::default();
+
         // attributes内のFeature（子要素）を全て取り出す
         let mut child_features = Vec::new();
         for (key, value) in toplevel_feature.attributes.iter() {
             let features = extract_features(value);
             child_features.extend(features);
         }
-
-        // attributes内のArrayを取り出し、中身がData（子要素）で、なおかつattributesが複数のkeyを持つものを全て取り出す
-        let mut other_layer_data_list = Vec::new();
-        for (key, value) in toplevel_feature.attributes.iter() {
-            let array = extract_array(value);
-            for v in array {
-                let data_list = extract_data(&v);
-                for d in &data_list {
-                    if d.attributes.len() >= 2 {
-                        other_layer_data_list.push(d.clone());
-                    }
-                }
-            }
-        }
-
-        // 仮の設定を作成する
-        let mut settings = Settings::default();
 
         // 設定に応じてfeaturesをセマンティックごとに分割する
         settings.load_semantic_parts = false;
@@ -218,6 +204,20 @@ impl Transformer for SemanticObjectSeparator {
                     };
 
                     objects.push(obj);
+                }
+            }
+        }
+
+        // attributes内のArrayを取り出し、中身がData（子要素）で、なおかつattributesが複数のkeyを持つものを全て取り出す
+        let mut other_layer_data_list = Vec::new();
+        for (key, value) in toplevel_feature.attributes.iter() {
+            let array = extract_array(value);
+            for v in array {
+                let data_list = extract_data(&v);
+                for d in &data_list {
+                    if d.attributes.len() >= 2 {
+                        other_layer_data_list.push(d.clone());
+                    }
                 }
             }
         }
