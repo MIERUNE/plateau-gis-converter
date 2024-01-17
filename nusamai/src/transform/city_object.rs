@@ -344,12 +344,11 @@ impl ObjectTransformer {
         if settings.to_tabular {
             transformer_pipeline.add(Box::new(FlattenTreeTransformer {}));
         }
-        transformer_pipeline.add(Box::new(SeparateLodTransformer {}));
-        // if settings.load_semantic_parts {
-        //     transformer_pipeline.add(Box::new(SemanticSplitTransformer {}));
-        // } else {
-        //     transformer_pipeline.add(Box::new(SeparateLodTransformer {}));
-        // }
+        if settings.load_semantic_parts {
+            transformer_pipeline.add(Box::new(SemanticSplitTransformer {}));
+        } else {
+            transformer_pipeline.add(Box::new(SeparateLodTransformer {}));
+        }
 
         let obj = CityObject {
             root: Value::Feature(toplevel_feature),
@@ -404,20 +403,20 @@ impl ObjectTransformer {
         // todo: 上記の設定の内容を検討する
         // todo: プログラムをもう少し構造化する
 
-        if objects.len() > 0 {
-            for o in &objects {
-                if let Value::Feature(f) = &o.root {
-                    println!("{:?}: {:?}", f.id, f.geometries);
-                }
+        // if objects.len() > 0 {
+        //     for o in &objects {
+        //         if let Value::Feature(f) = &o.root {
+        //             println!("{:?}: {:?}", f.id, f.geometries);
+        //         }
 
-                let file =
-                    std::fs::File::create("/Users/satoru/Downloads/output/test.json").unwrap();
-                let writer = std::io::BufWriter::new(file);
-                serde_json::to_writer_pretty(writer, &objects).unwrap();
-            }
-        }
+        //         let file =
+        //             std::fs::File::create("/Users/satoru/Downloads/output/test.json").unwrap();
+        //         let writer = std::io::BufWriter::new(file);
+        //         serde_json::to_writer_pretty(writer, &objects).unwrap();
+        //     }
+        // }
 
-        println!();
+        // println!();
 
         objects
     }
