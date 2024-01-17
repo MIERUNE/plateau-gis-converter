@@ -66,14 +66,17 @@ pub struct FeatureId {
 #[serde(deny_unknown_fields)]
 pub struct FeatureIdTexture {
     /// Texture channels containing feature IDs, identified by index. Feature IDs may be packed into multiple channels if a single channel does not have sufficient bit depth to represent all feature ID values. The values are packed in little-endian order.
-    #[serde(default = "default_channels")]
+    #[serde(
+        default = "default_channels",
+        skip_serializing_if = "is_default_channels"
+    )]
     pub channels: Vec<u32>,
 
     /// The index of the texture.
     pub index: u32,
 
     /// This integer value is used to construct a string in the format `TEXCOORD_<set index>` which is a reference to a key in `mesh.primitives.attributes` (e.g. a value of `0` corresponds to `TEXCOORD_0`). A mesh primitive **MUST** have the corresponding texture coordinate attributes for the material to be applicable to it.
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "is_default")]
     pub tex_coord: u32,
 
     /// JSON object with extension-specific objects.
@@ -87,4 +90,12 @@ pub struct FeatureIdTexture {
 
 fn default_channels() -> Vec<u32> {
     vec![0]
+}
+
+fn is_default_channels(v: &Vec<u32>) -> bool {
+    *v == vec![0]
+}
+
+fn is_default<T: Default + PartialEq>(value: &T) -> bool {
+    *value == T::default()
 }

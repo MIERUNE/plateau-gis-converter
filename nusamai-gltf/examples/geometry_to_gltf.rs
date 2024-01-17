@@ -349,47 +349,54 @@ fn make_gltf_json(triangles: &Triangles) -> String {
     assert_eq!(gltf.asset.generator, Some("nusamai-gltf".into()));
 
     // glTF のバッファを作成
-    let mut buffer = Buffer::new();
-    // indicesはu32なので4バイト、verticesはf32x3なので12バイト
     let indices_byte_length = indices.len() as u32 * 4;
     let vertices_byte_length = vertices.len() as u32 * 12;
-    buffer.byte_length = indices_byte_length + vertices_byte_length;
-    buffer.uri = Some("data.bin".to_string());
+    let buffer = Buffer {
+        byte_length: indices_byte_length + vertices_byte_length,
+        uri: Some("data.bin".to_string()),
+        ..Default::default()
+    };
+    // indicesはu32なので4バイト、verticesはf32x3なので12バイト
 
     gltf.buffers = vec![buffer];
 
     // glTF のバッファビューを作成
-    let mut buffer_view1 = BufferView::new();
-    buffer_view1.buffer = 0;
-    buffer_view1.byte_length = indices_byte_length;
-    buffer_view1.byte_offset = 0;
-    buffer_view1.target = Some(BufferViewTarget::ElementArrayBuffer);
+    let buffer_view1 = BufferView {
+        byte_length: indices_byte_length,
+        target: Some(BufferViewTarget::ElementArrayBuffer),
+        ..Default::default()
+    };
 
-    let mut buffer_view2 = BufferView::new();
-    buffer_view2.buffer = 0;
-    buffer_view2.byte_length = vertices_byte_length;
-    buffer_view2.byte_offset = indices_byte_length;
-    buffer_view2.target = Some(BufferViewTarget::ArrayBuffer);
+    let buffer_view2 = BufferView {
+        byte_length: vertices_byte_length,
+        byte_offset: indices_byte_length,
+        target: Some(BufferViewTarget::ArrayBuffer),
+        ..Default::default()
+    };
 
     gltf.buffer_views = vec![buffer_view1, buffer_view2];
 
     // glTF のアクセサを作成
-    let mut accessor1 = Accessor::new();
-    accessor1.buffer_view = Some(0);
-    accessor1.byte_offset = 0;
-    accessor1.component_type = ComponentType::UnsignedInt;
-    accessor1.count = indices.len() as u32;
-    accessor1.type_ = AccessorType::Scalar;
+    let mut accessor1 = Accessor {
+        buffer_view: Some(0),
+        byte_offset: 0,
+        component_type: ComponentType::UnsignedInt,
+        count: indices.len() as u32,
+        type_: AccessorType::Scalar,
+        ..Default::default()
+    };
     let max_indices = indices.iter().max().unwrap();
     accessor1.max = vec![*max_indices as f32].into();
     accessor1.min = vec![0.0].into();
 
-    let mut accessor2 = Accessor::new();
-    accessor2.buffer_view = Some(1);
-    accessor2.byte_offset = 0;
-    accessor2.component_type = ComponentType::Float;
-    accessor2.count = vertices.len() as u32;
-    accessor2.type_ = AccessorType::Vec3;
+    let mut accessor2 = Accessor {
+        buffer_view: Some(1),
+        byte_offset: 0,
+        component_type: ComponentType::Float,
+        count: vertices.len() as u32,
+        type_: AccessorType::Vec3,
+        ..Default::default()
+    };
     let mut max_vertex: [f32; 3] = [f32::MIN; 3];
     let mut min_vertex: [f32; 3] = [f32::MAX; 3];
     for vertex in vertices {
@@ -408,29 +415,37 @@ fn make_gltf_json(triangles: &Triangles) -> String {
     gltf.accessors = vec![accessor1, accessor2];
 
     // glTF のメッシュを作成
-    let mut mesh = Mesh::new();
-    let mut primitive1 = MeshPrimitive::new();
-    primitive1.indices = Some(0);
-    primitive1.mode = PrimitiveMode::Triangles;
-    primitive1.attributes = {
-        let mut map = HashMap::new();
-        map.insert("POSITION".to_string(), 1);
-        map
+    let primitive1 = MeshPrimitive {
+        indices: Some(0),
+        mode: PrimitiveMode::Triangles,
+        attributes: {
+            let mut map = HashMap::new();
+            map.insert("POSITION".to_string(), 1);
+            map
+        },
+        ..Default::default()
     };
 
-    mesh.primitives = vec![primitive1];
+    let mesh = Mesh {
+        primitives: vec![primitive1],
+        ..Default::default()
+    };
 
     gltf.meshes = vec![mesh];
 
     // glTF のシーンを作成
-    let mut scene = Scene::new();
-    scene.nodes = Some(vec![0]);
+    let scene = Scene {
+        nodes: Some(vec![0]),
+        ..Default::default()
+    };
 
     gltf.scenes = vec![scene];
 
     // glTF のノードを作成
-    let mut node = Node::new();
-    node.mesh = Some(0);
+    let node = Node {
+        mesh: Some(0),
+        ..Default::default()
+    };
 
     gltf.nodes = vec![node];
 

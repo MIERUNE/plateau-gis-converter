@@ -152,7 +152,7 @@ pub struct ClassProperty {
     pub enum_type: Option<String>,
 
     /// Whether the property is an array. When `count` is defined the property is a fixed-length array. Otherwise the property is a variable-length array.
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "is_default")]
     pub array: bool,
 
     /// The number of array elements. May only be defined when `array` is true.
@@ -160,7 +160,7 @@ pub struct ClassProperty {
     pub count: Option<u32>,
 
     /// Specifies whether integer values are normalized. Only applicable to `SCALAR`, `VECN`, and `MATN` types with integer component types. For unsigned integer component types, values are normalized between `[0.0, 1.0]`. For signed integer component types, values are normalized between `[-1.0, 1.0]`. For all other component types, this property must be false.
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "is_default")]
     pub normalized: bool,
 
     /// An offset to apply to property values. Only applicable to `SCALAR`, `VECN`, and `MATN` types when the component type is `FLOAT32` or `FLOAT64`, or when the property is `normalized`.
@@ -179,8 +179,8 @@ pub struct ClassProperty {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub min: Option<Value>, // definitions.schema.json#/definitions/numericValue
 
-    /// If required, the property must be present in every entity conforming to the class. If not required, individual entities may include `noData` values, or the entire property may be omitted. As a result, `noData` has no effect on a required property. Client implementations may use required properties to make performance optimizations.
-    #[serde(default)]
+    /// If required, the property shall be present in every entity conforming to the class. If not required, individual entities may include `noData` values, or the entire property may be omitted. As a result, `noData` has no effect on a required property. Client implementations may use required properties to make performance optimizations.
+    #[serde(default, skip_serializing_if = "is_default")]
     pub required: bool,
 
     /// A `noData` value represents missing data — also known as a sentinel value — wherever it appears. `BOOLEAN` properties may not specify `noData` values. This is given as the plain property value, without the transforms from the `normalized`, `offset`, and `scale` properties. Must not be defined if `required` is true.
@@ -205,7 +205,7 @@ pub struct ClassProperty {
 }
 
 /// ValueType enumeration
-#[derive(Serialize, Deserialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Debug, Default, PartialEq, Eq)]
 #[serde(rename_all = "UPPERCASE")]
 pub enum EnumValueType {
     Int8,
@@ -233,7 +233,7 @@ pub struct Enum {
     pub description: Option<String>,
 
     /// The type of the integer enum value.
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "is_default")]
     pub value_type: EnumValueType,
 
     /// An array of enum values.
@@ -319,7 +319,10 @@ pub struct PropertyTexture {
 #[serde(rename_all = "camelCase")]
 pub struct PropertyTextureProperty {
     /// Texture channels containing property values, identified by index. The values may be packed into multiple channels if a single channel does not have sufficient bit depth. The values are packed in little-endian order."
-    #[serde(default = "default_channels")]
+    #[serde(
+        default = "default_channels",
+        skip_serializing_if = "is_default_channels"
+    )]
     pub channels: Vec<u32>,
 
     /// An offset to apply to property values. Only applicable when the component type is `FLOAT32` or `FLOAT64`, or when the property is `normalized`. Overrides the class property's `offset` if both are defined.
@@ -341,6 +344,10 @@ pub struct PropertyTextureProperty {
 
 fn default_channels() -> Vec<u32> {
     vec![0]
+}
+
+fn is_default_channels(v: &Vec<u32>) -> bool {
+    *v == vec![0]
 }
 
 #[derive(Serialize, Deserialize, Debug, Default)]
@@ -383,7 +390,7 @@ pub struct PropertyAttributeProperty {
 }
 
 /// OffsetType enumeration
-#[derive(Serialize, Deserialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Debug, Default, PartialEq, Eq)]
 #[serde(rename_all = "UPPERCASE")]
 pub enum OffsetType {
     UInt8,
@@ -410,11 +417,11 @@ pub struct PropertyTableProperty {
     pub string_offsets: Option<u32>,
 
     /// The type of values in `arrayOffsets`.
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "is_default")]
     pub array_offset_type: OffsetType,
 
     /// The type of values in `stringOffsets`.
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "is_default")]
     pub string_offset_type: OffsetType,
 
     /// An offset to apply to property values.
@@ -440,4 +447,8 @@ pub struct PropertyTableProperty {
     /// Application-specific data.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub extras: Option<Value>,
+}
+
+fn is_default<T: Default + PartialEq>(value: &T) -> bool {
+    *value == T::default()
 }
