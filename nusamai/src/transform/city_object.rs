@@ -155,37 +155,25 @@ impl Transformer for SemanticSplitTransformer {
 
 struct DataCollectTransformer {}
 impl Transformer for DataCollectTransformer {
-    fn transform(&self, city_objects: CityObject) -> Vec<CityObject> {
+    fn transform(&self, city_object: CityObject) -> Vec<CityObject> {
         let mut results = Vec::new();
         let mut other_layer_data_list = Vec::new();
 
-        // 仮実装: 渡されるcity_objectsは、元々同じCityObjectであるため、すべて同じroot_gml_idを持つ
-        if city_objects.is_empty() {
-            return city_objects;
-        }
-        let toplevel_feature = match &city_objects[0].root {
-            Value::Feature(f) => f.clone(),
+        // attributes内のArrayを取り出し、中身がData（子要素）で持つものを全て取り出す
+        let feature_ref = match &city_object.root {
+            Value::Feature(f) => f,
             _ => panic!(
                 "Root value type must be Feature, but found {:?}",
-                city_objects[0].root
+                city_object.root
             ),
         };
-        let geometry_store = city_objects[0].geometry_store.clone();
 
-        // attributes内のArrayを取り出し、中身がData（子要素）で持つものを全て取り出す
-        for o in &city_objects {
-            let feature_ref = match &o.root {
-                Value::Feature(f) => f,
-                _ => panic!("Root value type must be Feature, but found {:?}", o.root),
-            };
-
-            for (_, value) in feature_ref.attributes.iter() {
-                let array = extract_array(value);
-                for v in array {
-                    let data_list = extract_data(&v);
-                    for d in &data_list {
-                        other_layer_data_list.push(d.clone());
-                    }
+        for (_, value) in feature_ref.attributes.iter() {
+            let array = extract_array(value);
+            for v in array {
+                let data_list = extract_data(&v);
+                for d in &data_list {
+                    other_layer_data_list.push(d.clone());
                 }
             }
         }
@@ -215,19 +203,13 @@ impl Transformer for DataCollectTransformer {
 
             let obj = CityObject {
                 root: Value::Data(data),
-                geometry_store: geometry_store.clone(),
+                geometry_store: city_object.geometry_store.clone(),
             };
 
             results.push(obj);
         }
 
-        for o in city_objects {
-            let obj = CityObject {
-                root: o.root.clone(),
-                geometry_store: o.geometry_store.clone(),
-            };
-            results.push(obj)
-        }
+        results.push(city_object);
 
         results
     }
