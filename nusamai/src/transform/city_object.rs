@@ -24,6 +24,10 @@ pub struct Settings {
     mappings: IndexMap<String, SettingValue, RandomState>,
 }
 
+pub trait Transformer {
+    fn transform(&self, city_objects: Vec<&CityObject>) -> Vec<CityObject>;
+}
+
 pub struct FeatureCollectTransformer {
     settings: Settings,
 }
@@ -133,14 +137,68 @@ impl Transformer for FeatureCollectTransformer {
     }
 }
 
-pub trait Transformer {
-    fn transform(&self, city_objects: Vec<&CityObject>) -> Vec<CityObject>;
+pub struct FlattenTreeTransformer {
+    settings: Settings,
 }
-
-struct FlattenTreeTransformer {}
 impl Transformer for FlattenTreeTransformer {
     fn transform(&self, city_objects: Vec<&CityObject>) -> Vec<CityObject> {
-        todo!();
+        let mut results = Vec::new();
+
+        for o in &city_objects {
+            let feature_ref = match &o.root {
+                Value::Feature(f) => f,
+                _ => panic!("Root value type must be Feature, but found {:?}", o.root),
+            };
+            let root_gml_id = &feature_ref.id;
+
+            // attributes内のArrayを取り出し、中身がData（子要素）で、なおかつattributesが複数のkeyを持つものを全て取り出す
+            let mut other_layer_data_list = Vec::new();
+            for (_, value) in feature_ref.attributes.iter() {
+                let array = extract_array(value);
+                for v in array {
+                    let data_list = extract_data(&v);
+                    for d in &data_list {
+                        if d.attributes.len() >= 2 {
+                            other_layer_data_list.push(d.clone());
+                        }
+                    }
+                }
+            }
+
+            // other_layer_data_listを利用する
+            if self.settings.to_tabular {
+                for d in &other_layer_data_list {
+                    let mut attributes = IndexMap::with_hasher(RandomState::new());
+                    for (key, value) in d.attributes.iter() {
+                        attributes.insert(key.clone(), value.clone());
+                    }
+
+                    let feature = Feature {
+                        id: root_gml_id.clone(),
+                        typename: d.typename.clone(),
+                        attributes,
+                        geometries: None,
+                    };
+
+                    let obj = CityObject {
+                        root: Value::Feature(feature),
+                        geometry_store: o.geometry_store.clone(),
+                    };
+
+                    results.push(obj);
+                }
+            }
+        }
+
+        for o in city_objects.clone() {
+            let obj = CityObject {
+                root: o.root.clone(),
+                geometry_store: o.geometry_store.clone(),
+            };
+            results.push(obj)
+        }
+
+        results
     }
 }
 
@@ -187,7 +245,7 @@ impl TransformerPipeline {
     fn transform(&self, city_objects: Vec<&CityObject>) -> Vec<CityObject> {
         let mut results = Vec::new();
         for transformer in &self.transformers {
-            let mut new_objects = transformer.transform(city_objects.clone());
+            let new_objects = transformer.transform(city_objects.clone());
             results = new_objects;
         }
         results
@@ -201,7 +259,6 @@ pub struct ObjectTransformer {
 
 impl ObjectTransformer {
     pub fn transform(&self, cityobj: &CityObject) -> Vec<CityObject> {
-        // パフォーマンスなどを無視し、わかりやすさのためにコピーしたデータを用意しておく
         let toplevel_feature = match &cityobj.root {
             Value::Feature(f) => f.clone(),
             _ => panic!(
@@ -219,48 +276,18 @@ impl ObjectTransformer {
         settings.to_tabular = true;
         settings.to_json_string = true;
 
-        let transformer = FeatureCollectTransformer {
-            settings: settings.clone(),
-        };
-        let mut objects = transformer.transform(vec![cityobj]);
-
-        // attributes内のArrayを取り出し、中身がData（子要素）で、なおかつattributesが複数のkeyを持つものを全て取り出す
-        let mut other_layer_data_list = Vec::new();
-        for (key, value) in toplevel_feature.attributes.iter() {
-            let array = extract_array(value);
-            for v in array {
-                let data_list = extract_data(&v);
-                for d in &data_list {
-                    if d.attributes.len() >= 2 {
-                        other_layer_data_list.push(d.clone());
-                    }
-                }
-            }
-        }
-
-        // other_layer_data_listを利用する
-        if settings.to_tabular {
-            for d in &other_layer_data_list {
-                let mut attributes = IndexMap::with_hasher(RandomState::new());
-                for (key, value) in d.attributes.iter() {
-                    attributes.insert(key.clone(), value.clone());
-                }
-
-                let feature = Feature {
-                    id: root_gml_id.clone(),
-                    typename: d.typename.clone(),
-                    attributes,
-                    geometries: None,
-                };
-
-                let obj = CityObject {
-                    root: Value::Feature(feature),
-                    geometry_store: cityobj.geometry_store.clone(),
-                };
-
-                objects.push(obj);
-            }
-        }
+        let transformer_pipeline = TransformerPipeline::new(
+            vec![
+                Box::new(FeatureCollectTransformer {
+                    settings: settings.clone(),
+                }),
+                Box::new(FlattenTreeTransformer {
+                    settings: settings.clone(),
+                }),
+            ],
+            settings.clone(),
+        );
+        let mut objects = transformer_pipeline.transform(vec![cityobj]);
 
         // Array・Data・featureは全てJSON文字列に変換するかどうか
         if settings.to_json_string {
