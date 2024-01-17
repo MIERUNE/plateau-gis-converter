@@ -63,6 +63,32 @@ impl Transformer for FilterLODTransformer {
     }
 }
 
+struct TransformerPipeline {
+    transformers: Vec<Box<dyn Transformer>>,
+    settings: Settings,
+}
+impl TransformerPipeline {
+    fn new(transformers: Vec<Box<dyn Transformer>>, settings: Settings) -> Self {
+        Self {
+            transformers,
+            settings,
+        }
+    }
+
+    fn transform(&self, cityobj: CityObject) -> Vec<CityObject> {
+        let mut objects = vec![cityobj];
+        for transformer in &self.transformers {
+            let mut new_objects = Vec::new();
+            for o in &objects {
+                let mut transformed_objects = transformer.transform(o);
+                new_objects.append(&mut transformed_objects);
+            }
+            objects = new_objects;
+        }
+        objects
+    }
+}
+
 #[derive(Debug, Default)]
 pub struct SemanticObjectSeparator {
     pub settings: Settings,
