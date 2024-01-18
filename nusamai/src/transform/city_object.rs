@@ -1,5 +1,4 @@
-use ahash::RandomState;
-use bincode::de;
+use ahash::{HashMap, RandomState};
 use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
 
@@ -11,7 +10,7 @@ use nusamai_citygml::{
 // 子要素収集のためのユーティリティ
 fn extract_features(value: &Value) -> Vec<Feature> {
     match value {
-        Value::Array(vec) => vec.iter().flat_map(|v| extract_features(v)).collect(),
+        Value::Array(vec) => vec.iter().flat_map(extract_features).collect(),
         Value::Feature(feature) => {
             vec![feature.clone()]
         }
@@ -21,7 +20,7 @@ fn extract_features(value: &Value) -> Vec<Feature> {
 
 fn extract_data(value: &Value) -> Vec<Data> {
     match value {
-        Value::Array(vec) => vec.iter().flat_map(|v| extract_data(v)).collect(),
+        Value::Array(vec) => vec.iter().flat_map(extract_data).collect(),
         Value::Data(data) => {
             vec![data.clone()]
         }
@@ -43,14 +42,16 @@ struct Param {
     remove: bool,
 }
 
-type Attributes = IndexMap<String, Param, RandomState>;
+#[derive(Debug, Serialize, Clone, Deserialize, PartialEq)]
+struct Mappings {
+    types: HashMap<String, HashMap<String, Param>>,
+}
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct Settings {
     load_semantic_parts: bool,
     to_json_string: bool,
     to_tabular: bool,
-    mappings: IndexMap<String, Attributes, RandomState>,
 }
 
 struct FeatureCollector {}
@@ -104,12 +105,10 @@ impl FeatureCollector {
             geometries: Some(child_geometry_refs.clone()),
         };
 
-        let obj = CityObject {
+        CityObject {
             root: Value::Feature(feature),
             geometry_store: city_object.geometry_store.clone(),
-        };
-
-        obj
+        }
     }
 }
 
@@ -312,58 +311,108 @@ impl TransformerPipeline {
 }
 
 trait Traversal {
-    fn traverse(&self, city_object: CityObject) -> CityObject;
+    fn traverse(&self, city_object: CityObject, mappings: &Mappings) -> CityObject;
 }
 
 struct JsonStringTraversal {}
 impl Traversal for JsonStringTraversal {
-    fn traverse(&self, city_object: CityObject) -> CityObject {
-        // Array・Data・featureは全てJSON文字列に変換するかどうか
-        let mut attributes = IndexMap::with_hasher(RandomState::new());
-        if let Value::Feature(f) = &city_object.root {
-            for (key, value) in f.attributes.iter() {
-                match value {
-                    Value::Array(a) => {
-                        let json_array = serde_json::to_string(a).unwrap();
-                        attributes.insert(key.clone(), Value::String(json_array));
-                    }
-                    Value::Data(d) => {
-                        let json_data = serde_json::to_string(&d.attributes).unwrap();
-                        attributes.insert(key.clone(), Value::String(json_data));
-                    }
-                    Value::Feature(f) => {
-                        let json_feature = serde_json::to_string(&f.attributes).unwrap();
-                        attributes.insert(key.clone(), Value::String(json_feature));
-                    }
-                    _ => {
+    fn traverse(&self, city_object: CityObject, mappings: &Mappings) -> CityObject {
+        let root_typename = match &city_object.root {
+            Value::Feature(f) => &f.typename,
+            Value::Data(d) => &d.typename,
+            _ => panic!(
+                "Root value type must be Feature or Data, but found {:?}",
+                city_object.root
+            ),
+        };
+
+        let targets = mappings.types.get(root_typename.as_ref());
+        if let Some(targets) = targets {
+            let mut attributes = IndexMap::with_hasher(RandomState::new());
+            if let Value::Feature(f) = &city_object.root {
+                for (key, value) in f.attributes.iter() {
+                    let param = targets.get(key);
+
+                    if let Some(p) = param {
+                        if p.remove {
+                            continue;
+                        };
+
+                        let key = if p.name.is_empty() { key } else { &p.name };
+
+                        let value = if p.type_name == "string" {
+                            match value {
+                                Value::Array(a) => {
+                                    let array = a
+                                        .iter()
+                                        .map(|v| {
+                                            if let Value::String(s) = v {
+                                                s.clone()
+                                            } else {
+                                                panic!("Array must be String, but found {:?}", v)
+                                            }
+                                        })
+                                        .collect::<Vec<String>>()
+                                        .join(",");
+                                    Value::String(array)
+                                }
+                                Value::Data(d) => {
+                                    let json_data = serde_json::to_string(&d.attributes).unwrap();
+                                    Value::String(json_data)
+                                }
+                                Value::Feature(f) => {
+                                    let json_feature =
+                                        serde_json::to_string(&f.attributes).unwrap();
+                                    Value::String(json_feature)
+                                }
+                                _ => value.clone(),
+                            }
+                        } else if p.type_name == "json" {
+                            match value {
+                                Value::Array(a) => {
+                                    let json_array = serde_json::to_string(a).unwrap();
+                                    Value::String(json_array)
+                                }
+                                Value::Data(d) => {
+                                    let json_data = serde_json::to_string(&d.attributes).unwrap();
+                                    Value::String(json_data)
+                                }
+                                Value::Feature(f) => {
+                                    let json_feature =
+                                        serde_json::to_string(&f.attributes).unwrap();
+                                    Value::String(json_feature)
+                                }
+                                _ => value.clone(),
+                            }
+                        } else {
+                            value.clone()
+                        };
                         attributes.insert(key.clone(), value.clone());
-                    }
+                    };
+                    attributes.insert(key.clone(), value.clone());
                 }
+
+                let feature = Feature {
+                    id: f.id.clone(),
+                    typename: f.typename.clone(),
+                    attributes,
+                    geometries: f.geometries.clone(),
+                };
+
+                let obj = CityObject {
+                    root: Value::Feature(feature),
+                    geometry_store: city_object.geometry_store,
+                };
+                return obj;
             }
-
-            let feature = Feature {
-                id: f.id.clone(),
-                typename: f.typename.clone(),
-                attributes,
-                geometries: f.geometries.clone(),
-            };
-
-            let obj = CityObject {
-                root: Value::Feature(feature),
-                geometry_store: city_object.geometry_store,
-            };
-            return obj;
         }
         city_object
     }
 }
 
-struct FilteringAttributesTraversal {}
-
-struct ArrayToStringTraversal {}
-
 struct ObjectTraversalPipeline {
     traversals: Vec<Box<dyn Traversal>>,
+    mappings: Mappings,
 }
 impl ObjectTraversalPipeline {
     fn add(&mut self, traversal: Box<dyn Traversal>) {
@@ -373,7 +422,7 @@ impl ObjectTraversalPipeline {
     fn traverse(&self, city_object: CityObject) -> CityObject {
         let mut obj = city_object;
         for traversal in &self.traversals {
-            obj = traversal.traverse(obj);
+            obj = traversal.traverse(obj, &self.mappings);
         }
         obj
     }
@@ -408,8 +457,13 @@ impl ObjectTransformer {
             load_semantic_parts: false,
             to_tabular: true,
             to_json_string: true,
-            mappings: IndexMap::with_hasher(RandomState::new()),
         };
+        // 仮にJSONファイルから設定を読み込む
+        // マッピングルールのパスを読み込めば良い？
+        // sinkから渡したい
+        let file = std::fs::File::open("/Users/satoru/Downloads/output/sample.json").unwrap();
+        let reader = std::io::BufReader::new(file);
+        let mappings: Mappings = serde_json::from_reader(reader).unwrap();
 
         // LODごとの分離などの、CityObject->Vec<CityObject>を行うTransformer
         let mut transformer_pipeline = TransformerPipeline {
@@ -428,6 +482,7 @@ impl ObjectTransformer {
         // 属性の変換などの、CityObject->CityObjectを行うTraversal
         let mut traversal_pipeline = ObjectTraversalPipeline {
             traversals: Vec::new(),
+            mappings,
         };
         if settings.to_json_string {
             traversal_pipeline.add(Box::new(JsonStringTraversal {}));
@@ -437,26 +492,9 @@ impl ObjectTransformer {
             .map(|o| traversal_pipeline.traverse(o))
             .collect();
 
-        // todo: 特定の属性のみ形状を変換するような構造を組み込む
-        // スキーマ情報から、本来あるべき構造は得られる
-        // それとtypenameを比較していって、その構造をどう変換させるべきかわかるはず？
-        // どの属性を、どう変換させるのか
-        // 属性を消すのか、値をJSONにするのか、Arrayをカンマ区切りにするのか、など
-
-        if objects.len() >= 1 {
-            for o in &objects {
-                // if let Value::Feature(f) = &o.root {
-                //     println!("{:?}: {:?}", f.id, f.geometries);
-                // }
-
-                let file =
-                    std::fs::File::create("/Users/satoru/Downloads/output/test.json").unwrap();
-                let writer = std::io::BufWriter::new(file);
-                serde_json::to_writer_pretty(writer, &objects).unwrap();
-            }
-        }
-
-        // println!();
+        let file = std::fs::File::create("/Users/satoru/Downloads/output/test.json").unwrap();
+        let writer = std::io::BufWriter::new(file);
+        serde_json::to_writer(writer, &objects).unwrap();
 
         objects
     }

@@ -76,7 +76,7 @@ impl DataSink for GeoJsonSink {
                         let object_transformer = ObjectTransformer {
                             settings: Default::default(),
                         };
-                        let objects = object_transformer.transform(obj);
+                        let _ = object_transformer.transform(obj);
 
                         // let features = toplevel_cityobj_to_geojson_features(&parcel.cityobj);
                         let features = toplevel_cityobj_to_geojson_features(&parcel.cityobj);
