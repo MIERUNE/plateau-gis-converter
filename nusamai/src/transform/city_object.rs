@@ -461,7 +461,7 @@ impl ObjectTransformer {
         // 仮にJSONファイルから設定を読み込む
         // マッピングルールのパスを読み込めば良い？
         // sinkから渡したい
-        let file = std::fs::File::open("/Users/satoru/Downloads/output/sample.json").unwrap();
+        let file = std::fs::File::open("/Users/satoru/Downloads/output/mappings.json").unwrap();
         let reader = std::io::BufReader::new(file);
         let mappings: Mappings = serde_json::from_reader(reader).unwrap();
 
@@ -492,7 +492,8 @@ impl ObjectTransformer {
             .map(|o| traversal_pipeline.traverse(o))
             .collect();
 
-        let file = std::fs::File::create("/Users/satoru/Downloads/output/test.json").unwrap();
+        let file =
+            std::fs::File::create("/Users/satoru/Downloads/output/output_object.json").unwrap();
         let writer = std::io::BufWriter::new(file);
         serde_json::to_writer(writer, &objects).unwrap();
 
