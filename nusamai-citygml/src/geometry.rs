@@ -58,18 +58,24 @@ pub struct GeometryStore {
     pub multipoint: MultiPoint<'static, 1, u32>,
 }
 
+/// Temporary storage for the parser to collect geometries.
 #[derive(Default)]
 pub(crate) struct GeometryCollector {
     pub vertices: indexmap::IndexSet<[u64; 3], ahash::RandomState>,
     pub multipolygon: MultiPolygon<'static, 1, u32>,
     pub multilinestring: MultiLineString<'static, 1, u32>,
     pub multipoint: MultiPoint<'static, 1, u32>,
+    pub ring_ids: Vec<Option<u32>>,
 }
 
 impl GeometryCollector {
-    pub fn add_exterior_ring(&mut self, iter: impl Iterator<Item = [f64; 3]>) -> usize {
+    pub fn add_exterior_ring(
+        &mut self,
+        iter: impl Iterator<Item = [f64; 3]>,
+        ring_id: Option<u32>,
+    ) -> usize {
+        self.ring_ids.push(ring_id);
         self.multipolygon.add_exterior(iter.map(|v| {
-            // ...
             let vbits = [v[0].to_bits(), v[1].to_bits(), v[2].to_bits()];
             let (index, _) = self.vertices.insert_full(vbits);
             [index as u32]
@@ -78,9 +84,13 @@ impl GeometryCollector {
         self.multipolygon.len() - 1
     }
 
-    pub fn add_interior_ring(&mut self, iter: impl Iterator<Item = [f64; 3]>) {
+    pub fn add_interior_ring(
+        &mut self,
+        iter: impl Iterator<Item = [f64; 3]>,
+        ring_id: Option<u32>,
+    ) {
+        self.ring_ids.push(ring_id);
         self.multipolygon.add_interior(iter.map(|v| {
-            // ...
             let vbits = [v[0].to_bits(), v[1].to_bits(), v[2].to_bits()];
             let (index, _) = self.vertices.insert_full(vbits);
             [index as u32]

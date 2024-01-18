@@ -12,6 +12,7 @@ use crate::pipeline::{Feedback, Parcel, Sender};
 use crate::source::{DataSource, DataSourceProvider, SourceInfo};
 use nusamai_citygml::object::CityObject;
 use nusamai_citygml::{CityGMLElement, CityGMLReader, ParseError, SubTreeReader};
+use nusamai_plateau::models;
 
 pub struct CityGMLSourceProvider {
     // FIXME: Use the configuration mechanism
@@ -68,6 +69,7 @@ impl DataSource for CityGMLSource {
     }
 }
 
+// TODO: Move this to nusamai-plateau ?
 fn toplevel_dispatcher<R: BufRead>(
     st: &mut SubTreeReader<R>,
     downstream: &Sender,
@@ -84,14 +86,14 @@ fn toplevel_dispatcher<R: BufRead>(
                 Ok(())
             }
             b"core:cityObjectMember" => {
-                let mut cityobj: nusamai_plateau::models::TopLevelCityObject = Default::default();
+                let mut cityobj: models::TopLevelCityObject = Default::default();
                 cityobj.parse(st)?;
-                let geometries = st.collect_geometries();
+                let geometry_store = st.collect_geometries();
 
                 if let Some(root) = cityobj.into_object() {
                     let cityobj = CityObject {
                         root,
-                        geometry_store: geometries,
+                        geometry_store,
                     };
                     if downstream.send(Parcel { cityobj }).is_err() {
                         feedback.cancel();
@@ -101,7 +103,9 @@ fn toplevel_dispatcher<R: BufRead>(
                 Ok(())
             }
             b"app:appearanceMember" => {
-                st.skip_current_element()?;
+                let mut app: models::appearance::AppearanceProperty = Default::default();
+                app.parse(st)?;
+                println!("app: {:?}", app);
                 Ok(())
             }
             other => Err(ParseError::SchemaViolation(format!(

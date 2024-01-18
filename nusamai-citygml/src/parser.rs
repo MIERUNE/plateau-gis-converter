@@ -72,6 +72,8 @@ impl<'a> InternalState<'a> {
 pub struct ParseContext<'a> {
     source_uri: Option<Url>,
     code_resolver: &'a dyn CodeResolver,
+    // Mapping a string gml:id to an integer ID, unique in a single document
+    id_map: indexmap::IndexSet<String, ahash::RandomState>,
 }
 
 impl<'a> ParseContext<'a> {
@@ -79,6 +81,7 @@ impl<'a> ParseContext<'a> {
         Self {
             source_uri: Some(source_uri),
             code_resolver,
+            ..Default::default()
         }
     }
 
@@ -89,6 +92,11 @@ impl<'a> ParseContext<'a> {
     pub fn code_resolver(&self) -> &dyn CodeResolver {
         self.code_resolver
     }
+
+    pub fn id_to_integer_id(&mut self, id: String) -> u32 {
+        let (idx, _) = self.id_map.insert_full(id);
+        idx as u32
+    }
 }
 
 impl<'a> Default for ParseContext<'a> {
@@ -96,6 +104,7 @@ impl<'a> Default for ParseContext<'a> {
         Self {
             source_uri: None,
             code_resolver: &codelist::NoopResolver {},
+            id_map: indexmap::IndexSet::default(),
         }
     }
 }
@@ -149,7 +158,7 @@ pub struct SubTreeReader<'a, 'b, R> {
     path_start: usize,
 }
 
-impl<R: BufRead> SubTreeReader<'_, '_, R> {
+impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
     pub fn parse_children(
         &mut self,
         logic: impl FnMut(&mut SubTreeReader<R>) -> Result<(), ParseError>,
@@ -206,7 +215,7 @@ impl<R: BufRead> SubTreeReader<'_, '_, R> {
 
     pub fn parse_attributes(
         &mut self,
-        mut logic: impl FnMut(&[u8], &[u8]) -> Result<(), ParseError>,
+        mut logic: impl FnMut(&[u8], &[u8], &mut ParseContext) -> Result<(), ParseError>,
     ) -> Result<(), ParseError> {
         let Some(start) = &self.state.current_start else {
             panic!("parse_attributes() must be called immediately after encountering a start tag.");
@@ -220,6 +229,7 @@ impl<R: BufRead> SubTreeReader<'_, '_, R> {
             logic(
                 self.state.buf1.as_ref(), // attribute path "@nsprefix:name"
                 attr.value.as_ref(),      // attribute value
+                &mut self.state.context,
             )?;
             self.state.buf1.truncate(1);
         }
@@ -293,6 +303,14 @@ impl<R: BufRead> SubTreeReader<'_, '_, R> {
 
     pub fn context(&self) -> &ParseContext {
         &self.state.context
+    }
+
+    pub fn context_mut(&mut self) -> &mut ParseContext<'b> {
+        &mut self.state.context
+    }
+
+    pub fn id_to_integer_id(&mut self, id: String) -> u32 {
+        self.state.context.id_to_integer_id(id)
     }
 
     pub fn collect_geometries(&mut self) -> GeometryStore {
@@ -654,6 +672,7 @@ impl<R: BufRead> SubTreeReader<'_, '_, R> {
         let mut depth = 1;
         let mut expect_exterior = true;
         let mut is_exterior = true;
+        let mut ring_id = None;
         loop {
             match self.reader.read_resolved_event_into(&mut self.state.buf1) {
                 Ok((Bound(GML31_NS), Event::Start(start))) => {
@@ -682,7 +701,18 @@ impl<R: BufRead> SubTreeReader<'_, '_, R> {
                                 String::from_utf8_lossy(start.name().as_ref())
                             )));
                         }
-                        (3, b"LinearRing") => (),
+                        (3, b"LinearRing") => {
+                            ring_id = None;
+                            for attr in start.attributes().flatten() {
+                                let (nsres, localname) = self.reader.resolve_attribute(attr.key);
+                                if nsres == Bound(GML31_NS) && localname.as_ref() == b"id" {
+                                    let id =
+                                        String::from_utf8_lossy(attr.value.as_ref()).to_string();
+                                    ring_id = Some(self.state.context.id_to_integer_id(id));
+                                    break;
+                                }
+                            }
+                        }
                         (3, _) => {
                             return Err(ParseError::SchemaViolation(format!(
                                 "Expected <LinearRing> but found <{}>",
@@ -749,10 +779,14 @@ impl<R: BufRead> SubTreeReader<'_, '_, R> {
                         .map(|c| [c[0], c[1], c[2]]);
                     if is_exterior {
                         // add a new polygon
-                        self.state.geometry_collector.add_exterior_ring(iter);
+                        self.state
+                            .geometry_collector
+                            .add_exterior_ring(iter, ring_id.take());
                     } else {
                         // append an interior ring
-                        self.state.geometry_collector.add_interior_ring(iter);
+                        self.state
+                            .geometry_collector
+                            .add_interior_ring(iter, ring_id.take());
                     }
                 }
                 Ok(_) => (),

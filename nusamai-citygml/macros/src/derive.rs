@@ -208,8 +208,9 @@ fn generate_citygml_impl_for_struct(
                     // XML attributes (e.g. @gml:id)
                     attribute_arms.push(quote! {
                         #path => {
-                            self.#field_ident = <#field_ty as nusamai_citygml::CityGMLAttribute>::parse_attr_value(
+                            self.#field_ident = <#field_ty as nusamai_citygml::CityGMLAttribute>::parse_attribute_value(
                                 std::str::from_utf8(value).unwrap(),
+                                ctx
                             )?;
                             Ok(())
                         }
@@ -283,7 +284,7 @@ fn generate_citygml_impl_for_struct(
 
     let attr_parsing = (!attribute_arms.is_empty()).then(|| {
         quote! {
-            st.parse_attributes(|name, value| match name {
+            st.parse_attributes(|name, value, ctx| match name {
                 #(#attribute_arms)*
                 _ => Ok(()),
             })?;

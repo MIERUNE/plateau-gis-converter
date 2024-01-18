@@ -11,16 +11,16 @@
 ## リポジトリ構成
 
 - アプリケーション：
-    - [`app`](./app/) &mdash; Tauri による GUI アプリケーション
-    - [`nusamai`](./nusamai/) &mdash; アプリケーションのバックエンド (およびCLI実装)
+    - [`app`](./app/) &mdash; Tauri による GUI 実装
+    - [`nusamai`](./nusamai/) &mdash; バックエンドおよびコマンドライン版実装
 - 基盤・ユーティリティ：
     - [`nusamai-geometry`](./nusamai-geometry/) &mdash; ジオメトリ型
     - [`nusamai-projection`](./nusamai-projection/) &mdash; 投影法変換
 - データソース：
-    - [`nusamai-citygml`](./nusamai-plateau/citygml/) &mdash; CityGML パーサ
-    - [`nusamai-plateau`](./nusamai-plateau/) &mdash; PLATEAU 用の CityGML モデル
+    - [`nusamai-citygml`](./nusamai-plateau/citygml/) &mdash; CityGML パーサ実装支援ライブラリ
         - [`macros`](./nusamai-plateau/citygml/macros/) &mdash; パーサ導出用の proc macros
-- 変換先形式のためのライブラリ：
+    - [`nusamai-plateau`](./nusamai-plateau/) &mdash; PLATEAU 用の CityGML モデルおよびパーサ
+- 変換先形式のための支援ライブラリ（本アプリケーションのユースケースが混入しないようにする）
     - [`nusamai-3dtiles`](./nusamai-3dtiles/) &mdash; 3D Tiles
     - [`nusamai-mvt`](./nusamai-mvt/) &mdash; Mapbox Vector Tiles (MVT)
     - [`nusamai-gpkg`](./nusamai-gpkg/) &mdash; GeoPackage

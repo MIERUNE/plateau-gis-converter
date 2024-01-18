@@ -8,6 +8,7 @@ use crate::Measure;
 use chrono::NaiveDate;
 use serde::{Deserialize, Serialize};
 
+// TODO: Cow<'static, str> insted of String ??
 pub type Map = indexmap::IndexMap<String, Value, ahash::RandomState>;
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -36,6 +37,7 @@ pub enum Value {
     String(String),
     Code(Code),
     Integer(i64),
+    NonNegativeInteger(u64),
     Double(f64),
     Measure(Measure),
     Boolean(bool),
@@ -56,6 +58,7 @@ impl Value {
             String(s) => serde_json::Value::String(s.into()),
             Code(c) => serde_json::Value::String(c.value().to_owned()),
             Integer(i) => serde_json::Value::Number((*i).into()),
+            NonNegativeInteger(i) => serde_json::Value::Number((*i).into()),
             Double(d) => serde_json::Value::Number(serde_json::Number::from_f64(*d).unwrap()),
             Measure(m) => {
                 serde_json::Value::Number(serde_json::Number::from_f64(m.value()).unwrap())
