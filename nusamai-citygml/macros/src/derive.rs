@@ -30,11 +30,15 @@ fn generate_citygml_impl(derive_input: &DeriveInput) -> Result<TokenStream, Erro
     }
 }
 
-fn bytehash(s: &[u8]) -> u8 {
+const HASH_CHAR_TAKE: usize = 7;
+const HASH_MASK: u32 = 0x1f;
+
+fn hash(s: &[u8]) -> u32 {
     let h = s
         .iter()
+        .take(HASH_CHAR_TAKE)
         .fold(5381u32, |a, c| a.wrapping_mul(33) ^ *c as u32);
-    (h & 0xff) as u8
+    h & HASH_MASK
 }
 
 fn generate_citygml_impl_for_struct(
@@ -125,7 +129,7 @@ fn generate_citygml_impl_for_struct(
                         c.extend(name);
                         let pat = LitByteStr::new(c.as_ref(), prefix.span());
                         let geomtype = format_ident!("{}", geomtype);
-                        let hash = bytehash(&pat.value());
+                        let hash = hash(&pat.value());
 
                         child_arms.push(quote! {
                             (#hash, #pat) => st.parse_geometric_attr(&mut self.#field_ident, #lod, ::nusamai_citygml::geometry::GeometryParseType::#geomtype),
@@ -187,7 +191,7 @@ fn generate_citygml_impl_for_struct(
                 } else if meta.path.is_ident("generics") {
                     let mut add_arm = |path: &[u8]| {
                         let pat = LitByteStr::new(path, attr.span());
-                        let hash = bytehash(path);
+                        let hash = hash(path);
                         child_arms.push(quote! {
                             (#hash, #pat) => <#field_ty as CityGMLElement>::parse(&mut self.#field_ident, st),
                         });
@@ -255,13 +259,13 @@ fn generate_citygml_impl_for_struct(
                     // if the path contains '/', add the first path as a 'noop' arm.
                     if let Some(pos) = path_value.iter().position(|&x| x == b'/') {
                         let prefix = LitByteStr::new(&path_value[..pos], path.span());
-                        let hash = bytehash(&prefix.value());
+                        let hash = hash(&prefix.value());
                         child_arms.push(quote! {
                             (#hash, #prefix) => Ok(()),
                         });
                     };
 
-                    let hash = bytehash(&path.value());
+                    let hash = hash(&path.value());
                     child_arms.push(quote! {
                         (#hash, #path) => <#field_ty as CityGMLElement>::parse(&mut self.#field_ident, st),
                     });
@@ -371,7 +375,7 @@ fn generate_citygml_impl_for_struct(
 
                 st.parse_children(|st| {
                     let path = st.current_path();
-                    let hash = (path.iter().fold(5381u32, |a, c| a.wrapping_mul(33) ^ *c as u32) & 0xff) as u8;
+                    let hash = path.iter().take(#HASH_CHAR_TAKE).fold(5381u32, |a, c| a.wrapping_mul(33) ^ *c as u32) & #HASH_MASK;
                     match (hash, path) {
                         #(#child_arms)*
                         _ => #extra_arm,
@@ -461,7 +465,7 @@ fn generate_citygml_impl_for_enum(
                 if meta.path.is_ident("path") {
                     let value = meta.value()?;
                     let path: LitByteStr = value.parse()?;
-                    let hash = bytehash(&path.value());
+                    let hash = hash(&path.value());
 
                     child_arms.push(quote! {
                         (#hash, #path) => {
@@ -489,7 +493,7 @@ fn generate_citygml_impl_for_enum(
             fn parse<R: ::std::io::BufRead>(&mut self, st: &mut ::nusamai_citygml::SubTreeReader<R>) -> Result<(), ::nusamai_citygml::ParseError> {
                 st.parse_children(|st| {
                     let path = st.current_path();
-                    let hash = (path.iter().fold(5381u32, |a, c| a.wrapping_mul(33) ^ *c as u32) & 0xff) as u8;
+                    let hash = path.iter().take(#HASH_CHAR_TAKE).fold(5381u32, |a, c| a.wrapping_mul(33) ^ *c as u32) & #HASH_MASK;
                     match (hash, path) {
                         #(#child_arms)*
                         _ => Ok(()),
