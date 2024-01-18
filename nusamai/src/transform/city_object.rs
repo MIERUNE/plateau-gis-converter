@@ -320,6 +320,23 @@ impl Traversal for JsonStringTraversal {
     }
 }
 
+struct ObjectTraversalPipeline {
+    traversals: Vec<Box<dyn Traversal>>,
+}
+impl ObjectTraversalPipeline {
+    fn add(&mut self, traversal: Box<dyn Traversal>) {
+        self.traversals.push(traversal);
+    }
+
+    fn traverse(&self, city_object: CityObject) -> CityObject {
+        let mut obj = city_object;
+        for traversal in &self.traversals {
+            obj = traversal.traverse(obj);
+        }
+        obj
+    }
+}
+
 struct TransformerPipeline {
     transformers: Vec<Box<dyn Transformer>>,
 }
@@ -365,7 +382,16 @@ impl ObjectTransformer {
             ),
         };
 
-        // 仮の設定を作成する
+        // 一旦コピーを作成
+        let obj = CityObject {
+            root: Value::Feature(toplevel_feature),
+            geometry_store: cityobj.geometry_store.clone(),
+        };
+
+        // attributes内の子要素（feature）を収集して、トップレベルに引き上げる
+        let obj = FeatureCollector {}.collect(obj);
+
+        // 仮の設定を作成する（外部から与えたい）
         let settings = Settings {
             load_semantic_parts: false,
             to_tabular: true,
@@ -373,7 +399,7 @@ impl ObjectTransformer {
             mappings: IndexMap::with_hasher(RandomState::new()),
         };
 
-        // CityObject->Vec<CityObject>を行うTransformerと、属性の変換などを行うCityObject->CityObjectを行うTraversalは分離した方が良いかも
+        // LODごとの分離などの、CityObject->Vec<CityObject>を行うTransformer
         let mut transformer_pipeline = TransformerPipeline {
             transformers: Vec::new(),
         };
@@ -385,18 +411,19 @@ impl ObjectTransformer {
         } else {
             transformer_pipeline.add(Box::new(SeparateLodTransformer {}));
         }
-
-        let obj = CityObject {
-            root: Value::Feature(toplevel_feature),
-            geometry_store: cityobj.geometry_store.clone(),
-        };
-        // attributes内の子要素（feature）を収集して、トップレベルに引き上げる
-        let obj = FeatureCollector {}.collect(obj);
-
         let objects = transformer_pipeline.transform(obj);
 
-        let t = JsonStringTraversal {};
-        let objects: Vec<CityObject> = objects.into_iter().map(|o| t.traverse(o)).collect();
+        // 属性の変換などの、CityObject->CityObjectを行うTraversal
+        let mut traversal_pipeline = ObjectTraversalPipeline {
+            traversals: Vec::new(),
+        };
+        if settings.to_json_string {
+            traversal_pipeline.add(Box::new(JsonStringTraversal {}));
+        }
+        let objects: Vec<CityObject> = objects
+            .into_iter()
+            .map(|o| traversal_pipeline.traverse(o))
+            .collect();
 
         // todo: 特定の属性のみ形状を変換するような構造を組み込む
 
