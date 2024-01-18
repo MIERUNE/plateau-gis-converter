@@ -1,4 +1,5 @@
 use ahash::RandomState;
+use bincode::de;
 use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
 
@@ -7,21 +8,49 @@ use nusamai_citygml::{
     GeometryRefEntry, GeometryStore, Value,
 };
 
-// 以下、仮実装
-#[derive(Debug, Default, Clone, Serialize, Deserialize)]
-enum SettingValue {
-    Json(String),
-    Separate(bool),
-    #[default]
-    None,
+// 子要素収集のためのユーティリティ
+fn extract_features(value: &Value) -> Vec<Feature> {
+    match value {
+        Value::Array(vec) => vec.iter().flat_map(|v| extract_features(v)).collect(),
+        Value::Feature(feature) => {
+            vec![feature.clone()]
+        }
+        _ => Vec::new(),
+    }
 }
+
+fn extract_data(value: &Value) -> Vec<Data> {
+    match value {
+        Value::Array(vec) => vec.iter().flat_map(|v| extract_data(v)).collect(),
+        Value::Data(data) => {
+            vec![data.clone()]
+        }
+        _ => Vec::new(),
+    }
+}
+
+fn extract_array(value: &Value) -> Vec<Value> {
+    match value {
+        Value::Array(vec) => vec.clone(),
+        _ => Vec::new(),
+    }
+}
+
+#[derive(Debug, Serialize, Clone, Deserialize, PartialEq)]
+struct Param {
+    name: String,
+    type_name: String,
+    remove: bool,
+}
+
+type Attributes = IndexMap<String, Param, RandomState>;
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct Settings {
     load_semantic_parts: bool,
     to_json_string: bool,
     to_tabular: bool,
-    mappings: IndexMap<String, SettingValue, RandomState>,
+    mappings: IndexMap<String, Attributes, RandomState>,
 }
 
 struct FeatureCollector {}
@@ -252,24 +281,33 @@ impl Transformer for SeparateLodTransformer {
     }
 }
 
-struct FilterFeaturesTransformer {}
-impl Transformer for FilterFeaturesTransformer {
-    fn transform(&self, city_object: CityObject) -> Vec<CityObject> {
-        todo!();
-    }
+struct TransformerPipeline {
+    transformers: Vec<Box<dyn Transformer>>,
 }
-
-struct FilterAttributesTransformer {}
-impl Transformer for FilterAttributesTransformer {
-    fn transform(&self, city_object: CityObject) -> Vec<CityObject> {
-        todo!();
+impl TransformerPipeline {
+    fn add(&mut self, transformer: Box<dyn Transformer>) {
+        self.transformers.push(transformer);
     }
-}
 
-struct AttributesTransformer {}
-impl Transformer for AttributesTransformer {
     fn transform(&self, city_object: CityObject) -> Vec<CityObject> {
-        todo!();
+        let mut results = Vec::new();
+        for transformer in &self.transformers {
+            let obj = CityObject {
+                root: city_object.root.clone(),
+                geometry_store: city_object.geometry_store.clone(),
+            };
+            let objects = transformer.transform(obj);
+            results.extend(objects)
+        }
+
+        let results: Vec<CityObject> = results.into_iter().fold(Vec::new(), |mut acc, x| {
+            if !acc.contains(&x) {
+                acc.push(x);
+            }
+            acc
+        });
+
+        results
     }
 }
 
@@ -320,6 +358,10 @@ impl Traversal for JsonStringTraversal {
     }
 }
 
+struct FilteringAttributesTraversal {}
+
+struct ArrayToStringTraversal {}
+
 struct ObjectTraversalPipeline {
     traversals: Vec<Box<dyn Traversal>>,
 }
@@ -334,36 +376,6 @@ impl ObjectTraversalPipeline {
             obj = traversal.traverse(obj);
         }
         obj
-    }
-}
-
-struct TransformerPipeline {
-    transformers: Vec<Box<dyn Transformer>>,
-}
-impl TransformerPipeline {
-    fn add(&mut self, transformer: Box<dyn Transformer>) {
-        self.transformers.push(transformer);
-    }
-
-    fn transform(&self, city_object: CityObject) -> Vec<CityObject> {
-        let mut results = Vec::new();
-        for transformer in &self.transformers {
-            let obj = CityObject {
-                root: city_object.root.clone(),
-                geometry_store: city_object.geometry_store.clone(),
-            };
-            let objects = transformer.transform(obj);
-            results.extend(objects)
-        }
-
-        let results: Vec<CityObject> = results.into_iter().fold(Vec::new(), |mut acc, x| {
-            if !acc.contains(&x) {
-                acc.push(x);
-            }
-            acc
-        });
-
-        results
     }
 }
 
@@ -447,33 +459,5 @@ impl ObjectTransformer {
         // println!();
 
         objects
-    }
-}
-
-// 子要素収集のためのユーティリティ
-fn extract_features(value: &Value) -> Vec<Feature> {
-    match value {
-        Value::Array(vec) => vec.iter().flat_map(|v| extract_features(v)).collect(),
-        Value::Feature(feature) => {
-            vec![feature.clone()]
-        }
-        _ => Vec::new(),
-    }
-}
-
-fn extract_data(value: &Value) -> Vec<Data> {
-    match value {
-        Value::Array(vec) => vec.iter().flat_map(|v| extract_data(v)).collect(),
-        Value::Data(data) => {
-            vec![data.clone()]
-        }
-        _ => Vec::new(),
-    }
-}
-
-fn extract_array(value: &Value) -> Vec<Value> {
-    match value {
-        Value::Array(vec) => vec.clone(),
-        _ => Vec::new(),
     }
 }
