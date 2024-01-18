@@ -426,8 +426,12 @@ impl ObjectTransformer {
             .collect();
 
         // todo: 特定の属性のみ形状を変換するような構造を組み込む
+        // スキーマ情報から、本来あるべき構造は得られる
+        // それとtypenameを比較していって、その構造をどう変換させるべきかわかるはず？
+        // どの属性を、どう変換させるのか
+        // 属性を消すのか、値をJSONにするのか、Arrayをカンマ区切りにするのか、など
 
-        if objects.len() >= 8 {
+        if objects.len() >= 1 {
             for o in &objects {
                 // if let Value::Feature(f) = &o.root {
                 //     println!("{:?}: {:?}", f.id, f.geometries);
@@ -436,7 +440,7 @@ impl ObjectTransformer {
                 let file =
                     std::fs::File::create("/Users/satoru/Downloads/output/test.json").unwrap();
                 let writer = std::io::BufWriter::new(file);
-                serde_json::to_writer(writer, &objects).unwrap();
+                serde_json::to_writer_pretty(writer, &objects).unwrap();
             }
         }
 
