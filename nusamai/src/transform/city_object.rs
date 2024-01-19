@@ -7,7 +7,7 @@ use nusamai_citygml::{
     GeometryRefEntry, GeometryStore, Value,
 };
 
-// 子要素収集のためのユーティリティ
+// utility for child element collection
 fn extract_features(value: &Value) -> Vec<Feature> {
     match value {
         Value::Array(vec) => vec.iter().flat_map(extract_features).collect(),
@@ -28,6 +28,21 @@ fn extract_data(value: &Value) -> Vec<Data> {
     }
 }
 
+// Configure settings to control how city objects are transformed
+// Assumed to be loaded from json file
+#[derive(Debug, Clone, Serialize, Deserialize)]
+struct Mappings {
+    types: HashMap<String, HashMap<String, Param>>,
+    settings: Settings,
+}
+
+#[derive(Debug, Default, Clone, Serialize, Deserialize)]
+pub struct Settings {
+    load_semantic_parts: bool,
+    to_json_string: bool,
+    to_tabular: bool,
+}
+
 fn extract_array(value: &Value) -> Vec<Value> {
     match value {
         Value::Array(vec) => vec.clone(),
@@ -40,18 +55,6 @@ struct Param {
     name: String,
     type_name: String,
     remove: bool,
-}
-
-#[derive(Debug, Serialize, Clone, Deserialize, PartialEq)]
-struct Mappings {
-    types: HashMap<String, HashMap<String, Param>>,
-}
-
-#[derive(Debug, Default, Clone, Serialize, Deserialize)]
-pub struct Settings {
-    load_semantic_parts: bool,
-    to_json_string: bool,
-    to_tabular: bool,
 }
 
 struct FeatureCollector {}
@@ -429,12 +432,10 @@ impl ObjectTraversalPipeline {
 }
 
 #[derive(Debug, Default)]
-pub struct ObjectTransformer {
-    pub settings: Settings,
-}
+pub struct ObjectTransformer {}
 
 impl ObjectTransformer {
-    pub fn transform(&self, cityobj: &CityObject) -> Vec<CityObject> {
+    pub fn transform(&self, cityobj: &CityObject) -> Vsec<CityObject> {
         let toplevel_feature = match &cityobj.root {
             Value::Feature(f) => f.clone(),
             _ => panic!(
@@ -452,18 +453,14 @@ impl ObjectTransformer {
         // attributes内の子要素（feature）を収集して、トップレベルに引き上げる
         let obj = FeatureCollector {}.collect(obj);
 
-        // 仮の設定を作成する（外部から与えたい）
-        let settings = Settings {
-            load_semantic_parts: false,
-            to_tabular: true,
-            to_json_string: true,
-        };
         // 仮にJSONファイルから設定を読み込む
         // マッピングルールのパスを読み込めば良い？
         // sinkから渡したい
         let file = std::fs::File::open("/Users/satoru/Downloads/output/mappings.json").unwrap();
         let reader = std::io::BufReader::new(file);
         let mappings: Mappings = serde_json::from_reader(reader).unwrap();
+
+        let settings = mappings.settings.clone();
 
         // LODごとの分離などの、CityObject->Vec<CityObject>を行うTransformer
         let mut transformer_pipeline = TransformerPipeline {
