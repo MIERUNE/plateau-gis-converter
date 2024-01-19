@@ -602,3 +602,233 @@ fn load_flood_example() {
         };
     }
 }
+
+#[test]
+fn load_urf_kodo_example() {
+    let cityobjs = load_cityobjs("./tests/data/kawasaki-shi/udx/urf/533915_urf_6668_kodo_op.gml");
+    assert_eq!(cityobjs.len(), 1);
+    let TopLevelCityObject::HeightControlDistrict(hcd) = &cityobjs.first().unwrap().cityobj else {
+        panic!("Not a HeightControlDistrict");
+    };
+
+    assert_eq!(
+        hcd.function,
+        vec![Code::new("高度地区".to_string(), "18".to_string(),)]
+    );
+
+    assert_eq!(
+        hcd.urf_valid_from,
+        Option::Some(Date::from_ymd_opt(2009, 11, 11).unwrap())
+    );
+
+    assert_eq!(
+        hcd.valid_from_type,
+        Some(Code::new("変更".to_string(), "3".to_string()))
+    );
+}
+
+#[test]
+fn load_urf_kuiki_example() {
+    let cityobjs = load_cityobjs("./tests/data/kawasaki-shi/udx/urf/533915_urf_6668_kuiki_op.gml");
+    assert_eq!(cityobjs.len(), 2);
+    let TopLevelCityObject::AreaClassification(acf) = &cityobjs.first().unwrap().cityobj else {
+        panic!("Not a AreaClassification");
+    };
+
+    assert_eq!(
+        acf.function,
+        vec![Code::new("市街化区域".to_string(), "22".to_string(),)]
+
+    );
+
+    assert_eq!(
+        acf.urf_valid_from,
+        Option::Some(Date::from_ymd_opt(2009, 9, 18).unwrap())
+    );
+
+    assert_eq!(
+        acf.valid_from_type,
+        Some(Code::new("変更".to_string(), "3".to_string()))
+    );
+
+}
+
+#[test]
+fn load_urf_rinko_example() {
+    let cityobjs = load_cityobjs("./tests/data/kawasaki-shi/udx/urf/533915_urf_6668_rinko_op.gml");
+    assert_eq!(cityobjs.len(), 2);
+    let TopLevelCityObject::PortZone(pz) = &cityobjs.first().unwrap().cityobj else {
+        panic!("Not a PortZone");
+    };
+
+    assert_eq!(
+        pz.function,
+        vec![Code::new("臨港地区".to_string(), "30".to_string(),)]
+
+    );
+
+    assert_eq!(
+        pz.urf_valid_from,
+        Option::Some(Date::from_ymd_opt(2009, 9, 18).unwrap())
+    );
+
+    assert_eq!(
+        pz.valid_from_type,
+        Some(Code::new("変更".to_string(), "3".to_string()))
+    );
+
+}
+
+#[test]
+fn load_urf_yoto_example() {
+    let cityobjs = load_cityobjs("./tests/data/kawasaki-shi/udx/urf/533915_urf_6668_yoto_op.gml");
+    assert_eq!(cityobjs.len(), 4);
+    let TopLevelCityObject::UseDistrict(ud) = &cityobjs.first().unwrap().cityobj else {
+        panic!("Not a UseDistrict");
+    };
+
+    assert_eq!(
+        ud.function,
+        vec![Code::new("工業専用地域".to_string(), "13".to_string(),)]
+
+    );
+
+    assert_eq!(
+        ud.urf_valid_from,
+        Option::Some(Date::from_ymd_opt(2009, 11, 11).unwrap())
+    );
+
+    assert_eq!(
+        ud.valid_from_type,
+        Some(Code::new("変更".to_string(), "3".to_string()))
+    );
+}
+
+#[test]
+fn load_urf_boka_example() {
+    let cityobjs = load_cityobjs("./tests/data/kawasaki-shi/udx/urf/533916_urf_6668_boka_op.gml");
+    assert_eq!(cityobjs.len(), 2);
+    let TopLevelCityObject::FirePreventionDistrict(fpd) = &cityobjs.first().unwrap().cityobj else {
+        panic!("Not a FirePreventionDistrict");
+    };
+
+    assert_eq!(
+        fpd.function,
+        vec![Code::new("準防火地域".to_string(), "25".to_string(),)]
+
+    );
+
+    assert_eq!(
+        fpd.urf_valid_from,
+        Option::Some(Date::from_ymd_opt(2009, 9, 18).unwrap())
+    );
+
+    assert_eq!(
+        fpd.valid_from_type,
+        Some(Code::new("変更".to_string(), "3".to_string()))
+    );
+
+}
+#[test]
+fn load_urf_seisan_example() {
+    let cityobjs = load_cityobjs("./tests/data/kawasaki-shi/udx/urf/533923_urf_6668_seisan_op.gml");
+    assert_eq!(cityobjs.len(), 27);
+    let TopLevelCityObject::ProductiveGreenZone(pgz) = &cityobjs.first().unwrap().cityobj else {
+        panic!("Not a ProductiveGreenZone");
+    };
+
+    assert_eq!(
+        pgz.function,
+        vec![Code::new("生産緑地地区".to_string(), "38".to_string(),)]
+
+    );
+
+    assert_eq!(
+        pgz.urf_valid_from,
+        Option::Some(Date::from_ymd_opt(2010, 12, 21).unwrap())
+    );
+
+    assert_eq!(
+        pgz.valid_from_type,
+        Some(Code::new("変更".to_string(), "3".to_string()))
+    );
+
+}
+
+
+#[test]
+fn load_urf_tokuryoku_example() {
+    let cityobjs = load_cityobjs("./tests/data/kawasaki-shi/udx/urf/533923_urf_6668_tokuryoku_op.gml");
+    assert_eq!(cityobjs.len(), 7);
+    let TopLevelCityObject::SpecialGreenSpaceConservationDistrict(sgcd) = &cityobjs.first().unwrap().cityobj else {
+        panic!("Not a SpecialGreenSpaceConservationDistrict");
+    };
+
+    assert_eq!(
+        sgcd.function,
+        vec![Code::new("特別緑地保存地区".to_string(), "35".to_string(),)]
+
+    );
+
+    assert_eq!(
+        sgcd.urf_valid_from,
+        Option::Some(Date::from_ymd_opt(2022, 4, 7).unwrap())
+    );
+
+    assert_eq!(
+        sgcd.valid_from_type,
+        Some(Code::new("変更".to_string(), "3".to_string()))
+    );
+
+}
+#[test]
+fn load_urf_chusha_example() {
+    let cityobjs = load_cityobjs("./tests/data/kawasaki-shi/udx/urf/533925_urf_6668_chusha_op.gml");
+    assert_eq!(cityobjs.len(), 1);
+    let TopLevelCityObject::ParkingPlaceDevelopmentZone(ppdz) = &cityobjs.first().unwrap().cityobj else {
+        panic!("Not a ParkingPlaceDevelopmentZone");
+    };
+
+    assert_eq!(
+        ppdz.function,
+        vec![Code::new("駐車場整備地区".to_string(), "29".to_string(),)]
+
+    );
+
+    assert_eq!(
+        ppdz.urf_valid_from,
+        Option::Some(Date::from_ymd_opt(1969, 3, 13).unwrap())
+    );
+
+    assert_eq!(
+        ppdz.valid_from_type,
+        Some(Code::new("決定".to_string(), "1".to_string()))
+    );
+
+}
+
+#[test]
+fn load_urf_tokuyoto_example() {
+    let cityobjs = load_cityobjs("./tests/data/kawasaki-shi/udx/urf/533925_urf_6668_tokuyoto_op.gml");
+    assert_eq!(cityobjs.len(), 4);
+    let TopLevelCityObject::SpecialUseDistrict(sud) = &cityobjs.first().unwrap().cityobj else {
+        panic!("Not a SpecialUseDistrict");
+    };
+
+    assert_eq!(
+        sud.function,
+        vec![Code::new("特別用途地区".to_string(), "14".to_string(),)]
+
+    );
+
+    assert_eq!(
+        sud.urf_valid_from,
+        Option::Some(Date::from_ymd_opt(2005, 10, 7).unwrap())
+    );
+
+    assert_eq!(
+        sud.valid_from_type,
+        Some(Code::new("変更".to_string(), "3".to_string()))
+    );
+
+}

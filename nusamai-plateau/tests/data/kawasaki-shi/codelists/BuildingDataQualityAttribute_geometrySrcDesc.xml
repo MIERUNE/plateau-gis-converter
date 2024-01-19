@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<gml:Dictionary xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:gml="http://www.opengis.net/gml" xsi:schemaLocation="http://www.opengis.net/gml http://schemas.opengis.net/gml/3.1.1/profiles/SimpleDictionary/1.0.0/gmlSimpleDictionaryProfile.xsd" gml:id="cl_6dcfc1d6-deb4-4b51-981e-3768fc61ba05">
-	<gml:name>CityFurnitureDataQualityAttribute_geometrySrcDesc</gml:name>
+<gml:Dictionary xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:gml="http://www.opengis.net/gml" xsi:schemaLocation="http://www.opengis.net/gml http://schemas.opengis.net/gml/3.1.1/profiles/SimpleDictionary/1.0.0/gmlSimpleDictionaryProfile.xsd" gml:id="cl_d646bcf8-8019-11ec-a8a3-0242ac120002">
+	<gml:name>BuildingDataQualityAttribute_geometrySrcDesc</gml:name>
 	<gml:dictionaryEntry>
 		<gml:Definition gml:id="id1">
 			<gml:description>現地測量</gml:description>
