@@ -491,6 +491,7 @@ impl ObjectTransformer {
             .map(|o| traversal_pipeline.traverse(o))
             .collect();
 
+        // 参考情報としてのファイル出力
         let file = std::fs::File::create("./output_object.json").unwrap();
         let writer = std::io::BufWriter::new(file);
         serde_json::to_writer(writer, &objects).unwrap();
