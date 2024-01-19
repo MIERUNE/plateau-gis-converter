@@ -12,7 +12,7 @@ pub struct TextureInfo {
     pub index: u32,
 
     /// This integer value is used to construct a string in the format `TEXCOORD_<set index>` which is a reference to a key in `mesh.primitives.attributes` (e.g. a value of `0` corresponds to `TEXCOORD_0`). A mesh primitive **MUST** have the corresponding texture coordinate attributes for the material to be applicable to it.
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "is_default")]
     pub tex_coord: u32,
 
     /// JSON object with extension-specific objects.
@@ -29,4 +29,8 @@ pub struct TextureInfo {
 pub struct TextureInfoExtensions {
     #[serde(flatten)]
     others: HashMap<String, Value>,
+}
+
+fn is_default<T: Default + PartialEq>(value: &T) -> bool {
+    *value == T::default()
 }

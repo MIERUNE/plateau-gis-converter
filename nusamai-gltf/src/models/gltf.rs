@@ -74,7 +74,6 @@ pub struct Gltf {
 
     /// The index of the default scene. This property MUST NOT be defined, when scenes is undefined.
     #[serde(skip_serializing_if = "Option::is_none")]
-    #[serde(default)]
     pub scene: Option<u32>,
 
     /// An array of scenes.
@@ -99,10 +98,6 @@ pub struct Gltf {
 }
 
 impl Gltf {
-    pub fn new() -> Self {
-        Default::default()
-    }
-
     pub fn to_string(&self) -> Result<String, serde_json::Error> {
         serde_json::to_string(self)
     }
@@ -251,7 +246,7 @@ mod tests {
 
     #[test]
     fn gltf_default() {
-        let gltf = Gltf::new();
+        let gltf = Gltf::default();
         assert_eq!(gltf.asset.version, "2.0");
         assert_eq!(gltf.asset.generator, Some("nusamai-gltf".into()));
     }
