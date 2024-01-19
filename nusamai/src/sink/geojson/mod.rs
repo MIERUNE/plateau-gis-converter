@@ -74,7 +74,8 @@ impl DataSink for GeoJsonSink {
                         // todo: parse attributes
                         let obj = &parcel.cityobj;
                         let object_transformer = ObjectTransformer {};
-                        let _ = object_transformer.transform(obj);
+                        let _ =
+                            object_transformer.transform(obj, &PathBuf::from("./mappings.json"));
 
                         let features = toplevel_cityobj_to_geojson_features(&parcel.cityobj);
                         for feature in features {

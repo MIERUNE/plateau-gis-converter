@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use ahash::{HashMap, RandomState};
 use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
@@ -435,7 +437,7 @@ impl ObjectTraversalPipeline {
 pub struct ObjectTransformer {}
 
 impl ObjectTransformer {
-    pub fn transform(&self, cityobj: &CityObject) -> Vec<CityObject> {
+    pub fn transform(&self, cityobj: &CityObject, mapping_path: &PathBuf) -> Vec<CityObject> {
         let toplevel_feature = match &cityobj.root {
             Value::Feature(f) => f.clone(),
             _ => panic!(
@@ -456,7 +458,7 @@ impl ObjectTransformer {
         // 仮にJSONファイルから設定を読み込む
         // マッピングルールのパスを読み込めば良い？
         // sinkから渡したい
-        let file = std::fs::File::open("./mappings.json").unwrap();
+        let file = std::fs::File::open(mapping_path).unwrap();
         let reader = std::io::BufReader::new(file);
         let mappings: Mappings = serde_json::from_reader(reader).unwrap();
 
