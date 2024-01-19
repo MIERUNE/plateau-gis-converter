@@ -496,3 +496,119 @@ impl ObjectTransformer {
         objects
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use nusamai_citygml::{Code, GeometryType};
+
+    use super::*;
+
+    fn make_mapping_rule() -> Mappings {
+        let json_text = r#"
+            {
+                "settings": {
+                    "load_semantic_parts": false,
+                    "to_tabular": true,
+                    "to_json_string": true
+                },
+                "types": {
+                    "bldg:Building": {
+                        "uro:buildingIDAttribute": {
+                            "name": "",
+                            "type_name": "",
+                            "remove": true
+                        },
+                        "bldg:boundedBy": {
+                            "name": "",
+                            "type_name": "",
+                            "remove": true
+                        },
+                        "gen:genericAttribute": {
+                            "name": "",
+                            "type_name": "",
+                            "remove": true
+                        },
+                        "uro:buildingDataQualityAttribute": {
+                            "name": "",
+                            "type_name": "",
+                            "remove": true
+                        },
+                        "uro:buildingDetailAttribute": {
+                            "name": "",
+                            "type_name": "",
+                            "remove": true
+                        },
+                        "uro:buildingDisasterRiskAttribute": {
+                            "name": "",
+                            "type_name": "",
+                            "remove": true
+                        }
+                    }
+                }
+            }
+        "#;
+        let mappings: Mappings = serde_json::from_str(json_text).unwrap();
+
+        assert!(!mappings.settings.load_semantic_parts);
+        assert!(mappings.settings.to_tabular);
+        assert!(mappings.settings.to_json_string);
+
+        mappings
+    }
+
+    fn make_dummy_city_object() -> CityObject {
+        let mut attributes_1 = IndexMap::with_hasher(RandomState::new());
+        attributes_1.insert("String".to_string(), Value::String("test".to_string()));
+        attributes_1.insert("Integer".to_string(), Value::Integer(1));
+        attributes_1.insert(
+            "Code".to_string(),
+            Value::Code(Code::new("test".to_string(), "1".to_string())),
+        );
+        let geometries_1 = vec![GeometryRefEntry {
+            ty: GeometryType::Surface,
+            lod: 0,
+            pos: 0,
+            len: 0,
+        }];
+
+        let feature_1 = Feature {
+            id: "bldg:Building".to_string(),
+            typename: "bldg_47af72fa-7135-4a1c-b93c-d69e3b245cc6".into(),
+            attributes: attributes_1,
+            geometries: Some(geometries_1),
+        };
+
+        let city_object_1 = CityObject {
+            root: Value::Feature(feature_1),
+            geometry_store: GeometryStore {
+                ..Default::default()
+            },
+        };
+        city_object_1
+    }
+
+    #[test]
+    fn test_load_mappings() {
+        let mappings = make_mapping_rule();
+        assert!(mappings.types.get("bldg:Building").is_some());
+    }
+
+    #[test]
+    fn test_city_object() {
+        let city_object = make_dummy_city_object();
+        if let Value::Feature(feature) = &city_object.root {
+            assert_eq!(feature.id, "bldg:Building");
+            assert_eq!(
+                feature.typename,
+                "bldg_47af72fa-7135-4a1c-b93c-d69e3b245cc6"
+            );
+            assert_eq!(feature.attributes.len(), 3);
+            assert_eq!(feature.geometries.as_ref().unwrap().len(), 1);
+        } else {
+            panic!(
+                "Root value type must be Feature, but found {:?}",
+                city_object.root
+            );
+        }
+    }
+}
