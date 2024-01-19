@@ -456,8 +456,6 @@ impl ObjectTransformer {
         let obj = FeatureCollector {}.collect(obj);
 
         // 仮にJSONファイルから設定を読み込む
-        // マッピングルールのパスを読み込めば良い？
-        // sinkから渡したい
         let file = std::fs::File::open(mapping_path).unwrap();
         let reader = std::io::BufReader::new(file);
         let mappings: Mappings = serde_json::from_reader(reader).unwrap();
