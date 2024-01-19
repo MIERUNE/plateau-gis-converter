@@ -54,4 +54,5 @@ Network Trash Folder
 Temporary Items
 .apdisk
 
-
+# emacs buckup files
+*~

@@ -13,25 +13,25 @@ pub type Map = indexmap::IndexMap<String, Value, ahash::RandomState>;
 #[derive(Debug, Deserialize, Serialize)]
 pub struct CityObject {
     pub root: Value,
-    pub geometries: geometry::GeometryStore,
+    pub geometry_store: geometry::GeometryStore,
 }
 
-#[derive(Debug, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct Feature {
     pub typename: Cow<'static, str>,
-    pub id: Option<String>,
+    pub id: String,
     pub attributes: Map,
     pub geometries: Option<GeometryRef>,
 }
 
-#[derive(Debug, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct Data {
     pub typename: Cow<'static, str>,
     pub attributes: Map,
 }
 
 /// Nodes for the "Object" representation of the city object.
-#[derive(Debug, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub enum Value {
     String(String),
     Code(Code),
@@ -57,7 +57,9 @@ impl Value {
             Code(c) => serde_json::Value::String(c.value().to_owned()),
             Integer(i) => serde_json::Value::Number((*i).into()),
             Double(d) => serde_json::Value::Number(serde_json::Number::from_f64(*d).unwrap()),
-            Measure(m) => serde_json::Value::Number(serde_json::Number::from_f64(m.value).unwrap()),
+            Measure(m) => {
+                serde_json::Value::Number(serde_json::Number::from_f64(m.value()).unwrap())
+            }
             Boolean(b) => serde_json::Value::Bool(*b),
             URI(u) => serde_json::Value::String(u.value().clone()),
             Date(d) => serde_json::Value::String(d.to_string()), // ISO 8601
@@ -115,7 +117,7 @@ mod tests {
         let obj = Value::Double(1.0);
         assert_eq!(obj.to_attribute_json(), json!(1.0));
 
-        let obj = Value::Measure(Measure { value: 1.0 });
+        let obj = Value::Measure(Measure::new(1.0));
         assert_eq!(obj.to_attribute_json(), json!(1.0));
 
         let obj = Value::Boolean(true);
@@ -135,7 +137,7 @@ mod tests {
         attributes.insert("Integer".into(), Value::Integer(1));
         let obj = Value::Feature(Feature {
             typename: "test".into(),
-            id: Some("test".into()),
+            id: "test".into(),
             attributes,
             geometries: None,
         });

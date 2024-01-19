@@ -35,7 +35,7 @@ pub struct MeshPrimitive {
     pub material: Option<u32>,
 
     /// The topology type of primitives to render.
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "is_default")]
     pub mode: PrimitiveMode,
 
     /// An array of morph targets.
@@ -49,14 +49,6 @@ pub struct MeshPrimitive {
     /// Application-specific data.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub extras: Option<Value>,
-}
-
-impl MeshPrimitive {
-    pub fn new() -> Self {
-        Self {
-            ..Default::default()
-        }
-    }
 }
 
 /// A set of primitives to be rendered.  Its global transform is defined by a node that references it.
@@ -91,10 +83,34 @@ pub struct MeshExtensions {
     others: HashMap<String, Value>,
 }
 
-impl Mesh {
-    pub fn new() -> Self {
-        Self {
-            ..Default::default()
-        }
+fn is_default<T: Default + PartialEq>(value: &T) -> bool {
+    *value == T::default()
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn test_primitive() {
+        use super::*;
+
+        let p: MeshPrimitive = serde_json::from_str(r#"{"attributes":{"POSITION":0}}"#).unwrap();
+        assert_eq!(p.mode, PrimitiveMode::Triangles);
+        assert_eq!(
+            serde_json::to_string(&p).unwrap(),
+            r#"{"attributes":{"POSITION":0}}"#
+        );
+    }
+
+    #[test]
+    fn test_mesh() {
+        use super::*;
+
+        let p: Mesh =
+            serde_json::from_str(r#"{"primitives":[{"attributes":{"POSITION":0}}]}"#).unwrap();
+        assert_eq!(p.primitives.len(), 1);
+        assert_eq!(
+            serde_json::to_string(&p).unwrap(),
+            r#"{"primitives":[{"attributes":{"POSITION":0}}]}"#
+        );
     }
 }

@@ -58,7 +58,7 @@ pub struct SerdeSink {
 
 impl DataSink for SerdeSink {
     fn run(&mut self, upstream: Receiver, feedback: &mut Feedback) {
-        let (sender, receiver) = std::sync::mpsc::sync_channel(100);
+        let (sender, receiver) = std::sync::mpsc::sync_channel(1000);
 
         rayon::join(
             || {

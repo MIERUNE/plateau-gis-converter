@@ -25,7 +25,6 @@ pub struct CityObjectGroup {
     // #[citygml(path = b"grp:geometry")]
     // pub geometry: Option<GeometryProperty>, // -> gml:_Geometry
     //
-
     #[citygml(path = b"uro:fiscalYearOfPublication")]
     pub fiscal_year_of_publication: Vec<GYear>,
 

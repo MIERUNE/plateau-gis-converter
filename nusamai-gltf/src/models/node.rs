@@ -25,24 +25,30 @@ pub struct Node {
     pub skin: Option<u32>,
 
     /// A floating-point 4x4 transformation matrix stored in column-major order.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub matrix: Option<[f32; 16]>,
+    #[serde(default = "default_matrix", skip_serializing_if = "is_default_matrix")]
+    pub matrix: [f32; 16],
 
     /// The index of the mesh in this node.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub mesh: Option<u32>,
 
     /// The node's unit quaternion rotation in the order (x, y, z, w), where w is the scalar.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub rotation: Option<[f32; 4]>,
+    #[serde(
+        default = "default_rotation",
+        skip_serializing_if = "is_default_rotation"
+    )]
+    pub rotation: [f32; 4],
 
     /// The node's non-uniform scale, given as the scaling factors along the x, y, and z axes.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub scale: Option<[f32; 3]>,
+    #[serde(default = "default_scale", skip_serializing_if = "is_default_scale")]
+    pub scale: [f32; 3],
 
     /// The node's translation along the x, y, and z axes.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub translation: Option<[f32; 3]>,
+    #[serde(
+        default = "default_translation",
+        skip_serializing_if = "is_default_translation"
+    )]
+    pub translation: [f32; 3],
 
     /// The weights of the instantiated morph target. The number of array elements **MUST** match the number of morph targets of the referenced mesh. When defined, `mesh` **MUST** also be defined.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -64,10 +70,54 @@ pub struct NodeExtensions {
     others: HashMap<String, Value>,
 }
 
-impl Node {
-    pub fn new() -> Self {
-        Self {
-            ..Default::default()
-        }
+fn default_matrix() -> [f32; 16] {
+    [
+        1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0,
+    ]
+}
+
+fn is_default_matrix(matrix: &[f32; 16]) -> bool {
+    *matrix == default_matrix()
+}
+
+fn default_rotation() -> [f32; 4] {
+    [0.0, 0.0, 0.0, 1.0]
+}
+
+fn is_default_rotation(rotation: &[f32; 4]) -> bool {
+    *rotation == default_rotation()
+}
+
+fn default_scale() -> [f32; 3] {
+    [1.0, 1.0, 1.0]
+}
+
+fn is_default_scale(rotation: &[f32; 3]) -> bool {
+    *rotation == default_scale()
+}
+
+fn default_translation() -> [f32; 3] {
+    [0., 0., 0.]
+}
+
+fn is_default_translation(translation: &[f32; 3]) -> bool {
+    *translation == default_translation()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn default() {
+        let node: Node = serde_json::from_str("{}").unwrap();
+        assert_eq!(
+            node.matrix,
+            [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0]
+        );
+        assert_eq!(node.translation, [0.0, 0.0, 0.0]);
+        assert_eq!(node.rotation, [0.0, 0.0, 0.0, 1.0]);
+        assert_eq!(node.scale, [1.0, 1.0, 1.0]);
+        assert_eq!(serde_json::to_string(&node).unwrap(), "{}");
     }
 }
