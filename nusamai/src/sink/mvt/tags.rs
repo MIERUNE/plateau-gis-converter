@@ -45,9 +45,7 @@ pub fn traverse_properties(
             });
         }
         nusamai_citygml::Value::Feature(feat) => {
-            if let Some(id) = feat.id.clone() {
-                tags.extend(tags_enc.add("id", id.clone().into()));
-            }
+            tags.extend(tags_enc.add("id", feat.id.clone().into()));
             feat.attributes.iter().for_each(|(k, v)| {
                 let k = match k.split_once(':') {
                     Some((_, k)) => k,

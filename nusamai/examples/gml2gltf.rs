@@ -344,7 +344,7 @@ fn make_gltf_json(triangles: &Triangles) -> String {
     let vertices = &triangles.vertices;
 
     // glTF のモデルを作成
-    let mut gltf = Gltf::construct();
+    let mut gltf = Gltf::default();
 
     // glTF のバッファを作成
     let mut buffer = Buffer::new();

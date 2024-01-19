@@ -28,26 +28,79 @@ fn load_area_example() {
 
 #[test]
 fn load_bridge_example() {
-    let cityobjs = load_cityobjs("./tests/data/plateau-3_0/udx/brid/51324378_brid_6697.gml");
-    assert_eq!(cityobjs.len(), 1);
-    let TopLevelCityObject::Bridge(bridge) = &cityobjs.first().unwrap().cityobj else {
-        panic!("Not a CityFurniture");
-    };
+    {
+        let cityobjs =
+            load_cityobjs("./tests/data/plateau-3_0/udx/brid/dorokyo_51324378_brid_6697.gml");
+        assert_eq!(cityobjs.len(), 1);
+        let TopLevelCityObject::Bridge(bridge) = &cityobjs.first().unwrap().cityobj else {
+            panic!("Expected a bridge");
+        };
 
-    assert_eq!(
-        bridge.class,
-        Some(Code::new("アーチ橋".to_string(), "03".to_string()))
-    );
-    assert_eq!(
-        bridge.function,
-        vec![Code::new("道路橋".to_string(), "01".to_string())]
-    );
-    assert_eq!(bridge.year_of_construction, Some("1962".to_string()));
-    assert_eq!(bridge.is_movable, Some(false));
-    assert_eq!(
-        bridge.outer_bridge_construction[0].function,
-        vec![Code::new("アーチ".to_string(), "04".to_string())]
-    )
+        assert_eq!(
+            bridge.class,
+            Some(Code::new("アーチ橋".to_string(), "03".to_string()))
+        );
+        assert_eq!(
+            bridge.function,
+            vec![Code::new("道路橋".to_string(), "01".to_string())]
+        );
+        assert_eq!(bridge.year_of_construction, Some("1962".to_string()));
+        assert_eq!(bridge.is_movable, Some(false));
+        assert_eq!(
+            bridge.outer_bridge_construction[0].function,
+            vec![Code::new("アーチ".to_string(), "04".to_string())]
+        );
+    }
+
+    {
+        let cityobjs =
+            load_cityobjs("./tests/data/plateau-3_0/udx/brid/hodokyo_51324378_brid_6697.gml");
+        assert_eq!(cityobjs.len(), 1);
+        let TopLevelCityObject::Bridge(bridge) = &cityobjs.first().unwrap().cityobj else {
+            panic!("Expected a bridge");
+        };
+
+        assert_eq!(
+            bridge.function,
+            vec![Code::new("横断歩道橋".to_string(), "07".to_string())]
+        );
+        assert_eq!(bridge.year_of_construction, Some("1968".to_string()));
+        assert_eq!(bridge.brid_risk_assessment_attribute.len(), 1);
+        assert_eq!(
+            bridge.brid_risk_assessment_attribute[0]
+                .risk_type
+                .as_ref()
+                .unwrap()
+                .value(),
+            "判定区分Ⅰ（健全）"
+        );
+    }
+
+    {
+        let cityobjs =
+            load_cityobjs("./tests/data/plateau-3_0/udx/brid/pedeck_53360690_brid_6697.gml");
+        assert_eq!(cityobjs.len(), 1);
+        let TopLevelCityObject::Bridge(bridge) = &cityobjs.first().unwrap().cityobj else {
+            panic!("Expected a bridge");
+        };
+
+        assert_eq!(
+            bridge.function,
+            vec![Code::new(
+                "ペデストリアンデッキ".to_string(),
+                "08".to_string()
+            )]
+        );
+        assert_eq!(bridge.brid_structure_attribute.len(), 1);
+        assert_eq!(
+            bridge.brid_structure_attribute[0]
+                .length
+                .as_ref()
+                .unwrap()
+                .value(),
+            776.0
+        );
+    }
 }
 
 #[test]
@@ -219,8 +272,8 @@ fn load_other_construction_example() {
 
 #[test]
 fn load_dem_example() {
-    let cityobjs = load_cityobjs("./tests/data/tokyo23-ku/udx/dem/533937_dem_6697_op.gml");
-    assert_eq!(cityobjs.len(), 1);
+    let cityobjs = load_cityobjs("./tests/data/yokosuka-shi/udx/dem/523965_dem_6697_05_op.gml");
+    assert_eq!(cityobjs.len(), 2);
     let TopLevelCityObject::ReliefFeature(dem) = &cityobjs.first().unwrap().cityobj else {
         panic!("Not a ReliefFeature");
     };
@@ -229,6 +282,15 @@ fn load_dem_example() {
         panic!("Unexpected relief component type");
     };
     assert_eq!(tin.lod, Some(1));
+
+    assert_eq!(cityobjs[0].geometries.epsg, 6697);
+    assert_eq!(
+        cityobjs
+            .iter()
+            .map(|o| o.geometries.multipolygon.len())
+            .sum::<usize>(),
+        1066
+    );
 }
 
 #[test]
@@ -281,9 +343,13 @@ fn load_railway_example() {
 
     assert_eq!(
         railway.id,
-        Some("rwy_f087faa5-f548-4188-aa2e-03c7a5f2d3b9".to_string())
+        "rwy_f087faa5-f548-4188-aa2e-03c7a5f2d3b9".to_string()
     );
-    assert_eq!(railway.name, vec!["東北線".to_string()]);
+
+    assert_eq!(
+        railway.name,
+        vec![Code::new("東北線".into(), "東北線".into())]
+    );
     assert_eq!(railway.traffic_area.len(), 7);
     assert_eq!(
         railway.traffic_area.first().unwrap().function,

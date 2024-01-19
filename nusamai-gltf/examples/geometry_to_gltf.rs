@@ -222,7 +222,7 @@ fn parse_body(reader: &mut NsReader<&[u8]>) -> Result<Vec<MultiPolygon3<'static>
     }
 }
 
-fn tessellation(
+fn tessellate(
     mpolys: &[MultiPolygon3],
     mu_lng: f64,
     mu_lat: f64,
@@ -344,7 +344,9 @@ fn make_gltf_json(triangles: &Triangles) -> String {
     let vertices = &triangles.vertices;
 
     // glTF のモデルを作成
-    let mut gltf = Gltf::construct();
+    let mut gltf = Gltf::default();
+    assert_eq!(gltf.asset.version, "2.0");
+    assert_eq!(gltf.asset.generator, Some("nusamai-gltf".into()));
 
     // glTF のバッファを作成
     let mut buffer = Buffer::new();
@@ -521,11 +523,11 @@ fn main() {
     let (mu_lat, mu_lng) = calc_center(&all_mpolys);
 
     // 三角分割
-    // verticesは頂点の配列だが、u32のビットパターンで格納されている
-    let triangles = tessellation(&all_mpolys, mu_lng, mu_lat).unwrap();
+    let triangles = tessellate(&all_mpolys, mu_lng, mu_lat).unwrap();
 
     // バイナリバッファを作成
     let binary_buffer = make_binary_buffer(&triangles);
+    std::fs::create_dir("./data/").unwrap();
     fs::write("./data/data.bin", &binary_buffer).unwrap();
 
     // glTFのJSON文字列を作成

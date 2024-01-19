@@ -79,12 +79,12 @@ impl GpkgSink {
                             return Err(());
                         }
                         let cityobj = parcel.cityobj;
-                        if !cityobj.geometries.multipolygon.is_empty() {
+                        if !cityobj.geometry_store.multipolygon.is_empty() {
                             let mut bytes = Vec::new();
                             if write_indexed_multipolygon(
                                 &mut bytes,
-                                &cityobj.geometries.vertices,
-                                &cityobj.geometries.multipolygon,
+                                &cityobj.geometry_store.vertices,
+                                &cityobj.geometry_store.multipolygon,
                                 4326,
                             )
                             .is_err()

@@ -42,7 +42,7 @@ struct InternalState<'a> {
     buf1: Vec<u8>,
     /// General purpose buffer 2
     buf2: Vec<u8>,
-    /// Data of last start tag
+    /// Floating-point number buffer
     fp_buf: Vec<f64>,
     /// Data of last start tag
     current_start: Option<BytesStart<'static>>,

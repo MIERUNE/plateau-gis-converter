@@ -10,6 +10,12 @@ use serde_json::Value;
 //use base64::{prelude::*, alphabet::STANDARD};
 use base64::{engine::general_purpose::STANDARD, Engine as _};
 
+enum GltfType{
+    Acompanying,
+    Embedded,
+    Binary,
+}
+
 /// The root object for a glTF asset.
 #[derive(Serialize, Deserialize, Debug, Default)]
 #[serde(rename_all = "camelCase")]
@@ -93,19 +99,8 @@ pub struct Gltf {
 }
 
 impl Gltf {
-    fn new() -> Self {
+    pub fn new() -> Self {
         Default::default()
-    }
-
-    pub fn construct() -> Gltf{
-        let mut gltf = Gltf::new();
-        gltf.initialize();
-        gltf
-    }
-
-    pub fn initialize(&mut self){
-        self.asset.version = "2.0".to_string();
-        self.asset.generator = Some("nusamai-gltf".to_string());
     }
 
     pub fn to_string(&self) -> Result<String, serde_json::Error> {
@@ -127,17 +122,35 @@ pub enum GltfSequence{
     Indices(Vec<u32>),
     Coords(Vec<f32>),
     Image(Vec<u8>),
+    Bin(Vec<u8>),
 }
 
 /// value sequences accompanying glTF Json
 /// Json に付随するシーケンス群。
+
+#[derive(Debug, Clone)]
 pub struct GltfSeqList{
     seq_list:Vec<GltfSequence>
 }
 impl GltfSeqList{
+    pub fn new() -> Self{
+        Self{
+            ..Default::default()
+        }
+    }
+    /// push sequence to sequence list
+    pub fn push(&mut self, sequence: GltfSequence){
+        self.seq_list.push(sequence);
+    }
     /// シーケンスをバイナリに変換
-    fn make_bin_sequence(&self) -> Vec<u8>{
+    /// returns (binary_sequence, offset_list, size_list)
+    pub fn make_bin_sequence(&self) -> (Vec<u8>, Vec<usize>, Vec<usize>){
+        let mut offset: usize = 0;
+        let mut size: usize = 0;
+        let mut offsets: Vec<usize> = Vec::new();
+        let mut sizes: Vec<usize> = Vec::new();
         let mut bin_buf: Vec<u8> = Vec::new();
+        
         for item in self.seq_list.iter(){
             match item{
                 GltfSequence::D5120(data) => {
@@ -149,7 +162,7 @@ impl GltfSeqList{
                     while bin_buf.len() % 4 != 0{
                         bin_buf.push(0x0)
                     }
-                }
+                },
                 GltfSequence::D5121(data) => {
                     let mut copied = data.clone();
                     bin_buf.append(&mut copied);
@@ -157,7 +170,7 @@ impl GltfSeqList{
                     while bin_buf.len() % 4 != 0{
                         bin_buf.push(0x0)
                     }
-                }
+                },
                 GltfSequence::D5122(data) => {
                     for v in data.iter(){
                         let _ = bin_buf.write_i16::<LittleEndian>(*v).unwrap();
@@ -166,7 +179,7 @@ impl GltfSeqList{
                     while bin_buf.len() % 4 != 0{
                         bin_buf.push(0x0)
                     }
-                }
+                },
                 GltfSequence::D5123(data) => {
                     for v in data.iter(){
                         let _ = bin_buf.write_u16::<LittleEndian>(*v).unwrap();
@@ -175,17 +188,17 @@ impl GltfSeqList{
                     while bin_buf.len() % 4 != 0{
                         bin_buf.push(0x0)
                     }
-                }
+                },
                 GltfSequence::Indices(indices) => {
                     for v in indices.iter(){
                         let _ = bin_buf.write_u32::<LittleEndian>(*v).unwrap();
                     }
-                }
+                },
                 GltfSequence::Coords(coords) => {
                     for v in coords.iter(){
                         let _ = bin_buf.write_f32::<LittleEndian>(*v).unwrap();
                     }
-                }
+                },
                 GltfSequence::Image(image) => {
                     let mut copied = image.clone();
                     bin_buf.append(&mut copied);
@@ -193,17 +206,66 @@ impl GltfSeqList{
                     while bin_buf.len() % 4 != 0{
                         bin_buf.push(0x0)
                     }
-                }
+                },
+                GltfSequence::Bin(data) => {
+                    let mut copied = data.clone();
+                    bin_buf.append(&mut copied);
+                    // 4 byte 境界に合わせるために
+                    while bin_buf.len() % 4 != 0{
+                        bin_buf.push(0x0)
+                    }
+                },
             }
+            // size = 現在の長さ - 前の offset
+            size = bin_buf.len() - offset;
+            sizes.push(size);
+            offsets.push(offset);
+            // 現在の長さ -> 次の offset
+            offset = bin_buf.len();
+
         }
-        bin_buf
+        (bin_buf, offsets, sizes)
 
     }
     /// シーケンスを Base64 文字列に変換
-    fn make_base64_sequence(&self) -> String{
-        let mut bin_seq = self.make_bin_sequence();
+    pub fn make_base64_sequence(&self) -> (String, Vec<usize>, Vec<usize>){
+        let taple3 = self.make_bin_sequence();
 
-        STANDARD.encode(bin_seq)
+        let base64str = STANDARD.encode(taple3.0);
+        (base64str, taple3.1, taple3.2)
     }
 
+}
+
+impl Default for GltfSeqList{
+    fn default() -> Self{
+        Self{
+            seq_list: Vec::new()
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn gltf_default() {
+        let gltf = Gltf::new();
+        assert_eq!(gltf.asset.version, "2.0");
+        assert_eq!(gltf.asset.generator, Some("nusamai-gltf".into()));
+    }
+
+    #[test]
+    fn seq_boundary() {
+        let mut seq_list = GltfSeqList::new();
+        let mut image :Vec<u8> = Vec::new();
+        image.push(0x01);
+        image.push(0x02);
+        image.push(0x03);
+        seq_list.push(GltfSequence::Image(image));
+
+        let taple3 = seq_list.make_bin_sequence();
+        assert_eq!( taple3.0.len(), 4);
+    }
 }
