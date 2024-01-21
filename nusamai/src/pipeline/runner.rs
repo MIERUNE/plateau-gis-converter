@@ -20,7 +20,14 @@ fn run_source_thread(
     let (sender, receiver) = sync_channel(SOURCE_OUTPUT_CHANNEL_BOUND);
     let handle = std::thread::spawn(move || {
         log::info!("Source thread started.");
-        let pool = ThreadPoolBuilder::new().build().unwrap();
+        let num_threads = std::thread::available_parallelism()
+            .map(|v| v.get() * 5)
+            .unwrap_or(1);
+        let pool = ThreadPoolBuilder::new()
+            .use_current_thread()
+            .num_threads(num_threads)
+            .build()
+            .unwrap();
         pool.install(|| {
             source.run(sender, &feedback);
         });
@@ -36,7 +43,10 @@ fn run_transformer_thread(
 ) -> (std::thread::JoinHandle<()>, Receiver) {
     let (sender, receiver) = sync_channel(TRANSFORMER_OUTPUT_CHANNEL_BOUND);
     let handle = std::thread::spawn(move || {
-        let pool = ThreadPoolBuilder::new().build().unwrap();
+        let pool = ThreadPoolBuilder::new()
+            .use_current_thread()
+            .build()
+            .unwrap();
         pool.install(|| {
             log::info!("Transformer threads started.");
             let _ = upstream.into_iter().par_bridge().try_for_each(|parcel| {
@@ -63,7 +73,10 @@ fn run_sink_thread(
 ) -> std::thread::JoinHandle<()> {
     std::thread::spawn(move || {
         log::info!("Sink thread started.");
-        let pool = ThreadPoolBuilder::new().build().unwrap();
+        let pool = ThreadPoolBuilder::new()
+            .use_current_thread()
+            .build()
+            .unwrap();
         pool.install(|| {
             sink.run(upstream, &mut feedback);
         });

@@ -30,15 +30,17 @@ fn generate_citygml_impl(derive_input: &DeriveInput) -> Result<TokenStream, Erro
     }
 }
 
-const HASH_CHAR_TAKE: usize = 7;
-const HASH_MASK: u32 = 0x1f;
+const HASH_CHAR_SKIP: usize = 4;
+const HASH_CHAR_TAKE: usize = 3;
+const HASH_MASK: u32 = 0x7f;
 
-fn hash(s: &[u8]) -> u32 {
+fn hash(s: &[u8]) -> u8 {
     let h = s
         .iter()
+        .skip(HASH_CHAR_SKIP)
         .take(HASH_CHAR_TAKE)
         .fold(5381u32, |a, c| a.wrapping_mul(33) ^ *c as u32);
-    h & HASH_MASK
+    (h & HASH_MASK) as u8
 }
 
 fn generate_citygml_impl_for_struct(
@@ -127,12 +129,12 @@ fn generate_citygml_impl_for_struct(
                         let mut c = prefix.value().clone();
                         c.push(b':');
                         c.extend(name);
-                        let pat = LitByteStr::new(c.as_ref(), prefix.span());
+                        let path = LitByteStr::new(&c, prefix.span());
                         let geomtype = format_ident!("{}", geomtype);
-                        let hash = hash(&pat.value());
+                        let hash = hash(&c);
 
                         child_arms.push(quote! {
-                            (#hash, #pat) => st.parse_geometric_attr(&mut self.#field_ident, #lod, ::nusamai_citygml::geometry::GeometryParseType::#geomtype),
+                            (#hash, #path) => st.parse_geometric_attr(&mut self.#field_ident, #lod, ::nusamai_citygml::geometry::GeometryParseType::#geomtype),
                         });
                     };
 
@@ -375,7 +377,7 @@ fn generate_citygml_impl_for_struct(
 
                 st.parse_children(|st| {
                     let path = st.current_path();
-                    let hash = path.iter().take(#HASH_CHAR_TAKE).fold(5381u32, |a, c| a.wrapping_mul(33) ^ *c as u32) & #HASH_MASK;
+                    let hash = (path.iter().skip(#HASH_CHAR_SKIP).take(#HASH_CHAR_TAKE).fold(5381u32, |a, c| a.wrapping_mul(33) ^ *c as u32) & #HASH_MASK) as u8;
                     match (hash, path) {
                         #(#child_arms)*
                         _ => #extra_arm,
@@ -467,12 +469,23 @@ fn generate_citygml_impl_for_enum(
                     let path: LitByteStr = value.parse()?;
                     let hash = hash(&path.value());
 
-                    child_arms.push(quote! {
-                        (#hash, #path) => {
-                            let mut v: #field_ty = Default::default();
-                            <#field_ty as CityGMLElement>::parse(&mut v, st)?;
-                            *self = Self::#variant_ident(v);
-                            Ok(())
+                    child_arms.push(if enum_data.variants.len() < 6 {
+                        quote! {
+                            (_, #path) => {
+                                let mut v: #field_ty = Default::default();
+                                <#field_ty as CityGMLElement>::parse(&mut v, st)?;
+                                *self = Self::#variant_ident(v);
+                                Ok(())
+                            }
+                        }
+                    } else {
+                        quote! {
+                            (#hash, #path) => {
+                                let mut v: #field_ty = Default::default();
+                                <#field_ty as CityGMLElement>::parse(&mut v, st)?;
+                                *self = Self::#variant_ident(v);
+                                Ok(())
+                            }
                         }
                     });
 
@@ -493,7 +506,7 @@ fn generate_citygml_impl_for_enum(
             fn parse<R: ::std::io::BufRead>(&mut self, st: &mut ::nusamai_citygml::SubTreeReader<R>) -> Result<(), ::nusamai_citygml::ParseError> {
                 st.parse_children(|st| {
                     let path = st.current_path();
-                    let hash = path.iter().take(#HASH_CHAR_TAKE).fold(5381u32, |a, c| a.wrapping_mul(33) ^ *c as u32) & #HASH_MASK;
+                    let hash = (path.iter().skip(#HASH_CHAR_SKIP).take(#HASH_CHAR_TAKE).fold(5381u32, |a, c| a.wrapping_mul(33) ^ *c as u32) & #HASH_MASK) as u8;
                     match (hash, path) {
                         #(#child_arms)*
                         _ => Ok(()),
