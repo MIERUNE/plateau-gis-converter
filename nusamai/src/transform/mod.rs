@@ -9,7 +9,7 @@ pub struct DummyTransformer {
 impl Default for DummyTransformer {
     fn default() -> Self {
         Self {
-            jgd2wgs: JGD2011ToWGS84::from_embedded_model(),
+            jgd2wgs: JGD2011ToWGS84::new(),
         }
     }
 }
