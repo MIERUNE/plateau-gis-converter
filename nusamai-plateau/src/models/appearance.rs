@@ -1,8 +1,6 @@
-use std::io::BufRead;
-
+use nusamai_citygml::appearance::TextureAssociation;
 use nusamai_citygml::{
-    citygml_data, citygml_feature, citygml_property, schema, CityGMLElement, Code, LocalHref,
-    ParseError, Point, SubTreeReader, Value, URI,
+    citygml_feature, citygml_property, CityGMLElement, Code, LocalHref, Point, URI,
 };
 
 type Double01 = f64; // TODO?
@@ -90,54 +88,6 @@ pub struct ParameterizedTexture {
 
     #[citygml(path = b"app:target")]
     pub target: Vec<TextureAssociation>,
-}
-
-#[citygml_property(name = "app:_TextureAssociation", noncityobj)]
-pub enum TextureAssociation {
-    #[citygml(path = b"app:TexCoordList")]
-    TexCoordList(TexCoordList),
-    #[citygml(path = b"app:TexCoordGen")]
-    TexCoordGen(TexCoordGen),
-}
-
-// pub struct TexCoordList {
-//     #[citygml(path = b"@app:ring")]
-//     pub ring: Option<LocalHref>,
-//
-//     #[citygml(path = b"app:textureCoordinates")]
-//     pub texture_coordinates: Option<String>,
-// }
-
-#[derive(Debug, Default, serde::Serialize, serde::Deserialize)]
-pub struct TexCoordList {
-    ring: LocalHref,
-    coords: Vec<f64>,
-}
-
-impl CityGMLElement for TexCoordList {
-    fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
-        st.parse_attributes(|k, v, st| {
-            if k == b"@gml:ring" {
-                todo!();
-            }
-            Ok(())
-        })?;
-        self.coords = todo!();
-        Ok(())
-    }
-
-    fn into_object(self) -> Option<Value> {
-        None
-    }
-
-    fn collect_schema(_schema: &mut schema::Schema) -> schema::Attribute {
-        // do nothing ?
-    }
-}
-
-#[citygml_data(name = "app:TexCoordGen", noncityobj)]
-pub struct TexCoordGen {
-    // TODO?
 }
 
 #[citygml_feature(name = "app:GeoreferencedTexture", noncityobj)]

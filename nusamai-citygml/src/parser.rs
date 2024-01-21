@@ -1,5 +1,5 @@
 use std::io::BufRead;
-use std::str;
+use std::{mem, str};
 
 use quick_xml::events::{BytesStart, Event};
 use quick_xml::name::Namespace;
@@ -8,12 +8,14 @@ use quick_xml::NsReader;
 use thiserror::Error;
 use url::Url;
 
+use crate::appearance::{TexCoordList, TextureAssociation};
 use crate::codelist::{self, CodeResolver};
 use crate::geometry::{
     GeometryCollector, GeometryParseType, GeometryRef, GeometryRefEntry, GeometryStore,
     GeometryType,
 };
-use crate::namespace::{wellknown_prefix_from_nsres, GML31_NS};
+use crate::namespace::{wellknown_prefix_from_nsres, APP_2_NS, GML31_NS};
+use crate::{CityGMLAttribute, LocalHref};
 
 #[derive(Error, Debug)]
 pub enum ParseError {
@@ -793,6 +795,147 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                 Err(e) => return Err(e.into()),
             }
         }
+    }
+
+    /// Parses <app:target> of ParameterizedTexture
+    pub(crate) fn parse_texture_association(&mut self) -> Result<TextureAssociation, ParseError> {
+        // uri attribute (required)
+        let mut target = None;
+        if let Some(start) = &self.state.current_start {
+            for attr in start.attributes().flatten() {
+                if attr.key.as_ref() == b"uri" {
+                    target = Some(LocalHref::parse_attribute_value(
+                        std::str::from_utf8(attr.value.as_ref()).unwrap(),
+                        &mut self.state.context,
+                    )?);
+                }
+            }
+        }
+
+        loop {
+            match self.reader.read_event_into(&mut self.state.buf1) {
+                Ok(Event::Start(start)) => {
+                    let (nsres, localname) = self.reader.resolve_element(start.name());
+                    match (nsres, localname.as_ref()) {
+                        (Bound(APP_2_NS), b"TexCoordList") => {
+                            let mut tex_coords = TexCoordList {
+                                target: target.take().unwrap(),
+                                ..Default::default()
+                            };
+                            self.parse_tex_coord_list(&mut tex_coords)?;
+                            return Ok(TextureAssociation::TexCoordList(tex_coords));
+                        }
+                        _ => {
+                            return Err(ParseError::SchemaViolation(format!(
+                                "Unexpected geometry elements <{}>",
+                                String::from_utf8_lossy(start.name().as_ref())
+                            )))
+                        }
+                    };
+                }
+                Ok(Event::End(_)) => break,
+                Ok(Event::Text(_)) => {
+                    return Err(ParseError::SchemaViolation(
+                        "Unexpected text content".into(),
+                    ))
+                }
+                Ok(_) => (),
+                Err(e) => return Err(e.into()),
+            }
+        }
+
+        Err(ParseError::SchemaViolation(
+            "Expected <app:TexCoordList> or <app:TexCoordGen> but not found".into(),
+        ))
+    }
+
+    fn parse_tex_coord_list(&mut self, tex_coords: &mut TexCoordList) -> Result<(), ParseError> {
+        let mut inside_coordinates = false;
+        let mut ring = None;
+        let mut coords = None;
+        loop {
+            match self.reader.read_event_into(&mut self.state.buf1) {
+                Ok(Event::Start(start)) => {
+                    if inside_coordinates {
+                        return Err(ParseError::SchemaViolation(format!(
+                            "Unexpected elements <{}>",
+                            String::from_utf8_lossy(start.name().as_ref())
+                        )));
+                    }
+
+                    let (nsres, localname) = self.reader.resolve_element(start.name());
+                    match (nsres, localname.as_ref()) {
+                        (Bound(APP_2_NS), b"textureCoordinates") => {
+                            inside_coordinates = true;
+                            for attr in start.attributes().flatten() {
+                                if attr.key.as_ref() == b"ring" {
+                                    ring = Some(LocalHref::parse_attribute_value(
+                                        std::str::from_utf8(attr.value.as_ref()).unwrap(),
+                                        &mut self.state.context,
+                                    )?);
+                                }
+                            }
+
+                            if ring.is_none() {
+                                return Err(ParseError::SchemaViolation(
+                                    "<app:textureCoordinates> must have a 'ring' attribute.".into(),
+                                ));
+                            }
+                        }
+                        _ => {
+                            return Err(ParseError::SchemaViolation(format!(
+                                "Unexpected elements <{}>",
+                                String::from_utf8_lossy(start.name().as_ref())
+                            )));
+                        }
+                    };
+                }
+                Ok(Event::End(_)) => match inside_coordinates {
+                    true => {
+                        tex_coords.rings.push(ring.take().ok_or_else(|| {
+                            ParseError::SchemaViolation(
+                                "<app:textureCoordinates> must have a 'ring' attribute.".into(),
+                            )
+                        })?);
+                        tex_coords.coords_list.push(coords.take().ok_or_else(|| {
+                            ParseError::SchemaViolation(
+                                "<app:textureCoordinates> must have a <app:textureCoordinate>."
+                                    .into(),
+                            )
+                        })?);
+                        inside_coordinates = false;
+                    }
+                    false => {
+                        break;
+                    }
+                },
+                Ok(Event::Text(text)) => {
+                    if !inside_coordinates {
+                        return Err(ParseError::SchemaViolation(
+                            "Unexpected text content".into(),
+                        ));
+                    }
+
+                    self.state.fp_buf.clear();
+                    for s in text.unescape().unwrap().split_ascii_whitespace() {
+                        if let Ok(v) = s.parse() {
+                            self.state.fp_buf.push(v);
+                        } else {
+                            return Err(ParseError::InvalidValue(format!(
+                                "Invalid floating point number: {}",
+                                s
+                            )));
+                        }
+                    }
+
+                    coords = Some(mem::take(&mut self.state.fp_buf));
+                }
+                Ok(_) => (),
+                Err(e) => return Err(e.into()),
+            }
+        }
+
+        Ok(())
     }
 }
 

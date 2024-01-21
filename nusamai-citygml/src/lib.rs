@@ -1,3 +1,4 @@
+pub mod appearance;
 pub mod attribute;
 pub mod codelist;
 pub mod geometry;

@@ -71,11 +71,11 @@ pub(crate) struct GeometryCollector {
 impl GeometryCollector {
     pub fn add_exterior_ring(
         &mut self,
-        iter: impl Iterator<Item = [f64; 3]>,
+        iter: impl IntoIterator<Item = [f64; 3]>,
         ring_id: Option<u32>,
     ) -> usize {
         self.ring_ids.push(ring_id);
-        self.multipolygon.add_exterior(iter.map(|v| {
+        self.multipolygon.add_exterior(iter.into_iter().map(|v| {
             let vbits = [v[0].to_bits(), v[1].to_bits(), v[2].to_bits()];
             let (index, _) = self.vertices.insert_full(vbits);
             [index as u32]
@@ -86,11 +86,11 @@ impl GeometryCollector {
 
     pub fn add_interior_ring(
         &mut self,
-        iter: impl Iterator<Item = [f64; 3]>,
+        iter: impl IntoIterator<Item = [f64; 3]>,
         ring_id: Option<u32>,
     ) {
         self.ring_ids.push(ring_id);
-        self.multipolygon.add_interior(iter.map(|v| {
+        self.multipolygon.add_interior(iter.into_iter().map(|v| {
             let vbits = [v[0].to_bits(), v[1].to_bits(), v[2].to_bits()];
             let (index, _) = self.vertices.insert_full(vbits);
             [index as u32]
