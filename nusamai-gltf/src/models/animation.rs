@@ -53,7 +53,7 @@ pub struct AnimationSampler {
     /// The index of an accessor containing keyframe timestamps. The accessor **MUST** be of scalar type with floating-point components.
     pub input: u32,
     /// Interpolation algorithm.
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "is_default")]
     pub interpolation: AnimationSamplerInterpolation,
     /// The index of an accessor, containing keyframe output values.
     pub output: u32,
@@ -88,4 +88,8 @@ pub struct Animation {
 pub struct AnimationExtensions {
     #[serde(flatten)]
     others: HashMap<String, Value>,
+}
+
+fn is_default<T: Default + PartialEq>(value: &T) -> bool {
+    *value == T::default()
 }
