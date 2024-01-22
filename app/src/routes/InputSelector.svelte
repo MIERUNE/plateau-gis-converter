@@ -22,7 +22,7 @@
 		inputPaths = [];
 		for (const folder of inputFolders) {
 			const files = await fs.readDir(folder);
-			inputPaths = files.map((d) => d.path);
+			inputPaths = inputPaths.concat(files.map((d) => d.path));
 		}
 	}
 
