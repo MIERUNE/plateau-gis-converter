@@ -80,7 +80,7 @@
 					{#if inputFolders.length === 0}
 						<p class="opacity-50">フォルダが選択されていません</p>
 					{:else}
-						<div class="flex items-center">
+						<div class="flex items-center gap-1">
 							<p>
 								<b>{inputFolders.length}</b> フォルダ （計 <b>{inputPaths.length}</b> ファイル）
 							</p>
@@ -99,7 +99,7 @@
 				{:else if inputPaths.length === 0}
 					<p class="opacity-50">ファイルが選択されていません</p>
 				{:else}
-					<div class="flex items-center">
+					<div class="flex items-center gap-1">
 						<p><b>{inputPaths.length}</b> ファイル</p>
 						<button class="tooltip hover:text-accent1">
 							<Icon class="text-2xl" icon="material-symbols-light:list-alt-rounded" />
