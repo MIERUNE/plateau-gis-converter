@@ -3,8 +3,23 @@
 	import Icon from '@iconify/svelte';
 
 	export let inputPath = '';
+	let isFolderMode = true;
+	let folderNames: string[] = [];
 
-	async function openInputDialog() {
+	async function openFolderDialog() {
+		const res = await dialog.open({
+			multiple: true,
+			directory: true
+		});
+		console.log(res);
+
+		// TODO: get folder names
+		inputPath = Array.isArray(res) ? res[0] : res ?? '';
+
+		// TODO: get file names under the folders
+	}
+
+	async function openFileDialog() {
 		const res = await dialog.open({
 			multiple: true,
 			directory: false,
@@ -15,14 +30,17 @@
 				}
 			]
 		});
+
+		// TODO: get file names
 		inputPath = Array.isArray(res) ? res[0] : res ?? '';
 	}
-
-	let isFolderMode = true;
 </script>
 
 <div>
-	<h2 class="font-bold text-xl">入力</h2>
+	<div class="flex items-center gap-1.5">
+		<Icon class="text-xl" icon="material-symbols:input-rounded" />
+		<h2 class="font-bold text-xl">入力</h2>
+	</div>
 
 	<div class="ml-3">
 		<div>
@@ -45,7 +63,7 @@
 
 		<div class="flex items-center gap-3">
 			<button
-				on:click={openInputDialog}
+				on:click={openFolderDialog}
 				class="bg-accent1 font-semibold rounded px-4 py-0.5 shadow hover:opacity-75">選択</button
 			>
 			<div class="text-sm" class:opacity-50={!inputPath}>

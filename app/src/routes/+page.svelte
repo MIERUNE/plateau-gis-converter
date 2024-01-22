@@ -2,6 +2,7 @@
 	import Icon from '@iconify/svelte';
 	import { invoke } from '@tauri-apps/api/tauri';
 	import InputSelector from './InputSelector.svelte';
+	import SettingSelector from './SettingSelector.svelte';
 	import OutputSelector from './OutputSelector.svelte';
 
 	let inputPath = '';
@@ -28,7 +29,7 @@
 </script>
 
 <div class="grid place-items-center h-screen">
-	<div class="max-w-2xl flex flex-col gap-9">
+	<div class="max-w-2xl flex flex-col gap-12">
 		<div class="flex items-center gap-1.5">
 			<h1 class="font-bold text-2xl">BRIDGE 都市デジタルツイン・GISコンバータ</h1>
 			<Icon
@@ -38,7 +39,10 @@
 		</div>
 
 		<InputSelector bind:inputPath />
-		<OutputSelector bind:fileType bind:outputPath />
+
+		<SettingSelector bind:fileType />
+
+		<OutputSelector bind:outputPath />
 
 		<div class="flex justify-end">
 			<button
