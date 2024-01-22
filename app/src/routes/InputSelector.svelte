@@ -22,7 +22,8 @@
 		inputPaths = [];
 		for (const folder of inputFolders) {
 			const files = await fs.readDir(folder);
-			inputPaths = inputPaths.concat(files.map((d) => d.path));
+			const gmlFiles = files.filter((d) => d.name?.endsWith('.gml'));
+			inputPaths = inputPaths.concat(gmlFiles.map((d) => d.path));
 		}
 	}
 
@@ -86,6 +87,15 @@
 					<p>{inputPaths.length}ファイル</p>
 				{/if}
 			</div>
+		</div>
+
+		<div class="max-w-md text-sm">
+			inputFolders:<br />{inputFolders}
+		</div>
+
+		<div class="max-w-md text-sm">
+			inputPaths:<br />
+			{inputPaths.join('\n')}
 		</div>
 	</div>
 </div>
