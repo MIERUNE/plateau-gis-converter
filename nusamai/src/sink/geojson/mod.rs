@@ -10,6 +10,7 @@ use crate::get_parameter_value;
 use crate::parameters::*;
 use crate::pipeline::{Feedback, Receiver};
 use crate::sink::{DataSink, DataSinkProvider, SinkInfo};
+use crate::transform::city_object::ObjectTransformer;
 
 use nusamai_citygml::object::Entity;
 use nusamai_geojson::conversion::{
@@ -69,6 +70,12 @@ impl DataSink for GeoJsonSink {
                         if feedback.is_cancelled() {
                             return Err(());
                         }
+
+                        // todo: parse attributes
+                        let obj = &parcel.cityobj;
+                        let object_transformer = ObjectTransformer {};
+                        let _ =
+                            object_transformer.transform(obj, &PathBuf::from("./mappings.json"));
 
                         let features = toplevel_cityobj_to_geojson_features(&parcel.entity);
                         for feature in features {

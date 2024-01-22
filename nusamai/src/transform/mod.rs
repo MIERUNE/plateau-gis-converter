@@ -1,4 +1,7 @@
+pub mod city_object;
+
 use crate::pipeline::{Feedback, Parcel, Sender, TransformError, Transformer};
+
 use nusamai_projection::crs::*;
 use nusamai_projection::vshift::JGD2011ToWGS84;
 
