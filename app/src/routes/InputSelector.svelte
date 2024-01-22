@@ -53,7 +53,7 @@
 
 	<div class="ml-3">
 		<div>
-			<span class="isolate inline-flex rounded-md shadow-sm my-3">
+			<span class="isolate inline-flex rounded-md my-3">
 				<button
 					type="button"
 					class="relative inline-flex gap-1 items-center rounded-l-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-10"
