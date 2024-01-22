@@ -71,7 +71,7 @@ impl DataSink for SerdeSink {
                         }
 
                         buf.clear();
-                        bincode::serialize_into(buf as &mut Vec<u8>, &parcel.cityobj).unwrap();
+                        bincode::serialize_into(buf as &mut Vec<u8>, &parcel.entity).unwrap();
                         if sender.send(lz4_flex::compress_prepend_size(buf)).is_err() {
                             log::info!("sink cancelled");
                             return Err(());
