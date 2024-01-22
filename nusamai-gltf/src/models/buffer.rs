@@ -45,12 +45,6 @@ pub struct BufferExtensions {
     others: HashMap<String, Value>,
 }
 
-impl Buffer {
-    pub fn new() -> Self {
-        Default::default()
-    }
-}
-
 /// A view into a buffer generally representing a subset of the buffer.
 #[derive(Serialize, Deserialize, Debug, Default)]
 #[serde(rename_all = "camelCase")]
@@ -64,7 +58,7 @@ pub struct BufferView {
     pub buffer: u32,
 
     /// The offset into the buffer in bytes.
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "is_default")]
     pub byte_offset: u32,
 
     /// The length of the bufferView in bytes.
@@ -79,8 +73,19 @@ pub struct BufferView {
     pub target: Option<BufferViewTarget>,
 }
 
-impl BufferView {
-    pub fn new() -> Self {
-        Default::default()
+fn is_default<T: Default + PartialEq>(value: &T) -> bool {
+    *value == T::default()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn default() {
+        let view: BufferView = serde_json::from_str(r#"{"buffer":2,"byteLength":100}"#).unwrap();
+        assert_eq!(view.buffer, 2);
+        assert_eq!(view.byte_length, 100);
+        assert_eq!(view.byte_offset, 0);
     }
 }

@@ -5,5 +5,4 @@ edition = "2021"
 
 [dependencies]
 japan-geoid = { git = "https://github.com/MIERUNE/japan-geoid" }
-lz4_flex = "0.11.1"
 thiserror = "1.0.50"

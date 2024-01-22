@@ -2,12 +2,12 @@
 
 use hashbrown::HashMap;
 
-use nusamai_citygml::object::CityObject;
+use nusamai_citygml::object::Entity;
 use nusamai_geometry::{LineString2, MultiPolygon2, Polygon2};
 use nusamai_mvt::{webmercator::lnglat_to_web_mercator, TileZXY};
 
 pub fn slice_cityobj_geoms(
-    obj: &CityObject,
+    obj: &Entity,
     min_z: u8,
     max_z: u8,
     max_detail: u32,
@@ -19,11 +19,12 @@ pub fn slice_cityobj_geoms(
         "max_z must be greater than or equal to min_z"
     );
 
-    if obj.geometry_store.multipolygon.is_empty() {
+    let geom_store = obj.geometry_store.read().unwrap();
+    if geom_store.multipolygon.is_empty() {
         return Ok(());
     }
 
-    let idx_mpoly = &obj.geometry_store.multipolygon;
+    let idx_mpoly = &geom_store.multipolygon;
     let mut tiled_mpolys = HashMap::new();
 
     let extent = 2u32.pow(max_detail);
@@ -31,7 +32,7 @@ pub fn slice_cityobj_geoms(
 
     idx_mpoly.iter().for_each(|idx_poly| {
         let poly = idx_poly.transform(|c| {
-            let [lng, lat, _height] = obj.geometry_store.vertices[c[0] as usize];
+            let [lng, lat, _height] = geom_store.vertices[c[0] as usize];
             let (mx, my) = lnglat_to_web_mercator(lng, lat);
             [mx, my]
         });

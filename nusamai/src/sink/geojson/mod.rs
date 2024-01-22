@@ -12,7 +12,7 @@ use crate::pipeline::{Feedback, Receiver};
 use crate::sink::{DataSink, DataSinkProvider, SinkInfo};
 use crate::transform::city_object::ObjectTransformer;
 
-use nusamai_citygml::object::CityObject;
+use nusamai_citygml::object::Entity;
 use nusamai_geojson::conversion::{
     indexed_multilinestring_to_geometry, indexed_multipoint_to_geometry,
     indexed_multipolygon_to_geometry,
@@ -77,7 +77,7 @@ impl DataSink for GeoJsonSink {
                         let _ =
                             object_transformer.transform(obj, &PathBuf::from("./mappings.json"));
 
-                        let features = toplevel_cityobj_to_geojson_features(&parcel.cityobj);
+                        let features = toplevel_cityobj_to_geojson_features(&parcel.entity);
                         for feature in features {
                             let Ok(bytes) = serde_json::to_vec(&feature) else {
                                 // TODO: fatal error
@@ -97,7 +97,7 @@ impl DataSink for GeoJsonSink {
 
                 // TODO: Handle output file path
                 let mut file = File::create(&self.output_path).unwrap();
-                let mut writer = BufWriter::new(&mut file);
+                let mut writer = BufWriter::with_capacity(1024 * 1024, &mut file);
 
                 // Write the FeatureCollection header
                 writer
@@ -134,15 +134,14 @@ fn extract_properties(tree: &nusamai_citygml::object::Value) -> Option<geojson::
 /// Each feature for MultiPolygon, MultiLineString, and MultiPoint will be created (if it exists)
 // TODO: Handle properties (`obj.root` -> `geojson::Feature.properties`)
 // TODO: We may want to traverse the tree and create features for each semantic child in the future
-pub fn toplevel_cityobj_to_geojson_features(obj: &CityObject) -> Vec<geojson::Feature> {
+pub fn toplevel_cityobj_to_geojson_features(obj: &Entity) -> Vec<geojson::Feature> {
     let mut geojson_features: Vec<geojson::Feature> = Vec::with_capacity(1);
     let properties = extract_properties(&obj.root);
+    let mut geom_store = obj.geometry_store.read().unwrap();
 
-    if !obj.geometry_store.multipolygon.is_empty() {
-        let mpoly_geojson_geom = indexed_multipolygon_to_geometry(
-            &obj.geometry_store.vertices,
-            &obj.geometry_store.multipolygon,
-        );
+    if !geom_store.multipolygon.is_empty() {
+        let mpoly_geojson_geom =
+            indexed_multipolygon_to_geometry(&geom_store.vertices, &geom_store.multipolygon);
 
         let mpoly_geojson_feat = geojson::Feature {
             bbox: None,
@@ -154,11 +153,9 @@ pub fn toplevel_cityobj_to_geojson_features(obj: &CityObject) -> Vec<geojson::Fe
         geojson_features.push(mpoly_geojson_feat);
     }
 
-    if !obj.geometry_store.multilinestring.is_empty() {
-        let mls_geojson_geom = indexed_multilinestring_to_geometry(
-            &obj.geometry_store.vertices,
-            &obj.geometry_store.multilinestring,
-        );
+    if !geom_store.multilinestring.is_empty() {
+        let mls_geojson_geom =
+            indexed_multilinestring_to_geometry(&geom_store.vertices, &geom_store.multilinestring);
         let mls_geojson_feat = geojson::Feature {
             bbox: None,
             geometry: Some(mls_geojson_geom),
@@ -169,11 +166,9 @@ pub fn toplevel_cityobj_to_geojson_features(obj: &CityObject) -> Vec<geojson::Fe
         geojson_features.push(mls_geojson_feat);
     }
 
-    if !obj.geometry_store.multipoint.is_empty() {
-        let mpoint_geojson_geom = indexed_multipoint_to_geometry(
-            &obj.geometry_store.vertices,
-            &obj.geometry_store.multipoint,
-        );
+    if !geom_store.multipoint.is_empty() {
+        let mpoint_geojson_geom =
+            indexed_multipoint_to_geometry(&geom_store.vertices, &geom_store.multipoint);
         let mpoint_geojson_feat = geojson::Feature {
             bbox: None,
             geometry: Some(mpoint_geojson_geom),
@@ -189,6 +184,8 @@ pub fn toplevel_cityobj_to_geojson_features(obj: &CityObject) -> Vec<geojson::Fe
 
 #[cfg(test)]
 mod tests {
+    use std::sync::{Arc, RwLock};
+
     use super::*;
     use nusamai_citygml::{object::Feature, Value};
     use nusamai_geometry::MultiPolygon;
@@ -212,14 +209,14 @@ mod tests {
             multipoint: Default::default(),
         };
 
-        let obj = CityObject {
+        let obj = Entity {
             root: Value::Feature(Feature {
                 typename: "dummy".into(),
                 id: "dummy".into(),
                 attributes: Default::default(),
                 geometries: None,
             }),
-            geometry_store: geometries,
+            geometry_store: RwLock::new(geometries).into(),
         };
 
         let geojson_features = toplevel_cityobj_to_geojson_features(&obj);

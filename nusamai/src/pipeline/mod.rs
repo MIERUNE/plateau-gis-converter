@@ -14,5 +14,5 @@ pub type Receiver = mpsc::Receiver<Parcel>;
 /// Message passing through pipeline stages
 #[derive(Debug)]
 pub struct Parcel {
-    pub cityobj: nusamai_citygml::object::CityObject,
+    pub entity: nusamai_citygml::object::Entity,
 }

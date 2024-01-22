@@ -6,11 +6,11 @@ use serde_json::Value;
 use super::texture_info::TextureInfo;
 
 /// The material's alpha rendering mode enumeration specifying the interpretation of the alpha value of the base color.
-#[derive(Serialize, Deserialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Debug, Default, PartialEq, Clone, Copy)]
 #[serde(rename_all = "UPPERCASE")]
 pub enum AlphaMode {
-    #[default]
     /// The alpha value is ignored, and the rendered output is fully opaque.
+    #[default]
     Opaque,
     /// The rendered output is either fully opaque or fully transparent depending on the alpha value and the specified `alphaCutoff` value; the exact appearance of the edges **MAY** be subject to implementation-specific techniques such as "`Alpha-to-Coverage`".
     Mask,
@@ -18,7 +18,7 @@ pub enum AlphaMode {
     Blend,
 }
 
-#[derive(Serialize, Deserialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 #[serde(deny_unknown_fields)]
 pub struct MaterialNormalTextureInfo {
@@ -26,11 +26,11 @@ pub struct MaterialNormalTextureInfo {
     pub index: u32,
 
     /// This integer value is used to construct a string in the format `TEXCOORD_<set index>` which is a reference to a key in `mesh.primitives.attributes` (e.g. a value of `0` corresponds to `TEXCOORD_0`). A mesh primitive **MUST** have the corresponding texture coordinate attributes for the material to be applicable to it.
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "is_default")]
     pub tex_coord: u32,
 
     /// The scalar parameter applied to each normal vector of the texture. This value scales the normal vector in X and Y directions using the formula: `scaledNormal =  normalize((<sampled normal texture value> * 2.0 - 1.0) * vec3(<normal scale>, <normal scale>, 1.0))`."""
-    #[serde(default = "default_scale")]
+    #[serde(default = "one", skip_serializing_if = "is_one")]
     pub scale: f32,
 
     /// JSON object with extension-specific objects.
@@ -42,6 +42,18 @@ pub struct MaterialNormalTextureInfo {
     pub extras: Option<Value>,
 }
 
+impl Default for MaterialNormalTextureInfo {
+    fn default() -> Self {
+        Self {
+            index: 0,
+            tex_coord: 0,
+            scale: 1.0,
+            extensions: None,
+            extras: None,
+        }
+    }
+}
+
 #[derive(Serialize, Deserialize, Debug, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct MaterialNormalTextureInfoExtensions {
@@ -49,11 +61,7 @@ pub struct MaterialNormalTextureInfoExtensions {
     others: HashMap<String, Value>,
 }
 
-fn default_scale() -> f32 {
-    1.0
-}
-
-#[derive(Serialize, Deserialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 #[serde(deny_unknown_fields)]
 pub struct MaterialOcclusionTextureInfo {
@@ -61,11 +69,11 @@ pub struct MaterialOcclusionTextureInfo {
     pub index: u32,
 
     /// This integer value is used to construct a string in the format `TEXCOORD_<set index>` which is a reference to a key in `mesh.primitives.attributes` (e.g. a value of `0` corresponds to `TEXCOORD_0`). A mesh primitive **MUST** have the corresponding texture coordinate attributes for the material to be applicable to it.
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "is_default")]
     pub tex_coord: u32,
 
     /// A scalar parameter controlling the amount of occlusion applied. A value of `0.0` means no occlusion. A value of `1.0` means full occlusion. This value affects the final occlusion value as: `1.0 + strength * (<sampled occlusion texture value> - 1.0)`.
-    #[serde(default = "default_strength")]
+    #[serde(default = "one", skip_serializing_if = "is_one")]
     pub strength: f32,
 
     /// JSON object with extension-specific objects.
@@ -77,15 +85,23 @@ pub struct MaterialOcclusionTextureInfo {
     pub extras: Option<Value>,
 }
 
+impl Default for MaterialOcclusionTextureInfo {
+    fn default() -> Self {
+        Self {
+            index: 0,
+            tex_coord: 0,
+            strength: 1.0,
+            extensions: None,
+            extras: None,
+        }
+    }
+}
+
 #[derive(Serialize, Deserialize, Debug, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct MaterialOcculusionTextureInfoExtensions {
     #[serde(flatten)]
     others: HashMap<String, Value>,
-}
-
-fn default_strength() -> f32 {
-    1.0
 }
 
 /// A set of parameter values that are used to define the metallic-roughness material model from Physically-Based Rendering (PBR) methodology.
@@ -95,6 +111,7 @@ fn default_strength() -> f32 {
 #[serde(deny_unknown_fields)]
 pub struct MaterialPBRMetallicRoughness {
     /// The factors for the base color of the material. This value defines linear multipliers for the sampled texels of the base color texture.
+    #[serde(skip_serializing_if = "is_default_color")]
     pub base_color_factor: [f32; 4],
 
     /// The base color texture. The first three components (RGB) **MUST** be encoded with the sRGB transfer function. They specify the base color of the material. If the fourth component (A) is present, it represents the linear alpha coverage of the material. Otherwise, the alpha coverage is equal to `1.0`. The `material.alphaMode` property specifies how alpha is interpreted. The stored texels **MUST NOT** be premultiplied. When undefined, the texture **MUST** be sampled as having `1.0` in all components.
@@ -102,14 +119,20 @@ pub struct MaterialPBRMetallicRoughness {
     pub base_color_texture: Option<TextureInfo>,
 
     /// The factor for the metalness of the material. This value defines a linear multiplier for the sampled metalness values of the metallic-roughness texture.
+    #[serde(skip_serializing_if = "is_one")]
     pub metallic_factor: f32,
 
     /// The factor for the metalness of the material. This value defines a linear multiplier for the sampled metalness values of the metallic-roughness texture.
+    #[serde(skip_serializing_if = "is_one")]
     pub roughness_factor: f32,
 
     /// The metallic-roughness texture. The metalness values are sampled from the B channel. The roughness values are sampled from the G channel. These values **MUST** be encoded with a linear transfer function. If other channels are present (R or A), they **MUST** be ignored for metallic-roughness calculations. When undefined, the texture **MUST** be sampled as having `1.0` in G and B components.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub metallic_roughness_texture: Option<TextureInfo>,
+}
+
+fn is_default_color(v: &[f32; 4]) -> bool {
+    *v == [1.0, 1.0, 1.0, 1.0]
 }
 
 impl Default for MaterialPBRMetallicRoughness {
@@ -151,15 +174,19 @@ pub struct Material {
     pub emissive_texture: Option<TextureInfo>,
 
     /// The factors for the emissive color of the material. This value defines linear multipliers for the sampled texels of the emissive texture.
+    #[serde(skip_serializing_if = "is_default_emissive_factor")]
     pub emissive_factor: [f32; 3],
 
     /// The material's alpha rendering mode enumeration specifying the interpretation of the alpha value of the base color.
+    #[serde(skip_serializing_if = "is_default")]
     pub alpha_mode: AlphaMode,
 
     /// Specifies the cutoff threshold when in `MASK` alpha mode. If the alpha value is greater than or equal to this value then it is rendered as fully opaque, otherwise, it is rendered as fully transparent. A value greater than `1.0` will render the entire material as fully transparent. This value **MUST** be ignored for other alpha modes. When `alphaMode` is not defined, this value **MUST NOT** be defined.
+    #[serde(skip_serializing_if = "is_half")]
     pub alpha_cutoff: f32,
 
     /// Specifies whether the material is double sided. When this value is false, back-face culling is enabled. When this value is true, back-face culling is disabled and double-sided lighting is enabled. The back-face **MUST** have its normals reversed before the lighting equation is evaluated.
+    #[serde(skip_serializing_if = "is_default")]
     pub double_sided: bool,
 
     /// JSON object with extension-specific objects.
@@ -194,4 +221,48 @@ impl Default for Material {
 pub struct MaterialExtensions {
     #[serde(flatten)]
     others: HashMap<String, Value>,
+}
+
+fn one() -> f32 {
+    1.0
+}
+
+fn is_one(v: &f32) -> bool {
+    *v == 1.0
+}
+
+fn is_default_emissive_factor(v: &[f32; 3]) -> bool {
+    *v == [0.0, 0.0, 0.0]
+}
+
+fn is_half(v: &f32) -> bool {
+    *v == 0.5
+}
+
+fn is_default<T: Default + PartialEq>(value: &T) -> bool {
+    *value == T::default()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_material() {
+        let m: Material = serde_json::from_str("{}").unwrap();
+        assert_eq!(m.alpha_cutoff, 0.5);
+        assert_eq!(m.emissive_factor, [0.0, 0.0, 0.0]);
+        assert_eq!(m.alpha_mode, AlphaMode::Opaque);
+        assert!(!m.double_sided);
+        assert_eq!(serde_json::to_string(&m).unwrap(), "{}");
+    }
+
+    #[test]
+    fn test_pbr_material() {
+        let m: MaterialPBRMetallicRoughness = serde_json::from_str("{}").unwrap();
+        assert_eq!(m.base_color_factor, [1.0, 1.0, 1.0, 1.0]);
+        assert_eq!(m.metallic_factor, 1.0);
+        assert_eq!(m.roughness_factor, 1.0);
+        assert_eq!(serde_json::to_string(&m).unwrap(), "{}");
+    }
 }

@@ -113,7 +113,10 @@ impl DataSink for MVTSink {
                 let output_path = &self.output_path;
                 s.spawn(move || {
                     // Run in a separate thread pool to avoid deadlocks
-                    let pool = rayon::ThreadPoolBuilder::new().build().unwrap();
+                    let pool = rayon::ThreadPoolBuilder::new()
+                        .use_current_thread()
+                        .build()
+                        .unwrap();
                     pool.install(|| {
                         tile_writing_stage(output_path, feedback, receiver_sorted, tile_id_conv);
                     })
@@ -135,10 +138,10 @@ fn geometry_slicing_stage(
             return Err(());
         }
 
-        let max_detail = 12;
+        let max_detail = 12; // 4096
         let buffer_pixels = 5;
         slice_cityobj_geoms(
-            &parcel.cityobj,
+            &parcel.entity,
             7,
             15,
             max_detail,
@@ -146,7 +149,7 @@ fn geometry_slicing_stage(
             |(z, x, y), mpoly| {
                 let feature = SlicedFeature {
                     geometry: mpoly,
-                    properties: parcel.cityobj.root.clone(),
+                    properties: parcel.entity.root.clone(),
                 };
                 let bytes = bincode::serialize(&feature).unwrap();
                 let sfeat = SerializedSlicedFeature {

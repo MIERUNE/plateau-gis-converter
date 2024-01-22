@@ -34,10 +34,6 @@ pub enum WrappingMode {
     Repeat = 10497,
 }
 
-fn is_default_wrapping_mode(mode: &WrappingMode) -> bool {
-    *mode == WrappingMode::default()
-}
-
 /// Texture sampler properties for filtering and wrapping modes.
 #[derive(Serialize, Deserialize, Debug, Default)]
 #[serde(rename_all = "camelCase")]
@@ -57,11 +53,11 @@ pub struct Sampler {
     pub min_filter: Option<MinFilter>,
 
     /// S (U) wrapping mode.  All valid values correspond to WebGL enums.
-    #[serde(skip_serializing_if = "is_default_wrapping_mode")]
+    #[serde(skip_serializing_if = "is_default")]
     pub wrap_s: WrappingMode,
 
     /// T (V) wrapping mode.
-    #[serde(skip_serializing_if = "is_default_wrapping_mode")]
+    #[serde(skip_serializing_if = "is_default")]
     pub wrap_t: WrappingMode,
 
     /// JSON object with extension-specific objects.
@@ -78,4 +74,8 @@ pub struct Sampler {
 pub struct SamplerExtensions {
     #[serde(flatten)]
     others: HashMap<String, Value>,
+}
+
+fn is_default<T: Default + PartialEq>(value: &T) -> bool {
+    *value == T::default()
 }

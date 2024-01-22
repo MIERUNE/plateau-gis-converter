@@ -27,7 +27,7 @@ pub enum ComponentType {
 }
 
 /// An object pointing to a buffer view containing the indices of deviating accessor values. The number of indices is equal to `accessor.sparse.count`. Indices **MUST** strictly increase.
-#[derive(Serialize, Deserialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 #[serde(deny_unknown_fields)]
 pub struct AccessorSparseIndices {
@@ -35,7 +35,7 @@ pub struct AccessorSparseIndices {
     pub buffer_view: u32,
 
     /// The offset relative to the start of the buffer view in bytes.
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "is_default")]
     pub byte_offset: u32,
 
     /// The indices data type.
@@ -43,7 +43,7 @@ pub struct AccessorSparseIndices {
 }
 
 /// An object pointing to a buffer view containing the deviating accessor values. The number of elements is equal to `accessor.sparse.count` times number of components. The elements have the same component type as the base accessor. The elements are tightly packed. Data **MUST** be aligned following the same rules as the base accessor.
-#[derive(Serialize, Deserialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 #[serde(deny_unknown_fields)]
 pub struct AccessorSparseValues {
@@ -51,12 +51,12 @@ pub struct AccessorSparseValues {
     pub buffer_view: u32,
 
     /// The offset relative to the start of the bufferView in bytes.
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "is_default")]
     pub byte_offset: u32,
 }
 
 /// Sparse storage of accessor values that deviate from their initialization value.
-#[derive(Serialize, Deserialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 #[serde(deny_unknown_fields)]
 pub struct AccessorSparse {
@@ -97,16 +97,15 @@ pub struct Accessor {
     pub buffer_view: Option<u32>,
 
     /// The offset relative to the start of the buffer view in bytes.  This **MUST** be a multiple of the size of the component datatype. This property **MUST NOT** be defined when `bufferView` is undefined.
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "is_default")]
     pub byte_offset: u32,
 
     /// The datatype of the accessor's components.  UNSIGNED_INT type **MUST NOT** be used for any accessor that is not referenced by `mesh.primitive.indices`.
     pub component_type: ComponentType,
 
     /// Specifies whether integer data values are normalized (`true`) to [0, 1] (for unsigned types) or to [-1, 1] (for signed types) when they are accessed. This property **MUST NOT** be set to `true` for accessors with `FLOAT` or `UNSIGNED_INT` component type.
-    #[serde(default)]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub normalized: Option<bool>,
+    #[serde(default, skip_serializing_if = "is_default")]
+    pub normalized: bool,
 
     /// The number of elements referenced by this accessor, not to be confused with the number of bytes or number of components.
     pub count: u32,
@@ -140,15 +139,13 @@ pub struct Accessor {
     pub extras: Option<Value>,
 }
 
-impl Accessor {
-    pub fn new() -> Self {
-        Default::default()
-    }
-}
-
 #[derive(Serialize, Deserialize, Debug, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct AccessorExtensions {
     #[serde(flatten)]
     others: HashMap<String, Value>,
+}
+
+fn is_default<T: Default + PartialEq>(value: &T) -> bool {
+    *value == T::default()
 }

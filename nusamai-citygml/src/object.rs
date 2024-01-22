@@ -1,6 +1,7 @@
 //! Object representation of the city objects.
 
 use std::borrow::Cow;
+use std::sync::{Arc, RwLock};
 
 use crate::geometry::{self, GeometryRef};
 use crate::values::{Code, Point, URI};
@@ -10,10 +11,11 @@ use serde::{Deserialize, Serialize};
 
 pub type Map = indexmap::IndexMap<String, Value, ahash::RandomState>;
 
-#[derive(Debug, Deserialize, Serialize, PartialEq)]
-pub struct CityObject {
+/// City objects, features, objects or data
+#[derive(Debug, Deserialize, Serialize)]
+pub struct Entity {
     pub root: Value,
-    pub geometry_store: geometry::GeometryStore,
+    pub geometry_store: Arc<RwLock<geometry::GeometryStore>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
