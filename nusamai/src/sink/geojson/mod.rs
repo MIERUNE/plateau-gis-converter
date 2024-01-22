@@ -90,7 +90,7 @@ impl DataSink for GeoJsonSink {
 
                 // TODO: Handle output file path
                 let mut file = File::create(&self.output_path).unwrap();
-                let mut writer = BufWriter::new(&mut file);
+                let mut writer = BufWriter::with_capacity(1024 * 1024, &mut file);
 
                 // Write the FeatureCollection header
                 writer

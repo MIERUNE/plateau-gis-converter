@@ -43,7 +43,7 @@ impl DataSink for NoopSink {
             self.num_features += 1;
             self.num_vertices += parcel.cityobj.geometry_store.vertices.len();
 
-            log::info!("feature: {:?}", parcel.cityobj.root);
+            // log::info!("feature: {:?}", parcel.cityobj.root);
         }
 
         if feedback.is_cancelled() {

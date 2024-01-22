@@ -63,7 +63,7 @@ impl CodeResolver for Resolver {
                     path
                 )));
             };
-            let reader = std::io::BufReader::new(file);
+            let reader = std::io::BufReader::with_capacity(128 * 1024, file);
             let definitions = parse_dictionary(reader)?;
 
             let v = definitions.get(code).map(|d| d.value().to_string());
