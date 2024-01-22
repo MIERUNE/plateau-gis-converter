@@ -47,6 +47,7 @@
 		<Icon class="text-xl" icon="material-symbols:input-rounded" />
 		<h2 class="font-bold text-xl">入力</h2>
 	</div>
+	<hr class="mt-0.5" />
 
 	<div class="ml-3">
 		<div>

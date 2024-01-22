@@ -10,6 +10,7 @@
 		<Icon class="text-xl" icon="material-symbols:settings" />
 		<h2 class="font-bold text-xl">設定</h2>
 	</div>
+	<hr class="mt-0.5" />
 
 	<div class="flex flex-col gap-5 mt-3 ml-2">
 		<div class=" flex flex-col gap-1.5">

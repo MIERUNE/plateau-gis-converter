@@ -16,6 +16,7 @@
 		<Icon class="text-xl" icon="material-symbols:output-rounded" />
 		<h2 class="font-bold text-xl">出力</h2>
 	</div>
+	<hr class="mt-0.5" />
 
 	<div class="flex flex-col gap-5 mt-3 ml-2">
 		<div class="flex items-center gap-3">
