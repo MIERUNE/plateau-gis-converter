@@ -4,10 +4,12 @@
 	import InputSelector from './InputSelector.svelte';
 	import SettingSelector from './SettingSelector.svelte';
 	import OutputSelector from './OutputSelector.svelte';
+	import LoadingAnimation from './LoadingAnimation.svelte';
 
 	let inputPaths: string[] = [];
 	let fileType: string;
 	let outputPath = '';
+	let isRunning = false;
 
 	async function convertAndSave() {
 		if (!inputPaths) {
@@ -19,14 +21,22 @@
 			return;
 		}
 
+		isRunning = true;
 		await invoke('run', {
 			inputPaths,
 			outputPath,
 			fileType
 		});
+		isRunning = false;
 		alert(`${fileType}形式で '${outputPath}' に出力しました。`);
 	}
 </script>
+
+{#if isRunning}
+	<div class="grid place-items-center absolute w-screen h-screen z-20 bg-black/60">
+		<LoadingAnimation />
+	</div>
+{/if}
 
 <div class="grid place-items-center h-screen">
 	<div class="max-w-2xl flex flex-col gap-12">
