@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { dialog, fs } from '@tauri-apps/api';
 	import Icon from '@iconify/svelte';
+	import { abbreviatePath } from '$lib/utils';
 
 	let isFolderMode = true;
 	let inputFolders: string[] = [];
@@ -79,12 +80,38 @@
 					{#if inputFolders.length === 0}
 						<p class="opacity-50">フォルダが選択されていません</p>
 					{:else}
-						<p>{inputFolders.length}フォルダ（計{inputPaths.length}GMLファイル）</p>
+						<div class="flex items-center">
+							<p>
+								<b>{inputFolders.length}</b> フォルダ （計 <b>{inputPaths.length}</b> ファイル）
+							</p>
+							<button class="tooltip hover:text-accent1">
+								<Icon class="text-2xl" icon="material-symbols-light:list-alt-rounded" />
+								<div class="tooltip-text max-h-64 overflow-y-auto">
+									<ol>
+										{#each inputFolders as folder}
+											<li class="text-xs">{abbreviatePath(folder, 30)}</li>
+										{/each}
+									</ol>
+								</div>
+							</button>
+						</div>
 					{/if}
 				{:else if inputPaths.length === 0}
 					<p class="opacity-50">ファイルが選択されていません</p>
 				{:else}
-					<p>{inputPaths.length}ファイル</p>
+					<div class="flex items-center">
+						<p><b>{inputPaths.length}</b> ファイル</p>
+						<button class="tooltip hover:text-accent1">
+							<Icon class="text-2xl" icon="material-symbols-light:list-alt-rounded" />
+							<div class="tooltip-text max-h-64 overflow-y-auto">
+								<ol>
+									{#each inputPaths as path}
+										<li class="text-xs">{abbreviatePath(path, 30)}</li>
+									{/each}
+								</ol>
+							</div>
+						</button>
+					</div>
 				{/if}
 			</div>
 		</div>
@@ -95,5 +122,36 @@
 	.active {
 		@apply bg-accent1;
 		pointer-events: none;
+	}
+
+	ol {
+		@apply pl-4;
+		@apply list-decimal;
+	}
+
+	.tooltip {
+		position: relative;
+		cursor: pointer;
+	}
+
+	.tooltip-text {
+		opacity: 0;
+		visibility: hidden;
+		position: absolute;
+		left: 50%;
+		transform: translateX(-50%) translateY(100%);
+		bottom: 0px;
+		display: inline-block;
+		white-space: nowrap;
+		@apply text-left;
+		@apply px-6 py-2;
+		@apply bg-white text-base border rounded shadow;
+		transition: 0.3s ease-in;
+		z-index: 10;
+	}
+
+	.tooltip:hover .tooltip-text {
+		opacity: 1;
+		visibility: visible;
 	}
 </style>
