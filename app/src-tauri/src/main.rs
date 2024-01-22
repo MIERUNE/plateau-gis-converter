@@ -30,6 +30,8 @@ fn main() {
 fn run(input_paths: Vec<String>, output_path: String, filetype: String) {
     let sinkopt: Vec<(String, String)> = vec![("@output".into(), output_path)];
 
+    log::info!("Running pipeline with input: {:?}", input_paths);
+
     // TODO: set cancellation handler
     let canceller = Arc::new(Mutex::new(Canceller::default()));
 

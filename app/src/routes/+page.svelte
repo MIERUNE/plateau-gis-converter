@@ -7,7 +7,7 @@
 	import LoadingAnimation from './LoadingAnimation.svelte';
 
 	let inputPaths: string[] = [];
-	let fileType: string;
+	let filetype: string;
 	let outputPath = '';
 	let isRunning = false;
 
@@ -25,10 +25,10 @@
 		await invoke('run', {
 			inputPaths,
 			outputPath,
-			fileType
+			filetype
 		});
 		isRunning = false;
-		alert(`${fileType}形式で '${outputPath}' に出力しました。`);
+		alert(`${filetype}形式で '${outputPath}' に出力しました。`);
 	}
 </script>
 
@@ -49,7 +49,7 @@
 
 		<InputSelector bind:inputPaths />
 
-		<SettingSelector bind:fileType />
+		<SettingSelector bind:filetype />
 
 		<OutputSelector bind:outputPath />
 
