@@ -1,6 +1,6 @@
 <script lang="ts">
+	import Icon from '@iconify/svelte';
 	import { invoke } from '@tauri-apps/api/tauri';
-
 	import InputSelector from './InputSelector.svelte';
 	import OutputSelector from './OutputSelector.svelte';
 
@@ -23,21 +23,31 @@
 			outputPath,
 			fileType
 		});
-		alert(`${fileType}形式で、 ${outputPath} に出力しました 🚀`);
+		alert(`${fileType}形式で '${outputPath}' に出力しました。`);
 	}
 </script>
 
 <div class="grid place-items-center h-screen">
-	<InputSelector bind:inputPath />
+	<div class="max-w-2xl flex flex-col gap-9">
+		<div class="flex items-center gap-1.5">
+			<h1 class="font-bold text-2xl">BRIDGE 都市デジタルツイン・GISコンバータ</h1>
+			<Icon
+				class="text-xl mt-1 hover:opacity-60 hover:cursor-pointer"
+				icon="mingcute:information-line"
+			/>
+		</div>
 
-	<OutputSelector bind:fileType bind:outputPath />
+		<InputSelector bind:inputPath />
+		<OutputSelector bind:fileType bind:outputPath />
 
-	<div class="flex justify-center">
-		<button
-			on:click={convertAndSave}
-			class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-6 rounded-2xl shadow"
-		>
-			変換
-		</button>
+		<div class="flex justify-end">
+			<button
+				on:click={convertAndSave}
+				class="bg-accent1 flex items-center font-bold py-1.5 pl-3 pr-5 rounded-full gap-1 shawdow-2xl hover:opacity-75"
+			>
+				<Icon class="text-lg" icon="ic:baseline-play-arrow" />
+				変換
+			</button>
+		</div>
 	</div>
 </div>
