@@ -138,7 +138,7 @@ fn geometry_slicing_stage(
             return Err(());
         }
 
-        let max_detail = 12;
+        let max_detaentity;
         let buffer_pixels = 5;
         slice_cityobj_geoms(
             &parcel.cityobj,
@@ -146,7 +146,7 @@ fn geometry_slicing_stage(
             15,
             max_detail,
             buffer_pixels,
-            |(z, x, y), mpoly| {
+            |(z, x, y), mpoly| {entity
                 let feature = SlicedFeature {
                     geometry: mpoly,
                     properties: parcel.cityobj.root.clone(),

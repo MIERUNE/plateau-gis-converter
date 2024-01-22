@@ -78,13 +78,14 @@ impl GpkgSink {
                         if feedback.is_cancelled() {
                             return Err(());
                         }
-                        let cityobj = parcel.cityobj;
-                        if !cityobj.geometry_store.multipolygon.is_empty() {
+                        let entity = parcel.entity;
+                        let geom_store = entity.geometry_store.read().unwrap();
+                        if !geom_store.multipolygon.is_empty() {
                             let mut bytes = Vec::new();
                             if write_indexed_multipolygon(
                                 &mut bytes,
-                                &cityobj.geometry_store.vertices,
-                                &cityobj.geometry_store.multipolygon,
+                                &geom_store.vertices,
+                                &geom_store.multipolygon,
                                 4326,
                             )
                             .is_err()
