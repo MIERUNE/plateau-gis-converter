@@ -79,7 +79,7 @@
 					{#if inputFolders.length === 0}
 						<p class="opacity-50">フォルダが選択されていません</p>
 					{:else}
-						<p>{inputFolders.length}フォルダ（計{inputPaths.length}ファイル）</p>
+						<p>{inputFolders.length}フォルダ（計{inputPaths.length}GMLファイル）</p>
 					{/if}
 				{:else if inputPaths.length === 0}
 					<p class="opacity-50">ファイルが選択されていません</p>
@@ -87,15 +87,6 @@
 					<p>{inputPaths.length}ファイル</p>
 				{/if}
 			</div>
-		</div>
-
-		<div class="max-w-md text-sm">
-			inputFolders:<br />{inputFolders}
-		</div>
-
-		<div class="max-w-md text-sm">
-			inputPaths:<br />
-			{inputPaths.join('\n')}
 		</div>
 	</div>
 </div>
