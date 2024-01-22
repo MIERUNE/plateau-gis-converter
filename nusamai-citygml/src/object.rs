@@ -15,7 +15,7 @@ pub type Map = indexmap::IndexMap<String, Value, ahash::RandomState>;
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Entity {
     pub root: Value,
-    pub geometry_store: Arc<RwLock<geometry::GeometryStore>>, // read-only
+    pub geometry_store: Arc<RwLock<geometry::GeometryStore>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
