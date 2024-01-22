@@ -10,65 +10,76 @@ pub const APP_2_NS: Namespace = Namespace(b"http://www.opengis.net/citygml/appea
 pub fn wellknown_prefix_from_nsres<'a>(ns: &ResolveResult<'a>) -> &'a [u8] {
     match ns {
         ResolveResult::Bound(Namespace(name)) => {
-            const OPENGIS_PREFIX: &[u8] = b"http://www.opengis.net/";
-            const IUR_PREFIX: &[u8] = b"https://www.geospatial.jp/iur/";
-            if name.starts_with(OPENGIS_PREFIX) {
-                let s = &name[OPENGIS_PREFIX.len()..];
-                // GML 3.1.1
-                if s == b"gml" {
-                    b"gml:"
-                } else if s.starts_with(b"citygml/") {
-                    // CityGML 2.0
-                    match &s[b"citygml/".len()..] {
-                        b"2.0" => b"core:",
-                        b"appearance/2.0" => b"app:",
-                        b"building/2.0" => b"bldg:",
-                        b"bridge/2.0" => b"brid:",
-                        b"relief/2.0" => b"dem:",
-                        b"cityfurniture/2.0" => b"frn:",
-                        b"generics/2.0" => b"gen:",
-                        b"cityobjectgroup/2.0" => b"grp:",
-                        b"landuse/2.0" => b"luse:",
-                        b"transportation/2.0" => b"tran:",
-                        b"texturedsurface/2.0" => b"tex:", // deprecated
-                        b"vegetation/2.0" => b"veg:",
-                        b"waterbody/2.0" => b"wtr:",
-                        b"tunnel/2.0" => b"tun:",
-                        _ => b"unsupported:",
+            if let Some(http) = name.strip_prefix(b"http") {
+                if let Some(http_www) = http.strip_prefix(b"://www.") {
+                    if let Some(opengis) = http_www.strip_prefix(b"opengis.net/") {
+                        // GML 3.1.1
+                        if opengis == b"gml" {
+                            b"gml:"
+                        } else if let Some(citygml) = opengis.strip_prefix(b"citygml/") {
+                            // CityGML 2.0
+                            match citygml {
+                                b"2.0" => b"core:",
+                                b"appearance/2.0" => b"app:",
+                                b"building/2.0" => b"bldg:",
+                                b"generics/2.0" => b"gen:",
+                                b"transportation/2.0" => b"tran:",
+                                b"cityfurniture/2.0" => b"frn:",
+                                b"vegetation/2.0" => b"veg:",
+                                b"bridge/2.0" => b"brid:",
+                                b"relief/2.0" => b"dem:",
+                                b"landuse/2.0" => b"luse:",
+                                b"waterbody/2.0" => b"wtr:",
+                                b"tunnel/2.0" => b"tun:",
+                                b"cityobjectgroup/2.0" => b"grp:",
+                                b"texturedsurface/2.0" => b"tex:", // deprecated
+                                _ => b"unsupported:",
+                            }
+                        } else {
+                            b"unsupported:"
+                        }
+                    } else if name == b"w3.org/1999/xlink" {
+                        // xlink
+                        b"xlink:"
+                    } else {
+                        // PLATEAU 1.x
+                        match *name {
+                            b"kantei.go.jp/jp/singi/tiiki/toshisaisei/itoshisaisei/iur/uro/1.4" => {
+                                b"uro:"
+                            }
+                            b"kantei.go.jp/jp/singi/tiiki/toshisaisei/itoshisaisei/iur/urf/1.4" => {
+                                b"urf:"
+                            }
+                            _ => b"unsupported:",
+                        }
+                    }
+                } else if let Some(https_www) = http.strip_prefix(b"s://www.") {
+                    if let Some(iur) = https_www.strip_prefix(b"geospatial.jp/iur/ur") {
+                        match iur {
+                            // PLATEAU 3.x
+                            b"o/3.0" => b"uro:",
+                            b"f/3.0" => b"urf:",
+                            // PLATEAU 2.x
+                            b"o/2.0" => b"uro:",
+                            b"f/2.0" => b"urf:",
+                            _ => b"unsupported:",
+                        }
+                    } else {
+                        // PLATEAU 1.x
+                        match https_www {
+                            b"chisou.go.jp/tiiki/toshisaisei/itoshisaisei/iur/uro/1.5" => b"uro:",
+                            b"chisou.go.jp/tiiki/toshisaisei/itoshisaisei/iur/urf/1.5" => b"urf:",
+                            _ => b"unsupported:",
+                        }
                     }
                 } else {
                     b"unsupported:"
                 }
-            } else if name.starts_with(IUR_PREFIX) {
-                let s = &name[IUR_PREFIX.len()..];
-                match s {
-                    // PLATEAU 3.x
-                    b"uro/3.0" => b"uro:",
-                    b"urf/3.0" => b"urf:",
-                    // PLATEAU 2.x
-                    b"uro/2.0" => b"uro:",
-                    b"urf/2.0" => b"urf:",
-                    _ => b"unsupported:",
-                }
             } else if name == b"urn:oasis:names:tc:ciq:xsdschema:xAL:2.0" {
                 // OASIS xAL 2.0
                 b"xAL:"
-            } else if name == b"http://www.w3.org/1999/xlink" {
-                // xlink
-                b"xlink:"
             } else {
-                // PLATEAU 1.x
-                match *name {
-                    b"https://www.chisou.go.jp/tiiki/toshisaisei/itoshisaisei/iur/uro/1.5" => b"uro:",
-                    b"https://www.chisou.go.jp/tiiki/toshisaisei/itoshisaisei/iur/urf/1.5" => b"urf:",
-                    b"http://www.kantei.go.jp/jp/singi/tiiki/toshisaisei/itoshisaisei/iur/uro/1.4" => {
-                        b"uro:"
-                    }
-                    b"http://www.kantei.go.jp/jp/singi/tiiki/toshisaisei/itoshisaisei/iur/urf/1.4" => {
-                        b"urf:"
-                    }
-                    _ => b"unsupported:",
-                }
+                b"unsupported:"
             }
         }
         ResolveResult::Unbound => b"",
@@ -211,7 +222,7 @@ mod tests {
                     let wellknown = std::str::from_utf8(wellknown_prefix_from_nsres(&ns)).unwrap();
                     let localname = e.local_name();
                     let expected = String::from_utf8_lossy(localname.as_ref()) + ":";
-                    assert_eq!(wellknown, expected);
+                    assert_eq!(expected, wellknown);
                 }
                 Ok((_, Event::Eof)) => break,
                 Ok(_) => {}

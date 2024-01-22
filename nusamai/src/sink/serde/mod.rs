@@ -82,7 +82,8 @@ impl DataSink for SerdeSink {
             },
             || {
                 // Write to file
-                let mut writer = BufWriter::new(File::create(&self.output_path).unwrap());
+                let mut writer =
+                    BufWriter::with_capacity(1024 * 1024, File::create(&self.output_path).unwrap());
                 for compressed in receiver {
                     // size
                     writer

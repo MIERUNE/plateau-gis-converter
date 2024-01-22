@@ -113,7 +113,10 @@ impl DataSink for MVTSink {
                 let output_path = &self.output_path;
                 s.spawn(move || {
                     // Run in a separate thread pool to avoid deadlocks
-                    let pool = rayon::ThreadPoolBuilder::new().build().unwrap();
+                    let pool = rayon::ThreadPoolBuilder::new()
+                        .use_current_thread()
+                        .build()
+                        .unwrap();
                     pool.install(|| {
                         tile_writing_stage(output_path, feedback, receiver_sorted, tile_id_conv);
                     })

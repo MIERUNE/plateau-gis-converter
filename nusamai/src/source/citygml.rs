@@ -50,7 +50,7 @@ impl DataSource for CityGMLSource {
             let Ok(file) = std::fs::File::open(filename) else {
                 panic!("failed to open file {}", filename);
             };
-            let reader = std::io::BufReader::new(file);
+            let reader = std::io::BufReader::with_capacity(1024 * 1024, file);
             let mut xml_reader = quick_xml::NsReader::from_reader(reader);
             let source_url =
                 Url::from_file_path(fs::canonicalize(Path::new(filename)).unwrap()).unwrap();
