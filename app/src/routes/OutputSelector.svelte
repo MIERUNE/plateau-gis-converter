@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { dialog } from '@tauri-apps/api';
 	import Icon from '@iconify/svelte';
+	import { abbreviatePath } from '$lib/utils';
 
 	export let outputPath: string;
 
@@ -23,8 +24,11 @@
 				class="bg-accent1 font-semibold rounded px-4 py-0.5 shadow hover:opacity-75">選択</button
 			>
 			<div class="text-sm" class:opacity-50={!outputPath}>
-				{(outputPath.length < 36 ? outputPath : `... ${outputPath.slice(-36)}`) ||
-					'出力先が選択されていません'}
+				{#if outputPath}
+					<p><code>{abbreviatePath(outputPath, 40)}</code></p>
+				{:else}
+					<p>出力先が選択されていません</p>
+				{/if}
 			</div>
 		</div>
 	</div>

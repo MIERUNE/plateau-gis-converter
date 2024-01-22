@@ -13,7 +13,7 @@
 
 	<div class="flex flex-col gap-5 mt-3 ml-2">
 		<div class=" flex flex-col gap-1.5">
-			<label for="filetype-select" class="font-bold">形式</label>
+			<label for="filetype-select" class="font-bold">ファイル形式</label>
 			<select bind:value={fileType} name="filetype" id="filetype-select" class="w-36">
 				{#each fileTypeOptions as fileType}
 					<option value={fileType}>{fileType}</option>

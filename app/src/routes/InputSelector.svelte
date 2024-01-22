@@ -1,22 +1,29 @@
 <script lang="ts">
-	import { dialog } from '@tauri-apps/api';
+	import { dialog, fs } from '@tauri-apps/api';
 	import Icon from '@iconify/svelte';
 
-	export let inputPath = '';
 	let isFolderMode = true;
-	let folderNames: string[] = [];
+	let inputFolders: string[] = [];
+	export let inputPaths: string[] = [];
+
+	// Clear the inputs when the mode changes
+	$: if (isFolderMode || !isFolderMode) {
+		inputFolders = [];
+		inputPaths = [];
+	}
 
 	async function openFolderDialog() {
 		const res = await dialog.open({
 			multiple: true,
 			directory: true
 		});
-		console.log(res);
-
-		// TODO: get folder names
-		inputPath = Array.isArray(res) ? res[0] : res ?? '';
-
-		// TODO: get file names under the folders
+		if (!res) return;
+		inputFolders = Array.isArray(res) ? res : [res];
+		inputPaths = [];
+		for (const folder of inputFolders) {
+			const files = await fs.readDir(folder);
+			inputPaths = files.map((d) => d.path);
+		}
 	}
 
 	async function openFileDialog() {
@@ -30,9 +37,8 @@
 				}
 			]
 		});
-
-		// TODO: get file names
-		inputPath = Array.isArray(res) ? res[0] : res ?? '';
+		if (!res) return;
+		inputPaths = Array.isArray(res) ? res : [res];
 	}
 </script>
 
@@ -63,12 +69,21 @@
 
 		<div class="flex items-center gap-3">
 			<button
-				on:click={openFolderDialog}
+				on:click={isFolderMode ? openFolderDialog : openFileDialog}
 				class="bg-accent1 font-semibold rounded px-4 py-0.5 shadow hover:opacity-75">選択</button
 			>
-			<div class="text-sm" class:opacity-50={!inputPath}>
-				{(inputPath.length < 36 ? inputPath : `... ${inputPath.slice(-36)}`) ||
-					`入力${isFolderMode ? 'フォルダ' : 'ファイル'}が選択されていません`}
+			<div class="text-sm">
+				{#if isFolderMode}
+					{#if inputFolders.length === 0}
+						<p class="opacity-50">フォルダが選択されていません</p>
+					{:else}
+						<p>{inputFolders.length}フォルダ（計{inputPaths.length}ファイル）</p>
+					{/if}
+				{:else if inputPaths.length === 0}
+					<p class="opacity-50">ファイルが選択されていません</p>
+				{:else}
+					<p>{inputPaths.length}ファイル</p>
+				{/if}
 			</div>
 		</div>
 	</div>

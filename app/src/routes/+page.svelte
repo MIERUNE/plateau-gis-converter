@@ -5,13 +5,13 @@
 	import SettingSelector from './SettingSelector.svelte';
 	import OutputSelector from './OutputSelector.svelte';
 
-	let inputPath = '';
+	let inputPaths: string[] = [];
 	let fileType: string;
 	let outputPath = '';
 
 	async function convertAndSave() {
-		if (!inputPath) {
-			alert('入力ファイルを選択してください');
+		if (!inputPaths) {
+			alert('入力フォルダ/ファイルを選択してください');
 			return;
 		}
 		if (!outputPath) {
@@ -20,7 +20,7 @@
 		}
 
 		await invoke('run', {
-			inputPath,
+			inputPaths,
 			outputPath,
 			fileType
 		});
@@ -38,7 +38,7 @@
 			/>
 		</div>
 
-		<InputSelector bind:inputPath />
+		<InputSelector bind:inputPaths />
 
 		<SettingSelector bind:fileType />
 

@@ -4,7 +4,7 @@ export default {
 	theme: {
 		extend: {
 			colors: {
-				base: '#0f172a',
+				base: '#334155',
 				accent1: '#00BEBE',
 				accent2: '#463C64'
 			}
