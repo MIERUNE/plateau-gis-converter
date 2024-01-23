@@ -1,0 +1,3166 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<gml:Dictionary xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:gml="http://www.opengis.net/gml" xsi:schemaLocation="http://www.opengis.net/gml http://schemas.opengis.net/gml/3.1.1/profiles/SimpleDictionary/1.0.0/gmlSimpleDictionaryProfile.xsd" gml:id="cl_0f948d41-36ce-490c-8cf7-f881feee9638">
+	<gml:name>Building_name</gml:name>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id1">
+			<gml:description>AOI国際病院</gml:description>
+			<gml:name>1</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id2">
+			<gml:description>ＪＸＴＧエネルギー株式会社川崎製造所</gml:description>
+			<gml:name>2</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id3">
+			<gml:description>ＪＸＴＧエネルギー株式会社川崎製油所</gml:description>
+			<gml:name>3</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id4">
+			<gml:description>たま日吉台病院</gml:description>
+			<gml:name>4</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id5">
+			<gml:description>はるひ野駅</gml:description>
+			<gml:name>5</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id6">
+			<gml:description>稲田堤駅</gml:description>
+			<gml:name>6</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id7">
+			<gml:description>稲田堤郵便局</gml:description>
+			<gml:name>7</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id8">
+			<gml:description>横浜税関川崎外郵出張所</gml:description>
+			<gml:name>8</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id9">
+			<gml:description>横浜税関川崎税関支署</gml:description>
+			<gml:name>9</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id10">
+			<gml:description>横浜税関川崎税関支署東扇島出張所</gml:description>
+			<gml:name>10</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id11">
+			<gml:description>横浜地方裁判所川崎支部</gml:description>
+			<gml:name>11</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id12">
+			<gml:description>横浜地方法務局川崎支局</gml:description>
+			<gml:name>12</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id13">
+			<gml:description>柿生駅</gml:description>
+			<gml:name>13</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id14">
+			<gml:description>柿生郵便局</gml:description>
+			<gml:name>14</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id15">
+			<gml:description>梶が谷駅</gml:description>
+			<gml:name>15</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id16">
+			<gml:description>関東運輸局神奈川運輸支局川崎自動車検査登録事務所</gml:description>
+			<gml:name>16</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id17">
+			<gml:description>関東地方整備局川崎国道事務所</gml:description>
+			<gml:name>17</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id18">
+			<gml:description>久地駅</gml:description>
+			<gml:name>18</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id19">
+			<gml:description>宮崎台駅</gml:description>
+			<gml:name>19</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id20">
+			<gml:description>宮川病院</gml:description>
+			<gml:name>20</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id21">
+			<gml:description>宮前警察署</gml:description>
+			<gml:name>21</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id22">
+			<gml:description>宮前警察署宮前平駅前交番</gml:description>
+			<gml:name>22</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id23">
+			<gml:description>宮前警察署鷺沼駅前交番</gml:description>
+			<gml:name>23</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id24">
+			<gml:description>宮前警察署神木交番</gml:description>
+			<gml:name>24</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id25">
+			<gml:description>宮前警察署蔵敷交番</gml:description>
+			<gml:name>25</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id26">
+			<gml:description>宮前警察署馬絹交番</gml:description>
+			<gml:name>26</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id27">
+			<gml:description>宮前警察署野川交番</gml:description>
+			<gml:name>27</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id28">
+			<gml:description>宮前警察署有馬交番</gml:description>
+			<gml:name>28</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id29">
+			<gml:description>宮前平駅</gml:description>
+			<gml:name>29</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id30">
+			<gml:description>宮前郵便局</gml:description>
+			<gml:name>30</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id31">
+			<gml:description>京王稲田堤駅</gml:description>
+			<gml:name>31</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id32">
+			<gml:description>京急川崎駅</gml:description>
+			<gml:name>32</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id33">
+			<gml:description>京浜総合病院</gml:description>
+			<gml:name>33</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id34">
+			<gml:description>栗平駅</gml:description>
+			<gml:name>34</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id35">
+			<gml:description>慶友会第一病院</gml:description>
+			<gml:name>35</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id36">
+			<gml:description>県立向の岡工業高等学校</gml:description>
+			<gml:name>36</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id37">
+			<gml:description>県立高津養護学校</gml:description>
+			<gml:name>37</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id38">
+			<gml:description>県立住吉高等学校</gml:description>
+			<gml:name>38</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id39">
+			<gml:description>県立新城高等学校</gml:description>
+			<gml:name>39</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id40">
+			<gml:description>県立菅高等学校</gml:description>
+			<gml:name>40</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id41">
+			<gml:description>県立生田高等学校</gml:description>
+			<gml:name>41</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id42">
+			<gml:description>県立生田東高等学校</gml:description>
+			<gml:name>42</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id43">
+			<gml:description>県立川崎工科高等学校</gml:description>
+			<gml:name>43</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id44">
+			<gml:description>県立川崎高等学校</gml:description>
+			<gml:name>44</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id45">
+			<gml:description>県立川崎北高等学校</gml:description>
+			<gml:name>45</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id46">
+			<gml:description>県立多摩高等学校</gml:description>
+			<gml:name>46</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id47">
+			<gml:description>県立大師高等学校</gml:description>
+			<gml:name>47</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id48">
+			<gml:description>県立中原養護学校</gml:description>
+			<gml:name>48</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id49">
+			<gml:description>県立百合丘高等学校</gml:description>
+			<gml:name>49</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id50">
+			<gml:description>県立麻生高等学校</gml:description>
+			<gml:name>50</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id51">
+			<gml:description>県立麻生総合高等学校</gml:description>
+			<gml:name>51</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id52">
+			<gml:description>県立麻生養護学校</gml:description>
+			<gml:name>52</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id53">
+			<gml:description>元住吉駅</gml:description>
+			<gml:name>53</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id54">
+			<gml:description>原子力規制委員会川崎原子力規制事務所</gml:description>
+			<gml:name>54</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id55">
+			<gml:description>五月台駅</gml:description>
+			<gml:name>55</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id56">
+			<gml:description>向ヶ丘遊園駅</gml:description>
+			<gml:name>56</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id57">
+			<gml:description>向河原駅</gml:description>
+			<gml:name>57</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id58">
+			<gml:description>幸警察署</gml:description>
+			<gml:name>58</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id59">
+			<gml:description>幸警察署下平間交番</gml:description>
+			<gml:name>59</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id60">
+			<gml:description>幸警察署河原町交番</gml:description>
+			<gml:name>60</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id61">
+			<gml:description>幸警察署古市場交番</gml:description>
+			<gml:name>61</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id62">
+			<gml:description>幸警察署幸町交番</gml:description>
+			<gml:name>62</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id63">
+			<gml:description>幸警察署鹿島田駅前交番</gml:description>
+			<gml:name>63</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id64">
+			<gml:description>幸警察署小向東芝町交番</gml:description>
+			<gml:name>64</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id65">
+			<gml:description>幸警察署川崎駅西口交番</gml:description>
+			<gml:name>65</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id66">
+			<gml:description>幸警察署塚越交番</gml:description>
+			<gml:name>66</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id67">
+			<gml:description>幸警察署南加瀬交番</gml:description>
+			<gml:name>67</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id68">
+			<gml:description>幸警察署日吉交番</gml:description>
+			<gml:name>68</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id69">
+			<gml:description>幸警察署北加瀬交番</gml:description>
+			<gml:name>69</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id70">
+			<gml:description>港町駅</gml:description>
+			<gml:name>70</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id71">
+			<gml:description>溝の口駅</gml:description>
+			<gml:name>71</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id72">
+			<gml:description>溝ノ口中央通郵便局</gml:description>
+			<gml:name>72</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id73">
+			<gml:description>高津駅</gml:description>
+			<gml:name>73</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id74">
+			<gml:description>高津警察署</gml:description>
+			<gml:name>74</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id75">
+			<gml:description>高津警察署久末交番</gml:description>
+			<gml:name>75</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id76">
+			<gml:description>高津警察署溝口駅前交番</gml:description>
+			<gml:name>76</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id77">
+			<gml:description>高津警察署千年交番</gml:description>
+			<gml:name>77</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id78">
+			<gml:description>高津警察署津田山駅前交番</gml:description>
+			<gml:name>78</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id79">
+			<gml:description>高津警察署北見方交番</gml:description>
+			<gml:name>79</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id80">
+			<gml:description>高津警察署末長交番</gml:description>
+			<gml:name>80</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id81">
+			<gml:description>高津郵便局</gml:description>
+			<gml:name>81</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id82">
+			<gml:description>国立医薬品食品衛生研究所</gml:description>
+			<gml:name>82</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id83">
+			<gml:description>黒川駅</gml:description>
+			<gml:name>83</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id84">
+			<gml:description>鷺沼駅</gml:description>
+			<gml:name>84</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id85">
+			<gml:description>産業道路駅</gml:description>
+			<gml:name>85</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id86">
+			<gml:description>市立さくら小学校</gml:description>
+			<gml:name>86</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id87">
+			<gml:description>市立はるひ野小学校</gml:description>
+			<gml:name>87</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id88">
+			<gml:description>市立旭町小学校</gml:description>
+			<gml:name>88</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id89">
+			<gml:description>市立井田小学校</gml:description>
+			<gml:name>89</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id90">
+			<gml:description>市立井田中学校</gml:description>
+			<gml:name>90</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id91">
+			<gml:description>市立稲田小学校</gml:description>
+			<gml:name>91</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id92">
+			<gml:description>市立稲田中学校</gml:description>
+			<gml:name>92</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id93">
+			<gml:description>市立王禅寺中央小学校</gml:description>
+			<gml:name>93</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id94">
+			<gml:description>市立王禅寺中央中学校</gml:description>
+			<gml:name>94</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id95">
+			<gml:description>市立岡上小学校</gml:description>
+			<gml:name>95</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id96">
+			<gml:description>市立下河原小学校</gml:description>
+			<gml:name>96</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id97">
+			<gml:description>市立下作延小学校</gml:description>
+			<gml:name>97</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id98">
+			<gml:description>市立下小田中小学校</gml:description>
+			<gml:name>98</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id99">
+			<gml:description>市立下沼部小学校</gml:description>
+			<gml:name>99</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id100">
+			<gml:description>市立下布田小学校</gml:description>
+			<gml:name>100</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id101">
+			<gml:description>市立下平間小学校</gml:description>
+			<gml:name>101</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id102">
+			<gml:description>市立柿生小学校</gml:description>
+			<gml:name>102</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id103">
+			<gml:description>市立柿生中学校</gml:description>
+			<gml:name>103</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id104">
+			<gml:description>市立梶ヶ谷小学校</gml:description>
+			<gml:name>104</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id105">
+			<gml:description>市立苅宿小学校</gml:description>
+			<gml:name>105</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id106">
+			<gml:description>市立橘高等学校</gml:description>
+			<gml:name>106</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id107">
+			<gml:description>市立橘小学校</gml:description>
+			<gml:name>107</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id108">
+			<gml:description>市立橘中学校</gml:description>
+			<gml:name>108</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id109">
+			<gml:description>市立久地小学校</gml:description>
+			<gml:name>109</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id110">
+			<gml:description>市立久本小学校</gml:description>
+			<gml:name>110</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id111">
+			<gml:description>市立久末小学校</gml:description>
+			<gml:name>111</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id112">
+			<gml:description>市立宮崎小学校</gml:description>
+			<gml:name>112</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id113">
+			<gml:description>市立宮崎台小学校</gml:description>
+			<gml:name>113</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id114">
+			<gml:description>市立宮崎中学校</gml:description>
+			<gml:name>114</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id115">
+			<gml:description>市立宮前小学校</gml:description>
+			<gml:name>115</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id116">
+			<gml:description>市立宮前平小学校</gml:description>
+			<gml:name>116</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id117">
+			<gml:description>市立宮前平中学校</gml:description>
+			<gml:name>117</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id118">
+			<gml:description>市立宮内小学校</gml:description>
+			<gml:name>118</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id119">
+			<gml:description>市立宮内中学校</gml:description>
+			<gml:name>119</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id120">
+			<gml:description>市立京町小学校</gml:description>
+			<gml:name>120</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id121">
+			<gml:description>市立京町中学校</gml:description>
+			<gml:name>121</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id122">
+			<gml:description>市立玉川小学校</gml:description>
+			<gml:name>122</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id123">
+			<gml:description>市立玉川中学校</gml:description>
+			<gml:name>123</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id124">
+			<gml:description>市立金程小学校</gml:description>
+			<gml:name>124</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id125">
+			<gml:description>市立金程中学校</gml:description>
+			<gml:name>125</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id126">
+			<gml:description>市立栗木台小学校</gml:description>
+			<gml:name>126</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id127">
+			<gml:description>市立犬蔵小学校</gml:description>
+			<gml:name>127</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id128">
+			<gml:description>市立犬蔵中学校</gml:description>
+			<gml:name>128</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id129">
+			<gml:description>市立古市場小学校</gml:description>
+			<gml:name>129</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id130">
+			<gml:description>市立古川小学校</gml:description>
+			<gml:name>130</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id131">
+			<gml:description>市立戸手小学校</gml:description>
+			<gml:name>131</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id132">
+			<gml:description>市立御幸小学校</gml:description>
+			<gml:name>132</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id133">
+			<gml:description>市立御幸中学校</gml:description>
+			<gml:name>133</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id134">
+			<gml:description>市立向丘小学校</gml:description>
+			<gml:name>134</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id135">
+			<gml:description>市立向丘中学校</gml:description>
+			<gml:name>135</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id136">
+			<gml:description>市立向小学校</gml:description>
+			<gml:name>136</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id137">
+			<gml:description>市立幸町小学校</gml:description>
+			<gml:name>137</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id138">
+			<gml:description>市立高津高等学校</gml:description>
+			<gml:name>138</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id139">
+			<gml:description>市立高津小学校</gml:description>
+			<gml:name>139</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id140">
+			<gml:description>市立高津中学校</gml:description>
+			<gml:name>140</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id141">
+			<gml:description>市立今井小学校</gml:description>
+			<gml:name>141</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id142">
+			<gml:description>市立今井中学校</gml:description>
+			<gml:name>142</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id143">
+			<gml:description>市立坂戸小学校</gml:description>
+			<gml:name>143</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id144">
+			<gml:description>市立鷺沼小学校</gml:description>
+			<gml:name>144</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id145">
+			<gml:description>市立桜本中学校</gml:description>
+			<gml:name>145</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id146">
+			<gml:description>市立三田小学校</gml:description>
+			<gml:name>146</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id147">
+			<gml:description>市立四谷小学校</gml:description>
+			<gml:name>147</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id148">
+			<gml:description>市立子母口小学校</gml:description>
+			<gml:name>148</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id149">
+			<gml:description>市立住吉小学校</gml:description>
+			<gml:name>149</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id150">
+			<gml:description>市立住吉中学校</gml:description>
+			<gml:name>150</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id151">
+			<gml:description>市立宿河原小学校</gml:description>
+			<gml:name>151</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id152">
+			<gml:description>市立商業高等学校</gml:description>
+			<gml:name>152</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id153">
+			<gml:description>市立小杉小学校</gml:description>
+			<gml:name>153</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id154">
+			<gml:description>市立小倉小学校</gml:description>
+			<gml:name>154</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id155">
+			<gml:description>市立小田小学校</gml:description>
+			<gml:name>155</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id156">
+			<gml:description>市立上丸子小学校</gml:description>
+			<gml:name>156</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id157">
+			<gml:description>市立上作延小学校</gml:description>
+			<gml:name>157</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id158">
+			<gml:description>市立新作小学校</gml:description>
+			<gml:name>158</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id159">
+			<gml:description>市立新城小学校</gml:description>
+			<gml:name>159</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id160">
+			<gml:description>市立新町小学校</gml:description>
+			<gml:name>160</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id161">
+			<gml:description>市立真福寺小学校</gml:description>
+			<gml:name>161</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id162">
+			<gml:description>市立菅小学校</gml:description>
+			<gml:name>162</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id163">
+			<gml:description>市立菅生小学校</gml:description>
+			<gml:name>163</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id164">
+			<gml:description>市立菅生中学校</gml:description>
+			<gml:name>164</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id165">
+			<gml:description>市立菅中学校</gml:description>
+			<gml:name>165</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id166">
+			<gml:description>市立生田小学校</gml:description>
+			<gml:name>166</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id167">
+			<gml:description>市立生田中学校</gml:description>
+			<gml:name>167</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id168">
+			<gml:description>市立西梶ヶ谷小学校</gml:description>
+			<gml:name>168</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id169">
+			<gml:description>市立西丸子小学校</gml:description>
+			<gml:name>169</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id170">
+			<gml:description>市立西御幸小学校</gml:description>
+			<gml:name>170</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id171">
+			<gml:description>市立西高津中学校</gml:description>
+			<gml:name>171</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id172">
+			<gml:description>市立西菅小学校</gml:description>
+			<gml:name>172</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id173">
+			<gml:description>市立西生田小学校</gml:description>
+			<gml:name>173</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id174">
+			<gml:description>市立西生田中学校</gml:description>
+			<gml:name>174</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id175">
+			<gml:description>市立西中原中学校</gml:description>
+			<gml:name>175</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id176">
+			<gml:description>市立西野川小学校</gml:description>
+			<gml:name>176</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id177">
+			<gml:description>市立西有馬小学校</gml:description>
+			<gml:name>177</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id178">
+			<gml:description>市立千代ヶ丘小学校</gml:description>
+			<gml:name>178</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id179">
+			<gml:description>市立川崎高等学校附属中学校</gml:description>
+			<gml:name>179</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id180">
+			<gml:description>市立川崎小学校</gml:description>
+			<gml:name>180</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id181">
+			<gml:description>市立川崎総合科学高等学校</gml:description>
+			<gml:name>181</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id182">
+			<gml:description>市立川崎中学校</gml:description>
+			<gml:name>182</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id183">
+			<gml:description>市立川中島小学校</gml:description>
+			<gml:name>183</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id184">
+			<gml:description>市立川中島中学校</gml:description>
+			<gml:name>184</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id185">
+			<gml:description>市立浅田小学校</gml:description>
+			<gml:name>185</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id186">
+			<gml:description>市立大戸小学校</gml:description>
+			<gml:name>186</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id187">
+			<gml:description>市立大師小学校</gml:description>
+			<gml:name>187</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id188">
+			<gml:description>市立大師中学校</gml:description>
+			<gml:name>188</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id189">
+			<gml:description>市立大谷戸小学校</gml:description>
+			<gml:name>189</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id190">
+			<gml:description>市立大島小学校</gml:description>
+			<gml:name>190</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id191">
+			<gml:description>市立中央支援学校</gml:description>
+			<gml:name>191</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id192">
+			<gml:description>市立中原小学校</gml:description>
+			<gml:name>192</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id193">
+			<gml:description>市立中原中学校</gml:description>
+			<gml:name>193</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id194">
+			<gml:description>市立中野島小学校</gml:description>
+			<gml:name>194</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id195">
+			<gml:description>市立中野島中学校</gml:description>
+			<gml:name>195</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id196">
+			<gml:description>市立長沢小学校</gml:description>
+			<gml:name>196</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id197">
+			<gml:description>市立長沢中学校</gml:description>
+			<gml:name>197</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id198">
+			<gml:description>市立長尾小学校</gml:description>
+			<gml:name>198</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id199">
+			<gml:description>市立塚越中学校</gml:description>
+			<gml:name>199</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id200">
+			<gml:description>市立殿町小学校</gml:description>
+			<gml:name>200</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id201">
+			<gml:description>市立田島支援学校</gml:description>
+			<gml:name>201</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id202">
+			<gml:description>市立田島支援学校桜校</gml:description>
+			<gml:name>202</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id203">
+			<gml:description>市立田島小学校</gml:description>
+			<gml:name>203</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id204">
+			<gml:description>市立田島中学校</gml:description>
+			<gml:name>204</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id205">
+			<gml:description>市立渡田小学校</gml:description>
+			<gml:name>205</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id206">
+			<gml:description>市立渡田中学校</gml:description>
+			<gml:name>206</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id207">
+			<gml:description>市立登戸小学校</gml:description>
+			<gml:name>207</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id208">
+			<gml:description>市立土橋小学校</gml:description>
+			<gml:name>208</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id209">
+			<gml:description>市立東柿生小学校</gml:description>
+			<gml:name>209</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id210">
+			<gml:description>市立東高津小学校</gml:description>
+			<gml:name>210</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id211">
+			<gml:description>市立東高津中学校</gml:description>
+			<gml:name>211</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id212">
+			<gml:description>市立東住吉小学校</gml:description>
+			<gml:name>212</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id213">
+			<gml:description>市立東小倉小学校</gml:description>
+			<gml:name>213</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id214">
+			<gml:description>市立東小田小学校</gml:description>
+			<gml:name>214</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id215">
+			<gml:description>市立東菅小学校</gml:description>
+			<gml:name>215</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id216">
+			<gml:description>市立東生田小学校</gml:description>
+			<gml:name>216</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id217">
+			<gml:description>市立東大島小学校</gml:description>
+			<gml:name>217</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id218">
+			<gml:description>市立東門前小学校</gml:description>
+			<gml:name>218</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id219">
+			<gml:description>市立藤崎小学校</gml:description>
+			<gml:name>219</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id220">
+			<gml:description>市立南加瀬小学校</gml:description>
+			<gml:name>220</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id221">
+			<gml:description>市立南加瀬中学校</gml:description>
+			<gml:name>221</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id222">
+			<gml:description>市立南河原小学校</gml:description>
+			<gml:name>222</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id223">
+			<gml:description>市立南河原中学校</gml:description>
+			<gml:name>223</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id224">
+			<gml:description>市立南原小学校</gml:description>
+			<gml:name>224</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id225">
+			<gml:description>市立南菅小学校</gml:description>
+			<gml:name>225</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id226">
+			<gml:description>市立南菅中学校</gml:description>
+			<gml:name>226</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id227">
+			<gml:description>市立南生田小学校</gml:description>
+			<gml:name>227</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id228">
+			<gml:description>市立南生田中学校</gml:description>
+			<gml:name>228</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id229">
+			<gml:description>市立南大師中学校</gml:description>
+			<gml:name>229</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id230">
+			<gml:description>市立南百合丘小学校</gml:description>
+			<gml:name>230</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id231">
+			<gml:description>市立南野川小学校</gml:description>
+			<gml:name>231</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id232">
+			<gml:description>市立虹ヶ丘小学校</gml:description>
+			<gml:name>232</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id233">
+			<gml:description>市立日吉小学校</gml:description>
+			<gml:name>233</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id234">
+			<gml:description>市立日吉中学校</gml:description>
+			<gml:name>234</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id235">
+			<gml:description>市立白鳥中学校</gml:description>
+			<gml:name>235</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id236">
+			<gml:description>市立白幡台小学校</gml:description>
+			<gml:name>236</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id237">
+			<gml:description>市立稗原小学校</gml:description>
+			<gml:name>237</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id238">
+			<gml:description>市立百合丘小学校</gml:description>
+			<gml:name>238</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id239">
+			<gml:description>市立富士見台小学校</gml:description>
+			<gml:name>239</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id240">
+			<gml:description>市立富士見中学校</gml:description>
+			<gml:name>240</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id241">
+			<gml:description>市立平間小学校</gml:description>
+			<gml:name>241</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id242">
+			<gml:description>市立平間中学校</gml:description>
+			<gml:name>242</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id243">
+			<gml:description>市立平小学校</gml:description>
+			<gml:name>243</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id244">
+			<gml:description>市立平中学校</gml:description>
+			<gml:name>244</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id245">
+			<gml:description>市立片平小学校</gml:description>
+			<gml:name>245</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id246">
+			<gml:description>市立麻生小学校</gml:description>
+			<gml:name>246</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id247">
+			<gml:description>市立麻生中学校</gml:description>
+			<gml:name>247</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id248">
+			<gml:description>市立末長小学校</gml:description>
+			<gml:name>248</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id249">
+			<gml:description>市立夢見ヶ崎小学校</gml:description>
+			<gml:name>249</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id250">
+			<gml:description>市立木月小学校</gml:description>
+			<gml:name>250</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id251">
+			<gml:description>市立野川小学校</gml:description>
+			<gml:name>251</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id252">
+			<gml:description>市立野川中学校</gml:description>
+			<gml:name>252</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id253">
+			<gml:description>市立有馬小学校</gml:description>
+			<gml:name>253</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id254">
+			<gml:description>市立有馬中学校</gml:description>
+			<gml:name>254</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id255">
+			<gml:description>市立臨港中学校</gml:description>
+			<gml:name>255</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id256">
+			<gml:description>市立聾学校</gml:description>
+			<gml:name>256</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id257">
+			<gml:description>市立枡形中学校</gml:description>
+			<gml:name>257</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id258">
+			<gml:description>私立カリタス女子中学校</gml:description>
+			<gml:name>258</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id259">
+			<gml:description>私立カリタス小学校</gml:description>
+			<gml:name>259</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id260">
+			<gml:description>私立桐光学園小学校</gml:description>
+			<gml:name>260</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id261">
+			<gml:description>私立桐光学園中学校</gml:description>
+			<gml:name>261</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id262">
+			<gml:description>私立洗足学園高等学校</gml:description>
+			<gml:name>262</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id263">
+			<gml:description>私立洗足学園小学校</gml:description>
+			<gml:name>263</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id264">
+			<gml:description>私立大西学園小学校</gml:description>
+			<gml:name>264</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id265">
+			<gml:description>私立大西学園中学校</gml:description>
+			<gml:name>265</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id266">
+			<gml:description>私立日本女子大学附属高等学校</gml:description>
+			<gml:name>266</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id267">
+			<gml:description>私立日本女子大学附属中学校</gml:description>
+			<gml:name>267</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id268">
+			<gml:description>私立法政大学第二中学校</gml:description>
+			<gml:name>268</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id269">
+			<gml:description>鹿島田駅</gml:description>
+			<gml:name>269</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id270">
+			<gml:description>若葉台駅</gml:description>
+			<gml:name>270</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id271">
+			<gml:description>宿河原駅</gml:description>
+			<gml:name>271</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id272">
+			<gml:description>小田栄駅</gml:description>
+			<gml:name>272</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id273">
+			<gml:description>小島新田駅</gml:description>
+			<gml:name>273</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id274">
+			<gml:description>昭和駅</gml:description>
+			<gml:name>274</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id275">
+			<gml:description>昭和音楽大学</gml:description>
+			<gml:name>275</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id276">
+			<gml:description>尻手駅</gml:description>
+			<gml:name>276</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id277">
+			<gml:description>新丸子駅</gml:description>
+			<gml:name>277</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id278">
+			<gml:description>新川崎駅</gml:description>
+			<gml:name>278</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id279">
+			<gml:description>新百合ヶ丘駅</gml:description>
+			<gml:name>279</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id280">
+			<gml:description>新百合ヶ丘総合病院</gml:description>
+			<gml:name>280</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id281">
+			<gml:description>新百合ヶ丘郵便局</gml:description>
+			<gml:name>281</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id282">
+			<gml:description>神奈川県警察学校木月分校</gml:description>
+			<gml:name>282</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id283">
+			<gml:description>神奈川労働局川崎公共職業安定所</gml:description>
+			<gml:name>283</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id284">
+			<gml:description>神奈川労働局川崎南労働基準監督署</gml:description>
+			<gml:name>284</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id285">
+			<gml:description>神奈川労働局川崎北公共職業安定所</gml:description>
+			<gml:name>285</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id286">
+			<gml:description>神奈川労働局川崎北公共職業安定所(溝ノ口庁舎)</gml:description>
+			<gml:name>286</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id287">
+			<gml:description>神奈川労働局川崎北労働基準監督署</gml:description>
+			<gml:name>287</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id288">
+			<gml:description>生田駅</gml:description>
+			<gml:name>288</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id289">
+			<gml:description>生田駅前郵便局</gml:description>
+			<gml:name>289</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id290">
+			<gml:description>聖マリアンナ医科大学東横病院</gml:description>
+			<gml:name>290</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id291">
+			<gml:description>聖マリアンナ医科大学病院</gml:description>
+			<gml:name>291</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id292">
+			<gml:description>専修大学(生田キャンパス)</gml:description>
+			<gml:name>292</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id293">
+			<gml:description>川崎ブレーメン通郵便局</gml:description>
+			<gml:name>293</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id294">
+			<gml:description>川崎旭町郵便局</gml:description>
+			<gml:name>294</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id295">
+			<gml:description>川崎井田郵便局</gml:description>
+			<gml:name>295</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id296">
+			<gml:description>川崎駅</gml:description>
+			<gml:name>296</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id297">
+			<gml:description>川崎駅西口郵便局</gml:description>
+			<gml:name>297</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id298">
+			<gml:description>川崎堰郵便局</gml:description>
+			<gml:name>298</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id299">
+			<gml:description>川崎下作延郵便局</gml:description>
+			<gml:name>299</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id300">
+			<gml:description>川崎下沼部郵便局</gml:description>
+			<gml:name>300</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id301">
+			<gml:description>川崎河原町郵便局</gml:description>
+			<gml:name>301</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id302">
+			<gml:description>川崎梶ヶ谷郵便局</gml:description>
+			<gml:name>302</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id303">
+			<gml:description>川崎苅宿郵便局</gml:description>
+			<gml:name>303</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id304">
+			<gml:description>川崎久末郵便局</gml:description>
+			<gml:name>304</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id305">
+			<gml:description>川崎宮前平郵便局</gml:description>
+			<gml:name>305</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id306">
+			<gml:description>川崎宮内郵便局</gml:description>
+			<gml:name>306</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id307">
+			<gml:description>川崎京町郵便局</gml:description>
+			<gml:name>307</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id308">
+			<gml:description>川崎協同病院</gml:description>
+			<gml:name>308</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id309">
+			<gml:description>川崎栗平郵便局</gml:description>
+			<gml:name>309</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id310">
+			<gml:description>川崎警察署</gml:description>
+			<gml:name>310</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id311">
+			<gml:description>川崎警察署京町通交番</gml:description>
+			<gml:name>311</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id312">
+			<gml:description>川崎警察署小田交番</gml:description>
+			<gml:name>312</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id313">
+			<gml:description>川崎警察署川崎駅前交番</gml:description>
+			<gml:name>313</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id314">
+			<gml:description>川崎警察署浅田交番</gml:description>
+			<gml:name>314</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id315">
+			<gml:description>川崎警察署大師駅前交番</gml:description>
+			<gml:name>315</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id316">
+			<gml:description>川崎警察署大島町交番</gml:description>
+			<gml:name>316</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id317">
+			<gml:description>川崎警察署中島町交番</gml:description>
+			<gml:name>317</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id318">
+			<gml:description>川崎警察署渡田交番</gml:description>
+			<gml:name>318</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id319">
+			<gml:description>川崎警察署藤崎交番</gml:description>
+			<gml:name>319</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id320">
+			<gml:description>川崎警察署南町交番</gml:description>
+			<gml:name>320</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id321">
+			<gml:description>川崎警察署富士見公園交番</gml:description>
+			<gml:name>321</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id322">
+			<gml:description>川崎古市場郵便局</gml:description>
+			<gml:name>322</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id323">
+			<gml:description>川崎向ケ丘郵便局</gml:description>
+			<gml:name>323</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id324">
+			<gml:description>川崎幸病院</gml:description>
+			<gml:name>324</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id325">
+			<gml:description>川崎港郵便局</gml:description>
+			<gml:name>325</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id326">
+			<gml:description>川崎溝ノ口郵便局</gml:description>
+			<gml:name>326</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id327">
+			<gml:description>川崎砂子郵便局</gml:description>
+			<gml:name>327</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id328">
+			<gml:description>川崎鷺沼郵便局</gml:description>
+			<gml:name>328</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id329">
+			<gml:description>川崎三田郵便局</gml:description>
+			<gml:name>329</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id330">
+			<gml:description>川崎四谷上町郵便局</gml:description>
+			<gml:name>330</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id331">
+			<gml:description>川崎子母口郵便局</gml:description>
+			<gml:name>331</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id332">
+			<gml:description>川崎市宮前区役所</gml:description>
+			<gml:name>332</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id333">
+			<gml:description>川崎市幸区役所</gml:description>
+			<gml:name>333</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id334">
+			<gml:description>川崎市高津区役所</gml:description>
+			<gml:name>334</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id335">
+			<gml:description>川崎市消防局</gml:description>
+			<gml:name>335</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id336">
+			<gml:description>川崎市消防局宮前消防署</gml:description>
+			<gml:name>336</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id337">
+			<gml:description>川崎市消防局宮前消防署宮崎出張所</gml:description>
+			<gml:name>337</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id338">
+			<gml:description>川崎市消防局宮前消防署犬蔵出張所</gml:description>
+			<gml:name>338</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id339">
+			<gml:description>川崎市消防局宮前消防署向丘出張所</gml:description>
+			<gml:name>339</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id340">
+			<gml:description>川崎市消防局宮前消防署菅生出張所</gml:description>
+			<gml:name>340</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id341">
+			<gml:description>川崎市消防局宮前消防署野川出張所</gml:description>
+			<gml:name>341</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id342">
+			<gml:description>川崎市消防局幸消防署</gml:description>
+			<gml:name>342</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id343">
+			<gml:description>川崎市消防局幸消防署加瀬出張所</gml:description>
+			<gml:name>343</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id344">
+			<gml:description>川崎市消防局幸消防署南河原出張所</gml:description>
+			<gml:name>344</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id345">
+			<gml:description>川崎市消防局幸消防署平間出張所</gml:description>
+			<gml:name>345</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id346">
+			<gml:description>川崎市消防局高津消防署</gml:description>
+			<gml:name>346</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id347">
+			<gml:description>川崎市消防局高津消防署梶ヶ谷出張所</gml:description>
+			<gml:name>347</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id348">
+			<gml:description>川崎市消防局高津消防署久地出張所</gml:description>
+			<gml:name>348</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id349">
+			<gml:description>川崎市消防局高津消防署子母口出張所</gml:description>
+			<gml:name>349</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id350">
+			<gml:description>川崎市消防局高津消防署新作出張所</gml:description>
+			<gml:name>350</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id351">
+			<gml:description>川崎市消防局川崎消防署小田出張所</gml:description>
+			<gml:name>351</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id352">
+			<gml:description>川崎市消防局川崎消防署大島出張所</gml:description>
+			<gml:name>352</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id353">
+			<gml:description>川崎市消防局多摩消防署</gml:description>
+			<gml:name>353</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id354">
+			<gml:description>川崎市消防局多摩消防署栗谷出張所</gml:description>
+			<gml:name>354</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id355">
+			<gml:description>川崎市消防局多摩消防署菅出張所</gml:description>
+			<gml:name>355</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id356">
+			<gml:description>川崎市消防局中原消防署</gml:description>
+			<gml:name>356</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id357">
+			<gml:description>川崎市消防局中原消防署井田出張所</gml:description>
+			<gml:name>357</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id358">
+			<gml:description>川崎市消防局中原消防署苅宿出張所</gml:description>
+			<gml:name>358</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id359">
+			<gml:description>川崎市消防局中原消防署小田中出張所</gml:description>
+			<gml:name>359</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id360">
+			<gml:description>川崎市消防局麻生消防署</gml:description>
+			<gml:name>360</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id361">
+			<gml:description>川崎市消防局麻生消防署王禅寺出張所</gml:description>
+			<gml:name>361</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id362">
+			<gml:description>川崎市消防局麻生消防署柿生出張所</gml:description>
+			<gml:name>362</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id363">
+			<gml:description>川崎市消防局麻生消防署栗木出張所</gml:description>
+			<gml:name>363</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id364">
+			<gml:description>川崎市消防局麻生消防署百合丘出張所</gml:description>
+			<gml:name>364</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id365">
+			<gml:description>川崎市消防局臨港消防署</gml:description>
+			<gml:name>365</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id366">
+			<gml:description>川崎市消防局臨港消防署千鳥町出張所</gml:description>
+			<gml:name>366</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id367">
+			<gml:description>川崎市消防局臨港消防署殿町出張所</gml:description>
+			<gml:name>367</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id368">
+			<gml:description>川崎市消防局臨港消防署藤崎出張所</gml:description>
+			<gml:name>368</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id369">
+			<gml:description>川崎市消防局臨港消防署浮島出張所</gml:description>
+			<gml:name>369</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id370">
+			<gml:description>川崎市青少年科学館（かわさき宙と緑の科学館）</gml:description>
+			<gml:name>370</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id371">
+			<gml:description>川崎市川崎区役所</gml:description>
+			<gml:name>371</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id372">
+			<gml:description>川崎市多摩区役所</gml:description>
+			<gml:name>372</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id373">
+			<gml:description>川崎市中原区役所</gml:description>
+			<gml:name>373</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id374">
+			<gml:description>川崎市保健所</gml:description>
+			<gml:name>374</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id375">
+			<gml:description>川崎市麻生区役所</gml:description>
+			<gml:name>375</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id376">
+			<gml:description>川崎市役所</gml:description>
+			<gml:name>376</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id377">
+			<gml:description>川崎市役所通郵便局</gml:description>
+			<gml:name>377</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id378">
+			<gml:description>川崎市立井田病院</gml:description>
+			<gml:name>378</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id379">
+			<gml:description>川崎市立看護短期大学</gml:description>
+			<gml:name>379</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id380">
+			<gml:description>川崎市立川崎病院</gml:description>
+			<gml:name>380</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id381">
+			<gml:description>川崎市立多摩病院</gml:description>
+			<gml:name>381</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id382">
+			<gml:description>川崎市立日本民家園</gml:description>
+			<gml:name>382</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id383">
+			<gml:description>川崎鹿島田郵便局</gml:description>
+			<gml:name>383</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id384">
+			<gml:description>川崎宿河原郵便局</gml:description>
+			<gml:name>384</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id385">
+			<gml:description>川崎小向西町郵便局</gml:description>
+			<gml:name>385</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id386">
+			<gml:description>川崎小杉郵便局</gml:description>
+			<gml:name>386</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id387">
+			<gml:description>川崎小倉郵便局</gml:description>
+			<gml:name>387</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id388">
+			<gml:description>川崎小田郵便局</gml:description>
+			<gml:name>388</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id389">
+			<gml:description>川崎昭和郵便局</gml:description>
+			<gml:name>389</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id390">
+			<gml:description>川崎上丸子郵便局</gml:description>
+			<gml:name>390</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id391">
+			<gml:description>川崎上作延郵便局</gml:description>
+			<gml:name>391</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id392">
+			<gml:description>川崎上小田中郵便局</gml:description>
+			<gml:name>392</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id393">
+			<gml:description>川崎上新城郵便局</gml:description>
+			<gml:name>393</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id394">
+			<gml:description>川崎上平間郵便局</gml:description>
+			<gml:name>394</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id395">
+			<gml:description>川崎新丸子郵便局</gml:description>
+			<gml:name>395</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id396">
+			<gml:description>川崎新城郵便局</gml:description>
+			<gml:name>396</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id397">
+			<gml:description>川崎新町駅</gml:description>
+			<gml:name>397</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id398">
+			<gml:description>川崎諏訪郵便局</gml:description>
+			<gml:name>398</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id399">
+			<gml:description>川崎菅星ヶ丘郵便局</gml:description>
+			<gml:name>399</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id400">
+			<gml:description>川崎菅生郵便局</gml:description>
+			<gml:name>400</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id401">
+			<gml:description>川崎生田南郵便局</gml:description>
+			<gml:name>401</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id402">
+			<gml:description>川崎生田郵便局</gml:description>
+			<gml:name>402</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id403">
+			<gml:description>川崎千代ヶ丘郵便局</gml:description>
+			<gml:name>403</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id404">
+			<gml:description>川崎千年郵便局</gml:description>
+			<gml:name>404</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id405">
+			<gml:description>川崎浅田郵便局</gml:description>
+			<gml:name>405</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id406">
+			<gml:description>川崎大師駅</gml:description>
+			<gml:name>406</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id407">
+			<gml:description>川崎大師海岸郵便局</gml:description>
+			<gml:name>407</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id408">
+			<gml:description>川崎大師郵便局</gml:description>
+			<gml:name>408</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id409">
+			<gml:description>川崎大島郵便局</gml:description>
+			<gml:name>409</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id410">
+			<gml:description>川崎中央郵便局</gml:description>
+			<gml:name>410</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id411">
+			<gml:description>川崎中野島北郵便局</gml:description>
+			<gml:name>411</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id412">
+			<gml:description>川崎中野島郵便局</gml:description>
+			<gml:name>412</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id413">
+			<gml:description>川崎中有馬郵便局</gml:description>
+			<gml:name>413</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id414">
+			<gml:description>川崎長沢郵便局</gml:description>
+			<gml:name>414</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id415">
+			<gml:description>川崎塚越郵便局</gml:description>
+			<gml:name>415</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id416">
+			<gml:description>川崎殿町郵便局</gml:description>
+			<gml:name>416</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id417">
+			<gml:description>川崎田尻郵便局</gml:description>
+			<gml:name>417</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id418">
+			<gml:description>川崎渡田向町郵便局</gml:description>
+			<gml:name>418</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id419">
+			<gml:description>川崎渡田郵便局</gml:description>
+			<gml:name>419</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id420">
+			<gml:description>川崎土橋郵便局</gml:description>
+			<gml:name>420</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id421">
+			<gml:description>川崎東柿生郵便局</gml:description>
+			<gml:name>421</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id422">
+			<gml:description>川崎東大島郵便局</gml:description>
+			<gml:name>422</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id423">
+			<gml:description>川崎藤崎郵便局</gml:description>
+			<gml:name>423</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id424">
+			<gml:description>川崎南加瀬郵便局</gml:description>
+			<gml:name>424</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id425">
+			<gml:description>川崎南河原郵便局</gml:description>
+			<gml:name>425</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id426">
+			<gml:description>川崎南町郵便局</gml:description>
+			<gml:name>426</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id427">
+			<gml:description>川崎馬絹郵便局</gml:description>
+			<gml:name>427</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id428">
+			<gml:description>川崎白山郵便局</gml:description>
+			<gml:name>428</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id429">
+			<gml:description>川崎北加瀬郵便局</gml:description>
+			<gml:name>429</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id430">
+			<gml:description>川崎北見方郵便局</gml:description>
+			<gml:name>430</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id431">
+			<gml:description>川崎北部市場内郵便局</gml:description>
+			<gml:name>431</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id432">
+			<gml:description>川崎本町郵便局</gml:description>
+			<gml:name>432</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id433">
+			<gml:description>川崎木月大町郵便局</gml:description>
+			<gml:name>433</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id434">
+			<gml:description>川崎木月郵便局</gml:description>
+			<gml:name>434</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id435">
+			<gml:description>川崎野川郵便局</gml:description>
+			<gml:name>435</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id436">
+			<gml:description>川崎有馬郵便局</gml:description>
+			<gml:name>436</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id437">
+			<gml:description>川崎臨港警察署</gml:description>
+			<gml:name>437</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id438">
+			<gml:description>川崎臨港警察署鋼管通交番</gml:description>
+			<gml:name>438</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id439">
+			<gml:description>川崎臨港警察署出来野交番</gml:description>
+			<gml:name>439</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id440">
+			<gml:description>川崎臨港警察署浜町交番</gml:description>
+			<gml:name>440</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id441">
+			<gml:description>川崎臨港警察署浮島橋交番</gml:description>
+			<gml:name>441</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id442">
+			<gml:description>扇町駅</gml:description>
+			<gml:name>442</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id443">
+			<gml:description>洗足こども短期大学</gml:description>
+			<gml:name>443</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id444">
+			<gml:description>洗足学園音楽大学(溝の口キャンパス)</gml:description>
+			<gml:name>444</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id445">
+			<gml:description>総合高津中央病院</gml:description>
+			<gml:name>445</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id446">
+			<gml:description>総合新川橋病院</gml:description>
+			<gml:name>446</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id447">
+			<gml:description>総合川崎臨港病院</gml:description>
+			<gml:name>447</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id448">
+			<gml:description>多摩警察署</gml:description>
+			<gml:name>448</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id449">
+			<gml:description>多摩警察署堰交番</gml:description>
+			<gml:name>449</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id450">
+			<gml:description>多摩警察署向ケ丘遊園駅前交番</gml:description>
+			<gml:name>450</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id451">
+			<gml:description>多摩警察署宿河原交番</gml:description>
+			<gml:name>451</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id452">
+			<gml:description>多摩警察署菅交番</gml:description>
+			<gml:name>452</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id453">
+			<gml:description>多摩警察署菅星ヶ丘交番</gml:description>
+			<gml:name>453</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id454">
+			<gml:description>多摩警察署生田交番</gml:description>
+			<gml:name>454</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id455">
+			<gml:description>多摩警察署中野島交番</gml:description>
+			<gml:name>455</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id456">
+			<gml:description>多摩警察署長沢交番</gml:description>
+			<gml:name>456</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id457">
+			<gml:description>多摩警察署登戸駅前交番</gml:description>
+			<gml:name>457</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id458">
+			<gml:description>多摩警察署読売ランド駅前交番</gml:description>
+			<gml:name>458</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id459">
+			<gml:description>太田総合病院</gml:description>
+			<gml:name>459</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id460">
+			<gml:description>大川駅</gml:description>
+			<gml:name>460</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id461">
+			<gml:description>第三管区海上保安本部横浜海上保安部川崎海上保安署</gml:description>
+			<gml:name>461</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id462">
+			<gml:description>中原警察署</gml:description>
+			<gml:name>462</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id463">
+			<gml:description>中原警察署井田交番</gml:description>
+			<gml:name>463</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id464">
+			<gml:description>中原警察署下小田中交番</gml:description>
+			<gml:name>464</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id465">
+			<gml:description>中原警察署丸子橋交番</gml:description>
+			<gml:name>465</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id466">
+			<gml:description>中原警察署宮内交番</gml:description>
+			<gml:name>466</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id467">
+			<gml:description>中原警察署向河原交番</gml:description>
+			<gml:name>467</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id468">
+			<gml:description>中原警察署小杉交番</gml:description>
+			<gml:name>468</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id469">
+			<gml:description>中原警察署上平間交番</gml:description>
+			<gml:name>469</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id470">
+			<gml:description>中原警察署中丸子交番</gml:description>
+			<gml:name>470</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id471">
+			<gml:description>中原警察署武蔵小杉駅前交番</gml:description>
+			<gml:name>471</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id472">
+			<gml:description>中原警察署武蔵中原駅前交番</gml:description>
+			<gml:name>472</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id473">
+			<gml:description>中原警察署木月交番</gml:description>
+			<gml:name>473</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id474">
+			<gml:description>中原警察署木月三丁目交番</gml:description>
+			<gml:name>474</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id475">
+			<gml:description>中原郵便局</gml:description>
+			<gml:name>475</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id476">
+			<gml:description>中野島駅</gml:description>
+			<gml:name>476</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id477">
+			<gml:description>津田山駅</gml:description>
+			<gml:name>477</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id478">
+			<gml:description>帝京大学医学部附属溝口病院</gml:description>
+			<gml:name>478</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id479">
+			<gml:description>田園調布学園大学</gml:description>
+			<gml:name>479</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id480">
+			<gml:description>田村外科病院</gml:description>
+			<gml:name>480</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id481">
+			<gml:description>登戸駅</gml:description>
+			<gml:name>481</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id482">
+			<gml:description>登戸郵便局</gml:description>
+			<gml:name>482</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id483">
+			<gml:description>島脳神経外科整形外科医院</gml:description>
+			<gml:name>483</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id484">
+			<gml:description>東京瓦斯株式会社(川崎支店)</gml:description>
+			<gml:name>484</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id485">
+			<gml:description>東京検疫所川崎検疫所支所</gml:description>
+			<gml:name>485</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id486">
+			<gml:description>東京国税局川崎南税務署</gml:description>
+			<gml:name>486</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id487">
+			<gml:description>東京国税局川崎北税務署</gml:description>
+			<gml:name>487</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id488">
+			<gml:description>東京出入国在留管理局横浜支局川崎出張所</gml:description>
+			<gml:name>488</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id489">
+			<gml:description>東京電力パワーグリッド株式会社川崎支社</gml:description>
+			<gml:name>489</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id490">
+			<gml:description>東日本電信電話株式会社（川崎支店）</gml:description>
+			<gml:name>490</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id491">
+			<gml:description>東門前駅</gml:description>
+			<gml:name>491</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id492">
+			<gml:description>読売ランド前駅</gml:description>
+			<gml:name>492</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id493">
+			<gml:description>内閣府東扇島基幹的広域防災拠点施設</gml:description>
+			<gml:name>493</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id494">
+			<gml:description>二子新地駅</gml:description>
+			<gml:name>494</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id495">
+			<gml:description>日本医科大学武蔵小杉病院</gml:description>
+			<gml:name>495</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id496">
+			<gml:description>日本映画大学（新百合ヶ丘キャンパス）</gml:description>
+			<gml:name>496</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id497">
+			<gml:description>日本映画大学（白山キャンパス）</gml:description>
+			<gml:name>497</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id498">
+			<gml:description>日本鋼管病院</gml:description>
+			<gml:name>498</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id499">
+			<gml:description>日本女子大学(西生田キャンパス)</gml:description>
+			<gml:name>499</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id500">
+			<gml:description>八丁畷駅</gml:description>
+			<gml:name>500</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id501">
+			<gml:description>百合ヶ丘駅</gml:description>
+			<gml:name>501</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id502">
+			<gml:description>百合ケ丘駅前郵便局</gml:description>
+			<gml:name>502</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id503">
+			<gml:description>浜川崎駅</gml:description>
+			<gml:name>503</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id504">
+			<gml:description>武蔵溝ノ口駅</gml:description>
+			<gml:name>504</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id505">
+			<gml:description>武蔵小杉駅</gml:description>
+			<gml:name>505</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id506">
+			<gml:description>武蔵新城駅</gml:description>
+			<gml:name>506</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id507">
+			<gml:description>武蔵中原駅</gml:description>
+			<gml:name>507</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id508">
+			<gml:description>武蔵白石駅</gml:description>
+			<gml:name>508</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id509">
+			<gml:description>福住医院</gml:description>
+			<gml:name>509</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id510">
+			<gml:description>平間駅</gml:description>
+			<gml:name>510</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id511">
+			<gml:description>片倉病院</gml:description>
+			<gml:name>511</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id512">
+			<gml:description>防衛装備庁艦艇装備研究所川崎支所</gml:description>
+			<gml:name>512</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id513">
+			<gml:description>麻生警察署</gml:description>
+			<gml:name>513</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id514">
+			<gml:description>麻生警察署王禅寺交番</gml:description>
+			<gml:name>514</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id515">
+			<gml:description>麻生警察署柿生交番</gml:description>
+			<gml:name>515</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id516">
+			<gml:description>麻生警察署栗平駅前交番</gml:description>
+			<gml:name>516</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id517">
+			<gml:description>麻生警察署細山交番</gml:description>
+			<gml:name>517</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id518">
+			<gml:description>麻生警察署東柿生駐在所</gml:description>
+			<gml:name>518</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id519">
+			<gml:description>麻生警察署南王禅寺交番</gml:description>
+			<gml:name>519</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id520">
+			<gml:description>麻生警察署百合丘交番</gml:description>
+			<gml:name>520</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id521">
+			<gml:description>麻生総合病院</gml:description>
+			<gml:name>521</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id522">
+			<gml:description>麻生郵便局</gml:description>
+			<gml:name>522</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id523">
+			<gml:description>明治大学(生田キャンパス)</gml:description>
+			<gml:name>523</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id524">
+			<gml:description>有馬病院</gml:description>
+			<gml:name>524</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id525">
+			<gml:description>鈴木町駅</gml:description>
+			<gml:name>525</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id526">
+			<gml:description>労働者健康安全機構関東労災病院</gml:description>
+			<gml:name>526</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id527">
+			<gml:description>和光大学</gml:description>
+			<gml:name>527</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+</gml:Dictionary>
