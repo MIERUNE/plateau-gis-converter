@@ -1,0 +1,12 @@
+[package]
+name = "nusamai-mvt"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+ahash = "0.8.7"
+indexmap = "2.1.0"
+prost = "0.12.3"
+
+[build-dependencies]
+prost-build = "0.12.3"

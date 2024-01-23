@@ -1,0 +1,11 @@
+[package]
+name = "nusamai-geojson"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+geojson = "0.24.1"
+nusamai-geometry = { path = "../nusamai-geometry" }
+serde_json = { version = "1.0.108", features = ["indexmap"] }

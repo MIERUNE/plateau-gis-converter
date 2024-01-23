@@ -1,8 +1,13 @@
 [workspace]
 
 members = [
-    "nusamai-geometry",
-    "nusamai-czml",
-    "app/src-tauri"
+    "app/src-tauri",
+    "nusamai-*",
+    "nusamai",
 ]
 resolver = "2"
+
+[profile.release-lto]
+inherits = "release"
+lto = "fat"
+panic = "abort"
