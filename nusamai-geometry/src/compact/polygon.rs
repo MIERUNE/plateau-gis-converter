@@ -5,7 +5,7 @@ use super::CoordNum;
 
 /// Computer-friendly Polygon
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, PartialEq)]
 pub struct Polygon<'a, const D: usize, T: CoordNum = f64> {
     /// 座標データ
     coords: Cow<'a, [T]>,

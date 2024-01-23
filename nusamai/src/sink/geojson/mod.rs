@@ -130,7 +130,7 @@ fn extract_properties(tree: &nusamai_citygml::object::Value) -> Option<geojson::
 pub fn toplevel_cityobj_to_geojson_features(obj: &Entity) -> Vec<geojson::Feature> {
     let mut geojson_features: Vec<geojson::Feature> = Vec::with_capacity(1);
     let properties = extract_properties(&obj.root);
-    let mut geom_store = obj.geometry_store.read().unwrap();
+    let geom_store = obj.geometry_store.read().unwrap();
 
     if !geom_store.multipolygon.is_empty() {
         let mpoly_geojson_geom =
@@ -177,7 +177,7 @@ pub fn toplevel_cityobj_to_geojson_features(obj: &Entity) -> Vec<geojson::Featur
 
 #[cfg(test)]
 mod tests {
-    use std::sync::{Arc, RwLock};
+    use std::sync::RwLock;
 
     use super::*;
     use nusamai_citygml::{object::Feature, Value};

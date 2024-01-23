@@ -5,7 +5,7 @@ use super::CoordNum;
 
 /// Computer-friendly MultiPolygon
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, PartialEq)]
 pub struct MultiPolygon<'a, const D: usize, T: CoordNum = f64> {
     /// すべての Polygon の座標データを連結したもの
     ///
