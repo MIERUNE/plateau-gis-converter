@@ -1,4 +1,5 @@
 pub mod geojson;
+pub mod geojson_transform_exp;
 pub mod gpkg;
 pub mod mvt;
 pub mod noop;

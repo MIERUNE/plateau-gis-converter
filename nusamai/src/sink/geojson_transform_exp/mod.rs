@@ -1,5 +1,7 @@
 //! GeoJSON sink
 
+mod transform;
+
 use std::fs::File;
 use std::io::{BufWriter, Write};
 use std::path::PathBuf;
@@ -10,6 +12,7 @@ use crate::get_parameter_value;
 use crate::parameters::*;
 use crate::pipeline::{Feedback, Receiver};
 use crate::sink::{DataSink, DataSinkProvider, SinkInfo};
+use transform::ObjectTransformer;
 
 use nusamai_citygml::object::Entity;
 use nusamai_geojson::conversion::{
@@ -17,9 +20,9 @@ use nusamai_geojson::conversion::{
     indexed_multipolygon_to_geometry,
 };
 
-pub struct GeoJsonSinkProvider {}
+pub struct GeoJsonTransformExpSinkProvider {}
 
-impl DataSinkProvider for GeoJsonSinkProvider {
+impl DataSinkProvider for GeoJsonTransformExpSinkProvider {
     fn info(&self) -> SinkInfo {
         SinkInfo {
             name: "GeoJSON".to_string(),
@@ -45,17 +48,17 @@ impl DataSinkProvider for GeoJsonSinkProvider {
     fn create(&self, params: &Parameters) -> Box<dyn DataSink> {
         let output_path = get_parameter_value!(params, "@output", FileSystemPath);
 
-        Box::<GeoJsonSink>::new(GeoJsonSink {
+        Box::<GeoJsonTfExpSink>::new(GeoJsonTfExpSink {
             output_path: output_path.unwrap().into(),
         })
     }
 }
 
-pub struct GeoJsonSink {
+pub struct GeoJsonTfExpSink {
     output_path: PathBuf,
 }
 
-impl DataSink for GeoJsonSink {
+impl DataSink for GeoJsonTfExpSink {
     fn run(&mut self, upstream: Receiver, feedback: &mut Feedback) {
         let (sender, receiver) = std::sync::mpsc::sync_channel(1000);
 
@@ -70,7 +73,12 @@ impl DataSink for GeoJsonSink {
                             return Err(());
                         }
 
-                        let features = toplevel_cityobj_to_geojson_features(&parcel.entity);
+                        // todo: parse attributes
+                        let object_transformer = ObjectTransformer {};
+                        let entity = object_transformer
+                            .transform(parcel.entity, &PathBuf::from("./mappings.json"));
+
+                        let features = toplevel_cityobj_to_geojson_features(&entity[0]);
                         for feature in features {
                             let Ok(bytes) = serde_json::to_vec(&feature) else {
                                 // TODO: fatal error
@@ -119,7 +127,14 @@ fn extract_properties(tree: &nusamai_citygml::object::Value) -> Option<geojson::
             serde_json::Value::Object(map) => Some(map),
             _ => unreachable!(),
         },
-        _ => panic!("Root value type must be Feature, but found {:?}", tree),
+        data @ nusamai_citygml::Value::Data(_) => match data.to_attribute_json() {
+            serde_json::Value::Object(map) => Some(map),
+            _ => unreachable!(),
+        },
+        _ => panic!(
+            "Root value type must be Feature or Data, but found {:?}",
+            tree
+        ),
     }
 }
 
