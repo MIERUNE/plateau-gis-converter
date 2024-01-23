@@ -832,3 +832,216 @@ fn load_urf_tokuyoto_example() {
     );
 
 }
+
+#[test]
+fn load_urf_toshikeikaku_example() {
+    let cityobjs = load_cityobjs("./tests/data/sapporo-shi/udx/urf/644131_urf_6668_op.gml");
+    assert_eq!(cityobjs.len(), 12);
+    let TopLevelCityObject::UrbanPlanningArea(upa) = &cityobjs.first().unwrap().cityobj else {
+        panic!("Not a UrbanPlanningArea");
+    };
+
+    assert_eq!(
+        upa.function,
+        vec![Code::new("都市計画区域".to_string(), "21".to_string(),)]
+
+    );
+
+    assert_eq!(
+        upa.urf_valid_from,
+        Option::Some(Date::from_ymd_opt(2022, 3, 23).unwrap())
+    );
+
+    assert_eq!(
+        upa.valid_from_type,
+        Some(Code::new("変更".to_string(), "3".to_string()))
+    );
+
+}
+
+#[test]
+fn load_urf_huchi_example() {
+    let cityobjs = load_cityobjs("./tests/data/sendai-shi/udx/urf/574026_urf_6668_huchi_op.gml");
+    assert_eq!(cityobjs.len(), 1);
+    let TopLevelCityObject::ScenicDistrict(sd) = &cityobjs.first().unwrap().cityobj else {
+        panic!("Not a ScenicDistrict");
+    };
+
+    assert_eq!(
+        sd.function,
+        vec![Code::new("風致地区".to_string(), "28".to_string(),)]
+
+    );
+
+    assert_eq!(
+        sd.prefecture,
+        Some(Code::new("宮城県".to_string(), "04".to_string()))
+    );
+
+    assert_eq!(
+        sd.city,
+        Some(Code::new("宮城県仙台市".to_string(), "04100".to_string()))
+    );
+
+}
+
+#[test]
+fn load_urf_kodoriyou_example() {
+    let cityobjs = load_cityobjs("./tests/data/sendai-shi/udx/urf/574027_urf_6668_kodoriyou_op.gml");
+    assert_eq!(cityobjs.len(), 3);
+    let TopLevelCityObject::HighLevelUseDistrict(hlud) = &cityobjs.first().unwrap().cityobj else {
+        panic!("Not a HighLevelUseDistrict");
+    };
+
+    assert_eq!(
+        hlud.function,
+        vec![Code::new("高度利用地区".to_string(), "19".to_string(),)]
+
+    );
+
+    assert_eq!(
+        hlud.urf_valid_from,
+        Option::Some(Date::from_ymd_opt(2013, 3, 8).unwrap())
+    );
+
+    assert_eq!(
+        hlud.valid_from_type,
+        Some(Code::new("変更".to_string(), "3".to_string()))
+    );
+
+    assert_eq!(
+        hlud.custodian,
+        Some("仙台市".to_string())
+    );
+
+    assert_eq!(
+        hlud.prefecture,
+        Some(Code::new("宮城県".to_string(), "04".to_string()))
+    );
+
+    assert_eq!(
+        hlud.city,
+        Some(Code::new("宮城県仙台市".to_string(), "04100".to_string()))
+    );
+
+}
+
+
+#[test]
+fn load_urf_keikan_example() {
+    let cityobjs = load_cityobjs("./tests/data/sendai-shi/udx/urf/574036_urf_6668_keikan_op.gml");
+    assert_eq!(cityobjs.len(), 2);
+    let TopLevelCityObject::LandscapeZone(lz) = &cityobjs.first().unwrap().cityobj else {
+        panic!("Not a LandscapeZone");
+    };
+
+    assert_eq!(
+        lz.function,
+        vec![Code::new("景観地区".to_string(), "27".to_string(),)]
+
+    );
+
+    assert_eq!(
+        lz.urf_valid_from,
+        Option::Some(Date::from_ymd_opt(2011, 12, 16).unwrap())
+    );
+
+    assert_eq!(
+        lz.valid_from_type,
+        Some(Code::new("変更".to_string(), "3".to_string()))
+    );
+
+    assert_eq!(
+        lz.custodian,
+        Some("仙台市".to_string())
+    );
+
+    assert_eq!(
+        lz.prefecture,
+        Some(Code::new("宮城県".to_string(), "04".to_string()))
+    );
+
+    assert_eq!(
+        lz.city,
+        Some(Code::new("宮城県仙台市".to_string(), "04100".to_string()))
+    );
+
+}
+
+#[test]
+fn load_urf_tosisai_example() {
+    let cityobjs = load_cityobjs("./tests/data/sendai-shi/udx/urf/574036_urf_6668_tosisai_op.gml");
+    assert_eq!(cityobjs.len(), 1);
+    let TopLevelCityObject::SpecialUrbanRenaissanceDistrict(surd) = &cityobjs.first().unwrap().cityobj else {
+        panic!("Not a SpecialUrbanRenaissanceDistrict");
+    };
+
+    assert_eq!(
+        surd.function,
+        vec![Code::new("都市再生特別地区".to_string(), "21".to_string(),)]
+
+    );
+
+    assert_eq!(
+        surd.urf_valid_from,
+        Option::Some(Date::from_ymd_opt(2020, 9, 16).unwrap())
+    );
+
+    assert_eq!(
+        surd.valid_from_type,
+        Some(Code::new("変更".to_string(), "3".to_string()))
+    );
+
+    assert_eq!(
+        surd.custodian,
+        Some("仙台市".to_string())
+    );
+
+    assert_eq!(
+        surd.prefecture,
+        Some(Code::new("宮城県".to_string(), "04".to_string()))
+    );
+
+    assert_eq!(
+        surd.city,
+        Some(Code::new("宮城県仙台市".to_string(), "04100".to_string()))
+    );
+
+}
+
+
+#[test]
+fn load_urf_sigaidev_example() {
+    let cityobjs = load_cityobjs("./tests/data/kofu-shi/udx/urf/533834_urf_6668_sigaidev_op.gml");
+    assert_eq!(cityobjs.len(), 27);
+    let TopLevelCityObject::UrbanDevelopmentProject(udp) = &cityobjs.first().unwrap().cityobj else {
+        panic!("Not a UrbanDevelopmentProject");
+    };
+
+    assert_eq!(
+        udp.function,
+        vec![Code::new("工業地域".to_string(), "12".to_string(),)]
+
+    );
+
+    assert_eq!(
+        udp.urf_valid_from,
+        Option::Some(Date::from_ymd_opt(1, 1, 1).unwrap())
+    );
+
+    assert_eq!(
+        udp.valid_from_type,
+        Some(Code::new("不明".to_string(), "4".to_string()))
+    );
+
+    assert_eq!(
+        udp.prefecture,
+        Some(Code::new("山梨県".to_string(), "19".to_string()))
+    );
+
+    assert_eq!(
+        udp.city,
+        Some(Code::new("山梨県甲府市".to_string(), "19201".to_string()))
+    );
+
+}
