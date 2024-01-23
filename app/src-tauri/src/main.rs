@@ -27,17 +27,18 @@ fn main() {
 }
 
 #[tauri::command]
-fn run(input_path: String, output_path: String, filetype: String) {
-    // TODO: handle multiple files
-    let filenames = vec![input_path];
+fn run(input_paths: Vec<String>, output_path: String, filetype: String) {
     let sinkopt: Vec<(String, String)> = vec![("@output".into(), output_path)];
+
+    log::info!("Running pipeline with input: {:?}", input_paths);
 
     // TODO: set cancellation handler
     let canceller = Arc::new(Mutex::new(Canceller::default()));
 
     let source = {
-        let source_provider: Box<dyn DataSourceProvider> =
-            Box::new(CityGMLSourceProvider { filenames });
+        let source_provider: Box<dyn DataSourceProvider> = Box::new(CityGMLSourceProvider {
+            filenames: input_paths,
+        });
         let mut source_params = source_provider.parameters();
         if let Err(err) = source_params.validate() {
             log::error!("Error validating source parameters: {:?}", err);
