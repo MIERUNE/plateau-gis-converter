@@ -6,3 +6,8 @@ members = [
     "nusamai",
 ]
 resolver = "2"
+
+[profile.release-lto]
+inherits = "release"
+lto = "fat"
+panic = "abort"
