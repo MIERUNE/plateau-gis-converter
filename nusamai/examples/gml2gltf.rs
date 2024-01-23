@@ -347,20 +347,20 @@ fn make_gltf_json(triangles: &Triangles) -> String {
     let mut gltf = Gltf::default();
 
     // glTF のバッファを作成
-    let mut buffer = Buffer::new();
+    let mut buffer = Buffer::default();
     // indicesはu32なので4バイト、verticesはf32x3なので12バイト
     let indices_byte_length = indices.len() as u32 * 4;
     let vertices_byte_length = vertices.len() as u32 * 12;
 
     // glTF のバッファビューを作成
-    let mut buffer_view1 = BufferView::new();
+    let mut buffer_view1 = BufferView::default();
     buffer_view1.buffer = 0;
     buffer_view1.byte_length = indices_byte_length;
     buffer_view1.byte_offset = 0;
     //buffer_view1.target = Some(BufferViewTarget::ElementArrayBuffer);
 
     let buffersize = vertices_byte_length + indices_byte_length;
-    let mut buffer_view2 = BufferView::new();
+    let mut buffer_view2 = BufferView::default();
     buffer_view2.buffer = 0;
     buffer_view2.byte_length = vertices_byte_length;
     buffer_view2.byte_offset = indices_byte_length;
@@ -373,7 +373,7 @@ fn make_gltf_json(triangles: &Triangles) -> String {
     gltf.buffers = vec![buffer];
 
     // glTF のアクセサを作成
-    let mut accessor1 = Accessor::new();
+    let mut accessor1 = Accessor::default();
     accessor1.buffer_view = Some(0);
     accessor1.byte_offset = 0;
     accessor1.component_type = ComponentType::UnsignedInt;
@@ -383,7 +383,7 @@ fn make_gltf_json(triangles: &Triangles) -> String {
     accessor1.max = vec![*max_indices as f32].into();
     accessor1.min = vec![0.0].into();
 
-    let mut accessor2 = Accessor::new();
+    let mut accessor2 = Accessor::default();
     accessor2.buffer_view = Some(1);
     accessor2.byte_offset = 0;
     accessor2.component_type = ComponentType::Float;
@@ -407,8 +407,8 @@ fn make_gltf_json(triangles: &Triangles) -> String {
     gltf.accessors = vec![accessor1, accessor2];
 
     // glTF のメッシュを作成
-    let mut mesh = Mesh::new();
-    let mut primitive1 = MeshPrimitive::new();
+    let mut mesh = Mesh::default();
+    let mut primitive1 = MeshPrimitive::default();
     primitive1.indices = Some(0);
     primitive1.mode = PrimitiveMode::Triangles;
     primitive1.attributes = {
@@ -422,13 +422,13 @@ fn make_gltf_json(triangles: &Triangles) -> String {
     gltf.meshes = vec![mesh];
 
     // glTF のシーンを作成
-    let mut scene = Scene::new();
+    let mut scene = Scene::default();
     scene.nodes = Some(vec![0]);
 
     gltf.scenes = vec![scene];
 
     // glTF のノードを作成
-    let mut node = Node::new();
+    let mut node = Node::default();
     node.mesh = Some(0);
 
     gltf.nodes = vec![node];
