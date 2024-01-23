@@ -1,12 +1,11 @@
 [package]
-name = "czml"
+name = "nusamai-czml"
 version = "0.1.0"
 edition = "2021"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
-serde = "1.0.192"
-serde_json = { version = "1.0.108", features = ["float_roundtrip"] }
 nusamai-geometry = { path = "../nusamai-geometry" }
-clap = "4.4.8"
+nusamai-gltf = { path = "../nusamai-gltf" }
+serde = "1.0.195"
+serde_json = { version = "1.0.111", features = ["float_roundtrip"] }
+
