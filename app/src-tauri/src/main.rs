@@ -12,7 +12,7 @@ use nusamai::sink::{
 };
 use nusamai::source::citygml::CityGMLSourceProvider;
 use nusamai::source::DataSourceProvider;
-use nusamai::transform::DummyTransformer;
+use nusamai::transformer::runner::MultiThreadTransformer;
 
 fn main() {
     if env::var("RUST_LOG").is_err() {
@@ -72,7 +72,7 @@ fn run(input_paths: Vec<String>, output_path: String, filetype: String) {
         sink_provider.create(&sink_params)
     };
 
-    let transformer = Box::<DummyTransformer>::default();
+    let transformer = Box::<MultiThreadTransformer>::default();
 
     // start the pipeline
     let (handle, watcher, inner_canceller) = nusamai::pipeline::run(source, transformer, sink);

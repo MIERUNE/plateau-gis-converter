@@ -14,7 +14,9 @@ pub type Map = indexmap::IndexMap<String, Value, ahash::RandomState>;
 /// City objects, features, objects or data
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Entity {
+    /// Attribute tree
     pub root: Value,
+    /// All geometries referenced by the attribute tree
     pub geometry_store: Arc<RwLock<geometry::GeometryStore>>,
 }
 
@@ -75,7 +77,9 @@ impl Value {
                 //     }
                 // }
             }
-            Array(a) => serde_json::Value::Array(a.iter().map(Value::to_attribute_json).collect()),
+            Array(arr) => {
+                serde_json::Value::Array(arr.iter().map(Value::to_attribute_json).collect())
+            }
             Feature(feat) => {
                 let mut m = serde_json::Map::from_iter(
                     feat.attributes

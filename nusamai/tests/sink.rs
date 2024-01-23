@@ -1,7 +1,7 @@
 use nusamai::sink::DataSinkProvider;
 use nusamai::source::citygml::CityGMLSourceProvider;
 use nusamai::source::DataSourceProvider;
-use nusamai::transform::DummyTransformer;
+use nusamai::transformer::runner::MultiThreadTransformer;
 
 use nusamai::sink;
 
@@ -18,7 +18,7 @@ pub(crate) fn simple_run_sink<S: DataSinkProvider>(sink_provider: S, output: Opt
 
     let source = source_provider.create(&source_provider.parameters());
 
-    let transformer = Box::<DummyTransformer>::default();
+    let transformer = Box::<MultiThreadTransformer>::default();
 
     assert!(!sink_provider.info().name.is_empty());
     let mut sink_params = sink_provider.parameters();

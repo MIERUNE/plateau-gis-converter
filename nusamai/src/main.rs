@@ -11,7 +11,7 @@ use nusamai::sink::{
 use nusamai::sink::{DataSink, DataSinkProvider};
 use nusamai::source::citygml::CityGMLSourceProvider;
 use nusamai::source::{DataSource, DataSourceProvider};
-use nusamai::transform::DummyTransformer;
+use nusamai::transformer::runner::MultiThreadTransformer;
 
 #[derive(clap::Parser)]
 #[command(author, version, about, long_about = None)]
@@ -126,7 +126,7 @@ fn run(
 ) {
     let total_time = std::time::Instant::now();
 
-    let transformer = Box::<DummyTransformer>::default();
+    let transformer = Box::<MultiThreadTransformer>::default();
 
     // start the pipeline
     let (handle, watcher, inner_canceller) = nusamai::pipeline::run(source, transformer, sink);

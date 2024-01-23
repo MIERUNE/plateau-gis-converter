@@ -33,7 +33,7 @@ pub struct NoopSink {
 }
 
 impl DataSink for NoopSink {
-    fn run(&mut self, upstream: Receiver, feedback: &mut Feedback) {
+    fn run(&mut self, upstream: Receiver, feedback: &Feedback) {
         for parcel in upstream {
             if feedback.is_cancelled() {
                 log::info!("sink cancelled");

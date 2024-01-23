@@ -1,14 +1,14 @@
 use std::sync::mpsc::sync_channel;
 
-use rayon::{prelude::*, ThreadPoolBuilder};
+use rayon::ThreadPoolBuilder;
 
 use super::{
     feedback::{watcher, Feedback, Watcher},
     Canceller,
 };
-use crate::pipeline::{Receiver, Transformer};
 use crate::sink::DataSink;
 use crate::source::DataSource;
+use crate::{pipeline::Receiver, transformer::Transformer};
 
 const SOURCE_OUTPUT_CHANNEL_BOUND: usize = 10000;
 const TRANSFORMER_OUTPUT_CHANNEL_BOUND: usize = 10000;
@@ -43,25 +43,15 @@ fn run_transformer_thread(
 ) -> (std::thread::JoinHandle<()>, Receiver) {
     let (sender, receiver) = sync_channel(TRANSFORMER_OUTPUT_CHANNEL_BOUND);
     let handle = std::thread::spawn(move || {
+        log::info!("Transformer thread started.");
         let pool = ThreadPoolBuilder::new()
             .use_current_thread()
             .build()
             .unwrap();
         pool.install(|| {
-            log::info!("Transformer threads started.");
-            let _ = upstream.into_iter().par_bridge().try_for_each(|parcel| {
-                if feedback.is_cancelled() {
-                    log::info!("transformer cancelled");
-                    return Err(());
-                }
-                if transformer.transform(parcel, &sender, &feedback).is_err() {
-                    Err(())
-                } else {
-                    Ok(())
-                }
-            });
-            log::info!("Transformer threads finished.");
+            transformer.run(upstream, sender, &feedback);
         });
+        log::info!("Transformer thread finished.");
     });
     (handle, receiver)
 }
@@ -69,7 +59,7 @@ fn run_transformer_thread(
 fn run_sink_thread(
     mut sink: Box<dyn DataSink>,
     upstream: Receiver,
-    mut feedback: Feedback,
+    feedback: Feedback,
 ) -> std::thread::JoinHandle<()> {
     std::thread::spawn(move || {
         log::info!("Sink thread started.");
@@ -78,7 +68,7 @@ fn run_sink_thread(
             .build()
             .unwrap();
         pool.install(|| {
-            sink.run(upstream, &mut feedback);
+            sink.run(upstream, &feedback);
         });
         log::info!("Sink thread finished.");
     })

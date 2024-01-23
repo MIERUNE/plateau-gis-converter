@@ -24,5 +24,5 @@ pub trait DataSinkProvider {
 }
 
 pub trait DataSink: Send {
-    fn run(&mut self, upstream: Receiver, feedback: &mut Feedback);
+    fn run(&mut self, upstream: Receiver, feedback: &Feedback);
 }
