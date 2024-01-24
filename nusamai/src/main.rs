@@ -72,7 +72,11 @@ fn main() {
     }
     pretty_env_logger::init();
 
-    let args = Args::parse();
+    let args = {
+        let mut args = Args::parse();
+        args.sinkopt.push(("@output".into(), args.output.clone()));
+        args
+    };
 
     let mut canceller = Arc::new(Mutex::new(Canceller::default()));
     {
