@@ -2,7 +2,7 @@
 //!
 //! This is a demo sync that only counts the number of features and vertices and does not generate any output.
 
-use crate::parameters::Parameters;
+use crate::parameters::{FileSystemPathParameter, ParameterEntry, ParameterType, Parameters};
 use crate::pipeline::{Feedback, Receiver};
 use crate::sink::{DataSink, DataSinkProvider, SinkInfo};
 
@@ -23,7 +23,19 @@ impl DataSinkProvider for NoopSinkProvider {
     }
 
     fn parameters(&self) -> Parameters {
-        Parameters::default()
+        let mut params = Parameters::new();
+        params.define(
+            "@output".into(),
+            ParameterEntry {
+                description: "Output file path (dummy, no effect)".into(),
+                required: false,
+                parameter: ParameterType::FileSystemPath(FileSystemPathParameter {
+                    value: None,
+                    must_exist: false,
+                }),
+            },
+        );
+        params
     }
 }
 
