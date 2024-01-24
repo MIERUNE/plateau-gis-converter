@@ -29,7 +29,7 @@ struct Args {
     sinkopt: Vec<(String, String)>,
 
     #[arg(long)]
-    output: Option<String>,
+    output: String,
 }
 
 fn parse_key_val(s: &str) -> Result<(String, String), String> {
@@ -68,13 +68,7 @@ fn main() {
     }
     pretty_env_logger::init();
 
-    let args = {
-        let mut args = Args::parse();
-        if let Some(output) = &args.output {
-            args.sinkopt.push(("@output".into(), output.into()));
-        }
-        args
-    };
+    let args = Args::parse();
 
     let mut canceller = Arc::new(Mutex::new(Canceller::default()));
     {
