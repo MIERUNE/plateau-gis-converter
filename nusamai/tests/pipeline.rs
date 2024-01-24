@@ -1,9 +1,11 @@
 use nusamai::parameters::Parameters;
-use nusamai::pipeline::{self, Parcel, Receiver, TransformError};
-use nusamai::pipeline::{feedback, Feedback, FeedbackMessage, Sender, Transformer};
+use nusamai::pipeline::{self, Parcel, Receiver};
+use nusamai::pipeline::{Feedback, FeedbackMessage, Sender};
 use nusamai::sink::{DataSink, DataSinkProvider, SinkInfo};
 use nusamai::source::{DataSource, DataSourceProvider, SourceInfo};
+use nusamai::transformer::Transformer;
 use nusamai_citygml::object::Entity;
+use nusamai_citygml::schema::Schema;
 use rand::prelude::*;
 
 pub struct DummySourceProvider {}
@@ -51,18 +53,16 @@ impl DataSource for DummySource {
     }
 }
 
-struct NoopTransformer {}
+#[derive(Default)]
+pub struct NoopTransformer {}
 
 impl Transformer for NoopTransformer {
-    fn transform(
-        &self,
-        parcel: Parcel,
-        downstream: &Sender,
-        _feedback: &feedback::Feedback,
-    ) -> Result<(), TransformError> {
-        // no-op
-        downstream.send(parcel)?;
-        Ok(())
+    fn run(&self, upstream: Receiver, downstream: Sender, _feedback: &Feedback) {
+        for parcel in upstream {
+            if downstream.send(parcel).is_err() {
+                break;
+            }
+        }
     }
 }
 
@@ -87,7 +87,7 @@ impl DataSinkProvider for DummySinkProvider {
 struct DummySink {}
 
 impl DataSink for DummySink {
-    fn run(&mut self, upstream: Receiver, feedback: &mut Feedback) {
+    fn run(&mut self, upstream: Receiver, feedback: &Feedback, _schema: &Schema) {
         for parcel in upstream {
             if feedback.is_cancelled() {
                 return;
@@ -109,11 +109,13 @@ fn test_run_pipeline() {
     let sink_provider: Box<dyn DataSinkProvider> = Box::new(DummySinkProvider {});
 
     let source = source_provider.create(&source_provider.parameters());
-    let transformer = Box::new(NoopTransformer {});
     let sink = sink_provider.create(&source_provider.parameters());
 
+    let schema = nusamai_citygml::schema::Schema::default();
+    let transformer = Box::<NoopTransformer>::default();
+
     // start the pipeline
-    let (handle, watcher, canceller) = pipeline::run(source, transformer, sink);
+    let (handle, watcher, canceller) = pipeline::run(source, transformer, sink, schema.into());
 
     std::thread::scope(|scope| {
         // cancel the pipeline

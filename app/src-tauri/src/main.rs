@@ -12,7 +12,9 @@ use nusamai::sink::{
 };
 use nusamai::source::citygml::CityGMLSourceProvider;
 use nusamai::source::DataSourceProvider;
-use nusamai::transform::DummyTransformer;
+use nusamai::transformer::builder::{NusamaiTransformBuilder, TransformBuilder};
+use nusamai::transformer::runner::MultiThreadTransformer;
+use nusamai_plateau::models::TopLevelCityObject;
 
 fn main() {
     if env::var("RUST_LOG").is_err() {
@@ -72,10 +74,19 @@ fn run(input_paths: Vec<String>, output_path: String, filetype: String) {
         sink_provider.create(&sink_params)
     };
 
-    let transformer = Box::<DummyTransformer>::default();
+    let (transformer, schema) = {
+        use nusamai_citygml::CityGMLElement;
+        let transform_builder = NusamaiTransformBuilder::default();
+        let mut schema = nusamai_citygml::schema::Schema::default();
+        TopLevelCityObject::collect_schema(&mut schema);
+        transform_builder.transform_schema(&mut schema);
+        let transformer = Box::new(MultiThreadTransformer::new(transform_builder));
+        (transformer, schema)
+    };
 
     // start the pipeline
-    let (handle, watcher, inner_canceller) = nusamai::pipeline::run(source, transformer, sink);
+    let (handle, watcher, inner_canceller) =
+        nusamai::pipeline::run(source, transformer, sink, schema.into());
     *canceller.lock().unwrap() = inner_canceller;
 
     std::thread::scope(|scope| {

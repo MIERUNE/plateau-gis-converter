@@ -2,6 +2,7 @@
 
 use std::path::PathBuf;
 
+use nusamai_citygml::schema::Schema;
 use url::Url;
 
 use rayon::prelude::*;
@@ -54,7 +55,7 @@ pub struct GpkgSink {
 }
 
 impl GpkgSink {
-    pub async fn run_async(&mut self, upstream: Receiver, feedback: &mut Feedback) {
+    pub async fn run_async(&mut self, upstream: Receiver, feedback: &Feedback) {
         let mut handler = if self.output_path.to_string_lossy().starts_with("sqlite:") {
             GpkgHandler::from_url(&Url::parse(self.output_path.to_str().unwrap()).unwrap())
                 .await
@@ -117,7 +118,7 @@ impl GpkgSink {
 }
 
 impl DataSink for GpkgSink {
-    fn run(&mut self, upstream: Receiver, feedback: &mut Feedback) {
+    fn run(&mut self, upstream: Receiver, feedback: &Feedback, _schema: &Schema) {
         let runtime = tokio::runtime::Runtime::new().unwrap();
         runtime.block_on(self.run_async(upstream, feedback));
     }

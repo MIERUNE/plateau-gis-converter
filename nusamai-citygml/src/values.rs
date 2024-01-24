@@ -7,7 +7,6 @@ use serde::{Deserialize, Serialize};
 use std::io::BufRead;
 
 // type aliases
-// type aliases
 pub type Date = chrono::NaiveDate;
 pub type Length = Measure; // Length is almost same as Measure
 pub type GYear = String; // TODO?
@@ -313,7 +312,7 @@ impl CityGMLElement for Point {
     }
 }
 
-impl<T: CityGMLElement + Default + std::fmt::Debug> CityGMLElement for Option<T> {
+impl<T: CityGMLElement + Default> CityGMLElement for Option<T> {
     #[inline]
     fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
         if self.is_some() {
@@ -463,14 +462,20 @@ impl CityGMLElement for GenericAttribute {
             self.generic_attr_set
                 .into_iter()
                 .flat_map(|(k, v)| match v.into_object() {
-                    Some(Value::Data(data)) => Some((k, Value::Data(data))),
+                    Some(Value::Object(data)) => Some((k, Value::Object(data))),
                     _ => None,
                 }),
         );
-        Some(Value::Data(object::Data {
-            typename: "gen:genericAttribute".into(),
-            attributes: map,
-        }))
+
+        if map.is_empty() {
+            None
+        } else {
+            Some(Value::Object(object::Object {
+                typename: "gen:genericAttribute".into(),
+                stereotype: object::ObjectStereotype::Data,
+                attributes: map,
+            }))
+        }
     }
 
     fn collect_schema(schema: &mut schema::Schema) -> schema::Attribute {
