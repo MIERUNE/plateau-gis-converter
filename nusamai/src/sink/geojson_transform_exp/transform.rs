@@ -5,7 +5,7 @@ use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
 
 use nusamai_citygml::{
-    object::{Entity, Feature, Map},
+    object::{Entity, Map, Object, ObjectStereotype},
     Value,
 };
 
@@ -100,7 +100,7 @@ impl Transform for FeatureFlatteningTransform {
     fn transform(&self, mut entity: Entity) -> Vec<Entity> {
         // SeparateLodTransformerとは両立できない
 
-        if !matches!(entity.root, Value::Feature(_)) {
+        if !matches!(entity.root, Value::Object(_)) {
             panic!(
                 "Root value type must be Feature, but found {:?}",
                 entity.root
@@ -123,7 +123,7 @@ struct DataFlatteningTransform {}
 
 impl Transform for DataFlatteningTransform {
     fn transform(&self, mut entity: Entity) -> Vec<Entity> {
-        if !matches!(entity.root, Value::Feature(_)) {
+        if !matches!(entity.root, Value::Object(_)) {
             panic!(
                 "Root value type must be Feature, but found {:?}",
                 entity.root
@@ -148,126 +148,48 @@ fn flatten(
     do_flatten_data: bool,
     out: &mut Vec<Value>,
 ) {
-    // REVIEW(fukada): 以下のようにコードが冗長になるため、Feature, Data, (Object) を統一的に扱うようにしたほうがよいかもしれない
+    if let Value::Object(obj) = value {
+        let mut new_attrs = Map::default();
+        for (key, value) in obj.attributes.drain(..) {
+            match value {
+                Value::Array(mut child_arr) => match child_arr.first() {
+                    Some(Value::Object(obj)) => {
+                        let do_flatten = match obj.stereotype {
+                            ObjectStereotype::Feature { .. } if do_flatten_feature => true,
+                            ObjectStereotype::Data { .. } if do_flatten_data => true,
+                            _ => false,
+                        };
 
-    match value {
-        Value::Data(data) => {
-            let mut new_attrs = Map::default();
-            for (key, value) in data.attributes.drain(..) {
-                match value {
-                    Value::Array(mut child_arr) => match child_arr.first() {
-                        Some(Value::Data(_)) => {
-                            if do_flatten_data {
-                                for mut value in child_arr.drain(..) {
-                                    flatten(&mut value, do_flatten_feature, do_flatten_data, out);
-                                    out.push(value);
-                                }
-                            } else {
-                                for value in child_arr.iter_mut() {
-                                    flatten(value, do_flatten_feature, do_flatten_data, out);
-                                }
-                                new_attrs.insert(key, Value::Array(child_arr));
+                        if do_flatten {
+                            for mut value in child_arr.drain(..) {
+                                flatten(&mut value, do_flatten_feature, do_flatten_data, out);
+                                out.push(value);
                             }
-                        }
-                        Some(Value::Feature(_)) => {
-                            if do_flatten_feature {
-                                for mut value in child_arr.drain(..) {
-                                    flatten(&mut value, do_flatten_feature, do_flatten_data, out);
-                                    out.push(value);
-                                }
-                            } else {
-                                for value in child_arr.iter_mut() {
-                                    flatten(value, do_flatten_feature, do_flatten_data, out);
-                                }
-                                new_attrs.insert(key, Value::Array(child_arr));
+                        } else {
+                            for value in child_arr.iter_mut() {
+                                flatten(value, do_flatten_feature, do_flatten_data, out);
                             }
-                        }
-                        _ => {
                             new_attrs.insert(key, Value::Array(child_arr));
-                        }
-                    },
-                    mut value @ Value::Data(_) => {
-                        flatten(&mut value, do_flatten_feature, do_flatten_data, out);
-                        if do_flatten_data {
-                            out.push(value);
-                        } else {
-                            new_attrs.insert(key, value);
-                        }
-                    }
-                    mut value @ Value::Feature(_) => {
-                        flatten(&mut value, do_flatten_feature, do_flatten_data, out);
-                        if do_flatten_feature {
-                            out.push(value);
-                        } else {
-                            new_attrs.insert(key, value);
                         }
                     }
                     _ => {
+                        new_attrs.insert(key, Value::Array(child_arr));
+                    }
+                },
+                mut value @ Value::Object(_) => {
+                    flatten(&mut value, do_flatten_feature, do_flatten_data, out);
+                    if do_flatten_feature {
+                        out.push(value);
+                    } else {
                         new_attrs.insert(key, value);
                     }
                 }
-            }
-            data.attributes = new_attrs;
-        }
-        Value::Feature(feat) => {
-            let mut new_attrs = Map::default();
-            for (key, value) in feat.attributes.drain(..) {
-                match value {
-                    Value::Array(mut child_arr) => match child_arr.first() {
-                        Some(Value::Data(_)) => {
-                            if do_flatten_data {
-                                for mut value in child_arr.drain(..) {
-                                    flatten(&mut value, do_flatten_feature, do_flatten_data, out);
-                                    out.push(value);
-                                }
-                            } else {
-                                for value in child_arr.iter_mut() {
-                                    flatten(value, do_flatten_feature, do_flatten_data, out);
-                                }
-                                new_attrs.insert(key, Value::Array(child_arr));
-                            }
-                        }
-                        Some(Value::Feature(_)) => {
-                            if do_flatten_feature {
-                                for mut value in child_arr.drain(..) {
-                                    flatten(&mut value, do_flatten_feature, do_flatten_data, out);
-                                    out.push(value);
-                                }
-                            } else {
-                                for value in child_arr.iter_mut() {
-                                    flatten(value, do_flatten_feature, do_flatten_data, out);
-                                }
-                                new_attrs.insert(key, Value::Array(child_arr));
-                            }
-                        }
-                        _ => {
-                            new_attrs.insert(key, Value::Array(child_arr));
-                        }
-                    },
-                    mut value @ Value::Data(_) => {
-                        flatten(&mut value, do_flatten_feature, do_flatten_data, out);
-                        if do_flatten_data {
-                            out.push(value);
-                        } else {
-                            new_attrs.insert(key, value);
-                        }
-                    }
-                    mut value @ Value::Feature(_) => {
-                        flatten(&mut value, do_flatten_feature, do_flatten_data, out);
-                        if do_flatten_feature {
-                            out.push(value);
-                        } else {
-                            new_attrs.insert(key, value);
-                        }
-                    }
-                    _ => {
-                        new_attrs.insert(key, value);
-                    }
+                _ => {
+                    new_attrs.insert(key, value);
                 }
             }
-            feat.attributes = new_attrs;
         }
-        _ => {}
+        obj.attributes = new_attrs;
     }
 }
 
@@ -278,41 +200,45 @@ impl Transform for LodSeparationTransform {
         let mut results = Vec::new();
 
         let Entity {
-            root: Value::Feature(feature),
+            root: Value::Object(obj),
             ..
         } = entity
         else {
             panic!(
-                "Root value type must be Feature, but found {:?}",
+                "Root value type must be Object (class), but found {:?}",
                 entity.root
             );
         };
 
+        let ObjectStereotype::Feature { id, geometries } = obj.stereotype else {
+            panic!("Stereotype must be Feature");
+        };
+
         // feature.geometriesから、lodごとに分割して、objectsに追加する
         let mut lods: IndexMap<usize, Vec<_>> = IndexMap::new();
-        if let Some(geometry_ref_list) = feature.geometries {
-            for g in geometry_ref_list {
-                match g.lod {
-                    0 => lods.entry(0).or_default().push(g),
-                    1 => lods.entry(1).or_default().push(g),
-                    2 => lods.entry(2).or_default().push(g),
-                    3 => lods.entry(3).or_default().push(g),
-                    4 => lods.entry(4).or_default().push(g),
-                    _ => unreachable!("lod must be [0-4]"),
-                }
+        for g in geometries {
+            match g.lod {
+                0 => lods.entry(0).or_default().push(g),
+                1 => lods.entry(1).or_default().push(g),
+                2 => lods.entry(2).or_default().push(g),
+                3 => lods.entry(3).or_default().push(g),
+                4 => lods.entry(4).or_default().push(g),
+                _ => unreachable!("lod must be [0-4]"),
             }
+        }
 
-            for (_, geometry) in lods {
-                results.push(Entity {
-                    root: Value::Feature(Feature {
-                        id: feature.id.clone(),
-                        typename: feature.typename.clone(),
-                        attributes: feature.attributes.clone(),
-                        geometries: Some(geometry),
-                    }),
-                    geometry_store: entity.geometry_store.to_owned(),
-                });
-            }
+        for (_, geometry) in lods {
+            results.push(Entity {
+                root: Value::Object(Object {
+                    typename: obj.typename.clone(),
+                    attributes: obj.attributes.clone(),
+                    stereotype: ObjectStereotype::Feature {
+                        id: id.clone(),
+                        geometries: geometry,
+                    },
+                }),
+                geometry_store: entity.geometry_store.to_owned(),
+            });
         }
 
         results
@@ -356,8 +282,7 @@ struct JSONStringifyEditor {}
 impl Editor for JSONStringifyEditor {
     fn edit(&self, entity: &mut Entity, mappings: &Mappings) {
         let root_typename = match &entity.root {
-            Value::Feature(f) => &f.typename,
-            Value::Data(d) => &d.typename,
+            Value::Object(f) => &f.typename,
             _ => panic!(
                 "Root value type must be Feature or Data, but found {:?}",
                 entity.root
@@ -367,8 +292,8 @@ impl Editor for JSONStringifyEditor {
             return;
         };
 
-        if let Value::Data(feat) = &mut entity.root {
-            let attributes = std::mem::take(&mut feat.attributes);
+        if let Value::Object(obj) = &mut entity.root {
+            let attributes = std::mem::take(&mut obj.attributes);
 
             for (key, mut value) in attributes {
                 let param = target.get(&key);
@@ -394,11 +319,7 @@ impl Editor for JSONStringifyEditor {
                                     .join(",");
                                 Value::String(array)
                             }
-                            Value::Data(d) => {
-                                let json_data = serde_json::to_string(&d.attributes).unwrap();
-                                Value::String(json_data)
-                            }
-                            Value::Feature(f) => {
+                            Value::Object(f) => {
                                 let json_feature = serde_json::to_string(&f.attributes).unwrap();
                                 Value::String(json_feature)
                             }
@@ -406,17 +327,8 @@ impl Editor for JSONStringifyEditor {
                         }
                     } else if p.type_name == "json" {
                         match value {
-                            Value::Array(a) => {
-                                let json_array = serde_json::to_string(&a).unwrap();
-                                Value::String(json_array)
-                            }
-                            Value::Data(d) => {
-                                let json_data = serde_json::to_string(&d.attributes).unwrap();
-                                Value::String(json_data)
-                            }
-                            Value::Feature(f) => {
-                                let json_feature = serde_json::to_string(&f.attributes).unwrap();
-                                Value::String(json_feature)
+                            Value::Array(_) | Value::Object(_) => {
+                                Value::String(value.to_attribute_json().to_string())
                             }
                             _ => value,
                         }
@@ -428,9 +340,9 @@ impl Editor for JSONStringifyEditor {
                         "" => key,
                         _ => p.name.clone(),
                     };
-                    feat.attributes.insert(key, value);
+                    obj.attributes.insert(key, value);
                 } else {
-                    feat.attributes.insert(key, value);
+                    obj.attributes.insert(key, value);
                 };
             }
         }
@@ -512,7 +424,7 @@ mod tests {
 
     use super::*;
     use nusamai_citygml::{
-        object::{Entity, Map},
+        object::{self, Entity, Map, ObjectStereotype},
         Code, GeometryRefEntry, GeometryStore, GeometryType, Value,
     };
 
@@ -584,15 +496,17 @@ mod tests {
             len: 0,
         }];
 
-        let feature_1 = Feature {
-            id: "bldg:Building".to_string(),
+        let obj_1 = Object {
             typename: "bldg_47af72fa-7135-4a1c-b93c-d69e3b245cc6".into(),
             attributes: attributes_1,
-            geometries: Some(geometries_1),
+            stereotype: object::ObjectStereotype::Feature {
+                id: "bldg:Building".to_string(),
+                geometries: geometries_1,
+            },
         };
 
         Entity {
-            root: Value::Feature(feature_1),
+            root: Value::Object(obj_1),
             geometry_store: RwLock::new(GeometryStore {
                 ..Default::default()
             })
@@ -609,14 +523,16 @@ mod tests {
     #[test]
     fn test_entity() {
         let entity = make_dummy_entity();
-        if let Value::Feature(feature) = &entity.root {
-            assert_eq!(feature.id, "bldg:Building");
-            assert_eq!(
-                feature.typename,
-                "bldg_47af72fa-7135-4a1c-b93c-d69e3b245cc6"
-            );
-            assert_eq!(feature.attributes.len(), 3);
-            assert_eq!(feature.geometries.as_ref().unwrap().len(), 1);
+        if let Value::Object(obj) = &entity.root {
+            assert_eq!(obj.typename, "bldg_47af72fa-7135-4a1c-b93c-d69e3b245cc6");
+            assert_eq!(obj.attributes.len(), 3);
+
+            let ObjectStereotype::Feature { id, geometries } = &obj.stereotype else {
+                panic!("Stereotype must be Feature");
+            };
+
+            assert_eq!(id, "bldg:Building");
+            assert_eq!(geometries.len(), 1);
         } else {
             panic!(
                 "Root value type must be Feature, but found {:?}",

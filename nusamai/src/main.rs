@@ -11,7 +11,10 @@ use nusamai::sink::{
 use nusamai::sink::{DataSink, DataSinkProvider};
 use nusamai::source::citygml::CityGMLSourceProvider;
 use nusamai::source::{DataSource, DataSourceProvider};
-use nusamai::transform::DummyTransformer;
+use nusamai::transformer::builder::{NusamaiTransformBuilder, TransformBuilder};
+use nusamai::transformer::runner::MultiThreadTransformer;
+use nusamai_citygml::CityGMLElement;
+use nusamai_plateau::models::TopLevelCityObject;
 
 #[derive(clap::Parser)]
 #[command(author, version, about, long_about = None)]
@@ -128,10 +131,16 @@ fn run(
 ) {
     let total_time = std::time::Instant::now();
 
-    let transformer = Box::<DummyTransformer>::default();
+    // Prepare the transformer for the pipeline and transform the schema
+    let transform_builder = NusamaiTransformBuilder::default();
+    let mut schema = nusamai_citygml::schema::Schema::default();
+    TopLevelCityObject::collect_schema(&mut schema);
+    transform_builder.transform_schema(&mut schema);
+    let transformer = Box::new(MultiThreadTransformer::new(transform_builder));
 
     // start the pipeline
-    let (handle, watcher, inner_canceller) = nusamai::pipeline::run(source, transformer, sink);
+    let (handle, watcher, inner_canceller) =
+        nusamai::pipeline::run(source, transformer, sink, schema.into());
     *canceller.lock().unwrap() = inner_canceller;
 
     std::thread::scope(|scope| {
