@@ -1,0 +1,9 @@
+テスト用データ出典
+
+- [3D都市モデル（Project PLATEAU）東京都23区　ポートシティ竹芝　建築物モデル（LOD4）（2022年度）](https://www.geospatial.jp/ckan/dataset/plateau-tokyo23ku-2023-lod4)
+- [3D都市モデル（Project PLATEAU）川崎市（2022年度）](https://www.geospatial.jp/ckan/dataset/plateau-14130-kawasaki-shi-2022)
+- [3D都市モデル（Project PLATEAU）沼津市（2021年度）](https://www.geospatial.jp/ckan/dataset/plateau-22203-numazu-shi-2021)
+- [3D都市モデル（Project PLATEAU）武雄市（2022年度）](https://www.geospatial.jp/ckan/dataset/plateau-41206-takeo-shi-2022)
+- [3D都市モデル（Project PLATEAU）横須賀市（2020年度）v2](https://www.geospatial.jp/ckan/dataset/plateau-14201-yokosuka-shi-2020)
+
+Project PLATEAUのサイトポリシーに従って、どなたでも、複製、公衆送信、翻訳・変形等の翻案等、自由に利用できます。商用利用も可能です。 (https://www.mlit.go.jp/plateau/site-policy/)

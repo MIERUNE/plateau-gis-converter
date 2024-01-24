@@ -1,4 +1,4 @@
-const fileTypeOptions = ['GeoJSON', 'PLY'];
+const fileTypeOptions = ['GeoJSON', 'GeoPackage', 'Serde', 'Vector Tiles'];
 
 const crsOptions = [
 	{ value: 'EPSG:6678', label: 'JGD2011 / Japan Plane Rectangular CS X' },
