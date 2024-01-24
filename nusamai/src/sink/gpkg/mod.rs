@@ -2,6 +2,7 @@
 
 use std::path::PathBuf;
 
+use nusamai_citygml::schema::Schema;
 use url::Url;
 
 use rayon::prelude::*;
@@ -117,7 +118,7 @@ impl GpkgSink {
 }
 
 impl DataSink for GpkgSink {
-    fn run(&mut self, upstream: Receiver, feedback: &Feedback) {
+    fn run(&mut self, upstream: Receiver, feedback: &Feedback, _schema: &Schema) {
         let runtime = tokio::runtime::Runtime::new().unwrap();
         runtime.block_on(self.run_async(upstream, feedback));
     }

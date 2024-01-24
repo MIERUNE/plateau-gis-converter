@@ -37,12 +37,13 @@
 ### CLI
 
 ```bash
-# Debug (very low performance)
-cargo run -- ~/path/to/PLATEAU/15100_niigata-shi_2022_citygml_1_op/udx/bldg/*.gml --sink noop
-# Release
-cargo run --profile -- ~/path/to/PLATEAU/15100_niigata-shi_2022_citygml_1_op/udx/bldg/*.gml --sink noop
-# Release (with LTO)
-cargo run --profile release-lto -- ~/path/to/Desktop/PLATEAU/15100_niigata-shi_2022_citygml_1_op/udx/bldg/*.gml --sink noop
+cd ./nusamai/
+# Debug (非常に低速)
+cargo run -- ~/path/to/PLATEAU/15100_niigata-shi_2022_citygml_1_op/udx/bldg/*.gml --sink geojson --output foobar.geojson
+# Release (最適化コンパイル、実用速度)
+cargo run --release -- ~/path/to/PLATEAU/15100_niigata-shi_2022_citygml_1_op/udx/bldg/*.gml --sink geojson --output foobar.geojson
+# Release (LTO有効のプロダクションビルド、最高速)
+cargo run --profile release-lto -- ~/path/to/Desktop/PLATEAU/15100_niigata-shi_2022_citygml_1_op/udx/bldg/*.gml --sink geojson --output foobar.geojson
 ```
 
 ## 参考

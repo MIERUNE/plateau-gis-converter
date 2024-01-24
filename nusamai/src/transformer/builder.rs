@@ -1,5 +1,6 @@
 use std::sync::Arc;
 
+use nusamai_citygml::schema::Schema;
 use nusamai_projection::vshift::JGD2011ToWGS84;
 
 use super::{
@@ -7,22 +8,31 @@ use super::{
     Transform,
 };
 
-pub struct TransformBuilder {
+pub trait TransformBuilder: Send + Sync {
+    fn build(&self) -> Box<dyn Transform>;
+
+    fn transform_schema(&self, schema: &mut Schema) {
+        self.build().transform_schema(schema);
+    }
+}
+
+pub struct NusamaiTransformBuilder {
     jgd2wgs: Arc<JGD2011ToWGS84>,
 }
 
-impl TransformBuilder {
-    pub fn build(&self) -> Box<dyn Transform> {
+impl TransformBuilder for NusamaiTransformBuilder {
+    fn build(&self) -> Box<dyn Transform> {
         let mut transforms = SerialTransform::default();
+        // TODO: build transforming graph from config
         transforms.push(Box::new(ProjectionTransform::new(self.jgd2wgs.clone())));
         Box::new(transforms)
     }
 }
 
-impl Default for TransformBuilder {
+impl Default for NusamaiTransformBuilder {
     fn default() -> Self {
         Self {
-            jgd2wgs: Arc::new(JGD2011ToWGS84::default()),
+            jgd2wgs: JGD2011ToWGS84::default().into(),
         }
     }
 }

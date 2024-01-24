@@ -229,7 +229,7 @@ fn generics() {
     };
 
     let obj = demo.generic_attribute.into_object().unwrap();
-    if let Value::Data(data) = obj {
+    if let Value::Object(data) = obj {
         assert_eq!(data.attributes["s1"], Value::String("foo".to_string()));
         assert_eq!(data.attributes["s2"], Value::String("bar".to_string()));
         assert_eq!(data.attributes["i1"], Value::Integer(10));
@@ -247,8 +247,8 @@ fn generics() {
             Value::URI(values::URI::new("https://foo.com/hoge"))
         );
 
-        let Value::Data(set1) = &data.attributes["set1"] else {
-            panic!("expected data");
+        let Value::Object(set1) = &data.attributes["set1"] else {
+            panic!("expected object");
         };
         assert_eq!(set1.attributes["fizz"], Value::String("buzz".to_string()));
         assert_eq!(set1.attributes["d1"], Value::Double(123.45));

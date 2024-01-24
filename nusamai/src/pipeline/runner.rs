@@ -1,5 +1,6 @@
-use std::sync::mpsc::sync_channel;
+use std::sync::{mpsc::sync_channel, Arc};
 
+use nusamai_citygml::schema::Schema;
 use rayon::ThreadPoolBuilder;
 
 use super::{
@@ -28,7 +29,7 @@ fn run_source_thread(
             .num_threads(num_threads)
             .build()
             .unwrap();
-        pool.install(|| {
+        pool.install(move || {
             source.run(sender, &feedback);
         });
         log::info!("Source thread finished.");
@@ -48,7 +49,7 @@ fn run_transformer_thread(
             .use_current_thread()
             .build()
             .unwrap();
-        pool.install(|| {
+        pool.install(move || {
             transformer.run(upstream, sender, &feedback);
         });
         log::info!("Transformer thread finished.");
@@ -58,6 +59,7 @@ fn run_transformer_thread(
 
 fn run_sink_thread(
     mut sink: Box<dyn DataSink>,
+    schema: Arc<Schema>,
     upstream: Receiver,
     feedback: Feedback,
 ) -> std::thread::JoinHandle<()> {
@@ -67,8 +69,8 @@ fn run_sink_thread(
             .use_current_thread()
             .build()
             .unwrap();
-        pool.install(|| {
-            sink.run(upstream, &feedback);
+        pool.install(move || {
+            sink.run(upstream, &feedback, &schema);
         });
         log::info!("Sink thread finished.");
     })
@@ -96,6 +98,7 @@ pub fn run(
     source: Box<dyn DataSource>,
     transformer: Box<dyn Transformer>,
     sink: Box<dyn DataSink>,
+    schema: Arc<Schema>,
 ) -> (PipelineHandle, Watcher, Canceller) {
     let (watcher, feedback, canceller) = watcher();
 
@@ -103,7 +106,7 @@ pub fn run(
     let (source_thread, source_receiver) = run_source_thread(source, feedback.clone());
     let (transformer_thread, transformer_receiver) =
         run_transformer_thread(transformer, source_receiver, feedback.clone());
-    let sink_thread = run_sink_thread(sink, transformer_receiver, feedback.clone());
+    let sink_thread = run_sink_thread(sink, schema, transformer_receiver, feedback.clone());
 
     let handle = PipelineHandle {
         thread_handles: vec![source_thread, transformer_thread, sink_thread],

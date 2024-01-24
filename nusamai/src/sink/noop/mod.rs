@@ -2,6 +2,8 @@
 //!
 //! This is a demo sync that only counts the number of features and vertices and does not generate any output.
 
+use nusamai_citygml::schema::Schema;
+
 use crate::parameters::Parameters;
 use crate::pipeline::{Feedback, Receiver};
 use crate::sink::{DataSink, DataSinkProvider, SinkInfo};
@@ -33,7 +35,7 @@ pub struct NoopSink {
 }
 
 impl DataSink for NoopSink {
-    fn run(&mut self, upstream: Receiver, feedback: &Feedback) {
+    fn run(&mut self, upstream: Receiver, feedback: &Feedback, _schema: &Schema) {
         for parcel in upstream {
             if feedback.is_cancelled() {
                 log::info!("sink cancelled");

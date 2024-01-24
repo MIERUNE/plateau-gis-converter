@@ -3,6 +3,7 @@ use std::sync::Arc;
 use crate::transformer::Transform;
 
 use nusamai_citygml::object::Entity;
+use nusamai_citygml::schema::Schema;
 use nusamai_projection::crs::*;
 use nusamai_projection::vshift::JGD2011ToWGS84;
 
@@ -23,12 +24,16 @@ impl Transform for ProjectionTransform {
                 (v[0], v[1], v[2]) = self.jgd2wgs.convert(lng, lat, height);
             });
 
-            // Ensure that the source is JGD2011 and the destination is WGS 84
+            // Ensure that the source CRS is JGD2011 and the destination is WGS 84
             assert_eq!(geom_store.epsg, EPSG_JGD2011_GEOGRAPHIC_3D);
             geom_store.epsg = EPSG_WGS84_GEOGRAPHIC_3D;
         }
 
         out.push(entity);
+    }
+
+    fn transform_schema(&self, _schema: &mut Schema) {
+        // TODO: Change the CRS information in the schema (?)
     }
 }
 

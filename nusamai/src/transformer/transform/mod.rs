@@ -3,7 +3,7 @@ mod projection;
 pub use projection::*;
 
 use super::Transform;
-use nusamai_citygml::object::Entity;
+use nusamai_citygml::{object::Entity, schema::Schema};
 
 // Perform transforms in sequence
 #[derive(Default)]
@@ -30,6 +30,12 @@ impl Transform for SerialTransform {
         }
         out.append(entities);
     }
+
+    fn transform_schema(&self, schema: &mut Schema) {
+        for transform in &self.transforms {
+            transform.transform_schema(schema)
+        }
+    }
 }
 
 impl SerialTransform {
@@ -38,11 +44,15 @@ impl SerialTransform {
     }
 }
 
-/// Passes through entities without any transformation
+/// No-op transform
 pub struct IdentityTransform {}
 
 impl Transform for IdentityTransform {
     fn transform(&mut self, entity: Entity, out: &mut Vec<Entity>) {
         out.push(entity);
+    }
+
+    fn transform_schema(&self, _schema: &mut Schema) {
+        // do nothing
     }
 }
