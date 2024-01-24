@@ -3,6 +3,7 @@
 use std::fs;
 use std::io::BufRead;
 use std::path::Path;
+use std::sync::RwLock;
 use url::Url;
 
 use rayon::prelude::*;
@@ -10,7 +11,7 @@ use rayon::prelude::*;
 use crate::parameters::Parameters;
 use crate::pipeline::{Feedback, Parcel, Sender};
 use crate::source::{DataSource, DataSourceProvider, SourceInfo};
-use nusamai_citygml::object::CityObject;
+use nusamai_citygml::object::Entity;
 use nusamai_citygml::{CityGMLElement, CityGMLReader, ParseError, SubTreeReader};
 use nusamai_plateau::models;
 
@@ -91,11 +92,11 @@ fn toplevel_dispatcher<R: BufRead>(
                 let geometry_store = st.collect_geometries();
 
                 if let Some(root) = cityobj.into_object() {
-                    let cityobj = CityObject {
+                    let entity = Entity {
                         root,
-                        geometry_store,
+                        geometry_store: RwLock::new(geometries).into(),
                     };
-                    if downstream.send(Parcel { cityobj }).is_err() {
+                    if downstream.send(Parcel { entity }).is_err() {
                         feedback.cancel();
                         return Ok(());
                     }

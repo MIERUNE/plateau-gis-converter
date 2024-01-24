@@ -1,9 +1,12 @@
 use nusamai::sink::DataSinkProvider;
 use nusamai::source::citygml::CityGMLSourceProvider;
 use nusamai::source::DataSourceProvider;
-use nusamai::transform::DummyTransformer;
+use nusamai::transformer::builder::{NusamaiTransformBuilder, TransformBuilder};
+use nusamai::transformer::runner::MultiThreadTransformer;
 
 use nusamai::sink;
+use nusamai_citygml::CityGMLElement;
+use nusamai_plateau::models::TopLevelCityObject;
 
 pub(crate) fn simple_run_sink<S: DataSinkProvider>(sink_provider: S, output: Option<&str>) {
     let source_provider: Box<dyn DataSourceProvider> = Box::new(CityGMLSourceProvider {
@@ -18,7 +21,11 @@ pub(crate) fn simple_run_sink<S: DataSinkProvider>(sink_provider: S, output: Opt
 
     let source = source_provider.create(&source_provider.parameters());
 
-    let transformer = Box::<DummyTransformer>::default();
+    let transform_builder = NusamaiTransformBuilder::default();
+    let mut schema = nusamai_citygml::schema::Schema::default();
+    TopLevelCityObject::collect_schema(&mut schema);
+    transform_builder.transform_schema(&mut schema);
+    let transformer = Box::new(MultiThreadTransformer::new(transform_builder));
 
     assert!(!sink_provider.info().name.is_empty());
     let mut sink_params = sink_provider.parameters();
@@ -30,7 +37,8 @@ pub(crate) fn simple_run_sink<S: DataSinkProvider>(sink_provider: S, output: Opt
     sink_params.validate().unwrap();
     let sink = sink_provider.create(&sink_params);
 
-    let (handle, _watcher, canceller) = nusamai::pipeline::run(source, transformer, sink);
+    let (handle, _watcher, canceller) =
+        nusamai::pipeline::run(source, transformer, sink, schema.into());
     handle.join();
 
     // should not be cancelled

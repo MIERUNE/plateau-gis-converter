@@ -1,5 +1,5 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
-<gml:Dictionary xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:gml="http://www.opengis.net/gml" xsi:schemaLocation="http://www.opengis.net/gml http://schemas.opengis.net/gml/3.1.1/profiles/SimpleDictionary/1.0.0/gmlSimpleDictionaryProfile.xsd" gml:id="cl_7fd1b0aa-ac2c-4e1b-b547-57106d8ca8b0">
+<?xml version="1.0" encoding="UTF-8"?>
+<gml:Dictionary xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:gml="http://www.opengis.net/gml" xsi:schemaLocation="http://www.opengis.net/gml http://schemas.opengis.net/gml/3.1.1/profiles/SimpleDictionary/1.0.0/gmlSimpleDictionaryProfile.xsd" gml:id="cl_655d3083-ce28-416f-b2c8-86065b100ff8">
 	<gml:name>CityFurnitureDataQualityAttribute_srcScale</gml:name>
 	<gml:dictionaryEntry>
 		<gml:Definition gml:id="id1">
@@ -19,4 +19,5 @@
 			<gml:name>3</gml:name>
 		</gml:Definition>
 	</gml:dictionaryEntry>
+
 </gml:Dictionary>

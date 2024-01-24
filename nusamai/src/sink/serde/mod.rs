@@ -7,6 +7,7 @@ use std::io::{BufWriter, Write};
 use std::path::PathBuf;
 
 use bincode;
+use nusamai_citygml::schema::Schema;
 use rayon::prelude::*;
 
 use crate::get_parameter_value;
@@ -57,7 +58,7 @@ pub struct SerdeSink {
 }
 
 impl DataSink for SerdeSink {
-    fn run(&mut self, upstream: Receiver, feedback: &mut Feedback) {
+    fn run(&mut self, upstream: Receiver, feedback: &Feedback, _schema: &Schema) {
         let (sender, receiver) = std::sync::mpsc::sync_channel(1000);
 
         rayon::join(
@@ -71,7 +72,7 @@ impl DataSink for SerdeSink {
                         }
 
                         buf.clear();
-                        bincode::serialize_into(buf as &mut Vec<u8>, &parcel.cityobj).unwrap();
+                        bincode::serialize_into(buf as &mut Vec<u8>, &parcel.entity).unwrap();
                         if sender.send(lz4_flex::compress_prepend_size(buf)).is_err() {
                             log::info!("sink cancelled");
                             return Err(());

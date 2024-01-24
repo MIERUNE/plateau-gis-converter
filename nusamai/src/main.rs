@@ -5,31 +5,38 @@ use clap::Parser;
 
 use nusamai::pipeline::Canceller;
 use nusamai::sink::{
-    geojson::GeoJsonSinkProvider, gpkg::GpkgSinkProvider, mvt::MVTSinkProvider,
-    noop::NoopSinkProvider, serde::SerdeSinkProvider,
+    geojson::GeoJsonSinkProvider, geojson_transform_exp::GeoJsonTransformExpSinkProvider,
+    gpkg::GpkgSinkProvider, mvt::MVTSinkProvider, noop::NoopSinkProvider, serde::SerdeSinkProvider,
 };
 use nusamai::sink::{DataSink, DataSinkProvider};
 use nusamai::source::citygml::CityGMLSourceProvider;
 use nusamai::source::{DataSource, DataSourceProvider};
-use nusamai::transform::DummyTransformer;
+use nusamai::transformer::builder::{NusamaiTransformBuilder, TransformBuilder};
+use nusamai::transformer::runner::MultiThreadTransformer;
+use nusamai_citygml::CityGMLElement;
+use nusamai_plateau::models::TopLevelCityObject;
 
 #[derive(clap::Parser)]
 #[command(author, version, about, long_about = None)]
 struct Args {
-    #[arg(value_enum, long)]
-    sink: SinkChoice,
-
     #[arg()]
     filenames: Vec<String>,
 
+    /// Sink choice
+    #[arg(value_enum, long)]
+    sink: SinkChoice,
+
+    /// Output path
+    #[arg(long)]
+    output: String,
+
+    /// Options for the source
     #[arg(short = 'i', value_parser = parse_key_val)]
     sourceopt: Vec<(String, String)>,
 
+    /// Options for the sink
     #[arg(short = 'o', value_parser = parse_key_val)]
     sinkopt: Vec<(String, String)>,
-
-    #[arg(long)]
-    output: Option<String>,
 }
 
 fn parse_key_val(s: &str) -> Result<(String, String), String> {
@@ -46,6 +53,7 @@ enum SinkChoice {
     Geojson,
     Gpkg,
     Mvt,
+    GeojsonTransformExp,
 }
 
 impl SinkChoice {
@@ -54,6 +62,7 @@ impl SinkChoice {
             SinkChoice::Noop => Box::new(NoopSinkProvider {}),
             SinkChoice::Serde => Box::new(SerdeSinkProvider {}),
             SinkChoice::Geojson => Box::new(GeoJsonSinkProvider {}),
+            SinkChoice::GeojsonTransformExp => Box::new(GeoJsonTransformExpSinkProvider {}),
             SinkChoice::Gpkg => Box::new(GpkgSinkProvider {}),
             SinkChoice::Mvt => Box::new(MVTSinkProvider {}),
         }
@@ -68,9 +77,7 @@ fn main() {
 
     let args = {
         let mut args = Args::parse();
-        if let Some(output) = &args.output {
-            args.sinkopt.push(("@output".into(), output.into()));
-        }
+        args.sinkopt.push(("@output".into(), args.output.clone()));
         args
     };
 
@@ -124,10 +131,16 @@ fn run(
 ) {
     let total_time = std::time::Instant::now();
 
-    let transformer = Box::<DummyTransformer>::default();
+    // Prepare the transformer for the pipeline and transform the schema
+    let transform_builder = NusamaiTransformBuilder::default();
+    let mut schema = nusamai_citygml::schema::Schema::default();
+    TopLevelCityObject::collect_schema(&mut schema);
+    transform_builder.transform_schema(&mut schema);
+    let transformer = Box::new(MultiThreadTransformer::new(transform_builder));
 
     // start the pipeline
-    let (handle, watcher, inner_canceller) = nusamai::pipeline::run(source, transformer, sink);
+    let (handle, watcher, inner_canceller) =
+        nusamai::pipeline::run(source, transformer, sink, schema.into());
     *canceller.lock().unwrap() = inner_canceller;
 
     std::thread::scope(|scope| {

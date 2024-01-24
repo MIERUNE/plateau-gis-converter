@@ -11,6 +11,7 @@ use std::sync::mpsc;
 use ext_sort::{buffer::mem::MemoryLimitedBufferBuilder, ExternalSorter, ExternalSorterBuilder};
 use hashbrown::HashMap;
 use itertools::Itertools;
+use nusamai_citygml::schema::Schema;
 use nusamai_mvt::geometry::GeometryEncoder;
 use nusamai_mvt::tag::TagsEncoder;
 use prost::Message;
@@ -83,7 +84,7 @@ struct SlicedFeature<'a> {
 }
 
 impl DataSink for MVTSink {
-    fn run(&mut self, upstream: Receiver, feedback: &mut Feedback) {
+    fn run(&mut self, upstream: Receiver, feedback: &Feedback, _schema: &Schema) {
         let (sender_sliced, receiver_sliced) = mpsc::sync_channel(2000);
         let (sender_sorted, receiver_sorted) = mpsc::sync_channel(2000);
 
@@ -138,10 +139,10 @@ fn geometry_slicing_stage(
             return Err(());
         }
 
-        let max_detail = 12;
+        let max_detail = 12; // 4096
         let buffer_pixels = 5;
         slice_cityobj_geoms(
-            &parcel.cityobj,
+            &parcel.entity,
             7,
             15,
             max_detail,
@@ -149,7 +150,7 @@ fn geometry_slicing_stage(
             |(z, x, y), mpoly| {
                 let feature = SlicedFeature {
                     geometry: mpoly,
-                    properties: parcel.cityobj.root.clone(),
+                    properties: parcel.entity.root.clone(),
                 };
                 let bytes = bincode::serialize(&feature).unwrap();
                 let sfeat = SerializedSlicedFeature {
@@ -253,19 +254,18 @@ fn tile_writing_stage(
                 let mut id = None;
                 let mut tags: Vec<u32> = Vec::new();
 
-                let layer = if let value @ object::Value::Feature(feat) = &feat.properties {
-                    let layer = layers.entry_ref(feat.typename.as_ref()).or_default();
+                let layer = if let value @ object::Value::Object(obj) = &feat.properties {
+                    let layer = layers.entry_ref(obj.typename.as_ref()).or_default();
 
                     // Encode attributes as MVT tags
                     traverse_properties(&mut tags, &mut layer.tags_enc, String::new(), value);
 
                     // Make a MVT feature id (u64) by hashing the original feature id string.
-                    id = Some(
-                        feat.id
-                            .as_bytes()
+                    id = obj.stereotype.id().map(|id| {
+                        id.as_bytes()
                             .iter()
-                            .fold(5381u64, |a, c| a.wrapping_mul(33) ^ *c as u64),
-                    );
+                            .fold(5381u64, |a, c| a.wrapping_mul(33) ^ *c as u64)
+                    });
 
                     layer
                 } else {

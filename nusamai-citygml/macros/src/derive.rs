@@ -52,7 +52,7 @@ fn generate_citygml_impl_for_struct(
     let mut into_object_stmts = Vec::new();
     let mut prop_stmts = Vec::new();
 
-    let mut geom_into_object_stmt = quote! { None };
+    let mut geom_into_object_stmt = quote! { Vec::new() };
     let mut id_value = quote!(String::new());
     let struct_ident = &derive_input.ident;
     let mut typename = String::from(stringify!(derive_input.ident));
@@ -186,7 +186,7 @@ fn generate_citygml_impl_for_struct(
                     }
 
                     geom_into_object_stmt = quote! {
-                        Some(self.#field_ident)
+                        self.#field_ident
                     };
 
                     Ok(())
@@ -320,30 +320,33 @@ fn generate_citygml_impl_for_struct(
     let into_object_impl = match ty {
         StereoType::Feature => {
             quote! {
-                Some(::nusamai_citygml::object::Value::Feature(
-                    ::nusamai_citygml::object::Feature {
+                Some(::nusamai_citygml::object::Value::Object(
+                    ::nusamai_citygml::object::Object {
                         typename: #typename.into(),
-                        id: #id_value,
                         attributes: {
                             let mut attributes = ::nusamai_citygml::object::Map::default();
                             #(#into_object_stmts)*
                             attributes
                         },
-                        geometries: #geom_into_object_stmt,
+                        stereotype: ::nusamai_citygml::object::ObjectStereotype::Feature {
+                            id: #id_value,
+                            geometries: #geom_into_object_stmt,
+                        }
                     }
                 ))
             }
         }
         StereoType::Data => {
             quote! {
-                Some(::nusamai_citygml::object::Value::Data(
-                    ::nusamai_citygml::object::Data {
+                Some(::nusamai_citygml::object::Value::Object(
+                    ::nusamai_citygml::object::Object {
                         typename: #typename.into(),
                         attributes: {
                             let mut attributes = ::nusamai_citygml::object::Map::default();
                             #(#into_object_stmts)*
                             attributes
                         },
+                        stereotype: ::nusamai_citygml::object::ObjectStereotype::Data,
                     }
                 ))
             }
