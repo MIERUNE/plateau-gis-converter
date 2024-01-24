@@ -16,20 +16,24 @@ use nusamai::transform::DummyTransformer;
 #[derive(clap::Parser)]
 #[command(author, version, about, long_about = None)]
 struct Args {
-    #[arg(value_enum, long)]
-    sink: SinkChoice,
-
     #[arg()]
     filenames: Vec<String>,
 
+    /// Sink choice
+    #[arg(value_enum, long)]
+    sink: SinkChoice,
+
+    /// Output path
+    #[arg(long)]
+    output: String,
+
+    /// Options for the source
     #[arg(short = 'i', value_parser = parse_key_val)]
     sourceopt: Vec<(String, String)>,
 
+    /// Options for the sink
     #[arg(short = 'o', value_parser = parse_key_val)]
     sinkopt: Vec<(String, String)>,
-
-    #[arg(long)]
-    output: String,
 }
 
 fn parse_key_val(s: &str) -> Result<(String, String), String> {
