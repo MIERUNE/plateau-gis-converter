@@ -1,5 +1,7 @@
 use serde::{Deserialize, Serialize};
 
+use crate::{CzmlString, Model};
+
 #[derive(Serialize, Deserialize)]
 pub struct Packet {
     id: Option<String>,
@@ -7,8 +9,7 @@ pub struct Packet {
     delete_flag: Option<bool>,
     name: Option<String>,
     parent: Option<String>,
-    description: Option<String>, // String.json
+    description: Option<CzmlString>,
     version: Option<String>,
-    tileset: Option<String>, // Tileset.json
-    model: Option<String>,   // Model.json
+    model: Option<Model>,
 }
