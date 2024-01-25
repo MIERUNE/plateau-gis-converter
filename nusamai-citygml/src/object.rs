@@ -3,10 +3,9 @@
 use std::borrow::Cow;
 use std::sync::{Arc, RwLock};
 
-use crate::geometry::{self, GeometryRef};
-use crate::values::{Code, Point, URI};
+use crate::geometry::{GeometryRef, GeometryStore};
+use crate::values::{Code, Date, Point, URI};
 use crate::Measure;
-use chrono::NaiveDate;
 use serde::{Deserialize, Serialize};
 
 pub type Map = indexmap::IndexMap<String, Value, ahash::RandomState>;
@@ -14,25 +13,37 @@ pub type Map = indexmap::IndexMap<String, Value, ahash::RandomState>;
 /// City objects, features, objects or data
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Entity {
+    /// Attribute tree
     pub root: Value,
-    pub geometry_store: Arc<RwLock<geometry::GeometryStore>>,
+    /// All geometries referenced by the attribute tree
+    pub geometry_store: Arc<RwLock<GeometryStore>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-pub struct Feature {
+pub struct Object {
     pub typename: Cow<'static, str>,
-    pub id: String,
+    pub stereotype: ObjectStereotype,
     pub attributes: Map,
-    pub geometries: Option<GeometryRef>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
-pub struct Data {
-    pub typename: Cow<'static, str>,
-    pub attributes: Map,
+pub enum ObjectStereotype {
+    Feature { id: String, geometries: GeometryRef },
+    Object { id: String },
+    Data,
 }
 
-/// Nodes for the "Object" representation of the city object.
+impl ObjectStereotype {
+    pub fn id(&self) -> Option<&str> {
+        match self {
+            ObjectStereotype::Feature { id, .. } => Some(id),
+            ObjectStereotype::Object { id } => Some(id),
+            ObjectStereotype::Data => None,
+        }
+    }
+}
+
+// Nodes for the "Object" representation of the city object.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub enum Value {
     String(String),
@@ -42,11 +53,10 @@ pub enum Value {
     Measure(Measure),
     Boolean(bool),
     URI(URI),
-    Date(NaiveDate),
+    Date(Date),
     Point(Point),
     Array(Vec<Value>),
-    Feature(Feature),
-    Data(Data),
+    Object(Object),
 }
 
 #[cfg(feature = "serde_json")]
@@ -75,24 +85,19 @@ impl Value {
                 //     }
                 // }
             }
-            Array(a) => serde_json::Value::Array(a.iter().map(Value::to_attribute_json).collect()),
-            Feature(feat) => {
-                let mut m = serde_json::Map::from_iter(
-                    feat.attributes
-                        .iter()
-                        .map(|(k, v)| (k.into(), v.to_attribute_json())),
-                );
-                m.insert("type".into(), feat.typename.clone().into());
-                m.insert("id".into(), feat.id.clone().into());
-                serde_json::Value::Object(m)
+            Array(arr) => {
+                serde_json::Value::Array(arr.iter().map(Value::to_attribute_json).collect())
             }
-            Data(data) => {
+            Object(cls) => {
                 let mut m = serde_json::Map::from_iter(
-                    data.attributes
+                    cls.attributes
                         .iter()
                         .map(|(k, v)| (k.into(), v.to_attribute_json())),
                 );
-                m.insert("type".into(), data.typename.clone().into());
+                m.insert("type".into(), cls.typename.clone().into());
+                if let Some(id) = cls.stereotype.id() {
+                    m.insert("id".into(), serde_json::Value::String(id.into()));
+                }
                 serde_json::Value::Object(m)
             }
         }
@@ -128,20 +133,22 @@ mod tests {
         let obj = Value::URI(URI::new("http://example.com"));
         assert_eq!(obj.to_attribute_json(), json!("http://example.com"));
 
-        let obj = Value::Date(NaiveDate::from_ymd_opt(2020, 1, 1).unwrap());
+        let obj = Value::Date(Date::from_ymd_opt(2020, 1, 1).unwrap());
         assert_eq!(obj.to_attribute_json(), json!("2020-01-01"));
 
         let obj = Value::Array(vec![Value::String("test".into()), Value::Integer(1)]);
         assert_eq!(obj.to_attribute_json(), json!(["test", 1]));
 
         let mut attributes = Map::default();
-        attributes.insert("String".into(), Value::String("test".into()));
-        attributes.insert("Integer".into(), Value::Integer(1));
-        let obj = Value::Feature(Feature {
+        attributes.insert("string".into(), Value::String("test".into()));
+        attributes.insert("integer".into(), Value::Integer(1));
+        let obj = Value::Object(Object {
             typename: "test".into(),
-            id: "test".into(),
             attributes,
-            geometries: None,
+            stereotype: ObjectStereotype::Feature {
+                id: "test".into(),
+                geometries: Vec::default(),
+            },
         });
         assert_eq!(
             obj.to_attribute_json(),
@@ -149,17 +156,18 @@ mod tests {
                 {
                     "type": "test",
                     "id": "test",
-                    "String": "test",
-                    "Integer": 1
+                    "string": "test",
+                    "integer": 1
                 }
             }
         );
 
         let mut attributes = Map::default();
-        attributes.insert("String".into(), Value::String("test".into()));
-        attributes.insert("Integer".into(), Value::Integer(1));
-        let obj = Value::Data(Data {
+        attributes.insert("string".into(), Value::String("test".into()));
+        attributes.insert("integer".into(), Value::Integer(1));
+        let obj = Value::Object(Object {
             typename: "test".into(),
+            stereotype: ObjectStereotype::Data,
             attributes,
         });
         assert_eq!(
@@ -167,8 +175,8 @@ mod tests {
             json! {
                 {
                     "type": "test",
-                    "String": "test",
-                    "Integer": 1
+                    "string": "test",
+                    "integer": 1
                 }
             }
         );

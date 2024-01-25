@@ -1,0 +1,286 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<gml:Dictionary xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:gml="http://www.opengis.net/gml" xsi:schemaLocation="http://www.opengis.net/gml http://schemas.opengis.net/gml/3.1.1/profiles/SimpleDictionary/1.0.0/gmlSimpleDictionaryProfile.xsd" gml:id="cl_04ab5a05-9a81-4b29-8a29-6d25ac7aff58">
+	<gml:name>BuildingDetailAttribute_orgUsage2</gml:name>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id1">
+			<gml:description>住宅（専用住宅（住宅に附属する物置、車庫を含む））</gml:description>
+			<gml:name>10</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id2">
+			<gml:description>集合住宅（アパート、マンション、寄宿舎、寮）</gml:description>
+			<gml:name>20</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id3">
+			<gml:description>店舗併用住宅（住宅と商業・業務用途を併用している場合）</gml:description>
+			<gml:name>30</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id4">
+			<gml:description>宿泊施設との併用（集合住宅と商業、業務、宿泊、娯楽、遊戯、官公庁、文教厚生 系用途を併用している場合）</gml:description>
+			<gml:name>41</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id5">
+			<gml:description>娯楽施設との併用（集合住宅と商業、業務、宿泊、娯楽、遊戯、官公庁、文教厚生 系用途を併用している場合）</gml:description>
+			<gml:name>42</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id6">
+			<gml:description>遊戯施設との併用（集合住宅と商業、業務、宿泊、娯楽、遊戯、官公庁、文教厚生 系用途を併用している場合）</gml:description>
+			<gml:name>43</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id7">
+			<gml:description>店舗併用集合住宅（集合住宅と商業・業務系用途を併用している場合、業務・商業系で上記以外）</gml:description>
+			<gml:name>44</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id8">
+			<gml:description>作業所併用住宅（住宅と工業系用途を併用している場合）</gml:description>
+			<gml:name>50</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id9">
+			<gml:description>業務施設（銀行、事務所、ＮＴＴ、新聞社、放送局）</gml:description>
+			<gml:name>60</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id10">
+			<gml:description>業務施設（１）（銀行、事務所、ＮＴＴ、新聞社、放送局）</gml:description>
+			<gml:name>61</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id11">
+			<gml:description>業務施設（２）（郵便局）</gml:description>
+			<gml:name>62</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id12">
+			<gml:description>商業施設（Ａ）（小売店、卸売店、百貨店、その他の物品販売施設）</gml:description>
+			<gml:name>71</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id13">
+			<gml:description>商業施設（Ｂ）（食堂、喫茶店、スナック、その他の飲食業を営む施設）</gml:description>
+			<gml:name>72</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id14">
+			<gml:description>商業施設（Ｃ）（理容店、美容院、レンタル業、宴会場、結婚式場、その他のサービス施設）</gml:description>
+			<gml:name>73</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id15">
+			<gml:description>宿泊施設（ホテル、旅館、カプセルホテル、保養所、民宿（モーテル、ラブホテル等風俗営業法による風俗営業関連施設を除く））</gml:description>
+			<gml:name>80</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id16">
+			<gml:description>娯楽施設（Ａ）（劇場、映画館、演芸場、観覧場）</gml:description>
+			<gml:name>91</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id17">
+			<gml:description>娯楽施設（Ｂ）（料理店、キャバレー、ダンスホール、ナイトクラブ、バー等風俗営業法による風俗営業関連施設）</gml:description>
+			<gml:name>92</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id18">
+			<gml:description>娯楽施設（Ｃ１）（特殊浴場、サウナ、アダルトショップ等風俗営業法による風俗営業関連施設）</gml:description>
+			<gml:name>93</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id19">
+			<gml:description>娯楽施設（Ｃ２）（モーテル、ラブホテル）</gml:description>
+			<gml:name>94</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id20">
+			<gml:description>遊戯施設（Ａ）（ボーリング場、スケート場、水泳場、バッティングセンター、ゴルフ練習場）</gml:description>
+			<gml:name>101</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id21">
+			<gml:description>遊戯施設（Ｂ１）（麻雀屋、パチンコ屋、射的場、勝馬投票券販売所、ゲームセンター）</gml:description>
+			<gml:name>102</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id22">
+			<gml:description>遊戯施設（Ｂ２）（カラオケボックス、インターネットカフェ、漫画喫茶）</gml:description>
+			<gml:name>103</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id23">
+			<gml:description>商業系用途複合施設（商業系用途の複合施設で、主たる用途の床面積が、全体の３／４に満たないもの）</gml:description>
+			<gml:name>110</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id24">
+			<gml:description>官公庁施設（県庁、市役所、町村役場、裁判所、税務署、警察署、消防署、交番）</gml:description>
+			<gml:name>120</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id25">
+			<gml:description>文教厚生施設（Ａ１）（大学、高等専門学校、専修学校、各種学校）</gml:description>
+			<gml:name>131</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id26">
+			<gml:description>文教厚生施設（Ａ２）（病院）</gml:description>
+			<gml:name>132</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id27">
+			<gml:description>文教厚生施設（Ａ３）（体育館、競技場）</gml:description>
+			<gml:name>133</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id28">
+			<gml:description>文教厚生施設（Ａ４）（公会堂、博物館）</gml:description>
+			<gml:name>134</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id29">
+			<gml:description>文教厚生施設（Ｂ１）（幼稚園、小・中学校、高等学校、老人ホ－ム、保育所）</gml:description>
+			<gml:name>135</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id30">
+			<gml:description>文教厚生施設（Ｂ２）（図書館、公民館）</gml:description>
+			<gml:name>136</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id31">
+			<gml:description>文教厚生施設（Ｂ３）（身体障害者福祉ホーム、老人福祉センター、児童厚生施設、診療所、）</gml:description>
+			<gml:name>137</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id32">
+			<gml:description>文教厚生施設（Ｂ４）（神社、寺院、教会、公衆浴場（特殊浴場を除く））</gml:description>
+			<gml:name>138</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id33">
+			<gml:description>運輸倉庫施設（Ａ）（自動車車庫、駐輪施設）</gml:description>
+			<gml:name>141</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id34">
+			<gml:description>運輸倉庫施設（Ｂ１）（駅舎、バスターミナル、港湾施設、停車場、飛行場、電車車庫）</gml:description>
+			<gml:name>142</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id35">
+			<gml:description>運輸倉庫施設（Ｂ２）（倉庫、トラックターミナル、荷捌場、卸売市場）</gml:description>
+			<gml:name>143</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id36">
+			<gml:description>重化学工業施設（アスファルト精製、金属の溶解又は精製、火薬類塗料、合成樹脂、セメント、鉄釘の製造、石炭ガス、圧縮ガス、マッチ、セルロイド、ゴム製品の製造、製革、パルプの製造、動力つちを使用する金属の製造）</gml:description>
+			<gml:name>150</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id37">
+			<gml:description>軽工業施設（原動力を使用する床面積が　１５０㎡を超える工場、ぼろ・わたの選別再製、岩石の粉砕、瓦れんが、煉炭、石鹸、生コン、陶磁器、絵の具の製造、塗料の加熱乾燥、吹付け、ドライクリーニング（自動車修理工場を除く））</gml:description>
+			<gml:name>160</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id38">
+			<gml:description>サービス工業施設（Ａ）（自動車修理工場）</gml:description>
+			<gml:name>171</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id39">
+			<gml:description>サービス工業施設（Ｂ）（原動力を使用する床面積が５０㎡を超える工場、印刷、木材、石材の引割、機械撚糸、魚肉の練製品、セメント製品の製造、メッキ、合成樹脂の射出成形）</gml:description>
+			<gml:name>172</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id40">
+			<gml:description>家内工業施設（原動力を使用する床面積が５０㎡未満の工場、原動機を使用しない工場）</gml:description>
+			<gml:name>180</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id41">
+			<gml:description>処理施設（Ａ）（ガソリンスタンド）</gml:description>
+			<gml:name>191</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id42">
+			<gml:description>処理施設（Ｂ）（消防法による設置許可が必要なもの）</gml:description>
+			<gml:name>192</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id43">
+			<gml:description>処理施設（Ｃ）（廃棄物処理場、汚水処理場、火葬場、屠場、発電所、変電所、変圧所、浄水場）</gml:description>
+			<gml:name>193</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id44">
+			<gml:description>農業施設（畜舎、温室、船小屋、農業用納屋、農林漁業用作業場）</gml:description>
+			<gml:name>200</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id45">
+			<gml:description>防衛施設（自衛隊、米軍提供施設）</gml:description>
+			<gml:name>210</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id46">
+			<gml:description>建設中の建物（建設中の建物）</gml:description>
+			<gml:name>990</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+	<gml:dictionaryEntry>
+		<gml:Definition gml:id="id47">
+			<gml:description>工事現場仮設事務所（工事現場仮設事務所）</gml:description>
+			<gml:name>999</gml:name>
+		</gml:Definition>
+	</gml:dictionaryEntry>
+</gml:Dictionary>

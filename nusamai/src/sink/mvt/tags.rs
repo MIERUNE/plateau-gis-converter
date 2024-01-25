@@ -44,22 +44,15 @@ pub fn traverse_properties(
                 }
             });
         }
-        nusamai_citygml::Value::Feature(feat) => {
-            tags.extend(tags_enc.add("id", feat.id.clone().into()));
-            feat.attributes.iter().for_each(|(k, v)| {
-                let k = match k.split_once(':') {
-                    Some((_, k)) => k,
-                    None => k,
-                };
-                if name.is_empty() {
-                    traverse_properties(tags, tags_enc, k.into(), v);
-                } else {
-                    traverse_properties(tags, tags_enc, format!("{}.{}", name, k), v);
+        nusamai_citygml::Value::Object(obj) => {
+            match &obj.stereotype {
+                object::ObjectStereotype::Feature { id, .. }
+                | object::ObjectStereotype::Object { id, .. } => {
+                    tags.extend(tags_enc.add("id", id.clone().into()));
                 }
-            });
-        }
-        nusamai_citygml::Value::Data(data) => {
-            data.attributes.iter().for_each(|(k, v)| {
+                _ => {}
+            };
+            obj.attributes.iter().for_each(|(k, v)| {
                 let k = match k.split_once(':') {
                     Some((_, k)) => k,
                     None => k,

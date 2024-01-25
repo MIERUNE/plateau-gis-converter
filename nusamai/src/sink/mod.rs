@@ -1,8 +1,11 @@
 pub mod geojson;
+pub mod geojson_transform_exp;
 pub mod gpkg;
 pub mod mvt;
 pub mod noop;
 pub mod serde;
+
+use nusamai_citygml::schema::Schema;
 
 use crate::parameters::Parameters;
 use crate::pipeline::{Feedback, Receiver};
@@ -23,5 +26,5 @@ pub trait DataSinkProvider {
 }
 
 pub trait DataSink: Send {
-    fn run(&mut self, upstream: Receiver, feedback: &mut Feedback);
+    fn run(&mut self, upstream: Receiver, feedback: &Feedback, schema: &Schema);
 }
