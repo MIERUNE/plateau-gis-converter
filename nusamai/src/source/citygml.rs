@@ -12,16 +12,16 @@ use crate::parameters::Parameters;
 use crate::pipeline::{Feedback, Parcel, Sender};
 use crate::source::{DataSource, DataSourceProvider, SourceInfo};
 use nusamai_citygml::object::Entity;
-use nusamai_citygml::{CityGMLElement, CityGMLReader, ParseError, SubTreeReader};
+use nusamai_citygml::{CityGmlElement, CityGmlReader, ParseError, SubTreeReader};
 
-pub struct CityGMLSourceProvider {
+pub struct CityGmlSourceProvider {
     // FIXME: Use the configuration mechanism
     pub filenames: Vec<String>,
 }
 
-impl DataSourceProvider for CityGMLSourceProvider {
+impl DataSourceProvider for CityGmlSourceProvider {
     fn create(&self, _params: &Parameters) -> Box<dyn DataSource> {
-        Box::new(CityGMLSource {
+        Box::new(CityGmlSource {
             filenames: self.filenames.clone(),
         })
     }
@@ -37,11 +37,11 @@ impl DataSourceProvider for CityGMLSourceProvider {
     }
 }
 
-pub struct CityGMLSource {
+pub struct CityGmlSource {
     filenames: Vec<String>,
 }
 
-impl DataSource for CityGMLSource {
+impl DataSource for CityGmlSource {
     fn run(&mut self, downstream: Sender, feedback: &Feedback) {
         let code_resolver = nusamai_plateau::codelist::Resolver::new();
 
@@ -56,7 +56,7 @@ impl DataSource for CityGMLSource {
                 Url::from_file_path(fs::canonicalize(Path::new(filename)).unwrap()).unwrap();
 
             let context = nusamai_citygml::ParseContext::new(source_url, &code_resolver);
-            let mut citygml_reader = CityGMLReader::new(context);
+            let mut citygml_reader = CityGmlReader::new(context);
 
             match citygml_reader.start_root(&mut xml_reader) {
                 Ok(mut st) => match toplevel_dispatcher(&mut st, &downstream, feedback) {

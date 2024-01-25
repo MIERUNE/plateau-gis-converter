@@ -16,7 +16,7 @@ pub use values::*;
 
 pub use object::Value;
 
-pub trait CityGMLElement: Sized {
+pub trait CityGmlElement: Sized {
     /// Parse a XML fragment into this element.
     fn parse<R: std::io::BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError>;
 

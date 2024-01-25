@@ -10,7 +10,7 @@ use nusamai::sink::{
     geojson::GeoJsonSinkProvider, gpkg::GpkgSinkProvider, mvt::MVTSinkProvider,
     serde::SerdeSinkProvider,
 };
-use nusamai::source::citygml::CityGMLSourceProvider;
+use nusamai::source::citygml::CityGmlSourceProvider;
 use nusamai::source::DataSourceProvider;
 use nusamai::transformer::builder::{NusamaiTransformBuilder, TransformBuilder};
 use nusamai::transformer::runner::MultiThreadTransformer;
@@ -38,7 +38,7 @@ fn run(input_paths: Vec<String>, output_path: String, filetype: String) {
     let canceller = Arc::new(Mutex::new(Canceller::default()));
 
     let source = {
-        let source_provider: Box<dyn DataSourceProvider> = Box::new(CityGMLSourceProvider {
+        let source_provider: Box<dyn DataSourceProvider> = Box::new(CityGmlSourceProvider {
             filenames: input_paths,
         });
         let mut source_params = source_provider.parameters();
@@ -75,7 +75,7 @@ fn run(input_paths: Vec<String>, output_path: String, filetype: String) {
     };
 
     let (transformer, schema) = {
-        use nusamai_citygml::CityGMLElement;
+        use nusamai_citygml::CityGmlElement;
         let transform_builder = NusamaiTransformBuilder::default();
         let mut schema = nusamai_citygml::schema::Schema::default();
         TopLevelCityObject::collect_schema(&mut schema);

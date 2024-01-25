@@ -61,7 +61,7 @@ impl DataSinkProvider for MVTSinkProvider {
         let output_path = get_parameter_value!(params, "@output", FileSystemPath);
 
         Box::<MVTSink>::new(MVTSink {
-            output_path: output_path.unwrap().into(),
+            output_path: output_path.as_ref().unwrap().into(),
         })
     }
 }

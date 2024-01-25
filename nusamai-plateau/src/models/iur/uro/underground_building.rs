@@ -1,4 +1,4 @@
-use nusamai_citygml::{citygml_feature, CityGMLElement, Code, GYear, Length, MeasureOrNullList};
+use nusamai_citygml::{citygml_feature, CityGmlElement, Code, GYear, Length, MeasureOrNullList};
 
 use crate::models::building as bldg;
 use crate::models::core;

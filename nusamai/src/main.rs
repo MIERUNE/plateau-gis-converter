@@ -9,11 +9,11 @@ use nusamai::sink::{
     gpkg::GpkgSinkProvider, mvt::MVTSinkProvider, noop::NoopSinkProvider, serde::SerdeSinkProvider,
 };
 use nusamai::sink::{DataSink, DataSinkProvider};
-use nusamai::source::citygml::CityGMLSourceProvider;
+use nusamai::source::citygml::CityGmlSourceProvider;
 use nusamai::source::{DataSource, DataSourceProvider};
 use nusamai::transformer::builder::{NusamaiTransformBuilder, TransformBuilder};
 use nusamai::transformer::runner::MultiThreadTransformer;
-use nusamai_citygml::CityGMLElement;
+use nusamai_citygml::CityGmlElement;
 use nusamai_plateau::models::TopLevelCityObject;
 
 #[derive(clap::Parser)]
@@ -92,7 +92,7 @@ fn main() {
     }
 
     let source = {
-        let source_provider: Box<dyn DataSourceProvider> = Box::new(CityGMLSourceProvider {
+        let source_provider: Box<dyn DataSourceProvider> = Box::new(CityGmlSourceProvider {
             filenames: args.filenames,
         });
         let mut source_params = source_provider.parameters();

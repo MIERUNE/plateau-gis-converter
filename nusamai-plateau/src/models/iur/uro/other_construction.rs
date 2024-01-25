@@ -1,4 +1,4 @@
-use nusamai_citygml::{citygml_data, citygml_property, CityGMLElement, Code, Length, Measure};
+use nusamai_citygml::{citygml_data, citygml_property, CityGmlElement, Code, Length, Measure};
 
 #[citygml_data(name = "uro:ConstructionDataQualityAttribute")]
 pub struct ConstructionDataQualityAttribute {
