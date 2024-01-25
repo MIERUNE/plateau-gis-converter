@@ -1,4 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
-pub struct ReferenceValueProperty {}
+pub struct ReferenceValueProperty {
+    #[serde(flatten)]
+    pub value: String,
+}
