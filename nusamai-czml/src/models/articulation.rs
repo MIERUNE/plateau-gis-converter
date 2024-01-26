@@ -10,7 +10,7 @@ use crate::{
 
 pub type Articulation = ArticulationValueType;
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 #[serde(untagged)]
 pub enum ArticulationValueType {
     Array(Vec<ArticulationProperties>),
@@ -18,7 +18,7 @@ pub enum ArticulationValueType {
     Number(Number),
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct ArticulationProperties {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub number: Option<DoubleValue>,
@@ -43,7 +43,7 @@ pub struct ArticulationProperties {
     pub reference_value_property: Option<ReferenceValueProperty>,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct Articulations {
     #[serde(flatten)]
     #[serde(skip_serializing_if = "Option::is_none")]

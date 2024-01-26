@@ -3,27 +3,27 @@ use serde::{Deserialize, Serialize};
 
 use crate::{DeletableProperty, InterpolatableProperty, ReferenceValue, ReferenceValueProperty};
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct Rotation {
     #[serde(flatten)]
     pub value: RotationValueType,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 #[serde(untagged)]
 pub enum RotationValueType {
     Array(Vec<RotationProperties>),
     Object(RotationProperties),
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 #[serde(untagged)]
 pub enum UnitQuaternionValue {
     Constant([f64; 4]),
     TimeTagged(Vec<UnitQuaternionTimeTagged>),
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct UnitQuaternionTimeTagged {
     #[serde(with = "chrono::serde::ts_seconds")]
     pub time: DateTime<Utc>,
@@ -33,12 +33,12 @@ pub struct UnitQuaternionTimeTagged {
     pub w: f64,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct UnitQuaternionValueProperty {
     pub value: Option<UnitQuaternionValue>,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct RotationProperties {
     pub unit_quaternion: Option<UnitQuaternionValue>,

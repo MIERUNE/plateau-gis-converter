@@ -5,28 +5,28 @@ use crate::{DeletableProperty, InterpolatableProperty, ReferenceValue, Reference
 
 pub type Color = ColorValueType;
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 #[serde(untagged)]
 pub enum ColorValueType {
     Array(Vec<ColorProperties>),
     Object(ColorProperties),
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 #[serde(untagged)]
 pub enum RgbaValue {
     Constant([u8; 4]),
     RgbaTimeTagged(Vec<RgbaTimeTagged>),
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 #[serde(untagged)]
 pub enum RgbafValue {
     Constant([f32; 4]),
     TimeTagged(Vec<RgbafTimeTagged>),
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct RgbafTimeTagged {
     #[serde(with = "chrono::serde::ts_seconds")]
     pub time: DateTime<Utc>,
@@ -36,7 +36,7 @@ pub struct RgbafTimeTagged {
     pub alpha: f32,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct RgbaTimeTagged {
     #[serde(with = "chrono::serde::ts_seconds")]
     pub time: DateTime<Utc>,
@@ -46,7 +46,7 @@ pub struct RgbaTimeTagged {
     pub alpha: u8,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct RgbaValueProperty {
     pub red: u8,
     pub green: u8,
@@ -54,7 +54,7 @@ pub struct RgbaValueProperty {
     pub alpha: u8,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct RgbafValueProperty {
     pub red: f32,
     pub green: f32,
@@ -62,7 +62,7 @@ pub struct RgbafValueProperty {
     pub alpha: f32,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct ColorProperties {
     #[serde(skip_serializing_if = "Option::is_none")]

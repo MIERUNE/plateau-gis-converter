@@ -5,50 +5,49 @@ use crate::{
     DistanceDisplayCondition, HeightReference, NodeTransformations, RgbaValue, ShadowMode,
 };
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 #[serde(deny_unknown_fields)]
 pub struct Model {
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub show: Option<CzmlBoolean>,
 
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub gltf: Option<CzmlUri>,
+    pub gltf: CzmlUri,
 
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub scale: Option<CzmlDouble>,
 
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub minimum_pixel_size: Option<CzmlDouble>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub maximum_scale: Option<CzmlDouble>,
 
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub incrementally_load_textures: Option<CzmlBoolean>,
 
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub run_animations: Option<CzmlBoolean>,
 
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub shadows: Option<ShadowMode>,
 
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub height_reference: Option<HeightReference>,
 
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub silhouette_color: Option<Color>,
 
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub silhouette_size: Option<CzmlDouble>,
 
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub color: Option<Color>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub color_blend_mode: Option<ColorBlendMode>,
 
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub color_blend_amount: Option<CzmlDouble>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -65,7 +64,7 @@ impl Default for Model {
     fn default() -> Self {
         Self {
             show: Some(CzmlBoolean::Boolean(true)),
-            gltf: None,
+            gltf: CzmlUri::String("example.gltf".to_string()),
             scale: Some(CzmlDouble::Double(1.0)),
             minimum_pixel_size: Some(CzmlDouble::Double(0.0)),
             maximum_scale: Default::default(),
@@ -100,5 +99,16 @@ impl Default for Model {
             node_transformations: Default::default(),
             articulations: Default::default(),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_default() {
+        let model_string: Model = serde_json::from_str(r#"{"gltf":"example.gltf"}"#).unwrap();
+        assert_eq!(model_string.gltf, "example.gltf".to_string(),);
     }
 }

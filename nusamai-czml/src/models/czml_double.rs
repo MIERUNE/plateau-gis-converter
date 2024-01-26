@@ -7,7 +7,7 @@ use crate::{
 
 pub type CzmlDouble = DoubleValueType;
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 #[serde(untagged)]
 pub enum DoubleValueType {
     Array(Vec<DoubleProperties>),
@@ -15,7 +15,7 @@ pub enum DoubleValueType {
     Double(f32),
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct DoubleProperties {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub number: Option<DoubleValue>,

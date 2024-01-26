@@ -5,7 +5,7 @@ use crate::{DeletableProperty, ReferenceValue, ReferenceValueProperty};
 
 pub type CzmlBoolean = BooleanValueType;
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 #[serde(untagged)]
 pub enum BooleanValueType {
     Array(Vec<BooleanProperties>),
@@ -17,7 +17,7 @@ pub type BooleanValue = String;
 
 pub type BooleanValueProperty = Value;
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct BooleanProperties {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub boolean: Option<BooleanValue>,

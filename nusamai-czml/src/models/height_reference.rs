@@ -5,7 +5,7 @@ use crate::{DeletableProperty, ReferenceValue, ReferenceValueProperty};
 
 pub type HeightReference = HeightReferenceValueType;
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 #[serde(untagged)]
 pub enum HeightReferenceValueType {
     Array(Vec<HeightReferenceProperties>),
@@ -17,7 +17,7 @@ pub type HeightReferenceValue = String;
 
 pub type HeightReferenceValueProperty = Value;
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct HeightReferenceProperties {
     #[serde(skip_serializing_if = "Option::is_none")]

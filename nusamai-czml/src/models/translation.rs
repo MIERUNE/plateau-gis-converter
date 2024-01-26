@@ -5,20 +5,20 @@ use crate::{
     ReferenceValue, ReferenceValueProperty,
 };
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct Translation {
     #[serde(flatten)]
     pub value: TranslationValueType,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 #[serde(untagged)]
 pub enum TranslationValueType {
     Array(Vec<TranslationProperties>),
     Object(TranslationProperties),
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct TranslationProperties {
     pub cartesian: Option<Cartesian3Value>,

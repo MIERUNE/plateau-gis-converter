@@ -5,7 +5,7 @@ use crate::{DeletableProperty, ReferenceValue, ReferenceValueProperty};
 
 pub type ColorBlendMode = ColorBlendModeValueType;
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 #[serde(untagged)]
 pub enum ColorBlendModeValueType {
     Array(Vec<ColorBlendModeProperties>),
@@ -13,7 +13,7 @@ pub enum ColorBlendModeValueType {
     String(String),
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub enum ColorBlendModeValue {
     #[serde(rename = "HIGHLIGHT")]
     Highlight,
@@ -25,7 +25,7 @@ pub enum ColorBlendModeValue {
 
 pub type ColorBlendModeValueProperty = Value;
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct ColorBlendModeProperties {
     #[serde(skip_serializing_if = "Option::is_none")]

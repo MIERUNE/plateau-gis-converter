@@ -5,20 +5,20 @@ use crate::{
     ReferenceValue, ReferenceValueProperty,
 };
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct Scale {
     #[serde(flatten)]
     pub value: ScaleValueType,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 #[serde(untagged)]
 pub enum ScaleValueType {
     Array(Vec<ScaleProperties>),
     Object(ScaleProperties),
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct ScaleProperties {
     pub cartesian: Option<Cartesian3Value>,

@@ -6,7 +6,7 @@ use serde_json::Value;
 use crate::{CzmlString, Model};
 
 // todo: Modify HashMap and Value
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 #[serde(deny_unknown_fields)]
 pub struct Packet {
@@ -68,7 +68,7 @@ pub struct Packet {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub label: Option<HashMap<String, Value>>,
 
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub model: Option<Model>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
