@@ -46,7 +46,7 @@ pub fn indexed_multilinestring_to_geometry(
     multilinestring_to_geometry_with_mapping(mls_idx, |idx| vertices[idx[0] as usize].to_vec())
 }
 
-/// Create a GeoJSON MultiLineString from `nusamai_geometry::MultiPolygon` with a mapping function.
+/// Create a GeoJSON MultiLineString from `nusamai_geometry::MultiLineString` with a mapping function.
 pub fn multilinestring_to_geometry_with_mapping<const D: usize, T: CoordNum>(
     mls: &MultiLineString<D, T>,
     mapping: impl Fn([T; D]) -> Vec<f64>,
