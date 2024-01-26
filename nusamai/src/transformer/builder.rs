@@ -3,10 +3,7 @@ use std::sync::Arc;
 use nusamai_citygml::schema::Schema;
 use nusamai_projection::vshift::Jgd2011ToWgs84;
 
-use super::{
-    transform::{ProjectionTransform, RemoveNamespaceTransform, NamespaceRemovalTransform, SerialTransform},
-    Transform,
-};
+use super::{transform::*, Transform};
 
 pub trait TransformBuilder: Send + Sync {
     fn build(&self) -> Box<dyn Transform>;
@@ -23,14 +20,11 @@ pub struct NusamaiTransformBuilder {
 impl TransformBuilder for NusamaiTransformBuilder {
     fn build(&self) -> Box<dyn Transform> {
         let mut transforms = SerialTransform::default();
-        // TODO: build transforming graph from config
+        // TODO: build transformation based on config
         transforms.push(Box::new(ProjectionTransform::new(self.jgd2wgs.clone())));
-<<<<<<< HEAD
         transforms.push(Box::<RemoveNamespaceTransform>::default());
-||||||| 2a393cf4
-=======
-        transforms.push(Box::<NamespaceRemovalTransform>::default());
->>>>>>> main
+        transforms.push(Box::<FilterLodTransform>::default());
+        transforms.push(Box::<FullMergeTransform>::default());
         Box::new(transforms)
     }
 }

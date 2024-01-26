@@ -9,16 +9,19 @@ use nusamai_citygml::GeometryRefEntry;
 #[derive(Default, Clone)]
 pub struct FullMergeTransform {
     geoms_buf: HashSet<GeometryRefEntry>,
+    path_buf: String,
 }
 
 impl Transform for FullMergeTransform {
     fn transform(&mut self, mut entity: Entity, out: &mut Vec<Entity>) {
         if let Value::Object(obj) = entity.root {
-            if let ObjectStereotype::Feature { id, .. } = obj.stereotype {
+            if let ObjectStereotype::Feature { id, geometries } = obj.stereotype {
                 let mut new_attrs = Default::default();
                 let new_geoms = &mut self.geoms_buf;
-                let mut path = String::with_capacity(50);
-                full_merge_traverse(&mut new_attrs, new_geoms, &mut path, obj.attributes);
+                let path = &mut self.path_buf;
+                path.clear();
+                new_geoms.extend(geometries);
+                traverse_for_full_merge(&mut new_attrs, new_geoms, path, obj.attributes);
                 entity.root = Value::Object(Object {
                     typename: obj.typename,
                     attributes: new_attrs,
@@ -43,7 +46,7 @@ impl Transform for FullMergeTransform {
     }
 }
 
-fn full_merge_traverse(
+fn traverse_for_full_merge(
     new_attrs: &mut Map,
     new_geoms: &mut HashSet<GeometryRefEntry>,
     path: &mut String,
@@ -58,7 +61,7 @@ fn full_merge_traverse(
                 if let ObjectStereotype::Feature { geometries, .. } = obj.stereotype {
                     new_geoms.extend(geometries);
                 }
-                full_merge_traverse(new_attrs, new_geoms, path, obj.attributes);
+                traverse_for_full_merge(new_attrs, new_geoms, path, obj.attributes);
             }
             Value::Array(arr) => {
                 for (i, value) in arr.into_iter().enumerate() {
@@ -67,7 +70,7 @@ fn full_merge_traverse(
                     path.push('.');
                     match value {
                         Value::Object(obj) => {
-                            full_merge_traverse(new_attrs, new_geoms, path, obj.attributes);
+                            traverse_for_full_merge(new_attrs, new_geoms, path, obj.attributes);
                         }
                         _ => {
                             new_attrs.insert(path.clone(), value);
@@ -94,7 +97,7 @@ impl Transform for GeometryMergeTransform {
         if let Value::Object(obj) = &mut entity.root {
             if let ObjectStereotype::Feature { geometries, .. } = &mut obj.stereotype {
                 let new_geoms = &mut self.geoms_buf;
-                geometry_merge_traverse(new_geoms, &mut obj.attributes);
+                traverse_for_geometry_merge(new_geoms, &mut obj.attributes);
                 *geometries = new_geoms.drain().collect();
             }
             out.push(entity);
@@ -106,19 +109,19 @@ impl Transform for GeometryMergeTransform {
     }
 }
 
-fn geometry_merge_traverse(new_geoms: &mut HashSet<GeometryRefEntry>, attributes: &mut Map) {
+fn traverse_for_geometry_merge(new_geoms: &mut HashSet<GeometryRefEntry>, attributes: &mut Map) {
     for value in attributes.values_mut() {
         match value {
             Value::Object(obj) => {
                 if let ObjectStereotype::Feature { geometries, .. } = &mut obj.stereotype {
                     new_geoms.extend(geometries.drain(..));
                 }
-                geometry_merge_traverse(new_geoms, &mut obj.attributes);
+                traverse_for_geometry_merge(new_geoms, &mut obj.attributes);
             }
             Value::Array(arr) => {
                 for value in arr {
                     if let Value::Object(obj) = value {
-                        geometry_merge_traverse(new_geoms, &mut obj.attributes);
+                        traverse_for_geometry_merge(new_geoms, &mut obj.attributes);
                     }
                 }
             }

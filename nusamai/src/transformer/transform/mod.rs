@@ -4,13 +4,14 @@ mod merge;
 mod projection;
 
 pub use attrname::*;
+pub use lods::*;
 pub use merge::*;
 pub use projection::*;
 
 use super::Transform;
 use nusamai_citygml::{object::Entity, schema::Schema};
 
-// Perform transforms in sequence
+/// Perform transforms in sequence
 #[derive(Default)]
 pub struct SerialTransform {
     transforms: Vec<Box<dyn Transform>>,
