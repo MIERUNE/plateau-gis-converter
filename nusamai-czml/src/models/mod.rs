@@ -1,6 +1,7 @@
 pub mod czml;
 pub mod czml_boolean;
 pub mod czml_string;
+pub mod czml_uri;
 pub mod deletable_property;
 pub mod model;
 pub mod packet;
@@ -11,6 +12,7 @@ pub mod values;
 pub use czml::*;
 pub use czml_boolean::*;
 pub use czml_string::*;
+pub use czml_uri::*;
 pub use deletable_property::*;
 pub use model::*;
 pub use packet::*;
