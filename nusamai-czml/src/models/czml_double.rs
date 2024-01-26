@@ -1,9 +1,7 @@
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 
-use crate::{
-    DeletableProperty, DoubleValue, DoubleValueProperty, InterpolatableProperty, ReferenceValue,
-    ReferenceValueProperty,
-};
+use crate::{DeletableProperty, InterpolatableProperty, ReferenceValue, ReferenceValueProperty};
 
 #[derive(Serialize, Deserialize)]
 pub struct CzmlDouble {
@@ -18,6 +16,10 @@ pub enum DoubleValueType {
     Object(DoubleProperties),
     String(String),
 }
+
+pub type DoubleValue = String;
+
+pub type DoubleValueProperty = Value;
 
 #[derive(Serialize, Deserialize)]
 pub struct DoubleProperties {

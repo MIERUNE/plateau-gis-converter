@@ -1,8 +1,7 @@
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 
-use crate::{
-    DeletableProperty, ReferenceValue, ReferenceValueProperty, StringValue, StringValueProperty,
-};
+use crate::{DeletableProperty, ReferenceValue, ReferenceValueProperty};
 
 #[derive(Serialize, Deserialize)]
 pub struct CzmlString {
@@ -17,6 +16,10 @@ pub enum StringValueType {
     Object(StringProperties),
     String(String),
 }
+
+pub type StringValue = String;
+
+pub type StringValueProperty = Value;
 
 #[derive(Serialize, Deserialize)]
 pub struct StringProperties {

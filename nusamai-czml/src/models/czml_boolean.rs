@@ -1,8 +1,7 @@
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 
-use crate::{
-    BooleanValue, BooleanValueProperty, DeletableProperty, ReferenceValue, ReferenceValueProperty,
-};
+use crate::{DeletableProperty, ReferenceValue, ReferenceValueProperty};
 
 #[derive(Serialize, Deserialize)]
 pub struct CzmlBoolean {
@@ -17,6 +16,10 @@ pub enum BooleanValueType {
     Object(BooleanProperties),
     Boolean(bool),
 }
+
+pub type BooleanValue = String;
+
+pub type BooleanValueProperty = Value;
 
 #[derive(Serialize, Deserialize)]
 pub struct BooleanProperties {

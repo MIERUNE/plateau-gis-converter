@@ -1,8 +1,7 @@
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 
-use crate::{
-    DeletableProperty, ReferenceValue, ReferenceValueProperty, UriValue, UriValueProperty,
-};
+use crate::{DeletableProperty, ReferenceValue, ReferenceValueProperty};
 
 #[derive(Serialize, Deserialize)]
 pub struct CzmlUri {
@@ -17,6 +16,10 @@ pub enum UriValueType {
     Object(UriProperties),
     String(String),
 }
+
+pub type UriValue = String;
+
+pub type UriValueProperty = Value;
 
 #[derive(Serialize, Deserialize)]
 pub struct UriProperties {

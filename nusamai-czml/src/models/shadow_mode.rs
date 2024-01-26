@@ -1,9 +1,7 @@
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 
-use crate::{
-    DeletableProperty, ReferenceValue, ReferenceValueProperty, ShadowModeValue,
-    ShadowModeValueProperty,
-};
+use crate::{DeletableProperty, ReferenceValue, ReferenceValueProperty};
 
 #[derive(Serialize, Deserialize)]
 pub struct ShadowMode {
@@ -18,6 +16,10 @@ pub enum ShadowModeValueType {
     Object(ShadowModeProperties),
     String(String),
 }
+
+pub type ShadowModeValue = String;
+
+pub type ShadowModeValueProperty = Value;
 
 #[derive(Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
