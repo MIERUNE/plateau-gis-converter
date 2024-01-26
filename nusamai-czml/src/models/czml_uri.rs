@@ -1,8 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    DeletableProperty, ReferenceValue, ReferenceValueProperty, StringValue, StringValueProperty,
-    UriValue, UriValueProperty,
+    DeletableProperty, ReferenceValue, ReferenceValueProperty, UriValue, UriValueProperty,
 };
 
 #[derive(Serialize, Deserialize)]
