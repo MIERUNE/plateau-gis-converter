@@ -1,5 +1,4 @@
 use serde::{Deserialize, Serialize};
-use serde_json::Number;
 
 use crate::{
     DeletableProperty, DoubleValue, DoubleValueProperty, InterpolatableProperty, ReferenceValue,

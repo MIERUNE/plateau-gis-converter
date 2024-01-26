@@ -34,6 +34,11 @@ pub struct UnitQuaternionTimeTagged {
 }
 
 #[derive(Serialize, Deserialize)]
+pub struct UnitQuaternionValueProperty {
+    pub value: Option<UnitQuaternionValue>,
+}
+
+#[derive(Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct RotationProperties {
     pub unit_quaternion: Option<UnitQuaternionValue>,

@@ -17,7 +17,6 @@ pub mod rotation;
 pub mod scale;
 pub mod shadow_mode;
 pub mod translation;
-pub mod uri;
 pub mod value_properties;
 pub mod values;
 
@@ -40,6 +39,5 @@ pub use rotation::*;
 pub use scale::*;
 pub use shadow_mode::*;
 pub use translation::*;
-pub use uri::*;
 pub use value_properties::*;
 pub use values::*;

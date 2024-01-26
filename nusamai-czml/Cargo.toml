@@ -10,3 +10,5 @@ nusamai-gltf = { path = "../nusamai-gltf" }
 serde = "1.0.195"
 serde_json = { version = "1.0.111", features = ["float_roundtrip"] }
 
+[dev-dependencies]
+glob = "0.3.1"
