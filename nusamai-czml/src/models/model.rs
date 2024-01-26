@@ -107,8 +107,20 @@ mod tests {
     use super::*;
 
     #[test]
+    fn test_gltf_string() {
+        let model_string: Model = serde_json::from_str(r#"{"gltf":"example.gltf"}"#).unwrap();
+        assert_eq!(
+            model_string.gltf,
+            CzmlUri::String("example.gltf".to_string())
+        );
+    }
+
+    #[test]
     fn test_default() {
         let model_string: Model = serde_json::from_str(r#"{"gltf":"example.gltf"}"#).unwrap();
-        assert_eq!(model_string.gltf, "example.gltf".to_string(),);
+        assert_eq!(model_string.show, None);
+
+        let model_default = Model::default();
+        assert_eq!(model_default.show, Some(CzmlBoolean::Boolean(true)));
     }
 }
