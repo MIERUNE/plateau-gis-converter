@@ -24,7 +24,7 @@ pub type HeightReferenceValueProperty = Value;
 #[derive(Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct HeightReferenceProperties {
-    pub shadow_mode: Option<HeightReferenceValue>,
+    pub height_reference: Option<HeightReferenceValue>,
     pub reference: Option<ReferenceValue>,
     #[serde(flatten)]
     pub deletable_property: Option<DeletableProperty>,
