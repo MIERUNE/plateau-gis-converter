@@ -9,22 +9,39 @@ use crate::{
 #[serde(rename_all = "camelCase")]
 #[serde(deny_unknown_fields)]
 pub struct Model {
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub show: Option<CzmlBoolean>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub gltf: Option<CzmlUri>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub scale: Option<CzmlDouble>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub minimum_pixel_size: Option<CzmlDouble>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub maximum_scale: Option<CzmlDouble>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub incrementally_load_textures: Option<CzmlBoolean>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub run_animations: Option<CzmlBoolean>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub shadows: Option<ShadowMode>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub height_reference: Option<HeightReference>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub silhouette_color: Option<Color>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub silhouette_size: Option<CzmlDouble>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub color: Option<Color>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub color_blend_mode: Option<ColorBlendMode>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub color_blend_amount: Option<CzmlDouble>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub distance_display_condition: Option<DistanceDisplayCondition>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub node_transformations: Option<NodeTransformations>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub articulations: Option<Articulation>,
 }
 
