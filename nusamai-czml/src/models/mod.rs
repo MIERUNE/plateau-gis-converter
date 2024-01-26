@@ -1,9 +1,11 @@
+pub mod color;
 pub mod czml;
 pub mod czml_boolean;
 pub mod czml_double;
 pub mod czml_string;
 pub mod czml_uri;
 pub mod deletable_property;
+pub mod height_reference;
 pub mod interpolatable_property;
 pub mod model;
 pub mod packet;
@@ -12,12 +14,14 @@ pub mod uri;
 pub mod value_properties;
 pub mod values;
 
+pub use color::*;
 pub use czml::*;
 pub use czml_boolean::*;
 pub use czml_double::*;
 pub use czml_string::*;
 pub use czml_uri::*;
 pub use deletable_property::*;
+pub use height_reference::*;
 pub use interpolatable_property::*;
 pub use model::*;
 pub use packet::*;
