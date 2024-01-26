@@ -24,7 +24,8 @@ impl TransformBuilder for NusamaiTransformBuilder {
         transforms.push(Box::new(ProjectionTransform::new(self.jgd2wgs.clone())));
         transforms.push(Box::<RemoveNamespaceTransform>::default());
         transforms.push(Box::<FilterLodTransform>::default());
-        transforms.push(Box::<FullMergeTransform>::default());
+        // transforms.push(Box::<FullMergeTransform>::default());
+        transforms.push(Box::<FlattenFeatureTransform>::default());
         Box::new(transforms)
     }
 }

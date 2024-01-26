@@ -7,7 +7,7 @@ use syn::{
     LitByteStr, LitStr,
 };
 
-use crate::StereoType;
+use crate::Stereotype;
 
 const CITYGML_ATTR_IDENT: &str = "citygml";
 
@@ -56,7 +56,7 @@ fn generate_citygml_impl_for_struct(
     let mut id_value = quote!(String::new());
     let struct_ident = &derive_input.ident;
     let mut typename = String::from(stringify!(derive_input.ident));
-    let mut ty = StereoType::Feature;
+    let mut ty = Stereotype::Feature;
     let mut allow_extra = false;
 
     for attr in &derive_input.attrs {
@@ -71,8 +71,8 @@ fn generate_citygml_impl_for_struct(
             } else if meta.path.is_ident("type") {
                 let ty_ident: Ident = meta.value()?.parse()?;
                 ty = match ty_ident.to_string().as_str() {
-                    "feature" => StereoType::Feature,
-                    "data" => StereoType::Data,
+                    "feature" => Stereotype::Feature,
+                    "data" => Stereotype::Data,
                     _ => {
                         return Err(meta.error("feature or data expected"));
                     }
@@ -317,7 +317,7 @@ fn generate_citygml_impl_for_struct(
     });
 
     let into_object_impl = match ty {
-        StereoType::Feature => {
+        Stereotype::Feature => {
             quote! {
                 Some(::nusamai_citygml::object::Value::Object(
                     ::nusamai_citygml::object::Object {
@@ -335,7 +335,7 @@ fn generate_citygml_impl_for_struct(
                 ))
             }
         }
-        StereoType::Data => {
+        Stereotype::Data => {
             quote! {
                 Some(::nusamai_citygml::object::Value::Object(
                     ::nusamai_citygml::object::Object {
@@ -363,13 +363,13 @@ fn generate_citygml_impl_for_struct(
     };
 
     let stereotype = match ty {
-        StereoType::Feature => quote! { Feature },
-        StereoType::Data => quote! { Data },
+        Stereotype::Feature => quote! { Feature },
+        Stereotype::Data => quote! { Data },
         _ => unreachable!(),
     };
     let stereotypedef = match ty {
-        StereoType::Feature => quote! { FeatureTypeDef },
-        StereoType::Data => quote! { DataTypeDef },
+        Stereotype::Feature => quote! { FeatureTypeDef },
+        Stereotype::Data => quote! { DataTypeDef },
         _ => unreachable!(),
     };
 

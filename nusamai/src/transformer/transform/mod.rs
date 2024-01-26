@@ -1,9 +1,11 @@
 mod attrname;
+mod flatten;
 mod lods;
 mod merge;
 mod projection;
 
 pub use attrname::*;
+pub use flatten::*;
 pub use lods::*;
 pub use merge::*;
 pub use projection::*;
