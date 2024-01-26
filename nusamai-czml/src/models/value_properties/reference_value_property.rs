@@ -1,7 +1,3 @@
-use serde::{Deserialize, Serialize};
+use serde_json::Value;
 
-#[derive(Serialize, Deserialize)]
-pub struct ReferenceValueProperty {
-    #[serde(flatten)]
-    pub value: String,
-}
+pub type ReferenceValueProperty = Value;
