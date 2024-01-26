@@ -1,13 +1,23 @@
 use nusamai_geometry::{CoordNum, MultiPoint};
 use shapefile::NO_DATA;
 
-pub fn multipoint3_to_shape(mpoint: &MultiPoint<3>) -> shapefile::MultipointZ {
-    multipoint3_to_shape_with_mapping(mpoint, |c| c.to_vec())
+/// Create a Shapefile MultiPointZ from `nusamai_geometry::MultiPoint`.
+pub fn multipoint_to_shape(mpoint: &MultiPoint<3>) -> shapefile::MultipointZ {
+    multipoint_to_shape_with_mapping(mpoint, |c| c.to_vec())
 }
 
-pub fn multipoint3_to_shape_with_mapping<T: CoordNum>(
-    mpoint: &MultiPoint<3, T>,
-    mapping: impl Fn([T; 3]) -> Vec<f64>,
+/// Create a Shapefile MultiPointZ from vertices and indices.
+pub fn indexed_multipoint_to_shape(
+    vertices: &[[f64; 3]],
+    mpoint_idx: &MultiPoint<1, u32>,
+) -> shapefile::MultipointZ {
+    multipoint_to_shape_with_mapping(mpoint_idx, |idx| vertices[idx[0] as usize].to_vec())
+}
+
+/// Create a Shapefile MultiPointZ from `nusamai_geometry::MultiPoint` with a mapping function.
+pub fn multipoint_to_shape_with_mapping<const D: usize, T: CoordNum>(
+    mpoint: &MultiPoint<D, T>,
+    mapping: impl Fn([T; D]) -> Vec<f64>,
 ) -> shapefile::MultipointZ {
     let shape_points = mpoint
         .iter()
@@ -29,9 +39,34 @@ mod tests {
         mpoint.push(&[21., 22., 23.]);
         mpoint.push(&[31., 32., 33.]);
 
-        let shape = multipoint3_to_shape(&mpoint);
+        let shape = multipoint_to_shape(&mpoint);
 
-        assert_eq!(shape.points().len(), 3);
+        assert_eq!(shape.points().len(), mpoint.len());
+        assert_eq!(
+            shape.point(0).unwrap(),
+            &shapefile::PointZ::new(11., 12., 13., NO_DATA)
+        );
+        assert_eq!(
+            shape.point(1).unwrap(),
+            &shapefile::PointZ::new(21., 22., 23., NO_DATA)
+        );
+        assert_eq!(
+            shape.point(2).unwrap(),
+            &shapefile::PointZ::new(31., 32., 33., NO_DATA)
+        );
+    }
+
+    #[test]
+    fn test_indexed_multipoint() {
+        let vertices = vec![[11., 12., 13.], [21., 22., 23.], [31., 32., 33.]];
+        let mut mpoint = MultiPoint::<1, u32>::new();
+        mpoint.push(&[0]);
+        mpoint.push(&[1]);
+        mpoint.push(&[2]);
+
+        let shape = indexed_multipoint_to_shape(&vertices, &mpoint);
+
+        assert_eq!(shape.points().len(), mpoint.len());
         assert_eq!(
             shape.point(0).unwrap(),
             &shapefile::PointZ::new(11., 12., 13., NO_DATA)
