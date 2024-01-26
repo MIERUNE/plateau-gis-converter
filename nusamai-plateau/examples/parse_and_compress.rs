@@ -3,7 +3,7 @@ use clap::Parser;
 use serde::{Deserialize, Serialize};
 use std::{io::BufRead, time::Instant};
 
-use nusamai_citygml::{object::Value, CityGMLElement, CityGMLReader, ParseError, SubTreeReader};
+use nusamai_citygml::{object::Value, CityGmlElement, CityGmlReader, ParseError, SubTreeReader};
 
 #[derive(Debug, Deserialize, Serialize)]
 struct TopLevelCityObject {
@@ -101,7 +101,7 @@ fn main() {
             let inst = Instant::now();
             let mut xml_reader = quick_xml::NsReader::from_reader(reader);
             let context = nusamai_citygml::ParseContext::default();
-            match CityGMLReader::new(context).start_root(&mut xml_reader) {
+            match CityGmlReader::new(context).start_root(&mut xml_reader) {
                 Ok(mut st) => {
                     match example_toplevel_dispatcher(
                         &mut st,

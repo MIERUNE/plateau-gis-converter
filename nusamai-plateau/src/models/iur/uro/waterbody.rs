@@ -1,5 +1,5 @@
 use nusamai_citygml::{
-    citygml_data, citygml_property, CityGMLElement, Code, GYearMonth, Length, Measure,
+    citygml_data, citygml_property, CityGmlElement, Code, GYearMonth, Length, Measure,
 };
 
 #[citygml_property(name = "uro:WaterBodyFloodingRiskAttributeProperty")]

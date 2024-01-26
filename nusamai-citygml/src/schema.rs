@@ -42,7 +42,7 @@ pub struct PropertyTypeDef {
 pub struct Attribute {
     #[serde(rename = "ref")]
     pub type_ref: TypeRef,
-    #[serde(default, skip_serializing_if = "is_one")]
+    #[serde(default, skip_serializing_if = "is_zero")]
     pub min_occurs: u16,
     #[serde(default, skip_serializing_if = "is_some_one")]
     pub max_occurs: Option<u16>,
@@ -61,7 +61,7 @@ impl Default for Attribute {
     fn default() -> Self {
         Self {
             type_ref: TypeRef::Unknown,
-            min_occurs: 1,
+            min_occurs: 0,
             max_occurs: Some(1),
         }
     }
@@ -88,13 +88,13 @@ fn is_false(n: &bool) -> bool {
     !(*n)
 }
 
-fn is_one(n: &u16) -> bool {
-    *n == 1
+fn is_zero(n: &u16) -> bool {
+    *n == 0
 }
 
 fn is_some_one(n: &Option<u16>) -> bool {
     match n {
-        Some(n) => is_one(n),
+        Some(n) => *n == 1,
         None => false,
     }
 }

@@ -1,7 +1,7 @@
 use crate::object::{self, Value};
 use crate::parser::{ParseError, SubTreeReader};
 use crate::schema;
-use crate::CityGMLElement;
+use crate::CityGmlElement;
 pub use chrono::NaiveDate;
 use serde::{Deserialize, Serialize};
 use std::io::BufRead;
@@ -16,7 +16,7 @@ pub type BuildingLODType = String; // TODO?
 pub type DoubleList = String; // TODO?
 pub type LODType = u64; // TODO?
 
-impl CityGMLElement for String {
+impl CityGmlElement for String {
     #[inline]
     fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
         self.push_str(st.parse_text()?);
@@ -44,7 +44,7 @@ impl URI {
     }
 }
 
-impl CityGMLElement for URI {
+impl CityGmlElement for URI {
     #[inline]
     fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
         self.0.push_str(st.parse_text()?);
@@ -79,7 +79,7 @@ impl Code {
     }
 }
 
-impl CityGMLElement for Code {
+impl CityGmlElement for Code {
     #[inline]
     fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
         let code_space = st.find_codespace_attr();
@@ -120,7 +120,7 @@ impl CityGMLElement for Code {
     }
 }
 
-impl CityGMLElement for i64 {
+impl CityGmlElement for i64 {
     #[inline]
     fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
         let text = st.parse_text()?;
@@ -145,7 +145,7 @@ impl CityGMLElement for i64 {
     }
 }
 
-impl CityGMLElement for u64 {
+impl CityGmlElement for u64 {
     #[inline]
     fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
         let text = st.parse_text()?;
@@ -170,7 +170,7 @@ impl CityGMLElement for u64 {
     }
 }
 
-impl CityGMLElement for f64 {
+impl CityGmlElement for f64 {
     #[inline]
     fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
         let text = st.parse_text()?;
@@ -195,7 +195,7 @@ impl CityGMLElement for f64 {
     }
 }
 
-impl CityGMLElement for bool {
+impl CityGmlElement for bool {
     #[inline]
     fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
         let text = st.parse_text()?.trim();
@@ -239,7 +239,7 @@ impl Measure {
     }
 }
 
-impl CityGMLElement for Measure {
+impl CityGmlElement for Measure {
     #[inline]
     fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
         let text = st.parse_text()?;
@@ -264,7 +264,7 @@ impl CityGMLElement for Measure {
     }
 }
 
-impl CityGMLElement for Date {
+impl CityGmlElement for Date {
     #[inline]
     fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
         let text = st.parse_text()?;
@@ -296,7 +296,7 @@ pub struct Point {
 
 pub type Vector = Point;
 
-impl CityGMLElement for Point {
+impl CityGmlElement for Point {
     #[inline]
     fn parse<R: BufRead>(&mut self, _st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
         // TODO
@@ -312,7 +312,7 @@ impl CityGMLElement for Point {
     }
 }
 
-impl<T: CityGMLElement + Default> CityGMLElement for Option<T> {
+impl<T: CityGmlElement + Default> CityGmlElement for Option<T> {
     #[inline]
     fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
         if self.is_some() {
@@ -341,11 +341,11 @@ impl<T: CityGMLElement + Default> CityGMLElement for Option<T> {
     }
 }
 
-impl<T: CityGMLElement + Default> CityGMLElement for Vec<T> {
+impl<T: CityGmlElement + Default> CityGmlElement for Vec<T> {
     #[inline]
     fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
         let mut v: T = Default::default();
-        <T as CityGMLElement>::parse(&mut v, st)?;
+        <T as CityGmlElement>::parse(&mut v, st)?;
         self.push(v);
         Ok(())
     }
@@ -368,10 +368,10 @@ impl<T: CityGMLElement + Default> CityGMLElement for Vec<T> {
     }
 }
 
-impl<T: CityGMLElement + Default> CityGMLElement for Box<T> {
+impl<T: CityGmlElement + Default> CityGmlElement for Box<T> {
     #[inline]
     fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
-        <T as CityGMLElement>::parse(self, st)?;
+        <T as CityGmlElement>::parse(self, st)?;
         Ok(())
     }
 
@@ -396,7 +396,7 @@ pub struct GenericAttribute {
     pub generic_attr_set: Vec<(String, GenericAttribute)>,
 }
 
-impl CityGMLElement for GenericAttribute {
+impl CityGmlElement for GenericAttribute {
     fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
         match st.current_path() {
             b"gen:stringAttribute" | b"gen:StringAttribute" => {
@@ -495,7 +495,7 @@ impl CityGMLElement for GenericAttribute {
 
 fn parse_value<T, R: BufRead>(st: &mut SubTreeReader<R>) -> Result<(String, T), ParseError>
 where
-    T: CityGMLElement + Default,
+    T: CityGmlElement + Default,
 {
     let mut name = None;
     let mut value = None;

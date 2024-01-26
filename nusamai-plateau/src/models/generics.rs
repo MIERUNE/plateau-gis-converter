@@ -1,4 +1,4 @@
-use nusamai_citygml::{citygml_feature, CityGMLElement, Code};
+use nusamai_citygml::{citygml_feature, CityGmlElement, Code};
 
 #[citygml_feature(name = "gen:GenericCityObject")]
 pub struct GenericCityObject {

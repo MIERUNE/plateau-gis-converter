@@ -2,7 +2,7 @@ use std::io::BufRead;
 use std::path::Path;
 use url::Url;
 
-use nusamai_citygml::{CityGMLElement, CityGMLReader, GeometryStore, ParseError, SubTreeReader};
+use nusamai_citygml::{CityGmlElement, CityGmlReader, GeometryStore, ParseError, SubTreeReader};
 use nusamai_plateau::models::TopLevelCityObject;
 
 pub struct CityObject {
@@ -48,7 +48,7 @@ pub fn load_cityobjs_from_reader(reader: impl BufRead, path: &Path) -> Vec<CityO
     let source_url = Url::from_file_path(std::fs::canonicalize(path).unwrap()).unwrap();
     let context = nusamai_citygml::ParseContext::new(source_url, &code_resolver);
 
-    let cityobjs = match CityGMLReader::new(context).start_root(&mut xml_reader) {
+    let cityobjs = match CityGmlReader::new(context).start_root(&mut xml_reader) {
         Ok(mut st) => match toplevel_dispatcher(&mut st) {
             Ok(cityobjs) => cityobjs,
             Err(e) => panic!("Err: {:?}", e),

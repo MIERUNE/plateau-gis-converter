@@ -1,6 +1,4 @@
-use nusamai_citygml::{
-    citygml_data, CityGMLElement, Code, GYear, Measure,
-};
+use nusamai_citygml::{citygml_data, CityGmlElement, Code, GYear, Measure};
 
 #[citygml_data(name = "uro:LandUseDetailAttribute")]
 pub struct LandUseDetailAttribute {
@@ -63,7 +61,6 @@ pub struct LandUseDetailAttribute {
 
     #[citygml(path = b"uro:surveyYear")]
     pub survey_year: Option<GYear>,
-
 }
 
 #[citygml_data(name = "uro:LandUseDataQualityAttribute")]
@@ -76,5 +73,4 @@ pub struct LandUseDataQualityAttribute {
 
     #[citygml(path = b"uro:thematicSrcDesc")]
     pub thematic_src_desc: Vec<Code>,
-
 }

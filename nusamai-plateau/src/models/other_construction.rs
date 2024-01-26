@@ -2,7 +2,7 @@
 //! con:OtherConstruction (CityGML 3.x)
 
 use super::iur::uro;
-use nusamai_citygml::{citygml_feature, citygml_property, CityGMLElement, Code, Date};
+use nusamai_citygml::{citygml_feature, citygml_property, CityGmlElement, Code, Date};
 
 type ConditionOfConstructionValue = String;
 

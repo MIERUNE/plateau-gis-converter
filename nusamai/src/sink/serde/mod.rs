@@ -44,7 +44,7 @@ impl DataSinkProvider for SerdeSinkProvider {
         let output_path = get_parameter_value!(params, "@output", FileSystemPath);
 
         Box::<SerdeSink>::new(SerdeSink {
-            output_path: output_path.unwrap().into(),
+            output_path: output_path.as_ref().unwrap().into(),
             ..Default::default()
         })
     }

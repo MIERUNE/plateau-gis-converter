@@ -1,4 +1,4 @@
-//! CityGMLElement derive macro
+//! CityGmlElement derive macro
 
 use proc_macro2::{Ident, TokenStream};
 use quote::{format_ident, quote};
@@ -195,7 +195,7 @@ fn generate_citygml_impl_for_struct(
                         let pat = LitByteStr::new(path, attr.span());
                         let hash = hash(path);
                         child_arms.push(quote! {
-                            (#hash, #pat) => <#field_ty as CityGMLElement>::parse(&mut self.#field_ident, st),
+                            (#hash, #pat) => <#field_ty as CityGmlElement>::parse(&mut self.#field_ident, st),
                         });
                     };
 
@@ -216,7 +216,7 @@ fn generate_citygml_impl_for_struct(
                     );
                     prop_stmts.push(
                         quote! {
-                            attributes.insert("gen:genericAttribute".into(), <#field_ty as CityGMLElement>::collect_schema(schema));
+                            attributes.insert("gen:genericAttribute".into(), <#field_ty as CityGmlElement>::collect_schema(schema));
                         }
                     );
                     Ok(())
@@ -232,7 +232,7 @@ fn generate_citygml_impl_for_struct(
                     // XML attributes (e.g. @gml:id)
                     attribute_arms.push(quote! {
                         #path => {
-                            self.#field_ident = <#field_ty as nusamai_citygml::CityGMLAttribute>::parse_attr_value(
+                            self.#field_ident = <#field_ty as nusamai_citygml::CityGmlAttribute>::parse_attr_value(
                                 std::str::from_utf8(value).unwrap(),
                             )?;
                             Ok(())
@@ -251,7 +251,7 @@ fn generate_citygml_impl_for_struct(
                         });
                         prop_stmts.push(
                             quote! {
-                                attributes.insert(#name.into(), <#field_ty as CityGMLElement>::collect_schema(schema));
+                                attributes.insert(#name.into(), <#field_ty as CityGmlElement>::collect_schema(schema));
                             }
                         );
                     }
@@ -269,7 +269,7 @@ fn generate_citygml_impl_for_struct(
 
                     let hash = hash(&path.value());
                     child_arms.push(quote! {
-                        (#hash, #path) => <#field_ty as CityGMLElement>::parse(&mut self.#field_ident, st),
+                        (#hash, #path) => <#field_ty as CityGmlElement>::parse(&mut self.#field_ident, st),
                     });
 
                     if !into_obj_generated {
@@ -289,12 +289,12 @@ fn generate_citygml_impl_for_struct(
                         prop_stmts.push(
                             match required {
                                 true => quote! {
-                                    let mut ty_ref = <#field_ty as CityGMLElement>::collect_schema(schema);
+                                    let mut ty_ref = <#field_ty as CityGmlElement>::collect_schema(schema);
                                     if ty_ref.min_occurs == 0 { ty_ref.min_occurs = 1; }
                                     attributes.insert(#name.into(), ty_ref);
                                 },
                                 false => quote! {
-                                    attributes.insert(#name.into(), <#field_ty as CityGMLElement>::collect_schema(schema));
+                                    attributes.insert(#name.into(), <#field_ty as CityGmlElement>::collect_schema(schema));
                                 }
                             }
                         );
@@ -374,7 +374,7 @@ fn generate_citygml_impl_for_struct(
     };
 
     Ok(quote! {
-        impl #impl_generics ::nusamai_citygml::CityGMLElement for #struct_ident #ty_generics #where_clause {
+        impl #impl_generics ::nusamai_citygml::CityGmlElement for #struct_ident #ty_generics #where_clause {
             fn parse<R: std::io::BufRead>(&mut self, st: &mut ::nusamai_citygml::SubTreeReader<R>) -> Result<(), ::nusamai_citygml::ParseError> {
                 #attr_parsing
 
@@ -459,7 +459,7 @@ fn generate_citygml_impl_for_enum(
         let field_ty = &field.ty;
         let variant_ident = &variant.ident;
         choice_types.push(quote! {
-            <#field_ty as CityGMLElement>::collect_schema(schema),
+            <#field_ty as CityGmlElement>::collect_schema(schema),
         });
 
         for attr in &variant.attrs {
@@ -476,7 +476,7 @@ fn generate_citygml_impl_for_enum(
                         quote! {
                             (_, #path) => {
                                 let mut v: #field_ty = Default::default();
-                                <#field_ty as CityGMLElement>::parse(&mut v, st)?;
+                                <#field_ty as CityGmlElement>::parse(&mut v, st)?;
                                 *self = Self::#variant_ident(v);
                                 Ok(())
                             }
@@ -485,7 +485,7 @@ fn generate_citygml_impl_for_enum(
                         quote! {
                             (#hash, #path) => {
                                 let mut v: #field_ty = Default::default();
-                                <#field_ty as CityGMLElement>::parse(&mut v, st)?;
+                                <#field_ty as CityGmlElement>::parse(&mut v, st)?;
                                 *self = Self::#variant_ident(v);
                                 Ok(())
                             }
@@ -505,7 +505,7 @@ fn generate_citygml_impl_for_enum(
     let struct_name = &derive_input.ident;
 
     Ok(quote! {
-        impl #impl_generics ::nusamai_citygml::CityGMLElement for #struct_name #ty_generics #where_clause {
+        impl #impl_generics ::nusamai_citygml::CityGmlElement for #struct_name #ty_generics #where_clause {
             fn parse<R: ::std::io::BufRead>(&mut self, st: &mut ::nusamai_citygml::SubTreeReader<R>) -> Result<(), ::nusamai_citygml::ParseError> {
                 st.parse_children(|st| {
                     let path = st.current_path();

@@ -1,5 +1,5 @@
 use super::iur::uro;
-use nusamai_citygml::{citygml_feature, citygml_property, CityGMLElement, Code, GYear};
+use nusamai_citygml::{citygml_feature, citygml_property, CityGmlElement, Code, GYear};
 
 #[citygml_feature(name = "tun:Tunnel")]
 pub struct Tunnel {

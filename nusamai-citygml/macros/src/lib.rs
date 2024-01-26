@@ -7,7 +7,7 @@ mod type_attrs;
 
 use proc_macro::TokenStream;
 
-#[proc_macro_derive(CityGMLElement, attributes(citygml))]
+#[proc_macro_derive(CityGmlElement, attributes(citygml))]
 pub fn derive_citygml_element(token: TokenStream) -> TokenStream {
     derive::derive_citygml_element(token)
 }

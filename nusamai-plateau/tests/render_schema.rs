@@ -1,4 +1,4 @@
-use nusamai_citygml::{schema, CityGMLElement};
+use nusamai_citygml::{schema, CityGmlElement};
 use nusamai_plateau::models::TopLevelCityObject;
 
 #[test]
