@@ -7,12 +7,12 @@ use crate::{
 #[derive(Serialize, Deserialize)]
 pub struct CzmlString {
     #[serde(flatten)]
-    pub value: ValueType,
+    pub value: StringValueType,
 }
 
 #[derive(Serialize, Deserialize)]
 #[serde(untagged)]
-pub enum ValueType {
+pub enum StringValueType {
     Array(Vec<StringProperties>),
     Object(StringProperties),
     String(String),
