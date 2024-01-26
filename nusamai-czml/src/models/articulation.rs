@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use serde::{Deserialize, Serialize};
 use serde_json::Number;
 
@@ -39,4 +41,11 @@ pub struct ArticulationProperties {
     #[serde(flatten)]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub reference_value_property: Option<ReferenceValueProperty>,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct Articulations {
+    #[serde(flatten)]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub articulations: Option<HashMap<String, Articulation>>,
 }

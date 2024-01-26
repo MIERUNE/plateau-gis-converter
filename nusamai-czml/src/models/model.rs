@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    Articulation, Color, ColorBlendMode, ColorProperties, CzmlBoolean, CzmlDouble, CzmlUri,
+    Articulations, Color, ColorBlendMode, ColorProperties, CzmlBoolean, CzmlDouble, CzmlUri,
     DistanceDisplayCondition, HeightReference, NodeTransformations, RgbaValue, ShadowMode,
 };
 
@@ -58,7 +58,7 @@ pub struct Model {
     pub node_transformations: Option<NodeTransformations>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub articulations: Option<Articulation>,
+    pub articulations: Option<Articulations>,
 }
 
 impl Default for Model {
