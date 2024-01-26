@@ -7,21 +7,21 @@ use crate::{
 };
 
 #[derive(Serialize, Deserialize)]
-pub struct CzmlDouble {
+pub struct Articulation {
     #[serde(flatten)]
-    pub value: DoubleValueType,
+    pub value: ArticulationValueType,
 }
 
 #[derive(Serialize, Deserialize)]
 #[serde(untagged)]
-pub enum DoubleValueType {
-    Array(Vec<DoubleProperties>),
-    Object(DoubleProperties),
+pub enum ArticulationValueType {
+    Array(Vec<ArticulationProperties>),
+    Object(ArticulationProperties),
     Number(Number),
 }
 
 #[derive(Serialize, Deserialize)]
-pub struct DoubleProperties {
+pub struct ArticulationProperties {
     pub number: Option<DoubleValue>,
     pub reference: Option<ReferenceValue>,
     #[serde(flatten)]

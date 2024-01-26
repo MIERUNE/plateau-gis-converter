@@ -1,3 +1,4 @@
+pub mod articulation;
 pub mod color;
 pub mod color_blend_mode;
 pub mod czml;
@@ -19,6 +20,7 @@ pub mod uri;
 pub mod value_properties;
 pub mod values;
 
+pub use articulation::*;
 pub use color::*;
 pub use color_blend_mode::*;
 pub use czml::*;
