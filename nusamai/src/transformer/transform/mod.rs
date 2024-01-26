@@ -1,7 +1,10 @@
-mod attr_key;
+mod attrname;
+mod lods;
+mod merge;
 mod projection;
 
-pub use attr_key::*;
+pub use attrname::*;
+pub use merge::*;
 pub use projection::*;
 
 use super::Transform;
@@ -46,6 +49,7 @@ impl SerialTransform {
 }
 
 /// No-op transform
+#[derive(Clone)]
 pub struct IdentityTransform {}
 
 impl Transform for IdentityTransform {

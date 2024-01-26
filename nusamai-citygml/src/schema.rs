@@ -19,18 +19,18 @@ pub enum TypeDef {
 
 pub type Map = IndexMap<String, Attribute, ahash::RandomState>;
 
-#[derive(Debug, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Default, Serialize, Deserialize, PartialEq)]
 pub struct DataTypeDef {
     pub attributes: Map,
     #[serde(default, skip_serializing_if = "is_false")]
-    pub any: bool,
+    pub additional_attributes: bool,
 }
 
-#[derive(Debug, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Default, Serialize, Deserialize, PartialEq)]
 pub struct FeatureTypeDef {
     pub attributes: Map,
     #[serde(default, skip_serializing_if = "is_false")]
-    pub any: bool,
+    pub additional_attributes: bool,
 }
 
 #[derive(Debug, Serialize, Deserialize, PartialEq)]

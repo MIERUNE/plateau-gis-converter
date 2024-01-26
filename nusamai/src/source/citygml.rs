@@ -113,9 +113,6 @@ fn toplevel_dispatcher<R: BufRead>(
     });
     match result {
         Ok(_) => Ok(()),
-        Err(e) => {
-            log::error!("{:?}", e);
-            Err(e)
-        }
+        Err(e) => Err(e),
     }
 }

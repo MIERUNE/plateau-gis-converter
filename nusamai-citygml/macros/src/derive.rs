@@ -399,8 +399,7 @@ fn generate_citygml_impl_for_struct(
                     schema.types.insert(
                         key.into(),
                         ::nusamai_citygml::schema::TypeDef::#stereotype(::nusamai_citygml::schema::#stereotypedef {
-                            attributes: Default::default(),
-                            any: false,
+                            ..Default::default()
                         })
                     );
                     let mut attributes = ::nusamai_citygml::schema::Map::default();

@@ -17,7 +17,7 @@ pub trait Transformer: Send {
     fn run(&self, upstream: Receiver, downstream: Sender, feedback: &Feedback);
 }
 
-pub trait Transform {
+pub trait Transform: Send {
     /// Transform each entity
     fn transform(&mut self, entity: Entity, out: &mut Vec<Entity>);
     /// Transform the schema

@@ -4,7 +4,7 @@ use nusamai_citygml::schema::Schema;
 use nusamai_projection::vshift::Jgd2011ToWgs84;
 
 use super::{
-    transform::{NamespaceRemovalTransform, ProjectionTransform, SerialTransform},
+    transform::{ProjectionTransform, RemoveNamespaceTransform, SerialTransform},
     Transform,
 };
 
@@ -25,7 +25,7 @@ impl TransformBuilder for NusamaiTransformBuilder {
         let mut transforms = SerialTransform::default();
         // TODO: build transforming graph from config
         transforms.push(Box::new(ProjectionTransform::new(self.jgd2wgs.clone())));
-        transforms.push(Box::<NamespaceRemovalTransform>::default());
+        transforms.push(Box::<RemoveNamespaceTransform>::default());
         Box::new(transforms)
     }
 }

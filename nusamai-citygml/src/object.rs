@@ -59,27 +59,6 @@ pub enum Value {
     Object(Object),
 }
 
-impl Value {
-    /// Traverses the attribute tree and apply the function to each object.
-    pub fn traverse_object_mut(&mut self, mut f: impl FnMut(&mut Object)) {
-        self.traverse_object_mut_inner(&mut f);
-    }
-
-    fn traverse_object_mut_inner(&mut self, f: &mut impl FnMut(&mut Object)) {
-        match self {
-            Value::Object(obj) => {
-                f(obj);
-            }
-            Value::Array(arr) => {
-                for v in arr.iter_mut() {
-                    v.traverse_object_mut_inner(f);
-                }
-            }
-            _ => {}
-        }
-    }
-}
-
 #[cfg(feature = "serde_json")]
 impl Value {
     /// Extracts the thematic attribute tree and converts it to a JSON representation.
