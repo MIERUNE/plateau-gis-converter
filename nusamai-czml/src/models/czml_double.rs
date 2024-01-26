@@ -17,7 +17,7 @@ pub struct CzmlDouble {
 pub enum DoubleValueType {
     Array(Vec<DoubleProperties>),
     Object(DoubleProperties),
-    Number(Number),
+    Double(f32),
 }
 
 #[derive(Serialize, Deserialize)]
