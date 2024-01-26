@@ -13,7 +13,7 @@ pub struct RemoveNamespaceTransform {}
 
 impl Transform for RemoveNamespaceTransform {
     fn transform(&mut self, mut entity: Entity, out: &mut Vec<Entity>) {
-        traverse_object(&mut entity.root);
+        edit_tree(&mut entity.root);
         out.push(entity);
     }
 
@@ -34,11 +34,11 @@ impl Transform for RemoveNamespaceTransform {
     }
 }
 
-fn traverse_object(value: &mut Value) {
+fn edit_tree(value: &mut Value) {
     match value {
         Value::Object(obj) => {
             obj.attributes.retain2(|key, value| {
-                traverse_object(value);
+                edit_tree(value);
                 if let Some(pos) = key.find(':') {
                     *key = key[pos + 1..].to_string();
                 }
@@ -47,7 +47,7 @@ fn traverse_object(value: &mut Value) {
         }
         Value::Array(arr) => {
             for v in arr.iter_mut() {
-                traverse_object(v);
+                edit_tree(v);
             }
         }
         _ => {}
