@@ -5,10 +5,12 @@ use crate::transformer::Transform;
 use nusamai_citygml::object::Entity;
 use nusamai_citygml::schema::Schema;
 use nusamai_projection::crs::*;
-use nusamai_projection::vshift::JGD2011ToWGS84;
+use nusamai_projection::vshift::Jgd2011ToWgs84;
 
+/// Coordinate transformation. Currently supports only JGD2011 to WGS 84.
+#[derive(Clone)]
 pub struct ProjectionTransform {
-    jgd2wgs: Arc<JGD2011ToWGS84>,
+    jgd2wgs: Arc<Jgd2011ToWgs84>,
 }
 
 impl Transform for ProjectionTransform {
@@ -38,7 +40,7 @@ impl Transform for ProjectionTransform {
 }
 
 impl ProjectionTransform {
-    pub fn new(jgd2wgs: Arc<JGD2011ToWGS84>) -> Self {
+    pub fn new(jgd2wgs: Arc<Jgd2011ToWgs84>) -> Self {
         Self { jgd2wgs }
     }
 }

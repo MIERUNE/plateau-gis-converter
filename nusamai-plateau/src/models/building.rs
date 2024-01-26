@@ -1,7 +1,7 @@
 use super::core::Address;
 use super::iur::uro;
 use nusamai_citygml::{
-    citygml_feature, citygml_property, CityGMLElement, Code, GYear, Length, Measure,
+    citygml_feature, citygml_property, CityGmlElement, Code, GYear, Length, Measure,
     MeasureOrNullList,
 };
 

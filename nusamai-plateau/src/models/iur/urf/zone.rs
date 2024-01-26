@@ -1,5 +1,5 @@
 use nusamai_citygml::{
-    citygml_data, citygml_feature, citygml_property, CityGMLElement, Code, Date, GYear, Length,
+    citygml_data, citygml_feature, citygml_property, CityGmlElement, Code, Date, GYear, Length,
     Measure, URI,
 };
 

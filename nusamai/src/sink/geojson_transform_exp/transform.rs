@@ -161,7 +161,7 @@ fn flatten(
                         };
 
                         if do_flatten {
-                            for mut value in child_arr.drain(..) {
+                            for mut value in child_arr {
                                 flatten(&mut value, do_flatten_feature, do_flatten_data, out);
                                 out.push(value);
                             }

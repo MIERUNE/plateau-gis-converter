@@ -47,7 +47,7 @@ impl DataSinkProvider for GeoJsonSinkProvider {
         let output_path = get_parameter_value!(params, "@output", FileSystemPath);
 
         Box::<GeoJsonSink>::new(GeoJsonSink {
-            output_path: output_path.unwrap().into(),
+            output_path: output_path.as_ref().unwrap().into(),
         })
     }
 }

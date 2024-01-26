@@ -42,10 +42,10 @@ impl DataSinkProvider for GpkgSinkProvider {
     }
 
     fn create(&self, params: &Parameters) -> Box<dyn DataSink> {
-        let output_path = get_parameter_value!(params, "@output", FileSystemPath).unwrap();
+        let output_path = get_parameter_value!(params, "@output", FileSystemPath);
 
         Box::<GpkgSink>::new(GpkgSink {
-            output_path: output_path.clone(),
+            output_path: output_path.as_ref().unwrap().into(),
         })
     }
 }
