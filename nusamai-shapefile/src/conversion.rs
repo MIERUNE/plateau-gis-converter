@@ -1,5 +1,62 @@
-use nusamai_geometry::{CoordNum, MultiLineString, MultiLineString3, MultiPoint, MultiPoint3};
+use nusamai_geometry::{
+    CoordNum, MultiLineString, MultiLineString3, MultiPoint, MultiPoint3, MultiPolygon,
+    MultiPolygon3, Polygon,
+};
 use shapefile::NO_DATA;
+
+/// Create a Shapefile Polygon from `nusamai_geometry::MultiPolygon`.
+pub fn multipolygon_to_shape(mpoly: &MultiPolygon3) -> shapefile::PolygonZ {
+    multipolygon_to_shape_with_mapping(mpoly, |c| c)
+}
+
+/// Create a Shapefile Polygon from vertices and indices.
+pub fn indexed_multipolygon_to_shape(
+    vertices: &[[f64; 3]],
+    mpoly_idx: &MultiPolygon<1, u32>,
+) -> shapefile::PolygonZ {
+    multipolygon_to_shape_with_mapping(mpoly_idx, |idx| vertices[idx[0] as usize])
+}
+
+/// Create a Shapefile Polygon from `nusamai_geometry::MultiPolygon` with a mapping function.
+pub fn multipolygon_to_shape_with_mapping<const D: usize, T: CoordNum>(
+    mpoly: &MultiPolygon<D, T>,
+    mapping: impl Fn([T; D]) -> [f64; 3],
+) -> shapefile::PolygonZ {
+    let all_rings = mpoly
+        .iter()
+        .flat_map(|poly| polygon_to_shape_rings_with_mapping(&poly, &mapping))
+        .collect::<Vec<shapefile::PolygonRing<shapefile::PointZ>>>();
+
+    shapefile::PolygonZ::with_rings(all_rings)
+}
+
+fn polygon_to_shape_rings_with_mapping<const D: usize, T: CoordNum>(
+    poly: &Polygon<D, T>,
+    mapping: impl Fn([T; D]) -> [f64; 3],
+) -> Vec<shapefile::PolygonRing<shapefile::PointZ>> {
+    let outer_points = poly
+        .exterior()
+        .iter_closed()
+        .map(&mapping)
+        .map(|coords| shapefile::PointZ::new(coords[0], coords[1], coords[2], NO_DATA))
+        .collect::<Vec<shapefile::PointZ>>();
+    let outer_ring = shapefile::PolygonRing::Outer(outer_points);
+
+    let inner_rings = poly
+        .interiors()
+        .map(|ring| {
+            ring.iter_closed()
+                .map(&mapping)
+                .map(|coords| shapefile::PointZ::new(coords[0], coords[1], coords[2], NO_DATA))
+                .collect::<Vec<shapefile::PointZ>>()
+        })
+        .map(shapefile::PolygonRing::Inner)
+        .collect::<Vec<shapefile::PolygonRing<shapefile::PointZ>>>();
+
+    let mut all_rings = vec![outer_ring];
+    all_rings.extend(inner_rings);
+    all_rings
+}
 
 /// Create a Shapefile PolylineZ from `nusamai_geometry::MultiLineString`.
 pub fn multilinestring_to_shape(mls: &MultiLineString3) -> shapefile::PolylineZ {
