@@ -3,11 +3,7 @@ use serde_json::Value;
 
 use crate::{DeletableProperty, ReferenceValue, ReferenceValueProperty};
 
-#[derive(Serialize, Deserialize)]
-pub struct CzmlUri {
-    #[serde(flatten)]
-    pub value: UriValueType,
-}
+pub type CzmlUri = UriValueType;
 
 #[derive(Serialize, Deserialize)]
 #[serde(untagged)]

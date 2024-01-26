@@ -3,11 +3,7 @@ use serde_json::Value;
 
 use crate::{DeletableProperty, ReferenceValue, ReferenceValueProperty};
 
-#[derive(Serialize, Deserialize)]
-pub struct HeightReference {
-    #[serde(flatten)]
-    pub value: HeightReferenceValueType,
-}
+pub type HeightReference = HeightReferenceValueType;
 
 #[derive(Serialize, Deserialize)]
 #[serde(untagged)]

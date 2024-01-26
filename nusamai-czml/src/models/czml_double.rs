@@ -5,11 +5,7 @@ use crate::{
     ReferenceValueProperty,
 };
 
-#[derive(Serialize, Deserialize)]
-pub struct CzmlDouble {
-    #[serde(flatten)]
-    pub value: DoubleValueType,
-}
+pub type CzmlDouble = DoubleValueType;
 
 #[derive(Serialize, Deserialize)]
 #[serde(untagged)]

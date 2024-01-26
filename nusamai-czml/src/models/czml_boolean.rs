@@ -3,11 +3,7 @@ use serde_json::Value;
 
 use crate::{DeletableProperty, ReferenceValue, ReferenceValueProperty};
 
-#[derive(Serialize, Deserialize)]
-pub struct CzmlBoolean {
-    #[serde(flatten)]
-    pub value: BooleanValueType,
-}
+pub type CzmlBoolean = BooleanValueType;
 
 #[derive(Serialize, Deserialize)]
 #[serde(untagged)]

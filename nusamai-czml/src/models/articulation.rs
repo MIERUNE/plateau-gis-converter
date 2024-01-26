@@ -6,11 +6,7 @@ use crate::{
     ReferenceValueProperty,
 };
 
-#[derive(Serialize, Deserialize)]
-pub struct Articulation {
-    #[serde(flatten)]
-    pub value: ArticulationValueType,
-}
+pub type Articulation = ArticulationValueType;
 
 #[derive(Serialize, Deserialize)]
 #[serde(untagged)]

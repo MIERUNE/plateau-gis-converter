@@ -3,11 +3,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{DeletableProperty, InterpolatableProperty, ReferenceValue, ReferenceValueProperty};
 
-#[derive(Serialize, Deserialize)]
-pub struct Color {
-    #[serde(flatten)]
-    pub value: ColorValueType,
-}
+pub type Color = ColorValueType;
 
 #[derive(Serialize, Deserialize)]
 #[serde(untagged)]

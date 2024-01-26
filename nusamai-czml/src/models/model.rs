@@ -1,10 +1,8 @@
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    Articulation, BooleanValueType, Color, ColorBlendMode, ColorBlendModeValueType,
-    ColorProperties, ColorValueType, CzmlBoolean, CzmlDouble, CzmlUri, DistanceDisplayCondition,
-    DoubleValueType, HeightReference, HeightReferenceValueType, NodeTransformations, RgbaValue,
-    ShadowMode, ShadowModeValueType,
+    Articulation, Color, ColorBlendMode, ColorProperties, CzmlBoolean, CzmlDouble, CzmlUri,
+    DistanceDisplayCondition, HeightReference, NodeTransformations, RgbaValue, ShadowMode,
 };
 
 #[derive(Serialize, Deserialize)]
@@ -33,62 +31,38 @@ pub struct Model {
 impl Default for Model {
     fn default() -> Self {
         Self {
-            show: Some(CzmlBoolean {
-                value: BooleanValueType::Boolean(true),
-            }),
+            show: Some(CzmlBoolean::Boolean(true)),
             gltf: None,
-            scale: Some(CzmlDouble {
-                value: DoubleValueType::Double(1.0),
-            }),
-            minimum_pixel_size: Some(CzmlDouble {
-                value: DoubleValueType::Double(0.0),
-            }),
+            scale: Some(CzmlDouble::Double(1.0)),
+            minimum_pixel_size: Some(CzmlDouble::Double(0.0)),
             maximum_scale: Default::default(),
-            incrementally_load_textures: Some(CzmlBoolean {
-                value: BooleanValueType::Boolean(true),
-            }),
-            run_animations: Some(CzmlBoolean {
-                value: BooleanValueType::Boolean(true),
-            }),
-            shadows: Some(ShadowMode {
-                value: ShadowModeValueType::String("ENABLED".to_string()),
-            }),
-            height_reference: Some(HeightReference {
-                value: HeightReferenceValueType::String("NONE".to_string()),
-            }),
-            silhouette_color: Some(Color {
-                value: ColorValueType::Object(ColorProperties {
-                    rgba: Some(RgbaValue::Constant([255, 0, 0, 0])),
-                    rgbaf: None,
-                    reference: None,
-                    interpolatable_property: None,
-                    deletable_property: None,
-                    rgba_value_property: None,
-                    rgbaf_value_property: None,
-                    reference_value_property: None,
-                }),
-            }),
-            silhouette_size: Some(CzmlDouble {
-                value: DoubleValueType::Double(0.0),
-            }),
-            color: Some(Color {
-                value: ColorValueType::Object(ColorProperties {
-                    rgba: Some(RgbaValue::Constant([0, 0, 0, 0])),
-                    rgbaf: None,
-                    reference: None,
-                    interpolatable_property: None,
-                    deletable_property: None,
-                    rgba_value_property: None,
-                    rgbaf_value_property: None,
-                    reference_value_property: None,
-                }),
-            }),
-            color_blend_mode: Some(ColorBlendMode {
-                value: ColorBlendModeValueType::String("HIGHLIGHT".to_string()),
-            }),
-            color_blend_amount: Some(CzmlDouble {
-                value: DoubleValueType::Double(0.5),
-            }),
+            incrementally_load_textures: Some(CzmlBoolean::Boolean(true)),
+            run_animations: Some(CzmlBoolean::Boolean(true)),
+            shadows: Some(ShadowMode::String("ENABLED".to_string())),
+            height_reference: Some(HeightReference::String("NONE".to_string())),
+            silhouette_color: Some(Color::Object(ColorProperties {
+                rgba: Some(RgbaValue::Constant([255, 0, 0, 0])),
+                rgbaf: None,
+                reference: None,
+                interpolatable_property: None,
+                deletable_property: None,
+                rgba_value_property: None,
+                rgbaf_value_property: None,
+                reference_value_property: None,
+            })),
+            silhouette_size: Some(CzmlDouble::Double(0.0)),
+            color: Some(Color::Object(ColorProperties {
+                rgba: Some(RgbaValue::Constant([0, 0, 0, 0])),
+                rgbaf: None,
+                reference: None,
+                interpolatable_property: None,
+                deletable_property: None,
+                rgba_value_property: None,
+                rgbaf_value_property: None,
+                reference_value_property: None,
+            })),
+            color_blend_mode: Some(ColorBlendMode::String("HIGHLIGHT".to_string())),
+            color_blend_amount: Some(CzmlDouble::Double(0.5)),
             distance_display_condition: Default::default(),
             node_transformations: Default::default(),
             articulations: Default::default(),

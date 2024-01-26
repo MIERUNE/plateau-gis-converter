@@ -6,7 +6,7 @@ fn load_examples() {
         let path = path.unwrap();
         println!("loading {:?}", path);
         let src = std::fs::read_to_string(path).unwrap();
-        let a: Czml = serde_json::from_str(&src).unwrap();
+        let a: Packet = serde_json::from_str(&src).unwrap();
 
         // 'null' should not appear in output
         let ser = serde_json::to_string(&a).unwrap();

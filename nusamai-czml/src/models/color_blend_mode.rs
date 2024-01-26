@@ -3,11 +3,7 @@ use serde_json::Value;
 
 use crate::{DeletableProperty, ReferenceValue, ReferenceValueProperty};
 
-#[derive(Serialize, Deserialize)]
-pub struct ColorBlendMode {
-    #[serde(flatten)]
-    pub value: ColorBlendModeValueType,
-}
+pub type ColorBlendMode = ColorBlendModeValueType;
 
 #[derive(Serialize, Deserialize)]
 #[serde(untagged)]

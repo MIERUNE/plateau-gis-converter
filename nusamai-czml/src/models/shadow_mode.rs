@@ -3,11 +3,7 @@ use serde_json::Value;
 
 use crate::{DeletableProperty, ReferenceValue, ReferenceValueProperty};
 
-#[derive(Serialize, Deserialize)]
-pub struct ShadowMode {
-    #[serde(flatten)]
-    pub value: ShadowModeValueType,
-}
+pub type ShadowMode = ShadowModeValueType;
 
 #[derive(Serialize, Deserialize)]
 #[serde(untagged)]

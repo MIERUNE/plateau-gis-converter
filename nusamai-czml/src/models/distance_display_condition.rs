@@ -3,11 +3,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{DeletableProperty, InterpolatableProperty, ReferenceValue, ReferenceValueProperty};
 
-#[derive(Serialize, Deserialize)]
-pub struct DistanceDisplayCondition {
-    #[serde(flatten)]
-    pub value: DistanceDisplayConditionValueType,
-}
+pub type DistanceDisplayCondition = DistanceDisplayConditionValueType;
 
 #[derive(Serialize, Deserialize)]
 #[serde(untagged)]
