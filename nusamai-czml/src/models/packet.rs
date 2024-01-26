@@ -5,46 +5,79 @@ use serde_json::Value;
 
 use crate::{CzmlString, Model};
 
-// todo: Modify HashMap
+// todo: Modify HashMap and Value
 #[derive(Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 #[serde(deny_unknown_fields)]
 pub struct Packet {
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub id: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub delete: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub name: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub parent: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub description: Option<CzmlString>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub clock: Option<HashMap<String, Value>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub version: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub availability: Option<Value>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub properties: Option<HashMap<String, Value>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub position: Option<HashMap<String, Value>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub orientation: Option<HashMap<String, Value>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub view_from: Option<HashMap<String, Value>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub billboard: Option<HashMap<String, Value>>,
     #[serde(rename = "box")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub box_: Option<HashMap<String, Value>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub corridor: Option<HashMap<String, Value>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub cylinder: Option<HashMap<String, Value>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub ellipse: Option<HashMap<String, Value>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub ellipsoid: Option<HashMap<String, Value>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub label: Option<HashMap<String, Value>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub model: Option<Model>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub path: Option<HashMap<String, Value>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub point: Option<HashMap<String, Value>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub polygon: Option<HashMap<String, Value>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub polyline: Option<HashMap<String, Value>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub polyline_volume: Option<HashMap<String, Value>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub rectangle: Option<HashMap<String, Value>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub tileset: Option<HashMap<String, Value>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub wall: Option<HashMap<String, Value>>,
     #[serde(rename = "agi_conicSensor")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub agi_conic_sensor: Option<HashMap<String, Value>>,
     #[serde(rename = "agi_customPatternSensor")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub agi_custom_pattern_sensor: Option<HashMap<String, Value>>,
     #[serde(rename = "agi_rectangularSensor")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub agi_rectangular_sensor: Option<HashMap<String, Value>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub agi_fan: Option<HashMap<String, Value>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub agi_vector: Option<HashMap<String, Value>>,
 }
