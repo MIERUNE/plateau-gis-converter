@@ -485,7 +485,7 @@ impl CityGmlElement for GenericAttribute {
                 key.into(),
                 schema::TypeDef::Data(schema::DataTypeDef {
                     attributes: Default::default(),
-                    any: true,
+                    additional_attributes: true,
                 }),
             );
         }

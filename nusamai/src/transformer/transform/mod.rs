@@ -1,13 +1,19 @@
-mod attr_key;
+mod attrname;
+mod flatten;
+mod lods;
+mod merge;
 mod projection;
 
-pub use attr_key::*;
+pub use attrname::*;
+pub use flatten::*;
+pub use lods::*;
+pub use merge::*;
 pub use projection::*;
 
 use super::Transform;
 use nusamai_citygml::{object::Entity, schema::Schema};
 
-// Perform transforms in sequence
+/// Perform transforms in sequence
 #[derive(Default)]
 pub struct SerialTransform {
     transforms: Vec<Box<dyn Transform>>,
@@ -46,6 +52,7 @@ impl SerialTransform {
 }
 
 /// No-op transform
+#[derive(Clone)]
 pub struct IdentityTransform {}
 
 impl Transform for IdentityTransform {

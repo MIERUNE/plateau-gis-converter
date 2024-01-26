@@ -7,6 +7,8 @@ use nusamai_citygml::schema::Schema;
 use nusamai_projection::crs::*;
 use nusamai_projection::vshift::Jgd2011ToWgs84;
 
+/// Coordinate transformation. Currently supports only JGD2011 to WGS 84.
+#[derive(Clone)]
 pub struct ProjectionTransform {
     jgd2wgs: Arc<Jgd2011ToWgs84>,
 }

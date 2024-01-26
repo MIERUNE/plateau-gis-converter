@@ -1,4 +1,4 @@
-use crate::StereoType;
+use crate::Stereotype;
 use proc_macro2::TokenStream;
 use quote::quote;
 use syn::meta::ParseNestedMeta;
@@ -33,7 +33,7 @@ impl FeatureArgs {
 }
 
 pub(crate) fn citygml_type(
-    ty: StereoType,
+    ty: Stereotype,
     args: proc_macro::TokenStream,
     input: proc_macro::TokenStream,
 ) -> proc_macro::TokenStream {
@@ -61,7 +61,7 @@ fn add_named_field(pos: usize, fields: &mut syn::FieldsNamed, body: TokenStream)
         .insert(pos, syn::Field::parse_named.parse2(body).unwrap())
 }
 
-fn modify(ty: &StereoType, args: &FeatureArgs, input: &mut DeriveInput) -> Result<(), Error> {
+fn modify(ty: &Stereotype, args: &FeatureArgs, input: &mut DeriveInput) -> Result<(), Error> {
     match &args.name {
         Some(name) => {
             input.attrs.push(syn::parse_quote! {
@@ -72,13 +72,13 @@ fn modify(ty: &StereoType, args: &FeatureArgs, input: &mut DeriveInput) -> Resul
     };
 
     input.attrs.push(match &ty {
-        StereoType::Feature => {
+        Stereotype::Feature => {
             syn::parse_quote! { #[citygml(type = feature)] }
         }
-        StereoType::Data => {
+        Stereotype::Data => {
             syn::parse_quote! { #[citygml(type = data)] }
         }
-        StereoType::Property => {
+        Stereotype::Property => {
             syn::parse_quote! { #[citygml(type = property)] }
         }
     });
@@ -88,12 +88,12 @@ fn modify(ty: &StereoType, args: &FeatureArgs, input: &mut DeriveInput) -> Resul
             // for #[citygml_feature] and #[citygml_data]
 
             match ty {
-                StereoType::Feature | StereoType::Data => {}
+                Stereotype::Feature | Stereotype::Data => {}
                 _ => return Err(Error::new_spanned(input, "target must be struct")),
             }
 
             if let syn::Fields::Named(ref mut fields) = data.fields {
-                if let StereoType::Feature = ty {
+                if let Stereotype::Feature = ty {
                     // for #[citygml_feature]
 
                     let prefix = args.prefix.as_ref().unwrap();
@@ -225,7 +225,7 @@ fn modify(ty: &StereoType, args: &FeatureArgs, input: &mut DeriveInput) -> Resul
             }
         }
         Data::Enum(_data) => match ty {
-            StereoType::Property => {
+            Stereotype::Property => {
                 // for #[citygml_property]
                 _data.variants.push(parse_quote! {
                     #[default]
