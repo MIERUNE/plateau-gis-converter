@@ -28,12 +28,21 @@ pub type ColorBlendModeValueProperty = Value;
 #[derive(Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ColorBlendModeProperties {
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub color_blend_mode: Option<ColorBlendModeValue>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub reference: Option<ReferenceValue>,
+
     #[serde(flatten)]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub deletable_property: Option<DeletableProperty>,
+
     #[serde(flatten)]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub string_value_property: Option<ColorBlendModeValueProperty>,
+
     #[serde(flatten)]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub reference_value_property: Option<ReferenceValueProperty>,
 }

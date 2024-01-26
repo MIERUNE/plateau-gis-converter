@@ -65,17 +65,32 @@ pub struct RgbafValueProperty {
 #[derive(Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ColorProperties {
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub rgba: Option<RgbaValue>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub rgbaf: Option<RgbafValue>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub reference: Option<ReferenceValue>,
+
     #[serde(flatten)]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub interpolatable_property: Option<InterpolatableProperty>,
+
     #[serde(flatten)]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub deletable_property: Option<DeletableProperty>,
+
     #[serde(flatten)]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub rgba_value_property: Option<RgbaValueProperty>,
+
     #[serde(flatten)]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub rgbaf_value_property: Option<RgbafValueProperty>,
+
     #[serde(flatten)]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub reference_value_property: Option<ReferenceValueProperty>,
 }

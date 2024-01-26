@@ -19,12 +19,21 @@ pub type UriValueProperty = Value;
 
 #[derive(Serialize, Deserialize)]
 pub struct UriProperties {
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub uri: Option<UriValue>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub reference: Option<ReferenceValue>,
+
     #[serde(flatten)]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub deletable_property: Option<DeletableProperty>,
+
     #[serde(flatten)]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub uri_value_property: Option<UriValueProperty>,
+
     #[serde(flatten)]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub reference_value_property: Option<ReferenceValueProperty>,
 }

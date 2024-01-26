@@ -26,15 +26,6 @@ pub struct NodeTransformationProperties {
 #[derive(Serialize, Deserialize)]
 pub struct NodeTransformations {
     #[serde(flatten)]
-    pub transformations: HashMap<String, NodeTransformation>,
-}
-
-impl Default for NodeTransformationProperties {
-    fn default() -> Self {
-        Self {
-            translation: Default::default(),
-            rotation: Default::default(),
-            scale: Default::default(),
-        }
-    }
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub transformations: Option<HashMap<String, NodeTransformation>>,
 }

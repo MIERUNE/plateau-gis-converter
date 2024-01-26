@@ -36,14 +36,25 @@ pub struct DistanceDisplayConditionValueProperty {
 #[derive(Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct DistanceDisplayConditionProperties {
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub distance_display_condition: Option<DistanceDisplayConditionValue>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub reference: Option<ReferenceValue>,
+
     #[serde(flatten)]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub interpolatable_property: Option<InterpolatableProperty>,
+
     #[serde(flatten)]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub deletable_property: Option<DeletableProperty>,
+
     #[serde(flatten)]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub distance_display_condition_value_property: Option<DistanceDisplayConditionValueProperty>,
+
     #[serde(flatten)]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub reference_value_property: Option<ReferenceValueProperty>,
 }

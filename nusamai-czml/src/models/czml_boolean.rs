@@ -19,12 +19,21 @@ pub type BooleanValueProperty = Value;
 
 #[derive(Serialize, Deserialize)]
 pub struct BooleanProperties {
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub boolean: Option<BooleanValue>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub reference: Option<ReferenceValue>,
+
     #[serde(flatten)]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub deletable_property: Option<DeletableProperty>,
+
     #[serde(flatten)]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub boolean_value_property: Option<BooleanValueProperty>,
+
     #[serde(flatten)]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub reference_value_property: Option<ReferenceValueProperty>,
 }
