@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 
 use crate::{
     DeletableProperty, ReferenceValue, ReferenceValueProperty, StringValue, StringValueProperty,
@@ -22,7 +23,10 @@ pub enum ValueType {
 pub struct StringProperties {
     pub string: Option<StringValue>,
     pub reference: Option<ReferenceValue>,
+    #[serde(flatten)]
     pub deletable_property: Option<DeletableProperty>,
+    #[serde(flatten)]
     pub string_value_property: Option<StringValueProperty>,
+    #[serde(flatten)]
     pub reference_value_property: Option<ReferenceValueProperty>,
 }
