@@ -1,4 +1,5 @@
 pub mod color;
+pub mod color_blend_mode;
 pub mod czml;
 pub mod czml_boolean;
 pub mod czml_double;
@@ -15,6 +16,7 @@ pub mod value_properties;
 pub mod values;
 
 pub use color::*;
+pub use color_blend_mode::*;
 pub use czml::*;
 pub use czml_boolean::*;
 pub use czml_double::*;
