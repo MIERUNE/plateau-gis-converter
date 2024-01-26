@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-use crate::Translation;
+use crate::{Rotation, Scale, Translation};
 
 #[derive(Serialize, Deserialize)]
 pub struct NodeTransformation {
@@ -27,4 +27,14 @@ pub struct NodeTransformationProperties {
 pub struct NodeTransformations {
     #[serde(flatten)]
     pub transformations: HashMap<String, NodeTransformation>,
+}
+
+impl Default for NodeTransformationProperties {
+    fn default() -> Self {
+        Self {
+            translation: Default::default(),
+            rotation: Default::default(),
+            scale: Default::default(),
+        }
+    }
 }

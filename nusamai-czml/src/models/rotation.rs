@@ -34,11 +34,6 @@ pub struct UnitQuaternionTimeTagged {
 }
 
 #[derive(Serialize, Deserialize)]
-pub struct UnitQuaternionValueProperty {
-    pub value: Option<UnitQuaternionValue>,
-}
-
-#[derive(Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct RotationProperties {
     pub unit_quaternion: Option<UnitQuaternionValue>,
@@ -51,4 +46,19 @@ pub struct RotationProperties {
     pub distance_display_condition_value_property: Option<UnitQuaternionValueProperty>,
     #[serde(flatten)]
     pub reference_value_property: Option<ReferenceValueProperty>,
+}
+
+impl Default for Rotation {
+    fn default() -> Self {
+        Self {
+            value: RotationValueType::Object(RotationProperties {
+                unit_quaternion: Some(UnitQuaternionValue::Constant([0.0, 0.0, 0.0, 1.0])),
+                reference: None,
+                interpolatable_property: None,
+                deletable_property: None,
+                distance_display_condition_value_property: None,
+                reference_value_property: None,
+            }),
+        }
+    }
 }

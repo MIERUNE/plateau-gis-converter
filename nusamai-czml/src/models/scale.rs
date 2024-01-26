@@ -6,21 +6,21 @@ use crate::{
 };
 
 #[derive(Serialize, Deserialize)]
-pub struct Translation {
+pub struct Scale {
     #[serde(flatten)]
-    pub value: TranslationValueType,
+    pub value: ScaleValueType,
 }
 
 #[derive(Serialize, Deserialize)]
 #[serde(untagged)]
-pub enum TranslationValueType {
-    Array(Vec<TranslationProperties>),
-    Object(TranslationProperties),
+pub enum ScaleValueType {
+    Array(Vec<ScaleProperties>),
+    Object(ScaleProperties),
 }
 
 #[derive(Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct TranslationProperties {
+pub struct ScaleProperties {
     pub cartesian: Option<Cartesian3Value>,
     pub reference: Option<ReferenceValue>,
     #[serde(flatten)]
@@ -33,11 +33,11 @@ pub struct TranslationProperties {
     pub reference_value_property: Option<ReferenceValueProperty>,
 }
 
-impl Default for Translation {
+impl Default for Scale {
     fn default() -> Self {
         Self {
-            value: TranslationValueType::Object(TranslationProperties {
-                cartesian: Some(Cartesian3Value::Constant([0.0, 0.0, 0.0])),
+            value: ScaleValueType::Object(ScaleProperties {
+                cartesian: Some(Cartesian3Value::Constant([1.0, 1.0, 1.0])),
                 reference: None,
                 interpolatable_property: None,
                 deletable_property: None,
