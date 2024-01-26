@@ -121,6 +121,192 @@ mod tests {
     use super::*;
 
     #[test]
+    fn test_multipolygon_to_shape() {
+        let mut mpoly = MultiPolygon::<3>::new();
+        // 1st polygon
+        mpoly.add_exterior([
+            [0., 0., 0.],
+            [0., 10., 0.],
+            [10., 10., 0.],
+            [10., 0., 0.],
+            [0., 0., 0.], // closed
+        ]);
+        //  polygon
+        mpoly.add_exterior([
+            [10., 10., 0.],
+            [10., 20., 0.],
+            [20., 20., 0.],
+            [20., 10., 0.], // not closed
+        ]);
+        mpoly.add_interior([
+            [15., 15., 0.],
+            [18., 10., 0.],
+            [18., 18., 0.],
+            [15., 18., 0.], // not closed
+        ]);
+
+        let shape = multipolygon_to_shape(&mpoly);
+
+        assert_eq!(
+            shape.rings().len(),
+            mpoly
+                .iter()
+                .map(|poly| poly.rings().collect::<Vec<_>>().len())
+                .sum()
+        );
+        assert_eq!(
+            shape.ring(0).unwrap(),
+            &shapefile::PolygonRing::Outer(vec![
+                shapefile::PointZ::new(0., 0., 0., NO_DATA),
+                shapefile::PointZ::new(0., 10., 0., NO_DATA),
+                shapefile::PointZ::new(10., 10., 0., NO_DATA),
+                shapefile::PointZ::new(10., 0., 0., NO_DATA),
+                shapefile::PointZ::new(0., 0., 0., NO_DATA),
+            ])
+        );
+        assert_eq!(
+            shape.ring(1).unwrap(),
+            &shapefile::PolygonRing::Outer(vec![
+                shapefile::PointZ::new(10., 10., 0., NO_DATA),
+                shapefile::PointZ::new(10., 20., 0., NO_DATA),
+                shapefile::PointZ::new(20., 20., 0., NO_DATA),
+                shapefile::PointZ::new(20., 10., 0., NO_DATA),
+                shapefile::PointZ::new(10., 10., 0., NO_DATA), // closed
+            ])
+        );
+        assert_eq!(
+            shape.ring(2).unwrap(),
+            &shapefile::PolygonRing::Inner(vec![
+                shapefile::PointZ::new(15., 15., 0., NO_DATA),
+                shapefile::PointZ::new(18., 10., 0., NO_DATA),
+                shapefile::PointZ::new(18., 18., 0., NO_DATA),
+                shapefile::PointZ::new(15., 18., 0., NO_DATA),
+                shapefile::PointZ::new(15., 15., 0., NO_DATA), // closed
+            ])
+        );
+    }
+
+    #[test]
+    fn test_indexed_multipolygon() {
+        let vertices: Vec<[f64; 3]> = vec![
+            // 1st polygon, exterior (vertex 0~3)
+            [0., 0., 111.],
+            [5., 0., 111.],
+            [5., 5., 111.],
+            [0., 5., 111.],
+            // 1st polygon, interior 1 (vertex 4~7)
+            [1., 1., 111.],
+            [2., 1., 111.],
+            [2., 2., 111.],
+            [1., 2., 111.],
+            // 1st polygon, interior 2 (vertex 8~11)
+            [3., 3., 111.],
+            [4., 3., 111.],
+            [4., 4., 111.],
+            [3., 4., 111.],
+            // 2nd polygon, exterior (vertex 12~15)
+            [4., 0., 222.],
+            [7., 0., 222.],
+            [7., 3., 222.],
+            [4., 3., 222.],
+            // 2nd polygon, interior (vertex 16~19)
+            [5., 1., 222.],
+            [6., 1., 222.],
+            [6., 2., 222.],
+            [5., 2., 222.],
+            // 3rd polygon, exterior (vertex 20~23)
+            [4., 0., 333.],
+            [7., 0., 333.],
+            [7., 3., 333.],
+            [4., 3., 333.],
+        ];
+
+        let mut mpoly = MultiPolygon::<1, u32>::new();
+        // 1st polygon
+        mpoly.add_exterior([[0], [1], [2], [3], [0]]);
+        mpoly.add_interior([[4], [5], [6], [7], [4]]);
+        mpoly.add_interior([[8], [9], [10], [11], [8]]);
+        // 2nd polygon
+        mpoly.add_exterior([[12], [13], [14], [15], [12]]);
+        mpoly.add_interior([[16], [17], [18], [19], [16]]);
+        // 3rd polygon
+        mpoly.add_exterior([[20], [21], [22], [23], [20]]);
+
+        let shape = indexed_multipolygon_to_shape(&vertices, &mpoly);
+
+        assert_eq!(
+            shape.rings().len(),
+            mpoly
+                .iter()
+                .map(|poly| poly.rings().collect::<Vec<_>>().len())
+                .sum()
+        );
+        assert_eq!(
+            shape.ring(0).unwrap(),
+            &shapefile::PolygonRing::Outer(vec![
+                // Outer ring: re-ordered to clockwise
+                shapefile::PointZ::new(0., 0., 111., NO_DATA),
+                shapefile::PointZ::new(0., 5., 111., NO_DATA),
+                shapefile::PointZ::new(5., 5., 111., NO_DATA),
+                shapefile::PointZ::new(5., 0., 111., NO_DATA),
+                shapefile::PointZ::new(0., 0., 111., NO_DATA),
+            ])
+        );
+        assert_eq!(
+            shape.ring(1).unwrap(),
+            &shapefile::PolygonRing::Inner(vec![
+                shapefile::PointZ::new(1., 1., 111., NO_DATA),
+                shapefile::PointZ::new(2., 1., 111., NO_DATA),
+                shapefile::PointZ::new(2., 2., 111., NO_DATA),
+                shapefile::PointZ::new(1., 2., 111., NO_DATA),
+                shapefile::PointZ::new(1., 1., 111., NO_DATA),
+            ])
+        );
+        assert_eq!(
+            shape.ring(2).unwrap(),
+            &shapefile::PolygonRing::Inner(vec![
+                shapefile::PointZ::new(3., 3., 111., NO_DATA),
+                shapefile::PointZ::new(4., 3., 111., NO_DATA),
+                shapefile::PointZ::new(4., 4., 111., NO_DATA),
+                shapefile::PointZ::new(3., 4., 111., NO_DATA),
+                shapefile::PointZ::new(3., 3., 111., NO_DATA),
+            ])
+        );
+        assert_eq!(
+            shape.ring(3).unwrap(),
+            &shapefile::PolygonRing::Outer(vec![
+                // Outer ring: re-ordered to clockwise
+                shapefile::PointZ::new(4., 0., 222., NO_DATA),
+                shapefile::PointZ::new(4., 3., 222., NO_DATA),
+                shapefile::PointZ::new(7., 3., 222., NO_DATA),
+                shapefile::PointZ::new(7., 0., 222., NO_DATA),
+                shapefile::PointZ::new(4., 0., 222., NO_DATA),
+            ])
+        );
+        assert_eq!(
+            shape.ring(4).unwrap(),
+            &shapefile::PolygonRing::Inner(vec![
+                shapefile::PointZ::new(5., 1., 222., NO_DATA),
+                shapefile::PointZ::new(6., 1., 222., NO_DATA),
+                shapefile::PointZ::new(6., 2., 222., NO_DATA),
+                shapefile::PointZ::new(5., 2., 222., NO_DATA),
+                shapefile::PointZ::new(5., 1., 222., NO_DATA),
+            ])
+        );
+        assert_eq!(
+            shape.ring(5).unwrap(),
+            &shapefile::PolygonRing::Outer(vec![
+                // Outer ring: re-ordered to clockwise
+                shapefile::PointZ::new(4., 0., 333., NO_DATA),
+                shapefile::PointZ::new(4., 3., 333., NO_DATA),
+                shapefile::PointZ::new(7., 3., 333., NO_DATA),
+                shapefile::PointZ::new(7., 0., 333., NO_DATA),
+                shapefile::PointZ::new(4., 0., 333., NO_DATA),
+            ])
+        );
+    }
+
+    #[test]
     fn test_multilinestring_to_shape() {
         let mut mls = MultiLineString::<3>::new();
         mls.add_linestring([[11., 12., 13.], [21., 22., 23.], [31., 32., 33.]]);
