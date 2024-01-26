@@ -9,8 +9,7 @@ fn main() {
         .add_float_field("lat".try_into().unwrap(), 50, 10);
 
     // Create all the files needed for the shapefile to be complete (.shp, .shx, .dbf)
-    let mut writer =
-        shapefile::Writer::from_path("/Users/sorami/Desktop/tmp.shp", table_builder).unwrap();
+    let mut writer = shapefile::Writer::from_path("./tmp.shp", table_builder).unwrap();
 
     for lat in 20..45 {
         for lon in 120..150 {
