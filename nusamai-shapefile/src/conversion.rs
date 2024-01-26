@@ -1,9 +1,9 @@
-use nusamai_geometry::{CoordNum, MultiPoint};
+use nusamai_geometry::{CoordNum, MultiPoint, MultiPoint3};
 use shapefile::NO_DATA;
 
 /// Create a Shapefile MultiPointZ from `nusamai_geometry::MultiPoint`.
-pub fn multipoint_to_shape(mpoint: &MultiPoint<3>) -> shapefile::MultipointZ {
-    multipoint_to_shape_with_mapping(mpoint, |c| c.to_vec())
+pub fn multipoint_to_shape(mpoint: &MultiPoint3) -> shapefile::MultipointZ {
+    multipoint_to_shape_with_mapping(mpoint, |c| c)
 }
 
 /// Create a Shapefile MultiPointZ from vertices and indices.
@@ -11,13 +11,13 @@ pub fn indexed_multipoint_to_shape(
     vertices: &[[f64; 3]],
     mpoint_idx: &MultiPoint<1, u32>,
 ) -> shapefile::MultipointZ {
-    multipoint_to_shape_with_mapping(mpoint_idx, |idx| vertices[idx[0] as usize].to_vec())
+    multipoint_to_shape_with_mapping(mpoint_idx, |idx| vertices[idx[0] as usize])
 }
 
 /// Create a Shapefile MultiPointZ from `nusamai_geometry::MultiPoint` with a mapping function.
 pub fn multipoint_to_shape_with_mapping<const D: usize, T: CoordNum>(
     mpoint: &MultiPoint<D, T>,
-    mapping: impl Fn([T; D]) -> Vec<f64>,
+    mapping: impl Fn([T; D]) -> [f64; 3],
 ) -> shapefile::MultipointZ {
     let shape_points = mpoint
         .iter()
