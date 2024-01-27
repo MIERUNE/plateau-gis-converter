@@ -26,6 +26,11 @@ impl EditFieldNamesTransform {
         const SHAPE_DICT: &str = include_str!("./shp_field_dict.json");
         let map: HashMap<String, String> = serde_json::from_str(SHAPE_DICT).unwrap();
         self.rename_map.extend(map);
+        for value in self.rename_map.values() {
+            if value.len() > 10 {
+                panic!("The key length must be less than 10 characters: {}", value);
+            }
+        }
     }
 }
 

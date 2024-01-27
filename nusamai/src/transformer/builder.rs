@@ -22,6 +22,8 @@ impl TransformBuilder for NusamaiTransformBuilder {
         let mut transforms = SerialTransform::default();
         // TODO: build transformation based on config
 
+        transforms.push(Box::new(ProjectionTransform::new(self.jgd2wgs.clone())));
+
         let renamer = {
             let mut renamer = Box::<EditFieldNamesTransform>::default();
             renamer.load_default_map_for_shape();
@@ -34,8 +36,6 @@ impl TransformBuilder for NusamaiTransformBuilder {
         // transforms.push(Box::<GeometricMergedownTransform>::default());
         // transforms.push(Box::<FullMergedownTransform>::default());
 
-        // order: any
-        transforms.push(Box::new(ProjectionTransform::new(self.jgd2wgs.clone())));
         Box::new(transforms)
     }
 }
