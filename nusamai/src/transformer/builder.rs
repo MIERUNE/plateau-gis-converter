@@ -4,6 +4,7 @@ use nusamai_citygml::schema::Schema;
 use nusamai_projection::vshift::Jgd2011ToWgs84;
 
 use super::{transform::*, Transform};
+use crate::transformer;
 
 pub trait TransformBuilder: Send + Sync {
     fn build(&self) -> Box<dyn Transform>;
@@ -14,6 +15,7 @@ pub trait TransformBuilder: Send + Sync {
 }
 
 pub struct NusamaiTransformBuilder {
+    request: transformer::Request,
     jgd2wgs: Arc<Jgd2011ToWgs84>,
 }
 
@@ -22,15 +24,21 @@ impl TransformBuilder for NusamaiTransformBuilder {
         let mut transforms = SerialTransform::default();
         // TODO: build transformation based on config
 
+        // Transform the coordinate system
         transforms.push(Box::new(ProjectionTransform::new(self.jgd2wgs.clone())));
 
-        let renamer = {
+        // Change field names
+        transforms.push({
             let mut renamer = Box::<EditFieldNamesTransform>::default();
-            renamer.load_default_map_for_shape();
+            if self.request.shorten_names_for_shapefile {
+                renamer.load_default_map_for_shape();
+            }
             renamer
-        };
-        transforms.push(renamer);
+        });
+
+        // Retain only a single LOD
         transforms.push(Box::<FilterLodTransform>::default());
+
         transforms.push(Box::<FlattenFeatureTransform>::default());
 
         // transforms.push(Box::<GeometricMergedownTransform>::default());
@@ -40,9 +48,10 @@ impl TransformBuilder for NusamaiTransformBuilder {
     }
 }
 
-impl Default for NusamaiTransformBuilder {
-    fn default() -> Self {
+impl NusamaiTransformBuilder {
+    pub fn new(req: transformer::Request) -> Self {
         Self {
+            request: req,
             jgd2wgs: Jgd2011ToWgs84::default().into(),
         }
     }

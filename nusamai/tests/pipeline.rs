@@ -3,7 +3,7 @@ use nusamai::pipeline::{self, Parcel, Receiver};
 use nusamai::pipeline::{Feedback, FeedbackMessage, Sender};
 use nusamai::sink::{DataSink, DataSinkProvider, SinkInfo};
 use nusamai::source::{DataSource, DataSourceProvider, SourceInfo};
-use nusamai::transformer::Transformer;
+use nusamai::transformer::{self, Transformer};
 use nusamai_citygml::object::Entity;
 use nusamai_citygml::schema::Schema;
 use rand::prelude::*;
@@ -99,6 +99,12 @@ impl DataSink for DummySink {
             feedback.feedback(FeedbackMessage {
                 message: format!("dummy sink received: {:?}", parcel),
             })
+        }
+    }
+
+    fn make_transform_requirements(&self) -> transformer::Requirements {
+        transformer::Requirements {
+            ..Default::default()
         }
     }
 }

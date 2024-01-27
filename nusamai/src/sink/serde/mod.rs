@@ -10,10 +10,10 @@ use bincode;
 use nusamai_citygml::schema::Schema;
 use rayon::prelude::*;
 
-use crate::get_parameter_value;
 use crate::parameters::*;
 use crate::pipeline::{Feedback, Receiver};
 use crate::sink::{DataSink, DataSinkProvider, SinkInfo};
+use crate::{get_parameter_value, transformer};
 
 pub struct SerdeSinkProvider {}
 
@@ -58,6 +58,14 @@ pub struct SerdeSink {
 }
 
 impl DataSink for SerdeSink {
+    fn make_transform_requirements(&self) -> transformer::Requirements {
+        // use transformer::RequirementItem;
+
+        transformer::Requirements {
+            ..Default::default()
+        }
+    }
+
     fn run(&mut self, upstream: Receiver, feedback: &Feedback, _schema: &Schema) {
         let (sender, receiver) = std::sync::mpsc::sync_channel(1000);
 

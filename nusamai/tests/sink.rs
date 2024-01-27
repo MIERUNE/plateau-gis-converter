@@ -1,7 +1,7 @@
 use nusamai::sink::DataSinkProvider;
 use nusamai::source::citygml::CityGmlSourceProvider;
 use nusamai::source::DataSourceProvider;
-use nusamai::transformer::MultiThreadTransformer;
+use nusamai::transformer::{self, MultiThreadTransformer};
 use nusamai::transformer::{NusamaiTransformBuilder, TransformBuilder};
 
 use nusamai::sink;
@@ -21,7 +21,8 @@ pub(crate) fn simple_run_sink<S: DataSinkProvider>(sink_provider: S, output: Opt
 
     let source = source_provider.create(&source_provider.parameters());
 
-    let transform_builder = NusamaiTransformBuilder::default();
+    let transform_builder =
+        NusamaiTransformBuilder::new(transformer::Requirements::default().into());
     let mut schema = nusamai_citygml::schema::Schema::default();
     TopLevelCityObject::collect_schema(&mut schema);
     transform_builder.transform_schema(&mut schema);
