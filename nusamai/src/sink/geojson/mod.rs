@@ -58,10 +58,9 @@ pub struct GeoJsonSink {
 
 impl DataSink for GeoJsonSink {
     fn make_transform_requirements(&self) -> transformer::Requirements {
-        use transformer::RequirementItem;
+        // use transformer::RequirementItem;
 
         transformer::Requirements {
-            shorten_names_for_shapefile: RequirementItem::Required(true),
             ..Default::default()
         }
     }
