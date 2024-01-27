@@ -27,7 +27,6 @@ impl TransformBuilder for NusamaiTransformBuilder {
         // Transform the coordinate system
         transforms.push(Box::new(ProjectionTransform::new(self.jgd2wgs.clone())));
 
-        // Change field names
         transforms.push({
             let mut renamer = Box::<EditFieldNamesTransform>::default();
             if self.request.shorten_names_for_shapefile {
@@ -36,10 +35,9 @@ impl TransformBuilder for NusamaiTransformBuilder {
             renamer
         });
 
-        // Retain only a single LOD
-        transforms.push(Box::<FilterLodTransform>::default());
+        // transforms.push(Box::<FilterLodTransform>::default());
 
-        transforms.push(Box::<FlattenFeatureTransform>::default());
+        // transforms.push(Box::new(FlattenFeatureTransform::new(true)));
 
         // transforms.push(Box::<GeometricMergedownTransform>::default());
         // transforms.push(Box::<FullMergedownTransform>::default());
