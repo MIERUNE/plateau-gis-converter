@@ -21,11 +21,20 @@ impl TransformBuilder for NusamaiTransformBuilder {
     fn build(&self) -> Box<dyn Transform> {
         let mut transforms = SerialTransform::default();
         // TODO: build transformation based on config
-        transforms.push(Box::<RemoveNamespaceTransform>::default());
+
+        let renamer = {
+            let mut renamer = Box::<EditFieldNamesTransform>::default();
+            renamer.load_default_map_for_shape();
+            renamer
+        };
+        transforms.push(renamer);
         transforms.push(Box::<FilterLodTransform>::default());
+        transforms.push(Box::<FlattenFeatureTransform>::default());
+
         // transforms.push(Box::<GeometricMergedownTransform>::default());
         // transforms.push(Box::<FullMergedownTransform>::default());
-        transforms.push(Box::<FlattenFeatureTransform>::default());
+
+        // order: any
         transforms.push(Box::new(ProjectionTransform::new(self.jgd2wgs.clone())));
         Box::new(transforms)
     }
