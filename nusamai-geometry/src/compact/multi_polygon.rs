@@ -1,4 +1,5 @@
 use std::borrow::Cow;
+use std::ops::Range;
 
 use super::polygon::Polygon;
 use super::CoordNum;
@@ -117,11 +118,20 @@ impl<'a, const D: usize, T: CoordNum> MultiPolygon<'a, D, T> {
         Iter {
             mpoly: self,
             pos: 0,
+            end: self.len(),
+        }
+    }
+
+    pub fn iter_range(&self, range: Range<usize>) -> Iter<D, T> {
+        Iter {
+            mpoly: self,
+            pos: range.start,
+            end: range.end,
         }
     }
 
     /// Returns the polygon at the given index.
-    pub fn get(&self, index: usize) -> Polygon<D, T> {
+    pub fn get(&'a self, index: usize) -> Polygon<'a, D, T> {
         let len = self.len();
         let (c_start, c_end, h_start, h_end) = match index {
             index if index >= len => {
@@ -242,13 +252,15 @@ impl<'a, const D: usize, T: CoordNum> IntoIterator for &'a MultiPolygon<'_, D, T
 pub struct Iter<'a, const D: usize, T: CoordNum> {
     mpoly: &'a MultiPolygon<'a, D, T>,
     pos: usize,
+    end: usize,
 }
 
 impl<'a, const D: usize, T: CoordNum> Iterator for Iter<'a, D, T> {
     type Item = Polygon<'a, D, T>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if self.pos < self.mpoly.len() {
+        if self.pos < self.end {
+            // TODO: optimize
             let poly = self.mpoly.get(self.pos);
             self.pos += 1;
             Some(poly)
