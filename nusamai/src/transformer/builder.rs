@@ -73,6 +73,19 @@ impl TransformBuilder for NusamaiTransformBuilder {
 
         transforms.push({
             let mut renamer = Box::<EditFieldNamesTransform>::default();
+            renamer.load_default_map_for_shape();
+            renamer
+        });
+
+        // transforms.push(Box::<FilterLodTransform>::default());
+
+        // transforms.push(Box::new(FlattenFeatureTransform::new(true)));
+
+        // transforms.push(Box::<GeometricMergedownTransform>::default());
+        // transforms.push(Box::<FullMergedownTransform>::default());
+
+        transforms.push({
+            let mut renamer = Box::<EditFieldNamesTransform>::default();
             if self.request.shorten_names_for_shapefile {
                 renamer.load_default_map_for_shape();
             }
