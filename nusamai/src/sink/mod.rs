@@ -4,6 +4,7 @@ pub mod gpkg;
 pub mod mvt;
 pub mod noop;
 pub mod serde;
+pub mod shapefile;
 
 use nusamai_citygml::schema::Schema;
 

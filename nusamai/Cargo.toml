@@ -35,6 +35,7 @@ itertools = "0.12.0"
 prost = "0.12.3"
 bytesize = "1.3.0"
 ahash = "0.8.7"
+nusamai-shapefile = { path = "../nusamai-shapefile" }
 
 [dev-dependencies]
 rand = "0.8.5"
