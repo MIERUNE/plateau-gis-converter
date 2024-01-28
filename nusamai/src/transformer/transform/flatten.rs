@@ -3,7 +3,7 @@ use std::sync::{Arc, RwLock};
 use crate::transformer::Transform;
 
 use nusamai_citygml::object::{Entity, Map, Object, ObjectStereotype, Value};
-use nusamai_citygml::schema::Schema;
+use nusamai_citygml::schema::{Attribute, Schema, TypeDef, TypeRef};
 use nusamai_citygml::GeometryStore;
 
 pub struct FlattenFeatureTransform {
@@ -13,12 +13,36 @@ pub struct FlattenFeatureTransform {
 impl Transform for FlattenFeatureTransform {
     fn transform(&mut self, entity: Entity, out: &mut Vec<Entity>) {
         let geom_store = entity.geometry_store;
-        self.flatten_feature(entity.root, &geom_store, out);
+        self.flatten_feature(entity.root, &geom_store, out, &None);
     }
 
-    fn transform_schema(&self, _schema: &mut Schema) {
-        // do nothing
+    fn transform_schema(&self, schema: &mut Schema) {
+        for ty in schema.types.values_mut() {
+            if let TypeDef::Feature(feature) = ty {
+                feature.attributes.insert(
+                    "parentId".into(),
+                    Attribute {
+                        type_ref: TypeRef::String,
+                        min_occurs: 0,
+                        max_occurs: Some(1),
+                    },
+                );
+                feature.attributes.insert(
+                    "parentType".into(),
+                    Attribute {
+                        type_ref: TypeRef::String,
+                        min_occurs: 0,
+                        max_occurs: Some(1),
+                    },
+                );
+            }
+        }
     }
+}
+
+struct Parent {
+    id: String,
+    typename: String,
 }
 
 impl FlattenFeatureTransform {
@@ -33,18 +57,33 @@ impl FlattenFeatureTransform {
         value: Value,
         geom_store: &Arc<RwLock<GeometryStore>>,
         out: &mut Vec<Entity>,
+        parent: &Option<Parent>,
     ) -> Option<Value> {
         match value {
             Value::Object(mut obj) => {
+                let new_parent = obj.stereotype.id().map(|id| Parent {
+                    id: id.to_string(),
+                    typename: obj.typename.to_string(),
+                });
+
+                // Attributes
                 let mut new_attribs = Map::default();
+                // set parent id and type to attributes
+                if let Some(Parent { id, typename }) = parent {
+                    new_attribs.insert("parentId".to_string(), Value::String(id.to_string()));
+                    new_attribs.insert(
+                        "parentType".to_string(),
+                        Value::String(typename.to_string()),
+                    );
+                }
                 for (key, value) in obj.attributes.drain(..) {
-                    if let Some(v) = self.flatten_feature(value, geom_store, out) {
+                    if let Some(v) = self.flatten_feature(value, geom_store, out, &new_parent) {
                         new_attribs.insert(key, v);
                     }
                 }
                 obj.attributes = new_attribs;
 
-                // if feature
+                // if this object is a feature
                 if let ObjectStereotype::Feature { .. } = &obj.stereotype {
                     if self.is_split_target(&obj) {
                         out.push(Entity {
@@ -60,15 +99,11 @@ impl FlattenFeatureTransform {
             Value::Array(mut arr) => {
                 let mut new_arr = Vec::new();
                 for value in arr.drain(..) {
-                    if let Some(v) = self.flatten_feature(value, geom_store, out) {
+                    if let Some(v) = self.flatten_feature(value, geom_store, out, parent) {
                         new_arr.push(v)
                     }
                 }
-                if arr.is_empty() {
-                    None
-                } else {
-                    Some(Value::Array(arr))
-                }
+                arr.is_empty().then(|| Value::Array(arr))
             }
             _ => Some(value),
         }
