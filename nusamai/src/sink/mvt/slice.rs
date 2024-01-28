@@ -2,7 +2,10 @@
 
 use hashbrown::HashMap;
 
-use nusamai_citygml::object::Entity;
+use nusamai_citygml::{
+    object::{Entity, ObjectStereotype, Value},
+    Geometry,
+};
 use nusamai_geometry::{LineString2, MultiPolygon2, Polygon2};
 use nusamai_mvt::{webmercator::lnglat_to_web_mercator, TileZXY};
 
@@ -24,41 +27,52 @@ pub fn slice_cityobj_geoms(
         return Ok(());
     }
 
-    let idx_mpoly = &geom_store.multipolygon;
     let mut tiled_mpolys = HashMap::new();
 
     let extent = 2u32.pow(max_detail);
     let buffer = extent * buffer_pixels / 256;
 
-    idx_mpoly.iter().for_each(|idx_poly| {
-        let poly = idx_poly.transform(|c| {
-            let [lng, lat, _height] = geom_store.vertices[c[0] as usize];
-            let (mx, my) = lnglat_to_web_mercator(lng, lat);
-            [mx, my]
-        });
+    let Value::Object(obj) = &obj.root else {
+        return Ok(());
+    };
+    let ObjectStereotype::Feature { geometries, .. } = &obj.stereotype else {
+        return Ok(());
+    };
 
-        // Early rejection of polygons that are not front-facing.
-        if !poly.exterior().is_cw() {
-            return;
-        }
-        debug_assert!(poly.exterior().ring_area() > 0.0);
+    for (_geom_ty, geom) in geom_store.iter_geometry(geometries) {
+        match geom {
+            Geometry::Polygon(idx_poly) => {
+                let poly = idx_poly.transform(|c| {
+                    let [lng, lat, _height] = geom_store.vertices[c[0] as usize];
+                    let (mx, my) = lnglat_to_web_mercator(lng, lat);
+                    [mx, my]
+                });
 
-        let area = poly.area();
+                // Early rejection of polygons that are not front-facing.
+                if !poly.exterior().is_cw() {
+                    continue;
+                }
+                debug_assert!(poly.exterior().ring_area() > 0.0);
 
-        // Slice for each zoom level
-        for zoom in min_z..=max_z {
-            // Skip if the polygon is smaller than 4 square subpixels
-            //
-            // TODO: emulate the 'tiny-polygon-reduction' of tippecanoe
-            if area * (4u64.pow(zoom as u32 + max_detail) as f64) < 4.0 {
-                continue;
+                let area = poly.area();
+
+                // Slice for each zoom level
+                for zoom in min_z..=max_z {
+                    // Skip if the polygon is smaller than 4 square subpixels
+                    //
+                    // TODO: emulate the 'tiny-polygon-reduction' of tippecanoe
+                    if area * (4u64.pow(zoom as u32 + max_detail) as f64) < 4.0 {
+                        continue;
+                    }
+
+                    let z_scale = 2u32.pow(zoom as u32) as f64;
+                    let scaled_poly = poly.transform(|c| [(c[0] * z_scale), (c[1] * z_scale)]);
+                    slice_polygon(zoom, extent, buffer, &scaled_poly, &mut tiled_mpolys);
+                }
             }
-
-            let z_scale = 2u32.pow(zoom as u32) as f64;
-            let scaled_poly = poly.transform(|c| [(c[0] * z_scale), (c[1] * z_scale)]);
-            slice_polygon(zoom, extent, buffer, &scaled_poly, &mut tiled_mpolys);
+            _ => todo!(),
         }
-    });
+    }
 
     for ((z, x, y), mpoly) in tiled_mpolys {
         if mpoly.is_empty() {
@@ -68,6 +82,7 @@ pub fn slice_cityobj_geoms(
     }
 
     Ok(())
+
     // TODO: linestring, point
 }
 
@@ -232,23 +247,28 @@ fn slice_polygon(
 
                     let mut simplified = Vec::new();
                     simplified.push(coords[0]);
+
                     for c in coords.windows(3) {
                         let &[prev, curr, next] = c else {
                             unreachable!()
                         };
+
                         // Remove duplicate points
-                        if prev == curr || curr == next {
+                        if prev == curr {
                             continue;
                         }
+
                         // Reject collinear points
                         let [curr_x, curr_y] = curr;
                         let [prev_x, prev_y] = prev;
                         let [next_x, next_y] = next;
-                        if ((next_y - prev_y) as i32 * (curr_x - prev_x) as i32).abs()
-                            == ((curr_y - prev_y) as i32 * (next_x - prev_x) as i32).abs()
+                        if curr != next
+                            && ((next_y - prev_y) as i32 * (curr_x - prev_x) as i32).abs()
+                                == ((curr_y - prev_y) as i32 * (next_x - prev_x) as i32).abs()
                         {
                             continue;
                         }
+
                         simplified.push(curr);
                     }
                     simplified.push(*coords.last().unwrap());

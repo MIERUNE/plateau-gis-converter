@@ -1,6 +1,9 @@
-pub mod builder;
-pub mod runner;
+mod builder;
+mod runner;
 pub mod transform;
+
+pub use builder::*;
+pub use runner::*;
 
 use crate::pipeline::{Feedback, Parcel, Receiver, Sender};
 

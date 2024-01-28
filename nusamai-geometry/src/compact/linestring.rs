@@ -66,8 +66,11 @@ impl<'a, const D: usize, T: CoordNum> LineString<'a, D, T> {
     }
 
     /// Create a new LineString by applying the given transformation to all coordinates.
-    pub fn transform(&self, f: impl Fn(&[T; D]) -> [T; D]) -> Self {
-        Self {
+    pub fn transform<const D2: usize, T2: CoordNum>(
+        &self,
+        f: impl Fn(&[T; D]) -> [T2; D2],
+    ) -> LineString<D2, T2> {
+        LineString {
             coords: self
                 .coords
                 .chunks_exact(D)
