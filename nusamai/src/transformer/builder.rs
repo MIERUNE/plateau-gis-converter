@@ -27,13 +27,13 @@ impl TransformBuilder for NusamaiTransformBuilder {
         // Transform the coordinate system
         transforms.push(Box::new(ProjectionTransform::new(self.jgd2wgs.clone())));
 
-        transforms.push({
-            let mut renamer = Box::<EditFieldNamesTransform>::default();
-            if self.request.shorten_names_for_shapefile {
-                renamer.load_default_map_for_shape();
-            }
-            renamer
-        });
+        // transforms.push({
+        //     let mut renamer = Box::<EditFieldNamesTransform>::default();
+        //     if self.request.shorten_names_for_shapefile {
+        //         renamer.load_default_map_for_shape();
+        //     }
+        //     renamer
+        // });
 
         // transforms.push(Box::<FilterLodTransform>::default());
 
