@@ -247,23 +247,28 @@ fn slice_polygon(
 
                     let mut simplified = Vec::new();
                     simplified.push(coords[0]);
+
                     for c in coords.windows(3) {
                         let &[prev, curr, next] = c else {
                             unreachable!()
                         };
+
                         // Remove duplicate points
-                        if prev == curr || curr == next {
+                        if prev == curr {
                             continue;
                         }
+
                         // Reject collinear points
                         let [curr_x, curr_y] = curr;
                         let [prev_x, prev_y] = prev;
                         let [next_x, next_y] = next;
-                        if ((next_y - prev_y) as i32 * (curr_x - prev_x) as i32).abs()
-                            == ((curr_y - prev_y) as i32 * (next_x - prev_x) as i32).abs()
+                        if curr != next
+                            && ((next_y - prev_y) as i32 * (curr_x - prev_x) as i32).abs()
+                                == ((curr_y - prev_y) as i32 * (next_x - prev_x) as i32).abs()
                         {
                             continue;
                         }
+
                         simplified.push(curr);
                     }
                     simplified.push(*coords.last().unwrap());
