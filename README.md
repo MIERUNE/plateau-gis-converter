@@ -59,12 +59,14 @@ cargo run --profile release-lto -- ~/path/to/Desktop/PLATEAU/15100_niigata-shi_2
 Dev:
 
 ```console
+cd ./app/
+npm install
 RUST_BACKTRACE=1 npx tauri dev
 ```
 
 Build:
 
 ```bash
-cd app
+cd ./app/
 npx tauri build --release
 ```
