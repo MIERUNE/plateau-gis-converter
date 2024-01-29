@@ -5,6 +5,7 @@ use std::io::{BufWriter, Write};
 use std::path::PathBuf;
 
 use nusamai_citygml::schema::Schema;
+use nusamai_citygml::GeometryType;
 use rayon::prelude::*;
 
 use crate::parameters::*;
@@ -12,10 +13,9 @@ use crate::pipeline::{Feedback, Receiver};
 use crate::sink::{DataSink, DataSinkProvider, SinkInfo};
 use crate::{get_parameter_value, transformer};
 
-use nusamai_citygml::object::Entity;
+use nusamai_citygml::object::{Entity, ObjectStereotype, Value};
 use nusamai_geojson::conversion::{
-    indexed_multilinestring_to_geometry, indexed_multipoint_to_geometry,
-    indexed_multipolygon_to_geometry,
+    indexed_linestring_to_value, indexed_point_to_value, indexed_polygon_to_value,
 };
 
 pub struct GeoJsonSinkProvider {}
@@ -140,44 +140,87 @@ pub fn toplevel_cityobj_to_geojson_features(entity: &Entity) -> Vec<geojson::Fea
     let properties = extract_properties(&entity.root);
     let geom_store = entity.geometry_store.read().unwrap();
 
-    if !geom_store.multipolygon.is_empty() {
-        let mpoly_geojson_geom =
-            indexed_multipolygon_to_geometry(&geom_store.vertices, &geom_store.multipolygon);
+    let Value::Object(obj) = &entity.root else {
+        return Vec::default();
+    };
+    let ObjectStereotype::Feature { id, geometries } = &obj.stereotype else {
+        return Vec::default();
+    };
 
+    let mut polygons = Vec::new();
+    let mut linestrings = Vec::new();
+    let mut points = Vec::new();
+
+    geometries.iter().for_each(|entry| match entry.ty {
+        GeometryType::Solid | GeometryType::Surface | GeometryType::Triangle => {
+            for idx_poly in geom_store
+                .multipolygon
+                .iter_range(entry.pos as usize..(entry.pos + entry.len) as usize)
+            {
+                let value = indexed_polygon_to_value(&geom_store.vertices, &idx_poly);
+                let geojson::Value::Polygon(poly) = value else {
+                    unreachable!()
+                };
+                polygons.push(poly);
+            }
+        }
+        GeometryType::Curve => {
+            for idx_ls in geom_store
+                .multilinestring
+                .iter_range(entry.pos as usize..(entry.pos + entry.len) as usize)
+            {
+                let value = indexed_linestring_to_value(&geom_store.vertices, &idx_ls);
+                let geojson::Value::LineString(ls) = value else {
+                    unreachable!()
+                };
+                linestrings.push(ls);
+            }
+        }
+        GeometryType::Point => {
+            for idx_point in geom_store
+                .multipoint
+                .iter_range(entry.pos as usize..(entry.pos + entry.len) as usize)
+            {
+                let value = indexed_point_to_value(&geom_store.vertices, idx_point[0]);
+                let geojson::Value::Point(point) = value else {
+                    unreachable!()
+                };
+                points.push(point);
+            }
+        }
+    });
+
+    if !polygons.is_empty() {
         let mpoly_geojson_feat = geojson::Feature {
             bbox: None,
-            geometry: Some(mpoly_geojson_geom),
-            id: None,
+            geometry: Some(geojson::Value::MultiPolygon(polygons).into()),
+            id: Some(geojson::feature::Id::String(id.clone())),
             properties: properties.clone(),
             foreign_members: None,
         };
         geojson_features.push(mpoly_geojson_feat);
     }
 
-    if !geom_store.multilinestring.is_empty() {
-        let mls_geojson_geom =
-            indexed_multilinestring_to_geometry(&geom_store.vertices, &geom_store.multilinestring);
-        let mls_geojson_feat = geojson::Feature {
+    if !linestrings.is_empty() {
+        let mpoly_geojson_feat = geojson::Feature {
             bbox: None,
-            geometry: Some(mls_geojson_geom),
-            id: None,
+            geometry: Some(geojson::Value::MultiLineString(linestrings).into()),
+            id: Some(geojson::feature::Id::String(id.clone())),
             properties: properties.clone(),
             foreign_members: None,
         };
-        geojson_features.push(mls_geojson_feat);
+        geojson_features.push(mpoly_geojson_feat);
     }
 
-    if !geom_store.multipoint.is_empty() {
-        let mpoint_geojson_geom =
-            indexed_multipoint_to_geometry(&geom_store.vertices, &geom_store.multipoint);
-        let mpoint_geojson_feat = geojson::Feature {
+    if !points.is_empty() {
+        let mpoly_geojson_feat = geojson::Feature {
             bbox: None,
-            geometry: Some(mpoint_geojson_geom),
-            id: None,
-            properties,
+            geometry: Some(geojson::Value::MultiPoint(points).into()),
+            id: Some(geojson::feature::Id::String(id.clone())),
+            properties: properties.clone(),
             foreign_members: None,
         };
-        geojson_features.push(mpoint_geojson_feat);
+        geojson_features.push(mpoly_geojson_feat);
     }
 
     geojson_features
@@ -188,7 +231,7 @@ mod tests {
     use std::sync::RwLock;
 
     use super::*;
-    use nusamai_citygml::{object::Object, Value};
+    use nusamai_citygml::{object::Object, GeometryRefEntry, Value};
     use nusamai_geometry::MultiPolygon;
     use nusamai_projection::crs::EPSG_JGD2011_GEOGRAPHIC_3D;
 
@@ -216,7 +259,12 @@ mod tests {
                 attributes: Default::default(),
                 stereotype: nusamai_citygml::object::ObjectStereotype::Feature {
                     id: "dummy".into(),
-                    geometries: Vec::default(),
+                    geometries: vec![GeometryRefEntry {
+                        ty: GeometryType::Solid,
+                        pos: 0,
+                        len: 1,
+                        lod: 1,
+                    }],
                 },
             }),
             geometry_store: RwLock::new(geometries).into(),

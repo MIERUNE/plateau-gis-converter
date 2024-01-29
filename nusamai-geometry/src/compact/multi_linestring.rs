@@ -1,4 +1,5 @@
 use std::borrow::Cow;
+use std::ops::Range;
 
 use super::linestring::LineString;
 use super::CoordNum;
@@ -54,10 +55,17 @@ impl<'a, const D: usize, T: CoordNum> MultiLineString<'a, D, T> {
 
     pub fn iter(&self) -> Iter<D, T> {
         Iter {
-            all_coords: &self.all_coords,
-            coords_spans: &self.coords_spans,
-            start: 0,
-            index_pos: 0,
+            ls: self,
+            pos: 0,
+            end: self.len(),
+        }
+    }
+
+    pub fn iter_range(&self, range: Range<usize>) -> Iter<D, T> {
+        Iter {
+            ls: self,
+            pos: range.start,
+            end: range.end,
         }
     }
 
@@ -121,25 +129,30 @@ impl<'a, const D: usize, T: CoordNum> IntoIterator for &'a MultiLineString<'_, D
 }
 
 pub struct Iter<'a, const D: usize, T: CoordNum> {
-    all_coords: &'a [T],
-    coords_spans: &'a [u32],
-    start: usize,
-    index_pos: usize,
+    ls: &'a MultiLineString<'a, D, T>,
+    pos: usize,
+    end: usize,
 }
 
 impl<'a, const D: usize, T: CoordNum> Iterator for Iter<'a, D, T> {
     type Item = LineString<'a, D, T>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if self.index_pos < self.coords_spans.len() {
-            let end = self.coords_spans[self.index_pos] as usize * D;
-            self.index_pos += 1;
-            let coords = &self.all_coords[self.start..end];
-            self.start = end;
-            Some(LineString::from_raw(coords.into()))
-        } else if self.start < self.all_coords.len() {
-            let coords = &self.all_coords[self.start..];
-            self.start = self.all_coords.len();
+        if self.ls.is_empty() {
+            return None;
+        }
+        if self.pos < self.end {
+            let start = match self.pos {
+                0 => 0,
+                _ => self.ls.coords_spans[self.pos - 1] as usize * D,
+            };
+            let end = if self.pos < self.ls.coords_spans.len() {
+                self.ls.coords_spans[self.pos] as usize * D
+            } else {
+                self.ls.all_coords.len()
+            };
+            let coords = &self.ls.all_coords[start..end];
+            self.pos += 1;
             Some(LineString::from_raw(coords.into()))
         } else {
             None
@@ -209,11 +222,23 @@ mod tests {
         mline.add_linestring(vec![[6., 6.], [7., 7.], [8., 8.], [9., 9.]]);
         assert_eq!(mline.len(), 3);
 
+        mline.add_linestring(vec![[1., 1.], [2., 2.], [3., 3.], [4., 4.]]);
+        assert_eq!(mline.len(), 4);
+
         for (i, line) in mline.iter().enumerate() {
             match i {
                 0 => assert_eq!(line.coords(), &[0., 0., 1., 1., 2., 2.]),
                 1 => assert_eq!(line.coords(), &[3., 3., 4., 4., 5., 5.]),
                 2 => assert_eq!(line.coords(), &[6., 6., 7., 7., 8., 8., 9., 9.]),
+                3 => assert_eq!(line.coords(), &[1., 1., 2., 2., 3., 3., 4., 4.]),
+                _ => unreachable!(),
+            }
+        }
+
+        for (i, line) in mline.iter_range(1..3).enumerate() {
+            match i {
+                0 => assert_eq!(line.coords(), &[3., 3., 4., 4., 5., 5.]),
+                1 => assert_eq!(line.coords(), &[6., 6., 7., 7., 8., 8., 9., 9.]),
                 _ => unreachable!(),
             }
         }
