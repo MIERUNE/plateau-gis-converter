@@ -31,8 +31,8 @@ pub struct Packet {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub version: Option<String>,
 
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub availability: Option<Value>,
+    #[serde(default = "default_availability")]
+    pub availability: Value,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub properties: Option<HashMap<String, Value>>,
@@ -112,4 +112,72 @@ pub struct Packet {
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub agi_vector: Option<HashMap<String, Value>>,
+}
+
+fn default_availability() -> Value {
+    Value::String("0000-00-00T00:00:00Z/9999-12-31T24:00:00Z".to_string())
+}
+
+impl Default for Packet {
+    fn default() -> Self {
+        Self {
+            id: None,
+            delete: None,
+            name: None,
+            parent: None,
+            description: None,
+            clock: None,
+            version: None,
+            availability: default_availability(),
+            properties: None,
+            position: None,
+            orientation: None,
+            view_from: None,
+            billboard: None,
+            box_: None,
+            corridor: None,
+            cylinder: None,
+            ellipse: None,
+            ellipsoid: None,
+            label: None,
+            model: None,
+            path: None,
+            point: None,
+            polygon: None,
+            polyline: None,
+            polyline_volume: None,
+            rectangle: None,
+            tileset: None,
+            wall: None,
+            agi_conic_sensor: None,
+            agi_custom_pattern_sensor: None,
+            agi_rectangular_sensor: None,
+            agi_fan: None,
+            agi_vector: None,
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn default_deserialize() {
+        let packet: Packet = serde_json::from_str("{}").unwrap();
+        assert_eq!(
+            packet.availability,
+            Value::String("0000-00-00T00:00:00Z/9999-12-31T24:00:00Z".to_string())
+        );
+    }
+
+    #[test]
+    fn default_serialize() {
+        let packet = Packet::default();
+        let json = serde_json::to_string(&packet).unwrap();
+        assert_eq!(
+            json,
+            r#"{"availability":"0000-00-00T00:00:00Z/9999-12-31T24:00:00Z"}"#
+        );
+    }
 }
