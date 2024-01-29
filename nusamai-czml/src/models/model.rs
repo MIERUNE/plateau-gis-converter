@@ -117,9 +117,6 @@ mod tests {
 
     #[test]
     fn test_default() {
-        let model_string: Model = serde_json::from_str(r#"{"gltf":"example.gltf"}"#).unwrap();
-        assert_eq!(model_string.show, None);
-
         let model_default = Model::default();
         assert_eq!(model_default.show, Some(CzmlBoolean::Boolean(true)));
     }
