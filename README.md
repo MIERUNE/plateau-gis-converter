@@ -6,31 +6,40 @@
 [![Docs](https://github.com/MIERUNE/nusamai/actions/workflows/doc.yml/badge.svg)](https://mierune.github.io/nusamai/app/)
 
 - Notion: [BRIDGE 都市デジタルツイン・GISコンバータの開発](https://www.notion.so/mierune/BRIDGE-GIS-461ba0355b3041619ed3f303a8b0166f)
-- Rustdoc: https://mierune.github.io/nusamai/app/ 
+- Rustdoc: <https://mierune.github.io/nusamai/app/>
 
 ## リポジトリ構成
 
 - アプリケーション：
-    - [`app`](./app/) &mdash; Tauri による GUI アプリケーション
-    - [`nusamai`](./nusamai/) &mdash; アプリケーションのバックエンド (およびCLI実装)
+  - [`app`](./app/) &mdash; Tauri による GUI アプリケーション
+  - [`nusamai`](./nusamai/) &mdash; アプリケーションのバックエンド (およびCLI実装)
 - 基盤・ユーティリティ：
-    - [`nusamai-geometry`](./nusamai-geometry/) &mdash; ジオメトリ型
-    - [`nusamai-projection`](./nusamai-projection/) &mdash; 投影法変換
+  - [`nusamai-geometry`](./nusamai-geometry/) &mdash; ジオメトリ型
+  - [`nusamai-projection`](./nusamai-projection/) &mdash; 投影法変換
 - データソース：
-    - [`nusamai-citygml`](./nusamai-plateau/citygml/) &mdash; CityGML パーサ
-    - [`nusamai-plateau`](./nusamai-plateau/) &mdash; PLATEAU 用の CityGML モデル
-        - [`macros`](./nusamai-plateau/citygml/macros/) &mdash; パーサ導出用の proc macros
+  - [`nusamai-citygml`](./nusamai-plateau/citygml/) &mdash; CityGML パーサ
+  - [`nusamai-plateau`](./nusamai-plateau/) &mdash; PLATEAU 用の CityGML モデル
+    - [`macros`](./nusamai-plateau/citygml/macros/) &mdash; パーサ導出用の proc macros
 - 変換先形式のためのライブラリ：
-    - [`nusamai-3dtiles`](./nusamai-3dtiles/) &mdash; 3D Tiles
-    - [`nusamai-mvt`](./nusamai-mvt/) &mdash; Mapbox Vector Tiles (MVT)
-    - [`nusamai-gpkg`](./nusamai-gpkg/) &mdash; GeoPackage
-    - [`nusamai-gltf`](./nusamai-gltf/) &mdash; glTF
-    - [`nusamai-geojson`](./nusamai-geojson/) &mdash; GeoJSON
+  - [`nusamai-3dtiles`](./nusamai-3dtiles/) &mdash; 3D Tiles
+  - [`nusamai-mvt`](./nusamai-mvt/) &mdash; Mapbox Vector Tiles (MVT)
+  - [`nusamai-gpkg`](./nusamai-gpkg/) &mdash; GeoPackage
+  - [`nusamai-gltf`](./nusamai-gltf/) &mdash; glTF
+  - [`nusamai-geojson`](./nusamai-geojson/) &mdash; GeoJSON
 
 ### 外部リポジトリ
 
 - [MIERUNE/earcut-rs](https://github.com/MIERUNE/earcut-rs) &mdash; ポリゴン三角形化アルゴリズム
 - [MIERUNE/japan-geoid](https://github.com/MIERUNE/japan-geoid) &mdash; 日本のジオイドモデル (JGD2011 → WGS 84 の変換に必要)
+
+## Build
+
+### GUI
+
+```bash
+cd app
+npm run tauri build --release
+```
 
 ## Development
 

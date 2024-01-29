@@ -58,9 +58,10 @@ pub struct GeoJsonSink {
 
 impl DataSink for GeoJsonSink {
     fn make_transform_requirements(&self) -> transformer::Requirements {
-        // use transformer::RequirementItem;
+        use transformer::RequirementItem;
 
         transformer::Requirements {
+            mergedown: RequirementItem::Required(transformer::Mergedown::Geometry),
             ..Default::default()
         }
     }
@@ -122,20 +123,18 @@ impl DataSink for GeoJsonSink {
     }
 }
 
-fn extract_properties(tree: &nusamai_citygml::object::Value) -> Option<geojson::JsonObject> {
-    match &tree {
+fn extract_properties(value: &nusamai_citygml::object::Value) -> Option<geojson::JsonObject> {
+    match &value {
         obj @ nusamai_citygml::Value::Object(_) => match obj.to_attribute_json() {
             serde_json::Value::Object(map) => Some(map),
             _ => unreachable!(),
         },
-        _ => panic!("Root value type must be Feature, but found {:?}", tree),
+        _ => panic!("Root value type must be Feature, but found {:?}", value),
     }
 }
 
 /// Create GeoJSON features from a TopLevelCityObject
 /// Each feature for MultiPolygon, MultiLineString, and MultiPoint will be created (if it exists)
-// TODO: Handle properties (`obj.root` -> `geojson::Feature.properties`)
-// TODO: We may want to traverse the tree and create features for each semantic child in the future
 pub fn toplevel_cityobj_to_geojson_features(entity: &Entity) -> Vec<geojson::Feature> {
     let mut geojson_features: Vec<geojson::Feature> = Vec::with_capacity(1);
     let properties = extract_properties(&entity.root);
