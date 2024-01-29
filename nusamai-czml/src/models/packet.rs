@@ -69,8 +69,8 @@ pub struct Packet {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub label: Option<HashMap<String, Value>>,
 
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub model: Option<Model>,
+    #[serde(default)]
+    pub model: Model,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub path: Option<HashMap<String, Value>>,
@@ -141,7 +141,7 @@ impl Default for Packet {
             ellipse: None,
             ellipsoid: None,
             label: None,
-            model: None,
+            model: Model::default(),
             path: None,
             point: None,
             polygon: None,
@@ -176,9 +176,10 @@ mod tests {
     fn test_default_serialize() {
         let packet = Packet::default();
         let json = serde_json::to_string(&packet).unwrap();
+        println!("{}", json);
         assert_eq!(
             json,
-            r#"{"availability":"0000-00-00T00:00:00Z/9999-12-31T24:00:00Z"}"#
+            r#"{"availability":"0000-00-00T00:00:00Z/9999-12-31T24:00:00Z","model":{"show":true,"gltf":"","scale":1.0,"minimumPixelSize":0.0,"incrementallyLoadTextures":true,"runAnimations":true,"shadows":"ENABLED","heightReference":"NONE","silhouetteColor":{"rgba":[255,0,0,0]},"silhouetteSize":0.0,"color":{"rgba":[0,0,0,0]},"colorBlendMode":"HIGHLIGHT","colorBlendAmount":0.5}}"#
         );
     }
 }

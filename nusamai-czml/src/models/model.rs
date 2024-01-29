@@ -169,25 +169,9 @@ mod tests {
     fn test_default_serialize() {
         let model = Model::default();
         let json = serde_json::to_string(&model).unwrap();
-
         assert_eq!(
             json,
-            r#"
-            {
-                "show":true,
-                "gltf":"",
-                "scale":1.0,
-                "minimumPixelSize":0.0,
-                "incrementallyLoadTextures":true,
-                "runAnimations":true,
-                "shadows":"ENABLED",
-                "heightReference":"NONE",
-                "silhouetteColor":{"rgba":[255,0,0,0]},
-                "silhouetteSize":0.0,
-                "color":{"rgba":[0,0,0,0]},
-                "colorBlendMode":"HIGHLIGHT",
-                "colorBlendAmount":0.5
-            }"#
-        );
+            r#"{"show":true,"gltf":"","scale":1.0,"minimumPixelSize":0.0,"incrementallyLoadTextures":true,"runAnimations":true,"shadows":"ENABLED","heightReference":"NONE","silhouetteColor":{"rgba":[255,0,0,0]},"silhouetteSize":0.0,"color":{"rgba":[0,0,0,0]},"colorBlendMode":"HIGHLIGHT","colorBlendAmount":0.5}"#
+        )
     }
 }
