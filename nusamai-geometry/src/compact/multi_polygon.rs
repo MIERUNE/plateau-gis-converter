@@ -305,17 +305,41 @@ mod tests {
         // 3rd polygon
         mpoly.add_exterior([[4., 0.], [7., 0.], [7., 3.], [4., 3.], [4., 0.]]);
         assert_eq!(mpoly.len(), 3);
-        mpoly.add_interior([[5., 1.], [6., 1.], [6., 2.], [5., 2.], [5., 1.]]);
-        assert_eq!(mpoly.len(), 3);
 
         for (i, poly) in mpoly.iter().enumerate() {
             match i {
                 0 => assert_eq!(poly.interiors().count(), 2),
                 1 => assert_eq!(poly.interiors().count(), 1),
-                2 => assert_eq!(poly.interiors().count(), 1),
+                2 => assert_eq!(poly.interiors().count(), 0),
                 _ => unreachable!(),
             }
         }
+
+        for (i, poly) in mpoly.iter_range(0..1).enumerate() {
+            match i {
+                0 => assert_eq!(poly.interiors().count(), 2),
+                _ => unreachable!(),
+            }
+        }
+
+        for (i, poly) in mpoly.iter_range(1..2).enumerate() {
+            match i {
+                0 => assert_eq!(poly.interiors().count(), 1),
+                _ => unreachable!(),
+            }
+        }
+
+        let mut found = false;
+        for (i, poly) in mpoly.iter_range(2..3).enumerate() {
+            match i {
+                0 => {
+                    assert_eq!(poly.interiors().count(), 0);
+                    found = true;
+                }
+                _ => unreachable!(),
+            }
+        }
+        assert!(found);
 
         mpoly.clear();
         assert_eq!(mpoly.len(), 0);

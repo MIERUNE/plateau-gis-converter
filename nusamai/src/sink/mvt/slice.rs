@@ -3,8 +3,8 @@
 use hashbrown::HashMap;
 
 use nusamai_citygml::{
+    geometry::GeometryType,
     object::{Entity, ObjectStereotype, Value},
-    Geometry,
 };
 use nusamai_geometry::{LineString2, MultiPolygon2, Polygon2};
 use nusamai_mvt::{webmercator::lnglat_to_web_mercator, TileZXY};
@@ -39,9 +39,12 @@ pub fn slice_cityobj_geoms(
         return Ok(());
     };
 
-    for (_geom_ty, geom) in geom_store.iter_geometry(geometries) {
-        match geom {
-            Geometry::Polygon(idx_poly) => {
+    geometries.iter().for_each(|entry| match entry.ty {
+        GeometryType::Solid | GeometryType::Surface | GeometryType::Triangle => {
+            for idx_poly in geom_store
+                .multipolygon
+                .iter_range(entry.pos as usize..(entry.pos + entry.len) as usize)
+            {
                 let poly = idx_poly.transform(|c| {
                     let [lng, lat, _height] = geom_store.vertices[c[0] as usize];
                     let (mx, my) = lnglat_to_web_mercator(lng, lat);
@@ -70,9 +73,14 @@ pub fn slice_cityobj_geoms(
                     slice_polygon(zoom, extent, buffer, &scaled_poly, &mut tiled_mpolys);
                 }
             }
-            _ => todo!(),
         }
-    }
+        GeometryType::Curve => {
+            // TODO: implement
+        }
+        GeometryType::Point => {
+            // TODO: implement
+        }
+    });
 
     for ((z, x, y), mpoly) in tiled_mpolys {
         if mpoly.is_empty() {
