@@ -11,8 +11,8 @@ use nusamai::sink::{
 use nusamai::sink::{DataSink, DataSinkProvider};
 use nusamai::source::citygml::CityGmlSourceProvider;
 use nusamai::source::{DataSource, DataSourceProvider};
-use nusamai::transformer::builder::{NusamaiTransformBuilder, TransformBuilder};
-use nusamai::transformer::runner::MultiThreadTransformer;
+use nusamai::transformer::MultiThreadTransformer;
+use nusamai::transformer::{NusamaiTransformBuilder, TransformBuilder};
 use nusamai_citygml::CityGmlElement;
 use nusamai_plateau::models::TopLevelCityObject;
 

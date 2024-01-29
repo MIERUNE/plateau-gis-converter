@@ -1,4 +1,4 @@
-use nusamai_geometry::{MultiLineString, MultiPoint, MultiPolygon};
+use nusamai_geometry::{LineString, MultiLineString, MultiPoint, MultiPolygon, Polygon};
 use nusamai_projection::crs::*;
 
 #[derive(Debug, Clone, Copy)]
@@ -14,10 +14,8 @@ pub enum GeometryParseType {
 }
 
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
-#[derive(Debug, Clone, Copy, Default, Hash, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, Hash, PartialEq, Eq)]
 pub enum GeometryType {
-    #[default]
-    Unknown,
     /// Polygons (solids)
     Solid,
     /// Polygons (surfaces)
@@ -42,6 +40,12 @@ pub struct GeometryRefEntry {
 
 pub type GeometryRef = Vec<GeometryRefEntry>;
 
+pub enum Geometry<'a> {
+    Polygon(Polygon<'a, 1, u32>),
+    LineString(LineString<'a, 1, u32>),
+    Point(&'a [u32]),
+}
+
 /// Geometries in a single city object and all its children.
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 #[derive(Debug, Default)]
@@ -56,6 +60,21 @@ pub struct GeometryStore {
     pub multilinestring: MultiLineString<'static, 1, u32>,
     /// All points, referenced by `GeometryRef`
     pub multipoint: MultiPoint<'static, 1, u32>,
+}
+
+impl GeometryStore {
+    pub fn iter_geometry<'a>(
+        &'a self,
+        geom: &'a GeometryRef,
+    ) -> impl Iterator<Item = (GeometryType, Geometry)> {
+        geom.iter().flat_map(move |entry| match entry.ty {
+            GeometryType::Solid | GeometryType::Surface | GeometryType::Triangle => self
+                .multipolygon
+                .iter_range(entry.pos as usize..(entry.pos + entry.len) as usize)
+                .map(|idx_poly| (entry.ty, Geometry::Polygon(idx_poly))),
+            _ => todo!(),
+        })
+    }
 }
 
 #[derive(Default)]

@@ -7,12 +7,12 @@ use nusamai_citygml::GeometryRefEntry;
 
 /// Collect all attributes and geometries from the descendants and merge them into the root object.
 #[derive(Default, Clone)]
-pub struct FullMergeTransform {
+pub struct FullMergedownTransform {
     geoms_buf: HashSet<GeometryRefEntry>,
     path_buf: String,
 }
 
-impl Transform for FullMergeTransform {
+impl Transform for FullMergedownTransform {
     fn transform(&mut self, mut entity: Entity, out: &mut Vec<Entity>) {
         if let Value::Object(obj) = entity.root {
             if let ObjectStereotype::Feature { id, geometries } = obj.stereotype {
@@ -88,11 +88,11 @@ fn consume_tree_for_full_merge(
 }
 
 #[derive(Default, Clone)]
-pub struct GeometryMergeTransform {
+pub struct GeometricMergedownTransform {
     geoms_buf: HashSet<GeometryRefEntry>,
 }
 
-impl Transform for GeometryMergeTransform {
+impl Transform for GeometricMergedownTransform {
     fn transform(&mut self, mut entity: Entity, out: &mut Vec<Entity>) {
         if let Value::Object(obj) = &mut entity.root {
             if let ObjectStereotype::Feature { geometries, .. } = &mut obj.stereotype {
