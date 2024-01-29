@@ -2,9 +2,7 @@ use nusamai::sink;
 use nusamai::sink::DataSinkProvider;
 use nusamai::source::citygml::CityGmlSourceProvider;
 use nusamai::source::DataSourceProvider;
-use nusamai::transformer::{
-    self, MultiThreadTransformer, NusamaiTransformBuilder, TransformBuilder,
-};
+use nusamai::transformer::{MultiThreadTransformer, NusamaiTransformBuilder, TransformBuilder};
 use nusamai_citygml::CityGmlElement;
 use nusamai_plateau::models::TopLevelCityObject;
 
