@@ -123,13 +123,13 @@ impl DataSink for GeoJsonSink {
     }
 }
 
-fn extract_properties(entity: &nusamai_citygml::object::Value) -> Option<geojson::JsonObject> {
-    match &entity {
+fn extract_properties(value: &nusamai_citygml::object::Value) -> Option<geojson::JsonObject> {
+    match &value {
         obj @ nusamai_citygml::Value::Object(_) => match obj.to_attribute_json() {
             serde_json::Value::Object(map) => Some(map),
             _ => unreachable!(),
         },
-        _ => panic!("Root value type must be Feature, but found {:?}", entity),
+        _ => panic!("Root value type must be Feature, but found {:?}", value),
     }
 }
 
