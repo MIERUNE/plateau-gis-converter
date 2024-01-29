@@ -106,6 +106,6 @@ mod tests {
     #[test]
     fn test_default() {
         let model_default = Model::default();
-        assert_eq!(model_default.show, Some(CzmlBoolean::Boolean(true)));
+        assert_eq!(model_default.show, CzmlBoolean::Boolean(true));
     }
 }

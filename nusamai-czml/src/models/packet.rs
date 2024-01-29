@@ -164,7 +164,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn default_deserialize() {
+    fn test_default_deserialize() {
         let packet: Packet = serde_json::from_str("{}").unwrap();
         assert_eq!(
             packet.availability,
@@ -173,7 +173,7 @@ mod tests {
     }
 
     #[test]
-    fn default_serialize() {
+    fn test_default_serialize() {
         let packet = Packet::default();
         let json = serde_json::to_string(&packet).unwrap();
         assert_eq!(
