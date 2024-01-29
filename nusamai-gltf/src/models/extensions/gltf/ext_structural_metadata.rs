@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::collections::HashMap;
 
-#[derive(Serialize, Deserialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
 #[serde(rename_all = "camelCase")]
 #[serde(deny_unknown_fields)]
 pub struct ExtStructuralMetadata {
@@ -32,7 +32,7 @@ pub struct ExtStructuralMetadata {
 }
 
 /// Schema in EXT_structural_metadata
-#[derive(Serialize, Deserialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
 #[serde(rename_all = "camelCase")]
 #[serde(deny_unknown_fields)]
 pub struct Schema {
@@ -69,7 +69,7 @@ pub struct Schema {
 }
 
 /// Class in EXT_structural_metadata
-#[derive(Serialize, Deserialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
 #[serde(deny_unknown_fields)]
 pub struct Class {
     /// The name of the class, e.g. for display purposes.
@@ -94,7 +94,7 @@ pub struct Class {
 }
 
 /// ElementType enumeration
-#[derive(Serialize, Deserialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
 #[serde(rename_all = "UPPERCASE")]
 pub enum ClassPropertyType {
     #[default]
@@ -111,7 +111,7 @@ pub enum ClassPropertyType {
 }
 
 /// ComponentType enumeration
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 #[serde(rename_all = "UPPERCASE")]
 pub enum ClassPropertyComponentType {
     Int8,
@@ -127,7 +127,7 @@ pub enum ClassPropertyComponentType {
 }
 
 /// Class Property in EXT_structural_metadata
-#[derive(Serialize, Deserialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
 #[serde(deny_unknown_fields)]
 #[serde(rename_all = "camelCase")]
 pub struct ClassProperty {
@@ -205,7 +205,7 @@ pub struct ClassProperty {
 }
 
 /// ValueType enumeration
-#[derive(Serialize, Deserialize, Debug, Default, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default, PartialEq, Eq)]
 #[serde(rename_all = "UPPERCASE")]
 pub enum EnumValueType {
     Int8,
@@ -220,7 +220,7 @@ pub enum EnumValueType {
 }
 
 /// Enum in EXT_structural_metadata
-#[derive(Serialize, Deserialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
 #[serde(rename_all = "camelCase")]
 #[serde(deny_unknown_fields)]
 pub struct Enum {
@@ -249,7 +249,7 @@ pub struct Enum {
 }
 
 /// Enum Value in EXT_structural_metadata
-#[derive(Serialize, Deserialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
 #[serde(rename_all = "camelCase")]
 #[serde(deny_unknown_fields)]
 pub struct EnumValue {
@@ -273,7 +273,7 @@ pub struct EnumValue {
 }
 
 /// Property Table in EXT_structural_metadata
-#[derive(Serialize, Deserialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
 #[serde(rename_all = "camelCase")]
 #[serde(deny_unknown_fields)]
 pub struct PropertyTable {
@@ -300,7 +300,7 @@ pub struct PropertyTable {
     pub extras: Option<Value>,
 }
 
-#[derive(Serialize, Deserialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
 pub struct PropertyTexture {
     /// The name of the property attribute, e.g. for display purposes.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -315,7 +315,7 @@ pub struct PropertyTexture {
 }
 
 /// A texture containing property values.
-#[derive(Serialize, Deserialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct PropertyTextureProperty {
     /// Texture channels containing property values, identified by index. The values may be packed into multiple channels if a single channel does not have sufficient bit depth. The values are packed in little-endian order."
@@ -350,7 +350,7 @@ fn is_default_channels(v: &Vec<u32>) -> bool {
     *v == vec![0]
 }
 
-#[derive(Serialize, Deserialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
 #[serde(rename_all = "camelCase")]
 #[serde(deny_unknown_fields)]
 pub struct PropertyAttribute {
@@ -366,7 +366,7 @@ pub struct PropertyAttribute {
     properties: HashMap<String, PropertyAttributeProperty>,
 }
 
-#[derive(Serialize, Deserialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct PropertyAttributeProperty {
     /// The name of the attribute containing property values.
@@ -390,7 +390,7 @@ pub struct PropertyAttributeProperty {
 }
 
 /// OffsetType enumeration
-#[derive(Serialize, Deserialize, Debug, Default, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default, PartialEq, Eq)]
 #[serde(rename_all = "UPPERCASE")]
 pub enum OffsetType {
     UInt8,
@@ -401,7 +401,7 @@ pub enum OffsetType {
 }
 
 /// Property Table Property in EXT_structural_metadata
-#[derive(Serialize, Deserialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
 #[serde(rename_all = "camelCase")]
 #[serde(deny_unknown_fields)]
 pub struct PropertyTableProperty {

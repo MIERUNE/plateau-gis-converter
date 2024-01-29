@@ -14,7 +14,7 @@ pub enum BufferViewTarget {
 }
 
 /// A buffer points to binary geometry, animation, or skins.
-#[derive(Serialize, Deserialize, Debug, Default, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
 #[serde(rename_all = "camelCase")]
 #[serde(deny_unknown_fields)]
 pub struct Buffer {
@@ -46,7 +46,7 @@ pub struct BufferExtensions {
 }
 
 /// A view into a buffer generally representing a subset of the buffer.
-#[derive(Serialize, Deserialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
 #[serde(rename_all = "camelCase")]
 #[serde(deny_unknown_fields)]
 pub struct BufferView {

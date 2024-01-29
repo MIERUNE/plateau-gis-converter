@@ -5,7 +5,7 @@ use std::collections::HashMap;
 use serde_json::Value;
 
 /// A texture and its sampler.
-#[derive(Serialize, Deserialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
 #[serde[rename_all = "camelCase"]]
 #[serde(deny_unknown_fields)]
 pub struct Texture {
@@ -30,7 +30,7 @@ pub struct Texture {
     pub extras: Option<Value>,
 }
 
-#[derive(Serialize, Deserialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct TextureExtensions {
     #[serde(flatten)]

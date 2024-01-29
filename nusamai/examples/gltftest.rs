@@ -1,25 +1,57 @@
 
 use nusamai_gltf::*;
 
+
 fn main(){
-    match import_gltf("../../assets/glTF/glTF-Sample-Models-main/2.0/Avocado/glTF-Binary/Avocado.glb".to_string())
+
+    let filename = "../../assets/glTF/glTF-Sample-Models-main/2.0/Avocado/glTF/Avocado.gltf";
+    //match import_gltf("../../assets/glTF/glTF-Sample-Models-main/2.0/Avocado/glTF-Binary/Avocado.glb".to_string())
+    match import_gltf(filename.to_string())
     {
         Ok((gltf, seq_list)) => {
+            println!("{}", gltf.to_string_pretty().unwrap());
+            println!("{}", seq_list.to_string());
 
-            println!("YES!!! {}", gltf.to_string().unwrap());
+            match export_glb("./out.glb".to_string(), gltf, seq_list){
+                Ok(())=>{
+                },
+                Err(e)=>{
+                    match e{
+                        GltfExportError::FileOpenError(msg)=>{
+                            println!("FileOpenError: {}", msg);
+                        },
+                        GltfExportError::WriteError(msg)=>{
+                            println!("WriteError: {}", msg);
+                        },
+                        GltfExportError::TranslationError(msg)=>{
+                            println!("TranslationError: {}", msg);
+                        },
+                        GltfExportError::OtherError(msg)=>{
+                            println!("OtherError: {}", msg);
+                        }
+
+                    }
+                }
+            }
 
         },
-        Err(GltfImportError::FileOpenError(msg)) => {
-            println!("FileOpenError: {}", msg);
-        },
-        Err(GltfImportError::ReadError(msg))=>{
-            println!("ReadError: {}", msg);
-        },
-        Err(GltfImportError::OtherError(msg))=>{
-            println!("OtherError: {}", msg);
-        },
-        _ => {}
+        Err(e)=>{
+            match e{
+                GltfImportError::FileOpenError(msg)=>{
+                    println!("FileOpenError: {}", msg);
+                },
+                GltfImportError::ReadError(msg)=>{
+                    println!("ReadError: {}", msg);
+                },
+                GltfImportError::ParseError(msg)=>{
+                    println!("ParseError: {}", msg);
+                },
+                GltfImportError::OtherError(msg)=>{
+                    println!("OtherError: {}", msg);
+                }
+            }
+        }
     }
-
+    
 }
 

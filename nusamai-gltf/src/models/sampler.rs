@@ -35,7 +35,7 @@ pub enum WrappingMode {
 }
 
 /// Texture sampler properties for filtering and wrapping modes.
-#[derive(Serialize, Deserialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
 #[serde(rename_all = "camelCase")]
 #[serde(default)]
 #[serde(deny_unknown_fields)]
@@ -69,7 +69,7 @@ pub struct Sampler {
     pub extras: Option<Value>,
 }
 
-#[derive(Serialize, Deserialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct SamplerExtensions {
     #[serde(flatten)]

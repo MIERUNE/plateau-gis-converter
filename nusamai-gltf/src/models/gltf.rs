@@ -17,7 +17,7 @@ enum GltfType {
 }
 
 /// The root object for a glTF asset.
-#[derive(Serialize, Deserialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Debug, Default, Clone)]
 #[serde(rename_all = "camelCase")]
 #[serde(deny_unknown_fields)]
 pub struct Gltf {
@@ -101,6 +101,9 @@ impl Gltf {
     pub fn to_string(&self) -> Result<String, serde_json::Error> {
         serde_json::to_string(self)
     }
+    pub fn to_string_pretty(&self) -> Result<String, serde_json::Error> {
+        serde_json::to_string_pretty(self)
+    }
 }
 
 /// GltfSequence
@@ -110,10 +113,6 @@ impl Gltf {
 
 #[derive(Debug, Clone)]
 pub enum GltfSequence {
-    D5120(Vec<i8>),
-    D5121(Vec<u8>),
-    D5122(Vec<i16>),
-    D5123(Vec<u16>),
     Indices(Vec<u32>),
     Coords(Vec<f32>),
     Image(Vec<u8>),
@@ -125,7 +124,7 @@ pub enum GltfSequence {
 
 #[derive(Debug, Clone)]
 pub struct GltfSeqList {
-    seq_list: Vec<GltfSequence>,
+    pub sequences: Vec<GltfSequence>,
 }
 impl GltfSeqList {
     pub fn new() -> Self {
@@ -135,7 +134,7 @@ impl GltfSeqList {
     }
     /// push sequence to sequence list
     pub fn push(&mut self, sequence: GltfSequence) {
-        self.seq_list.push(sequence);
+        self.sequences.push(sequence);
     }
     /// シーケンスをバイナリに変換
     /// returns (binary_sequence, offset_list, size_list)
@@ -146,44 +145,8 @@ impl GltfSeqList {
         let mut sizes: Vec<usize> = Vec::new();
         let mut bin_buf: Vec<u8> = Vec::new();
 
-        for item in self.seq_list.iter() {
+        for item in self.sequences.iter() {
             match item {
-                GltfSequence::D5120(data) => {
-                    // i8 と u8 はサイズが同じなので as で型変換して push
-                    for v in data {
-                        bin_buf.push(*v as u8)
-                    }
-                    // 4 byte 境界に合わせるために
-                    while bin_buf.len() % 4 != 0 {
-                        bin_buf.push(0x0)
-                    }
-                }
-                GltfSequence::D5121(data) => {
-                    let mut copied = data.clone();
-                    bin_buf.append(&mut copied);
-                    // 4 byte 境界に合わせるために
-                    while bin_buf.len() % 4 != 0 {
-                        bin_buf.push(0x0)
-                    }
-                }
-                GltfSequence::D5122(data) => {
-                    for v in data.iter() {
-                        let _ = bin_buf.write_i16::<LittleEndian>(*v).unwrap();
-                    }
-                    // 4 byte 境界に合わせるために
-                    while bin_buf.len() % 4 != 0 {
-                        bin_buf.push(0x0)
-                    }
-                }
-                GltfSequence::D5123(data) => {
-                    for v in data.iter() {
-                        let _ = bin_buf.write_u16::<LittleEndian>(*v).unwrap();
-                    }
-                    // 4 byte 境界に合わせるために
-                    while bin_buf.len() % 4 != 0 {
-                        bin_buf.push(0x0)
-                    }
-                }
                 GltfSequence::Indices(indices) => {
                     for v in indices.iter() {
                         let _ = bin_buf.write_u32::<LittleEndian>(*v).unwrap();
@@ -232,8 +195,37 @@ impl GltfSeqList {
 impl Default for GltfSeqList {
     fn default() -> Self {
         Self {
-            seq_list: Vec::new(),
+            sequences: Vec::new(),
         }
+    }
+}
+
+impl GltfSeqList{
+    pub fn to_string(&self) -> String{
+        let mut s:String = String::new(); 
+
+        let mut pos: usize = 0;
+        for item in self.sequences.iter(){
+            match item{
+                GltfSequence::Indices(v) => {
+                    s.push_str(format!("Indices(offset:{}, size:{}), ", pos, v.len()*4).as_str());
+                    pos += v.len()*4;
+                },
+                GltfSequence::Coords(v) => {
+                    s.push_str(format!("Coords(offset:{}, size:{}), ", pos, v.len()*4).as_str());
+                    pos += v.len()*4;
+                },
+                GltfSequence::Image(v) => {
+                    s.push_str(format!("Image(offset:{}, size:{}), ", pos, v.len()).as_str());
+                    pos += v.len();
+                },
+                GltfSequence::Bin(v) => {
+                    s.push_str(format!("Bin(offset:{}, size:{}), ", pos, v.len()).as_str());
+                    pos += v.len();
+                },
+            }
+        }
+        return s;
     }
 }
 
