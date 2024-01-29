@@ -68,14 +68,6 @@ impl FlattenFeatureTransform {
 
                 // Attributes
                 let mut new_attribs = Map::default();
-                // set parent id and type to attributes
-                if let Some(Parent { id, typename }) = parent {
-                    new_attribs.insert("parentId".to_string(), Value::String(id.to_string()));
-                    new_attribs.insert(
-                        "parentType".to_string(),
-                        Value::String(typename.to_string()),
-                    );
-                }
                 for (key, value) in obj.attributes.drain(..) {
                     if let Some(v) = self.flatten_feature(value, geom_store, out, &new_parent) {
                         new_attribs.insert(key, v);
@@ -86,6 +78,15 @@ impl FlattenFeatureTransform {
                 // if this object is a feature
                 if let ObjectStereotype::Feature { .. } = &obj.stereotype {
                     if self.is_split_target(&obj) {
+                        // set parent id and type to attributes
+                        if let Some(Parent { id, typename }) = parent {
+                            obj.attributes
+                                .insert("parentId".to_string(), Value::String(id.to_string()));
+                            obj.attributes.insert(
+                                "parentType".to_string(),
+                                Value::String(typename.to_string()),
+                            );
+                        }
                         out.push(Entity {
                             root: Value::Object(obj),
                             geometry_store: geom_store.clone(),
