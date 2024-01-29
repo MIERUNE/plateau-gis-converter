@@ -64,7 +64,7 @@ impl Default for Model {
     fn default() -> Self {
         Self {
             show: Some(CzmlBoolean::Boolean(true)),
-            gltf: CzmlUri::String("example.gltf".to_string()),
+            gltf: CzmlUri::String("".to_string()),
             scale: Some(CzmlDouble::Double(1.0)),
             minimum_pixel_size: Some(CzmlDouble::Double(0.0)),
             maximum_scale: Default::default(),
