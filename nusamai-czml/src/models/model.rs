@@ -9,46 +9,34 @@ use crate::{
 #[serde(rename_all = "camelCase")]
 #[serde(deny_unknown_fields)]
 pub struct Model {
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub show: Option<CzmlBoolean>,
+    pub show: CzmlBoolean,
 
     pub gltf: CzmlUri,
 
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub scale: Option<CzmlDouble>,
+    pub scale: CzmlDouble,
 
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub minimum_pixel_size: Option<CzmlDouble>,
+    pub minimum_pixel_size: CzmlDouble,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub maximum_scale: Option<CzmlDouble>,
 
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub incrementally_load_textures: Option<CzmlBoolean>,
+    pub incrementally_load_textures: CzmlBoolean,
 
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub run_animations: Option<CzmlBoolean>,
+    pub run_animations: CzmlBoolean,
 
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub shadows: Option<ShadowMode>,
+    pub shadows: ShadowMode,
 
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub height_reference: Option<HeightReference>,
+    pub height_reference: HeightReference,
 
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub silhouette_color: Option<Color>,
+    pub silhouette_color: Color,
 
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub silhouette_size: Option<CzmlDouble>,
+    pub silhouette_size: CzmlDouble,
 
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub color: Option<Color>,
+    pub color: Color,
 
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub color_blend_mode: Option<ColorBlendMode>,
+    pub color_blend_mode: ColorBlendMode,
 
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub color_blend_amount: Option<CzmlDouble>,
+    pub color_blend_amount: CzmlDouble,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub distance_display_condition: Option<DistanceDisplayCondition>,
@@ -63,16 +51,16 @@ pub struct Model {
 impl Default for Model {
     fn default() -> Self {
         Self {
-            show: Some(CzmlBoolean::Boolean(true)),
+            show: CzmlBoolean::Boolean(true),
             gltf: CzmlUri::String("".to_string()),
-            scale: Some(CzmlDouble::Double(1.0)),
-            minimum_pixel_size: Some(CzmlDouble::Double(0.0)),
-            maximum_scale: Default::default(),
-            incrementally_load_textures: Some(CzmlBoolean::Boolean(true)),
-            run_animations: Some(CzmlBoolean::Boolean(true)),
-            shadows: Some(ShadowMode::String("ENABLED".to_string())),
-            height_reference: Some(HeightReference::String("NONE".to_string())),
-            silhouette_color: Some(Color::Object(ColorProperties {
+            scale: CzmlDouble::Double(1.0),
+            minimum_pixel_size: CzmlDouble::Double(0.0),
+            maximum_scale: None,
+            incrementally_load_textures: CzmlBoolean::Boolean(true),
+            run_animations: CzmlBoolean::Boolean(true),
+            shadows: ShadowMode::String("ENABLED".to_string()),
+            height_reference: HeightReference::String("NONE".to_string()),
+            silhouette_color: Color::Object(ColorProperties {
                 rgba: Some(RgbaValue::Constant([255, 0, 0, 0])),
                 rgbaf: None,
                 reference: None,
@@ -81,9 +69,9 @@ impl Default for Model {
                 rgba_value_property: None,
                 rgbaf_value_property: None,
                 reference_value_property: None,
-            })),
-            silhouette_size: Some(CzmlDouble::Double(0.0)),
-            color: Some(Color::Object(ColorProperties {
+            }),
+            silhouette_size: CzmlDouble::Double(0.0),
+            color: Color::Object(ColorProperties {
                 rgba: Some(RgbaValue::Constant([0, 0, 0, 0])),
                 rgbaf: None,
                 reference: None,
@@ -92,12 +80,12 @@ impl Default for Model {
                 rgba_value_property: None,
                 rgbaf_value_property: None,
                 reference_value_property: None,
-            })),
-            color_blend_mode: Some(ColorBlendMode::String("HIGHLIGHT".to_string())),
-            color_blend_amount: Some(CzmlDouble::Double(0.5)),
-            distance_display_condition: Default::default(),
-            node_transformations: Default::default(),
-            articulations: Default::default(),
+            }),
+            color_blend_mode: ColorBlendMode::String("HIGHLIGHT".to_string()),
+            color_blend_amount: CzmlDouble::Double(0.5),
+            distance_display_condition: None,
+            node_transformations: None,
+            articulations: None,
         }
     }
 }
