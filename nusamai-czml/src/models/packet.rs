@@ -31,6 +31,7 @@ pub struct Packet {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub version: Option<String>,
 
+    // todo: Implement TimeIntervalCollectionValue.json
     #[serde(default = "default_availability")]
     pub availability: Value,
 
