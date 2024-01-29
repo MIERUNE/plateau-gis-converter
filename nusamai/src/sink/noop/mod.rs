@@ -12,7 +12,7 @@ use crate::parameters::{
 use crate::pipeline::{Feedback, Receiver};
 use crate::sink::{DataSink, DataSinkProvider, SinkInfo};
 
-use crate::get_parameter_value;
+use crate::{get_parameter_value, transformer};
 
 pub struct NoopSinkProvider {}
 
@@ -64,6 +64,14 @@ pub struct NoopSink {
 }
 
 impl DataSink for NoopSink {
+    fn make_transform_requirements(&self) -> transformer::Requirements {
+        // use transformer::RequirementItem;
+
+        transformer::Requirements {
+            ..Default::default()
+        }
+    }
+
     fn run(&mut self, upstream: Receiver, feedback: &Feedback, schema: &Schema) {
         if self.write_schema {
             let mut file = std::fs::File::create("schema.json").unwrap();

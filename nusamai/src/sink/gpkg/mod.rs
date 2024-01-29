@@ -11,8 +11,8 @@ use crate::parameters::Parameters;
 use crate::pipeline::{Feedback, Receiver};
 use crate::sink::{DataSink, DataSinkProvider, SinkInfo};
 
-use crate::get_parameter_value;
 use crate::parameters::*;
+use crate::{get_parameter_value, transformer};
 use nusamai_gpkg::geometry::write_indexed_multipolygon;
 use nusamai_gpkg::GpkgHandler;
 
@@ -118,6 +118,14 @@ impl GpkgSink {
 }
 
 impl DataSink for GpkgSink {
+    fn make_transform_requirements(&self) -> transformer::Requirements {
+        // use transformer::RequirementItem;
+
+        transformer::Requirements {
+            ..Default::default()
+        }
+    }
+
     fn run(&mut self, upstream: Receiver, feedback: &Feedback, _schema: &Schema) {
         let runtime = tokio::runtime::Runtime::new().unwrap();
         runtime.block_on(self.run_async(upstream, feedback));

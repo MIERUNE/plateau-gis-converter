@@ -31,9 +31,6 @@ impl Transform for ProjectionTransform {
                     // JGD2011 to WGS 84 (elevation to ellipsoidal height)
                     (v[0], v[1], v[2]) = self.jgd2wgs.convert(lng, lat, height);
                 });
-
-                // Ensure that the source CRS is JGD2011 and the destination is WGS 84
-                assert_eq!(geom_store.epsg, EPSG_JGD2011_GEOGRAPHIC_3D);
                 geom_store.epsg = EPSG_WGS84_GEOGRAPHIC_3D;
             }
             EPSG_WGS84_GEOGRAPHIC_3D => {
