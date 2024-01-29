@@ -21,22 +21,27 @@ pub(crate) fn simple_run_sink<S: DataSinkProvider>(sink_provider: S, output: Opt
 
     let source = source_provider.create(&source_provider.parameters());
 
-    let transform_builder =
-        NusamaiTransformBuilder::new(transformer::Requirements::default().into());
-    let mut schema = nusamai_citygml::schema::Schema::default();
-    TopLevelCityObject::collect_schema(&mut schema);
-    transform_builder.transform_schema(&mut schema);
-    let transformer = Box::new(MultiThreadTransformer::new(transform_builder));
+    let sink = {
+        assert!(!sink_provider.info().name.is_empty());
+        let mut sink_params = sink_provider.parameters();
+        if let Some(output) = output {
+            sink_params
+                .update_values_with_str(std::iter::once(&("@output".into(), output.into())))
+                .unwrap();
+        }
+        sink_params.validate().unwrap();
+        sink_provider.create(&sink_params)
+    };
 
-    assert!(!sink_provider.info().name.is_empty());
-    let mut sink_params = sink_provider.parameters();
-    if let Some(output) = output {
-        sink_params
-            .update_values_with_str(std::iter::once(&("@output".into(), output.into())))
-            .unwrap();
-    }
-    sink_params.validate().unwrap();
-    let sink = sink_provider.create(&sink_params);
+    let (transformer, schema) = {
+        let transform_req = sink.make_transform_requirements();
+        let transform_builder = NusamaiTransformBuilder::new(transform_req.into());
+        let mut schema = nusamai_citygml::schema::Schema::default();
+        TopLevelCityObject::collect_schema(&mut schema);
+        transform_builder.transform_schema(&mut schema);
+        let transformer = Box::new(MultiThreadTransformer::new(transform_builder));
+        (transformer, schema)
+    };
 
     let (handle, _watcher, canceller) =
         nusamai::pipeline::run(source, transformer, sink, schema.into());
