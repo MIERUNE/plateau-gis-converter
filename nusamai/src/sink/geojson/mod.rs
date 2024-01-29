@@ -58,9 +58,10 @@ pub struct GeoJsonSink {
 
 impl DataSink for GeoJsonSink {
     fn make_transform_requirements(&self) -> transformer::Requirements {
-        // use transformer::RequirementItem;
+        use transformer::RequirementItem;
 
         transformer::Requirements {
+            mergedown: RequirementItem::Required(transformer::Mergedown::Geometry),
             ..Default::default()
         }
     }
