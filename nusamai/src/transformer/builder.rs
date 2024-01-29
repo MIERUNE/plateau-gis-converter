@@ -28,26 +28,58 @@ impl<T> RequirementItem<T> {
 pub struct Requirements {
     /// Whether to shorten field names to 10 characters or less for Shapefiles.
     pub shorten_names_for_shapefile: RequirementItem<bool>,
+    pub mergedown: RequirementItem<Mergedown>,
+    pub feature_flattening: RequirementItem<FeatureFlattening>,
 }
 
 impl Default for Requirements {
     fn default() -> Self {
         Self {
             shorten_names_for_shapefile: RequirementItem::Required(false),
+            mergedown: RequirementItem::Required(Mergedown::Geometry),
+            feature_flattening: RequirementItem::Recommended(
+                FeatureFlattening::AllExceptThematicSurfaces,
+            ),
         }
     }
 }
 
 pub struct Request {
     pub shorten_names_for_shapefile: bool,
+    pub mergedown: Mergedown,
+    pub feat_flattening: FeatureFlattening,
 }
 
 impl From<Requirements> for Request {
     fn from(req: Requirements) -> Self {
         Self {
             shorten_names_for_shapefile: req.shorten_names_for_shapefile.into_value(),
+            mergedown: req.mergedown.into_value(),
+            feat_flattening: req.feature_flattening.into_value(),
         }
     }
+}
+
+#[derive(Default)]
+pub enum FeatureFlattening {
+    /// No feature flattening
+    None,
+    /// Flatten all features except thematic surfaces
+    #[default]
+    AllExceptThematicSurfaces,
+    /// Flatten all features
+    All,
+}
+
+#[derive(Default)]
+pub enum Mergedown {
+    /// No mergedown
+    None,
+    /// Merge all geometries into the root feature
+    #[default]
+    Geometry,
+    /// Merge all geometries and data attributes into the root feature
+    Full,
 }
 
 pub trait TransformBuilder: Send + Sync {
@@ -81,10 +113,25 @@ impl TransformBuilder for NusamaiTransformBuilder {
 
         transforms.push(Box::<FilterLodTransform>::default());
 
-        transforms.push(Box::new(FlattenFeatureTransform::new(true)));
+        match self.request.feat_flattening {
+            FeatureFlattening::None => {}
+            FeatureFlattening::AllExceptThematicSurfaces => {
+                transforms.push(Box::new(FlattenFeatureTransform::new(false)));
+            }
+            FeatureFlattening::All => {
+                transforms.push(Box::new(FlattenFeatureTransform::new(true)));
+            }
+        }
 
-        transforms.push(Box::<GeometricMergedownTransform>::default());
-        // transforms.push(Box::<FullMergedownTransform>::default());
+        match self.request.mergedown {
+            Mergedown::Geometry => {
+                transforms.push(Box::<GeometricMergedownTransform>::default());
+            }
+            Mergedown::Full => {
+                transforms.push(Box::<FullMergedownTransform>::default());
+            }
+            Mergedown::None => {}
+        }
 
         Box::new(transforms)
     }

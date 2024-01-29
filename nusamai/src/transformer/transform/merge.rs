@@ -19,9 +19,11 @@ impl Transform for FullMergedownTransform {
             let new_geoms = &mut self.geoms_buf;
             let path = &mut self.path_buf;
             path.clear();
-            collect_all_attrs_and_geoms(&mut new_attrs, new_geoms, path, obj.attributes);
 
-            if let ObjectStereotype::Feature { id, .. } = obj.stereotype {
+            collect_all_attrs_and_geoms(&mut new_attrs, new_geoms, path, obj.attributes, false);
+
+            if let ObjectStereotype::Feature { id, geometries } = obj.stereotype {
+                new_geoms.extend(geometries);
                 entity.root = Value::Object(Object {
                     typename: obj.typename,
                     attributes: new_attrs,
@@ -51,6 +53,7 @@ fn collect_all_attrs_and_geoms(
     new_geoms: &mut HashSet<GeometryRefEntry>,
     path: &mut String,
     attributes: Map,
+    in_child_feature: bool,
 ) {
     for (key, value) in attributes {
         let path_len = path.len();
@@ -58,10 +61,20 @@ fn collect_all_attrs_and_geoms(
         path.push('.');
         match value {
             Value::Object(obj) => {
-                if let ObjectStereotype::Feature { geometries, .. } = obj.stereotype {
-                    new_geoms.extend(geometries);
-                }
-                collect_all_attrs_and_geoms(new_attrs, new_geoms, path, obj.attributes);
+                let in_child_feature =
+                    if let ObjectStereotype::Feature { geometries, .. } = obj.stereotype {
+                        new_geoms.extend(geometries);
+                        true
+                    } else {
+                        in_child_feature
+                    };
+                collect_all_attrs_and_geoms(
+                    new_attrs,
+                    new_geoms,
+                    path,
+                    obj.attributes,
+                    in_child_feature,
+                );
             }
             Value::Array(arr) => {
                 for (i, value) in arr.into_iter().enumerate() {
@@ -70,7 +83,23 @@ fn collect_all_attrs_and_geoms(
                     path.push('.');
                     match value {
                         Value::Object(obj) => {
-                            collect_all_attrs_and_geoms(new_attrs, new_geoms, path, obj.attributes);
+                            let in_child_feature = if let ObjectStereotype::Feature {
+                                geometries,
+                                ..
+                            } = obj.stereotype
+                            {
+                                new_geoms.extend(geometries);
+                                true
+                            } else {
+                                in_child_feature
+                            };
+                            collect_all_attrs_and_geoms(
+                                new_attrs,
+                                new_geoms,
+                                path,
+                                obj.attributes,
+                                in_child_feature,
+                            );
                         }
                         _ => {
                             new_attrs.insert(path.clone(), value);
@@ -80,7 +109,9 @@ fn collect_all_attrs_and_geoms(
                 }
             }
             _ => {
-                new_attrs.insert(path[..path.len() - 1].to_string(), value);
+                if !in_child_feature {
+                    new_attrs.insert(path[..path.len() - 1].to_string(), value);
+                }
             }
         }
         path.truncate(path_len);

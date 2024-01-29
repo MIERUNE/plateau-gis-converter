@@ -28,7 +28,7 @@ use crate::sink::{DataSink, DataSinkProvider, SinkInfo};
 use crate::{get_parameter_value, transformer};
 use slice::slice_cityobj_geoms;
 use sort::BincodeExternalChunk;
-use tags::traverse_properties;
+use tags::convert_properties;
 
 pub struct MVTSinkProvider {}
 
@@ -85,9 +85,10 @@ struct SlicedFeature<'a> {
 
 impl DataSink for MVTSink {
     fn make_transform_requirements(&self) -> transformer::Requirements {
-        // use transformer::RequirementItem;
+        use transformer::RequirementItem;
 
         transformer::Requirements {
+            mergedown: RequirementItem::Recommended(transformer::Mergedown::Full),
             ..Default::default()
         }
     }
@@ -152,7 +153,7 @@ fn geometry_slicing_stage(
         slice_cityobj_geoms(
             &parcel.entity,
             7,
-            15,
+            16,
             max_detail,
             buffer_pixels,
             |(z, x, y), mpoly| {
@@ -262,11 +263,13 @@ fn tile_writing_stage(
                 let mut id = None;
                 let mut tags: Vec<u32> = Vec::new();
 
-                let layer = if let value @ object::Value::Object(obj) = &feat.properties {
+                let layer = if let object::Value::Object(obj) = &feat.properties {
                     let layer = layers.entry_ref(obj.typename.as_ref()).or_default();
 
                     // Encode attributes as MVT tags
-                    traverse_properties(&mut tags, &mut layer.tags_enc, String::new(), value);
+                    for (key, value) in &obj.attributes {
+                        convert_properties(&mut tags, &mut layer.tags_enc, key, value);
+                    }
 
                     // Make a MVT feature id (u64) by hashing the original feature id string.
                     id = obj.stereotype.id().map(|id| {

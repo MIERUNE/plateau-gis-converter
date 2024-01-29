@@ -103,7 +103,11 @@ impl FlattenFeatureTransform {
                         new_arr.push(v)
                     }
                 }
-                arr.is_empty().then(|| Value::Array(arr))
+                if new_arr.is_empty() {
+                    None
+                } else {
+                    Some(Value::Array(new_arr))
+                }
             }
             _ => Some(value),
         }
@@ -111,7 +115,6 @@ impl FlattenFeatureTransform {
 
     fn is_split_target(&self, obj: &Object) -> bool {
         if let ObjectStereotype::Feature { .. } = &obj.stereotype {
-            // TODO: more robust approach to deterine if the feature is a thematic surface
             if self.split_thematic_surfaces {
                 true
             } else {
