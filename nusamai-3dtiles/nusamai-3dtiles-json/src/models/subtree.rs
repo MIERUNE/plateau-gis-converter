@@ -2,7 +2,7 @@
 
 use std::collections::HashMap;
 
-use nusamai_gltf::extensions::gltf::ext_structural_metadata;
+use nusamai_gltf_json::extensions::gltf::ext_structural_metadata;
 use serde::{Deserialize, Serialize};
 
 use super::tileset;

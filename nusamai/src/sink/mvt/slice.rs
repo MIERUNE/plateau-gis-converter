@@ -3,8 +3,8 @@
 use hashbrown::HashMap;
 
 use nusamai_citygml::{
+    geometry::GeometryType,
     object::{Entity, ObjectStereotype, Value},
-    Geometry,
 };
 use nusamai_geometry::{LineString2, MultiPolygon2, Polygon2};
 use nusamai_mvt::{webmercator::lnglat_to_web_mercator, TileZXY};
@@ -39,9 +39,12 @@ pub fn slice_cityobj_geoms(
         return Ok(());
     };
 
-    for (_geom_ty, geom) in geom_store.iter_geometry(geometries) {
-        match geom {
-            Geometry::Polygon(idx_poly) => {
+    geometries.iter().for_each(|entry| match entry.ty {
+        GeometryType::Solid | GeometryType::Surface | GeometryType::Triangle => {
+            for idx_poly in geom_store
+                .multipolygon
+                .iter_range(entry.pos as usize..(entry.pos + entry.len) as usize)
+            {
                 let poly = idx_poly.transform(|c| {
                     let [lng, lat, _height] = geom_store.vertices[c[0] as usize];
                     let (mx, my) = lnglat_to_web_mercator(lng, lat);
@@ -70,9 +73,14 @@ pub fn slice_cityobj_geoms(
                     slice_polygon(zoom, extent, buffer, &scaled_poly, &mut tiled_mpolys);
                 }
             }
-            _ => todo!(),
         }
-    }
+        GeometryType::Curve => {
+            // TODO: implement
+        }
+        GeometryType::Point => {
+            // TODO: implement
+        }
+    });
 
     for ((z, x, y), mpoly) in tiled_mpolys {
         if mpoly.is_empty() {
@@ -178,6 +186,9 @@ fn slice_polygon(
             min_y.floor() as u32..max_y.ceil() as u32
         };
 
+        let mut int_coords_buf = Vec::new();
+        let mut simplified_buf = Vec::new();
+
         for yi in y_range {
             let k1 = yi as f64 - buf_width;
             let k2 = (yi + 1) as f64 + buf_width;
@@ -226,29 +237,30 @@ fn slice_polygon(
                     })
                     .unwrap();
 
-                let simplified = {
-                    let mut coords: Vec<[i16; 2]> = new_ring_buffer
-                        .iter()
-                        .map(|&[x, y]| {
-                            let tx = (((x - xi as f64) * (extent as f64)) + 0.5) as i16;
-                            let ty = (((y - yi as f64) * (extent as f64)) + 0.5) as i16;
-                            [tx, ty]
-                        })
-                        .collect();
+                // get integer coordinates and simplify the ring
+                {
+                    int_coords_buf.clear();
+                    int_coords_buf.extend(new_ring_buffer.iter().map(|&[x, y]| {
+                        let tx = (((x - xi as f64) * (extent as f64)) + 0.5) as i16;
+                        let ty = (((y - yi as f64) * (extent as f64)) + 0.5) as i16;
+                        [tx, ty]
+                    }));
 
                     // remove closing point if exists
-                    if coords.len() >= 2 && coords[0] == *coords.last().unwrap() {
-                        coords.pop();
+                    if int_coords_buf.len() >= 2
+                        && int_coords_buf[0] == *int_coords_buf.last().unwrap()
+                    {
+                        int_coords_buf.pop();
                     }
 
-                    if coords.len() < 3 {
+                    if int_coords_buf.len() < 3 {
                         continue;
                     }
 
-                    let mut simplified = Vec::new();
-                    simplified.push(coords[0]);
+                    simplified_buf.clear();
+                    simplified_buf.push(int_coords_buf[0]);
 
-                    for c in coords.windows(3) {
+                    for c in int_coords_buf.windows(3) {
                         let &[prev, curr, next] = c else {
                             unreachable!()
                         };
@@ -269,14 +281,12 @@ fn slice_polygon(
                             continue;
                         }
 
-                        simplified.push(curr);
+                        simplified_buf.push(curr);
                     }
-                    simplified.push(*coords.last().unwrap());
+                    simplified_buf.push(*int_coords_buf.last().unwrap());
+                }
 
-                    simplified
-                };
-
-                let flat_coords: Vec<i16> = simplified.iter().flatten().copied().collect();
+                let flat_coords: Vec<i16> = simplified_buf.iter().flatten().copied().collect();
                 let mut ring = LineString2::from_raw(flat_coords.into());
                 ring.reverse_inplace();
 

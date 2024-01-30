@@ -76,11 +76,14 @@ pub enum TypeRef {
     NonNegativeInteger,
     Double,
     Boolean,
+    /// String containing a valid JSON.
+    JsonString,
     URI,
     Date,
     DataTime,
     Measure,
     Point,
+    /// Reference to a user type defined in the schema.
     Named(String),
 }
 
