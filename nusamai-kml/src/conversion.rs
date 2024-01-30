@@ -1,5 +1,5 @@
 use nusamai_geometry::{CoordNum, MultiPoint};
-use kml::{types::{Point}};
+use kml::types::Point;
 
 
 pub fn multipoint_to_kml_with_mapping<const D: usize, T: CoordNum>(
