@@ -9,20 +9,10 @@
 //! export_gltf_embedded()
 //!
 
-use crate::{Gltf, GltfSequence, GltfSeqList, MimeType, Buffer, BufferView};
+use crate::{Gltf, GltfSeqList, MimeType, Buffer, BufferView};
 
-use byteorder::{LittleEndian, WriteBytesExt};
-use clap::Parser;
-use earcut_rs::{utils_3d::project3d_to_2d, Earcut};
-use indexmap::IndexSet;
-use nusamai_geometry::MultiPolygon3;
-use quick_xml::{
-    events::Event,
-    name::{Namespace, ResolveResult::Bound},
-    reader::NsReader,
-};
-use std::path::{Path, PathBuf};
-use std::{clone::Clone, collections::HashMap, default::Default, fs, io::BufWriter};
+use std::path::Path;
+use std::{clone::Clone, default::Default, fs};
 use std::{io::Write, usize};
 
 pub enum GltfExportError {
@@ -59,13 +49,13 @@ pub fn mime_type_from_uri(uri: &String)->Result<MimeType, GltfExportError>
 }
 
 /// バイナリ情報を glTF ファイルとは別に BIN 情報として作成
-pub fn make_gltf(gltf: Gltf, seq_list:GltfSeqList) -> Result<Vec<u8>, GltfExportError> {
+pub fn make_gltf(_gltf: Gltf, _seq_list:GltfSeqList) -> Result<Vec<u8>, GltfExportError> {
 
     return Err(GltfExportError::OtherError("not implemented yet.".to_string()));
 }
 
 /// バイナリ情報を glTF ファイル内にテキストで埋込んだテキストイメージを作成
-pub fn make_gltf_embedded(gltf: Gltf, seq_list:GltfSeqList) -> Result<String, GltfExportError> {
+pub fn make_gltf_embedded(_gltf: Gltf, _seq_list:GltfSeqList) -> Result<String, GltfExportError> {
 
     return Err(GltfExportError::OtherError("not implemented yet.".to_string()));
 }
@@ -80,13 +70,11 @@ pub fn make_glb(gltf_in: Gltf, seq_list: GltfSeqList) -> Result<Vec<u8>, GltfExp
     // images -> 登場順に
     let mut gltf : Gltf = gltf_in.clone();
     // 出力用 GltfSeqList;
-    let buffer_count = gltf.buffers.len();
-    let buffer_view_count = gltf.buffers.len();
 
     // bufferView がない場合には 0
-    for mut item in gltf.accessors.iter_mut(){
+    for item in gltf.accessors.iter_mut(){
         match item.buffer_view{
-            Some(n)=>{
+            Some(_n)=>{
                 // noop
             },
             None=>{
@@ -106,12 +94,10 @@ pub fn make_glb(gltf_in: Gltf, seq_list: GltfSeqList) -> Result<Vec<u8>, GltfExp
     }
     // images の書換え
     let buffer_view_count: u32 = gltf.buffer_views.len() as u32;
-    let mut is_originaly_bin = false;
     let mut index: u32 = buffer_view_count;
     for item in gltf.images.iter_mut(){
         match &item.mime_type{
-            Some(t)=>{
-                is_originaly_bin = true;
+            Some(_t)=>{
             },
             None=>{
                 //return Result::Err(GltfExportError::OtherError("can not get mime type from extension.".to_string()));
@@ -119,7 +105,6 @@ pub fn make_glb(gltf_in: Gltf, seq_list: GltfSeqList) -> Result<Vec<u8>, GltfExp
         }
         match &item.uri{
             Some(uri)=>{
-                is_originaly_bin = false;
                 match mime_type_from_uri(&uri){
                     Ok(m)=>{
                         // mimeType, bufferView を追加し、uri を削除
@@ -184,8 +169,7 @@ pub fn make_glb(gltf_in: Gltf, seq_list: GltfSeqList) -> Result<Vec<u8>, GltfExp
     println!("{}", gltf.to_string_pretty().unwrap());
 
     // bin へ書込み
-    let mut pos = 0;
-    let mut json: String = gltf.to_string().unwrap();
+    let json: String = gltf.to_string().unwrap();
     let json_chunk = json.as_bytes();
     let json_chunk_padded = {
         let mut v = json_chunk.to_vec();
@@ -223,8 +207,9 @@ pub fn make_glb(gltf_in: Gltf, seq_list: GltfSeqList) -> Result<Vec<u8>, GltfExp
     return Ok(bin);
 }
 
-pub fn export_gltf(filename : String, gltf: Gltf, seq_list: GltfSeqList) -> Result<(), GltfExportError>
+pub fn export_gltf(_filename : String, _gltf: Gltf, _seq_list: GltfSeqList) -> Result<(), GltfExportError>
 {
+
     return Err(GltfExportError::OtherError("not implemented yet.".to_string()));
 }
 

@@ -4,29 +4,15 @@
 //!
 
 use crate::{Gltf, GltfSequence, GltfSeqList};
-use byteorder::{LittleEndian, WriteBytesExt};
-use clap::Parser;
-use earcut_rs::{utils_3d::project3d_to_2d, Earcut};
 use fs::File;
-use indexmap::IndexSet;
-use nusamai_geometry::MultiPolygon3;
 use serde_json;
-use quick_xml::{
-    events::Event,
-    name::{Namespace, ResolveResult::Bound},
-    reader::NsReader,
-};
 
-use std::str;
-use std::{io::prelude::*, f32::consts::E};
 use std::io::{BufReader, Read};
 use std::mem::transmute;
 use std::path::{Path, PathBuf};
-use std::{clone::Clone, collections::HashMap, default::Default, fs, io::BufWriter};
-use std::{io::Write, usize};
-use url::{Url, Host, Position};
+use std::{clone::Clone, fs};
+use url::Url;
 use base64::prelude::*;
-use thiserror::Error;
 
 pub enum GltfImportError {
     FileOpenError(String),
@@ -37,13 +23,11 @@ pub enum GltfImportError {
 
 /// Vec<u8> から Json を読込み Glrf 構造体に詰める
 fn parse_json(bin_json: Vec<u8>) -> Result<Gltf, GltfImportError> {
-    let mut gltf = Gltf::default();
 
     let result : Result<Gltf, serde_json::Error> = serde_json::from_str(std::str::from_utf8(&bin_json).unwrap());
 
     match result{
-        Ok(_gltf) => {
-            gltf = _gltf;
+        Ok(gltf) => {
             return Ok(gltf);
         },
         Err(e) => {
@@ -74,7 +58,7 @@ fn _read_bin_file(filename: String) -> Result<Vec<u8>, GltfImportError>{
     let mut bin: Vec<u8> = Vec::new();
     let mut buffer = [0; 4];
     let mut reader = BufReader::new(file);
-    let mut readlen: usize = 0;
+    let mut readlen: usize;
     loop {
         readlen = reader.read(&mut buffer).unwrap();
         bin.extend(&buffer[0..]);
@@ -183,14 +167,13 @@ fn read_bin_file(uri: String, filename: String) -> Result<Vec<u8>, GltfImportErr
 fn _import_gltf(filename: String) -> Result<(Gltf, GltfSeqList), GltfImportError> {
     let mut seq_list = GltfSeqList::new();
 
-    let mut gltf: Gltf = Gltf::default();
     let file: fs::File;
     let result = File::open(&filename);
     match result {
         Ok(f) => {
             file = f;
         }
-        Err(e) => {
+        Err(_e) => {
             return Err(GltfImportError::FileOpenError(format!(
                 "File open error. {}",
                 filename
@@ -203,6 +186,7 @@ fn _import_gltf(filename: String) -> Result<(Gltf, GltfSeqList), GltfImportError
     // parse json and directly pack to Grtf 
     let result : Result<Gltf, serde_json::Error> = serde_json::from_reader(reader);
 
+    let gltf;
     match result{
         Ok(_gltf) => {
             gltf = _gltf;
@@ -267,7 +251,7 @@ fn _import_glb(filename: String) -> Result<(Gltf, GltfSeqList), GltfImportError>
         Ok(f) => {
             file = f;
         }
-        Err(e) => {
+        Err(_e) => {
             return Result::Err(GltfImportError::FileOpenError(format!(
                 "File open error. {}",
                 filename
@@ -289,7 +273,6 @@ fn _import_glb(filename: String) -> Result<(Gltf, GltfSeqList), GltfImportError>
         ));
     }
 
-    let mut readlen: usize;
     // read glb header
     pos += reader.read(&mut buffer).unwrap();
     if buffer != [0x67, 0x6c, 0x54, 0x46] as [u8; 4] {
@@ -336,7 +319,7 @@ fn _import_glb(filename: String) -> Result<(Gltf, GltfSeqList), GltfImportError>
 
     println!("{}", String::from_utf8(bin_json.clone()).unwrap());
 
-    let mut gltf: Gltf = Gltf::default();
+    let gltf: Gltf;
     
     //match parse_json(binjson){
     match parse_json(bin_json){
@@ -348,7 +331,7 @@ fn _import_glb(filename: String) -> Result<(Gltf, GltfSeqList), GltfImportError>
             //println!( "some parse error occured. {:?}", e);
             return Result::Err(GltfImportError::ParseError(e));
         },
-        _ => {()}
+        _ => {return Result::Err(GltfImportError::OtherError("Unknown error".to_string()));}
     }
 
     // to read bin chunk header

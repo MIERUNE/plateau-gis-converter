@@ -10,12 +10,6 @@ use serde_json::Value;
 //use base64::{prelude::*, alphabet::STANDARD};
 use base64::{engine::general_purpose::STANDARD, Engine as _};
 
-enum GltfType {
-    Acompanying,
-    Embedded,
-    Binary,
-}
-
 /// The root object for a glTF asset.
 #[derive(Serialize, Deserialize, Debug, Default, Clone)]
 #[serde(rename_all = "camelCase")]
@@ -140,7 +134,7 @@ impl GltfSeqList {
     /// returns (binary_sequence, offset_list, size_list)
     pub fn make_bin_sequence(&self) -> (Vec<u8>, Vec<usize>, Vec<usize>) {
         let mut offset: usize = 0;
-        let mut size: usize = 0;
+        let mut size: usize;
         let mut offsets: Vec<usize> = Vec::new();
         let mut sizes: Vec<usize> = Vec::new();
         let mut bin_buf: Vec<u8> = Vec::new();
