@@ -41,4 +41,3 @@ rand = "0.8.5"
 tokio = { version = "1.35.1", features = ["full"] }
 nusamai-geometry = { path = "../nusamai-geometry" }
 byteorder = "1.5.0"
-nusamai-gltf = { path = "../nusamai-gltf" }

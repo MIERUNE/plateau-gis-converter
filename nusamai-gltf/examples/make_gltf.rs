@@ -5,7 +5,7 @@ use std::fs::File;
 use std::io::{self, BufWriter, Write as _};
 use std::vec;
 
-use nusamai_gltf::*;
+use nusamai_gltf_json::*;
 
 fn main() -> io::Result<()> {
     let mut gltf = Gltf {
