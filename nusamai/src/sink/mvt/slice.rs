@@ -116,7 +116,7 @@ fn slice_polygon(
             .fold((f64::MAX, f64::MIN), |(min_x, max_x), c| {
                 (min_x.min(c[0]), max_x.max(c[0]))
             });
-        min_x.floor() as u32..max_x.ceil() as u32
+        min_x.floor() as i32..max_x.ceil() as i32
     };
 
     let mut x_sliced_polys = Vec::with_capacity(x_range.len());
@@ -193,9 +193,14 @@ fn slice_polygon(
             let k1 = yi as f64 - buf_width;
             let k2 = (yi + 1) as f64 + buf_width;
 
-            // todo?: check interior bbox to optimize
+            // todo?: check interior bbox to optimize ...
 
-            let tile_mpoly = out.entry((zoom, xi, yi)).or_default();
+            let key = (
+                zoom,
+                xi.rem_euclid(1 << zoom) as u32, // handling geometry crossing the antimeridian
+                yi,
+            );
+            let tile_mpoly = out.entry(key).or_default();
 
             for (ri, ring) in x_sliced_poly.rings().enumerate() {
                 if ring.coords().is_empty() {
