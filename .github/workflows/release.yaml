@@ -36,6 +36,11 @@ jobs:
         run: npm install 
         working-directory: ./app
 
+      - name: Set optimization options
+        run: |
+          echo 'profile.release.lto = true' >> Cargo.toml
+          echo 'profile.release.panic = abort' >> Cargo.toml
+
       - name: Build the app
         uses: tauri-apps/tauri-action@v0
         env:
