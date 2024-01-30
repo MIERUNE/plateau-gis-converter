@@ -122,7 +122,7 @@ fn extract_properties(tree: &nusamai_citygml::object::Value) -> Option<geojson::
 /// Create Shapefile features from a TopLevelCityObject
 /// Each feature for MultiPolygon, MultiLineString, and MultiPoint will be created (if it exists)
 /// TODO: Implement MultiLineString and MultiPoint handling
-pub fn toplevel_cityobj_to_geojson_features(entity: &Entity) -> Vec<shapefile::PolygonZ> {
+pub fn toplevel_cityobj_to_shape_features(entity: &Entity) -> Vec<shapefile::PolygonZ> {
     let _properties = extract_properties(&entity.root);
     let geom_store = entity.geometry_store.read().unwrap();
 
@@ -163,7 +163,7 @@ pub fn toplevel_cityobj_to_geojson_features(entity: &Entity) -> Vec<shapefile::P
         }
     });
 
-    polygons
+    // TODO: polygons to a multipolygon
 }
 
 #[cfg(test)]
