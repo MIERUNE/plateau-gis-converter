@@ -1,23 +1,19 @@
 //! Shapefile sink
 
-use std::fs::File;
-use std::io::{BufWriter, Write};
 use std::path::PathBuf;
 
 use nusamai_citygml::schema::Schema;
+use nusamai_citygml::GeometryType;
 use rayon::prelude::*;
 
-use crate::get_parameter_value;
 use crate::parameters::*;
 use crate::pipeline::{Feedback, Receiver};
 use crate::sink::{DataSink, DataSinkProvider, SinkInfo};
+use crate::{get_parameter_value, transformer};
 
-use nusamai_citygml::object::Entity;
-use nusamai_shapefile::conversion::{
-    indexed_multipoint_to_shape, indexed_multilinestring_to_shape,
-    indexed_multipolygon_to_shape,
-};
-}
+use nusamai_citygml::object::{Entity, ObjectStereotype, Value};
+use nusamai_shapefile::conversion::indexed_polygon_to_shape;
+use shapefile;
 
 pub struct ShapefileSinkProvider {}
 
@@ -57,9 +53,16 @@ pub struct ShapefileSink {
     output_path: PathBuf,
 }
 
-// TODO: below are copied from GeoJSON sink - change them to work with shapefile
-
 impl DataSink for ShapefileSink {
+    fn make_transform_requirements(&self) -> transformer::Requirements {
+        use transformer::RequirementItem;
+
+        transformer::Requirements {
+            mergedown: RequirementItem::Required(transformer::Mergedown::Geometry),
+            ..Default::default()
+        }
+    }
+
     fn run(&mut self, upstream: Receiver, feedback: &Feedback, _schema: &Schema) {
         let (sender, receiver) = std::sync::mpsc::sync_channel(1000);
 
@@ -76,11 +79,7 @@ impl DataSink for ShapefileSink {
 
                         let features = toplevel_cityobj_to_geojson_features(&parcel.entity);
                         for feature in features {
-                            let Ok(bytes) = serde_json::to_vec(&feature) else {
-                                // TODO: fatal error
-                                return Err(());
-                            };
-                            if sender.send(bytes).is_err() {
+                            if sender.send(feature).is_err() {
                                 log::info!("sink cancelled");
                                 return Err(());
                             };
@@ -92,26 +91,19 @@ impl DataSink for ShapefileSink {
             || {
                 // Write Shapefile to a file
 
-                // TODO: Handle output file path
-                let mut file = File::create(&self.output_path).unwrap();
-                let mut writer = BufWriter::with_capacity(1024 * 1024, &mut file);
+                // Attribute fields for the features
+                // FieldName byte representation cannot exceed 11 bytes
+                let table_builder = shapefile::dbase::TableWriterBuilder::new();
 
-                // Write the FeatureCollection header
-                writer
-                    .write_all(b"{\"type\":\"FeatureCollection\",\"features\":[")
-                    .unwrap();
+                // Create all the files needed for the shapefile to be complete (.shp, .shx, .dbf)
+                let mut writer =
+                    shapefile::Writer::from_path(&self.output_path, table_builder).unwrap();
 
-                // Write each Feature
-                let mut iter = receiver.into_iter().peekable();
-                while let Some(bytes) = iter.next() {
-                    writer.write_all(&bytes).unwrap();
-                    if iter.peek().is_some() {
-                        writer.write_all(b",").unwrap();
-                    };
-                }
-
-                // Write the FeautureCollection footer and EOL
-                writer.write_all(b"]}\n").unwrap();
+                // Write each feature
+                receiver.into_iter().for_each(|feature| {
+                    let record = shapefile::dbase::Record::default(); // for attributes
+                    writer.write_shape_and_record(&feature, &record).unwrap();
+                });
             },
         );
     }
@@ -127,56 +119,51 @@ fn extract_properties(tree: &nusamai_citygml::object::Value) -> Option<geojson::
     }
 }
 
-/// Create GeoJSON features from a TopLevelCityObject
+/// Create Shapefile features from a TopLevelCityObject
 /// Each feature for MultiPolygon, MultiLineString, and MultiPoint will be created (if it exists)
-// TODO: Handle properties (`obj.root` -> `geojson::Feature.properties`)
-// TODO: We may want to traverse the tree and create features for each semantic child in the future
-pub fn toplevel_cityobj_to_geojson_features(obj: &Entity) -> Vec<geojson::Feature> {
-    let mut geojson_features: Vec<geojson::Feature> = Vec::with_capacity(1);
-    let properties = extract_properties(&obj.root);
-    let geom_store = obj.geometry_store.read().unwrap();
+/// TODO: Implement MultiLineString and MultiPoint handling
+pub fn toplevel_cityobj_to_geojson_features(entity: &Entity) -> Vec<shapefile::PolygonZ> {
+    let _properties = extract_properties(&entity.root);
+    let geom_store = entity.geometry_store.read().unwrap();
 
-    if !geom_store.multipolygon.is_empty() {
-        let mpoly_geojson_geom =
-            indexed_multipolygon_to_geometry(&geom_store.vertices, &geom_store.multipolygon);
+    let Value::Object(obj) = &entity.root else {
+        return Vec::default();
+    };
+    let ObjectStereotype::Feature { id: _, geometries } = &obj.stereotype else {
+        return Vec::default();
+    };
 
-        let mpoly_geojson_feat = geojson::Feature {
-            bbox: None,
-            geometry: Some(mpoly_geojson_geom),
-            id: None,
-            properties: properties.clone(),
-            foreign_members: None,
-        };
-        geojson_features.push(mpoly_geojson_feat);
-    }
+    let mut polygons = Vec::new();
 
-    if !geom_store.multilinestring.is_empty() {
-        let mls_geojson_geom =
-            indexed_multilinestring_to_geometry(&geom_store.vertices, &geom_store.multilinestring);
-        let mls_geojson_feat = geojson::Feature {
-            bbox: None,
-            geometry: Some(mls_geojson_geom),
-            id: None,
-            properties: properties.clone(),
-            foreign_members: None,
-        };
-        geojson_features.push(mls_geojson_feat);
-    }
+    geometries.iter().for_each(|entry| match entry.ty {
+        GeometryType::Solid | GeometryType::Surface | GeometryType::Triangle => {
+            for idx_poly in geom_store
+                .multipolygon
+                .iter_range(entry.pos as usize..(entry.pos + entry.len) as usize)
+            {
+                let shape = indexed_polygon_to_shape(&geom_store.vertices, &idx_poly);
+                polygons.push(shape);
+            }
+        }
+        GeometryType::Curve => {
+            for _idx_ls in geom_store
+                .multilinestring
+                .iter_range(entry.pos as usize..(entry.pos + entry.len) as usize)
+            {
+                unimplemented!();
+            }
+        }
+        GeometryType::Point => {
+            for _idx_point in geom_store
+                .multipoint
+                .iter_range(entry.pos as usize..(entry.pos + entry.len) as usize)
+            {
+                unimplemented!();
+            }
+        }
+    });
 
-    if !geom_store.multipoint.is_empty() {
-        let mpoint_geojson_geom =
-            indexed_multipoint_to_geometry(&geom_store.vertices, &geom_store.multipoint);
-        let mpoint_geojson_feat = geojson::Feature {
-            bbox: None,
-            geometry: Some(mpoint_geojson_geom),
-            id: None,
-            properties,
-            foreign_members: None,
-        };
-        geojson_features.push(mpoint_geojson_feat);
-    }
-
-    geojson_features
+    polygons
 }
 
 #[cfg(test)]
@@ -184,9 +171,10 @@ mod tests {
     use std::sync::RwLock;
 
     use super::*;
-    use nusamai_citygml::{object::Object, Value};
+    use nusamai_citygml::{object::Object, GeometryRefEntry, Value};
     use nusamai_geometry::MultiPolygon;
     use nusamai_projection::crs::EPSG_JGD2011_GEOGRAPHIC_3D;
+    use shapefile::NO_DATA;
 
     #[test]
     fn test_toplevel_cityobj_multipolygon() {
@@ -212,41 +200,32 @@ mod tests {
                 attributes: Default::default(),
                 stereotype: nusamai_citygml::object::ObjectStereotype::Feature {
                     id: "dummy".into(),
-                    geometries: Vec::default(),
+                    geometries: vec![GeometryRefEntry {
+                        ty: GeometryType::Solid,
+                        pos: 0,
+                        len: 1,
+                        lod: 1,
+                    }],
                 },
             }),
             geometry_store: RwLock::new(geometries).into(),
         };
 
-        let geojson_features = toplevel_cityobj_to_geojson_features(&obj);
-        assert_eq!(geojson_features.len(), 1);
+        let shapes = toplevel_cityobj_to_geojson_features(&obj);
+        assert_eq!(shapes.len(), 1);
 
-        let mpoly_geojson = geojson_features.first().unwrap();
-        assert!(mpoly_geojson.bbox.is_none());
-        assert!(mpoly_geojson.foreign_members.is_none());
-        if let geojson::Value::MultiPolygon(rings_list) =
-            mpoly_geojson.geometry.clone().unwrap().value
-        {
-            for (i, rings) in rings_list.iter().enumerate() {
-                match i {
-                    0 => {
-                        assert_eq!(rings.len(), 1);
-                        assert_eq!(
-                            rings[0],
-                            vec![
-                                [0., 0., 111.],
-                                [5., 0., 111.],
-                                [5., 5., 111.],
-                                [0., 5., 111.],
-                                [0., 0., 111.]
-                            ]
-                        );
-                    }
-                    _ => unreachable!("Unexpected number of polygons"),
-                }
-            }
-        } else {
-            unreachable!("The result is not a GeoJSON MultiPolygon");
-        };
+        let mpoly_shape = shapes.first().unwrap();
+        assert_eq!(mpoly_shape.rings().len(), 1);
+        assert_eq!(
+            mpoly_shape.ring(0).unwrap(),
+            &shapefile::PolygonRing::Outer(vec![
+                // Outer ring: re-ordered to clockwise
+                shapefile::PointZ::new(0., 0., 111., NO_DATA),
+                shapefile::PointZ::new(0., 5., 111., NO_DATA),
+                shapefile::PointZ::new(5., 5., 111., NO_DATA),
+                shapefile::PointZ::new(5., 0., 111., NO_DATA),
+                shapefile::PointZ::new(0., 0., 111., NO_DATA), // automatically closed
+            ])
+        )
     }
 }
