@@ -76,7 +76,8 @@ fn run(input_paths: Vec<String>, output_path: String, filetype: String) {
 
     let (transformer, schema) = {
         use nusamai_citygml::CityGmlElement;
-        let transform_builder = NusamaiTransformBuilder::default();
+        let requirements = sink.make_transform_requirements();
+        let transform_builder = NusamaiTransformBuilder::new(requirements.into());
         let mut schema = nusamai_citygml::schema::Schema::default();
         TopLevelCityObject::collect_schema(&mut schema);
         transform_builder.transform_schema(&mut schema);

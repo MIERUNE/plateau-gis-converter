@@ -9,7 +9,8 @@
 //! export_gltf_embedded()
 //!
 
-use crate::{Gltf, GltfSeqList, MimeType, Buffer, BufferView};
+use nusamai_gltf_json::models::*;
+use crate::sequence::GltfSeqList;
 
 use std::path::Path;
 use std::{clone::Clone, default::Default, fs};

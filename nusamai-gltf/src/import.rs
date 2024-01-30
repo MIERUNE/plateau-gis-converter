@@ -3,7 +3,8 @@
 //! import_gltf()    : Gltf構造体に gltf ファイルを読込む
 //!
 
-use crate::{Gltf, GltfSequence, GltfSeqList};
+use nusamai_gltf_json::models::*;
+use crate::sequence::{GltfSequence, GltfSeqList};
 use fs::File;
 use serde_json;
 
@@ -74,14 +75,14 @@ fn _read_bin_file(filename: String) -> Result<Vec<u8>, GltfImportError>{
 // uri が path を含んでいない場合は入力ファイル（filename）のディレクトリからファイルを探す。
 fn read_bin_file(uri: String, filename: String) -> Result<Vec<u8>, GltfImportError>
 {
-    println!("read_bin_file: uri:{}  filename:{}", uri, filename);
+    //println!("read_bin_file: uri:{}  filename:{}", uri, filename);
     // uri に BIN が Base64 で格納されているか確認
     let head = String::from("data:application/octet-stream;base64,");
     match uri.find(&head){
         Some(pos) => {
             // base64 で BIN データが格納されている。
             if pos == 0 {
-                println!("read_bin_file: uri icontains base64.");
+                //println!("read_bin_file: uri contains base64.");
                 match BASE64_URL_SAFE.decode(&uri[head.len()..]){
                     Ok(v) => {
                         return Ok(v);
@@ -103,7 +104,7 @@ fn read_bin_file(uri: String, filename: String) -> Result<Vec<u8>, GltfImportErr
     // uri が url であるか確認
     match Url::parse(&uri){
         Ok(url) => {
-            println!("read_bin_file: uri is url.");   
+            //println!("read_bin_file: uri is url.");   
             match url.scheme(){
                 "https" => {
                     return Err(GltfImportError::OtherError("http file access currently not supported.".to_string()));
@@ -276,13 +277,13 @@ fn _import_glb(filename: String) -> Result<(Gltf, GltfSeqList), GltfImportError>
     // read glb header
     pos += reader.read(&mut buffer).unwrap();
     if buffer != [0x67, 0x6c, 0x54, 0x46] as [u8; 4] {
-        println!("{:?}", buffer);
+        //println!("{:?}", buffer);
         return Result::Err(GltfImportError::ReadError("No glTF MAGIC Number".to_string()));
     }
     // read gltf version
     pos += reader.read(&mut buffer).unwrap();
     if buffer != [0x2, 0x00, 0x00, 0x00] {
-        println!("{:?}", buffer);
+        //println!("{:?}", buffer);
         return Result::Err(GltfImportError::ReadError("glTF version is not 2".to_string()));
     }
     // read overall length

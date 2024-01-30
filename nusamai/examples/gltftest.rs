@@ -1,12 +1,23 @@
 
 use nusamai_gltf::*;
 
+use std::env;
+use std::process;
+
 
 fn main(){
 
-    let filename = "../../assets/glTF/glTF-Sample-Models-main/2.0/Avocado/glTF/Avocado.gltf";
-    //match import_gltf("../../assets/glTF/glTF-Sample-Models-main/2.0/Avocado/glTF-Binary/Avocado.glb".to_string())
-    match import_gltf(filename.to_string())
+    let args: Vec<String> = env::args().collect();
+
+    if args.len() != 2{
+        println!( "accept only one arg, found {}", args.len()-1);
+        process::exit(0);
+    }
+
+    println!( "input file: {}", &args[1]);
+    let filename = args[1].clone();
+
+    match import_gltf(filename)
     {
         Ok((gltf, seq_list)) => {
             println!("{}", gltf.to_string_pretty().unwrap());
@@ -33,7 +44,6 @@ fn main(){
                     }
                 }
             }
-
         },
         Err(e)=>{
             match e{
@@ -52,6 +62,5 @@ fn main(){
             }
         }
     }
-    
 }
 

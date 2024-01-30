@@ -14,7 +14,7 @@ use clap::Parser;
 use earcut_rs::{utils_3d::project3d_to_2d, Earcut};
 use indexmap::IndexSet;
 use nusamai_geometry::MultiPolygon3;
-use nusamai_gltf::*;
+use nusamai_gltf_json::*;
 use quick_xml::{
     events::Event,
     name::{Namespace, ResolveResult::Bound},

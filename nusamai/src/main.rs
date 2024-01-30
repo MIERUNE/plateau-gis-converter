@@ -135,11 +135,15 @@ fn run(
     let total_time = std::time::Instant::now();
 
     // Prepare the transformer for the pipeline and transform the schema
-    let transform_builder = NusamaiTransformBuilder::default();
-    let mut schema = nusamai_citygml::schema::Schema::default();
-    TopLevelCityObject::collect_schema(&mut schema);
-    transform_builder.transform_schema(&mut schema);
-    let transformer = Box::new(MultiThreadTransformer::new(transform_builder));
+    let (transformer, schema) = {
+        let requirements = sink.make_transform_requirements();
+        let transform_builder = NusamaiTransformBuilder::new(requirements.into());
+        let mut schema = nusamai_citygml::schema::Schema::default();
+        TopLevelCityObject::collect_schema(&mut schema);
+        transform_builder.transform_schema(&mut schema);
+        let transformer = Box::new(MultiThreadTransformer::new(transform_builder));
+        (transformer, schema)
+    };
 
     // start the pipeline
     let (handle, watcher, inner_canceller) =
