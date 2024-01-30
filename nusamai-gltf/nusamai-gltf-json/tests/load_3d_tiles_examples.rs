@@ -1,4 +1,4 @@
-use nusamai_gltf::*;
+use nusamai_gltf_json::*;
 
 #[test]
 fn load_examples() {

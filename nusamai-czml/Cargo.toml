@@ -5,8 +5,6 @@ edition = "2021"
 
 [dependencies]
 chrono = { version = "0.4.33", features = ["serde"] }
-nusamai-geometry = { path = "../nusamai-geometry" }
-nusamai-gltf = { path = "../nusamai-gltf" }
 serde = "1.0.195"
 serde_json = { version = "1.0.111", features = ["float_roundtrip"] }
 
