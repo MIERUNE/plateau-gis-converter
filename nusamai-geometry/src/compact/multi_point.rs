@@ -1,10 +1,10 @@
-use std::borrow::Cow;
+use std::{borrow::Cow, ops::Range};
 
 use super::CoordNum;
 
 /// Computer-friendly MultiPoint
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, PartialEq)]
 pub struct MultiPoint<'a, const D: usize, T: CoordNum = f64> {
     /// すべての Point の座標データを連結したもの
     ///
@@ -35,6 +35,15 @@ impl<'a, const D: usize, T: CoordNum> MultiPoint<'a, D, T> {
         Iter {
             slice: &self.coords,
             pos: 0,
+            end: self.coords.len(),
+        }
+    }
+
+    pub fn iter_range(&self, range: Range<usize>) -> Iter<D, T> {
+        Iter {
+            slice: &self.coords,
+            pos: range.start * D,
+            end: range.end * D,
         }
     }
 
@@ -59,8 +68,11 @@ impl<'a, const D: usize, T: CoordNum> MultiPoint<'a, D, T> {
     }
 
     /// Create a new MultiPoint by applying the given transformation to all coordinates.
-    pub fn transform(&self, f: impl Fn(&[T; D]) -> [T; D]) -> Self {
-        Self {
+    pub fn transform<const D2: usize, T2: CoordNum>(
+        &self,
+        f: impl Fn(&[T; D]) -> [T2; D2],
+    ) -> MultiPoint<D2, T2> {
+        MultiPoint {
             coords: self
                 .coords
                 .chunks_exact(D)
@@ -96,6 +108,7 @@ impl<'a, const D: usize, T: CoordNum> IntoIterator for &'a MultiPoint<'_, D, T> 
 pub struct Iter<'a, const D: usize, T: CoordNum> {
     slice: &'a [T],
     pos: usize,
+    end: usize,
 }
 
 impl<'a, const D: usize, T: CoordNum> Iterator for Iter<'a, D, T> {
@@ -103,7 +116,7 @@ impl<'a, const D: usize, T: CoordNum> Iterator for Iter<'a, D, T> {
 
     fn next(&mut self) -> Option<Self::Item> {
         self.pos += D;
-        if self.pos <= self.slice.len() {
+        if self.pos <= self.end {
             Some(self.slice[self.pos - D..self.pos].try_into().unwrap())
         } else {
             None
@@ -126,16 +139,30 @@ mod tests {
         assert_eq!(mpoints.len(), 1);
 
         mpoints.push(&[1.0, 1.0]);
+        mpoints.push(&[2.0, 2.0]);
+        mpoints.push(&[3.0, 3.0]);
         assert_eq!(mpoints.get(0), &[0.0, 0.0]);
         assert_eq!(mpoints.get(1), &[1.0, 1.0]);
-        assert_eq!(mpoints.len(), 2);
-        assert_eq!(mpoints.iter().count(), 2);
-        assert_eq!((&mpoints).into_iter().count(), 2);
+        assert_eq!(mpoints.get(2), &[2.0, 2.0]);
+        assert_eq!(mpoints.get(3), &[3.0, 3.0]);
+        assert_eq!(mpoints.len(), 4);
+        assert_eq!(mpoints.iter().count(), 4);
+        assert_eq!((&mpoints).into_iter().count(), 4);
 
         for (i, point) in mpoints.iter().enumerate() {
             match i {
                 0 => assert_eq!(point, [0.0, 0.0]),
                 1 => assert_eq!(point, [1.0, 1.0]),
+                2 => assert_eq!(point, [2.0, 2.0]),
+                3 => assert_eq!(point, [3.0, 3.0]),
+                _ => unreachable!(),
+            }
+        }
+
+        for (i, point) in mpoints.iter_range(1..3).enumerate() {
+            match i {
+                0 => assert_eq!(point, [1.0, 1.0]),
+                1 => assert_eq!(point, [2.0, 2.0]),
                 _ => unreachable!(),
             }
         }

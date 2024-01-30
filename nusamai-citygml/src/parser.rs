@@ -29,7 +29,7 @@ pub enum ParseError {
     Cancelled,
 }
 
-pub struct CityGMLReader<'a> {
+pub struct CityGmlReader<'a> {
     state: InternalState<'a>,
 }
 
@@ -42,7 +42,7 @@ struct InternalState<'a> {
     buf1: Vec<u8>,
     /// General purpose buffer 2
     buf2: Vec<u8>,
-    /// Data of last start tag
+    /// Floating-point number buffer
     fp_buf: Vec<f64>,
     /// Data of last start tag
     current_start: Option<BytesStart<'static>>,
@@ -100,7 +100,7 @@ impl<'a> Default for ParseContext<'a> {
     }
 }
 
-impl<'a> CityGMLReader<'a> {
+impl<'a> CityGmlReader<'a> {
     #[inline]
     pub fn new(context: ParseContext<'a>) -> Self {
         Self {
@@ -816,7 +816,7 @@ mod tests {
 
     fn parse(doc: &str, f: impl Fn(&mut SubTreeReader<std::io::Cursor<&str>>)) {
         let mut reader = quick_xml::NsReader::from_reader(std::io::Cursor::new(doc));
-        let mut citygml_reader = CityGMLReader::new(ParseContext::default());
+        let mut citygml_reader = CityGmlReader::new(ParseContext::default());
         let mut subtree_reader = citygml_reader
             .start_root(&mut reader)
             .expect("Failed to start root");

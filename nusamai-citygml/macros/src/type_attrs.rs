@@ -1,4 +1,4 @@
-use crate::StereoType;
+use crate::Stereotype;
 use proc_macro2::TokenStream;
 use quote::quote;
 use syn::meta::ParseNestedMeta;
@@ -33,7 +33,7 @@ impl FeatureArgs {
 }
 
 pub(crate) fn citygml_type(
-    ty: StereoType,
+    ty: Stereotype,
     args: proc_macro::TokenStream,
     input: proc_macro::TokenStream,
 ) -> proc_macro::TokenStream {
@@ -49,19 +49,19 @@ pub(crate) fn citygml_type(
 
     quote! {
         #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize), serde(tag = "type"))]
-        #[derive(Default, Debug, nusamai_citygml::CityGMLElement)]
+        #[derive(Default, Debug, ::nusamai_citygml::CityGmlElement)]
         #input
     }
     .into()
 }
 
-fn add_named_field(fields: &mut syn::FieldsNamed, body: TokenStream) {
+fn add_named_field(pos: usize, fields: &mut syn::FieldsNamed, body: TokenStream) {
     fields
         .named
-        .push(syn::Field::parse_named.parse2(body).unwrap())
+        .insert(pos, syn::Field::parse_named.parse2(body).unwrap())
 }
 
-fn modify(ty: &StereoType, args: &FeatureArgs, input: &mut DeriveInput) -> Result<(), Error> {
+fn modify(ty: &Stereotype, args: &FeatureArgs, input: &mut DeriveInput) -> Result<(), Error> {
     match &args.name {
         Some(name) => {
             input.attrs.push(syn::parse_quote! {
@@ -72,13 +72,13 @@ fn modify(ty: &StereoType, args: &FeatureArgs, input: &mut DeriveInput) -> Resul
     };
 
     input.attrs.push(match &ty {
-        StereoType::Feature => {
+        Stereotype::Feature => {
             syn::parse_quote! { #[citygml(type = feature)] }
         }
-        StereoType::Data => {
+        Stereotype::Data => {
             syn::parse_quote! { #[citygml(type = data)] }
         }
-        StereoType::Property => {
+        Stereotype::Property => {
             syn::parse_quote! { #[citygml(type = property)] }
         }
     });
@@ -88,12 +88,12 @@ fn modify(ty: &StereoType, args: &FeatureArgs, input: &mut DeriveInput) -> Resul
             // for #[citygml_feature] and #[citygml_data]
 
             match ty {
-                StereoType::Feature | StereoType::Data => {}
+                Stereotype::Feature | Stereotype::Data => {}
                 _ => return Err(Error::new_spanned(input, "target must be struct")),
             }
 
             if let syn::Fields::Named(ref mut fields) = data.fields {
-                if let StereoType::Feature = ty {
+                if let Stereotype::Feature = ty {
                     // for #[citygml_feature]
 
                     let prefix = args.prefix.as_ref().unwrap();
@@ -117,20 +117,29 @@ fn modify(ty: &StereoType, args: &FeatureArgs, input: &mut DeriveInput) -> Resul
                         _ => prefix.clone(),
                     };
 
+                    let mut pos = 0;
+
                     add_named_field(
+                        pos,
                         fields,
                         quote! {
                             #[citygml(geom = #geom_prefix)]
-                            pub geometries: nusamai_citygml::GeometryRef
+                            pub geometries: ::nusamai_citygml::GeometryRef
+
                         },
                     );
+                    pos += 1;
+
                     add_named_field(
+                        pos,
                         fields,
                         quote! {
-                            #[citygml(path = b"@gml:id")]
-                            pub id: Option<String>
+                            #[citygml(path = b"@gml:id", required)]
+                            pub id: String
                         },
                     );
+                    pos += 1;
+
                     //// CityGML 3.0
                     // add_named_field(
                     //     fields,
@@ -139,61 +148,84 @@ fn modify(ty: &StereoType, args: &FeatureArgs, input: &mut DeriveInput) -> Resul
                     //         pub id: Option<String>
                     //     },
                     // );
+                    // pos += 1;
+
                     add_named_field(
+                        pos,
                         fields,
                         quote! {
                             #[citygml(path = b"gml:description")]
                             pub description: Option<String>
                         },
                     );
+                    pos += 1;
+
                     add_named_field(
+                        pos,
                         fields,
                         quote! {
                             #[citygml(path = b"gml:name")]
-                            pub name: Vec<String>
+                            pub name: Vec<::nusamai_citygml::Code>
                         },
                     );
+                    pos += 1;
+
                     add_named_field(
+                        pos,
                         fields,
                         quote! {
                             #[citygml(path = b"core:creationDate")]
-                            pub creation_date: Option<nusamai_citygml::Date> // TODO: DateTime (CityGML 3.0)
+                            pub creation_date: Option<::nusamai_citygml::Date> // TODO: DateTime (CityGML 3.0)
                         },
                     );
+                    pos += 1;
+
                     add_named_field(
+                        pos,
                         fields,
                         quote! {
                             #[citygml(path = b"core:terminationDate")]
-                            pub termination_date: Option<nusamai_citygml::Date> // TODO: DateTime (CityGML 3.0)
+                            pub termination_date: Option<::nusamai_citygml::Date> // TODO: DateTime (CityGML 3.0)
                         },
                     );
-                    add_named_field(
-                        fields,
-                        quote! {
-                            #[citygml(path = b"core:validFrom")]
-                            pub valid_from: Option<nusamai_citygml::Date> // TODO: DateTime (CityGML 3.0)
-                        },
-                    );
-                    add_named_field(
-                        fields,
-                        quote! {
-                            #[citygml(path = b"core:validTo")]
-                            pub valid_to: Option<nusamai_citygml::Date> // TODO: DateTime (CityGML 3.0)
-                        },
-                    );
+                    pos += 1;
+
+                    // // CityGML 3.0
+                    // add_named_field(
+                    //     pos,
+                    //     fields,
+                    //     quote! {
+                    //         #[citygml(path = b"core:validFrom")]
+                    //         pub valid_from: Option<::nusamai_citygml::Date> // TODO: DateTime (CityGML 3.0)
+                    //     },
+                    // );
+                    // pos += 1;
+                    //
+                    // // CityGML 3.0
+                    // add_named_field(
+                    //     pos,
+                    //     fields,
+                    //     quote! {
+                    //         #[citygml(path = b"core:validTo")]
+                    //         pub valid_to: Option<::nusamai_citygml::Date> // TODO: DateTime (CityGML 3.0)
+                    //     },
+                    // );
+                    // pos += 1;
+
                     // TODO: not implemented yet
                     add_named_field(
+                        pos,
                         fields,
                         quote! {
                             #[citygml(generics)]
-                            pub generic_attribute: nusamai_citygml::GenericAttribute
+                            pub generic_attribute: ::nusamai_citygml::GenericAttribute
                         },
                     );
                 }
             }
         }
         Data::Enum(_data) => match ty {
-            StereoType::Property => {
+            Stereotype::Property => {
                 // for #[citygml_property]
                 _data.variants.push(parse_quote! {
                     #[default]

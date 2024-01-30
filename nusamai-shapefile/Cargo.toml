@@ -1,0 +1,8 @@
+[package]
+name = "nusamai-shapefile"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+nusamai-geometry = { path = "../nusamai-geometry" }
+shapefile = "0.5.0"

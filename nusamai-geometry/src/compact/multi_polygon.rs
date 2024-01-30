@@ -1,11 +1,12 @@
 use std::borrow::Cow;
+use std::ops::Range;
 
 use super::polygon::Polygon;
 use super::CoordNum;
 
 /// Computer-friendly MultiPolygon
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, PartialEq)]
 pub struct MultiPolygon<'a, const D: usize, T: CoordNum = f64> {
     /// すべての Polygon の座標データを連結したもの
     ///
@@ -117,11 +118,20 @@ impl<'a, const D: usize, T: CoordNum> MultiPolygon<'a, D, T> {
         Iter {
             mpoly: self,
             pos: 0,
+            end: self.len(),
+        }
+    }
+
+    pub fn iter_range(&self, range: Range<usize>) -> Iter<D, T> {
+        Iter {
+            mpoly: self,
+            pos: range.start,
+            end: range.end,
         }
     }
 
     /// Returns the polygon at the given index.
-    pub fn get(&self, index: usize) -> Polygon<D, T> {
+    pub fn get(&'a self, index: usize) -> Polygon<'a, D, T> {
         let len = self.len();
         let (c_start, c_end, h_start, h_end) = match index {
             index if index >= len => {
@@ -242,13 +252,15 @@ impl<'a, const D: usize, T: CoordNum> IntoIterator for &'a MultiPolygon<'_, D, T
 pub struct Iter<'a, const D: usize, T: CoordNum> {
     mpoly: &'a MultiPolygon<'a, D, T>,
     pos: usize,
+    end: usize,
 }
 
 impl<'a, const D: usize, T: CoordNum> Iterator for Iter<'a, D, T> {
     type Item = Polygon<'a, D, T>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if self.pos < self.mpoly.len() {
+        if self.pos < self.end {
+            // TODO: optimize
             let poly = self.mpoly.get(self.pos);
             self.pos += 1;
             Some(poly)
@@ -293,17 +305,41 @@ mod tests {
         // 3rd polygon
         mpoly.add_exterior([[4., 0.], [7., 0.], [7., 3.], [4., 3.], [4., 0.]]);
         assert_eq!(mpoly.len(), 3);
-        mpoly.add_interior([[5., 1.], [6., 1.], [6., 2.], [5., 2.], [5., 1.]]);
-        assert_eq!(mpoly.len(), 3);
 
         for (i, poly) in mpoly.iter().enumerate() {
             match i {
                 0 => assert_eq!(poly.interiors().count(), 2),
                 1 => assert_eq!(poly.interiors().count(), 1),
-                2 => assert_eq!(poly.interiors().count(), 1),
+                2 => assert_eq!(poly.interiors().count(), 0),
                 _ => unreachable!(),
             }
         }
+
+        for (i, poly) in mpoly.iter_range(0..1).enumerate() {
+            match i {
+                0 => assert_eq!(poly.interiors().count(), 2),
+                _ => unreachable!(),
+            }
+        }
+
+        for (i, poly) in mpoly.iter_range(1..2).enumerate() {
+            match i {
+                0 => assert_eq!(poly.interiors().count(), 1),
+                _ => unreachable!(),
+            }
+        }
+
+        let mut found = false;
+        for (i, poly) in mpoly.iter_range(2..3).enumerate() {
+            match i {
+                0 => {
+                    assert_eq!(poly.interiors().count(), 0);
+                    found = true;
+                }
+                _ => unreachable!(),
+            }
+        }
+        assert!(found);
 
         mpoly.clear();
         assert_eq!(mpoly.len(), 0);

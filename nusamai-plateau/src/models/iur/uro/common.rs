@@ -1,4 +1,4 @@
-use nusamai_citygml::{citygml_data, CityGMLElement, Code, Date, Length, Measure, Point, URI};
+use nusamai_citygml::{citygml_data, CityGmlElement, Code, Date, Length, Measure, Point, URI};
 
 #[citygml_data(name = "uro:UserDefinedValue")]
 pub struct UserDefinedValue {

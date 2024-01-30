@@ -1,6 +1,6 @@
 use super::core::Address;
 use super::iur::uro;
-use nusamai_citygml::{citygml_feature, CityGMLElement, citygml_property, Code, GYear};
+use nusamai_citygml::{citygml_feature, citygml_property, CityGmlElement, Code, GYear};
 
 #[citygml_feature(name = "brid:Bridge")]
 pub struct Bridge {
@@ -29,7 +29,7 @@ pub struct Bridge {
     pub outer_bridge_installation: Vec<BridgeInstallation>,
 
     #[citygml(path = b"brid:interiorBridgeInstallation/brid:IntBridgeInstallation")]
-    pub interior_bridge_installation: Vec<IntBridgeInstallation>,
+    pub interior_bridge_installation: Vec<BridgeInstallation>,
 
     #[citygml(path = b"brid:boundedBy")]
     pub bounded_by: Vec<BoundarySurfaceProperty>, // -> brid:_BoundarySurface
@@ -72,9 +72,7 @@ pub struct Bridge {
 
     #[citygml(path = b"uro:bridStructureAttribute/uro:BridgeStructureAttribute")]
     pub brid_structure_attribute: Vec<uro::BridgeStructureAttribute>,
-
 }
-
 
 #[citygml_feature(name = "brid:BridgePart")]
 pub struct BridgePart {
@@ -103,7 +101,7 @@ pub struct BridgePart {
     pub outer_bridge_installation: Vec<BridgeInstallation>,
 
     #[citygml(path = b"brid:interiorBridgeInstallation/brid:IntBridgeInstallation")]
-    pub interior_bridge_installation: Vec<IntBridgeInstallation>,
+    pub interior_bridge_installation: Vec<BridgeInstallation>,
 
     #[citygml(path = b"brid:boundedBy")]
     pub bounded_by: Vec<BoundarySurfaceProperty>, // -> brid:_BoundarySurface
@@ -146,7 +144,6 @@ pub struct BridgePart {
 
     #[citygml(path = b"uro:bridStructureAttribute/uro:BridgeStructureAttribute")]
     pub brid_structure_attribute: Vec<uro::BridgeStructureAttribute>,
-
 }
 
 #[citygml_feature(name = "brid:BridgeConstructionElement")]
@@ -162,7 +159,6 @@ pub struct BridgeConstructionElement {
 
     #[citygml(path = b"brid:boundedBy")]
     pub bounded_by: Vec<BoundarySurfaceProperty>, // -> brid:_BoundarySurface
-
 }
 
 #[citygml_feature(name = "brid:BridgeRoom")]
@@ -183,58 +179,49 @@ pub struct BridgeRoom {
     pub interior_furniture: Vec<BridgeFurniture>,
 
     #[citygml(path = b"brid:bridgeRoomInstallation/brid:IntBridgeInstallation")]
-    pub bridge_room_installation: Vec<IntBridgeInstallation>,
-
+    pub bridge_room_installation: Vec<BridgeInstallation>,
 }
 #[citygml_feature(name = "brid:RoofSurface")]
 pub struct RoofSurface {
     #[citygml(path = b"brid:opening")]
     pub opening: Vec<OpeningProperty>, // -> brid:_Opening
-
 }
 
 #[citygml_feature(name = "brid:WallSurface")]
 pub struct WallSurface {
     #[citygml(path = b"brid:opening")]
     pub opening: Vec<OpeningProperty>, // -> brid:_Opening
-
 }
 
 #[citygml_feature(name = "brid:GroundSurface")]
 pub struct GroundSurface {
     #[citygml(path = b"brid:opening")]
     pub opening: Vec<OpeningProperty>, // -> brid:_Opening
-
 }
 
 #[citygml_feature(name = "brid:OuterCeilingSurface")]
 pub struct OuterCeilingSurface {
     #[citygml(path = b"brid:opening")]
     pub opening: Vec<OpeningProperty>, // -> brid:_Opening
-
 }
 
 #[citygml_feature(name = "brid:OuterFloorSurface")]
 pub struct OuterFloorSurface {
     #[citygml(path = b"brid:opening")]
     pub opening: Vec<OpeningProperty>, // -> brid:_Opening
-
 }
 
 #[citygml_feature(name = "brid:ClosureSurface")]
 pub struct ClosureSurface {
     #[citygml(path = b"brid:opening")]
     pub opening: Vec<OpeningProperty>, // -> brid:_Opening
-
 }
 
 #[citygml_feature(name = "brid:InteriorWallSurface")]
 pub struct InteriorWallSurface {
     #[citygml(path = b"brid:opening")]
     pub opening: Vec<OpeningProperty>, // -> brid:_Opening
-
 }
-
 
 #[citygml_feature(name = "brid:BridgeInstallation")]
 pub struct BridgeInstallation {
@@ -249,24 +236,23 @@ pub struct BridgeInstallation {
 
     #[citygml(path = b"brid:boundedBy")]
     pub bounded_by: Vec<BoundarySurfaceProperty>, // -> brid:_BoundarySurface
-
 }
 
-#[citygml_feature(name = "brid:IntBridgeInstallation")]
-pub struct IntBridgeInstallation {
-    #[citygml(path = b"brid:class")]
-    pub class: Option<Code>,
-
-    #[citygml(path = b"brid:function")]
-    pub function: Vec<Code>,
-
-    #[citygml(path = b"brid:usage")]
-    pub usage: Vec<Code>,
-
-    #[citygml(path = b"brid:boundedBy")]
-    pub bounded_by: Vec<BoundarySurfaceProperty>, // -> brid:_BoundarySurface
-
-}
+// Intentionally not used to facilitate transition to CityGML 3.0.
+// #[citygml_feature(name = "brid:IntBridgeInstallation")]
+// pub struct IntBridgeInstallation {
+//     #[citygml(path = b"brid:class")]
+//     pub class: Option<Code>,
+//
+//     #[citygml(path = b"brid:function")]
+//     pub function: Vec<Code>,
+//
+//     #[citygml(path = b"brid:usage")]
+//     pub usage: Vec<Code>,
+//
+//     #[citygml(path = b"brid:boundedBy")]
+//     pub bounded_by: Vec<BoundarySurfaceProperty>, // -> brid:_BoundarySurface
+// }
 
 #[citygml_feature(name = "brid:BridgeFurniture")]
 pub struct BridgeFurniture {
@@ -278,39 +264,24 @@ pub struct BridgeFurniture {
 
     #[citygml(path = b"brid:usage")]
     pub usage: Vec<Code>,
-
 }
 
-#[citygml_property(name = "bldg:_OpeningProperty")]
+#[citygml_property(name = "brid:_OpeningProperty")]
 pub enum OpeningProperty {
-    #[citygml(path = b"bldg:Door")]
+    #[citygml(path = b"brid:Door")]
     Door(Door),
-    #[citygml(path = b"bldg:Window")]
+    #[citygml(path = b"brid:Window")]
     Window(Window),
 }
 
-#[citygml_feature(name = "bldg:Door")]
+#[citygml_feature(name = "brid:Door")]
 pub struct Door {
-    #[citygml(path = b"uro:ifcOpeningAttribute")]
-    pub ifc_opening_attribute: Vec<uro::IfcAttributeProperty>, // -> uro:IfcAttribute
-
-    #[citygml(path = b"uro:indoorOpeningAttribute")]
-    pub indoor_opening_attribute: Vec<uro::IndoorAttributeProperty>, // -> uro:IndoorAttribute
-
-    #[citygml(path = b"bldg:address/core:Address")]
+    #[citygml(path = b"brid:address/core:Address")]
     pub address: Vec<Address>,
-
 }
 
-#[citygml_feature(name = "bldg:Window")]
-pub struct Window {
-    #[citygml(path = b"uro:ifcOpeningAttribute")]
-    pub ifc_opening_attribute: Vec<uro::IfcAttributeProperty>, // -> uro:IfcAttribute
-
-    #[citygml(path = b"uro:indoorOpeningAttribute")]
-    pub indoor_opening_attribute: Vec<uro::IndoorAttributeProperty>, // -> uro:IndoorAttribute
-
-}
+#[citygml_feature(name = "brid:Window")]
+pub struct Window {}
 
 #[citygml_property(name = "brid:_BoundarySurfaceProperty")]
 pub enum BoundarySurfaceProperty {
@@ -338,12 +309,10 @@ pub enum BoundarySurfaceProperty {
 pub struct CeilingSurface {
     #[citygml(path = b"brid:opening")]
     pub opening: Vec<OpeningProperty>, // -> brid:_Opening
-
 }
 
 #[citygml_feature(name = "brid:FloorSurface")]
 pub struct FloorSurface {
     #[citygml(path = b"brid:opening")]
     pub opening: Vec<OpeningProperty>, // -> brid:_Opening
-
 }

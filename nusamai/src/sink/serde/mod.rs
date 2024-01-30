@@ -7,12 +7,13 @@ use std::io::{BufWriter, Write};
 use std::path::PathBuf;
 
 use bincode;
+use nusamai_citygml::schema::Schema;
 use rayon::prelude::*;
 
-use crate::get_parameter_value;
 use crate::parameters::*;
 use crate::pipeline::{Feedback, Receiver};
 use crate::sink::{DataSink, DataSinkProvider, SinkInfo};
+use crate::{get_parameter_value, transformer};
 
 pub struct SerdeSinkProvider {}
 
@@ -43,7 +44,7 @@ impl DataSinkProvider for SerdeSinkProvider {
         let output_path = get_parameter_value!(params, "@output", FileSystemPath);
 
         Box::<SerdeSink>::new(SerdeSink {
-            output_path: output_path.unwrap().into(),
+            output_path: output_path.as_ref().unwrap().into(),
             ..Default::default()
         })
     }
@@ -57,7 +58,15 @@ pub struct SerdeSink {
 }
 
 impl DataSink for SerdeSink {
-    fn run(&mut self, upstream: Receiver, feedback: &mut Feedback) {
+    fn make_transform_requirements(&self) -> transformer::Requirements {
+        // use transformer::RequirementItem;
+
+        transformer::Requirements {
+            ..Default::default()
+        }
+    }
+
+    fn run(&mut self, upstream: Receiver, feedback: &Feedback, _schema: &Schema) {
         let (sender, receiver) = std::sync::mpsc::sync_channel(1000);
 
         rayon::join(
@@ -71,7 +80,7 @@ impl DataSink for SerdeSink {
                         }
 
                         buf.clear();
-                        bincode::serialize_into(buf as &mut Vec<u8>, &parcel.cityobj).unwrap();
+                        bincode::serialize_into(buf as &mut Vec<u8>, &parcel.entity).unwrap();
                         if sender.send(lz4_flex::compress_prepend_size(buf)).is_err() {
                             log::info!("sink cancelled");
                             return Err(());
@@ -82,7 +91,8 @@ impl DataSink for SerdeSink {
             },
             || {
                 // Write to file
-                let mut writer = BufWriter::new(File::create(&self.output_path).unwrap());
+                let mut writer =
+                    BufWriter::with_capacity(1024 * 1024, File::create(&self.output_path).unwrap());
                 for compressed in receiver {
                     // size
                     writer

@@ -1,5 +1,5 @@
 use super::iur::uro;
-use nusamai_citygml::{citygml_feature, citygml_property, CityGMLElement, Code, GYear};
+use nusamai_citygml::{citygml_feature, citygml_property, CityGmlElement, Code, GYear};
 
 #[citygml_feature(name = "tun:Tunnel")]
 pub struct Tunnel {
@@ -22,7 +22,7 @@ pub struct Tunnel {
     pub outer_tunnel_installation: Vec<TunnelInstallation>,
 
     #[citygml(path = b"tun:interiorTunnelInstallation/tun:IntTunnelInstallation")]
-    pub interior_tunnel_installation: Vec<IntTunnelInstallation>,
+    pub interior_tunnel_installation: Vec<TunnelInstallation>,
 
     #[citygml(path = b"tun:boundedBy")]
     pub bounded_by: Vec<BoundarySurfaceProperty>, // -> tun:_BoundarySurface
@@ -62,10 +62,7 @@ pub struct Tunnel {
 
     #[citygml(path = b"uro:tunStructureAttribute/uro:TunnelStructureAttribute")]
     pub tun_structure_attribute: Vec<uro::TunnelStructureAttribute>,
-
 }
-
-
 
 #[citygml_feature(name = "tun:TunnelPart")]
 pub struct TunnelPart {
@@ -88,7 +85,7 @@ pub struct TunnelPart {
     pub outer_tunnel_installation: Vec<TunnelInstallation>,
 
     #[citygml(path = b"tun:interiorTunnelInstallation/tun:IntTunnelInstallation")]
-    pub interior_tunnel_installation: Vec<IntTunnelInstallation>,
+    pub interior_tunnel_installation: Vec<TunnelInstallation>,
 
     #[citygml(path = b"tun:boundedBy")]
     pub bounded_by: Vec<BoundarySurfaceProperty>, // -> tun:_BoundarySurface
@@ -128,7 +125,6 @@ pub struct TunnelPart {
 
     #[citygml(path = b"uro:tunStructureAttribute/uro:TunnelStructureAttribute")]
     pub tun_structure_attribute: Vec<uro::TunnelStructureAttribute>,
-
 }
 
 #[citygml_feature(name = "tun:HollowSpace")]
@@ -149,8 +145,7 @@ pub struct HollowSpace {
     pub interior_furniture: Vec<TunnelFurniture>,
 
     #[citygml(path = b"tun:hollowSpaceInstallation/tun:IntTunnelInstallation")]
-    pub hollow_space_installation: Vec<IntTunnelInstallation>,
-
+    pub hollow_space_installation: Vec<TunnelInstallation>,
 }
 
 #[citygml_feature(name = "tun:TunnelInstallation")]
@@ -166,24 +161,23 @@ pub struct TunnelInstallation {
 
     #[citygml(path = b"tun:boundedBy")]
     pub bounded_by: Vec<BoundarySurfaceProperty>, // -> tun:_BoundarySurface
-
 }
 
-#[citygml_feature(name = "tun:IntTunnelInstallation")]
-pub struct IntTunnelInstallation {
-    #[citygml(path = b"tun:class")]
-    pub class: Option<Code>,
-
-    #[citygml(path = b"tun:function")]
-    pub function: Vec<Code>,
-
-    #[citygml(path = b"tun:usage")]
-    pub usage: Vec<Code>,
-
-    #[citygml(path = b"tun:boundedBy")]
-    pub bounded_by: Vec<BoundarySurfaceProperty>, // -> tun:_BoundarySurface
-
-}
+// Intentionally not used to facilitate transition to CityGML 3.0.
+// #[citygml_feature(name = "tun:IntTunnelInstallation")]
+// pub struct IntTunnelInstallation {
+//     #[citygml(path = b"tun:class")]
+//     pub class: Option<Code>,
+//
+//     #[citygml(path = b"tun:function")]
+//     pub function: Vec<Code>,
+//
+//     #[citygml(path = b"tun:usage")]
+//     pub usage: Vec<Code>,
+//
+//     #[citygml(path = b"tun:boundedBy")]
+//     pub bounded_by: Vec<BoundarySurfaceProperty>, // -> tun:_BoundarySurface
+// }
 
 #[citygml_property(name = "tun:_BoundarySurfaceProperty")]
 pub enum BoundarySurfaceProperty {
@@ -211,63 +205,54 @@ pub enum BoundarySurfaceProperty {
 pub struct CeilingSurface {
     #[citygml(path = b"tun:opening")]
     pub opening: Vec<OpeningProperty>, // -> tun:_Opening
-
 }
 
 #[citygml_feature(name = "tun:ClosureSurface")]
 pub struct ClosureSurface {
     #[citygml(path = b"tun:opening")]
     pub opening: Vec<OpeningProperty>, // -> tun:_Opening
-
 }
 
 #[citygml_feature(name = "tun:FloorSurface")]
 pub struct FloorSurface {
     #[citygml(path = b"tun:opening")]
     pub opening: Vec<OpeningProperty>, // -> tun:_Opening
-
 }
 
 #[citygml_feature(name = "tun:GroundSurface")]
 pub struct GroundSurface {
     #[citygml(path = b"tun:opening")]
     pub opening: Vec<OpeningProperty>, // -> tun:_Opening
-
 }
 
 #[citygml_feature(name = "tun:InteriorWallSurface")]
 pub struct InteriorWallSurface {
     #[citygml(path = b"tun:opening")]
     pub opening: Vec<OpeningProperty>, // -> tun:_Opening
-
 }
 
 #[citygml_feature(name = "tun:OuterCeilingSurface")]
 pub struct OuterCeilingSurface {
     #[citygml(path = b"tun:opening")]
     pub opening: Vec<OpeningProperty>, // -> tun:_Opening
-
 }
 
 #[citygml_feature(name = "tun:OuterFloorSurface")]
 pub struct OuterFloorSurface {
     #[citygml(path = b"tun:opening")]
     pub opening: Vec<OpeningProperty>, // -> tun:_Opening
-
 }
 
 #[citygml_feature(name = "tun:RoofSurface")]
 pub struct RoofSurface {
     #[citygml(path = b"tun:opening")]
     pub opening: Vec<OpeningProperty>, // -> tun:_Opening
-
 }
 
 #[citygml_feature(name = "tun:WallSurface")]
 pub struct WallSurface {
     #[citygml(path = b"tun:opening")]
     pub opening: Vec<OpeningProperty>, // -> tun:_Opening
-
 }
 
 #[citygml_property(name = "tun:_OpeningProperty")]
@@ -279,12 +264,10 @@ pub enum OpeningProperty {
 }
 
 #[citygml_feature(name = "tun:Door")]
-pub struct Door {
-}
+pub struct Door {}
 
 #[citygml_feature(name = "tun:Window")]
-pub struct Window {
-}
+pub struct Window {}
 
 #[citygml_feature(name = "tun:TunnelFurniture")]
 pub struct TunnelFurniture {
@@ -296,5 +279,4 @@ pub struct TunnelFurniture {
 
     #[citygml(path = b"tun:usage")]
     pub usage: Vec<Code>,
-
 }

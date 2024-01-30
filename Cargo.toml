@@ -1,8 +1,17 @@
 [workspace]
-
 members = [
     "app/src-tauri",
     "nusamai-*",
+    "nusamai-*/nusamai-*-json",
     "nusamai",
 ]
 resolver = "2"
+
+[workspace.package]
+version = "0.0.0-alpha.0"
+authors = ["MIERUNE Inc. <info@mierune.co.jp>"]
+
+[profile.release-lto]
+inherits = "release"
+lto = "fat"
+panic = "abort"

@@ -2,6 +2,7 @@
 
 use std::path::PathBuf;
 
+use nusamai_citygml::schema::Schema;
 use url::Url;
 
 use rayon::prelude::*;
@@ -10,8 +11,8 @@ use crate::parameters::Parameters;
 use crate::pipeline::{Feedback, Receiver};
 use crate::sink::{DataSink, DataSinkProvider, SinkInfo};
 
-use crate::get_parameter_value;
 use crate::parameters::*;
+use crate::{get_parameter_value, transformer};
 use nusamai_gpkg::geometry::write_indexed_multipolygon;
 use nusamai_gpkg::GpkgHandler;
 
@@ -41,10 +42,10 @@ impl DataSinkProvider for GpkgSinkProvider {
     }
 
     fn create(&self, params: &Parameters) -> Box<dyn DataSink> {
-        let output_path = get_parameter_value!(params, "@output", FileSystemPath).unwrap();
+        let output_path = get_parameter_value!(params, "@output", FileSystemPath);
 
         Box::<GpkgSink>::new(GpkgSink {
-            output_path: output_path.clone(),
+            output_path: output_path.as_ref().unwrap().into(),
         })
     }
 }
@@ -54,7 +55,7 @@ pub struct GpkgSink {
 }
 
 impl GpkgSink {
-    pub async fn run_async(&mut self, upstream: Receiver, feedback: &mut Feedback) {
+    pub async fn run_async(&mut self, upstream: Receiver, feedback: &Feedback) {
         let mut handler = if self.output_path.to_string_lossy().starts_with("sqlite:") {
             GpkgHandler::from_url(&Url::parse(self.output_path.to_str().unwrap()).unwrap())
                 .await
@@ -78,13 +79,14 @@ impl GpkgSink {
                         if feedback.is_cancelled() {
                             return Err(());
                         }
-                        let cityobj = parcel.cityobj;
-                        if !cityobj.geometries.multipolygon.is_empty() {
+                        let entity = parcel.entity;
+                        let geom_store = entity.geometry_store.read().unwrap();
+                        if !geom_store.multipolygon.is_empty() {
                             let mut bytes = Vec::new();
                             if write_indexed_multipolygon(
                                 &mut bytes,
-                                &cityobj.geometries.vertices,
-                                &cityobj.geometries.multipolygon,
+                                &geom_store.vertices,
+                                &geom_store.multipolygon,
                                 4326,
                             )
                             .is_err()
@@ -116,7 +118,15 @@ impl GpkgSink {
 }
 
 impl DataSink for GpkgSink {
-    fn run(&mut self, upstream: Receiver, feedback: &mut Feedback) {
+    fn make_transform_requirements(&self) -> transformer::Requirements {
+        // use transformer::RequirementItem;
+
+        transformer::Requirements {
+            ..Default::default()
+        }
+    }
+
+    fn run(&mut self, upstream: Receiver, feedback: &Feedback, _schema: &Schema) {
         let runtime = tokio::runtime::Runtime::new().unwrap();
         runtime.block_on(self.run_async(upstream, feedback));
     }

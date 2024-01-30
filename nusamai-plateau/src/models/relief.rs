@@ -1,6 +1,6 @@
 use super::iur::uro;
 use nusamai_citygml::{
-    citygml_data, citygml_feature, citygml_property, CityGMLElement, LODType, Point, Vector,
+    citygml_data, citygml_feature, citygml_property, CityGmlElement, LODType, Point, Vector,
 };
 
 #[citygml_feature(name = "dem:ReliefFeature")]
@@ -109,7 +109,7 @@ pub struct RectifiedGridDomain {
     pub rectified_grid: Option<RectifiedGrid>,
 }
 
-#[citygml_data(name = "gml:coverageFunction")]
+#[citygml_data(name = "gml:CoverageFunction")]
 pub struct CoverageFunction {
     #[citygml(path = b"gml:MappingRule", required)]
     pub mapping_rule: Option<String>,

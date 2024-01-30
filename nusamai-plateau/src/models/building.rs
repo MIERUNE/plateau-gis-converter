@@ -1,7 +1,7 @@
 use super::core::Address;
 use super::iur::uro;
 use nusamai_citygml::{
-    citygml_feature, citygml_property, CityGMLElement, Code, GYear, Length, Measure,
+    citygml_feature, citygml_property, CityGmlElement, Code, GYear, Length, Measure,
     MeasureOrNullList,
 };
 
@@ -386,6 +386,25 @@ pub struct BuildingInstallation {
     #[citygml(path = b"uro:ifcBuildingInstallationAttribute")]
     pub ifc_building_installation_attribute: Vec<uro::IfcAttributeProperty>, // -> uro:IfcAttribute
 }
+
+// Intentionally not used to facilitate transition to CityGML 3.0.
+// #[citygml_feature(name = "bldg:BuildingInstallation")]
+// pub struct BuildingInstallation {
+//     #[citygml(path = b"bldg:class")]
+//     pub class: Option<Code>,
+//
+//     #[citygml(path = b"bldg:function")]
+//     pub function: Vec<Code>,
+//
+//     #[citygml(path = b"bldg:usage")]
+//     pub usage: Vec<Code>,
+//
+//     #[citygml(path = b"bldg:boundedBy")]
+//     pub bounded_by: Vec<BoundarySurfaceProperty>, // -> bldg:_BoundarySurface
+//
+//     #[citygml(path = b"uro:ifcBuildingInstallationAttribute")]
+//     pub ifc_building_installation_attribute: Vec<uro::IfcAttributeProperty>, // -> uro:IfcAttribute
+// }
 
 #[citygml_feature(name = "bldg:BuildingFurniture")]
 pub struct BuildingFurniture {

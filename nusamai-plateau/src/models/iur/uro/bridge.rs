@@ -1,5 +1,5 @@
 use nusamai_citygml::{
-    citygml_data, citygml_property, CityGMLElement, Code, Date, GYear, Length, Measure,
+    citygml_data, citygml_property, CityGmlElement, Code, Date, GYear, Length, Measure,
 };
 
 #[citygml_data(name = "uro:BridgeStructureAttribute")]

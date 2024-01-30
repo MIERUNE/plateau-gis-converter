@@ -19,7 +19,7 @@
 
 use super::*;
 use nusamai_citygml::{
-    citygml_data, citygml_feature, CityGMLElement, Code, GYear, Length, Measure, Point,
+    citygml_data, citygml_feature, CityGmlElement, Code, GYear, Length, Measure, Point,
 };
 
 #[citygml_feature(name = "uro:Appurtenance")]

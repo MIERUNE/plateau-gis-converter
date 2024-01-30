@@ -11,6 +11,7 @@ use std::sync::mpsc;
 use ext_sort::{buffer::mem::MemoryLimitedBufferBuilder, ExternalSorter, ExternalSorterBuilder};
 use hashbrown::HashMap;
 use itertools::Itertools;
+use nusamai_citygml::schema::Schema;
 use nusamai_mvt::geometry::GeometryEncoder;
 use nusamai_mvt::tag::TagsEncoder;
 use prost::Message;
@@ -21,13 +22,13 @@ use nusamai_citygml::object;
 use nusamai_geometry::MultiPolygon;
 use nusamai_mvt::{tileid::TileIdMethod, vector_tile};
 
-use crate::get_parameter_value;
 use crate::parameters::*;
 use crate::pipeline::{Feedback, Receiver};
 use crate::sink::{DataSink, DataSinkProvider, SinkInfo};
+use crate::{get_parameter_value, transformer};
 use slice::slice_cityobj_geoms;
 use sort::BincodeExternalChunk;
-use tags::traverse_properties;
+use tags::convert_properties;
 
 pub struct MVTSinkProvider {}
 
@@ -60,7 +61,7 @@ impl DataSinkProvider for MVTSinkProvider {
         let output_path = get_parameter_value!(params, "@output", FileSystemPath);
 
         Box::<MVTSink>::new(MVTSink {
-            output_path: output_path.unwrap().into(),
+            output_path: output_path.as_ref().unwrap().into(),
         })
     }
 }
@@ -83,7 +84,16 @@ struct SlicedFeature<'a> {
 }
 
 impl DataSink for MVTSink {
-    fn run(&mut self, upstream: Receiver, feedback: &mut Feedback) {
+    fn make_transform_requirements(&self) -> transformer::Requirements {
+        use transformer::RequirementItem;
+
+        transformer::Requirements {
+            mergedown: RequirementItem::Recommended(transformer::Mergedown::Full),
+            ..Default::default()
+        }
+    }
+
+    fn run(&mut self, upstream: Receiver, feedback: &Feedback, _schema: &Schema) {
         let (sender_sliced, receiver_sliced) = mpsc::sync_channel(2000);
         let (sender_sorted, receiver_sorted) = mpsc::sync_channel(2000);
 
@@ -113,7 +123,10 @@ impl DataSink for MVTSink {
                 let output_path = &self.output_path;
                 s.spawn(move || {
                     // Run in a separate thread pool to avoid deadlocks
-                    let pool = rayon::ThreadPoolBuilder::new().build().unwrap();
+                    let pool = rayon::ThreadPoolBuilder::new()
+                        .use_current_thread()
+                        .build()
+                        .unwrap();
                     pool.install(|| {
                         tile_writing_stage(output_path, feedback, receiver_sorted, tile_id_conv);
                     })
@@ -135,18 +148,18 @@ fn geometry_slicing_stage(
             return Err(());
         }
 
-        let max_detail = 12;
+        let max_detail = 12; // 4096
         let buffer_pixels = 5;
         slice_cityobj_geoms(
-            &parcel.cityobj,
+            &parcel.entity,
             7,
-            15,
+            16,
             max_detail,
             buffer_pixels,
             |(z, x, y), mpoly| {
                 let feature = SlicedFeature {
                     geometry: mpoly,
-                    properties: parcel.cityobj.root.clone(),
+                    properties: parcel.entity.root.clone(),
                 };
                 let bytes = bincode::serialize(&feature).unwrap();
                 let sfeat = SerializedSlicedFeature {
@@ -250,21 +263,20 @@ fn tile_writing_stage(
                 let mut id = None;
                 let mut tags: Vec<u32> = Vec::new();
 
-                let layer = if let value @ object::Value::Feature(feat) = &feat.properties {
-                    let layer = layers.entry_ref(feat.typename.as_ref()).or_default();
+                let layer = if let object::Value::Object(obj) = &feat.properties {
+                    let layer = layers.entry_ref(obj.typename.as_ref()).or_default();
 
                     // Encode attributes as MVT tags
-                    traverse_properties(&mut tags, &mut layer.tags_enc, String::new(), value);
+                    for (key, value) in &obj.attributes {
+                        convert_properties(&mut tags, &mut layer.tags_enc, key, value);
+                    }
 
                     // Make a MVT feature id (u64) by hashing the original feature id string.
-                    if let Some(id_str) = &feat.id {
-                        id = Some(
-                            id_str
-                                .as_bytes()
-                                .iter()
-                                .fold(5381u64, |a, c| a.wrapping_mul(33) ^ *c as u64),
-                        );
-                    }
+                    id = obj.stereotype.id().map(|id| {
+                        id.as_bytes()
+                            .iter()
+                            .fold(5381u64, |a, c| a.wrapping_mul(33) ^ *c as u64)
+                    });
 
                     layer
                 } else {

@@ -28,26 +28,79 @@ fn load_area_example() {
 
 #[test]
 fn load_bridge_example() {
-    let cityobjs = load_cityobjs("./tests/data/plateau-3_0/udx/brid/51324378_brid_6697.gml");
-    assert_eq!(cityobjs.len(), 1);
-    let TopLevelCityObject::Bridge(bridge) = &cityobjs.first().unwrap().cityobj else {
-        panic!("Not a CityFurniture");
-    };
+    {
+        let cityobjs =
+            load_cityobjs("./tests/data/plateau-3_0/udx/brid/dorokyo_51324378_brid_6697.gml");
+        assert_eq!(cityobjs.len(), 1);
+        let TopLevelCityObject::Bridge(bridge) = &cityobjs.first().unwrap().cityobj else {
+            panic!("Expected a bridge");
+        };
 
-    assert_eq!(
-        bridge.class,
-        Some(Code::new("アーチ橋".to_string(), "03".to_string()))
-    );
-    assert_eq!(
-        bridge.function,
-        vec![Code::new("道路橋".to_string(), "01".to_string())]
-    );
-    assert_eq!(bridge.year_of_construction, Some("1962".to_string()));
-    assert_eq!(bridge.is_movable, Some(false));
-    assert_eq!(
-        bridge.outer_bridge_construction[0].function,
-        vec![Code::new("アーチ".to_string(), "04".to_string())]
-    )
+        assert_eq!(
+            bridge.class,
+            Some(Code::new("アーチ橋".to_string(), "03".to_string()))
+        );
+        assert_eq!(
+            bridge.function,
+            vec![Code::new("道路橋".to_string(), "01".to_string())]
+        );
+        assert_eq!(bridge.year_of_construction, Some("1962".to_string()));
+        assert_eq!(bridge.is_movable, Some(false));
+        assert_eq!(
+            bridge.outer_bridge_construction[0].function,
+            vec![Code::new("アーチ".to_string(), "04".to_string())]
+        );
+    }
+
+    {
+        let cityobjs =
+            load_cityobjs("./tests/data/plateau-3_0/udx/brid/hodokyo_51324378_brid_6697.gml");
+        assert_eq!(cityobjs.len(), 1);
+        let TopLevelCityObject::Bridge(bridge) = &cityobjs.first().unwrap().cityobj else {
+            panic!("Expected a bridge");
+        };
+
+        assert_eq!(
+            bridge.function,
+            vec![Code::new("横断歩道橋".to_string(), "07".to_string())]
+        );
+        assert_eq!(bridge.year_of_construction, Some("1968".to_string()));
+        assert_eq!(bridge.brid_risk_assessment_attribute.len(), 1);
+        assert_eq!(
+            bridge.brid_risk_assessment_attribute[0]
+                .risk_type
+                .as_ref()
+                .unwrap()
+                .value(),
+            "判定区分Ⅰ（健全）"
+        );
+    }
+
+    {
+        let cityobjs =
+            load_cityobjs("./tests/data/plateau-3_0/udx/brid/pedeck_53360690_brid_6697.gml");
+        assert_eq!(cityobjs.len(), 1);
+        let TopLevelCityObject::Bridge(bridge) = &cityobjs.first().unwrap().cityobj else {
+            panic!("Expected a bridge");
+        };
+
+        assert_eq!(
+            bridge.function,
+            vec![Code::new(
+                "ペデストリアンデッキ".to_string(),
+                "08".to_string()
+            )]
+        );
+        assert_eq!(bridge.brid_structure_attribute.len(), 1);
+        assert_eq!(
+            bridge.brid_structure_attribute[0]
+                .length
+                .as_ref()
+                .unwrap()
+                .value(),
+            776.0
+        );
+    }
 }
 
 #[test]
@@ -219,8 +272,8 @@ fn load_other_construction_example() {
 
 #[test]
 fn load_dem_example() {
-    let cityobjs = load_cityobjs("./tests/data/tokyo23-ku/udx/dem/533937_dem_6697_op.gml");
-    assert_eq!(cityobjs.len(), 1);
+    let cityobjs = load_cityobjs("./tests/data/yokosuka-shi/udx/dem/523965_dem_6697_05_op.gml");
+    assert_eq!(cityobjs.len(), 2);
     let TopLevelCityObject::ReliefFeature(dem) = &cityobjs.first().unwrap().cityobj else {
         panic!("Not a ReliefFeature");
     };
@@ -229,6 +282,15 @@ fn load_dem_example() {
         panic!("Unexpected relief component type");
     };
     assert_eq!(tin.lod, Some(1));
+
+    assert_eq!(cityobjs[0].geometries.epsg, 6697);
+    assert_eq!(
+        cityobjs
+            .iter()
+            .map(|o| o.geometries.multipolygon.len())
+            .sum::<usize>(),
+        1066
+    );
 }
 
 #[test]
@@ -281,9 +343,13 @@ fn load_railway_example() {
 
     assert_eq!(
         railway.id,
-        Some("rwy_f087faa5-f548-4188-aa2e-03c7a5f2d3b9".to_string())
+        "rwy_f087faa5-f548-4188-aa2e-03c7a5f2d3b9".to_string()
     );
-    assert_eq!(railway.name, vec!["東北線".to_string()]);
+
+    assert_eq!(
+        railway.name,
+        vec![Code::new("東北線".into(), "東北線".into())]
+    );
     assert_eq!(railway.traffic_area.len(), 7);
     assert_eq!(
         railway.traffic_area.first().unwrap().function,
@@ -535,4 +601,447 @@ fn load_flood_example() {
             panic!("expected SedimentDisasterProneArea");
         };
     }
+}
+
+#[test]
+fn load_urf_kodo_example() {
+    let cityobjs = load_cityobjs("./tests/data/kawasaki-shi/udx/urf/533915_urf_6668_kodo_op.gml");
+    assert_eq!(cityobjs.len(), 1);
+    let TopLevelCityObject::HeightControlDistrict(hcd) = &cityobjs.first().unwrap().cityobj else {
+        panic!("Not a HeightControlDistrict");
+    };
+
+    assert_eq!(
+        hcd.function,
+        vec![Code::new("高度地区".to_string(), "18".to_string(),)]
+    );
+
+    assert_eq!(
+        hcd.urf_valid_from,
+        Option::Some(Date::from_ymd_opt(2009, 11, 11).unwrap())
+    );
+
+    assert_eq!(
+        hcd.valid_from_type,
+        Some(Code::new("変更".to_string(), "3".to_string()))
+    );
+}
+
+#[test]
+fn load_urf_kuiki_example() {
+    let cityobjs = load_cityobjs("./tests/data/kawasaki-shi/udx/urf/533915_urf_6668_kuiki_op.gml");
+    assert_eq!(cityobjs.len(), 2);
+    let TopLevelCityObject::AreaClassification(acf) = &cityobjs.first().unwrap().cityobj else {
+        panic!("Not a AreaClassification");
+    };
+
+    assert_eq!(
+        acf.function,
+        vec![Code::new("市街化区域".to_string(), "22".to_string(),)]
+
+    );
+
+    assert_eq!(
+        acf.urf_valid_from,
+        Option::Some(Date::from_ymd_opt(2009, 9, 18).unwrap())
+    );
+
+    assert_eq!(
+        acf.valid_from_type,
+        Some(Code::new("変更".to_string(), "3".to_string()))
+    );
+
+}
+
+#[test]
+fn load_urf_rinko_example() {
+    let cityobjs = load_cityobjs("./tests/data/kawasaki-shi/udx/urf/533915_urf_6668_rinko_op.gml");
+    assert_eq!(cityobjs.len(), 2);
+    let TopLevelCityObject::PortZone(pz) = &cityobjs.first().unwrap().cityobj else {
+        panic!("Not a PortZone");
+    };
+
+    assert_eq!(
+        pz.function,
+        vec![Code::new("臨港地区".to_string(), "30".to_string(),)]
+
+    );
+
+    assert_eq!(
+        pz.urf_valid_from,
+        Option::Some(Date::from_ymd_opt(2009, 9, 18).unwrap())
+    );
+
+    assert_eq!(
+        pz.valid_from_type,
+        Some(Code::new("変更".to_string(), "3".to_string()))
+    );
+
+}
+
+#[test]
+fn load_urf_yoto_example() {
+    let cityobjs = load_cityobjs("./tests/data/kawasaki-shi/udx/urf/533915_urf_6668_yoto_op.gml");
+    assert_eq!(cityobjs.len(), 4);
+    let TopLevelCityObject::UseDistrict(ud) = &cityobjs.first().unwrap().cityobj else {
+        panic!("Not a UseDistrict");
+    };
+
+    assert_eq!(
+        ud.function,
+        vec![Code::new("工業専用地域".to_string(), "13".to_string(),)]
+
+    );
+
+    assert_eq!(
+        ud.urf_valid_from,
+        Option::Some(Date::from_ymd_opt(2009, 11, 11).unwrap())
+    );
+
+    assert_eq!(
+        ud.valid_from_type,
+        Some(Code::new("変更".to_string(), "3".to_string()))
+    );
+}
+
+#[test]
+fn load_urf_boka_example() {
+    let cityobjs = load_cityobjs("./tests/data/kawasaki-shi/udx/urf/533916_urf_6668_boka_op.gml");
+    assert_eq!(cityobjs.len(), 2);
+    let TopLevelCityObject::FirePreventionDistrict(fpd) = &cityobjs.first().unwrap().cityobj else {
+        panic!("Not a FirePreventionDistrict");
+    };
+
+    assert_eq!(
+        fpd.function,
+        vec![Code::new("準防火地域".to_string(), "25".to_string(),)]
+
+    );
+
+    assert_eq!(
+        fpd.urf_valid_from,
+        Option::Some(Date::from_ymd_opt(2009, 9, 18).unwrap())
+    );
+
+    assert_eq!(
+        fpd.valid_from_type,
+        Some(Code::new("変更".to_string(), "3".to_string()))
+    );
+
+}
+#[test]
+fn load_urf_seisan_example() {
+    let cityobjs = load_cityobjs("./tests/data/kawasaki-shi/udx/urf/533923_urf_6668_seisan_op.gml");
+    assert_eq!(cityobjs.len(), 27);
+    let TopLevelCityObject::ProductiveGreenZone(pgz) = &cityobjs.first().unwrap().cityobj else {
+        panic!("Not a ProductiveGreenZone");
+    };
+
+    assert_eq!(
+        pgz.function,
+        vec![Code::new("生産緑地地区".to_string(), "38".to_string(),)]
+
+    );
+
+    assert_eq!(
+        pgz.urf_valid_from,
+        Option::Some(Date::from_ymd_opt(2010, 12, 21).unwrap())
+    );
+
+    assert_eq!(
+        pgz.valid_from_type,
+        Some(Code::new("変更".to_string(), "3".to_string()))
+    );
+
+}
+
+
+#[test]
+fn load_urf_tokuryoku_example() {
+    let cityobjs = load_cityobjs("./tests/data/kawasaki-shi/udx/urf/533923_urf_6668_tokuryoku_op.gml");
+    assert_eq!(cityobjs.len(), 7);
+    let TopLevelCityObject::SpecialGreenSpaceConservationDistrict(sgcd) = &cityobjs.first().unwrap().cityobj else {
+        panic!("Not a SpecialGreenSpaceConservationDistrict");
+    };
+
+    assert_eq!(
+        sgcd.function,
+        vec![Code::new("特別緑地保存地区".to_string(), "35".to_string(),)]
+
+    );
+
+    assert_eq!(
+        sgcd.urf_valid_from,
+        Option::Some(Date::from_ymd_opt(2022, 4, 7).unwrap())
+    );
+
+    assert_eq!(
+        sgcd.valid_from_type,
+        Some(Code::new("変更".to_string(), "3".to_string()))
+    );
+
+}
+#[test]
+fn load_urf_chusha_example() {
+    let cityobjs = load_cityobjs("./tests/data/kawasaki-shi/udx/urf/533925_urf_6668_chusha_op.gml");
+    assert_eq!(cityobjs.len(), 1);
+    let TopLevelCityObject::ParkingPlaceDevelopmentZone(ppdz) = &cityobjs.first().unwrap().cityobj else {
+        panic!("Not a ParkingPlaceDevelopmentZone");
+    };
+
+    assert_eq!(
+        ppdz.function,
+        vec![Code::new("駐車場整備地区".to_string(), "29".to_string(),)]
+
+    );
+
+    assert_eq!(
+        ppdz.urf_valid_from,
+        Option::Some(Date::from_ymd_opt(1969, 3, 13).unwrap())
+    );
+
+    assert_eq!(
+        ppdz.valid_from_type,
+        Some(Code::new("決定".to_string(), "1".to_string()))
+    );
+
+}
+
+#[test]
+fn load_urf_tokuyoto_example() {
+    let cityobjs = load_cityobjs("./tests/data/kawasaki-shi/udx/urf/533925_urf_6668_tokuyoto_op.gml");
+    assert_eq!(cityobjs.len(), 4);
+    let TopLevelCityObject::SpecialUseDistrict(sud) = &cityobjs.first().unwrap().cityobj else {
+        panic!("Not a SpecialUseDistrict");
+    };
+
+    assert_eq!(
+        sud.function,
+        vec![Code::new("特別用途地区".to_string(), "14".to_string(),)]
+
+    );
+
+    assert_eq!(
+        sud.urf_valid_from,
+        Option::Some(Date::from_ymd_opt(2005, 10, 7).unwrap())
+    );
+
+    assert_eq!(
+        sud.valid_from_type,
+        Some(Code::new("変更".to_string(), "3".to_string()))
+    );
+
+}
+
+#[test]
+fn load_urf_toshikeikaku_example() {
+    let cityobjs = load_cityobjs("./tests/data/sapporo-shi/udx/urf/644131_urf_6668_op.gml");
+    assert_eq!(cityobjs.len(), 12);
+    let TopLevelCityObject::UrbanPlanningArea(upa) = &cityobjs.first().unwrap().cityobj else {
+        panic!("Not a UrbanPlanningArea");
+    };
+
+    assert_eq!(
+        upa.function,
+        vec![Code::new("都市計画区域".to_string(), "21".to_string(),)]
+
+    );
+
+    assert_eq!(
+        upa.urf_valid_from,
+        Option::Some(Date::from_ymd_opt(2022, 3, 23).unwrap())
+    );
+
+    assert_eq!(
+        upa.valid_from_type,
+        Some(Code::new("変更".to_string(), "3".to_string()))
+    );
+
+}
+
+#[test]
+fn load_urf_huchi_example() {
+    let cityobjs = load_cityobjs("./tests/data/sendai-shi/udx/urf/574026_urf_6668_huchi_op.gml");
+    assert_eq!(cityobjs.len(), 1);
+    let TopLevelCityObject::ScenicDistrict(sd) = &cityobjs.first().unwrap().cityobj else {
+        panic!("Not a ScenicDistrict");
+    };
+
+    assert_eq!(
+        sd.function,
+        vec![Code::new("風致地区".to_string(), "28".to_string(),)]
+
+    );
+
+    assert_eq!(
+        sd.prefecture,
+        Some(Code::new("宮城県".to_string(), "04".to_string()))
+    );
+
+    assert_eq!(
+        sd.city,
+        Some(Code::new("宮城県仙台市".to_string(), "04100".to_string()))
+    );
+
+}
+
+#[test]
+fn load_urf_kodoriyou_example() {
+    let cityobjs = load_cityobjs("./tests/data/sendai-shi/udx/urf/574027_urf_6668_kodoriyou_op.gml");
+    assert_eq!(cityobjs.len(), 3);
+    let TopLevelCityObject::HighLevelUseDistrict(hlud) = &cityobjs.first().unwrap().cityobj else {
+        panic!("Not a HighLevelUseDistrict");
+    };
+
+    assert_eq!(
+        hlud.function,
+        vec![Code::new("高度利用地区".to_string(), "19".to_string(),)]
+
+    );
+
+    assert_eq!(
+        hlud.urf_valid_from,
+        Option::Some(Date::from_ymd_opt(2013, 3, 8).unwrap())
+    );
+
+    assert_eq!(
+        hlud.valid_from_type,
+        Some(Code::new("変更".to_string(), "3".to_string()))
+    );
+
+    assert_eq!(
+        hlud.custodian,
+        Some("仙台市".to_string())
+    );
+
+    assert_eq!(
+        hlud.prefecture,
+        Some(Code::new("宮城県".to_string(), "04".to_string()))
+    );
+
+    assert_eq!(
+        hlud.city,
+        Some(Code::new("宮城県仙台市".to_string(), "04100".to_string()))
+    );
+
+}
+
+
+#[test]
+fn load_urf_keikan_example() {
+    let cityobjs = load_cityobjs("./tests/data/sendai-shi/udx/urf/574036_urf_6668_keikan_op.gml");
+    assert_eq!(cityobjs.len(), 2);
+    let TopLevelCityObject::LandscapeZone(lz) = &cityobjs.first().unwrap().cityobj else {
+        panic!("Not a LandscapeZone");
+    };
+
+    assert_eq!(
+        lz.function,
+        vec![Code::new("景観地区".to_string(), "27".to_string(),)]
+
+    );
+
+    assert_eq!(
+        lz.urf_valid_from,
+        Option::Some(Date::from_ymd_opt(2011, 12, 16).unwrap())
+    );
+
+    assert_eq!(
+        lz.valid_from_type,
+        Some(Code::new("変更".to_string(), "3".to_string()))
+    );
+
+    assert_eq!(
+        lz.custodian,
+        Some("仙台市".to_string())
+    );
+
+    assert_eq!(
+        lz.prefecture,
+        Some(Code::new("宮城県".to_string(), "04".to_string()))
+    );
+
+    assert_eq!(
+        lz.city,
+        Some(Code::new("宮城県仙台市".to_string(), "04100".to_string()))
+    );
+
+}
+
+#[test]
+fn load_urf_tosisai_example() {
+    let cityobjs = load_cityobjs("./tests/data/sendai-shi/udx/urf/574036_urf_6668_tosisai_op.gml");
+    assert_eq!(cityobjs.len(), 1);
+    let TopLevelCityObject::SpecialUrbanRenaissanceDistrict(surd) = &cityobjs.first().unwrap().cityobj else {
+        panic!("Not a SpecialUrbanRenaissanceDistrict");
+    };
+
+    assert_eq!(
+        surd.function,
+        vec![Code::new("都市再生特別地区".to_string(), "21".to_string(),)]
+
+    );
+
+    assert_eq!(
+        surd.urf_valid_from,
+        Option::Some(Date::from_ymd_opt(2020, 9, 16).unwrap())
+    );
+
+    assert_eq!(
+        surd.valid_from_type,
+        Some(Code::new("変更".to_string(), "3".to_string()))
+    );
+
+    assert_eq!(
+        surd.custodian,
+        Some("仙台市".to_string())
+    );
+
+    assert_eq!(
+        surd.prefecture,
+        Some(Code::new("宮城県".to_string(), "04".to_string()))
+    );
+
+    assert_eq!(
+        surd.city,
+        Some(Code::new("宮城県仙台市".to_string(), "04100".to_string()))
+    );
+
+}
+
+
+#[test]
+fn load_urf_sigaidev_example() {
+    let cityobjs = load_cityobjs("./tests/data/kofu-shi/udx/urf/533834_urf_6668_sigaidev_op.gml");
+    assert_eq!(cityobjs.len(), 27);
+    let TopLevelCityObject::UrbanDevelopmentProject(udp) = &cityobjs.first().unwrap().cityobj else {
+        panic!("Not a UrbanDevelopmentProject");
+    };
+
+    assert_eq!(
+        udp.function,
+        vec![Code::new("工業地域".to_string(), "12".to_string(),)]
+
+    );
+
+    assert_eq!(
+        udp.urf_valid_from,
+        Option::Some(Date::from_ymd_opt(1, 1, 1).unwrap())
+    );
+
+    assert_eq!(
+        udp.valid_from_type,
+        Some(Code::new("不明".to_string(), "4".to_string()))
+    );
+
+    assert_eq!(
+        udp.prefecture,
+        Some(Code::new("山梨県".to_string(), "19".to_string()))
+    );
+
+    assert_eq!(
+        udp.city,
+        Some(Code::new("山梨県甲府市".to_string(), "19201".to_string()))
+    );
+
 }
