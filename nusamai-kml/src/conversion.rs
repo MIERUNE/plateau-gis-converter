@@ -24,20 +24,19 @@ pub fn multipoint_to_kml_with_mapping<const D: usize, T: CoordNum>(
             })
         })
         .collect();
-    let folder = Kml::Folder {
+    Kml::Folder {
         attrs: HashMap::new(),
         elements: placemarks,
-    };
+    }
+}
 
+pub fn multipoint_to_kml(mpoint: &MultiPoint<3>) -> Kml {
+    let folder = multipoint_to_kml_with_mapping(mpoint, |c| c);
     let document = KmlDocument {
         elements: vec![folder],
         ..Default::default()
     };
     Kml::KmlDocument(document)
-}
-
-pub fn multipoint_to_kml(mpoint: &MultiPoint<3>) -> Kml {
-    multipoint_to_kml_with_mapping(mpoint, |c| c)
 }
 
 #[cfg(test)]
