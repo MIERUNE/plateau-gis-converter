@@ -7,10 +7,6 @@ const filetypeOptions: Record<string, { label: string; extensions: string[] }> =
 		label: 'GeoPackage',
 		extensions: ['gpkg']
 	},
-	serde: {
-		label: 'Serde',
-		extensions: ['bin']
-	},
 	mvt: {
 		label: 'Vector Tiles',
 		extensions: ['']
@@ -18,6 +14,10 @@ const filetypeOptions: Record<string, { label: string; extensions: string[] }> =
 	shapefile: {
 		label: 'Shapefile',
 		extensions: ['shp']
+	},
+	serde: {
+		label: 'Serde',
+		extensions: ['']
 	}
 };
 
