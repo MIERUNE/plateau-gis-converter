@@ -104,8 +104,6 @@ fn slice_polygon(
     }
 
     let z_scale = (1 << zoom) as f64;
-    let poly = poly.transform(|c| [(c[0] * z_scale), (c[1] * z_scale)]);
-
     let buf_width = buffer as f64 / extent as f64;
     let mut new_ring_buffer: Vec<[f64; 2]> = Vec::with_capacity(poly.exterior().len() + 1);
 

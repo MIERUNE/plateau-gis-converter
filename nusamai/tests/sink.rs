@@ -73,3 +73,19 @@ fn run_gpkg_sink() {
 fn run_mvt_sink() {
     simple_run_sink(sink::mvt::MVTSinkProvider {}, "/tmp/nusamai/mvt/".into());
 }
+
+#[test]
+fn run_shapefile_sink() {
+    simple_run_sink(
+        sink::shapefile::ShapefileSinkProvider {},
+        "/dev/null".into(),
+    );
+}
+
+#[test]
+fn run_cesiumtiles_sink() {
+    simple_run_sink(
+        sink::cesiumtiles::CesiumTilesSinkProvider {},
+        "/tmp/nusamai/3dtiles/".into(),
+    );
+}
