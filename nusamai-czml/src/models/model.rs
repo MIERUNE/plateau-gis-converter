@@ -96,13 +96,7 @@ fn default_height_reference() -> HeightReference {
 fn default_silhouette_color() -> Color {
     Color::Object(ColorProperties {
         rgba: Some(RgbaValue::Constant([255, 0, 0, 0])),
-        rgbaf: None,
-        reference: None,
-        interpolatable_property: None,
-        deletable_property: None,
-        rgba_value_property: None,
-        rgbaf_value_property: None,
-        reference_value_property: None,
+        ..Default::default()
     })
 }
 
@@ -113,13 +107,7 @@ fn default_silhouette_size() -> CzmlDouble {
 fn default_color() -> Color {
     Color::Object(ColorProperties {
         rgba: Some(RgbaValue::Constant([0, 0, 0, 0])),
-        rgbaf: None,
-        reference: None,
-        interpolatable_property: None,
-        deletable_property: None,
-        rgba_value_property: None,
-        rgbaf_value_property: None,
-        reference_value_property: None,
+        ..Default::default()
     })
 }
 
@@ -148,9 +136,7 @@ impl Default for Model {
             color: default_color(),
             color_blend_mode: default_color_blend_mode(),
             color_blend_amount: default_color_blend_amount(),
-            distance_display_condition: None,
-            node_transformations: None,
-            articulations: None,
+            ..Default::default()
         }
     }
 }
