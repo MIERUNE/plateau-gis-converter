@@ -144,7 +144,7 @@ impl Default for Packet {
             model: Model::default(),
             path: None,
             point: None,
-            polygon: None,
+            polygon: CzmlPolygon::default(),
             polyline: None,
             polyline_volume: None,
             rectangle: None,

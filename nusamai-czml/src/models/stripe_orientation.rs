@@ -22,10 +22,10 @@ pub enum StripeOrientationValue {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct StripeOrientationValueProperty {
     #[serde(flatten)]
-    pub arc_type: StripeOrientationValue,
+    pub stripe_orientation_value: StripeOrientationValue,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct StripeOrientationProperties {
     #[serde(skip_serializing_if = "Option::is_none")]

@@ -1,6 +1,9 @@
 use serde::{Deserialize, Serialize};
 
-use crate::{Color, CzmlDouble, StripeOrientation};
+use crate::{
+    Color, ColorProperties, CzmlDouble, RgbaValue, StripeOrientation, StripeOrientationProperties,
+    StripeOrientationValue,
+};
 
 pub type StripeMaterial = StripeMaterialType;
 
@@ -32,15 +35,24 @@ pub struct StripeMaterialProperties {
 }
 
 fn default_orientation() -> StripeOrientation {
-    StripeOrientation::Horizontal
+    StripeOrientation::Object(StripeOrientationProperties {
+        stripe_orientation: Some(StripeOrientationValue::Horizontal),
+        ..Default::default()
+    })
 }
 
 fn default_even_color() -> Color {
-    Color::from_rgb(1.0, 1.0, 1.0)
+    Color::Object(ColorProperties {
+        rgba: Some(RgbaValue::Constant([255, 255, 255, 0])),
+        ..Default::default()
+    })
 }
 
 fn default_odd_color() -> Color {
-    Color::from_rgb(0.0, 0.0, 0.0)
+    Color::Object(ColorProperties {
+        rgba: Some(RgbaValue::Constant([0, 0, 0, 0])),
+        ..Default::default()
+    })
 }
 
 fn default_offset() -> CzmlDouble {

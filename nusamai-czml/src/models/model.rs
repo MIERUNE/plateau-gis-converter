@@ -136,7 +136,9 @@ impl Default for Model {
             color: default_color(),
             color_blend_mode: default_color_blend_mode(),
             color_blend_amount: default_color_blend_amount(),
-            ..Default::default()
+            distance_display_condition: None,
+            node_transformations: None,
+            articulations: None,
         }
     }
 }

@@ -14,7 +14,7 @@ pub enum LineOffsetType {
     Object(LineOffsetProperties),
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct LineOffsetProperties {
     #[serde(skip_serializing_if = "Option::is_none")]
