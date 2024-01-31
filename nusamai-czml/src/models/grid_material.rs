@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::{Color, CzmlDouble, LineCount, LineThickness};
+use crate::{Color, CzmlDouble, LineCount, LineOffset, LineThickness};
 
 pub type GridMaterial = GridMaterialType;
 
