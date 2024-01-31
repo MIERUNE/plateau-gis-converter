@@ -2,35 +2,38 @@ use serde::{Deserialize, Serialize};
 
 use crate::{DeletableProperty, ReferenceValue, ReferenceValueProperty};
 
-pub type ArcType = ArcTypeType;
+pub type StripeOrientation = StripeOrientationType;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 #[serde(untagged)]
-pub enum ArcTypeType {
-    Array(Vec<ArcTypeProperties>),
-    Object(ArcTypeProperties),
+pub enum StripeOrientationType {
+    Array(Vec<StripeOrientationProperties>),
+    Object(StripeOrientationProperties),
     String(String),
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
-pub enum ArcTypeValue {
-    None,
-    Geodesic,
-    Rhumb,
+pub enum StripeOrientationValue {
+    Horizontal,
+    Vertical,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct ArcTypeValueProperty {
+pub struct StripeOrientationValueProperty {
     #[serde(flatten)]
-    pub arc_type: ArcTypeValue,
+    pub arc_type: StripeOrientationValue,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+pub type Cartesian2Value = Vec<f64>;
+
+pub type Cartesian2ValueProperty = Vec<f64>;
+
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 #[serde(rename_all = "camelCase")]
-pub struct ArcTypeProperties {
+pub struct StripeOrientationProperties {
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub arc_type: Option<ArcTypeValue>,
+    pub stripe_orientation: Option<StripeOrientationValue>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub reference: Option<ReferenceValue>,
@@ -41,7 +44,7 @@ pub struct ArcTypeProperties {
 
     #[serde(flatten)]
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub arc_type_value_property: Option<ArcTypeValueProperty>,
+    pub stripe_orientation_value_property: Option<StripeOrientationValueProperty>,
 
     #[serde(flatten)]
     #[serde(skip_serializing_if = "Option::is_none")]
