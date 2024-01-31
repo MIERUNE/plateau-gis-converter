@@ -11,6 +11,15 @@ pub enum PositionListType {
     Object(PositionListProperties),
 }
 
+pub type Cartesian3ListValue = Vec<f64>;
+pub type CartographicRadiansListValue = Vec<f64>;
+pub type CartographicDegreesListValue = Vec<f64>;
+pub type ReferenceListValue = Vec<String>;
+
+pub type Cartesian3ListValueProperty = Vec<f64>;
+pub type CartographicRadiansListValueProperty = Vec<f64>;
+pub type CartographicDegreesListValueProperty = Vec<f64>;
+
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct PositionListProperties {
