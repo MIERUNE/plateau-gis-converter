@@ -211,7 +211,13 @@ fn tile_writing_stage(
             }
             let (zoom, x, y) = tile_id_conv.id_to_zxy(tile_id);
 
-            println!("tile: {}, {}, {}", zoom, x, y);
+            let (min_y, max_y) = tiling::y_slice_range(zoom, y);
+            let xs = tiling::x_step(zoom, y);
+            let (min_x, max_x) = tiling::x_slice_range(zoom, x as i32, xs);
+            println!(
+                "tile: z={}, x={}, y={} (lng: {} -> {}, lat: {} -> {})",
+                zoom, x, y, min_x, max_x, min_y, max_y
+            );
 
             // TODO: write a tile
 
