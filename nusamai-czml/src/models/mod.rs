@@ -1,6 +1,7 @@
 pub mod arc_type;
 pub mod articulation;
 pub mod checkerboard_material;
+pub mod classification_type;
 pub mod color;
 pub mod color_blend_mode;
 pub mod czml;
@@ -38,6 +39,7 @@ pub mod values;
 pub use arc_type::*;
 pub use articulation::*;
 pub use checkerboard_material::*;
+pub use classification_type::*;
 pub use color::*;
 pub use color_blend_mode::*;
 pub use czml::*;
