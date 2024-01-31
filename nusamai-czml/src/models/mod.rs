@@ -1,3 +1,4 @@
+pub mod arc_type;
 pub mod articulation;
 pub mod color;
 pub mod color_blend_mode;
@@ -23,6 +24,7 @@ pub mod translation;
 pub mod value_properties;
 pub mod values;
 
+pub use arc_type::*;
 pub use articulation::*;
 pub use color::*;
 pub use color_blend_mode::*;
