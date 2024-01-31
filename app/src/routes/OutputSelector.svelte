@@ -2,7 +2,9 @@
 	import { dialog } from '@tauri-apps/api';
 	import Icon from '@iconify/svelte';
 	import { abbreviatePath } from '$lib/utils';
+	import { filetypeOptions } from '$lib/settings';
 
+	export let filetype: string;
 	export let outputPath: string;
 
 	async function openOutputDialog() {
@@ -10,7 +12,7 @@
 			filters: [
 				{
 					name: 'Output format',
-					extensions: ['geojson', 'json']
+					extensions: filetypeOptions[filetype].extensions
 				}
 			]
 		});
