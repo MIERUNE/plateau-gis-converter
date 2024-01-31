@@ -1,5 +1,5 @@
 use kml::{
-    types::{Geometry, KmlDocument, Placemark, Point},
+    types::{Geometry, Placemark, Point},
     Kml,
 };
 use nusamai_geometry::{CoordNum, MultiPoint};
@@ -31,17 +31,13 @@ pub fn multipoint_to_kml_with_mapping<const D: usize, T: CoordNum>(
 }
 
 pub fn multipoint_to_kml(mpoint: &MultiPoint<3>) -> Kml {
-    let folder = multipoint_to_kml_with_mapping(mpoint, |c| c);
-    let document = KmlDocument {
-        elements: vec![folder],
-        ..Default::default()
-    };
-    Kml::KmlDocument(document)
+    multipoint_to_kml_with_mapping(mpoint, |c| c)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use kml::{types::Placemark, Kml, KmlDocument};
 
     #[test]
     fn test_multipoint_to_kml() {
@@ -50,7 +46,13 @@ mod tests {
         mpoint.push(&[21., 22., 23.]);
         mpoint.push(&[31., 32., 33.]);
 
-        let kml = multipoint_to_kml(&mpoint);
+        let folder = multipoint_to_kml(&mpoint);
+
+        let document = KmlDocument {
+            elements: vec![folder],
+            ..Default::default()
+        };
+        let kml = Kml::KmlDocument(document);
 
         if let Kml::KmlDocument(doc) = kml {
             assert_eq!(doc.elements.len(), 1);
