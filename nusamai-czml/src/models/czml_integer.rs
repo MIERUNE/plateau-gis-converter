@@ -12,7 +12,7 @@ pub type CzmlInteger = IntegerValueType;
 pub enum IntegerValueType {
     Array(Vec<IntegerProperties>),
     Object(IntegerProperties),
-    Number(i32),
+    Integer(i32),
 }
 
 #[derive(Serialize, Deserialize, Debug)]

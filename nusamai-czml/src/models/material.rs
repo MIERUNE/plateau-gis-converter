@@ -13,7 +13,7 @@ pub enum MaterialType {
     Object(MaterialProperties),
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct MaterialProperties {
     #[serde(skip_serializing_if = "Option::is_none")]

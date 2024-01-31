@@ -26,7 +26,7 @@ pub struct ArcTypeValueProperty {
     pub arc_type: ArcTypeValue,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct ArcTypeProperties {
     #[serde(skip_serializing_if = "Option::is_none")]

@@ -17,7 +17,7 @@ pub type HeightReferenceValue = String;
 
 pub type HeightReferenceValueProperty = Value;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct HeightReferenceProperties {
     #[serde(skip_serializing_if = "Option::is_none")]

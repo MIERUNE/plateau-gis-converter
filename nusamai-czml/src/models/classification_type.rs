@@ -26,7 +26,7 @@ pub struct ClassificationTypeValueProperty {
     pub classification_type: ClassificationTypeValue,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct ClassificationTypeProperties {
     #[serde(skip_serializing_if = "Option::is_none")]

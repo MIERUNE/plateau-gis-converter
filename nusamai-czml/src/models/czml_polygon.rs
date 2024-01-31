@@ -1,9 +1,11 @@
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    ArcType, ClassificationType, Color, CzmlBoolean, CzmlDouble, CzmlInteger,
-    DistanceDisplayCondition, HeightReference, Material, PositionList, PositionListOfLists,
-    RgbaValue, ShadowMode,
+    ArcType, ArcTypeProperties, ArcTypeValue, ClassificationType, ClassificationTypeProperties,
+    ClassificationTypeValue, Color, ColorProperties, CzmlBoolean, CzmlDouble, CzmlInteger,
+    DistanceDisplayCondition, HeightReference, HeightReferenceProperties, Material,
+    MaterialProperties, PositionList, PositionListOfLists, RgbaValue, ShadowMode,
+    ShadowModeProperties, ShadowModeValue, SolidColorMaterial,
 };
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -81,7 +83,10 @@ fn default_show() -> CzmlBoolean {
 }
 
 fn default_arc_type() -> ArcType {
-    ArcType::Object(ArcType::ArcTypeObject::Geodesic)
+    ArcType::Object(ArcTypeProperties {
+        arc_type: Some(ArcTypeValue::Geodesic),
+        ..Default::default()
+    })
 }
 
 fn default_height() -> CzmlDouble {
@@ -89,11 +94,17 @@ fn default_height() -> CzmlDouble {
 }
 
 fn default_height_reference() -> HeightReference {
-    HeightReference::Object(HeightReference::HeightReferenceObject::None)
+    HeightReference::Object(HeightReferenceProperties {
+        height_reference: Some("NONE".to_string()),
+        ..Default::default()
+    })
 }
 
 fn default_extruded_height_reference() -> HeightReference {
-    HeightReference::Object(HeightReference::HeightReferenceObject::None)
+    HeightReference::Object(HeightReferenceProperties {
+        height_reference: Some("NONE".to_string()),
+        ..Default::default()
+    })
 }
 
 fn default_st_rotation() -> CzmlDouble {
@@ -109,13 +120,15 @@ fn default_fill() -> CzmlBoolean {
 }
 
 fn default_material() -> Material {
-    Material::Object(Material::MaterialObject::SolidColorMaterial(
-        crate::SolidColorMaterial {
-            color: Color::ColorObject(crate::Color {
-                rgba: RgbaValue::Constant([0, 0, 0, 255]),
+    Material::Object(MaterialProperties {
+        solid_color: Some(SolidColorMaterial {
+            color: Color::Object(ColorProperties {
+                rgba: Some(RgbaValue::Constant([255, 255, 255, 255])),
+                ..Default::default()
             }),
-        },
-    ))
+        }),
+        ..Default::default()
+    })
 }
 
 fn default_outline() -> CzmlBoolean {
@@ -123,8 +136,9 @@ fn default_outline() -> CzmlBoolean {
 }
 
 fn default_outline_color() -> Color {
-    Color::ColorObject(crate::Color {
-        rgba: RgbaValue::Constant([0, 0, 0, 255]),
+    Color::Object(ColorProperties {
+        rgba: Some(RgbaValue::Constant([0, 0, 0, 255])),
+        ..Default::default()
     })
 }
 
@@ -145,11 +159,17 @@ fn default_close_bottom() -> CzmlBoolean {
 }
 
 fn default_shadows() -> ShadowMode {
-    ShadowMode::Object(ShadowMode::ShadowModeObject::Disabled)
+    ShadowMode::Object(ShadowModeProperties {
+        shadow_mode: Some(ShadowModeValue::Disabled),
+        ..Default::default()
+    })
 }
 
 fn default_classification_type() -> ClassificationType {
-    ClassificationType::Object(ClassificationType::ClassificationTypeObject::Both)
+    ClassificationType::Object(ClassificationTypeProperties {
+        classification_type: Some(ClassificationTypeValue::Terrain),
+        ..Default::default()
+    })
 }
 
 fn default_z_index() -> CzmlInteger {
@@ -197,6 +217,6 @@ mod tests {
     #[test]
     fn test_default_serialize() {
         let polygon = CzmlPolygon::default();
-        let json = serde_json::to_string(&model).unwrap();
+        let json = serde_json::to_string(&polygon).unwrap();
     }
 }
