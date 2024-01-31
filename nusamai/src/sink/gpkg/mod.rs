@@ -91,7 +91,7 @@ impl GpkgSink {
                             return Ok(());
                         };
 
-                        let mut polygons: Vec<Vec<u8>> = Vec::new();
+                        let mut mpoly = nusamai_geometry::MultiPolygon::new();
 
                         geometries.iter().for_each(|entry| match entry.ty {
                             GeometryType::Solid
@@ -100,40 +100,30 @@ impl GpkgSink {
                                 for idx_poly in geom_store.multipolygon.iter_range(
                                     entry.pos as usize..(entry.pos + entry.len) as usize,
                                 ) {
-                                    // TODO: 複数のPolygonを、一つのMultiPolygonにまとめる必要がある
-                                    let mut bytes = Vec::new();
-                                    if write_indexed_multipolygon(
-                                        &mut bytes,
-                                        &geom_store.vertices,
-                                        &idx_poly,
-                                        4326,
-                                    )
-                                    .is_err()
-                                    {
-                                        // TODO: fatal error
-                                    }
-                                    polygons.push(bytes);
+                                    mpoly.add(idx_poly);
                                 }
                             }
-                            GeometryType::Curve => {
-                                for idx_ls in geom_store.multilinestring.iter_range(
-                                    entry.pos as usize..(entry.pos + entry.len) as usize,
-                                ) {
-                                    unimplemented!();
-                                }
-                            }
-                            GeometryType::Point => {
-                                for idx_point in geom_store.multipoint.iter_range(
-                                    entry.pos as usize..(entry.pos + entry.len) as usize,
-                                ) {
-                                    unimplemented!();
-                                }
-                            }
+                            GeometryType::Curve => unimplemented!(),
+                            GeometryType::Point => unimplemented!(),
                         });
 
-                        let mut features: Vec<Vec<u8>> = Vec::new();
+                        if mpoly.is_empty() {
+                            return Ok(());
+                        }
 
-                        if sender.blocking_send(features).is_err() {
+                        let mut bytes = Vec::new();
+                        if write_indexed_multipolygon(
+                            &mut bytes,
+                            &geom_store.vertices,
+                            &mpoly,
+                            4326,
+                        )
+                        .is_err()
+                        {
+                            // TODO: fatal error
+                        }
+
+                        if sender.blocking_send(bytes).is_err() {
                             return Err(());
                         };
 
@@ -148,9 +138,7 @@ impl GpkgSink {
             if feedback.is_cancelled() {
                 return;
             }
-            for feat in gpkg_bin {
-                tx.insert_feature(&feat).await;
-            }
+            tx.insert_feature(&gpkg_bin).await;
         }
         tx.commit().await.unwrap();
 
