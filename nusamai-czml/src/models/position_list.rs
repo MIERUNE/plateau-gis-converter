@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::{DeletableProperty, ReferenceValueProperty};
+use crate::DeletableProperty;
 
 pub type PositionList = PositionListType;
 
@@ -19,6 +19,7 @@ pub type ReferenceListValue = Vec<String>;
 pub type Cartesian3ListValueProperty = Vec<f64>;
 pub type CartographicRadiansListValueProperty = Vec<f64>;
 pub type CartographicDegreesListValueProperty = Vec<f64>;
+pub type ReferenceListValueProperty = Vec<String>;
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
@@ -55,5 +56,5 @@ pub struct PositionListProperties {
 
     #[serde(flatten)]
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub reference_value_property: Option<ReferenceValueProperty>,
+    pub reference_value_property: Option<ReferenceListValueProperty>,
 }

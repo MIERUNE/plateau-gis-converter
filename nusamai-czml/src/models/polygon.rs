@@ -1,7 +1,8 @@
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    Color, CzmlBoolean, CzmlDouble, DistanceDisplayCondition, HeightReference, ShadowMode,
+    Color, CzmlBoolean, CzmlDouble, DistanceDisplayCondition, HeightReference, PositionList,
+    PositionListOfLists, ShadowMode,
 };
 
 #[derive(Serialize, Deserialize)]
