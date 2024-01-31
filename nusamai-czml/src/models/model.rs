@@ -150,7 +150,11 @@ mod tests {
     #[test]
     fn test_default_deserialize() {
         let model: Model = serde_json::from_str("{}").unwrap();
-        assert_eq!(model.gltf, CzmlUri::String("".to_string()));
+        let uri_string = match model.gltf {
+            CzmlUri::String(ref s) => s,
+            _ => panic!("gltf is not string"),
+        };
+        assert_eq!(*uri_string, "".to_string());
     }
 
     #[test]

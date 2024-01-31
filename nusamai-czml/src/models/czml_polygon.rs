@@ -212,11 +212,18 @@ mod tests {
     #[test]
     fn test_default_deserialize() {
         let polygon: CzmlPolygon = serde_json::from_str("{}").unwrap();
+        let is_show = match polygon.show {
+            CzmlBoolean::Boolean(b) => b,
+            _ => false,
+        };
+        assert!(is_show);
     }
 
     #[test]
     fn test_default_serialize() {
         let polygon = CzmlPolygon::default();
-        let json = serde_json::to_string(&polygon).unwrap();
+        let json = serde_json::to_string_pretty(&polygon).unwrap();
+        println!("{}", json);
+        assert!(json.contains(r#""show":true"#));
     }
 }
