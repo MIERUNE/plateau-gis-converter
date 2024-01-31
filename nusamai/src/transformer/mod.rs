@@ -1,3 +1,5 @@
+//! The transformer stage that preprocesses the attributes and geometry of the entities.
+
 mod builder;
 mod runner;
 pub mod transform;

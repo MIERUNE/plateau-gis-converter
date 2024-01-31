@@ -1,9 +1,13 @@
+//! Output format drivers (sinks)
+
+pub mod cesiumtiles;
 pub mod geojson;
 pub mod geojson_transform_exp;
 pub mod gpkg;
 pub mod mvt;
 pub mod noop;
 pub mod serde;
+pub mod shapefile;
 
 use nusamai_citygml::schema::Schema;
 
