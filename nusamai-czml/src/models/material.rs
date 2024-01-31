@@ -11,7 +11,6 @@ pub type Material = MaterialType;
 pub enum MaterialType {
     Array(Vec<MaterialProperties>),
     Object(MaterialProperties),
-    Material(Material),
 }
 
 #[derive(Serialize, Deserialize, Debug)]

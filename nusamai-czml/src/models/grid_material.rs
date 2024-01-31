@@ -7,14 +7,14 @@ use crate::{
 
 pub type GridMaterial = GridMaterialType;
 
-#[derive(Serialize, Deserialize, Debug, PartialEq)]
+#[derive(Serialize, Deserialize, Debug)]
 #[serde(untagged)]
 pub enum GridMaterialType {
     Array(Vec<GridMaterialProperties>),
     Object(GridMaterialProperties),
 }
 
-#[derive(Serialize, Deserialize, Debug, PartialEq)]
+#[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 #[serde(deny_unknown_fields)]
 pub struct GridMaterialProperties {

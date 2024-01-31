@@ -7,14 +7,14 @@ use crate::{
 
 pub type LineThickness = LineThicknessType;
 
-#[derive(Serialize, Deserialize, Debug, PartialEq)]
+#[derive(Serialize, Deserialize, Debug)]
 #[serde(untagged)]
 pub enum LineThicknessType {
     Array(Vec<LineThicknessProperties>),
     Object(LineThicknessProperties),
 }
 
-#[derive(Serialize, Deserialize, Debug, PartialEq)]
+#[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct LineThicknessProperties {
     #[serde(skip_serializing_if = "Option::is_none")]

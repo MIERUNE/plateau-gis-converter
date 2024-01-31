@@ -4,14 +4,14 @@ use crate::{Color, CzmlDouble, StripeOrientation};
 
 pub type StripeMaterial = StripeMaterialType;
 
-#[derive(Serialize, Deserialize, Debug, PartialEq)]
+#[derive(Serialize, Deserialize, Debug)]
 #[serde(untagged)]
 pub enum StripeMaterialType {
     Array(Vec<StripeMaterialProperties>),
     Object(StripeMaterialProperties),
 }
 
-#[derive(Serialize, Deserialize, Debug, PartialEq)]
+#[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 #[serde(deny_unknown_fields)]
 pub struct StripeMaterialProperties {

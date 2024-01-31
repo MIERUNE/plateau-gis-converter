@@ -4,7 +4,7 @@ use crate::{DeletableProperty, ReferenceValue, ReferenceValueProperty};
 
 pub type StripeOrientation = StripeOrientationType;
 
-#[derive(Serialize, Deserialize, Debug, PartialEq)]
+#[derive(Serialize, Deserialize, Debug)]
 #[serde(untagged)]
 pub enum StripeOrientationType {
     Array(Vec<StripeOrientationProperties>),
@@ -25,7 +25,7 @@ pub struct StripeOrientationValueProperty {
     pub arc_type: StripeOrientationValue,
 }
 
-#[derive(Serialize, Deserialize, Debug, PartialEq)]
+#[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct StripeOrientationProperties {
     #[serde(skip_serializing_if = "Option::is_none")]

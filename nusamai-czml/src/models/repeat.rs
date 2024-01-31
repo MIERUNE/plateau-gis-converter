@@ -7,14 +7,20 @@ use crate::{
 
 pub type Repeat = RepeatType;
 
-#[derive(Serialize, Deserialize, Debug, PartialEq)]
+#[derive(Serialize, Deserialize, Debug)]
 #[serde(untagged)]
 pub enum RepeatType {
     Array(Vec<RepeatProperties>),
     Object(RepeatProperties),
 }
 
-#[derive(Serialize, Deserialize, Debug, PartialEq)]
+impl Default for RepeatType {
+    fn default() -> Self {
+        RepeatType::Object(RepeatProperties::default())
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct RepeatProperties {
     #[serde(skip_serializing_if = "Option::is_none")]

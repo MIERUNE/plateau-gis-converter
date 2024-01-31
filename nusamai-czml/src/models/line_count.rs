@@ -7,14 +7,14 @@ use crate::{
 
 pub type LineCount = LineCountType;
 
-#[derive(Serialize, Deserialize, Debug, PartialEq)]
+#[derive(Serialize, Deserialize, Debug)]
 #[serde(untagged)]
 pub enum LineCountType {
     Array(Vec<LineCountProperties>),
     Object(LineCountProperties),
 }
 
-#[derive(Serialize, Deserialize, Debug, PartialEq)]
+#[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct LineCountProperties {
     #[serde(skip_serializing_if = "Option::is_none")]
