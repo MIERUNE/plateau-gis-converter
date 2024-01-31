@@ -2,7 +2,8 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     Articulations, Color, ColorBlendMode, ColorProperties, CzmlBoolean, CzmlDouble, CzmlUri,
-    DistanceDisplayCondition, HeightReference, NodeTransformations, RgbaValue, ShadowMode,
+    DistanceDisplayCondition, HeightReference, HeightReferenceValue, NodeTransformations,
+    RgbaValue, ShadowMode, ShadowModeValue,
 };
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -86,11 +87,11 @@ fn default_run_animations() -> CzmlBoolean {
 }
 
 fn default_shadows() -> ShadowMode {
-    ShadowMode::String("ENABLED".to_string())
+    ShadowMode::String(ShadowModeValue::Enabled)
 }
 
 fn default_height_reference() -> HeightReference {
-    HeightReference::String("NONE".to_string())
+    HeightReference::String(HeightReferenceValue::None)
 }
 
 fn default_silhouette_color() -> Color {

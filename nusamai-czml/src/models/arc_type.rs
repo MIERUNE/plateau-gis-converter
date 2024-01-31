@@ -9,7 +9,7 @@ pub type ArcType = ArcTypeType;
 pub enum ArcTypeType {
     Array(Vec<ArcTypeProperties>),
     Object(ArcTypeProperties),
-    String(String),
+    String(ArcTypeValue),
 }
 
 #[derive(Serialize, Deserialize, Debug)]

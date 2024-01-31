@@ -9,7 +9,7 @@ pub type ClassificationType = ClassificationTypeValueType;
 pub enum ClassificationTypeValueType {
     Array(Vec<ClassificationTypeProperties>),
     Object(ClassificationTypeProperties),
-    String(String),
+    String(ClassificationTypeValue),
 }
 
 #[derive(Serialize, Deserialize, Debug)]

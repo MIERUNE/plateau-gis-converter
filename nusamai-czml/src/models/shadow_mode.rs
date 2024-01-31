@@ -12,7 +12,7 @@ pub type ShadowMode = ShadowModeValueType;
 pub enum ShadowModeValueType {
     Array(Vec<ShadowModeProperties>),
     Object(ShadowModeProperties),
-    String(String),
+    String(ShadowModeValue),
 }
 
 #[derive(Serialize, Deserialize, Debug, Default)]
