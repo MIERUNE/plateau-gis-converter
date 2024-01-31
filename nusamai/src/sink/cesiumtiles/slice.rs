@@ -2,6 +2,7 @@
 
 use hashbrown::HashMap;
 
+use super::tiling;
 use nusamai_citygml::{
     geometry::GeometryType,
     object::{Entity, ObjectStereotype, Value},
@@ -9,14 +10,12 @@ use nusamai_citygml::{
 use nusamai_geometry::{LineString3, MultiPolygon3, Polygon3};
 use nusamai_mvt::TileZXY;
 
-pub fn slice_cityobj_geoms(
+pub fn slice_cityobj_geoms<E>(
     obj: &Entity,
     min_z: u8,
     max_z: u8,
-    max_detail: u32,
-    buffer_pixels: u32,
-    f: impl Fn(TileZXY, MultiPolygon3) -> Result<(), ()>,
-) -> Result<(), ()> {
+    f: impl Fn(TileZXY, MultiPolygon3) -> Result<(), E>,
+) -> Result<(), E> {
     assert!(
         max_z >= min_z,
         "max_z must be greater than or equal to min_z"
@@ -28,9 +27,6 @@ pub fn slice_cityobj_geoms(
     }
 
     let mut tiled_mpolys = HashMap::new();
-
-    let extent = 1 << max_detail;
-    let buffer = extent * buffer_pixels / 256;
 
     let Value::Object(obj) = &obj.root else {
         return Ok(());
@@ -49,7 +45,7 @@ pub fn slice_cityobj_geoms(
 
                 // Slice for each zoom level
                 for zoom in min_z..=max_z {
-                    slice_polygon(zoom, extent, buffer, &poly, &mut tiled_mpolys);
+                    slice_polygon(zoom, &poly, &mut tiled_mpolys);
                 }
             }
         }
@@ -73,19 +69,11 @@ pub fn slice_cityobj_geoms(
     // TODO: linestring, point
 }
 
-fn slice_polygon(
-    zoom: u8,
-    extent: u32,
-    buffer: u32,
-    poly: &Polygon3,
-    out: &mut HashMap<(u8, u32, u32), MultiPolygon3>,
-) {
+fn slice_polygon(zoom: u8, poly: &Polygon3, out: &mut HashMap<(u8, u32, u32), MultiPolygon3>) {
     if poly.exterior().is_empty() {
         return;
     }
 
-    let z_scale = (1 << zoom) as f64;
-    let buf_width = buffer as f64 / extent as f64;
     let mut new_ring_buffer: Vec<[f64; 3]> = Vec::with_capacity(poly.exterior().len() + 1);
 
     // Slice along Y-axis
@@ -96,14 +84,13 @@ fn slice_polygon(
             .fold((f64::MAX, f64::MIN), |(min_y, max_y), c| {
                 (min_y.min(c[1]), max_y.max(c[1]))
             });
-        (min_y * z_scale).floor() as u32..(max_y * z_scale).ceil() as u32
+        tiling::iter_y_slice(zoom, min_y, max_y)
     };
 
     let mut y_sliced_polys = Vec::with_capacity(y_range.len());
 
     for yi in y_range.clone() {
-        let k1 = (yi as f64 - buf_width) / z_scale;
-        let k2 = ((yi + 1) as f64 + buf_width) / z_scale;
+        let (k1, k2) = tiling::y_slice_range(zoom, yi);
         let mut y_sliced_poly = Polygon3::new();
 
         // todo?: check interior bbox to optimize
@@ -156,19 +143,19 @@ fn slice_polygon(
 
     // Slice along X-axis
     for (yi, y_sliced_poly) in y_range.zip(y_sliced_polys.iter()) {
-        let x_range = {
+        let x_iter = {
             let (min_x, max_x) = y_sliced_poly
                 .exterior()
                 .iter()
                 .fold((f64::MAX, f64::MIN), |(min_x, max_x), c| {
                     (min_x.min(c[0]), max_x.max(c[0]))
                 });
-            (min_x * z_scale).floor() as i32..(max_x * z_scale).ceil() as i32
+
+            tiling::iter_x_slice(zoom, yi, min_x, max_x)
         };
 
-        for xi in x_range {
-            let k1 = (xi as f64 - buf_width) / z_scale;
-            let k2 = ((xi + 1) as f64 + buf_width) / z_scale;
+        for (xi, xs) in x_iter {
+            let (k1, k2) = tiling::x_slice_range(zoom, xi, xs);
 
             // todo?: check interior bbox to optimize ...
 

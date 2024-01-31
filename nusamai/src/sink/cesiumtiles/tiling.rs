@@ -1,3 +1,5 @@
+use std::ops::Range;
+
 fn msb(d: u32) -> u32 {
     u32::BITS - d.leading_zeros()
 }
@@ -47,7 +49,7 @@ pub fn x_slice_range(z: u8, x: i32, xs: u32) -> (f64, f64) {
     (west, east)
 }
 
-pub fn iter_y_slice(z: u8, south: f64, north: f64) -> impl Iterator<Item = u32> {
+pub fn iter_y_slice(z: u8, south: f64, north: f64) -> Range<u32> {
     let (_, y_size) = get_size_for_z(z);
     let north = north.clamp(-90.0, 90.0);
     let south = south.clamp(-90.0, 90.0);
