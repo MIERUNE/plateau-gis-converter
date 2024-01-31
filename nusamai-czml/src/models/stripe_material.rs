@@ -1,9 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::{
-    Color, CzmlDouble, LineCount, LineCountProperties, LineOffset, LineThickness,
-    LineThicknessProperties, StripeOrientation,
-};
+use crate::{Color, CzmlDouble, StripeOrientation};
 
 pub type StripeMaterial = StripeMaterialType;
 
