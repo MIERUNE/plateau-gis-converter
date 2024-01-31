@@ -29,7 +29,7 @@ pub fn slice_cityobj_geoms(
 
     let mut tiled_mpolys = HashMap::new();
 
-    let extent = 2u32.pow(max_detail);
+    let extent = 1 << max_detail;
     let buffer = extent * buffer_pixels / 256;
 
     let Value::Object(obj) = &obj.root else {
