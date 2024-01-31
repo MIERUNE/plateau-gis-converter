@@ -9,7 +9,7 @@ use crate::{
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 #[serde(deny_unknown_fields)]
-pub struct Polygon {
+pub struct CzmlPolygon {
     #[serde(default = "default_show")]
     pub show: CzmlBoolean,
 
@@ -156,7 +156,7 @@ fn default_z_index() -> CzmlInteger {
     CzmlInteger::Integer(0)
 }
 
-impl Default for Polygon {
+impl Default for CzmlPolygon {
     fn default() -> Self {
         Self {
             show: default_show(),
@@ -191,12 +191,12 @@ mod tests {
 
     #[test]
     fn test_default_deserialize() {
-        let polygon: Polygon = serde_json::from_str("{}").unwrap();
+        let polygon: CzmlPolygon = serde_json::from_str("{}").unwrap();
     }
 
     #[test]
     fn test_default_serialize() {
-        let polygon = Polygon::default();
+        let polygon = CzmlPolygon::default();
         let json = serde_json::to_string(&model).unwrap();
     }
 }

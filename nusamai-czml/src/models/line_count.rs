@@ -1,6 +1,9 @@
 use serde::{Deserialize, Serialize};
 
-use crate::{DeletableProperty, InterpolatableProperty, ReferenceValue, ReferenceValueProperty};
+use crate::{
+    Cartesian2Value, Cartesian2ValueProperty, DeletableProperty, InterpolatableProperty,
+    ReferenceValue, ReferenceValueProperty,
+};
 
 pub type LineCount = LineCountType;
 
@@ -10,10 +13,6 @@ pub enum LineCountType {
     Array(Vec<LineCountProperties>),
     Object(LineCountProperties),
 }
-
-pub type Cartesian2Value = Vec<f64>;
-
-pub type Cartesian2ValueProperty = Vec<f64>;
 
 #[derive(Serialize, Deserialize, Debug, PartialEq)]
 #[serde(rename_all = "camelCase")]

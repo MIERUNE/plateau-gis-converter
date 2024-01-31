@@ -1,10 +1,9 @@
 use std::collections::HashMap;
 
-use nusamai_geometry::Polygon;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
-use crate::{CzmlString, Model};
+use crate::{CzmlPolygon, CzmlString, Model};
 
 // todo: Modify HashMap and Value
 #[derive(Serialize, Deserialize, Debug)]
@@ -80,7 +79,7 @@ pub struct Packet {
     pub point: Option<HashMap<String, Value>>,
 
     #[serde(default)]
-    pub polygon: Polygon,
+    pub polygon: CzmlPolygon,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub polyline: Option<HashMap<String, Value>>,

@@ -25,10 +25,6 @@ pub struct StripeOrientationValueProperty {
     pub arc_type: StripeOrientationValue,
 }
 
-pub type Cartesian2Value = Vec<f64>;
-
-pub type Cartesian2ValueProperty = Vec<f64>;
-
 #[derive(Serialize, Deserialize, Debug, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct StripeOrientationProperties {
