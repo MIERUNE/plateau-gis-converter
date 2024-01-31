@@ -108,23 +108,23 @@ fn slice_polygon(
     let buf_width = buffer as f64 / extent as f64;
     let mut new_ring_buffer: Vec<[f64; 2]> = Vec::with_capacity(poly.exterior().len() + 1);
 
-    // Slice along X-axis
-    let x_range = {
-        let (min_x, max_x) = poly
+    // Slice along Y-axis
+    let y_range = {
+        let (min_y, max_y) = poly
             .exterior()
             .iter()
-            .fold((f64::MAX, f64::MIN), |(min_x, max_x), c| {
-                (min_x.min(c[0]), max_x.max(c[0]))
+            .fold((f64::MAX, f64::MIN), |(min_y, max_y), c| {
+                (min_y.min(c[1]), max_y.max(c[1]))
             });
-        min_x.floor() as u32..max_x.ceil() as u32
+        min_y.floor() as u32..max_y.ceil() as u32
     };
 
-    let mut x_sliced_polys = Vec::with_capacity(x_range.len());
+    let mut y_sliced_polys = Vec::with_capacity(y_range.len());
 
-    for xi in x_range.clone() {
-        let k1 = xi as f64 - buf_width;
-        let k2 = (xi + 1) as f64 + buf_width;
-        let mut x_sliced_poly = Polygon2::new();
+    for yi in y_range.clone() {
+        let k1 = yi as f64 - buf_width;
+        let k2 = (yi + 1) as f64 + buf_width;
+        let mut y_sliced_poly = Polygon2::new();
 
         // todo?: check interior bbox to optimize
 
@@ -138,66 +138,71 @@ fn slice_polygon(
                 .fold(None, |a, b| {
                     let Some(a) = a else { return Some(b) };
 
-                    if a[0] < k1 {
-                        if b[0] > k1 {
-                            let y = (b[1] - a[1]) * (k1 - a[0]) / (b[0] - a[0]) + a[1];
-                            // let z = (b[2] - a[2]) * (k1 - a[0]) / (b[0] - a[0]) + a[2];
-                            new_ring_buffer.push([k1, y])
+                    if a[1] < k1 {
+                        if b[1] > k1 {
+                            let x = (b[0] - a[0]) * (k1 - a[1]) / (b[1] - a[1]) + a[0];
+                            // let z = (b[2] - a[2]) * (k1 - a[1]) / (b[1] - a[1]) + a[2];
+                            new_ring_buffer.push([x, k1])
                         }
-                    } else if a[0] > k2 {
-                        if b[0] < k2 {
-                            let y = (b[1] - a[1]) * (k2 - a[0]) / (b[0] - a[0]) + a[1];
-                            // let z = (b[2] - a[2]) * (k2 - a[0]) / (b[0] - a[0]) + a[2];
-                            new_ring_buffer.push([k2, y])
+                    } else if a[1] > k2 {
+                        if b[1] < k2 {
+                            let x = (b[0] - a[0]) * (k2 - a[1]) / (b[1] - a[1]) + a[0];
+                            // let z = (b[2] - a[2]) * (k2 - a[1]) / (b[1] - a[1]) + a[2];
+                            new_ring_buffer.push([x, k2])
                         }
                     } else {
                         new_ring_buffer.push(a)
                     }
 
-                    if b[0] < k1 && a[0] > k1 {
-                        let y = (b[1] - a[1]) * (k1 - a[0]) / (b[0] - a[0]) + a[1];
-                        // let z = (b[2] - a[2]) * (k1 - a[0]) / (b[0] - a[0]) + a[2];
-                        new_ring_buffer.push([k1, y])
-                    } else if b[0] > k2 && a[0] < k2 {
-                        let y = (b[1] - a[1]) * (k2 - a[0]) / (b[0] - a[0]) + a[1];
-                        // let z = (b[2] - a[2]) * (k2 - a[0]) / (b[0] - a[0]) + a[2];
-                        new_ring_buffer.push([k2, y])
+                    if b[1] < k1 && a[1] > k1 {
+                        let x = (b[0] - a[0]) * (k1 - a[1]) / (b[1] - a[1]) + a[0];
+                        // let z = (b[2] - a[2]) * (k1 - a[1]) / (b[1] - a[1]) + a[2];
+                        new_ring_buffer.push([x, k1])
+                    } else if b[1] > k2 && a[1] < k2 {
+                        let x = (b[0] - a[0]) * (k2 - a[1]) / (b[1] - a[1]) + a[0];
+                        // let z = (b[2] - a[2]) * (k2 - a[1]) / (b[1] - a[1]) + a[2];
+                        new_ring_buffer.push([x, k2])
                     }
 
                     Some(b)
                 })
                 .unwrap();
 
-            x_sliced_poly.add_ring(new_ring_buffer.iter().copied());
+            y_sliced_poly.add_ring(new_ring_buffer.iter().copied());
         }
 
-        x_sliced_polys.push(x_sliced_poly);
+        y_sliced_polys.push(y_sliced_poly);
     }
 
-    // Slice along Y-axis
-    for (xi, x_sliced_poly) in x_range.zip(x_sliced_polys.iter()) {
-        let y_range = {
-            let (min_y, max_y) = x_sliced_poly
+    // Slice along X-axis
+    for (yi, y_sliced_poly) in y_range.zip(y_sliced_polys.iter()) {
+        let x_range = {
+            let (min_x, max_x) = y_sliced_poly
                 .exterior()
                 .iter()
-                .fold((f64::MAX, f64::MIN), |(min_y, max_y), c| {
-                    (min_y.min(c[1]), max_y.max(c[1]))
+                .fold((f64::MAX, f64::MIN), |(min_x, max_x), c| {
+                    (min_x.min(c[0]), max_x.max(c[0]))
                 });
-            min_y.floor() as u32..max_y.ceil() as u32
+            min_x.floor() as i32..max_x.ceil() as i32
         };
 
         let mut int_coords_buf = Vec::new();
         let mut simplified_buf = Vec::new();
 
-        for yi in y_range {
-            let k1 = yi as f64 - buf_width;
-            let k2 = (yi + 1) as f64 + buf_width;
+        for xi in x_range {
+            let k1 = xi as f64 - buf_width;
+            let k2 = (xi + 1) as f64 + buf_width;
 
-            // todo?: check interior bbox to optimize
+            // todo?: check interior bbox to optimize ...
 
-            let tile_mpoly = out.entry((zoom, xi, yi)).or_default();
+            let key = (
+                zoom,
+                xi.rem_euclid(1 << zoom) as u32, // handling geometry crossing the antimeridian
+                yi,
+            );
+            let tile_mpoly = out.entry(key).or_default();
 
-            for (ri, ring) in x_sliced_poly.rings().enumerate() {
+            for (ri, ring) in y_sliced_poly.rings().enumerate() {
                 if ring.coords().is_empty() {
                     continue;
                 }
@@ -207,30 +212,30 @@ fn slice_polygon(
                     .fold(None, |a, b| {
                         let Some(a) = a else { return Some(b) };
 
-                        if a[1] < k1 {
-                            if b[1] > k1 {
-                                let x = (b[0] - a[0]) * (k1 - a[1]) / (b[1] - a[1]) + a[0];
-                                // let z = (b[2] - a[2]) * (k1 - a[1]) / (b[1] - a[1]) + a[2];
-                                new_ring_buffer.push([x, k1])
+                        if a[0] < k1 {
+                            if b[0] > k1 {
+                                let y = (b[1] - a[1]) * (k1 - a[0]) / (b[0] - a[0]) + a[1];
+                                // let z = (b[2] - a[2]) * (k1 - a[0]) / (b[0] - a[0]) + a[2];
+                                new_ring_buffer.push([k1, y])
                             }
-                        } else if a[1] > k2 {
-                            if b[1] < k2 {
-                                let x = (b[0] - a[0]) * (k2 - a[1]) / (b[1] - a[1]) + a[0];
-                                // let z = (b[2] - a[2]) * (k2 - a[1]) / (b[1] - a[1]) + a[2];
-                                new_ring_buffer.push([x, k2])
+                        } else if a[0] > k2 {
+                            if b[0] < k2 {
+                                let y = (b[1] - a[1]) * (k2 - a[0]) / (b[0] - a[0]) + a[1];
+                                // let z = (b[2] - a[2]) * (k2 - a[0]) / (b[0] - a[0]) + a[2];
+                                new_ring_buffer.push([k2, y])
                             }
                         } else {
                             new_ring_buffer.push(a)
                         }
 
-                        if b[1] < k1 && a[1] > k1 {
-                            let x = (b[0] - a[0]) * (k1 - a[1]) / (b[1] - a[1]) + a[0];
-                            // let z = (b[2] - a[2]) * (k1 - a[1]) / (b[1] - a[1]) + a[2];
-                            new_ring_buffer.push([x, k1])
-                        } else if b[1] > k2 && a[1] < k2 {
-                            let x = (b[0] - a[0]) * (k2 - a[1]) / (b[1] - a[1]) + a[0];
-                            // let z = (b[2] - a[2]) * (k2 - a[1]) / (b[1] - a[1]) + a[2];
-                            new_ring_buffer.push([x, k2])
+                        if b[0] < k1 && a[0] > k1 {
+                            let y = (b[1] - a[1]) * (k1 - a[0]) / (b[0] - a[0]) + a[1];
+                            // let z = (b[2] - a[2]) * (k1 - a[0]) / (b[0] - a[0]) + a[2];
+                            new_ring_buffer.push([k1, y])
+                        } else if b[0] > k2 && a[0] < k2 {
+                            let y = (b[1] - a[1]) * (k2 - a[0]) / (b[0] - a[0]) + a[1];
+                            // let z = (b[2] - a[2]) * (k2 - a[0]) / (b[0] - a[0]) + a[2];
+                            new_ring_buffer.push([k2, y])
                         }
 
                         Some(b)
