@@ -1,4 +1,4 @@
-//! Configuration mechanism for Sink, Source, and other components.
+//! Configuration facility for Sink, Source, and other components.
 
 use std::collections::HashMap;
 
