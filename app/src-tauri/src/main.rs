@@ -8,7 +8,7 @@ use nusamai::pipeline::Canceller;
 use nusamai::sink::DataSinkProvider;
 use nusamai::sink::{
     geojson::GeoJsonSinkProvider, gpkg::GpkgSinkProvider, mvt::MVTSinkProvider,
-    serde::SerdeSinkProvider,
+    serde::SerdeSinkProvider, shapefile::ShapefileSinkProvider,
 };
 use nusamai::source::citygml::CityGmlSourceProvider;
 use nusamai::source::DataSourceProvider;
@@ -56,6 +56,7 @@ fn run(input_paths: Vec<String>, output_path: String, filetype: String) {
             "GeoPackage" => Box::new(GpkgSinkProvider {}),
             "Serde" => Box::new(SerdeSinkProvider {}),
             "Vector Tiles" => Box::new(MVTSinkProvider {}),
+            "Shapefile" => Box::new(ShapefileSinkProvider {}),
             _ => {
                 log::error!("Unknown filetype: {}", filetype);
                 return;
