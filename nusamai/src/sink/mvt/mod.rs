@@ -225,7 +225,7 @@ fn tile_writing_stage(
     tile_id_conv: TileIdMethod,
 ) {
     let detail = 12;
-    let extent = 2u32.pow(detail);
+    let extent = 1 << detail;
 
     let _ = receiver_sorted
         .into_iter()

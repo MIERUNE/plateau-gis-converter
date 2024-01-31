@@ -8,6 +8,7 @@ use nusamai::sink::{
     geojson::GeoJsonSinkProvider, geojson_transform_exp::GeoJsonTransformExpSinkProvider,
     gpkg::GpkgSinkProvider, mvt::MVTSinkProvider, noop::NoopSinkProvider, serde::SerdeSinkProvider,
     gltf::GltfSinkProvider,
+    shapefile::ShapefileSinkProvider,
 };
 use nusamai::sink::{DataSink, DataSinkProvider};
 use nusamai::source::citygml::CityGmlSourceProvider;
@@ -56,6 +57,7 @@ enum SinkChoice {
     Mvt,
     GeojsonTransformExp,
     Gltf,
+    Shapefile,
 }
 
 impl SinkChoice {
@@ -68,6 +70,7 @@ impl SinkChoice {
             SinkChoice::Gpkg => Box::new(GpkgSinkProvider {}),
             SinkChoice::Mvt => Box::new(MVTSinkProvider {}),
             SinkChoice::Gltf => Box::new(GltfSinkProvider {}),
+            SinkChoice::Shapefile => Box::new(ShapefileSinkProvider {}),
         }
     }
 }

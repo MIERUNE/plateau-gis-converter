@@ -1,18 +1,19 @@
 //! GeoPackage sink
 
 use std::path::PathBuf;
-
-use nusamai_citygml::schema::Schema;
 use url::Url;
 
 use rayon::prelude::*;
 
 use crate::parameters::Parameters;
+use crate::parameters::*;
 use crate::pipeline::{Feedback, Receiver};
 use crate::sink::{DataSink, DataSinkProvider, SinkInfo};
-
-use crate::parameters::*;
 use crate::{get_parameter_value, transformer};
+
+use nusamai_citygml::object::{ObjectStereotype, Value};
+use nusamai_citygml::schema::Schema;
+use nusamai_citygml::GeometryType;
 use nusamai_gpkg::geometry::write_indexed_multipolygon;
 use nusamai_gpkg::GpkgHandler;
 
@@ -81,23 +82,51 @@ impl GpkgSink {
                         }
                         let entity = parcel.entity;
                         let geom_store = entity.geometry_store.read().unwrap();
-                        if !geom_store.multipolygon.is_empty() {
-                            let mut bytes = Vec::new();
-                            if write_indexed_multipolygon(
-                                &mut bytes,
-                                &geom_store.vertices,
-                                &geom_store.multipolygon,
-                                4326,
-                            )
-                            .is_err()
-                            {
-                                // TODO: fatal error
-                            }
 
-                            if sender.blocking_send(bytes).is_err() {
-                                return Err(());
-                            };
+                        let Value::Object(obj) = &entity.root else {
+                            return Ok(());
+                        };
+                        let ObjectStereotype::Feature { id: _, geometries } = &obj.stereotype
+                        else {
+                            return Ok(());
+                        };
+
+                        let mut mpoly = nusamai_geometry::MultiPolygon::new();
+
+                        geometries.iter().for_each(|entry| match entry.ty {
+                            GeometryType::Solid
+                            | GeometryType::Surface
+                            | GeometryType::Triangle => {
+                                for idx_poly in geom_store.multipolygon.iter_range(
+                                    entry.pos as usize..(entry.pos + entry.len) as usize,
+                                ) {
+                                    mpoly.add(idx_poly);
+                                }
+                            }
+                            GeometryType::Curve => unimplemented!(),
+                            GeometryType::Point => unimplemented!(),
+                        });
+
+                        if mpoly.is_empty() {
+                            return Ok(());
                         }
+
+                        let mut bytes = Vec::new();
+                        if write_indexed_multipolygon(
+                            &mut bytes,
+                            &geom_store.vertices,
+                            &mpoly,
+                            4326,
+                        )
+                        .is_err()
+                        {
+                            // TODO: fatal error
+                        }
+
+                        if sender.blocking_send(bytes).is_err() {
+                            return Err(());
+                        };
+
                         Ok(())
                     },
                 );

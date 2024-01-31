@@ -131,7 +131,7 @@ fn read_bin_file(uri: String, filename: String) -> Result<Vec<u8>, GltfImportErr
     }
     // assumed normal file
     let path = Path::new(&uri);
-    // 実行時ディレクトリ直下に存在？
+    // 実行ディレクトリ直下に存在？
     if path.is_file(){
         match _read_bin_file(String::from(path.to_str().unwrap())){
             Ok(v) => {
@@ -231,7 +231,7 @@ fn _import_gltf(filename: String) -> Result<(Gltf, GltfSeqList), GltfImportError
                 }
             }
             None => {
-                // if gltf having None uri become error
+                // if gltf having None uri become error.
                 return Err(GltfImportError::OtherError("No uri in image".to_string()));
             }
         }
