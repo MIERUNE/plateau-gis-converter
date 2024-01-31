@@ -1,6 +1,8 @@
 use serde::{Deserialize, Serialize};
 
-use crate::{Color, CzmlBoolean, CzmlUri, GridMaterial, Repeat};
+use crate::{
+    CheckerboardMaterial, GridMaterial, ImageMaterial, SolidColorMaterial, StripeMaterial,
+};
 
 pub type Material = MaterialType;
 
@@ -10,27 +12,6 @@ pub enum MaterialType {
     Array(Vec<MaterialProperties>),
     Object(MaterialProperties),
     Material(Material),
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct SolidColorMaterial {
-    #[serde(default = "default_color")]
-    pub color: Color,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct ImageMaterial {
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub image: Option<CzmlUri>,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub repeat: Option<Repeat>,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub color: Option<Color>,
-
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub transparent: Option<CzmlBoolean>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
