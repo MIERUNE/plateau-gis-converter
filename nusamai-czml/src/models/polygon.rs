@@ -5,7 +5,9 @@ use crate::{
     PositionList, PositionListOfLists, ShadowMode,
 };
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
+#[serde(deny_unknown_fields)]
 pub struct Polygon {
     #[serde(default = "default_show")]
     pub show: CzmlBoolean,

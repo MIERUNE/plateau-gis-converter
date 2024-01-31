@@ -1,25 +1,25 @@
 use serde::{Deserialize, Serialize};
 
-use crate::{
-    DeletableProperty, DoubleValue, DoubleValueProperty, InterpolatableProperty, ReferenceValue,
-    ReferenceValueProperty,
-};
+use crate::{DeletableProperty, InterpolatableProperty, ReferenceValue, ReferenceValueProperty};
 
-pub type CzmlDouble = DoubleValueType;
+pub type LineCount = LineCountType;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 #[serde(untagged)]
-pub enum DoubleValueType {
-    Array(Vec<DoubleProperties>),
-    Object(DoubleProperties),
-    Double(f32),
+pub enum LineCountType {
+    Array(Vec<LineCountProperties>),
+    Object(LineCountProperties),
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+pub type Cartesian2Value = Vec<f64>;
+
+pub type Cartesian2ValueProperty = Vec<f64>;
+
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 #[serde(rename_all = "camelCase")]
-pub struct DoubleProperties {
+pub struct LineCountProperties {
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub number: Option<DoubleValue>,
+    pub cartesian2: Option<Cartesian2Value>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub reference: Option<ReferenceValue>,
@@ -34,7 +34,7 @@ pub struct DoubleProperties {
 
     #[serde(flatten)]
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub uri_value_property: Option<DoubleValueProperty>,
+    pub cartesian2_value_property: Option<Cartesian2ValueProperty>,
 
     #[serde(flatten)]
     #[serde(skip_serializing_if = "Option::is_none")]

@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::{Color, CzmlDouble};
+use crate::{Color, CzmlDouble, LineCount};
 
 pub type GridMaterial = GridMaterialType;
 
@@ -12,6 +12,7 @@ pub enum GridMaterialType {
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq)]
+#[serde(rename_all = "camelCase")]
 pub struct GridMaterialProperties {
     pub color: Color,
 

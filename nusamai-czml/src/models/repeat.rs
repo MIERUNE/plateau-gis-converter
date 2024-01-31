@@ -16,6 +16,7 @@ pub type Cartesian2Value = Vec<f64>;
 pub type Cartesian2ValueProperty = Vec<f64>;
 
 #[derive(Serialize, Deserialize, Debug, PartialEq)]
+#[serde(rename_all = "camelCase")]
 pub struct RepeatProperties {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub cartesian2: Option<Cartesian2Value>,

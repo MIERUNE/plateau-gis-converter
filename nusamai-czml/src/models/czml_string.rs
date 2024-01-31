@@ -18,6 +18,7 @@ pub type StringValue = String;
 pub type StringValueProperty = Value;
 
 #[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
 pub struct StringProperties {
     pub string: Option<StringValue>,
 

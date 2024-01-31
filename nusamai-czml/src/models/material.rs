@@ -34,6 +34,7 @@ pub struct ImageMaterial {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
 pub struct MaterialProperties {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub solid_color: Option<SolidColorMaterial>,
