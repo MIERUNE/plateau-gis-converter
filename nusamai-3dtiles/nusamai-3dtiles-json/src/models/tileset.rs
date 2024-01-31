@@ -310,7 +310,7 @@ pub struct Tileset {
 
     /// An object defining the structure of metadata classes and enums. When this is defined, then `schemaUri` shall be undefined.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub schema: Option<nusamai_gltf::extensions::gltf::ext_structural_metadata::Schema>,
+    pub schema: Option<nusamai_gltf_json::extensions::gltf::ext_structural_metadata::Schema>,
 
     /// The URI (or IRI) of the external schema file. When this is defined, then `schema` shall be undefined.
     #[serde(skip_serializing_if = "Option::is_none")]

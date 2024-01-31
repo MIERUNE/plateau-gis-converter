@@ -1,26 +1,20 @@
-//! Mapbox Vector Tiles (MVT) sink
+//! 3D Tiles sink
 
-mod slice;
-mod sort;
-mod tags;
+pub mod slice;
+pub mod sort;
+pub mod tiling;
 
-use std::fs;
 use std::path::{Path, PathBuf};
 use std::sync::mpsc;
 
 use ext_sort::{buffer::mem::MemoryLimitedBufferBuilder, ExternalSorter, ExternalSorterBuilder};
-use hashbrown::HashMap;
 use itertools::Itertools;
-use prost::Message;
 use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
 
-use nusamai_citygml::object;
 use nusamai_citygml::schema::Schema;
 use nusamai_geometry::MultiPolygon;
-use nusamai_mvt::geometry::GeometryEncoder;
-use nusamai_mvt::tag::TagsEncoder;
-use nusamai_mvt::{tileid::TileIdMethod, vector_tile};
+use nusamai_mvt::tileid::TileIdMethod;
 
 use crate::parameters::*;
 use crate::pipeline::{Feedback, Receiver};
@@ -28,11 +22,10 @@ use crate::sink::{DataSink, DataSinkProvider, SinkInfo};
 use crate::{get_parameter_value, transformer};
 use slice::slice_cityobj_geoms;
 use sort::BincodeExternalChunk;
-use tags::convert_properties;
 
-pub struct MVTSinkProvider {}
+pub struct CesiumTilesSinkProvider {}
 
-impl DataSinkProvider for MVTSinkProvider {
+impl DataSinkProvider for CesiumTilesSinkProvider {
     fn info(&self) -> SinkInfo {
         SinkInfo {
             name: "Vector Tiles (MVT)".to_string(),
@@ -60,13 +53,13 @@ impl DataSinkProvider for MVTSinkProvider {
     fn create(&self, params: &Parameters) -> Box<dyn DataSink> {
         let output_path = get_parameter_value!(params, "@output", FileSystemPath);
 
-        Box::<MVTSink>::new(MVTSink {
+        Box::<CesiumTilesSink>::new(CesiumTilesSink {
             output_path: output_path.as_ref().unwrap().into(),
         })
     }
 }
 
-struct MVTSink {
+struct CesiumTilesSink {
     output_path: PathBuf,
 }
 
@@ -79,11 +72,11 @@ struct SerializedSlicedFeature {
 
 #[derive(Serialize, Deserialize)]
 struct SlicedFeature<'a> {
-    geometry: MultiPolygon<'a, 2, i16>,
+    geometry: MultiPolygon<'a, 3>,
     properties: nusamai_citygml::object::Value,
 }
 
-impl DataSink for MVTSink {
+impl DataSink for CesiumTilesSink {
     fn make_transform_requirements(&self) -> transformer::Requirements {
         use transformer::RequirementItem;
 
@@ -117,7 +110,7 @@ impl DataSink for MVTSink {
                 });
             }
 
-            // Group sorted features and write them into MVT tiles
+            // Group sorted features and write them into tiles
             {
                 let feedback = feedback.clone();
                 let output_path = &self.output_path;
@@ -148,32 +141,23 @@ fn geometry_slicing_stage(
             return Err(());
         }
 
-        let max_detail = 12; // 4096
-        let buffer_pixels = 5;
-        slice_cityobj_geoms(
-            &parcel.entity,
-            7,
-            16,
-            max_detail,
-            buffer_pixels,
-            |(z, x, y), mpoly| {
-                let feature = SlicedFeature {
-                    geometry: mpoly,
-                    properties: parcel.entity.root.clone(),
-                };
-                let bytes = bincode::serialize(&feature).unwrap();
-                let sfeat = SerializedSlicedFeature {
-                    tile_id: tile_id_conv.zxy_to_id(z, x, y),
-                    body: bytes,
-                };
+        slice_cityobj_geoms(&parcel.entity, 7, 16, |(z, x, y), mpoly| {
+            let feature = SlicedFeature {
+                geometry: mpoly,
+                properties: parcel.entity.root.clone(),
+            };
+            let bytes = bincode::serialize(&feature).unwrap();
+            let sfeat = SerializedSlicedFeature {
+                tile_id: tile_id_conv.zxy_to_id(z, x, y),
+                body: bytes,
+            };
 
-                if sender_sliced.send(sfeat).is_err() {
-                    log::info!("sink cancelled");
-                    return Err(());
-                };
-                Ok(())
-            },
-        )
+            if sender_sliced.send(sfeat).is_err() {
+                log::info!("sink cancelled");
+                return Err(());
+            };
+            Ok(())
+        })
     });
 }
 
@@ -211,121 +195,30 @@ fn feature_sorting_stage(
     }
 }
 
-#[derive(Default)]
-struct LayerData {
-    pub features: Vec<vector_tile::tile::Feature>,
-    pub tags_enc: TagsEncoder,
-}
-
 fn tile_writing_stage(
-    output_path: &Path,
+    _output_path: &Path,
     feedback: Feedback,
     receiver_sorted: mpsc::Receiver<(u64, Vec<SerializedSlicedFeature>)>,
     tile_id_conv: TileIdMethod,
 ) {
-    let detail = 12;
-    let extent = 1 << detail;
-
     let _ = receiver_sorted
         .into_iter()
         .par_bridge()
-        .try_for_each(|(tile_id, sfeats)| {
+        .try_for_each(|(tile_id, _sfeats)| {
             if feedback.is_cancelled() {
                 return Err(());
             }
             let (zoom, x, y) = tile_id_conv.id_to_zxy(tile_id);
 
-            let mut layers: HashMap<String, LayerData> = HashMap::new();
-
-            for ser_feat in sfeats {
-                let feat: SlicedFeature = bincode::deserialize(&ser_feat.body).unwrap();
-                let mpoly = feat.geometry;
-
-                // encode geometry
-                let mut geom_enc = GeometryEncoder::new();
-                for poly in &mpoly {
-                    let exterior = poly.exterior();
-                    if exterior.is_ccw() {
-                        geom_enc.add_ring(&exterior);
-                    }
-                    for interior in poly.interiors() {
-                        if interior.is_cw() {
-                            geom_enc.add_ring(&interior);
-                        }
-                    }
-                }
-                let geometry = geom_enc.into_vec();
-                if geometry.is_empty() {
-                    continue;
-                }
-
-                let mut id = None;
-                let mut tags: Vec<u32> = Vec::new();
-
-                let layer = if let object::Value::Object(obj) = &feat.properties {
-                    let layer = layers.entry_ref(obj.typename.as_ref()).or_default();
-
-                    // Encode attributes as MVT tags
-                    for (key, value) in &obj.attributes {
-                        convert_properties(&mut tags, &mut layer.tags_enc, key, value);
-                    }
-
-                    // Make a MVT feature id (u64) by hashing the original feature id string.
-                    id = obj.stereotype.id().map(|id| {
-                        id.as_bytes()
-                            .iter()
-                            .fold(5381u64, |a, c| a.wrapping_mul(33) ^ *c as u64)
-                    });
-
-                    layer
-                } else {
-                    layers.entry_ref("Unknown").or_default()
-                };
-
-                layer.features.push(vector_tile::tile::Feature {
-                    id,
-                    tags,
-                    r#type: Some(vector_tile::tile::GeomType::Polygon as i32),
-                    geometry,
-                });
-            }
-
-            let layers = layers
-                .into_iter()
-                .flat_map(|(name, layer_data)| {
-                    if layer_data.features.is_empty() {
-                        return None;
-                    }
-                    let (keys, values) = layer_data.tags_enc.into_keys_and_values();
-                    Some(vector_tile::tile::Layer {
-                        version: 2,
-                        name: name.to_string(),
-                        features: layer_data.features,
-                        keys,
-                        values,
-                        extent: Some(extent),
-                    })
-                })
-                .collect();
-
-            let tile = vector_tile::Tile { layers };
-
-            let path = output_path.join(Path::new(&format!("{}/{}/{}.pbf", zoom, x, y)));
-
-            if let Some(dir) = path.parent() {
-                if let Err(e) = fs::create_dir_all(dir) {
-                    panic!("Fatal error: {:?}", e); // FIXME
-                }
-            }
-            let bytes = tile.encode_to_vec();
-
-            log::info!(
-                "Writing a tile: {} ({})",
-                &path.to_string_lossy(),
-                bytesize::to_string(bytes.len() as u64, true)
+            let (min_y, max_y) = tiling::y_slice_range(zoom, y);
+            let xs = tiling::x_step(zoom, y);
+            let (min_x, max_x) = tiling::x_slice_range(zoom, x as i32, xs);
+            println!(
+                "tile: z={}, x={}, y={} (lng: {} -> {}, lat: {} -> {})",
+                zoom, x, y, min_x, max_x, min_y, max_y
             );
 
-            fs::write(&path, &bytes).unwrap();
+            // TODO: write a tile
 
             Ok(())
         });
