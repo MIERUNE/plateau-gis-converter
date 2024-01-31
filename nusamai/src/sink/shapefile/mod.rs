@@ -12,7 +12,7 @@ use crate::sink::{DataSink, DataSinkProvider, SinkInfo};
 use crate::{get_parameter_value, transformer};
 
 use nusamai_citygml::object::{Entity, ObjectStereotype, Value};
-use nusamai_shapefile::conversion::indexed_polygon_to_shape;
+use nusamai_shapefile::conversion::indexed_multipolygon_to_shape;
 use shapefile;
 
 pub struct ShapefileSinkProvider {}
@@ -77,13 +77,14 @@ impl DataSink for ShapefileSink {
                             return Err(());
                         }
 
-                        let features = toplevel_cityobj_to_geojson_features(&parcel.entity);
-                        for feature in features {
-                            if sender.send(feature).is_err() {
+                        let shapes = toplevel_cityobj_to_shapes(&parcel.entity);
+                        for shape in shapes {
+                            if sender.send(shape).is_err() {
                                 log::info!("sink cancelled");
                                 return Err(());
                             };
                         }
+
                         Ok(())
                     },
                 );
@@ -100,9 +101,15 @@ impl DataSink for ShapefileSink {
                     shapefile::Writer::from_path(&self.output_path, table_builder).unwrap();
 
                 // Write each feature
-                receiver.into_iter().for_each(|feature| {
-                    let record = shapefile::dbase::Record::default(); // for attributes
-                    writer.write_shape_and_record(&feature, &record).unwrap();
+                receiver.into_iter().for_each(|shape| match shape {
+                    shapefile::Shape::PolygonZ(polygon) => {
+                        let record = shapefile::dbase::Record::default(); // for attributes
+                        writer.write_shape_and_record(&polygon, &record).unwrap();
+                    }
+                    shapefile::Shape::NullShape => {}
+                    _ => {
+                        log::warn!("Unsupported shape type");
+                    }
                 });
             },
         );
@@ -122,18 +129,18 @@ fn extract_properties(tree: &nusamai_citygml::object::Value) -> Option<geojson::
 /// Create Shapefile features from a TopLevelCityObject
 /// Each feature for MultiPolygon, MultiLineString, and MultiPoint will be created (if it exists)
 /// TODO: Implement MultiLineString and MultiPoint handling
-pub fn toplevel_cityobj_to_shape_features(entity: &Entity) -> Vec<shapefile::PolygonZ> {
+pub fn toplevel_cityobj_to_shapes(entity: &Entity) -> Vec<shapefile::Shape> {
     let _properties = extract_properties(&entity.root);
     let geom_store = entity.geometry_store.read().unwrap();
 
     let Value::Object(obj) = &entity.root else {
-        return Vec::default();
+        return vec![shapefile::Shape::NullShape];
     };
     let ObjectStereotype::Feature { id: _, geometries } = &obj.stereotype else {
-        return Vec::default();
+        return vec![shapefile::Shape::NullShape];
     };
 
-    let mut polygons = Vec::new();
+    let mut mpoly = nusamai_geometry::MultiPolygon::<1, u32>::new();
 
     geometries.iter().for_each(|entry| match entry.ty {
         GeometryType::Solid | GeometryType::Surface | GeometryType::Triangle => {
@@ -141,29 +148,23 @@ pub fn toplevel_cityobj_to_shape_features(entity: &Entity) -> Vec<shapefile::Pol
                 .multipolygon
                 .iter_range(entry.pos as usize..(entry.pos + entry.len) as usize)
             {
-                let shape = indexed_polygon_to_shape(&geom_store.vertices, &idx_poly);
-                polygons.push(shape);
+                mpoly.add(idx_poly);
             }
         }
-        GeometryType::Curve => {
-            for _idx_ls in geom_store
-                .multilinestring
-                .iter_range(entry.pos as usize..(entry.pos + entry.len) as usize)
-            {
-                unimplemented!();
-            }
-        }
-        GeometryType::Point => {
-            for _idx_point in geom_store
-                .multipoint
-                .iter_range(entry.pos as usize..(entry.pos + entry.len) as usize)
-            {
-                unimplemented!();
-            }
-        }
+        GeometryType::Curve => unimplemented!(),
+        GeometryType::Point => unimplemented!(),
     });
 
-    // TODO: polygons to a multipolygon
+    let mut shapes = vec![];
+    if !mpoly.is_empty() {
+        let shape = indexed_multipolygon_to_shape(&geom_store.vertices, &mpoly);
+        shapes.push(shapefile::Shape::PolygonZ(shape));
+    }
+    if !shapes.is_empty() {
+        return shapes;
+    }
+
+    vec![shapefile::Shape::NullShape]
 }
 
 #[cfg(test)]
@@ -211,21 +212,24 @@ mod tests {
             geometry_store: RwLock::new(geometries).into(),
         };
 
-        let shapes = toplevel_cityobj_to_geojson_features(&obj);
+        let shapes = toplevel_cityobj_to_shapes(&obj);
         assert_eq!(shapes.len(), 1);
 
-        let mpoly_shape = shapes.first().unwrap();
-        assert_eq!(mpoly_shape.rings().len(), 1);
-        assert_eq!(
-            mpoly_shape.ring(0).unwrap(),
-            &shapefile::PolygonRing::Outer(vec![
-                // Outer ring: re-ordered to clockwise
-                shapefile::PointZ::new(0., 0., 111., NO_DATA),
-                shapefile::PointZ::new(0., 5., 111., NO_DATA),
-                shapefile::PointZ::new(5., 5., 111., NO_DATA),
-                shapefile::PointZ::new(5., 0., 111., NO_DATA),
-                shapefile::PointZ::new(0., 0., 111., NO_DATA), // automatically closed
-            ])
-        )
+        if let shapefile::Shape::PolygonZ(polygon) = &shapes[0] {
+            assert_eq!(polygon.rings().len(), 1);
+            assert_eq!(
+                polygon.ring(0).unwrap(),
+                &shapefile::PolygonRing::Outer(vec![
+                    // Outer ring: re-ordered to clockwise
+                    shapefile::PointZ::new(0., 0., 111., NO_DATA),
+                    shapefile::PointZ::new(0., 5., 111., NO_DATA),
+                    shapefile::PointZ::new(5., 5., 111., NO_DATA),
+                    shapefile::PointZ::new(5., 0., 111., NO_DATA),
+                    shapefile::PointZ::new(0., 0., 111., NO_DATA), // automatically closed
+                ])
+            )
+        } else {
+            panic!("Expected PolygonZ.");
+        }
     }
 }
