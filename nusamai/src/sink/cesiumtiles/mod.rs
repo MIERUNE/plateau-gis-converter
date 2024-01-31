@@ -110,7 +110,7 @@ impl DataSink for CesiumTilesSink {
                 });
             }
 
-            // Group sorted features and write them into MVT tiles
+            // Group sorted features and write them into tiles
             {
                 let feedback = feedback.clone();
                 let output_path = &self.output_path;
@@ -170,7 +170,6 @@ fn feature_sorting_stage(
         std::io::Error,
         MemoryLimitedBufferBuilder,
         BincodeExternalChunk<_>,
-        // TODO: Use Binpack instead of RMP ?
         // TODO: Implement an external sorter by ourselves?
     > = ExternalSorterBuilder::new()
         .with_tmp_dir(Path::new("./"))
