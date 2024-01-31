@@ -179,9 +179,9 @@ impl<'a, const D: usize, T: CoordNum> MultiPolygon<'a, D, T> {
 
     // Adds a polygon to the multipolygon.
     pub fn add(&mut self, poly: Polygon<'a, D, T>) {
-        self.add_exterior(poly.exterior().iter());
+        self.add_exterior(&poly.exterior());
         for hole in poly.interiors() {
-            self.add_interior(hole.iter());
+            self.add_interior(&hole);
         }
     }
 
