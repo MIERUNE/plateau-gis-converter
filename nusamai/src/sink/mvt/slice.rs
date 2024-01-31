@@ -117,14 +117,14 @@ fn slice_polygon(
             .fold((f64::MAX, f64::MIN), |(min_y, max_y), c| {
                 (min_y.min(c[1]), max_y.max(c[1]))
             });
-        min_y.floor() as u32..max_y.ceil() as u32
+        (min_y * z_scale).floor() as u32..(max_y * z_scale).ceil() as u32
     };
 
     let mut y_sliced_polys = Vec::with_capacity(y_range.len());
 
     for yi in y_range.clone() {
-        let k1 = yi as f64 - buf_width;
-        let k2 = (yi + 1) as f64 + buf_width;
+        let k1 = (yi as f64 - buf_width) / z_scale;
+        let k2 = ((yi + 1) as f64 + buf_width) / z_scale;
         let mut y_sliced_poly = Polygon2::new();
 
         // todo?: check interior bbox to optimize
@@ -175,6 +175,9 @@ fn slice_polygon(
         y_sliced_polys.push(y_sliced_poly);
     }
 
+    let mut int_coords_buf = Vec::new();
+    let mut simplified_buf = Vec::new();
+
     // Slice along X-axis
     for (yi, y_sliced_poly) in y_range.zip(y_sliced_polys.iter()) {
         let x_range = {
@@ -184,15 +187,12 @@ fn slice_polygon(
                 .fold((f64::MAX, f64::MIN), |(min_x, max_x), c| {
                     (min_x.min(c[0]), max_x.max(c[0]))
                 });
-            min_x.floor() as i32..max_x.ceil() as i32
+            (min_x * z_scale).floor() as i32..(max_x * z_scale).ceil() as i32
         };
 
-        let mut int_coords_buf = Vec::new();
-        let mut simplified_buf = Vec::new();
-
         for xi in x_range {
-            let k1 = xi as f64 - buf_width;
-            let k2 = (xi + 1) as f64 + buf_width;
+            let k1 = (xi as f64 - buf_width) / z_scale;
+            let k2 = ((xi + 1) as f64 + buf_width) / z_scale;
 
             // todo?: check interior bbox to optimize ...
 
@@ -247,8 +247,8 @@ fn slice_polygon(
                 {
                     int_coords_buf.clear();
                     int_coords_buf.extend(new_ring_buffer.iter().map(|&[x, y]| {
-                        let tx = (((x - xi as f64) * (extent as f64)) + 0.5) as i16;
-                        let ty = (((y - yi as f64) * (extent as f64)) + 0.5) as i16;
+                        let tx = (((x * z_scale - xi as f64) * (extent as f64)) + 0.5) as i16;
+                        let ty = (((y * z_scale - yi as f64) * (extent as f64)) + 0.5) as i16;
                         [tx, ty]
                     }));
 
@@ -292,8 +292,8 @@ fn slice_polygon(
                     simplified_buf.push(*int_coords_buf.last().unwrap());
                 }
 
-                let flat_coords: Vec<i16> = simplified_buf.iter().flatten().copied().collect();
-                let mut ring = LineString2::from_raw(flat_coords.into());
+                let mut ring =
+                    LineString2::from_raw(simplified_buf.iter().flatten().copied().collect());
                 ring.reverse_inplace();
 
                 // Skip the polygon if:

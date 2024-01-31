@@ -22,7 +22,7 @@ fn run_source_thread(
     let handle = std::thread::spawn(move || {
         log::info!("Source thread started.");
         let num_threads = std::thread::available_parallelism()
-            .map(|v| v.get() * 5)
+            .map(|v| v.get() * 3)
             .unwrap_or(1);
         let pool = ThreadPoolBuilder::new()
             .use_current_thread()
@@ -65,8 +65,12 @@ fn run_sink_thread(
 ) -> std::thread::JoinHandle<()> {
     std::thread::spawn(move || {
         log::info!("Sink thread started.");
+        let num_threads = std::thread::available_parallelism()
+            .map(|v| v.get() * 3)
+            .unwrap_or(1);
         let pool = ThreadPoolBuilder::new()
             .use_current_thread()
+            .num_threads(num_threads)
             .build()
             .unwrap();
         pool.install(move || {
