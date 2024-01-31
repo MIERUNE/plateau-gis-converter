@@ -4,17 +4,14 @@ mod slice;
 mod sort;
 mod tiling;
 
-use std::fs;
 use std::path::{Path, PathBuf};
 use std::sync::mpsc;
 
 use ext_sort::{buffer::mem::MemoryLimitedBufferBuilder, ExternalSorter, ExternalSorterBuilder};
-use hashbrown::HashMap;
 use itertools::Itertools;
 use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
 
-use nusamai_citygml::object;
 use nusamai_citygml::schema::Schema;
 use nusamai_geometry::MultiPolygon;
 use nusamai_mvt::tileid::TileIdMethod;
