@@ -6,7 +6,14 @@
 	export let outputPath: string;
 
 	async function openOutputDialog() {
-		const res = await dialog.save();
+		const res = await dialog.save({
+			filters: [
+				{
+					name: 'Output format',
+					extensions: ['geojson', 'json']
+				}
+			]
+		});
 		outputPath = Array.isArray(res) ? res[0] : res;
 	}
 </script>
