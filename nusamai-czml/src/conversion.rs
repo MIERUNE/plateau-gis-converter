@@ -1,6 +1,6 @@
 use nusamai_geometry::Polygon;
 
-use crate::models::CzmlPolygon;
+use crate::{models::CzmlPolygon, PositionList, PositionListProperties};
 
 //
 pub fn indexed_multipolygon_to_czml_polygon(
@@ -24,6 +24,11 @@ pub fn indexed_multipolygon_to_czml_polygon(
         }
         interiors.push(interior_vec);
     }
+
+    czml_polygon.positions = Some(PositionList::Object(PositionListProperties {
+        cartographic_degrees: Some(exteriors.into_iter().flatten().collect()),
+        ..Default::default()
+    }));
 
     czml_polygon
 }
@@ -60,6 +65,8 @@ mod tests {
         poly_idx.add_ring([[4], [5], [6], [7], [4]]);
         poly_idx.add_ring([[8], [9], [10], [11], [8]]);
 
-        let value = indexed_multipolygon_to_czml_polygon(&vertices, &poly_idx);
+        let czml_polygon = indexed_multipolygon_to_czml_polygon(&vertices, &poly_idx);
+
+        println!("{}", serde_json::to_string_pretty(&czml_polygon).unwrap());
     }
 }
