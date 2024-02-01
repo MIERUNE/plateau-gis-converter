@@ -258,8 +258,8 @@ fn tile_writing_stage(
             }
 
             // calculate the centroid
-            let mut pos_max = [0., 0., 0.];
-            let mut pos_min = [0., 0., 0.];
+            let mut pos_max = [f64::MIN; 3];
+            let mut pos_min = [f64::MAX; 3];
 
             let mut mu_x = 0.;
             let mut mu_y = 0.;
