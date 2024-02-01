@@ -114,7 +114,8 @@ fn default_material() -> Material {
     Material::Object(MaterialProperties {
         solid_color: Some(SolidColorMaterial {
             color: Color::Object(ColorProperties {
-                rgba: Some(RgbaValue::Constant([255, 255, 255, 255])),
+                // FIXME: → [255, 255, 255, 255]
+                rgba: Some(RgbaValue::Constant([255, 0, 255, 255])),
                 ..Default::default()
             }),
         }),
