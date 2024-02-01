@@ -84,7 +84,6 @@ impl DataSink for StanfordPlySink {
 
         rayon::join(
             || {
-                // Convert CityObjects to GeoJSON objects
 
                 let ellipsoid = nusamai_projection::ellipsoid::wgs84();
 
