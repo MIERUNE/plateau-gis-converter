@@ -80,7 +80,7 @@ impl DataSink for GeoJsonSink {
                             return Err(());
                         }
 
-                        let features = toplevel_cityobj_to_geojson_features(&parcel.entity);
+                        let features = entity_to_geojson_features(&parcel.entity);
                         for feature in features {
                             let Ok(bytes) = serde_json::to_vec(&feature) else {
                                 // TODO: fatal error
@@ -135,7 +135,7 @@ fn extract_properties(value: &nusamai_citygml::object::Value) -> Option<geojson:
 
 /// Create GeoJSON features from a TopLevelCityObject
 /// Each feature for MultiPolygon, MultiLineString, and MultiPoint will be created (if it exists)
-pub fn toplevel_cityobj_to_geojson_features(entity: &Entity) -> Vec<geojson::Feature> {
+pub fn entity_to_geojson_features(entity: &Entity) -> Vec<geojson::Feature> {
     let mut geojson_features: Vec<geojson::Feature> = Vec::with_capacity(1);
     let properties = extract_properties(&entity.root);
     let geom_store = entity.geometry_store.read().unwrap();
@@ -270,7 +270,7 @@ mod tests {
             geometry_store: RwLock::new(geometries).into(),
         };
 
-        let geojson_features = toplevel_cityobj_to_geojson_features(&obj);
+        let geojson_features = entity_to_geojson_features(&obj);
         assert_eq!(geojson_features.len(), 1);
 
         let mpoly_geojson = geojson_features.first().unwrap();

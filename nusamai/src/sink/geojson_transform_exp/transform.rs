@@ -250,7 +250,7 @@ struct SerialTransform {
 }
 
 impl SerialTransform {
-    fn add(&mut self, transformer: Box<dyn Transform>) {
+    fn push(&mut self, transformer: Box<dyn Transform>) {
         self.transforms.push(transformer);
     }
 }
@@ -388,12 +388,12 @@ impl ObjectTransformer {
             transforms: Vec::new(),
         };
         if settings.to_tabular {
-            serial_transform.add(Box::new(DataFlatteningTransform {}));
+            serial_transform.push(Box::new(DataFlatteningTransform {}));
         }
         if settings.load_semantic_parts {
-            serial_transform.add(Box::new(FeatureFlatteningTransform {}));
+            serial_transform.push(Box::new(FeatureFlatteningTransform {}));
         } else {
-            serial_transform.add(Box::new(LodSeparationTransform {}));
+            serial_transform.push(Box::new(LodSeparationTransform {}));
         }
         let mut entities = serial_transform.transform(entity);
 

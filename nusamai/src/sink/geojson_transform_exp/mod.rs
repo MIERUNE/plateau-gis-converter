@@ -86,7 +86,7 @@ impl DataSink for GeoJsonTfExpSink {
                         let entity = object_transformer
                             .transform(parcel.entity, &PathBuf::from("./mappings.json"));
 
-                        let features = toplevel_cityobj_to_geojson_features(&entity[0]);
+                        let features = entity_to_geojson_features(&entity[0]);
                         for feature in features {
                             let Ok(bytes) = serde_json::to_vec(&feature) else {
                                 // TODO: fatal error
@@ -146,7 +146,7 @@ fn extract_properties(tree: &nusamai_citygml::object::Value) -> Option<geojson::
 /// Each feature for MultiPolygon, MultiLineString, and MultiPoint will be created (if it exists)
 // TODO: Handle properties (`obj.root` -> `geojson::Feature.properties`)
 // TODO: We may want to traverse the tree and create features for each semantic child in the future
-pub fn toplevel_cityobj_to_geojson_features(obj: &Entity) -> Vec<geojson::Feature> {
+pub fn entity_to_geojson_features(obj: &Entity) -> Vec<geojson::Feature> {
     let mut geojson_features: Vec<geojson::Feature> = Vec::with_capacity(1);
     let properties = extract_properties(&obj.root);
     let geom_store = obj.geometry_store.read().unwrap();
@@ -236,7 +236,7 @@ mod tests {
             geometry_store: RwLock::new(geometries).into(),
         };
 
-        let geojson_features = toplevel_cityobj_to_geojson_features(&obj);
+        let geojson_features = entity_to_geojson_features(&obj);
         assert_eq!(geojson_features.len(), 1);
 
         let mpoly_geojson = geojson_features.first().unwrap();
