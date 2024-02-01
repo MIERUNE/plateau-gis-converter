@@ -1,28 +1,25 @@
-use std::collections::HashMap;
-
 use serde::{Deserialize, Serialize};
-use serde_json::Number;
 
 use crate::{
-    DeletableProperty, DoubleValue, DoubleValueProperty, InterpolatableProperty, ReferenceValue,
+    DeletableProperty, IntegerValue, IntegerValueProperty, InterpolatableProperty, ReferenceValue,
     ReferenceValueProperty,
 };
 
-pub type Articulation = ArticulationValueType;
+pub type CzmlInteger = IntegerValueType;
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(untagged)]
-pub enum ArticulationValueType {
-    Array(Vec<ArticulationProperties>),
-    Object(ArticulationProperties),
-    Number(Number),
+pub enum IntegerValueType {
+    Array(Vec<IntegerProperties>),
+    Object(IntegerProperties),
+    Integer(i32),
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
-pub struct ArticulationProperties {
+pub struct IntegerProperties {
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub number: Option<DoubleValue>,
+    pub number: Option<IntegerValue>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub reference: Option<ReferenceValue>,
@@ -37,16 +34,9 @@ pub struct ArticulationProperties {
 
     #[serde(flatten)]
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub uri_value_property: Option<DoubleValueProperty>,
+    pub uri_value_property: Option<IntegerValueProperty>,
 
     #[serde(flatten)]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub reference_value_property: Option<ReferenceValueProperty>,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct Articulations {
-    #[serde(flatten)]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub articulations: Option<HashMap<String, Articulation>>,
 }

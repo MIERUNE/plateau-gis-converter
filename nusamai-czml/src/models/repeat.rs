@@ -1,28 +1,30 @@
-use std::collections::HashMap;
-
 use serde::{Deserialize, Serialize};
-use serde_json::Number;
 
 use crate::{
-    DeletableProperty, DoubleValue, DoubleValueProperty, InterpolatableProperty, ReferenceValue,
-    ReferenceValueProperty,
+    Cartesian2Value, Cartesian2ValueProperty, DeletableProperty, InterpolatableProperty,
+    ReferenceValue, ReferenceValueProperty,
 };
 
-pub type Articulation = ArticulationValueType;
+pub type Repeat = RepeatType;
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(untagged)]
-pub enum ArticulationValueType {
-    Array(Vec<ArticulationProperties>),
-    Object(ArticulationProperties),
-    Number(Number),
+pub enum RepeatType {
+    Array(Vec<RepeatProperties>),
+    Object(RepeatProperties),
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+impl Default for RepeatType {
+    fn default() -> Self {
+        RepeatType::Object(RepeatProperties::default())
+    }
+}
+
+#[derive(Serialize, Deserialize, Debug, Default)]
 #[serde(rename_all = "camelCase")]
-pub struct ArticulationProperties {
+pub struct RepeatProperties {
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub number: Option<DoubleValue>,
+    pub cartesian2: Option<Cartesian2Value>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub reference: Option<ReferenceValue>,
@@ -37,16 +39,9 @@ pub struct ArticulationProperties {
 
     #[serde(flatten)]
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub uri_value_property: Option<DoubleValueProperty>,
+    pub cartesian2_value_property: Option<Cartesian2ValueProperty>,
 
     #[serde(flatten)]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub reference_value_property: Option<ReferenceValueProperty>,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct Articulations {
-    #[serde(flatten)]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub articulations: Option<HashMap<String, Articulation>>,
 }

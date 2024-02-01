@@ -5,7 +5,7 @@ use crate::{DeletableProperty, ReferenceValue, ReferenceValueProperty};
 
 pub type CzmlUri = UriValueType;
 
-#[derive(Serialize, Deserialize, Debug, PartialEq)]
+#[derive(Serialize, Deserialize, Debug)]
 #[serde(untagged)]
 pub enum UriValueType {
     Array(Vec<UriProperties>),
@@ -17,7 +17,8 @@ pub type UriValue = String;
 
 pub type UriValueProperty = Value;
 
-#[derive(Serialize, Deserialize, Debug, PartialEq)]
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
 pub struct UriProperties {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub uri: Option<UriValue>,
