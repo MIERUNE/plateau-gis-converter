@@ -145,8 +145,6 @@ impl DataSink for StanfordPlySink {
                                         );
                                     }
 
-                                    assert!(triangles_buf.len() % 3 == 0);
-
                                     triangles.extend(triangles_buf.iter().map(|idx| {
                                         [
                                             buf3d[*idx as usize * 3],
