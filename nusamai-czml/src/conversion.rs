@@ -6,7 +6,7 @@ use crate::{
 };
 
 //
-pub fn indexed_multipolygon_to_czml_polygon(
+pub fn indexed_polygon_to_czml_polygon(
     vertices: &[[f64; 3]],
     poly_idx: &Polygon<1, u32>,
 ) -> CzmlPolygon {
@@ -76,7 +76,7 @@ mod tests {
         poly_idx.add_ring([[4], [5], [6], [7], [4]]);
         poly_idx.add_ring([[8], [9], [10], [11], [8]]);
 
-        let czml_polygon = indexed_multipolygon_to_czml_polygon(&vertices, &poly_idx);
+        let czml_polygon = indexed_polygon_to_czml_polygon(&vertices, &poly_idx);
 
         let packet = Packet {
             id: Some("test".to_string()),
