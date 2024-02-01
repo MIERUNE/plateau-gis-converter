@@ -28,6 +28,19 @@ fn main() {
         .expect("error while running tauri application");
 }
 
+fn select_sink_provider(filetype: &str) -> Box<dyn DataSinkProvider> {
+    // TODO: share possible options with the frontend types (src/lib/settings.ts)
+    match filetype {
+        "noop" => Box::new(nusamai::sink::noop::NoopSinkProvider {}),
+        "serde" => Box::new(SerdeSinkProvider {}),
+        "geojson" => Box::new(GeoJsonSinkProvider {}),
+        "gpkg" => Box::new(GpkgSinkProvider {}),
+        "mvt" => Box::new(MVTSinkProvider {}),
+        "shapefile" => Box::new(ShapefileSinkProvider {}),
+        _ => panic!("Unknown filetype: {}", filetype),
+    }
+}
+
 #[tauri::command]
 fn run(input_paths: Vec<String>, output_path: String, filetype: String) {
     let sinkopt: Vec<(String, String)> = vec![("@output".into(), output_path)];
@@ -50,19 +63,7 @@ fn run(input_paths: Vec<String>, output_path: String, filetype: String) {
     };
 
     let sink = {
-        // TODO: share with the frontend types (src/lib/settings.ts)
-        let sink_provider: Box<dyn DataSinkProvider> = match &*filetype {
-            "GeoJSON" => Box::new(GeoJsonSinkProvider {}),
-            "GeoPackage" => Box::new(GpkgSinkProvider {}),
-            "Serde" => Box::new(SerdeSinkProvider {}),
-            "Vector Tiles" => Box::new(MVTSinkProvider {}),
-            "Shapefile" => Box::new(ShapefileSinkProvider {}),
-            _ => {
-                log::error!("Unknown filetype: {}", filetype);
-                return;
-            }
-        };
-
+        let sink_provider = select_sink_provider(&filetype);
         let mut sink_params = sink_provider.parameters();
         if let Err(err) = sink_params.update_values_with_str(&sinkopt) {
             log::error!("Error parsing sink options: {:?}", err);
