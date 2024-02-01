@@ -48,7 +48,7 @@ pub fn indexed_multipolygon_to_czml_polygon(
 
 #[cfg(test)]
 mod tests {
-    use std::vec;
+    use crate::Packet;
 
     use super::*;
 
@@ -73,13 +73,22 @@ mod tests {
         ];
 
         let mut poly_idx = Polygon::<1, u32>::new();
-        // マルチではない単体のポリゴンなので、1つリングを追加すると外形は完成し、残りのリングはすべてホールとして扱われる
+        // Adding one ring completes the outline and all remaining rings are treated as holes
         poly_idx.add_ring([[0], [1], [2], [3], [0]]);
         poly_idx.add_ring([[4], [5], [6], [7], [4]]);
         poly_idx.add_ring([[8], [9], [10], [11], [8]]);
 
         let czml_polygon = indexed_multipolygon_to_czml_polygon(&vertices, &poly_idx);
 
-        println!("{}", serde_json::to_string_pretty(&czml_polygon).unwrap());
+        let packet = Packet {
+            id: Some("test".to_string()),
+            polygon: Some(czml_polygon),
+            ..Default::default()
+        };
+
+        let packets = vec![packet];
+
+        let json = serde_json::to_string(&packets).unwrap();
+        println!("{}", json);
     }
 }

@@ -3,6 +3,7 @@ use serde::{Deserialize, Serialize};
 use crate::models::packet::Packet;
 
 #[derive(Serialize, Deserialize)]
-pub struct Czml {
-    pub packet: Vec<Packet>,
+pub struct Document {
+    #[serde(flatten)]
+    pub packets: Vec<Packet>,
 }
