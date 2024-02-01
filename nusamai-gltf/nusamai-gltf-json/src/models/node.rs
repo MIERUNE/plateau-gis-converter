@@ -4,7 +4,7 @@ use std::collections::HashMap;
 use serde_json::Value;
 
 /// A node in the node hierarchy.  When the node contains `skin`, all `mesh.primitives` **MUST** contain `JOINTS_0` and `WEIGHTS_0` attributes.  A node **MAY** have either a `matrix` or any combination of `translation`/`rotation`/`scale` (TRS) properties. TRS properties are converted to matrices and postmultiplied in the `T * R * S` order to compose the transformation matrix; first the scale is applied to the vertices, then the rotation, and then the translation. If none are provided, the transform is the identity. When a node is targeted for animation (referenced by an animation.channel.target), `matrix` **MUST NOT** be present.
-#[derive(Serialize, Deserialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Debug)]
 #[serde[rename_all = "camelCase"]]
 #[serde(deny_unknown_fields)]
 pub struct Node {
@@ -63,6 +63,25 @@ pub struct Node {
     pub extras: Option<Value>,
 }
 
+impl Default for Node {
+    fn default() -> Self {
+        Node {
+            name: None,
+            camera: None,
+            children: None,
+            skin: None,
+            matrix: default_matrix(),
+            mesh: None,
+            rotation: default_rotation(),
+            scale: default_scale(),
+            translation: default_translation(),
+            weights: None,
+            extensions: None,
+            extras: None,
+        }
+    }
+}
+
 #[derive(Serialize, Deserialize, Debug, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct NodeExtensions {
@@ -110,6 +129,17 @@ mod tests {
 
     #[test]
     fn default() {
+        let node: Node = Default::default();
+        assert_eq!(
+            node.matrix,
+            [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0]
+        );
+        assert_eq!(node.translation, [0.0, 0.0, 0.0]);
+        assert_eq!(node.rotation, [0.0, 0.0, 0.0, 1.0]);
+        assert_eq!(node.scale, [1.0, 1.0, 1.0]);
+
+        assert_eq!(serde_json::to_string(&node).unwrap(), "{}");
+
         let node: Node = serde_json::from_str("{}").unwrap();
         assert_eq!(
             node.matrix,
@@ -118,6 +148,5 @@ mod tests {
         assert_eq!(node.translation, [0.0, 0.0, 0.0]);
         assert_eq!(node.rotation, [0.0, 0.0, 0.0, 1.0]);
         assert_eq!(node.scale, [1.0, 1.0, 1.0]);
-        assert_eq!(serde_json::to_string(&node).unwrap(), "{}");
     }
 }

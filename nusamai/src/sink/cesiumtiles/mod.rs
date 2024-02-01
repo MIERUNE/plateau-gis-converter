@@ -1,7 +1,7 @@
 //! 3D Tiles sink
 
 use std::fs;
-use std::io::Write;
+use std::io::{BufWriter, Write};
 pub mod slice;
 pub mod sort;
 pub mod tiling;
@@ -10,7 +10,7 @@ use std::path::{Path, PathBuf};
 use std::sync::mpsc;
 
 use ahash::RandomState;
-use byteorder::{ByteOrder, LittleEndian, WriteBytesExt};
+use byteorder::{ByteOrder, LittleEndian};
 use earcut_rs::utils_3d::project3d_to_2d;
 use earcut_rs::Earcut;
 use ext_sort::{buffer::mem::MemoryLimitedBufferBuilder, ExternalSorter, ExternalSorterBuilder};
@@ -30,17 +30,6 @@ use crate::sink::{DataSink, DataSinkProvider, SinkInfo};
 use crate::{get_parameter_value, transformer};
 use slice::slice_cityobj_geoms;
 use sort::BincodeExternalChunk;
-
-const PLY_HEADER_TEMPLATE: &str = r##"ply
-format binary_little_endian 1.0
-element vertex {n_verts}
-property double x
-property double y
-property double z
-element face {n_faces}
-property list uchar uint vertex_indices
-end_header
-"##;
 
 pub struct CesiumTilesSinkProvider {}
 
@@ -269,6 +258,9 @@ fn tile_writing_stage(
             }
 
             // calculate the centroid
+            let mut pos_max = [0., 0., 0.];
+            let mut pos_min = [0., 0., 0.];
+
             let mut mu_x = 0.;
             let mut mu_y = 0.;
             let mut mu_z = 0.;
@@ -282,14 +274,25 @@ fn tile_writing_stage(
             mu_z /= triangles.len() as f64;
 
             // make vertices and indices
-            let mut vertices: IndexSet<[u64; 3], RandomState> = IndexSet::default();
+            let mut vertices: IndexSet<[u32; 3], RandomState> = IndexSet::default();
             let indices: Vec<_> = triangles
                 .iter()
-                .map(|[x, y, z]| {
+                .map(|&[x, y, z]| {
+                    let (x, y, z) = (x - mu_x, y - mu_y, z - mu_z);
+                    pos_max = [
+                        f64::max(pos_max[0], x),
+                        f64::max(pos_max[1], y),
+                        f64::max(pos_max[2], z),
+                    ];
+                    pos_min = [
+                        f64::min(pos_min[0], x),
+                        f64::min(pos_min[1], y),
+                        f64::min(pos_min[2], z),
+                    ];
                     let vbits = [
-                        (x - mu_x).to_bits(),
-                        (y - mu_y).to_bits(),
-                        (z - mu_z).to_bits(),
+                        (x as f32).to_bits(),
+                        (y as f32).to_bits(),
+                        (z as f32).to_bits(),
                     ];
                     let (index, _) = vertices.insert_full(vbits);
                     index as u32
@@ -308,38 +311,134 @@ fn tile_writing_stage(
             println!("{:?} {:?}", vertices.len(), indices.len());
 
             // write to file
-            let path = output_path.join(Path::new(&format!("{}/{}/{}.ply", zoom, x, y)));
-            if let Some(dir) = path.parent() {
+            let path_glb = output_path.join(Path::new(&format!("{}/{}/{}.glb", zoom, x, y)));
+            if let Some(dir) = path_glb.parent() {
                 if let Err(e) = fs::create_dir_all(dir) {
                     panic!("Fatal error: {:?}", e); // FIXME
                 }
             }
-
-            let file = std::fs::File::create(&path).unwrap();
-            let mut writer = std::io::BufWriter::new(file);
-            writer
-                .write_all(
-                    PLY_HEADER_TEMPLATE
-                        .replace("{n_verts}", &vertices.len().to_string())
-                        .replace("{n_faces}", &(indices.len() / 3).to_string())
-                        .as_ref(),
-                )
-                .unwrap();
-
-            let mut buf = [0; 24];
-            vertices.iter().for_each(|v| {
-                LittleEndian::write_u64_into(v, &mut buf);
-                writer.write_all(&buf).unwrap();
-            });
-            let mut buf = [0; 12];
-            indices.chunks_exact(3).for_each(|v| {
-                writer.write_u8(3).unwrap();
-                LittleEndian::write_u32_into(v, &mut buf);
-                writer.write_all(&buf).unwrap();
-            });
-
-            writer.flush().unwrap();
+            write_gltf_glb(&path_glb, pos_min, pos_max, vertices, indices);
 
             Ok(())
         });
+}
+
+fn write_gltf_glb(
+    path: &Path,
+    min: [f64; 3],
+    max: [f64; 3],
+    vertices: impl IntoIterator<Item = [u32; 3]>,
+    indices: impl IntoIterator<Item = u32>,
+) {
+    use nusamai_gltf_json::*;
+
+    let mut bin_content: Vec<u8> = Vec::new();
+
+    let vertices_offset = bin_content.len();
+    let mut buf = [0; 12];
+    let mut vertices_count = 0;
+    for v in vertices {
+        LittleEndian::write_u32_into(&v, &mut buf);
+        bin_content.write_all(&buf).unwrap();
+        vertices_count += 1;
+    }
+    let vertices_len = bin_content.len() - vertices_offset;
+
+    let indices_offset = bin_content.len();
+    let mut indices_count = 0;
+    for idx in indices {
+        bin_content.write_all(&idx.to_le_bytes()).unwrap();
+        indices_count += 1;
+    }
+    let indices_len = bin_content.len() - indices_offset;
+
+    let gltf = Gltf {
+        scenes: vec![Scene {
+            nodes: Some(vec![0]),
+            ..Default::default()
+        }],
+        nodes: vec![Node {
+            mesh: Some(0),
+            ..Default::default()
+        }],
+        meshes: vec![Mesh {
+            primitives: vec![MeshPrimitive {
+                attributes: vec![("POSITION".to_string(), 0)].into_iter().collect(),
+                indices: Some(1),
+                mode: PrimitiveMode::Triangles,
+                ..Default::default()
+            }],
+            ..Default::default()
+        }],
+        accessors: vec![
+            Accessor {
+                buffer_view: Some(0),
+                component_type: ComponentType::Float,
+                count: vertices_count,
+                min: Some(min.to_vec()),
+                max: Some(max.to_vec()),
+                type_: AccessorType::Vec3,
+                ..Default::default()
+            },
+            Accessor {
+                buffer_view: Some(1),
+                component_type: ComponentType::UnsignedInt,
+                count: indices_count,
+                type_: AccessorType::Scalar,
+                ..Default::default()
+            },
+        ],
+        buffer_views: vec![
+            BufferView {
+                byte_offset: vertices_offset as u32,
+                byte_length: vertices_len as u32,
+                target: Some(BufferViewTarget::ArrayBuffer),
+                ..Default::default()
+            },
+            BufferView {
+                byte_offset: indices_offset as u32,
+                byte_length: indices_len as u32,
+                target: Some(BufferViewTarget::ElementArrayBuffer),
+                ..Default::default()
+            },
+        ],
+        buffers: vec![Buffer {
+            byte_length: bin_content.len() as u32,
+            ..Default::default()
+        }],
+        ..Default::default()
+    };
+
+    {
+        let mut json_content = serde_json::to_vec(&gltf).unwrap();
+
+        // append padding
+        json_content.extend(vec![0x20; (4 - (json_content.len() % 4)) % 4].iter());
+        bin_content.extend(vec![0x0; (4 - (bin_content.len() % 4)) % 4].iter());
+
+        let total_size = 12 + 8 + json_content.len() + 8 + bin_content.len();
+
+        let mut file = std::fs::File::create(path).unwrap();
+        let mut writer = BufWriter::new(&mut file);
+
+        writer.write_all(b"glTF").unwrap(); // magic
+        writer.write_all(&2u32.to_le_bytes()).unwrap(); // version: 2
+        writer
+            .write_all(&(total_size as u32).to_le_bytes())
+            .unwrap(); // total size
+
+        writer
+            .write_all(&(json_content.len() as u32).to_le_bytes())
+            .unwrap(); // json content
+        writer.write_all(b"JSON").unwrap(); // chunk type
+        writer.write_all(&json_content).unwrap(); // json content
+
+        writer
+            .write_all(&(bin_content.len() as u32).to_le_bytes())
+            .unwrap(); // json content
+        writer.write_all(b"BIN\0").unwrap(); // chunk type
+        writer.write_all(&bin_content).unwrap(); // bin content
+
+        writer.flush().unwrap();
+    }
 }
