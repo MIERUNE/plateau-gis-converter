@@ -1,27 +1,35 @@
 use serde::{Deserialize, Serialize};
-use serde_json::Value;
 
 use crate::{DeletableProperty, ReferenceValue, ReferenceValueProperty};
 
-pub type CzmlBoolean = BooleanValueType;
+pub type StripeOrientation = StripeOrientationType;
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(untagged)]
-pub enum BooleanValueType {
-    Array(Vec<BooleanProperties>),
-    Object(BooleanProperties),
-    Boolean(bool),
+pub enum StripeOrientationType {
+    Array(Vec<StripeOrientationProperties>),
+    Object(StripeOrientationProperties),
+    String(String),
 }
 
-pub type BooleanValue = String;
-
-pub type BooleanValueProperty = Value;
+#[derive(Serialize, Deserialize, Debug)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum StripeOrientationValue {
+    Horizontal,
+    Vertical,
+}
 
 #[derive(Serialize, Deserialize, Debug)]
+pub struct StripeOrientationValueProperty {
+    #[serde(flatten)]
+    pub stripe_orientation_value: StripeOrientationValue,
+}
+
+#[derive(Serialize, Deserialize, Debug, Default)]
 #[serde(rename_all = "camelCase")]
-pub struct BooleanProperties {
+pub struct StripeOrientationProperties {
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub boolean: Option<BooleanValue>,
+    pub stripe_orientation: Option<StripeOrientationValue>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub reference: Option<ReferenceValue>,
@@ -32,7 +40,7 @@ pub struct BooleanProperties {
 
     #[serde(flatten)]
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub boolean_value_property: Option<BooleanValueProperty>,
+    pub stripe_orientation_value_property: Option<StripeOrientationValueProperty>,
 
     #[serde(flatten)]
     #[serde(skip_serializing_if = "Option::is_none")]
