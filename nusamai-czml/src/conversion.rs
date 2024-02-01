@@ -12,13 +12,11 @@ pub fn indexed_multipolygon_to_czml_polygon(
 ) -> CzmlPolygon {
     let mut czml_polygon = CzmlPolygon::default();
 
-    // 外形の頂点を追加
     let mut exteriors = Vec::new();
     for idx in poly_idx.exterior().iter() {
         exteriors.push(vertices[idx[0] as usize]);
     }
 
-    // ホールの頂点を追加
     let mut interiors = Vec::new();
     for interior in poly_idx.interiors() {
         let mut interior_vec = Vec::new();
