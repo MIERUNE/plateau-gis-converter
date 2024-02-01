@@ -12,7 +12,7 @@ use crate::sink::{DataSink, DataSinkProvider, SinkInfo};
 use crate::{get_parameter_value, transformer};
 
 use nusamai_citygml::object::{Entity, ObjectStereotype, Value};
-use nusamai_czml::conversion::indexed_multipolygon_to_shape;
+use nusamai_czml::conversion::indexed_multilinestring_to_czml_polygon;
 
 pub struct czmlSinkProvider {}
 

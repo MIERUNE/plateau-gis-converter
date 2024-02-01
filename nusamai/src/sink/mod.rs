@@ -1,6 +1,7 @@
 //! Output format drivers (sinks)
 
 pub mod cesiumtiles;
+pub mod czml;
 pub mod geojson;
 pub mod geojson_transform_exp;
 pub mod gpkg;
