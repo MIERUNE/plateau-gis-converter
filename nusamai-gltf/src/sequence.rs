@@ -1,11 +1,9 @@
-use byteorder::{LittleEndian, WriteBytesExt};
 use base64::{engine::general_purpose::STANDARD, Engine as _};
-
+use byteorder::{LittleEndian, WriteBytesExt};
 
 /// GltfSequence
 /// glTF のバイナリシーケンスに格納される情報
 /// 頂点座標、indices、UV 座標、イメージなどが格納されている。
-/// 互換性のために Dxxxx も定義
 
 #[derive(Debug, Clone)]
 pub enum GltfSequence {
@@ -96,32 +94,31 @@ impl Default for GltfSeqList {
     }
 }
 
-impl GltfSeqList{
-    pub fn to_string(&self) -> String{
-        let mut s:String = String::new(); 
+impl GltfSeqList {
+    pub fn to_string(&self) -> String {
+        let mut s: String = String::new();
 
         let mut pos: usize = 0;
-        for item in self.sequences.iter(){
-            match item{
+        for item in self.sequences.iter() {
+            match item {
                 GltfSequence::Indices(v) => {
-                    s.push_str(format!("Indices(offset:{}, size:{}), ", pos, v.len()*4).as_str());
-                    pos += v.len()*4;
-                },
+                    s.push_str(format!("Indices(offset:{}, size:{}), ", pos, v.len() * 4).as_str());
+                    pos += v.len() * 4;
+                }
                 GltfSequence::Coords(v) => {
-                    s.push_str(format!("Coords(offset:{}, size:{}), ", pos, v.len()*4).as_str());
-                    pos += v.len()*4;
-                },
+                    s.push_str(format!("Coords(offset:{}, size:{}), ", pos, v.len() * 4).as_str());
+                    pos += v.len() * 4;
+                }
                 GltfSequence::Image(v) => {
                     s.push_str(format!("Image(offset:{}, size:{}), ", pos, v.len()).as_str());
                     pos += v.len();
-                },
+                }
                 GltfSequence::Bin(v) => {
                     s.push_str(format!("Bin(offset:{}, size:{}), ", pos, v.len()).as_str());
                     pos += v.len();
-                },
+                }
             }
         }
         return s;
     }
 }
-

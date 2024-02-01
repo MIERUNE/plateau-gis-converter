@@ -9,12 +9,12 @@
 //!
 //! このXMLのパース方法は本格的なパーザで使うことを意図していません。
 
+use nusamai_gltf_json::*;
 use byteorder::{LittleEndian, WriteBytesExt};
 use clap::Parser;
 use earcut_rs::{utils_3d::project3d_to_2d, Earcut};
 use indexmap::IndexSet;
 use nusamai_geometry::MultiPolygon3;
-use nusamai_gltf::*;
 use quick_xml::{
     events::Event,
     name::{Namespace, ResolveResult::Bound},
@@ -295,8 +295,8 @@ fn make_glb(gltf_string: String, binary_buffer: Vec<u8>) -> Vec<u8> {
     // JSONチャンクヘッダー
     // この長さはパディングを含むJSONデータの長さ
     let json_chunk_header = [
-        (json_chunk_len+(4-json_chunk_len%4)%4) as u32, // パディング込みの長さ
-        0x4E4F534A,            // JSON (リトルエンディアンで "JSON")
+        (json_chunk_len + (4 - json_chunk_len % 4) % 4) as u32, // パディング込みの長さ
+        0x4E4F534A, // JSON (リトルエンディアンで "JSON")
     ];
 
     let binary_len = binary_buffer.len();

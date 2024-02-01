@@ -6,9 +6,8 @@ use clap::Parser;
 use nusamai::pipeline::Canceller;
 use nusamai::sink::{
     geojson::GeoJsonSinkProvider, geojson_transform_exp::GeoJsonTransformExpSinkProvider,
-    gpkg::GpkgSinkProvider, mvt::MVTSinkProvider, noop::NoopSinkProvider, serde::SerdeSinkProvider,
-    gltf::GltfSinkProvider,
-    shapefile::ShapefileSinkProvider,
+    gltf::GltfSinkProvider, gpkg::GpkgSinkProvider, mvt::MVTSinkProvider, noop::NoopSinkProvider,
+    serde::SerdeSinkProvider, shapefile::ShapefileSinkProvider,
 };
 use nusamai::sink::{DataSink, DataSinkProvider};
 use nusamai::source::citygml::CityGmlSourceProvider;

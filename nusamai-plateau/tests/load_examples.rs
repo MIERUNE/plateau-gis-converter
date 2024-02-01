@@ -638,7 +638,6 @@ fn load_urf_kuiki_example() {
     assert_eq!(
         acf.function,
         vec![Code::new("市街化区域".to_string(), "22".to_string(),)]
-
     );
 
     assert_eq!(
@@ -650,7 +649,6 @@ fn load_urf_kuiki_example() {
         acf.valid_from_type,
         Some(Code::new("変更".to_string(), "3".to_string()))
     );
-
 }
 
 #[test]
@@ -664,7 +662,6 @@ fn load_urf_rinko_example() {
     assert_eq!(
         pz.function,
         vec![Code::new("臨港地区".to_string(), "30".to_string(),)]
-
     );
 
     assert_eq!(
@@ -676,7 +673,6 @@ fn load_urf_rinko_example() {
         pz.valid_from_type,
         Some(Code::new("変更".to_string(), "3".to_string()))
     );
-
 }
 
 #[test]
@@ -690,7 +686,6 @@ fn load_urf_yoto_example() {
     assert_eq!(
         ud.function,
         vec![Code::new("工業専用地域".to_string(), "13".to_string(),)]
-
     );
 
     assert_eq!(
@@ -715,7 +710,6 @@ fn load_urf_boka_example() {
     assert_eq!(
         fpd.function,
         vec![Code::new("準防火地域".to_string(), "25".to_string(),)]
-
     );
 
     assert_eq!(
@@ -727,7 +721,6 @@ fn load_urf_boka_example() {
         fpd.valid_from_type,
         Some(Code::new("変更".to_string(), "3".to_string()))
     );
-
 }
 #[test]
 fn load_urf_seisan_example() {
@@ -740,7 +733,6 @@ fn load_urf_seisan_example() {
     assert_eq!(
         pgz.function,
         vec![Code::new("生産緑地地区".to_string(), "38".to_string(),)]
-
     );
 
     assert_eq!(
@@ -752,22 +744,22 @@ fn load_urf_seisan_example() {
         pgz.valid_from_type,
         Some(Code::new("変更".to_string(), "3".to_string()))
     );
-
 }
-
 
 #[test]
 fn load_urf_tokuryoku_example() {
-    let cityobjs = load_cityobjs("./tests/data/kawasaki-shi/udx/urf/533923_urf_6668_tokuryoku_op.gml");
+    let cityobjs =
+        load_cityobjs("./tests/data/kawasaki-shi/udx/urf/533923_urf_6668_tokuryoku_op.gml");
     assert_eq!(cityobjs.len(), 7);
-    let TopLevelCityObject::SpecialGreenSpaceConservationDistrict(sgcd) = &cityobjs.first().unwrap().cityobj else {
+    let TopLevelCityObject::SpecialGreenSpaceConservationDistrict(sgcd) =
+        &cityobjs.first().unwrap().cityobj
+    else {
         panic!("Not a SpecialGreenSpaceConservationDistrict");
     };
 
     assert_eq!(
         sgcd.function,
         vec![Code::new("特別緑地保存地区".to_string(), "35".to_string(),)]
-
     );
 
     assert_eq!(
@@ -779,20 +771,19 @@ fn load_urf_tokuryoku_example() {
         sgcd.valid_from_type,
         Some(Code::new("変更".to_string(), "3".to_string()))
     );
-
 }
 #[test]
 fn load_urf_chusha_example() {
     let cityobjs = load_cityobjs("./tests/data/kawasaki-shi/udx/urf/533925_urf_6668_chusha_op.gml");
     assert_eq!(cityobjs.len(), 1);
-    let TopLevelCityObject::ParkingPlaceDevelopmentZone(ppdz) = &cityobjs.first().unwrap().cityobj else {
+    let TopLevelCityObject::ParkingPlaceDevelopmentZone(ppdz) = &cityobjs.first().unwrap().cityobj
+    else {
         panic!("Not a ParkingPlaceDevelopmentZone");
     };
 
     assert_eq!(
         ppdz.function,
         vec![Code::new("駐車場整備地区".to_string(), "29".to_string(),)]
-
     );
 
     assert_eq!(
@@ -804,12 +795,12 @@ fn load_urf_chusha_example() {
         ppdz.valid_from_type,
         Some(Code::new("決定".to_string(), "1".to_string()))
     );
-
 }
 
 #[test]
 fn load_urf_tokuyoto_example() {
-    let cityobjs = load_cityobjs("./tests/data/kawasaki-shi/udx/urf/533925_urf_6668_tokuyoto_op.gml");
+    let cityobjs =
+        load_cityobjs("./tests/data/kawasaki-shi/udx/urf/533925_urf_6668_tokuyoto_op.gml");
     assert_eq!(cityobjs.len(), 4);
     let TopLevelCityObject::SpecialUseDistrict(sud) = &cityobjs.first().unwrap().cityobj else {
         panic!("Not a SpecialUseDistrict");
@@ -818,7 +809,6 @@ fn load_urf_tokuyoto_example() {
     assert_eq!(
         sud.function,
         vec![Code::new("特別用途地区".to_string(), "14".to_string(),)]
-
     );
 
     assert_eq!(
@@ -830,7 +820,6 @@ fn load_urf_tokuyoto_example() {
         sud.valid_from_type,
         Some(Code::new("変更".to_string(), "3".to_string()))
     );
-
 }
 
 #[test]
@@ -844,7 +833,6 @@ fn load_urf_toshikeikaku_example() {
     assert_eq!(
         upa.function,
         vec![Code::new("都市計画区域".to_string(), "21".to_string(),)]
-
     );
 
     assert_eq!(
@@ -856,7 +844,6 @@ fn load_urf_toshikeikaku_example() {
         upa.valid_from_type,
         Some(Code::new("変更".to_string(), "3".to_string()))
     );
-
 }
 
 #[test]
@@ -870,7 +857,6 @@ fn load_urf_huchi_example() {
     assert_eq!(
         sd.function,
         vec![Code::new("風致地区".to_string(), "28".to_string(),)]
-
     );
 
     assert_eq!(
@@ -882,12 +868,12 @@ fn load_urf_huchi_example() {
         sd.city,
         Some(Code::new("宮城県仙台市".to_string(), "04100".to_string()))
     );
-
 }
 
 #[test]
 fn load_urf_kodoriyou_example() {
-    let cityobjs = load_cityobjs("./tests/data/sendai-shi/udx/urf/574027_urf_6668_kodoriyou_op.gml");
+    let cityobjs =
+        load_cityobjs("./tests/data/sendai-shi/udx/urf/574027_urf_6668_kodoriyou_op.gml");
     assert_eq!(cityobjs.len(), 3);
     let TopLevelCityObject::HighLevelUseDistrict(hlud) = &cityobjs.first().unwrap().cityobj else {
         panic!("Not a HighLevelUseDistrict");
@@ -896,7 +882,6 @@ fn load_urf_kodoriyou_example() {
     assert_eq!(
         hlud.function,
         vec![Code::new("高度利用地区".to_string(), "19".to_string(),)]
-
     );
 
     assert_eq!(
@@ -909,10 +894,7 @@ fn load_urf_kodoriyou_example() {
         Some(Code::new("変更".to_string(), "3".to_string()))
     );
 
-    assert_eq!(
-        hlud.custodian,
-        Some("仙台市".to_string())
-    );
+    assert_eq!(hlud.custodian, Some("仙台市".to_string()));
 
     assert_eq!(
         hlud.prefecture,
@@ -923,9 +905,7 @@ fn load_urf_kodoriyou_example() {
         hlud.city,
         Some(Code::new("宮城県仙台市".to_string(), "04100".to_string()))
     );
-
 }
-
 
 #[test]
 fn load_urf_keikan_example() {
@@ -938,7 +918,6 @@ fn load_urf_keikan_example() {
     assert_eq!(
         lz.function,
         vec![Code::new("景観地区".to_string(), "27".to_string(),)]
-
     );
 
     assert_eq!(
@@ -951,10 +930,7 @@ fn load_urf_keikan_example() {
         Some(Code::new("変更".to_string(), "3".to_string()))
     );
 
-    assert_eq!(
-        lz.custodian,
-        Some("仙台市".to_string())
-    );
+    assert_eq!(lz.custodian, Some("仙台市".to_string()));
 
     assert_eq!(
         lz.prefecture,
@@ -965,21 +941,21 @@ fn load_urf_keikan_example() {
         lz.city,
         Some(Code::new("宮城県仙台市".to_string(), "04100".to_string()))
     );
-
 }
 
 #[test]
 fn load_urf_tosisai_example() {
     let cityobjs = load_cityobjs("./tests/data/sendai-shi/udx/urf/574036_urf_6668_tosisai_op.gml");
     assert_eq!(cityobjs.len(), 1);
-    let TopLevelCityObject::SpecialUrbanRenaissanceDistrict(surd) = &cityobjs.first().unwrap().cityobj else {
+    let TopLevelCityObject::SpecialUrbanRenaissanceDistrict(surd) =
+        &cityobjs.first().unwrap().cityobj
+    else {
         panic!("Not a SpecialUrbanRenaissanceDistrict");
     };
 
     assert_eq!(
         surd.function,
         vec![Code::new("都市再生特別地区".to_string(), "21".to_string(),)]
-
     );
 
     assert_eq!(
@@ -992,10 +968,7 @@ fn load_urf_tosisai_example() {
         Some(Code::new("変更".to_string(), "3".to_string()))
     );
 
-    assert_eq!(
-        surd.custodian,
-        Some("仙台市".to_string())
-    );
+    assert_eq!(surd.custodian, Some("仙台市".to_string()));
 
     assert_eq!(
         surd.prefecture,
@@ -1006,22 +979,20 @@ fn load_urf_tosisai_example() {
         surd.city,
         Some(Code::new("宮城県仙台市".to_string(), "04100".to_string()))
     );
-
 }
-
 
 #[test]
 fn load_urf_sigaidev_example() {
     let cityobjs = load_cityobjs("./tests/data/kofu-shi/udx/urf/533834_urf_6668_sigaidev_op.gml");
     assert_eq!(cityobjs.len(), 27);
-    let TopLevelCityObject::UrbanDevelopmentProject(udp) = &cityobjs.first().unwrap().cityobj else {
+    let TopLevelCityObject::UrbanDevelopmentProject(udp) = &cityobjs.first().unwrap().cityobj
+    else {
         panic!("Not a UrbanDevelopmentProject");
     };
 
     assert_eq!(
         udp.function,
         vec![Code::new("工業地域".to_string(), "12".to_string(),)]
-
     );
 
     assert_eq!(
@@ -1043,5 +1014,4 @@ fn load_urf_sigaidev_example() {
         udp.city,
         Some(Code::new("山梨県甲府市".to_string(), "19201".to_string()))
     );
-
 }
