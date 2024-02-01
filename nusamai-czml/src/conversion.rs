@@ -86,9 +86,17 @@ mod tests {
             ..Default::default()
         };
 
-        let packets = vec![packet];
+        // Cesium requires a Packet called document
+        let document: Packet =
+            serde_json::from_str(r#"{"id":"document","version":"1.0"}"#).unwrap();
+
+        let packets = vec![document, packet];
 
         let json = serde_json::to_string(&packets).unwrap();
-        println!("{}", json);
+
+        assert_eq!(
+            json,
+            r#"[{"id":"document","version":"1.0","availability":"0000-00-00T00:00:00Z/9999-12-31T24:00:00Z"},{"id":"test","availability":"0000-00-00T00:00:00Z/9999-12-31T24:00:00Z","polygon":{"show":true,"positions":{"referenceFrame":"FIXED","cartographicDegrees":[0.0,0.0,111.0,5.0,0.0,111.0,5.0,5.0,111.0,0.0,5.0,111.0]},"holes":{"cartographicDegrees":[[1.0,1.0,111.0,2.0,1.0,111.0,2.0,2.0,111.0,1.0,2.0,111.0],[3.0,3.0,111.0,4.0,3.0,111.0,4.0,4.0,111.0,3.0,4.0,111.0]]},"arcType":"GEODESIC","height":0.0,"heightReference":"NONE","extrudedHeightReference":"NONE","stRotation":0.0,"granularity":0.0174532,"fill":true,"material":{"solidColor":{"color":{"rgba":[255,255,255,255]}}},"outline":false,"outlineColor":{"rgba":[0,0,0,255]},"outlineWidth":1.0,"perPositionHeight":false,"closeTop":true,"closeBottom":true,"shadows":"DISABLED","classificationType":"BOTH","zIndex":0}}]"#
+        )
     }
 }
