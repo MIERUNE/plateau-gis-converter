@@ -1,6 +1,9 @@
 use nusamai_geometry::Polygon;
 
-use crate::{models::CzmlPolygon, PositionList, PositionListProperties};
+use crate::{
+    models::CzmlPolygon, PositionList, PositionListOfLists, PositionListOfListsProperties,
+    PositionListProperties,
+};
 
 //
 pub fn indexed_multipolygon_to_czml_polygon(
@@ -27,6 +30,16 @@ pub fn indexed_multipolygon_to_czml_polygon(
 
     czml_polygon.positions = Some(PositionList::Object(PositionListProperties {
         cartographic_degrees: Some(exteriors.into_iter().flatten().collect()),
+        ..Default::default()
+    }));
+
+    czml_polygon.holes = Some(PositionListOfLists::Object(PositionListOfListsProperties {
+        cartographic_degrees: Some(
+            interiors
+                .into_iter()
+                .map(|x| x.into_iter().flatten().collect())
+                .collect(),
+        ),
         ..Default::default()
     }));
 

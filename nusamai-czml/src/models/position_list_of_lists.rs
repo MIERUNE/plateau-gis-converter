@@ -21,7 +21,7 @@ pub type CartographicRadiansListOfListsValueProperty = Vec<Vec<f64>>;
 pub type CartographicDegreesListOfListsValueProperty = Vec<Vec<f64>>;
 pub type ReferenceListOfListsValueProperty = Vec<Vec<String>>;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct PositionListOfListsProperties {
     #[serde(skip_serializing_if = "Option::is_none")]
