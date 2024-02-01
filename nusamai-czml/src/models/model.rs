@@ -2,7 +2,8 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     Articulations, Color, ColorBlendMode, ColorProperties, CzmlBoolean, CzmlDouble, CzmlUri,
-    DistanceDisplayCondition, HeightReference, NodeTransformations, RgbaValue, ShadowMode,
+    DistanceDisplayCondition, HeightReference, HeightReferenceValue, NodeTransformations,
+    RgbaValue, ShadowMode, ShadowModeValue,
 };
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -86,23 +87,17 @@ fn default_run_animations() -> CzmlBoolean {
 }
 
 fn default_shadows() -> ShadowMode {
-    ShadowMode::String("ENABLED".to_string())
+    ShadowMode::String(ShadowModeValue::Enabled)
 }
 
 fn default_height_reference() -> HeightReference {
-    HeightReference::String("NONE".to_string())
+    HeightReference::String(HeightReferenceValue::None)
 }
 
 fn default_silhouette_color() -> Color {
     Color::Object(ColorProperties {
         rgba: Some(RgbaValue::Constant([255, 0, 0, 0])),
-        rgbaf: None,
-        reference: None,
-        interpolatable_property: None,
-        deletable_property: None,
-        rgba_value_property: None,
-        rgbaf_value_property: None,
-        reference_value_property: None,
+        ..Default::default()
     })
 }
 
@@ -113,13 +108,7 @@ fn default_silhouette_size() -> CzmlDouble {
 fn default_color() -> Color {
     Color::Object(ColorProperties {
         rgba: Some(RgbaValue::Constant([0, 0, 0, 0])),
-        rgbaf: None,
-        reference: None,
-        interpolatable_property: None,
-        deletable_property: None,
-        rgba_value_property: None,
-        rgbaf_value_property: None,
-        reference_value_property: None,
+        ..Default::default()
     })
 }
 
@@ -162,7 +151,11 @@ mod tests {
     #[test]
     fn test_default_deserialize() {
         let model: Model = serde_json::from_str("{}").unwrap();
-        assert_eq!(model.gltf, CzmlUri::String("".to_string()));
+        let uri_string = match model.gltf {
+            CzmlUri::String(ref s) => s,
+            _ => panic!("gltf is not string"),
+        };
+        assert_eq!(*uri_string, "".to_string());
     }
 
     #[test]

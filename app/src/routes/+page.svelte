@@ -51,7 +51,7 @@
 
 		<SettingSelector bind:filetype />
 
-		<OutputSelector bind:outputPath />
+		<OutputSelector {filetype} bind:outputPath />
 
 		<div class="flex justify-end">
 			<button

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
-	import { fileTypeOptions, crsOptions } from '$lib/settings';
+	import { filetypeOptions, crsOptions } from '$lib/settings';
 
 	export let filetype: string;
 </script>
@@ -16,8 +16,8 @@
 		<div class=" flex flex-col gap-1.5">
 			<label for="filetype-select" class="font-bold">ファイル形式</label>
 			<select bind:value={filetype} name="filetype" id="filetype-select" class="w-36">
-				{#each fileTypeOptions as ft}
-					<option value={ft}>{ft}</option>
+				{#each Object.entries(filetypeOptions) as [value, item]}
+					<option {value}>{item.label}</option>
 				{/each}
 			</select>
 		</div>

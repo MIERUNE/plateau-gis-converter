@@ -1,28 +1,24 @@
-use std::collections::HashMap;
-
 use serde::{Deserialize, Serialize};
-use serde_json::Number;
 
 use crate::{
-    DeletableProperty, DoubleValue, DoubleValueProperty, InterpolatableProperty, ReferenceValue,
-    ReferenceValueProperty,
+    Cartesian2Value, Cartesian2ValueProperty, DeletableProperty, InterpolatableProperty,
+    ReferenceValue, ReferenceValueProperty,
 };
 
-pub type Articulation = ArticulationValueType;
+pub type LineThickness = LineThicknessType;
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(untagged)]
-pub enum ArticulationValueType {
-    Array(Vec<ArticulationProperties>),
-    Object(ArticulationProperties),
-    Number(Number),
+pub enum LineThicknessType {
+    Array(Vec<LineThicknessProperties>),
+    Object(LineThicknessProperties),
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Default)]
 #[serde(rename_all = "camelCase")]
-pub struct ArticulationProperties {
+pub struct LineThicknessProperties {
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub number: Option<DoubleValue>,
+    pub cartesian2: Option<Cartesian2Value>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub reference: Option<ReferenceValue>,
@@ -37,16 +33,9 @@ pub struct ArticulationProperties {
 
     #[serde(flatten)]
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub uri_value_property: Option<DoubleValueProperty>,
+    pub cartesian2_value_property: Option<Cartesian2ValueProperty>,
 
     #[serde(flatten)]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub reference_value_property: Option<ReferenceValueProperty>,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct Articulations {
-    #[serde(flatten)]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub articulations: Option<HashMap<String, Articulation>>,
 }

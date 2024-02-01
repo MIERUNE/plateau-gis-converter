@@ -5,9 +5,15 @@ use clap::Parser;
 
 use nusamai::pipeline::Canceller;
 use nusamai::sink::{
-    geojson::GeoJsonSinkProvider, geojson_transform_exp::GeoJsonTransformExpSinkProvider,
-    gltf::GltfSinkProvider, gpkg::GpkgSinkProvider, mvt::MVTSinkProvider, noop::NoopSinkProvider,
-    serde::SerdeSinkProvider, shapefile::ShapefileSinkProvider,
+    cesiumtiles::CesiumTilesSinkProvider, 
+    geojson::GeoJsonSinkProvider, 
+    geojson_transform_exp::GeoJsonTransformExpSinkProvider,
+    gltf::GltfSinkProvider, 
+    mvt::MVTSinkProvider, 
+    serde::SerdeSinkProvider, 
+    gpkg::GpkgSinkProvider,
+    noop::NoopSinkProvider, 
+    shapefile::ShapefileSinkProvider,
 };
 use nusamai::sink::{DataSink, DataSinkProvider};
 use nusamai::source::citygml::CityGmlSourceProvider;
@@ -56,6 +62,8 @@ enum SinkChoice {
     Mvt,
     GeojsonTransformExp,
     Gltf,
+    #[clap(name = "3dtiles")]
+    CesiumTiles,
     Shapefile,
 }
 
@@ -69,6 +77,7 @@ impl SinkChoice {
             SinkChoice::Gpkg => Box::new(GpkgSinkProvider {}),
             SinkChoice::Mvt => Box::new(MVTSinkProvider {}),
             SinkChoice::Gltf => Box::new(GltfSinkProvider {}),
+            SinkChoice::CesiumTiles => Box::new(CesiumTilesSinkProvider {}),
             SinkChoice::Shapefile => Box::new(ShapefileSinkProvider {}),
         }
     }

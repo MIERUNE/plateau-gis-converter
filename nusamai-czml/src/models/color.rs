@@ -12,6 +12,12 @@ pub enum ColorValueType {
     Object(ColorProperties),
 }
 
+impl Default for ColorValueType {
+    fn default() -> Self {
+        ColorValueType::Object(ColorProperties::default())
+    }
+}
+
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(untagged)]
 pub enum RgbaValue {
@@ -62,7 +68,7 @@ pub struct RgbafValueProperty {
     pub alpha: f32,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct ColorProperties {
     #[serde(skip_serializing_if = "Option::is_none")]

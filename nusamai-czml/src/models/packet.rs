@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
-use crate::{CzmlString, Model};
+use crate::{CzmlPolygon, CzmlString, Model};
 
 // todo: Modify HashMap and Value
 #[derive(Serialize, Deserialize, Debug)]
@@ -69,8 +69,8 @@ pub struct Packet {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub label: Option<HashMap<String, Value>>,
 
-    #[serde(default)]
-    pub model: Model,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub model: Option<Model>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub path: Option<HashMap<String, Value>>,
@@ -79,7 +79,7 @@ pub struct Packet {
     pub point: Option<HashMap<String, Value>>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub polygon: Option<HashMap<String, Value>>,
+    pub polygon: Option<CzmlPolygon>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub polyline: Option<HashMap<String, Value>>,
@@ -141,7 +141,7 @@ impl Default for Packet {
             ellipse: None,
             ellipsoid: None,
             label: None,
-            model: Model::default(),
+            model: None,
             path: None,
             point: None,
             polygon: None,
@@ -176,10 +176,9 @@ mod tests {
     fn test_default_serialize() {
         let packet = Packet::default();
         let json = serde_json::to_string(&packet).unwrap();
-        println!("{}", json);
         assert_eq!(
             json,
-            r#"{"availability":"0000-00-00T00:00:00Z/9999-12-31T24:00:00Z","model":{"show":true,"gltf":"","scale":1.0,"minimumPixelSize":0.0,"incrementallyLoadTextures":true,"runAnimations":true,"shadows":"ENABLED","heightReference":"NONE","silhouetteColor":{"rgba":[255,0,0,0]},"silhouetteSize":0.0,"color":{"rgba":[0,0,0,0]},"colorBlendMode":"HIGHLIGHT","colorBlendAmount":0.5}}"#
+            r#"{"availability":"0000-00-00T00:00:00Z/9999-12-31T24:00:00Z"}"#
         );
     }
 }

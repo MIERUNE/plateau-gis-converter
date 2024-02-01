@@ -9,14 +9,14 @@ use nusamai_citygml::{
 use nusamai_geometry::{LineString2, MultiPolygon2, Polygon2};
 use nusamai_mvt::{webmercator::lnglat_to_web_mercator, TileZXY};
 
-pub fn slice_cityobj_geoms(
+pub fn slice_cityobj_geoms<E>(
     obj: &Entity,
     min_z: u8,
     max_z: u8,
     max_detail: u32,
     buffer_pixels: u32,
-    f: impl Fn(TileZXY, MultiPolygon2<i16>) -> Result<(), ()>,
-) -> Result<(), ()> {
+    f: impl Fn(TileZXY, MultiPolygon2<i16>) -> Result<(), E>,
+) -> Result<(), E> {
     assert!(
         max_z >= min_z,
         "max_z must be greater than or equal to min_z"

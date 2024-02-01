@@ -1,3 +1,7 @@
+//! The main pipeline for processing CityGML data
+//!
+//! [Source] => [Transformer] => [Sink]
+
 pub mod feedback;
 pub mod runner;
 
