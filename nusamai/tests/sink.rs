@@ -83,6 +83,11 @@ fn run_shapefile_sink() {
 }
 
 #[test]
+fn run_ply_sink() {
+    simple_run_sink(sink::ply::StanfordPlySinkProvider {}, "/dev/null".into());
+}
+
+#[test]
 fn run_cesiumtiles_sink() {
     simple_run_sink(
         sink::cesiumtiles::CesiumTilesSinkProvider {},
