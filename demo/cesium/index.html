@@ -1,79 +1,77 @@
 <!DOCTYPE html>
 <html>
-	<head>
-		<meta charset="UTF-8" />
-		<title>Cesium</title>
-		<script src="https://cesium.com/downloads/cesiumjs/releases/1.114/Build/Cesium/Cesium.js"></script>
-		<link
-			href="https://cesium.com/downloads/cesiumjs/releases/1.114/Build/Cesium/Widgets/widgets.css"
-			rel="stylesheet"
-		/>
-		<style>
-			#cesiumContainer {
-				position: absolute;
-				top: 0;
-				left: 0;
-				height: 100%;
-				width: 100%;
-				margin: 0;
-				overflow: hidden;
-				padding: 0;
-				font-family: sans-serif;
-			}
+  <head>
+    <meta charset="UTF-8" />
+    <title>Cesium</title>
+    <script src="https://cesium.com/downloads/cesiumjs/releases/1.114/Build/Cesium/Cesium.js"></script>
+    <link
+      href="https://cesium.com/downloads/cesiumjs/releases/1.114/Build/Cesium/Widgets/widgets.css"
+      rel="stylesheet"
+    />
+    <style>
+      #cesiumContainer {
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+        width: 100%;
+        margin: 0;
+        overflow: hidden;
+        padding: 0;
+        font-family: sans-serif;
+      }
 
-			html {
-				height: 100%;
-			}
+      html {
+        height: 100%;
+      }
 
-			body {
-				padding: 0;
-				margin: 0;
-				overflow: hidden;
-				height: 100%;
-			}
-		</style>
-	</head>
-	<body>
-		<div id="cesiumContainer"></div>
-		<script>
-			const raster_tile = new Cesium.OpenStreetMapImageryProvider({
-				url: "https://cyberjapandata.gsi.go.jp/xyz/std/",
-				credit: new Cesium.Credit(
-					"地理院タイル",
-					"",
-					"https://maps.gsi.go.jp/development/ichiran.html"
-				),
-				maximumLevel: 18,
-			});
-			const viewer = new Cesium.Viewer("cesiumContainer", {
-				imageryProvider: raster_tile,
-				baseLayerPicker: false,
-				geocoder: false,
-				homeButton: false,
-			});
+      body {
+        padding: 0;
+        margin: 0;
+        overflow: hidden;
+        height: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="cesiumContainer"></div>
+    <script>
+      const raster_tile = new Cesium.OpenStreetMapImageryProvider({
+        url: "https://cyberjapandata.gsi.go.jp/xyz/std/",
+        credit: new Cesium.Credit(
+          "地理院タイル",
+          "",
+          "https://maps.gsi.go.jp/development/ichiran.html"
+        ),
+        maximumLevel: 18,
+      });
+      const viewer = new Cesium.Viewer("cesiumContainer", {
+        imageryProvider: raster_tile,
+        baseLayerPicker: false,
+        geocoder: false,
+        homeButton: false,
+      });
 
-			viewer.camera.setView({
-				destination: Cesium.Cartesian3.fromDegrees(140.0, 36.14, 20000000.0),
-			});
+      viewer.camera.setView({
+        destination: Cesium.Cartesian3.fromDegrees(140.0, 36.14, 20000000.0),
+      });
 
-			// Set your 3DTiles
+      // Set your 3DTiles
+      // const tileset = viewer.scene.primitives.add(
+      // 	new Cesium.Cesium3DTileset({
+      // 		url: "http://localhost:8000/examples/tileset.json",
+      // 	})
+      // );
+      // tileset.style = new Cesium.Cesium3DTileStyle({
+      // 	pointSize: 5,
+      // });
+      // viewer.zoomTo(tileset);
 
-			// const tileset = viewer.scene.primitives.add(
-			// 	new Cesium.Cesium3DTileset({
-			// 		url: "http://localhost:8000/examples/tileset.json",
-			// 	})
-			// );
-			// tileset.style = new Cesium.Cesium3DTileStyle({
-			// 	pointSize: 5,
-			// });
-			// viewer.zoomTo(tileset);
-
-			// Set your CZML
-
-			const czml = "http://localhost:8000/examples/sample.json";
-			const dataSourcePromise = Cesium.CzmlDataSource.load(czml);
-			viewer.dataSources.add(dataSourcePromise);
-			viewer.zoomTo(dataSourcePromise);
-		</script>
-	</body>
+      // Set your CZML
+      const czml = "http://localhost:8000/examples/sample.json";
+      const dataSourcePromise = Cesium.CzmlDataSource.load(czml);
+      viewer.dataSources.add(dataSourcePromise);
+      viewer.zoomTo(dataSourcePromise);
+    </script>
+  </body>
 </html>

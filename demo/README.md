@@ -1,14 +1,12 @@
-# frontend demo
+# Demo
 
-## Usage
+## Cesium
 
-### Cesium
+1. Start local web server:
 
-- run local server
+    ```bash
+    cd cesium
+    python -m http.server
+    ```
 
-```bash
-cd cesium
-python -m http.server
-```
-
-- open browser and visit `http://localhost:8000/`
+2. Open the browser and visit `http://localhost:8000/`
