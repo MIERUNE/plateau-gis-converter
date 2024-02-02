@@ -183,6 +183,3 @@ pub fn entity_to_packet(entity: &Entity, single_part: bool) -> Vec<Packet> {
 
     packets
 }
-
-#[cfg(test)]
-mod tests {}
