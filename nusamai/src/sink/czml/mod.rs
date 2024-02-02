@@ -108,7 +108,7 @@ impl DataSink for CzmlSink {
                     version: Some("1.0".into()),
                     ..Default::default()
                 };
-                write!(writer, "[{},", serde_json::to_string(&doc).unwrap()).unwrap();
+                write!(writer, r#"[{},"#, serde_json::to_string(&doc).unwrap()).unwrap();
 
                 // Write each Packet
                 let mut iter = receiver.into_iter().peekable();
@@ -193,12 +193,14 @@ pub fn entity_to_packet(entity: &Entity, single_part: bool) -> Vec<Packet> {
                 // In Cesium, if perPositionHeight is false, the polygon height is fixed
                 czml_polygon.per_position_height = CzmlBoolean::Boolean(true);
 
+                let reference_string = parent_id.clone() + "#description";
                 let packet = Packet {
                     polygon: Some(czml_polygon),
                     description: Some(StringValueType::Object(StringProperties {
-                        reference: Some(parent_id.clone()),
+                        reference: Some(reference_string),
                         ..Default::default()
                     })),
+                    parent: Some(parent_id.clone()),
                     ..Default::default()
                 };
                 packets.push(packet);
