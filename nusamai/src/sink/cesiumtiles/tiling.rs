@@ -34,6 +34,15 @@ pub fn is_valid_zxy(z: u8, x: u32, y: u32) -> bool {
     }
 }
 
+pub fn calc_parent_zxy(z: u8, x: u32, y: u32) -> (u8, u32, u32) {
+    match z {
+        0 => panic!("z=0 has no parent"),
+        1 => (z - 1, 0, 0),
+        2 => (z - 1, x / 2, y),
+        _ => (z - 1, x / 2, y / 2),
+    }
+}
+
 pub fn y_slice_range(z: u8, y: u32) -> (f64, f64) {
     let (_, y_size) = get_size_for_z(z);
     let y = y as f64;
@@ -220,5 +229,22 @@ mod tests {
         let (south, north) = y_slice_range(z, y);
         let (west, east) = x_slice_range(z, x, xs);
         assert_eq!((45.0, 67.5, -90.0, -45.0), (south, north, west, east));
+    }
+
+    #[test]
+    fn test_calc_parent_zxy() {
+        assert_eq!(calc_parent_zxy(2, 0, 0), (1, 0, 0));
+        assert_eq!(calc_parent_zxy(2, 2, 0), (1, 1, 0));
+        assert_eq!(calc_parent_zxy(2, 2, 1), (1, 1, 1));
+        assert_eq!(calc_parent_zxy(2, 1, 1), (1, 0, 1));
+
+        assert_eq!(calc_parent_zxy(3, 0, 0), (2, 0, 0));
+        assert_eq!(calc_parent_zxy(3, 2, 0), (2, 1, 0));
+        assert_eq!(calc_parent_zxy(3, 1, 1), (2, 0, 0));
+        assert_eq!(calc_parent_zxy(3, 2, 1), (2, 1, 0));
+
+        assert_eq!(calc_parent_zxy(4, 4, 1), (3, 2, 0));
+        assert_eq!(calc_parent_zxy(4, 4, 2), (3, 2, 1));
+        assert_eq!(calc_parent_zxy(4, 0, 2), (3, 0, 1));
     }
 }

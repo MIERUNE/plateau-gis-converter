@@ -7,7 +7,7 @@ pub mod sort;
 pub mod tiling;
 
 use std::path::{Path, PathBuf};
-use std::sync::mpsc;
+use std::sync::{mpsc, Arc, Mutex};
 
 use ahash::RandomState;
 use byteorder::{ByteOrder, LittleEndian};
@@ -16,10 +16,12 @@ use earcut_rs::Earcut;
 use ext_sort::{buffer::mem::MemoryLimitedBufferBuilder, ExternalSorter, ExternalSorterBuilder};
 use indexmap::IndexSet;
 use itertools::Itertools;
+use nusamai_mvt::TileZXY;
 use nusamai_projection::cartesian::geographic_to_geocentric;
 use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
 
+use nusamai_3dtiles_json::tileset;
 use nusamai_citygml::schema::Schema;
 use nusamai_geometry::MultiPolygon;
 use nusamai_mvt::tileid::TileIdMethod;
@@ -30,6 +32,8 @@ use crate::sink::{DataSink, DataSinkProvider, SinkInfo};
 use crate::{get_parameter_value, transformer};
 use slice::slice_cityobj_geoms;
 use sort::BincodeExternalChunk;
+
+use self::tiling::{calc_parent_zxy, geometric_error};
 
 pub struct CesiumTilesSinkProvider {}
 
@@ -203,6 +207,17 @@ fn feature_sorting_stage(
     }
 }
 
+#[derive(Debug)]
+struct TileSpec {
+    zxy: TileZXY,
+    min_lng: f64,
+    max_lng: f64,
+    min_lat: f64,
+    max_lat: f64,
+    min_height: f64,
+    max_height: f64,
+}
+
 fn tile_writing_stage(
     output_path: &Path,
     feedback: Feedback,
@@ -211,6 +226,8 @@ fn tile_writing_stage(
 ) {
     let ellipsoid = nusamai_projection::ellipsoid::wgs84();
 
+    let tiles: Arc<Mutex<Vec<TileSpec>>> = Default::default();
+
     let _ = receiver_sorted
         .into_iter()
         .par_bridge()
@@ -218,6 +235,16 @@ fn tile_writing_stage(
             if feedback.is_cancelled() {
                 return Err(());
             }
+
+            let mut tilespec = TileSpec {
+                zxy: (0, 0, 0),
+                min_lng: f64::MAX,
+                max_lng: f64::MIN,
+                min_lat: f64::MAX,
+                max_lat: f64::MIN,
+                min_height: f64::MAX,
+                max_height: f64::MIN,
+            };
 
             let mut earcutter = Earcut::new();
             let mut buf3d: Vec<f64> = Vec::new();
@@ -229,6 +256,13 @@ fn tile_writing_stage(
                 let mut feat: SlicedFeature = bincode::deserialize(&ser_feat.body).unwrap();
 
                 feat.geometry.transform_inplace(|&[lng, lat, height]| {
+                    tilespec.min_lng = tilespec.min_lng.min(lng);
+                    tilespec.max_lng = tilespec.max_lng.max(lng);
+                    tilespec.min_lat = tilespec.min_lat.min(lat);
+                    tilespec.max_lat = tilespec.max_lat.max(lat);
+                    tilespec.min_height = tilespec.min_height.min(height);
+                    tilespec.max_height = tilespec.max_height.max(height);
+
                     let (x, y, z) = geographic_to_geocentric(&ellipsoid, lng, lat, height);
                     [x, z, -y]
                 });
@@ -300,8 +334,12 @@ fn tile_writing_stage(
                 })
                 .collect();
 
+            let zxy: TileZXY = tile_id_conv.id_to_zxy(tile_id);
+            let (zoom, x, y) = zxy;
+            tilespec.zxy = zxy;
+            tiles.lock().unwrap().push(tilespec);
+
             // print tile information
-            let (zoom, x, y) = tile_id_conv.id_to_zxy(tile_id);
             let (min_y, max_y) = tiling::y_slice_range(zoom, y);
             let xs = tiling::x_step(zoom, y);
             let (min_x, max_x) = tiling::x_slice_range(zoom, x as i32, xs);
@@ -322,6 +360,128 @@ fn tile_writing_stage(
 
             Ok(())
         });
+
+    let mut tree = TileTree::default();
+    for tilespec in tiles.lock().unwrap().drain(..) {
+        tree.add_node(tilespec);
+    }
+
+    let tileset = tileset::Tileset {
+        asset: tileset::Asset {
+            version: "1.1".to_string(),
+            ..Default::default()
+        },
+        root: tree.into_tileset_root(),
+        geometric_error: 1e+100,
+        ..Default::default()
+    };
+
+    let root_tileset_path = output_path.join(Path::new("tileset.json"));
+    fs::write(
+        root_tileset_path,
+        serde_json::to_string_pretty(&tileset).unwrap(),
+    )
+    .unwrap()
+}
+
+#[derive(Default, Debug)]
+struct Tile {
+    zoom: u8,
+    x: u32,
+    y: u32,
+    has_content: bool,
+    bounding_volume: tileset::BoundingVolume,
+    child00: Option<Box<Tile>>,
+    child01: Option<Box<Tile>>,
+    child10: Option<Box<Tile>>,
+    child11: Option<Box<Tile>>,
+}
+
+impl Tile {
+    fn into_tileset_tile(self) -> tileset::Tile {
+        let children = {
+            let children: Vec<_> = [self.child00, self.child01, self.child10, self.child11]
+                .into_iter()
+                .flatten()
+                .map(|child| child.into_tileset_tile())
+                .collect();
+            if children.is_empty() {
+                None
+            } else {
+                Some(children)
+            }
+        };
+
+        let content = if self.has_content {
+            Some(tileset::Content {
+                uri: format!("{}/{}/{}.glb", self.zoom, self.x, self.y),
+                ..Default::default()
+            })
+        } else {
+            None
+        };
+
+        tileset::Tile {
+            geometric_error: geometric_error(self.zoom, self.y),
+            refine: Some(tileset::Refine::Replace),
+            bounding_volume: self.bounding_volume,
+            content,
+            children,
+            ..Default::default()
+        }
+    }
+
+    fn new(zxy: TileZXY) -> Self {
+        let (zoom, x, y) = zxy;
+        Tile {
+            zoom,
+            x,
+            y,
+            ..Default::default()
+        }
+    }
+}
+
+#[derive(Default, Debug)]
+struct TileTree {
+    root: Tile,
+}
+
+impl TileTree {
+    fn into_tileset_root(self) -> tileset::Tile {
+        self.root.into_tileset_tile()
+    }
+
+    fn add_node(&mut self, tilespec: TileSpec) {
+        let node = self.get_node(tilespec.zxy);
+        node.has_content = true;
+        println!("{:?}", tilespec);
+        node.bounding_volume = tileset::BoundingVolume::new_region([
+            tilespec.min_lng.to_radians(),
+            tilespec.min_lat.to_radians(),
+            tilespec.max_lng.to_radians(),
+            tilespec.max_lat.to_radians(),
+            tilespec.min_height,
+            tilespec.max_height,
+        ]);
+    }
+
+    fn get_node(&mut self, zxy: TileZXY) -> &mut Tile {
+        let (zoom, x, y) = zxy;
+        if zoom == 0 {
+            &mut self.root
+        } else {
+            let parent = self.get_node(calc_parent_zxy(zoom, x, y));
+            let node = match (x % 2, y % 2) {
+                (0, 0) => parent.child00.get_or_insert_with(|| Tile::new(zxy).into()),
+                (0, 1) => parent.child01.get_or_insert_with(|| Tile::new(zxy).into()),
+                (1, 0) => parent.child10.get_or_insert_with(|| Tile::new(zxy).into()),
+                (1, 1) => parent.child11.get_or_insert_with(|| Tile::new(zxy).into()),
+                _ => unreachable!(),
+            };
+            node
+        }
+    }
 }
 
 fn write_gltf_glb(
@@ -333,8 +493,6 @@ fn write_gltf_glb(
     indices: impl IntoIterator<Item = u32>,
 ) {
     use nusamai_gltf_json::*;
-
-    println!("tr: {:?}", translation);
 
     let mut bin_content: Vec<u8> = Vec::new();
 
