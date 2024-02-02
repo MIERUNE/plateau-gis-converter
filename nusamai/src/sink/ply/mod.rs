@@ -84,7 +84,6 @@ impl DataSink for StanfordPlySink {
 
         rayon::join(
             || {
-
                 let ellipsoid = nusamai_projection::ellipsoid::wgs84();
 
                 let _ = upstream.into_iter().par_bridge().try_for_each_with(

@@ -118,13 +118,13 @@ pub struct Accessor {
     ///
     /// `normalized` property has no effect on array values: they always correspond to the actual values stored in the buffer. When the accessor is sparse, this property **MUST** contain maximum values of accessor data with sparse substitution applied.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub max: Option<Vec<f32>>,
+    pub max: Option<Vec<f64>>,
 
     /// Minimum value of each component in this accessor.  Array elements **MUST** be treated as having the same data type as accessor's `componentType`. Both `min` and `max` arrays have the same length.  The length is determined by the value of the `type` property; it can be 1, 2, 3, 4, 9, or 16.
     ///
     /// `normalized` property has no effect on array values: they always correspond to the actual values stored in the buffer. When the accessor is sparse, this property **MUST** contain minimum values of accessor data with sparse substitution applied.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub min: Option<Vec<f32>>,
+    pub min: Option<Vec<f64>>,
 
     /// Sparse storage of elements that deviate from their initialization value.
     #[serde(skip_serializing_if = "Option::is_none")]

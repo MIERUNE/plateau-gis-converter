@@ -4,7 +4,7 @@ use std::collections::HashMap;
 use serde_json::Value;
 
 /// A node in the node hierarchy.  When the node contains `skin`, all `mesh.primitives` **MUST** contain `JOINTS_0` and `WEIGHTS_0` attributes.  A node **MAY** have either a `matrix` or any combination of `translation`/`rotation`/`scale` (TRS) properties. TRS properties are converted to matrices and postmultiplied in the `T * R * S` order to compose the transformation matrix; first the scale is applied to the vertices, then the rotation, and then the translation. If none are provided, the transform is the identity. When a node is targeted for animation (referenced by an animation.channel.target), `matrix` **MUST NOT** be present.
-#[derive(Serialize, Deserialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Debug)]
 #[serde[rename_all = "camelCase"]]
 #[serde(deny_unknown_fields)]
 pub struct Node {
@@ -26,7 +26,7 @@ pub struct Node {
 
     /// A floating-point 4x4 transformation matrix stored in column-major order.
     #[serde(default = "default_matrix", skip_serializing_if = "is_default_matrix")]
-    pub matrix: [f32; 16],
+    pub matrix: [f64; 16],
 
     /// The index of the mesh in this node.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -37,22 +37,22 @@ pub struct Node {
         default = "default_rotation",
         skip_serializing_if = "is_default_rotation"
     )]
-    pub rotation: [f32; 4],
+    pub rotation: [f64; 4],
 
     /// The node's non-uniform scale, given as the scaling factors along the x, y, and z axes.
     #[serde(default = "default_scale", skip_serializing_if = "is_default_scale")]
-    pub scale: [f32; 3],
+    pub scale: [f64; 3],
 
     /// The node's translation along the x, y, and z axes.
     #[serde(
         default = "default_translation",
         skip_serializing_if = "is_default_translation"
     )]
-    pub translation: [f32; 3],
+    pub translation: [f64; 3],
 
     /// The weights of the instantiated morph target. The number of array elements **MUST** match the number of morph targets of the referenced mesh. When defined, `mesh` **MUST** also be defined.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub weights: Option<Vec<f32>>,
+    pub weights: Option<Vec<f64>>,
 
     /// JSON object with extension-specific objects.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -63,6 +63,25 @@ pub struct Node {
     pub extras: Option<Value>,
 }
 
+impl Default for Node {
+    fn default() -> Self {
+        Node {
+            name: None,
+            camera: None,
+            children: None,
+            skin: None,
+            matrix: default_matrix(),
+            mesh: None,
+            rotation: default_rotation(),
+            scale: default_scale(),
+            translation: default_translation(),
+            weights: None,
+            extensions: None,
+            extras: None,
+        }
+    }
+}
+
 #[derive(Serialize, Deserialize, Debug, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct NodeExtensions {
@@ -70,37 +89,37 @@ pub struct NodeExtensions {
     others: HashMap<String, Value>,
 }
 
-fn default_matrix() -> [f32; 16] {
+fn default_matrix() -> [f64; 16] {
     [
         1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0,
     ]
 }
 
-fn is_default_matrix(matrix: &[f32; 16]) -> bool {
+fn is_default_matrix(matrix: &[f64; 16]) -> bool {
     *matrix == default_matrix()
 }
 
-fn default_rotation() -> [f32; 4] {
+fn default_rotation() -> [f64; 4] {
     [0.0, 0.0, 0.0, 1.0]
 }
 
-fn is_default_rotation(rotation: &[f32; 4]) -> bool {
+fn is_default_rotation(rotation: &[f64; 4]) -> bool {
     *rotation == default_rotation()
 }
 
-fn default_scale() -> [f32; 3] {
+fn default_scale() -> [f64; 3] {
     [1.0, 1.0, 1.0]
 }
 
-fn is_default_scale(rotation: &[f32; 3]) -> bool {
+fn is_default_scale(rotation: &[f64; 3]) -> bool {
     *rotation == default_scale()
 }
 
-fn default_translation() -> [f32; 3] {
+fn default_translation() -> [f64; 3] {
     [0., 0., 0.]
 }
 
-fn is_default_translation(translation: &[f32; 3]) -> bool {
+fn is_default_translation(translation: &[f64; 3]) -> bool {
     *translation == default_translation()
 }
 
@@ -110,6 +129,17 @@ mod tests {
 
     #[test]
     fn default() {
+        let node: Node = Default::default();
+        assert_eq!(
+            node.matrix,
+            [1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0]
+        );
+        assert_eq!(node.translation, [0.0, 0.0, 0.0]);
+        assert_eq!(node.rotation, [0.0, 0.0, 0.0, 1.0]);
+        assert_eq!(node.scale, [1.0, 1.0, 1.0]);
+
+        assert_eq!(serde_json::to_string(&node).unwrap(), "{}");
+
         let node: Node = serde_json::from_str("{}").unwrap();
         assert_eq!(
             node.matrix,
@@ -118,6 +148,5 @@ mod tests {
         assert_eq!(node.translation, [0.0, 0.0, 0.0]);
         assert_eq!(node.rotation, [0.0, 0.0, 0.0, 1.0]);
         assert_eq!(node.scale, [1.0, 1.0, 1.0]);
-        assert_eq!(serde_json::to_string(&node).unwrap(), "{}");
     }
 }
