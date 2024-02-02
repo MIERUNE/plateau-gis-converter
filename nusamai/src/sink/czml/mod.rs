@@ -99,11 +99,6 @@ impl DataSink for CzmlSink {
                 let mut file = File::create(&self.output_path).unwrap();
                 let mut writer = BufWriter::with_capacity(1024 * 1024, &mut file);
 
-                // Cesium requires a Packet called Document
-                writer
-                    .write_all(b"[{\"id\":\"document\",\"version\":\"1.0\"},")
-                    .unwrap();
-
                 // Write each Packet
                 let mut iter = receiver.into_iter().peekable();
                 while let Some(bytes) = iter.next() {
@@ -158,7 +153,14 @@ pub fn entity_to_packet(entity: &Entity, single_part: bool) -> Vec<Packet> {
         GeometryType::Point => unimplemented!(),
     });
 
-    let mut packets = vec![];
+    // Cesium requires a Packet called Document
+    let doc = Packet {
+        id: Some("document".into()),
+        version: Some("1.0".into()),
+        ..Default::default()
+    };
+    let mut packets = vec![doc];
+
     if !mpoly.is_empty() {
         // CZML does not support multi-part polygons due to its specification, so create a Packet for each face.
         if single_part {
@@ -182,4 +184,154 @@ pub fn entity_to_packet(entity: &Entity, single_part: bool) -> Vec<Packet> {
     }
 
     packets
+}
+
+#[cfg(test)]
+mod tests {
+    use std::sync::RwLock;
+
+    use super::*;
+    use nusamai_citygml::{object::Object, GeometryRefEntry, Value};
+    use nusamai_czml::{PositionListProperties, PositionListType};
+    use nusamai_geometry::MultiPolygon;
+    use nusamai_projection::crs::EPSG_JGD2011_GEOGRAPHIC_3D;
+
+    #[test]
+    fn test_entity_multipolygon() {
+        let vertices: Vec<[f64; 3]> = vec![
+            // 1st polygon, exterior (vertex 0~3)
+            [0., 0., 111.],
+            [5., 0., 111.],
+            [5., 5., 111.],
+            [0., 5., 111.],
+            // 1st polygon, interior 1 (vertex 4~7)
+            [1., 1., 111.],
+            [2., 1., 111.],
+            [2., 2., 111.],
+            [1., 2., 111.],
+            // 1st polygon, interior 2 (vertex 8~11)
+            [3., 3., 111.],
+            [4., 3., 111.],
+            [4., 4., 111.],
+            [3., 4., 111.],
+            // 2nd polygon, exterior (vertex 12~15)
+            [4., 0., 222.],
+            [7., 0., 222.],
+            [7., 3., 222.],
+            [4., 3., 222.],
+            // 2nd polygon, interior (vertex 16~19)
+            [5., 1., 222.],
+            [6., 1., 222.],
+            [6., 2., 222.],
+            [5., 2., 222.],
+            // 3rd polygon, exterior (vertex 20~23)
+            [4., 0., 333.],
+            [7., 0., 333.],
+            [7., 3., 333.],
+            [4., 3., 333.],
+        ];
+
+        let mut mpoly = MultiPolygon::<1, u32>::new();
+        // 1st polygon
+        mpoly.add_exterior([[0], [1], [2], [3], [0]]);
+        mpoly.add_interior([[4], [5], [6], [7], [4]]);
+        mpoly.add_interior([[8], [9], [10], [11], [8]]);
+        // 2nd polygon
+        mpoly.add_exterior([[12], [13], [14], [15], [12]]);
+        mpoly.add_interior([[16], [17], [18], [19], [16]]);
+        // 3rd polygon
+        mpoly.add_exterior([[20], [21], [22], [23], [20]]);
+
+        let geometries = nusamai_citygml::GeometryStore {
+            epsg: EPSG_JGD2011_GEOGRAPHIC_3D,
+            vertices,
+            multipolygon: mpoly,
+            multilinestring: Default::default(),
+            multipoint: Default::default(),
+        };
+
+        let entity = Entity {
+            root: Value::Object(Object {
+                typename: "dummy".into(),
+                attributes: Default::default(),
+                stereotype: nusamai_citygml::object::ObjectStereotype::Feature {
+                    id: "dummy".into(),
+                    geometries: vec![
+                        GeometryRefEntry {
+                            ty: GeometryType::Solid,
+                            pos: 0,
+                            len: 1,
+                            lod: 1,
+                        },
+                        GeometryRefEntry {
+                            ty: GeometryType::Solid,
+                            pos: 1,
+                            len: 1,
+                            lod: 1,
+                        },
+                        GeometryRefEntry {
+                            ty: GeometryType::Solid,
+                            pos: 2,
+                            len: 1,
+                            lod: 1,
+                        },
+                    ],
+                },
+            }),
+            geometry_store: RwLock::new(geometries).into(),
+        };
+
+        // test document packet
+        let packets = entity_to_packet(&entity, true);
+        assert_eq!(packets.len(), 4);
+        assert_eq!(packets[0].id, Some("document".into()));
+
+        // test first polygon packet
+        let first_polygon = &packets[1].polygon;
+        assert!(first_polygon.is_some());
+
+        let first_polygon = first_polygon.as_ref().unwrap();
+        let first_polygon_positions = PositionListProperties {
+            cartographic_degrees: Some(vec![
+                0., 0., 111., 5., 0., 111., 5., 5., 111., 0., 5., 111.,
+            ]),
+            ..Default::default()
+        };
+        assert_eq!(
+            first_polygon.positions,
+            Some(PositionListType::Object(first_polygon_positions))
+        );
+
+        // test second polygon packet
+        let second_polygon = &packets[2].polygon;
+        assert!(second_polygon.is_some());
+
+        let second_polygon = second_polygon.as_ref().unwrap();
+        let second_polygon_positions = PositionListProperties {
+            cartographic_degrees: Some(vec![
+                4., 0., 222., 7., 0., 222., 7., 3., 222., 4., 3., 222.,
+            ]),
+            ..Default::default()
+        };
+        assert_eq!(
+            second_polygon.positions,
+            Some(PositionListType::Object(second_polygon_positions))
+        );
+
+        // test third polygon packet
+        let third_polygon = &packets[3].polygon;
+        assert!(third_polygon.is_some());
+
+        let third_polygon = third_polygon.as_ref().unwrap();
+        let third_polygon_positions = PositionListProperties {
+            cartographic_degrees: Some(vec![
+                4., 0., 333., 7., 0., 333., 7., 3., 333., 4., 3., 333.,
+            ]),
+            ..Default::default()
+        };
+        assert_eq!(
+            third_polygon.positions,
+            Some(PositionListType::Object(third_polygon_positions))
+        );
+    }
 }
