@@ -7,7 +7,7 @@ use crate::{
     RgbaValue, ShadowMode, ShadowModeValue, SolidColorMaterial,
 };
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 #[serde(rename_all = "camelCase")]
 #[serde(deny_unknown_fields)]
 pub struct CzmlPolygon {

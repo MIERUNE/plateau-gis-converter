@@ -4,7 +4,7 @@ use crate::DeletableProperty;
 
 pub type PositionList = PositionListType;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 #[serde(untagged)]
 pub enum PositionListType {
     Array(Vec<PositionListProperties>),
@@ -21,7 +21,7 @@ pub type CartographicRadiansListValueProperty = Vec<f64>;
 pub type CartographicDegreesListValueProperty = Vec<f64>;
 pub type ReferenceListValueProperty = Vec<String>;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct PositionListProperties {
     #[serde(
