@@ -80,18 +80,7 @@ impl DataSink for CzmlSink {
                             return Err(());
                         }
 
-                        let mut packets = Vec::new();
-
-                        // Cesium requires a Packet called Document
-                        let doc = Packet {
-                            id: Some("document".into()),
-                            version: Some("1.0".into()),
-                            ..Default::default()
-                        };
-                        packets.push(doc);
-
-                        let p = entity_to_packet(&parcel.entity, true);
-                        packets.extend(p);
+                        let packets = entity_to_packet(&parcel.entity, true);
 
                         for packet in packets {
                             let Ok(bytes) = serde_json::to_vec(&packet) else {
@@ -113,7 +102,13 @@ impl DataSink for CzmlSink {
                 let mut file = File::create(&self.output_path).unwrap();
                 let mut writer = BufWriter::with_capacity(1024 * 1024, &mut file);
 
-                writer.write_all(b"[\n").unwrap();
+                // Cesium requires a Packet called Document
+                let doc = Packet {
+                    id: Some("document".into()),
+                    version: Some("1.0".into()),
+                    ..Default::default()
+                };
+                write!(writer, "[{},", serde_json::to_string(&doc).unwrap()).unwrap();
 
                 // Write each Packet
                 let mut iter = receiver.into_iter().peekable();
