@@ -4,11 +4,15 @@ use std::fs::File;
 use std::io::{BufWriter, Write};
 use std::path::PathBuf;
 
+use ahash::RandomState;
+use earcut_rs::utils_3d::project3d_to_2d;
+use earcut_rs::Earcut;
+use indexmap::IndexSet;
+use nusamai_geometry::MultiPolygon;
 use rayon::prelude::*;
 
-use nusamai_citygml::object::{Entity, ObjectStereotype, Value};
+use nusamai_citygml::object::Entity;
 use nusamai_citygml::schema::Schema;
-use nusamai_citygml::GeometryType;
 
 use crate::parameters::*;
 use crate::pipeline::{Feedback, Receiver};
@@ -76,17 +80,25 @@ impl DataSink for GltfSink {
                             return Err(());
                         }
 
-                        let packets = entity_to_packet(&parcel.entity, true);
-                        for packet in packets {
-                            let Ok(bytes) = serde_json::to_vec(&packet) else {
-                                // TODO: fatal error
-                                return Err(());
-                            };
-                            if sender.send(bytes).is_err() {
-                                log::info!("sink cancelled");
-                                return Err(());
-                            };
-                        }
+                        let features = entity_to_gltf(&parcel.entity);
+                        // for feature in features {
+                        //     let Ok(bytes) = serde_json::to_vec(&feature) else {
+                        //         // TODO: fatal error
+                        //         return Err(());
+                        //     };
+                        //     if sender.send(bytes).is_err() {
+                        //         log::info!("sink cancelled");
+                        //         return Err(());
+                        //     };
+                        // }
+
+                        let Ok(bytes) = serde_json::to_vec(&features) else {
+                            return Err(());
+                        };
+                        if sender.send(bytes).is_err() {
+                            log::info!("sink cancelled");
+                            return Err(());
+                        };
 
                         Ok(())
                     },
@@ -113,65 +125,92 @@ impl DataSink for GltfSink {
     }
 }
 
-/// Create CZML Packet from a Entity
-pub fn entity_to_packet(entity: &Entity, single_part: bool) -> Vec<Feature> {
-    // TODO: extract properties
-    // let _properties = extract_properties(&entity.root);
-    let geom_store = entity.geometry_store.read().unwrap();
+fn triangulate_polygon(
+    multi_polygon: &MultiPolygon<1, u32>,
+) -> (IndexSet<[u32; 3], RandomState>, Vec<u32>) {
+    let mut earcutter = Earcut::new();
+    let mut buf3d: Vec<f64> = Vec::new();
+    let mut buf2d: Vec<f64> = Vec::new();
+    let mut triangles_buf: Vec<u32> = Vec::new();
+    let mut triangles = Vec::new();
 
-    let Value::Object(obj) = &entity.root else {
-        return Vec::default();
-    };
-    let ObjectStereotype::Feature { id: _, geometries } = &obj.stereotype else {
-        return Vec::default();
-    };
+    for poly in multi_polygon.iter() {
+        let num_outer = match poly.hole_indices().first() {
+            Some(&v) => v as usize,
+            None => poly.coords().len() / 3,
+        };
 
-    let mut mpoly = nusamai_geometry::MultiPolygon::<1, u32>::new();
+        buf3d.clear();
+        buf3d.extend(poly.coords());
 
-    geometries.iter().for_each(|entry| match entry.ty {
-        GeometryType::Solid | GeometryType::Surface | GeometryType::Triangle => {
-            for idx_poly in geom_store
-                .multipolygon
-                .iter_range(entry.pos as usize..(entry.pos + entry.len) as usize)
-            {
-                mpoly.push(idx_poly);
-            }
-        }
-        GeometryType::Curve => unimplemented!(),
-        GeometryType::Point => unimplemented!(),
-    });
-
-    // Cesium requires a Packet called Document
-    let doc = Packet {
-        id: Some("document".into()),
-        version: Some("1.0".into()),
-        ..Default::default()
-    };
-    let mut packets = vec![doc];
-
-    if !mpoly.is_empty() {
-        // CZML does not support multi-part polygons due to its specification, so create a Packet for each face.
-        if single_part {
-            for poly in mpoly.iter() {
-                let czml_polygon = indexed_polygon_to_czml_polygon(&geom_store.vertices, &poly);
-                let packet = Packet {
-                    polygon: Some(czml_polygon),
-                    ..Default::default()
-                };
-                packets.push(packet);
-            }
-        } else {
-            // TODO: Multi-part polygons are used in the glTF model
-            let czml_polygon = indexed_multipolygon_to_czml_polygon(&geom_store.vertices, &mpoly);
-            let packet = Packet {
-                polygon: Some(czml_polygon),
-                ..Default::default()
-            };
-            packets.push(packet);
+        if project3d_to_2d(&buf3d, num_outer, &mut buf2d) {
+            // earcut
+            earcutter.earcut(&buf2d, poly.hole_indices(), 2, &mut triangles_buf);
+            triangles.extend(triangles_buf.iter().map(|idx| {
+                [
+                    buf3d[*idx as usize * 3],
+                    buf3d[*idx as usize * 3 + 1],
+                    buf3d[*idx as usize * 3 + 2],
+                ]
+            }));
         }
     }
 
-    packets
+    // calculate the centroid and min/max
+    let mut pos_max = [f64::MIN; 3];
+    let mut pos_min = [f64::MAX; 3];
+    let mut translation = [0.; 3];
+
+    for &[x, y, z] in &triangles {
+        pos_min = [
+            f64::min(pos_min[0], x),
+            f64::min(pos_min[1], y),
+            f64::min(pos_min[2], z),
+        ];
+        pos_max = [
+            f64::max(pos_max[0], x),
+            f64::max(pos_max[1], y),
+            f64::max(pos_max[2], z),
+        ];
+    }
+    // TODO: Use a library for 3d linalg
+    translation[0] = (pos_max[0] + pos_min[0]) / 2.;
+    translation[1] = (pos_max[1] + pos_min[1]) / 2.;
+    translation[2] = (pos_max[2] + pos_min[2]) / 2.;
+    pos_min[0] -= translation[0];
+    pos_max[0] -= translation[0];
+    pos_min[1] -= translation[1];
+    pos_max[1] -= translation[1];
+    pos_min[2] -= translation[2];
+    pos_max[2] -= translation[2];
+
+    // make vertices and indices
+    let mut vertices: IndexSet<[u32; 3], RandomState> = IndexSet::default();
+    let indices: Vec<_> = triangles
+        .iter()
+        .map(|&[x, y, z]| {
+            let (x, y, z) = (x - translation[0], y - translation[1], z - translation[2]);
+            let vbits = [
+                (x as f32).to_bits(),
+                (y as f32).to_bits(),
+                (z as f32).to_bits(),
+            ];
+            let (index, _) = vertices.insert_full(vbits);
+            index as u32
+        })
+        .collect();
+
+    (vertices, indices)
+}
+
+/// Create glTF Packet from a Entity
+pub fn entity_to_gltf(entity: &Entity) {
+    let geom_store = entity.geometry_store.read().unwrap();
+
+    let mut mpoly = nusamai_geometry::MultiPolygon::<1, u32>::new();
+
+    triangulate_polygon(&geom_store.multipolygon);
+    // Todo
 }
 
 #[cfg(test)]
