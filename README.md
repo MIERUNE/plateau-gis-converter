@@ -67,6 +67,6 @@ RUST_BACKTRACE=1 npx tauri dev
 Build:
 
 ```bash
-cd ./app/
+cd ./app
 npx tauri build
 ```
