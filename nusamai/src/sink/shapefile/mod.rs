@@ -77,7 +77,7 @@ impl DataSink for ShapefileSink {
                             return Err(());
                         }
 
-                        let shapes = toplevel_cityobj_to_shapes(&parcel.entity);
+                        let shapes = entity_to_shapes(&parcel.entity);
                         for shape in shapes {
                             if sender.send(shape).is_err() {
                                 log::info!("sink cancelled");
@@ -129,7 +129,7 @@ fn extract_properties(tree: &nusamai_citygml::object::Value) -> Option<geojson::
 /// Create Shapefile features from a TopLevelCityObject
 /// Each feature for MultiPolygon, MultiLineString, and MultiPoint will be created (if it exists)
 /// TODO: Implement MultiLineString and MultiPoint handling
-pub fn toplevel_cityobj_to_shapes(entity: &Entity) -> Vec<shapefile::Shape> {
+pub fn entity_to_shapes(entity: &Entity) -> Vec<shapefile::Shape> {
     let _properties = extract_properties(&entity.root);
     let geom_store = entity.geometry_store.read().unwrap();
 
@@ -148,7 +148,7 @@ pub fn toplevel_cityobj_to_shapes(entity: &Entity) -> Vec<shapefile::Shape> {
                 .multipolygon
                 .iter_range(entry.pos as usize..(entry.pos + entry.len) as usize)
             {
-                mpoly.add(idx_poly);
+                mpoly.push(idx_poly);
             }
         }
         GeometryType::Curve => unimplemented!(),
@@ -212,7 +212,7 @@ mod tests {
             geometry_store: RwLock::new(geometries).into(),
         };
 
-        let shapes = toplevel_cityobj_to_shapes(&obj);
+        let shapes = entity_to_shapes(&obj);
         assert_eq!(shapes.len(), 1);
 
         if let shapefile::Shape::PolygonZ(polygon) = &shapes[0] {

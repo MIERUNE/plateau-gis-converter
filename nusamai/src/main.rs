@@ -7,8 +7,8 @@ use nusamai::pipeline::Canceller;
 use nusamai::sink::{
     cesiumtiles::CesiumTilesSinkProvider, czml::CzmlSinkProvider, geojson::GeoJsonSinkProvider,
     geojson_transform_exp::GeoJsonTransformExpSinkProvider, gpkg::GpkgSinkProvider,
-    mvt::MVTSinkProvider, noop::NoopSinkProvider, serde::SerdeSinkProvider,
-    shapefile::ShapefileSinkProvider,
+    mvt::MVTSinkProvider, noop::NoopSinkProvider, ply::StanfordPlySinkProvider,
+    serde::SerdeSinkProvider, shapefile::ShapefileSinkProvider,
 };
 use nusamai::sink::{DataSink, DataSinkProvider};
 use nusamai::source::citygml::CityGmlSourceProvider;
@@ -60,6 +60,7 @@ enum SinkChoice {
     CesiumTiles,
     Shapefile,
     Czml,
+    Ply,
 }
 
 impl SinkChoice {
@@ -74,6 +75,7 @@ impl SinkChoice {
             SinkChoice::CesiumTiles => Box::new(CesiumTilesSinkProvider {}),
             SinkChoice::Shapefile => Box::new(ShapefileSinkProvider {}),
             SinkChoice::Czml => Box::new(CzmlSinkProvider {}),
+            SinkChoice::Ply => Box::new(StanfordPlySinkProvider {}),
         }
     }
 }

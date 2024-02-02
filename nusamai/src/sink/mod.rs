@@ -7,6 +7,7 @@ pub mod geojson_transform_exp;
 pub mod gpkg;
 pub mod mvt;
 pub mod noop;
+pub mod ply;
 pub mod serde;
 pub mod shapefile;
 
