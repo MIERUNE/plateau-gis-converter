@@ -10,7 +10,9 @@ use nusamai_citygml::object::{Entity, ObjectStereotype, Value};
 use nusamai_citygml::schema::Schema;
 use nusamai_citygml::GeometryType;
 use nusamai_czml::conversion::indexed_multipolygon_to_czml_polygon;
-use nusamai_czml::{indexed_polygon_to_czml_polygon, CzmlBoolean, Packet, StringValueType};
+use nusamai_czml::{
+    indexed_polygon_to_czml_polygon, CzmlBoolean, Packet, StringProperties, StringValueType,
+};
 
 use crate::parameters::*;
 use crate::pipeline::{Feedback, Receiver};
@@ -78,7 +80,19 @@ impl DataSink for CzmlSink {
                             return Err(());
                         }
 
-                        let packets = entity_to_packet(&parcel.entity, true);
+                        let mut packets = Vec::new();
+
+                        // Cesium requires a Packet called Document
+                        let doc = Packet {
+                            id: Some("document".into()),
+                            version: Some("1.0".into()),
+                            ..Default::default()
+                        };
+                        packets.push(doc);
+
+                        let p = entity_to_packet(&parcel.entity, true);
+                        packets.extend(p);
+
                         for packet in packets {
                             let Ok(bytes) = serde_json::to_vec(&packet) else {
                                 // TODO: fatal error
@@ -98,6 +112,8 @@ impl DataSink for CzmlSink {
                 // Write CZML to a file
                 let mut file = File::create(&self.output_path).unwrap();
                 let mut writer = BufWriter::with_capacity(1024 * 1024, &mut file);
+
+                writer.write_all(b"[\n").unwrap();
 
                 // Write each Packet
                 let mut iter = receiver.into_iter().peekable();
@@ -138,7 +154,6 @@ fn map_to_html_table(map: &serde_json::Map<String, serde_json::Value>) -> String
 /// Create CZML Packet from a Entity
 pub fn entity_to_packet(entity: &Entity, single_part: bool) -> Vec<Packet> {
     let properties = extract_properties(&entity.root);
-    println!("{}", properties);
     let geom_store = entity.geometry_store.read().unwrap();
 
     let Value::Object(obj) = &entity.root else {
@@ -167,13 +182,6 @@ pub fn entity_to_packet(entity: &Entity, single_part: bool) -> Vec<Packet> {
         GeometryType::Point => unimplemented!(),
     });
 
-    // Cesium requires a Packet called Document
-    let doc = Packet {
-        id: Some("document".into()),
-        version: Some("1.0".into()),
-        ..Default::default()
-    };
-
     // Create a Packet that retains attributes and references it from child features
     let properties_packet = Packet {
         id: Some(parent_id.clone()),
@@ -192,6 +200,10 @@ pub fn entity_to_packet(entity: &Entity, single_part: bool) -> Vec<Packet> {
 
                 let packet = Packet {
                     polygon: Some(czml_polygon),
+                    description: Some(StringValueType::Object(StringProperties {
+                        reference: Some(parent_id.clone()),
+                        ..Default::default()
+                    })),
                     ..Default::default()
                 };
                 packets.push(packet);
