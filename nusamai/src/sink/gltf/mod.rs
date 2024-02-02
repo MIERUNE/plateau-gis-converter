@@ -8,10 +8,11 @@ use ahash::RandomState;
 use earcut_rs::utils_3d::project3d_to_2d;
 use earcut_rs::Earcut;
 use indexmap::IndexSet;
-use nusamai_geometry::MultiPolygon;
+use nusamai_citygml::{GeometryType, Value};
+use nusamai_geometry::{MultiPolygon, Polygon};
 use rayon::prelude::*;
 
-use nusamai_citygml::object::Entity;
+use nusamai_citygml::object::{Entity, ObjectStereotype};
 use nusamai_citygml::schema::Schema;
 
 use crate::parameters::*;
@@ -126,7 +127,7 @@ impl DataSink for GltfSink {
 }
 
 fn triangulate_polygon(
-    multi_polygon: &MultiPolygon<1, u32>,
+    multi_polygon: &MultiPolygon<3, f64>,
 ) -> (IndexSet<[u32; 3], RandomState>, Vec<u32>) {
     let mut earcutter = Earcut::new();
     let mut buf3d: Vec<f64> = Vec::new();
@@ -144,7 +145,6 @@ fn triangulate_polygon(
         buf3d.extend(poly.coords());
 
         if project3d_to_2d(&buf3d, num_outer, &mut buf2d) {
-            // earcut
             earcutter.earcut(&buf2d, poly.hole_indices(), 2, &mut triangles_buf);
             triangles.extend(triangles_buf.iter().map(|idx| {
                 [
@@ -207,10 +207,55 @@ fn triangulate_polygon(
 pub fn entity_to_gltf(entity: &Entity) {
     let geom_store = entity.geometry_store.read().unwrap();
 
+    let Value::Object(obj) = &entity.root else {
+        unimplemented!()
+    };
+    let ObjectStereotype::Feature { id: _, geometries } = &obj.stereotype else {
+        unimplemented!()
+    };
+
     let mut mpoly = nusamai_geometry::MultiPolygon::<1, u32>::new();
 
-    triangulate_polygon(&geom_store.multipolygon);
-    // Todo
+    geometries.iter().for_each(|entry| match entry.ty {
+        GeometryType::Solid | GeometryType::Surface | GeometryType::Triangle => {
+            for idx_poly in geom_store
+                .multipolygon
+                .iter_range(entry.pos as usize..(entry.pos + entry.len) as usize)
+            {
+                mpoly.push(idx_poly);
+            }
+        }
+        GeometryType::Curve => unimplemented!(),
+        GeometryType::Point => unimplemented!(),
+    });
+
+    mpoly.iter().for_each(|poly| {
+        log::info!("{:?}", poly);
+    });
+
+    let mut exteriors = Vec::new();
+    for poly in mpoly.iter() {
+        for idx in poly.exterior().iter() {
+            exteriors.push(&geom_store.vertices[idx[0] as usize]);
+        }
+    }
+
+    let mut interiors = Vec::new();
+    for poly in mpoly.iter() {
+        for interior in poly.interiors() {
+            let mut interior_vec = Vec::new();
+            for idx in interior.iter() {
+                interior_vec.push(&geom_store.vertices[idx[0] as usize]);
+            }
+            interiors.push(interior_vec);
+        }
+    }
+
+    let mut mpoly3: MultiPolygon<'_, 3> = MultiPolygon::<3, f64>::new();
+
+    // todo: 3次元ポリゴンを作る・3次元ポリゴンを3次元マルチポリゴンに追加する
+
+    let (vertices, indices) = triangulate_polygon(&mpoly3);
 }
 
 #[cfg(test)]
@@ -306,5 +351,7 @@ mod tests {
             }),
             geometry_store: RwLock::new(geometries).into(),
         };
+
+        entity_to_gltf(&entity);
     }
 }
