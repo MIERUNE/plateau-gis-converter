@@ -230,7 +230,7 @@ fn tile_writing_stage(
 
                 feat.geometry.transform_inplace(|&[lng, lat, height]| {
                     let (x, y, z) = geographic_to_geocentric(&ellipsoid, lng, lat, height);
-                    [x, y, z]
+                    [x, z, -y]
                 });
 
                 for poly in &feat.geometry {
@@ -257,38 +257,40 @@ fn tile_writing_stage(
                 }
             }
 
-            // calculate the centroid
+            // calculate the centroid and min/max
             let mut pos_max = [f64::MIN; 3];
             let mut pos_min = [f64::MAX; 3];
+            let mut translation = [0.; 3];
 
-            let mut mu_x = 0.;
-            let mut mu_y = 0.;
-            let mut mu_z = 0.;
-            for [x, y, z] in &triangles {
-                mu_x += x;
-                mu_y += y;
-                mu_z += z;
+            for &[x, y, z] in &triangles {
+                pos_min = [
+                    f64::min(pos_min[0], x),
+                    f64::min(pos_min[1], y),
+                    f64::min(pos_min[2], z),
+                ];
+                pos_max = [
+                    f64::max(pos_max[0], x),
+                    f64::max(pos_max[1], y),
+                    f64::max(pos_max[2], z),
+                ];
             }
-            mu_x /= triangles.len() as f64;
-            mu_y /= triangles.len() as f64;
-            mu_z /= triangles.len() as f64;
+            // TODO: Use a library for 3d linalg
+            translation[0] = (pos_max[0] + pos_min[0]) / 2.;
+            translation[1] = (pos_max[1] + pos_min[1]) / 2.;
+            translation[2] = (pos_max[2] + pos_min[2]) / 2.;
+            pos_min[0] -= translation[0];
+            pos_max[0] -= translation[0];
+            pos_min[1] -= translation[1];
+            pos_max[1] -= translation[1];
+            pos_min[2] -= translation[2];
+            pos_max[2] -= translation[2];
 
             // make vertices and indices
             let mut vertices: IndexSet<[u32; 3], RandomState> = IndexSet::default();
             let indices: Vec<_> = triangles
                 .iter()
                 .map(|&[x, y, z]| {
-                    let (x, y, z) = (x - mu_x, y - mu_y, z - mu_z);
-                    pos_max = [
-                        f64::max(pos_max[0], x),
-                        f64::max(pos_max[1], y),
-                        f64::max(pos_max[2], z),
-                    ];
-                    pos_min = [
-                        f64::min(pos_min[0], x),
-                        f64::min(pos_min[1], y),
-                        f64::min(pos_min[2], z),
-                    ];
+                    let (x, y, z) = (x - translation[0], y - translation[1], z - translation[2]);
                     let vbits = [
                         (x as f32).to_bits(),
                         (y as f32).to_bits(),
@@ -317,7 +319,7 @@ fn tile_writing_stage(
                     panic!("Fatal error: {:?}", e); // FIXME
                 }
             }
-            write_gltf_glb(&path_glb, pos_min, pos_max, vertices, indices);
+            write_gltf_glb(&path_glb, pos_min, pos_max, translation, vertices, indices);
 
             Ok(())
         });
@@ -327,10 +329,13 @@ fn write_gltf_glb(
     path: &Path,
     min: [f64; 3],
     max: [f64; 3],
+    translation: [f64; 3],
     vertices: impl IntoIterator<Item = [u32; 3]>,
     indices: impl IntoIterator<Item = u32>,
 ) {
     use nusamai_gltf_json::*;
+
+    println!("tr: {:?}", translation);
 
     let mut bin_content: Vec<u8> = Vec::new();
 
@@ -359,6 +364,7 @@ fn write_gltf_glb(
         }],
         nodes: vec![Node {
             mesh: Some(0),
+            translation,
             ..Default::default()
         }],
         meshes: vec![Mesh {

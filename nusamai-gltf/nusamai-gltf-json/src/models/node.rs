@@ -26,7 +26,7 @@ pub struct Node {
 
     /// A floating-point 4x4 transformation matrix stored in column-major order.
     #[serde(default = "default_matrix", skip_serializing_if = "is_default_matrix")]
-    pub matrix: [f32; 16],
+    pub matrix: [f64; 16],
 
     /// The index of the mesh in this node.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -37,22 +37,22 @@ pub struct Node {
         default = "default_rotation",
         skip_serializing_if = "is_default_rotation"
     )]
-    pub rotation: [f32; 4],
+    pub rotation: [f64; 4],
 
     /// The node's non-uniform scale, given as the scaling factors along the x, y, and z axes.
     #[serde(default = "default_scale", skip_serializing_if = "is_default_scale")]
-    pub scale: [f32; 3],
+    pub scale: [f64; 3],
 
     /// The node's translation along the x, y, and z axes.
     #[serde(
         default = "default_translation",
         skip_serializing_if = "is_default_translation"
     )]
-    pub translation: [f32; 3],
+    pub translation: [f64; 3],
 
     /// The weights of the instantiated morph target. The number of array elements **MUST** match the number of morph targets of the referenced mesh. When defined, `mesh` **MUST** also be defined.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub weights: Option<Vec<f32>>,
+    pub weights: Option<Vec<f64>>,
 
     /// JSON object with extension-specific objects.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -89,37 +89,37 @@ pub struct NodeExtensions {
     others: HashMap<String, Value>,
 }
 
-fn default_matrix() -> [f32; 16] {
+fn default_matrix() -> [f64; 16] {
     [
         1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0,
     ]
 }
 
-fn is_default_matrix(matrix: &[f32; 16]) -> bool {
+fn is_default_matrix(matrix: &[f64; 16]) -> bool {
     *matrix == default_matrix()
 }
 
-fn default_rotation() -> [f32; 4] {
+fn default_rotation() -> [f64; 4] {
     [0.0, 0.0, 0.0, 1.0]
 }
 
-fn is_default_rotation(rotation: &[f32; 4]) -> bool {
+fn is_default_rotation(rotation: &[f64; 4]) -> bool {
     *rotation == default_rotation()
 }
 
-fn default_scale() -> [f32; 3] {
+fn default_scale() -> [f64; 3] {
     [1.0, 1.0, 1.0]
 }
 
-fn is_default_scale(rotation: &[f32; 3]) -> bool {
+fn is_default_scale(rotation: &[f64; 3]) -> bool {
     *rotation == default_scale()
 }
 
-fn default_translation() -> [f32; 3] {
+fn default_translation() -> [f64; 3] {
     [0., 0., 0.]
 }
 
-fn is_default_translation(translation: &[f32; 3]) -> bool {
+fn is_default_translation(translation: &[f64; 3]) -> bool {
     *translation == default_translation()
 }
 

@@ -206,9 +206,8 @@ fn slice_polygon(zoom: u8, poly: &Polygon3, out: &mut HashMap<(u8, u32, u32), Mu
                     })
                     .unwrap();
 
-                let mut ring =
+                let ring =
                     LineString3::from_raw(new_ring_buffer.iter().flatten().copied().collect());
-                ring.reverse_inplace();
 
                 match ri {
                     0 => tile_mpoly.add_exterior(ring.iter()),
