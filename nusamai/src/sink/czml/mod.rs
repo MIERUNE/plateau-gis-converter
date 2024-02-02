@@ -313,23 +313,21 @@ mod tests {
             geometry_store: RwLock::new(geometries).into(),
         };
 
-        // test document packet
         let packets = entity_to_packet(&entity, true);
-        assert_eq!(packets.len(), 5);
-        assert_eq!(packets[0].id, Some("document".into()));
+        assert_eq!(packets.len(), 4);
 
-        // test properties packet
-        let properties = &packets[1];
-        let description = properties.description.as_ref().unwrap();
+        // test parent packet
+        let parent = &packets[0];
+        assert_eq!(parent.id, Some("dummy".into()));
         assert_eq!(
-            description,
-            &StringValueType::String(
+            parent.description,
+            Some(StringValueType::String(
                 r#"<table><tr><td>id</td><td>"dummy"</td></tr><tr><td>type</td><td>"dummy"</td></tr></table>"#.into()
-            )
+            ))
         );
 
         // test first polygon packet
-        let first_polygon = &packets[2].polygon;
+        let first_polygon = &packets[1].polygon;
         assert!(first_polygon.is_some());
 
         let first_polygon = first_polygon.as_ref().unwrap();
@@ -345,7 +343,7 @@ mod tests {
         );
 
         // test second polygon packet
-        let second_polygon = &packets[3].polygon;
+        let second_polygon = &packets[2].polygon;
         assert!(second_polygon.is_some());
 
         let second_polygon = second_polygon.as_ref().unwrap();
@@ -361,7 +359,7 @@ mod tests {
         );
 
         // test third polygon packet
-        let third_polygon = &packets[4].polygon;
+        let third_polygon = &packets[3].polygon;
         assert!(third_polygon.is_some());
 
         let third_polygon = third_polygon.as_ref().unwrap();
