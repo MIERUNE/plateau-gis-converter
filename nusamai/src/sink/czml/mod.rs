@@ -10,7 +10,7 @@ use nusamai_citygml::object::{Entity, ObjectStereotype, Value};
 use nusamai_citygml::schema::Schema;
 use nusamai_citygml::GeometryType;
 use nusamai_czml::conversion::indexed_multipolygon_to_czml_polygon;
-use nusamai_czml::{indexed_polygon_to_czml_polygon, CzmlBoolean, Packet};
+use nusamai_czml::{indexed_polygon_to_czml_polygon, CzmlBoolean, Packet, StringValueType};
 
 use crate::parameters::*;
 use crate::pipeline::{Feedback, Receiver};
@@ -144,7 +144,11 @@ pub fn entity_to_packet(entity: &Entity, single_part: bool) -> Vec<Packet> {
     let Value::Object(obj) = &entity.root else {
         return Vec::default();
     };
-    let ObjectStereotype::Feature { id: _, geometries } = &obj.stereotype else {
+    let ObjectStereotype::Feature {
+        id: parent_id,
+        geometries,
+    } = &obj.stereotype
+    else {
         return Vec::default();
     };
 
@@ -169,7 +173,14 @@ pub fn entity_to_packet(entity: &Entity, single_part: bool) -> Vec<Packet> {
         version: Some("1.0".into()),
         ..Default::default()
     };
-    let mut packets = vec![doc];
+
+    // Create a Packet that retains attributes and references it from child features
+    let properties_packet = Packet {
+        id: Some(parent_id.clone()),
+        description: Some(StringValueType::String(properties)),
+        ..Default::default()
+    };
+    let mut packets: Vec<Packet> = vec![doc, properties_packet];
 
     if !mpoly.is_empty() {
         // CZML does not support multi-part polygons due to its specification, so create a Packet for each face.
@@ -296,11 +307,21 @@ mod tests {
 
         // test document packet
         let packets = entity_to_packet(&entity, true);
-        assert_eq!(packets.len(), 4);
+        assert_eq!(packets.len(), 5);
         assert_eq!(packets[0].id, Some("document".into()));
 
+        // test properties packet
+        let properties = &packets[1];
+        let description = properties.description.as_ref().unwrap();
+        assert_eq!(
+            description,
+            &StringValueType::String(
+                r#"<table><tr><td>id</td><td>"dummy"</td></tr><tr><td>type</td><td>"dummy"</td></tr></table>"#.into()
+            )
+        );
+
         // test first polygon packet
-        let first_polygon = &packets[1].polygon;
+        let first_polygon = &packets[2].polygon;
         assert!(first_polygon.is_some());
 
         let first_polygon = first_polygon.as_ref().unwrap();
@@ -316,7 +337,7 @@ mod tests {
         );
 
         // test second polygon packet
-        let second_polygon = &packets[2].polygon;
+        let second_polygon = &packets[3].polygon;
         assert!(second_polygon.is_some());
 
         let second_polygon = second_polygon.as_ref().unwrap();
@@ -332,7 +353,7 @@ mod tests {
         );
 
         // test third polygon packet
-        let third_polygon = &packets[3].polygon;
+        let third_polygon = &packets[4].polygon;
         assert!(third_polygon.is_some());
 
         let third_polygon = third_polygon.as_ref().unwrap();

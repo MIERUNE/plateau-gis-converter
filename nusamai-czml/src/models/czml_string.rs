@@ -5,7 +5,7 @@ use crate::{DeletableProperty, ReferenceValue, ReferenceValueProperty};
 
 pub type CzmlString = StringValueType;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 #[serde(untagged)]
 pub enum StringValueType {
     Array(Vec<StringProperties>),
@@ -17,7 +17,7 @@ pub type StringValue = String;
 
 pub type StringValueProperty = Value;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct StringProperties {
     pub string: Option<StringValue>,
