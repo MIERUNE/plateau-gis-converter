@@ -9,8 +9,8 @@ use rayon::prelude::*;
 use nusamai_citygml::object::{Entity, ObjectStereotype, Value};
 use nusamai_citygml::schema::Schema;
 use nusamai_citygml::GeometryType;
-use nusamai_czml::conversion::indexed_multilinestring_to_czml_polygon;
-use nusamai_czml::Packet;
+use nusamai_czml::conversion::indexed_multipolygon_to_czml_polygon;
+use nusamai_czml::{indexed_polygon_to_czml_polygon, Packet};
 
 use crate::parameters::*;
 use crate::pipeline::{Feedback, Receiver};
@@ -78,7 +78,7 @@ impl DataSink for CzmlSink {
                             return Err(());
                         }
 
-                        let packets = entity_to_packet(&parcel.entity);
+                        let packets = entity_to_packet(&parcel.entity, true);
                         for packet in packets {
                             let Ok(bytes) = serde_json::to_vec(&packet) else {
                                 // TODO: fatal error
@@ -131,7 +131,8 @@ impl DataSink for CzmlSink {
 // }
 
 /// Create CZML Packet from a Entity
-pub fn entity_to_packet(entity: &Entity) -> Vec<Packet> {
+pub fn entity_to_packet(entity: &Entity, single_part: bool) -> Vec<Packet> {
+    // TODO: extract properties
     // let _properties = extract_properties(&entity.root);
     let geom_store = entity.geometry_store.read().unwrap();
 
@@ -159,14 +160,25 @@ pub fn entity_to_packet(entity: &Entity) -> Vec<Packet> {
 
     let mut packets = vec![];
     if !mpoly.is_empty() {
-        let czml_polygon = indexed_multilinestring_to_czml_polygon(&geom_store.vertices, &mpoly);
-
-        let packet = Packet {
-            polygon: Some(czml_polygon),
-            ..Default::default()
-        };
-
-        packets.push(packet);
+        // CZML does not support multi-part polygons due to its specification, so create a Packet for each face.
+        if single_part {
+            for poly in mpoly.iter() {
+                let czml_polygon = indexed_polygon_to_czml_polygon(&geom_store.vertices, &poly);
+                let packet = Packet {
+                    polygon: Some(czml_polygon),
+                    ..Default::default()
+                };
+                packets.push(packet);
+            }
+        } else {
+            // TODO: Multi-part polygons are used in the glTF model
+            let czml_polygon = indexed_multipolygon_to_czml_polygon(&geom_store.vertices, &mpoly);
+            let packet = Packet {
+                polygon: Some(czml_polygon),
+                ..Default::default()
+            };
+            packets.push(packet);
+        }
     }
 
     packets

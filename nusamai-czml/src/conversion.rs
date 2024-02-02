@@ -46,7 +46,7 @@ pub fn indexed_polygon_to_czml_polygon(
     czml_polygon
 }
 
-pub fn indexed_multilinestring_to_czml_polygon(
+pub fn indexed_multipolygon_to_czml_polygon(
     vertices: &[[f64; 3]],
     mpoly: &MultiPolygon<1, u32>,
 ) -> CzmlPolygon {
@@ -188,7 +188,7 @@ mod tests {
         // 3rd polygon
         mpoly.add_exterior([[20], [21], [22], [23], [20]]);
 
-        let czml_polygon = indexed_multilinestring_to_czml_polygon(&vertices, &mpoly);
+        let czml_polygon = indexed_multipolygon_to_czml_polygon(&vertices, &mpoly);
 
         let packet = Packet {
             polygon: Some(czml_polygon),
