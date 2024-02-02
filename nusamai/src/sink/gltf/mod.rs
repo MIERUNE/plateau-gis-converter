@@ -43,17 +43,17 @@ impl DataSinkProvider for GltfSinkProvider {
     fn create(&self, params: &Parameters) -> Box<dyn DataSink> {
         let output_path = get_parameter_value!(params, "@output", FileSystemPath);
 
-        Box::<CzmlSink>::new(CzmlSink {
+        Box::<GltfSink>::new(GltfSink {
             output_path: output_path.as_ref().unwrap().into(),
         })
     }
 }
 
-pub struct CzmlSink {
+pub struct GltfSink {
     output_path: PathBuf,
 }
 
-impl DataSink for CzmlSink {
+impl DataSink for GltfSink {
     fn make_transform_requirements(&self) -> transformer::Requirements {
         use transformer::RequirementItem;
 
@@ -113,18 +113,8 @@ impl DataSink for CzmlSink {
     }
 }
 
-// fn extract_properties(tree: &nusamai_citygml::object::Value) -> Option<geojson::JsonObject> {
-//     match &tree {
-//         obj @ nusamai_citygml::Value::Object(_) => match obj.to_attribute_json() {
-//             serde_json::Value::Object(map) => Some(map),
-//             _ => unreachable!(),
-//         },
-//         _ => panic!("Root value type must be Feature, but found {:?}", tree),
-//     }
-// }
-
 /// Create CZML Packet from a Entity
-pub fn entity_to_packet(entity: &Entity, single_part: bool) -> Vec<Packet> {
+pub fn entity_to_packet(entity: &Entity, single_part: bool) -> Vec<Feature> {
     // TODO: extract properties
     // let _properties = extract_properties(&entity.root);
     let geom_store = entity.geometry_store.read().unwrap();
@@ -190,7 +180,6 @@ mod tests {
 
     use super::*;
     use nusamai_citygml::{object::Object, GeometryRefEntry, Value};
-    use nusamai_czml::{PositionListProperties, PositionListType};
     use nusamai_geometry::MultiPolygon;
     use nusamai_projection::crs::EPSG_JGD2011_GEOGRAPHIC_3D;
 
@@ -278,58 +267,5 @@ mod tests {
             }),
             geometry_store: RwLock::new(geometries).into(),
         };
-
-        // test document packet
-        let packets = entity_to_packet(&entity, true);
-        assert_eq!(packets.len(), 4);
-        assert_eq!(packets[0].id, Some("document".into()));
-
-        // test first polygon packet
-        let first_polygon = &packets[1].polygon;
-        assert!(first_polygon.is_some());
-
-        let first_polygon = first_polygon.as_ref().unwrap();
-        let first_polygon_positions = PositionListProperties {
-            cartographic_degrees: Some(vec![
-                0., 0., 111., 5., 0., 111., 5., 5., 111., 0., 5., 111.,
-            ]),
-            ..Default::default()
-        };
-        assert_eq!(
-            first_polygon.positions,
-            Some(PositionListType::Object(first_polygon_positions))
-        );
-
-        // test second polygon packet
-        let second_polygon = &packets[2].polygon;
-        assert!(second_polygon.is_some());
-
-        let second_polygon = second_polygon.as_ref().unwrap();
-        let second_polygon_positions = PositionListProperties {
-            cartographic_degrees: Some(vec![
-                4., 0., 222., 7., 0., 222., 7., 3., 222., 4., 3., 222.,
-            ]),
-            ..Default::default()
-        };
-        assert_eq!(
-            second_polygon.positions,
-            Some(PositionListType::Object(second_polygon_positions))
-        );
-
-        // test third polygon packet
-        let third_polygon = &packets[3].polygon;
-        assert!(third_polygon.is_some());
-
-        let third_polygon = third_polygon.as_ref().unwrap();
-        let third_polygon_positions = PositionListProperties {
-            cartographic_degrees: Some(vec![
-                4., 0., 333., 7., 0., 333., 7., 3., 333., 4., 3., 333.,
-            ]),
-            ..Default::default()
-        };
-        assert_eq!(
-            third_polygon.positions,
-            Some(PositionListType::Object(third_polygon_positions))
-        );
     }
 }
