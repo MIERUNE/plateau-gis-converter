@@ -188,7 +188,7 @@ pub fn entity_to_packet(entity: &Entity, single_part: bool) -> Vec<Packet> {
         description: Some(StringValueType::String(properties)),
         ..Default::default()
     };
-    let mut packets: Vec<Packet> = vec![doc, properties_packet];
+    let mut packets: Vec<Packet> = vec![properties_packet];
 
     if !mpoly.is_empty() {
         // CZML does not support multi-part polygons due to its specification, so create a Packet for each face.
