@@ -81,7 +81,6 @@ impl DataSink for CzmlSink {
                         }
 
                         let packets = entity_to_packet(&parcel.entity, true);
-
                         for packet in packets {
                             let Ok(bytes) = serde_json::to_vec(&packet) else {
                                 // TODO: fatal error
