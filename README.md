@@ -68,5 +68,5 @@ Build:
 
 ```bash
 cd ./app/
-npx tauri build --release
+npx tauri build
 ```
