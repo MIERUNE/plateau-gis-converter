@@ -68,6 +68,7 @@ fn polygon_to_kml_polygon_with_mapping<const D: usize, T: CoordNum>(
     }
 }
 
+/// Create a kml::MultiGeometry with Polygon from `nusamai_geometry::MultiPoint` with a mapping function.
 pub fn polygon_to_kml_with_mapping<const D: usize, T: CoordNum>(
     poly: Polygon<D, T>,
     mapping: impl Fn([T; D]) -> [f64; 3],
@@ -82,6 +83,7 @@ pub fn polygon_to_kml_with_mapping<const D: usize, T: CoordNum>(
     }
 }
 
+/// Create a kml::MultiGeometry from a nusamai_geometry::MultiPolygon
 pub fn polygon_to_kml(poly: &Polygon<3>) -> MultiGeometry {
     polygon_to_kml_with_mapping(poly.clone(), |c| c)
 }
