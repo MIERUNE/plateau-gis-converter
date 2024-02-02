@@ -93,8 +93,6 @@ pub fn indexed_multipolygon_to_czml_polygon(
 
 #[cfg(test)]
 mod tests {
-    use std::io::Write;
-
     use crate::Packet;
 
     use super::*;
@@ -195,20 +193,13 @@ mod tests {
             ..Default::default()
         };
 
-        let doc = Packet {
-            id: Some("document".to_string()),
-            version: Some("1.0".to_string()),
-            ..Default::default()
-        };
+        let packets = vec![packet];
 
-        let packets = vec![doc, packet];
+        let json = serde_json::to_string(&packets).unwrap();
 
-        let json = serde_json::to_string_pretty(&packets).unwrap();
-
-        let file = std::fs::File::create("/Users/satoru/Downloads/sample.json").unwrap();
-        let mut writer = std::io::BufWriter::new(file);
-        writer.write_all(json.as_bytes()).unwrap();
-
-        println!("{}", json);
+        assert_eq!(
+            json,
+            r#"[{"availability":"0000-00-00T00:00:00Z/9999-12-31T24:00:00Z","polygon":{"show":true,"positions":{"referenceFrame":"FIXED","cartographicDegrees":[0.0,0.0,111.0,5.0,0.0,111.0,5.0,5.0,111.0,0.0,5.0,111.0,4.0,0.0,222.0,7.0,0.0,222.0,7.0,3.0,222.0,4.0,3.0,222.0,4.0,0.0,333.0,7.0,0.0,333.0,7.0,3.0,333.0,4.0,3.0,333.0]},"holes":{"cartographicDegrees":[[1.0,1.0,111.0,2.0,1.0,111.0,2.0,2.0,111.0,1.0,2.0,111.0],[3.0,3.0,111.0,4.0,3.0,111.0,4.0,4.0,111.0,3.0,4.0,111.0],[5.0,1.0,222.0,6.0,1.0,222.0,6.0,2.0,222.0,5.0,2.0,222.0]]},"arcType":"GEODESIC","height":0.0,"heightReference":"NONE","extrudedHeightReference":"NONE","stRotation":0.0,"granularity":0.0174532,"fill":true,"material":{"solidColor":{"color":{"rgba":[255,255,255,255]}}},"outline":false,"outlineColor":{"rgba":[0,0,0,255]},"outlineWidth":1.0,"perPositionHeight":false,"closeTop":true,"closeBottom":true,"shadows":"DISABLED","classificationType":"BOTH","zIndex":0}}]"#
+        )
     }
 }
