@@ -24,7 +24,10 @@ pub type ReferenceListValueProperty = Vec<String>;
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct PositionListProperties {
-    #[serde(default = "default_reference_frame")]
+    #[serde(
+        default = "default_reference_frame",
+        skip_serializing_if = "is_default_reference_frame"
+    )]
     pub reference_frame: String,
 
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -62,6 +65,10 @@ pub struct PositionListProperties {
 
 fn default_reference_frame() -> String {
     String::from("FIXED")
+}
+
+fn is_default_reference_frame(reference_frame: &String) -> bool {
+    *reference_frame == "FIXED"
 }
 
 impl Default for PositionListProperties {
