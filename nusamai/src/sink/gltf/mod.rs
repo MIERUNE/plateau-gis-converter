@@ -254,6 +254,12 @@ pub fn entity_to_gltf(entity: &Entity) {
     let mut mpoly3: MultiPolygon<'_, 3> = MultiPolygon::<3, f64>::new();
 
     // todo: 3次元ポリゴンを作る・3次元ポリゴンを3次元マルチポリゴンに追加する
+    // todo: 三角分割する
+    // todo: 三角形の頂点と面をまとめる
+    // todo: glTFに変換する
+    // todo: ファイルに書き出す
+    // todo: 属性について考える
+    // todo: 属性を付与する
 
     let (vertices, indices) = triangulate_polygon(&mpoly3);
 }
