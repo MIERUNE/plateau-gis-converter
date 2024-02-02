@@ -115,20 +115,30 @@ impl DataSink for CzmlSink {
     }
 }
 
-// fn extract_properties(tree: &nusamai_citygml::object::Value) -> Option<geojson::JsonObject> {
-//     match &tree {
-//         obj @ nusamai_citygml::Value::Object(_) => match obj.to_attribute_json() {
-//             serde_json::Value::Object(map) => Some(map),
-//             _ => unreachable!(),
-//         },
-//         _ => panic!("Root value type must be Feature, but found {:?}", tree),
-//     }
-// }
+fn extract_properties(tree: &nusamai_citygml::object::Value) -> String {
+    match &tree {
+        obj @ nusamai_citygml::Value::Object(_) => match obj.to_attribute_json() {
+            serde_json::Value::Object(map) => map_to_html_table(&map),
+            _ => unreachable!(),
+        },
+        _ => panic!("Root value type must be Feature, but found {:?}", tree),
+    }
+}
+
+fn map_to_html_table(map: &serde_json::Map<String, serde_json::Value>) -> String {
+    let mut html = String::new();
+    html.push_str("<table>");
+    for (key, value) in map {
+        html.push_str(&format!("<tr><td>{}</td><td>{}</td></tr>", key, value));
+    }
+    html.push_str("</table>");
+    html
+}
 
 /// Create CZML Packet from a Entity
 pub fn entity_to_packet(entity: &Entity, single_part: bool) -> Vec<Packet> {
-    // TODO: extract properties
-    // let _properties = extract_properties(&entity.root);
+    let properties = extract_properties(&entity.root);
+    println!("{}", properties);
     let geom_store = entity.geometry_store.read().unwrap();
 
     let Value::Object(obj) = &entity.root else {
