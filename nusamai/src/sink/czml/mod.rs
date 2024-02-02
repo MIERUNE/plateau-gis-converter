@@ -10,7 +10,7 @@ use nusamai_citygml::object::{Entity, ObjectStereotype, Value};
 use nusamai_citygml::schema::Schema;
 use nusamai_citygml::GeometryType;
 use nusamai_czml::conversion::indexed_multipolygon_to_czml_polygon;
-use nusamai_czml::{indexed_polygon_to_czml_polygon, Packet};
+use nusamai_czml::{indexed_polygon_to_czml_polygon, CzmlBoolean, Packet};
 
 use crate::parameters::*;
 use crate::pipeline::{Feedback, Receiver};
@@ -165,7 +165,10 @@ pub fn entity_to_packet(entity: &Entity, single_part: bool) -> Vec<Packet> {
         // CZML does not support multi-part polygons due to its specification, so create a Packet for each face.
         if single_part {
             for poly in mpoly.iter() {
-                let czml_polygon = indexed_polygon_to_czml_polygon(&geom_store.vertices, &poly);
+                let mut czml_polygon = indexed_polygon_to_czml_polygon(&geom_store.vertices, &poly);
+                // In Cesium, if perPositionHeight is false, the polygon height is fixed
+                czml_polygon.per_position_height = CzmlBoolean::Boolean(true);
+
                 let packet = Packet {
                     polygon: Some(czml_polygon),
                     ..Default::default()
