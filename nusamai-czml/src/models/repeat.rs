@@ -7,7 +7,7 @@ use crate::{
 
 pub type Repeat = RepeatType;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 #[serde(untagged)]
 pub enum RepeatType {
     Array(Vec<RepeatProperties>),
@@ -20,7 +20,7 @@ impl Default for RepeatType {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Debug, Default, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct RepeatProperties {
     #[serde(skip_serializing_if = "Option::is_none")]

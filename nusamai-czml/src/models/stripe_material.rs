@@ -7,14 +7,14 @@ use crate::{
 
 pub type StripeMaterial = StripeMaterialType;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 #[serde(untagged)]
 pub enum StripeMaterialType {
     Array(Vec<StripeMaterialProperties>),
     Object(StripeMaterialProperties),
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 #[serde(rename_all = "camelCase")]
 #[serde(deny_unknown_fields)]
 pub struct StripeMaterialProperties {
