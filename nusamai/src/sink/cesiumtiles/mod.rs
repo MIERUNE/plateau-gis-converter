@@ -245,15 +245,14 @@ fn tile_writing_stage(
                     if project3d_to_2d(&buf3d, num_outer, &mut buf2d) {
                         // earcut
                         earcutter.earcut(&buf2d, poly.hole_indices(), 2, &mut triangles_buf);
+                        triangles.extend(triangles_buf.iter().map(|idx| {
+                            [
+                                buf3d[*idx as usize * 3],
+                                buf3d[*idx as usize * 3 + 1],
+                                buf3d[*idx as usize * 3 + 2],
+                            ]
+                        }));
                     }
-
-                    triangles.extend(triangles_buf.iter().map(|idx| {
-                        [
-                            buf3d[*idx as usize * 3],
-                            buf3d[*idx as usize * 3 + 1],
-                            buf3d[*idx as usize * 3 + 2],
-                        ]
-                    }));
                 }
             }
 
@@ -367,10 +366,20 @@ fn write_gltf_glb(
             translation,
             ..Default::default()
         }],
+        materials: vec![Material {
+            pbr_metallic_roughness: Some(MaterialPbrMetallicRoughness {
+                base_color_factor: [0.5, 0.5, 0.5, 1.0],
+                metallic_factor: 1.,
+                roughness_factor: 0.2,
+                ..Default::default()
+            }),
+            ..Default::default()
+        }],
         meshes: vec![Mesh {
             primitives: vec![MeshPrimitive {
                 attributes: vec![("POSITION".to_string(), 0)].into_iter().collect(),
                 indices: Some(1),
+                material: Some(0),
                 mode: PrimitiveMode::Triangles,
                 ..Default::default()
             }],

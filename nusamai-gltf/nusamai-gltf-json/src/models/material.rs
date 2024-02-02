@@ -109,7 +109,7 @@ pub struct MaterialOcculusionTextureInfoExtensions {
 #[serde(rename_all = "camelCase")]
 #[serde(default)]
 #[serde(deny_unknown_fields)]
-pub struct MaterialPBRMetallicRoughness {
+pub struct MaterialPbrMetallicRoughness {
     /// The factors for the base color of the material. This value defines linear multipliers for the sampled texels of the base color texture.
     #[serde(skip_serializing_if = "is_default_color")]
     pub base_color_factor: [f32; 4],
@@ -135,7 +135,7 @@ fn is_default_color(v: &[f32; 4]) -> bool {
     *v == [1.0, 1.0, 1.0, 1.0]
 }
 
-impl Default for MaterialPBRMetallicRoughness {
+impl Default for MaterialPbrMetallicRoughness {
     fn default() -> Self {
         Self {
             base_color_factor: [1.0, 1.0, 1.0, 1.0],
@@ -159,7 +159,7 @@ pub struct Material {
 
     /// A set of parameter values that are used to define the metallic-roughness material model from Physically Based Rendering (PBR) methodology. When undefined, all the default values of `pbrMetallicRoughness` **MUST** apply.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub pbr_metallic_roughness: Option<MaterialPBRMetallicRoughness>,
+    pub pbr_metallic_roughness: Option<MaterialPbrMetallicRoughness>,
 
     /// The tangent space normal texture. The texture encodes RGB components with linear transfer function. Each texel represents the XYZ components of a normal vector in tangent space. The normal vectors use the convention +X is right and +Y is up. +Z points toward the viewer. If a fourth component (A) is present, it **MUST** be ignored. When undefined, the material does not have a tangent space normal texture.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -259,7 +259,7 @@ mod tests {
 
     #[test]
     fn test_pbr_material() {
-        let m: MaterialPBRMetallicRoughness = serde_json::from_str("{}").unwrap();
+        let m: MaterialPbrMetallicRoughness = serde_json::from_str("{}").unwrap();
         assert_eq!(m.base_color_factor, [1.0, 1.0, 1.0, 1.0]);
         assert_eq!(m.metallic_factor, 1.0);
         assert_eq!(m.roughness_factor, 1.0);
