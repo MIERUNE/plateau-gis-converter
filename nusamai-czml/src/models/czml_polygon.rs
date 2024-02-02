@@ -115,7 +115,7 @@ fn default_material() -> Material {
         solid_color: Some(SolidColorMaterial {
             color: Color::Object(ColorProperties {
                 // FIXME: → [255, 255, 255, 255]
-                rgba: Some(RgbaValue::Constant([0, 0, 255, 255])),
+                rgba: Some(RgbaValue::Constant([255, 255, 255, 255])),
                 ..Default::default()
             }),
         }),
@@ -124,18 +124,21 @@ fn default_material() -> Material {
 }
 
 fn default_outline() -> CzmlBoolean {
-    CzmlBoolean::Boolean(false)
+    // FIXME: → false
+    CzmlBoolean::Boolean(true)
 }
 
 fn default_outline_color() -> Color {
     Color::Object(ColorProperties {
-        rgba: Some(RgbaValue::Constant([0, 0, 0, 255])),
+        // FIXME: → [0, 0, 0, 255]
+        rgba: Some(RgbaValue::Constant([255, 0, 255, 255])),
         ..Default::default()
     })
 }
 
 fn default_outline_width() -> CzmlDouble {
-    CzmlDouble::Double(1.0)
+    // FIXME: → 1.0
+    CzmlDouble::Double(100.0)
 }
 
 fn default_per_position_height() -> CzmlBoolean {
@@ -143,11 +146,13 @@ fn default_per_position_height() -> CzmlBoolean {
 }
 
 fn default_close_top() -> CzmlBoolean {
-    CzmlBoolean::Boolean(true)
+    // FIXME: → true
+    CzmlBoolean::Boolean(false)
 }
 
 fn default_close_bottom() -> CzmlBoolean {
-    CzmlBoolean::Boolean(true)
+    // FIXME: → true
+    CzmlBoolean::Boolean(false)
 }
 
 fn default_shadows() -> ShadowMode {

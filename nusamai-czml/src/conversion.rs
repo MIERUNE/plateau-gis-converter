@@ -93,6 +93,8 @@ pub fn indexed_multilinestring_to_czml_polygon(
 
 #[cfg(test)]
 mod tests {
+    use std::io::Write;
+
     use crate::Packet;
 
     use super::*;
@@ -193,9 +195,19 @@ mod tests {
             ..Default::default()
         };
 
-        let packets = vec![packet];
+        let doc = Packet {
+            id: Some("document".to_string()),
+            version: Some("1.0".to_string()),
+            ..Default::default()
+        };
+
+        let packets = vec![doc, packet];
 
         let json = serde_json::to_string_pretty(&packets).unwrap();
+
+        let file = std::fs::File::create("/Users/satoru/Downloads/sample.json").unwrap();
+        let mut writer = std::io::BufWriter::new(file);
+        writer.write_all(json.as_bytes()).unwrap();
 
         println!("{}", json);
     }
