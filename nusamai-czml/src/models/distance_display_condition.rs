@@ -5,21 +5,21 @@ use crate::{DeletableProperty, InterpolatableProperty, ReferenceValue, Reference
 
 pub type DistanceDisplayCondition = DistanceDisplayConditionValueType;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 #[serde(untagged)]
 pub enum DistanceDisplayConditionValueType {
     Array(Vec<DistanceDisplayConditionProperties>),
     Object(DistanceDisplayConditionProperties),
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 #[serde(untagged)]
 pub enum DistanceDisplayConditionValue {
     Constant([f64; 2]),
     TimeTagged(Vec<DistanceDisplayConditionTimeTagged>),
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 pub struct DistanceDisplayConditionTimeTagged {
     #[serde(with = "chrono::serde::ts_seconds")]
     pub time: DateTime<Utc>,
@@ -27,13 +27,13 @@ pub struct DistanceDisplayConditionTimeTagged {
     pub far_distance: f64,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 pub struct DistanceDisplayConditionValueProperty {
     pub near_distance: f64,
     pub far_distance: f64,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct DistanceDisplayConditionProperties {
     #[serde(skip_serializing_if = "Option::is_none")]

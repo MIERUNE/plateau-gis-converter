@@ -4,14 +4,14 @@ use crate::{Color, ColorProperties, Repeat, RepeatProperties, RgbaValue};
 
 pub type CheckerboardMaterial = CheckerboardMaterialType;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 #[serde(untagged)]
 pub enum CheckerboardMaterialType {
     Array(Vec<CheckerboardMaterialProperties>),
     Object(CheckerboardMaterialProperties),
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 #[serde(rename_all = "camelCase")]
 #[serde(deny_unknown_fields)]
 pub struct CheckerboardMaterialProperties {

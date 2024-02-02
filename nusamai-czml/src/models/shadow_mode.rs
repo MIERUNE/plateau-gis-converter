@@ -7,7 +7,7 @@ use crate::{
 
 pub type ShadowMode = ShadowModeValueType;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 #[serde(untagged)]
 pub enum ShadowModeValueType {
     Array(Vec<ShadowModeProperties>),
@@ -15,7 +15,7 @@ pub enum ShadowModeValueType {
     String(ShadowModeValue),
 }
 
-#[derive(Serialize, Deserialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Debug, Default, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct ShadowModeProperties {
     #[serde(skip_serializing_if = "Option::is_none")]

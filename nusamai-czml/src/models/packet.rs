@@ -32,7 +32,10 @@ pub struct Packet {
     pub version: Option<String>,
 
     // todo: Implement TimeIntervalCollectionValue.json
-    #[serde(default = "default_availability")]
+    #[serde(
+        default = "default_availability",
+        skip_serializing_if = "is_default_availability"
+    )]
     pub availability: Value,
 
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -118,6 +121,9 @@ pub struct Packet {
 fn default_availability() -> Value {
     Value::String("0000-00-00T00:00:00Z/9999-12-31T24:00:00Z".to_string())
 }
+fn is_default_availability(availability: &Value) -> bool {
+    *availability == default_availability()
+}
 
 impl Default for Packet {
     fn default() -> Self {
@@ -176,9 +182,6 @@ mod tests {
     fn test_default_serialize() {
         let packet = Packet::default();
         let json = serde_json::to_string(&packet).unwrap();
-        assert_eq!(
-            json,
-            r#"{"availability":"0000-00-00T00:00:00Z/9999-12-31T24:00:00Z"}"#
-        );
+        assert_eq!(json, r#"{}"#);
     }
 }

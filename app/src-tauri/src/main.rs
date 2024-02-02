@@ -7,8 +7,8 @@ use std::sync::{Arc, Mutex};
 use nusamai::pipeline::Canceller;
 use nusamai::sink::DataSinkProvider;
 use nusamai::sink::{
-    geojson::GeoJsonSinkProvider, gpkg::GpkgSinkProvider, mvt::MVTSinkProvider,
-    serde::SerdeSinkProvider, shapefile::ShapefileSinkProvider,
+    czml::CzmlSinkProvider, geojson::GeoJsonSinkProvider, gpkg::GpkgSinkProvider,
+    mvt::MVTSinkProvider, serde::SerdeSinkProvider, shapefile::ShapefileSinkProvider,
 };
 use nusamai::source::citygml::CityGmlSourceProvider;
 use nusamai::source::DataSourceProvider;
@@ -37,6 +37,7 @@ fn select_sink_provider(filetype: &str) -> Box<dyn DataSinkProvider> {
         "gpkg" => Box::new(GpkgSinkProvider {}),
         "mvt" => Box::new(MVTSinkProvider {}),
         "shapefile" => Box::new(ShapefileSinkProvider {}),
+        "czml" => Box::new(CzmlSinkProvider {}),
         _ => panic!("Unknown filetype: {}", filetype),
     }
 }

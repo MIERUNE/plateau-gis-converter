@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::Color;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 pub struct SolidColorMaterial {
     #[serde(default = "default_color")]
     pub color: Color,

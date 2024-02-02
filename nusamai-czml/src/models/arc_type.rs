@@ -4,7 +4,7 @@ use crate::{DeletableProperty, ReferenceValue, ReferenceValueProperty};
 
 pub type ArcType = ArcTypeType;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 #[serde(untagged)]
 pub enum ArcTypeType {
     Array(Vec<ArcTypeProperties>),
@@ -12,7 +12,7 @@ pub enum ArcTypeType {
     String(ArcTypeValue),
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum ArcTypeValue {
     None,
@@ -20,13 +20,13 @@ pub enum ArcTypeValue {
     Rhumb,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 pub struct ArcTypeValueProperty {
     #[serde(flatten)]
     pub arc_type: ArcTypeValue,
 }
 
-#[derive(Serialize, Deserialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Debug, Default, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct ArcTypeProperties {
     #[serde(skip_serializing_if = "Option::is_none")]

@@ -4,7 +4,7 @@ use crate::DeletableProperty;
 
 pub type PositionList = PositionListType;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 #[serde(untagged)]
 pub enum PositionListType {
     Array(Vec<PositionListProperties>),
@@ -21,9 +21,13 @@ pub type CartographicRadiansListValueProperty = Vec<f64>;
 pub type CartographicDegreesListValueProperty = Vec<f64>;
 pub type ReferenceListValueProperty = Vec<String>;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct PositionListProperties {
+    #[serde(
+        default = "default_reference_frame",
+        skip_serializing_if = "is_default_reference_frame"
+    )]
     pub reference_frame: String,
 
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -57,4 +61,29 @@ pub struct PositionListProperties {
     #[serde(flatten)]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub reference_value_property: Option<ReferenceListValueProperty>,
+}
+
+fn default_reference_frame() -> String {
+    String::from("FIXED")
+}
+
+fn is_default_reference_frame(reference_frame: &String) -> bool {
+    *reference_frame == "FIXED"
+}
+
+impl Default for PositionListProperties {
+    fn default() -> Self {
+        Self {
+            reference_frame: String::from("FIXED"),
+            cartesian: None,
+            cartographic_radians: None,
+            cartographic_degrees: None,
+            references: None,
+            deletable_property: None,
+            cartesian3_list_value_property: None,
+            cartographic_radians_list_value_property: None,
+            cartographic_degrees_list_value_property: None,
+            reference_value_property: None,
+        }
+    }
 }
