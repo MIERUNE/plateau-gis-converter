@@ -18,33 +18,5 @@
 			},
 			"perPositionHeight": true
 		}
-	},
-	{
-		"polygon": {
-			"positions": {
-				"cartographicDegrees": [
-					4.0, 0.0, 222.0, 7.0, 0.0, 222.0, 7.0, 3.0, 222.0, 4.0, 3.0, 222.0
-				]
-			},
-			"holes": {
-				"cartographicDegrees": [
-					[5.0, 1.0, 222.0, 6.0, 1.0, 222.0, 6.0, 2.0, 222.0, 5.0, 2.0, 222.0]
-				]
-			},
-			"perPositionHeight": true
-		}
-	},
-	{
-		"polygon": {
-			"positions": {
-				"cartographicDegrees": [
-					4.0, 0.0, 333.0, 7.0, 0.0, 333.0, 7.0, 3.0, 333.0, 4.0, 3.0, 333.0
-				]
-			},
-			"holes": {
-				"cartographicDegrees": []
-			},
-			"perPositionHeight": true
-		}
 	}
 ]
