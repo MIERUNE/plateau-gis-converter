@@ -169,8 +169,8 @@ fn run(
 
     // wait for the pipeline to finish
     handle.join();
-    if canceller.lock().unwrap().is_cancelled() {
-        log::info!("Pipeline cancelled");
+    if canceller.lock().unwrap().is_canceled() {
+        log::info!("Pipeline canceled");
     }
 
     log::info!("Total processing time: {:?}", total_time.elapsed());

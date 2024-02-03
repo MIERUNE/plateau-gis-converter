@@ -45,8 +45,8 @@ pub(crate) fn simple_run_sink<S: DataSinkProvider>(sink_provider: S, output: Opt
         nusamai::pipeline::run(source, transformer, sink, schema.into());
     handle.join();
 
-    // should not be cancelled
-    assert!(!canceller.is_cancelled());
+    // should not be canceled
+    assert!(!canceller.is_canceled());
 }
 
 #[test]

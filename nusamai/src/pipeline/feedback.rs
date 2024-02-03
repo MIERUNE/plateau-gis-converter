@@ -3,11 +3,14 @@
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 
+use super::PipelineError;
+
 const FEEDBACK_CHANNEL_BOUND: usize = 10000;
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct FeedbackMessage {
     pub message: String,
+    pub error: Option<PipelineError>,
     // severity:
     // progress:
     // source:
@@ -16,28 +19,48 @@ pub struct FeedbackMessage {
 
 #[derive(Clone)]
 pub struct Feedback {
-    cancelled: Arc<AtomicBool>,
+    canceled: Arc<AtomicBool>,
     sender: std::sync::mpsc::SyncSender<FeedbackMessage>,
 }
 
 impl Feedback {
-    /// Checks if the pipeline is requested to be cancelled
+    /// Checks if the pipeline is requested to be canceled
     #[inline]
-    pub fn is_cancelled(&self) -> bool {
-        self.cancelled.load(Ordering::Relaxed)
+    pub fn is_canceled(&self) -> bool {
+        self.canceled.load(Ordering::Relaxed)
     }
 
-    /// Request the pipeline to be cancelled
+    /// Returns an error if the pipeline is requested to be canceled
+    #[inline]
+    pub fn ensure_not_canceled(&self) -> Result<(), PipelineError> {
+        if self.canceled.load(Ordering::Relaxed) {
+            Err(PipelineError::Canceled)
+        } else {
+            Ok(())
+        }
+    }
+
+    /// Request the pipeline to be canceled
     #[inline]
     pub fn cancel(&self) {
-        self.cancelled.store(true, Ordering::Relaxed)
+        self.canceled.store(true, Ordering::Relaxed)
     }
 
     /// Send a message to the feedback channel
     #[inline]
-    pub fn feedback(&self, msg: FeedbackMessage) {
+    pub fn feedback_raw(&self, msg: FeedbackMessage) {
         // don't care if the receiver is dropped.
         let _ = self.sender.send(msg);
+    }
+
+    /// Report a fatal error and cancel the pipeline
+    #[inline]
+    pub fn report_error(&self, error: PipelineError) {
+        self.cancel();
+        let _ = self.sender.send(FeedbackMessage {
+            message: "Fatal error".to_string(),
+            error: Some(error),
+        });
     }
 }
 
@@ -56,30 +79,30 @@ impl IntoIterator for Watcher {
 
 #[derive(Clone, Default)]
 pub struct Canceller {
-    cancelled: Arc<AtomicBool>,
+    canceled: Arc<AtomicBool>,
 }
 
 impl Canceller {
     /// Cancel the pipeline
     pub fn cancel(&self) {
-        self.cancelled.store(true, Ordering::Relaxed);
+        self.canceled.store(true, Ordering::Relaxed);
     }
 
-    /// Checks if the pipeline is cancelled
-    pub fn is_cancelled(&self) -> bool {
-        self.cancelled.load(Ordering::Relaxed)
+    /// Checks if the pipeline is canceled
+    pub fn is_canceled(&self) -> bool {
+        self.canceled.load(Ordering::Relaxed)
     }
 }
 
 pub(crate) fn watcher() -> (Watcher, Feedback, Canceller) {
-    let cancelled = Arc::new(AtomicBool::new(false));
+    let canceled = Arc::new(AtomicBool::new(false));
     let (sender, receiver) = std::sync::mpsc::sync_channel(FEEDBACK_CHANNEL_BOUND);
     let watcher = Watcher { receiver };
     let canceller = Canceller {
-        cancelled: cancelled.clone(),
+        canceled: canceled.clone(),
     };
     let feedback = Feedback {
-        cancelled: cancelled.clone(),
+        canceled: canceled.clone(),
         sender,
     };
     (watcher, feedback, canceller)

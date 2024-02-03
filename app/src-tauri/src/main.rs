@@ -104,7 +104,7 @@ fn run(input_paths: Vec<String>, output_path: String, filetype: String) {
 
     // wait for the pipeline to finish
     handle.join();
-    if canceller.lock().unwrap().is_cancelled() {
-        log::info!("Pipeline cancelled");
+    if canceller.lock().unwrap().is_canceled() {
+        log::info!("Pipeline canceled");
     }
 }

@@ -9,6 +9,7 @@ use url::Url;
 use rayon::prelude::*;
 
 use crate::parameters::Parameters;
+use crate::pipeline;
 use crate::pipeline::{Feedback, Parcel, Sender};
 use crate::source::{DataSource, DataSourceProvider, SourceInfo};
 use nusamai_citygml::object::Entity;
@@ -42,14 +43,13 @@ pub struct CityGmlSource {
 }
 
 impl DataSource for CityGmlSource {
-    fn run(&mut self, downstream: Sender, feedback: &Feedback) {
+    fn run(&mut self, downstream: Sender, feedback: &Feedback) -> pipeline::Result<()> {
         let code_resolver = nusamai_plateau::codelist::Resolver::new();
 
-        let _ = self.filenames.par_iter().try_for_each(|filename| {
+        self.filenames.par_iter().try_for_each(|filename| {
+            println!("{}", filename);
             log::info!("loading city objects from: {} ...", filename);
-            let Ok(file) = std::fs::File::open(filename) else {
-                panic!("failed to open file {}", filename);
-            };
+            let file = std::fs::File::open(filename).unwrap();
             let reader = std::io::BufReader::with_capacity(1024 * 1024, file);
             let mut xml_reader = quick_xml::NsReader::from_reader(reader);
             let source_url =
@@ -65,7 +65,9 @@ impl DataSource for CityGmlSource {
                 },
                 Err(e) => Err(e),
             }
-        });
+        })?;
+
+        Ok(())
     }
 }
 
@@ -75,8 +77,8 @@ fn toplevel_dispatcher<R: BufRead>(
     feedback: &Feedback,
 ) -> Result<(), ParseError> {
     let result = st.parse_children(|st| {
-        if feedback.is_cancelled() {
-            return Err(ParseError::Cancelled);
+        if feedback.is_canceled() {
+            return Ok(());
         }
 
         match st.current_path() {
