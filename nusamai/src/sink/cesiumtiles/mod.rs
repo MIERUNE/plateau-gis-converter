@@ -1,16 +1,16 @@
 //! 3D Tiles sink
 
 use std::fs;
-use std::io::{BufWriter, Write};
-pub mod slice;
-pub mod sort;
-pub mod tiling;
+mod gltf;
+mod slice;
+mod sort;
+mod tiling;
 
+use std::io::BufWriter;
 use std::path::{Path, PathBuf};
 use std::sync::{mpsc, Arc, Mutex};
 
 use ahash::RandomState;
-use byteorder::{ByteOrder, LittleEndian};
 use earcut_rs::utils_3d::project3d_to_2d;
 use earcut_rs::Earcut;
 use ext_sort::{buffer::mem::MemoryLimitedBufferBuilder, ExternalSorter, ExternalSorterBuilder};
@@ -21,19 +21,19 @@ use nusamai_projection::cartesian::geographic_to_geocentric;
 use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
 
-use nusamai_3dtiles_json::tileset;
 use nusamai_citygml::schema::Schema;
 use nusamai_geometry::MultiPolygon;
 use nusamai_mvt::tileid::TileIdMethod;
 
 use crate::parameters::*;
 use crate::pipeline::{Feedback, Receiver};
+use crate::sink::cesiumtiles::gltf::write_gltf_glb;
 use crate::sink::{DataSink, DataSinkProvider, SinkInfo};
 use crate::{get_parameter_value, transformer};
 use slice::slice_cityobj_geoms;
 use sort::BincodeExternalChunk;
 
-use self::tiling::{calc_parent_zxy, geometric_error};
+use tiling::{TileSpec, TileTree};
 
 pub struct CesiumTilesSinkProvider {}
 
@@ -207,31 +207,6 @@ fn feature_sorting_stage(
     }
 }
 
-#[derive(Debug)]
-struct TileSpec {
-    zxy: TileZXY,
-    min_lng: f64,
-    max_lng: f64,
-    min_lat: f64,
-    max_lat: f64,
-    min_height: f64,
-    max_height: f64,
-}
-
-impl Default for TileSpec {
-    fn default() -> Self {
-        TileSpec {
-            zxy: (0, u32::MAX, u32::MAX),
-            min_lng: f64::MAX,
-            max_lng: f64::MIN,
-            min_lat: f64::MAX,
-            max_lat: f64::MIN,
-            min_height: f64::MAX,
-            max_height: f64::MIN,
-        }
-    }
-}
-
 fn tile_writing_stage(
     output_path: &Path,
     feedback: Feedback,
@@ -239,7 +214,6 @@ fn tile_writing_stage(
     tile_id_conv: TileIdMethod,
 ) {
     let ellipsoid = nusamai_projection::ellipsoid::wgs84();
-
     let tiles: Arc<Mutex<Vec<TileSpec>>> = Default::default();
 
     let _ = receiver_sorted
@@ -348,6 +322,14 @@ fn tile_writing_stage(
                 })
                 .collect();
 
+            // Remove degenerate triangles
+            let indices: Vec<u32> = indices
+                .chunks_exact(3)
+                .filter(|idx| (idx[0] != idx[1] && idx[1] != idx[2] && idx[2] != idx[0]))
+                .flatten()
+                .copied()
+                .collect();
+
             let zxy: TileZXY = tile_id_conv.id_to_zxy(tile_id);
             let (zoom, x, y) = zxy;
             tilespec.zxy = zxy;
@@ -370,7 +352,17 @@ fn tile_writing_stage(
                     panic!("Fatal error: {:?}", e); // FIXME
                 }
             }
-            write_gltf_glb(&path_glb, pos_min, pos_max, translation, vertices, indices);
+
+            let mut file = std::fs::File::create(path_glb).unwrap();
+            let mut writer = BufWriter::new(&mut file);
+            write_gltf_glb(
+                &mut writer,
+                pos_min,
+                pos_max,
+                translation,
+                vertices,
+                indices,
+            );
 
             Ok(())
         });
@@ -380,8 +372,8 @@ fn tile_writing_stage(
         tree.add_node(tilespec);
     }
 
-    let tileset = tileset::Tileset {
-        asset: tileset::Asset {
+    let tileset = nusamai_3dtiles_json::tileset::Tileset {
+        asset: nusamai_3dtiles_json::tileset::Asset {
             version: "1.1".to_string(),
             ..Default::default()
         },
@@ -396,269 +388,4 @@ fn tile_writing_stage(
         serde_json::to_string_pretty(&tileset).unwrap(),
     )
     .unwrap()
-}
-
-#[derive(Default, Debug)]
-struct Tile {
-    spec: TileSpec,
-    has_content: bool,
-    child00: Option<Box<Tile>>,
-    child01: Option<Box<Tile>>,
-    child10: Option<Box<Tile>>,
-    child11: Option<Box<Tile>>,
-}
-
-impl Tile {
-    fn update_boundary(&mut self) {
-        for c in [
-            &mut self.child00,
-            &mut self.child01,
-            &mut self.child10,
-            &mut self.child11,
-        ]
-        .into_iter()
-        .flatten()
-        {
-            c.update_boundary();
-            self.spec.min_lng = self.spec.min_lng.min(c.spec.min_lng);
-            self.spec.max_lng = self.spec.max_lng.max(c.spec.max_lng);
-            self.spec.min_lat = self.spec.min_lat.min(c.spec.min_lat);
-            self.spec.max_lat = self.spec.max_lat.max(c.spec.max_lat);
-            self.spec.min_height = self.spec.min_height.min(c.spec.min_height);
-            self.spec.max_height = self.spec.max_height.max(c.spec.max_height);
-        }
-    }
-
-    fn into_tileset_tile(mut self) -> tileset::Tile {
-        self.update_boundary();
-
-        let children = {
-            let children: Vec<_> = [self.child00, self.child01, self.child10, self.child11]
-                .into_iter()
-                .flatten()
-                .map(|child| child.into_tileset_tile())
-                .collect();
-            if children.is_empty() {
-                None
-            } else {
-                Some(children)
-            }
-        };
-
-        let (z, x, y) = self.spec.zxy;
-        let content = if self.has_content {
-            Some(tileset::Content {
-                uri: format!("{}/{}/{}.glb", z, x, y),
-                ..Default::default()
-            })
-        } else {
-            None
-        };
-
-        tileset::Tile {
-            geometric_error: geometric_error(z, y),
-            refine: Some(tileset::Refine::Replace),
-            bounding_volume: tileset::BoundingVolume::new_region([
-                self.spec.min_lng.to_radians(),
-                self.spec.min_lat.to_radians(),
-                self.spec.max_lng.to_radians(),
-                self.spec.max_lat.to_radians(),
-                self.spec.min_height,
-                self.spec.max_height,
-            ]),
-            content,
-            children,
-            ..Default::default()
-        }
-    }
-
-    fn new(zxy: TileZXY) -> Self {
-        Tile {
-            spec: TileSpec {
-                zxy,
-                ..Default::default()
-            },
-            ..Default::default()
-        }
-    }
-}
-
-#[derive(Debug)]
-struct TileTree {
-    root: Tile,
-}
-
-impl Default for TileTree {
-    fn default() -> Self {
-        Self {
-            root: Tile {
-                spec: TileSpec {
-                    zxy: (0, 0, 0),
-                    ..Default::default()
-                },
-                ..Default::default()
-            },
-        }
-    }
-}
-
-impl TileTree {
-    fn into_tileset_root(self) -> tileset::Tile {
-        self.root.into_tileset_tile()
-    }
-
-    fn add_node(&mut self, tilespec: TileSpec) {
-        let node = self.get_node(tilespec.zxy);
-        node.has_content = true;
-        node.spec = tilespec;
-    }
-
-    fn get_node(&mut self, zxy: TileZXY) -> &mut Tile {
-        let (zoom, x, y) = zxy;
-        if zoom == 0 {
-            &mut self.root
-        } else {
-            let parent = self.get_node(calc_parent_zxy(zoom, x, y));
-            let node = match (x % 2, y % 2) {
-                (0, 0) => parent.child00.get_or_insert_with(|| Tile::new(zxy).into()),
-                (0, 1) => parent.child01.get_or_insert_with(|| Tile::new(zxy).into()),
-                (1, 0) => parent.child10.get_or_insert_with(|| Tile::new(zxy).into()),
-                (1, 1) => parent.child11.get_or_insert_with(|| Tile::new(zxy).into()),
-                _ => unreachable!(),
-            };
-            node
-        }
-    }
-}
-
-fn write_gltf_glb(
-    path: &Path,
-    min: [f64; 3],
-    max: [f64; 3],
-    translation: [f64; 3],
-    vertices: impl IntoIterator<Item = [u32; 3]>,
-    indices: impl IntoIterator<Item = u32>,
-) {
-    use nusamai_gltf_json::*;
-
-    let mut bin_content: Vec<u8> = Vec::new();
-
-    let vertices_offset = bin_content.len();
-    let mut buf = [0; 12];
-    let mut vertices_count = 0;
-    for v in vertices {
-        LittleEndian::write_u32_into(&v, &mut buf);
-        bin_content.write_all(&buf).unwrap();
-        vertices_count += 1;
-    }
-    let vertices_len = bin_content.len() - vertices_offset;
-
-    let indices_offset = bin_content.len();
-    let mut indices_count = 0;
-    for idx in indices {
-        bin_content.write_all(&idx.to_le_bytes()).unwrap();
-        indices_count += 1;
-    }
-    let indices_len = bin_content.len() - indices_offset;
-
-    let gltf = Gltf {
-        scenes: vec![Scene {
-            nodes: Some(vec![0]),
-            ..Default::default()
-        }],
-        nodes: vec![Node {
-            mesh: Some(0),
-            translation,
-            ..Default::default()
-        }],
-        materials: vec![Material {
-            pbr_metallic_roughness: Some(MaterialPbrMetallicRoughness {
-                base_color_factor: [0.5, 0.5, 0.5, 1.0],
-                metallic_factor: 1.,
-                roughness_factor: 0.2,
-                ..Default::default()
-            }),
-            ..Default::default()
-        }],
-        meshes: vec![Mesh {
-            primitives: vec![MeshPrimitive {
-                attributes: vec![("POSITION".to_string(), 0)].into_iter().collect(),
-                indices: Some(1),
-                material: Some(0),
-                mode: PrimitiveMode::Triangles,
-                ..Default::default()
-            }],
-            ..Default::default()
-        }],
-        accessors: vec![
-            Accessor {
-                buffer_view: Some(0),
-                component_type: ComponentType::Float,
-                count: vertices_count,
-                min: Some(min.to_vec()),
-                max: Some(max.to_vec()),
-                type_: AccessorType::Vec3,
-                ..Default::default()
-            },
-            Accessor {
-                buffer_view: Some(1),
-                component_type: ComponentType::UnsignedInt,
-                count: indices_count,
-                type_: AccessorType::Scalar,
-                ..Default::default()
-            },
-        ],
-        buffer_views: vec![
-            BufferView {
-                byte_offset: vertices_offset as u32,
-                byte_length: vertices_len as u32,
-                target: Some(BufferViewTarget::ArrayBuffer),
-                ..Default::default()
-            },
-            BufferView {
-                byte_offset: indices_offset as u32,
-                byte_length: indices_len as u32,
-                target: Some(BufferViewTarget::ElementArrayBuffer),
-                ..Default::default()
-            },
-        ],
-        buffers: vec![Buffer {
-            byte_length: bin_content.len() as u32,
-            ..Default::default()
-        }],
-        ..Default::default()
-    };
-
-    {
-        let mut json_content = serde_json::to_vec(&gltf).unwrap();
-
-        // append padding
-        json_content.extend(vec![0x20; (4 - (json_content.len() % 4)) % 4].iter());
-        bin_content.extend(vec![0x0; (4 - (bin_content.len() % 4)) % 4].iter());
-
-        let total_size = 12 + 8 + json_content.len() + 8 + bin_content.len();
-
-        let mut file = std::fs::File::create(path).unwrap();
-        let mut writer = BufWriter::new(&mut file);
-
-        writer.write_all(b"glTF").unwrap(); // magic
-        writer.write_all(&2u32.to_le_bytes()).unwrap(); // version: 2
-        writer
-            .write_all(&(total_size as u32).to_le_bytes())
-            .unwrap(); // total size
-
-        writer
-            .write_all(&(json_content.len() as u32).to_le_bytes())
-            .unwrap(); // json content
-        writer.write_all(b"JSON").unwrap(); // chunk type
-        writer.write_all(&json_content).unwrap(); // json content
-
-        writer
-            .write_all(&(bin_content.len() as u32).to_le_bytes())
-            .unwrap(); // json content
-        writer.write_all(b"BIN\0").unwrap(); // chunk type
-        writer.write_all(&bin_content).unwrap(); // bin content
-
-        writer.flush().unwrap();
-    }
 }
