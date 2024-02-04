@@ -6,7 +6,7 @@ use serde_json::Value;
 use super::texture_info::TextureInfo;
 
 /// The material's alpha rendering mode enumeration specifying the interpretation of the alpha value of the base color.
-#[derive(Serialize, Deserialize, Debug, Default, PartialEq, Clone, Copy)]
+#[derive(Serialize, Deserialize, Debug, Default, Clone, Copy, PartialEq, Eq)]
 #[serde(rename_all = "UPPERCASE")]
 pub enum AlphaMode {
     /// The alpha value is ignored, and the rendered output is fully opaque.
@@ -18,7 +18,7 @@ pub enum AlphaMode {
     Blend,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 #[serde(rename_all = "camelCase")]
 #[serde(deny_unknown_fields)]
 pub struct MaterialNormalTextureInfo {
@@ -54,14 +54,14 @@ impl Default for MaterialNormalTextureInfo {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Debug, Default, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct MaterialNormalTextureInfoExtensions {
     #[serde(flatten)]
     others: HashMap<String, Value>,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 #[serde(rename_all = "camelCase")]
 #[serde(deny_unknown_fields)]
 pub struct MaterialOcclusionTextureInfo {
@@ -97,7 +97,7 @@ impl Default for MaterialOcclusionTextureInfo {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Debug, Default, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct MaterialOcculusionTextureInfoExtensions {
     #[serde(flatten)]
@@ -105,7 +105,7 @@ pub struct MaterialOcculusionTextureInfoExtensions {
 }
 
 /// A set of parameter values that are used to define the metallic-roughness material model from Physically-Based Rendering (PBR) methodology.
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 #[serde(rename_all = "camelCase")]
 #[serde(default)]
 #[serde(deny_unknown_fields)]
@@ -148,7 +148,7 @@ impl Default for MaterialPbrMetallicRoughness {
 }
 
 /// The material appearance of a primitive.
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 #[serde(rename_all = "camelCase")]
 #[serde(default)]
 #[serde(deny_unknown_fields)]
@@ -216,7 +216,7 @@ impl Default for Material {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Debug, Default, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct MaterialExtensions {
     #[serde(flatten)]
