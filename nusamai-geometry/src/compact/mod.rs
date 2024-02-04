@@ -5,13 +5,13 @@ mod multi_polygon;
 mod polygon;
 
 use core::fmt::Debug;
+
 pub use linestring::{LineString, LineString2, LineString3};
 pub use multi_linestring::{MultiLineString, MultiLineString2, MultiLineString3};
 pub use multi_point::{MultiPoint, MultiPoint2, MultiPoint3};
 pub use multi_polygon::{MultiPolygon, MultiPolygon2, MultiPolygon3};
-pub use polygon::{Polygon, Polygon2, Polygon3};
-
 use num_traits::{Num, NumCast};
+pub use polygon::{Polygon, Polygon2, Polygon3};
 
 pub trait CoordNum: Num + Copy + NumCast + PartialOrd + Default + Debug {}
 impl<T: Num + Copy + NumCast + PartialOrd + Default + Debug> CoordNum for T {}

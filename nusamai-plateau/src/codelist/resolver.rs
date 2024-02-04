@@ -1,12 +1,12 @@
 use std::path::PathBuf;
 
-use super::xml::{parse_dictionary, Definition};
 use hashbrown::HashMap;
+use nusamai_citygml::codelist::CodeResolver;
+use nusamai_citygml::ParseError;
 use stretto::Cache;
 use url::Url;
 
-use nusamai_citygml::codelist::CodeResolver;
-use nusamai_citygml::ParseError;
+use super::xml::{parse_dictionary, Definition};
 
 pub struct Resolver {
     cache: Cache<PathBuf, HashMap<String, Definition>>,

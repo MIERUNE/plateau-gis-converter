@@ -1,5 +1,6 @@
-use super::iur::uro;
 use nusamai_citygml::{citygml_feature, CityGmlElement, Code};
+
+use super::iur::uro;
 
 #[citygml_feature(name = "luse:LandUse")]
 pub struct LandUse {

@@ -8,6 +8,8 @@
 //!
 //! このXMLのパース方法は本格的なパーザで使うことを意図していません。
 
+use std::{fs, io::Write};
+
 use byteorder::{ByteOrder, LittleEndian, WriteBytesExt};
 use clap::Parser;
 use indexmap::IndexSet;
@@ -17,9 +19,6 @@ use quick_xml::{
     name::{Namespace, ResolveResult::Bound},
     reader::NsReader,
 };
-
-use std::fs;
-use std::io::Write;
 use thiserror::Error;
 
 const GML_NS: Namespace = Namespace(b"http://www.opengis.net/gml");

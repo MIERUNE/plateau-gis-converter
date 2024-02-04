@@ -1,7 +1,8 @@
-use crate::models::core::Address;
 use nusamai_citygml::{
     citygml_data, citygml_property, CityGmlElement, Code, Date, DoubleList, Measure, Point, URI,
 };
+
+use crate::models::core::Address;
 
 // TODO?
 type IfcElementCompositionEnum = String;

@@ -1,8 +1,9 @@
 //! Attribute encoder for MVT.
 
-use crate::vector_tile::tile;
 use ahash::RandomState;
 use indexmap::IndexSet;
+
+use crate::vector_tile::tile;
 
 #[derive(Default)]
 pub struct TagsEncoder {

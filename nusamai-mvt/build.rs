@@ -1,6 +1,4 @@
-use std::env;
-use std::io::Result;
-use std::path::Path;
+use std::{env, io::Result, path::Path};
 
 fn main() -> Result<()> {
     if !Path::new("src/vector_tile.rs").exists() {

@@ -1,7 +1,7 @@
+use std::io;
+
 use nusamai_citygml::{schema, schema::Schema, CityGmlElement};
 use nusamai_plateau::models::TopLevelCityObject;
-
-use std::io;
 
 fn main() {
     let mut schema = Schema::default();

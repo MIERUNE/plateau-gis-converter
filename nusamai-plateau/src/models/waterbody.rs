@@ -1,5 +1,6 @@
-use super::iur::uro;
 use nusamai_citygml::{citygml_feature, citygml_property, CityGmlElement, Code};
+
+use super::iur::uro;
 
 #[citygml_feature(name = "wtr:WaterBody")]
 pub struct WaterBody {

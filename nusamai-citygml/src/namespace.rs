@@ -90,8 +90,9 @@ pub fn wellknown_prefix_from_nsres<'a>(ns: &ResolveResult<'a>) -> &'a [u8] {
 mod tests {
     #[test]
     fn normalized_prefix() {
-        use super::*;
         use quick_xml::{events::Event, NsReader};
+
+        use super::*;
 
         let data = r#"
         <?xml version="1.0" encoding="UTF-8"?>

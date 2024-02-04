@@ -11,10 +11,9 @@ pub use attribute::*;
 pub use geometry::*;
 pub use macros::*;
 pub use namespace::*;
+pub use object::Value;
 pub use parser::*;
 pub use values::*;
-
-pub use object::Value;
 
 pub trait CityGmlElement: Sized {
     /// Parse a XML fragment into this element.

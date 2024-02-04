@@ -1,12 +1,17 @@
 //! Object representation of the city objects.
 
-use std::borrow::Cow;
-use std::sync::{Arc, RwLock};
+use std::{
+    borrow::Cow,
+    sync::{Arc, RwLock},
+};
 
-use crate::geometry::{GeometryRef, GeometryStore};
-use crate::values::{Code, Date, Point, URI};
-use crate::Measure;
 use serde::{Deserialize, Serialize};
+
+use crate::{
+    geometry::{GeometryRef, GeometryStore},
+    values::{Code, Date, Point, URI},
+    Measure,
+};
 
 pub type Map = indexmap::IndexMap<String, Value, ahash::RandomState>;
 
@@ -128,8 +133,9 @@ impl Value {
 #[cfg(test)]
 #[cfg(feature = "serde_json")]
 mod tests {
-    use super::*;
     use serde_json::json;
+
+    use super::*;
 
     #[test]
     fn to_attribute_json() {

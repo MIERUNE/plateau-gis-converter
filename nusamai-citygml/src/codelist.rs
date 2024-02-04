@@ -1,5 +1,6 @@
-use crate::parser::ParseError;
 use url::Url;
+
+use crate::parser::ParseError;
 
 pub trait CodeResolver {
     fn resolve(

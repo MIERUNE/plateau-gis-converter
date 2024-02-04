@@ -1,9 +1,10 @@
-use super::core::Address;
-use super::iur::uro;
 use nusamai_citygml::{
     citygml_feature, citygml_property, CityGmlElement, Code, GYear, Length, Measure,
     MeasureOrNullList,
 };
+
+use super::core::Address;
+use super::iur::uro;
 
 #[citygml_feature(name = "bldg:Building")]
 pub struct Building {

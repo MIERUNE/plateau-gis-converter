@@ -1,9 +1,9 @@
 use std::io::BufRead;
 use std::path::Path;
-use url::Url;
 
 use nusamai_citygml::{CityGmlElement, CityGmlReader, GeometryStore, ParseError, SubTreeReader};
 use nusamai_plateau::models::TopLevelCityObject;
+use url::Url;
 
 pub struct CityObject {
     pub cityobj: TopLevelCityObject,

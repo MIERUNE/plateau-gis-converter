@@ -1,8 +1,6 @@
-use std::borrow::Cow;
-use std::ops::Range;
+use std::{borrow::Cow, ops::Range};
 
-use super::polygon::Polygon;
-use super::CoordNum;
+use super::{polygon::Polygon, CoordNum};
 
 /// Computer-friendly MultiPolygon
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
@@ -281,8 +279,7 @@ impl<'a, const D: usize, T: CoordNum> Iterator for Iter<'a, D, T> {
 
 #[cfg(test)]
 mod tests {
-    use super::super::polygon::Polygon2;
-    use super::*;
+    use super::{super::polygon::Polygon2, *};
 
     #[test]
     fn test_mpoly_add() {

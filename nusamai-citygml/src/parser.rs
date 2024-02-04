@@ -1,19 +1,21 @@
-use std::io::BufRead;
-use std::str;
+use std::{io::BufRead, str};
 
-use quick_xml::events::{BytesStart, Event};
-use quick_xml::name::Namespace;
-use quick_xml::name::ResolveResult::Bound;
-use quick_xml::NsReader;
+use quick_xml::{
+    events::{BytesStart, Event},
+    name::{Namespace, ResolveResult::Bound},
+    NsReader,
+};
 use thiserror::Error;
 use url::Url;
 
-use crate::codelist::{self, CodeResolver};
-use crate::geometry::{
-    GeometryCollector, GeometryParseType, GeometryRef, GeometryRefEntry, GeometryStore,
-    GeometryType,
+use crate::{
+    codelist::{self, CodeResolver},
+    geometry::{
+        GeometryCollector, GeometryParseType, GeometryRef, GeometryRefEntry, GeometryStore,
+        GeometryType,
+    },
+    namespace::{wellknown_prefix_from_nsres, GML31_NS},
 };
-use crate::namespace::{wellknown_prefix_from_nsres, GML31_NS};
 
 #[derive(Error, Debug)]
 pub enum ParseError {

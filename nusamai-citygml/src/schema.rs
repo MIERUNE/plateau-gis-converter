@@ -1,7 +1,6 @@
 //! Programmatically readable representation of the CityGML model.
 
 use indexmap::IndexMap;
-
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize, Default)]

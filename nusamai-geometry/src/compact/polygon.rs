@@ -1,7 +1,6 @@
 use std::borrow::Cow;
 
-use super::linestring::LineString;
-use super::CoordNum;
+use super::{linestring::LineString, CoordNum};
 
 /// Computer-friendly Polygon
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
