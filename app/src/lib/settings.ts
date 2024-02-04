@@ -18,6 +18,10 @@ const filetypeOptions: Record<string, { label: string; extensions: string[] }> =
 	serde: {
 		label: 'Serde',
 		extensions: ['']
+	},
+	czml: {
+		label: 'CZML',
+		extensions: ['json']
 	}
 };
 
@@ -27,4 +31,4 @@ const crsOptions = [
 	{ value: 'EPSG:3857', label: 'Web Mercator' }
 ];
 
-export { filetypeOptions, crsOptions };
+export { crsOptions, filetypeOptions };

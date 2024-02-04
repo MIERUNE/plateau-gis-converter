@@ -4,7 +4,7 @@ use std::collections::HashMap;
 use serde_json::Value;
 
 /// An orthographic camera containing properties to create an orthographic projection matrix.
-#[derive(Serialize, Deserialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Debug, Default, PartialEq)]
 #[serde(rename_all = "camelCase")]
 #[serde(deny_unknown_fields)]
 pub struct CameraOrthographic {
@@ -22,7 +22,7 @@ pub struct CameraOrthographic {
 }
 
 /// A perspective camera containing properties to create a perspective projection matrix.
-#[derive(Serialize, Deserialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Debug, Default, PartialEq)]
 #[serde(rename_all = "camelCase")]
 #[serde(deny_unknown_fields)]
 pub struct CameraPerspective {
@@ -41,7 +41,7 @@ pub struct CameraPerspective {
     pub znear: f64,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, Copy, Default)]
+#[derive(Serialize, Deserialize, Debug, Clone, Copy, Default, PartialEq, Eq)]
 #[serde(rename_all = "lowercase")]
 pub enum CameraType {
     #[default]
@@ -50,7 +50,7 @@ pub enum CameraType {
 }
 
 /// A camera's projection.  A node MAY reference a camera to apply a transform to place the camera in the scene.
-#[derive(Serialize, Deserialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Debug, Default, PartialEq)]
 #[serde(rename_all = "camelCase")]
 #[serde(deny_unknown_fields)]
 pub struct Camera {
@@ -79,7 +79,7 @@ pub struct Camera {
     pub extras: Option<Value>,
 }
 
-#[derive(Serialize, Deserialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Debug, Default, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct CameraExtensions {
     #[serde(flatten)]

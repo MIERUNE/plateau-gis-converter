@@ -7,7 +7,7 @@ use crate::{
 
 pub type CzmlInteger = IntegerValueType;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 #[serde(untagged)]
 pub enum IntegerValueType {
     Array(Vec<IntegerProperties>),
@@ -15,7 +15,7 @@ pub enum IntegerValueType {
     Integer(i32),
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct IntegerProperties {
     #[serde(skip_serializing_if = "Option::is_none")]

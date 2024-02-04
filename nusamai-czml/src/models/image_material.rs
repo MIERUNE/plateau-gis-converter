@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{Color, CzmlBoolean, CzmlUri, Repeat};
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 pub struct ImageMaterial {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub image: Option<CzmlUri>,

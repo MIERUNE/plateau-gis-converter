@@ -4,7 +4,7 @@ use crate::{DeletableProperty, ReferenceValue, ReferenceValueProperty};
 
 pub type StripeOrientation = StripeOrientationType;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 #[serde(untagged)]
 pub enum StripeOrientationType {
     Array(Vec<StripeOrientationProperties>),
@@ -12,20 +12,20 @@ pub enum StripeOrientationType {
     String(String),
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum StripeOrientationValue {
     Horizontal,
     Vertical,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 pub struct StripeOrientationValueProperty {
     #[serde(flatten)]
     pub stripe_orientation_value: StripeOrientationValue,
 }
 
-#[derive(Serialize, Deserialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Debug, Default, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct StripeOrientationProperties {
     #[serde(skip_serializing_if = "Option::is_none")]

@@ -1,7 +1,7 @@
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 #[serde(untagged)]
 pub enum DoubleValue {
     Single(f64),
@@ -9,7 +9,7 @@ pub enum DoubleValue {
     TimeTagged(Vec<DoubleTimeTagged>),
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 pub struct DoubleTimeTagged {
     #[serde(with = "chrono::serde::ts_seconds")]
     pub time: DateTime<Utc>,

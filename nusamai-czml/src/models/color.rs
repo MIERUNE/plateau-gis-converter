@@ -5,7 +5,7 @@ use crate::{DeletableProperty, InterpolatableProperty, ReferenceValue, Reference
 
 pub type Color = ColorValueType;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 #[serde(untagged)]
 pub enum ColorValueType {
     Array(Vec<ColorProperties>),
@@ -18,21 +18,21 @@ impl Default for ColorValueType {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 #[serde(untagged)]
 pub enum RgbaValue {
     Constant([u8; 4]),
     RgbaTimeTagged(Vec<RgbaTimeTagged>),
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 #[serde(untagged)]
 pub enum RgbafValue {
     Constant([f32; 4]),
     TimeTagged(Vec<RgbafTimeTagged>),
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 pub struct RgbafTimeTagged {
     #[serde(with = "chrono::serde::ts_seconds")]
     pub time: DateTime<Utc>,
@@ -42,7 +42,7 @@ pub struct RgbafTimeTagged {
     pub alpha: f32,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 pub struct RgbaTimeTagged {
     #[serde(with = "chrono::serde::ts_seconds")]
     pub time: DateTime<Utc>,
@@ -52,7 +52,7 @@ pub struct RgbaTimeTagged {
     pub alpha: u8,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 pub struct RgbaValueProperty {
     pub red: u8,
     pub green: u8,
@@ -60,7 +60,7 @@ pub struct RgbaValueProperty {
     pub alpha: u8,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 pub struct RgbafValueProperty {
     pub red: f32,
     pub green: f32,
@@ -68,7 +68,7 @@ pub struct RgbafValueProperty {
     pub alpha: f32,
 }
 
-#[derive(Serialize, Deserialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Debug, Default, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct ColorProperties {
     #[serde(skip_serializing_if = "Option::is_none")]

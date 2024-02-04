@@ -5,7 +5,7 @@ use clap::Parser;
 
 use nusamai::pipeline::Canceller;
 use nusamai::sink::{
-    cesiumtiles::CesiumTilesSinkProvider, geojson::GeoJsonSinkProvider,
+    cesiumtiles::CesiumTilesSinkProvider, czml::CzmlSinkProvider, geojson::GeoJsonSinkProvider,
     geojson_transform_exp::GeoJsonTransformExpSinkProvider, gpkg::GpkgSinkProvider,
     mvt::MVTSinkProvider, noop::NoopSinkProvider, ply::StanfordPlySinkProvider,
     serde::SerdeSinkProvider, shapefile::ShapefileSinkProvider,
@@ -59,6 +59,7 @@ enum SinkChoice {
     #[clap(name = "3dtiles")]
     CesiumTiles,
     Shapefile,
+    Czml,
     Ply,
 }
 
@@ -73,6 +74,7 @@ impl SinkChoice {
             SinkChoice::Mvt => Box::new(MVTSinkProvider {}),
             SinkChoice::CesiumTiles => Box::new(CesiumTilesSinkProvider {}),
             SinkChoice::Shapefile => Box::new(ShapefileSinkProvider {}),
+            SinkChoice::Czml => Box::new(CzmlSinkProvider {}),
             SinkChoice::Ply => Box::new(StanfordPlySinkProvider {}),
         }
     }

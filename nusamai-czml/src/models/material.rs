@@ -6,14 +6,14 @@ use crate::{
 
 pub type Material = MaterialType;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq)]
 #[serde(untagged)]
 pub enum MaterialType {
     Array(Vec<MaterialProperties>),
     Object(MaterialProperties),
 }
 
-#[derive(Serialize, Deserialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Debug, Default, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct MaterialProperties {
     #[serde(skip_serializing_if = "Option::is_none")]

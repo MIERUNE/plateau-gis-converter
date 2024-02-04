@@ -19,6 +19,7 @@ nusamai-geojson = { path = "../nusamai-geojson" }
 nusamai-gltf-json = { path = "../nusamai-gltf/nusamai-gltf-json" }
 nusamai-3dtiles-json = { path = "../nusamai-3dtiles/nusamai-3dtiles-json" }
 nusamai-geometry = { path = "../nusamai-geometry" }
+nusamai-czml = { path = "../nusamai-czml" }
 nusamai-projection = { path = "../nusamai-projection" }
 nusamai-mvt = { path = "../nusamai-mvt" }
 geojson = "0.24.1"
