@@ -77,6 +77,7 @@ fn main() -> io::Result<()> {
     let scene = Scene {
         name: None,
         nodes: vec![0].into(),
+        ..Default::default()
     };
 
     gltf.buffers = vec![buffer];

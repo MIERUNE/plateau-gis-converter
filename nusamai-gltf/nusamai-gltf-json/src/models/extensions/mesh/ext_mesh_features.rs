@@ -7,7 +7,7 @@ use serde_json::Value;
 use std::collections::HashMap;
 
 /// EXT_mesh_features glTF Mesh Primitive extension
-#[derive(Serialize, Deserialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Debug, Default, PartialEq)]
 #[serde(rename_all = "camelCase")]
 #[serde(deny_unknown_fields)]
 pub struct ExtMeshFeatures {
@@ -24,7 +24,7 @@ pub struct ExtMeshFeatures {
 }
 
 /// Feature ID in EXT_mesh_features
-#[derive(Serialize, Deserialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Debug, Default, PartialEq)]
 #[serde(rename_all = "camelCase")]
 #[serde(deny_unknown_fields)]
 pub struct FeatureId {
@@ -61,7 +61,7 @@ pub struct FeatureId {
 }
 
 /// Feature ID Texture in EXT_mesh_features
-#[derive(Serialize, Deserialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Debug, Default, PartialEq)]
 #[serde(rename_all = "camelCase")]
 #[serde(deny_unknown_fields)]
 pub struct FeatureIdTexture {
