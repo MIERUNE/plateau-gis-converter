@@ -1,3 +1,5 @@
+use std::sync::Once;
+
 use nusamai::sink;
 use nusamai::sink::DataSinkProvider;
 use nusamai::source::citygml::CityGmlSourceProvider;
@@ -6,7 +8,16 @@ use nusamai::transformer::{MultiThreadTransformer, NusamaiTransformBuilder, Tran
 use nusamai_citygml::CityGmlElement;
 use nusamai_plateau::models::TopLevelCityObject;
 
+static INIT: Once = Once::new();
+
 pub(crate) fn simple_run_sink<S: DataSinkProvider>(sink_provider: S, output: Option<&str>) {
+    INIT.call_once(|| {
+        if std::env::var("RUST_LOG").is_err() {
+            std::env::set_var("RUST_LOG", "info")
+        }
+        pretty_env_logger::init();
+    });
+
     let source_provider: Box<dyn DataSourceProvider> = Box::new(CityGmlSourceProvider {
         filenames: vec![
             "../nusamai-plateau/tests/data/plateau-3_0/udx/rwy/53395518_rwy_6697.gml".to_string(),
@@ -78,7 +89,7 @@ fn run_mvt_sink() {
 fn run_shapefile_sink() {
     simple_run_sink(
         sink::shapefile::ShapefileSinkProvider {},
-        "/dev/null".into(),
+        "/tmp/nusamai/shapefile".into(),
     );
 }
 

@@ -1,3 +1,5 @@
+use std::sync::Once;
+
 use nusamai::parameters::Parameters;
 use nusamai::pipeline::{self, Parcel, Receiver};
 use nusamai::pipeline::{Feedback, FeedbackMessage, Result, Sender};
@@ -7,6 +9,8 @@ use nusamai::transformer::{self, Transformer};
 use nusamai_citygml::object::Entity;
 use nusamai_citygml::schema::Schema;
 use rand::prelude::*;
+
+static INIT: Once = Once::new();
 
 pub struct DummySourceProvider {}
 
@@ -113,6 +117,13 @@ impl DataSink for DummySink {
 
 #[test]
 fn test_run_pipeline() {
+    INIT.call_once(|| {
+        if std::env::var("RUST_LOG").is_err() {
+            std::env::set_var("RUST_LOG", "info")
+        }
+        pretty_env_logger::init();
+    });
+
     let source_provider: Box<dyn DataSourceProvider> = Box::new(DummySourceProvider {});
     let sink_provider: Box<dyn DataSinkProvider> = Box::new(DummySinkProvider {});
 
