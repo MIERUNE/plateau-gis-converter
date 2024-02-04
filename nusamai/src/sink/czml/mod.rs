@@ -10,7 +10,9 @@ use nusamai_citygml::object::{Entity, ObjectStereotype, Value};
 use nusamai_citygml::schema::Schema;
 use nusamai_citygml::GeometryType;
 use nusamai_czml::conversion::indexed_multipolygon_to_czml_polygon;
-use nusamai_czml::{indexed_polygon_to_czml_polygon, Packet};
+use nusamai_czml::{
+    indexed_polygon_to_czml_polygon, CzmlBoolean, Packet, StringProperties, StringValueType,
+};
 
 use crate::parameters::*;
 use crate::pipeline::{Feedback, PipelineError, Receiver, Result};
@@ -93,6 +95,14 @@ impl DataSink for CzmlSink {
                 let mut file = File::create(&self.output_path)?;
                 let mut writer = BufWriter::with_capacity(1024 * 1024, &mut file);
 
+                // Cesium requires a Packet called Document
+                let doc = Packet {
+                    id: Some("document".into()),
+                    version: Some("1.0".into()),
+                    ..Default::default()
+                };
+                write!(writer, r#"[{},"#, serde_json::to_string(&doc).unwrap()).unwrap();
+
                 // Write each Packet
                 let mut iter = receiver.into_iter().peekable();
                 while let Some(bytes) = iter.next() {
@@ -121,26 +131,39 @@ impl DataSink for CzmlSink {
     }
 }
 
-// fn extract_properties(tree: &nusamai_citygml::object::Value) -> Option<geojson::JsonObject> {
-//     match &tree {
-//         obj @ nusamai_citygml::Value::Object(_) => match obj.to_attribute_json() {
-//             serde_json::Value::Object(map) => Some(map),
-//             _ => unreachable!(),
-//         },
-//         _ => panic!("Root value type must be Feature, but found {:?}", tree),
-//     }
-// }
+fn extract_properties(tree: &nusamai_citygml::object::Value) -> String {
+    match &tree {
+        obj @ nusamai_citygml::Value::Object(_) => match obj.to_attribute_json() {
+            serde_json::Value::Object(map) => map_to_html_table(&map),
+            _ => unreachable!(),
+        },
+        _ => panic!("Root value type must be Feature, but found {:?}", tree),
+    }
+}
+
+fn map_to_html_table(map: &serde_json::Map<String, serde_json::Value>) -> String {
+    let mut html = String::new();
+    html.push_str("<table>");
+    for (key, value) in map {
+        html.push_str(&format!("<tr><td>{}</td><td>{}</td></tr>", key, value));
+    }
+    html.push_str("</table>");
+    html
+}
 
 /// Create CZML Packet from a Entity
 pub fn entity_to_packet(entity: &Entity, single_part: bool) -> Vec<Packet> {
-    // TODO: extract properties
-    // let _properties = extract_properties(&entity.root);
+    let properties = extract_properties(&entity.root);
     let geom_store = entity.geometry_store.read().unwrap();
 
     let Value::Object(obj) = &entity.root else {
         return Vec::default();
     };
-    let ObjectStereotype::Feature { id: _, geometries } = &obj.stereotype else {
+    let ObjectStereotype::Feature {
+        id: parent_id,
+        geometries,
+    } = &obj.stereotype
+    else {
         return Vec::default();
     };
 
@@ -159,21 +182,30 @@ pub fn entity_to_packet(entity: &Entity, single_part: bool) -> Vec<Packet> {
         GeometryType::Point => unimplemented!(),
     });
 
-    // Cesium requires a Packet called Document
-    let doc = Packet {
-        id: Some("document".into()),
-        version: Some("1.0".into()),
+    // Create a Packet that retains attributes and references it from child features
+    let properties_packet = Packet {
+        id: Some(parent_id.clone()),
+        description: Some(StringValueType::String(properties)),
         ..Default::default()
     };
-    let mut packets = vec![doc];
+    let mut packets: Vec<Packet> = vec![properties_packet];
 
     if !mpoly.is_empty() {
         // CZML does not support multi-part polygons due to its specification, so create a Packet for each face.
         if single_part {
             for poly in mpoly.iter() {
-                let czml_polygon = indexed_polygon_to_czml_polygon(&geom_store.vertices, &poly);
+                let mut czml_polygon = indexed_polygon_to_czml_polygon(&geom_store.vertices, &poly);
+                // In Cesium, if perPositionHeight is false, the polygon height is fixed
+                czml_polygon.per_position_height = CzmlBoolean::Boolean(true);
+
+                let reference_string = parent_id.clone() + "#description";
                 let packet = Packet {
                     polygon: Some(czml_polygon),
+                    description: Some(StringValueType::Object(StringProperties {
+                        reference: Some(reference_string),
+                        ..Default::default()
+                    })),
+                    parent: Some(parent_id.clone()),
                     ..Default::default()
                 };
                 packets.push(packet);
@@ -287,10 +319,18 @@ mod tests {
             geometry_store: RwLock::new(geometries).into(),
         };
 
-        // test document packet
         let packets = entity_to_packet(&entity, true);
         assert_eq!(packets.len(), 4);
-        assert_eq!(packets[0].id, Some("document".into()));
+
+        // test parent packet
+        let parent = &packets[0];
+        assert_eq!(parent.id, Some("dummy".into()));
+        assert_eq!(
+            parent.description,
+            Some(StringValueType::String(
+                r#"<table><tr><td>id</td><td>"dummy"</td></tr><tr><td>type</td><td>"dummy"</td></tr></table>"#.into()
+            ))
+        );
 
         // test first polygon packet
         let first_polygon = &packets[1].polygon;

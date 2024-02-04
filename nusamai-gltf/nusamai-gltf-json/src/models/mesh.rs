@@ -19,7 +19,7 @@ pub enum PrimitiveMode {
 }
 
 /// Geometry to be rendered with the given material.
-#[derive(Serialize, Deserialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Debug, Default, PartialEq)]
 #[serde[rename_all = "camelCase"]]
 #[serde(deny_unknown_fields)]
 pub struct MeshPrimitive {
@@ -52,7 +52,7 @@ pub struct MeshPrimitive {
 }
 
 /// A set of primitives to be rendered.  Its global transform is defined by a node that references it.
-#[derive(Serialize, Deserialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Debug, Default, PartialEq)]
 #[serde[rename_all = "camelCase"]]
 #[serde(deny_unknown_fields)]
 pub struct Mesh {
@@ -76,7 +76,7 @@ pub struct Mesh {
     pub extras: Option<Value>,
 }
 
-#[derive(Serialize, Deserialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Debug, Default, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct MeshExtensions {
     #[serde(flatten)]
