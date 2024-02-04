@@ -1,8 +1,8 @@
 use nusamai_geometry::{MultiPolygon, Polygon};
 
 use crate::{
-    models::CzmlPolygon, CzmlBoolean, PositionList, PositionListOfLists,
-    PositionListOfListsProperties, PositionListProperties,
+    models::CzmlPolygon, PositionList, PositionListOfLists, PositionListOfListsProperties,
+    PositionListProperties,
 };
 
 pub fn indexed_polygon_to_czml_polygon(
@@ -39,9 +39,6 @@ pub fn indexed_polygon_to_czml_polygon(
         ),
         ..Default::default()
     }));
-
-    // In Cesium, if perPositionHeight is false, the polygon height is fixed
-    czml_polygon.per_position_height = CzmlBoolean::Boolean(true);
 
     czml_polygon
 }
@@ -84,9 +81,6 @@ pub fn indexed_multipolygon_to_czml_polygon(
         ),
         ..Default::default()
     }));
-
-    // In Cesium, if perPositionHeight is false, the polygon height is fixed
-    czml_polygon.per_position_height = CzmlBoolean::Boolean(true);
 
     czml_polygon
 }
@@ -136,7 +130,7 @@ mod tests {
 
         assert_eq!(
             json,
-            r#"[{"polygon":{"positions":{"cartographicDegrees":[0.0,0.0,111.0,5.0,0.0,111.0,5.0,5.0,111.0,0.0,5.0,111.0]},"holes":{"cartographicDegrees":[[1.0,1.0,111.0,2.0,1.0,111.0,2.0,2.0,111.0,1.0,2.0,111.0],[3.0,3.0,111.0,4.0,3.0,111.0,4.0,4.0,111.0,3.0,4.0,111.0]]},"perPositionHeight":true}}]"#
+            r#"[{"polygon":{"positions":{"cartographicDegrees":[0.0,0.0,111.0,5.0,0.0,111.0,5.0,5.0,111.0,0.0,5.0,111.0]},"holes":{"cartographicDegrees":[[1.0,1.0,111.0,2.0,1.0,111.0,2.0,2.0,111.0,1.0,2.0,111.0],[3.0,3.0,111.0,4.0,3.0,111.0,4.0,4.0,111.0,3.0,4.0,111.0]]}}}]"#
         )
     }
 
@@ -199,7 +193,7 @@ mod tests {
 
         assert_eq!(
             json,
-            r#"[{"polygon":{"positions":{"cartographicDegrees":[0.0,0.0,111.0,5.0,0.0,111.0,5.0,5.0,111.0,0.0,5.0,111.0,4.0,0.0,222.0,7.0,0.0,222.0,7.0,3.0,222.0,4.0,3.0,222.0,4.0,0.0,333.0,7.0,0.0,333.0,7.0,3.0,333.0,4.0,3.0,333.0]},"holes":{"cartographicDegrees":[[1.0,1.0,111.0,2.0,1.0,111.0,2.0,2.0,111.0,1.0,2.0,111.0],[3.0,3.0,111.0,4.0,3.0,111.0,4.0,4.0,111.0,3.0,4.0,111.0],[5.0,1.0,222.0,6.0,1.0,222.0,6.0,2.0,222.0,5.0,2.0,222.0]]},"perPositionHeight":true}}]"#
+            r#"[{"polygon":{"positions":{"cartographicDegrees":[0.0,0.0,111.0,5.0,0.0,111.0,5.0,5.0,111.0,0.0,5.0,111.0,4.0,0.0,222.0,7.0,0.0,222.0,7.0,3.0,222.0,4.0,3.0,222.0,4.0,0.0,333.0,7.0,0.0,333.0,7.0,3.0,333.0,4.0,3.0,333.0]},"holes":{"cartographicDegrees":[[1.0,1.0,111.0,2.0,1.0,111.0,2.0,2.0,111.0,1.0,2.0,111.0],[3.0,3.0,111.0,4.0,3.0,111.0,4.0,4.0,111.0,3.0,4.0,111.0],[5.0,1.0,222.0,6.0,1.0,222.0,6.0,2.0,222.0,5.0,2.0,222.0]]}}}]"#
         )
     }
 }
