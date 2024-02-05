@@ -1,71 +1,48 @@
 use nusamai_citygml::object;
 use nusamai_mvt::tag::TagsEncoder;
 
-pub fn traverse_properties(
+pub fn convert_properties(
     tags: &mut Vec<u32>,
     tags_enc: &mut TagsEncoder,
-    name: String,
+    name: &str,
     tree: &object::Value,
 ) {
     match &tree {
         nusamai_citygml::Value::String(v) => {
-            tags.extend(tags_enc.add(&name, v.clone().into()));
+            tags.extend(tags_enc.add(name, v.clone().into()));
         }
         nusamai_citygml::Value::Code(v) => {
-            tags.extend(tags_enc.add(&name, v.value().into()));
+            tags.extend(tags_enc.add(name, v.value().into()));
         }
         nusamai_citygml::Value::Integer(v) => {
-            tags.extend(tags_enc.add(&name, (*v).into()));
+            tags.extend(tags_enc.add(name, (*v).into()));
         }
         nusamai_citygml::Value::NonNegativeInteger(v) => {
             tags.extend(tags_enc.add(&name, (*v).into()));
         }
         nusamai_citygml::Value::Double(v) => {
-            tags.extend(tags_enc.add(&name, (*v).into()));
+            tags.extend(tags_enc.add(name, (*v).into()));
         }
         nusamai_citygml::Value::Measure(v) => {
-            tags.extend(tags_enc.add(&name, v.value().into()));
+            tags.extend(tags_enc.add(name, v.value().into()));
         }
         nusamai_citygml::Value::Boolean(v) => {
-            tags.extend(tags_enc.add(&name, (*v).into()));
+            tags.extend(tags_enc.add(name, (*v).into()));
         }
         nusamai_citygml::Value::URI(v) => {
-            tags.extend(tags_enc.add(&name, v.value().to_string().into()));
+            tags.extend(tags_enc.add(name, v.value().to_string().into()));
         }
         nusamai_citygml::Value::Date(v) => {
-            tags.extend(tags_enc.add(&name, v.to_string().into()));
+            tags.extend(tags_enc.add(name, v.to_string().into()));
         }
         nusamai_citygml::Value::Point(v) => {
-            tags.extend(tags_enc.add(&name, format!("{:?}", v).into())); // FIXME
+            tags.extend(tags_enc.add(name, format!("{:?}", v).into())); // FIXME
         }
-        nusamai_citygml::Value::Array(arr) => {
-            arr.iter().enumerate().for_each(|(i, v)| {
-                if name.is_empty() {
-                    traverse_properties(tags, tags_enc, i.to_string(), v);
-                } else {
-                    traverse_properties(tags, tags_enc, format!("{}.{}", name, i), v);
-                }
-            });
+        nusamai_citygml::Value::Array(_arr) => {
+            // ignore non-root attributes
         }
-        nusamai_citygml::Value::Object(obj) => {
-            match &obj.stereotype {
-                object::ObjectStereotype::Feature { id, .. }
-                | object::ObjectStereotype::Object { id, .. } => {
-                    tags.extend(tags_enc.add("id", id.clone().into()));
-                }
-                _ => {}
-            };
-            obj.attributes.iter().for_each(|(k, v)| {
-                let k = match k.split_once(':') {
-                    Some((_, k)) => k,
-                    None => k,
-                };
-                if name.is_empty() {
-                    traverse_properties(tags, tags_enc, k.into(), v);
-                } else {
-                    traverse_properties(tags, tags_enc, format!("{}.{}", name, k), v);
-                }
-            });
+        nusamai_citygml::Value::Object(_obj) => {
+            // ignore non-root attributes
         }
     }
 }

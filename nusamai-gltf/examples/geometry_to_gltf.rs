@@ -14,7 +14,7 @@ use clap::Parser;
 use earcut_rs::{utils_3d::project3d_to_2d, Earcut};
 use indexmap::IndexSet;
 use nusamai_geometry::MultiPolygon3;
-use nusamai_gltf::*;
+use nusamai_gltf_json::*;
 use quick_xml::{
     events::Event,
     name::{Namespace, ResolveResult::Bound},
@@ -377,7 +377,7 @@ fn make_gltf_json(triangles: &Triangles) -> String {
     gltf.buffer_views = vec![buffer_view1, buffer_view2];
 
     // glTF のアクセサを作成
-    let mut accessor1 = Accessor {
+    let accessor1 = Accessor {
         buffer_view: Some(0),
         byte_offset: 0,
         component_type: ComponentType::UnsignedInt,
@@ -385,9 +385,6 @@ fn make_gltf_json(triangles: &Triangles) -> String {
         type_: AccessorType::Scalar,
         ..Default::default()
     };
-    let max_indices = indices.iter().max().unwrap();
-    accessor1.max = vec![*max_indices as f32].into();
-    accessor1.min = vec![0.0].into();
 
     let mut accessor2 = Accessor {
         buffer_view: Some(1),
@@ -397,16 +394,13 @@ fn make_gltf_json(triangles: &Triangles) -> String {
         type_: AccessorType::Vec3,
         ..Default::default()
     };
-    let mut max_vertex: [f32; 3] = [f32::MIN; 3];
-    let mut min_vertex: [f32; 3] = [f32::MAX; 3];
+    let mut max_vertex: [f64; 3] = [f64::MIN; 3];
+    let mut min_vertex: [f64; 3] = [f64::MAX; 3];
     for vertex in vertices {
         for (i, v) in vertex.iter().enumerate() {
             let v = f32::from_bits(*v);
-            if v > max_vertex[i] {
-                max_vertex[i] = v;
-            } else if v < min_vertex[i] {
-                min_vertex[i] = v;
-            }
+            max_vertex[i] = max_vertex[i].max(v as f64);
+            min_vertex[i] = min_vertex[i].min(v as f64);
         }
     }
     accessor2.max = Some(max_vertex.to_vec());

@@ -6,16 +6,18 @@
 [![Docs](https://github.com/MIERUNE/nusamai/actions/workflows/doc.yml/badge.svg)](https://mierune.github.io/nusamai/app/)
 
 - Notion: [BRIDGE 都市デジタルツイン・GISコンバータの開発](https://www.notion.so/mierune/BRIDGE-GIS-461ba0355b3041619ed3f303a8b0166f)
-- Rustdoc: https://mierune.github.io/nusamai/app/ 
+- Rustdoc: <https://mierune.github.io/nusamai/app/>
 
-## リポジトリ構成
+## Development
+
+### リポジトリ構成
 
 - アプリケーション：
     - [`app`](./app/) &mdash; Tauri による GUI 実装
     - [`nusamai`](./nusamai/) &mdash; バックエンドおよびコマンドライン版実装
 - 基盤・ユーティリティ：
-    - [`nusamai-geometry`](./nusamai-geometry/) &mdash; ジオメトリ型
-    - [`nusamai-projection`](./nusamai-projection/) &mdash; 投影法変換
+  - [`nusamai-geometry`](./nusamai-geometry/) &mdash; ジオメトリ型
+  - [`nusamai-projection`](./nusamai-projection/) &mdash; 投影法変換
 - データソース：
     - [`nusamai-citygml`](./nusamai-plateau/citygml/) &mdash; CityGML パーサ実装支援ライブラリ
         - [`macros`](./nusamai-plateau/citygml/macros/) &mdash; パーサ導出用の proc macros
@@ -32,9 +34,15 @@
 - [MIERUNE/earcut-rs](https://github.com/MIERUNE/earcut-rs) &mdash; ポリゴン三角形化アルゴリズム
 - [MIERUNE/japan-geoid](https://github.com/MIERUNE/japan-geoid) &mdash; 日本のジオイドモデル (JGD2011 → WGS 84 の変換に必要)
 
-## Development
+### その他のリポジトリ
 
-### CLI
+- [MIERUNE/plateau-qgis-plugin](https://github.com/MIERUNE/plateau-qgis-plugin) &mdash; PLATEAU QGIS Plugin の実装
+- [MIERUNE/plateau-schema-experiment](https://github.com/MIERUNE/plateau-schema-experiment) &mdash; CityGML 2.0 と i-UR の XML Schema を解析する実験コード群。QGIS Pluginの属性列挙に使用。
+- [MIERUNE/3dtiles-research](https://github.com/MIERUNE/3dtiles-research) &mdash; 3D Tiles / glTF の実験コード群
+
+### Build &amp; Run
+
+#### CLI
 
 ```bash
 cd ./nusamai/
@@ -46,8 +54,19 @@ cargo run --release -- ~/path/to/PLATEAU/15100_niigata-shi_2022_citygml_1_op/udx
 cargo run --profile release-lto -- ~/path/to/Desktop/PLATEAU/15100_niigata-shi_2022_citygml_1_op/udx/bldg/*.gml --sink geojson --output foobar.geojson
 ```
 
-## 参考
+#### GUI
 
-- [MIERUNE/plateau-qgis-plugin](https://github.com/MIERUNE/plateau-qgis-plugin) &mdash; PLATEAU QGIS Plugin の実装
-- [MIERUNE/plateau-schema-experiment](https://github.com/MIERUNE/plateau-schema-experiment) &mdash; CityGML 2.0 と i-UR の XML Schema を解析する実験コード群。QGIS Pluginの属性列挙に使用。
-- [MIERUNE/3dtiles-research](https://github.com/MIERUNE/3dtiles-research) &mdash; 3D Tiles / glTF の実験コード群
+Dev:
+
+```console
+cd ./app/
+npm install
+RUST_BACKTRACE=1 npx tauri dev
+```
+
+Build:
+
+```bash
+cd ./app
+npx tauri build
+```

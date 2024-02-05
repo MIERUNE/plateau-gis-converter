@@ -20,7 +20,7 @@ pub struct FooBarFeature {
 It expands to:
 
 ```rust
-#[derive(Default, Debug, CityGMLElement)]
+#[derive(Default, Debug, CityGmlElement)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize), serde(tag = "type"))]
 #[citygml(name = "abc:FooBarFeature")]
 pub struct FooBarFeature {
@@ -66,7 +66,7 @@ pub struct FooBarData {
 It expands to:
 
 ```rust
-#[derive(Default, Debug, CityGMLElement)]
+#[derive(Default, Debug, CityGmlElement)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize), serde(tag = "type"))]
 #[citygml(name = "abc:FooBarData")]
 pub struct FooBarFeature {
@@ -90,7 +90,7 @@ pub enum FooBarProperty {
 It expands to:
 
 ```rust
-#[derive(Default, Debug, CityGMLElement)]
+#[derive(Default, Debug, CityGmlElement)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize), serde(tag = "type"))]
 #[citygml(name = "abc:FooBarProperty")]
 pub enum FooBarProperty {
@@ -105,9 +105,9 @@ pub enum FooBarProperty {
 
 ## Derive macros
 
-### `#[derive(CityGMLElement)]`
+### `#[derive(CityGmlElement)]`
 
-It automatically implements the `CityGMLElement` trait for the target struct/enum, enabling it to parse corresponding CityGML fragments.
+It automatically implements the `CityGmlElement` trait for the target struct/enum, enabling it to parse corresponding CityGML fragments.
 
 In most cases, you should use the attribute macros above instead of directly applying this derive macro.
 

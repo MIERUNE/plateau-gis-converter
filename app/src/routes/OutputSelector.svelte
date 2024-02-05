@@ -2,11 +2,20 @@
 	import { dialog } from '@tauri-apps/api';
 	import Icon from '@iconify/svelte';
 	import { abbreviatePath } from '$lib/utils';
+	import { filetypeOptions } from '$lib/settings';
 
+	export let filetype: string;
 	export let outputPath: string;
 
 	async function openOutputDialog() {
-		const res = await dialog.save();
+		const res = await dialog.save({
+			filters: [
+				{
+					name: 'Output format',
+					extensions: filetypeOptions[filetype].extensions
+				}
+			]
+		});
 		outputPath = Array.isArray(res) ? res[0] : res;
 	}
 </script>

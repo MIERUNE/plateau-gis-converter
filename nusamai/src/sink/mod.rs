@@ -1,14 +1,21 @@
+//! Output format drivers (sinks)
+
+pub mod cesiumtiles;
+pub mod czml;
 pub mod geojson;
 pub mod geojson_transform_exp;
 pub mod gpkg;
 pub mod mvt;
 pub mod noop;
+pub mod ply;
 pub mod serde;
+pub mod shapefile;
 
 use nusamai_citygml::schema::Schema;
 
 use crate::parameters::Parameters;
 use crate::pipeline::{Feedback, Receiver};
+use crate::transformer;
 
 pub struct SinkInfo {
     pub name: String,
@@ -27,4 +34,7 @@ pub trait DataSinkProvider {
 
 pub trait DataSink: Send {
     fn run(&mut self, upstream: Receiver, feedback: &Feedback, schema: &Schema);
+
+    /// Make a transform requirements
+    fn make_transform_requirements(&self) -> transformer::Requirements;
 }

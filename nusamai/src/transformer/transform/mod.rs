@@ -1,11 +1,19 @@
+mod attrname;
+mod flatten;
+mod lods;
+mod merge;
 mod projection;
 
+pub use attrname::*;
+pub use flatten::*;
+pub use lods::*;
+pub use merge::*;
 pub use projection::*;
 
 use super::Transform;
 use nusamai_citygml::{object::Entity, schema::Schema};
 
-// Perform transforms in sequence
+/// Perform transforms in sequence
 #[derive(Default)]
 pub struct SerialTransform {
     transforms: Vec<Box<dyn Transform>>,
@@ -18,11 +26,10 @@ impl Transform for SerialTransform {
         let entities = &mut self.buffer1;
         let temp_entities = &mut self.buffer2;
         entities.clear();
-        entities.push(entity);
         temp_entities.clear();
 
+        entities.push(entity);
         for transform in self.transforms.iter_mut() {
-            temp_entities.clear();
             for entity in entities.drain(..) {
                 transform.transform(entity, temp_entities);
             }
@@ -45,6 +52,7 @@ impl SerialTransform {
 }
 
 /// No-op transform
+#[derive(Clone)]
 pub struct IdentityTransform {}
 
 impl Transform for IdentityTransform {
@@ -54,5 +62,38 @@ impl Transform for IdentityTransform {
 
     fn transform_schema(&self, _schema: &mut Schema) {
         // do nothing
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::sync::RwLock;
+
+    use nusamai_citygml::object::{Object, Value};
+    use nusamai_citygml::GeometryStore;
+
+    use super::*;
+    #[test]
+    fn test_serial_transform() {
+        let mut transform = SerialTransform::default();
+        transform.push(Box::new(IdentityTransform {}));
+        transform.push(Box::new(IdentityTransform {}));
+        transform.push(Box::new(IdentityTransform {}));
+        let mut entities = Vec::new();
+        transform.transform(
+            Entity {
+                root: Value::Object(Object {
+                    typename: "test".into(),
+                    attributes: Default::default(),
+                    stereotype: nusamai_citygml::object::ObjectStereotype::Feature {
+                        id: "foobar".into(),
+                        geometries: Default::default(),
+                    },
+                }),
+                geometry_store: RwLock::new(GeometryStore::default()).into(),
+            },
+            &mut entities,
+        );
+        assert_eq!(entities.len(), 1);
     }
 }

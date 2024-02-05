@@ -1,6 +1,6 @@
 use super::iur::uro;
 use nusamai_citygml::{
-    citygml_data, citygml_feature, citygml_property, CityGMLElement, LODType, Point, Vector,
+    citygml_data, citygml_feature, citygml_property, CityGmlElement, LODType, Point, Vector,
 };
 
 #[citygml_feature(name = "dem:ReliefFeature")]

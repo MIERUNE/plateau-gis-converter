@@ -1,4 +1,4 @@
-use nusamai_citygml::{citygml_data, CityGMLElement, Code};
+use nusamai_citygml::{citygml_data, CityGmlElement, Code};
 
 #[citygml_data(name = "uro:KeyValuePairAttribute")]
 pub struct KeyValuePairAttribute {

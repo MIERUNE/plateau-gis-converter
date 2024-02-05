@@ -5,22 +5,24 @@ use clap::Parser;
 
 use nusamai::pipeline::Canceller;
 use nusamai::sink::{
-    geojson::GeoJsonSinkProvider, geojson_transform_exp::GeoJsonTransformExpSinkProvider,
-    gpkg::GpkgSinkProvider, mvt::MVTSinkProvider, noop::NoopSinkProvider, serde::SerdeSinkProvider,
+    cesiumtiles::CesiumTilesSinkProvider, czml::CzmlSinkProvider, geojson::GeoJsonSinkProvider,
+    geojson_transform_exp::GeoJsonTransformExpSinkProvider, gpkg::GpkgSinkProvider,
+    mvt::MVTSinkProvider, noop::NoopSinkProvider, ply::StanfordPlySinkProvider,
+    serde::SerdeSinkProvider, shapefile::ShapefileSinkProvider,
 };
 use nusamai::sink::{DataSink, DataSinkProvider};
-use nusamai::source::citygml::CityGMLSourceProvider;
+use nusamai::source::citygml::CityGmlSourceProvider;
 use nusamai::source::{DataSource, DataSourceProvider};
-use nusamai::transformer::builder::{NusamaiTransformBuilder, TransformBuilder};
-use nusamai::transformer::runner::MultiThreadTransformer;
-use nusamai_citygml::CityGMLElement;
+use nusamai::transformer::MultiThreadTransformer;
+use nusamai::transformer::{NusamaiTransformBuilder, TransformBuilder};
+use nusamai_citygml::CityGmlElement;
 use nusamai_plateau::models::TopLevelCityObject;
 
 #[derive(clap::Parser)]
 #[command(author, version, about, long_about = None)]
 struct Args {
     #[arg()]
-    filenames: Vec<String>,
+    file_patterns: Vec<String>,
 
     /// Sink choice
     #[arg(value_enum, long)]
@@ -54,6 +56,11 @@ enum SinkChoice {
     Gpkg,
     Mvt,
     GeojsonTransformExp,
+    #[clap(name = "3dtiles")]
+    CesiumTiles,
+    Shapefile,
+    Czml,
+    Ply,
 }
 
 impl SinkChoice {
@@ -65,6 +72,10 @@ impl SinkChoice {
             SinkChoice::GeojsonTransformExp => Box::new(GeoJsonTransformExpSinkProvider {}),
             SinkChoice::Gpkg => Box::new(GpkgSinkProvider {}),
             SinkChoice::Mvt => Box::new(MVTSinkProvider {}),
+            SinkChoice::CesiumTiles => Box::new(CesiumTilesSinkProvider {}),
+            SinkChoice::Shapefile => Box::new(ShapefileSinkProvider {}),
+            SinkChoice::Czml => Box::new(CzmlSinkProvider {}),
+            SinkChoice::Ply => Box::new(StanfordPlySinkProvider {}),
         }
     }
 }
@@ -76,8 +87,10 @@ fn main() {
     pretty_env_logger::init();
 
     let args = {
+        // output path
         let mut args = Args::parse();
         args.sinkopt.push(("@output".into(), args.output.clone()));
+
         args
     };
 
@@ -92,9 +105,17 @@ fn main() {
     }
 
     let source = {
-        let source_provider: Box<dyn DataSourceProvider> = Box::new(CityGMLSourceProvider {
-            filenames: args.filenames,
-        });
+        // glob input file patterns
+        let mut filenames = vec![];
+        for file_pattern in &args.file_patterns {
+            let file_pattern = shellexpand::tilde(file_pattern);
+            for entry in glob::glob(&file_pattern).unwrap() {
+                filenames.push(entry.unwrap());
+            }
+        }
+
+        let source_provider: Box<dyn DataSourceProvider> =
+            Box::new(CityGmlSourceProvider { filenames });
         let mut source_params = source_provider.parameters();
         if let Err(err) = source_params.update_values_with_str(&args.sourceopt) {
             log::error!("Error parsing source parameters: {:?}", err);
@@ -132,11 +153,15 @@ fn run(
     let total_time = std::time::Instant::now();
 
     // Prepare the transformer for the pipeline and transform the schema
-    let transform_builder = NusamaiTransformBuilder::default();
-    let mut schema = nusamai_citygml::schema::Schema::default();
-    TopLevelCityObject::collect_schema(&mut schema);
-    transform_builder.transform_schema(&mut schema);
-    let transformer = Box::new(MultiThreadTransformer::new(transform_builder));
+    let (transformer, schema) = {
+        let requirements = sink.make_transform_requirements();
+        let transform_builder = NusamaiTransformBuilder::new(requirements.into());
+        let mut schema = nusamai_citygml::schema::Schema::default();
+        TopLevelCityObject::collect_schema(&mut schema);
+        transform_builder.transform_schema(&mut schema);
+        let transformer = Box::new(MultiThreadTransformer::new(transform_builder));
+        (transformer, schema)
+    };
 
     // start the pipeline
     let (handle, watcher, inner_canceller) =

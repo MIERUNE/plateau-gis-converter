@@ -2,18 +2,21 @@
 
 use hashbrown::HashMap;
 
-use nusamai_citygml::object::Entity;
+use nusamai_citygml::{
+    geometry::GeometryType,
+    object::{Entity, ObjectStereotype, Value},
+};
 use nusamai_geometry::{LineString2, MultiPolygon2, Polygon2};
 use nusamai_mvt::{webmercator::lnglat_to_web_mercator, TileZXY};
 
-pub fn slice_cityobj_geoms(
+pub fn slice_cityobj_geoms<E>(
     obj: &Entity,
     min_z: u8,
     max_z: u8,
     max_detail: u32,
     buffer_pixels: u32,
-    f: impl Fn(TileZXY, MultiPolygon2<i16>) -> Result<(), ()>,
-) -> Result<(), ()> {
+    f: impl Fn(TileZXY, MultiPolygon2<i16>) -> Result<(), E>,
+) -> Result<(), E> {
     assert!(
         max_z >= min_z,
         "max_z must be greater than or equal to min_z"
@@ -24,39 +27,56 @@ pub fn slice_cityobj_geoms(
         return Ok(());
     }
 
-    let idx_mpoly = &geom_store.multipolygon;
     let mut tiled_mpolys = HashMap::new();
 
-    let extent = 2u32.pow(max_detail);
+    let extent = 1 << max_detail;
     let buffer = extent * buffer_pixels / 256;
 
-    idx_mpoly.iter().for_each(|idx_poly| {
-        let poly = idx_poly.transform(|c| {
-            let [lng, lat, _height] = geom_store.vertices[c[0] as usize];
-            let (mx, my) = lnglat_to_web_mercator(lng, lat);
-            [mx, my]
-        });
+    let Value::Object(obj) = &obj.root else {
+        return Ok(());
+    };
+    let ObjectStereotype::Feature { geometries, .. } = &obj.stereotype else {
+        return Ok(());
+    };
 
-        // Early rejection of polygons that are not front-facing.
-        if !poly.exterior().is_cw() {
-            return;
-        }
-        debug_assert!(poly.exterior().ring_area() > 0.0);
+    geometries.iter().for_each(|entry| match entry.ty {
+        GeometryType::Solid | GeometryType::Surface | GeometryType::Triangle => {
+            for idx_poly in geom_store
+                .multipolygon
+                .iter_range(entry.pos as usize..(entry.pos + entry.len) as usize)
+            {
+                let poly = idx_poly.transform(|c| {
+                    let [lng, lat, _height] = geom_store.vertices[c[0] as usize];
+                    let (mx, my) = lnglat_to_web_mercator(lng, lat);
+                    [mx, my]
+                });
 
-        let area = poly.area();
+                // Early rejection of polygons that are not front-facing.
+                if !poly.exterior().is_cw() {
+                    continue;
+                }
+                debug_assert!(poly.exterior().ring_area() > 0.0);
 
-        // Slice for each zoom level
-        for zoom in min_z..=max_z {
-            // Skip if the polygon is smaller than 4 square subpixels
-            //
-            // TODO: emulate the 'tiny-polygon-reduction' of tippecanoe
-            if area * (4u64.pow(zoom as u32 + max_detail) as f64) < 4.0 {
-                continue;
+                let area = poly.area();
+
+                // Slice for each zoom level
+                for zoom in min_z..=max_z {
+                    // Skip if the polygon is smaller than 4 square subpixels
+                    //
+                    // TODO: emulate the 'tiny-polygon-reduction' of tippecanoe
+                    if area * (4u64.pow(zoom as u32 + max_detail) as f64) < 4.0 {
+                        continue;
+                    }
+
+                    slice_polygon(zoom, extent, buffer, &poly, &mut tiled_mpolys);
+                }
             }
-
-            let z_scale = 2u32.pow(zoom as u32) as f64;
-            let scaled_poly = poly.transform(|c| [(c[0] * z_scale), (c[1] * z_scale)]);
-            slice_polygon(zoom, extent, buffer, &scaled_poly, &mut tiled_mpolys);
+        }
+        GeometryType::Curve => {
+            // TODO: implement
+        }
+        GeometryType::Point => {
+            // TODO: implement
         }
     });
 
@@ -68,6 +88,7 @@ pub fn slice_cityobj_geoms(
     }
 
     Ok(())
+
     // TODO: linestring, point
 }
 
@@ -82,26 +103,27 @@ fn slice_polygon(
         return;
     }
 
+    let z_scale = (1 << zoom) as f64;
     let buf_width = buffer as f64 / extent as f64;
     let mut new_ring_buffer: Vec<[f64; 2]> = Vec::with_capacity(poly.exterior().len() + 1);
 
-    // Slice along X-axis
-    let x_range = {
-        let (min_x, max_x) = poly
+    // Slice along Y-axis
+    let y_range = {
+        let (min_y, max_y) = poly
             .exterior()
             .iter()
-            .fold((f64::MAX, f64::MIN), |(min_x, max_x), c| {
-                (min_x.min(c[0]), max_x.max(c[0]))
+            .fold((f64::MAX, f64::MIN), |(min_y, max_y), c| {
+                (min_y.min(c[1]), max_y.max(c[1]))
             });
-        min_x.floor() as u32..max_x.ceil() as u32
+        (min_y * z_scale).floor() as u32..(max_y * z_scale).ceil() as u32
     };
 
-    let mut x_sliced_polys = Vec::with_capacity(x_range.len());
+    let mut y_sliced_polys = Vec::with_capacity(y_range.len());
 
-    for xi in x_range.clone() {
-        let k1 = xi as f64 - buf_width;
-        let k2 = (xi + 1) as f64 + buf_width;
-        let mut x_sliced_poly = Polygon2::new();
+    for yi in y_range.clone() {
+        let k1 = (yi as f64 - buf_width) / z_scale;
+        let k2 = ((yi + 1) as f64 + buf_width) / z_scale;
+        let mut y_sliced_poly = Polygon2::new();
 
         // todo?: check interior bbox to optimize
 
@@ -115,63 +137,71 @@ fn slice_polygon(
                 .fold(None, |a, b| {
                     let Some(a) = a else { return Some(b) };
 
-                    if a[0] < k1 {
-                        if b[0] > k1 {
-                            let y = (b[1] - a[1]) * (k1 - a[0]) / (b[0] - a[0]) + a[1];
-                            // let z = (b[2] - a[2]) * (k1 - a[0]) / (b[0] - a[0]) + a[2];
-                            new_ring_buffer.push([k1, y])
+                    if a[1] < k1 {
+                        if b[1] > k1 {
+                            let x = (b[0] - a[0]) * (k1 - a[1]) / (b[1] - a[1]) + a[0];
+                            // let z = (b[2] - a[2]) * (k1 - a[1]) / (b[1] - a[1]) + a[2];
+                            new_ring_buffer.push([x, k1])
                         }
-                    } else if a[0] > k2 {
-                        if b[0] < k2 {
-                            let y = (b[1] - a[1]) * (k2 - a[0]) / (b[0] - a[0]) + a[1];
-                            // let z = (b[2] - a[2]) * (k2 - a[0]) / (b[0] - a[0]) + a[2];
-                            new_ring_buffer.push([k2, y])
+                    } else if a[1] > k2 {
+                        if b[1] < k2 {
+                            let x = (b[0] - a[0]) * (k2 - a[1]) / (b[1] - a[1]) + a[0];
+                            // let z = (b[2] - a[2]) * (k2 - a[1]) / (b[1] - a[1]) + a[2];
+                            new_ring_buffer.push([x, k2])
                         }
                     } else {
                         new_ring_buffer.push(a)
                     }
 
-                    if b[0] < k1 && a[0] > k1 {
-                        let y = (b[1] - a[1]) * (k1 - a[0]) / (b[0] - a[0]) + a[1];
-                        // let z = (b[2] - a[2]) * (k1 - a[0]) / (b[0] - a[0]) + a[2];
-                        new_ring_buffer.push([k1, y])
-                    } else if b[0] > k2 && a[0] < k2 {
-                        let y = (b[1] - a[1]) * (k2 - a[0]) / (b[0] - a[0]) + a[1];
-                        // let z = (b[2] - a[2]) * (k2 - a[0]) / (b[0] - a[0]) + a[2];
-                        new_ring_buffer.push([k2, y])
+                    if b[1] < k1 && a[1] > k1 {
+                        let x = (b[0] - a[0]) * (k1 - a[1]) / (b[1] - a[1]) + a[0];
+                        // let z = (b[2] - a[2]) * (k1 - a[1]) / (b[1] - a[1]) + a[2];
+                        new_ring_buffer.push([x, k1])
+                    } else if b[1] > k2 && a[1] < k2 {
+                        let x = (b[0] - a[0]) * (k2 - a[1]) / (b[1] - a[1]) + a[0];
+                        // let z = (b[2] - a[2]) * (k2 - a[1]) / (b[1] - a[1]) + a[2];
+                        new_ring_buffer.push([x, k2])
                     }
 
                     Some(b)
                 })
                 .unwrap();
 
-            x_sliced_poly.add_ring(new_ring_buffer.iter().copied());
+            y_sliced_poly.add_ring(new_ring_buffer.iter().copied());
         }
 
-        x_sliced_polys.push(x_sliced_poly);
+        y_sliced_polys.push(y_sliced_poly);
     }
 
-    // Slice along Y-axis
-    for (xi, x_sliced_poly) in x_range.zip(x_sliced_polys.iter()) {
-        let y_range = {
-            let (min_y, max_y) = x_sliced_poly
+    let mut int_coords_buf = Vec::new();
+    let mut simplified_buf = Vec::new();
+
+    // Slice along X-axis
+    for (yi, y_sliced_poly) in y_range.zip(y_sliced_polys.iter()) {
+        let x_range = {
+            let (min_x, max_x) = y_sliced_poly
                 .exterior()
                 .iter()
-                .fold((f64::MAX, f64::MIN), |(min_y, max_y), c| {
-                    (min_y.min(c[1]), max_y.max(c[1]))
+                .fold((f64::MAX, f64::MIN), |(min_x, max_x), c| {
+                    (min_x.min(c[0]), max_x.max(c[0]))
                 });
-            min_y.floor() as u32..max_y.ceil() as u32
+            (min_x * z_scale).floor() as i32..(max_x * z_scale).ceil() as i32
         };
 
-        for yi in y_range {
-            let k1 = yi as f64 - buf_width;
-            let k2 = (yi + 1) as f64 + buf_width;
+        for xi in x_range {
+            let k1 = (xi as f64 - buf_width) / z_scale;
+            let k2 = ((xi + 1) as f64 + buf_width) / z_scale;
 
-            // todo?: check interior bbox to optimize
+            // todo?: check interior bbox to optimize ...
 
-            let tile_mpoly = out.entry((zoom, xi, yi)).or_default();
+            let key = (
+                zoom,
+                xi.rem_euclid(1 << zoom) as u32, // handling geometry crossing the antimeridian
+                yi,
+            );
+            let tile_mpoly = out.entry(key).or_default();
 
-            for (ri, ring) in x_sliced_poly.rings().enumerate() {
+            for (ri, ring) in y_sliced_poly.rings().enumerate() {
                 if ring.coords().is_empty() {
                     continue;
                 }
@@ -181,83 +211,87 @@ fn slice_polygon(
                     .fold(None, |a, b| {
                         let Some(a) = a else { return Some(b) };
 
-                        if a[1] < k1 {
-                            if b[1] > k1 {
-                                let x = (b[0] - a[0]) * (k1 - a[1]) / (b[1] - a[1]) + a[0];
-                                // let z = (b[2] - a[2]) * (k1 - a[1]) / (b[1] - a[1]) + a[2];
-                                new_ring_buffer.push([x, k1])
+                        if a[0] < k1 {
+                            if b[0] > k1 {
+                                let y = (b[1] - a[1]) * (k1 - a[0]) / (b[0] - a[0]) + a[1];
+                                // let z = (b[2] - a[2]) * (k1 - a[0]) / (b[0] - a[0]) + a[2];
+                                new_ring_buffer.push([k1, y])
                             }
-                        } else if a[1] > k2 {
-                            if b[1] < k2 {
-                                let x = (b[0] - a[0]) * (k2 - a[1]) / (b[1] - a[1]) + a[0];
-                                // let z = (b[2] - a[2]) * (k2 - a[1]) / (b[1] - a[1]) + a[2];
-                                new_ring_buffer.push([x, k2])
+                        } else if a[0] > k2 {
+                            if b[0] < k2 {
+                                let y = (b[1] - a[1]) * (k2 - a[0]) / (b[0] - a[0]) + a[1];
+                                // let z = (b[2] - a[2]) * (k2 - a[0]) / (b[0] - a[0]) + a[2];
+                                new_ring_buffer.push([k2, y])
                             }
                         } else {
                             new_ring_buffer.push(a)
                         }
 
-                        if b[1] < k1 && a[1] > k1 {
-                            let x = (b[0] - a[0]) * (k1 - a[1]) / (b[1] - a[1]) + a[0];
-                            // let z = (b[2] - a[2]) * (k1 - a[1]) / (b[1] - a[1]) + a[2];
-                            new_ring_buffer.push([x, k1])
-                        } else if b[1] > k2 && a[1] < k2 {
-                            let x = (b[0] - a[0]) * (k2 - a[1]) / (b[1] - a[1]) + a[0];
-                            // let z = (b[2] - a[2]) * (k2 - a[1]) / (b[1] - a[1]) + a[2];
-                            new_ring_buffer.push([x, k2])
+                        if b[0] < k1 && a[0] > k1 {
+                            let y = (b[1] - a[1]) * (k1 - a[0]) / (b[0] - a[0]) + a[1];
+                            // let z = (b[2] - a[2]) * (k1 - a[0]) / (b[0] - a[0]) + a[2];
+                            new_ring_buffer.push([k1, y])
+                        } else if b[0] > k2 && a[0] < k2 {
+                            let y = (b[1] - a[1]) * (k2 - a[0]) / (b[0] - a[0]) + a[1];
+                            // let z = (b[2] - a[2]) * (k2 - a[0]) / (b[0] - a[0]) + a[2];
+                            new_ring_buffer.push([k2, y])
                         }
 
                         Some(b)
                     })
                     .unwrap();
 
-                let simplified = {
-                    let mut coords: Vec<[i16; 2]> = new_ring_buffer
-                        .iter()
-                        .map(|&[x, y]| {
-                            let tx = (((x - xi as f64) * (extent as f64)) + 0.5) as i16;
-                            let ty = (((y - yi as f64) * (extent as f64)) + 0.5) as i16;
-                            [tx, ty]
-                        })
-                        .collect();
+                // get integer coordinates and simplify the ring
+                {
+                    int_coords_buf.clear();
+                    int_coords_buf.extend(new_ring_buffer.iter().map(|&[x, y]| {
+                        let tx = (((x * z_scale - xi as f64) * (extent as f64)) + 0.5) as i16;
+                        let ty = (((y * z_scale - yi as f64) * (extent as f64)) + 0.5) as i16;
+                        [tx, ty]
+                    }));
 
                     // remove closing point if exists
-                    if coords.len() >= 2 && coords[0] == *coords.last().unwrap() {
-                        coords.pop();
+                    if int_coords_buf.len() >= 2
+                        && int_coords_buf[0] == *int_coords_buf.last().unwrap()
+                    {
+                        int_coords_buf.pop();
                     }
 
-                    if coords.len() < 3 {
+                    if int_coords_buf.len() < 3 {
                         continue;
                     }
 
-                    let mut simplified = Vec::new();
-                    simplified.push(coords[0]);
-                    for c in coords.windows(3) {
+                    simplified_buf.clear();
+                    simplified_buf.push(int_coords_buf[0]);
+
+                    for c in int_coords_buf.windows(3) {
                         let &[prev, curr, next] = c else {
                             unreachable!()
                         };
+
                         // Remove duplicate points
-                        if prev == curr || curr == next {
+                        if prev == curr {
                             continue;
                         }
+
                         // Reject collinear points
                         let [curr_x, curr_y] = curr;
                         let [prev_x, prev_y] = prev;
                         let [next_x, next_y] = next;
-                        if ((next_y - prev_y) as i32 * (curr_x - prev_x) as i32).abs()
-                            == ((curr_y - prev_y) as i32 * (next_x - prev_x) as i32).abs()
+                        if curr != next
+                            && ((next_y - prev_y) as i32 * (curr_x - prev_x) as i32).abs()
+                                == ((curr_y - prev_y) as i32 * (next_x - prev_x) as i32).abs()
                         {
                             continue;
                         }
-                        simplified.push(curr);
+
+                        simplified_buf.push(curr);
                     }
-                    simplified.push(*coords.last().unwrap());
+                    simplified_buf.push(*int_coords_buf.last().unwrap());
+                }
 
-                    simplified
-                };
-
-                let flat_coords: Vec<i16> = simplified.iter().flatten().copied().collect();
-                let mut ring = LineString2::from_raw(flat_coords.into());
+                let mut ring =
+                    LineString2::from_raw(simplified_buf.iter().flatten().copied().collect());
                 ring.reverse_inplace();
 
                 // Skip the polygon if:

@@ -2,27 +2,27 @@
 
 use std::fs;
 use std::io::BufRead;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::sync::RwLock;
-use url::Url;
 
 use rayon::prelude::*;
+use url::Url;
 
 use crate::parameters::Parameters;
 use crate::pipeline::{Feedback, Parcel, Sender};
 use crate::source::{DataSource, DataSourceProvider, SourceInfo};
 use nusamai_citygml::object::Entity;
-use nusamai_citygml::{CityGMLElement, CityGMLReader, ParseError, SubTreeReader};
+use nusamai_citygml::{CityGmlElement, CityGmlReader, ParseError, SubTreeReader};
 use nusamai_plateau::models;
 
-pub struct CityGMLSourceProvider {
+pub struct CityGmlSourceProvider {
     // FIXME: Use the configuration mechanism
-    pub filenames: Vec<String>,
+    pub filenames: Vec<PathBuf>,
 }
 
-impl DataSourceProvider for CityGMLSourceProvider {
+impl DataSourceProvider for CityGmlSourceProvider {
     fn create(&self, _params: &Parameters) -> Box<dyn DataSource> {
-        Box::new(CityGMLSource {
+        Box::new(CityGmlSource {
             filenames: self.filenames.clone(),
         })
     }
@@ -38,26 +38,24 @@ impl DataSourceProvider for CityGMLSourceProvider {
     }
 }
 
-pub struct CityGMLSource {
-    filenames: Vec<String>,
+pub struct CityGmlSource {
+    filenames: Vec<PathBuf>,
 }
 
-impl DataSource for CityGMLSource {
+impl DataSource for CityGmlSource {
     fn run(&mut self, downstream: Sender, feedback: &Feedback) {
         let code_resolver = nusamai_plateau::codelist::Resolver::new();
 
-        let _ = self.filenames.par_iter().try_for_each(|filename| {
-            log::info!("loading city objects from: {} ...", filename);
-            let Ok(file) = std::fs::File::open(filename) else {
-                panic!("failed to open file {}", filename);
-            };
+        self.filenames.par_iter().try_for_each(|filename| {
+            log::info!("loading city objects from: {:?} ...", filename);
+            let file = std::fs::File::open(filename).unwrap();
             let reader = std::io::BufReader::with_capacity(1024 * 1024, file);
             let mut xml_reader = quick_xml::NsReader::from_reader(reader);
             let source_url =
                 Url::from_file_path(fs::canonicalize(Path::new(filename)).unwrap()).unwrap();
 
             let context = nusamai_citygml::ParseContext::new(source_url, &code_resolver);
-            let mut citygml_reader = CityGMLReader::new(context);
+            let mut citygml_reader = CityGmlReader::new(context);
 
             match citygml_reader.start_root(&mut xml_reader) {
                 Ok(mut st) => match toplevel_dispatcher(&mut st, &downstream, feedback) {
@@ -94,7 +92,7 @@ fn toplevel_dispatcher<R: BufRead>(
                 if let Some(root) = cityobj.into_object() {
                     let entity = Entity {
                         root,
-                        geometry_store: RwLock::new(geometries).into(),
+                        geometry_store: RwLock::new(geometry_store).into(),
                     };
                     if downstream.send(Parcel { entity }).is_err() {
                         feedback.cancel();
@@ -117,9 +115,6 @@ fn toplevel_dispatcher<R: BufRead>(
     });
     match result {
         Ok(_) => Ok(()),
-        Err(e) => {
-            log::error!("{:?}", e);
-            Err(e)
-        }
+        Err(e) => Err(e),
     }
 }

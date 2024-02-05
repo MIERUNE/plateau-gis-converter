@@ -15,7 +15,7 @@ use crate::geometry::{
     GeometryType,
 };
 use crate::namespace::{wellknown_prefix_from_nsres, APP_2_NS, GML31_NS};
-use crate::{CityGMLAttribute, LocalHref};
+use crate::{CityGmlAttribute, LocalHref};
 
 #[derive(Error, Debug)]
 pub enum ParseError {
@@ -31,7 +31,7 @@ pub enum ParseError {
     Cancelled,
 }
 
-pub struct CityGMLReader<'a> {
+pub struct CityGmlReader<'a> {
     state: InternalState<'a>,
 }
 
@@ -111,7 +111,7 @@ impl<'a> Default for ParseContext<'a> {
     }
 }
 
-impl<'a> CityGMLReader<'a> {
+impl<'a> CityGmlReader<'a> {
     #[inline]
     pub fn new(context: ParseContext<'a>) -> Self {
         Self {
@@ -993,7 +993,7 @@ mod tests {
 
     fn parse(doc: &str, f: impl Fn(&mut SubTreeReader<std::io::Cursor<&str>>)) {
         let mut reader = quick_xml::NsReader::from_reader(std::io::Cursor::new(doc));
-        let mut citygml_reader = CityGMLReader::new(ParseContext::default());
+        let mut citygml_reader = CityGmlReader::new(ParseContext::default());
         let mut subtree_reader = citygml_reader
             .start_root(&mut reader)
             .expect("Failed to start root");

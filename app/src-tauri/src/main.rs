@@ -2,18 +2,20 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use std::env;
+use std::path::PathBuf;
+use std::str::FromStr;
 use std::sync::{Arc, Mutex};
 
 use nusamai::pipeline::Canceller;
 use nusamai::sink::DataSinkProvider;
 use nusamai::sink::{
-    geojson::GeoJsonSinkProvider, gpkg::GpkgSinkProvider, mvt::MVTSinkProvider,
-    serde::SerdeSinkProvider,
+    czml::CzmlSinkProvider, geojson::GeoJsonSinkProvider, gpkg::GpkgSinkProvider,
+    mvt::MVTSinkProvider, serde::SerdeSinkProvider, shapefile::ShapefileSinkProvider,
 };
-use nusamai::source::citygml::CityGMLSourceProvider;
+use nusamai::source::citygml::CityGmlSourceProvider;
 use nusamai::source::DataSourceProvider;
-use nusamai::transformer::builder::{NusamaiTransformBuilder, TransformBuilder};
-use nusamai::transformer::runner::MultiThreadTransformer;
+use nusamai::transformer::MultiThreadTransformer;
+use nusamai::transformer::{NusamaiTransformBuilder, TransformBuilder};
 use nusamai_plateau::models::TopLevelCityObject;
 
 fn main() {
@@ -28,6 +30,20 @@ fn main() {
         .expect("error while running tauri application");
 }
 
+fn select_sink_provider(filetype: &str) -> Box<dyn DataSinkProvider> {
+    // TODO: share possible options with the frontend types (src/lib/settings.ts)
+    match filetype {
+        "noop" => Box::new(nusamai::sink::noop::NoopSinkProvider {}),
+        "serde" => Box::new(SerdeSinkProvider {}),
+        "geojson" => Box::new(GeoJsonSinkProvider {}),
+        "gpkg" => Box::new(GpkgSinkProvider {}),
+        "mvt" => Box::new(MVTSinkProvider {}),
+        "shapefile" => Box::new(ShapefileSinkProvider {}),
+        "czml" => Box::new(CzmlSinkProvider {}),
+        _ => panic!("Unknown filetype: {}", filetype),
+    }
+}
+
 #[tauri::command]
 fn run(input_paths: Vec<String>, output_path: String, filetype: String) {
     let sinkopt: Vec<(String, String)> = vec![("@output".into(), output_path)];
@@ -38,8 +54,11 @@ fn run(input_paths: Vec<String>, output_path: String, filetype: String) {
     let canceller = Arc::new(Mutex::new(Canceller::default()));
 
     let source = {
-        let source_provider: Box<dyn DataSourceProvider> = Box::new(CityGMLSourceProvider {
-            filenames: input_paths,
+        let source_provider: Box<dyn DataSourceProvider> = Box::new(CityGmlSourceProvider {
+            filenames: input_paths
+                .iter()
+                .map(|s| PathBuf::from_str(s).unwrap())
+                .collect(),
         });
         let mut source_params = source_provider.parameters();
         if let Err(err) = source_params.validate() {
@@ -50,18 +69,7 @@ fn run(input_paths: Vec<String>, output_path: String, filetype: String) {
     };
 
     let sink = {
-        // TODO: share with the frontend types (src/lib/settings.ts)
-        let sink_provider: Box<dyn DataSinkProvider> = match &*filetype {
-            "GeoJSON" => Box::new(GeoJsonSinkProvider {}),
-            "GeoPackage" => Box::new(GpkgSinkProvider {}),
-            "Serde" => Box::new(SerdeSinkProvider {}),
-            "Vector Tiles" => Box::new(MVTSinkProvider {}),
-            _ => {
-                log::error!("Unknown filetype: {}", filetype);
-                return;
-            }
-        };
-
+        let sink_provider = select_sink_provider(&filetype);
         let mut sink_params = sink_provider.parameters();
         if let Err(err) = sink_params.update_values_with_str(&sinkopt) {
             log::error!("Error parsing sink options: {:?}", err);
@@ -75,8 +83,9 @@ fn run(input_paths: Vec<String>, output_path: String, filetype: String) {
     };
 
     let (transformer, schema) = {
-        use nusamai_citygml::CityGMLElement;
-        let transform_builder = NusamaiTransformBuilder::default();
+        use nusamai_citygml::CityGmlElement;
+        let requirements = sink.make_transform_requirements();
+        let transform_builder = NusamaiTransformBuilder::new(requirements.into());
         let mut schema = nusamai_citygml::schema::Schema::default();
         TopLevelCityObject::collect_schema(&mut schema);
         transform_builder.transform_schema(&mut schema);

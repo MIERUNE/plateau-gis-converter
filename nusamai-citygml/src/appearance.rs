@@ -1,4 +1,4 @@
-use crate::{schema, CityGMLElement, LocalHref, ParseError, SubTreeReader};
+use crate::{schema, CityGmlElement, LocalHref, ParseError, SubTreeReader};
 
 #[derive(Debug, Default, serde::Serialize, serde::Deserialize)]
 pub enum TextureAssociation {
@@ -17,7 +17,7 @@ pub struct TexCoordList {
     pub coords_list: Vec<Vec<f64>>,
 }
 
-impl CityGMLElement for TextureAssociation {
+impl CityGmlElement for TextureAssociation {
     fn parse<R: std::io::BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
         *self = st.parse_texture_association()?;
         Ok(())

@@ -1,4 +1,4 @@
-//! Configuration mechanism for Sink, Source, and other components.
+//! Configuration facility for Sink, Source, and other components.
 
 use std::collections::HashMap;
 
@@ -14,7 +14,7 @@ macro_rules! get_parameter_value {
         let ParameterType::$param_type(inner) = &entry.parameter else {
             unreachable!();
         };
-        inner.value.as_ref()
+        &inner.value
     }};
 }
 
@@ -116,6 +116,7 @@ impl ParameterEntry {
         match &self.parameter {
             ParameterType::FileSystemPath(p) => p.validate(self.required),
             ParameterType::String(p) => p.validate(self.required),
+            ParameterType::Boolean(p) => p.validate(self.required),
         }
     }
 
@@ -124,6 +125,7 @@ impl ParameterEntry {
         match &mut self.parameter {
             ParameterType::FileSystemPath(p) => p.update_value_with_str(s),
             ParameterType::String(p) => p.update_value_with_str(s),
+            ParameterType::Boolean(p) => p.update_value_with_str(s),
         }
     }
 
@@ -132,6 +134,7 @@ impl ParameterEntry {
         match &mut self.parameter {
             ParameterType::FileSystemPath(p) => p.update_value_with_json(v),
             ParameterType::String(p) => p.update_value_with_json(v),
+            ParameterType::Boolean(p) => p.update_value_with_json(v),
         }
     }
 }
@@ -140,6 +143,7 @@ impl ParameterEntry {
 pub enum ParameterType {
     FileSystemPath(FileSystemPathParameter),
     String(StringParameter),
+    Boolean(BooleanParameter),
     // and so on ...
 }
 
@@ -203,6 +207,41 @@ impl StringParameter {
     pub fn update_value_with_json(&mut self, v: &serde_json::Value) -> Result<(), Error> {
         if let serde_json::Value::String(s) = v {
             self.value = Some(s.clone());
+            Ok(())
+        } else {
+            Err(Error::InvalidValue("Invalid value type.".into()))
+        }
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub struct BooleanParameter {
+    pub value: Option<bool>,
+}
+
+impl BooleanParameter {
+    pub fn validate(&self, required: bool) -> Result<(), Error> {
+        if required {
+            match &self.value {
+                Some(_) => Ok(()),
+                _ => Err(Error::RequiredValueNotProvided),
+            }
+        } else {
+            Ok(())
+        }
+    }
+
+    pub fn update_value_with_str(&mut self, s: &str) -> Result<(), Error> {
+        let Ok(v) = s.parse::<bool>() else {
+            return Err(Error::InvalidValue("Invalid value type.".into()));
+        };
+        self.value = Some(v);
+        Ok(())
+    }
+
+    pub fn update_value_with_json(&mut self, v: &serde_json::Value) -> Result<(), Error> {
+        if let &serde_json::Value::Bool(s) = v {
+            self.value = Some(s);
             Ok(())
         } else {
             Err(Error::InvalidValue("Invalid value type.".into()))

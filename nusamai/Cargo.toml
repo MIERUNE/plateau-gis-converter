@@ -1,6 +1,6 @@
 [package]
 name = "nusamai"
-version = "0.1.0"
+version.workspace = true
 edition = "2021"
 
 [dependencies]
@@ -16,7 +16,10 @@ ctrlc = "3.4.1"
 bincode = "1.3.3"
 lz4_flex = "0.11.1"
 nusamai-geojson = { path = "../nusamai-geojson" }
+nusamai-gltf-json = { path = "../nusamai-gltf/nusamai-gltf-json" }
+nusamai-3dtiles-json = { path = "../nusamai-3dtiles/nusamai-3dtiles-json" }
 nusamai-geometry = { path = "../nusamai-geometry" }
+nusamai-czml = { path = "../nusamai-czml" }
 nusamai-projection = { path = "../nusamai-projection" }
 nusamai-mvt = { path = "../nusamai-mvt" }
 geojson = "0.24.1"
@@ -25,7 +28,7 @@ url = "2.5.0"
 nusamai-gpkg = { path = "../nusamai-gpkg" }
 tokio = { version = "1.35.1", features = ["full"] }
 byteorder = "1.5.0"
-hashbrown = "0.14.3"
+hashbrown = { version = "0.14.3", features = ["serde"] }
 ext-sort = { version = "0.1.4", features = ["memory-limit"] }
 deepsize = "0.2.0"
 serde_bytes = "0.11.14"
@@ -35,10 +38,14 @@ itertools = "0.12.0"
 prost = "0.12.3"
 bytesize = "1.3.0"
 ahash = "0.8.7"
+nusamai-shapefile = { path = "../nusamai-shapefile" }
+shapefile = "0.5.0"
+earcut-rs = { git = "https://github.com/MIERUNE/earcut-rs.git" }
+glob = "0.3.1"
+shellexpand = "3.1.0"
 
 [dev-dependencies]
 rand = "0.8.5"
 tokio = { version = "1.35.1", features = ["full"] }
 nusamai-geometry = { path = "../nusamai-geometry" }
 byteorder = "1.5.0"
-nusamai-gltf = { path = "../nusamai-gltf" }

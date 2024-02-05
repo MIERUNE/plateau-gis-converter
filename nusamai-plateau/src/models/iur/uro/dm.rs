@@ -1,4 +1,4 @@
-use nusamai_citygml::{citygml_data, citygml_property, CityGMLElement, Code, GYearMonth, Length};
+use nusamai_citygml::{citygml_data, citygml_property, CityGmlElement, Code, GYearMonth, Length};
 
 #[citygml_property(name = "uro:DmAttributeProperty")]
 pub enum DmAttributeProperty {

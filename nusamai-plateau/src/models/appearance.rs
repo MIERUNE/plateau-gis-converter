@@ -1,6 +1,6 @@
 use nusamai_citygml::appearance::TextureAssociation;
 use nusamai_citygml::{
-    citygml_feature, citygml_property, CityGMLElement, Code, LocalHref, Point, URI,
+    citygml_feature, citygml_property, CityGmlElement, Code, LocalHref, Point, URI,
 };
 
 type Double01 = f64; // TODO?

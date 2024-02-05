@@ -22,7 +22,7 @@ pub use generics::GenericCityObject;
 pub use iur::urf;
 pub use iur::uro;
 pub use landuse::LandUse;
-use nusamai_citygml::{citygml_property, CityGMLElement};
+use nusamai_citygml::{citygml_property, CityGmlElement};
 pub use other_construction::OtherConstruction;
 pub use relief::ReliefFeature;
 pub use transportation::{Railway, Road, Square, Track, Waterway};

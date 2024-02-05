@@ -1,6 +1,6 @@
 use super::core::Address;
 use super::iur::uro;
-use nusamai_citygml::{citygml_feature, citygml_property, CityGMLElement, Code, GYear};
+use nusamai_citygml::{citygml_feature, citygml_property, CityGmlElement, Code, GYear};
 
 #[citygml_feature(name = "brid:Bridge")]
 pub struct Bridge {
@@ -266,34 +266,22 @@ pub struct BridgeFurniture {
     pub usage: Vec<Code>,
 }
 
-#[citygml_property(name = "bldg:_OpeningProperty")]
+#[citygml_property(name = "brid:_OpeningProperty")]
 pub enum OpeningProperty {
-    #[citygml(path = b"bldg:Door")]
+    #[citygml(path = b"brid:Door")]
     Door(Door),
-    #[citygml(path = b"bldg:Window")]
+    #[citygml(path = b"brid:Window")]
     Window(Window),
 }
 
-#[citygml_feature(name = "bldg:Door")]
+#[citygml_feature(name = "brid:Door")]
 pub struct Door {
-    #[citygml(path = b"uro:ifcOpeningAttribute")]
-    pub ifc_opening_attribute: Vec<uro::IfcAttributeProperty>, // -> uro:IfcAttribute
-
-    #[citygml(path = b"uro:indoorOpeningAttribute")]
-    pub indoor_opening_attribute: Vec<uro::IndoorAttributeProperty>, // -> uro:IndoorAttribute
-
-    #[citygml(path = b"bldg:address/core:Address")]
+    #[citygml(path = b"brid:address/core:Address")]
     pub address: Vec<Address>,
 }
 
-#[citygml_feature(name = "bldg:Window")]
-pub struct Window {
-    #[citygml(path = b"uro:ifcOpeningAttribute")]
-    pub ifc_opening_attribute: Vec<uro::IfcAttributeProperty>, // -> uro:IfcAttribute
-
-    #[citygml(path = b"uro:indoorOpeningAttribute")]
-    pub indoor_opening_attribute: Vec<uro::IndoorAttributeProperty>, // -> uro:IndoorAttribute
-}
+#[citygml_feature(name = "brid:Window")]
+pub struct Window {}
 
 #[citygml_property(name = "brid:_BoundarySurfaceProperty")]
 pub enum BoundarySurfaceProperty {

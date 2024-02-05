@@ -1,11 +1,11 @@
 use nusamai_citygml::{
-    citygml_feature, values, CityGMLElement, CityGMLReader, Date, Measure, ParseContext,
+    citygml_feature, values, CityGmlElement, CityGmlReader, Date, Measure, ParseContext,
     ParseError, Value, URI,
 };
 
 #[test]
 fn parse_date() {
-    #[derive(CityGMLElement, Default)]
+    #[derive(CityGmlElement, Default)]
     struct Root {
         #[citygml(path = b"date")]
         date: Option<chrono::NaiveDate>,
@@ -15,7 +15,7 @@ fn parse_date() {
         r#"<root><date>2019-03-21</date></root>"#,
     ));
     let context = ParseContext::default();
-    match CityGMLReader::new(context).start_root(&mut xml_reader) {
+    match CityGmlReader::new(context).start_root(&mut xml_reader) {
         Ok(mut st) => {
             let mut root = Root::default();
             root.parse(&mut st).unwrap();
@@ -28,7 +28,7 @@ fn parse_date() {
 
 #[test]
 fn parse_boolean() {
-    #[derive(CityGMLElement, Default)]
+    #[derive(CityGmlElement, Default)]
     struct Root {
         #[citygml(path = b"boolean")]
         bools: Vec<bool>,
@@ -49,7 +49,7 @@ fn parse_boolean() {
         "#,
     ));
     let context = ParseContext::default();
-    match CityGMLReader::new(context).start_root(&mut xml_reader) {
+    match CityGmlReader::new(context).start_root(&mut xml_reader) {
         Ok(mut st) => {
             let mut root = Root::default();
             root.parse(&mut st).unwrap();
@@ -64,7 +64,7 @@ fn parse_boolean() {
 
 #[test]
 fn parse_basic_types() {
-    #[derive(CityGMLElement, Default)]
+    #[derive(CityGmlElement, Default)]
     struct Root {
         #[citygml(path = b"int")]
         int: Option<i64>,
@@ -99,7 +99,7 @@ fn parse_basic_types() {
         "#,
     ));
     let context = ParseContext::default();
-    match CityGMLReader::new(context).start_root(&mut xml_reader) {
+    match CityGmlReader::new(context).start_root(&mut xml_reader) {
         Ok(mut st) => {
             let mut root = Root::default();
             root.parse(&mut st).unwrap();
@@ -119,10 +119,10 @@ fn parse_basic_types() {
     }
 }
 
-fn expect_invalid<T: CityGMLElement + Default>(xml: &str) {
+fn expect_invalid<T: CityGmlElement + Default>(xml: &str) {
     let mut xml_reader = quick_xml::NsReader::from_reader(std::io::Cursor::new(xml));
     let context = ParseContext::default();
-    match CityGMLReader::new(context).start_root(&mut xml_reader) {
+    match CityGmlReader::new(context).start_root(&mut xml_reader) {
         Ok(mut st) => {
             let mut root = T::default();
             match root.parse(&mut st) {
@@ -156,13 +156,13 @@ fn parse_duplicate_content() {
     "#,
     ));
 
-    #[derive(CityGMLElement, Default)]
+    #[derive(CityGmlElement, Default)]
     struct Root {
         #[citygml(path = b"only_once")]
         only_once: Option<i64>,
     }
     let context = ParseContext::default();
-    match CityGMLReader::new(context).start_root(&mut xml_reader) {
+    match CityGmlReader::new(context).start_root(&mut xml_reader) {
         Ok(mut st) => {
             let mut root = Root::default();
             match root.parse(&mut st) {
@@ -221,7 +221,7 @@ fn generics() {
     let mut xml_reader = quick_xml::NsReader::from_reader(reader);
     let context = nusamai_citygml::ParseContext::default();
     let mut demo = Demo::default();
-    match nusamai_citygml::CityGMLReader::new(context).start_root(&mut xml_reader) {
+    match nusamai_citygml::CityGmlReader::new(context).start_root(&mut xml_reader) {
         Ok(mut st) => {
             demo.parse(&mut st).unwrap();
         }
