@@ -17,6 +17,7 @@ bincode = "1.3.3"
 lz4_flex = "0.11.1"
 nusamai-geojson = { path = "../nusamai-geojson" }
 nusamai-gltf-json = { path = "../nusamai-gltf/nusamai-gltf-json" }
+nusamai-3dtiles-json = { path = "../nusamai-3dtiles/nusamai-3dtiles-json" }
 nusamai-geometry = { path = "../nusamai-geometry" }
 nusamai-czml = { path = "../nusamai-czml" }
 nusamai-projection = { path = "../nusamai-projection" }

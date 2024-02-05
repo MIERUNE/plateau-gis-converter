@@ -1,21 +1,22 @@
 //! 3D Tiles sink
 
 use std::fs;
-use std::io::{BufWriter, Write};
-pub mod slice;
-pub mod sort;
-pub mod tiling;
+mod gltf;
+mod slice;
+mod sort;
+mod tiling;
 
+use std::io::BufWriter;
 use std::path::{Path, PathBuf};
-use std::sync::mpsc;
+use std::sync::{mpsc, Arc, Mutex};
 
 use ahash::RandomState;
-use byteorder::{ByteOrder, LittleEndian};
 use earcut_rs::utils_3d::project3d_to_2d;
 use earcut_rs::Earcut;
 use ext_sort::{buffer::mem::MemoryLimitedBufferBuilder, ExternalSorter, ExternalSorterBuilder};
 use indexmap::IndexSet;
 use itertools::Itertools;
+use nusamai_mvt::TileZXY;
 use nusamai_projection::cartesian::geographic_to_geocentric;
 use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
@@ -26,10 +27,13 @@ use nusamai_mvt::tileid::TileIdMethod;
 
 use crate::parameters::*;
 use crate::pipeline::{Feedback, Receiver};
+use crate::sink::cesiumtiles::gltf::write_gltf_glb;
 use crate::sink::{DataSink, DataSinkProvider, SinkInfo};
 use crate::{get_parameter_value, transformer};
 use slice::slice_cityobj_geoms;
 use sort::BincodeExternalChunk;
+
+use tiling::{TileSpec, TileTree};
 
 pub struct CesiumTilesSinkProvider {}
 
@@ -210,6 +214,7 @@ fn tile_writing_stage(
     tile_id_conv: TileIdMethod,
 ) {
     let ellipsoid = nusamai_projection::ellipsoid::wgs84();
+    let tiles: Arc<Mutex<Vec<TileSpec>>> = Default::default();
 
     let _ = receiver_sorted
         .into_iter()
@@ -218,6 +223,16 @@ fn tile_writing_stage(
             if feedback.is_cancelled() {
                 return Err(());
             }
+
+            let mut tilespec = TileSpec {
+                zxy: (0, 0, 0),
+                min_lng: f64::MAX,
+                max_lng: f64::MIN,
+                min_lat: f64::MAX,
+                max_lat: f64::MIN,
+                min_height: f64::MAX,
+                max_height: f64::MIN,
+            };
 
             let mut earcutter = Earcut::new();
             let mut buf3d: Vec<f64> = Vec::new();
@@ -229,6 +244,13 @@ fn tile_writing_stage(
                 let mut feat: SlicedFeature = bincode::deserialize(&ser_feat.body).unwrap();
 
                 feat.geometry.transform_inplace(|&[lng, lat, height]| {
+                    tilespec.min_lng = tilespec.min_lng.min(lng);
+                    tilespec.max_lng = tilespec.max_lng.max(lng);
+                    tilespec.min_lat = tilespec.min_lat.min(lat);
+                    tilespec.max_lat = tilespec.max_lat.max(lat);
+                    tilespec.min_height = tilespec.min_height.min(height);
+                    tilespec.max_height = tilespec.max_height.max(height);
+
                     let (x, y, z) = geographic_to_geocentric(&ellipsoid, lng, lat, height);
                     [x, z, -y]
                 });
@@ -300,8 +322,20 @@ fn tile_writing_stage(
                 })
                 .collect();
 
+            // Remove degenerate triangles
+            let indices: Vec<u32> = indices
+                .chunks_exact(3)
+                .filter(|idx| (idx[0] != idx[1] && idx[1] != idx[2] && idx[2] != idx[0]))
+                .flatten()
+                .copied()
+                .collect();
+
+            let zxy: TileZXY = tile_id_conv.id_to_zxy(tile_id);
+            let (zoom, x, y) = zxy;
+            tilespec.zxy = zxy;
+            tiles.lock().unwrap().push(tilespec);
+
             // print tile information
-            let (zoom, x, y) = tile_id_conv.id_to_zxy(tile_id);
             let (min_y, max_y) = tiling::y_slice_range(zoom, y);
             let xs = tiling::x_step(zoom, y);
             let (min_x, max_x) = tiling::x_slice_range(zoom, x as i32, xs);
@@ -318,142 +352,40 @@ fn tile_writing_stage(
                     panic!("Fatal error: {:?}", e); // FIXME
                 }
             }
-            write_gltf_glb(&path_glb, pos_min, pos_max, translation, vertices, indices);
+
+            let mut file = std::fs::File::create(path_glb).unwrap();
+            let mut writer = BufWriter::new(&mut file);
+            write_gltf_glb(
+                &mut writer,
+                pos_min,
+                pos_max,
+                translation,
+                vertices,
+                indices,
+            );
 
             Ok(())
         });
-}
 
-fn write_gltf_glb(
-    path: &Path,
-    min: [f64; 3],
-    max: [f64; 3],
-    translation: [f64; 3],
-    vertices: impl IntoIterator<Item = [u32; 3]>,
-    indices: impl IntoIterator<Item = u32>,
-) {
-    use nusamai_gltf_json::*;
-
-    println!("tr: {:?}", translation);
-
-    let mut bin_content: Vec<u8> = Vec::new();
-
-    let vertices_offset = bin_content.len();
-    let mut buf = [0; 12];
-    let mut vertices_count = 0;
-    for v in vertices {
-        LittleEndian::write_u32_into(&v, &mut buf);
-        bin_content.write_all(&buf).unwrap();
-        vertices_count += 1;
+    let mut tree = TileTree::default();
+    for tilespec in tiles.lock().unwrap().drain(..) {
+        tree.add_node(tilespec);
     }
-    let vertices_len = bin_content.len() - vertices_offset;
 
-    let indices_offset = bin_content.len();
-    let mut indices_count = 0;
-    for idx in indices {
-        bin_content.write_all(&idx.to_le_bytes()).unwrap();
-        indices_count += 1;
-    }
-    let indices_len = bin_content.len() - indices_offset;
-
-    let gltf = Gltf {
-        scenes: vec![Scene {
-            nodes: Some(vec![0]),
+    let tileset = nusamai_3dtiles_json::tileset::Tileset {
+        asset: nusamai_3dtiles_json::tileset::Asset {
+            version: "1.1".to_string(),
             ..Default::default()
-        }],
-        nodes: vec![Node {
-            mesh: Some(0),
-            translation,
-            ..Default::default()
-        }],
-        materials: vec![Material {
-            pbr_metallic_roughness: Some(MaterialPbrMetallicRoughness {
-                base_color_factor: [0.5, 0.5, 0.5, 1.0],
-                metallic_factor: 1.,
-                roughness_factor: 0.2,
-                ..Default::default()
-            }),
-            ..Default::default()
-        }],
-        meshes: vec![Mesh {
-            primitives: vec![MeshPrimitive {
-                attributes: vec![("POSITION".to_string(), 0)].into_iter().collect(),
-                indices: Some(1),
-                material: Some(0),
-                mode: PrimitiveMode::Triangles,
-                ..Default::default()
-            }],
-            ..Default::default()
-        }],
-        accessors: vec![
-            Accessor {
-                buffer_view: Some(0),
-                component_type: ComponentType::Float,
-                count: vertices_count,
-                min: Some(min.to_vec()),
-                max: Some(max.to_vec()),
-                type_: AccessorType::Vec3,
-                ..Default::default()
-            },
-            Accessor {
-                buffer_view: Some(1),
-                component_type: ComponentType::UnsignedInt,
-                count: indices_count,
-                type_: AccessorType::Scalar,
-                ..Default::default()
-            },
-        ],
-        buffer_views: vec![
-            BufferView {
-                byte_offset: vertices_offset as u32,
-                byte_length: vertices_len as u32,
-                target: Some(BufferViewTarget::ArrayBuffer),
-                ..Default::default()
-            },
-            BufferView {
-                byte_offset: indices_offset as u32,
-                byte_length: indices_len as u32,
-                target: Some(BufferViewTarget::ElementArrayBuffer),
-                ..Default::default()
-            },
-        ],
-        buffers: vec![Buffer {
-            byte_length: bin_content.len() as u32,
-            ..Default::default()
-        }],
+        },
+        root: tree.into_tileset_root(),
+        geometric_error: 1e+100,
         ..Default::default()
     };
 
-    {
-        let mut json_content = serde_json::to_vec(&gltf).unwrap();
-
-        // append padding
-        json_content.extend(vec![0x20; (4 - (json_content.len() % 4)) % 4].iter());
-        bin_content.extend(vec![0x0; (4 - (bin_content.len() % 4)) % 4].iter());
-
-        let total_size = 12 + 8 + json_content.len() + 8 + bin_content.len();
-
-        let mut file = std::fs::File::create(path).unwrap();
-        let mut writer = BufWriter::new(&mut file);
-
-        writer.write_all(b"glTF").unwrap(); // magic
-        writer.write_all(&2u32.to_le_bytes()).unwrap(); // version: 2
-        writer
-            .write_all(&(total_size as u32).to_le_bytes())
-            .unwrap(); // total size
-
-        writer
-            .write_all(&(json_content.len() as u32).to_le_bytes())
-            .unwrap(); // json content
-        writer.write_all(b"JSON").unwrap(); // chunk type
-        writer.write_all(&json_content).unwrap(); // json content
-
-        writer
-            .write_all(&(bin_content.len() as u32).to_le_bytes())
-            .unwrap(); // json content
-        writer.write_all(b"BIN\0").unwrap(); // chunk type
-        writer.write_all(&bin_content).unwrap(); // bin content
-
-        writer.flush().unwrap();
-    }
+    let root_tileset_path = output_path.join(Path::new("tileset.json"));
+    fs::write(
+        root_tileset_path,
+        serde_json::to_string_pretty(&tileset).unwrap(),
+    )
+    .unwrap()
 }
