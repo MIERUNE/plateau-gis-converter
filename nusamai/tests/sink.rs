@@ -5,15 +5,29 @@ use nusamai::source::DataSourceProvider;
 use nusamai::transformer::{MultiThreadTransformer, NusamaiTransformBuilder, TransformBuilder};
 use nusamai_citygml::CityGmlElement;
 use nusamai_plateau::models::TopLevelCityObject;
+use std::path::PathBuf;
+use std::str::FromStr;
 
 pub(crate) fn simple_run_sink<S: DataSinkProvider>(sink_provider: S, output: Option<&str>) {
+    INIT.call_once(|| {
+        if std::env::var("RUST_LOG").is_err() {
+            std::env::set_var("RUST_LOG", "error")
+        }
+        pretty_env_logger::init();
+    });
+
+    let filenames = [
+        "../nusamai-plateau/tests/data/plateau-3_0/udx/rwy/53395527_rwy_6697.gml",
+        "../nusamai-plateau/tests/data/plateau-3_0/udx/brid/dorokyo_51324378_brid_6697.gml",
+        "../nusamai-plateau/tests/data/plateau-3_0/udx/trk/53361601_trk_6697.gml",
+        "../nusamai-plateau/tests/data/plateau-3_0/udx/tun/53361613_tun_6697.gml",
+    ];
+
     let source_provider: Box<dyn DataSourceProvider> = Box::new(CityGmlSourceProvider {
-        filenames: vec![
-            "../nusamai-plateau/tests/data/plateau-3_0/udx/rwy/53395518_rwy_6697.gml".to_string(),
-            "../nusamai-plateau/tests/data/plateau-3_0/udx/brid/51324378_brid_6697.gml".to_string(),
-            "../nusamai-plateau/tests/data/plateau-3_0/udx/trk/53361601_trk_6697.gml".to_string(),
-            "../nusamai-plateau/tests/data/plateau-3_0/udx/tun/53361613_tun_6697.gml".to_string(),
-        ],
+        filenames: filenames
+            .iter()
+            .map(|name| PathBuf::from_str(name).unwrap())
+            .collect(),
     });
     assert_eq!(source_provider.info().name, "CityGML");
 
