@@ -9,9 +9,11 @@ use byteorder::{ByteOrder, LittleEndian};
 use earcut_rs::utils_3d::project3d_to_2d;
 use earcut_rs::Earcut;
 use indexmap::IndexSet;
+use nusamai_czml::translation;
+use nusamai_projection::cartesian::geographic_to_geocentric;
 use rayon::prelude::*;
 
-use nusamai_citygml::object::{Entity, ObjectStereotype};
+use nusamai_citygml::object::ObjectStereotype;
 use nusamai_citygml::schema::Schema;
 use nusamai_citygml::{GeometryType, Value};
 use nusamai_geometry::{MultiPolygon, Polygon};
@@ -22,9 +24,9 @@ use crate::pipeline::{Feedback, Receiver};
 use crate::sink::{DataSink, DataSinkProvider, SinkInfo};
 use crate::{get_parameter_value, transformer};
 
-pub struct GltfSinkProvider {}
+pub struct GltfPocSinkProvider {}
 
-impl DataSinkProvider for GltfSinkProvider {
+impl DataSinkProvider for GltfPocSinkProvider {
     fn info(&self) -> SinkInfo {
         SinkInfo {
             name: "glTF".to_string(),
@@ -50,17 +52,17 @@ impl DataSinkProvider for GltfSinkProvider {
     fn create(&self, params: &Parameters) -> Box<dyn DataSink> {
         let output_path = get_parameter_value!(params, "@output", FileSystemPath);
 
-        Box::<GltfSink>::new(GltfSink {
+        Box::<GltfPocSink>::new(GltfPocSink {
             output_path: output_path.as_ref().unwrap().into(),
         })
     }
 }
 
-pub struct GltfSink {
+pub struct GltfPocSink {
     output_path: PathBuf,
 }
 
-impl DataSink for GltfSink {
+impl DataSink for GltfPocSink {
     fn make_transform_requirements(&self) -> transformer::Requirements {
         use transformer::RequirementItem;
 
@@ -75,6 +77,8 @@ impl DataSink for GltfSink {
 
         rayon::join(
             || {
+                let ellipsoid = nusamai_projection::ellipsoid::wgs84();
+
                 // Convert Entity to CzmlPolygon objects
                 let _ = upstream.into_iter().par_bridge().try_for_each_with(
                     sender,
@@ -106,27 +110,15 @@ impl DataSink for GltfSink {
                                 for idx_poly in geom_store.multipolygon.iter_range(
                                     entry.pos as usize..(entry.pos + entry.len) as usize,
                                 ) {
-                                    let exterior_rings: Vec<[f64; 3]> = idx_poly
-                                        .exterior()
-                                        .into_iter()
-                                        .map(|idx| geom_store.vertices[idx[0] as usize])
-                                        .collect();
-
-                                    let interior_rings: Vec<Vec<[f64; 3]>> = idx_poly
-                                        .interiors()
-                                        .map(|interior| {
-                                            interior
-                                                .into_iter()
-                                                .map(|idx| geom_store.vertices[idx[0] as usize])
-                                                .collect()
-                                        })
-                                        .collect();
-
-                                    let mut poly = Polygon::<3, f64>::new();
-                                    poly.add_ring(exterior_rings);
-                                    for interior in interior_rings {
-                                        poly.add_ring(interior);
-                                    }
+                                    let poly = idx_poly.transform(|idx| {
+                                        let [lng, lat, height] =
+                                            geom_store.vertices[idx[0] as usize];
+                                        // Convert to geocentric (x, y, z) coordinate.
+                                        // (Earcut do not work in geographic space)
+                                        let (x, y, z) =
+                                            geographic_to_geocentric(&ellipsoid, lng, lat, height);
+                                        [x, y, z]
+                                    });
 
                                     mpoly3.push(poly);
                                 }
@@ -152,39 +144,77 @@ impl DataSink for GltfSink {
             },
             || {
                 // Write CZML to a file
+                // todo: schemaから属性定義を行う必要がある
+
+                // indicesとverticesはmpoly3に結合していく
+                // 同時にentityごとのmpolyを三角分割し、indices, vertices, feature_idsを作成していく
+                // その後、全体を三角分割し、translation, pos_min, pos_maxを得る
+                // それらを使って、gltfを書き込む
+
+                let mut iter = receiver.into_iter().peekable();
+
+                let mut all_indices: Vec<u32> = Vec::new();
+                let mut all_vertices: Vec<[u32; 3]> = Vec::new();
+                let mut all_feature_ids: Vec<u32> = Vec::new();
+
+                let mut feature_id = 0;
+
+                let mut all_mpoly3 = MultiPolygon::<3, f64>::new();
+
+                while let Some((mpoly3, attributes)) = iter.next() {
+                    // mpoly3を全て取り出し、結合していく
+                    mpoly3
+                        .iter()
+                        .for_each(|poly: Polygon<'_, 3>| all_mpoly3.push(poly.clone()));
+
+                    let (indices, vertices, _, _, _) = triangulate(&mpoly3);
+
+                    // all_indicesのmaxがSomeの場合はその値を利用し、そうでない場合は0を利用する
+                    let max = if all_indices.is_empty() {
+                        0
+                    } else {
+                        *all_indices.iter().max().unwrap() + 1
+                    };
+                    all_indices.extend(indices.iter().map(|idx| idx + max));
+
+                    all_vertices.extend(vertices.clone());
+
+                    let vertices_len = vertices.len();
+                    all_feature_ids.extend((0..vertices_len).map(|_| feature_id));
+                    feature_id += 1;
+                }
+
                 let mut file = File::create(&self.output_path).unwrap();
                 let mut writer = BufWriter::with_capacity(1024 * 1024, &mut file);
 
-                // Write each glTF
-                // todo: indices, vertices, feature_idsのVecを作成し、pushしていく
-                // todo: mpolyを受け取るので、先頭の地物をfeature_id: 0とし、頂点の個数と同じ分だけ、idを振っていく
-                // todo: 三角分割する
-                // todo: 三角分割したものをindicesとverticesに追加していく
+                let (indices, vertices, translation, pos_max, pos_min) = triangulate(&all_mpoly3);
 
-                let mut iter = receiver.into_iter().peekable();
-                // iterの先頭を0として、頂点の個数と同じ分だけ、idを振っていく
-                let mut feature_id = 0;
-                while let Some((mpoly3, attributes)) = iter.next() {
-                    triangulate(mpoly3);
-                }
+                write_gltf(
+                    writer,
+                    pos_min,
+                    pos_max,
+                    translation,
+                    vertices,
+                    indices,
+                    // all_feature_ids,
+                );
+
+                // todo: 属性部分をbufferにするコードを書く
             },
         );
     }
 }
 
-fn mpoly3_to_vertices(mpoly3: MultiPolygon<'_, 3>) {}
-
-/// Create glTF Packet from a Entity
-fn triangulate(mpoly3: MultiPolygon<'_, 3>) {
-    // todo: mpoly3からindices, vertices, feature_idsを生成する関数を作る
-    // todo: gltf書き込みを行う関数を作る
-
-    // todo: bufferには頂点インデックス + 頂点座標 + 頂点IDの順で書き込む（法線とか・RGBを書き込むなら、考慮する必要がある）
-    // todo: bufferViewは上記に合わせ、3つ作る
-    // todo: accessorは上記に合わせ、3つ作るが頂点インデックスと頂点IDはSCALAR、頂点座標はVEC3になると思う
-
-    // todo: 属性部分をbufferにするコードを書く
-
+/// Triangulate MultiPolygon and return indices, vertices, translation, pos_min, pos_max
+fn triangulate(
+    mpoly3: &MultiPolygon<'_, 3>,
+) -> (
+    Vec<u32>,
+    IndexSet<[u32; 3], RandomState>,
+    [f64; 3],
+    [f64; 3],
+    [f64; 3],
+) {
     let mut earcutter = Earcut::new();
     let mut buf3d: Vec<f64> = Vec::new();
     let mut buf2d: Vec<f64> = Vec::new();
@@ -211,6 +241,8 @@ fn triangulate(mpoly3: MultiPolygon<'_, 3>) {
             }));
         }
     }
+
+    // println!("triangles: {:?}", triangles);
 
     // calculate the centroid and min/max
     let mut pos_max = [f64::MIN; 3];
@@ -256,11 +288,13 @@ fn triangulate(mpoly3: MultiPolygon<'_, 3>) {
         })
         .collect();
 
-    println!("{:?}", indices);
-    println!("{:?}", vertices);
-    println!("{:?}", translation);
-    println!("{:?}", pos_min);
-    println!("{:?}", pos_max);
+    // println!("indices: {:?}", indices);
+    // println!("vertices: {:?}", vertices);
+    // println!("translation: {:?}", translation);
+    // println!("pos_min: {:?}", pos_min);
+    // println!("pos_max: {:?}\n", pos_max);
+
+    return (indices, vertices, translation, pos_max, pos_min);
 }
 
 fn write_gltf<W: Write>(
@@ -270,8 +304,13 @@ fn write_gltf<W: Write>(
     translation: [f64; 3],
     vertices: impl IntoIterator<Item = [u32; 3]>,
     indices: impl IntoIterator<Item = u32>,
+    // feature_ids: impl IntoIterator<Item = u32>,
 ) {
-    let path_glb = "/Users/satoru/Downloads/plateau/test.glb";
+    // todo: bufferには頂点インデックス + 頂点座標 + 頂点IDの順で書き込む（法線とか・RGBを書き込むなら、考慮する必要がある）
+    // todo: bufferViewは上記に合わせ、3つ作る
+    // todo: accessorは上記に合わせ、3つ作るが頂点インデックスと頂点IDはSCALAR、頂点座標はVEC3になると思う
+
+    let path_glb = "/Users/satoru/Downloads/test.glb";
     let mut file = std::fs::File::create(path_glb).unwrap();
     let mut writer = BufWriter::new(&mut file);
 
@@ -294,6 +333,12 @@ fn write_gltf<W: Write>(
         indices_count += 1;
     }
     let indices_len = bin_content.len() - indices_offset;
+
+    // let feature_ids_offset = bin_content.len();
+    // for id in feature_ids {
+    //     bin_content.write_all(&id.to_le_bytes()).unwrap();
+    // }
+    // let feature_ids_len = bin_content.len() - feature_ids_offset;
 
     let gltf = Gltf {
         scenes: vec![Scene {
@@ -399,7 +444,10 @@ mod tests {
     use std::sync::RwLock;
 
     use super::*;
-    use nusamai_citygml::{object::Object, GeometryRefEntry, Value};
+    use nusamai_citygml::{
+        object::{Entity, Object},
+        GeometryRefEntry, Value,
+    };
     use nusamai_geometry::MultiPolygon;
     use nusamai_projection::crs::EPSG_JGD2011_GEOGRAPHIC_3D;
 
