@@ -8,16 +8,13 @@ use ahash::RandomState;
 use byteorder::{ByteOrder, LittleEndian};
 use earcut_rs::utils_3d::project3d_to_2d;
 use earcut_rs::Earcut;
-use geojson::feature;
 use indexmap::IndexSet;
-use nusamai_czml::translation;
 use nusamai_projection::cartesian::geographic_to_geocentric;
 use rayon::prelude::*;
 
 use nusamai_citygml::object::ObjectStereotype;
 use nusamai_citygml::schema::Schema;
 use nusamai_citygml::{GeometryType, Value};
-use nusamai_geometry::{MultiPolygon, Polygon};
 use nusamai_gltf_json::*;
 
 use crate::parameters::*;
@@ -173,7 +170,6 @@ impl DataSink for GltfPocSink {
                 // Write CZML to a file
                 // todo: schemaから属性定義を行う必要がある
 
-                let mut all_indices = Vec::new();
                 let mut all_vertices = Vec::new();
                 let mut all_feature_ids = Vec::new();
 
@@ -185,10 +181,8 @@ impl DataSink for GltfPocSink {
 
                     let mut pos_max = [f64::MIN; 3];
                     let mut pos_min = [f64::MAX; 3];
-                    // let mut translation = [0.; 3];
 
                     let mut vertices: Vec<[f64; 3]> = Vec::new();
-                    let mut indices: Vec<u32> = Vec::new();
 
                     // calculate the centroid and min/max
                     for &[x, y, z] in &triangles {
@@ -205,39 +199,8 @@ impl DataSink for GltfPocSink {
                         vertices.push([x, y, z]);
                     }
 
-                    // translation[0] = (pos_max[0] + pos_min[0]) / 2.;
-                    // translation[1] = (pos_max[1] + pos_min[1]) / 2.;
-                    // translation[2] = (pos_max[2] + pos_min[2]) / 2.;
-                    // pos_min[0] -= translation[0];
-                    // pos_max[0] -= translation[0];
-                    // pos_min[1] -= translation[1];
-                    // pos_max[1] -= translation[1];
-                    // pos_min[2] -= translation[2];
-                    // pos_max[2] -= translation[2];
-
-                    // make vertices and indices
-
-                    // let mut vertices: IndexSet<[u32; 3], RandomState> = IndexSet::default();
-                    // let indices: Vec<_> = triangles
-                    //     .iter()
-                    //     .map(|&[x, y, z]| {
-                    //         let (x, y, z) =
-                    //             (x - translation[0], y - translation[1], z - translation[2]);
-                    //         let vbits = [
-                    //             (x as f32).to_bits(),
-                    //             (y as f32).to_bits(),
-                    //             (z as f32).to_bits(),
-                    //         ];
-                    //         let (index, _) = vertices.insert_full(vbits);
-                    //         index as u32
-                    //     })
-                    //     .collect();
-
-                    // all_indicesの最大値を取得。存在しない場合は0を返す
-                    let max_index = all_indices.iter().max().copied().unwrap_or(0);
-                    all_indices.extend(indices.into_iter().map(|idx| idx + max_index));
-
                     all_vertices.extend(vertices);
+
                     all_feature_ids.push(feature_id);
                     feature_id += 1;
 
@@ -251,13 +214,9 @@ impl DataSink for GltfPocSink {
                         f64::max(all_max[1], pos_max[1]),
                         f64::max(all_max[2], pos_max[2]),
                     ];
-
-                    // all_translation[0] += translation[0];
-                    // all_translation[1] += translation[1];
-                    // all_translation[2] += translation[2];
                 }
 
-                // translationを求める
+                // calculate the centroid
                 let mut all_translation = [0.; 3];
                 all_translation[0] = (all_max[0] + all_min[0]) / 2.;
                 all_translation[1] = (all_max[1] + all_min[1]) / 2.;
@@ -270,6 +229,7 @@ impl DataSink for GltfPocSink {
                 all_max[2] -= all_translation[2];
                 all_min[2] -= all_translation[2];
 
+                // make vertices and indices
                 let mut vertices: IndexSet<[u32; 3], RandomState> = IndexSet::default();
                 let indices: Vec<_> = all_vertices
                     .iter()
@@ -292,10 +252,7 @@ impl DataSink for GltfPocSink {
                 let mut file = File::create(&self.output_path).unwrap();
                 let writer = BufWriter::with_capacity(1024 * 1024, &mut file);
 
-                write_gltf(
-                    writer, all_min, all_max, vertices, indices,
-                    // all_feature_ids,
-                );
+                write_gltf(writer, all_min, all_max, vertices, indices);
 
                 // todo: 属性部分をbufferにするコードを書く
             },
