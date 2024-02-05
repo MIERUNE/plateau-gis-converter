@@ -27,8 +27,8 @@ pub enum ParseError {
     InvalidValue(String),
     #[error("Codelist error: {0}")]
     CodelistError(String),
-    #[error("cancelled")]
-    Cancelled,
+    #[error("canceled")]
+    Canceled,
 }
 
 pub struct CityGmlReader<'a> {

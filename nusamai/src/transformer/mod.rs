@@ -7,7 +7,7 @@ pub mod transform;
 pub use builder::*;
 pub use runner::*;
 
-use crate::pipeline::{Feedback, Parcel, Receiver, Sender};
+use crate::pipeline::{Feedback, Parcel, Receiver, Result, Sender};
 
 use nusamai_citygml::{object::Entity, schema::Schema};
 use thiserror::Error;
@@ -19,7 +19,7 @@ pub enum TransformError {
 }
 
 pub trait Transformer: Send {
-    fn run(&self, upstream: Receiver, downstream: Sender, feedback: &Feedback);
+    fn run(&self, upstream: Receiver, downstream: Sender, feedback: &Feedback) -> Result<()>;
 }
 
 pub trait Transform: Send {

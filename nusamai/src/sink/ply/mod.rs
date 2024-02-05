@@ -8,11 +8,12 @@ use byteorder::{ByteOrder, LittleEndian, WriteBytesExt};
 use earcut_rs::{utils_3d::project3d_to_2d, Earcut};
 use indexmap::IndexSet;
 use nusamai_citygml::{schema::Schema, GeometryType};
+
 use nusamai_projection::cartesian::geographic_to_geocentric;
 use rayon::prelude::*;
 
 use crate::parameters::*;
-use crate::pipeline::{Feedback, Receiver};
+use crate::pipeline::{Feedback, PipelineError, Receiver};
 use crate::sink::{DataSink, DataSinkProvider, SinkInfo};
 use crate::{get_parameter_value, transformer};
 
@@ -79,19 +80,23 @@ impl DataSink for StanfordPlySink {
         }
     }
 
-    fn run(&mut self, upstream: Receiver, feedback: &Feedback, _schema: &Schema) {
+    fn run(
+        &mut self,
+        upstream: Receiver,
+        feedback: &Feedback,
+        _schema: &Schema,
+    ) -> Result<(), PipelineError> {
         let (sender, receiver) = std::sync::mpsc::sync_channel(1000);
 
-        rayon::join(
+        let (ra, rb) = rayon::join(
             || {
                 let ellipsoid = nusamai_projection::ellipsoid::wgs84();
 
-                let _ = upstream.into_iter().par_bridge().try_for_each_with(
-                    sender,
-                    |sender, parcel| {
-                        if feedback.is_cancelled() {
-                            return Err(());
-                        }
+                upstream
+                    .into_iter()
+                    .par_bridge()
+                    .try_for_each_with(sender, |sender, parcel| {
+                        feedback.ensure_not_canceled()?;
 
                         let entity = parcel.entity;
                         let geom_store = entity.geometry_store.read().unwrap();
@@ -160,13 +165,11 @@ impl DataSink for StanfordPlySink {
                         });
 
                         if sender.send(triangles).is_err() {
-                            log::info!("sink cancelled");
-                            return Err(());
+                            return Err(PipelineError::Canceled);
                         };
 
                         Ok(())
-                    },
-                );
+                    })
             },
             || {
                 // calculate the centroid
@@ -203,31 +206,41 @@ impl DataSink for StanfordPlySink {
 
                 // write to file
                 println!("{:?} {:?}", vertices.len(), indices.len());
-                let file = std::fs::File::create(&self.output_path).unwrap();
+                let file = std::fs::File::create(&self.output_path)?;
                 let mut writer = std::io::BufWriter::new(file);
-                writer
-                    .write_all(
-                        PLY_HEADER_TEMPLATE
-                            .replace("{n_verts}", &vertices.len().to_string())
-                            .replace("{n_faces}", &(indices.len() / 3).to_string())
-                            .as_ref(),
-                    )
-                    .unwrap();
+                writer.write_all(
+                    PLY_HEADER_TEMPLATE
+                        .replace("{n_verts}", &vertices.len().to_string())
+                        .replace("{n_faces}", &(indices.len() / 3).to_string())
+                        .as_ref(),
+                )?;
 
                 let mut buf = [0; 24];
-                vertices.iter().for_each(|v| {
+                for v in &vertices {
                     LittleEndian::write_u64_into(v, &mut buf);
-                    writer.write_all(&buf).unwrap();
-                });
+                    writer.write_all(&buf)?;
+                }
                 let mut buf = [0; 12];
-                indices.chunks_exact(3).for_each(|v| {
-                    writer.write_u8(3).unwrap();
-                    LittleEndian::write_u32_into(v, &mut buf);
-                    writer.write_all(&buf).unwrap();
-                });
+                for idx in indices.chunks_exact(3) {
+                    writer.write_u8(3)?;
+                    LittleEndian::write_u32_into(idx, &mut buf);
+                    writer.write_all(&buf)?;
+                }
 
-                writer.flush().unwrap();
+                writer.flush()?;
+
+                Ok(())
             },
         );
+
+        match ra {
+            Ok(_) | Err(PipelineError::Canceled) => {}
+            Err(error) => feedback.report_fatal_error(error),
+        }
+        match rb {
+            Ok(_) | Err(PipelineError::Canceled) => {}
+            Err(error) => feedback.report_fatal_error(error),
+        }
+        Ok(())
     }
 }
