@@ -1,5 +1,4 @@
 //! gltf sink poc
-mod gltf;
 
 use std::fs::File;
 use std::io::{BufWriter, Write};
