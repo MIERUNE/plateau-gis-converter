@@ -160,23 +160,22 @@ impl DataSink for GltfSink {
                 // todo: mpolyを受け取るので、先頭の地物をfeature_id: 0とし、頂点の個数と同じ分だけ、idを振っていく
                 // todo: 三角分割する
                 // todo: 三角分割したものをindicesとverticesに追加していく
-                // let mut iter = receiver.into_iter().peekable();
-                // while let Some(bytes) = iter.next() {
-                //     writer.write_all(&bytes).unwrap();
-                //     if iter.peek().is_some() {
-                //         writer.write_all(b",").unwrap();
-                //     };
-                // }
 
-                // // Write the FeautureCollection footer and EOL
-                // writer.write_all(b"]\n").unwrap();
+                let mut iter = receiver.into_iter().peekable();
+                // iterの先頭を0として、頂点の個数と同じ分だけ、idを振っていく
+                let mut feature_id = 0;
+                while let Some((mpoly3, attributes)) = iter.next() {
+                    triangulate(mpoly3);
+                }
             },
         );
     }
 }
 
+fn mpoly3_to_vertices(mpoly3: MultiPolygon<'_, 3>) {}
+
 /// Create glTF Packet from a Entity
-fn entity_to_gltf(mpoly3: MultiPolygon<'_, 3>) {
+fn triangulate(mpoly3: MultiPolygon<'_, 3>) {
     // todo: mpoly3からindices, vertices, feature_idsを生成する関数を作る
     // todo: gltf書き込みを行う関数を作る
 
@@ -256,6 +255,12 @@ fn entity_to_gltf(mpoly3: MultiPolygon<'_, 3>) {
             index as u32
         })
         .collect();
+
+    println!("{:?}", indices);
+    println!("{:?}", vertices);
+    println!("{:?}", translation);
+    println!("{:?}", pos_min);
+    println!("{:?}", pos_max);
 }
 
 fn write_gltf<W: Write>(
@@ -482,11 +487,5 @@ mod tests {
             }),
             geometry_store: RwLock::new(geometries).into(),
         };
-
-        let mpoly3 = entity_to_mpoly3(&entity);
-        let attributes = entity_to_attributes(&entity);
-
-        println!("{:?}", mpoly3);
-        println!("{:?}", attributes);
     }
 }
