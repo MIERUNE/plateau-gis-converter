@@ -2,11 +2,11 @@
 
 use std::fs;
 use std::io::BufRead;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::sync::RwLock;
-use url::Url;
 
 use rayon::prelude::*;
+use url::Url;
 
 use crate::parameters::Parameters;
 use crate::pipeline;
@@ -17,7 +17,7 @@ use nusamai_citygml::{CityGmlElement, CityGmlReader, ParseError, SubTreeReader};
 
 pub struct CityGmlSourceProvider {
     // FIXME: Use the configuration mechanism
-    pub filenames: Vec<String>,
+    pub filenames: Vec<PathBuf>,
 }
 
 impl DataSourceProvider for CityGmlSourceProvider {
@@ -39,7 +39,7 @@ impl DataSourceProvider for CityGmlSourceProvider {
 }
 
 pub struct CityGmlSource {
-    filenames: Vec<String>,
+    filenames: Vec<PathBuf>,
 }
 
 impl DataSource for CityGmlSource {
@@ -47,8 +47,8 @@ impl DataSource for CityGmlSource {
         let code_resolver = nusamai_plateau::codelist::Resolver::new();
 
         self.filenames.par_iter().try_for_each(|filename| {
-            log::info!("loading city objects from: {} ...", filename);
-            let file = std::fs::File::open(filename).unwrap();
+            log::info!("loading city objects from: {:?} ...", filename);
+            let file = std::fs::File::open(filename)?;
             let reader = std::io::BufReader::with_capacity(1024 * 1024, file);
             let mut xml_reader = quick_xml::NsReader::from_reader(reader);
             let source_url =
