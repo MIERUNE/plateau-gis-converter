@@ -263,9 +263,6 @@ pub fn entity_to_gltf(entity: &Entity) {
 
     println!("mpoly3: {:?}", &mpoly3);
 
-    // todo: 三角形の頂点と面をまとめる
-    // todo: glTFに変換する
-    // todo: ファイルに書き出す
     // todo: 属性について考える
     // todo: 属性を付与する
 
