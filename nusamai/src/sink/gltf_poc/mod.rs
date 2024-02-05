@@ -9,6 +9,7 @@ use byteorder::{ByteOrder, LittleEndian};
 use earcut_rs::utils_3d::project3d_to_2d;
 use earcut_rs::Earcut;
 use indexmap::IndexSet;
+use nusamai_gltf_json::extensions::mesh::ext_mesh_features::FeatureId;
 use nusamai_projection::cartesian::geographic_to_geocentric;
 use rayon::prelude::*;
 
@@ -98,6 +99,7 @@ impl DataSink for GltfPocSink {
                             unimplemented!()
                         };
 
+                        // Divide polygons into triangles
                         let mut earcutter = Earcut::new();
                         let mut buf3d: Vec<f64> = Vec::new();
                         let mut buf2d: Vec<f64> = Vec::new();
@@ -157,7 +159,7 @@ impl DataSink for GltfPocSink {
                         };
                         let attributes = obj.attributes.clone();
 
-                        // send mpoly3 and attributes to sender
+                        // send triangles and attributes to sender
                         if sender.send((triangles, attributes)).is_err() {
                             return Err(());
                         }
@@ -167,7 +169,7 @@ impl DataSink for GltfPocSink {
                 );
             },
             || {
-                // Write CZML to a file
+                // Write glTF to a file
                 // todo: schemaから属性定義を行う必要がある
 
                 let mut all_vertices = Vec::new();
@@ -252,7 +254,7 @@ impl DataSink for GltfPocSink {
                 let mut file = File::create(&self.output_path).unwrap();
                 let writer = BufWriter::with_capacity(1024 * 1024, &mut file);
 
-                write_gltf(writer, all_min, all_max, vertices, indices);
+                write_gltf(writer, all_min, all_max, vertices, indices, all_feature_ids);
 
                 // todo: 属性部分をbufferにするコードを書く
             },
@@ -266,16 +268,8 @@ fn write_gltf<W: Write>(
     max: [f64; 3],
     vertices: impl IntoIterator<Item = [u32; 3]>,
     indices: impl IntoIterator<Item = u32>,
-    // feature_ids: impl IntoIterator<Item = u32>,
+    feature_ids: impl IntoIterator<Item = u32>,
 ) {
-    // todo: bufferには頂点インデックス + 頂点座標 + 頂点IDの順で書き込む（法線とか・RGBを書き込むなら、考慮する必要がある）
-    // todo: bufferViewは上記に合わせ、3つ作る
-    // todo: accessorは上記に合わせ、3つ作るが頂点インデックスと頂点IDはSCALAR、頂点座標はVEC3になると思う
-
-    let path_glb = "/Users/satoru/Downloads/test.glb";
-    let mut file = std::fs::File::create(path_glb).unwrap();
-    let mut writer = BufWriter::new(&mut file);
-
     let mut bin_content: Vec<u8> = Vec::new();
 
     let vertices_offset = bin_content.len();
@@ -296,13 +290,16 @@ fn write_gltf<W: Write>(
     }
     let indices_len = bin_content.len() - indices_offset;
 
-    // let feature_ids_offset = bin_content.len();
-    // for id in feature_ids {
-    //     bin_content.write_all(&id.to_le_bytes()).unwrap();
-    // }
-    // let feature_ids_len = bin_content.len() - feature_ids_offset;
+    let feature_ids_offset = bin_content.len();
+    let mut feature_ids_count = 0;
+    for id in feature_ids {
+        bin_content.write_all(&id.to_le_bytes()).unwrap();
+        feature_ids_count += 1;
+    }
+    let feature_ids_len = bin_content.len() - feature_ids_offset;
 
     let gltf = Gltf {
+        extensions_used: vec!["EXT_mesh_features".to_string()],
         scenes: vec![Scene {
             nodes: Some(vec![0]),
             ..Default::default()
@@ -322,10 +319,26 @@ fn write_gltf<W: Write>(
         }],
         meshes: vec![Mesh {
             primitives: vec![MeshPrimitive {
-                attributes: vec![("POSITION".to_string(), 0)].into_iter().collect(),
+                attributes: vec![
+                    ("POSITION".to_string(), 0),
+                    ("_FEATURE_ID_0".to_string(), 2),
+                ]
+                .into_iter()
+                .collect(),
                 indices: Some(1),
                 material: Some(0),
                 mode: PrimitiveMode::Triangles,
+                extensions: Some(extensions::mesh::MeshPrimitive {
+                    ext_mesh_features: Some(extensions::mesh::ext_mesh_features::ExtMeshFeatures {
+                        feature_ids: vec![FeatureId {
+                            attribute: Some(0),
+                            feature_count: feature_ids_count as u32,
+                            ..Default::default()
+                        }],
+                        ..Default::default()
+                    }),
+                    ..Default::default()
+                }),
                 ..Default::default()
             }],
             ..Default::default()
@@ -347,6 +360,13 @@ fn write_gltf<W: Write>(
                 type_: AccessorType::Scalar,
                 ..Default::default()
             },
+            Accessor {
+                buffer_view: Some(2),
+                component_type: ComponentType::UnsignedInt,
+                count: feature_ids_count,
+                type_: AccessorType::Scalar,
+                ..Default::default()
+            },
         ],
         buffer_views: vec![
             BufferView {
@@ -359,6 +379,12 @@ fn write_gltf<W: Write>(
                 byte_offset: indices_offset as u32,
                 byte_length: indices_len as u32,
                 target: Some(BufferViewTarget::ElementArrayBuffer),
+                ..Default::default()
+            },
+            BufferView {
+                byte_offset: feature_ids_offset as u32,
+                byte_length: feature_ids_len as u32,
+                target: Some(BufferViewTarget::ArrayBuffer),
                 ..Default::default()
             },
         ],
