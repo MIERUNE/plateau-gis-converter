@@ -9,13 +9,6 @@ use std::path::PathBuf;
 use std::str::FromStr;
 
 pub(crate) fn simple_run_sink<S: DataSinkProvider>(sink_provider: S, output: Option<&str>) {
-    INIT.call_once(|| {
-        if std::env::var("RUST_LOG").is_err() {
-            std::env::set_var("RUST_LOG", "error")
-        }
-        pretty_env_logger::init();
-    });
-
     let filenames = [
         "../nusamai-plateau/tests/data/plateau-3_0/udx/rwy/53395527_rwy_6697.gml",
         "../nusamai-plateau/tests/data/plateau-3_0/udx/brid/dorokyo_51324378_brid_6697.gml",

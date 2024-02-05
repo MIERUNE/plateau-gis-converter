@@ -2,6 +2,8 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use std::env;
+use std::path::PathBuf;
+use std::str::FromStr;
 use std::sync::{Arc, Mutex};
 
 use nusamai::pipeline::Canceller;
@@ -53,7 +55,10 @@ fn run(input_paths: Vec<String>, output_path: String, filetype: String) {
 
     let source = {
         let source_provider: Box<dyn DataSourceProvider> = Box::new(CityGmlSourceProvider {
-            filenames: input_paths,
+            filenames: input_paths
+                .iter()
+                .map(|s| PathBuf::from_str(s).unwrap())
+                .collect(),
         });
         let mut source_params = source_provider.parameters();
         if let Err(err) = source_params.validate() {
