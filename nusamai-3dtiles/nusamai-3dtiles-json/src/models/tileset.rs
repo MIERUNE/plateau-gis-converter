@@ -329,8 +329,7 @@ pub struct Tileset {
     pub metadata: Option<MetadataEntity>,
 
     /// The error, in meters, introduced if this tileset is not rendered. At runtime, the geometric error is used to compute screen space error (SSE), i.e., the error measured in pixels.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub geometric_error: Option<f64>,
+    pub geometric_error: f64, // non-negative
 
     /// The root tile.
     pub root: Tile,
