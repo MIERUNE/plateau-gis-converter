@@ -8,6 +8,7 @@ use ahash::RandomState;
 use earcut_rs::utils_3d::project3d_to_2d;
 use earcut_rs::Earcut;
 use indexmap::IndexSet;
+use itertools::Itertools;
 use nusamai_citygml::{GeometryType, Value};
 use nusamai_geometry::{MultiPolygon, Polygon};
 use rayon::prelude::*;
@@ -210,11 +211,15 @@ pub fn entity_to_gltf(entity: &Entity) {
     let Value::Object(obj) = &entity.root else {
         unimplemented!()
     };
-    let ObjectStereotype::Feature { id: _, geometries } = &obj.stereotype else {
+    let ObjectStereotype::Feature { id, geometries } = &obj.stereotype else {
         unimplemented!()
     };
 
-    let mut mpoly = nusamai_geometry::MultiPolygon::<1, u32>::new();
+    println!("id: {}", id);
+    println!("geometries: {:?}", geometries);
+
+    // let mut idx_mpoly = nusamai_geometry::MultiPolygon::<1, u32>::new();
+    let mut mpoly3: MultiPolygon<'_, 3> = MultiPolygon::<3, f64>::new();
 
     geometries.iter().for_each(|entry| match entry.ty {
         GeometryType::Solid | GeometryType::Surface | GeometryType::Triangle => {
@@ -222,39 +227,37 @@ pub fn entity_to_gltf(entity: &Entity) {
                 .multipolygon
                 .iter_range(entry.pos as usize..(entry.pos + entry.len) as usize)
             {
-                mpoly.push(idx_poly);
+                let exterior_rings: Vec<[f64; 3]> = idx_poly
+                    .exterior()
+                    .into_iter()
+                    .map(|idx| geom_store.vertices[idx[0] as usize])
+                    .collect();
+
+                let interior_rings: Vec<Vec<[f64; 3]>> = idx_poly
+                    .interiors()
+                    .map(|interior| {
+                        interior
+                            .into_iter()
+                            .map(|idx| geom_store.vertices[idx[0] as usize])
+                            .collect()
+                    })
+                    .collect();
+
+                let mut poly = Polygon::<3, f64>::new();
+                poly.add_ring(exterior_rings);
+                for interior in interior_rings {
+                    poly.add_ring(interior);
+                }
+
+                mpoly3.push(poly);
             }
         }
         GeometryType::Curve => unimplemented!(),
         GeometryType::Point => unimplemented!(),
     });
 
-    mpoly.iter().for_each(|poly| {
-        log::info!("{:?}", poly);
-    });
+    println!("mpoly3: {:?}", &mpoly3);
 
-    let mut exteriors = Vec::new();
-    for poly in mpoly.iter() {
-        for idx in poly.exterior().iter() {
-            exteriors.push(&geom_store.vertices[idx[0] as usize]);
-        }
-    }
-
-    let mut interiors = Vec::new();
-    for poly in mpoly.iter() {
-        for interior in poly.interiors() {
-            let mut interior_vec = Vec::new();
-            for idx in interior.iter() {
-                interior_vec.push(&geom_store.vertices[idx[0] as usize]);
-            }
-            interiors.push(interior_vec);
-        }
-    }
-
-    let mut mpoly3: MultiPolygon<'_, 3> = MultiPolygon::<3, f64>::new();
-
-    // todo: 3次元ポリゴンを作る・3次元ポリゴンを3次元マルチポリゴンに追加する
-    // todo: 三角分割する
     // todo: 三角形の頂点と面をまとめる
     // todo: glTFに変換する
     // todo: ファイルに書き出す
@@ -262,6 +265,8 @@ pub fn entity_to_gltf(entity: &Entity) {
     // todo: 属性を付与する
 
     let (vertices, indices) = triangulate_polygon(&mpoly3);
+    println!("vertices: {:?}", vertices);
+    println!("indices: {:?}", indices);
 }
 
 #[cfg(test)]
