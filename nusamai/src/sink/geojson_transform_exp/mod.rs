@@ -121,11 +121,11 @@ impl DataSink for GeoJsonTfExpSink {
 
         match ra {
             Ok(_) | Err(PipelineError::Canceled) => {}
-            Err(error) => feedback.report_error(error),
+            Err(error) => feedback.report_fatal_error(error),
         }
         match rb {
             Ok(_) | Err(PipelineError::Canceled) => {}
-            Err(error) => feedback.report_error(error),
+            Err(error) => feedback.report_fatal_error(error),
         }
         Ok(())
     }

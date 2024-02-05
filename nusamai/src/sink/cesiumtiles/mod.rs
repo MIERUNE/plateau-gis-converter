@@ -109,7 +109,7 @@ impl DataSink for CesiumTilesSink {
                     if let Err(error) =
                         geometry_slicing_stage(feedback, upstream, tile_id_conv, sender_sliced)
                     {
-                        feedback.report_error(error);
+                        feedback.report_fatal_error(error);
                     }
                 });
             }
@@ -134,7 +134,7 @@ impl DataSink for CesiumTilesSink {
                         if let Err(error) =
                             tile_writing_stage(output_path, feedback, receiver_sorted, tile_id_conv)
                         {
-                            feedback.report_error(error);
+                            feedback.report_fatal_error(error);
                         }
                     })
                 });

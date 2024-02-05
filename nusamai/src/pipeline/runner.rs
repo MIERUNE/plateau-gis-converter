@@ -31,7 +31,7 @@ fn run_source_thread(
             .unwrap();
         pool.install(move || {
             if let Err(error) = source.run(sender, &feedback) {
-                feedback.report_error(error);
+                feedback.report_fatal_error(error);
             }
         });
         log::info!("Source thread finished.");
@@ -53,7 +53,7 @@ fn run_transformer_thread(
             .unwrap();
         pool.install(move || {
             if let Err(error) = transformer.run(upstream, sender, &feedback) {
-                feedback.report_error(error);
+                feedback.report_fatal_error(error);
             }
         });
         log::info!("Transformer thread finished.");
@@ -79,7 +79,7 @@ fn run_sink_thread(
             .unwrap();
         pool.install(move || {
             if let Err(error) = sink.run(upstream, &feedback, &schema) {
-                feedback.report_error(error);
+                feedback.report_fatal_error(error);
             }
         });
         log::info!("Sink thread finished.");

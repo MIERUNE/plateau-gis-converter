@@ -115,11 +115,11 @@ impl DataSink for GeoJsonSink {
             },
         );
 
-        match ra {
+        match ra {report_fatal_error
             Ok(_) | Err(PipelineError::Canceled) => {}
             Err(error) => feedback.report_error(error),
         }
-        match rb {
+        match rb {report_fatal_error
             Ok(_) | Err(PipelineError::Canceled) => {}
             Err(error) => feedback.report_error(error),
         }

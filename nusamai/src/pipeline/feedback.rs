@@ -55,7 +55,7 @@ impl Feedback {
 
     /// Report a fatal error and cancel the pipeline
     #[inline]
-    pub fn report_error(&self, error: PipelineError) {
+    pub fn report_fatal_error(&self, error: PipelineError) {
         self.cancel();
         let _ = self.sender.send(FeedbackMessage {
             message: "Fatal error".to_string(),
