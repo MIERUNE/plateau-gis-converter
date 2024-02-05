@@ -22,5 +22,5 @@ pub struct MeshPrimitive {
     pub khr_materials_variants: Option<khr_materials_variants::KhrMaterialsVariants>,
 
     #[serde(flatten)]
-    others: HashMap<String, Value>,
+    pub others: HashMap<String, Value>,
 }
