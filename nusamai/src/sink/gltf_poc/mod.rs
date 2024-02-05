@@ -8,6 +8,7 @@ use ahash::RandomState;
 use byteorder::{ByteOrder, LittleEndian};
 use earcut_rs::utils_3d::project3d_to_2d;
 use earcut_rs::Earcut;
+use geojson::feature;
 use indexmap::IndexSet;
 use nusamai_czml::translation;
 use nusamai_projection::cartesian::geographic_to_geocentric;
@@ -100,8 +101,11 @@ impl DataSink for GltfPocSink {
                             unimplemented!()
                         };
 
-                        // Vertex indices are taken from 1D polygons and converted to 3D polygons
-                        let mut mpoly3 = MultiPolygon::<3, f64>::new();
+                        let mut earcutter = Earcut::new();
+                        let mut buf3d: Vec<f64> = Vec::new();
+                        let mut buf2d: Vec<f64> = Vec::new();
+                        let mut triangles_buf: Vec<u32> = Vec::new();
+                        let mut triangles = Vec::new();
 
                         geometries.iter().for_each(|entry| match entry.ty {
                             GeometryType::Solid
@@ -120,7 +124,30 @@ impl DataSink for GltfPocSink {
                                         [x, y, z]
                                     });
 
-                                    mpoly3.push(poly);
+                                    let num_outer = match poly.hole_indices().first() {
+                                        Some(&v) => v as usize,
+                                        None => poly.coords().len() / 3,
+                                    };
+
+                                    buf3d.clear();
+                                    buf3d.extend(poly.coords());
+
+                                    if project3d_to_2d(&buf3d, num_outer, &mut buf2d) {
+                                        // earcut
+                                        earcutter.earcut(
+                                            &buf2d,
+                                            poly.hole_indices(),
+                                            2,
+                                            &mut triangles_buf,
+                                        );
+                                        triangles.extend(triangles_buf.iter().map(|idx| {
+                                            [
+                                                buf3d[*idx as usize * 3],
+                                                buf3d[*idx as usize * 3 + 1],
+                                                buf3d[*idx as usize * 3 + 2],
+                                            ]
+                                        }));
+                                    }
                                 }
                             }
                             GeometryType::Curve => unimplemented!(),
@@ -134,7 +161,7 @@ impl DataSink for GltfPocSink {
                         let attributes = obj.attributes.clone();
 
                         // send mpoly3 and attributes to sender
-                        if sender.send((mpoly3, attributes)).is_err() {
+                        if sender.send((triangles, attributes)).is_err() {
                             return Err(());
                         }
 
@@ -146,56 +173,127 @@ impl DataSink for GltfPocSink {
                 // Write CZML to a file
                 // todo: schemaから属性定義を行う必要がある
 
-                // indicesとverticesはmpoly3に結合していく
-                // 同時にentityごとのmpolyを三角分割し、indices, vertices, feature_idsを作成していく
-                // その後、全体を三角分割し、translation, pos_min, pos_maxを得る
-                // それらを使って、gltfを書き込む
+                let mut all_indices = Vec::new();
+                let mut all_vertices = Vec::new();
+                let mut all_feature_ids = Vec::new();
 
-                let mut iter = receiver.into_iter().peekable();
+                let mut all_max = [f64::MIN; 3];
+                let mut all_min = [f64::MAX; 3];
 
-                let mut all_indices: Vec<u32> = Vec::new();
-                let mut all_vertices: Vec<[u32; 3]> = Vec::new();
-                let mut all_feature_ids: Vec<u32> = Vec::new();
+                for (triangles, attributes) in receiver {
+                    let mut feature_id = 0;
 
-                let mut feature_id = 0;
+                    let mut pos_max = [f64::MIN; 3];
+                    let mut pos_min = [f64::MAX; 3];
+                    // let mut translation = [0.; 3];
 
-                let mut all_mpoly3 = MultiPolygon::<3, f64>::new();
+                    let mut vertices: Vec<[f64; 3]> = Vec::new();
+                    let mut indices: Vec<u32> = Vec::new();
 
-                while let Some((mpoly3, attributes)) = iter.next() {
-                    // mpoly3を全て取り出し、結合していく
-                    mpoly3
-                        .iter()
-                        .for_each(|poly: Polygon<'_, 3>| all_mpoly3.push(poly.clone()));
+                    // calculate the centroid and min/max
+                    for &[x, y, z] in &triangles {
+                        pos_min = [
+                            f64::min(pos_min[0], x),
+                            f64::min(pos_min[1], y),
+                            f64::min(pos_min[2], z),
+                        ];
+                        pos_max = [
+                            f64::max(pos_max[0], x),
+                            f64::max(pos_max[1], y),
+                            f64::max(pos_max[2], z),
+                        ];
+                        vertices.push([x, y, z]);
+                    }
 
-                    let (indices, vertices, _, _, _) = triangulate(&mpoly3);
+                    // translation[0] = (pos_max[0] + pos_min[0]) / 2.;
+                    // translation[1] = (pos_max[1] + pos_min[1]) / 2.;
+                    // translation[2] = (pos_max[2] + pos_min[2]) / 2.;
+                    // pos_min[0] -= translation[0];
+                    // pos_max[0] -= translation[0];
+                    // pos_min[1] -= translation[1];
+                    // pos_max[1] -= translation[1];
+                    // pos_min[2] -= translation[2];
+                    // pos_max[2] -= translation[2];
 
-                    // all_indicesのmaxがSomeの場合はその値を利用し、そうでない場合は0を利用する
-                    let max = if all_indices.is_empty() {
-                        0
-                    } else {
-                        *all_indices.iter().max().unwrap() + 1
-                    };
-                    all_indices.extend(indices.iter().map(|idx| idx + max));
+                    // make vertices and indices
 
-                    all_vertices.extend(vertices.clone());
+                    // let mut vertices: IndexSet<[u32; 3], RandomState> = IndexSet::default();
+                    // let indices: Vec<_> = triangles
+                    //     .iter()
+                    //     .map(|&[x, y, z]| {
+                    //         let (x, y, z) =
+                    //             (x - translation[0], y - translation[1], z - translation[2]);
+                    //         let vbits = [
+                    //             (x as f32).to_bits(),
+                    //             (y as f32).to_bits(),
+                    //             (z as f32).to_bits(),
+                    //         ];
+                    //         let (index, _) = vertices.insert_full(vbits);
+                    //         index as u32
+                    //     })
+                    //     .collect();
 
-                    let vertices_len = vertices.len();
-                    all_feature_ids.extend((0..vertices_len).map(|_| feature_id));
+                    // all_indicesの最大値を取得。存在しない場合は0を返す
+                    let max_index = all_indices.iter().max().copied().unwrap_or(0);
+                    all_indices.extend(indices.into_iter().map(|idx| idx + max_index));
+
+                    all_vertices.extend(vertices);
+                    all_feature_ids.push(feature_id);
                     feature_id += 1;
+
+                    all_min = [
+                        f64::min(all_min[0], pos_min[0]),
+                        f64::min(all_min[1], pos_min[1]),
+                        f64::min(all_min[2], pos_min[2]),
+                    ];
+                    all_max = [
+                        f64::max(all_max[0], pos_max[0]),
+                        f64::max(all_max[1], pos_max[1]),
+                        f64::max(all_max[2], pos_max[2]),
+                    ];
+
+                    // all_translation[0] += translation[0];
+                    // all_translation[1] += translation[1];
+                    // all_translation[2] += translation[2];
                 }
 
-                let mut file = File::create(&self.output_path).unwrap();
-                let mut writer = BufWriter::with_capacity(1024 * 1024, &mut file);
+                // translationを求める
+                let mut all_translation = [0.; 3];
+                all_translation[0] = (all_max[0] + all_min[0]) / 2.;
+                all_translation[1] = (all_max[1] + all_min[1]) / 2.;
+                all_translation[2] = (all_max[2] + all_min[2]) / 2.;
 
-                let (indices, vertices, translation, pos_max, pos_min) = triangulate(&all_mpoly3);
+                all_max[0] -= all_translation[0];
+                all_min[0] -= all_translation[0];
+                all_max[1] -= all_translation[1];
+                all_min[1] -= all_translation[1];
+                all_max[2] -= all_translation[2];
+                all_min[2] -= all_translation[2];
+
+                let mut vertices: IndexSet<[u32; 3], RandomState> = IndexSet::default();
+                let indices: Vec<_> = all_vertices
+                    .iter()
+                    .map(|&[x, y, z]| {
+                        let (x, y, z) = (
+                            x - all_translation[0],
+                            y - all_translation[1],
+                            z - all_translation[2],
+                        );
+                        let vbits = [
+                            (x as f32).to_bits(),
+                            (y as f32).to_bits(),
+                            (z as f32).to_bits(),
+                        ];
+                        let (index, _) = vertices.insert_full(vbits);
+                        index as u32
+                    })
+                    .collect();
+
+                let mut file = File::create(&self.output_path).unwrap();
+                let writer = BufWriter::with_capacity(1024 * 1024, &mut file);
 
                 write_gltf(
-                    writer,
-                    pos_min,
-                    pos_max,
-                    translation,
-                    vertices,
-                    indices,
+                    writer, all_min, all_max, vertices, indices,
                     // all_feature_ids,
                 );
 
@@ -205,103 +303,10 @@ impl DataSink for GltfPocSink {
     }
 }
 
-/// Triangulate MultiPolygon and return indices, vertices, translation, pos_min, pos_max
-fn triangulate(
-    mpoly3: &MultiPolygon<'_, 3>,
-) -> (
-    Vec<u32>,
-    IndexSet<[u32; 3], RandomState>,
-    [f64; 3],
-    [f64; 3],
-    [f64; 3],
-) {
-    let mut earcutter = Earcut::new();
-    let mut buf3d: Vec<f64> = Vec::new();
-    let mut buf2d: Vec<f64> = Vec::new();
-    let mut triangles_buf: Vec<u32> = Vec::new();
-    let mut triangles = Vec::new();
-
-    for poly in mpoly3.iter() {
-        let num_outer = match poly.hole_indices().first() {
-            Some(&v) => v as usize,
-            None => poly.coords().len() / 3,
-        };
-
-        buf3d.clear();
-        buf3d.extend(poly.coords());
-
-        if project3d_to_2d(&buf3d, num_outer, &mut buf2d) {
-            earcutter.earcut(&buf2d, poly.hole_indices(), 2, &mut triangles_buf);
-            triangles.extend(triangles_buf.iter().map(|idx| {
-                [
-                    buf3d[*idx as usize * 3],
-                    buf3d[*idx as usize * 3 + 1],
-                    buf3d[*idx as usize * 3 + 2],
-                ]
-            }));
-        }
-    }
-
-    // println!("triangles: {:?}", triangles);
-
-    // calculate the centroid and min/max
-    let mut pos_max = [f64::MIN; 3];
-    let mut pos_min = [f64::MAX; 3];
-    let mut translation = [0.; 3];
-
-    for &[x, y, z] in &triangles {
-        pos_min = [
-            f64::min(pos_min[0], x),
-            f64::min(pos_min[1], y),
-            f64::min(pos_min[2], z),
-        ];
-        pos_max = [
-            f64::max(pos_max[0], x),
-            f64::max(pos_max[1], y),
-            f64::max(pos_max[2], z),
-        ];
-    }
-    // TODO: Use a library for 3d linalg
-    translation[0] = (pos_max[0] + pos_min[0]) / 2.;
-    translation[1] = (pos_max[1] + pos_min[1]) / 2.;
-    translation[2] = (pos_max[2] + pos_min[2]) / 2.;
-    pos_min[0] -= translation[0];
-    pos_max[0] -= translation[0];
-    pos_min[1] -= translation[1];
-    pos_max[1] -= translation[1];
-    pos_min[2] -= translation[2];
-    pos_max[2] -= translation[2];
-
-    // make vertices and indices
-    let mut vertices: IndexSet<[u32; 3], RandomState> = IndexSet::default();
-    let indices: Vec<_> = triangles
-        .iter()
-        .map(|&[x, y, z]| {
-            let (x, y, z) = (x - translation[0], y - translation[1], z - translation[2]);
-            let vbits = [
-                (x as f32).to_bits(),
-                (y as f32).to_bits(),
-                (z as f32).to_bits(),
-            ];
-            let (index, _) = vertices.insert_full(vbits);
-            index as u32
-        })
-        .collect();
-
-    // println!("indices: {:?}", indices);
-    // println!("vertices: {:?}", vertices);
-    // println!("translation: {:?}", translation);
-    // println!("pos_min: {:?}", pos_min);
-    // println!("pos_max: {:?}\n", pos_max);
-
-    return (indices, vertices, translation, pos_max, pos_min);
-}
-
 fn write_gltf<W: Write>(
     mut writer: W,
     min: [f64; 3],
     max: [f64; 3],
-    translation: [f64; 3],
     vertices: impl IntoIterator<Item = [u32; 3]>,
     indices: impl IntoIterator<Item = u32>,
     // feature_ids: impl IntoIterator<Item = u32>,
@@ -347,7 +352,6 @@ fn write_gltf<W: Write>(
         }],
         nodes: vec![Node {
             mesh: Some(0),
-            translation,
             ..Default::default()
         }],
         materials: vec![Material {
