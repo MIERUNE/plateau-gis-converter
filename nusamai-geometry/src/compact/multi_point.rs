@@ -82,7 +82,7 @@ impl<'a, const D: usize, T: CoordNum> MultiPoint<'a, D, T> {
     }
 
     /// Applies the given transformation to all coordinates in the MultiPoint.
-    pub fn transform_inplace(&mut self, f: impl Fn(&[T; D]) -> [T; D]) {
+    pub fn transform_inplace(&mut self, mut f: impl FnMut(&[T; D]) -> [T; D]) {
         self.coords.to_mut().chunks_exact_mut(D).for_each(|c| {
             let transformed = f(&c.try_into().unwrap());
             c.copy_from_slice(&transformed);

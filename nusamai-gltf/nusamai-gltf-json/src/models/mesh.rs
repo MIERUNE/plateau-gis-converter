@@ -65,7 +65,7 @@ pub struct Mesh {
 
     /// Array of weights to be applied to the morph targets. The number of array elements **MUST** match the number of morph targets.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub weights: Option<Vec<f32>>,
+    pub weights: Option<Vec<f64>>,
 
     /// JSON object with extension-specific objects.
     #[serde(skip_serializing_if = "Option::is_none")]
