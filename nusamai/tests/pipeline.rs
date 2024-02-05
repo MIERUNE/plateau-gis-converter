@@ -119,7 +119,7 @@ impl DataSink for DummySink {
 fn test_run_pipeline() {
     INIT.call_once(|| {
         if std::env::var("RUST_LOG").is_err() {
-            std::env::set_var("RUST_LOG", "info")
+            std::env::set_var("RUST_LOG", "error")
         }
         pretty_env_logger::init();
     });

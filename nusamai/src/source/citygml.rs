@@ -47,7 +47,6 @@ impl DataSource for CityGmlSource {
         let code_resolver = nusamai_plateau::codelist::Resolver::new();
 
         self.filenames.par_iter().try_for_each(|filename| {
-            println!("{}", filename);
             log::info!("loading city objects from: {} ...", filename);
             let file = std::fs::File::open(filename).unwrap();
             let reader = std::io::BufReader::with_capacity(1024 * 1024, file);
