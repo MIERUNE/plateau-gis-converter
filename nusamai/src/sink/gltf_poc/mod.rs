@@ -83,6 +83,8 @@ impl DataSink for GltfSink {
                             return Err(());
                         }
 
+                        // todo: 3次元MultiPolygonに変換していく
+                        // todo: mpoly3をsenderに送る
                         let features = entity_to_gltf(&parcel.entity);
                         // for feature in features {
                         //     let Ok(bytes) = serde_json::to_vec(&feature) else {
@@ -112,7 +114,11 @@ impl DataSink for GltfSink {
                 let mut file = File::create(&self.output_path).unwrap();
                 let mut writer = BufWriter::with_capacity(1024 * 1024, &mut file);
 
-                // Write each Packet
+                // Write each glTF
+                // todo: indices, vertices, feature_idsのVecを作成し、pushしていく
+                // todo: mpolyを受け取るので、先頭の地物をfeature_id: 0とし、頂点の個数と同じ分だけ、idを振っていく
+                // todo: 三角分割する
+                // todo: 三角分割したものをindicesとverticesに追加していく
                 let mut iter = receiver.into_iter().peekable();
                 while let Some(bytes) = iter.next() {
                     writer.write_all(&bytes).unwrap();
@@ -130,6 +136,13 @@ impl DataSink for GltfSink {
 
 /// Create glTF Packet from a Entity
 pub fn entity_to_gltf(entity: &Entity) {
+    // todo: entity to mpoly3の関数とmpoly3 to (indices, vertices, feature_ids)の関数に分割する
+    // todo: gltf書き込み部分も分離する
+
+    // todo: bufferには頂点インデックス + 頂点座標 + 頂点IDの順で書き込む（法線とか・RGBを書き込むなら、考慮する必要がある）
+    // todo: bufferViewは上記に合わせ、3つ作る
+    // todo: accessorは上記に合わせ、3つ作るが頂点インデックスと頂点IDはSCALAR、頂点座標はVEC3になると思う
+
     let geom_store = entity.geometry_store.read().unwrap();
 
     let Value::Object(obj) = &entity.root else {
@@ -250,9 +263,6 @@ pub fn entity_to_gltf(entity: &Entity) {
     let path_glb = "/Users/satoru/Downloads/plateau/test.glb";
     let mut file = std::fs::File::create(path_glb).unwrap();
     let mut writer = BufWriter::new(&mut file);
-
-    // todo: 属性について考える
-    // todo: 属性を付与する
 
     let mut bin_content: Vec<u8> = Vec::new();
 
