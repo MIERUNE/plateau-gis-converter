@@ -211,16 +211,12 @@ pub fn entity_to_gltf(entity: &Entity) {
     let Value::Object(obj) = &entity.root else {
         unimplemented!()
     };
-    let ObjectStereotype::Feature { id, geometries } = &obj.stereotype else {
+    let ObjectStereotype::Feature { id: _, geometries } = &obj.stereotype else {
         unimplemented!()
     };
 
-    println!("id: {}", id);
-    println!("geometries: {:?}", geometries);
-
-    // let mut idx_mpoly = nusamai_geometry::MultiPolygon::<1, u32>::new();
+    // Vertex indices are taken from 1D polygons and converted to 3D polygons
     let mut mpoly3: MultiPolygon<'_, 3> = MultiPolygon::<3, f64>::new();
-
     geometries.iter().for_each(|entry| match entry.ty {
         GeometryType::Solid | GeometryType::Surface | GeometryType::Triangle => {
             for idx_poly in geom_store
