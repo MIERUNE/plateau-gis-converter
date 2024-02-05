@@ -1,4 +1,5 @@
-//! czml sink
+//! gltf sink poc
+mod gltf;
 
 use std::fs::File;
 use std::io::{BufWriter, Write};
@@ -8,7 +9,6 @@ use ahash::RandomState;
 use earcut_rs::utils_3d::project3d_to_2d;
 use earcut_rs::Earcut;
 use indexmap::IndexSet;
-use itertools::Itertools;
 use nusamai_citygml::{GeometryType, Value};
 use nusamai_geometry::{MultiPolygon, Polygon};
 use rayon::prelude::*;
@@ -18,6 +18,7 @@ use nusamai_citygml::schema::Schema;
 
 use crate::parameters::*;
 use crate::pipeline::{Feedback, Receiver};
+use crate::sink::gltf_poc::gltf::write_gltf_glb;
 use crate::sink::{DataSink, DataSinkProvider, SinkInfo};
 use crate::{get_parameter_value, transformer};
 
@@ -127,9 +128,7 @@ impl DataSink for GltfSink {
     }
 }
 
-fn triangulate_polygon(
-    multi_polygon: &MultiPolygon<3, f64>,
-) -> (IndexSet<[u32; 3], RandomState>, Vec<u32>) {
+fn triangulate_polygon(multi_polygon: &MultiPolygon<3, f64>) {
     let mut earcutter = Earcut::new();
     let mut buf3d: Vec<f64> = Vec::new();
     let mut buf2d: Vec<f64> = Vec::new();
@@ -201,7 +200,17 @@ fn triangulate_polygon(
         })
         .collect();
 
-    (vertices, indices)
+    let path_glb = "/Users/satoru/Downloads/plateau/test.glb";
+    let mut file = std::fs::File::create(path_glb).unwrap();
+    let mut writer = BufWriter::new(&mut file);
+    write_gltf_glb(
+        &mut writer,
+        pos_min,
+        pos_max,
+        translation,
+        vertices,
+        indices,
+    );
 }
 
 /// Create glTF Packet from a Entity
@@ -260,9 +269,7 @@ pub fn entity_to_gltf(entity: &Entity) {
     // todo: 属性について考える
     // todo: 属性を付与する
 
-    let (vertices, indices) = triangulate_polygon(&mpoly3);
-    println!("vertices: {:?}", vertices);
-    println!("indices: {:?}", indices);
+    triangulate_polygon(&mpoly3);
 }
 
 #[cfg(test)]
