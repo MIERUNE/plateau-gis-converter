@@ -85,28 +85,66 @@ impl DataSink for GltfSink {
 
                         // todo: transformerからschemaを受け取る必要がある
 
-                        // todo: 3次元MultiPolygonに変換していく
-                        // todo: 属性も一緒に送る
-                        // todo: mpoly3をsenderに送る
-                        let mpoly3 = entity_to_mpoly3(&parcel.entity);
-                        // for feature in features {
-                        //     let Ok(bytes) = serde_json::to_vec(&feature) else {
-                        //         // TODO: fatal error
-                        //         return Err(());
-                        //     };
-                        //     if sender.send(bytes).is_err() {
-                        //         log::info!("sink cancelled");
-                        //         return Err(());
-                        //     };
-                        // }
+                        let entity = parcel.entity;
+                        let geom_store = entity.geometry_store.read().unwrap();
 
-                        let Ok(bytes) = serde_json::to_vec(&mpoly3) else {
-                            return Err(());
+                        let Value::Object(obj) = &entity.root else {
+                            unimplemented!()
                         };
-                        if sender.send(bytes).is_err() {
-                            log::info!("sink cancelled");
-                            return Err(());
+                        let ObjectStereotype::Feature { id: _, geometries } = &obj.stereotype
+                        else {
+                            unimplemented!()
                         };
+
+                        // Vertex indices are taken from 1D polygons and converted to 3D polygons
+                        let mut mpoly3 = MultiPolygon::<3, f64>::new();
+
+                        geometries.iter().for_each(|entry| match entry.ty {
+                            GeometryType::Solid
+                            | GeometryType::Surface
+                            | GeometryType::Triangle => {
+                                for idx_poly in geom_store.multipolygon.iter_range(
+                                    entry.pos as usize..(entry.pos + entry.len) as usize,
+                                ) {
+                                    let exterior_rings: Vec<[f64; 3]> = idx_poly
+                                        .exterior()
+                                        .into_iter()
+                                        .map(|idx| geom_store.vertices[idx[0] as usize])
+                                        .collect();
+
+                                    let interior_rings: Vec<Vec<[f64; 3]>> = idx_poly
+                                        .interiors()
+                                        .map(|interior| {
+                                            interior
+                                                .into_iter()
+                                                .map(|idx| geom_store.vertices[idx[0] as usize])
+                                                .collect()
+                                        })
+                                        .collect();
+
+                                    let mut poly = Polygon::<3, f64>::new();
+                                    poly.add_ring(exterior_rings);
+                                    for interior in interior_rings {
+                                        poly.add_ring(interior);
+                                    }
+
+                                    mpoly3.push(poly);
+                                }
+                            }
+                            GeometryType::Curve => unimplemented!(),
+                            GeometryType::Point => unimplemented!(),
+                        });
+
+                        // extract attributes from entity
+                        let Value::Object(obj) = &entity.root else {
+                            unimplemented!()
+                        };
+                        let attributes = obj.attributes.clone();
+
+                        // send mpoly3 and attributes to sender
+                        if sender.send((mpoly3, attributes)).is_err() {
+                            return Err(());
+                        }
 
                         Ok(())
                     },
@@ -137,68 +175,8 @@ impl DataSink for GltfSink {
     }
 }
 
-fn entity_to_mpoly3(entity: &Entity) -> MultiPolygon<'_, 3> {
-    let geom_store = entity.geometry_store.read().unwrap();
-
-    let Value::Object(obj) = &entity.root else {
-        unimplemented!()
-    };
-    let ObjectStereotype::Feature { id: _, geometries } = &obj.stereotype else {
-        unimplemented!()
-    };
-
-    // Vertex indices are taken from 1D polygons and converted to 3D polygons
-    let mut mpoly3 = MultiPolygon::<3, f64>::new();
-
-    geometries.iter().for_each(|entry| match entry.ty {
-        GeometryType::Solid | GeometryType::Surface | GeometryType::Triangle => {
-            for idx_poly in geom_store
-                .multipolygon
-                .iter_range(entry.pos as usize..(entry.pos + entry.len) as usize)
-            {
-                let exterior_rings: Vec<[f64; 3]> = idx_poly
-                    .exterior()
-                    .into_iter()
-                    .map(|idx| geom_store.vertices[idx[0] as usize])
-                    .collect();
-
-                let interior_rings: Vec<Vec<[f64; 3]>> = idx_poly
-                    .interiors()
-                    .map(|interior| {
-                        interior
-                            .into_iter()
-                            .map(|idx| geom_store.vertices[idx[0] as usize])
-                            .collect()
-                    })
-                    .collect();
-
-                let mut poly = Polygon::<3, f64>::new();
-                poly.add_ring(exterior_rings);
-                for interior in interior_rings {
-                    poly.add_ring(interior);
-                }
-
-                mpoly3.push(poly);
-            }
-        }
-        GeometryType::Curve => unimplemented!(),
-        GeometryType::Point => unimplemented!(),
-    });
-
-    mpoly3
-}
-
-fn entity_to_attributes(entity: &Entity) -> &nusamai_citygml::object::Map {
-    let Value::Object(obj) = &entity.root else {
-        unimplemented!()
-    };
-    return &obj.attributes;
-}
-
 /// Create glTF Packet from a Entity
 fn entity_to_gltf(mpoly3: MultiPolygon<'_, 3>) {
-    // todo: entityからmpoly3を生成関数を作る
-    // todo: entityから属性を抽出する関数を作る
     // todo: mpoly3からindices, vertices, feature_idsを生成する関数を作る
     // todo: gltf書き込みを行う関数を作る
 
@@ -505,6 +483,10 @@ mod tests {
             geometry_store: RwLock::new(geometries).into(),
         };
 
-        println!("{:?}", entity_to_mpoly3(&entity));
+        let mpoly3 = entity_to_mpoly3(&entity);
+        let attributes = entity_to_attributes(&entity);
+
+        println!("{:?}", mpoly3);
+        println!("{:?}", attributes);
     }
 }
