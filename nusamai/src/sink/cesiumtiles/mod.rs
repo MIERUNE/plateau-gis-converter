@@ -366,10 +366,10 @@ fn tile_writing_stage(
                 translation,
                 vertices,
                 indices,
-            );
+            )?;
 
-            Ok(())
-        });
+            Ok::<(), PipelineError>(())
+        })?;
 
     let mut tree = TileTree::default();
     for tilespec in tiles.lock().unwrap().drain(..) {
@@ -390,6 +390,7 @@ fn tile_writing_stage(
     fs::write(
         root_tileset_path,
         serde_json::to_string_pretty(&tileset).unwrap(),
-    )
-    .unwrap()
+    )?;
+
+    Ok(())
 }
