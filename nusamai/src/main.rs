@@ -3,7 +3,6 @@ use std::sync::{Arc, Mutex};
 
 use clap::Parser;
 
-use nusamai::parameters::ParameterType;
 use nusamai::pipeline::Canceller;
 use nusamai::sink::{
     cesiumtiles::CesiumTilesSinkProvider, czml::CzmlSinkProvider, geojson::GeoJsonSinkProvider,

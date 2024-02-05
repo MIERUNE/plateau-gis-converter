@@ -24,10 +24,13 @@ pub struct Parcel {
 pub enum PipelineError {
     #[error("I/O error: {0}")]
     IoError(#[from] std::io::Error),
+
     #[error("{0}")]
     ParseError(#[from] nusamai_citygml::ParseError),
+
     #[error("canceled")]
     Canceled,
+
     #[error("{0}")]
     Other(String),
 }
