@@ -83,9 +83,12 @@ impl DataSink for GltfSink {
                             return Err(());
                         }
 
+                        // todo: transformerからschemaを受け取る必要がある
+
                         // todo: 3次元MultiPolygonに変換していく
+                        // todo: 属性も一緒に送る
                         // todo: mpoly3をsenderに送る
-                        let features = entity_to_gltf(&parcel.entity);
+                        let mpoly3 = entity_to_mpoly3(&parcel.entity);
                         // for feature in features {
                         //     let Ok(bytes) = serde_json::to_vec(&feature) else {
                         //         // TODO: fatal error
@@ -97,7 +100,7 @@ impl DataSink for GltfSink {
                         //     };
                         // }
 
-                        let Ok(bytes) = serde_json::to_vec(&features) else {
+                        let Ok(bytes) = serde_json::to_vec(&mpoly3) else {
                             return Err(());
                         };
                         if sender.send(bytes).is_err() {
@@ -119,30 +122,22 @@ impl DataSink for GltfSink {
                 // todo: mpolyを受け取るので、先頭の地物をfeature_id: 0とし、頂点の個数と同じ分だけ、idを振っていく
                 // todo: 三角分割する
                 // todo: 三角分割したものをindicesとverticesに追加していく
-                let mut iter = receiver.into_iter().peekable();
-                while let Some(bytes) = iter.next() {
-                    writer.write_all(&bytes).unwrap();
-                    if iter.peek().is_some() {
-                        writer.write_all(b",").unwrap();
-                    };
-                }
+                // let mut iter = receiver.into_iter().peekable();
+                // while let Some(bytes) = iter.next() {
+                //     writer.write_all(&bytes).unwrap();
+                //     if iter.peek().is_some() {
+                //         writer.write_all(b",").unwrap();
+                //     };
+                // }
 
-                // Write the FeautureCollection footer and EOL
-                writer.write_all(b"]\n").unwrap();
+                // // Write the FeautureCollection footer and EOL
+                // writer.write_all(b"]\n").unwrap();
             },
         );
     }
 }
 
-/// Create glTF Packet from a Entity
-pub fn entity_to_gltf(entity: &Entity) {
-    // todo: entity to mpoly3の関数とmpoly3 to (indices, vertices, feature_ids)の関数に分割する
-    // todo: gltf書き込み部分も分離する
-
-    // todo: bufferには頂点インデックス + 頂点座標 + 頂点IDの順で書き込む（法線とか・RGBを書き込むなら、考慮する必要がある）
-    // todo: bufferViewは上記に合わせ、3つ作る
-    // todo: accessorは上記に合わせ、3つ作るが頂点インデックスと頂点IDはSCALAR、頂点座標はVEC3になると思う
-
+fn entity_to_mpoly3(entity: &Entity) -> MultiPolygon<'_, 3> {
     let geom_store = entity.geometry_store.read().unwrap();
 
     let Value::Object(obj) = &entity.root else {
@@ -153,7 +148,8 @@ pub fn entity_to_gltf(entity: &Entity) {
     };
 
     // Vertex indices are taken from 1D polygons and converted to 3D polygons
-    let mut mpoly3: MultiPolygon<'_, 3> = MultiPolygon::<3, f64>::new();
+    let mut mpoly3 = MultiPolygon::<3, f64>::new();
+
     geometries.iter().for_each(|entry| match entry.ty {
         GeometryType::Solid | GeometryType::Surface | GeometryType::Triangle => {
             for idx_poly in geom_store
@@ -188,6 +184,29 @@ pub fn entity_to_gltf(entity: &Entity) {
         GeometryType::Curve => unimplemented!(),
         GeometryType::Point => unimplemented!(),
     });
+
+    mpoly3
+}
+
+fn entity_to_attributes(entity: &Entity) -> &nusamai_citygml::object::Map {
+    let Value::Object(obj) = &entity.root else {
+        unimplemented!()
+    };
+    return &obj.attributes;
+}
+
+/// Create glTF Packet from a Entity
+fn entity_to_gltf(mpoly3: MultiPolygon<'_, 3>) {
+    // todo: entityからmpoly3を生成関数を作る
+    // todo: entityから属性を抽出する関数を作る
+    // todo: mpoly3からindices, vertices, feature_idsを生成する関数を作る
+    // todo: gltf書き込みを行う関数を作る
+
+    // todo: bufferには頂点インデックス + 頂点座標 + 頂点IDの順で書き込む（法線とか・RGBを書き込むなら、考慮する必要がある）
+    // todo: bufferViewは上記に合わせ、3つ作る
+    // todo: accessorは上記に合わせ、3つ作るが頂点インデックスと頂点IDはSCALAR、頂点座標はVEC3になると思う
+
+    // todo: 属性部分をbufferにするコードを書く
 
     let mut earcutter = Earcut::new();
     let mut buf3d: Vec<f64> = Vec::new();
@@ -259,7 +278,16 @@ pub fn entity_to_gltf(entity: &Entity) {
             index as u32
         })
         .collect();
+}
 
+fn write_gltf<W: Write>(
+    mut writer: W,
+    min: [f64; 3],
+    max: [f64; 3],
+    translation: [f64; 3],
+    vertices: impl IntoIterator<Item = [u32; 3]>,
+    indices: impl IntoIterator<Item = u32>,
+) {
     let path_glb = "/Users/satoru/Downloads/plateau/test.glb";
     let mut file = std::fs::File::create(path_glb).unwrap();
     let mut writer = BufWriter::new(&mut file);
@@ -318,8 +346,8 @@ pub fn entity_to_gltf(entity: &Entity) {
                 buffer_view: Some(0),
                 component_type: ComponentType::Float,
                 count: vertices_count,
-                min: Some(pos_min.to_vec()),
-                max: Some(pos_max.to_vec()),
+                min: Some(min.to_vec()),
+                max: Some(max.to_vec()),
                 type_: AccessorType::Vec3,
                 ..Default::default()
             },
@@ -477,6 +505,6 @@ mod tests {
             geometry_store: RwLock::new(geometries).into(),
         };
 
-        entity_to_gltf(&entity);
+        println!("{:?}", entity_to_mpoly3(&entity));
     }
 }
