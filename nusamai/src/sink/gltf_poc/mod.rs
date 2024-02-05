@@ -6,19 +6,20 @@ use std::io::{BufWriter, Write};
 use std::path::PathBuf;
 
 use ahash::RandomState;
+use byteorder::{ByteOrder, LittleEndian};
 use earcut_rs::utils_3d::project3d_to_2d;
 use earcut_rs::Earcut;
 use indexmap::IndexSet;
-use nusamai_citygml::{GeometryType, Value};
-use nusamai_geometry::{MultiPolygon, Polygon};
 use rayon::prelude::*;
 
 use nusamai_citygml::object::{Entity, ObjectStereotype};
 use nusamai_citygml::schema::Schema;
+use nusamai_citygml::{GeometryType, Value};
+use nusamai_geometry::{MultiPolygon, Polygon};
+use nusamai_gltf_json::*;
 
 use crate::parameters::*;
 use crate::pipeline::{Feedback, Receiver};
-use crate::sink::gltf_poc::gltf::write_gltf_glb;
 use crate::sink::{DataSink, DataSinkProvider, SinkInfo};
 use crate::{get_parameter_value, transformer};
 
@@ -128,14 +129,61 @@ impl DataSink for GltfSink {
     }
 }
 
-fn triangulate_polygon(multi_polygon: &MultiPolygon<3, f64>) {
+/// Create glTF Packet from a Entity
+pub fn entity_to_gltf(entity: &Entity) {
+    let geom_store = entity.geometry_store.read().unwrap();
+
+    let Value::Object(obj) = &entity.root else {
+        unimplemented!()
+    };
+    let ObjectStereotype::Feature { id: _, geometries } = &obj.stereotype else {
+        unimplemented!()
+    };
+
+    // Vertex indices are taken from 1D polygons and converted to 3D polygons
+    let mut mpoly3: MultiPolygon<'_, 3> = MultiPolygon::<3, f64>::new();
+    geometries.iter().for_each(|entry| match entry.ty {
+        GeometryType::Solid | GeometryType::Surface | GeometryType::Triangle => {
+            for idx_poly in geom_store
+                .multipolygon
+                .iter_range(entry.pos as usize..(entry.pos + entry.len) as usize)
+            {
+                let exterior_rings: Vec<[f64; 3]> = idx_poly
+                    .exterior()
+                    .into_iter()
+                    .map(|idx| geom_store.vertices[idx[0] as usize])
+                    .collect();
+
+                let interior_rings: Vec<Vec<[f64; 3]>> = idx_poly
+                    .interiors()
+                    .map(|interior| {
+                        interior
+                            .into_iter()
+                            .map(|idx| geom_store.vertices[idx[0] as usize])
+                            .collect()
+                    })
+                    .collect();
+
+                let mut poly = Polygon::<3, f64>::new();
+                poly.add_ring(exterior_rings);
+                for interior in interior_rings {
+                    poly.add_ring(interior);
+                }
+
+                mpoly3.push(poly);
+            }
+        }
+        GeometryType::Curve => unimplemented!(),
+        GeometryType::Point => unimplemented!(),
+    });
+
     let mut earcutter = Earcut::new();
     let mut buf3d: Vec<f64> = Vec::new();
     let mut buf2d: Vec<f64> = Vec::new();
     let mut triangles_buf: Vec<u32> = Vec::new();
     let mut triangles = Vec::new();
 
-    for poly in multi_polygon.iter() {
+    for poly in mpoly3.iter() {
         let num_outer = match poly.hole_indices().first() {
             Some(&v) => v as usize,
             None => poly.coords().len() / 3,
@@ -203,70 +251,127 @@ fn triangulate_polygon(multi_polygon: &MultiPolygon<3, f64>) {
     let path_glb = "/Users/satoru/Downloads/plateau/test.glb";
     let mut file = std::fs::File::create(path_glb).unwrap();
     let mut writer = BufWriter::new(&mut file);
-    write_gltf_glb(
-        &mut writer,
-        pos_min,
-        pos_max,
-        translation,
-        vertices,
-        indices,
-    );
-}
-
-/// Create glTF Packet from a Entity
-pub fn entity_to_gltf(entity: &Entity) {
-    let geom_store = entity.geometry_store.read().unwrap();
-
-    let Value::Object(obj) = &entity.root else {
-        unimplemented!()
-    };
-    let ObjectStereotype::Feature { id: _, geometries } = &obj.stereotype else {
-        unimplemented!()
-    };
-
-    // Vertex indices are taken from 1D polygons and converted to 3D polygons
-    let mut mpoly3: MultiPolygon<'_, 3> = MultiPolygon::<3, f64>::new();
-    geometries.iter().for_each(|entry| match entry.ty {
-        GeometryType::Solid | GeometryType::Surface | GeometryType::Triangle => {
-            for idx_poly in geom_store
-                .multipolygon
-                .iter_range(entry.pos as usize..(entry.pos + entry.len) as usize)
-            {
-                let exterior_rings: Vec<[f64; 3]> = idx_poly
-                    .exterior()
-                    .into_iter()
-                    .map(|idx| geom_store.vertices[idx[0] as usize])
-                    .collect();
-
-                let interior_rings: Vec<Vec<[f64; 3]>> = idx_poly
-                    .interiors()
-                    .map(|interior| {
-                        interior
-                            .into_iter()
-                            .map(|idx| geom_store.vertices[idx[0] as usize])
-                            .collect()
-                    })
-                    .collect();
-
-                let mut poly = Polygon::<3, f64>::new();
-                poly.add_ring(exterior_rings);
-                for interior in interior_rings {
-                    poly.add_ring(interior);
-                }
-
-                mpoly3.push(poly);
-            }
-        }
-        GeometryType::Curve => unimplemented!(),
-        GeometryType::Point => unimplemented!(),
-    });
-
-    println!("mpoly3: {:?}", &mpoly3);
 
     // todo: 属性について考える
     // todo: 属性を付与する
 
-    triangulate_polygon(&mpoly3);
+    let mut bin_content: Vec<u8> = Vec::new();
+
+    let vertices_offset = bin_content.len();
+    let mut buf = [0; 12];
+    let mut vertices_count = 0;
+    for v in vertices {
+        LittleEndian::write_u32_into(&v, &mut buf);
+        bin_content.write_all(&buf).unwrap();
+        vertices_count += 1;
+    }
+    let vertices_len = bin_content.len() - vertices_offset;
+
+    let indices_offset = bin_content.len();
+    let mut indices_count = 0;
+    for idx in indices {
+        bin_content.write_all(&idx.to_le_bytes()).unwrap();
+        indices_count += 1;
+    }
+    let indices_len = bin_content.len() - indices_offset;
+
+    let gltf = Gltf {
+        scenes: vec![Scene {
+            nodes: Some(vec![0]),
+            ..Default::default()
+        }],
+        nodes: vec![Node {
+            mesh: Some(0),
+            translation,
+            ..Default::default()
+        }],
+        materials: vec![Material {
+            pbr_metallic_roughness: Some(MaterialPbrMetallicRoughness {
+                base_color_factor: [0.5, 0.7, 0.7, 1.0],
+                metallic_factor: 0.5,
+                roughness_factor: 0.5,
+                ..Default::default()
+            }),
+            ..Default::default()
+        }],
+        meshes: vec![Mesh {
+            primitives: vec![MeshPrimitive {
+                attributes: vec![("POSITION".to_string(), 0)].into_iter().collect(),
+                indices: Some(1),
+                material: Some(0),
+                mode: PrimitiveMode::Triangles,
+                ..Default::default()
+            }],
+            ..Default::default()
+        }],
+        accessors: vec![
+            Accessor {
+                buffer_view: Some(0),
+                component_type: ComponentType::Float,
+                count: vertices_count,
+                min: Some(pos_min.to_vec()),
+                max: Some(pos_max.to_vec()),
+                type_: AccessorType::Vec3,
+                ..Default::default()
+            },
+            Accessor {
+                buffer_view: Some(1),
+                component_type: ComponentType::UnsignedInt,
+                count: indices_count,
+                type_: AccessorType::Scalar,
+                ..Default::default()
+            },
+        ],
+        buffer_views: vec![
+            BufferView {
+                byte_offset: vertices_offset as u32,
+                byte_length: vertices_len as u32,
+                target: Some(BufferViewTarget::ArrayBuffer),
+                ..Default::default()
+            },
+            BufferView {
+                byte_offset: indices_offset as u32,
+                byte_length: indices_len as u32,
+                target: Some(BufferViewTarget::ElementArrayBuffer),
+                ..Default::default()
+            },
+        ],
+        buffers: vec![Buffer {
+            byte_length: bin_content.len() as u32,
+            ..Default::default()
+        }],
+        ..Default::default()
+    };
+
+    {
+        let mut json_content = serde_json::to_vec(&gltf).unwrap();
+
+        // append padding
+        json_content.extend(vec![0x20; (4 - (json_content.len() % 4)) % 4].iter());
+        bin_content.extend(vec![0x0; (4 - (bin_content.len() % 4)) % 4].iter());
+
+        let total_size = 12 + 8 + json_content.len() + 8 + bin_content.len();
+
+        writer.write_all(b"glTF").unwrap(); // magic
+        writer.write_all(&2u32.to_le_bytes()).unwrap(); // version: 2
+        writer
+            .write_all(&(total_size as u32).to_le_bytes())
+            .unwrap(); // total size
+
+        writer
+            .write_all(&(json_content.len() as u32).to_le_bytes())
+            .unwrap(); // json content
+        writer.write_all(b"JSON").unwrap(); // chunk type
+        writer.write_all(&json_content).unwrap(); // json content
+
+        writer
+            .write_all(&(bin_content.len() as u32).to_le_bytes())
+            .unwrap(); // json content
+        writer.write_all(b"BIN\0").unwrap(); // chunk type
+        writer.write_all(&bin_content).unwrap(); // bin content
+
+        writer.flush().unwrap();
+    }
 }
 
 #[cfg(test)]
