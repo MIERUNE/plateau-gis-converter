@@ -335,7 +335,7 @@ fn write_gltf<W: Write>(
                     ext_mesh_features: Some(extensions::mesh::ext_mesh_features::ExtMeshFeatures {
                         feature_ids: vec![FeatureId {
                             attribute: Some(0),
-                            feature_count: feature_ids_count as u32,
+                            feature_count: feature_ids_count,
                             ..Default::default()
                         }],
                         ..Default::default()
@@ -387,6 +387,7 @@ fn write_gltf<W: Write>(
             BufferView {
                 byte_offset: feature_ids_offset as u32,
                 byte_length: feature_ids_len as u32,
+                byte_stride: Some(4),
                 target: Some(BufferViewTarget::ArrayBuffer),
                 ..Default::default()
             },
