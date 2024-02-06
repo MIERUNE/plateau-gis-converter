@@ -172,19 +172,14 @@ impl DataSink for GltfPocSink {
                 // Write glTF to a file
                 // todo: schemaから属性定義を行う必要がある
 
-                let mut all_vertices = Vec::new();
-                let mut all_feature_ids = Vec::new();
+                let mut buffers: Vec<[f64; 4]> = Vec::new();
 
-                let mut all_max = [f64::MIN; 3];
-                let mut all_min = [f64::MAX; 3];
+                let mut all_max: [f64; 3] = [f64::MIN; 3];
+                let mut all_min: [f64; 3] = [f64::MAX; 3];
 
-                for (triangles, attributes) in receiver {
-                    let mut feature_id = 0;
-
+                for (feature_id, (triangles, _attributes)) in receiver.into_iter().enumerate() {
                     let mut pos_max = [f64::MIN; 3];
                     let mut pos_min = [f64::MAX; 3];
-
-                    let mut vertices: Vec<[f64; 3]> = Vec::new();
 
                     // calculate the centroid and min/max
                     for &[x, y, z] in &triangles {
@@ -198,13 +193,8 @@ impl DataSink for GltfPocSink {
                             f64::max(pos_max[1], y),
                             f64::max(pos_max[2], z),
                         ];
-                        vertices.push([x, y, z]);
+                        buffers.push([x, y, z, feature_id as f64]);
                     }
-
-                    all_vertices.extend(vertices);
-
-                    all_feature_ids.push(feature_id);
-                    feature_id += 1;
 
                     all_min = [
                         f64::min(all_min[0], pos_min[0]),
@@ -232,10 +222,11 @@ impl DataSink for GltfPocSink {
                 all_min[2] -= all_translation[2];
 
                 // make vertices and indices
+                let mut feature_ids: Vec<u32> = Vec::new();
                 let mut vertices: IndexSet<[u32; 3], RandomState> = IndexSet::default();
-                let indices: Vec<_> = all_vertices
+                let indices: Vec<_> = buffers
                     .iter()
-                    .map(|&[x, y, z]| {
+                    .map(|&[x, y, z, feature_id]| {
                         let (x, y, z) = (
                             x - all_translation[0],
                             y - all_translation[1],
@@ -246,15 +237,27 @@ impl DataSink for GltfPocSink {
                             (y as f32).to_bits(),
                             (z as f32).to_bits(),
                         ];
-                        let (index, _) = vertices.insert_full(vbits);
+                        let (index, is_insert) = vertices.insert_full(vbits);
+
+                        if is_insert {
+                            feature_ids.push(feature_id as u32);
+                        }
+
                         index as u32
                     })
+                    .collect();
+
+                let indices: Vec<u32> = indices
+                    .chunks_exact(3)
+                    .filter(|idx| (idx[0] != idx[1] && idx[1] != idx[2] && idx[2] != idx[0]))
+                    .flatten()
+                    .copied()
                     .collect();
 
                 let mut file = File::create(&self.output_path).unwrap();
                 let writer = BufWriter::with_capacity(1024 * 1024, &mut file);
 
-                write_gltf(writer, all_min, all_max, vertices, indices, all_feature_ids);
+                write_gltf(writer, all_min, all_max, vertices, indices, feature_ids);
 
                 // todo: 属性部分をbufferにするコードを書く
             },
@@ -362,7 +365,7 @@ fn write_gltf<W: Write>(
             },
             Accessor {
                 buffer_view: Some(2),
-                component_type: ComponentType::UnsignedInt,
+                component_type: ComponentType::UnsignedShort,
                 count: feature_ids_count,
                 type_: AccessorType::Scalar,
                 ..Default::default()
