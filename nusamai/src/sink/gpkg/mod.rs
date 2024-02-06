@@ -3,6 +3,8 @@
 use std::path::PathBuf;
 use url::Url;
 
+use indexmap::IndexMap;
+
 use rayon::prelude::*;
 
 use crate::parameters::Parameters;
@@ -12,7 +14,7 @@ use crate::sink::{DataSink, DataSinkProvider, SinkInfo};
 use crate::{get_parameter_value, transformer};
 
 use nusamai_citygml::object::{ObjectStereotype, Value};
-use nusamai_citygml::schema::Schema;
+use nusamai_citygml::schema::{Schema, TypeDef, TypeRef};
 use nusamai_citygml::GeometryType;
 use nusamai_gpkg::geometry::write_indexed_multipolygon;
 use nusamai_gpkg::GpkgHandler;
@@ -56,7 +58,7 @@ pub struct GpkgSink {
 }
 
 impl GpkgSink {
-    pub async fn run_async(&mut self, upstream: Receiver, feedback: &Feedback) {
+    pub async fn run_async(&mut self, upstream: Receiver, feedback: &Feedback, schema: &Schema) {
         let mut handler = if self.output_path.to_string_lossy().starts_with("sqlite:") {
             GpkgHandler::from_url(&Url::parse(self.output_path.to_str().unwrap()).unwrap())
                 .await
@@ -68,6 +70,9 @@ impl GpkgSink {
             .await
             .unwrap()
         };
+
+        // add attribute columns
+        let attribute_columns = schema_to_columns(schema);
 
         let (sender, mut receiver) = tokio::sync::mpsc::channel(100);
 
@@ -155,10 +160,66 @@ impl DataSink for GpkgSink {
         }
     }
 
-    fn run(&mut self, upstream: Receiver, feedback: &Feedback, _schema: &Schema) {
+    fn run(&mut self, upstream: Receiver, feedback: &Feedback, schema: &Schema) {
         let runtime = tokio::runtime::Runtime::new().unwrap();
-        runtime.block_on(self.run_async(upstream, feedback));
+        runtime.block_on(self.run_async(upstream, feedback, schema));
     }
+}
+
+/// Check the schema, and prepare attribute column information for the SQLite table
+fn schema_to_columns(schema: &Schema) -> IndexMap<String, String> {
+    let mut attribute_columns = IndexMap::<String, String>::new();
+    schema.types.iter().for_each(|(_name, ty)| match ty {
+        TypeDef::Feature(feat_td) => {
+            // Note: consider `feat_td.additional_attributes` ?
+            feat_td.attributes.iter().for_each(|(attr_name, attr)| {
+                // Note: consider  `attr.{min_occurs,max_occurs}` ?
+                match &attr.type_ref {
+                    TypeRef::String | TypeRef::JsonString => {
+                        attribute_columns.insert(attr_name.into(), "TEXT".into());
+                    }
+                    TypeRef::Integer | TypeRef::NonNegativeInteger => {
+                        attribute_columns.insert(attr_name.into(), "INTEGER".into());
+                    }
+                    TypeRef::Double => {
+                        attribute_columns.insert(attr_name.into(), "REAL".into());
+                    }
+                    TypeRef::Boolean => {
+                        attribute_columns.insert(attr_name.into(), "BOOLEAN".into());
+                    }
+                    _ => {
+                        log::warn!(
+                            "TypeDef::Feature - Unsupported attribute type: {:?} ('{}')",
+                            attr.type_ref,
+                            attr_name
+                        );
+                    }
+                }
+            });
+        }
+        TypeDef::Data(data_td) => {
+            // TODO: implement
+            log::warn!(
+                "TypeDef::Data - Not supported yet: {:?}",
+                data_td.attributes.values()
+            );
+        }
+        TypeDef::Property(prop_td) => {
+            // TODO: implement
+            log::warn!(
+                "TypeDef::Property - Not supported yet: {} members ({:?}, etc.)",
+                prop_td.members.len(),
+                prop_td
+                    .members
+                    .iter()
+                    .map(|m| &m.type_ref)
+                    .take(3)
+                    .collect::<Vec<_>>()
+            );
+        }
+    });
+
+    attribute_columns
 }
 
 #[cfg(test)]
