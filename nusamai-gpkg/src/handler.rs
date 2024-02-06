@@ -46,13 +46,6 @@ impl GpkgHandler {
         Ok(Self { pool })
     }
 
-    ///// Connect to an existing GeoPackage database
-    //pub async fn connect(path: &str) -> Result<Self, GpkgError> {
-    //    let db_url = format!("sqlite://{}", path);
-    //    let pool = SqlitePool::connect(&db_url).await?;
-    //    Ok(Self { pool })
-    //}
-
     pub async fn application_id(&self) -> u32 {
         let result = sqlx::query("PRAGMA application_id;")
             .fetch_one(&self.pool)
