@@ -3,7 +3,7 @@ use std::collections::HashMap;
 
 use serde_json::Value;
 
-#[derive(Serialize, Deserialize, Debug, PartialEq, Clone, Copy, Default)]
+#[derive(Serialize, Deserialize, Debug, Clone, Copy, Default, PartialEq, Eq)]
 #[serde(rename_all = "UPPERCASE")]
 pub enum AnimationSamplerInterpolation {
     #[default]
@@ -12,7 +12,7 @@ pub enum AnimationSamplerInterpolation {
     CubicSpline,
 }
 
-#[derive(Serialize, Deserialize, Debug, PartialEq, Clone, Copy, Default)]
+#[derive(Serialize, Deserialize, Debug, Clone, Copy, Default, PartialEq, Eq)]
 #[serde(rename_all = "lowercase")]
 pub enum AnimationChannelTargetPath {
     #[default]
@@ -23,7 +23,7 @@ pub enum AnimationChannelTargetPath {
 }
 
 /// The descriptor of the animated property.
-#[derive(Serialize, Deserialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default, PartialEq)]
 #[serde(rename_all = "camelCase")]
 #[serde(deny_unknown_fields)]
 pub struct AnimationChannelTarget {
@@ -35,7 +35,7 @@ pub struct AnimationChannelTarget {
 }
 
 /// An animation channel combines an animation sampler with a target property being animated.
-#[derive(Serialize, Deserialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default, PartialEq)]
 #[serde(rename_all = "camelCase")]
 #[serde(deny_unknown_fields)]
 pub struct AnimationChannel {
@@ -46,7 +46,8 @@ pub struct AnimationChannel {
 }
 
 /// An animation sampler combines timestamps with a sequence of output values and defines an interpolation algorithm.
-#[derive(Serialize, Deserialize, Debug, Default)]
+
+#[derive(Serialize, Deserialize, Debug, Clone, Default, PartialEq)]
 #[serde(rename_all = "camelCase")]
 #[serde(deny_unknown_fields)]
 pub struct AnimationSampler {
@@ -60,7 +61,8 @@ pub struct AnimationSampler {
 }
 
 /// A keyframe animation.
-#[derive(Serialize, Deserialize, Debug, Default)]
+
+#[derive(Serialize, Deserialize, Debug, Clone, Default, PartialEq)]
 #[serde(rename_all = "camelCase")]
 #[serde(deny_unknown_fields)]
 pub struct Animation {
@@ -83,7 +85,8 @@ pub struct Animation {
     pub extras: Option<Value>,
 }
 
-#[derive(Serialize, Deserialize, Debug, Default)]
+
+#[derive(Serialize, Deserialize, Debug, Clone, Default, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct AnimationExtensions {
     #[serde(flatten)]

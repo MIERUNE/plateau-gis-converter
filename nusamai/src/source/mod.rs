@@ -1,7 +1,9 @@
+//! Input data sources (mainly CityGML)
+
 pub mod citygml;
 
 use crate::parameters::Parameters;
-use crate::pipeline::{Feedback, Sender};
+use crate::pipeline::{Feedback, Result, Sender};
 
 pub struct SourceInfo {
     pub name: String,
@@ -20,5 +22,5 @@ pub trait DataSourceProvider {
 }
 
 pub trait DataSource: Send {
-    fn run(&mut self, sink: Sender, feedback: &Feedback);
+    fn run(&mut self, sink: Sender, feedback: &Feedback) -> Result<()>;
 }

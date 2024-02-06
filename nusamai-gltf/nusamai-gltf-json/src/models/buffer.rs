@@ -5,7 +5,7 @@ use std::collections::HashMap;
 
 use serde_json::Value;
 
-#[derive(Serialize_repr, Deserialize_repr, Debug, PartialEq, Eq, Clone, Copy, Default)]
+#[derive(Serialize_repr, Deserialize_repr, Debug, Clone, PartialEq, Eq, Copy, Default)]
 #[repr(u16)]
 pub enum BufferViewTarget {
     #[default]
@@ -14,7 +14,7 @@ pub enum BufferViewTarget {
 }
 
 /// A buffer points to binary geometry, animation, or skins.
-#[derive(Serialize, Deserialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default, PartialEq)]
 #[serde(rename_all = "camelCase")]
 #[serde(deny_unknown_fields)]
 pub struct Buffer {
@@ -38,7 +38,7 @@ pub struct Buffer {
     pub extras: Option<Value>,
 }
 
-#[derive(Serialize, Deserialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct BufferExtensions {
     #[serde(flatten)]
@@ -46,7 +46,7 @@ pub struct BufferExtensions {
 }
 
 /// A view into a buffer generally representing a subset of the buffer.
-#[derive(Serialize, Deserialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default, PartialEq)]
 #[serde(rename_all = "camelCase")]
 #[serde(deny_unknown_fields)]
 pub struct BufferView {

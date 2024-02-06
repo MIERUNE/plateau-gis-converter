@@ -10,7 +10,7 @@ use nusamai_citygml::schema::Schema;
 use rayon::prelude::*;
 
 use crate::parameters::*;
-use crate::pipeline::{Feedback, Receiver};
+use crate::pipeline::{Feedback, PipelineError, Receiver, Result};
 use crate::sink::{DataSink, DataSinkProvider, SinkInfo};
 use crate::{get_parameter_value, transformer};
 use transform::ObjectTransformer;
@@ -67,65 +67,67 @@ impl DataSink for GeoJsonTfExpSink {
         }
     }
 
-    fn run(&mut self, upstream: Receiver, feedback: &Feedback, _schema: &Schema) {
+    fn run(&mut self, upstream: Receiver, feedback: &Feedback, _schema: &Schema) -> Result<()> {
         let (sender, receiver) = std::sync::mpsc::sync_channel(1000);
 
-        rayon::join(
+        let (ra, rb) = rayon::join(
             || {
                 // Convert CityObjects to GeoJSON objects
 
-                let _ = upstream.into_iter().par_bridge().try_for_each_with(
-                    sender,
-                    |sender, parcel| {
-                        if feedback.is_cancelled() {
-                            return Err(());
-                        }
+                upstream
+                    .into_iter()
+                    .par_bridge()
+                    .try_for_each_with(sender, |sender, parcel| {
+                        feedback.ensure_not_canceled()?;
 
                         // todo: parse attributes
                         let object_transformer = ObjectTransformer {};
                         let entity = object_transformer
                             .transform(parcel.entity, &PathBuf::from("./mappings.json"));
 
-                        let features = toplevel_cityobj_to_geojson_features(&entity[0]);
+                        let features = entity_to_geojson_features(&entity[0]);
                         for feature in features {
-                            let Ok(bytes) = serde_json::to_vec(&feature) else {
-                                // TODO: fatal error
-                                return Err(());
-                            };
+                            let bytes = serde_json::to_vec(&feature).unwrap();
                             if sender.send(bytes).is_err() {
-                                log::info!("sink cancelled");
-                                return Err(());
+                                return Err(PipelineError::Canceled);
                             };
                         }
                         Ok(())
-                    },
-                );
+                    })
             },
             || {
                 // Write GeoJSON to a file
 
-                // TODO: Handle output file path
-                let mut file = File::create(&self.output_path).unwrap();
+                let mut file = File::create(&self.output_path)?;
                 let mut writer = BufWriter::with_capacity(1024 * 1024, &mut file);
 
                 // Write the FeatureCollection header
-                writer
-                    .write_all(b"{\"type\":\"FeatureCollection\",\"features\":[")
-                    .unwrap();
+                writer.write_all(b"{\"type\":\"FeatureCollection\",\"features\":[")?;
 
                 // Write each Feature
                 let mut iter = receiver.into_iter().peekable();
                 while let Some(bytes) = iter.next() {
-                    writer.write_all(&bytes).unwrap();
+                    writer.write_all(&bytes)?;
                     if iter.peek().is_some() {
-                        writer.write_all(b",").unwrap();
+                        writer.write_all(b",")?;
                     };
                 }
 
                 // Write the FeautureCollection footer and EOL
-                writer.write_all(b"]}\n").unwrap();
+                writer.write_all(b"]}\n")?;
+                Ok(())
             },
         );
+
+        match ra {
+            Ok(_) | Err(PipelineError::Canceled) => {}
+            Err(error) => feedback.report_fatal_error(error),
+        }
+        match rb {
+            Ok(_) | Err(PipelineError::Canceled) => {}
+            Err(error) => feedback.report_fatal_error(error),
+        }
+        Ok(())
     }
 }
 
@@ -146,7 +148,7 @@ fn extract_properties(tree: &nusamai_citygml::object::Value) -> Option<geojson::
 /// Each feature for MultiPolygon, MultiLineString, and MultiPoint will be created (if it exists)
 // TODO: Handle properties (`obj.root` -> `geojson::Feature.properties`)
 // TODO: We may want to traverse the tree and create features for each semantic child in the future
-pub fn toplevel_cityobj_to_geojson_features(obj: &Entity) -> Vec<geojson::Feature> {
+pub fn entity_to_geojson_features(obj: &Entity) -> Vec<geojson::Feature> {
     let mut geojson_features: Vec<geojson::Feature> = Vec::with_capacity(1);
     let properties = extract_properties(&obj.root);
     let geom_store = obj.geometry_store.read().unwrap();
@@ -236,7 +238,7 @@ mod tests {
             geometry_store: RwLock::new(geometries).into(),
         };
 
-        let geojson_features = toplevel_cityobj_to_geojson_features(&obj);
+        let geojson_features = entity_to_geojson_features(&obj);
         assert_eq!(geojson_features.len(), 1);
 
         let mpoly_geojson = geojson_features.first().unwrap();

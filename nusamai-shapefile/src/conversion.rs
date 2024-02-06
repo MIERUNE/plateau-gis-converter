@@ -1,8 +1,30 @@
 use nusamai_geometry::{
     CoordNum, MultiLineString, MultiLineString3, MultiPoint, MultiPoint3, MultiPolygon,
-    MultiPolygon3, Polygon,
+    MultiPolygon3, Polygon, Polygon3,
 };
 use shapefile::NO_DATA;
+
+/// Create a Shapefile Polygon from `nusamai_geometry::Polygon`.
+pub fn polygon_to_shape(poly: &Polygon3) -> shapefile::PolygonZ {
+    polygon_to_shape_with_mapping(poly, |c| c)
+}
+
+/// Create a Shapefile Polygon from vertices and indices.
+pub fn indexed_polygon_to_shape(
+    vertices: &[[f64; 3]],
+    poly_idx: &Polygon<1, u32>,
+) -> shapefile::PolygonZ {
+    polygon_to_shape_with_mapping(poly_idx, |idx| vertices[idx[0] as usize])
+}
+
+/// Create a Shapefile Polygon from `nusamai_geometry::Polygon` with a mapping function.
+pub fn polygon_to_shape_with_mapping<const D: usize, T: CoordNum>(
+    poly: &Polygon<D, T>,
+    mapping: impl Fn([T; D]) -> [f64; 3],
+) -> shapefile::PolygonZ {
+    let all_rings = polygon_to_shape_rings_with_mapping(poly, &mapping);
+    shapefile::PolygonZ::with_rings(all_rings)
+}
 
 /// Create a Shapefile Polygon from `nusamai_geometry::MultiPolygon`.
 pub fn multipolygon_to_shape(mpoly: &MultiPolygon3) -> shapefile::PolygonZ {
@@ -119,6 +141,109 @@ pub fn multipoint_to_shape_with_mapping<const D: usize, T: CoordNum>(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_polygon_to_shape() {
+        let mut poly = Polygon3::new();
+        poly.add_ring([
+            [10., 10., 0.],
+            [10., 20., 0.],
+            [20., 20., 0.],
+            [20., 10., 0.], // not closed
+        ]);
+        poly.add_ring([
+            [15., 15., 0.],
+            [18., 10., 0.],
+            [18., 18., 0.],
+            [15., 18., 0.],
+        ]);
+
+        let shape = polygon_to_shape(&poly);
+
+        assert_eq!(shape.rings().len(), poly.rings().collect::<Vec<_>>().len());
+        assert_eq!(
+            shape.ring(0).unwrap(),
+            &shapefile::PolygonRing::Outer(vec![
+                shapefile::PointZ::new(10., 10., 0., NO_DATA),
+                shapefile::PointZ::new(10., 20., 0., NO_DATA),
+                shapefile::PointZ::new(20., 20., 0., NO_DATA),
+                shapefile::PointZ::new(20., 10., 0., NO_DATA),
+                shapefile::PointZ::new(10., 10., 0., NO_DATA), // automatically closed
+            ])
+        );
+        assert_eq!(
+            shape.ring(1).unwrap(),
+            &shapefile::PolygonRing::Inner(vec![
+                shapefile::PointZ::new(15., 15., 0., NO_DATA),
+                shapefile::PointZ::new(18., 10., 0., NO_DATA),
+                shapefile::PointZ::new(18., 18., 0., NO_DATA),
+                shapefile::PointZ::new(15., 18., 0., NO_DATA),
+                shapefile::PointZ::new(15., 15., 0., NO_DATA),
+            ])
+        );
+    }
+
+    #[test]
+    fn test_indexed_polygon_to_shape() {
+        let vertices: Vec<[f64; 3]> = vec![
+            // 1st polygon, exterior (vertex 0~3)
+            [0., 0., 111.],
+            [5., 0., 111.],
+            [5., 5., 111.],
+            [0., 5., 111.],
+            // 1st polygon, interior 1 (vertex 4~7)
+            [1., 1., 111.],
+            [2., 1., 111.],
+            [2., 2., 111.],
+            [1., 2., 111.],
+            // 1st polygon, interior 2 (vertex 8~11)
+            [3., 3., 111.],
+            [4., 3., 111.],
+            [4., 4., 111.],
+            [3., 4., 111.],
+        ];
+
+        let mut poly = Polygon::<1, u32>::new();
+        // 1st polygon
+        poly.add_ring([[0], [1], [2], [3], [0]]);
+        poly.add_ring([[4], [5], [6], [7], [4]]);
+        poly.add_ring([[8], [9], [10], [11], [8]]);
+
+        let shape = indexed_polygon_to_shape(&vertices, &poly);
+
+        assert_eq!(shape.rings().len(), poly.rings().collect::<Vec<_>>().len());
+        assert_eq!(
+            shape.ring(0).unwrap(),
+            &shapefile::PolygonRing::Outer(vec![
+                // Outer ring: re-ordered to clockwise
+                shapefile::PointZ::new(0., 0., 111., NO_DATA),
+                shapefile::PointZ::new(0., 5., 111., NO_DATA),
+                shapefile::PointZ::new(5., 5., 111., NO_DATA),
+                shapefile::PointZ::new(5., 0., 111., NO_DATA),
+                shapefile::PointZ::new(0., 0., 111., NO_DATA),
+            ])
+        );
+        assert_eq!(
+            shape.ring(1).unwrap(),
+            &shapefile::PolygonRing::Inner(vec![
+                shapefile::PointZ::new(1., 1., 111., NO_DATA),
+                shapefile::PointZ::new(2., 1., 111., NO_DATA),
+                shapefile::PointZ::new(2., 2., 111., NO_DATA),
+                shapefile::PointZ::new(1., 2., 111., NO_DATA),
+                shapefile::PointZ::new(1., 1., 111., NO_DATA),
+            ])
+        );
+        assert_eq!(
+            shape.ring(2).unwrap(),
+            &shapefile::PolygonRing::Inner(vec![
+                shapefile::PointZ::new(3., 3., 111., NO_DATA),
+                shapefile::PointZ::new(4., 3., 111., NO_DATA),
+                shapefile::PointZ::new(4., 4., 111., NO_DATA),
+                shapefile::PointZ::new(3., 4., 111., NO_DATA),
+                shapefile::PointZ::new(3., 3., 111., NO_DATA),
+            ])
+        );
+    }
 
     #[test]
     fn test_multipolygon_to_shape() {

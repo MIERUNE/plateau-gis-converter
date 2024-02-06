@@ -2,13 +2,15 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use std::env;
+use std::path::PathBuf;
+use std::str::FromStr;
 use std::sync::{Arc, Mutex};
 
 use nusamai::pipeline::Canceller;
 use nusamai::sink::DataSinkProvider;
 use nusamai::sink::{
-    geojson::GeoJsonSinkProvider, gpkg::GpkgSinkProvider, mvt::MVTSinkProvider,
-    serde::SerdeSinkProvider,
+    czml::CzmlSinkProvider, geojson::GeoJsonSinkProvider, gpkg::GpkgSinkProvider,
+    mvt::MVTSinkProvider, serde::SerdeSinkProvider, shapefile::ShapefileSinkProvider,
 };
 use nusamai::source::citygml::CityGmlSourceProvider;
 use nusamai::source::DataSourceProvider;
@@ -28,6 +30,20 @@ fn main() {
         .expect("error while running tauri application");
 }
 
+fn select_sink_provider(filetype: &str) -> Box<dyn DataSinkProvider> {
+    // TODO: share possible options with the frontend types (src/lib/settings.ts)
+    match filetype {
+        "noop" => Box::new(nusamai::sink::noop::NoopSinkProvider {}),
+        "serde" => Box::new(SerdeSinkProvider {}),
+        "geojson" => Box::new(GeoJsonSinkProvider {}),
+        "gpkg" => Box::new(GpkgSinkProvider {}),
+        "mvt" => Box::new(MVTSinkProvider {}),
+        "shapefile" => Box::new(ShapefileSinkProvider {}),
+        "czml" => Box::new(CzmlSinkProvider {}),
+        _ => panic!("Unknown filetype: {}", filetype),
+    }
+}
+
 #[tauri::command]
 fn run(input_paths: Vec<String>, output_path: String, filetype: String) {
     let sinkopt: Vec<(String, String)> = vec![("@output".into(), output_path)];
@@ -39,7 +55,10 @@ fn run(input_paths: Vec<String>, output_path: String, filetype: String) {
 
     let source = {
         let source_provider: Box<dyn DataSourceProvider> = Box::new(CityGmlSourceProvider {
-            filenames: input_paths,
+            filenames: input_paths
+                .iter()
+                .map(|s| PathBuf::from_str(s).unwrap())
+                .collect(),
         });
         let mut source_params = source_provider.parameters();
         if let Err(err) = source_params.validate() {
@@ -50,18 +69,7 @@ fn run(input_paths: Vec<String>, output_path: String, filetype: String) {
     };
 
     let sink = {
-        // TODO: share with the frontend types (src/lib/settings.ts)
-        let sink_provider: Box<dyn DataSinkProvider> = match &*filetype {
-            "GeoJSON" => Box::new(GeoJsonSinkProvider {}),
-            "GeoPackage" => Box::new(GpkgSinkProvider {}),
-            "Serde" => Box::new(SerdeSinkProvider {}),
-            "Vector Tiles" => Box::new(MVTSinkProvider {}),
-            _ => {
-                log::error!("Unknown filetype: {}", filetype);
-                return;
-            }
-        };
-
+        let sink_provider = select_sink_provider(&filetype);
         let mut sink_params = sink_provider.parameters();
         if let Err(err) = sink_params.update_values_with_str(&sinkopt) {
             log::error!("Error parsing sink options: {:?}", err);
@@ -101,7 +109,7 @@ fn run(input_paths: Vec<String>, output_path: String, filetype: String) {
 
     // wait for the pipeline to finish
     handle.join();
-    if canceller.lock().unwrap().is_cancelled() {
-        log::info!("Pipeline cancelled");
+    if canceller.lock().unwrap().is_canceled() {
+        log::info!("Pipeline canceled");
     }
 }

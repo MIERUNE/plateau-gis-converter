@@ -5,7 +5,7 @@ use std::collections::HashMap;
 use serde_json::Value;
 
 /// Metadata about the glTF asset.
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 #[serde(rename_all = "camelCase")]
 #[serde(deny_unknown_fields)]
 pub struct Asset {
@@ -18,7 +18,6 @@ pub struct Asset {
     pub generator: Option<String>,
 
     /// The glTF version in the form of `<major>.<minor>` that this asset targets.
-    #[serde(default)]
     pub version: String,
 
     /// The minimum glTF version in the form of `<major>.<minor>` that this asset targets. This property **MUST NOT** be greater than the asset version.
@@ -34,24 +33,11 @@ pub struct Asset {
     pub extras: Option<Value>,
 }
 
-#[derive(Serialize, Deserialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct AssetExtensions {
     #[serde(flatten)]
     others: HashMap<String, Value>,
-}
-
-impl Default for Asset {
-    fn default() -> Self {
-        Self {
-            copyright: Default::default(),
-            generator: Some("nusamai-gltf".to_string()),
-            version: "2.0".into(),
-            min_version: Default::default(),
-            extensions: Default::default(),
-            extras: Default::default(),
-        }
-    }
 }
 
 impl Default for Asset {

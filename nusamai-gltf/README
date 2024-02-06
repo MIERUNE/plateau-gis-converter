@@ -1,0 +1,8 @@
+gltftest:
+
+cargo run --example gltftest somedirectory/of/samples/glTF-Sample-Models-main/2.0/Avocado/glTF-Binary/Avocado.glb
+
+cargo run --example gltftest somedirectory/of/samples/glTF-Sample-Models-main/2.0/Avocado/glTF/Avocado.gltf
+
+gltf を入力すると、out.glb を出力します。
+glb を入力しても out.glb を出力します（self i/o）。

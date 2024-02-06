@@ -18,6 +18,7 @@ pub type UriValue = String;
 pub type UriValueProperty = Value;
 
 #[derive(Serialize, Deserialize, Debug, PartialEq)]
+#[serde(rename_all = "camelCase")]
 pub struct UriProperties {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub uri: Option<UriValue>,

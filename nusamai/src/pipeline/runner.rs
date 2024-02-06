@@ -22,7 +22,7 @@ fn run_source_thread(
     let handle = std::thread::spawn(move || {
         log::info!("Source thread started.");
         let num_threads = std::thread::available_parallelism()
-            .map(|v| v.get() * 5)
+            .map(|v| v.get() * 3)
             .unwrap_or(1);
         let pool = ThreadPoolBuilder::new()
             .use_current_thread()
@@ -30,7 +30,9 @@ fn run_source_thread(
             .build()
             .unwrap();
         pool.install(move || {
-            source.run(sender, &feedback);
+            if let Err(error) = source.run(sender, &feedback) {
+                feedback.report_fatal_error(error);
+            }
         });
         log::info!("Source thread finished.");
     });
@@ -50,7 +52,9 @@ fn run_transformer_thread(
             .build()
             .unwrap();
         pool.install(move || {
-            transformer.run(upstream, sender, &feedback);
+            if let Err(error) = transformer.run(upstream, sender, &feedback) {
+                feedback.report_fatal_error(error);
+            }
         });
         log::info!("Transformer thread finished.");
     });
@@ -65,12 +69,18 @@ fn run_sink_thread(
 ) -> std::thread::JoinHandle<()> {
     std::thread::spawn(move || {
         log::info!("Sink thread started.");
+        let num_threads = std::thread::available_parallelism()
+            .map(|v| v.get() * 3)
+            .unwrap_or(1);
         let pool = ThreadPoolBuilder::new()
             .use_current_thread()
+            .num_threads(num_threads)
             .build()
             .unwrap();
         pool.install(move || {
-            sink.run(upstream, &feedback, &schema);
+            if let Err(error) = sink.run(upstream, &feedback, &schema) {
+                feedback.report_fatal_error(error);
+            }
         });
         log::info!("Sink thread finished.");
     })
@@ -84,9 +94,7 @@ impl PipelineHandle {
     // Wait for the pipeline to terminate
     pub fn join(self) {
         self.thread_handles.into_iter().for_each(|handle| {
-            if let Err(err) = handle.join() {
-                log::error!("Error: {:#?}", err);
-            }
+            handle.join().unwrap();
         });
     }
 }

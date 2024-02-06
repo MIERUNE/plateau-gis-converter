@@ -122,6 +122,7 @@ impl<'a, const D: usize, T: CoordNum> MultiPolygon<'a, D, T> {
         }
     }
 
+    /// Returns an iterator over the polygons in the given range.
     pub fn iter_range(&self, range: Range<usize>) -> Iter<D, T> {
         Iter {
             mpoly: self,
@@ -169,12 +170,20 @@ impl<'a, const D: usize, T: CoordNum> MultiPolygon<'a, D, T> {
         )
     }
 
-    /// Clears the multipolygon, removing all polygon.
+    /// Clears the multipolygon, removing all polygons.
     pub fn clear(&mut self) {
         self.all_coords.to_mut().clear();
         self.all_hole_indices.to_mut().clear();
         self.coords_spans.to_mut().clear();
         self.holes_spans.to_mut().clear();
+    }
+
+    // Adds a polygon to the multipolygon.
+    pub fn push(&mut self, poly: Polygon<D, T>) {
+        self.add_exterior(&poly.exterior());
+        for hole in poly.interiors() {
+            self.add_interior(&hole);
+        }
     }
 
     /// Adds a polygon with the given exterior ring.
@@ -232,7 +241,7 @@ impl<'a, const D: usize, T: CoordNum> MultiPolygon<'a, D, T> {
     }
 
     /// Applies the given transformation to all coordinates in the MultiPolygon.
-    pub fn transform_inplace(&mut self, f: impl Fn(&[T; D]) -> [T; D]) {
+    pub fn transform_inplace(&mut self, mut f: impl FnMut(&[T; D]) -> [T; D]) {
         self.all_coords.to_mut().chunks_exact_mut(D).for_each(|c| {
             let transformed = f(&c.try_into().unwrap());
             c.copy_from_slice(&transformed);
@@ -272,7 +281,80 @@ impl<'a, const D: usize, T: CoordNum> Iterator for Iter<'a, D, T> {
 
 #[cfg(test)]
 mod tests {
+    use super::super::polygon::Polygon2;
     use super::*;
+
+    #[test]
+    fn test_mpoly_add() {
+        let mut mpoly = MultiPolygon2::new();
+        assert_eq!(mpoly.len(), 0);
+        assert!(mpoly.is_empty());
+        assert_eq!(mpoly.iter().count(), 0);
+
+        // 1st polygon
+        let mut poly1 = Polygon2::new();
+        poly1.add_ring([[0., 0.], [5., 0.], [5., 5.], [0., 5.]]); // exterior
+        poly1.add_ring([[1., 1.], [2., 1.], [2., 2.], [1., 2.]]); // interior
+        poly1.add_ring([[3., 3.], [4., 3.], [4., 4.], [3., 4.]]); // interior
+        mpoly.push(poly1);
+        assert!(!mpoly.is_empty());
+        assert_eq!(mpoly.len(), 1);
+
+        // 2nd polygon
+        let mut poly2 = Polygon2::new();
+        poly2.add_ring([[4., 0.], [7., 0.], [7., 3.], [4., 3.]]); // exterior
+        poly2.add_ring([[5., 1.], [6., 1.], [6., 2.], [5., 2.]]); // interior
+        mpoly.push(poly2);
+        assert_eq!(mpoly.len(), 2);
+
+        // 3rd polygon
+        let mut poly3 = Polygon2::new();
+        poly3.add_ring([[4., 0.], [7., 0.], [7., 3.], [4., 3.]]); // exterior
+        mpoly.push(poly3);
+        assert_eq!(mpoly.len(), 3);
+
+        for (i, poly) in mpoly.iter().enumerate() {
+            match i {
+                0 => {
+                    assert_eq!(
+                        poly.exterior().iter().collect::<Vec<_>>(),
+                        [[0., 0.], [5., 0.], [5., 5.], [0., 5.]]
+                    );
+                    assert_eq!(poly.interiors().count(), 2);
+                    assert_eq!(
+                        poly.interiors()
+                            .map(|r| r.iter().collect::<Vec<_>>())
+                            .collect::<Vec<_>>(),
+                        [
+                            [[1., 1.], [2., 1.], [2., 2.], [1., 2.]],
+                            [[3., 3.], [4., 3.], [4., 4.], [3., 4.]],
+                        ]
+                    );
+                }
+                1 => {
+                    assert_eq!(
+                        poly.exterior().iter().collect::<Vec<_>>(),
+                        [[4., 0.], [7., 0.], [7., 3.], [4., 3.]]
+                    );
+                    assert_eq!(poly.interiors().count(), 1);
+                    assert_eq!(
+                        poly.interiors()
+                            .map(|r| r.iter().collect::<Vec<_>>())
+                            .collect::<Vec<_>>(),
+                        [[[5., 1.], [6., 1.], [6., 2.], [5., 2.]]]
+                    );
+                }
+                2 => {
+                    assert_eq!(
+                        poly.exterior().iter().collect::<Vec<_>>(),
+                        [[4., 0.], [7., 0.], [7., 3.], [4., 3.]]
+                    );
+                    assert_eq!(poly.interiors().count(), 0);
+                }
+                _ => unreachable!(),
+            }
+        }
+    }
 
     #[test]
     fn test_mpoly_append() {

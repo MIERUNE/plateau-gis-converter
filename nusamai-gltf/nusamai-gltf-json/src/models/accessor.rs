@@ -27,7 +27,7 @@ pub enum ComponentType {
 }
 
 /// An object pointing to a buffer view containing the indices of deviating accessor values. The number of indices is equal to `accessor.sparse.count`. Indices **MUST** strictly increase.
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 #[serde(rename_all = "camelCase")]
 #[serde(deny_unknown_fields)]
 pub struct AccessorSparseIndices {
@@ -43,7 +43,7 @@ pub struct AccessorSparseIndices {
 }
 
 /// An object pointing to a buffer view containing the deviating accessor values. The number of elements is equal to `accessor.sparse.count` times number of components. The elements have the same component type as the base accessor. The elements are tightly packed. Data **MUST** be aligned following the same rules as the base accessor.
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 #[serde(rename_all = "camelCase")]
 #[serde(deny_unknown_fields)]
 pub struct AccessorSparseValues {
@@ -56,7 +56,7 @@ pub struct AccessorSparseValues {
 }
 
 /// Sparse storage of accessor values that deviate from their initialization value.
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
 #[serde(rename_all = "camelCase")]
 #[serde(deny_unknown_fields)]
 pub struct AccessorSparse {
@@ -70,7 +70,7 @@ pub struct AccessorSparse {
     pub values: AccessorSparseValues,
 }
 
-#[derive(Serialize, Deserialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default, PartialEq)]
 #[serde(rename_all = "UPPERCASE")]
 pub enum AccessorType {
     #[default]
@@ -84,7 +84,7 @@ pub enum AccessorType {
 }
 
 /// Properties for an accessor. Accessors contain index or attribute data.
-#[derive(Serialize, Deserialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default, PartialEq)]
 #[serde[rename_all = "camelCase"]]
 #[serde(deny_unknown_fields)]
 pub struct Accessor {
@@ -118,13 +118,13 @@ pub struct Accessor {
     ///
     /// `normalized` property has no effect on array values: they always correspond to the actual values stored in the buffer. When the accessor is sparse, this property **MUST** contain maximum values of accessor data with sparse substitution applied.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub max: Option<Vec<f32>>,
+    pub max: Option<Vec<f64>>,
 
     /// Minimum value of each component in this accessor.  Array elements **MUST** be treated as having the same data type as accessor's `componentType`. Both `min` and `max` arrays have the same length.  The length is determined by the value of the `type` property; it can be 1, 2, 3, 4, 9, or 16.
     ///
     /// `normalized` property has no effect on array values: they always correspond to the actual values stored in the buffer. When the accessor is sparse, this property **MUST** contain minimum values of accessor data with sparse substitution applied.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub min: Option<Vec<f32>>,
+    pub min: Option<Vec<f64>>,
 
     /// Sparse storage of elements that deviate from their initialization value.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -139,7 +139,7 @@ pub struct Accessor {
     pub extras: Option<Value>,
 }
 
-#[derive(Serialize, Deserialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct AccessorExtensions {
     #[serde(flatten)]

@@ -9,7 +9,7 @@ use nusamai_citygml::schema::Schema;
 use crate::parameters::{
     BooleanParameter, FileSystemPathParameter, ParameterEntry, ParameterType, Parameters,
 };
-use crate::pipeline::{Feedback, Receiver};
+use crate::pipeline::{Feedback, Receiver, Result};
 use crate::sink::{DataSink, DataSinkProvider, SinkInfo};
 
 use crate::{get_parameter_value, transformer};
@@ -72,18 +72,14 @@ impl DataSink for NoopSink {
         }
     }
 
-    fn run(&mut self, upstream: Receiver, feedback: &Feedback, schema: &Schema) {
+    fn run(&mut self, upstream: Receiver, feedback: &Feedback, schema: &Schema) -> Result<()> {
         if self.write_schema {
-            let mut file = std::fs::File::create("schema.json").unwrap();
-            file.write_all(serde_json::to_string_pretty(schema).unwrap().as_bytes())
-                .unwrap();
+            let mut file = std::fs::File::create("schema.json")?;
+            file.write_all(serde_json::to_string_pretty(schema).unwrap().as_bytes())?;
         }
 
         for parcel in upstream {
-            if feedback.is_cancelled() {
-                log::info!("sink cancelled");
-                return;
-            }
+            feedback.ensure_not_canceled()?;
 
             self.num_features += 1;
             self.num_vertices += parcel.entity.geometry_store.read().unwrap().vertices.len();
@@ -91,10 +87,10 @@ impl DataSink for NoopSink {
             log::info!("feature: {:?}", parcel.entity.root);
         }
 
-        if feedback.is_cancelled() {
-            return;
-        }
+        feedback.ensure_not_canceled()?;
         log::info!("total number of features: {:#?}", self.num_features);
         log::info!("total vertices: {}", self.num_vertices);
+
+        Ok(())
     }
 }

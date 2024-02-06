@@ -6,6 +6,23 @@ version = "0.1.0"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+
+byteorder = "1.5.0"
+serde = { version = "1.0.192", features = ["derive"] }
+serde_json = { version = "1.0.108", features = ["indexmap", "float_roundtrip"] }
+serde_repr = "0.1.17"
+base64 = "0.21.7"
+earcut-rs = { git = "https://github.com/MIERUNE/earcut-rs.git" }
+clap = { version = "4.4.11", features = ["derive"] }
+indexmap = { version = "2.1.0", features = ["serde"] }
+nusamai-geometry = { path = "../nusamai-geometry" }
+nusamai-gltf-json = { "path" = "nusamai-gltf-json" }
+quick-xml = "0.31.0"
+thiserror = "1.0.50"
+url = "2.5.0"
+
+[dev-dependencies]
+glob = "0.3.1"
 nusamai-gltf-json = { "path" = "nusamai-gltf-json" }
 clap = { version = "4.4.6", features = ["derive"] }
 nusamai-geometry = { path = "../nusamai-geometry" }
