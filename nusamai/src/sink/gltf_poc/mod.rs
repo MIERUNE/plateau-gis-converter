@@ -7,7 +7,7 @@ use std::path::PathBuf;
 use ahash::RandomState;
 use byteorder::{ByteOrder, LittleEndian};
 use earcut_rs::utils_3d::project3d_to_2d;
-use earcut_rs::{Earcut, Index};
+use earcut_rs::Earcut;
 use indexmap::IndexSet;
 use nusamai_gltf_json::extensions::mesh::ext_mesh_features::FeatureId;
 use nusamai_projection::cartesian::geographic_to_geocentric;
@@ -82,7 +82,7 @@ impl DataSink for GltfPocSink {
         &mut self,
         upstream: Receiver,
         feedback: &Feedback,
-        _schema: &Schema,
+        schema: &Schema,
     ) -> Result<(), PipelineError> {
         let (sender, receiver) = std::sync::mpsc::sync_channel(1000);
 
@@ -99,6 +99,7 @@ impl DataSink for GltfPocSink {
                         }
 
                         // todo: transformerからschemaを受け取る必要がある
+                        // println!("{:?}", schema);
 
                         let entity = parcel.entity;
                         let geom_store = entity.geometry_store.read().unwrap();
