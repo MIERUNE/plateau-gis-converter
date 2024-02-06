@@ -10,6 +10,7 @@ pub mod noop;
 pub mod ply;
 pub mod serde;
 pub mod shapefile;
+pub mod kml;
 
 use nusamai_citygml::schema::Schema;
 

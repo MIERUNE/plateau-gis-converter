@@ -1,4 +1,6 @@
-use kml::types::{Coord, Geometry, LinearRing, MultiGeometry, Point, Polygon as KmlPolygon};
+use kml::types::{
+    AltitudeMode, Coord, Geometry, LinearRing, MultiGeometry, Point, Polygon as KmlPolygon,
+};
 use nusamai_geometry::{CoordNum, MultiPoint, Polygon};
 use std::{collections::HashMap, vec};
 
@@ -19,9 +21,9 @@ fn polygon_to_kml_outer_boundary_with_mapping<const D: usize, T: CoordNum>(
 
     LinearRing {
         coords: outer_coords,
-        extrude: false,
+        extrude: true,
         tessellate: false,
-        altitude_mode: Default::default(),
+        altitude_mode: AltitudeMode::Absolute,
         attrs: HashMap::new(),
     }
 }
@@ -43,9 +45,9 @@ fn polygon_to_kml_inner_boundary_with_mapping<const D: usize, T: CoordNum>(
         })
         .map(|coords| LinearRing {
             coords,
-            extrude: false,
+            extrude: true,
             tessellate: false,
-            altitude_mode: Default::default(),
+            altitude_mode: AltitudeMode::Absolute,
             attrs: HashMap::new(),
         })
         .collect()
@@ -61,9 +63,9 @@ fn polygon_to_kml_polygon_with_mapping<const D: usize, T: CoordNum>(
     KmlPolygon {
         outer,
         inner,
-        extrude: false,
+        extrude: true,
         tessellate: false,
-        altitude_mode: Default::default(),
+        altitude_mode: AltitudeMode::Absolute,
         attrs: HashMap::new(),
     }
 }
@@ -225,9 +227,9 @@ mod tests {
                             z: Some(0.0)
                         }
                     ],
-                    extrude: false,
+                    extrude: true,
                     tessellate: false,
-                    altitude_mode: Default::default(),
+                    altitude_mode: AltitudeMode::Absolute,
                     attrs: HashMap::new(),
                 },
                 inner: vec![LinearRing {
@@ -258,14 +260,14 @@ mod tests {
                             z: Some(0.0)
                         }
                     ],
-                    extrude: false,
+                    extrude: true,
                     tessellate: false,
-                    altitude_mode: Default::default(),
+                    altitude_mode: AltitudeMode::Absolute,
                     attrs: HashMap::new(),
                 }],
-                extrude: false,
+                extrude: true,
                 tessellate: false,
-                altitude_mode: Default::default(),
+                altitude_mode: AltitudeMode::Absolute,
                 attrs: HashMap::new(),
             })
         );
@@ -331,9 +333,9 @@ mod tests {
                             z: Some(111.0)
                         }
                     ],
-                    extrude: false,
+                    extrude: true,
                     tessellate: false,
-                    altitude_mode: Default::default(),
+                    altitude_mode: AltitudeMode::Absolute,
                     attrs: HashMap::new(),
                 },
                 inner: vec![
@@ -365,9 +367,9 @@ mod tests {
                                 z: Some(111.0)
                             }
                         ],
-                        extrude: false,
+                        extrude: true,
                         tessellate: false,
-                        altitude_mode: Default::default(),
+                        altitude_mode: AltitudeMode::Absolute,
                         attrs: HashMap::new(),
                     },
                     LinearRing {
@@ -398,15 +400,15 @@ mod tests {
                                 z: Some(111.0)
                             }
                         ],
-                        extrude: false,
+                        extrude: true,
                         tessellate: false,
-                        altitude_mode: Default::default(),
+                        altitude_mode: AltitudeMode::Absolute,
                         attrs: HashMap::new(),
                     }
                 ],
-                extrude: false,
+                extrude: true,
                 tessellate: false,
-                altitude_mode: Default::default(),
+                altitude_mode: AltitudeMode::Absolute,
                 attrs: HashMap::new(),
             })
         );
