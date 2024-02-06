@@ -7,7 +7,7 @@ use std::path::PathBuf;
 use ahash::RandomState;
 use byteorder::{ByteOrder, LittleEndian};
 use earcut_rs::utils_3d::project3d_to_2d;
-use earcut_rs::Earcut;
+use earcut_rs::{Earcut, Index};
 use indexmap::IndexSet;
 use nusamai_gltf_json::extensions::mesh::ext_mesh_features::FeatureId;
 use nusamai_projection::cartesian::geographic_to_geocentric;
@@ -22,6 +22,13 @@ use crate::parameters::*;
 use crate::pipeline::{Feedback, PipelineError, Receiver};
 use crate::sink::{DataSink, DataSinkProvider, SinkInfo};
 use crate::{get_parameter_value, transformer};
+
+#[derive(Debug, Default, PartialEq, Eq, Clone, Copy, Hash)]
+pub struct Vertex {
+    pub position: [u32; 3],  // f32.to_bits()
+    pub tex_coord: [u32; 2], // f32.to_bits()
+    pub feature_id: u32,
+}
 
 pub struct GltfPocSinkProvider {}
 
@@ -227,9 +234,9 @@ impl DataSink for GltfPocSink {
                 all_min[2] -= all_translation[2];
 
                 // make vertices and indices
-                let mut feature_ids: Vec<u32> = Vec::new();
-                let mut vertices: IndexSet<[u32; 3], RandomState> = IndexSet::default();
-                let indices: Vec<_> = buffers
+                let mut vertices: IndexSet<Vertex, RandomState> = IndexSet::default();
+
+                let indices: Vec<u32> = buffers
                     .iter()
                     .map(|&[x, y, z, feature_id]| {
                         let (x, y, z) = (
@@ -242,11 +249,14 @@ impl DataSink for GltfPocSink {
                             (y as f32).to_bits(),
                             (z as f32).to_bits(),
                         ];
-                        let (index, is_insert) = vertices.insert_full(vbits);
 
-                        if is_insert {
-                            feature_ids.push(feature_id as u32);
-                        }
+                        let vertex = Vertex {
+                            position: vbits,
+                            feature_id: feature_id as u32,
+                            ..Default::default()
+                        };
+
+                        let (index, _) = vertices.insert_full(vertex);
 
                         index as u32
                     })
@@ -262,7 +272,7 @@ impl DataSink for GltfPocSink {
                 let mut file = File::create(&self.output_path).unwrap();
                 let writer = BufWriter::with_capacity(1024 * 1024, &mut file);
 
-                write_gltf(writer, all_min, all_max, vertices, indices, feature_ids);
+                write_gltf(writer, all_min, all_max, vertices, indices);
 
                 write_3dtiles(all_max, all_min, &self.output_path);
 
@@ -273,85 +283,27 @@ impl DataSink for GltfPocSink {
     }
 }
 
-fn write_3dtiles(all_max: [f64; 3], all_min: [f64; 3], output_path: &PathBuf) {
-    // write 3DTiles
-    let centroid = [
-        (all_max[0] + all_min[0]) / 2.,
-        (all_max[1] + all_min[1]) / 2.,
-        (all_max[2] + all_min[2]) / 2.,
-    ];
-    let x_length: [f64; 3] = [(all_max[0] - all_min[0]) / 2., 0., 0.];
-    let y_length: [f64; 3] = [0., (all_max[1] - all_min[1]) / 2., 0.];
-    let z_length: [f64; 3] = [0., 0., (all_max[2] - all_min[2]) / 2.];
-
-    let bounding_volume = [
-        centroid[0],
-        centroid[1],
-        centroid[2],
-        x_length[0],
-        x_length[1],
-        x_length[2],
-        y_length[0],
-        y_length[1],
-        y_length[2],
-        z_length[0],
-        z_length[1],
-        z_length[2],
-    ];
-
-    // tileset.jsonはoutput_pathと同じフォルダで尚且つ、ファイル名は「tileset.json」に変更する
-    let tileset_path = output_path.with_file_name("tileset.json");
-    let content_uri = output_path
-        .file_name()
-        .unwrap()
-        .to_string_lossy()
-        .into_owned();
-
-    let tileset = nusamai_3dtiles_json::tileset::Tileset {
-        geometric_error: 100.0,
-        asset: nusamai_3dtiles_json::tileset::Asset {
-            version: "1.1".to_string(),
-            ..Default::default()
-        },
-        root: nusamai_3dtiles_json::tileset::Tile {
-            bounding_volume: nusamai_3dtiles_json::tileset::BoundingVolume {
-                box_: Some(bounding_volume),
-                ..Default::default()
-            },
-            content: Some(nusamai_3dtiles_json::tileset::Content {
-                uri: content_uri,
-                ..Default::default()
-            }),
-            ..Default::default()
-        },
-        ..Default::default()
-    };
-
-    let mut tileset_file = File::create(&tileset_path).unwrap();
-    let tileset_writer = BufWriter::with_capacity(1024 * 1024, &mut tileset_file);
-    serde_json::to_writer_pretty(tileset_writer, &tileset).unwrap();
-}
-
 fn write_gltf<W: Write>(
     mut writer: W,
     min: [f64; 3],
     max: [f64; 3],
-    vertices: impl IntoIterator<Item = [u32; 3]>,
+    vertices: IndexSet<Vertex, RandomState>,
     indices: impl IntoIterator<Item = u32>,
-    feature_ids: impl IntoIterator<Item = u32>,
 ) {
     let mut bin_content: Vec<u8> = Vec::new();
 
+    // write vertices
     let vertices_offset = bin_content.len();
     let mut buf = [0; 12];
     let mut vertices_count = 0;
-    for v in vertices {
-        LittleEndian::write_u32_into(&v, &mut buf);
+    for vertex in vertices.clone() {
+        LittleEndian::write_u32_into(&vertex.position, &mut buf);
         bin_content.write_all(&buf).unwrap();
         vertices_count += 1;
     }
-    let vertices_len = bin_content.len() - vertices_offset;
+    let vertices_len: usize = bin_content.len() - vertices_offset;
 
+    // write indices
     let indices_offset = bin_content.len();
     let mut indices_count = 0;
     for idx in indices {
@@ -360,10 +312,13 @@ fn write_gltf<W: Write>(
     }
     let indices_len = bin_content.len() - indices_offset;
 
+    // write feature_ids
     let feature_ids_offset = bin_content.len();
     let mut feature_ids_count = 0;
-    for id in feature_ids {
-        bin_content.write_all(&id.to_le_bytes()).unwrap();
+    for vertex in vertices.clone() {
+        bin_content
+            .write_all(&vertex.feature_id.to_le_bytes())
+            .unwrap();
         feature_ids_count += 1;
     }
     let feature_ids_len = bin_content.len() - feature_ids_offset;
@@ -484,6 +439,66 @@ fn write_gltf<W: Write>(
 
         writer.flush().unwrap();
     }
+}
+
+// FIXME: This is the code to verify the operation with Cesium
+fn write_3dtiles(all_max: [f64; 3], all_min: [f64; 3], output_path: &PathBuf) {
+    // write 3DTiles
+    let centroid = [
+        (all_max[0] + all_min[0]) / 2.,
+        (all_max[1] + all_min[1]) / 2.,
+        (all_max[2] + all_min[2]) / 2.,
+    ];
+    let x_length: [f64; 3] = [(all_max[0] - all_min[0]) / 2., 0., 0.];
+    let y_length: [f64; 3] = [0., (all_max[1] - all_min[1]) / 2., 0.];
+    let z_length: [f64; 3] = [0., 0., (all_max[2] - all_min[2]) / 2.];
+
+    let bounding_volume = [
+        centroid[0],
+        centroid[1],
+        centroid[2],
+        x_length[0],
+        x_length[1],
+        x_length[2],
+        y_length[0],
+        y_length[1],
+        y_length[2],
+        z_length[0],
+        z_length[1],
+        z_length[2],
+    ];
+
+    // tileset.jsonはoutput_pathと同じフォルダで尚且つ、ファイル名は「tileset.json」に変更する
+    let tileset_path = output_path.with_file_name("tileset.json");
+    let content_uri = output_path
+        .file_name()
+        .unwrap()
+        .to_string_lossy()
+        .into_owned();
+
+    let tileset = nusamai_3dtiles_json::tileset::Tileset {
+        geometric_error: 100.0,
+        asset: nusamai_3dtiles_json::tileset::Asset {
+            version: "1.1".to_string(),
+            ..Default::default()
+        },
+        root: nusamai_3dtiles_json::tileset::Tile {
+            bounding_volume: nusamai_3dtiles_json::tileset::BoundingVolume {
+                box_: Some(bounding_volume),
+                ..Default::default()
+            },
+            content: Some(nusamai_3dtiles_json::tileset::Content {
+                uri: content_uri,
+                ..Default::default()
+            }),
+            ..Default::default()
+        },
+        ..Default::default()
+    };
+
+    let mut tileset_file = File::create(&tileset_path).unwrap();
+    let tileset_writer = BufWriter::with_capacity(1024 * 1024, &mut tileset_file);
+    serde_json::to_writer_pretty(tileset_writer, &tileset).unwrap();
 }
 
 #[cfg(test)]
