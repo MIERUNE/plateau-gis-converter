@@ -123,7 +123,7 @@ pub fn multipoint_to_kml(mpoint: &MultiPoint<3>) -> MultiGeometry {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use kml::types::{Geometry, Placemark, Point};
+    use kml::types::{Geometry, Point};
     use nusamai_geometry::{MultiPoint, Polygon3};
 
     #[test]

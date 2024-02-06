@@ -22,7 +22,7 @@ use nusamai_plateau::models::TopLevelCityObject;
 #[command(author, version, about, long_about = None)]
 struct Args {
     #[arg()]
-    filenames: Vec<String>,
+    file_patterns: Vec<String>,
 
     /// Sink choice
     #[arg(value_enum, long)]
@@ -89,8 +89,10 @@ fn main() {
     pretty_env_logger::init();
 
     let args = {
+        // output path
         let mut args = Args::parse();
         args.sinkopt.push(("@output".into(), args.output.clone()));
+
         args
     };
 
@@ -105,9 +107,17 @@ fn main() {
     }
 
     let source = {
-        let source_provider: Box<dyn DataSourceProvider> = Box::new(CityGmlSourceProvider {
-            filenames: args.filenames,
-        });
+        // glob input file patterns
+        let mut filenames = vec![];
+        for file_pattern in &args.file_patterns {
+            let file_pattern = shellexpand::tilde(file_pattern);
+            for entry in glob::glob(&file_pattern).unwrap() {
+                filenames.push(entry.unwrap());
+            }
+        }
+
+        let source_provider: Box<dyn DataSourceProvider> =
+            Box::new(CityGmlSourceProvider { filenames });
         let mut source_params = source_provider.parameters();
         if let Err(err) = source_params.update_values_with_str(&args.sourceopt) {
             log::error!("Error parsing source parameters: {:?}", err);
@@ -171,8 +181,8 @@ fn run(
 
     // wait for the pipeline to finish
     handle.join();
-    if canceller.lock().unwrap().is_cancelled() {
-        log::info!("Pipeline cancelled");
+    if canceller.lock().unwrap().is_canceled() {
+        log::info!("Pipeline canceled");
     }
 
     log::info!("Total processing time: {:?}", total_time.elapsed());

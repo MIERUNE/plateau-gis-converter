@@ -1,3 +1,5 @@
+use std::sync::Once;
+
 use nusamai::sink;
 use nusamai::sink::DataSinkProvider;
 use nusamai::source::citygml::CityGmlSourceProvider;
@@ -6,14 +8,24 @@ use nusamai::transformer::{MultiThreadTransformer, NusamaiTransformBuilder, Tran
 use nusamai_citygml::CityGmlElement;
 use nusamai_plateau::models::TopLevelCityObject;
 
+use std::path::PathBuf;
+use std::str::FromStr;
+
+static INIT: Once = Once::new();
+
 pub(crate) fn simple_run_sink<S: DataSinkProvider>(sink_provider: S, output: Option<&str>) {
+    let filenames = [
+        "../nusamai-plateau/tests/data/plateau-3_0/udx/rwy/53395527_rwy_6697.gml",
+        "../nusamai-plateau/tests/data/plateau-3_0/udx/brid/dorokyo_51324378_brid_6697.gml",
+        "../nusamai-plateau/tests/data/plateau-3_0/udx/trk/53361601_trk_6697.gml",
+        "../nusamai-plateau/tests/data/plateau-3_0/udx/tun/53361613_tun_6697.gml",
+    ];
+
     let source_provider: Box<dyn DataSourceProvider> = Box::new(CityGmlSourceProvider {
-        filenames: vec![
-            "../nusamai-plateau/tests/data/plateau-3_0/udx/rwy/53395518_rwy_6697.gml".to_string(),
-            "../nusamai-plateau/tests/data/plateau-3_0/udx/brid/51324378_brid_6697.gml".to_string(),
-            "../nusamai-plateau/tests/data/plateau-3_0/udx/trk/53361601_trk_6697.gml".to_string(),
-            "../nusamai-plateau/tests/data/plateau-3_0/udx/tun/53361613_tun_6697.gml".to_string(),
-        ],
+        filenames: filenames
+            .iter()
+            .map(|name| PathBuf::from_str(name).unwrap())
+            .collect(),
     });
     assert_eq!(source_provider.info().name, "CityGML");
 
@@ -45,8 +57,8 @@ pub(crate) fn simple_run_sink<S: DataSinkProvider>(sink_provider: S, output: Opt
         nusamai::pipeline::run(source, transformer, sink, schema.into());
     handle.join();
 
-    // should not be cancelled
-    assert!(!canceller.is_cancelled());
+    // should not be canceled
+    assert!(!canceller.is_canceled());
 }
 
 #[test]
@@ -78,7 +90,7 @@ fn run_mvt_sink() {
 fn run_shapefile_sink() {
     simple_run_sink(
         sink::shapefile::ShapefileSinkProvider {},
-        "/dev/null".into(),
+        "/tmp/nusamai/shapefile".into(),
     );
 }
 

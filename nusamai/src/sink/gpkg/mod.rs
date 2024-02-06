@@ -7,7 +7,7 @@ use rayon::prelude::*;
 
 use crate::parameters::Parameters;
 use crate::parameters::*;
-use crate::pipeline::{Feedback, Receiver};
+use crate::pipeline::{Feedback, PipelineError, Receiver, Result};
 use crate::sink::{DataSink, DataSinkProvider, SinkInfo};
 use crate::{get_parameter_value, transformer};
 
@@ -56,7 +56,7 @@ pub struct GpkgSink {
 }
 
 impl GpkgSink {
-    pub async fn run_async(&mut self, upstream: Receiver, feedback: &Feedback) {
+    pub async fn run_async(&mut self, upstream: Receiver, feedback: &Feedback) -> Result<()> {
         let mut handler = if self.output_path.to_string_lossy().starts_with("sqlite:") {
             GpkgHandler::from_url(&Url::parse(self.output_path.to_str().unwrap()).unwrap())
                 .await
@@ -74,12 +74,12 @@ impl GpkgSink {
         let producers = {
             let feedback = feedback.clone();
             tokio::task::spawn_blocking(move || {
-                let _ = upstream.into_iter().par_bridge().try_for_each_with(
-                    sender,
-                    |sender, parcel| {
-                        if feedback.is_cancelled() {
-                            return Err(());
-                        }
+                upstream
+                    .into_iter()
+                    .par_bridge()
+                    .try_for_each_with(sender, |sender, parcel| {
+                        feedback.ensure_not_canceled()?;
+
                         let entity = parcel.entity;
                         let geom_store = entity.geometry_store.read().unwrap();
 
@@ -124,25 +124,25 @@ impl GpkgSink {
                         }
 
                         if sender.blocking_send(bytes).is_err() {
-                            return Err(());
+                            return Err(PipelineError::Canceled);
                         };
 
                         Ok(())
-                    },
-                );
+                    })
             })
         };
 
         let mut tx = handler.begin().await.unwrap();
         while let Some(gpkg_bin) = receiver.recv().await {
-            if feedback.is_cancelled() {
-                return;
-            }
+            feedback.ensure_not_canceled()?;
             tx.insert_feature(&gpkg_bin).await;
         }
         tx.commit().await.unwrap();
 
-        producers.await.unwrap();
+        match producers.await.unwrap() {
+            Ok(_) | Err(PipelineError::Canceled) => Ok(()),
+            error @ Err(_) => error,
+        }
     }
 }
 
@@ -155,9 +155,9 @@ impl DataSink for GpkgSink {
         }
     }
 
-    fn run(&mut self, upstream: Receiver, feedback: &Feedback, _schema: &Schema) {
+    fn run(&mut self, upstream: Receiver, feedback: &Feedback, _schema: &Schema) -> Result<()> {
         let runtime = tokio::runtime::Runtime::new().unwrap();
-        runtime.block_on(self.run_async(upstream, feedback));
+        runtime.block_on(self.run_async(upstream, feedback))
     }
 }
 
