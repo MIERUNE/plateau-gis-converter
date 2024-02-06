@@ -257,6 +257,8 @@ impl DataSink for GltfPocSink {
                 let mut file = File::create(&self.output_path).unwrap();
                 let writer = BufWriter::with_capacity(1024 * 1024, &mut file);
 
+                println!("feature_ids.len() = {}", feature_ids.len());
+                println!("feature_ids = {:?}", feature_ids);
                 write_gltf(writer, all_min, all_max, vertices, indices, feature_ids);
 
                 write_3dtiles(all_max, all_min, &self.output_path);
@@ -372,15 +374,15 @@ fn write_gltf<W: Write>(
             mesh: Some(0),
             ..Default::default()
         }],
-        materials: vec![Material {
-            pbr_metallic_roughness: Some(MaterialPbrMetallicRoughness {
-                base_color_factor: [0.5, 0.7, 0.7, 1.0],
-                metallic_factor: 0.5,
-                roughness_factor: 0.5,
-                ..Default::default()
-            }),
-            ..Default::default()
-        }],
+        // materials: vec![Material {
+        //     pbr_metallic_roughness: Some(MaterialPbrMetallicRoughness {
+        //         base_color_factor: [0.5, 0.7, 0.7, 1.0],
+        //         metallic_factor: 0.5,
+        //         roughness_factor: 0.5,
+        //         ..Default::default()
+        //     }),
+        //     ..Default::default()
+        // }],
         meshes: vec![Mesh {
             primitives: vec![MeshPrimitive {
                 attributes: vec![
@@ -390,13 +392,14 @@ fn write_gltf<W: Write>(
                 .into_iter()
                 .collect(),
                 indices: Some(1),
-                material: Some(0),
+                // material: Some(0),
                 mode: PrimitiveMode::Triangles,
                 extensions: Some(extensions::mesh::MeshPrimitive {
                     ext_mesh_features: Some(extensions::mesh::ext_mesh_features::ExtMeshFeatures {
                         feature_ids: vec![FeatureId {
                             attribute: Some(0),
                             feature_count: feature_ids_count,
+                            label: Some("perVertex".to_string()),
                             ..Default::default()
                         }],
                         ..Default::default()
