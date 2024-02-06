@@ -40,15 +40,9 @@
 						void fragmentMain(FragmentInput fsInput, inout czm_modelMaterial material) {
 							int id = fsInput.featureIds.featureId_0;
 							vec3 color = vec3(0.0, 0.0, 0.0);
-							if (id == 0) {
-							color = vec3(0.0, 1.0, 0.0);
-							} else if (id == 1) {
-							color = vec3(0.5, 0.5, 0.5);
-							} else if (id == 2) {
-							color = vec3(1.0, 0.0, 0.0);
-							} else if (id == 3) {
-							color = vec3(0.0, 0.0, 1.0);
-							}
+							color.r = float(id & 0xFF) / 255.0;
+							color.g = float((id >> 8) & 0xFF) / 255.0;
+							color.b = float((id >> 16) & 0xFF) / 255.0;
 							material.diffuse = color;
 						}
 					`,

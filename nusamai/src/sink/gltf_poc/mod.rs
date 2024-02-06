@@ -259,7 +259,7 @@ impl DataSink for GltfPocSink {
 
                 write_gltf(writer, all_min, all_max, vertices, indices, feature_ids);
 
-                write_3dtiles(all_max, all_min);
+                write_3dtiles(all_max, all_min, &self.output_path);
 
                 // todo: 属性部分をbufferにするコードを書く
             },
@@ -267,7 +267,7 @@ impl DataSink for GltfPocSink {
     }
 }
 
-fn write_3dtiles(all_max: [f64; 3], all_min: [f64; 3]) {
+fn write_3dtiles(all_max: [f64; 3], all_min: [f64; 3], output_path: &PathBuf) {
     // write 3DTiles
     let centroid = [
         (all_max[0] + all_min[0]) / 2.,
@@ -294,9 +294,8 @@ fn write_3dtiles(all_max: [f64; 3], all_min: [f64; 3]) {
     ];
 
     // tileset.jsonはoutput_pathと同じフォルダで尚且つ、ファイル名は「tileset.json」に変更する
-    let tileset_path = self.output_path.with_file_name("tileset.json");
-    let content_uri = self
-        .output_path
+    let tileset_path = output_path.with_file_name("tileset.json");
+    let content_uri = output_path
         .file_name()
         .unwrap()
         .to_string_lossy()
