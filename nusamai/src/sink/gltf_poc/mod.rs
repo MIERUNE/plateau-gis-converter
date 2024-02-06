@@ -19,7 +19,7 @@ use nusamai_citygml::{GeometryType, Value};
 use nusamai_gltf_json::*;
 
 use crate::parameters::*;
-use crate::pipeline::{Feedback, Receiver};
+use crate::pipeline::{Feedback, PipelineError, Receiver};
 use crate::sink::{DataSink, DataSinkProvider, SinkInfo};
 use crate::{get_parameter_value, transformer};
 
@@ -71,7 +71,12 @@ impl DataSink for GltfPocSink {
         }
     }
 
-    fn run(&mut self, upstream: Receiver, feedback: &Feedback, _schema: &Schema) {
+    fn run(
+        &mut self,
+        upstream: Receiver,
+        feedback: &Feedback,
+        _schema: &Schema,
+    ) -> Result<(), PipelineError> {
         let (sender, receiver) = std::sync::mpsc::sync_channel(1000);
 
         rayon::join(
@@ -82,8 +87,8 @@ impl DataSink for GltfPocSink {
                 let _ = upstream.into_iter().par_bridge().try_for_each_with(
                     sender,
                     |sender, parcel| {
-                        if feedback.is_cancelled() {
-                            return Err(());
+                        if feedback.is_canceled() {
+                            return Err(PipelineError::Canceled);
                         }
 
                         // todo: transformerからschemaを受け取る必要がある
@@ -161,7 +166,7 @@ impl DataSink for GltfPocSink {
 
                         // send triangles and attributes to sender
                         if sender.send((triangles, attributes)).is_err() {
-                            return Err(());
+                            return Err(PipelineError::Canceled);
                         }
 
                         Ok(())
@@ -264,6 +269,7 @@ impl DataSink for GltfPocSink {
                 // todo: 属性部分をbufferにするコードを書く
             },
         );
+        Ok(())
     }
 }
 
