@@ -1,15 +1,28 @@
 {
-	"asset": {
-		"version": "1.1"
-	},
-	"geometricError": 100.0,
-	"root": {
-		"content": {
-			"uri": "FeatureIdAttribute.gltf"
-		},
-		"boundingVolume": {
-			"box": [0.5, 0.0, 0.5, 0.5, 0.0, 0.0, 0.0, 0.01, 0.0, 0.0, 0.0, 0.5]
-		},
-		"geometricError": 0.0
-	}
+  "asset": {
+    "version": "1.1"
+  },
+  "geometricError": 100.0,
+  "root": {
+    "boundingVolume": {
+      "box": [
+        0.0,
+        2.3283064365386963e-10,
+        0.0,
+        527.1293573356234,
+        0.0,
+        0.0,
+        0.0,
+        387.38881583022885,
+        0.0,
+        0.0,
+        0.0,
+        542.6486890139058
+      ]
+    },
+    "geometricError": 0.0,
+    "content": {
+      "uri": "test.glb"
+    }
+  }
 }

@@ -120,7 +120,7 @@ impl DataSink for GltfPocSink {
                                         // (Earcut do not work in geographic space)
                                         let (x, y, z) =
                                             geographic_to_geocentric(&ellipsoid, lng, lat, height);
-                                        [x, y, z]
+                                        [x, z, -y]
                                     });
 
                                     let num_outer = match poly.hole_indices().first() {
@@ -259,15 +259,63 @@ impl DataSink for GltfPocSink {
 
                 write_gltf(writer, all_min, all_max, vertices, indices, feature_ids);
 
-                // boundingVolumeを求める
-                let bounding_volume = vec![
-                    all_translation[0],
-                    all_translation[1],
-                    all_translation[2],
-                    all_max[0] - all_min[0],
-                    all_max[1] - all_min[1],
-                    all_max[2] - all_min[2],
+                // write 3DTiles
+                let centroid = [
+                    (all_max[0] + all_min[0]) / 2.,
+                    (all_max[1] + all_min[1]) / 2.,
+                    (all_max[2] + all_min[2]) / 2.,
                 ];
+                let x_length: [f64; 3] = [(all_max[0] - all_min[0]) / 2., 0., 0.];
+                let y_length: [f64; 3] = [0., (all_max[1] - all_min[1]) / 2., 0.];
+                let z_length: [f64; 3] = [0., 0., (all_max[2] - all_min[2]) / 2.];
+
+                let bounding_volume = [
+                    centroid[0],
+                    centroid[1],
+                    centroid[2],
+                    x_length[0],
+                    x_length[1],
+                    x_length[2],
+                    y_length[0],
+                    y_length[1],
+                    y_length[2],
+                    z_length[0],
+                    z_length[1],
+                    z_length[2],
+                ];
+
+                // tileset.jsonはoutput_pathと同じフォルダで尚且つ、ファイル名は「tileset.json」に変更する
+                let tileset_path = self.output_path.with_file_name("tileset.json");
+                let content_uri = self
+                    .output_path
+                    .file_name()
+                    .unwrap()
+                    .to_string_lossy()
+                    .into_owned();
+
+                let tileset = nusamai_3dtiles_json::tileset::Tileset {
+                    geometric_error: 100.0,
+                    asset: nusamai_3dtiles_json::tileset::Asset {
+                        version: "1.1".to_string(),
+                        ..Default::default()
+                    },
+                    root: nusamai_3dtiles_json::tileset::Tile {
+                        bounding_volume: nusamai_3dtiles_json::tileset::BoundingVolume {
+                            box_: Some(bounding_volume),
+                            ..Default::default()
+                        },
+                        content: Some(nusamai_3dtiles_json::tileset::Content {
+                            uri: content_uri,
+                            ..Default::default()
+                        }),
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                };
+
+                let mut tileset_file = File::create(&tileset_path).unwrap();
+                let tileset_writer = BufWriter::with_capacity(1024 * 1024, &mut tileset_file);
+                serde_json::to_writer_pretty(tileset_writer, &tileset).unwrap();
 
                 // todo: 属性部分をbufferにするコードを書く
             },
