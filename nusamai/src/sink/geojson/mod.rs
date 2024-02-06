@@ -9,7 +9,7 @@ use nusamai_citygml::GeometryType;
 use rayon::prelude::*;
 
 use crate::parameters::*;
-use crate::pipeline::{Feedback, Receiver};
+use crate::pipeline::{Feedback, PipelineError, Receiver, Result};
 use crate::sink::{DataSink, DataSinkProvider, SinkInfo};
 use crate::{get_parameter_value, transformer};
 
@@ -66,40 +66,32 @@ impl DataSink for GeoJsonSink {
         }
     }
 
-    fn run(&mut self, upstream: Receiver, feedback: &Feedback, _schema: &Schema) {
+    fn run(&mut self, upstream: Receiver, feedback: &Feedback, _schema: &Schema) -> Result<()> {
         let (sender, receiver) = std::sync::mpsc::sync_channel(1000);
 
-        rayon::join(
+        let (ra, rb) = rayon::join(
             || {
                 // Convert CityObjects to GeoJSON objects
-
-                let _ = upstream.into_iter().par_bridge().try_for_each_with(
-                    sender,
-                    |sender, parcel| {
-                        if feedback.is_cancelled() {
-                            return Err(());
-                        }
+                upstream
+                    .into_iter()
+                    .par_bridge()
+                    .try_for_each_with(sender, |sender, parcel| {
+                        feedback.ensure_not_canceled()?;
 
                         let features = entity_to_geojson_features(&parcel.entity);
                         for feature in features {
-                            let Ok(bytes) = serde_json::to_vec(&feature) else {
-                                // TODO: fatal error
-                                return Err(());
-                            };
+                            let bytes = serde_json::to_vec(&feature).unwrap();
                             if sender.send(bytes).is_err() {
-                                log::info!("sink cancelled");
-                                return Err(());
+                                return Err(PipelineError::Canceled);
                             };
                         }
                         Ok(())
-                    },
-                );
+                    })
             },
             || {
                 // Write GeoJSON to a file
 
-                // TODO: Handle output file path
-                let mut file = File::create(&self.output_path).unwrap();
+                let mut file = File::create(&self.output_path)?;
                 let mut writer = BufWriter::with_capacity(1024 * 1024, &mut file);
 
                 // Write the FeatureCollection header
@@ -118,8 +110,21 @@ impl DataSink for GeoJsonSink {
 
                 // Write the FeautureCollection footer and EOL
                 writer.write_all(b"]}\n").unwrap();
+
+                Ok(())
             },
         );
+
+        match ra {
+            Ok(_) | Err(PipelineError::Canceled) => {}
+            Err(error) => feedback.report_fatal_error(error),
+        }
+        match rb {
+            Ok(_) | Err(PipelineError::Canceled) => {}
+            Err(error) => feedback.report_fatal_error(error),
+        }
+
+        Ok(())
     }
 }
 
