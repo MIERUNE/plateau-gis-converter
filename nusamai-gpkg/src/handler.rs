@@ -1,3 +1,4 @@
+use indexmap::IndexMap;
 use sqlx::{sqlite::*, ConnectOptions};
 use sqlx::{Acquire, Row};
 use sqlx::{Pool, Sqlite};
@@ -44,6 +45,21 @@ impl GpkgHandler {
         sqlx::query(mpoly3d_query).execute(&pool).await?;
 
         Ok(Self { pool })
+    }
+
+    /// Add columns to a table
+    pub async fn add_columns(
+        &self,
+        attribute_columns: IndexMap<String, String>,
+    ) -> Result<(), GpkgError> {
+        for (column_name, column_type) in attribute_columns {
+            let add_columns_query = format!(
+                "ALTER TABLE mpoly3d ADD COLUMN {} {};",
+                column_name, column_type
+            );
+            sqlx::query(&add_columns_query).execute(&self.pool).await?;
+        }
+        Ok(())
     }
 
     pub async fn application_id(&self) -> u32 {

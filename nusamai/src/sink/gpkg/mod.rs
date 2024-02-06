@@ -73,6 +73,7 @@ impl GpkgSink {
 
         // add attribute columns
         let attribute_columns = schema_to_columns(schema);
+        handler.add_columns(attribute_columns).await.unwrap();
 
         let (sender, mut receiver) = tokio::sync::mpsc::channel(100);
 
