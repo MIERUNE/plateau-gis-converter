@@ -259,6 +259,16 @@ impl DataSink for GltfPocSink {
 
                 write_gltf(writer, all_min, all_max, vertices, indices, feature_ids);
 
+                // boundingVolumeを求める
+                let bounding_volume = vec![
+                    all_translation[0],
+                    all_translation[1],
+                    all_translation[2],
+                    all_max[0] - all_min[0],
+                    all_max[1] - all_min[1],
+                    all_max[2] - all_min[2],
+                ];
+
                 // todo: 属性部分をbufferにするコードを書く
             },
         );
@@ -365,7 +375,7 @@ fn write_gltf<W: Write>(
             },
             Accessor {
                 buffer_view: Some(2),
-                component_type: ComponentType::UnsignedShort,
+                component_type: ComponentType::Float,
                 count: feature_ids_count,
                 type_: AccessorType::Scalar,
                 ..Default::default()
