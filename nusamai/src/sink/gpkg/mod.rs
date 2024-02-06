@@ -129,7 +129,43 @@ impl GpkgSink {
                             // TODO: fatal error
                         }
 
-                        if sender.blocking_send(bytes).is_err() {
+                        // Prepare attributes
+                        let mut n_skipped_attributes = 0;
+                        let mut attributes = IndexMap::<String, String>::new();
+                        for (attr_name, attr_value) in &obj.attributes {
+                            match attr_value {
+                                Value::String(s) => {
+                                    // single quote the string in SQLite
+                                    attributes.insert(attr_name.into(), format!("'{}'", s));
+                                }
+                                Value::Integer(i) => {
+                                    attributes.insert(attr_name.into(), i.to_string());
+                                }
+                                Value::Double(d) => {
+                                    attributes.insert(attr_name.into(), d.to_string());
+                                }
+                                Value::Boolean(b) => {
+                                    // 0 for false and 1 for true in SQLite
+                                    attributes.insert(
+                                        attr_name.into(),
+                                        if *b { "1".into() } else { "0".into() },
+                                    );
+                                }
+                                _ => {
+                                    // TODO: implement
+                                    n_skipped_attributes += 1;
+                                }
+                            };
+                        }
+                        let n_unskipped_attributes = obj.attributes.len() - n_skipped_attributes;
+                        if n_unskipped_attributes > 0 {
+                            log::info!(
+                                "Entity - {:?} unskipped attributes in result",
+                                n_unskipped_attributes
+                            );
+                        }
+
+                        if sender.blocking_send((bytes, attributes)).is_err() {
                             return Err(());
                         };
 
@@ -140,11 +176,11 @@ impl GpkgSink {
         };
 
         let mut tx = handler.begin().await.unwrap();
-        while let Some(gpkg_bin) = receiver.recv().await {
+        while let Some((gpkg_bin, attributes)) = receiver.recv().await {
             if feedback.is_cancelled() {
                 return;
             }
-            tx.insert_feature(&gpkg_bin).await;
+            tx.insert_feature(&gpkg_bin, &attributes).await.unwrap();
         }
         tx.commit().await.unwrap();
 

@@ -141,19 +141,38 @@ impl<'c> GpkgTransaction<'c> {
     }
 
     /// Add a MultiPolygonZ feature to the GeoPackage database
-    ///
-    /// Note: とりあえず地物を挿入してみるための実装です。参考にしないでください。
-    pub async fn insert_feature(&mut self, bytes: &[u8]) {
+    // TODO: generalize method
+    // TODO: handle MultiLineString, MultiPoint
+    pub async fn insert_feature(
+        &mut self,
+        bytes: &[u8],
+        attributes: &IndexMap<String, String>,
+    ) -> Result<(), GpkgError> {
         let executor = self.tx.acquire().await.unwrap();
 
-        sqlx::query("INSERT INTO mpoly3d (geometry) VALUES (?)")
-            .bind(bytes)
-            .execute(&mut *executor)
-            .await
-            .unwrap();
+        if attributes.is_empty() {
+            sqlx::query("INSERT INTO mpoly3d (geometry) VALUES (?)")
+                .bind(bytes)
+                .execute(&mut *executor)
+                .await?;
+            return Ok(());
+        }
 
-        // TODO: MultiLineString
-        // TODO: MultiPoint
+        let query_string = format!(
+            "INSERT INTO mpoly3d (geometry, {}) VALUES (?, {})",
+            attributes
+                .keys()
+                .map(|key| key.to_string())
+                .collect::<Vec<_>>()
+                .join(", "),
+            vec!["?"; attributes.len()].join(", ")
+        );
+        let mut query = sqlx::query(&query_string).bind(bytes);
+        for value in attributes.values() {
+            query = query.bind(value);
+        }
+        query.execute(&mut *executor).await?;
+        Ok(())
     }
 }
 
