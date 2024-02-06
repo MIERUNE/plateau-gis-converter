@@ -54,6 +54,18 @@ pub struct GeometryStore {
     pub multilinestring: MultiLineString<'static, 1, u32>,
     /// All points, referenced by `GeometryRef`
     pub multipoint: MultiPoint<'static, 1, u32>,
+
+    // TODO
+    pub ring_ids: Vec<Option<u32>>,
+    pub surface_spans: Vec<SurfaceSpan>,
+}
+
+#[derive(Debug)]
+#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
+pub struct SurfaceSpan {
+    pub id: u32,
+    pub start: u32,
+    pub end: u32,
 }
 
 /// Temporary storage for the parser to collect geometries.
@@ -63,7 +75,12 @@ pub(crate) struct GeometryCollector {
     pub multipolygon: MultiPolygon<'static, 1, u32>,
     pub multilinestring: MultiLineString<'static, 1, u32>,
     pub multipoint: MultiPoint<'static, 1, u32>,
+
+    /// ring ids of the all polygons
     pub ring_ids: Vec<Option<u32>>,
+
+    /// surface polygon spans in `multipolygon`
+    pub surface_spans: Vec<SurfaceSpan>,
 }
 
 impl GeometryCollector {
@@ -104,12 +121,15 @@ impl GeometryCollector {
                 f64::from_bits(vbits[2]),
             ]);
         }
+
         GeometryStore {
             epsg: EPSG_JGD2011_GEOGRAPHIC_3D,
             vertices,
             multipolygon: self.multipolygon,
             multilinestring: self.multilinestring,
             multipoint: self.multipoint,
+            ring_ids: self.ring_ids,
+            surface_spans: self.surface_spans,
         }
     }
 }

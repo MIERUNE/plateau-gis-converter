@@ -312,15 +312,17 @@ impl CityGmlElement for Point {
     }
 }
 
-#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, Default, PartialEq, Eq)]
+#[derive(
+    Debug, Clone, Copy, serde::Serialize, serde::Deserialize, Default, PartialEq, Eq, Hash,
+)]
 pub struct LocalHref(u32);
 
 impl LocalHref {
     pub fn new(idx: u32) -> Self {
         Self(idx)
     }
-    pub fn value(&self) -> &u32 {
-        &self.0
+    pub fn value(&self) -> u32 {
+        self.0
     }
 }
 

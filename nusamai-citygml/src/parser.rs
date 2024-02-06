@@ -15,7 +15,7 @@ use crate::geometry::{
     GeometryType,
 };
 use crate::namespace::{wellknown_prefix_from_nsres, APP_2_NS, GML31_NS};
-use crate::{CityGmlAttribute, LocalHref};
+use crate::{CityGmlAttribute, LocalHref, SurfaceSpan};
 
 #[derive(Error, Debug)]
 pub enum ParseError {
@@ -356,21 +356,67 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
         geomrefs: &mut GeometryRef,
         lod: u8,
     ) -> Result<(), ParseError> {
-        let poly_begin = self.state.geometry_collector.multipolygon.len();
+        let mut surface_id = None;
+        loop {
+            match self.reader.read_event_into(&mut self.state.buf1) {
+                Ok(Event::Start(start)) => {
+                    // surface id
+                    for attr in start.attributes().flatten() {
+                        let (nsres, localname) = self.reader.resolve_attribute(attr.key);
+                        if nsres == Bound(GML31_NS) && localname.as_ref() == b"id" {
+                            let id = String::from_utf8_lossy(attr.value.as_ref()).to_string();
+                            surface_id = Some(self.state.context.id_to_integer_id(id));
+                            break;
+                        }
+                    }
 
-        if expect_start(self.reader, &mut self.state.buf1, GML31_NS, b"MultiSurface")? {
-            self.parse_multi_surface()?;
-            expect_end(self.reader, &mut self.state.buf1)?;
-        }
+                    let (nsres, localname) = self.reader.resolve_element(start.name());
+                    let poly_begin = self.state.geometry_collector.multipolygon.len();
 
-        let poly_end = self.state.geometry_collector.multipolygon.len();
-        if poly_end - poly_begin > 0 {
-            geomrefs.push(GeometryRefEntry {
-                ty: GeometryType::Surface,
-                lod,
-                pos: poly_begin as u32,
-                len: (poly_end - poly_begin) as u32,
-            });
+                    let geomtype = match (nsres, localname.as_ref()) {
+                        (Bound(GML31_NS), b"MultiSurface") => {
+                            self.parse_multi_surface()?;
+                            GeometryType::Surface
+                        }
+                        _ => {
+                            return Err(ParseError::SchemaViolation(format!(
+                                "Expected MultiSurface but found <{}>",
+                                String::from_utf8_lossy(start.name().as_ref())
+                            )))
+                        }
+                    };
+
+                    let poly_end = self.state.geometry_collector.multipolygon.len();
+                    if poly_end - poly_begin > 0 {
+                        geomrefs.push(GeometryRefEntry {
+                            ty: geomtype,
+                            lod,
+                            pos: poly_begin as u32,
+                            len: (poly_end - poly_begin) as u32,
+                        });
+
+                        // record a partial surface span
+                        if let Some(id) = surface_id {
+                            self.state
+                                .geometry_collector
+                                .surface_spans
+                                .push(SurfaceSpan {
+                                    id,
+                                    start: poly_begin as u32,
+                                    end: poly_end as u32,
+                                });
+                        }
+                    }
+                }
+                Ok(Event::End(_)) => break,
+                Ok(Event::Text(_)) => {
+                    return Err(ParseError::SchemaViolation(
+                        "Unexpected text content".into(),
+                    ))
+                }
+                Ok(_) => (),
+                Err(e) => return Err(e.into()),
+            }
         }
         Ok(())
     }
@@ -419,11 +465,22 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
         geomrefs: &mut GeometryRef,
         lod: u8,
     ) -> Result<(), ParseError> {
+        let mut surface_id = None;
         loop {
             match self.reader.read_event_into(&mut self.state.buf1) {
                 Ok(Event::Start(start)) => {
                     let (nsres, localname) = self.reader.resolve_element(start.name());
                     let poly_begin = self.state.geometry_collector.multipolygon.len();
+
+                    // surface id
+                    for attr in start.attributes().flatten() {
+                        let (nsres, localname) = self.reader.resolve_attribute(attr.key);
+                        if nsres == Bound(GML31_NS) && localname.as_ref() == b"id" {
+                            let id = String::from_utf8_lossy(attr.value.as_ref()).to_string();
+                            surface_id = Some(self.state.context.id_to_integer_id(id));
+                            break;
+                        }
+                    }
 
                     let geomtype = match (nsres, localname.as_ref()) {
                         (Bound(GML31_NS), b"Solid") => {
@@ -474,6 +531,18 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                             pos: poly_begin as u32,
                             len: (poly_end - poly_begin) as u32,
                         });
+
+                        // record a partial surface span
+                        if let Some(id) = surface_id {
+                            self.state
+                                .geometry_collector
+                                .surface_spans
+                                .push(SurfaceSpan {
+                                    id,
+                                    start: poly_begin as u32,
+                                    end: poly_end as u32,
+                                });
+                        }
                     }
                 }
                 Ok(Event::End(_)) => break,
@@ -634,9 +703,22 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
     }
 
     fn parse_surface(&mut self) -> Result<(), ParseError> {
+        let mut surface_id = None;
+        let poly_begin = self.state.geometry_collector.multipolygon.len();
+
         loop {
             match self.reader.read_event_into(&mut self.state.buf1) {
                 Ok(Event::Start(start)) => {
+                    // surface id
+                    for attr in start.attributes().flatten() {
+                        let (nsres, localname) = self.reader.resolve_attribute(attr.key);
+                        if nsres == Bound(GML31_NS) && localname.as_ref() == b"id" {
+                            let id = String::from_utf8_lossy(attr.value.as_ref()).to_string();
+                            surface_id = Some(self.state.context.id_to_integer_id(id));
+                            break;
+                        }
+                    }
+
                     let (nsres, localname) = self.reader.resolve_element(start.name());
                     match (nsres, localname.as_ref()) {
                         (Bound(GML31_NS), b"Polygon") => self.parse_polygon()?,
@@ -655,6 +737,21 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                                 "Unexpected element <{}>",
                                 String::from_utf8_lossy(localname.as_ref())
                             )))
+                        }
+                    }
+
+                    // record a partial surface span
+                    if let Some(id) = surface_id {
+                        let poly_end = self.state.geometry_collector.multipolygon.len() as u32;
+                        if poly_end > poly_begin as u32 {
+                            self.state
+                                .geometry_collector
+                                .surface_spans
+                                .push(SurfaceSpan {
+                                    id,
+                                    start: poly_begin as u32,
+                                    end: poly_end,
+                                });
                         }
                     }
                 }

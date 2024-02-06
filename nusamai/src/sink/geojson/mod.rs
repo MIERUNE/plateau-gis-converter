@@ -254,8 +254,7 @@ mod tests {
             epsg: EPSG_JGD2011_GEOGRAPHIC_3D,
             vertices,
             multipolygon: mpoly,
-            multilinestring: Default::default(),
-            multipoint: Default::default(),
+            ..Default::default()
         };
 
         let obj = Entity {
