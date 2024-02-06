@@ -100,6 +100,28 @@ impl GpkgHandler {
         table_names
     }
 
+    /// Get the table's column information (name, type, notnull)
+    pub async fn table_info(
+        &self,
+        table_name: String,
+    ) -> Result<Vec<(String, String, i8)>, GpkgError> {
+        let result = sqlx::query(&format!("PRAGMA table_info({});", table_name))
+            .fetch_all(&self.pool)
+            .await?;
+
+        let columns = result
+            .iter()
+            .map(|row| {
+                (
+                    row.get::<String, &str>("name"),
+                    row.get::<String, &str>("type"),
+                    row.get::<i8, &str>("notnull"),
+                )
+            })
+            .collect();
+        Ok(columns)
+    }
+
     pub async fn begin(&mut self) -> Result<GpkgTransaction, GpkgError> {
         Ok(GpkgTransaction::new(self.pool.begin().await?))
     }
@@ -158,6 +180,33 @@ mod tests {
                 "gpkg_geometry_columns",
                 "gpkg_spatial_ref_sys",
                 "mpoly3d"
+            ]
+        );
+    }
+
+    #[tokio::test]
+    async fn test_add_columns() {
+        let handler = GpkgHandler::from_url(&Url::parse("sqlite::memory:").unwrap())
+            .await
+            .unwrap();
+
+        let mut attribute_columns = IndexMap::new();
+        attribute_columns.insert("attr1".into(), "TEXT".into());
+        attribute_columns.insert("attr2".into(), "INTEGER".into());
+        attribute_columns.insert("attr3".into(), "REAL".into());
+        attribute_columns.insert("attr4".into(), "BOOLEAN".into());
+        handler.add_columns(attribute_columns).await.unwrap();
+
+        let columns = handler.table_info("mpoly3d".into()).await.unwrap();
+        assert_eq!(
+            columns,
+            vec![
+                ("id".into(), "INTEGER".into(), 1),
+                ("geometry".into(), "BLOB".into(), 1),
+                ("attr1".into(), "TEXT".into(), 0),
+                ("attr2".into(), "INTEGER".into(), 0),
+                ("attr3".into(), "REAL".into(), 0),
+                ("attr4".into(), "BOOLEAN".into(), 0)
             ]
         );
     }
