@@ -324,7 +324,10 @@ fn write_gltf<W: Write>(
     let feature_ids_len = bin_content.len() - feature_ids_offset;
 
     let gltf = Gltf {
-        extensions_used: vec!["EXT_mesh_features".to_string()],
+        extensions_used: vec![
+            "EXT_mesh_features".to_string(),
+            "EXT_structural_metadata".to_string(),
+        ],
         scenes: vec![Scene {
             nodes: Some(vec![0]),
             ..Default::default()
@@ -407,6 +410,16 @@ fn write_gltf<W: Write>(
             byte_length: bin_content.len() as u32,
             ..Default::default()
         }],
+        extensions: Some(extensions::gltf::Gltf {
+            ext_structural_metadata: Some(
+                extensions::gltf::ext_structural_metadata::ExtStructuralMetadata {
+                    // todo: transformerで成形されるスキーマ情報を利用し、schema.classesを定義する必要がある
+                    // todo: 定義したschema.classesを利用して、property_tablesを作成する必要がある
+                    ..Default::default()
+                },
+            ),
+            ..Default::default()
+        }),
         ..Default::default()
     };
 
