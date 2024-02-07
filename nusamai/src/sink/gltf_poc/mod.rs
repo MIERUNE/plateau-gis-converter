@@ -8,14 +8,15 @@ use ahash::RandomState;
 use byteorder::{ByteOrder, LittleEndian};
 use earcut_rs::utils_3d::project3d_to_2d;
 use earcut_rs::Earcut;
-use hashbrown::HashSet;
-use indexmap::IndexSet;
+use indexmap::{IndexMap, IndexSet};
+use nusamai_gltf_json::extensions::gltf::ext_structural_metadata::ClassPropertyType;
 use nusamai_gltf_json::extensions::mesh::ext_mesh_features::FeatureId;
 use nusamai_projection::cartesian::geographic_to_geocentric;
 use rayon::prelude::*;
+use std::collections::HashSet;
 
-use nusamai_citygml::object::{Object, ObjectStereotype};
-use nusamai_citygml::schema::Schema;
+use nusamai_citygml::object::ObjectStereotype;
+use nusamai_citygml::schema::{Schema, TypeDef, TypeRef};
 use nusamai_citygml::{GeometryType, Value};
 use nusamai_gltf_json::*;
 
@@ -40,32 +41,9 @@ pub struct BoundingVolume {
     pub max_height: f64,
 }
 
-#[derive(Debug, Clone, PartialEq)]
-enum PropertyType {
-    Scalar,
-    Vec2,
-    Vec3,
-    Vec4,
-    Mat2,
-    Mat3,
-    Mat4,
-    String,
-    Boolean,
-    Enum,
-}
-
-#[derive(Debug, Clone, PartialEq)]
-enum ComponentType {
-    Int8(i8),
-    UInt8(u8),
-    Int16(i16),
-    UInt16(u16),
-    Int32(i32),
-    UInt32(u32),
-    Int64(i64),
-    UInt64(u64),
-    Float32(f32),
-    Float64(f64),
+pub struct GltfPropertyType {
+    pub class_property_type: ClassPropertyType,
+    pub component_type: ComponentType,
 }
 
 pub struct GltfPocSinkProvider {}
@@ -368,14 +346,15 @@ impl DataSink for GltfPocSink {
                     .collect();
 
                 // Get schema from attribute names
-                let mut schemas = Vec::new();
+                let mut schemas = IndexMap::new();
                 for typename in type_names {
                     let schema = schema.types.get(typename.as_ref()).unwrap();
-                    schemas.push(schema);
-                }
 
-                // todo: 属性ごとに、属性名・型・scalar/vector/matrixごとの型を定義する
-                // （extensions.ext_structural_metadata.schema.classes.<クラス名>.propertiesの話）
+                    // todo: 属性ごとに、属性名・型・scalar/vector/matrixごとの型を定義する
+                    // （extensions.ext_structural_metadata.schema.classes.<クラス名>.propertiesの話）
+                    let gltf_schemas = type_def_to_gltf_schema(schema);
+                    schemas.extend(gltf_schemas);
+                }
 
                 let mut file = File::create(&self.output_path).unwrap();
                 let writer = BufWriter::with_capacity(1024 * 1024, &mut file);
@@ -400,7 +379,37 @@ impl DataSink for GltfPocSink {
     }
 }
 
-fn typeref_to_gltf_schema() {}
+fn type_def_to_gltf_schema(schema: &TypeDef) -> IndexMap<String, ClassPropertyType> {
+    let mut results = IndexMap::new();
+
+    match schema {
+        TypeDef::Feature(f) => {
+            for (name, attr) in &f.attributes {
+                // todo: 他の型も定義する
+                // todo: Scalarの場合はComponentTypeを振り分ける必要がある
+                match &attr.type_ref {
+                    TypeRef::String => {
+                        results.insert(name.clone(), ClassPropertyType::String);
+                    }
+                    TypeRef::Integer => {
+                        results.insert(name.clone(), ClassPropertyType::Scalar);
+                    }
+                    TypeRef::Double => {
+                        results.insert(name.clone(), ClassPropertyType::Scalar);
+                    }
+                    TypeRef::Boolean => {
+                        results.insert(name.clone(), ClassPropertyType::Boolean);
+                    }
+                    _ => (),
+                }
+            }
+        }
+        TypeDef::Data(_) => unimplemented!(),
+        TypeDef::Property(_) => unimplemented!(),
+    }
+
+    results
+}
 
 fn write_gltf<W: Write>(
     mut writer: W,
