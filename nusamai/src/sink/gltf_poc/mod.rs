@@ -40,6 +40,34 @@ pub struct BoundingVolume {
     pub max_height: f64,
 }
 
+#[derive(Debug, Clone, PartialEq)]
+enum PropertyType {
+    Scalar,
+    Vec2,
+    Vec3,
+    Vec4,
+    Mat2,
+    Mat3,
+    Mat4,
+    String,
+    Boolean,
+    Enum,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+enum ComponentType {
+    Int8(i8),
+    UInt8(u8),
+    Int16(i16),
+    UInt16(u16),
+    Int32(i32),
+    UInt32(u32),
+    Int64(i64),
+    UInt64(u64),
+    Float32(f32),
+    Float64(f64),
+}
+
 pub struct GltfPocSinkProvider {}
 
 impl DataSinkProvider for GltfPocSinkProvider {
@@ -346,6 +374,9 @@ impl DataSink for GltfPocSink {
                     schemas.push(schema);
                 }
 
+                // todo: 属性ごとに、属性名・型・scalar/vector/matrixごとの型を定義する
+                // （extensions.ext_structural_metadata.schema.classes.<クラス名>.propertiesの話）
+
                 let mut file = File::create(&self.output_path).unwrap();
                 let writer = BufWriter::with_capacity(1024 * 1024, &mut file);
 
@@ -368,6 +399,8 @@ impl DataSink for GltfPocSink {
         Ok(())
     }
 }
+
+fn typeref_to_gltf_schema() {}
 
 fn write_gltf<W: Write>(
     mut writer: W,
