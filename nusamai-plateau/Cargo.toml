@@ -10,6 +10,7 @@ default = ["serde"]
 quick-xml = "0.31.0"
 serde = { version = "1.0.193", features = ["derive"], optional = true }
 nusamai-citygml = { path = "../nusamai-citygml", features = ["serde"]}
+nusamai-geometry = { path = "../nusamai-geometry" }
 chrono = { version = "0.4.31", features = ["serde"], default-features = false }
 url = "2.5.0"
 stretto = "0.8.2"

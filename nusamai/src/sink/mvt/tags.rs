@@ -18,7 +18,7 @@ pub fn convert_properties(
             tags.extend(tags_enc.add(name, (*v).into()));
         }
         nusamai_citygml::Value::NonNegativeInteger(v) => {
-            tags.extend(tags_enc.add(&name, (*v).into()));
+            tags.extend(tags_enc.add(name, (*v).into()));
         }
         nusamai_citygml::Value::Double(v) => {
             tags.extend(tags_enc.add(name, (*v).into()));

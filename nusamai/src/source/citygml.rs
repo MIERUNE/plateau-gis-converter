@@ -5,6 +5,7 @@ use std::io::BufRead;
 use std::path::{Path, PathBuf};
 use std::sync::RwLock;
 
+use nusamai_plateau::appearance::ResolvableAppearance;
 use rayon::prelude::*;
 use url::Url;
 
@@ -74,7 +75,11 @@ fn toplevel_dispatcher<R: BufRead>(
     downstream: &Sender,
     feedback: &Feedback,
 ) -> Result<(), ParseError> {
-    let result = st.parse_children(|st| {
+    let use_appearances = true;
+    let mut entities = Vec::new();
+    let mut appearance = None;
+
+    st.parse_children(|st| {
         if feedback.is_canceled() {
             return Ok(());
         }
@@ -94,18 +99,33 @@ fn toplevel_dispatcher<R: BufRead>(
                         root,
                         geometry_store: RwLock::new(geometry_store).into(),
                     };
-                    if downstream.send(Parcel { entity }).is_err() {
-                        feedback.cancel();
-                        return Ok(());
+
+                    if use_appearances {
+                        // store the entity to bind the appearance later
+                        entities.push(entity);
+                    } else {
+                        // send the entity immediately
+                        if downstream.send(Parcel { entity }).is_err() {
+                            feedback.cancel();
+                            return Ok(());
+                        }
                     }
                 }
                 Ok(())
             }
             b"app:appearanceMember" => {
-                let mut app: models::appearance::AppearanceProperty = Default::default();
-                app.parse(st)?;
-                // TODO:
-                // println!("app: {:?}", app);
+                if use_appearances {
+                    let mut app: models::appearance::AppearanceProperty = Default::default();
+                    app.parse(st)?;
+                    let models::appearance::AppearanceProperty::Appearance(app) = app else {
+                        unreachable!();
+                    };
+                    let app: ResolvableAppearance = app.into();
+
+                    appearance = Some(app);
+                } else {
+                    st.skip_current_element()?;
+                }
                 Ok(())
             }
             other => Err(ParseError::SchemaViolation(format!(
@@ -113,9 +133,18 @@ fn toplevel_dispatcher<R: BufRead>(
                 String::from_utf8_lossy(other)
             ))),
         }
-    });
-    match result {
-        Ok(_) => Ok(()),
-        Err(e) => Err(e),
+    })?;
+
+    for entity in entities {
+        if let Some(app) = &appearance {
+            let geom = entity.geometry_store.read().unwrap();
+        }
+
+        if downstream.send(Parcel { entity }).is_err() {
+            feedback.cancel();
+            break;
+        }
     }
+
+    Ok(())
 }

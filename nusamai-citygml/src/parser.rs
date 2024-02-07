@@ -994,12 +994,13 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                                 "<app:textureCoordinates> must have a 'ring' attribute.".into(),
                             )
                         })?);
-                        tex_coords.coords_list.push(coords.take().ok_or_else(|| {
+                        let a = coords.take().ok_or_else(|| {
                             ParseError::SchemaViolation(
                                 "<app:textureCoordinates> must have a <app:textureCoordinate>."
                                     .into(),
                             )
-                        })?);
+                        })?;
+                        tex_coords.coords_list.push(a);
                         inside_coordinates = false;
                     }
                     false => {
