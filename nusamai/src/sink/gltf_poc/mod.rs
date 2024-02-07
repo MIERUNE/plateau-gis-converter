@@ -7,7 +7,7 @@ use std::path::PathBuf;
 use ahash::RandomState;
 use byteorder::{ByteOrder, LittleEndian};
 use earcut_rs::utils_3d::project3d_to_2d;
-use earcut_rs::{Earcut, Index};
+use earcut_rs::Earcut;
 use indexmap::IndexSet;
 use nusamai_gltf_json::extensions::mesh::ext_mesh_features::FeatureId;
 use nusamai_projection::cartesian::geographic_to_geocentric;
@@ -272,9 +272,18 @@ impl DataSink for GltfPocSink {
                 let mut file = File::create(&self.output_path).unwrap();
                 let writer = BufWriter::with_capacity(1024 * 1024, &mut file);
 
-                write_gltf(writer, all_min, all_max, vertices, indices);
+                write_gltf(writer, all_min, all_max, all_translation, vertices, indices);
 
-                write_3dtiles(all_max, all_min, &self.output_path);
+                let region: [f64; 6] = [
+                    all_min[0],
+                    all_min[1],
+                    all_max[0],
+                    all_max[1],
+                    41.84946720253343,
+                    48.90264925237435,
+                ];
+
+                write_3dtiles(region, &self.output_path);
 
                 // todo: 属性部分をbufferにするコードを書く
             },
@@ -287,6 +296,7 @@ fn write_gltf<W: Write>(
     mut writer: W,
     min: [f64; 3],
     max: [f64; 3],
+    translation: [f64; 3],
     vertices: IndexSet<Vertex, RandomState>,
     indices: impl IntoIterator<Item = u32>,
 ) {
@@ -331,6 +341,7 @@ fn write_gltf<W: Write>(
         }],
         nodes: vec![Node {
             mesh: Some(0),
+            translation,
             ..Default::default()
         }],
         meshes: vec![Mesh {
@@ -442,33 +453,8 @@ fn write_gltf<W: Write>(
 }
 
 // FIXME: This is the code to verify the operation with Cesium
-fn write_3dtiles(all_max: [f64; 3], all_min: [f64; 3], output_path: &PathBuf) {
+fn write_3dtiles(bounding_volume: [f64; 6], output_path: &PathBuf) {
     // write 3DTiles
-    let centroid = [
-        (all_max[0] + all_min[0]) / 2.,
-        (all_max[1] + all_min[1]) / 2.,
-        (all_max[2] + all_min[2]) / 2.,
-    ];
-    let x_length: [f64; 3] = [(all_max[0] - all_min[0]) / 2., 0., 0.];
-    let y_length: [f64; 3] = [0., (all_max[1] - all_min[1]) / 2., 0.];
-    let z_length: [f64; 3] = [0., 0., (all_max[2] - all_min[2]) / 2.];
-
-    let bounding_volume = [
-        centroid[0],
-        centroid[1],
-        centroid[2],
-        x_length[0],
-        x_length[1],
-        x_length[2],
-        y_length[0],
-        y_length[1],
-        y_length[2],
-        z_length[0],
-        z_length[1],
-        z_length[2],
-    ];
-
-    // tileset.jsonはoutput_pathと同じフォルダで尚且つ、ファイル名は「tileset.json」に変更する
     let tileset_path = output_path.with_file_name("tileset.json");
     let content_uri = output_path
         .file_name()
@@ -477,14 +463,14 @@ fn write_3dtiles(all_max: [f64; 3], all_min: [f64; 3], output_path: &PathBuf) {
         .into_owned();
 
     let tileset = nusamai_3dtiles_json::tileset::Tileset {
-        geometric_error: 100.0,
+        geometric_error: 1e+100,
         asset: nusamai_3dtiles_json::tileset::Asset {
             version: "1.1".to_string(),
             ..Default::default()
         },
         root: nusamai_3dtiles_json::tileset::Tile {
             bounding_volume: nusamai_3dtiles_json::tileset::BoundingVolume {
-                box_: Some(bounding_volume),
+                region: Some(bounding_volume),
                 ..Default::default()
             },
             content: Some(nusamai_3dtiles_json::tileset::Content {
