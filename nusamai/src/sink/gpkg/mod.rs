@@ -135,8 +135,7 @@ impl GpkgSink {
                         for (attr_name, attr_value) in &obj.attributes {
                             match attr_value {
                                 Value::String(s) => {
-                                    // single quote the string in SQLite
-                                    attributes.insert(attr_name.into(), format!("'{}'", s));
+                                    attributes.insert(attr_name.into(), s.into());
                                 }
                                 Value::Integer(i) => {
                                     attributes.insert(attr_name.into(), i.to_string());
