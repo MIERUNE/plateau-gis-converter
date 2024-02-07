@@ -1,6 +1,8 @@
 //! gltf sink poc
 
+use std::collections::{HashMap, HashSet};
 use std::fs::File;
+use std::hash::Hash;
 use std::io::{BufWriter, Write};
 use std::path::PathBuf;
 
@@ -9,16 +11,18 @@ use byteorder::{ByteOrder, LittleEndian};
 use earcut_rs::utils_3d::project3d_to_2d;
 use earcut_rs::Earcut;
 use indexmap::{IndexMap, IndexSet};
-use nusamai_gltf_json::extensions::gltf::ext_structural_metadata::ClassPropertyType;
-use nusamai_gltf_json::extensions::mesh::ext_mesh_features::FeatureId;
-use nusamai_projection::cartesian::geographic_to_geocentric;
 use rayon::prelude::*;
-use std::collections::HashSet;
 
-use nusamai_citygml::object::ObjectStereotype;
-use nusamai_citygml::schema::{Schema, TypeDef, TypeRef};
-use nusamai_citygml::{GeometryType, Value};
-use nusamai_gltf_json::*;
+use nusamai_citygml::{
+    object::ObjectStereotype,
+    schema::{Schema, TypeDef, TypeRef},
+    GeometryType, Value,
+};
+use nusamai_gltf_json::{
+    extensions, Accessor, AccessorType, Buffer, BufferView, BufferViewTarget, ComponentType, Gltf,
+    Mesh, MeshPrimitive, Node, PrimitiveMode, Scene,
+};
+use nusamai_projection::cartesian::geographic_to_geocentric;
 
 use crate::parameters::*;
 use crate::pipeline::{Feedback, PipelineError, Receiver};
@@ -41,9 +45,12 @@ pub struct BoundingVolume {
     pub max_height: f64,
 }
 
+#[derive(Debug, Clone)]
 pub struct GltfPropertyType {
-    pub class_property_type: ClassPropertyType,
-    pub component_type: ComponentType,
+    pub property_name: String,
+    pub class_property_type: extensions::gltf::ext_structural_metadata::ClassPropertyType,
+    pub component_type:
+        Option<extensions::gltf::ext_structural_metadata::ClassPropertyComponentType>,
 }
 
 pub struct GltfPocSinkProvider {}
@@ -229,8 +236,6 @@ impl DataSink for GltfPocSink {
             },
             || {
                 // Write glTF to a file
-                // todo: schemaから属性定義を行う必要がある
-
                 let mut buffers: Vec<[f64; 4]> = Vec::new();
 
                 let mut all_max: [f64; 3] = [f64::MIN; 3];
@@ -349,17 +354,23 @@ impl DataSink for GltfPocSink {
                 let mut schemas = IndexMap::new();
                 for typename in type_names {
                     let schema = schema.types.get(typename.as_ref()).unwrap();
-
-                    // todo: 属性ごとに、属性名・型・scalar/vector/matrixごとの型を定義する
-                    // （extensions.ext_structural_metadata.schema.classes.<クラス名>.propertiesの話）
                     let gltf_schemas = type_def_to_gltf_schema(schema);
-                    schemas.extend(gltf_schemas);
+                    schemas.insert(typename.as_ref().to_string(), gltf_schemas);
                 }
+                // todo: 複数の地物型が存在している時の対応を考える
 
                 let mut file = File::create(&self.output_path).unwrap();
                 let writer = BufWriter::with_capacity(1024 * 1024, &mut file);
 
-                write_gltf(writer, all_min, all_max, all_translation, vertices, indices);
+                write_gltf(
+                    writer,
+                    all_min,
+                    all_max,
+                    all_translation,
+                    vertices,
+                    indices,
+                    schemas,
+                );
 
                 let region: [f64; 6] = [
                     bounding_volume.min_lng.to_radians(),
@@ -379,27 +390,48 @@ impl DataSink for GltfPocSink {
     }
 }
 
-fn type_def_to_gltf_schema(schema: &TypeDef) -> IndexMap<String, ClassPropertyType> {
-    let mut results = IndexMap::new();
+fn type_def_to_gltf_schema(schema: &TypeDef) -> Vec<GltfPropertyType> {
+    let mut results = Vec::new();
 
     match schema {
         TypeDef::Feature(f) => {
             for (name, attr) in &f.attributes {
-                // todo: 他の型も定義する
-                // todo: Scalarの場合はComponentTypeを振り分ける必要がある
                 match &attr.type_ref {
-                    TypeRef::String => {
-                        results.insert(name.clone(), ClassPropertyType::String);
-                    }
+                    TypeRef::String => results.push(GltfPropertyType {
+                        property_name: name.clone(),
+                        class_property_type:
+                            extensions::gltf::ext_structural_metadata::ClassPropertyType::String,
+                        component_type: None,
+                    }),
                     TypeRef::Integer => {
-                        results.insert(name.clone(), ClassPropertyType::Scalar);
+                        results.push(GltfPropertyType {
+                            property_name: name.clone(),
+                            class_property_type:
+                                extensions::gltf::ext_structural_metadata::ClassPropertyType::Scalar,
+                            component_type: Some(
+                                extensions::gltf::ext_structural_metadata::ClassPropertyComponentType::Int32,
+                            ),
+                        });
                     }
                     TypeRef::Double => {
-                        results.insert(name.clone(), ClassPropertyType::Scalar);
+                        results.push(GltfPropertyType {
+                            property_name: name.clone(),
+                            class_property_type:
+                                extensions::gltf::ext_structural_metadata::ClassPropertyType::Scalar,
+                            component_type: Some(
+                                extensions::gltf::ext_structural_metadata::ClassPropertyComponentType::Float64,
+                            ),
+                        });
                     }
                     TypeRef::Boolean => {
-                        results.insert(name.clone(), ClassPropertyType::Boolean);
+                        results.push(GltfPropertyType {
+                            property_name: name.clone(),
+                            class_property_type:
+                                extensions::gltf::ext_structural_metadata::ClassPropertyType::Boolean,
+                            component_type: None
+                        });
                     }
+                    // todo: その他の入れ子の型なども定義するが、基本的には全てTransformerで文字列化する
                     _ => (),
                 }
             }
@@ -418,6 +450,7 @@ fn write_gltf<W: Write>(
     translation: [f64; 3],
     vertices: IndexSet<Vertex, RandomState>,
     indices: impl IntoIterator<Item = u32>,
+    schemas: IndexMap<String, Vec<GltfPropertyType>>,
 ) {
     let mut bin_content: Vec<u8> = Vec::new();
 
@@ -452,6 +485,34 @@ fn write_gltf<W: Write>(
     }
     let feature_ids_len = bin_content.len() - feature_ids_offset;
 
+    // todo: 複数の地物型が存在している時の対応を考える
+    let mut properties = HashMap::new();
+    schemas.iter().for_each(|(_, gltf_property_types)| {
+        gltf_property_types.iter().for_each(|gltf_property_type| {
+            properties.insert(
+                gltf_property_type.property_name.clone(),
+                extensions::gltf::ext_structural_metadata::ClassProperty {
+                    description: Some(gltf_property_type.property_name.clone()),
+                    type_: gltf_property_type.class_property_type.clone(),
+                    component_type: gltf_property_type.component_type.clone(),
+                    ..Default::default()
+                },
+            );
+        });
+    });
+
+    let typename = schemas.keys().next().unwrap().clone();
+    let mut classes = HashMap::new();
+    classes.insert(
+        typename.clone(),
+        extensions::gltf::ext_structural_metadata::Class {
+            name: Some(typename.clone()),
+            description: None,
+            properties,
+            ..Default::default()
+        },
+    );
+
     let gltf = Gltf {
         extensions_used: vec![
             "EXT_mesh_features".to_string(),
@@ -478,7 +539,7 @@ fn write_gltf<W: Write>(
                 mode: PrimitiveMode::Triangles,
                 extensions: Some(extensions::mesh::MeshPrimitive {
                     ext_mesh_features: Some(extensions::mesh::ext_mesh_features::ExtMeshFeatures {
-                        feature_ids: vec![FeatureId {
+                        feature_ids: vec![extensions::mesh::ext_mesh_features::FeatureId {
                             attribute: Some(0),
                             feature_count: feature_ids_count,
                             ..Default::default()
@@ -540,20 +601,29 @@ fn write_gltf<W: Write>(
             byte_length: bin_content.len() as u32,
             ..Default::default()
         }],
-        // extensions: Some(extensions::gltf::Gltf {
-        //     ext_structural_metadata: Some(
-        //         extensions::gltf::ext_structural_metadata::ExtStructuralMetadata {
-        //             // todo: transformerで成形されるスキーマ情報を利用し、schema.classesを定義する必要がある
-        //             // todo: 定義したschema.classesを利用して、property_tablesを作成する必要がある
-        //             ..Default::default()
-        //         },
-        //     ),
-        //     ..Default::default()
-        // }),
+        extensions: Some(extensions::gltf::Gltf {
+            ext_structural_metadata: Some(
+                extensions::gltf::ext_structural_metadata::ExtStructuralMetadata {
+                    schema: Some(extensions::gltf::ext_structural_metadata::Schema {
+                        classes,
+                        ..Default::default()
+                    }),
+                    // todo: transformerで成形されるスキーマ情報を利用し、schema.classesを定義する必要がある
+                    // todo: 定義したschema.classesを利用して、property_tablesを作成する必要がある
+                    ..Default::default()
+                },
+            ),
+            ..Default::default()
+        }),
         ..Default::default()
     };
 
     {
+        // 一度、JSONでも出力する
+        let json_file = File::create("/Users/satoru/github.com/MIERUNE/nusamai/demo/cesium/examples/ext_structural_metadata/test.gltf").unwrap();
+        let mut json_writer = BufWriter::with_capacity(1024 * 1024, &json_file);
+        serde_json::to_writer_pretty(&mut json_writer, &gltf).unwrap();
+
         let mut json_content = serde_json::to_vec(&gltf).unwrap();
 
         // append padding

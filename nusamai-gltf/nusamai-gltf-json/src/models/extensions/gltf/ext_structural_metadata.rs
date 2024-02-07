@@ -94,7 +94,7 @@ pub struct Class {
 }
 
 /// ElementType enumeration
-#[derive(Serialize, Deserialize, Debug, Default, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Debug, Default, PartialEq, Eq, Clone)]
 #[serde(rename_all = "UPPERCASE")]
 pub enum ClassPropertyType {
     #[default]
@@ -111,7 +111,7 @@ pub enum ClassPropertyType {
 }
 
 /// ComponentType enumeration
-#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
 #[serde(rename_all = "UPPERCASE")]
 pub enum ClassPropertyComponentType {
     Int8,
