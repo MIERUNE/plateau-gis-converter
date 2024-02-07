@@ -58,7 +58,12 @@ pub struct GpkgSink {
 }
 
 impl GpkgSink {
-    pub async fn run_async(&mut self, upstream: Receiver, feedback: &Feedback, schema: &Schema) {
+    pub async fn run_async(
+        &mut self,
+        upstream: Receiver,
+        feedback: &Feedback,
+        schema: &Schema,
+    ) -> Result<()> {
         let mut handler = if self.output_path.to_string_lossy().starts_with("sqlite:") {
             GpkgHandler::from_url(&Url::parse(self.output_path.to_str().unwrap()).unwrap())
                 .await
@@ -165,7 +170,7 @@ impl GpkgSink {
                         }
 
                         if sender.blocking_send((bytes, attributes)).is_err() {
-                            return Err(());
+                            return Err(PipelineError::Canceled);
                         };
 
                         Ok(())
@@ -175,9 +180,7 @@ impl GpkgSink {
 
         let mut tx = handler.begin().await.unwrap();
         while let Some((gpkg_bin, attributes)) = receiver.recv().await {
-            if feedback.is_cancelled() {
-                return;
-            }
+            feedback.ensure_not_canceled()?;
             tx.insert_feature(&gpkg_bin, &attributes).await.unwrap();
         }
         tx.commit().await.unwrap();
@@ -198,9 +201,9 @@ impl DataSink for GpkgSink {
         }
     }
 
-    fn run(&mut self, upstream: Receiver, feedback: &Feedback, schema: &Schema) {
+    fn run(&mut self, upstream: Receiver, feedback: &Feedback, schema: &Schema) -> Result<()> {
         let runtime = tokio::runtime::Runtime::new().unwrap();
-        runtime.block_on(self.run_async(upstream, feedback, schema));
+        runtime.block_on(self.run_async(upstream, feedback, schema))
     }
 }
 
