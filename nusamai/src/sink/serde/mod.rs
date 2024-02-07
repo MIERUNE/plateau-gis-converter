@@ -11,7 +11,7 @@ use nusamai_citygml::schema::Schema;
 use rayon::prelude::*;
 
 use crate::parameters::*;
-use crate::pipeline::{Feedback, Receiver};
+use crate::pipeline::{Feedback, PipelineError, Receiver, Result};
 use crate::sink::{DataSink, DataSinkProvider, SinkInfo};
 use crate::{get_parameter_value, transformer};
 
@@ -66,51 +66,56 @@ impl DataSink for SerdeSink {
         }
     }
 
-    fn run(&mut self, upstream: Receiver, feedback: &Feedback, _schema: &Schema) {
+    fn run(&mut self, upstream: Receiver, feedback: &Feedback, _schema: &Schema) -> Result<()> {
         let (sender, receiver) = std::sync::mpsc::sync_channel(1000);
 
-        rayon::join(
+        let (ra, rb) = rayon::join(
             || {
                 // Compression
-                let _ = upstream.into_iter().par_bridge().try_for_each_with(
+                upstream.into_iter().par_bridge().try_for_each_with(
                     (sender, Vec::new()),
                     |(sender, buf), parcel| {
-                        if feedback.is_cancelled() {
-                            return Err(());
-                        }
+                        feedback.ensure_not_canceled()?;
 
                         buf.clear();
                         bincode::serialize_into(buf as &mut Vec<u8>, &parcel.entity).unwrap();
                         if sender.send(lz4_flex::compress_prepend_size(buf)).is_err() {
-                            log::info!("sink cancelled");
-                            return Err(());
+                            return Err(PipelineError::Canceled);
                         };
                         Ok(())
                     },
-                );
+                )?;
+                Ok(())
             },
             || {
                 // Write to file
                 let mut writer =
-                    BufWriter::with_capacity(1024 * 1024, File::create(&self.output_path).unwrap());
+                    BufWriter::with_capacity(1024 * 1024, File::create(&self.output_path)?);
                 for compressed in receiver {
                     // size
-                    writer
-                        .write_all(&(compressed.len() as u32).to_le_bytes())
-                        .unwrap();
+                    writer.write_all(&(compressed.len() as u32).to_le_bytes())?;
                     // compressed data
-                    writer.write_all(&compressed).unwrap();
+                    writer.write_all(&compressed)?;
 
                     self.features_written += 1;
                     self.bytes_written += 4 + compressed.len();
                 }
-
                 log::info!(
                     "Wrote {} features ({} bytes)",
                     self.features_written,
                     self.bytes_written
                 );
+                Ok(())
             },
         );
+        match ra {
+            Ok(_) | Err(PipelineError::Canceled) => {}
+            Err(error) => feedback.report_fatal_error(error),
+        }
+        match rb {
+            Ok(_) | Err(PipelineError::Canceled) => {}
+            Err(error) => feedback.report_fatal_error(error),
+        }
+        Ok(())
     }
 }

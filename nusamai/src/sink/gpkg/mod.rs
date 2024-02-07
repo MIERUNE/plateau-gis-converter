@@ -9,7 +9,7 @@ use rayon::prelude::*;
 
 use crate::parameters::Parameters;
 use crate::parameters::*;
-use crate::pipeline::{Feedback, Receiver};
+use crate::pipeline::{Feedback, PipelineError, Receiver, Result};
 use crate::sink::{DataSink, DataSinkProvider, SinkInfo};
 use crate::{get_parameter_value, transformer};
 
@@ -80,12 +80,12 @@ impl GpkgSink {
         let producers = {
             let feedback = feedback.clone();
             tokio::task::spawn_blocking(move || {
-                let _ = upstream.into_iter().par_bridge().try_for_each_with(
-                    sender,
-                    |sender, parcel| {
-                        if feedback.is_cancelled() {
-                            return Err(());
-                        }
+                upstream
+                    .into_iter()
+                    .par_bridge()
+                    .try_for_each_with(sender, |sender, parcel| {
+                        feedback.ensure_not_canceled()?;
+
                         let entity = parcel.entity;
                         let geom_store = entity.geometry_store.read().unwrap();
 
@@ -169,8 +169,7 @@ impl GpkgSink {
                         };
 
                         Ok(())
-                    },
-                );
+                    })
             })
         };
 
@@ -183,7 +182,10 @@ impl GpkgSink {
         }
         tx.commit().await.unwrap();
 
-        producers.await.unwrap();
+        match producers.await.unwrap() {
+            Ok(_) | Err(PipelineError::Canceled) => Ok(()),
+            error @ Err(_) => error,
+        }
     }
 }
 

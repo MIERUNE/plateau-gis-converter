@@ -13,8 +13,10 @@ impl Transform for FilterLodTransform {
         let lodmask = find_lods(&entity.root);
         let target_lod = lodmask.highest_lod();
         // Use the highest LOD as the target LOD for now.
-        edit_tree(&mut entity.root, target_lod);
-        out.push(entity);
+        if let Some(target_lod) = target_lod {
+            edit_tree(&mut entity.root, target_lod);
+            out.push(entity);
+        }
     }
 
     fn transform_schema(&self, _schema: &mut Schema) {
@@ -86,12 +88,24 @@ impl LodMask {
         self.0 & (1 << lod_no) != 0
     }
 
-    pub fn highest_lod(&self) -> u8 {
-        7 - self.0.leading_zeros() as u8
+    /// Returns the highest LOD number.
+    ///
+    /// It returns `None` if none of the LODs are set.
+    pub fn highest_lod(&self) -> Option<u8> {
+        match self.0 {
+            0 => None,
+            _ => Some(7 - self.0.leading_zeros() as u8),
+        }
     }
 
-    pub fn lowest_lod(&self) -> u8 {
-        self.0.trailing_zeros() as u8
+    /// Returns the lowest LOD number.
+    ///
+    /// It returns `None` if none of the LODs are set.
+    pub fn lowest_lod(&self) -> Option<u8> {
+        match self.0 {
+            0 => None,
+            _ => Some(self.0.trailing_zeros() as u8),
+        }
     }
 }
 
@@ -107,17 +121,22 @@ mod tests {
     #[test]
     fn test_lod_mask() {
         let mut mask = super::LodMask::default();
+        assert_eq!(mask.lowest_lod(), None);
+        assert_eq!(mask.highest_lod(), None);
+
         mask.add_lod(1);
-        assert_eq!(mask.lowest_lod(), 1);
-        assert_eq!(mask.highest_lod(), 1);
+        assert_eq!(mask.lowest_lod(), Some(1));
+        assert_eq!(mask.highest_lod(), Some(1));
         assert!(!mask.has_lod(0));
+
         mask.add_lod(2);
-        assert_eq!(mask.lowest_lod(), 1);
-        assert_eq!(mask.highest_lod(), 2);
+        assert_eq!(mask.lowest_lod(), Some(1));
+        assert_eq!(mask.highest_lod(), Some(2));
         assert!(!mask.has_lod(3));
+
         mask.add_lod(3);
-        assert_eq!(mask.lowest_lod(), 1);
-        assert_eq!(mask.highest_lod(), 3);
+        assert_eq!(mask.lowest_lod(), Some(1));
+        assert_eq!(mask.highest_lod(), Some(3));
         assert!(mask.has_lod(3));
     }
 }

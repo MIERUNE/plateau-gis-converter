@@ -1,3 +1,5 @@
+use std::sync::Once;
+
 use nusamai::sink;
 use nusamai::sink::DataSinkProvider;
 use nusamai::source::citygml::CityGmlSourceProvider;
@@ -5,8 +7,11 @@ use nusamai::source::DataSourceProvider;
 use nusamai::transformer::{MultiThreadTransformer, NusamaiTransformBuilder, TransformBuilder};
 use nusamai_citygml::CityGmlElement;
 use nusamai_plateau::models::TopLevelCityObject;
+
 use std::path::PathBuf;
 use std::str::FromStr;
+
+static INIT: Once = Once::new();
 
 pub(crate) fn simple_run_sink<S: DataSinkProvider>(sink_provider: S, output: Option<&str>) {
     let filenames = [
@@ -52,8 +57,8 @@ pub(crate) fn simple_run_sink<S: DataSinkProvider>(sink_provider: S, output: Opt
         nusamai::pipeline::run(source, transformer, sink, schema.into());
     handle.join();
 
-    // should not be cancelled
-    assert!(!canceller.is_cancelled());
+    // should not be canceled
+    assert!(!canceller.is_canceled());
 }
 
 #[test]
@@ -85,7 +90,7 @@ fn run_mvt_sink() {
 fn run_shapefile_sink() {
     simple_run_sink(
         sink::shapefile::ShapefileSinkProvider {},
-        "/dev/null".into(),
+        "/tmp/nusamai/shapefile".into(),
     );
 }
 

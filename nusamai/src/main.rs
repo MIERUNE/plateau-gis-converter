@@ -3,7 +3,6 @@ use std::sync::{Arc, Mutex};
 
 use clap::Parser;
 
-use nusamai::parameters::ParameterType;
 use nusamai::pipeline::Canceller;
 use nusamai::sink::{
     cesiumtiles::CesiumTilesSinkProvider, czml::CzmlSinkProvider, geojson::GeoJsonSinkProvider,
@@ -180,8 +179,8 @@ fn run(
 
     // wait for the pipeline to finish
     handle.join();
-    if canceller.lock().unwrap().is_cancelled() {
-        log::info!("Pipeline cancelled");
+    if canceller.lock().unwrap().is_canceled() {
+        log::info!("Pipeline canceled");
     }
 
     log::info!("Total processing time: {:?}", total_time.elapsed());

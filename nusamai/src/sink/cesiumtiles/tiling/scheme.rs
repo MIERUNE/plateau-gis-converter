@@ -26,14 +26,6 @@ fn get_size_for_z(z: u8) -> (u32, u32) {
     }
 }
 
-pub fn is_valid_zxy(z: u8, x: u32, y: u32) -> bool {
-    match z {
-        0 => x == 0 && y == 0,
-        1 => (0..2).contains(&x) && (0..2).contains(&y),
-        _ => x < 1 << z && y < 1 << (z - 1) && x % x_step(z, y) == 0,
-    }
-}
-
 pub fn calc_parent_zxy(z: u8, x: u32, y: u32) -> (u8, u32, u32) {
     match z {
         0 => panic!("z=0 has no parent"),
@@ -97,6 +89,14 @@ pub fn geometric_error(z: u8, y: u32) -> f64 {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    fn is_valid_zxy(z: u8, x: u32, y: u32) -> bool {
+        match z {
+            0 => x == 0 && y == 0,
+            1 => (0..2).contains(&x) && (0..2).contains(&y),
+            _ => x < 1 << z && y < 1 << (z - 1) && x % x_step(z, y) == 0,
+        }
+    }
 
     #[test]
     fn test_msb() {
