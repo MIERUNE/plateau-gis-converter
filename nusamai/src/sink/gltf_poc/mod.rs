@@ -492,7 +492,7 @@ fn write_gltf<W: Write>(
 
     schemas.iter().for_each(|(_, gltf_property_types)| {
         for gltf_property_type in gltf_property_types.iter() {
-            // Schema.classesを作成
+            // Create Schema.classes
             class_properties.insert(
                 gltf_property_type.property_name.clone(),
                 extensions::gltf::ext_structural_metadata::ClassProperty {
@@ -504,15 +504,19 @@ fn write_gltf<W: Write>(
             );
         }
 
-        // Schema.property_tablesを作成
-        // typeごとに作成される
+        // Create Schema.property_tables
         let mut property_table: extensions::gltf::ext_structural_metadata::PropertyTable =
             extensions::gltf::ext_structural_metadata::PropertyTable {
                 properties: HashMap::new(),
                 count: vertices_count,
                 ..Default::default()
             };
-        for (index, gltf_property_type) in gltf_property_types.iter().enumerate() {
+        for gltf_property_type in gltf_property_types.iter() {
+            let index = class_properties
+                .keys()
+                .position(|key| key == &gltf_property_type.property_name)
+                .unwrap();
+
             property_table.properties.insert(
                 gltf_property_type.property_name.clone(),
                 extensions::gltf::ext_structural_metadata::PropertyTableProperty {
