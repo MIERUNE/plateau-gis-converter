@@ -350,6 +350,7 @@ impl DataSink for GltfPocSink {
                     .copied()
                     .collect();
 
+                // todo: 複数の地物型が存在している時の対応を考える
                 // Get schema from attribute names
                 let mut schemas = IndexMap::new();
                 for typename in type_names {
@@ -357,7 +358,9 @@ impl DataSink for GltfPocSink {
                     let gltf_schemas = type_def_to_gltf_schema(schema);
                     schemas.insert(typename.as_ref().to_string(), gltf_schemas);
                 }
-                // todo: 複数の地物型が存在している時の対応を考える
+
+                // todo: attributesをbufferに変換
+                // todo: 取り扱えてない属性が多いので、うまくフィルタリングする必要がある
 
                 let mut file = File::create(&self.output_path).unwrap();
                 let writer = BufWriter::with_capacity(1024 * 1024, &mut file);
@@ -382,8 +385,6 @@ impl DataSink for GltfPocSink {
                 ];
 
                 write_3dtiles(region, &self.output_path);
-
-                // todo: 属性部分をbufferにするコードを書く
             },
         );
         Ok(())
