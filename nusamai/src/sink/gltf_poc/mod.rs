@@ -8,12 +8,13 @@ use ahash::RandomState;
 use byteorder::{ByteOrder, LittleEndian};
 use earcut_rs::utils_3d::project3d_to_2d;
 use earcut_rs::Earcut;
+use hashbrown::HashSet;
 use indexmap::IndexSet;
 use nusamai_gltf_json::extensions::mesh::ext_mesh_features::FeatureId;
 use nusamai_projection::cartesian::geographic_to_geocentric;
 use rayon::prelude::*;
 
-use nusamai_citygml::object::ObjectStereotype;
+use nusamai_citygml::object::{Object, ObjectStereotype};
 use nusamai_citygml::schema::Schema;
 use nusamai_citygml::{GeometryType, Value};
 use nusamai_gltf_json::*;
@@ -107,6 +108,7 @@ impl DataSink for GltfPocSink {
                             return Err(PipelineError::Canceled);
                         }
 
+                        // This is the code to verify the operation with Cesium
                         let mut bounding_volume = BoundingVolume {
                             min_lng: f64::MAX,
                             max_lng: f64::MIN,
@@ -115,9 +117,6 @@ impl DataSink for GltfPocSink {
                             min_height: f64::MAX,
                             max_height: f64::MIN,
                         };
-
-                        // todo: transformerからschemaを受け取る必要がある
-                        // println!("{:?}", schema);
 
                         let entity = parcel.entity;
                         let geom_store = entity.geometry_store.read().unwrap();
@@ -129,6 +128,8 @@ impl DataSink for GltfPocSink {
                         else {
                             unimplemented!()
                         };
+
+                        let typename = obj.typename.clone();
 
                         // Divide polygons into triangles
                         let mut earcutter = Earcut::new();
@@ -210,7 +211,7 @@ impl DataSink for GltfPocSink {
 
                         // send triangles and attributes to sender
                         if sender
-                            .send((triangles, attributes, bounding_volume))
+                            .send((triangles, attributes, bounding_volume, typename))
                             .is_err()
                         {
                             return Err(PipelineError::Canceled);
@@ -238,9 +239,14 @@ impl DataSink for GltfPocSink {
                     max_height: f64::MIN,
                 };
 
-                for (feature_id, (triangles, _attributes, _bounding_volume)) in
+                // Holds all attribute names of the target
+                let mut type_names = HashSet::new();
+
+                for (feature_id, (triangles, _attributes, _bounding_volume, typename)) in
                     receiver.into_iter().enumerate()
                 {
+                    type_names.insert(typename);
+
                     let mut pos_max = [f64::MIN; 3];
                     let mut pos_min = [f64::MAX; 3];
 
@@ -332,6 +338,13 @@ impl DataSink for GltfPocSink {
                     .flatten()
                     .copied()
                     .collect();
+
+                // Get schema from attribute names
+                let mut schemas = Vec::new();
+                for typename in type_names {
+                    let schema = schema.types.get(typename.as_ref()).unwrap();
+                    schemas.push(schema);
+                }
 
                 let mut file = File::create(&self.output_path).unwrap();
                 let writer = BufWriter::with_capacity(1024 * 1024, &mut file);
@@ -485,16 +498,16 @@ fn write_gltf<W: Write>(
             byte_length: bin_content.len() as u32,
             ..Default::default()
         }],
-        extensions: Some(extensions::gltf::Gltf {
-            ext_structural_metadata: Some(
-                extensions::gltf::ext_structural_metadata::ExtStructuralMetadata {
-                    // todo: transformerで成形されるスキーマ情報を利用し、schema.classesを定義する必要がある
-                    // todo: 定義したschema.classesを利用して、property_tablesを作成する必要がある
-                    ..Default::default()
-                },
-            ),
-            ..Default::default()
-        }),
+        // extensions: Some(extensions::gltf::Gltf {
+        //     ext_structural_metadata: Some(
+        //         extensions::gltf::ext_structural_metadata::ExtStructuralMetadata {
+        //             // todo: transformerで成形されるスキーマ情報を利用し、schema.classesを定義する必要がある
+        //             // todo: 定義したschema.classesを利用して、property_tablesを作成する必要がある
+        //             ..Default::default()
+        //         },
+        //     ),
+        //     ..Default::default()
+        // }),
         ..Default::default()
     };
 
@@ -529,7 +542,7 @@ fn write_gltf<W: Write>(
     }
 }
 
-// FIXME: This is the code to verify the operation with Cesium
+// This is the code to verify the operation with Cesium
 fn write_3dtiles(bounding_volume: [f64; 6], output_path: &PathBuf) {
     // write 3DTiles
     let tileset_path = output_path.with_file_name("tileset.json");
