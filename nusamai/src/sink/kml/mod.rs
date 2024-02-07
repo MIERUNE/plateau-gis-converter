@@ -11,7 +11,7 @@ use crate::{get_parameter_value, transformer};
 use nusamai_citygml::object::{Entity, ObjectStereotype, Value};
 use nusamai_citygml::schema::Schema;
 use nusamai_citygml::GeometryType;
-use nusamai_kml::conversion::indexed_polygon_to_kml;
+use nusamai_kml::conversion::indexed_multipolygon_to_kml;
 use rayon::prelude::*;
 
 use kml::{
@@ -153,10 +153,7 @@ pub fn entity_to_kml_mutilgeom(entity: &Entity) -> MultiGeometry {
         return MultiGeometry::default();
     };
 
-    let mut multi_geom_polygon = MultiGeometry::new(Vec::new());
-    let mut multi_geom_point = MultiGeometry::new(Vec::new());
-
-    let mut multi_geom = MultiGeometry::new(Vec::new());
+    let mut mpoly = nusamai_geometry::MultiPolygon::<1, u32>::new();
 
     geometries.iter().for_each(|entry| match entry.ty {
         GeometryType::Solid | GeometryType::Surface | GeometryType::Triangle => {
@@ -164,25 +161,13 @@ pub fn entity_to_kml_mutilgeom(entity: &Entity) -> MultiGeometry {
                 .multipolygon
                 .iter_range(entry.pos as usize..(entry.pos + entry.len) as usize)
             {
-                multi_geom_polygon = indexed_polygon_to_kml(&geom_store.vertices, &idx_poly);
+                mpoly.push(idx_poly);
             }
         }
-        GeometryType::Curve => unimplemented!(),
 
+        GeometryType::Curve => unimplemented!(),
         GeometryType::Point => unimplemented!(),
     });
 
-    if !multi_geom_polygon.geometries.is_empty() {
-        multi_geom
-            .geometries
-            .push(Geometry::MultiGeometry(multi_geom_polygon));
-    }
-
-    if !multi_geom_point.geometries.is_empty() {
-        multi_geom
-            .geometries
-            .push(Geometry::MultiGeometry(multi_geom_point));
-    }
-
-    multi_geom
+    indexed_multipolygon_to_kml(&geom_store.vertices, &mpoly)
 }

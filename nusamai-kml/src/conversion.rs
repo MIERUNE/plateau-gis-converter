@@ -1,8 +1,33 @@
 use kml::types::{
     AltitudeMode, Coord, Geometry, LinearRing, MultiGeometry, Point, Polygon as KmlPolygon,
 };
-use nusamai_geometry::{CoordNum, MultiPoint, Polygon};
+use nusamai_geometry::{CoordNum, MultiPoint, MultiPolygon, Polygon};
 use std::{collections::HashMap, vec};
+
+pub fn multipolygon_to_kml(mpoly: &MultiPolygon<3>) -> MultiGeometry {
+    multipolygon_to_kml_with_mapping(mpoly, |c| c)
+}
+
+pub fn indexed_multipolygon_to_kml(
+    vertices: &[[f64; 3]],
+    mpoly_idx: &MultiPolygon<1, u32>,
+) -> MultiGeometry {
+    multipolygon_to_kml_with_mapping(mpoly_idx, |idx| vertices[idx[0] as usize])
+}
+
+fn multipolygon_to_kml_with_mapping<const D: usize, T: CoordNum>(
+    mpoly: &MultiPolygon<D, T>,
+    mapping: impl Fn([T; D]) -> [f64; 3],
+) -> MultiGeometry {
+    let polygons = mpoly
+        .iter()
+        .map(|poly| polygon_to_kml_with_mapping(poly.clone(), &mapping))
+        .collect::<Vec<_>>();
+    MultiGeometry {
+        geometries: polygons.into_iter().map(Geometry::MultiGeometry).collect(),
+        attrs: HashMap::new(),
+    }
+}
 
 fn polygon_to_kml_outer_boundary_with_mapping<const D: usize, T: CoordNum>(
     poly: Polygon<D, T>,
