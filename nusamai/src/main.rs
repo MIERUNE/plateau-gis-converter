@@ -3,14 +3,13 @@ use std::sync::{Arc, Mutex};
 
 use clap::Parser;
 
-use nusamai::parameters::ParameterType;
 use nusamai::pipeline::Canceller;
 use nusamai::sink::{
     cesiumtiles::CesiumTilesSinkProvider, czml::CzmlSinkProvider, geojson::GeoJsonSinkProvider,
-    geojson_transform_exp::GeoJsonTransformExpSinkProvider, gpkg::GpkgSinkProvider,
-    mvt::MVTSinkProvider, noop::NoopSinkProvider, ply::StanfordPlySinkProvider,
-    serde::SerdeSinkProvider, shapefile::ShapefileSinkProvider,kml::KmlSinkProvider
-};
+    geojson_transform_exp::GeoJsonTransformExpSinkProvider, gltf_poc::GltfPocSinkProvider,
+    gpkg::GpkgSinkProvider, mvt::MVTSinkProvider, noop::NoopSinkProvider,
+    ply::StanfordPlySinkProvider, serde::SerdeSinkProvider, shapefile::ShapefileSinkProvider,
+    kml::KmlSinkProvider};
 use nusamai::sink::{DataSink, DataSinkProvider};
 use nusamai::source::citygml::CityGmlSourceProvider;
 use nusamai::source::{DataSource, DataSourceProvider};
@@ -62,7 +61,8 @@ enum SinkChoice {
     Shapefile,
     Czml,
     Ply,
-    KML
+    KML,
+    GltfPoc,
 }
 
 impl SinkChoice {
@@ -79,6 +79,7 @@ impl SinkChoice {
             SinkChoice::Czml => Box::new(CzmlSinkProvider {}),
             SinkChoice::Ply => Box::new(StanfordPlySinkProvider {}),
             SinkChoice::KML => Box::new(KmlSinkProvider {}),
+            SinkChoice::GltfPoc => Box::new(GltfPocSinkProvider {}),
         }
     }
 }
@@ -182,8 +183,8 @@ fn run(
 
     // wait for the pipeline to finish
     handle.join();
-    if canceller.lock().unwrap().is_cancelled() {
-        log::info!("Pipeline cancelled");
+    if canceller.lock().unwrap().is_canceled() {
+        log::info!("Pipeline canceled");
     }
 
     log::info!("Total processing time: {:?}", total_time.elapsed());

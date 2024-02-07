@@ -10,7 +10,7 @@ pub fn write_gltf_glb<W: Write>(
     translation: [f64; 3],
     vertices: impl IntoIterator<Item = [u32; 3]>,
     indices: impl IntoIterator<Item = u32>,
-) {
+) -> std::io::Result<()> {
     use nusamai_gltf_json::*;
 
     let mut bin_content: Vec<u8> = Vec::new();
@@ -20,7 +20,7 @@ pub fn write_gltf_glb<W: Write>(
     let mut vertices_count = 0;
     for v in vertices {
         LittleEndian::write_u32_into(&v, &mut buf);
-        bin_content.write_all(&buf).unwrap();
+        bin_content.write_all(&buf)?;
         vertices_count += 1;
     }
     let vertices_len = bin_content.len() - vertices_offset;
@@ -28,7 +28,7 @@ pub fn write_gltf_glb<W: Write>(
     let indices_offset = bin_content.len();
     let mut indices_count = 0;
     for idx in indices {
-        bin_content.write_all(&idx.to_le_bytes()).unwrap();
+        bin_content.write_all(&idx.to_le_bytes())?;
         indices_count += 1;
     }
     let indices_len = bin_content.len() - indices_offset;
@@ -102,7 +102,7 @@ pub fn write_gltf_glb<W: Write>(
     };
 
     {
-        let mut json_content = serde_json::to_vec(&gltf).unwrap();
+        let mut json_content = serde_json::to_vec(&gltf)?;
 
         // append padding
         json_content.extend(vec![0x20; (4 - (json_content.len() % 4)) % 4].iter());
@@ -110,24 +110,20 @@ pub fn write_gltf_glb<W: Write>(
 
         let total_size = 12 + 8 + json_content.len() + 8 + bin_content.len();
 
-        writer.write_all(b"glTF").unwrap(); // magic
+        writer.write_all(b"glTF")?; // magic
         writer.write_all(&2u32.to_le_bytes()).unwrap(); // version: 2
-        writer
-            .write_all(&(total_size as u32).to_le_bytes())
-            .unwrap(); // total size
+        writer.write_all(&(total_size as u32).to_le_bytes())?;
 
-        writer
-            .write_all(&(json_content.len() as u32).to_le_bytes())
-            .unwrap(); // json content
-        writer.write_all(b"JSON").unwrap(); // chunk type
-        writer.write_all(&json_content).unwrap(); // json content
+        writer.write_all(&(json_content.len() as u32).to_le_bytes())?;
+        writer.write_all(b"JSON")?; // chunk type
+        writer.write_all(&json_content)?; // json content
 
-        writer
-            .write_all(&(bin_content.len() as u32).to_le_bytes())
-            .unwrap(); // json content
-        writer.write_all(b"BIN\0").unwrap(); // chunk type
-        writer.write_all(&bin_content).unwrap(); // bin content
+        writer.write_all(&(bin_content.len() as u32).to_le_bytes())?; // json content
+        writer.write_all(b"BIN\0")?; // chunk type
+        writer.write_all(&bin_content)?; // bin content
 
-        writer.flush().unwrap();
+        writer.flush()?;
     }
+
+    Ok(())
 }

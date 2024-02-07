@@ -26,7 +26,7 @@ use nusamai_geometry::MultiPolygon;
 use nusamai_mvt::tileid::TileIdMethod;
 
 use crate::parameters::*;
-use crate::pipeline::{Feedback, Receiver};
+use crate::pipeline::{Feedback, PipelineError, Receiver, Result};
 use crate::sink::cesiumtiles::gltf::write_gltf_glb;
 use crate::sink::{DataSink, DataSinkProvider, SinkInfo};
 use crate::{get_parameter_value, transformer};
@@ -98,7 +98,7 @@ impl DataSink for CesiumTilesSink {
         }
     }
 
-    fn run(&mut self, upstream: Receiver, feedback: &Feedback, _schema: &Schema) {
+    fn run(&mut self, upstream: Receiver, feedback: &Feedback, _schema: &Schema) -> Result<()> {
         let (sender_sliced, receiver_sliced) = mpsc::sync_channel(2000);
         let (sender_sorted, receiver_sorted) = mpsc::sync_channel(2000);
 
@@ -109,9 +109,12 @@ impl DataSink for CesiumTilesSink {
         std::thread::scope(|s| {
             // Slicing geometry along the tile boundaries
             {
-                let feedback = feedback.clone();
                 s.spawn(move || {
-                    geometry_slicing_stage(feedback, upstream, tile_id_conv, sender_sliced);
+                    if let Err(error) =
+                        geometry_slicing_stage(feedback, upstream, tile_id_conv, sender_sliced)
+                    {
+                        feedback.report_fatal_error(error);
+                    }
                 });
             }
 
@@ -124,7 +127,6 @@ impl DataSink for CesiumTilesSink {
 
             // Group sorted features and write them into tiles
             {
-                let feedback = feedback.clone();
                 let output_path = &self.output_path;
                 s.spawn(move || {
                     // Run in a separate thread pool to avoid deadlocks
@@ -133,25 +135,29 @@ impl DataSink for CesiumTilesSink {
                         .build()
                         .unwrap();
                     pool.install(|| {
-                        tile_writing_stage(output_path, feedback, receiver_sorted, tile_id_conv);
+                        if let Err(error) =
+                            tile_writing_stage(output_path, feedback, receiver_sorted, tile_id_conv)
+                        {
+                            feedback.report_fatal_error(error);
+                        }
                     })
                 });
             }
         });
+
+        Ok(())
     }
 }
 
 fn geometry_slicing_stage(
-    feedback: Feedback,
+    feedback: &Feedback,
     upstream: mpsc::Receiver<crate::pipeline::Parcel>,
     tile_id_conv: TileIdMethod,
     sender_sliced: mpsc::SyncSender<SerializedSlicedFeature>,
-) {
+) -> Result<()> {
     // Convert CityObjects to sliced features
-    let _ = upstream.into_iter().par_bridge().try_for_each(|parcel| {
-        if feedback.is_cancelled() {
-            return Err(());
-        }
+    upstream.into_iter().par_bridge().try_for_each(|parcel| {
+        feedback.ensure_not_canceled()?;
 
         slice_cityobj_geoms(&parcel.entity, 7, 17, |(z, x, y), mpoly| {
             let feature = SlicedFeature {
@@ -165,12 +171,13 @@ fn geometry_slicing_stage(
             };
 
             if sender_sliced.send(sfeat).is_err() {
-                log::info!("sink cancelled");
-                return Err(());
+                return Err(PipelineError::Canceled);
             };
             Ok(())
         })
-    });
+    })?;
+
+    Ok(())
 }
 
 fn feature_sorting_stage(
@@ -196,12 +203,11 @@ fn feature_sorting_stage(
         .unwrap();
 
     for (tile_id, ser_feats) in &sorted
-        .map(Result::unwrap)
+        .map(std::result::Result::unwrap)
         .group_by(|ser_feat| ser_feat.tile_id)
     {
         let ser_feats: Vec<_> = ser_feats.collect();
         if sender_sorted.send((tile_id, ser_feats)).is_err() {
-            log::info!("sink cancelled?");
             return;
         };
     }
@@ -209,20 +215,18 @@ fn feature_sorting_stage(
 
 fn tile_writing_stage(
     output_path: &Path,
-    feedback: Feedback,
+    feedback: &Feedback,
     receiver_sorted: mpsc::Receiver<(u64, Vec<SerializedSlicedFeature>)>,
     tile_id_conv: TileIdMethod,
-) {
+) -> Result<()> {
     let ellipsoid = nusamai_projection::ellipsoid::wgs84();
     let tiles: Arc<Mutex<Vec<TileSpec>>> = Default::default();
 
-    let _ = receiver_sorted
+    receiver_sorted
         .into_iter()
         .par_bridge()
         .try_for_each(|(tile_id, sfeats)| {
-            if feedback.is_cancelled() {
-                return Err(());
-            }
+            feedback.ensure_not_canceled()?;
 
             let mut tilespec = TileSpec {
                 zxy: (0, 0, 0),
@@ -362,10 +366,10 @@ fn tile_writing_stage(
                 translation,
                 vertices,
                 indices,
-            );
+            )?;
 
-            Ok(())
-        });
+            Ok::<(), PipelineError>(())
+        })?;
 
     let mut tree = TileTree::default();
     for tilespec in tiles.lock().unwrap().drain(..) {
@@ -386,6 +390,7 @@ fn tile_writing_stage(
     fs::write(
         root_tileset_path,
         serde_json::to_string_pretty(&tileset).unwrap(),
-    )
-    .unwrap()
+    )?;
+
+    Ok(())
 }

@@ -1,3 +1,4 @@
+use indexmap::IndexMap;
 use sqlx::{sqlite::*, ConnectOptions};
 use sqlx::{Acquire, Row};
 use sqlx::{Pool, Sqlite};
@@ -46,12 +47,20 @@ impl GpkgHandler {
         Ok(Self { pool })
     }
 
-    ///// Connect to an existing GeoPackage database
-    //pub async fn connect(path: &str) -> Result<Self, GpkgError> {
-    //    let db_url = format!("sqlite://{}", path);
-    //    let pool = SqlitePool::connect(&db_url).await?;
-    //    Ok(Self { pool })
-    //}
+    /// Add columns to a table
+    pub async fn add_columns(
+        &self,
+        attribute_columns: IndexMap<String, String>,
+    ) -> Result<(), GpkgError> {
+        for (column_name, column_type) in attribute_columns {
+            let add_columns_query = format!(
+                "ALTER TABLE mpoly3d ADD COLUMN {} {};",
+                column_name, column_type
+            );
+            sqlx::query(&add_columns_query).execute(&self.pool).await?;
+        }
+        Ok(())
+    }
 
     pub async fn application_id(&self) -> u32 {
         let result = sqlx::query("PRAGMA application_id;")
@@ -91,6 +100,28 @@ impl GpkgHandler {
         table_names
     }
 
+    /// Get the table's column information (name, type, notnull)
+    pub async fn table_info(
+        &self,
+        table_name: String,
+    ) -> Result<Vec<(String, String, i8)>, GpkgError> {
+        let result = sqlx::query(&format!("PRAGMA table_info({});", table_name))
+            .fetch_all(&self.pool)
+            .await?;
+
+        let columns = result
+            .iter()
+            .map(|row| {
+                (
+                    row.get::<String, &str>("name"),
+                    row.get::<String, &str>("type"),
+                    row.get::<i8, &str>("notnull"),
+                )
+            })
+            .collect();
+        Ok(columns)
+    }
+
     pub async fn begin(&mut self) -> Result<GpkgTransaction, GpkgError> {
         Ok(GpkgTransaction::new(self.pool.begin().await?))
     }
@@ -110,19 +141,38 @@ impl<'c> GpkgTransaction<'c> {
     }
 
     /// Add a MultiPolygonZ feature to the GeoPackage database
-    ///
-    /// Note: とりあえず地物を挿入してみるための実装です。参考にしないでください。
-    pub async fn insert_feature(&mut self, bytes: &[u8]) {
+    // TODO: generalize method
+    // TODO: handle MultiLineString, MultiPoint
+    pub async fn insert_feature(
+        &mut self,
+        bytes: &[u8],
+        attributes: &IndexMap<String, String>,
+    ) -> Result<(), GpkgError> {
         let executor = self.tx.acquire().await.unwrap();
 
-        sqlx::query("INSERT INTO mpoly3d (geometry) VALUES (?)")
-            .bind(bytes)
-            .execute(&mut *executor)
-            .await
-            .unwrap();
+        if attributes.is_empty() {
+            sqlx::query("INSERT INTO mpoly3d (geometry) VALUES (?)")
+                .bind(bytes)
+                .execute(&mut *executor)
+                .await?;
+            return Ok(());
+        }
 
-        // TODO: MultiLineString
-        // TODO: MultiPoint
+        let query_string = format!(
+            "INSERT INTO mpoly3d (geometry, {}) VALUES (?, {})",
+            attributes
+                .keys()
+                .map(|key| key.to_string())
+                .collect::<Vec<_>>()
+                .join(", "),
+            vec!["?"; attributes.len()].join(", ")
+        );
+        let mut query = sqlx::query(&query_string).bind(bytes);
+        for value in attributes.values() {
+            query = query.bind(value);
+        }
+        query.execute(&mut *executor).await?;
+        Ok(())
     }
 }
 
@@ -149,6 +199,33 @@ mod tests {
                 "gpkg_geometry_columns",
                 "gpkg_spatial_ref_sys",
                 "mpoly3d"
+            ]
+        );
+    }
+
+    #[tokio::test]
+    async fn test_add_columns() {
+        let handler = GpkgHandler::from_url(&Url::parse("sqlite::memory:").unwrap())
+            .await
+            .unwrap();
+
+        let mut attribute_columns = IndexMap::new();
+        attribute_columns.insert("attr1".into(), "TEXT".into());
+        attribute_columns.insert("attr2".into(), "INTEGER".into());
+        attribute_columns.insert("attr3".into(), "REAL".into());
+        attribute_columns.insert("attr4".into(), "BOOLEAN".into());
+        handler.add_columns(attribute_columns).await.unwrap();
+
+        let columns = handler.table_info("mpoly3d".into()).await.unwrap();
+        assert_eq!(
+            columns,
+            vec![
+                ("id".into(), "INTEGER".into(), 1),
+                ("geometry".into(), "BLOB".into(), 1),
+                ("attr1".into(), "TEXT".into(), 0),
+                ("attr2".into(), "INTEGER".into(), 0),
+                ("attr3".into(), "REAL".into(), 0),
+                ("attr4".into(), "BOOLEAN".into(), 0)
             ]
         );
     }
