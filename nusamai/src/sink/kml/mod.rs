@@ -15,7 +15,7 @@ use nusamai_kml::conversion::indexed_multipolygon_to_kml;
 use rayon::prelude::*;
 
 use kml::{
-    types::{Geometry, Kml, MultiGeometry, Placemark},
+    types::{Kml, MultiGeometry, Placemark},
     KmlWriter,
 };
 
@@ -99,8 +99,6 @@ impl DataSink for KmlSink {
                 let mut placemarks: Vec<Kml> = Vec::new();
 
                 for geom in receiver.into_iter() {
-                    println!("{:?}", geom);
-
                     let placemark = Placemark {
                         geometry: Some(geom),
                         ..Default::default()

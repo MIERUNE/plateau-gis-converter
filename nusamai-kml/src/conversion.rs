@@ -4,6 +4,9 @@ use kml::types::{
 use nusamai_geometry::{CoordNum, MultiPoint, MultiPolygon, Polygon};
 use std::{collections::HashMap, vec};
 
+const EXTRUDE: bool = false;
+const ALTITUDEMODE: AltitudeMode = AltitudeMode::RelativeToGround;
+
 pub fn multipolygon_to_kml(mpoly: &MultiPolygon<3>) -> MultiGeometry {
     multipolygon_to_kml_with_mapping(mpoly, |c| c)
 }
@@ -46,9 +49,9 @@ fn polygon_to_kml_outer_boundary_with_mapping<const D: usize, T: CoordNum>(
 
     LinearRing {
         coords: outer_coords,
-        extrude: true,
+        extrude: EXTRUDE,
         tessellate: false,
-        altitude_mode: AltitudeMode::Absolute,
+        altitude_mode: ALTITUDEMODE,
         attrs: HashMap::new(),
     }
 }
@@ -70,9 +73,9 @@ fn polygon_to_kml_inner_boundary_with_mapping<const D: usize, T: CoordNum>(
         })
         .map(|coords| LinearRing {
             coords,
-            extrude: true,
+            extrude: EXTRUDE,
             tessellate: false,
-            altitude_mode: AltitudeMode::Absolute,
+            altitude_mode: ALTITUDEMODE,
             attrs: HashMap::new(),
         })
         .collect()
@@ -88,9 +91,9 @@ fn polygon_to_kml_polygon_with_mapping<const D: usize, T: CoordNum>(
     KmlPolygon {
         outer,
         inner,
-        extrude: true,
+        extrude: EXTRUDE,
         tessellate: false,
-        altitude_mode: AltitudeMode::Absolute,
+        altitude_mode: ALTITUDEMODE,
         attrs: HashMap::new(),
     }
 }
@@ -252,9 +255,9 @@ mod tests {
                             z: Some(0.0)
                         }
                     ],
-                    extrude: true,
+                    extrude: false,
                     tessellate: false,
-                    altitude_mode: AltitudeMode::Absolute,
+                    altitude_mode: AltitudeMode::RelativeToGround,
                     attrs: HashMap::new(),
                 },
                 inner: vec![LinearRing {
@@ -285,14 +288,14 @@ mod tests {
                             z: Some(0.0)
                         }
                     ],
-                    extrude: true,
+                    extrude: false,
                     tessellate: false,
-                    altitude_mode: AltitudeMode::Absolute,
+                    altitude_mode: AltitudeMode::RelativeToGround,
                     attrs: HashMap::new(),
                 }],
-                extrude: true,
+                extrude: false,
                 tessellate: false,
-                altitude_mode: AltitudeMode::Absolute,
+                altitude_mode: AltitudeMode::RelativeToGround,
                 attrs: HashMap::new(),
             })
         );
@@ -358,9 +361,9 @@ mod tests {
                             z: Some(111.0)
                         }
                     ],
-                    extrude: true,
+                    extrude: false,
                     tessellate: false,
-                    altitude_mode: AltitudeMode::Absolute,
+                    altitude_mode: AltitudeMode::RelativeToGround,
                     attrs: HashMap::new(),
                 },
                 inner: vec![
@@ -392,9 +395,9 @@ mod tests {
                                 z: Some(111.0)
                             }
                         ],
-                        extrude: true,
+                        extrude: false,
                         tessellate: false,
-                        altitude_mode: AltitudeMode::Absolute,
+                        altitude_mode: AltitudeMode::RelativeToGround,
                         attrs: HashMap::new(),
                     },
                     LinearRing {
@@ -425,17 +428,19 @@ mod tests {
                                 z: Some(111.0)
                             }
                         ],
-                        extrude: true,
+                        extrude: false,
                         tessellate: false,
-                        altitude_mode: AltitudeMode::Absolute,
+                        altitude_mode: AltitudeMode::RelativeToGround,
                         attrs: HashMap::new(),
                     }
                 ],
-                extrude: true,
+                extrude: false,
                 tessellate: false,
-                altitude_mode: AltitudeMode::Absolute,
+                altitude_mode: AltitudeMode::RelativeToGround,
                 attrs: HashMap::new(),
             })
         );
     }
 }
+
+
