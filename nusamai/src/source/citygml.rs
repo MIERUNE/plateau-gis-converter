@@ -5,7 +5,7 @@ use std::io::BufRead;
 use std::path::{Path, PathBuf};
 use std::sync::RwLock;
 
-use nusamai_plateau::appearance::ResolvableAppearance;
+use super::appearance::AppearanceStore;
 use rayon::prelude::*;
 use url::Url;
 
@@ -75,9 +75,9 @@ fn toplevel_dispatcher<R: BufRead>(
     downstream: &Sender,
     feedback: &Feedback,
 ) -> Result<(), ParseError> {
-    let use_appearances = true;
+    let parse_appearances = true;
     let mut entities = Vec::new();
-    let mut appearance = None;
+    let mut global_appearances: Vec<AppearanceStore> = Vec::new();
 
     st.parse_children(|st| {
         if feedback.is_canceled() {
@@ -100,7 +100,7 @@ fn toplevel_dispatcher<R: BufRead>(
                         geometry_store: RwLock::new(geometry_store).into(),
                     };
 
-                    if use_appearances {
+                    if parse_appearances {
                         // store the entity to bind the appearance later
                         entities.push(entity);
                     } else {
@@ -114,15 +114,14 @@ fn toplevel_dispatcher<R: BufRead>(
                 Ok(())
             }
             b"app:appearanceMember" => {
-                if use_appearances {
+                if parse_appearances {
                     let mut app: models::appearance::AppearanceProperty = Default::default();
                     app.parse(st)?;
                     let models::appearance::AppearanceProperty::Appearance(app) = app else {
                         unreachable!();
                     };
-                    let app: ResolvableAppearance = app.into();
-
-                    appearance = Some(app);
+                    let app: AppearanceStore = app.into();
+                    global_appearances.push(app);
                 } else {
                     st.skip_current_element()?;
                 }
@@ -136,9 +135,9 @@ fn toplevel_dispatcher<R: BufRead>(
     })?;
 
     for entity in entities {
-        if let Some(app) = &appearance {
-            let geom = entity.geometry_store.read().unwrap();
-        }
+        // if let Some(app) = &appearance {
+        //     let geom = entity.geometry_store.read().unwrap();
+        // }
 
         if downstream.send(Parcel { entity }).is_err() {
             feedback.cancel();

@@ -1,5 +1,6 @@
 //! Input data sources (mainly CityGML)
 
+pub mod appearance;
 pub mod citygml;
 
 use crate::parameters::Parameters;

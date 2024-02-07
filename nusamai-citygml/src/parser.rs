@@ -15,7 +15,7 @@ use crate::geometry::{
     GeometryType,
 };
 use crate::namespace::{wellknown_prefix_from_nsres, APP_2_NS, GML31_NS};
-use crate::{CityGmlAttribute, LocalHref, SurfaceSpan};
+use crate::{CityGmlAttribute, LocalId, SurfaceSpan};
 
 #[derive(Error, Debug)]
 pub enum ParseError {
@@ -901,7 +901,7 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
         if let Some(start) = &self.state.current_start {
             for attr in start.attributes().flatten() {
                 if attr.key.as_ref() == b"uri" {
-                    target = Some(LocalHref::parse_attribute_value(
+                    target = Some(LocalId::parse_attribute_value(
                         std::str::from_utf8(attr.value.as_ref()).unwrap(),
                         &mut self.state.context,
                     )?);
@@ -966,7 +966,7 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                             inside_coordinates = true;
                             for attr in start.attributes().flatten() {
                                 if attr.key.as_ref() == b"ring" {
-                                    ring = Some(LocalHref::parse_attribute_value(
+                                    ring = Some(LocalId::parse_attribute_value(
                                         std::str::from_utf8(attr.value.as_ref()).unwrap(),
                                         &mut self.state.context,
                                     )?);

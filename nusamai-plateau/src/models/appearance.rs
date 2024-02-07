@@ -1,6 +1,6 @@
 use nusamai_citygml::appearance::TextureAssociation;
 use nusamai_citygml::{
-    citygml_feature, citygml_property, CityGmlElement, Code, LocalHref, Point, URI,
+    citygml_feature, citygml_property, CityGmlElement, Code, LocalId, Point, URI,
 };
 
 type Double01 = f64; // TODO?
@@ -36,6 +36,7 @@ pub enum SurfaceDataProperty {
 }
 
 #[citygml_feature(name = "app:X3DMaterial", noncityobj)]
+#[derive(Clone)]
 pub struct X3DMaterial {
     #[citygml(path = b"app:isFront")]
     pub is_front: Option<bool>,
@@ -62,11 +63,12 @@ pub struct X3DMaterial {
     pub is_smooth: Option<bool>,
 
     #[citygml(path = b"app:target")]
-    pub target: Vec<LocalHref>,
+    pub target: Vec<LocalId>,
 }
 
 #[citygml_feature(name = "app:ParameterizedTexture", noncityobj)]
 #[citygml(allow_extra)]
+#[derive(Clone)]
 pub struct ParameterizedTexture {
     #[citygml(path = b"app:isFront")]
     pub is_front: Option<bool>,

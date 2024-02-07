@@ -15,6 +15,7 @@ chrono = { version = "0.4.31", features = ["serde"], default-features = false }
 url = "2.5.0"
 stretto = "0.8.2"
 hashbrown = "0.14.3"
+indexmap = "2.2.2"
 
 [dev-dependencies]
 zstd = { version = "0.13.0", features = ["zdict_builder"] }

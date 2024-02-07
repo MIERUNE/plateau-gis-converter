@@ -1,6 +1,6 @@
-use crate::{schema, CityGmlElement, LocalHref, ParseError, SubTreeReader};
+use crate::{schema, CityGmlElement, LocalId, ParseError, SubTreeReader};
 
-#[derive(Debug, Default, serde::Serialize, serde::Deserialize)]
+#[derive(Clone, Debug, Default, serde::Serialize, serde::Deserialize)]
 pub enum TextureAssociation {
     #[default]
     Unknown,
@@ -10,10 +10,10 @@ pub enum TextureAssociation {
     // TexCoordGen(TexCoordGen),
 }
 
-#[derive(Debug, Default, serde::Serialize, serde::Deserialize)]
+#[derive(Clone, Debug, Default, serde::Serialize, serde::Deserialize)]
 pub struct TexCoordList {
-    pub target: LocalHref,
-    pub rings: Vec<LocalHref>,
+    pub target: LocalId,
+    pub rings: Vec<LocalId>,
     pub coords_list: Vec<Vec<f64>>,
 }
 

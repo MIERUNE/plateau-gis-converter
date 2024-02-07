@@ -315,9 +315,9 @@ impl CityGmlElement for Point {
 #[derive(
     Debug, Clone, Copy, serde::Serialize, serde::Deserialize, Default, PartialEq, Eq, Hash,
 )]
-pub struct LocalHref(u32);
+pub struct LocalId(pub u32);
 
-impl LocalHref {
+impl LocalId {
     pub fn new(idx: u32) -> Self {
         Self(idx)
     }
@@ -326,7 +326,7 @@ impl LocalHref {
     }
 }
 
-impl CityGmlElement for LocalHref {
+impl CityGmlElement for LocalId {
     #[inline]
     fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
         let s = st.parse_text()?;
@@ -351,7 +351,7 @@ impl CityGmlElement for LocalHref {
     }
 }
 
-impl CityGmlAttribute for LocalHref {
+impl CityGmlAttribute for LocalId {
     #[inline]
     fn parse_attribute_value(value: &str, st: &mut ParseContext) -> Result<Self, ParseError> {
         let s = value;
