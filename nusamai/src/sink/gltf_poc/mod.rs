@@ -486,10 +486,14 @@ fn write_gltf<W: Write>(
     let feature_ids_len = bin_content.len() - feature_ids_offset;
 
     // todo: 複数の地物型が存在している時の対応を考える
-    let mut properties = HashMap::new();
+    let mut class_properties = HashMap::new();
+    let mut property_tables: Vec<extensions::gltf::ext_structural_metadata::PropertyTable> =
+        Vec::new();
+
     schemas.iter().for_each(|(_, gltf_property_types)| {
-        gltf_property_types.iter().for_each(|gltf_property_type| {
-            properties.insert(
+        for gltf_property_type in gltf_property_types.iter() {
+            // Schema.classesを作成
+            class_properties.insert(
                 gltf_property_type.property_name.clone(),
                 extensions::gltf::ext_structural_metadata::ClassProperty {
                     description: Some(gltf_property_type.property_name.clone()),
@@ -498,7 +502,26 @@ fn write_gltf<W: Write>(
                     ..Default::default()
                 },
             );
-        });
+        }
+
+        // Schema.property_tablesを作成
+        // typeごとに作成される
+        let mut property_table: extensions::gltf::ext_structural_metadata::PropertyTable =
+            extensions::gltf::ext_structural_metadata::PropertyTable {
+                properties: HashMap::new(),
+                count: vertices_count,
+                ..Default::default()
+            };
+        for (index, gltf_property_type) in gltf_property_types.iter().enumerate() {
+            property_table.properties.insert(
+                gltf_property_type.property_name.clone(),
+                extensions::gltf::ext_structural_metadata::PropertyTableProperty {
+                    values: index as u32,
+                    ..Default::default()
+                },
+            );
+        }
+        property_tables.push(property_table);
     });
 
     let typename = schemas.keys().next().unwrap().clone();
@@ -508,7 +531,7 @@ fn write_gltf<W: Write>(
         extensions::gltf::ext_structural_metadata::Class {
             name: Some(typename.clone()),
             description: None,
-            properties,
+            properties: class_properties,
             ..Default::default()
         },
     );
@@ -608,8 +631,7 @@ fn write_gltf<W: Write>(
                         classes,
                         ..Default::default()
                     }),
-                    // todo: transformerで成形されるスキーマ情報を利用し、schema.classesを定義する必要がある
-                    // todo: 定義したschema.classesを利用して、property_tablesを作成する必要がある
+                    property_tables: Some(property_tables),
                     ..Default::default()
                 },
             ),

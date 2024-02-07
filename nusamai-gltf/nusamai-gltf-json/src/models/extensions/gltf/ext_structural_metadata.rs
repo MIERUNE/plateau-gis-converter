@@ -390,7 +390,7 @@ pub struct PropertyAttributeProperty {
 }
 
 /// OffsetType enumeration
-#[derive(Serialize, Deserialize, Debug, Default, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Debug, Default, PartialEq, Eq, Clone)]
 #[serde(rename_all = "UPPERCASE")]
 pub enum OffsetType {
     UInt8,
@@ -401,7 +401,7 @@ pub enum OffsetType {
 }
 
 /// Property Table Property in EXT_structural_metadata
-#[derive(Serialize, Deserialize, Debug, Default, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, Default, PartialEq, Clone)]
 #[serde(rename_all = "camelCase")]
 #[serde(deny_unknown_fields)]
 pub struct PropertyTableProperty {
