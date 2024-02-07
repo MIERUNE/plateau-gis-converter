@@ -30,6 +30,15 @@ pub struct Vertex {
     pub feature_id: u32,
 }
 
+pub struct BoundingVolume {
+    pub min_lng: f64,
+    pub max_lng: f64,
+    pub min_lat: f64,
+    pub max_lat: f64,
+    pub min_height: f64,
+    pub max_height: f64,
+}
+
 pub struct GltfPocSinkProvider {}
 
 impl DataSinkProvider for GltfPocSinkProvider {
@@ -98,6 +107,15 @@ impl DataSink for GltfPocSink {
                             return Err(PipelineError::Canceled);
                         }
 
+                        let mut bounding_volume = BoundingVolume {
+                            min_lng: f64::MAX,
+                            max_lng: f64::MIN,
+                            min_lat: f64::MAX,
+                            max_lat: f64::MIN,
+                            min_height: f64::MAX,
+                            max_height: f64::MIN,
+                        };
+
                         // todo: transformerからschemaを受け取る必要がある
                         // println!("{:?}", schema);
 
@@ -119,6 +137,7 @@ impl DataSink for GltfPocSink {
                         let mut triangles_buf: Vec<u32> = Vec::new();
                         let mut triangles = Vec::new();
 
+                        // extract triangles from entity
                         geometries.iter().for_each(|entry| match entry.ty {
                             GeometryType::Solid
                             | GeometryType::Surface
@@ -126,13 +145,30 @@ impl DataSink for GltfPocSink {
                                 for idx_poly in geom_store.multipolygon.iter_range(
                                     entry.pos as usize..(entry.pos + entry.len) as usize,
                                 ) {
-                                    let poly = idx_poly.transform(|idx| {
+                                    let mut poly = idx_poly.transform(|idx| {
                                         let [lng, lat, height] =
                                             geom_store.vertices[idx[0] as usize];
+                                        [lng, lat, height]
+                                    });
+
+                                    poly.transform_inplace(|[lng, lat, height]| {
+                                        bounding_volume.min_lng = bounding_volume.min_lng.min(*lng);
+                                        bounding_volume.max_lng = bounding_volume.max_lng.max(*lng);
+                                        bounding_volume.min_lat = bounding_volume.min_lat.min(*lat);
+                                        bounding_volume.max_lat = bounding_volume.max_lat.max(*lat);
+                                        bounding_volume.min_height =
+                                            bounding_volume.min_height.min(*height);
+                                        bounding_volume.max_height =
+                                            bounding_volume.max_height.max(*height);
+
                                         // Convert to geocentric (x, y, z) coordinate.
                                         // (Earcut do not work in geographic space)
-                                        let (x, y, z) =
-                                            geographic_to_geocentric(&ellipsoid, lng, lat, height);
+
+                                        // WGS84 to Geocentric
+                                        let (x, y, z) = geographic_to_geocentric(
+                                            &ellipsoid, *lng, *lat, *height,
+                                        );
+                                        // OpenGL is a right-handed y-up
                                         [x, z, -y]
                                     });
 
@@ -173,7 +209,10 @@ impl DataSink for GltfPocSink {
                         let attributes = obj.attributes.clone();
 
                         // send triangles and attributes to sender
-                        if sender.send((triangles, attributes)).is_err() {
+                        if sender
+                            .send((triangles, attributes, bounding_volume))
+                            .is_err()
+                        {
                             return Err(PipelineError::Canceled);
                         }
 
@@ -190,7 +229,18 @@ impl DataSink for GltfPocSink {
                 let mut all_max: [f64; 3] = [f64::MIN; 3];
                 let mut all_min: [f64; 3] = [f64::MAX; 3];
 
-                for (feature_id, (triangles, _attributes)) in receiver.into_iter().enumerate() {
+                let mut bounding_volume = BoundingVolume {
+                    min_lng: f64::MAX,
+                    max_lng: f64::MIN,
+                    min_lat: f64::MAX,
+                    max_lat: f64::MIN,
+                    min_height: f64::MAX,
+                    max_height: f64::MIN,
+                };
+
+                for (feature_id, (triangles, _attributes, _bounding_volume)) in
+                    receiver.into_iter().enumerate()
+                {
                     let mut pos_max = [f64::MIN; 3];
                     let mut pos_min = [f64::MAX; 3];
 
@@ -219,6 +269,19 @@ impl DataSink for GltfPocSink {
                         f64::max(all_max[1], pos_max[1]),
                         f64::max(all_max[2], pos_max[2]),
                     ];
+
+                    bounding_volume.min_lng =
+                        f64::min(bounding_volume.min_lng, _bounding_volume.min_lng);
+                    bounding_volume.max_lng =
+                        f64::max(bounding_volume.max_lng, _bounding_volume.max_lng);
+                    bounding_volume.min_lat =
+                        f64::min(bounding_volume.min_lat, _bounding_volume.min_lat);
+                    bounding_volume.max_lat =
+                        f64::max(bounding_volume.max_lat, _bounding_volume.max_lat);
+                    bounding_volume.min_height =
+                        f64::min(bounding_volume.min_height, _bounding_volume.min_height);
+                    bounding_volume.max_height =
+                        f64::max(bounding_volume.max_height, _bounding_volume.max_height);
                 }
 
                 // calculate the centroid
@@ -273,9 +336,18 @@ impl DataSink for GltfPocSink {
                 let mut file = File::create(&self.output_path).unwrap();
                 let writer = BufWriter::with_capacity(1024 * 1024, &mut file);
 
-                write_gltf(writer, all_min, all_max, vertices, indices);
+                write_gltf(writer, all_min, all_max, all_translation, vertices, indices);
 
-                write_3dtiles(all_max, all_min, &self.output_path);
+                let region: [f64; 6] = [
+                    bounding_volume.min_lng.to_radians(),
+                    bounding_volume.min_lat.to_radians(),
+                    bounding_volume.max_lng.to_radians(),
+                    bounding_volume.max_lat.to_radians(),
+                    bounding_volume.min_height,
+                    bounding_volume.max_height,
+                ];
+
+                write_3dtiles(region, &self.output_path);
 
                 // todo: 属性部分をbufferにするコードを書く
             },
@@ -288,6 +360,7 @@ fn write_gltf<W: Write>(
     mut writer: W,
     min: [f64; 3],
     max: [f64; 3],
+    translation: [f64; 3],
     vertices: IndexSet<Vertex, RandomState>,
     indices: impl IntoIterator<Item = u32>,
 ) {
@@ -335,6 +408,7 @@ fn write_gltf<W: Write>(
         }],
         nodes: vec![Node {
             mesh: Some(0),
+            translation,
             ..Default::default()
         }],
         meshes: vec![Mesh {
@@ -456,33 +530,8 @@ fn write_gltf<W: Write>(
 }
 
 // FIXME: This is the code to verify the operation with Cesium
-fn write_3dtiles(all_max: [f64; 3], all_min: [f64; 3], output_path: &PathBuf) {
+fn write_3dtiles(bounding_volume: [f64; 6], output_path: &PathBuf) {
     // write 3DTiles
-    let centroid = [
-        (all_max[0] + all_min[0]) / 2.,
-        (all_max[1] + all_min[1]) / 2.,
-        (all_max[2] + all_min[2]) / 2.,
-    ];
-    let x_length: [f64; 3] = [(all_max[0] - all_min[0]) / 2., 0., 0.];
-    let y_length: [f64; 3] = [0., (all_max[1] - all_min[1]) / 2., 0.];
-    let z_length: [f64; 3] = [0., 0., (all_max[2] - all_min[2]) / 2.];
-
-    let bounding_volume = [
-        centroid[0],
-        centroid[1],
-        centroid[2],
-        x_length[0],
-        x_length[1],
-        x_length[2],
-        y_length[0],
-        y_length[1],
-        y_length[2],
-        z_length[0],
-        z_length[1],
-        z_length[2],
-    ];
-
-    // tileset.jsonはoutput_pathと同じフォルダで尚且つ、ファイル名は「tileset.json」に変更する
     let tileset_path = output_path.with_file_name("tileset.json");
     let content_uri = output_path
         .file_name()
@@ -491,14 +540,14 @@ fn write_3dtiles(all_max: [f64; 3], all_min: [f64; 3], output_path: &PathBuf) {
         .into_owned();
 
     let tileset = nusamai_3dtiles_json::tileset::Tileset {
-        geometric_error: 100.0,
+        geometric_error: 1e+100,
         asset: nusamai_3dtiles_json::tileset::Asset {
             version: "1.1".to_string(),
             ..Default::default()
         },
         root: nusamai_3dtiles_json::tileset::Tile {
             bounding_volume: nusamai_3dtiles_json::tileset::BoundingVolume {
-                box_: Some(bounding_volume),
+                region: Some(bounding_volume),
                 ..Default::default()
             },
             content: Some(nusamai_3dtiles_json::tileset::Content {
