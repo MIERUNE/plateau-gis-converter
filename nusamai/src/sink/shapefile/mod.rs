@@ -7,7 +7,7 @@ use nusamai_citygml::GeometryType;
 use rayon::prelude::*;
 
 use crate::parameters::*;
-use crate::pipeline::{Feedback, PipelineError, Receiver, Result};
+use crate::pipeline::{Feedback, Receiver};
 use crate::sink::{DataSink, DataSinkProvider, SinkInfo};
 use crate::{get_parameter_value, transformer};
 
@@ -63,28 +63,31 @@ impl DataSink for ShapefileSink {
         }
     }
 
-    fn run(&mut self, upstream: Receiver, feedback: &Feedback, _schema: &Schema) -> Result<()> {
+    fn run(&mut self, upstream: Receiver, feedback: &Feedback, _schema: &Schema) {
         let (sender, receiver) = std::sync::mpsc::sync_channel(1000);
 
-        let (ra, rb) = rayon::join(
+        rayon::join(
             || {
                 // Convert CityObjects to Shapefile objects
 
-                upstream
-                    .into_iter()
-                    .par_bridge()
-                    .try_for_each_with(sender, |sender, parcel| {
-                        feedback.ensure_not_canceled()?;
+                let _ = upstream.into_iter().par_bridge().try_for_each_with(
+                    sender,
+                    |sender, parcel| {
+                        if feedback.is_cancelled() {
+                            return Err(());
+                        }
 
                         let shapes = entity_to_shapes(&parcel.entity);
                         for shape in shapes {
                             if sender.send(shape).is_err() {
-                                return Err(PipelineError::Canceled);
+                                log::info!("sink cancelled");
+                                return Err(());
                             };
                         }
 
                         Ok(())
-                    })
+                    },
+                );
             },
             || {
                 // Write Shapefile to a file
@@ -94,7 +97,8 @@ impl DataSink for ShapefileSink {
                 let table_builder = shapefile::dbase::TableWriterBuilder::new();
 
                 // Create all the files needed for the shapefile to be complete (.shp, .shx, .dbf)
-                let mut writer = shapefile::Writer::from_path(&self.output_path, table_builder)?;
+                let mut writer =
+                    shapefile::Writer::from_path(&self.output_path, table_builder).unwrap();
 
                 // Write each feature
                 receiver.into_iter().for_each(|shape| match shape {
@@ -107,24 +111,8 @@ impl DataSink for ShapefileSink {
                         log::warn!("Unsupported shape type");
                     }
                 });
-
-                Ok::<(), shapefile::Error>(())
             },
         );
-
-        match ra {
-            Ok(_) | Err(PipelineError::Canceled) => {}
-            Err(error) => feedback.report_fatal_error(error),
-        }
-        match rb {
-            Ok(_) => {}
-            Err(shapefile::Error::IoError(error)) => {
-                feedback.report_fatal_error(PipelineError::IoError(error))
-            }
-            Err(error) => feedback.report_fatal_error(PipelineError::Other(error.to_string())),
-        }
-
-        Ok(())
     }
 }
 
