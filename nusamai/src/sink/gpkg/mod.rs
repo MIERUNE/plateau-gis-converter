@@ -324,6 +324,33 @@ fn get_indexed_multipolygon_bbox(vertices: &[[f64; 3]], mpoly: &MultiPolygon<1, 
 
 #[cfg(test)]
 mod tests {
+
+    use super::*;
+    use nusamai_projection::crs::EPSG_JGD2011_GEOGRAPHIC_3D;
+
     #[test]
-    fn test() {}
+    fn test_get_indexed_multipolygon_bbox() {
+        let vertices: Vec<[f64; 3]> = vec![
+            [10., 100., 111.],
+            [10., 200., 111.],
+            [20., 200., 111.],
+            [20., 100., 111.],
+        ];
+        let mut mpoly = MultiPolygon::<1, u32>::new();
+        mpoly.add_exterior([[0], [1], [2], [3], [0]]);
+        let geometries = nusamai_citygml::GeometryStore {
+            epsg: EPSG_JGD2011_GEOGRAPHIC_3D,
+            vertices,
+            multipolygon: mpoly,
+            multilinestring: Default::default(),
+            multipoint: Default::default(),
+        };
+
+        let bbox = get_indexed_multipolygon_bbox(&geometries.vertices, &geometries.multipolygon);
+
+        assert_eq!(bbox.min_x, 10.);
+        assert_eq!(bbox.min_y, 100.);
+        assert_eq!(bbox.max_x, 20.);
+        assert_eq!(bbox.max_y, 200.);
+    }
 }
