@@ -311,7 +311,7 @@ fn get_indexed_multipolygon_bbox(vertices: &[[f64; 3]], mpoly: &MultiPolygon<1, 
     for poly in mpoly {
         for linestring in &poly.exterior() {
             for point_idx in linestring.iter() {
-                let [x, y, z] = vertices[*point_idx as usize];
+                let [x, y, _z] = vertices[*point_idx as usize];
                 bbox.min_x = bbox.min_x.min(x);
                 bbox.min_y = bbox.min_y.min(y);
                 bbox.max_x = bbox.max_x.max(x);
