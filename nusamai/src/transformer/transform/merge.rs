@@ -1,9 +1,10 @@
 use crate::transformer::Transform;
 
 use hashbrown::HashSet;
-use nusamai_citygml::object::{Entity, Map, Object, ObjectStereotype, Value};
+use nusamai_citygml::object::{Map, Object, ObjectStereotype, Value};
 use nusamai_citygml::schema::{Schema, TypeDef};
 use nusamai_citygml::GeometryRefEntry;
+use nusamai_plateau::Entity;
 
 /// Collect all attributes and geometries from the descendants and merge them into the root object.
 #[derive(Default, Clone)]

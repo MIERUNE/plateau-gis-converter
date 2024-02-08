@@ -5,7 +5,6 @@ use std::io::BufRead;
 use std::path::{Path, PathBuf};
 use std::sync::RwLock;
 
-use super::appearance::AppearanceStore;
 use rayon::prelude::*;
 use url::Url;
 
@@ -13,9 +12,10 @@ use crate::parameters::Parameters;
 use crate::pipeline::{self, PipelineError};
 use crate::pipeline::{Feedback, Parcel, Sender};
 use crate::source::{DataSource, DataSourceProvider, SourceInfo};
-use nusamai_citygml::object::Entity;
 use nusamai_citygml::{CityGmlElement, CityGmlReader, ParseError, SubTreeReader};
+use nusamai_plateau::appearance::AppearanceStore;
 use nusamai_plateau::models;
+use nusamai_plateau::Entity;
 
 pub struct CityGmlSourceProvider {
     // FIXME: Use the configuration mechanism
@@ -98,6 +98,7 @@ fn toplevel_dispatcher<R: BufRead>(
                     let entity = Entity {
                         root,
                         geometry_store: RwLock::new(geometry_store).into(),
+                        appearance_store: Default::default(), // TODO: from local appearances
                     };
 
                     if parse_appearances {

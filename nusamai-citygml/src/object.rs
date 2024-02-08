@@ -1,24 +1,14 @@
 //! Object representation of the city objects.
 
 use std::borrow::Cow;
-use std::sync::{Arc, RwLock};
 
-use crate::geometry::{GeometryRef, GeometryStore};
+use crate::geometry::GeometryRef;
 use crate::values::{Code, Date, Point, URI};
 use crate::Measure;
 use serde::{Deserialize, Serialize};
 
 // TODO: Cow<'static, str> insted of String ??
 pub type Map = indexmap::IndexMap<String, Value, ahash::RandomState>;
-
-/// City objects, features, objects or data
-#[derive(Debug, Deserialize, Serialize)]
-pub struct Entity {
-    /// Attribute tree
-    pub root: Value,
-    /// All geometries referenced by the attribute tree
-    pub geometry_store: Arc<RwLock<GeometryStore>>,
-}
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct Object {

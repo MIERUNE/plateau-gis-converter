@@ -2,9 +2,10 @@ use crate::transformer::Transform;
 
 use hashbrown::HashMap;
 use indexmap::map::MutableKeys;
-use nusamai_citygml::object::{Entity, Value};
+use nusamai_citygml::object::Value;
 use nusamai_citygml::schema::Schema;
 use nusamai_citygml::schema::TypeDef;
+use nusamai_plateau::Entity;
 
 /// Transform to edit field names
 ///

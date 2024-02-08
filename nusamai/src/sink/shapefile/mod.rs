@@ -11,7 +11,8 @@ use crate::pipeline::{Feedback, PipelineError, Receiver, Result};
 use crate::sink::{DataSink, DataSinkProvider, SinkInfo};
 use crate::{get_parameter_value, transformer};
 
-use nusamai_citygml::object::{Entity, ObjectStereotype, Value};
+use nusamai_citygml::object::{ObjectStereotype, Value};
+use nusamai_plateau::Entity;
 use nusamai_shapefile::conversion::indexed_multipolygon_to_shape;
 use shapefile;
 
@@ -186,6 +187,7 @@ mod tests {
     use super::*;
     use nusamai_citygml::{object::Object, GeometryRefEntry, Value};
     use nusamai_geometry::MultiPolygon;
+    use nusamai_plateau::Entity;
     use nusamai_projection::crs::EPSG_JGD2011_GEOGRAPHIC_3D;
     use shapefile::NO_DATA;
 
@@ -221,6 +223,7 @@ mod tests {
                 },
             }),
             geometry_store: RwLock::new(geometries).into(),
+            appearance_store: Default::default(),
         };
 
         let shapes = entity_to_shapes(&obj);

@@ -1,11 +1,11 @@
 //! Utilities for resolving appearance data (WIP)
 
+use crate::models::appearance::{
+    self, Appearance, ParameterizedTexture, SurfaceDataProperty, X3DMaterial,
+};
 use hashbrown::HashMap;
 use nusamai_citygml::{appearance::TextureAssociation, LocalId};
 use nusamai_geometry::LineString2;
-use nusamai_plateau::models::appearance::{
-    self, Appearance, ParameterizedTexture, SurfaceDataProperty, X3DMaterial,
-};
 
 #[derive(Debug, Default, serde::Serialize, serde::Deserialize)]
 pub struct AppearanceStore {
@@ -135,7 +135,7 @@ mod tests {
 
     #[test]
     fn merge_appearance() {
-        use nusamai_plateau::models::appearance::{ParameterizedTexture, X3DMaterial};
+        use crate::models::appearance::{ParameterizedTexture, X3DMaterial};
 
         let mut app_local = AppearanceStore::default();
         let mut app_global = AppearanceStore::default();

@@ -6,13 +6,14 @@ use std::path::PathBuf;
 
 use rayon::prelude::*;
 
-use nusamai_citygml::object::{Entity, ObjectStereotype, Value};
+use nusamai_citygml::object::{ObjectStereotype, Value};
 use nusamai_citygml::schema::Schema;
 use nusamai_citygml::GeometryType;
 use nusamai_czml::conversion::indexed_multipolygon_to_czml_polygon;
 use nusamai_czml::{
     indexed_polygon_to_czml_polygon, CzmlBoolean, Packet, StringProperties, StringValueType,
 };
+use nusamai_plateau::Entity;
 
 use crate::parameters::*;
 use crate::pipeline::{Feedback, PipelineError, Receiver, Result};
@@ -316,6 +317,7 @@ mod tests {
                 },
             }),
             geometry_store: RwLock::new(geometries).into(),
+            appearance_store: Default::default(),
         };
 
         let packets = entity_to_packet(&entity, true);

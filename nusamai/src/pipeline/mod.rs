@@ -8,6 +8,8 @@ pub mod runner;
 use std::sync::mpsc;
 use thiserror::Error;
 
+pub use nusamai_plateau::Entity;
+
 pub use feedback::*;
 pub use runner::*;
 
@@ -17,7 +19,7 @@ pub type Receiver = mpsc::Receiver<Parcel>;
 /// Message passing through pipeline stages
 #[derive(Debug)]
 pub struct Parcel {
-    pub entity: nusamai_citygml::object::Entity,
+    pub entity: Entity,
 }
 
 #[derive(Error, Debug)]
