@@ -1,0 +1,373 @@
+{
+	"extensionsUsed": ["EXT_mesh_features", "EXT_structural_metadata"],
+	"accessors": [
+		{
+			"bufferView": 0,
+			"componentType": 5126,
+			"count": 22562,
+			"type": "VEC3",
+			"max": [527.1293573356234, 387.3888158304617, 542.6486890139058],
+			"min": [-527.1293573356234, -387.388815829996, -542.6486890139058]
+		},
+		{
+			"bufferView": 1,
+			"componentType": 5125,
+			"count": 115440,
+			"type": "SCALAR"
+		},
+		{
+			"bufferView": 2,
+			"componentType": 5125,
+			"count": 22562,
+			"type": "SCALAR"
+		}
+	],
+	"asset": {
+		"generator": "nusamai-gltf",
+		"version": "2.0"
+	},
+	"bufferViews": [
+		{
+			"buffer": 0,
+			"byteLength": 270744,
+			"target": 34962
+		},
+		{
+			"buffer": 0,
+			"byteOffset": 270744,
+			"byteLength": 461760,
+			"target": 34963
+		},
+		{
+			"buffer": 0,
+			"byteOffset": 732504,
+			"byteLength": 90248,
+			"target": 34962
+		}
+	],
+	"buffers": [
+		{
+			"byteLength": 822752
+		}
+	],
+	"meshes": [
+		{
+			"primitives": [
+				{
+					"attributes": {
+						"POSITION": 0,
+						"_FEATURE_ID_0": 2
+					},
+					"indices": 1,
+					"extensions": {
+						"EXT_mesh_features": {
+							"featureIds": [
+								{
+									"featureCount": 22562,
+									"attribute": 0
+								}
+							]
+						}
+					}
+				}
+			]
+		}
+	],
+	"nodes": [
+		{
+			"mesh": 0,
+			"translation": [-3929620.269123388, 3649625.761440213, -3439457.322811205]
+		}
+	],
+	"scenes": [
+		{
+			"nodes": [0]
+		}
+	],
+	"extensions": {
+		"EXT_structural_metadata": {
+			"schema": {
+				"id": "",
+				"classes": {
+					"bldg:Building": {
+						"name": "bldg:Building",
+						"properties": {
+							"bldgFacilityTypeAttribute": {
+								"description": "bldgFacilityTypeAttribute",
+								"type": "STRING"
+							},
+							"usage": {
+								"description": "usage",
+								"type": "STRING"
+							},
+							"name": {
+								"description": "name",
+								"type": "STRING"
+							},
+							"storeyHeightsAboveGround": {
+								"description": "storeyHeightsAboveGround",
+								"type": "STRING"
+							},
+							"consistsOfBuildingPart": {
+								"description": "consistsOfBuildingPart",
+								"type": "STRING"
+							},
+							"buildingDetailAttribute": {
+								"description": "buildingDetailAttribute",
+								"type": "STRING"
+							},
+							"ifcBuildingAttribute": {
+								"description": "ifcBuildingAttribute",
+								"type": "STRING"
+							},
+							"genericAttribute": {
+								"description": "genericAttribute",
+								"type": "STRING"
+							},
+							"buildingDataQualityAttribute": {
+								"description": "buildingDataQualityAttribute",
+								"type": "STRING"
+							},
+							"keyValuePairAttribute": {
+								"description": "keyValuePairAttribute",
+								"type": "STRING"
+							},
+							"boundedBy": {
+								"description": "boundedBy",
+								"type": "STRING"
+							},
+							"measuredHeight": {
+								"description": "measuredHeight",
+								"type": "SCALAR",
+								"componentType": "INT32"
+							},
+							"interiorRoom": {
+								"description": "interiorRoom",
+								"type": "STRING"
+							},
+							"buildingDisasterRiskAttribute": {
+								"description": "buildingDisasterRiskAttribute",
+								"type": "STRING"
+							},
+							"yearOfConstruction": {
+								"description": "yearOfConstruction",
+								"type": "SCALAR",
+								"componentType": "INT32"
+							},
+							"outerBuildingInstallation": {
+								"description": "outerBuildingInstallation",
+								"type": "STRING"
+							},
+							"function": {
+								"description": "function",
+								"type": "STRING"
+							},
+							"interiorBuildingInstallation": {
+								"description": "interiorBuildingInstallation",
+								"type": "STRING"
+							},
+							"bldgDmAttribute": {
+								"description": "bldgDmAttribute",
+								"type": "STRING"
+							},
+							"buildingIDAttribute": {
+								"description": "buildingIDAttribute",
+								"type": "STRING"
+							},
+							"largeCustomerFacilityAttribute": {
+								"description": "largeCustomerFacilityAttribute",
+								"type": "STRING"
+							},
+							"class": {
+								"description": "class",
+								"type": "STRING"
+							},
+							"yearOfDemolition": {
+								"description": "yearOfDemolition",
+								"type": "SCALAR",
+								"componentType": "INT32"
+							},
+							"storeysAboveGround": {
+								"description": "storeysAboveGround",
+								"type": "SCALAR",
+								"componentType": "INT32"
+							},
+							"description": {
+								"description": "description",
+								"type": "STRING"
+							},
+							"storeyHeightsBelowGround": {
+								"description": "storeyHeightsBelowGround",
+								"type": "STRING"
+							},
+							"bldgFacilityIdAttribute": {
+								"description": "bldgFacilityIdAttribute",
+								"type": "STRING"
+							},
+							"storeysBelowGround": {
+								"description": "storeysBelowGround",
+								"type": "SCALAR",
+								"componentType": "INT32"
+							},
+							"roofType": {
+								"description": "roofType",
+								"type": "STRING"
+							},
+							"bldgRealEstateIDAttribute": {
+								"description": "bldgRealEstateIDAttribute",
+								"type": "STRING"
+							},
+							"indoorBuildingAttribute": {
+								"description": "indoorBuildingAttribute",
+								"type": "STRING"
+							},
+							"parentId": {
+								"description": "parentId",
+								"type": "STRING"
+							},
+							"parentType": {
+								"description": "parentType",
+								"type": "STRING"
+							},
+							"address": {
+								"description": "address",
+								"type": "STRING"
+							},
+							"creationDate": {
+								"description": "creationDate",
+								"type": "STRING"
+							},
+							"bldgFacilityAttribute": {
+								"description": "bldgFacilityAttribute",
+								"type": "STRING"
+							},
+							"terminationDate": {
+								"description": "terminationDate",
+								"type": "STRING"
+							}
+						}
+					}
+				}
+			},
+			"propertyTables": [
+				{
+					"class": "",
+					"count": 22562,
+					"properties": {
+						"storeyHeightsAboveGround": {
+							"values": 3
+						},
+						"roofType": {
+							"values": 28
+						},
+						"bldgFacilityTypeAttribute": {
+							"values": 0
+						},
+						"storeyHeightsBelowGround": {
+							"values": 25
+						},
+						"creationDate": {
+							"values": 34
+						},
+						"function": {
+							"values": 16
+						},
+						"usage": {
+							"values": 1
+						},
+						"interiorRoom": {
+							"values": 12
+						},
+						"boundedBy": {
+							"values": 10
+						},
+						"bldgFacilityIdAttribute": {
+							"values": 26
+						},
+						"bldgDmAttribute": {
+							"values": 18
+						},
+						"class": {
+							"values": 21
+						},
+						"ifcBuildingAttribute": {
+							"values": 6
+						},
+						"yearOfDemolition": {
+							"values": 22
+						},
+						"consistsOfBuildingPart": {
+							"values": 4
+						},
+						"buildingDetailAttribute": {
+							"values": 5
+						},
+						"terminationDate": {
+							"values": 36
+						},
+						"measuredHeight": {
+							"values": 11
+						},
+						"storeysAboveGround": {
+							"values": 23
+						},
+						"bldgFacilityAttribute": {
+							"values": 35
+						},
+						"keyValuePairAttribute": {
+							"values": 9
+						},
+						"largeCustomerFacilityAttribute": {
+							"values": 20
+						},
+						"parentId": {
+							"values": 31
+						},
+						"description": {
+							"values": 24
+						},
+						"bldgRealEstateIDAttribute": {
+							"values": 29
+						},
+						"buildingDisasterRiskAttribute": {
+							"values": 13
+						},
+						"name": {
+							"values": 2
+						},
+						"genericAttribute": {
+							"values": 7
+						},
+						"outerBuildingInstallation": {
+							"values": 15
+						},
+						"interiorBuildingInstallation": {
+							"values": 17
+						},
+						"buildingIDAttribute": {
+							"values": 19
+						},
+						"indoorBuildingAttribute": {
+							"values": 30
+						},
+						"address": {
+							"values": 33
+						},
+						"yearOfConstruction": {
+							"values": 14
+						},
+						"storeysBelowGround": {
+							"values": 27
+						},
+						"parentType": {
+							"values": 32
+						},
+						"buildingDataQualityAttribute": {
+							"values": 8
+						}
+					}
+				}
+			]
+		}
+	}
+}

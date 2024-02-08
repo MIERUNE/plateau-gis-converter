@@ -63,6 +63,8 @@
 					shadows: true,
 				});
 
+				viewer.extend(Cesium.viewerCesium3DTilesInspectorMixin);
+
 				// Set your 3DTiles
 				// https://github.com/CesiumGS/3d-tiles-samples/blob/main/glTF/glTF-Mesh-Features-Samples-Sandcastle.js
 				const tileset = await Cesium.Cesium3DTileset.fromUrl(

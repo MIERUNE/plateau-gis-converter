@@ -127,7 +127,7 @@ pub enum ClassPropertyComponentType {
 }
 
 /// Class Property in EXT_structural_metadata
-#[derive(Serialize, Deserialize, Debug, Default, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, Default, PartialEq, Clone)]
 #[serde(deny_unknown_fields)]
 #[serde(rename_all = "camelCase")]
 pub struct ClassProperty {
