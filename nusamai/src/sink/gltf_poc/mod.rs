@@ -775,19 +775,19 @@ fn write_gltf<W: Write>(
             byte_length: bin_content.len() as u32,
             ..Default::default()
         }],
-        // extensions: Some(extensions::gltf::Gltf {
-        //     ext_structural_metadata: Some(
-        //         extensions::gltf::ext_structural_metadata::ExtStructuralMetadata {
-        //             schema: Some(extensions::gltf::ext_structural_metadata::Schema {
-        //                 classes,
-        //                 ..Default::default()
-        //             }),
-        //             property_tables: Some(property_tables),
-        //             ..Default::default()
-        //         },
-        //     ),
-        //     ..Default::default()
-        // }),
+        extensions: Some(extensions::gltf::Gltf {
+            ext_structural_metadata: Some(
+                extensions::gltf::ext_structural_metadata::ExtStructuralMetadata {
+                    schema: Some(extensions::gltf::ext_structural_metadata::Schema {
+                        classes,
+                        ..Default::default()
+                    }),
+                    // property_tables: Some(property_tables),
+                    ..Default::default()
+                },
+            ),
+            ..Default::default()
+        }),
         ..Default::default()
     };
 

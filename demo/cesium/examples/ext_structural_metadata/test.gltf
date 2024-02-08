@@ -66,8 +66,8 @@
       "primitives": [
         {
           "attributes": {
-            "POSITION": 0,
-            "_FEATURE_ID_0": 2
+            "_FEATURE_ID_0": 2,
+            "POSITION": 0
           },
           "indices": 1,
           "extensions": {
@@ -100,5 +100,172 @@
         0
       ]
     }
-  ]
+  ],
+  "extensions": {
+    "EXT_structural_metadata": {
+      "schema": {
+        "id": "",
+        "classes": {
+          "bldg:Building": {
+            "name": "bldg:Building",
+            "properties": {
+              "largeCustomerFacilityAttribute": {
+                "description": "largeCustomerFacilityAttribute",
+                "type": "STRING"
+              },
+              "description": {
+                "description": "description",
+                "type": "STRING"
+              },
+              "yearOfConstruction": {
+                "description": "yearOfConstruction",
+                "type": "SCALAR",
+                "componentType": "INT32"
+              },
+              "bldgFacilityTypeAttribute": {
+                "description": "bldgFacilityTypeAttribute",
+                "type": "STRING"
+              },
+              "indoorBuildingAttribute": {
+                "description": "indoorBuildingAttribute",
+                "type": "STRING"
+              },
+              "parentId": {
+                "description": "parentId",
+                "type": "STRING"
+              },
+              "class": {
+                "description": "class",
+                "type": "STRING"
+              },
+              "outerBuildingInstallation": {
+                "description": "outerBuildingInstallation",
+                "type": "STRING"
+              },
+              "interiorRoom": {
+                "description": "interiorRoom",
+                "type": "STRING"
+              },
+              "name": {
+                "description": "name",
+                "type": "STRING"
+              },
+              "storeyHeightsAboveGround": {
+                "description": "storeyHeightsAboveGround",
+                "type": "STRING"
+              },
+              "bldgDmAttribute": {
+                "description": "bldgDmAttribute",
+                "type": "STRING"
+              },
+              "parentType": {
+                "description": "parentType",
+                "type": "STRING"
+              },
+              "boundedBy": {
+                "description": "boundedBy",
+                "type": "STRING"
+              },
+              "measuredHeight": {
+                "description": "measuredHeight",
+                "type": "SCALAR",
+                "componentType": "INT32"
+              },
+              "address": {
+                "description": "address",
+                "type": "STRING"
+              },
+              "terminationDate": {
+                "description": "terminationDate",
+                "type": "STRING"
+              },
+              "roofType": {
+                "description": "roofType",
+                "type": "STRING"
+              },
+              "buildingDataQualityAttribute": {
+                "description": "buildingDataQualityAttribute",
+                "type": "STRING"
+              },
+              "consistsOfBuildingPart": {
+                "description": "consistsOfBuildingPart",
+                "type": "STRING"
+              },
+              "storeyHeightsBelowGround": {
+                "description": "storeyHeightsBelowGround",
+                "type": "STRING"
+              },
+              "bldgFacilityIdAttribute": {
+                "description": "bldgFacilityIdAttribute",
+                "type": "STRING"
+              },
+              "storeysAboveGround": {
+                "description": "storeysAboveGround",
+                "type": "SCALAR",
+                "componentType": "INT32"
+              },
+              "bldgRealEstateIDAttribute": {
+                "description": "bldgRealEstateIDAttribute",
+                "type": "STRING"
+              },
+              "buildingDetailAttribute": {
+                "description": "buildingDetailAttribute",
+                "type": "STRING"
+              },
+              "storeysBelowGround": {
+                "description": "storeysBelowGround",
+                "type": "SCALAR",
+                "componentType": "INT32"
+              },
+              "function": {
+                "description": "function",
+                "type": "STRING"
+              },
+              "ifcBuildingAttribute": {
+                "description": "ifcBuildingAttribute",
+                "type": "STRING"
+              },
+              "genericAttribute": {
+                "description": "genericAttribute",
+                "type": "STRING"
+              },
+              "usage": {
+                "description": "usage",
+                "type": "STRING"
+              },
+              "buildingIDAttribute": {
+                "description": "buildingIDAttribute",
+                "type": "STRING"
+              },
+              "keyValuePairAttribute": {
+                "description": "keyValuePairAttribute",
+                "type": "STRING"
+              },
+              "creationDate": {
+                "description": "creationDate",
+                "type": "STRING"
+              },
+              "yearOfDemolition": {
+                "description": "yearOfDemolition",
+                "type": "SCALAR",
+                "componentType": "INT32"
+              },
+              "buildingDisasterRiskAttribute": {
+                "description": "buildingDisasterRiskAttribute",
+                "type": "STRING"
+              },
+              "interiorBuildingInstallation": {
+                "description": "interiorBuildingInstallation",
+                "type": "STRING"
+              },
+              "bldgFacilityAttribute": {
+                "description": "bldgFacilityAttribute",
+                "type": "STRING"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
 }
