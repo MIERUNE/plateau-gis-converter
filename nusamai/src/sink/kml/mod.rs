@@ -4,7 +4,7 @@ use std::io::{BufWriter, Write};
 use std::path::PathBuf;
 
 use crate::parameters::*;
-use crate::pipeline::{Feedback, Receiver};
+use crate::pipeline::{Feedback, PipelineError, Receiver, Result};
 use crate::sink::{DataSink, DataSinkProvider, SinkInfo};
 use crate::{get_parameter_value, transformer};
 
@@ -67,35 +67,30 @@ impl DataSink for KmlSink {
         }
     }
 
-    fn run(&mut self, upstream: Receiver, feedback: &Feedback, _schema: &Schema) {
+    fn run(&mut self, upstream: Receiver, feedback: &Feedback, _schema: &Schema) -> Result<()> {
         let (sender, receiver) = std::sync::mpsc::sync_channel(1000);
 
-        rayon::join(
+        let (ra, rb) = rayon::join(
             || {
-                // Convert Cityobjects to KML
-
-                let _ = upstream.into_iter().par_bridge().try_for_each_with(
-                    sender,
-                    |sender, parcel| {
-                        if feedback.is_cancelled() {
-                            return Err(());
-                        }
+                // Convert CityObjects to GeoJSON objects
+                upstream
+                    .into_iter()
+                    .par_bridge()
+                    .try_for_each_with(sender, |sender, parcel| {
+                        feedback.ensure_not_canceled()?;
 
                         let multi_geom = entity_to_kml_mutilgeom(&parcel.entity);
 
                         for geom in multi_geom.geometries {
                             if sender.send(geom).is_err() {
-                                log::info!("sink cancelled");
-                                return Err(());
+                                return Err(PipelineError::Canceled);
                             }
                         }
                         Ok(())
-                    },
-                );
+                    })
             },
             || {
-                // Write KML to file
-
+                // Write GeoJSON to a file
                 let mut placemarks: Vec<Kml> = Vec::new();
 
                 for geom in receiver.into_iter() {
@@ -125,8 +120,21 @@ impl DataSink for KmlSink {
                 let mut kml_writer = KmlWriter::from_writer(&mut buf_writer);
                 let _ = kml_writer.write(&folder);
                 writeln!(buf_writer, "</kml>").unwrap();
+
+                Ok(())
             },
         );
+
+        match ra {
+            Ok(_) | Err(PipelineError::Canceled) => {}
+            Err(error) => feedback.report_fatal_error(error),
+        }
+        match rb {
+            Ok(_) | Err(PipelineError::Canceled) => {}
+            Err(error) => feedback.report_fatal_error(error),
+        }
+
+        Ok(())
     }
 }
 
