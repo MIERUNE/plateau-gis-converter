@@ -77,7 +77,7 @@ fn toplevel_dispatcher<R: BufRead>(
 ) -> Result<(), ParseError> {
     let parse_appearances = true;
     let mut entities = Vec::new();
-    let mut global_appearances: Vec<AppearanceStore> = Vec::new();
+    let mut global_appearances = AppearanceStore::default();
 
     st.parse_children(|st| {
         if feedback.is_canceled() {
@@ -121,8 +121,7 @@ fn toplevel_dispatcher<R: BufRead>(
                     let models::appearance::AppearanceProperty::Appearance(app) = app else {
                         unreachable!();
                     };
-                    let app: AppearanceStore = app.into();
-                    global_appearances.push(app);
+                    global_appearances.update(app);
                 } else {
                     st.skip_current_element()?;
                 }
@@ -136,9 +135,17 @@ fn toplevel_dispatcher<R: BufRead>(
     })?;
 
     for entity in entities {
-        // if let Some(app) = &appearance {
-        //     let geom = entity.geometry_store.read().unwrap();
-        // }
+        // merge global appearances into the entity's local appearance store
+        {
+            let geom_store = entity.geometry_store.read().unwrap();
+            entity.appearance_store.write().unwrap().merge_global(
+                &mut global_appearances,
+                &geom_store.ring_ids,
+                &geom_store.surface_spans,
+            );
+        }
+
+        println!("app: {:?}", entity.appearance_store.read().unwrap());
 
         if downstream.send(Parcel { entity }).is_err() {
             feedback.cancel();

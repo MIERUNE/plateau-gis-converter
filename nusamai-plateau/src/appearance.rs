@@ -1,10 +1,8 @@
 //! Utilities for resolving appearance data (WIP)
 
-use crate::models::appearance::{
-    self, Appearance, ParameterizedTexture, SurfaceDataProperty, X3DMaterial,
-};
+use crate::models::appearance::{self, ParameterizedTexture, SurfaceDataProperty, X3DMaterial};
 use hashbrown::HashMap;
-use nusamai_citygml::{appearance::TextureAssociation, LocalId};
+use nusamai_citygml::{appearance::TextureAssociation, LocalId, SurfaceSpan};
 use nusamai_geometry::LineString2;
 
 #[derive(Debug, Default, serde::Serialize, serde::Deserialize)]
@@ -56,8 +54,8 @@ impl AppearanceStore {
     pub fn merge_global(
         &mut self,
         other: &mut Self,
-        ring_ids: &[LocalId],
-        surface_ids: &[LocalId],
+        ring_ids: &[Option<LocalId>],
+        surface_spans: &[SurfaceSpan],
     ) {
         // merge texture
         {
@@ -67,13 +65,14 @@ impl AppearanceStore {
             for (theme_name, theme_src) in other.themes.iter_mut() {
                 let entries: Vec<_> = ring_ids
                     .iter()
+                    .filter_map(|v| *v)
                     .filter_map(|ring_id| {
-                        if let Some((idx, ls)) = theme_src.ring_id_to_texture.remove(ring_id) {
+                        if let Some((idx, ls)) = theme_src.ring_id_to_texture.remove(&ring_id) {
                             let (offset, inserted) = idx_map.insert_full(idx);
                             if inserted {
                                 self.textures.push(other.textures[idx as usize].clone());
                             }
-                            Some((*ring_id, ((base_idx + offset) as u32, ls)))
+                            Some((ring_id, ((base_idx + offset) as u32, ls)))
                         } else {
                             None
                         }
@@ -94,15 +93,16 @@ impl AppearanceStore {
             let base_idx = self.materials.len();
 
             for (theme_name, theme_src) in other.themes.iter_mut() {
-                let entries: Vec<_> = surface_ids
+                let entries: Vec<_> = surface_spans
                     .iter()
+                    .map(|span| span.id)
                     .filter_map(|surface_id| {
-                        if let Some(idx) = theme_src.surface_id_to_material.remove(surface_id) {
+                        if let Some(idx) = theme_src.surface_id_to_material.remove(&surface_id) {
                             let (offset, inserted) = idx_map.insert_full(idx);
                             if inserted {
                                 self.materials.push(other.materials[idx as usize].clone());
                             }
-                            Some((*surface_id, (base_idx + offset) as u32))
+                            Some((surface_id, (base_idx + offset) as u32))
                         } else {
                             None
                         }
@@ -116,16 +116,6 @@ impl AppearanceStore {
                     .extend(entries);
             }
         }
-    }
-}
-
-impl From<Appearance> for AppearanceStore {
-    fn from(app: appearance::Appearance) -> Self {
-        let mut ret = Self {
-            ..Default::default()
-        };
-        ret.update(app);
-        ret
     }
 }
 
@@ -186,8 +176,20 @@ mod tests {
         // merge global to local
         app_local.merge_global(
             &mut app_global,
-            &[LocalId(3), LocalId(4), LocalId(5), LocalId(99)],
-            &[LocalId(3), LocalId(4), LocalId(5), LocalId(99)],
+            [3, 4, 5, 99]
+                .into_iter()
+                .map(|id| Some(LocalId(id)))
+                .collect::<Vec<_>>()
+                .as_slice(),
+            [3, 4, 5, 99]
+                .into_iter()
+                .map(|id| SurfaceSpan {
+                    id: LocalId(id),
+                    start: 0,
+                    end: 0,
+                })
+                .collect::<Vec<_>>()
+                .as_slice(),
         );
 
         // check merge result

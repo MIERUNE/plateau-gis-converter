@@ -332,7 +332,7 @@ impl CityGmlElement for LocalId {
         let s = st.parse_text()?;
         if let Some(id) = s.strip_prefix('#') {
             let s = id.to_string();
-            self.0 = st.context_mut().id_to_integer_id(s);
+            *self = st.context_mut().id_to_integer_id(s);
             Ok(())
         } else {
             Err(ParseError::InvalidValue(format!(
@@ -357,7 +357,7 @@ impl CityGmlAttribute for LocalId {
         let s = value;
         if let Some(id) = s.strip_prefix('#') {
             let s = id.to_string();
-            Ok(Self(st.id_to_integer_id(s)))
+            Ok(st.id_to_integer_id(s))
         } else {
             Err(ParseError::InvalidValue(format!(
                 "Expected a reference starts with '#' but got {}",

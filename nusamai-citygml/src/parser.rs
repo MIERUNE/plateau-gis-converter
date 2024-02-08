@@ -95,9 +95,9 @@ impl<'a> ParseContext<'a> {
         self.code_resolver
     }
 
-    pub fn id_to_integer_id(&mut self, id: String) -> u32 {
+    pub fn id_to_integer_id(&mut self, id: String) -> LocalId {
         let (idx, _) = self.id_map.insert_full(id);
-        idx as u32
+        LocalId(idx as u32)
     }
 }
 
@@ -311,7 +311,7 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
         &mut self.state.context
     }
 
-    pub fn id_to_integer_id(&mut self, id: String) -> u32 {
+    pub fn id_to_integer_id(&mut self, id: String) -> LocalId {
         self.state.context.id_to_integer_id(id)
     }
 

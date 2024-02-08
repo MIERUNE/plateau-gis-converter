@@ -88,7 +88,7 @@ pub fn wellknown_prefix_from_nsres<'a>(ns: &ResolveResult<'a>) -> &'a [u8] {
 }
 
 #[inline]
-pub fn wellknown_prefix_from_nsres2<'a>(name: &'a [u8]) -> &'a [u8] {
+pub fn wellknown_prefix_from_nsres2(name: &[u8]) -> &[u8] {
     const OPENGIS_PREFIX: &[u8] = b"http://www.opengis.net/";
     const IUR_PREFIX: &[u8] = b"https://www.geospatial.jp/iur/";
 

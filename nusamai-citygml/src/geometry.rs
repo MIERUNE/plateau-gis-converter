@@ -1,6 +1,8 @@
 use nusamai_geometry::{MultiLineString, MultiPoint, MultiPolygon};
 use nusamai_projection::crs::*;
 
+use crate::LocalId;
+
 #[derive(Debug, Clone, Copy)]
 pub enum GeometryParseType {
     Geometry,
@@ -46,8 +48,10 @@ pub type GeometryRef = Vec<GeometryRefEntry>;
 pub struct GeometryStore {
     /// EPSG code of the Coordinate Reference System (CRS) for this geometry
     pub epsg: EPSGCode,
+
     /// Shared vertex buffer for all geometries
     pub vertices: Vec<[f64; 3]>,
+
     /// All polygons, referenced by `GeometryRef`
     pub multipolygon: MultiPolygon<'static, 1, u32>,
     /// All line-strings, referenced by `GeometryRef`
@@ -55,15 +59,16 @@ pub struct GeometryStore {
     /// All points, referenced by `GeometryRef`
     pub multipoint: MultiPoint<'static, 1, u32>,
 
-    // TODO
-    pub ring_ids: Vec<Option<u32>>,
+    /// Ring ids of the all polygons
+    pub ring_ids: Vec<Option<LocalId>>,
+    /// List of surface ids and their spans in `multipolygon`
     pub surface_spans: Vec<SurfaceSpan>,
 }
 
 #[derive(Debug)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 pub struct SurfaceSpan {
-    pub id: u32,
+    pub id: LocalId,
     pub start: u32,
     pub end: u32,
 }
@@ -77,7 +82,7 @@ pub(crate) struct GeometryCollector {
     pub multipoint: MultiPoint<'static, 1, u32>,
 
     /// ring ids of the all polygons
-    pub ring_ids: Vec<Option<u32>>,
+    pub ring_ids: Vec<Option<LocalId>>,
 
     /// surface polygon spans in `multipolygon`
     pub surface_spans: Vec<SurfaceSpan>,
@@ -87,7 +92,7 @@ impl GeometryCollector {
     pub fn add_exterior_ring(
         &mut self,
         iter: impl IntoIterator<Item = [f64; 3]>,
-        ring_id: Option<u32>,
+        ring_id: Option<LocalId>,
     ) -> usize {
         self.ring_ids.push(ring_id);
         self.multipolygon.add_exterior(iter.into_iter().map(|v| {
@@ -102,7 +107,7 @@ impl GeometryCollector {
     pub fn add_interior_ring(
         &mut self,
         iter: impl IntoIterator<Item = [f64; 3]>,
-        ring_id: Option<u32>,
+        ring_id: Option<LocalId>,
     ) {
         self.ring_ids.push(ring_id);
         self.multipolygon.add_interior(iter.into_iter().map(|v| {

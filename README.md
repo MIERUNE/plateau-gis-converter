@@ -22,12 +22,15 @@
     - [`nusamai-citygml`](./nusamai-plateau/citygml/) &mdash; CityGML パーサ実装支援ライブラリ
         - [`macros`](./nusamai-plateau/citygml/macros/) &mdash; パーサ導出用の proc macros
     - [`nusamai-plateau`](./nusamai-plateau/) &mdash; PLATEAU 用の CityGML モデルおよびパーサ
-- 変換先形式のための支援ライブラリ（本アプリケーションのユースケースが混入しないようにする）
+- 変換先形式のための支援ライブラリ（本プロジェクトのユースケースが混入しないように開発する）
     - [`nusamai-3dtiles`](./nusamai-3dtiles/) &mdash; 3D Tiles
     - [`nusamai-mvt`](./nusamai-mvt/) &mdash; Mapbox Vector Tiles (MVT)
     - [`nusamai-gpkg`](./nusamai-gpkg/) &mdash; GeoPackage
     - [`nusamai-gltf`](./nusamai-gltf/) &mdash; glTF
     - [`nusamai-geojson`](./nusamai-geojson/) &mdash; GeoJSON
+    - [`nusamai-kml`](./nusamai-kml/) &mdash; KML
+    - [`nusamai-czml`](./nusamai-kml/) &mdash; CZML
+    - [`nusamai-shapefile`](./nusamai-shapefile/) &mdash; Shapefile
 
 ### 外部リポジトリ
 
