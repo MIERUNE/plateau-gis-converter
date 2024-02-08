@@ -4,7 +4,7 @@ use crate::transformer::Transform;
 
 use nusamai_citygml::object::{Map, Object, ObjectStereotype, Value};
 use nusamai_citygml::schema::{Attribute, Schema, TypeDef, TypeRef};
-use nusamai_citygml::{appearance, GeometryStore};
+use nusamai_citygml::GeometryStore;
 use nusamai_plateau::appearance::AppearanceStore;
 use nusamai_plateau::Entity;
 
