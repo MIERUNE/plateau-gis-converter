@@ -106,3 +106,8 @@ fn run_cesiumtiles_sink() {
         "/tmp/nusamai/3dtiles/".into(),
     );
 }
+
+#[test]
+fn run_kml_sink() {
+    simple_run_sink(sink::kml::KmlSinkProvider {}, "/tmp/nusamai/kml".into());
+}
