@@ -461,8 +461,11 @@ fn write_gltf<W: Write>(
                 extensions: Some(extensions::mesh::MeshPrimitive {
                     ext_mesh_features: Some(extensions::mesh::ext_mesh_features::ExtMeshFeatures {
                         feature_ids: vec![extensions::mesh::ext_mesh_features::FeatureId {
+                            // todo: 複数の地物型を出力するときには、地物型ごとにfeature_idを付与していくので、attributesやproperty_tableは動的に変化する
+                            // todo: meshes.primitives.attributesには、地物型ごとのfeature_idを付与するので、以下のattributesへのインデックスも動的に変わる
                             attribute: Some(0),
-                            feature_count: feature_ids_count,
+                            feature_count: vertices.iter().map(|v| v.feature_id).max().unwrap() + 1,
+                            property_table: Some(0),
                             ..Default::default()
                         }],
                         ..Default::default()
@@ -492,7 +495,7 @@ fn write_gltf<W: Write>(
             },
             Accessor {
                 buffer_view: Some(2),
-                component_type: ComponentType::UnsignedInt,
+                component_type: ComponentType::Float,
                 count: feature_ids_count,
                 type_: AccessorType::Scalar,
                 ..Default::default()
@@ -518,34 +521,14 @@ fn write_gltf<W: Write>(
                 ..Default::default()
             },
         ],
-        buffers: vec![Buffer {
-            byte_length: bin_content.len() as u32,
-            ..Default::default()
-        }],
         ..Default::default()
     };
 
-    // todo: 複数のクラス名があった時の対応を考える
+    // // todo: 複数のクラス名があった時の対応を考える
     let class_name = class_names.iter().next().unwrap().as_ref().to_string();
     let schema = schema.types.get::<String>(&class_name).unwrap();
 
     let attributes_bin_contents = attributes_to_buffer(schema, &attributes);
-    // // BufferViewを属性の数だけ追加する
-    let mut buffer_views: Vec<BufferView> = Vec::new();
-    for (_, content) in attributes_bin_contents.iter() {
-        let byte_offset = bin_content.len();
-        let byte_length = content.len();
-        // todo: attributes_bin_contentsのバッファがbin_contentに追加されていなさそう？
-        bin_content.extend(content.iter());
-
-        buffer_views.push(BufferView {
-            byte_offset: byte_offset as u32,
-            byte_length: byte_length as u32,
-            ..Default::default()
-        });
-    }
-
-    gltf.buffer_views.extend(buffer_views);
 
     let buffer_view_count = gltf.buffer_views.len() as u32;
     let feature_count = vertices.iter().map(|v| v.feature_id).max().unwrap() + 1;
@@ -568,7 +551,28 @@ fn write_gltf<W: Write>(
         ..Default::default()
     };
 
+    let mut buffer_views: Vec<BufferView> = Vec::new();
+    for (_, content) in attributes_bin_contents.iter() {
+        let byte_offset = bin_content.len();
+        let byte_length = content.len();
+        bin_content.extend(content.iter());
+
+        buffer_views.push(BufferView {
+            byte_offset: byte_offset as u32,
+            byte_length: byte_length as u32,
+            ..Default::default()
+        });
+    }
+
+    gltf.buffer_views.extend(buffer_views);
+
     gltf.extensions = Some(extensions);
+
+    let buffers = vec![Buffer {
+        byte_length: bin_content.len() as u32,
+        ..Default::default()
+    }];
+    gltf.buffers = buffers;
 
     {
         // 一度、JSONでも出力する
