@@ -13,7 +13,7 @@ use crate::pipeline::{Feedback, PipelineError, Receiver, Result};
 use crate::sink::{DataSink, DataSinkProvider, SinkInfo};
 use crate::{get_parameter_value, transformer};
 
-use nusamai_citygml::object::{ObjectStereotype, Value};
+use nusamai_citygml::object::{Object, ObjectStereotype, Value};
 use nusamai_citygml::schema::{Schema, TypeDef, TypeRef};
 use nusamai_citygml::GeometryType;
 use nusamai_geometry::MultiPolygon;
@@ -144,39 +144,7 @@ impl GpkgSink {
                         }
 
                         // Prepare attributes
-                        let mut n_skipped_attributes = 0;
-                        let mut attributes = IndexMap::<String, String>::new();
-                        for (attr_name, attr_value) in &obj.attributes {
-                            match attr_value {
-                                Value::String(s) => {
-                                    attributes.insert(attr_name.into(), s.into());
-                                }
-                                Value::Integer(i) => {
-                                    attributes.insert(attr_name.into(), i.to_string());
-                                }
-                                Value::Double(d) => {
-                                    attributes.insert(attr_name.into(), d.to_string());
-                                }
-                                Value::Boolean(b) => {
-                                    // 0 for false and 1 for true in SQLite
-                                    attributes.insert(
-                                        attr_name.into(),
-                                        if *b { "1".into() } else { "0".into() },
-                                    );
-                                }
-                                _ => {
-                                    // TODO: implement
-                                    n_skipped_attributes += 1;
-                                }
-                            };
-                        }
-                        let n_unskipped_attributes = obj.attributes.len() - n_skipped_attributes;
-                        if n_unskipped_attributes > 0 {
-                            log::info!(
-                                "Entity - {:?} unskipped attributes in result",
-                                n_unskipped_attributes
-                            );
-                        }
+                        let attributes = prepare_object_attributes(obj);
 
                         // Bounding box
                         let bbox = get_indexed_multipolygon_bbox(&geom_store.vertices, &mpoly);
@@ -236,16 +204,72 @@ impl DataSink for GpkgSink {
     }
 }
 
+/// Prepare the attribute values for the GeoPackage
+fn prepare_object_attributes(obj: &Object) -> IndexMap<String, String> {
+    let mut attributes = IndexMap::<String, String>::new();
+
+    for (attr_name, attr_value) in &obj.attributes {
+        match attr_value {
+            Value::String(s) => {
+                attributes.insert(attr_name.into(), s.into());
+            }
+            Value::Code(c) => {
+                // value of the code
+                attributes.insert(attr_name.into(), c.value().into());
+            }
+            Value::Integer(i) => {
+                attributes.insert(attr_name.into(), i.to_string());
+            }
+            Value::NonNegativeInteger(i) => {
+                attributes.insert(attr_name.into(), i.to_string());
+            }
+            Value::Double(d) => {
+                attributes.insert(attr_name.into(), d.to_string());
+            }
+            Value::Measure(m) => {
+                attributes.insert(attr_name.into(), m.value().to_string());
+            }
+            Value::Boolean(b) => {
+                // 0 for false and 1 for true in SQLite
+                attributes.insert(attr_name.into(), if *b { "1".into() } else { "0".into() });
+            }
+            Value::URI(u) => {
+                // value of the URI
+                attributes.insert(attr_name.into(), u.value().to_string());
+            }
+            Value::Date(d) => {
+                // String, as SQLite does not have a date type
+                attributes.insert(attr_name.into(), d.to_string());
+            }
+            Value::Point(_p) => {
+                // TODO: implement
+                // Point struct currently does not contain any data
+            }
+            Value::Array(_arr) => {
+                // TODO: handle multiple values
+            }
+            Value::Object(_obj) => {
+                // TODO: handle nested objects
+            }
+        };
+    }
+
+    attributes
+}
+
 /// Check the schema, and prepare attribute column information for the SQLite table
 fn schema_to_columns(schema: &Schema) -> IndexMap<String, String> {
     let mut attribute_columns = IndexMap::<String, String>::new();
     schema.types.iter().for_each(|(_name, ty)| match ty {
         TypeDef::Feature(feat_td) => {
-            // Note: consider `feat_td.additional_attributes` ?
-            feat_td.attributes.iter().for_each(|(attr_name, attr)| {
-                // Note: consider  `attr.{min_occurs,max_occurs}` ?
+            // TODO: consider `feat_td.additional_attributes`
+            feat_td.attributes.iter().for_each(|(attr_name, attr)|
+                // TODO: consider `attr.{min_occurs,max_occurs}`
                 match &attr.type_ref {
-                    TypeRef::String | TypeRef::JsonString => {
+                    TypeRef::String => {
+                        attribute_columns.insert(attr_name.into(), "TEXT".into());
+                    }
+                    TypeRef::Code => {
                         attribute_columns.insert(attr_name.into(), "TEXT".into());
                     }
                     TypeRef::Integer | TypeRef::NonNegativeInteger => {
@@ -257,15 +281,46 @@ fn schema_to_columns(schema: &Schema) -> IndexMap<String, String> {
                     TypeRef::Boolean => {
                         attribute_columns.insert(attr_name.into(), "BOOLEAN".into());
                     }
-                    _ => {
+                    TypeRef::JsonString => {
+                        attribute_columns.insert(attr_name.into(), "TEXT".into());
+                    }
+                    TypeRef::URI => {
+                        attribute_columns.insert(attr_name.into(), "TEXT".into());
+                    }
+                    TypeRef::Date => {
+                        attribute_columns.insert(attr_name.into(), "TEXT".into());
+                    }
+                    TypeRef::DateTime => {
+                        attribute_columns.insert(attr_name.into(), "TEXT".into());
+                    }
+                    TypeRef::Measure => {
+                        attribute_columns.insert(attr_name.into(), "REAL".into());
+                    }
+                    TypeRef::Point => {
+                        // TODO: implement
+                        // Point struct currently does not contain any data
                         log::warn!(
                             "TypeDef::Feature - Unsupported attribute type: {:?} ('{}')",
                             attr.type_ref,
                             attr_name
                         );
                     }
-                }
-            });
+                    TypeRef::Named(_name) => {
+                        // TODO: Implement
+                        log::warn!(
+                            "TypeDef::Feature - Unsupported attribute type: {:?} ('{}')",
+                            attr.type_ref,
+                            attr_name
+                        );
+                    },
+                    TypeRef::Unknown => {
+                        log::warn!(
+                            "TypeDef::Feature - Unsupported attribute type: {:?} ('{}')",
+                            attr.type_ref,
+                            attr_name
+                        );
+                    }
+                });
         }
         TypeDef::Data(data_td) => {
             // TODO: implement
