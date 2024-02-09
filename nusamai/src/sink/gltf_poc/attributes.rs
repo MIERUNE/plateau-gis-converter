@@ -17,7 +17,7 @@ pub struct GltfPropertyType {
         Option<extensions::gltf::ext_structural_metadata::ClassPropertyComponentType>,
 }
 
-pub struct Attributes {
+pub struct EntityAttributes {
     pub class_name: String,
     pub feature_id: u32,
     pub attributes: IndexMap<String, Value, RandomState>,
@@ -227,6 +227,120 @@ pub fn to_gltf_property_tables(
     property_tables.push(property_table);
 
     property_tables
+}
+
+pub fn attributes_to_buffer(
+    schema: &TypeDef,
+    attributes: &Vec<EntityAttributes>,
+) -> IndexMap<String, Vec<u8>> {
+    let mut buffers: IndexMap<String, Vec<u8>> = IndexMap::new();
+    let mut attributes_bin_content: Vec<u8> = Vec::new();
+
+    match schema {
+        TypeDef::Feature(f) => {
+            for (name, attr) in &f.attributes {
+                let property_type = to_gltf_schema(&attr.type_ref);
+            }
+        }
+        TypeDef::Data(_) => unimplemented!(),
+        TypeDef::Property(_) => unimplemented!(),
+    }
+
+    for attr in attributes {
+        if let Some(value) = attr.attributes.get(&p.clone()) {
+            // todo: 全てのValueに対応する
+            // todo: 属性ごとに、バッファへの詰め込み方が異なる
+            // https://github.com/CesiumGS/3d-tiles/tree/main/specification/Metadata#binary-table-format
+            match value {
+                // todo: stringOffsetへの対応
+                Value::String(s) => {
+                    attributes_bin_content.write_all(s.as_bytes()).unwrap();
+                }
+                Value::Integer(i) => {
+                    attributes_bin_content.write_all(&i.to_le_bytes()).unwrap();
+                }
+                Value::Double(d) => {
+                    attributes_bin_content.write_all(&d.to_le_bytes()).unwrap();
+                }
+                _ => {
+                    attributes_bin_content
+                        .write_all(&0u32.to_le_bytes())
+                        .unwrap();
+                }
+            }
+        } else {
+            attributes_bin_content
+                .write_all(&0u32.to_le_bytes())
+                .unwrap();
+        }
+    }
+    todo!()
+}
+
+fn to_gltf_property_type(value: nusamai_citygml::Value) -> GltfPropertyType {
+    match value {
+        nusamai_citygml::Value::String(_) => GltfPropertyType {
+            property_name: "".to_string(),
+            class_property_type:
+                extensions::gltf::ext_structural_metadata::ClassPropertyType::String,
+            component_type: None,
+        },
+        nusamai_citygml::Value::Integer(_) => GltfPropertyType {
+            property_name: "".to_string(),
+            class_property_type:
+                extensions::gltf::ext_structural_metadata::ClassPropertyType::Scalar,
+            component_type: Some(
+                extensions::gltf::ext_structural_metadata::ClassPropertyComponentType::Int32,
+            ),
+        },
+        nusamai_citygml::Value::Double(_) => GltfPropertyType {
+            property_name: "".to_string(),
+            class_property_type:
+                extensions::gltf::ext_structural_metadata::ClassPropertyType::Scalar,
+            component_type: Some(
+                extensions::gltf::ext_structural_metadata::ClassPropertyComponentType::Float64,
+            ),
+        },
+        nusamai_citygml::Value::Boolean(_) => GltfPropertyType {
+            property_name: "".to_string(),
+            class_property_type:
+                extensions::gltf::ext_structural_metadata::ClassPropertyType::Boolean,
+            component_type: None,
+        },
+        nusamai_citygml::Value::Measure(_) => GltfPropertyType {
+            property_name: "".to_string(),
+            class_property_type:
+                extensions::gltf::ext_structural_metadata::ClassPropertyType::Scalar,
+            component_type: Some(
+                extensions::gltf::ext_structural_metadata::ClassPropertyComponentType::Int32,
+            ),
+        },
+        nusamai_citygml::Value::Code(_) => GltfPropertyType {
+            property_name: "".to_string(),
+            class_property_type:
+                extensions::gltf::ext_structural_metadata::ClassPropertyType::String,
+            component_type: None,
+        },
+        nusamai_citygml::Value::Object(_) => GltfPropertyType {
+            property_name: "".to_string(),
+            class_property_type:
+                extensions::gltf::ext_structural_metadata::ClassPropertyType::String,
+            component_type: None,
+        },
+        nusamai_citygml::Value::Point(_) => GltfPropertyType {
+            property_name: "".to_string(),
+            class_property_type: extensions::gltf::ext_structural_metadata::ClassPropertyType::Vec3,
+            component_type: Some(
+                extensions::gltf::ext_structural_metadata::ClassPropertyComponentType::Float64,
+            ),
+        },
+        _ => GltfPropertyType {
+            property_name: "".to_string(),
+            class_property_type:
+                extensions::gltf::ext_structural_metadata::ClassPropertyType::String,
+            component_type: None,
+        },
+    }
 }
 
 #[cfg(test)]

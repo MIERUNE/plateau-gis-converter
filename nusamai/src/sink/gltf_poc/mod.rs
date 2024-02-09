@@ -30,7 +30,7 @@ use crate::pipeline::{Feedback, PipelineError, Receiver};
 use crate::sink::{DataSink, DataSinkProvider, SinkInfo};
 use crate::{get_parameter_value, transformer};
 
-use attributes::{to_gltf_classes, to_gltf_property_tables, Attributes, GltfPropertyType};
+use attributes::{to_gltf_classes, to_gltf_property_tables, EntityAttributes, GltfPropertyType};
 
 #[derive(Debug, Default, PartialEq, Eq, Clone, Copy, Hash)]
 pub struct Vertex {
@@ -256,12 +256,12 @@ impl DataSink for GltfPocSink {
                 let mut buffers: Vec<[f64; 4]> = Vec::new();
 
                 // Holds all attributes of the target
-                let mut all_attributes: Vec<Attributes> = Vec::new();
+                let mut all_attributes: Vec<EntityAttributes> = Vec::new();
 
                 for (feature_id, (triangles, attributes, _bounding_volume, class_name)) in
                     receiver.into_iter().enumerate()
                 {
-                    all_attributes.push(Attributes {
+                    all_attributes.push(EntityAttributes {
                         class_name: class_name.as_ref().to_string(),
                         feature_id: feature_id as u32,
                         attributes,
