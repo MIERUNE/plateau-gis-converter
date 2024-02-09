@@ -154,23 +154,51 @@ fn to_gltf_property_tables(
     // Create Schema.property_tables
     let mut property_table: extensions::gltf::ext_structural_metadata::PropertyTable =
         extensions::gltf::ext_structural_metadata::PropertyTable {
+            class: class_name.clone(),
             properties: HashMap::new(),
             count: feature_count,
             ..Default::default()
         };
 
+    let mut count = buffer_view_length;
     match schema {
         TypeDef::Feature(f) => {
             for (name, attr) in &f.attributes {
                 let property_type = to_gltf_schema(&attr.type_ref);
                 // property_typeによって、PropertyTablePropertyの構造が変化する
-                property_table.properties.insert(
-                    *name,
-                    extensions::gltf::ext_structural_metadata::PropertyTableProperty {
-                        values: buffer_view_length + 2,
-                        ..Default::default()
-                    },
-                );
+                // todo: その他の型についても対応
+                match property_type.class_property_type {
+                    extensions::gltf::ext_structural_metadata::ClassPropertyType::String => {
+                        property_table.properties.insert(
+                            name.clone(),
+                            extensions::gltf::ext_structural_metadata::PropertyTableProperty {
+                                values: count,
+                                string_offsets: Some(count + 1),
+                                ..Default::default()
+                            },
+                        );
+                        count += 2;
+                    }
+                    extensions::gltf::ext_structural_metadata::ClassPropertyType::Scalar => {
+                        property_table.properties.insert(
+                            name.clone(),
+                            extensions::gltf::ext_structural_metadata::PropertyTableProperty {
+                                values: count,
+                                ..Default::default()
+                            },
+                        );
+                    }
+                    extensions::gltf::ext_structural_metadata::ClassPropertyType::Boolean => {
+                        property_table.properties.insert(
+                            name.clone(),
+                            extensions::gltf::ext_structural_metadata::PropertyTableProperty {
+                                values: count,
+                                ..Default::default()
+                            },
+                        );
+                    }
+                    _ => unimplemented!(),
+                }
             }
         }
         // todo: feature 以外の型も実装する
@@ -263,5 +291,29 @@ mod tests {
 
         let classes = to_gltf_classes(&class_name, &feature_type_def);
         assert_eq!(classes.len(), 1);
+    }
+
+    #[test]
+    fn test_to_gltf_property_tables() {
+        let class_name = "Building".to_string();
+        let attribute = TypeRef::String;
+        let mut attributes: IndexMap<String, nusamai_citygml::schema::Attribute, RandomState> =
+            IndexMap::default();
+
+        attributes.insert(
+            class_name.clone(),
+            nusamai_citygml::schema::Attribute {
+                type_ref: attribute,
+                ..Default::default()
+            },
+        );
+
+        let feature_type_def = TypeDef::Feature(FeatureTypeDef {
+            attributes,
+            ..Default::default()
+        });
+
+        let property_tables = to_gltf_property_tables(&feature_type_def, &class_name, 0, 1);
+        assert_eq!(property_tables.len(), 1);
     }
 }
