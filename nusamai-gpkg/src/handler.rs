@@ -62,6 +62,40 @@ impl GpkgHandler {
         Ok(())
     }
 
+    pub async fn update_bbox(
+        &self,
+        table_name: String,
+        min_x: f64,
+        min_y: f64,
+        max_x: f64,
+        max_y: f64,
+    ) -> Result<(), GpkgError> {
+        sqlx::query("UPDATE gpkg_contents SET min_x = ?, min_y = ?, max_x = ?, max_y = ? WHERE table_name = ?;"
+)
+            .bind(min_x)
+            .bind(min_y)
+            .bind(max_x)
+            .bind(max_y)
+            .bind(table_name)
+            .execute(&self.pool)
+            .await?;
+        Ok(())
+    }
+
+    pub async fn bbox(&self, table_name: String) -> Result<(f64, f64, f64, f64), GpkgError> {
+        let result = sqlx::query(
+            "SELECT min_x, min_y, max_x, max_y FROM gpkg_contents WHERE table_name = ?;",
+        )
+        .bind(table_name)
+        .fetch_one(&self.pool)
+        .await?;
+        let min_x: f64 = result.get(0);
+        let min_y: f64 = result.get(1);
+        let max_x: f64 = result.get(2);
+        let max_y: f64 = result.get(3);
+        Ok((min_x, min_y, max_x, max_y))
+    }
+
     pub async fn application_id(&self) -> u32 {
         let result = sqlx::query("PRAGMA application_id;")
             .fetch_one(&self.pool)
@@ -228,5 +262,29 @@ mod tests {
                 ("attr4".into(), "BOOLEAN".into(), 0)
             ]
         );
+    }
+
+    #[tokio::test]
+    async fn test_bbox() {
+        let handler = GpkgHandler::from_url(&Url::parse("sqlite::memory:").unwrap())
+            .await
+            .unwrap();
+
+        // initial values written in `mpoly3d.sql`
+        let (min_x, min_y, max_x, max_y) = handler.bbox("mpoly3d".into()).await.unwrap();
+        assert_eq!(min_x, 122.93250000);
+        assert_eq!(min_y, 20.42527778);
+        assert_eq!(max_x, 153.98666667);
+        assert_eq!(max_y, 45.55722222);
+
+        handler
+            .update_bbox("mpoly3d".into(), -111.0, 222.0, 333.0, -444.0)
+            .await
+            .unwrap();
+        let (min_x, min_y, max_x, max_y) = handler.bbox("mpoly3d".into()).await.unwrap();
+        assert_eq!(min_x, -111.0);
+        assert_eq!(min_y, 222.0);
+        assert_eq!(max_x, 333.0);
+        assert_eq!(max_y, -444.0);
     }
 }
