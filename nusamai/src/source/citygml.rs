@@ -145,8 +145,6 @@ fn toplevel_dispatcher<R: BufRead>(
             );
         }
 
-        println!("app: {:?}", entity.appearance_store.read().unwrap());
-
         if downstream.send(Parcel { entity }).is_err() {
             feedback.cancel();
             break;
