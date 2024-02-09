@@ -11,7 +11,6 @@ use byteorder::{ByteOrder, LittleEndian};
 use earcut_rs::utils_3d::project3d_to_2d;
 use earcut_rs::Earcut;
 use indexmap::{IndexMap, IndexSet};
-use nusamai_citygml::attribute;
 use rayon::prelude::*;
 
 use nusamai_citygml::{
@@ -58,6 +57,13 @@ pub struct Attributes {
     pub typename: String,
     pub feature_id: u32,
     pub attributes: IndexMap<String, Value, RandomState>,
+}
+
+pub struct triangleEntity {
+    pub triangles: Vec<[f64; 3]>,
+    pub attributes: IndexMap<String, Value, RandomState>,
+    pub bounding_volume: BoundingVolume,
+    pub class_name: String,
 }
 
 pub struct GltfPocSinkProvider {}
@@ -255,24 +261,24 @@ impl DataSink for GltfPocSink {
                     max_height: f64::MIN,
                 };
 
-                // Holds all attribute names of the target
-                let mut type_names = HashSet::new();
+                // Maintain a list of type names as multiple types are mixed.
+                let mut class_names = HashSet::new();
 
                 let mut buffers: Vec<[f64; 4]> = Vec::new();
 
                 // Holds all attributes of the target
                 let mut all_attributes: Vec<Attributes> = Vec::new();
 
-                for (feature_id, (triangles, attributes, _bounding_volume, typename)) in
+                for (feature_id, (triangles, attributes, _bounding_volume, class_name)) in
                     receiver.into_iter().enumerate()
                 {
                     all_attributes.push(Attributes {
-                        typename: typename.as_ref().to_string(),
+                        typename: class_name.as_ref().to_string(),
                         feature_id: feature_id as u32,
                         attributes,
                     });
 
-                    type_names.insert(typename);
+                    class_names.insert(class_name);
 
                     let mut pos_max = [f64::MIN; 3];
                     let mut pos_min = [f64::MAX; 3];
@@ -366,12 +372,12 @@ impl DataSink for GltfPocSink {
                     .copied()
                     .collect();
 
-                // Get schema from attribute names
+                // Extract only the schema of the classes that need to be processed
                 let mut schemas = IndexMap::new();
-                for typename in type_names {
-                    let schema = schema.types.get(typename.as_ref()).unwrap();
+                for class_name in class_names {
+                    let schema = schema.types.get(class_name.as_ref()).unwrap();
                     let gltf_schemas = type_def_to_gltf_schema(schema);
-                    schemas.insert(typename.as_ref().to_string(), gltf_schemas);
+                    schemas.insert(class_name.as_ref().to_string(), gltf_schemas);
                 }
 
                 let mut file = File::create(&self.output_path).unwrap();
@@ -578,110 +584,7 @@ fn write_gltf<W: Write>(
     }
     let feature_ids_len = bin_content.len() - feature_ids_offset;
 
-    // todo: 複数の地物型が存在している時の対応を考える
-    let mut class_properties = HashMap::new();
-    let mut property_tables: Vec<extensions::gltf::ext_structural_metadata::PropertyTable> =
-        Vec::new();
-
-    schemas.iter().for_each(|(_, gltf_property_types)| {
-        for gltf_property_type in gltf_property_types.iter() {
-            // Create Schema.classes
-            class_properties.insert(
-                gltf_property_type.property_name.clone(),
-                extensions::gltf::ext_structural_metadata::ClassProperty {
-                    description: Some(gltf_property_type.property_name.clone()),
-                    type_: gltf_property_type.class_property_type.clone(),
-                    component_type: gltf_property_type.component_type.clone(),
-                    ..Default::default()
-                },
-            );
-        }
-
-        // Create Schema.property_tables
-        let mut property_table: extensions::gltf::ext_structural_metadata::PropertyTable =
-            extensions::gltf::ext_structural_metadata::PropertyTable {
-                properties: HashMap::new(),
-                count: vertices_count,
-                ..Default::default()
-            };
-        for gltf_property_type in gltf_property_types.iter() {
-            let index = class_properties
-                .keys()
-                .position(|key| key == &gltf_property_type.property_name)
-                .unwrap();
-
-            property_table.properties.insert(
-                gltf_property_type.property_name.clone(),
-                extensions::gltf::ext_structural_metadata::PropertyTableProperty {
-                    values: index as u32,
-                    ..Default::default()
-                },
-            );
-        }
-        property_tables.push(property_table);
-    });
-
-    // todo: クラス名を固定にしているので、複数の地物型が存在している時の対応を考える
-    let typename = schemas.keys().next().unwrap().clone();
-    let mut classes = HashMap::new();
-    classes.insert(
-        typename.clone(),
-        extensions::gltf::ext_structural_metadata::Class {
-            name: Some(typename.clone()),
-            description: None,
-            properties: class_properties.clone(),
-            ..Default::default()
-        },
-    );
-
-    // todo: attributesをバイナリバッファに変換する
-    // 取り扱えない属性はしゃーないのでnullを入れる
-    // 順番はclass_propertiesの順番に合わせる
-    // class_propertiesの順番で、attributesを収集していく
-    let property_names = class_properties.keys().collect::<Vec<_>>();
-    // attributes.attributeを取り出す
-    let attribute_values = attributes
-        .iter()
-        .map(|attr| attr.attributes.clone())
-        .collect::<Vec<_>>();
-
-    let mut attributes_bin_content: Vec<u8> = Vec::new();
-    let mut attributes_count = 0;
-
-    for p in property_names {
-        for attr in &attribute_values {
-            attributes_count += 1;
-            if let Some(value) = attr.get(p) {
-                match value {
-                    Value::String(s) => {
-                        attributes_bin_content.write_all(s.as_bytes()).unwrap();
-                    }
-                    Value::Integer(i) => {
-                        attributes_bin_content.write_all(&i.to_le_bytes()).unwrap();
-                    }
-                    Value::Double(d) => {
-                        attributes_bin_content.write_all(&d.to_le_bytes()).unwrap();
-                    }
-                    _ => {
-                        attributes_bin_content
-                            .write_all(&0u32.to_le_bytes())
-                            .unwrap();
-                    }
-                }
-            } else {
-                attributes_bin_content
-                    .write_all(&0u32.to_le_bytes())
-                    .unwrap();
-            }
-        }
-    }
-
-    let attributes_offset = bin_content.len();
-    let attributes_bin_length = attributes_bin_content.len();
-
-    // bin_content.extend(attributes_bin_content);
-
-    let gltf = Gltf {
+    let mut gltf = Gltf {
         extensions_used: vec![
             "EXT_mesh_features".to_string(),
             "EXT_structural_metadata".to_string(),
@@ -764,32 +667,160 @@ fn write_gltf<W: Write>(
                 target: Some(BufferViewTarget::ArrayBuffer),
                 ..Default::default()
             },
-            // BufferView {
-            //     byte_offset: attributes_offset as u32,
-            //     byte_length: attributes_bin_length as u32,
-            //     target: Some(BufferViewTarget::ArrayBuffer),
-            //     ..Default::default()
-            // },
         ],
         buffers: vec![Buffer {
             byte_length: bin_content.len() as u32,
             ..Default::default()
         }],
-        extensions: Some(extensions::gltf::Gltf {
-            ext_structural_metadata: Some(
-                extensions::gltf::ext_structural_metadata::ExtStructuralMetadata {
-                    schema: Some(extensions::gltf::ext_structural_metadata::Schema {
-                        classes,
-                        ..Default::default()
-                    }),
-                    // property_tables: Some(property_tables),
-                    ..Default::default()
-                },
-            ),
-            ..Default::default()
-        }),
         ..Default::default()
     };
+
+    // スキーマに定義された属性名
+    let property_names = schemas
+        .values()
+        .next()
+        .unwrap()
+        .iter()
+        .map(|p| p.property_name.clone())
+        .collect::<Vec<_>>();
+
+    // 属性の値
+    let attribute_values = attributes
+        .iter()
+        .map(|attr| attr.attributes.clone())
+        .collect::<Vec<_>>();
+
+    // 列ごとのバイナリデータを格納する
+    let mut attributes_bin_contents: IndexMap<String, Vec<u8>> = IndexMap::new();
+
+    // 属性名から値を抽出して、全てリトルエンディアン形式で、密にバイナリエンコードする
+    // todo: 文字列の場合は、StringOffsetもバイナリエンコードする必要がある
+    for p in property_names {
+        let mut attributes_bin_content: Vec<u8> = Vec::new();
+        for attr in &attribute_values {
+            if let Some(value) = attr.get(&p.clone()) {
+                // todo: 全てのValueに対応する
+                // todo: 属性ごとに、バッファへの詰め込み方が異なる
+                // https://github.com/CesiumGS/3d-tiles/tree/main/specification/Metadata#binary-table-format
+                match value {
+                    Value::String(s) => {
+                        attributes_bin_content.write_all(s.as_bytes()).unwrap();
+                    }
+                    Value::Integer(i) => {
+                        attributes_bin_content.write_all(&i.to_le_bytes()).unwrap();
+                    }
+                    Value::Double(d) => {
+                        attributes_bin_content.write_all(&d.to_le_bytes()).unwrap();
+                    }
+                    _ => {
+                        attributes_bin_content
+                            .write_all(&0u32.to_le_bytes())
+                            .unwrap();
+                    }
+                }
+            } else {
+                attributes_bin_content
+                    .write_all(&0u32.to_le_bytes())
+                    .unwrap();
+            }
+        }
+        attributes_bin_contents.insert(p, attributes_bin_content);
+    }
+
+    // BufferViewを属性の数だけ追加する
+    let mut buffer_views: Vec<BufferView> = Vec::new();
+    for (p, content) in attributes_bin_contents.iter() {
+        let byte_offset = bin_content.len();
+        let byte_length = content.len();
+        bin_content.extend(content.iter());
+
+        buffer_views.push(BufferView {
+            byte_offset: byte_offset as u32,
+            byte_length: byte_length as u32,
+            ..Default::default()
+        });
+    }
+
+    // BufferViewを追加する
+    gltf.buffer_views.extend(buffer_views);
+
+    // todo: 複数の地物型が存在している時の対応を考える
+    let mut class_properties = HashMap::new();
+    let mut property_tables: Vec<extensions::gltf::ext_structural_metadata::PropertyTable> =
+        Vec::new();
+
+    schemas.iter().for_each(|(_, gltf_property_types)| {
+        for gltf_property_type in gltf_property_types.iter() {
+            // Create Schema.classes
+            class_properties.insert(
+                gltf_property_type.property_name.clone(),
+                extensions::gltf::ext_structural_metadata::ClassProperty {
+                    description: Some(gltf_property_type.property_name.clone()),
+                    type_: gltf_property_type.class_property_type.clone(),
+                    component_type: gltf_property_type.component_type.clone(),
+                    ..Default::default()
+                },
+            );
+        }
+
+        // Create Schema.property_tables
+        let mut property_table: extensions::gltf::ext_structural_metadata::PropertyTable =
+            extensions::gltf::ext_structural_metadata::PropertyTable {
+                properties: HashMap::new(),
+                count: vertices_count,
+                ..Default::default()
+            };
+        for gltf_property_type in gltf_property_types.iter() {
+            // attributes_bin_contentsが格納されているインデックスを取得
+            let index: u32 = attributes_bin_contents
+                .keys()
+                .position(|p| p == &gltf_property_type.property_name)
+                .unwrap() as u32;
+
+            property_table.properties.insert(
+                gltf_property_type.property_name.clone(),
+                extensions::gltf::ext_structural_metadata::PropertyTableProperty {
+                    // valuesはバイナリバッファのインデックスで、元々3つのインデックスがあるので、それを取得している
+                    values: index + 2,
+                    ..Default::default()
+                },
+            );
+        }
+        property_tables.push(property_table);
+    });
+
+    // todo: クラス名を固定にしているので、複数の地物型が存在している時の対応を考える
+    let typename = schemas.keys().next().unwrap().clone();
+    let mut classes = HashMap::new();
+    classes.insert(
+        typename.clone(),
+        extensions::gltf::ext_structural_metadata::Class {
+            name: Some(typename.clone()),
+            description: None,
+            properties: class_properties.clone(),
+            ..Default::default()
+        },
+    );
+
+    let extensions = extensions::gltf::Gltf {
+        ext_structural_metadata: Some(
+            extensions::gltf::ext_structural_metadata::ExtStructuralMetadata {
+                schema: Some(extensions::gltf::ext_structural_metadata::Schema {
+                    classes,
+                    ..Default::default()
+                }),
+                property_tables: Some(property_tables),
+                ..Default::default()
+            },
+        ),
+        ..Default::default()
+    };
+
+    gltf.extensions = Some(extensions);
+
+    for (_, content) in attributes_bin_contents.iter() {
+        bin_content.extend(content.iter());
+    }
 
     {
         // 一度、JSONでも出力する
