@@ -3,6 +3,7 @@ use std::path::Path;
 use url::Url;
 
 use nusamai_citygml::{CityGmlElement, CityGmlReader, GeometryStore, ParseError, SubTreeReader};
+use nusamai_plateau::models::appearance::AppearanceProperty;
 use nusamai_plateau::models::TopLevelCityObject;
 
 pub struct CityObject {
@@ -14,6 +15,7 @@ fn toplevel_dispatcher<R: BufRead>(
     st: &mut SubTreeReader<R>,
 ) -> Result<Vec<CityObject>, ParseError> {
     let mut cityobjs = Vec::new();
+
     match st.parse_children(|st| match st.current_path() {
         b"core:cityObjectMember" => {
             let mut cityobj: TopLevelCityObject = Default::default();
@@ -25,8 +27,16 @@ fn toplevel_dispatcher<R: BufRead>(
             });
             Ok(())
         }
-        b"gml:boundedBy" | b"app:appearanceMember" => {
+        b"gml:boundedBy" => {
             st.skip_current_element()?;
+            Ok(())
+        }
+        b"app:appearanceMember" => {
+            let mut app: AppearanceProperty = Default::default();
+            app.parse(st)?;
+            let AppearanceProperty::Appearance(_app) = app else {
+                unreachable!();
+            };
             Ok(())
         }
         other => Err(ParseError::SchemaViolation(format!(

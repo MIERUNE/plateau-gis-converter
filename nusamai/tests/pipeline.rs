@@ -6,8 +6,8 @@ use nusamai::pipeline::{Feedback, FeedbackMessage, Result, Sender};
 use nusamai::sink::{DataSink, DataSinkProvider, SinkInfo};
 use nusamai::source::{DataSource, DataSourceProvider, SourceInfo};
 use nusamai::transformer::{self, Transformer};
-use nusamai_citygml::object::Entity;
 use nusamai_citygml::schema::Schema;
+use nusamai_plateau::Entity;
 use rand::prelude::*;
 
 static INIT: Once = Once::new();
@@ -43,6 +43,7 @@ impl DataSource for DummySource {
                 entity: Entity {
                     root: nusamai_citygml::Value::Double(0.),
                     geometry_store: Default::default(),
+                    appearance_store: Default::default(),
                 },
             };
             feedback.feedback_raw(FeedbackMessage {

@@ -2,8 +2,9 @@ use std::ops::BitOrAssign;
 
 use crate::transformer::Transform;
 
-use nusamai_citygml::object::{Entity, ObjectStereotype, Value};
+use nusamai_citygml::object::{ObjectStereotype, Value};
 use nusamai_citygml::schema::Schema;
+use nusamai_plateau::Entity;
 
 #[derive(Default, Clone)]
 pub struct FilterLodTransform {}

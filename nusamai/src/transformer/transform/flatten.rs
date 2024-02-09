@@ -2,9 +2,11 @@ use std::sync::{Arc, RwLock};
 
 use crate::transformer::Transform;
 
-use nusamai_citygml::object::{Entity, Map, Object, ObjectStereotype, Value};
+use nusamai_citygml::object::{Map, Object, ObjectStereotype, Value};
 use nusamai_citygml::schema::{Attribute, Schema, TypeDef, TypeRef};
 use nusamai_citygml::GeometryStore;
+use nusamai_plateau::appearance::AppearanceStore;
+use nusamai_plateau::Entity;
 
 pub struct FlattenFeatureTransform {
     split_thematic_surfaces: bool,
@@ -13,7 +15,8 @@ pub struct FlattenFeatureTransform {
 impl Transform for FlattenFeatureTransform {
     fn transform(&mut self, entity: Entity, out: &mut Vec<Entity>) {
         let geom_store = entity.geometry_store;
-        self.flatten_feature(entity.root, &geom_store, out, &None);
+        let appearance_store = &entity.appearance_store;
+        self.flatten_feature(entity.root, &geom_store, &appearance_store, out, &None);
     }
 
     fn transform_schema(&self, schema: &mut Schema) {
@@ -56,6 +59,7 @@ impl FlattenFeatureTransform {
         &self,
         value: Value,
         geom_store: &Arc<RwLock<GeometryStore>>,
+        appearance_store: &Arc<RwLock<AppearanceStore>>,
         out: &mut Vec<Entity>,
         parent: &Option<Parent>,
     ) -> Option<Value> {
@@ -69,7 +73,9 @@ impl FlattenFeatureTransform {
                 // Attributes
                 let mut new_attribs = Map::default();
                 for (key, value) in obj.attributes.drain(..) {
-                    if let Some(v) = self.flatten_feature(value, geom_store, out, &new_parent) {
+                    if let Some(v) =
+                        self.flatten_feature(value, geom_store, appearance_store, out, &new_parent)
+                    {
                         new_attribs.insert(key, v);
                     }
                 }
@@ -90,6 +96,7 @@ impl FlattenFeatureTransform {
                         out.push(Entity {
                             root: Value::Object(obj),
                             geometry_store: geom_store.clone(),
+                            appearance_store: appearance_store.clone(),
                         });
                         return None;
                     }
@@ -100,7 +107,9 @@ impl FlattenFeatureTransform {
             Value::Array(mut arr) => {
                 let mut new_arr = Vec::new();
                 for value in arr.drain(..) {
-                    if let Some(v) = self.flatten_feature(value, geom_store, out, parent) {
+                    if let Some(v) =
+                        self.flatten_feature(value, geom_store, appearance_store, out, parent)
+                    {
                         new_arr.push(v)
                     }
                 }

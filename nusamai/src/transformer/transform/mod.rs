@@ -11,7 +11,8 @@ pub use merge::*;
 pub use projection::*;
 
 use super::Transform;
-use nusamai_citygml::{object::Entity, schema::Schema};
+use nusamai_citygml::schema::Schema;
+use nusamai_plateau::Entity;
 
 /// Perform transforms in sequence
 #[derive(Default)]
@@ -91,6 +92,7 @@ mod tests {
                     },
                 }),
                 geometry_store: RwLock::new(GeometryStore::default()).into(),
+                appearance_store: Default::default(),
             },
             &mut entities,
         );

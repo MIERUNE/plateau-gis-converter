@@ -1,3 +1,4 @@
+pub mod appearance;
 pub mod bridge;
 pub mod building;
 pub mod cityfurniture;

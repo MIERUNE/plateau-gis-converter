@@ -555,11 +555,9 @@ mod tests {
     use std::sync::RwLock;
 
     use super::*;
-    use nusamai_citygml::{
-        object::{Entity, Object},
-        GeometryRefEntry, Value,
-    };
+    use nusamai_citygml::{object::Object, GeometryRefEntry, Value};
     use nusamai_geometry::MultiPolygon;
+    use nusamai_plateau::Entity;
     use nusamai_projection::crs::EPSG_JGD2011_GEOGRAPHIC_3D;
 
     #[test]
@@ -614,9 +612,10 @@ mod tests {
             multipolygon: mpoly,
             multilinestring: Default::default(),
             multipoint: Default::default(),
+            ..Default::default()
         };
 
-        let entity = Entity {
+        let _entity = Entity {
             root: Value::Object(Object {
                 typename: "dummy".into(),
                 attributes: Default::default(),
@@ -645,6 +644,7 @@ mod tests {
                 },
             }),
             geometry_store: RwLock::new(geometries).into(),
+            appearance_store: Default::default(),
         };
     }
 }

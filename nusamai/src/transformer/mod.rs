@@ -9,7 +9,8 @@ pub use runner::*;
 
 use crate::pipeline::{Feedback, Parcel, Receiver, Result, Sender};
 
-use nusamai_citygml::{object::Entity, schema::Schema};
+use nusamai_citygml::schema::Schema;
+use nusamai_plateau::Entity;
 use thiserror::Error;
 
 #[derive(Error, Debug)]

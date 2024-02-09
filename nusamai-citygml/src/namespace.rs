@@ -1,6 +1,7 @@
 use quick_xml::name::{Namespace, ResolveResult};
 
 pub const GML31_NS: Namespace = Namespace(b"http://www.opengis.net/gml");
+pub const APP_2_NS: Namespace = Namespace(b"http://www.opengis.net/citygml/appearance/2.0");
 
 /// Normalizes `quick_xml::name::ResolveResult` to the well-known prefix.
 ///

@@ -1,19 +1,21 @@
-use crate::parser::ParseError;
+use crate::parser::{ParseContext, ParseError};
 
 pub trait CityGmlAttribute: Sized {
-    fn parse_attr_value(value: &str) -> Result<Self, ParseError>;
+    fn parse_attribute_value(value: &str, st: &mut ParseContext) -> Result<Self, ParseError>;
 }
 
 impl CityGmlAttribute for String {
     #[inline]
-    fn parse_attr_value(value: &str) -> Result<Self, ParseError> {
+    fn parse_attribute_value(value: &str, _st: &mut ParseContext) -> Result<Self, ParseError> {
         Ok(value.to_string())
     }
 }
 
 impl<T: CityGmlAttribute> CityGmlAttribute for Option<T> {
     #[inline]
-    fn parse_attr_value(value: &str) -> Result<Self, ParseError> {
-        Ok(Some(<T as CityGmlAttribute>::parse_attr_value(value)?))
+    fn parse_attribute_value(value: &str, st: &mut ParseContext) -> Result<Self, ParseError> {
+        Ok(Some(<T as CityGmlAttribute>::parse_attribute_value(
+            value, st,
+        )?))
     }
 }

@@ -1,7 +1,7 @@
 use crate::object::{self, Value};
 use crate::parser::{ParseError, SubTreeReader};
-use crate::schema;
-use crate::CityGmlElement;
+use crate::{schema, CityGmlAttribute};
+use crate::{CityGmlElement, ParseContext};
 pub use chrono::NaiveDate;
 use serde::{Deserialize, Serialize};
 use std::io::BufRead;
@@ -162,7 +162,7 @@ impl CityGmlElement for u64 {
     }
 
     fn into_object(self) -> Option<Value> {
-        Some(Value::Integer(self as i64))
+        Some(Value::NonNegativeInteger(self))
     }
 
     fn collect_schema(_schema: &mut schema::Schema) -> schema::Attribute {
@@ -312,7 +312,62 @@ impl CityGmlElement for Point {
     }
 }
 
-impl<T: CityGmlElement + Default> CityGmlElement for Option<T> {
+#[derive(
+    Debug, Clone, Copy, serde::Serialize, serde::Deserialize, Default, PartialEq, Eq, Hash,
+)]
+pub struct LocalId(pub u32);
+
+impl LocalId {
+    pub fn new(idx: u32) -> Self {
+        Self(idx)
+    }
+    pub fn value(&self) -> u32 {
+        self.0
+    }
+}
+
+impl CityGmlElement for LocalId {
+    #[inline]
+    fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
+        let s = st.parse_text()?;
+        if let Some(id) = s.strip_prefix('#') {
+            let s = id.to_string();
+            *self = st.context_mut().id_to_integer_id(s);
+            Ok(())
+        } else {
+            Err(ParseError::InvalidValue(format!(
+                "Expected a reference starts with '#' but got {}",
+                s
+            )))
+        }
+    }
+
+    fn into_object(self) -> Option<Value> {
+        Some(Value::NonNegativeInteger(self.0 as u64))
+    }
+
+    fn collect_schema(_schema: &mut schema::Schema) -> schema::Attribute {
+        schema::Attribute::new(schema::TypeRef::NonNegativeInteger)
+    }
+}
+
+impl CityGmlAttribute for LocalId {
+    #[inline]
+    fn parse_attribute_value(value: &str, st: &mut ParseContext) -> Result<Self, ParseError> {
+        let s = value;
+        if let Some(id) = s.strip_prefix('#') {
+            let s = id.to_string();
+            Ok(st.id_to_integer_id(s))
+        } else {
+            Err(ParseError::InvalidValue(format!(
+                "Expected a reference starts with '#' but got {}",
+                s
+            )))
+        }
+    }
+}
+
+impl<T: CityGmlElement + Default + std::fmt::Debug> CityGmlElement for Option<T> {
     #[inline]
     fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
         if self.is_some() {
@@ -499,7 +554,7 @@ where
 {
     let mut name = None;
     let mut value = None;
-    st.parse_attributes(|k, v| {
+    st.parse_attributes(|k, v, _| {
         // CityGML 2.0
         if k == b"@name" {
             name = Some(String::from_utf8_lossy(v).into());
@@ -535,7 +590,7 @@ fn parse_generic_set<R: BufRead>(
 ) -> Result<(String, GenericAttribute), ParseError> {
     let mut name = None;
     let mut value: Option<GenericAttribute> = None;
-    st.parse_attributes(|k, v| {
+    st.parse_attributes(|k, v, _| {
         if k == b"@name" {
             name = Some(String::from_utf8_lossy(v).into());
         }

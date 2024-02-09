@@ -2,8 +2,8 @@ use std::sync::Arc;
 
 use crate::transformer::Transform;
 
-use nusamai_citygml::object::Entity;
 use nusamai_citygml::schema::Schema;
+use nusamai_plateau::Entity;
 use nusamai_projection::crs::*;
 use nusamai_projection::vshift::Jgd2011ToWgs84;
 

@@ -13,10 +13,11 @@ use crate::pipeline::{Feedback, PipelineError, Receiver, Result};
 use crate::sink::{DataSink, DataSinkProvider, SinkInfo};
 use crate::{get_parameter_value, transformer};
 
-use nusamai_citygml::object::{Entity, ObjectStereotype, Value};
+use nusamai_citygml::object::{ObjectStereotype, Value};
 use nusamai_geojson::conversion::{
     indexed_linestring_to_value, indexed_point_to_value, indexed_polygon_to_value,
 };
+use nusamai_plateau::Entity;
 
 pub struct GeoJsonSinkProvider {}
 
@@ -254,8 +255,7 @@ mod tests {
             epsg: EPSG_JGD2011_GEOGRAPHIC_3D,
             vertices,
             multipolygon: mpoly,
-            multilinestring: Default::default(),
-            multipoint: Default::default(),
+            ..Default::default()
         };
 
         let obj = Entity {
@@ -273,6 +273,7 @@ mod tests {
                 },
             }),
             geometry_store: RwLock::new(geometries).into(),
+            appearance_store: Default::default(),
         };
 
         let geojson_features = entity_to_geojson_features(&obj);

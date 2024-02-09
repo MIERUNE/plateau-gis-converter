@@ -14,11 +14,21 @@ use std::str::FromStr;
 static INIT: Once = Once::new();
 
 pub(crate) fn simple_run_sink<S: DataSinkProvider>(sink_provider: S, output: Option<&str>) {
+    INIT.call_once(|| {
+        if std::env::var("RUST_LOG").is_err() {
+            std::env::set_var("RUST_LOG", "error")
+        }
+        pretty_env_logger::init();
+    });
+
     let filenames = [
         "../nusamai-plateau/tests/data/plateau-3_0/udx/rwy/53395527_rwy_6697.gml",
         "../nusamai-plateau/tests/data/plateau-3_0/udx/brid/dorokyo_51324378_brid_6697.gml",
         "../nusamai-plateau/tests/data/plateau-3_0/udx/trk/53361601_trk_6697.gml",
         "../nusamai-plateau/tests/data/plateau-3_0/udx/tun/53361613_tun_6697.gml",
+        "../nusamai-plateau/tests/data/plateau-3_0/udx/veg/52385628_veg_6697_op.gml",
+        "../nusamai-plateau/tests/data/kawasaki-shi/udx/frn/53391597_frn_6697_op.gml",
+        "../nusamai-plateau/tests/data/numazu-shi/udx/tran/52385608_tran_6697_op.gml",
     ];
 
     let source_provider: Box<dyn DataSourceProvider> = Box::new(CityGmlSourceProvider {
@@ -64,6 +74,19 @@ pub(crate) fn simple_run_sink<S: DataSinkProvider>(sink_provider: S, output: Opt
 #[test]
 fn run_serde_sink() {
     simple_run_sink(sink::serde::SerdeSinkProvider {}, "/dev/null".into());
+}
+
+#[test]
+fn run_czml_sink() {
+    simple_run_sink(sink::czml::CzmlSinkProvider {}, "/dev/null".into());
+}
+
+#[test]
+fn run_gltf_poc_sink() {
+    simple_run_sink(
+        sink::gltf_poc::GltfPocSinkProvider {},
+        "/tmp/nusamai/gltf-poc".into(),
+    );
 }
 
 #[test]
