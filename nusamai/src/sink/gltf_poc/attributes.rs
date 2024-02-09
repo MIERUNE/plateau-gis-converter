@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, io::Write};
 
 use ahash::RandomState;
 use indexmap::IndexMap;
@@ -8,6 +8,7 @@ use nusamai_citygml::{
     Value,
 };
 use nusamai_gltf_json::extensions;
+use rayon::string;
 
 #[derive(Debug, Clone)]
 pub struct GltfPropertyType {
@@ -234,113 +235,91 @@ pub fn attributes_to_buffer(
     attributes: &Vec<EntityAttributes>,
 ) -> IndexMap<String, Vec<u8>> {
     let mut buffers: IndexMap<String, Vec<u8>> = IndexMap::new();
-    let mut attributes_bin_content: Vec<u8> = Vec::new();
+
+    let mut gltf_properties = Vec::new();
 
     match schema {
         TypeDef::Feature(f) => {
             for (name, attr) in &f.attributes {
-                let property_type = to_gltf_schema(&attr.type_ref);
+                let mut property_type = to_gltf_schema(&attr.type_ref);
+                property_type.property_name = name.clone();
+                gltf_properties.push(property_type);
             }
         }
         TypeDef::Data(_) => unimplemented!(),
         TypeDef::Property(_) => unimplemented!(),
     }
 
-    for attr in attributes {
-        if let Some(value) = attr.attributes.get(&p.clone()) {
-            // todo: 全てのValueに対応する
-            // todo: 属性ごとに、バッファへの詰め込み方が異なる
-            // https://github.com/CesiumGS/3d-tiles/tree/main/specification/Metadata#binary-table-format
-            match value {
-                // todo: stringOffsetへの対応
-                Value::String(s) => {
-                    attributes_bin_content.write_all(s.as_bytes()).unwrap();
-                }
-                Value::Integer(i) => {
-                    attributes_bin_content.write_all(&i.to_le_bytes()).unwrap();
-                }
-                Value::Double(d) => {
-                    attributes_bin_content.write_all(&d.to_le_bytes()).unwrap();
-                }
-                _ => {
-                    attributes_bin_content
-                        .write_all(&0u32.to_le_bytes())
-                        .unwrap();
+    for p in gltf_properties {
+        let mut buffer: Vec<u8> = Vec::new();
+        let mut string_offset_buffer: Vec<u8> = Vec::new();
+        // let mut array_offset_buffer: Vec<u32> = Vec::new();
+
+        for attr in attributes {
+            if let Some(value) = attr.attributes.get(&p.property_name) {
+                match value {
+                    // todo: 型ごとの処理をきちんと定義する
+                    Value::String(s) => {
+                        buffer.write_all(s.as_bytes()).unwrap();
+                        string_offset_buffer
+                            .write_all(&(buffer.len() as u32).to_le_bytes())
+                            .unwrap();
+                    }
+                    Value::Integer(i) => {
+                        buffer.write_all(&i.to_le_bytes()).unwrap();
+                    }
+                    Value::Double(d) => {
+                        buffer.write_all(&d.to_le_bytes()).unwrap();
+                    }
+                    Value::Boolean(b) => {
+                        let buf: u8 = if *b { 1 } else { 0 };
+                        buffer.write_all(&buf.to_le_bytes()).unwrap();
+                    }
+                    Value::Code(c) => {
+                        let json = c.value();
+                        buffer.write_all(&json.as_bytes()).unwrap();
+                        string_offset_buffer
+                            .write_all(&(buffer.len() as u32).to_le_bytes())
+                            .unwrap();
+                    }
+                    Value::Measure(m) => {
+                        let json = m.value();
+                        buffer.write_all(&json.to_le_bytes()).unwrap();
+                    }
+                    Value::Point(_) => {
+                        unimplemented!();
+                    }
+                    Value::URI(u) => {
+                        buffer.write_all(u.value().as_bytes()).unwrap();
+                        string_offset_buffer
+                            .write_all(&(buffer.len() as u32).to_le_bytes())
+                            .unwrap();
+                    }
+                    Value::Date(d) => {
+                        unimplemented!();
+                    }
+                    Value::Array(a) => {
+                        let json = serde_json::to_string(a).unwrap();
+                        buffer.write_all(&json.as_bytes()).unwrap();
+                        string_offset_buffer
+                            .write_all(&(buffer.len() as u32).to_le_bytes())
+                            .unwrap();
+                    }
+                    Value::Object(o) => {
+                        let json = serde_json::to_string(o).unwrap();
+                        buffer.write_all(&json.as_bytes()).unwrap();
+                        string_offset_buffer
+                            .write_all(&(buffer.len() as u32).to_le_bytes())
+                            .unwrap();
+                    }
                 }
             }
-        } else {
-            attributes_bin_content
-                .write_all(&0u32.to_le_bytes())
-                .unwrap();
         }
-    }
-    todo!()
-}
 
-fn to_gltf_property_type(value: nusamai_citygml::Value) -> GltfPropertyType {
-    match value {
-        nusamai_citygml::Value::String(_) => GltfPropertyType {
-            property_name: "".to_string(),
-            class_property_type:
-                extensions::gltf::ext_structural_metadata::ClassPropertyType::String,
-            component_type: None,
-        },
-        nusamai_citygml::Value::Integer(_) => GltfPropertyType {
-            property_name: "".to_string(),
-            class_property_type:
-                extensions::gltf::ext_structural_metadata::ClassPropertyType::Scalar,
-            component_type: Some(
-                extensions::gltf::ext_structural_metadata::ClassPropertyComponentType::Int32,
-            ),
-        },
-        nusamai_citygml::Value::Double(_) => GltfPropertyType {
-            property_name: "".to_string(),
-            class_property_type:
-                extensions::gltf::ext_structural_metadata::ClassPropertyType::Scalar,
-            component_type: Some(
-                extensions::gltf::ext_structural_metadata::ClassPropertyComponentType::Float64,
-            ),
-        },
-        nusamai_citygml::Value::Boolean(_) => GltfPropertyType {
-            property_name: "".to_string(),
-            class_property_type:
-                extensions::gltf::ext_structural_metadata::ClassPropertyType::Boolean,
-            component_type: None,
-        },
-        nusamai_citygml::Value::Measure(_) => GltfPropertyType {
-            property_name: "".to_string(),
-            class_property_type:
-                extensions::gltf::ext_structural_metadata::ClassPropertyType::Scalar,
-            component_type: Some(
-                extensions::gltf::ext_structural_metadata::ClassPropertyComponentType::Int32,
-            ),
-        },
-        nusamai_citygml::Value::Code(_) => GltfPropertyType {
-            property_name: "".to_string(),
-            class_property_type:
-                extensions::gltf::ext_structural_metadata::ClassPropertyType::String,
-            component_type: None,
-        },
-        nusamai_citygml::Value::Object(_) => GltfPropertyType {
-            property_name: "".to_string(),
-            class_property_type:
-                extensions::gltf::ext_structural_metadata::ClassPropertyType::String,
-            component_type: None,
-        },
-        nusamai_citygml::Value::Point(_) => GltfPropertyType {
-            property_name: "".to_string(),
-            class_property_type: extensions::gltf::ext_structural_metadata::ClassPropertyType::Vec3,
-            component_type: Some(
-                extensions::gltf::ext_structural_metadata::ClassPropertyComponentType::Float64,
-            ),
-        },
-        _ => GltfPropertyType {
-            property_name: "".to_string(),
-            class_property_type:
-                extensions::gltf::ext_structural_metadata::ClassPropertyType::String,
-            component_type: None,
-        },
+        buffers.insert(p.property_name.clone(), buffer);
     }
+
+    buffers
 }
 
 #[cfg(test)]

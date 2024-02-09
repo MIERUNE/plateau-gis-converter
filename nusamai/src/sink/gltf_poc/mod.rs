@@ -14,11 +14,7 @@ use earcut_rs::Earcut;
 use indexmap::{IndexMap, IndexSet};
 use rayon::prelude::*;
 
-use nusamai_citygml::{
-    object::ObjectStereotype,
-    schema::{Schema, TypeDef, TypeRef},
-    GeometryType, Value,
-};
+use nusamai_citygml::{object::ObjectStereotype, schema::Schema, GeometryType, Value};
 use nusamai_gltf_json::{
     extensions, Accessor, AccessorType, Buffer, BufferView, BufferViewTarget, ComponentType, Gltf,
     Mesh, MeshPrimitive, Node, PrimitiveMode, Scene,
@@ -30,7 +26,9 @@ use crate::pipeline::{Feedback, PipelineError, Receiver};
 use crate::sink::{DataSink, DataSinkProvider, SinkInfo};
 use crate::{get_parameter_value, transformer};
 
-use attributes::{to_gltf_classes, to_gltf_property_tables, EntityAttributes, GltfPropertyType};
+use attributes::{
+    attributes_to_buffer, to_gltf_classes, to_gltf_property_tables, EntityAttributes,
+};
 
 #[derive(Debug, Default, PartialEq, Eq, Clone, Copy, Hash)]
 pub struct Vertex {
@@ -373,6 +371,7 @@ impl DataSink for GltfPocSink {
                     indices,
                     class_names,
                     schema,
+                    all_attributes,
                 );
 
                 let region: [f64; 6] = [
@@ -400,6 +399,7 @@ fn write_gltf<W: Write>(
     indices: impl IntoIterator<Item = u32>,
     class_names: HashSet<std::borrow::Cow<'_, str>>,
     schema: &Schema,
+    attributes: Vec<EntityAttributes>,
 ) {
     let mut bin_content: Vec<u8> = Vec::new();
 
@@ -525,82 +525,30 @@ fn write_gltf<W: Write>(
         ..Default::default()
     };
 
-    // // スキーマに定義された属性名
-    // let property_names = schemas
-    //     .values()
-    //     .next()
-    //     .unwrap()
-    //     .iter()
-    //     .map(|p| p.property_name.clone())
-    //     .collect::<Vec<_>>();
+    // todo: 複数のクラス名があった時の対応を考える
+    let class_name = class_names.iter().next().unwrap().as_ref().to_string();
+    let schema = schema.types.get::<String>(&class_name).unwrap();
 
-    // // 属性の値
-    // let attribute_values = attributes
-    //     .iter()
-    //     .map(|attr| attr.attributes.clone())
-    //     .collect::<Vec<_>>();
-
-    // // 列ごとのバイナリデータを格納する
-    // let mut attributes_bin_contents: IndexMap<String, Vec<u8>> = IndexMap::new();
-
-    // // 属性名から値を抽出して、全てリトルエンディアン形式で、密にバイナリエンコードする
-    // // todo: 文字列の場合は、StringOffsetもバイナリエンコードする必要がある
-    // for p in property_names {
-    //     let mut attributes_bin_content: Vec<u8> = Vec::new();
-    //     for attr in &attribute_values {
-    //         if let Some(value) = attr.get(&p.clone()) {
-    //             // todo: 全てのValueに対応する
-    //             // todo: 属性ごとに、バッファへの詰め込み方が異なる
-    //             // https://github.com/CesiumGS/3d-tiles/tree/main/specification/Metadata#binary-table-format
-    //             match value {
-    //                 // todo: stringOffsetへの対応
-    //                 Value::String(s) => {
-    //                     attributes_bin_content.write_all(s.as_bytes()).unwrap();
-    //                 }
-    //                 Value::Integer(i) => {
-    //                     attributes_bin_content.write_all(&i.to_le_bytes()).unwrap();
-    //                 }
-    //                 Value::Double(d) => {
-    //                     attributes_bin_content.write_all(&d.to_le_bytes()).unwrap();
-    //                 }
-    //                 _ => {
-    //                     attributes_bin_content
-    //                         .write_all(&0u32.to_le_bytes())
-    //                         .unwrap();
-    //                 }
-    //             }
-    //         } else {
-    //             attributes_bin_content
-    //                 .write_all(&0u32.to_le_bytes())
-    //                 .unwrap();
-    //         }
-    //     }
-    //     attributes_bin_contents.insert(p, attributes_bin_content);
-    // }
-
+    let attributes_bin_contents = attributes_to_buffer(schema, &attributes);
     // // BufferViewを属性の数だけ追加する
-    // let mut buffer_views: Vec<BufferView> = Vec::new();
-    // for (p, content) in attributes_bin_contents.iter() {
-    //     let byte_offset = bin_content.len();
-    //     let byte_length = content.len();
-    //     bin_content.extend(content.iter());
+    let mut buffer_views: Vec<BufferView> = Vec::new();
+    for (_, content) in attributes_bin_contents.iter() {
+        let byte_offset = bin_content.len();
+        let byte_length = content.len();
+        bin_content.extend(content.iter());
 
-    //     buffer_views.push(BufferView {
-    //         byte_offset: byte_offset as u32,
-    //         byte_length: byte_length as u32,
-    //         ..Default::default()
-    //     });
-    // }
+        buffer_views.push(BufferView {
+            byte_offset: byte_offset as u32,
+            byte_length: byte_length as u32,
+            ..Default::default()
+        });
+    }
 
-    // // BufferViewを追加する
-    // gltf.buffer_views.extend(buffer_views);
+    gltf.buffer_views.extend(buffer_views);
 
     let buffer_view_count = gltf.buffer_views.len() as u32;
     let feature_count = vertices.iter().map(|v| v.feature_id).max().unwrap() + 1;
 
-    // todo: 複数のクラス名があった時の対応を考える
-    let class_name = class_names.iter().next().unwrap().as_ref().to_string();
-    let schema = schema.types.get::<String>(&class_name).unwrap();
     let classes = to_gltf_classes(&class_name, schema);
     let property_tables =
         to_gltf_property_tables(&class_name, schema, buffer_view_count, feature_count);
@@ -620,10 +568,6 @@ fn write_gltf<W: Write>(
     };
 
     gltf.extensions = Some(extensions);
-
-    // for (_, content) in attributes_bin_contents.iter() {
-    //     bin_content.extend(content.iter());
-    // }
 
     {
         // 一度、JSONでも出力する
