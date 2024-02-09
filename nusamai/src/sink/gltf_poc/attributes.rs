@@ -101,7 +101,13 @@ fn to_gltf_schema(type_ref: &TypeRef) -> GltfPropertyType {
                 extensions::gltf::ext_structural_metadata::ClassPropertyType::String,
             component_type: None,
         },
-        _ => unimplemented!(),
+        // todo: その他の型についても対応（暫定的にStringとして取り扱う）
+        _ => GltfPropertyType {
+            property_name: "".to_string(),
+            class_property_type:
+                extensions::gltf::ext_structural_metadata::ClassPropertyType::String,
+            component_type: None,
+        },
     }
 }
 
@@ -154,8 +160,8 @@ pub fn to_gltf_classes(
 }
 
 pub fn to_gltf_property_tables(
-    schema: &TypeDef,
     class_name: &String,
+    schema: &TypeDef,
     buffer_view_length: u32,
     feature_count: u32,
 ) -> Vec<extensions::gltf::ext_structural_metadata::PropertyTable> {
