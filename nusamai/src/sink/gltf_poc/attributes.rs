@@ -184,8 +184,83 @@ fn to_gltf_classes(
 
 #[cfg(test)]
 mod tests {
+    use ahash::RandomState;
+    use indexmap::IndexMap;
+    use nusamai_citygml::schema::FeatureTypeDef;
+
     use super::*;
 
     #[test]
-    fn test_to_gltf_schema() {}
+    fn test_to_gltf_schema() {
+        let type_ref = TypeRef::String;
+        let gltf_property_type = to_gltf_schema(&type_ref);
+        assert_eq!(
+            gltf_property_type.class_property_type,
+            extensions::gltf::ext_structural_metadata::ClassPropertyType::String
+        );
+
+        let type_ref = TypeRef::Integer;
+        let gltf_property_type = to_gltf_schema(&type_ref);
+        assert_eq!(
+            gltf_property_type.class_property_type,
+            extensions::gltf::ext_structural_metadata::ClassPropertyType::Scalar
+        );
+        assert_eq!(
+            gltf_property_type.component_type,
+            Some(extensions::gltf::ext_structural_metadata::ClassPropertyComponentType::Int32)
+        );
+
+        let type_ref = TypeRef::Double;
+        let gltf_property_type = to_gltf_schema(&type_ref);
+        assert_eq!(
+            gltf_property_type.class_property_type,
+            extensions::gltf::ext_structural_metadata::ClassPropertyType::Scalar
+        );
+        assert_eq!(
+            gltf_property_type.component_type,
+            Some(extensions::gltf::ext_structural_metadata::ClassPropertyComponentType::Float64)
+        );
+
+        let type_ref = TypeRef::Boolean;
+        let gltf_property_type = to_gltf_schema(&type_ref);
+        assert_eq!(
+            gltf_property_type.class_property_type,
+            extensions::gltf::ext_structural_metadata::ClassPropertyType::Boolean
+        );
+
+        let type_ref = TypeRef::Measure;
+        let gltf_property_type = to_gltf_schema(&type_ref);
+        assert_eq!(
+            gltf_property_type.class_property_type,
+            extensions::gltf::ext_structural_metadata::ClassPropertyType::Scalar
+        );
+        assert_eq!(
+            gltf_property_type.component_type,
+            Some(extensions::gltf::ext_structural_metadata::ClassPropertyComponentType::Int32)
+        );
+    }
+
+    #[test]
+    fn test_to_gltf_classes() {
+        let class_name = "Building".to_string();
+        let attribute = TypeRef::String;
+        let mut attributes: IndexMap<String, nusamai_citygml::schema::Attribute, RandomState> =
+            IndexMap::default();
+
+        attributes.insert(
+            class_name.clone(),
+            nusamai_citygml::schema::Attribute {
+                type_ref: attribute,
+                ..Default::default()
+            },
+        );
+
+        let feature_type_def = TypeDef::Feature(FeatureTypeDef {
+            attributes,
+            ..Default::default()
+        });
+
+        let classes = to_gltf_classes(&class_name, &feature_type_def);
+        assert_eq!(classes.len(), 1);
+    }
 }
