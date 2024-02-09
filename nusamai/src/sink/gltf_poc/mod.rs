@@ -1,4 +1,5 @@
 //! gltf sink poc
+mod attributes;
 
 use std::collections::{HashMap, HashSet};
 use std::fs::File;
@@ -54,7 +55,7 @@ pub struct GltfPropertyType {
 }
 
 pub struct Attributes {
-    pub typename: String,
+    pub class_name: String,
     pub feature_id: u32,
     pub attributes: IndexMap<String, Value, RandomState>,
 }
@@ -273,7 +274,7 @@ impl DataSink for GltfPocSink {
                     receiver.into_iter().enumerate()
                 {
                     all_attributes.push(Attributes {
-                        typename: class_name.as_ref().to_string(),
+                        class_name: class_name.as_ref().to_string(),
                         feature_id: feature_id as u32,
                         attributes,
                     });
