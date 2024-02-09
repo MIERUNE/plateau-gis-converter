@@ -206,6 +206,7 @@ pub fn to_gltf_property_tables(
                                 ..Default::default()
                             },
                         );
+                        count += 1;
                     }
                     extensions::gltf::ext_structural_metadata::ClassPropertyType::Boolean => {
                         property_table.properties.insert(
@@ -215,6 +216,7 @@ pub fn to_gltf_property_tables(
                                 ..Default::default()
                             },
                         );
+                        count += 1;
                     }
                     _ => unimplemented!(),
                 }
@@ -350,6 +352,7 @@ pub fn attributes_to_buffer(
                     }
                 }
             } else {
+                // スキーマには定義されているが、entityには存在しない場合
                 match p {
                     GltfPropertyType {
                         class_property_type:
@@ -381,6 +384,13 @@ pub fn attributes_to_buffer(
         }
 
         buffers.insert(p.property_name.clone(), buffer);
+        // todo: array_offset_bufferを追加する
+        if !string_offset_buffer.is_empty() {
+            buffers.insert(
+                p.property_name.clone() + "_string_offsets",
+                string_offset_buffer,
+            );
+        }
     }
 
     buffers

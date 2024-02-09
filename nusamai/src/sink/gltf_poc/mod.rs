@@ -464,7 +464,7 @@ fn write_gltf<W: Write>(
                             // todo: 複数の地物型を出力するときには、地物型ごとにfeature_idを付与していくので、attributesやproperty_tableは動的に変化する
                             // todo: meshes.primitives.attributesには、地物型ごとのfeature_idを付与するので、以下のattributesへのインデックスも動的に変わる
                             attribute: Some(0),
-                            feature_count: vertices.iter().map(|v| v.feature_id).max().unwrap() + 1,
+                            feature_count: vertices.iter().map(|v| v.feature_id).max().unwrap(),
                             property_table: Some(0),
                             ..Default::default()
                         }],
@@ -495,7 +495,7 @@ fn write_gltf<W: Write>(
             },
             Accessor {
                 buffer_view: Some(2),
-                component_type: ComponentType::Float,
+                component_type: ComponentType::UnsignedInt,
                 count: feature_ids_count,
                 type_: AccessorType::Scalar,
                 ..Default::default()
@@ -528,10 +528,8 @@ fn write_gltf<W: Write>(
     let class_name = class_names.iter().next().unwrap().as_ref().to_string();
     let schema = schema.types.get::<String>(&class_name).unwrap();
 
-    let attributes_bin_contents = attributes_to_buffer(schema, &attributes);
-
     let buffer_view_count = gltf.buffer_views.len() as u32;
-    let feature_count = vertices.iter().map(|v| v.feature_id).max().unwrap() + 1;
+    let feature_count = vertices.iter().map(|v| v.feature_id).max().unwrap();
 
     let classes = to_gltf_classes(&class_name, schema);
     let property_tables =
@@ -551,10 +549,12 @@ fn write_gltf<W: Write>(
         ..Default::default()
     };
 
+    let attributes_bin_contents = attributes_to_buffer(schema, &attributes);
     let mut buffer_views: Vec<BufferView> = Vec::new();
     for (_, content) in attributes_bin_contents.iter() {
         let byte_offset = bin_content.len();
         let byte_length = content.len();
+
         bin_content.extend(content.iter());
 
         buffer_views.push(BufferView {
