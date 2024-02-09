@@ -101,8 +101,9 @@ fn to_gltf_classes(
 
     match schema {
         TypeDef::Feature(f) => {
-            for (_, attr) in &f.attributes {
-                let property_type = to_gltf_schema(&attr.type_ref);
+            for (name, attr) in &f.attributes {
+                let mut property_type = to_gltf_schema(&attr.type_ref);
+                property_type.property_name = name.clone();
                 gltf_property_types.push(property_type);
             }
         }
@@ -140,47 +141,47 @@ fn to_gltf_classes(
     classes
 }
 
-// fn to_gltf_property_tables(
-//     schema: &TypeDef,
-//     class_name: &String,
-//     buffer_view_length: u32,
-//     feature_count: u32,
-// ) -> Vec<extensions::gltf::ext_structural_metadata::PropertyTable> {
-//     // todo: 複数の地物型が存在している時の対応を考える
-//     let mut property_tables: Vec<extensions::gltf::ext_structural_metadata::PropertyTable> =
-//         Vec::new();
+fn to_gltf_property_tables(
+    schema: &TypeDef,
+    class_name: &String,
+    buffer_view_length: u32,
+    feature_count: u32,
+) -> Vec<extensions::gltf::ext_structural_metadata::PropertyTable> {
+    // todo: 複数の地物型が存在している時の対応を考える
+    let mut property_tables: Vec<extensions::gltf::ext_structural_metadata::PropertyTable> =
+        Vec::new();
 
-//     // Create Schema.property_tables
-//     let mut property_table: extensions::gltf::ext_structural_metadata::PropertyTable =
-//         extensions::gltf::ext_structural_metadata::PropertyTable {
-//             properties: HashMap::new(),
-//             count: feature_count,
-//             ..Default::default()
-//         };
+    // Create Schema.property_tables
+    let mut property_table: extensions::gltf::ext_structural_metadata::PropertyTable =
+        extensions::gltf::ext_structural_metadata::PropertyTable {
+            properties: HashMap::new(),
+            count: feature_count,
+            ..Default::default()
+        };
 
-//     match schema {
-//         TypeDef::Feature(f) => {
-//             for (name, attr) in &f.attributes {
-//                 let property_type = to_gltf_schema(&attr.type_ref);
-//                 // property_typeによって、PropertyTablePropertyの構造が変化する
-//                 property_table.properties.insert(
-//                     *name,
-//                     extensions::gltf::ext_structural_metadata::PropertyTableProperty {
-//                         values: buffer_view_length + 2,
-//                         ..Default::default()
-//                     },
-//                 );
-//             }
-//         }
-//         // todo: feature 以外の型も実装する
-//         TypeDef::Data(_) => unimplemented!(),
-//         TypeDef::Property(_) => unimplemented!(),
-//     }
+    match schema {
+        TypeDef::Feature(f) => {
+            for (name, attr) in &f.attributes {
+                let property_type = to_gltf_schema(&attr.type_ref);
+                // property_typeによって、PropertyTablePropertyの構造が変化する
+                property_table.properties.insert(
+                    *name,
+                    extensions::gltf::ext_structural_metadata::PropertyTableProperty {
+                        values: buffer_view_length + 2,
+                        ..Default::default()
+                    },
+                );
+            }
+        }
+        // todo: feature 以外の型も実装する
+        TypeDef::Data(_) => unimplemented!(),
+        TypeDef::Property(_) => unimplemented!(),
+    }
 
-//     property_tables.push(property_table);
+    property_tables.push(property_table);
 
-//     property_tables
-// }
+    property_tables
+}
 
 #[cfg(test)]
 mod tests {
