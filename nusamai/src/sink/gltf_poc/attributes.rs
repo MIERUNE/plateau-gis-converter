@@ -331,7 +331,7 @@ mod tests {
             ..Default::default()
         });
 
-        let property_tables = to_gltf_property_tables(&feature_type_def, &class_name, 0, 1);
+        let property_tables = to_gltf_property_tables(&class_name, &feature_type_def, 0, 1);
         assert_eq!(property_tables.len(), 1);
     }
 }
