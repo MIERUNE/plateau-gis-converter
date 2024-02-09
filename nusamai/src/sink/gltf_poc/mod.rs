@@ -535,6 +535,7 @@ fn write_gltf<W: Write>(
     for (_, content) in attributes_bin_contents.iter() {
         let byte_offset = bin_content.len();
         let byte_length = content.len();
+        // todo: attributes_bin_contentsのバッファがbin_contentに追加されていなさそう？
         bin_content.extend(content.iter());
 
         buffer_views.push(BufferView {

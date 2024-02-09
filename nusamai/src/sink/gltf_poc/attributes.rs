@@ -260,10 +260,17 @@ pub fn attributes_to_buffer(
                 match value {
                     // todo: 型ごとの処理をきちんと定義する
                     Value::String(s) => {
-                        buffer.write_all(s.as_bytes()).unwrap();
-                        string_offset_buffer
-                            .write_all(&(buffer.len() as u32).to_le_bytes())
-                            .unwrap();
+                        if s.is_empty() {
+                            buffer.write_all(&[0u8]).unwrap();
+                            string_offset_buffer
+                                .write_all(&(buffer.len() as u32).to_le_bytes())
+                                .unwrap();
+                        } else {
+                            buffer.write_all(s.as_bytes()).unwrap();
+                            string_offset_buffer
+                                .write_all(&(buffer.len() as u32).to_le_bytes())
+                                .unwrap();
+                        }
                     }
                     Value::Integer(i) => {
                         buffer.write_all(&i.to_le_bytes()).unwrap();
@@ -277,10 +284,17 @@ pub fn attributes_to_buffer(
                     }
                     Value::Code(c) => {
                         let json = c.value();
-                        buffer.write_all(&json.as_bytes()).unwrap();
-                        string_offset_buffer
-                            .write_all(&(buffer.len() as u32).to_le_bytes())
-                            .unwrap();
+                        if json.is_empty() {
+                            buffer.write_all(&[0u8]).unwrap();
+                            string_offset_buffer
+                                .write_all(&(buffer.len() as u32).to_le_bytes())
+                                .unwrap();
+                        } else {
+                            buffer.write_all(&json.as_bytes()).unwrap();
+                            string_offset_buffer
+                                .write_all(&(buffer.len() as u32).to_le_bytes())
+                                .unwrap();
+                        }
                     }
                     Value::Measure(m) => {
                         let json = m.value();
@@ -290,28 +304,78 @@ pub fn attributes_to_buffer(
                         unimplemented!();
                     }
                     Value::URI(u) => {
-                        buffer.write_all(u.value().as_bytes()).unwrap();
-                        string_offset_buffer
-                            .write_all(&(buffer.len() as u32).to_le_bytes())
-                            .unwrap();
+                        let json = u.value();
+                        if json.is_empty() {
+                            buffer.write_all(&[0u8]).unwrap();
+                            string_offset_buffer
+                                .write_all(&(buffer.len() as u32).to_le_bytes())
+                                .unwrap();
+                        } else {
+                            buffer.write_all(u.value().as_bytes()).unwrap();
+                            string_offset_buffer
+                                .write_all(&(buffer.len() as u32).to_le_bytes())
+                                .unwrap();
+                        }
                     }
                     Value::Date(d) => {
                         unimplemented!();
                     }
                     Value::Array(a) => {
                         let json = serde_json::to_string(a).unwrap();
-                        buffer.write_all(&json.as_bytes()).unwrap();
-                        string_offset_buffer
-                            .write_all(&(buffer.len() as u32).to_le_bytes())
-                            .unwrap();
+                        if json.is_empty() {
+                            buffer.write_all(&[0u8]).unwrap();
+                            string_offset_buffer
+                                .write_all(&(buffer.len() as u32).to_le_bytes())
+                                .unwrap();
+                        } else {
+                            buffer.write_all(&json.as_bytes()).unwrap();
+                            string_offset_buffer
+                                .write_all(&(buffer.len() as u32).to_le_bytes())
+                                .unwrap();
+                        }
                     }
                     Value::Object(o) => {
                         let json = serde_json::to_string(o).unwrap();
-                        buffer.write_all(&json.as_bytes()).unwrap();
+                        if json.is_empty() {
+                            buffer.write_all(&[0u8]).unwrap();
+                            string_offset_buffer
+                                .write_all(&(buffer.len() as u32).to_le_bytes())
+                                .unwrap();
+                        } else {
+                            buffer.write_all(&json.as_bytes()).unwrap();
+                            string_offset_buffer
+                                .write_all(&(buffer.len() as u32).to_le_bytes())
+                                .unwrap();
+                        }
+                    }
+                }
+            } else {
+                match p {
+                    GltfPropertyType {
+                        class_property_type:
+                            extensions::gltf::ext_structural_metadata::ClassPropertyType::String,
+                        ..
+                    } => {
+                        buffer.write_all(&[0u8]).unwrap();
                         string_offset_buffer
                             .write_all(&(buffer.len() as u32).to_le_bytes())
                             .unwrap();
                     }
+                    GltfPropertyType {
+                        class_property_type:
+                            extensions::gltf::ext_structural_metadata::ClassPropertyType::Scalar,
+                        ..
+                    } => {
+                        buffer.write_all(&[0u8; 4]).unwrap();
+                    }
+                    GltfPropertyType {
+                        class_property_type:
+                            extensions::gltf::ext_structural_metadata::ClassPropertyType::Boolean,
+                        ..
+                    } => {
+                        buffer.write_all(&[0u8]).unwrap();
+                    }
+                    _ => unimplemented!(),
                 }
             }
         }
