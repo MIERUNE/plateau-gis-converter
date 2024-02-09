@@ -238,7 +238,7 @@ fn prepare_object_attributes(obj: &Object) -> IndexMap<String, String> {
                 attributes.insert(attr_name.into(), u.value().to_string());
             }
             Value::Date(d) => {
-                // String, as SQLite does not have a date type
+                // Date represented as an ISO8601 string
                 attributes.insert(attr_name.into(), d.to_string());
             }
             Value::Point(_p) => {
@@ -288,7 +288,7 @@ fn schema_to_columns(schema: &Schema) -> IndexMap<String, String> {
                         attribute_columns.insert(attr_name.into(), "TEXT".into());
                     }
                     TypeRef::Date => {
-                        attribute_columns.insert(attr_name.into(), "TEXT".into());
+                        attribute_columns.insert(attr_name.into(), "DATE".into());
                     }
                     TypeRef::DateTime => {
                         attribute_columns.insert(attr_name.into(), "TEXT".into());
