@@ -1,5 +1,6 @@
-use std::collections::{hash_map::RandomState, HashMap};
+use std::collections::HashMap;
 
+use ahash::RandomState;
 use indexmap::IndexMap;
 
 use nusamai_citygml::{
