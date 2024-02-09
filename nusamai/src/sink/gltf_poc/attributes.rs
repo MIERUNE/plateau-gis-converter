@@ -1,6 +1,11 @@
-use std::collections::HashMap;
+use std::collections::{hash_map::RandomState, HashMap};
 
-use nusamai_citygml::schema::{TypeDef, TypeRef};
+use indexmap::IndexMap;
+
+use nusamai_citygml::{
+    schema::{TypeDef, TypeRef},
+    Value,
+};
 use nusamai_gltf_json::extensions;
 
 #[derive(Debug, Clone)]
@@ -9,6 +14,12 @@ pub struct GltfPropertyType {
     pub class_property_type: extensions::gltf::ext_structural_metadata::ClassPropertyType,
     pub component_type:
         Option<extensions::gltf::ext_structural_metadata::ClassPropertyComponentType>,
+}
+
+pub struct Attributes {
+    pub class_name: String,
+    pub feature_id: u32,
+    pub attributes: IndexMap<String, Value, RandomState>,
 }
 
 fn to_gltf_schema(type_ref: &TypeRef) -> GltfPropertyType {
@@ -93,7 +104,7 @@ fn to_gltf_schema(type_ref: &TypeRef) -> GltfPropertyType {
     }
 }
 
-fn to_gltf_classes(
+pub fn to_gltf_classes(
     class_name: &String,
     schema: &TypeDef,
 ) -> HashMap<String, extensions::gltf::ext_structural_metadata::Class> {
@@ -141,7 +152,7 @@ fn to_gltf_classes(
     classes
 }
 
-fn to_gltf_property_tables(
+pub fn to_gltf_property_tables(
     schema: &TypeDef,
     class_name: &String,
     buffer_view_length: u32,

@@ -30,6 +30,8 @@ use crate::pipeline::{Feedback, PipelineError, Receiver};
 use crate::sink::{DataSink, DataSinkProvider, SinkInfo};
 use crate::{get_parameter_value, transformer};
 
+use attributes::{to_gltf_classes, to_gltf_property_tables, Attributes, GltfPropertyType};
+
 #[derive(Debug, Default, PartialEq, Eq, Clone, Copy, Hash)]
 pub struct Vertex {
     pub position: [u32; 3],  // f32.to_bits()
@@ -44,20 +46,6 @@ pub struct BoundingVolume {
     pub max_lat: f64,
     pub min_height: f64,
     pub max_height: f64,
-}
-
-#[derive(Debug, Clone)]
-pub struct GltfPropertyType {
-    pub property_name: String,
-    pub class_property_type: extensions::gltf::ext_structural_metadata::ClassPropertyType,
-    pub component_type:
-        Option<extensions::gltf::ext_structural_metadata::ClassPropertyComponentType>,
-}
-
-pub struct Attributes {
-    pub class_name: String,
-    pub feature_id: u32,
-    pub attributes: IndexMap<String, Value, RandomState>,
 }
 
 pub struct triangleEntity {
