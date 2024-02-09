@@ -8,10 +8,11 @@ use crate::pipeline::{Feedback, PipelineError, Receiver, Result};
 use crate::sink::{DataSink, DataSinkProvider, SinkInfo};
 use crate::{get_parameter_value, transformer};
 
-use nusamai_citygml::object::{Entity, ObjectStereotype, Value};
+use nusamai_citygml::object::{ObjectStereotype, Value};
 use nusamai_citygml::schema::Schema;
 use nusamai_citygml::GeometryType;
 use nusamai_kml::conversion::indexed_multipolygon_to_kml;
+use nusamai_plateau::Entity;
 use rayon::prelude::*;
 
 use kml::{
@@ -149,13 +150,13 @@ fn extract_properties(value: &nusamai_citygml::object::Value) -> Option<geojson:
 }
 
 pub fn entity_to_kml_mutilgeom(entity: &Entity) -> MultiGeometry {
-    let properties = extract_properties(&entity.root);
+    let _properties = extract_properties(&entity.root);
     let geom_store = entity.geometry_store.read().unwrap();
 
     let Value::Object(obj) = &entity.root else {
         return MultiGeometry::default();
     };
-    let ObjectStereotype::Feature { id, geometries } = &obj.stereotype else {
+    let ObjectStereotype::Feature { geometries, .. } = &obj.stereotype else {
         return MultiGeometry::default();
     };
 

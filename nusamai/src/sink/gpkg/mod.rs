@@ -342,8 +342,7 @@ mod tests {
             epsg: EPSG_JGD2011_GEOGRAPHIC_3D,
             vertices,
             multipolygon: mpoly,
-            multilinestring: Default::default(),
-            multipoint: Default::default(),
+            ..Default::default()
         };
 
         let bbox = get_indexed_multipolygon_bbox(&geometries.vertices, &geometries.multipolygon);
