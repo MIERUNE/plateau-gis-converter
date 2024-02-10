@@ -16,7 +16,7 @@ pub struct LandUse {
     pub ifc_land_use_attribute: Vec<uro::IfcAttributeProperty>, // -> uro:IfcAttribute
 
     #[citygml(path = b"uro:landUseDetailAttribute/uro:LandUseDetailAttribute")]
-    pub land_use_detail_attribute: Vec<uro::LandUseDetailAttribute>,
+    pub land_use_detail_attribute: Option<uro::LandUseDetailAttribute>,
 
     #[citygml(path = b"uro:luseDataQualityAttribute/uro:LandUseDataQualityAttribute")]
     pub luse_data_quality_attribute: Option<uro::LandUseDataQualityAttribute>,

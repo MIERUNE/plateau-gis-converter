@@ -52,11 +52,11 @@ pub struct GeometryStore {
     /// Shared vertex buffer for all geometries
     pub vertices: Vec<[f64; 3]>,
 
-    /// All polygons, referenced by `GeometryRef`
+    /// All polygons, referenced by `GeometryRefs`
     pub multipolygon: MultiPolygon<'static, 1, u32>,
-    /// All line-strings, referenced by `GeometryRef`
+    /// All line-strings, referenced by `GeometryRefs`
     pub multilinestring: MultiLineString<'static, 1, u32>,
-    /// All points, referenced by `GeometryRef`
+    /// All points, referenced by `GeometryRefs`
     pub multipoint: MultiPoint<'static, 1, u32>,
 
     /// Ring ids of the all polygons

@@ -67,7 +67,7 @@ struct Param {
 //         }
 //
 //         // child_geometry_refの重複を除去する
-//         let child_geometry_refs: Vec<GeometryRefEntry> =
+//         let child_geometry_refs: Vec<GeometryRef> =
 //             child_geometry_refs
 //                 .into_iter()
 //                 .fold(Vec::new(), |mut acc, x| {
