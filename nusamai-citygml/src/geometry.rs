@@ -32,7 +32,7 @@ pub enum GeometryType {
 
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub struct GeometryRefEntry {
+pub struct GeometryRef {
     #[serde(rename = "type")]
     pub ty: GeometryType,
     pub lod: u8,
@@ -40,7 +40,7 @@ pub struct GeometryRefEntry {
     pub len: u32,
 }
 
-pub type GeometryRef = Vec<GeometryRefEntry>;
+pub type GeometryRefs = Vec<GeometryRef>;
 
 /// Geometries in a single city object and all its children.
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
@@ -52,11 +52,11 @@ pub struct GeometryStore {
     /// Shared vertex buffer for all geometries
     pub vertices: Vec<[f64; 3]>,
 
-    /// All polygons, referenced by `GeometryRef`
+    /// All polygons, referenced by `GeometryRefs`
     pub multipolygon: MultiPolygon<'static, 1, u32>,
-    /// All line-strings, referenced by `GeometryRef`
+    /// All line-strings, referenced by `GeometryRefs`
     pub multilinestring: MultiLineString<'static, 1, u32>,
-    /// All points, referenced by `GeometryRef`
+    /// All points, referenced by `GeometryRefs`
     pub multipoint: MultiPoint<'static, 1, u32>,
 
     /// Ring ids of the all polygons

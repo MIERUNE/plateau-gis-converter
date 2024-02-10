@@ -2,7 +2,7 @@
 
 use std::borrow::Cow;
 
-use crate::geometry::GeometryRef;
+use crate::geometry::GeometryRefs;
 use crate::values::{Code, Date, Point, URI};
 use crate::Measure;
 use serde::{Deserialize, Serialize};
@@ -19,8 +19,13 @@ pub struct Object {
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub enum ObjectStereotype {
-    Feature { id: String, geometries: GeometryRef },
-    Object { id: String },
+    Feature {
+        id: String,
+        geometries: GeometryRefs,
+    },
+    Object {
+        id: String,
+    },
     Data,
 }
 
