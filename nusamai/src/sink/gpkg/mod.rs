@@ -191,8 +191,6 @@ impl GpkgSink {
 
 impl DataSink for GpkgSink {
     fn make_transform_requirements(&self) -> transformer::Requirements {
-        // use transformer::RequirementItem;
-
         transformer::Requirements {
             ..Default::default()
         }

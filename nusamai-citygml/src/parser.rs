@@ -11,8 +11,7 @@ use url::Url;
 use crate::appearance::{TexCoordList, TextureAssociation};
 use crate::codelist::{self, CodeResolver};
 use crate::geometry::{
-    GeometryCollector, GeometryParseType, GeometryRef, GeometryRefEntry, GeometryStore,
-    GeometryType,
+    GeometryCollector, GeometryParseType, GeometryRef, GeometryRefs, GeometryStore, GeometryType,
 };
 use crate::namespace::{wellknown_prefix_from_nsres, APP_2_NS, GML31_NS};
 use crate::{CityGmlAttribute, LocalId, SurfaceSpan};
@@ -323,7 +322,7 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
     /// Expect a geometric attribute of CityGML
     pub fn parse_geometric_attr(
         &mut self,
-        geomref: &mut GeometryRef,
+        geomref: &mut GeometryRefs,
         lod: u8,
         geomtype: GeometryParseType,
     ) -> Result<(), ParseError> {
@@ -353,7 +352,7 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
 
     fn parse_multi_surface_prop(
         &mut self,
-        geomrefs: &mut GeometryRef,
+        geomrefs: &mut GeometryRefs,
         lod: u8,
     ) -> Result<(), ParseError> {
         let mut surface_id = None;
@@ -388,7 +387,7 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
 
                     let poly_end = self.state.geometry_collector.multipolygon.len();
                     if poly_end - poly_begin > 0 {
-                        geomrefs.push(GeometryRefEntry {
+                        geomrefs.push(GeometryRef {
                             ty: geomtype,
                             lod,
                             pos: poly_begin as u32,
@@ -423,14 +422,14 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
 
     fn parse_surface_prop(
         &mut self,
-        geomrefs: &mut GeometryRef,
+        geomrefs: &mut GeometryRefs,
         lod: u8,
     ) -> Result<(), ParseError> {
         let poly_begin = self.state.geometry_collector.multipolygon.len();
         self.parse_surface()?;
         let poly_end = self.state.geometry_collector.multipolygon.len();
         if poly_end - poly_begin > 0 {
-            geomrefs.push(GeometryRefEntry {
+            geomrefs.push(GeometryRef {
                 ty: GeometryType::Surface,
                 lod,
                 pos: poly_begin as u32,
@@ -440,7 +439,7 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
         Ok(())
     }
 
-    fn parse_solid_prop(&mut self, geomrefs: &mut GeometryRef, lod: u8) -> Result<(), ParseError> {
+    fn parse_solid_prop(&mut self, geomrefs: &mut GeometryRefs, lod: u8) -> Result<(), ParseError> {
         let poly_begin = self.state.geometry_collector.multipolygon.len();
 
         if expect_start(self.reader, &mut self.state.buf1, GML31_NS, b"Solid")? {
@@ -450,7 +449,7 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
 
         let poly_end = self.state.geometry_collector.multipolygon.len();
         if poly_end - poly_begin > 0 {
-            geomrefs.push(GeometryRefEntry {
+            geomrefs.push(GeometryRef {
                 ty: GeometryType::Solid,
                 lod,
                 pos: poly_begin as u32,
@@ -462,7 +461,7 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
 
     fn parse_geometry_prop(
         &mut self,
-        geomrefs: &mut GeometryRef,
+        geomrefs: &mut GeometryRefs,
         lod: u8,
     ) -> Result<(), ParseError> {
         let mut surface_id = None;
@@ -525,7 +524,7 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
 
                     let poly_end = self.state.geometry_collector.multipolygon.len();
                     if poly_end - poly_begin > 0 {
-                        geomrefs.push(GeometryRefEntry {
+                        geomrefs.push(GeometryRef {
                             ty: geomtype,
                             lod,
                             pos: poly_begin as u32,
@@ -560,7 +559,7 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
 
     fn parse_triangulated_prop(
         &mut self,
-        geomrefs: &mut GeometryRef,
+        geomrefs: &mut GeometryRefs,
         lod: u8,
     ) -> Result<(), ParseError> {
         let poly_begin = self.state.geometry_collector.multipolygon.len();
@@ -595,7 +594,7 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
 
         let poly_end = self.state.geometry_collector.multipolygon.len();
         if poly_end - poly_begin > 0 {
-            geomrefs.push(GeometryRefEntry {
+            geomrefs.push(GeometryRef {
                 ty: GeometryType::Triangle,
                 lod,
                 pos: poly_begin as u32,

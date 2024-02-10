@@ -60,10 +60,7 @@ pub struct KmlSink {
 
 impl DataSink for KmlSink {
     fn make_transform_requirements(&self) -> transformer::Requirements {
-        use transformer::RequirementItem;
-
         transformer::Requirements {
-            mergedown: RequirementItem::Required(transformer::Mergedown::Geometry),
             ..Default::default()
         }
     }

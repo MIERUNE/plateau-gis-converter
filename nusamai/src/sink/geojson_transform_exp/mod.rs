@@ -60,8 +60,6 @@ pub struct GeoJsonTfExpSink {
 
 impl DataSink for GeoJsonTfExpSink {
     fn make_transform_requirements(&self) -> transformer::Requirements {
-        // use transformer::RequirementItem;
-
         transformer::Requirements {
             ..Default::default()
         }

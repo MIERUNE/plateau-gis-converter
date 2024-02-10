@@ -429,7 +429,7 @@ mod tests {
     use super::*;
     use nusamai_citygml::{
         object::{self, Map, ObjectStereotype},
-        Code, GeometryRefEntry, GeometryStore, GeometryType, Value,
+        Code, GeometryRef, GeometryStore, GeometryType, Value,
     };
     use nusamai_plateau::Entity;
 
@@ -494,7 +494,7 @@ mod tests {
             "Code".to_string(),
             Value::Code(Code::new("test".to_string(), "1".to_string())),
         );
-        let geometries_1 = vec![GeometryRefEntry {
+        let geometries_1 = vec![GeometryRef {
             ty: GeometryType::Surface,
             lod: 0,
             pos: 0,

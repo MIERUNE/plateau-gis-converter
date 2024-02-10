@@ -65,8 +65,6 @@ pub struct NoopSink {
 
 impl DataSink for NoopSink {
     fn make_transform_requirements(&self) -> transformer::Requirements {
-        // use transformer::RequirementItem;
-
         transformer::Requirements {
             ..Default::default()
         }

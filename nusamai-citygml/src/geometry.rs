@@ -32,7 +32,7 @@ pub enum GeometryType {
 
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub struct GeometryRefEntry {
+pub struct GeometryRef {
     #[serde(rename = "type")]
     pub ty: GeometryType,
     pub lod: u8,
@@ -40,7 +40,7 @@ pub struct GeometryRefEntry {
     pub len: u32,
 }
 
-pub type GeometryRef = Vec<GeometryRefEntry>;
+pub type GeometryRefs = Vec<GeometryRef>;
 
 /// Geometries in a single city object and all its children.
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
