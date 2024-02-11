@@ -47,10 +47,10 @@ pub struct BoundingVolume {
 }
 
 pub struct triangleEntity {
-    pub triangles: Vec<[f64; 3]>,
-    pub attributes: IndexMap<String, Value, RandomState>,
-    pub bounding_volume: BoundingVolume,
     pub class_name: String,
+    pub triangles: Vec<[f64; 3]>,
+    pub bounding_volume: BoundingVolume,
+    pub attributes: IndexMap<String, Value, RandomState>,
 }
 
 pub struct GltfPocSinkProvider {}
@@ -325,7 +325,6 @@ impl DataSink for GltfPocSink {
 
                 // make vertices and indices
                 let mut vertices: IndexSet<Vertex, RandomState> = IndexSet::default();
-
                 let indices: Vec<u32> = buffers
                     .iter()
                     .map(|&[x, y, z, feature_id]| {
@@ -351,7 +350,6 @@ impl DataSink for GltfPocSink {
                         index as u32
                     })
                     .collect();
-
                 let indices: Vec<u32> = indices
                     .chunks_exact(3)
                     .filter(|idx| (idx[0] != idx[1] && idx[1] != idx[2] && idx[2] != idx[0]))
@@ -434,6 +432,7 @@ fn write_gltf<W: Write>(
     }
     let feature_ids_len = bin_content.len() - feature_ids_offset;
 
+    // make base gltf structure
     let mut gltf = Gltf {
         extensions_used: vec![
             "EXT_mesh_features".to_string(),
@@ -458,20 +457,6 @@ fn write_gltf<W: Write>(
                 .collect(),
                 indices: Some(1),
                 mode: PrimitiveMode::Triangles,
-                extensions: Some(extensions::mesh::MeshPrimitive {
-                    ext_mesh_features: Some(extensions::mesh::ext_mesh_features::ExtMeshFeatures {
-                        feature_ids: vec![extensions::mesh::ext_mesh_features::FeatureId {
-                            // todo: 複数の地物型を出力するときには、地物型ごとにfeature_idを付与していくので、attributesやproperty_tableは動的に変化する
-                            // todo: meshes.primitives.attributesには、地物型ごとのfeature_idを付与するので、以下のattributesへのインデックスも動的に変わる
-                            attribute: Some(0),
-                            feature_count: vertices.iter().map(|v| v.feature_id).max().unwrap(),
-                            property_table: Some(0),
-                            ..Default::default()
-                        }],
-                        ..Default::default()
-                    }),
-                    ..Default::default()
-                }),
                 ..Default::default()
             }],
             ..Default::default()
@@ -524,7 +509,7 @@ fn write_gltf<W: Write>(
         ..Default::default()
     };
 
-    // // todo: 複数のクラス名があった時の対応を考える
+    // todo: 複数のクラス名があった時の対応を考える
     let class_name = class_names.iter().next().unwrap().as_ref().to_string();
     let schema = schema.types.get::<String>(&class_name).unwrap();
 
@@ -549,6 +534,23 @@ fn write_gltf<W: Write>(
         ..Default::default()
     };
 
+    // mesh primitiveのextensionを追加
+    let mesh_primitive_extensions = Some(extensions::mesh::MeshPrimitive {
+        ext_mesh_features: Some(extensions::mesh::ext_mesh_features::ExtMeshFeatures {
+            feature_ids: vec![extensions::mesh::ext_mesh_features::FeatureId {
+                // todo: 複数の地物型を出力するときには、地物型ごとにfeature_idを付与していくので、attributesやproperty_tableは動的に変化する
+                // todo: meshes.primitives.attributesには、地物型ごとのfeature_idを付与するので、以下のattributesへのインデックスも動的に変わる
+                attribute: Some(0),
+                feature_count: vertices.iter().map(|v| v.feature_id).max().unwrap(),
+                property_table: Some(0),
+                ..Default::default()
+            }],
+            ..Default::default()
+        }),
+        ..Default::default()
+    });
+    gltf.meshes[0].primitives[0].extensions = mesh_primitive_extensions;
+
     let attributes_bin_contents = attributes_to_buffer(schema, &attributes);
     let mut buffer_views: Vec<BufferView> = Vec::new();
     for (_, content) in attributes_bin_contents.iter() {
@@ -568,6 +570,7 @@ fn write_gltf<W: Write>(
 
     gltf.extensions = Some(extensions);
 
+    // Add after all binary buffers have been written
     let buffers = vec![Buffer {
         byte_length: bin_content.len() as u32,
         ..Default::default()
@@ -575,10 +578,10 @@ fn write_gltf<W: Write>(
     gltf.buffers = buffers;
 
     {
-        // 一度、JSONでも出力する
-        let json_file = File::create("/Users/satoru/github.com/MIERUNE/nusamai/demo/cesium/examples/ext_structural_metadata/test.gltf").unwrap();
-        let mut json_writer = BufWriter::with_capacity(1024 * 1024, &json_file);
-        serde_json::to_writer_pretty(&mut json_writer, &gltf).unwrap();
+        // // 一度、JSONでも出力する
+        // let json_file = File::create("/Users/satoru/github.com/MIERUNE/nusamai/demo/cesium/examples/ext_structural_metadata/test.gltf").unwrap();
+        // let mut json_writer = BufWriter::with_capacity(1024 * 1024, &json_file);
+        // serde_json::to_writer_pretty(&mut json_writer, &gltf).unwrap();
 
         let mut json_content = serde_json::to_vec(&gltf).unwrap();
 
