@@ -1,5 +1,6 @@
 //! gltf sink poc
 mod attributes;
+mod gltf;
 
 use std::collections::HashSet;
 use std::fs::File;
@@ -239,6 +240,7 @@ impl DataSink for GltfPocSink {
                 let mut all_max: [f64; 3] = [f64::MIN; 3];
                 let mut all_min: [f64; 3] = [f64::MAX; 3];
 
+                // BoundingVolume.region required for 3DTiles
                 let mut bounding_volume = BoundingVolume {
                     min_lng: f64::MAX,
                     max_lng: f64::MIN,
@@ -251,6 +253,7 @@ impl DataSink for GltfPocSink {
                 // Maintain a list of type names as multiple types are mixed.
                 let mut class_names = HashSet::new();
 
+                // Binary buffer for glTF
                 let mut buffers: Vec<[f64; 4]> = Vec::new();
 
                 // Holds all attributes of the target
@@ -270,7 +273,7 @@ impl DataSink for GltfPocSink {
                     let mut pos_max = [f64::MIN; 3];
                     let mut pos_min = [f64::MAX; 3];
 
-                    // calculate the centroid and min/max
+                    // calculate the centroid and min/max of the entity
                     for &[x, y, z] in &triangles {
                         pos_min = [
                             f64::min(pos_min[0], x),
@@ -285,6 +288,7 @@ impl DataSink for GltfPocSink {
                         buffers.push([x, y, z, feature_id as f64]);
                     }
 
+                    // calculate the centroid of all entities
                     all_min = [
                         f64::min(all_min[0], pos_min[0]),
                         f64::min(all_min[1], pos_min[1]),
@@ -296,6 +300,7 @@ impl DataSink for GltfPocSink {
                         f64::max(all_max[2], pos_max[2]),
                     ];
 
+                    // calculate the bounding volume of all entities
                     bounding_volume.min_lng =
                         f64::min(bounding_volume.min_lng, _bounding_volume.min_lng);
                     bounding_volume.max_lng =
@@ -310,7 +315,7 @@ impl DataSink for GltfPocSink {
                         f64::max(bounding_volume.max_height, _bounding_volume.max_height);
                 }
 
-                // calculate the centroid
+                // calculate the centroid of all entities
                 let mut all_translation = [0.; 3];
                 all_translation[0] = (all_max[0] + all_min[0]) / 2.;
                 all_translation[1] = (all_max[1] + all_min[1]) / 2.;
@@ -399,116 +404,61 @@ fn write_gltf<W: Write>(
     schema: &Schema,
     attributes: Vec<EntityAttributes>,
 ) {
-    let mut bin_content: Vec<u8> = Vec::new();
+    let (mut bin_content, mut gltf) = build_base_gltf(&vertices, indices, translation, min, max);
 
-    // write vertices
-    let vertices_offset = bin_content.len();
-    let mut buf = [0; 12];
-    let mut vertices_count = 0;
-    for vertex in vertices.clone() {
-        LittleEndian::write_u32_into(&vertex.position, &mut buf);
-        bin_content.write_all(&buf).unwrap();
-        vertices_count += 1;
+    add_gltf_extensions(
+        class_names,
+        schema,
+        &mut gltf,
+        vertices,
+        attributes,
+        &mut bin_content,
+    );
+
+    {
+        // // 一度、JSONでも出力する
+        // let json_file = File::create("/Users/satoru/github.com/MIERUNE/nusamai/demo/cesium/examples/ext_structural_metadata/test.gltf").unwrap();
+        // let mut json_writer = BufWriter::with_capacity(1024 * 1024, &json_file);
+        // serde_json::to_writer_pretty(&mut json_writer, &gltf).unwrap();
+
+        let mut json_content = serde_json::to_vec(&gltf).unwrap();
+
+        // append padding
+        json_content.extend(vec![0x20; (4 - (json_content.len() % 4)) % 4].iter());
+        bin_content.extend(vec![0x0; (4 - (bin_content.len() % 4)) % 4].iter());
+
+        let total_size = 12 + 8 + json_content.len() + 8 + bin_content.len();
+
+        writer.write_all(b"glTF").unwrap(); // magic
+        writer.write_all(&2u32.to_le_bytes()).unwrap(); // version: 2
+        writer
+            .write_all(&(total_size as u32).to_le_bytes())
+            .unwrap(); // total size
+
+        writer
+            .write_all(&(json_content.len() as u32).to_le_bytes())
+            .unwrap(); // json content
+        writer.write_all(b"JSON").unwrap(); // chunk type
+        writer.write_all(&json_content).unwrap(); // json content
+
+        writer
+            .write_all(&(bin_content.len() as u32).to_le_bytes())
+            .unwrap(); // json content
+        writer.write_all(b"BIN\0").unwrap(); // chunk type
+        writer.write_all(&bin_content).unwrap(); // bin content
+
+        writer.flush().unwrap();
     }
-    let vertices_len: usize = bin_content.len() - vertices_offset;
+}
 
-    // write indices
-    let indices_offset = bin_content.len();
-    let mut indices_count = 0;
-    for idx in indices {
-        bin_content.write_all(&idx.to_le_bytes()).unwrap();
-        indices_count += 1;
-    }
-    let indices_len = bin_content.len() - indices_offset;
-
-    // write feature_ids
-    let feature_ids_offset = bin_content.len();
-    let mut feature_ids_count = 0;
-    for vertex in vertices.clone() {
-        bin_content
-            .write_all(&vertex.feature_id.to_le_bytes())
-            .unwrap();
-        feature_ids_count += 1;
-    }
-    let feature_ids_len = bin_content.len() - feature_ids_offset;
-
-    // make base gltf structure
-    let mut gltf = Gltf {
-        extensions_used: vec![
-            "EXT_mesh_features".to_string(),
-            "EXT_structural_metadata".to_string(),
-        ],
-        scenes: vec![Scene {
-            nodes: Some(vec![0]),
-            ..Default::default()
-        }],
-        nodes: vec![Node {
-            mesh: Some(0),
-            translation,
-            ..Default::default()
-        }],
-        meshes: vec![Mesh {
-            primitives: vec![MeshPrimitive {
-                attributes: vec![
-                    ("POSITION".to_string(), 0),
-                    ("_FEATURE_ID_0".to_string(), 2),
-                ]
-                .into_iter()
-                .collect(),
-                indices: Some(1),
-                mode: PrimitiveMode::Triangles,
-                ..Default::default()
-            }],
-            ..Default::default()
-        }],
-        accessors: vec![
-            Accessor {
-                buffer_view: Some(0),
-                component_type: ComponentType::Float,
-                count: vertices_count,
-                min: Some(min.to_vec()),
-                max: Some(max.to_vec()),
-                type_: AccessorType::Vec3,
-                ..Default::default()
-            },
-            Accessor {
-                buffer_view: Some(1),
-                component_type: ComponentType::UnsignedInt,
-                count: indices_count,
-                type_: AccessorType::Scalar,
-                ..Default::default()
-            },
-            Accessor {
-                buffer_view: Some(2),
-                component_type: ComponentType::UnsignedInt,
-                count: feature_ids_count,
-                type_: AccessorType::Scalar,
-                ..Default::default()
-            },
-        ],
-        buffer_views: vec![
-            BufferView {
-                byte_offset: vertices_offset as u32,
-                byte_length: vertices_len as u32,
-                target: Some(BufferViewTarget::ArrayBuffer),
-                ..Default::default()
-            },
-            BufferView {
-                byte_offset: indices_offset as u32,
-                byte_length: indices_len as u32,
-                target: Some(BufferViewTarget::ElementArrayBuffer),
-                ..Default::default()
-            },
-            BufferView {
-                byte_offset: feature_ids_offset as u32,
-                byte_length: feature_ids_len as u32,
-                target: Some(BufferViewTarget::ArrayBuffer),
-                ..Default::default()
-            },
-        ],
-        ..Default::default()
-    };
-
+fn add_gltf_extensions(
+    class_names: HashSet<std::borrow::Cow<'_, str>>,
+    schema: &Schema,
+    gltf: &mut Gltf,
+    vertices: IndexSet<Vertex, RandomState>,
+    attributes: Vec<EntityAttributes>,
+    bin_content: &mut Vec<u8>,
+) {
     // todo: 複数のクラス名があった時の対応を考える
     let class_name = class_names.iter().next().unwrap().as_ref().to_string();
     let schema = schema.types.get::<String>(&class_name).unwrap();
@@ -576,41 +526,126 @@ fn write_gltf<W: Write>(
         ..Default::default()
     }];
     gltf.buffers = buffers;
+}
 
-    {
-        // // 一度、JSONでも出力する
-        // let json_file = File::create("/Users/satoru/github.com/MIERUNE/nusamai/demo/cesium/examples/ext_structural_metadata/test.gltf").unwrap();
-        // let mut json_writer = BufWriter::with_capacity(1024 * 1024, &json_file);
-        // serde_json::to_writer_pretty(&mut json_writer, &gltf).unwrap();
+fn build_base_gltf(
+    vertices: &IndexSet<Vertex, RandomState>,
+    indices: impl IntoIterator<Item = u32>,
+    translation: [f64; 3],
+    min: [f64; 3],
+    max: [f64; 3],
+) -> (Vec<u8>, Gltf) {
+    let mut bin_content: Vec<u8> = Vec::new();
 
-        let mut json_content = serde_json::to_vec(&gltf).unwrap();
-
-        // append padding
-        json_content.extend(vec![0x20; (4 - (json_content.len() % 4)) % 4].iter());
-        bin_content.extend(vec![0x0; (4 - (bin_content.len() % 4)) % 4].iter());
-
-        let total_size = 12 + 8 + json_content.len() + 8 + bin_content.len();
-
-        writer.write_all(b"glTF").unwrap(); // magic
-        writer.write_all(&2u32.to_le_bytes()).unwrap(); // version: 2
-        writer
-            .write_all(&(total_size as u32).to_le_bytes())
-            .unwrap(); // total size
-
-        writer
-            .write_all(&(json_content.len() as u32).to_le_bytes())
-            .unwrap(); // json content
-        writer.write_all(b"JSON").unwrap(); // chunk type
-        writer.write_all(&json_content).unwrap(); // json content
-
-        writer
-            .write_all(&(bin_content.len() as u32).to_le_bytes())
-            .unwrap(); // json content
-        writer.write_all(b"BIN\0").unwrap(); // chunk type
-        writer.write_all(&bin_content).unwrap(); // bin content
-
-        writer.flush().unwrap();
+    // write vertices
+    let vertices_offset = bin_content.len();
+    let mut buf = [0; 12];
+    let mut vertices_count = 0;
+    for vertex in vertices.clone() {
+        LittleEndian::write_u32_into(&vertex.position, &mut buf);
+        bin_content.write_all(&buf).unwrap();
+        vertices_count += 1;
     }
+    let vertices_len: usize = bin_content.len() - vertices_offset;
+
+    // write indices
+    let indices_offset = bin_content.len();
+    let mut indices_count = 0;
+    for idx in indices {
+        bin_content.write_all(&idx.to_le_bytes()).unwrap();
+        indices_count += 1;
+    }
+    let indices_len = bin_content.len() - indices_offset;
+
+    // write feature_ids
+    let feature_ids_offset = bin_content.len();
+    let mut feature_ids_count = 0;
+    for vertex in vertices.clone() {
+        bin_content
+            .write_all(&vertex.feature_id.to_le_bytes())
+            .unwrap();
+        feature_ids_count += 1;
+    }
+    let feature_ids_len = bin_content.len() - feature_ids_offset;
+
+    // make base gltf structure
+    let gltf = Gltf {
+        extensions_used: vec![
+            "EXT_mesh_features".to_string(),
+            "EXT_structural_metadata".to_string(),
+        ],
+        scenes: vec![Scene {
+            nodes: Some(vec![0]),
+            ..Default::default()
+        }],
+        nodes: vec![Node {
+            mesh: Some(0),
+            translation,
+            ..Default::default()
+        }],
+        meshes: vec![Mesh {
+            primitives: vec![MeshPrimitive {
+                // todo: _FEATURE_ID_〇〇は地物型が複数存在すると動的に変化するので、対応
+                attributes: vec![
+                    ("POSITION".to_string(), 0),
+                    ("_FEATURE_ID_0".to_string(), 2),
+                ]
+                .into_iter()
+                .collect(),
+                indices: Some(1),
+                mode: PrimitiveMode::Triangles,
+                ..Default::default()
+            }],
+            ..Default::default()
+        }],
+        accessors: vec![
+            Accessor {
+                buffer_view: Some(0),
+                component_type: ComponentType::Float,
+                count: vertices_count,
+                min: Some(min.to_vec()),
+                max: Some(max.to_vec()),
+                type_: AccessorType::Vec3,
+                ..Default::default()
+            },
+            Accessor {
+                buffer_view: Some(1),
+                component_type: ComponentType::UnsignedInt,
+                count: indices_count,
+                type_: AccessorType::Scalar,
+                ..Default::default()
+            },
+            Accessor {
+                buffer_view: Some(2),
+                component_type: ComponentType::UnsignedInt,
+                count: feature_ids_count,
+                type_: AccessorType::Scalar,
+                ..Default::default()
+            },
+        ],
+        buffer_views: vec![
+            BufferView {
+                byte_offset: vertices_offset as u32,
+                byte_length: vertices_len as u32,
+                target: Some(BufferViewTarget::ArrayBuffer),
+                ..Default::default()
+            },
+            BufferView {
+                byte_offset: indices_offset as u32,
+                byte_length: indices_len as u32,
+                target: Some(BufferViewTarget::ElementArrayBuffer),
+                ..Default::default()
+            },
+            BufferView {
+                byte_offset: feature_ids_offset as u32,
+                byte_length: feature_ids_len as u32,
+                target: Some(BufferViewTarget::ArrayBuffer),
+                ..Default::default()
+            },
+        ],
+        ..Default::default()
+    };
+    (bin_content, gltf)
 }
 
 // This is the code to verify the operation with Cesium

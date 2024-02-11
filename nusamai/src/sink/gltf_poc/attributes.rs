@@ -8,7 +8,6 @@ use nusamai_citygml::{
     Value,
 };
 use nusamai_gltf_json::extensions;
-use rayon::string;
 
 #[derive(Debug, Clone)]
 pub struct GltfPropertyType {
