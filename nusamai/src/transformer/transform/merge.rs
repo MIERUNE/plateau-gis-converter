@@ -3,13 +3,13 @@ use crate::transformer::Transform;
 use hashbrown::HashSet;
 use nusamai_citygml::object::{Map, Object, ObjectStereotype, Value};
 use nusamai_citygml::schema::{Schema, TypeDef};
-use nusamai_citygml::GeometryRefEntry;
+use nusamai_citygml::GeometryRef;
 use nusamai_plateau::Entity;
 
 /// Collect all attributes and geometries from the descendants and merge them into the root object.
 #[derive(Default, Clone)]
 pub struct FullMergedownTransform {
-    geoms_buf: HashSet<GeometryRefEntry>,
+    geoms_buf: HashSet<GeometryRef>,
     path_buf: String,
 }
 
@@ -51,7 +51,7 @@ impl Transform for FullMergedownTransform {
 
 fn collect_all_attrs_and_geoms(
     new_attrs: &mut Map,
-    new_geoms: &mut HashSet<GeometryRefEntry>,
+    new_geoms: &mut HashSet<GeometryRef>,
     path: &mut String,
     attributes: Map,
     in_child_feature: bool,
@@ -121,7 +121,7 @@ fn collect_all_attrs_and_geoms(
 
 #[derive(Default, Clone)]
 pub struct GeometricMergedownTransform {
-    geoms_buf: HashSet<GeometryRefEntry>,
+    geoms_buf: HashSet<GeometryRef>,
 }
 
 impl Transform for GeometricMergedownTransform {
@@ -141,7 +141,7 @@ impl Transform for GeometricMergedownTransform {
     }
 }
 
-fn collect_all_geoms(new_geoms: &mut HashSet<GeometryRefEntry>, obj: &mut Object) {
+fn collect_all_geoms(new_geoms: &mut HashSet<GeometryRef>, obj: &mut Object) {
     if let ObjectStereotype::Feature { geometries, .. } = &mut obj.stereotype {
         new_geoms.extend(geometries.drain(..));
     }

@@ -130,7 +130,7 @@ fn modify(ty: &Stereotype, args: &FeatureArgs, input: &mut DeriveInput) -> Resul
                             fields,
                             quote! {
                                 #[citygml(geom = #geom_prefix)]
-                                pub geometries: ::nusamai_citygml::GeometryRef
+                                pub geometries: ::nusamai_citygml::GeometryRefs
                             },
                         );
                         pos += 1;

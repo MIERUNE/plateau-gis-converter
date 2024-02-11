@@ -19,7 +19,7 @@ pub struct WaterBody {
     pub flooding_risk_attribute: Vec<uro::WaterBodyFloodingRiskAttributeProperty>, // -> uro:WaterBodyFloodingRiskAttribute
 
     #[citygml(path = b"uro:waterBodyDetailAttribute/uro:WaterBodyDetailAttribute")]
-    pub water_body_detail_attribute: Vec<uro::WaterBodyDetailAttribute>,
+    pub water_body_detail_attribute: Option<uro::WaterBodyDetailAttribute>,
 
     #[citygml(path = b"uro:wtrDmAttribute")]
     pub wtr_dm_attribute: Vec<uro::DmAttributeProperty>, // -> uro:DmAttribute
