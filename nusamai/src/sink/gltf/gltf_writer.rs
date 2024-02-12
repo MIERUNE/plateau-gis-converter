@@ -51,7 +51,6 @@ pub fn build_base_gltf(
         ..Default::default()
     };
     for gltf in gltf_list {
-        // accessorsが参照しているbufferViewのインデックスなどを修正していく必要がある
         // accessorsを整列
         for accessor in gltf.accessors {
             let mut new_accessor = accessor.clone();
@@ -68,21 +67,19 @@ pub fn build_base_gltf(
         }
 
         // meshes.primitivesを整列
-        for mesh in gltf.meshes {
-            let mut new_mesh = mesh.clone();
-            for primitive in mesh.primitives {
+        for mesh in gltf.meshes.iter() {
+            for primitive in mesh.primitives.iter() {
                 let mut new_primitive = primitive.clone();
                 new_primitive.indices =
                     Some(primitive.indices.unwrap() + bin_contents.len() as u32);
                 let mut new_attributes = IndexMap::new();
-                for (key, value) in primitive.attributes {
+                for (key, value) in primitive.attributes.clone() {
                     new_attributes.insert(key, value + bin_contents.len() as u32);
                 }
                 let new_attributes: HashMap<String, u32> = new_attributes.into_iter().collect();
                 new_primitive.attributes = new_attributes;
-                new_mesh.primitives.push(new_primitive);
             }
-            base_gltf.meshes.push(new_mesh);
+            base_gltf.meshes.push(mesh.clone());
         }
     }
 

@@ -354,7 +354,6 @@ impl DataSink for GltfSink {
                 for (class_name, entities) in all_triangulated_entities {
                     let mut vertices: IndexSet<Vertex<u32>> = IndexSet::default();
                     let mut indices: Vec<u32> = Vec::new();
-                    let mut feature_ids: Vec<u32> = Vec::new();
 
                     for entity in entities {
                         let mut entity_vertices: Vec<Vertex<u32>> = Vec::new();
