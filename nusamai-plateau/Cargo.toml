@@ -13,7 +13,7 @@ nusamai-citygml = { path = "../nusamai-citygml", features = ["serde"]}
 nusamai-geometry = { path = "../nusamai-geometry" }
 chrono = { version = "0.4.34", features = ["serde"], default-features = false }
 url = "2.5.0"
-stretto = { git = "https://github.com/ciscorn/stretto.git" , branch = "update-wg" }
+stretto = "0.8.3"
 hashbrown = "0.14.3"
 indexmap = "2.2.2"
 log = "0.4.20"
