@@ -72,10 +72,7 @@ pub struct StanfordPlySink {
 
 impl DataSink for StanfordPlySink {
     fn make_transform_requirements(&self) -> transformer::Requirements {
-        use transformer::RequirementItem;
-
         transformer::Requirements {
-            mergedown: RequirementItem::Required(transformer::Mergedown::Geometry),
             ..Default::default()
         }
     }

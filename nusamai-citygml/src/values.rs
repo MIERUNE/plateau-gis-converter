@@ -15,6 +15,7 @@ pub type MeasureOrNullList = String; // TODO?
 pub type BuildingLODType = String; // TODO?
 pub type DoubleList = String; // TODO?
 pub type LODType = u64; // TODO?
+pub type Double01 = f64; // TODO?
 
 impl CityGmlElement for String {
     #[inline]
@@ -363,6 +364,121 @@ impl CityGmlAttribute for LocalId {
                 "Expected a reference starts with '#' but got {}",
                 s
             )))
+        }
+    }
+}
+
+#[derive(Debug, Default, Clone, Copy, serde::Serialize, serde::Deserialize)]
+pub struct Color {
+    pub r: f64,
+    pub g: f64,
+    pub b: f64,
+}
+
+impl Color {
+    pub fn new(r: f64, g: f64, b: f64) -> Self {
+        Self { r, g, b }
+    }
+}
+
+impl std::hash::Hash for Color {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.r.to_bits().hash(state);
+        self.g.to_bits().hash(state);
+        self.b.to_bits().hash(state);
+    }
+}
+
+impl CityGmlElement for Color {
+    fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
+        let text = st.parse_text()?;
+        let r: Result<Vec<_>, _> = text
+            .split_ascii_whitespace()
+            .map(|s| s.parse::<f64>())
+            .collect();
+        match r {
+            Ok(v) if v.len() == 3 => {
+                (self.r, self.g, self.b) = (v[0], v[1], v[2]);
+            }
+            _ => {
+                return Err(ParseError::InvalidValue(format!(
+                    "Failed to parse color value: {}",
+                    text
+                )))
+            }
+        }
+        Ok(())
+    }
+
+    fn into_object(self) -> Option<Value> {
+        Some(Value::Array(vec![
+            Value::Double(self.r),
+            Value::Double(self.g),
+            Value::Double(self.b),
+        ]))
+    }
+
+    fn collect_schema(_schema: &mut schema::Schema) -> schema::Attribute {
+        schema::Attribute {
+            type_ref: schema::TypeRef::Double,
+            min_occurs: 3,
+            max_occurs: Some(3),
+        }
+    }
+}
+
+#[derive(Debug, Default, Clone, Copy, serde::Serialize, serde::Deserialize)]
+pub struct ColorPlusOpacity {
+    pub r: Double01,
+    pub g: Double01,
+    pub b: Double01,
+    pub a: Double01,
+}
+
+impl ColorPlusOpacity {
+    pub fn new(r: f64, g: f64, b: f64, a: f64) -> Self {
+        Self { r, g, b, a }
+    }
+}
+
+impl CityGmlElement for ColorPlusOpacity {
+    fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
+        let text = st.parse_text()?;
+        let r: Result<Vec<_>, _> = text
+            .split_ascii_whitespace()
+            .map(|s| s.parse::<f64>())
+            .collect();
+        match r {
+            Ok(v) if v.len() == 3 => {
+                (self.r, self.g, self.b, self.a) = (v[0], v[1], v[2], 1.0);
+            }
+            Ok(v) if v.len() == 4 => {
+                (self.r, self.g, self.b, self.a) = (v[0], v[1], v[2], v[3]);
+            }
+            _ => {
+                return Err(ParseError::InvalidValue(format!(
+                    "Failed to parse color value: {}",
+                    text
+                )))
+            }
+        }
+        Ok(())
+    }
+
+    fn into_object(self) -> Option<Value> {
+        Some(Value::Array(vec![
+            Value::Double(self.r),
+            Value::Double(self.g),
+            Value::Double(self.b),
+            Value::Double(self.a),
+        ]))
+    }
+
+    fn collect_schema(_schema: &mut schema::Schema) -> schema::Attribute {
+        schema::Attribute {
+            type_ref: schema::TypeRef::Double,
+            min_occurs: 4,
+            max_occurs: Some(4),
         }
     }
 }

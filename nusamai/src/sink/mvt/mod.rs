@@ -86,10 +86,8 @@ struct SlicedFeature<'a> {
 
 impl DataSink for MVTSink {
     fn make_transform_requirements(&self) -> transformer::Requirements {
-        use transformer::RequirementItem;
-
         transformer::Requirements {
-            mergedown: RequirementItem::Recommended(transformer::Mergedown::Full),
+            key_value: transformer::KeyValueSpec::DotNotation,
             ..Default::default()
         }
     }

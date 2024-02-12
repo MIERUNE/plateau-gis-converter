@@ -8,14 +8,34 @@ use nusamai_citygml::GeometryStore;
 use nusamai_plateau::appearance::AppearanceStore;
 use nusamai_plateau::Entity;
 
-pub struct FlattenFeatureTransform {
+#[derive(Default)]
+pub struct FlattenTreeTransform {
     split_thematic_surfaces: bool,
+    split_data_stereotype: bool,
+    split_object_stereotype: bool,
 }
 
-impl Transform for FlattenFeatureTransform {
+impl FlattenTreeTransform {
+    pub fn with_split_thematic_surfaces(mut self, split: bool) -> Self {
+        self.split_thematic_surfaces = split;
+        self
+    }
+
+    pub fn with_split_data_stereotype(mut self, split: bool) -> Self {
+        self.split_data_stereotype = split;
+        self
+    }
+
+    pub fn with_split_object_stereotype(mut self, split: bool) -> Self {
+        self.split_object_stereotype = split;
+        self
+    }
+}
+
+impl Transform for FlattenTreeTransform {
     fn transform(&mut self, entity: Entity, out: &mut Vec<Entity>) {
         let geom_store = entity.geometry_store;
-        let appearance_store = &entity.appearance_store;
+        let appearance_store = entity.appearance_store;
         self.flatten_feature(entity.root, &geom_store, &appearance_store, out, &None);
     }
 
@@ -48,11 +68,9 @@ struct Parent {
     typename: String,
 }
 
-impl FlattenFeatureTransform {
-    pub fn new(split_thematic_surfaces: bool) -> Self {
-        Self {
-            split_thematic_surfaces,
-        }
+impl FlattenTreeTransform {
+    pub fn new() -> Self {
+        Default::default()
     }
 
     fn flatten_feature(
@@ -105,7 +123,7 @@ impl FlattenFeatureTransform {
                 Some(Value::Object(obj))
             }
             Value::Array(mut arr) => {
-                let mut new_arr = Vec::new();
+                let mut new_arr = Vec::with_capacity(arr.len());
                 for value in arr.drain(..) {
                     if let Some(v) =
                         self.flatten_feature(value, geom_store, appearance_store, out, parent)

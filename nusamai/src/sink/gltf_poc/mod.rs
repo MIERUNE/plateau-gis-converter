@@ -2,7 +2,7 @@
 
 use std::fs::File;
 use std::io::{BufWriter, Write};
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use ahash::RandomState;
 use byteorder::{ByteOrder, LittleEndian};
@@ -79,10 +79,7 @@ pub struct GltfPocSink {
 
 impl DataSink for GltfPocSink {
     fn make_transform_requirements(&self) -> transformer::Requirements {
-        use transformer::RequirementItem;
-
         transformer::Requirements {
-            mergedown: RequirementItem::Required(transformer::Mergedown::Geometry),
             ..Default::default()
         }
     }
@@ -516,7 +513,7 @@ fn write_gltf<W: Write>(
 }
 
 // FIXME: This is the code to verify the operation with Cesium
-fn write_3dtiles(bounding_volume: [f64; 6], output_path: &PathBuf) {
+fn write_3dtiles(bounding_volume: [f64; 6], output_path: &Path) {
     // write 3DTiles
     let tileset_path = output_path.with_file_name("tileset.json");
     let content_uri = output_path
@@ -545,7 +542,7 @@ fn write_3dtiles(bounding_volume: [f64; 6], output_path: &PathBuf) {
         ..Default::default()
     };
 
-    let mut tileset_file = File::create(&tileset_path).unwrap();
+    let mut tileset_file = File::create(tileset_path).unwrap();
     let tileset_writer = BufWriter::with_capacity(1024 * 1024, &mut tileset_file);
     serde_json::to_writer_pretty(tileset_writer, &tileset).unwrap();
 }

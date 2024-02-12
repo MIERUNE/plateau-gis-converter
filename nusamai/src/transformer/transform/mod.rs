@@ -1,13 +1,17 @@
 mod attrname;
+mod dots;
 mod flatten;
+mod geommerge;
+mod jsonify;
 mod lods;
-mod merge;
 mod projection;
 
 pub use attrname::*;
+pub use dots::*;
 pub use flatten::*;
+pub use geommerge::*;
+pub use jsonify::*;
 pub use lods::*;
-pub use merge::*;
 pub use projection::*;
 
 use super::Transform;
