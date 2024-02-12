@@ -1,6 +1,5 @@
 //! gltf sink poc
 mod attributes;
-mod gltf;
 
 use std::collections::HashSet;
 use std::fs::File;
@@ -365,6 +364,7 @@ impl DataSink for GltfPocSink {
                 let mut file = File::create(&self.output_path).unwrap();
                 let writer = BufWriter::with_capacity(1024 * 1024, &mut file);
 
+                // write glTF
                 let (mut bin_content, mut gltf) =
                     build_base_gltf(&vertices, indices, all_translation, all_min, all_max);
                 append_gltf_extensions(
@@ -377,6 +377,7 @@ impl DataSink for GltfPocSink {
                 );
                 write_gltf(gltf, bin_content, writer);
 
+                // write 3DTiles
                 let region: [f64; 6] = [
                     bounding_volume.min_lng.to_radians(),
                     bounding_volume.min_lat.to_radians(),
@@ -385,7 +386,6 @@ impl DataSink for GltfPocSink {
                     bounding_volume.min_height,
                     bounding_volume.max_height,
                 ];
-
                 write_3dtiles(region, &self.output_path);
             },
         );
