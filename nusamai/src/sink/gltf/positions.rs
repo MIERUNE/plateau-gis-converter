@@ -1,6 +1,6 @@
 #[derive(Debug, Default, PartialEq, Eq, Clone, Copy, Hash)]
-pub struct Vertex {
-    pub position: [u32; 3],  // f32.to_bits()
-    pub tex_coord: [u32; 2], // f32.to_bits()
+pub struct Vertex<T> {
+    pub position: [T; 3],
+    pub tex_coord: [T; 2],
     pub feature_id: u32,
 }

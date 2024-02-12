@@ -22,7 +22,7 @@ use crate::pipeline::{Feedback, PipelineError, Receiver};
 use crate::sink::{DataSink, DataSinkProvider, SinkInfo};
 use crate::{get_parameter_value, transformer};
 
-use attributes::EntityAttributes;
+use attributes::Attributes;
 use gltf_writer::{append_gltf_extensions, build_base_gltf, write_3dtiles, write_gltf};
 use positions::Vertex;
 
@@ -220,6 +220,8 @@ impl DataSink for GltfPocSink {
             },
             || {
                 // Write glTF to a file
+
+                // Max and min values of all vertices
                 let mut all_max: [f64; 3] = [f64::MIN; 3];
                 let mut all_min: [f64; 3] = [f64::MAX; 3];
 
@@ -239,13 +241,13 @@ impl DataSink for GltfPocSink {
                 // holds all vertex coordinates and feature_id
                 let mut all_positions: Vec<[f64; 4]> = Vec::new();
 
-                // Holds all attributes of the target
-                let mut all_attributes: Vec<EntityAttributes> = Vec::new();
+                // Holds all attributes of the entity
+                let mut all_attributes: Vec<Attributes> = Vec::new();
 
-                for (feature_id, (triangles, attributes, _bounding_volume, class_name)) in
+                for (feature_id, (triangles, attributes, bounds, class_name)) in
                     receiver.into_iter().enumerate()
                 {
-                    all_attributes.push(EntityAttributes {
+                    all_attributes.push(Attributes {
                         class_name: class_name.as_ref().to_string(),
                         feature_id: feature_id as u32,
                         attributes,
@@ -256,8 +258,13 @@ impl DataSink for GltfPocSink {
                     let mut pos_max = [f64::MIN; 3];
                     let mut pos_min = [f64::MAX; 3];
 
+                    // add feature_id to all_positions
+                    triangles.iter().for_each(|&[x, y, z]| {
+                        all_positions.push([x, y, z, feature_id as f64]);
+                    });
+
                     // calculate the centroid and min/max of the entity
-                    for &[x, y, z] in &triangles {
+                    triangles.iter().for_each(|&[x, y, z]| {
                         pos_min = [
                             f64::min(pos_min[0], x),
                             f64::min(pos_min[1], y),
@@ -268,8 +275,7 @@ impl DataSink for GltfPocSink {
                             f64::max(pos_max[1], y),
                             f64::max(pos_max[2], z),
                         ];
-                        all_positions.push([x, y, z, feature_id as f64]);
-                    }
+                    });
 
                     // calculate the centroid of all entities
                     all_min = [
@@ -284,18 +290,14 @@ impl DataSink for GltfPocSink {
                     ];
 
                     // calculate the bounding volume of all entities
-                    bounding_volume.min_lng =
-                        f64::min(bounding_volume.min_lng, _bounding_volume.min_lng);
-                    bounding_volume.max_lng =
-                        f64::max(bounding_volume.max_lng, _bounding_volume.max_lng);
-                    bounding_volume.min_lat =
-                        f64::min(bounding_volume.min_lat, _bounding_volume.min_lat);
-                    bounding_volume.max_lat =
-                        f64::max(bounding_volume.max_lat, _bounding_volume.max_lat);
+                    bounding_volume.min_lng = f64::min(bounding_volume.min_lng, bounds.min_lng);
+                    bounding_volume.max_lng = f64::max(bounding_volume.max_lng, bounds.max_lng);
+                    bounding_volume.min_lat = f64::min(bounding_volume.min_lat, bounds.min_lat);
+                    bounding_volume.max_lat = f64::max(bounding_volume.max_lat, bounds.max_lat);
                     bounding_volume.min_height =
-                        f64::min(bounding_volume.min_height, _bounding_volume.min_height);
+                        f64::min(bounding_volume.min_height, bounds.min_height);
                     bounding_volume.max_height =
-                        f64::max(bounding_volume.max_height, _bounding_volume.max_height);
+                        f64::max(bounding_volume.max_height, bounds.max_height);
                 }
 
                 // calculate the centroid of all entities
@@ -312,7 +314,7 @@ impl DataSink for GltfPocSink {
                 all_min[2] -= all_translation[2];
 
                 // make vertices and indices
-                let mut vertices: IndexSet<Vertex, RandomState> = IndexSet::default();
+                let mut vertices: IndexSet<Vertex<u32>, RandomState> = IndexSet::default();
                 let indices: Vec<u32> = all_positions
                     .iter()
                     .map(|&[x, y, z, feature_id]| {

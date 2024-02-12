@@ -17,7 +17,8 @@ pub struct GltfPropertyType {
         Option<extensions::gltf::ext_structural_metadata::ClassPropertyComponentType>,
 }
 
-pub struct EntityAttributes {
+// Attributes per vertex id
+pub struct Attributes {
     pub class_name: String,
     pub feature_id: u32,
     pub attributes: IndexMap<String, Value, RandomState>,
@@ -233,7 +234,7 @@ pub fn to_gltf_property_tables(
 
 pub fn attributes_to_buffer(
     schema: &TypeDef,
-    attributes: &Vec<EntityAttributes>,
+    attributes: &Vec<Attributes>,
 ) -> IndexMap<String, Vec<u8>> {
     let mut buffers: IndexMap<String, Vec<u8>> = IndexMap::new();
 
@@ -351,7 +352,7 @@ pub fn attributes_to_buffer(
                     }
                 }
             } else {
-                // スキーマには定義されているが、entityには存在しない場合
+                // If defined in the schema but not in the entity
                 match p {
                     GltfPropertyType {
                         class_property_type:
@@ -383,7 +384,7 @@ pub fn attributes_to_buffer(
         }
 
         buffers.insert(p.property_name.clone(), buffer);
-        // todo: array_offset_bufferを追加する
+        // todo: array_offset_bufferの対応を実装する
         if !string_offset_buffer.is_empty() {
             buffers.insert(
                 p.property_name.clone() + "_string_offsets",

@@ -14,129 +14,13 @@ use nusamai_gltf_json::{
 };
 
 use crate::sink::gltf::attributes::{
-    attributes_to_buffer, to_gltf_classes, to_gltf_property_tables, EntityAttributes,
+    attributes_to_buffer, to_gltf_classes, to_gltf_property_tables, Attributes,
 };
 
-use super::Vertex;
-
-pub fn write_gltf<W: Write>(gltf: Gltf, mut bin_content: Vec<u8>, mut writer: W) {
-    let mut json_content = serde_json::to_vec(&gltf).unwrap();
-
-    // append padding
-    json_content.extend(vec![0x20; (4 - (json_content.len() % 4)) % 4].iter());
-    bin_content.extend(vec![0x0; (4 - (bin_content.len() % 4)) % 4].iter());
-
-    let total_size = 12 + 8 + json_content.len() + 8 + bin_content.len();
-
-    writer.write_all(b"glTF").unwrap();
-    // magic
-    writer.write_all(&2u32.to_le_bytes()).unwrap();
-    // version: 2
-    writer
-        .write_all(&(total_size as u32).to_le_bytes())
-        .unwrap();
-    // total size
-
-    writer
-        .write_all(&(json_content.len() as u32).to_le_bytes())
-        .unwrap();
-    // json content
-    writer.write_all(b"JSON").unwrap();
-    // chunk type
-    writer.write_all(&json_content).unwrap();
-    // json content
-
-    writer
-        .write_all(&(bin_content.len() as u32).to_le_bytes())
-        .unwrap();
-    // json content
-    writer.write_all(b"BIN\0").unwrap();
-    // chunk type
-    writer.write_all(&bin_content).unwrap();
-    // bin content
-
-    writer.flush().unwrap();
-}
-
-pub fn append_gltf_extensions(
-    gltf: &mut Gltf,
-    bin_content: &mut Vec<u8>,
-    class_names: HashSet<std::borrow::Cow<'_, str>>,
-    schema: &Schema,
-    vertices: IndexSet<Vertex, RandomState>,
-    attributes: Vec<EntityAttributes>,
-) {
-    // todo: 複数のクラス名があった時の対応を考える
-    let class_name = class_names.iter().next().unwrap().as_ref().to_string();
-    let schema = schema.types.get::<String>(&class_name).unwrap();
-
-    let buffer_view_count = gltf.buffer_views.len() as u32;
-    let feature_count = vertices.iter().map(|v| v.feature_id).max().unwrap();
-
-    let classes = to_gltf_classes(&class_name, schema);
-    let property_tables =
-        to_gltf_property_tables(&class_name, schema, buffer_view_count, feature_count);
-
-    let extensions = extensions::gltf::Gltf {
-        ext_structural_metadata: Some(
-            extensions::gltf::ext_structural_metadata::ExtStructuralMetadata {
-                schema: Some(extensions::gltf::ext_structural_metadata::Schema {
-                    classes,
-                    ..Default::default()
-                }),
-                property_tables: Some(property_tables),
-                ..Default::default()
-            },
-        ),
-        ..Default::default()
-    };
-
-    // mesh primitiveのextensionを追加
-    let mesh_primitive_extensions = Some(extensions::mesh::MeshPrimitive {
-        ext_mesh_features: Some(extensions::mesh::ext_mesh_features::ExtMeshFeatures {
-            feature_ids: vec![extensions::mesh::ext_mesh_features::FeatureId {
-                // todo: 複数の地物型を出力するときには、地物型ごとにfeature_idを付与していくので、attributesやproperty_tableは動的に変化する
-                // todo: meshes.primitives.attributesには、地物型ごとのfeature_idを付与するので、以下のattributesへのインデックスも動的に変わる
-                attribute: Some(0),
-                feature_count: vertices.iter().map(|v| v.feature_id).max().unwrap(),
-                property_table: Some(0),
-                ..Default::default()
-            }],
-            ..Default::default()
-        }),
-        ..Default::default()
-    });
-    gltf.meshes[0].primitives[0].extensions = mesh_primitive_extensions;
-
-    let attributes_bin_contents = attributes_to_buffer(schema, &attributes);
-    let mut buffer_views: Vec<BufferView> = Vec::new();
-    for (_, content) in attributes_bin_contents.iter() {
-        let byte_offset = bin_content.len();
-        let byte_length = content.len();
-
-        bin_content.extend(content.iter());
-
-        buffer_views.push(BufferView {
-            byte_offset: byte_offset as u32,
-            byte_length: byte_length as u32,
-            ..Default::default()
-        });
-    }
-
-    gltf.buffer_views.extend(buffer_views);
-
-    gltf.extensions = Some(extensions);
-
-    // Add after all binary buffers have been written
-    let buffers = vec![Buffer {
-        byte_length: bin_content.len() as u32,
-        ..Default::default()
-    }];
-    gltf.buffers = buffers;
-}
+use super::positions::Vertex;
 
 pub fn build_base_gltf(
-    vertices: &IndexSet<Vertex, RandomState>,
+    vertices: &IndexSet<Vertex<u32>, RandomState>,
     indices: impl IntoIterator<Item = u32>,
     translation: [f64; 3],
     min: [f64; 3],
@@ -253,6 +137,122 @@ pub fn build_base_gltf(
         ..Default::default()
     };
     (bin_content, gltf)
+}
+
+pub fn append_gltf_extensions(
+    gltf: &mut Gltf,
+    bin_content: &mut Vec<u8>,
+    class_names: HashSet<std::borrow::Cow<'_, str>>,
+    schema: &Schema,
+    vertices: IndexSet<Vertex<u32>, RandomState>,
+    attributes: Vec<Attributes>,
+) {
+    // todo: 複数のクラス名があった時の対応を考える
+    let class_name = class_names.iter().next().unwrap().as_ref().to_string();
+    let schema = schema.types.get::<String>(&class_name).unwrap();
+
+    let buffer_view_count = gltf.buffer_views.len() as u32;
+    let feature_count = vertices.iter().map(|v| v.feature_id).max().unwrap();
+
+    let classes = to_gltf_classes(&class_name, schema);
+    let property_tables =
+        to_gltf_property_tables(&class_name, schema, buffer_view_count, feature_count);
+
+    let extensions = extensions::gltf::Gltf {
+        ext_structural_metadata: Some(
+            extensions::gltf::ext_structural_metadata::ExtStructuralMetadata {
+                schema: Some(extensions::gltf::ext_structural_metadata::Schema {
+                    classes,
+                    ..Default::default()
+                }),
+                property_tables: Some(property_tables),
+                ..Default::default()
+            },
+        ),
+        ..Default::default()
+    };
+
+    // mesh primitiveのextensionを追加
+    let mesh_primitive_extensions = Some(extensions::mesh::MeshPrimitive {
+        ext_mesh_features: Some(extensions::mesh::ext_mesh_features::ExtMeshFeatures {
+            feature_ids: vec![extensions::mesh::ext_mesh_features::FeatureId {
+                // todo: 複数の地物型を出力するときには、地物型ごとにfeature_idを付与していくので、attributesやproperty_tableは動的に変化する
+                // todo: meshes.primitives.attributesには、地物型ごとのfeature_idを付与するので、以下のattributesへのインデックスも動的に変わる
+                attribute: Some(0),
+                feature_count: vertices.iter().map(|v| v.feature_id).max().unwrap(),
+                property_table: Some(0),
+                ..Default::default()
+            }],
+            ..Default::default()
+        }),
+        ..Default::default()
+    });
+    gltf.meshes[0].primitives[0].extensions = mesh_primitive_extensions;
+
+    let attributes_bin_contents = attributes_to_buffer(schema, &attributes);
+    let mut buffer_views: Vec<BufferView> = Vec::new();
+    for (_, content) in attributes_bin_contents.iter() {
+        let byte_offset = bin_content.len();
+        let byte_length = content.len();
+
+        bin_content.extend(content.iter());
+
+        buffer_views.push(BufferView {
+            byte_offset: byte_offset as u32,
+            byte_length: byte_length as u32,
+            ..Default::default()
+        });
+    }
+
+    gltf.buffer_views.extend(buffer_views);
+
+    gltf.extensions = Some(extensions);
+
+    // Add after all binary buffers have been written
+    let buffers = vec![Buffer {
+        byte_length: bin_content.len() as u32,
+        ..Default::default()
+    }];
+    gltf.buffers = buffers;
+}
+
+pub fn write_gltf<W: Write>(gltf: Gltf, mut bin_content: Vec<u8>, mut writer: W) {
+    let mut json_content = serde_json::to_vec(&gltf).unwrap();
+
+    // append padding
+    json_content.extend(vec![0x20; (4 - (json_content.len() % 4)) % 4].iter());
+    bin_content.extend(vec![0x0; (4 - (bin_content.len() % 4)) % 4].iter());
+
+    let total_size = 12 + 8 + json_content.len() + 8 + bin_content.len();
+
+    writer.write_all(b"glTF").unwrap();
+    // magic
+    writer.write_all(&2u32.to_le_bytes()).unwrap();
+    // version: 2
+    writer
+        .write_all(&(total_size as u32).to_le_bytes())
+        .unwrap();
+    // total size
+
+    writer
+        .write_all(&(json_content.len() as u32).to_le_bytes())
+        .unwrap();
+    // json content
+    writer.write_all(b"JSON").unwrap();
+    // chunk type
+    writer.write_all(&json_content).unwrap();
+    // json content
+
+    writer
+        .write_all(&(bin_content.len() as u32).to_le_bytes())
+        .unwrap();
+    // json content
+    writer.write_all(b"BIN\0").unwrap();
+    // chunk type
+    writer.write_all(&bin_content).unwrap();
+    // bin content
+
+    writer.flush().unwrap();
 }
 
 // This is the code to verify the operation with Cesium
