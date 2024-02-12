@@ -365,17 +365,17 @@ impl DataSink for GltfPocSink {
                 let mut file = File::create(&self.output_path).unwrap();
                 let writer = BufWriter::with_capacity(1024 * 1024, &mut file);
 
-                write_gltf(
-                    writer,
-                    all_min,
-                    all_max,
-                    all_translation,
-                    vertices,
-                    indices,
+                let (mut bin_content, mut gltf) =
+                    build_base_gltf(&vertices, indices, all_translation, all_min, all_max);
+                append_gltf_extensions(
+                    &mut gltf,
+                    &mut bin_content,
                     class_names,
                     schema,
+                    vertices,
                     all_attributes,
                 );
+                write_gltf(gltf, bin_content, writer);
 
                 let region: [f64; 6] = [
                     bounding_volume.min_lng.to_radians(),
@@ -393,71 +393,52 @@ impl DataSink for GltfPocSink {
     }
 }
 
-fn write_gltf<W: Write>(
-    mut writer: W,
-    min: [f64; 3],
-    max: [f64; 3],
-    translation: [f64; 3],
-    vertices: IndexSet<Vertex, RandomState>,
-    indices: impl IntoIterator<Item = u32>,
-    class_names: HashSet<std::borrow::Cow<'_, str>>,
-    schema: &Schema,
-    attributes: Vec<EntityAttributes>,
-) {
-    let (mut bin_content, mut gltf) = build_base_gltf(&vertices, indices, translation, min, max);
+fn write_gltf<W: Write>(gltf: Gltf, mut bin_content: Vec<u8>, mut writer: W) {
+    let mut json_content = serde_json::to_vec(&gltf).unwrap();
 
-    add_gltf_extensions(
-        class_names,
-        schema,
-        &mut gltf,
-        vertices,
-        attributes,
-        &mut bin_content,
-    );
+    // append padding
+    json_content.extend(vec![0x20; (4 - (json_content.len() % 4)) % 4].iter());
+    bin_content.extend(vec![0x0; (4 - (bin_content.len() % 4)) % 4].iter());
 
-    {
-        // // 一度、JSONでも出力する
-        // let json_file = File::create("/Users/satoru/github.com/MIERUNE/nusamai/demo/cesium/examples/ext_structural_metadata/test.gltf").unwrap();
-        // let mut json_writer = BufWriter::with_capacity(1024 * 1024, &json_file);
-        // serde_json::to_writer_pretty(&mut json_writer, &gltf).unwrap();
+    let total_size = 12 + 8 + json_content.len() + 8 + bin_content.len();
 
-        let mut json_content = serde_json::to_vec(&gltf).unwrap();
+    writer.write_all(b"glTF").unwrap();
+    // magic
+    writer.write_all(&2u32.to_le_bytes()).unwrap();
+    // version: 2
+    writer
+        .write_all(&(total_size as u32).to_le_bytes())
+        .unwrap();
+    // total size
 
-        // append padding
-        json_content.extend(vec![0x20; (4 - (json_content.len() % 4)) % 4].iter());
-        bin_content.extend(vec![0x0; (4 - (bin_content.len() % 4)) % 4].iter());
+    writer
+        .write_all(&(json_content.len() as u32).to_le_bytes())
+        .unwrap();
+    // json content
+    writer.write_all(b"JSON").unwrap();
+    // chunk type
+    writer.write_all(&json_content).unwrap();
+    // json content
 
-        let total_size = 12 + 8 + json_content.len() + 8 + bin_content.len();
+    writer
+        .write_all(&(bin_content.len() as u32).to_le_bytes())
+        .unwrap();
+    // json content
+    writer.write_all(b"BIN\0").unwrap();
+    // chunk type
+    writer.write_all(&bin_content).unwrap();
+    // bin content
 
-        writer.write_all(b"glTF").unwrap(); // magic
-        writer.write_all(&2u32.to_le_bytes()).unwrap(); // version: 2
-        writer
-            .write_all(&(total_size as u32).to_le_bytes())
-            .unwrap(); // total size
-
-        writer
-            .write_all(&(json_content.len() as u32).to_le_bytes())
-            .unwrap(); // json content
-        writer.write_all(b"JSON").unwrap(); // chunk type
-        writer.write_all(&json_content).unwrap(); // json content
-
-        writer
-            .write_all(&(bin_content.len() as u32).to_le_bytes())
-            .unwrap(); // json content
-        writer.write_all(b"BIN\0").unwrap(); // chunk type
-        writer.write_all(&bin_content).unwrap(); // bin content
-
-        writer.flush().unwrap();
-    }
+    writer.flush().unwrap();
 }
 
-fn add_gltf_extensions(
+fn append_gltf_extensions(
+    gltf: &mut Gltf,
+    bin_content: &mut Vec<u8>,
     class_names: HashSet<std::borrow::Cow<'_, str>>,
     schema: &Schema,
-    gltf: &mut Gltf,
     vertices: IndexSet<Vertex, RandomState>,
     attributes: Vec<EntityAttributes>,
-    bin_content: &mut Vec<u8>,
 ) {
     // todo: 複数のクラス名があった時の対応を考える
     let class_name = class_names.iter().next().unwrap().as_ref().to_string();
