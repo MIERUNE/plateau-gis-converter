@@ -318,7 +318,7 @@ pub fn attributes_to_buffer(
                                 .unwrap();
                         }
                     }
-                    Value::Date(d) => {
+                    Value::Date(_) => {
                         unimplemented!();
                     }
                     Value::Array(a) => {

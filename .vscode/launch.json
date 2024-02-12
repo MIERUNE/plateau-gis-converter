@@ -15,7 +15,7 @@
 			"args": [
 				"/Users/satoru/Downloads/plateau/22203_numazu-shi_2021_citygml_4_op/udx/bldg/52385654_bldg_6697_op.gml",
 				"--sink",
-				"gltf-poc",
+				"gltf",
 				"--output",
 				"/Users/satoru/github.com/MIERUNE/nusamai/demo/cesium/examples/ext_structural_metadata/test.glb"
 			],

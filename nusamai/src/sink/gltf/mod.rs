@@ -11,7 +11,7 @@ use ahash::RandomState;
 use byteorder::{ByteOrder, LittleEndian};
 use earcut_rs::utils_3d::project3d_to_2d;
 use earcut_rs::Earcut;
-use indexmap::{IndexMap, IndexSet};
+use indexmap::IndexSet;
 use rayon::prelude::*;
 
 use nusamai_citygml::{object::ObjectStereotype, schema::Schema, GeometryType, Value};
@@ -44,13 +44,6 @@ pub struct BoundingVolume {
     pub max_lat: f64,
     pub min_height: f64,
     pub max_height: f64,
-}
-
-pub struct triangleEntity {
-    pub class_name: String,
-    pub triangles: Vec<[f64; 3]>,
-    pub bounding_volume: BoundingVolume,
-    pub attributes: IndexMap<String, Value, RandomState>,
 }
 
 pub struct GltfPocSinkProvider {}
@@ -134,6 +127,7 @@ impl DataSink for GltfPocSink {
                         let entity = parcel.entity;
                         let geom_store = entity.geometry_store.read().unwrap();
 
+                        // todo: Feature以外の処理に対応する
                         let Value::Object(obj) = &entity.root else {
                             unimplemented!()
                         };
