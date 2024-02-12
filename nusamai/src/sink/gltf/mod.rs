@@ -11,7 +11,7 @@ use std::path::PathBuf;
 use ahash::RandomState;
 use earcut_rs::utils_3d::project3d_to_2d;
 use earcut_rs::Earcut;
-use indexmap::IndexSet;
+use indexmap::{IndexMap, IndexSet};
 
 use nusamai_citygml::{object::ObjectStereotype, schema::Schema, GeometryType, Value};
 use nusamai_projection::cartesian::geographic_to_geocentric;
@@ -23,8 +23,10 @@ use crate::sink::{DataSink, DataSinkProvider, SinkInfo};
 use crate::{get_parameter_value, transformer};
 
 use attributes::Attributes;
-use gltf_writer::{append_gltf_extensions, build_base_gltf, write_3dtiles, write_gltf};
+use gltf_writer::{append_gltf_extensions, to_gltf, write_3dtiles, write_gltf};
 use positions::Vertex;
+
+use self::gltf_writer::build_base_gltf;
 
 pub struct BoundingVolume {
     pub min_lng: f64,
@@ -33,6 +35,16 @@ pub struct BoundingVolume {
     pub max_lat: f64,
     pub min_height: f64,
     pub max_height: f64,
+}
+
+pub struct TriangulatedEntity {
+    pub positions: Vec<Vertex<f64>>,
+    pub attributes: Attributes,
+}
+
+pub struct Buffers {
+    pub vertices: IndexSet<Vertex<u32>>,
+    pub indices: Vec<u32>,
 }
 
 pub struct GltfSinkProvider {}
@@ -232,33 +244,57 @@ impl DataSink for GltfSink {
                     max_height: f64::MIN,
                 };
 
-                // Maintain a list of type names as multiple types are mixed.
-                let mut class_names = HashSet::new();
+                // // Maintain a list of type names as multiple types are mixed.
+                // let mut class_names = HashSet::new();
 
-                // holds all vertex coordinates and feature_id
-                let mut all_positions: Vec<[f64; 4]> = Vec::new();
+                // // holds all vertex coordinates and feature_id
+                // let mut all_positions: Vec<[f64; 4]> = Vec::new();
 
-                // Holds all attributes of the entity
-                let mut all_attributes: Vec<Attributes> = Vec::new();
+                // // Holds all attributes of the entity
+                // let mut all_attributes: Vec<Attributes> = Vec::new();
+
+                let mut all_triangulated_entities: IndexMap<String, Vec<TriangulatedEntity>> =
+                    IndexMap::new();
 
                 for (feature_id, (triangles, attributes, bounds, class_name)) in
                     receiver.into_iter().enumerate()
                 {
-                    all_attributes.push(Attributes {
-                        class_name: class_name.as_ref().to_string(),
-                        feature_id: feature_id as u32,
-                        attributes,
-                    });
+                    let vertices = triangles
+                        .iter()
+                        .map(|&[x, y, z]| Vertex {
+                            position: [x, y, z],
+                            feature_id: feature_id as u32,
+                            ..Default::default()
+                        })
+                        .collect();
+                    let triangulated_entity = TriangulatedEntity {
+                        positions: vertices,
+                        attributes: Attributes {
+                            class_name: class_name.as_ref().to_string(),
+                            feature_id: feature_id as u32,
+                            attributes,
+                        },
+                    };
+                    all_triangulated_entities
+                        .entry(class_name.as_ref().to_string())
+                        .or_insert_with(Vec::new)
+                        .push(triangulated_entity);
 
-                    class_names.insert(class_name);
+                    // all_attributes.push(Attributes {
+                    //     class_name: class_name.as_ref().to_string(),
+                    //     feature_id: feature_id as u32,
+                    //     attributes,
+                    // });
+
+                    // class_names.insert(class_name);
 
                     let mut pos_max = [f64::MIN; 3];
                     let mut pos_min = [f64::MAX; 3];
 
-                    // add feature_id to all_positions
-                    triangles.iter().for_each(|&[x, y, z]| {
-                        all_positions.push([x, y, z, feature_id as f64]);
-                    });
+                    // // add feature_id to all_positions
+                    // triangles.iter().for_each(|&[x, y, z]| {
+                    //     all_positions.push([x, y, z, feature_id as f64]);
+                    // });
 
                     // calculate the centroid and min/max of the entity
                     triangles.iter().for_each(|&[x, y, z]| {
@@ -310,54 +346,100 @@ impl DataSink for GltfSink {
                 all_max[2] -= all_translation[2];
                 all_min[2] -= all_translation[2];
 
-                // make vertices and indices
-                let mut vertices: IndexSet<Vertex<u32>, RandomState> = IndexSet::default();
-                let indices: Vec<u32> = all_positions
-                    .iter()
-                    .map(|&[x, y, z, feature_id]| {
-                        let (x, y, z) = (
-                            x - all_translation[0],
-                            y - all_translation[1],
-                            z - all_translation[2],
-                        );
-                        let vbits = [
-                            (x as f32).to_bits(),
-                            (y as f32).to_bits(),
-                            (z as f32).to_bits(),
-                        ];
+                // ベースとなるglTFを作成するために、クラスごとに頂点・インデックス・頂点IDを分ける
+                // 2クラスあるなら、6個のbufferViewが必要で、それに伴い6個のaccessorが必要になる
+                // primitivesも、クラスごとに作成する必要があるので2つになる
+                // クラス名をキーとしたIndexMapを作成し、クラスごとに頂点・インデックス・頂点IDを格納する
+                let mut buffers = IndexMap::new();
+                for (class_name, entities) in all_triangulated_entities {
+                    let mut vertices: IndexSet<Vertex<u32>> = IndexSet::default();
+                    let mut indices: Vec<u32> = Vec::new();
+                    let mut feature_ids: Vec<u32> = Vec::new();
 
-                        let vertex = Vertex {
-                            position: vbits,
-                            feature_id: feature_id as u32,
-                            ..Default::default()
-                        };
+                    for entity in entities {
+                        let mut entity_vertices: Vec<Vertex<u32>> = Vec::new();
+                        let mut entity_indices: Vec<u32> = Vec::new();
 
-                        let (index, _) = vertices.insert_full(vertex);
+                        for vertex in entity.positions {
+                            let (x, y, z) = (
+                                vertex.position[0] - all_translation[0],
+                                vertex.position[1] - all_translation[1],
+                                vertex.position[2] - all_translation[2],
+                            );
+                            let vbits = [
+                                (x as f32).to_bits(),
+                                (y as f32).to_bits(),
+                                (z as f32).to_bits(),
+                            ];
 
-                        index as u32
-                    })
-                    .collect();
-                let indices: Vec<u32> = indices
-                    .chunks_exact(3)
-                    .filter(|idx| (idx[0] != idx[1] && idx[1] != idx[2] && idx[2] != idx[0]))
-                    .flatten()
-                    .copied()
-                    .collect();
+                            let vertex = Vertex {
+                                position: vbits,
+                                feature_id: vertex.feature_id,
+                                ..Default::default()
+                            };
+
+                            let (index, _) = vertices.insert_full(vertex);
+                            entity_vertices.push(vertex);
+                            entity_indices.push(index as u32);
+                        }
+
+                        indices.extend(entity_indices);
+                    }
+
+                    buffers.insert(class_name, Buffers { vertices, indices });
+                }
+
+                // make all vertices and indices for binary buffer
+                // let mut vertices: IndexSet<Vertex<u32>, RandomState> = IndexSet::default();
+                // let indices: Vec<u32> = all_positions
+                //     .iter()
+                //     .map(|&[x, y, z, feature_id]| {
+                //         let (x, y, z) = (
+                //             x - all_translation[0],
+                //             y - all_translation[1],
+                //             z - all_translation[2],
+                //         );
+                //         let vbits = [
+                //             (x as f32).to_bits(),
+                //             (y as f32).to_bits(),
+                //             (z as f32).to_bits(),
+                //         ];
+
+                //         let vertex = Vertex {
+                //             position: vbits,
+                //             feature_id: feature_id as u32,
+                //             ..Default::default()
+                //         };
+
+                //         let (index, _) = vertices.insert_full(vertex);
+
+                //         index as u32
+                //     })
+                //     .collect();
+                // let indices: Vec<u32> = indices
+                //     .chunks_exact(3)
+                //     .filter(|idx| (idx[0] != idx[1] && idx[1] != idx[2] && idx[2] != idx[0]))
+                //     .flatten()
+                //     .copied()
+                //     .collect();
 
                 let mut file = File::create(&self.output_path).unwrap();
                 let writer = BufWriter::with_capacity(1024 * 1024, &mut file);
 
                 // write glTF
-                let (mut bin_content, mut gltf) =
-                    build_base_gltf(&vertices, &indices, all_translation, all_min, all_max);
-                append_gltf_extensions(
-                    &mut gltf,
-                    &mut bin_content,
-                    class_names,
-                    schema,
-                    vertices,
-                    all_attributes,
-                );
+                let (bin_content, gltf) =
+                    build_base_gltf(&buffers, all_translation, all_min, all_max);
+
+                // let (mut bin_content, mut gltf) =
+                //     to_gltf(&vertices, &indices, all_translation, all_min, all_max);
+                // append_gltf_extensions(
+                //     &mut gltf,
+                //     &mut bin_content,
+                //     class_names,
+                //     schema,
+                //     vertices,
+                //     all_attributes,
+                // );
                 write_gltf(gltf, bin_content, writer);
 
                 // write 3DTiles

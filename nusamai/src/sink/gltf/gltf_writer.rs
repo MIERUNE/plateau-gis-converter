@@ -5,7 +5,7 @@ use std::path::PathBuf;
 
 use ahash::RandomState;
 use byteorder::{ByteOrder, LittleEndian};
-use indexmap::IndexSet;
+use indexmap::{IndexMap, IndexSet};
 
 use nusamai_citygml::schema::Schema;
 use nusamai_gltf_json::{
@@ -18,9 +18,84 @@ use crate::sink::gltf::attributes::{
 };
 
 use super::positions::Vertex;
+use super::Buffers;
 
 pub fn build_base_gltf(
-    vertices: &IndexSet<Vertex<u32>, RandomState>,
+    buffers: &IndexMap<String, Buffers>,
+    translation: [f64; 3],
+    min: [f64; 3],
+    max: [f64; 3],
+) -> (Vec<u8>, Gltf) {
+    let mut bin_contents: Vec<Vec<u8>> = Vec::new();
+    let mut gltf_list = Vec::new();
+    for (_class_name, buffer) in buffers.iter() {
+        let (bin_content, gltf) = to_gltf(&buffer.vertices, &buffer.indices, translation, min, max);
+        bin_contents.push(bin_content);
+        gltf_list.push(gltf);
+    }
+
+    let mut base_gltf = Gltf {
+        extensions_used: vec![
+            "EXT_mesh_features".to_string(),
+            "EXT_structural_metadata".to_string(),
+        ],
+        scenes: vec![Scene {
+            nodes: Some(vec![0]),
+            ..Default::default()
+        }],
+        nodes: vec![Node {
+            mesh: Some(0),
+            translation,
+            ..Default::default()
+        }],
+        ..Default::default()
+    };
+    for gltf in gltf_list {
+        // accessorsが参照しているbufferViewのインデックスなどを修正していく必要がある
+        // accessorsを整列
+        for accessor in gltf.accessors {
+            let mut new_accessor = accessor.clone();
+            new_accessor.buffer_view =
+                Some(accessor.buffer_view.unwrap() + base_gltf.buffer_views.len() as u32);
+            base_gltf.accessors.push(new_accessor);
+        }
+
+        // buffer_viewsを整列
+        for buffer_view in gltf.buffer_views {
+            let mut new_buffer_view = buffer_view.clone();
+            new_buffer_view.byte_offset += bin_contents.len() as u32;
+            base_gltf.buffer_views.push(new_buffer_view);
+        }
+
+        // meshes.primitivesを整列
+        for mesh in gltf.meshes {
+            let mut new_mesh = mesh.clone();
+            for primitive in mesh.primitives {
+                let mut new_primitive = primitive.clone();
+                new_primitive.indices =
+                    Some(primitive.indices.unwrap() + bin_contents.len() as u32);
+                let mut new_attributes = IndexMap::new();
+                for (key, value) in primitive.attributes {
+                    new_attributes.insert(key, value + bin_contents.len() as u32);
+                }
+                let new_attributes: HashMap<String, u32> = new_attributes.into_iter().collect();
+                new_primitive.attributes = new_attributes;
+                new_mesh.primitives.push(new_primitive);
+            }
+            base_gltf.meshes.push(new_mesh);
+        }
+    }
+
+    let mut bin_content: Vec<u8> = Vec::new();
+    for content in bin_contents {
+        bin_content.extend(content.iter());
+    }
+
+    (bin_content, base_gltf)
+}
+
+pub fn to_gltf(
+    vertices: &IndexSet<Vertex<u32>>,
     indices: &Vec<u32>,
     translation: [f64; 3],
     min: [f64; 3],
