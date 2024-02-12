@@ -34,7 +34,7 @@ pub struct Tunnel {
     pub consists_of_tunnel_part: Vec<TunnelPart>,
 
     #[citygml(path = b"uro:tunBaseAttribute/uro:ConstructionBaseAttribute")]
-    pub tun_base_attribute: Vec<uro::ConstructionBaseAttribute>,
+    pub tun_base_attribute: Option<uro::ConstructionBaseAttribute>,
 
     #[citygml(path = b"uro:tunDataQualityAttribute/uro:ConstructionDataQualityAttribute")]
     pub tun_data_quality_attribute: Option<uro::ConstructionDataQualityAttribute>,
@@ -55,13 +55,13 @@ pub struct Tunnel {
     pub tun_facility_type_attribute: Vec<uro::FacilityTypeAttribute>,
 
     #[citygml(path = b"uro:tunFunctionalAttribute/uro:TunnelFunctionalAttribute")]
-    pub tun_functional_attribute: Vec<uro::TunnelFunctionalAttribute>,
+    pub tun_functional_attribute: Option<uro::TunnelFunctionalAttribute>,
 
     #[citygml(path = b"uro:tunRiskAssessmentAttribute/uro:ConstructionRiskAssessmentAttribute")]
-    pub tun_risk_assessment_attribute: Vec<uro::ConstructionRiskAssessmentAttribute>,
+    pub tun_risk_assessment_attribute: Option<uro::ConstructionRiskAssessmentAttribute>,
 
     #[citygml(path = b"uro:tunStructureAttribute/uro:TunnelStructureAttribute")]
-    pub tun_structure_attribute: Vec<uro::TunnelStructureAttribute>,
+    pub tun_structure_attribute: Option<uro::TunnelStructureAttribute>,
 }
 
 #[citygml_feature(name = "tun:TunnelPart")]
@@ -97,7 +97,7 @@ pub struct TunnelPart {
     pub consists_of_tunnel_part: Vec<TunnelPart>,
 
     #[citygml(path = b"uro:tunBaseAttribute/uro:ConstructionBaseAttribute")]
-    pub tun_base_attribute: Vec<uro::ConstructionBaseAttribute>,
+    pub tun_base_attribute: Option<uro::ConstructionBaseAttribute>,
 
     #[citygml(path = b"uro:tunDataQualityAttribute/uro:ConstructionDataQualityAttribute")]
     pub tun_data_quality_attribute: Option<uro::ConstructionDataQualityAttribute>,
@@ -118,13 +118,13 @@ pub struct TunnelPart {
     pub tun_facility_type_attribute: Vec<uro::FacilityTypeAttribute>,
 
     #[citygml(path = b"uro:tunFunctionalAttribute/uro:TunnelFunctionalAttribute")]
-    pub tun_functional_attribute: Vec<uro::TunnelFunctionalAttribute>,
+    pub tun_functional_attribute: Option<uro::TunnelFunctionalAttribute>,
 
     #[citygml(path = b"uro:tunRiskAssessmentAttribute/uro:ConstructionRiskAssessmentAttribute")]
-    pub tun_risk_assessment_attribute: Vec<uro::ConstructionRiskAssessmentAttribute>,
+    pub tun_risk_assessment_attribute: Option<uro::ConstructionRiskAssessmentAttribute>,
 
     #[citygml(path = b"uro:tunStructureAttribute/uro:TunnelStructureAttribute")]
-    pub tun_structure_attribute: Vec<uro::TunnelStructureAttribute>,
+    pub tun_structure_attribute: Option<uro::TunnelStructureAttribute>,
 }
 
 #[citygml_feature(name = "tun:HollowSpace")]

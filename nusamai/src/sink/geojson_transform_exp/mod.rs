@@ -15,10 +15,10 @@ use crate::sink::{DataSink, DataSinkProvider, SinkInfo};
 use crate::{get_parameter_value, transformer};
 use transform::ObjectTransformer;
 
-use nusamai_citygml::object::Entity;
 use nusamai_geojson::conversion::{
     indexed_multilinestring_to_value, indexed_multipoint_to_value, indexed_multipolygon_to_value,
 };
+use nusamai_plateau::Entity;
 
 pub struct GeoJsonTransformExpSinkProvider {}
 
@@ -60,8 +60,6 @@ pub struct GeoJsonTfExpSink {
 
 impl DataSink for GeoJsonTfExpSink {
     fn make_transform_requirements(&self) -> transformer::Requirements {
-        // use transformer::RequirementItem;
-
         transformer::Requirements {
             ..Default::default()
         }
@@ -222,8 +220,7 @@ mod tests {
             epsg: EPSG_JGD2011_GEOGRAPHIC_3D,
             vertices,
             multipolygon: mpoly,
-            multilinestring: Default::default(),
-            multipoint: Default::default(),
+            ..Default::default()
         };
 
         let obj = Entity {
@@ -236,6 +233,7 @@ mod tests {
                 attributes: Default::default(),
             }),
             geometry_store: RwLock::new(geometries).into(),
+            appearance_store: Default::default(),
         };
 
         let geojson_features = entity_to_geojson_features(&obj);

@@ -1,5 +1,5 @@
 use std::io::BufRead;
-use std::str;
+use std::{mem, str};
 
 use quick_xml::events::{BytesStart, Event};
 use quick_xml::name::Namespace;
@@ -8,12 +8,13 @@ use quick_xml::NsReader;
 use thiserror::Error;
 use url::Url;
 
+use crate::appearance::{TexCoordList, TextureAssociation};
 use crate::codelist::{self, CodeResolver};
 use crate::geometry::{
-    GeometryCollector, GeometryParseType, GeometryRef, GeometryRefEntry, GeometryStore,
-    GeometryType,
+    GeometryCollector, GeometryParseType, GeometryRef, GeometryRefs, GeometryStore, GeometryType,
 };
-use crate::namespace::{wellknown_prefix_from_nsres, GML31_NS};
+use crate::namespace::{wellknown_prefix_from_nsres, APP_2_NS, GML31_NS};
+use crate::{CityGmlAttribute, LocalId, SurfaceSpan};
 
 #[derive(Error, Debug)]
 pub enum ParseError {
@@ -72,6 +73,8 @@ impl<'a> InternalState<'a> {
 pub struct ParseContext<'a> {
     source_uri: Option<Url>,
     code_resolver: &'a dyn CodeResolver,
+    // Mapping a string gml:id to an integer ID, unique in a single document
+    id_map: indexmap::IndexSet<String, ahash::RandomState>,
 }
 
 impl<'a> ParseContext<'a> {
@@ -79,6 +82,7 @@ impl<'a> ParseContext<'a> {
         Self {
             source_uri: Some(source_uri),
             code_resolver,
+            ..Default::default()
         }
     }
 
@@ -89,6 +93,11 @@ impl<'a> ParseContext<'a> {
     pub fn code_resolver(&self) -> &dyn CodeResolver {
         self.code_resolver
     }
+
+    pub fn id_to_integer_id(&mut self, id: String) -> LocalId {
+        let (idx, _) = self.id_map.insert_full(id);
+        LocalId(idx as u32)
+    }
 }
 
 impl<'a> Default for ParseContext<'a> {
@@ -96,6 +105,7 @@ impl<'a> Default for ParseContext<'a> {
         Self {
             source_uri: None,
             code_resolver: &codelist::NoopResolver {},
+            id_map: indexmap::IndexSet::default(),
         }
     }
 }
@@ -149,7 +159,7 @@ pub struct SubTreeReader<'a, 'b, R> {
     path_start: usize,
 }
 
-impl<R: BufRead> SubTreeReader<'_, '_, R> {
+impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
     pub fn parse_children(
         &mut self,
         logic: impl FnMut(&mut SubTreeReader<R>) -> Result<(), ParseError>,
@@ -206,7 +216,7 @@ impl<R: BufRead> SubTreeReader<'_, '_, R> {
 
     pub fn parse_attributes(
         &mut self,
-        mut logic: impl FnMut(&[u8], &[u8]) -> Result<(), ParseError>,
+        mut logic: impl FnMut(&[u8], &[u8], &mut ParseContext) -> Result<(), ParseError>,
     ) -> Result<(), ParseError> {
         let Some(start) = &self.state.current_start else {
             panic!("parse_attributes() must be called immediately after encountering a start tag.");
@@ -220,6 +230,7 @@ impl<R: BufRead> SubTreeReader<'_, '_, R> {
             logic(
                 self.state.buf1.as_ref(), // attribute path "@nsprefix:name"
                 attr.value.as_ref(),      // attribute value
+                &mut self.state.context,
             )?;
             self.state.buf1.truncate(1);
         }
@@ -295,6 +306,14 @@ impl<R: BufRead> SubTreeReader<'_, '_, R> {
         &self.state.context
     }
 
+    pub fn context_mut(&mut self) -> &mut ParseContext<'b> {
+        &mut self.state.context
+    }
+
+    pub fn id_to_integer_id(&mut self, id: String) -> LocalId {
+        self.state.context.id_to_integer_id(id)
+    }
+
     pub fn collect_geometries(&mut self) -> GeometryStore {
         let collector = std::mem::take(&mut self.state.geometry_collector);
         collector.into_geometries()
@@ -303,7 +322,7 @@ impl<R: BufRead> SubTreeReader<'_, '_, R> {
     /// Expect a geometric attribute of CityGML
     pub fn parse_geometric_attr(
         &mut self,
-        geomref: &mut GeometryRef,
+        geomref: &mut GeometryRefs,
         lod: u8,
         geomtype: GeometryParseType,
     ) -> Result<(), ParseError> {
@@ -333,38 +352,84 @@ impl<R: BufRead> SubTreeReader<'_, '_, R> {
 
     fn parse_multi_surface_prop(
         &mut self,
-        geomrefs: &mut GeometryRef,
+        geomrefs: &mut GeometryRefs,
         lod: u8,
     ) -> Result<(), ParseError> {
-        let poly_begin = self.state.geometry_collector.multipolygon.len();
+        let mut surface_id = None;
+        loop {
+            match self.reader.read_event_into(&mut self.state.buf1) {
+                Ok(Event::Start(start)) => {
+                    // surface id
+                    for attr in start.attributes().flatten() {
+                        let (nsres, localname) = self.reader.resolve_attribute(attr.key);
+                        if nsres == Bound(GML31_NS) && localname.as_ref() == b"id" {
+                            let id = String::from_utf8_lossy(attr.value.as_ref()).to_string();
+                            surface_id = Some(self.state.context.id_to_integer_id(id));
+                            break;
+                        }
+                    }
 
-        if expect_start(self.reader, &mut self.state.buf1, GML31_NS, b"MultiSurface")? {
-            self.parse_multi_surface()?;
-            expect_end(self.reader, &mut self.state.buf1)?;
-        }
+                    let (nsres, localname) = self.reader.resolve_element(start.name());
+                    let poly_begin = self.state.geometry_collector.multipolygon.len();
 
-        let poly_end = self.state.geometry_collector.multipolygon.len();
-        if poly_end - poly_begin > 0 {
-            geomrefs.push(GeometryRefEntry {
-                ty: GeometryType::Surface,
-                lod,
-                pos: poly_begin as u32,
-                len: (poly_end - poly_begin) as u32,
-            });
+                    let geomtype = match (nsres, localname.as_ref()) {
+                        (Bound(GML31_NS), b"MultiSurface") => {
+                            self.parse_multi_surface()?;
+                            GeometryType::Surface
+                        }
+                        _ => {
+                            return Err(ParseError::SchemaViolation(format!(
+                                "Expected MultiSurface but found <{}>",
+                                String::from_utf8_lossy(start.name().as_ref())
+                            )))
+                        }
+                    };
+
+                    let poly_end = self.state.geometry_collector.multipolygon.len();
+                    if poly_end - poly_begin > 0 {
+                        geomrefs.push(GeometryRef {
+                            ty: geomtype,
+                            lod,
+                            pos: poly_begin as u32,
+                            len: (poly_end - poly_begin) as u32,
+                        });
+
+                        // record a partial surface span
+                        if let Some(id) = surface_id {
+                            self.state
+                                .geometry_collector
+                                .surface_spans
+                                .push(SurfaceSpan {
+                                    id,
+                                    start: poly_begin as u32,
+                                    end: poly_end as u32,
+                                });
+                        }
+                    }
+                }
+                Ok(Event::End(_)) => break,
+                Ok(Event::Text(_)) => {
+                    return Err(ParseError::SchemaViolation(
+                        "Unexpected text content".into(),
+                    ))
+                }
+                Ok(_) => (),
+                Err(e) => return Err(e.into()),
+            }
         }
         Ok(())
     }
 
     fn parse_surface_prop(
         &mut self,
-        geomrefs: &mut GeometryRef,
+        geomrefs: &mut GeometryRefs,
         lod: u8,
     ) -> Result<(), ParseError> {
         let poly_begin = self.state.geometry_collector.multipolygon.len();
         self.parse_surface()?;
         let poly_end = self.state.geometry_collector.multipolygon.len();
         if poly_end - poly_begin > 0 {
-            geomrefs.push(GeometryRefEntry {
+            geomrefs.push(GeometryRef {
                 ty: GeometryType::Surface,
                 lod,
                 pos: poly_begin as u32,
@@ -374,7 +439,7 @@ impl<R: BufRead> SubTreeReader<'_, '_, R> {
         Ok(())
     }
 
-    fn parse_solid_prop(&mut self, geomrefs: &mut GeometryRef, lod: u8) -> Result<(), ParseError> {
+    fn parse_solid_prop(&mut self, geomrefs: &mut GeometryRefs, lod: u8) -> Result<(), ParseError> {
         let poly_begin = self.state.geometry_collector.multipolygon.len();
 
         if expect_start(self.reader, &mut self.state.buf1, GML31_NS, b"Solid")? {
@@ -384,7 +449,7 @@ impl<R: BufRead> SubTreeReader<'_, '_, R> {
 
         let poly_end = self.state.geometry_collector.multipolygon.len();
         if poly_end - poly_begin > 0 {
-            geomrefs.push(GeometryRefEntry {
+            geomrefs.push(GeometryRef {
                 ty: GeometryType::Solid,
                 lod,
                 pos: poly_begin as u32,
@@ -396,14 +461,25 @@ impl<R: BufRead> SubTreeReader<'_, '_, R> {
 
     fn parse_geometry_prop(
         &mut self,
-        geomrefs: &mut GeometryRef,
+        geomrefs: &mut GeometryRefs,
         lod: u8,
     ) -> Result<(), ParseError> {
+        let mut surface_id = None;
         loop {
             match self.reader.read_event_into(&mut self.state.buf1) {
                 Ok(Event::Start(start)) => {
                     let (nsres, localname) = self.reader.resolve_element(start.name());
                     let poly_begin = self.state.geometry_collector.multipolygon.len();
+
+                    // surface id
+                    for attr in start.attributes().flatten() {
+                        let (nsres, localname) = self.reader.resolve_attribute(attr.key);
+                        if nsres == Bound(GML31_NS) && localname.as_ref() == b"id" {
+                            let id = String::from_utf8_lossy(attr.value.as_ref()).to_string();
+                            surface_id = Some(self.state.context.id_to_integer_id(id));
+                            break;
+                        }
+                    }
 
                     let geomtype = match (nsres, localname.as_ref()) {
                         (Bound(GML31_NS), b"Solid") => {
@@ -448,12 +524,24 @@ impl<R: BufRead> SubTreeReader<'_, '_, R> {
 
                     let poly_end = self.state.geometry_collector.multipolygon.len();
                     if poly_end - poly_begin > 0 {
-                        geomrefs.push(GeometryRefEntry {
+                        geomrefs.push(GeometryRef {
                             ty: geomtype,
                             lod,
                             pos: poly_begin as u32,
                             len: (poly_end - poly_begin) as u32,
                         });
+
+                        // record a partial surface span
+                        if let Some(id) = surface_id {
+                            self.state
+                                .geometry_collector
+                                .surface_spans
+                                .push(SurfaceSpan {
+                                    id,
+                                    start: poly_begin as u32,
+                                    end: poly_end as u32,
+                                });
+                        }
                     }
                 }
                 Ok(Event::End(_)) => break,
@@ -471,7 +559,7 @@ impl<R: BufRead> SubTreeReader<'_, '_, R> {
 
     fn parse_triangulated_prop(
         &mut self,
-        geomrefs: &mut GeometryRef,
+        geomrefs: &mut GeometryRefs,
         lod: u8,
     ) -> Result<(), ParseError> {
         let poly_begin = self.state.geometry_collector.multipolygon.len();
@@ -506,7 +594,7 @@ impl<R: BufRead> SubTreeReader<'_, '_, R> {
 
         let poly_end = self.state.geometry_collector.multipolygon.len();
         if poly_end - poly_begin > 0 {
-            geomrefs.push(GeometryRefEntry {
+            geomrefs.push(GeometryRef {
                 ty: GeometryType::Triangle,
                 lod,
                 pos: poly_begin as u32,
@@ -614,9 +702,22 @@ impl<R: BufRead> SubTreeReader<'_, '_, R> {
     }
 
     fn parse_surface(&mut self) -> Result<(), ParseError> {
+        let mut surface_id = None;
+        let poly_begin = self.state.geometry_collector.multipolygon.len();
+
         loop {
             match self.reader.read_event_into(&mut self.state.buf1) {
                 Ok(Event::Start(start)) => {
+                    // surface id
+                    for attr in start.attributes().flatten() {
+                        let (nsres, localname) = self.reader.resolve_attribute(attr.key);
+                        if nsres == Bound(GML31_NS) && localname.as_ref() == b"id" {
+                            let id = String::from_utf8_lossy(attr.value.as_ref()).to_string();
+                            surface_id = Some(self.state.context.id_to_integer_id(id));
+                            break;
+                        }
+                    }
+
                     let (nsres, localname) = self.reader.resolve_element(start.name());
                     match (nsres, localname.as_ref()) {
                         (Bound(GML31_NS), b"Polygon") => self.parse_polygon()?,
@@ -637,6 +738,21 @@ impl<R: BufRead> SubTreeReader<'_, '_, R> {
                             )))
                         }
                     }
+
+                    // record a partial surface span
+                    if let Some(id) = surface_id {
+                        let poly_end = self.state.geometry_collector.multipolygon.len() as u32;
+                        if poly_end > poly_begin as u32 {
+                            self.state
+                                .geometry_collector
+                                .surface_spans
+                                .push(SurfaceSpan {
+                                    id,
+                                    start: poly_begin as u32,
+                                    end: poly_end,
+                                });
+                        }
+                    }
                 }
                 Ok(Event::End(_)) => return Ok(()),
                 Ok(Event::Text(_)) => {
@@ -654,6 +770,7 @@ impl<R: BufRead> SubTreeReader<'_, '_, R> {
         let mut depth = 1;
         let mut expect_exterior = true;
         let mut is_exterior = true;
+        let mut ring_id = None;
         loop {
             match self.reader.read_resolved_event_into(&mut self.state.buf1) {
                 Ok((Bound(GML31_NS), Event::Start(start))) => {
@@ -682,7 +799,18 @@ impl<R: BufRead> SubTreeReader<'_, '_, R> {
                                 String::from_utf8_lossy(start.name().as_ref())
                             )));
                         }
-                        (3, b"LinearRing") => (),
+                        (3, b"LinearRing") => {
+                            ring_id = None;
+                            for attr in start.attributes().flatten() {
+                                let (nsres, localname) = self.reader.resolve_attribute(attr.key);
+                                if nsres == Bound(GML31_NS) && localname.as_ref() == b"id" {
+                                    let id =
+                                        String::from_utf8_lossy(attr.value.as_ref()).to_string();
+                                    ring_id = Some(self.state.context.id_to_integer_id(id));
+                                    break;
+                                }
+                            }
+                        }
                         (3, _) => {
                             return Err(ParseError::SchemaViolation(format!(
                                 "Expected <LinearRing> but found <{}>",
@@ -749,16 +877,162 @@ impl<R: BufRead> SubTreeReader<'_, '_, R> {
                         .map(|c| [c[0], c[1], c[2]]);
                     if is_exterior {
                         // add a new polygon
-                        self.state.geometry_collector.add_exterior_ring(iter);
+                        self.state
+                            .geometry_collector
+                            .add_exterior_ring(iter, ring_id.take());
                     } else {
                         // append an interior ring
-                        self.state.geometry_collector.add_interior_ring(iter);
+                        self.state
+                            .geometry_collector
+                            .add_interior_ring(iter, ring_id.take());
                     }
                 }
                 Ok(_) => (),
                 Err(e) => return Err(e.into()),
             }
         }
+    }
+
+    /// Parses <app:target> of ParameterizedTexture
+    pub(crate) fn parse_texture_association(&mut self) -> Result<TextureAssociation, ParseError> {
+        // uri attribute (required)
+        let mut target = None;
+        if let Some(start) = &self.state.current_start {
+            for attr in start.attributes().flatten() {
+                if attr.key.as_ref() == b"uri" {
+                    target = Some(LocalId::parse_attribute_value(
+                        std::str::from_utf8(attr.value.as_ref()).unwrap(),
+                        &mut self.state.context,
+                    )?);
+                }
+            }
+        }
+
+        loop {
+            match self.reader.read_event_into(&mut self.state.buf1) {
+                Ok(Event::Start(start)) => {
+                    let (nsres, localname) = self.reader.resolve_element(start.name());
+                    match (nsres, localname.as_ref()) {
+                        (Bound(APP_2_NS), b"TexCoordList") => {
+                            let mut tex_coords = TexCoordList {
+                                target: target.take().unwrap(),
+                                ..Default::default()
+                            };
+                            self.parse_tex_coord_list(&mut tex_coords)?;
+                            return Ok(TextureAssociation::TexCoordList(tex_coords));
+                        }
+                        _ => {
+                            return Err(ParseError::SchemaViolation(format!(
+                                "Unexpected geometry elements <{}>",
+                                String::from_utf8_lossy(start.name().as_ref())
+                            )))
+                        }
+                    };
+                }
+                Ok(Event::End(_)) => break,
+                Ok(Event::Text(_)) => {
+                    return Err(ParseError::SchemaViolation(
+                        "Unexpected text content".into(),
+                    ))
+                }
+                Ok(_) => (),
+                Err(e) => return Err(e.into()),
+            }
+        }
+
+        Err(ParseError::SchemaViolation(
+            "Expected <app:TexCoordList> or <app:TexCoordGen> but not found".into(),
+        ))
+    }
+
+    fn parse_tex_coord_list(&mut self, tex_coords: &mut TexCoordList) -> Result<(), ParseError> {
+        let mut inside_coordinates = false;
+        let mut ring = None;
+        let mut coords = None;
+        loop {
+            match self.reader.read_event_into(&mut self.state.buf1) {
+                Ok(Event::Start(start)) => {
+                    if inside_coordinates {
+                        return Err(ParseError::SchemaViolation(format!(
+                            "Unexpected elements <{}>",
+                            String::from_utf8_lossy(start.name().as_ref())
+                        )));
+                    }
+
+                    let (nsres, localname) = self.reader.resolve_element(start.name());
+                    match (nsres, localname.as_ref()) {
+                        (Bound(APP_2_NS), b"textureCoordinates") => {
+                            inside_coordinates = true;
+                            for attr in start.attributes().flatten() {
+                                if attr.key.as_ref() == b"ring" {
+                                    ring = Some(LocalId::parse_attribute_value(
+                                        std::str::from_utf8(attr.value.as_ref()).unwrap(),
+                                        &mut self.state.context,
+                                    )?);
+                                }
+                            }
+
+                            if ring.is_none() {
+                                return Err(ParseError::SchemaViolation(
+                                    "<app:textureCoordinates> must have a 'ring' attribute.".into(),
+                                ));
+                            }
+                        }
+                        _ => {
+                            return Err(ParseError::SchemaViolation(format!(
+                                "Unexpected elements <{}>",
+                                String::from_utf8_lossy(start.name().as_ref())
+                            )));
+                        }
+                    };
+                }
+                Ok(Event::End(_)) => match inside_coordinates {
+                    true => {
+                        tex_coords.rings.push(ring.take().ok_or_else(|| {
+                            ParseError::SchemaViolation(
+                                "<app:textureCoordinates> must have a 'ring' attribute.".into(),
+                            )
+                        })?);
+                        let a = coords.take().ok_or_else(|| {
+                            ParseError::SchemaViolation(
+                                "<app:textureCoordinates> must have a <app:textureCoordinate>."
+                                    .into(),
+                            )
+                        })?;
+                        tex_coords.coords_list.push(a);
+                        inside_coordinates = false;
+                    }
+                    false => {
+                        break;
+                    }
+                },
+                Ok(Event::Text(text)) => {
+                    if !inside_coordinates {
+                        return Err(ParseError::SchemaViolation(
+                            "Unexpected text content".into(),
+                        ));
+                    }
+
+                    self.state.fp_buf.clear();
+                    for s in text.unescape().unwrap().split_ascii_whitespace() {
+                        if let Ok(v) = s.parse() {
+                            self.state.fp_buf.push(v);
+                        } else {
+                            return Err(ParseError::InvalidValue(format!(
+                                "Invalid floating point number: {}",
+                                s
+                            )));
+                        }
+                    }
+
+                    coords = Some(mem::take(&mut self.state.fp_buf));
+                }
+                Ok(_) => (),
+                Err(e) => return Err(e.into()),
+            }
+        }
+
+        Ok(())
     }
 }
 

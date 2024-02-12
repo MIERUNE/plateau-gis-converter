@@ -6,10 +6,11 @@ use clap::Parser;
 use nusamai::pipeline::Canceller;
 use nusamai::sink::{
     cesiumtiles::CesiumTilesSinkProvider, czml::CzmlSinkProvider, geojson::GeoJsonSinkProvider,
-    geojson_transform_exp::GeoJsonTransformExpSinkProvider, gltf::GltfPocSinkProvider,
+    geojson_transform_exp::GeoJsonTransformExpSinkProvider, gltf::GltfSinkProvider,
     gpkg::GpkgSinkProvider, mvt::MVTSinkProvider, noop::NoopSinkProvider,
     ply::StanfordPlySinkProvider, serde::SerdeSinkProvider, shapefile::ShapefileSinkProvider,
 };
+
 use nusamai::sink::{DataSink, DataSinkProvider};
 use nusamai::source::citygml::CityGmlSourceProvider;
 use nusamai::source::{DataSource, DataSourceProvider};
@@ -61,6 +62,7 @@ enum SinkChoice {
     Shapefile,
     Czml,
     Ply,
+    KML,
     Gltf,
 }
 
@@ -77,7 +79,8 @@ impl SinkChoice {
             SinkChoice::Shapefile => Box::new(ShapefileSinkProvider {}),
             SinkChoice::Czml => Box::new(CzmlSinkProvider {}),
             SinkChoice::Ply => Box::new(StanfordPlySinkProvider {}),
-            SinkChoice::Gltf => Box::new(GltfPocSinkProvider {}),
+            SinkChoice::Gltf => Box::new(GltfSinkProvider {}),
+            SinkChoice::KML => Box::new(KmlSinkProvider {}),
         }
     }
 }

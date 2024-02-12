@@ -44,7 +44,7 @@ pub struct Bridge {
     pub address: Vec<Address>,
 
     #[citygml(path = b"uro:bridBaseAttribute/uro:ConstructionBaseAttribute")]
-    pub brid_base_attribute: Vec<uro::ConstructionBaseAttribute>,
+    pub brid_base_attribute: Option<uro::ConstructionBaseAttribute>,
 
     #[citygml(path = b"uro:bridDataQualityAttribute/uro:ConstructionDataQualityAttribute")]
     pub brid_data_quality_attribute: Option<uro::ConstructionDataQualityAttribute>,
@@ -65,13 +65,13 @@ pub struct Bridge {
     pub brid_facility_type_attribute: Vec<uro::FacilityTypeAttribute>,
 
     #[citygml(path = b"uro:bridFunctionalAttribute/uro:BridgeFunctionalAttribute")]
-    pub brid_functional_attribute: Vec<uro::BridgeFunctionalAttribute>,
+    pub brid_functional_attribute: Option<uro::BridgeFunctionalAttribute>,
 
     #[citygml(path = b"uro:bridRiskAssessmentAttribute/uro:ConstructionRiskAssessmentAttribute")]
-    pub brid_risk_assessment_attribute: Vec<uro::ConstructionRiskAssessmentAttribute>,
+    pub brid_risk_assessment_attribute: Option<uro::ConstructionRiskAssessmentAttribute>,
 
     #[citygml(path = b"uro:bridStructureAttribute/uro:BridgeStructureAttribute")]
-    pub brid_structure_attribute: Vec<uro::BridgeStructureAttribute>,
+    pub brid_structure_attribute: Option<uro::BridgeStructureAttribute>,
 }
 
 #[citygml_feature(name = "brid:BridgePart")]
@@ -116,7 +116,7 @@ pub struct BridgePart {
     pub address: Vec<Address>,
 
     #[citygml(path = b"uro:bridBaseAttribute/uro:ConstructionBaseAttribute")]
-    pub brid_base_attribute: Vec<uro::ConstructionBaseAttribute>,
+    pub brid_base_attribute: Option<uro::ConstructionBaseAttribute>,
 
     #[citygml(path = b"uro:bridDataQualityAttribute/uro:ConstructionDataQualityAttribute")]
     pub brid_data_quality_attribute: Option<uro::ConstructionDataQualityAttribute>,
@@ -137,13 +137,13 @@ pub struct BridgePart {
     pub brid_facility_type_attribute: Vec<uro::FacilityTypeAttribute>,
 
     #[citygml(path = b"uro:bridFunctionalAttribute/uro:BridgeFunctionalAttribute")]
-    pub brid_functional_attribute: Vec<uro::BridgeFunctionalAttribute>,
+    pub brid_functional_attribute: Option<uro::BridgeFunctionalAttribute>,
 
     #[citygml(path = b"uro:bridRiskAssessmentAttribute/uro:ConstructionRiskAssessmentAttribute")]
-    pub brid_risk_assessment_attribute: Vec<uro::ConstructionRiskAssessmentAttribute>,
+    pub brid_risk_assessment_attribute: Option<uro::ConstructionRiskAssessmentAttribute>,
 
     #[citygml(path = b"uro:bridStructureAttribute/uro:BridgeStructureAttribute")]
-    pub brid_structure_attribute: Vec<uro::BridgeStructureAttribute>,
+    pub brid_structure_attribute: Option<uro::BridgeStructureAttribute>,
 }
 
 #[citygml_feature(name = "brid:BridgeConstructionElement")]

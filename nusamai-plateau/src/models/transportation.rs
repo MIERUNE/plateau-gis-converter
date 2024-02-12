@@ -38,10 +38,10 @@ pub struct Road {
     pub road_status: Vec<uro::RoadType>,
 
     #[citygml(path = b"uro:roadStructureAttribute/uro:RoadStructureAttribute")]
-    pub road_structure_attribute: Vec<uro::RoadStructureAttribute>,
+    pub road_structure_attribute: Option<uro::RoadStructureAttribute>,
 
     #[citygml(path = b"uro:trafficVolumeAttribute/uro:TrafficVolumeAttribute")]
-    pub traffic_volume_attribute: Vec<uro::TrafficVolumeAttribute>,
+    pub traffic_volume_attribute: Option<uro::TrafficVolumeAttribute>,
 }
 
 #[citygml_feature(name = "tran:Railway")]
@@ -77,7 +77,7 @@ pub struct Railway {
     pub tran_facility_type_attribute: Vec<uro::FacilityTypeAttribute>,
 
     #[citygml(path = b"uro:railwayRouteAttribute/uro:RailwayRouteAttribute")]
-    pub railway_route_attribute: Vec<uro::RailwayRouteAttribute>,
+    pub railway_route_attribute: Option<uro::RailwayRouteAttribute>,
 }
 
 #[citygml_feature(name = "tran:Track")]
@@ -113,7 +113,7 @@ pub struct Track {
     pub tran_facility_type_attribute: Vec<uro::FacilityTypeAttribute>,
 
     #[citygml(path = b"uro:trackAttribute/uro:TrackAttribute")]
-    pub track_attribute: Vec<uro::TrackAttribute>,
+    pub track_attribute: Option<uro::TrackAttribute>,
 }
 
 #[citygml_feature(name = "tran:Square")]
@@ -149,7 +149,7 @@ pub struct Square {
     pub tran_facility_type_attribute: Vec<uro::FacilityTypeAttribute>,
 
     #[citygml(path = b"uro:squareUrbanPlanAttribute")]
-    pub square_urban_plan_attribute: Vec<uro::SquareUrbanPlanAttributeProperty>, // -> uro:SquareUrbanPlanAttribute
+    pub square_urban_plan_attribute: Option<uro::SquareUrbanPlanAttributeProperty>, // -> uro:SquareUrbanPlanAttribute
 }
 
 /// uro:Waterway (PLATEAU, CityGML 2.x)
@@ -211,7 +211,7 @@ pub struct TrafficArea {
     pub railway_track_attribute: Vec<uro::RailwayTrackAttribute>,
 
     #[citygml(path = b"uro:trafficAreaStructureAttribute/uro:TrafficAreaStructureAttribute")]
-    pub traffic_area_structure_attribute: Vec<uro::TrafficAreaStructureAttribute>,
+    pub traffic_area_structure_attribute: Option<uro::TrafficAreaStructureAttribute>,
 }
 
 #[citygml_feature(name = "tran:AuxiliaryTrafficArea")]

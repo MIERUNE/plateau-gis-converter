@@ -5,10 +5,11 @@ use hashbrown::HashMap;
 use super::tiling;
 use nusamai_citygml::{
     geometry::GeometryType,
-    object::{Entity, ObjectStereotype, Value},
+    object::{ObjectStereotype, Value},
 };
 use nusamai_geometry::{LineString3, MultiPolygon3, Polygon3};
 use nusamai_mvt::TileZXY;
+use nusamai_plateau::Entity;
 
 pub fn slice_cityobj_geoms<E>(
     obj: &Entity,

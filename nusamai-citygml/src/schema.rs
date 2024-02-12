@@ -80,10 +80,10 @@ pub enum TypeRef {
     JsonString,
     URI,
     Date,
-    DataTime,
+    DateTime,
     Measure,
     Point,
-    /// Reference to a user type defined in the schema.
+    /// Reference to a type defined in the schema.
     Named(String),
 }
 

@@ -2,12 +2,14 @@ use std::ops::BitOrAssign;
 
 use crate::transformer::Transform;
 
-use nusamai_citygml::object::{Entity, ObjectStereotype, Value};
+use nusamai_citygml::object::{ObjectStereotype, Value};
 use nusamai_citygml::schema::Schema;
+use nusamai_plateau::Entity;
 
 #[derive(Default, Clone)]
 pub struct FilterLodTransform {}
 
+/// Transform to filter and split the LODs
 impl Transform for FilterLodTransform {
     fn transform(&mut self, mut entity: Entity, out: &mut Vec<Entity>) {
         let lodmask = find_lods(&entity.root);

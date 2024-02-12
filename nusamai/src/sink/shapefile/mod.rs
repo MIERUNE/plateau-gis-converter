@@ -11,7 +11,8 @@ use crate::pipeline::{Feedback, PipelineError, Receiver, Result};
 use crate::sink::{DataSink, DataSinkProvider, SinkInfo};
 use crate::{get_parameter_value, transformer};
 
-use nusamai_citygml::object::{Entity, ObjectStereotype, Value};
+use nusamai_citygml::object::{ObjectStereotype, Value};
+use nusamai_plateau::Entity;
 use nusamai_shapefile::conversion::indexed_multipolygon_to_shape;
 use shapefile;
 
@@ -55,10 +56,7 @@ pub struct ShapefileSink {
 
 impl DataSink for ShapefileSink {
     fn make_transform_requirements(&self) -> transformer::Requirements {
-        use transformer::RequirementItem;
-
         transformer::Requirements {
-            mergedown: RequirementItem::Required(transformer::Mergedown::Geometry),
             ..Default::default()
         }
     }
@@ -184,8 +182,9 @@ mod tests {
     use std::sync::RwLock;
 
     use super::*;
-    use nusamai_citygml::{object::Object, GeometryRefEntry, Value};
+    use nusamai_citygml::{object::Object, GeometryRef, Value};
     use nusamai_geometry::MultiPolygon;
+    use nusamai_plateau::Entity;
     use nusamai_projection::crs::EPSG_JGD2011_GEOGRAPHIC_3D;
     use shapefile::NO_DATA;
 
@@ -203,8 +202,7 @@ mod tests {
             epsg: EPSG_JGD2011_GEOGRAPHIC_3D,
             vertices,
             multipolygon: mpoly,
-            multilinestring: Default::default(),
-            multipoint: Default::default(),
+            ..Default::default()
         };
 
         let obj = Entity {
@@ -213,7 +211,7 @@ mod tests {
                 attributes: Default::default(),
                 stereotype: nusamai_citygml::object::ObjectStereotype::Feature {
                     id: "dummy".into(),
-                    geometries: vec![GeometryRefEntry {
+                    geometries: vec![GeometryRef {
                         ty: GeometryType::Solid,
                         pos: 0,
                         len: 1,
@@ -222,6 +220,7 @@ mod tests {
                 },
             }),
             geometry_store: RwLock::new(geometries).into(),
+            appearance_store: Default::default(),
         };
 
         let shapes = entity_to_shapes(&obj);

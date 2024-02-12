@@ -72,10 +72,7 @@ pub struct StanfordPlySink {
 
 impl DataSink for StanfordPlySink {
     fn make_transform_requirements(&self) -> transformer::Requirements {
-        use transformer::RequirementItem;
-
         transformer::Requirements {
-            mergedown: RequirementItem::Required(transformer::Mergedown::Geometry),
             ..Default::default()
         }
     }
@@ -146,17 +143,14 @@ impl DataSink for StanfordPlySink {
                                             2,
                                             &mut triangles_buf,
                                         );
+                                        triangles.extend(triangles_buf.iter().map(|idx| {
+                                            [
+                                                buf3d[*idx as usize * 3],
+                                                buf3d[*idx as usize * 3 + 1],
+                                                buf3d[*idx as usize * 3 + 2],
+                                            ]
+                                        }));
                                     }
-
-                                    assert!(triangles_buf.len() % 3 == 0);
-
-                                    triangles.extend(triangles_buf.iter().map(|idx| {
-                                        [
-                                            buf3d[*idx as usize * 3],
-                                            buf3d[*idx as usize * 3 + 1],
-                                            buf3d[*idx as usize * 3 + 2],
-                                        ]
-                                    }));
                                 }
                             }
                             GeometryType::Curve | GeometryType::Point => {

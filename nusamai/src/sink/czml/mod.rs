@@ -6,13 +6,14 @@ use std::path::PathBuf;
 
 use rayon::prelude::*;
 
-use nusamai_citygml::object::{Entity, ObjectStereotype, Value};
+use nusamai_citygml::object::{ObjectStereotype, Value};
 use nusamai_citygml::schema::Schema;
 use nusamai_citygml::GeometryType;
 use nusamai_czml::conversion::indexed_multipolygon_to_czml_polygon;
 use nusamai_czml::{
     indexed_polygon_to_czml_polygon, CzmlBoolean, Packet, StringProperties, StringValueType,
 };
+use nusamai_plateau::Entity;
 
 use crate::parameters::*;
 use crate::pipeline::{Feedback, PipelineError, Receiver, Result};
@@ -59,10 +60,7 @@ pub struct CzmlSink {
 
 impl DataSink for CzmlSink {
     fn make_transform_requirements(&self) -> transformer::Requirements {
-        use transformer::RequirementItem;
-
         transformer::Requirements {
-            mergedown: RequirementItem::Required(transformer::Mergedown::Geometry),
             ..Default::default()
         }
     }
@@ -229,7 +227,7 @@ mod tests {
     use std::sync::RwLock;
 
     use super::*;
-    use nusamai_citygml::{object::Object, GeometryRefEntry, Value};
+    use nusamai_citygml::{object::Object, GeometryRef, Value};
     use nusamai_czml::{PositionListProperties, PositionListType};
     use nusamai_geometry::MultiPolygon;
     use nusamai_projection::crs::EPSG_JGD2011_GEOGRAPHIC_3D;
@@ -284,8 +282,7 @@ mod tests {
             epsg: EPSG_JGD2011_GEOGRAPHIC_3D,
             vertices,
             multipolygon: mpoly,
-            multilinestring: Default::default(),
-            multipoint: Default::default(),
+            ..Default::default()
         };
 
         let entity = Entity {
@@ -295,19 +292,19 @@ mod tests {
                 stereotype: nusamai_citygml::object::ObjectStereotype::Feature {
                     id: "dummy".into(),
                     geometries: vec![
-                        GeometryRefEntry {
+                        GeometryRef {
                             ty: GeometryType::Solid,
                             pos: 0,
                             len: 1,
                             lod: 1,
                         },
-                        GeometryRefEntry {
+                        GeometryRef {
                             ty: GeometryType::Solid,
                             pos: 1,
                             len: 1,
                             lod: 1,
                         },
-                        GeometryRefEntry {
+                        GeometryRef {
                             ty: GeometryType::Solid,
                             pos: 2,
                             len: 1,
@@ -317,6 +314,7 @@ mod tests {
                 },
             }),
             geometry_store: RwLock::new(geometries).into(),
+            appearance_store: Default::default(),
         };
 
         let packets = entity_to_packet(&entity, true);

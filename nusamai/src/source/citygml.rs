@@ -12,8 +12,10 @@ use crate::parameters::Parameters;
 use crate::pipeline::{self, PipelineError};
 use crate::pipeline::{Feedback, Parcel, Sender};
 use crate::source::{DataSource, DataSourceProvider, SourceInfo};
-use nusamai_citygml::object::Entity;
 use nusamai_citygml::{CityGmlElement, CityGmlReader, ParseError, SubTreeReader};
+use nusamai_plateau::appearance::AppearanceStore;
+use nusamai_plateau::models;
+use nusamai_plateau::Entity;
 
 pub struct CityGmlSourceProvider {
     // FIXME: Use the configuration mechanism
@@ -67,12 +69,17 @@ impl DataSource for CityGmlSource {
     }
 }
 
+// TODO: Move this to nusamai-plateau ?
 fn toplevel_dispatcher<R: BufRead>(
     st: &mut SubTreeReader<R>,
     downstream: &Sender,
     feedback: &Feedback,
 ) -> Result<(), ParseError> {
-    let result = st.parse_children(|st| {
+    let parse_appearances = true;
+    let mut entities = Vec::new();
+    let mut global_appearances = AppearanceStore::default();
+
+    st.parse_children(|st| {
         if feedback.is_canceled() {
             return Ok(());
         }
@@ -83,24 +90,41 @@ fn toplevel_dispatcher<R: BufRead>(
                 Ok(())
             }
             b"core:cityObjectMember" => {
-                let mut cityobj: nusamai_plateau::models::TopLevelCityObject = Default::default();
+                let mut cityobj: models::TopLevelCityObject = Default::default();
                 cityobj.parse(st)?;
-                let geometries = st.collect_geometries();
+                let geometry_store = st.collect_geometries();
 
                 if let Some(root) = cityobj.into_object() {
                     let entity = Entity {
                         root,
-                        geometry_store: RwLock::new(geometries).into(),
+                        geometry_store: RwLock::new(geometry_store).into(),
+                        appearance_store: Default::default(), // TODO: from local appearances
                     };
-                    if downstream.send(Parcel { entity }).is_err() {
-                        feedback.cancel();
-                        return Ok(());
+
+                    if parse_appearances {
+                        // store the entity to bind the appearance later
+                        entities.push(entity);
+                    } else {
+                        // send the entity immediately
+                        if downstream.send(Parcel { entity }).is_err() {
+                            feedback.cancel();
+                            return Ok(());
+                        }
                     }
                 }
                 Ok(())
             }
             b"app:appearanceMember" => {
-                st.skip_current_element()?;
+                if parse_appearances {
+                    let mut app: models::appearance::AppearanceProperty = Default::default();
+                    app.parse(st)?;
+                    let models::appearance::AppearanceProperty::Appearance(app) = app else {
+                        unreachable!();
+                    };
+                    global_appearances.update(app);
+                } else {
+                    st.skip_current_element()?;
+                }
                 Ok(())
             }
             other => Err(ParseError::SchemaViolation(format!(
@@ -108,9 +132,24 @@ fn toplevel_dispatcher<R: BufRead>(
                 String::from_utf8_lossy(other)
             ))),
         }
-    });
-    match result {
-        Ok(_) => Ok(()),
-        Err(e) => Err(e),
+    })?;
+
+    for entity in entities {
+        // merge global appearances into the entity's local appearance store
+        {
+            let geom_store = entity.geometry_store.read().unwrap();
+            entity.appearance_store.write().unwrap().merge_global(
+                &mut global_appearances,
+                &geom_store.ring_ids,
+                &geom_store.surface_spans,
+            );
+        }
+
+        if downstream.send(Parcel { entity }).is_err() {
+            feedback.cancel();
+            break;
+        }
     }
+
+    Ok(())
 }

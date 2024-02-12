@@ -1,7 +1,7 @@
 use crate::object::{self, Value};
 use crate::parser::{ParseError, SubTreeReader};
-use crate::schema;
-use crate::CityGmlElement;
+use crate::{schema, CityGmlAttribute};
+use crate::{CityGmlElement, ParseContext};
 pub use chrono::NaiveDate;
 use serde::{Deserialize, Serialize};
 use std::io::BufRead;
@@ -15,6 +15,7 @@ pub type MeasureOrNullList = String; // TODO?
 pub type BuildingLODType = String; // TODO?
 pub type DoubleList = String; // TODO?
 pub type LODType = u64; // TODO?
+pub type Double01 = f64; // TODO?
 
 impl CityGmlElement for String {
     #[inline]
@@ -162,7 +163,7 @@ impl CityGmlElement for u64 {
     }
 
     fn into_object(self) -> Option<Value> {
-        Some(Value::Integer(self as i64))
+        Some(Value::NonNegativeInteger(self))
     }
 
     fn collect_schema(_schema: &mut schema::Schema) -> schema::Attribute {
@@ -312,7 +313,177 @@ impl CityGmlElement for Point {
     }
 }
 
-impl<T: CityGmlElement + Default> CityGmlElement for Option<T> {
+#[derive(
+    Debug, Clone, Copy, serde::Serialize, serde::Deserialize, Default, PartialEq, Eq, Hash,
+)]
+pub struct LocalId(pub u32);
+
+impl LocalId {
+    pub fn new(idx: u32) -> Self {
+        Self(idx)
+    }
+    pub fn value(&self) -> u32 {
+        self.0
+    }
+}
+
+impl CityGmlElement for LocalId {
+    #[inline]
+    fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
+        let s = st.parse_text()?;
+        if let Some(id) = s.strip_prefix('#') {
+            let s = id.to_string();
+            *self = st.context_mut().id_to_integer_id(s);
+            Ok(())
+        } else {
+            Err(ParseError::InvalidValue(format!(
+                "Expected a reference starts with '#' but got {}",
+                s
+            )))
+        }
+    }
+
+    fn into_object(self) -> Option<Value> {
+        Some(Value::NonNegativeInteger(self.0 as u64))
+    }
+
+    fn collect_schema(_schema: &mut schema::Schema) -> schema::Attribute {
+        schema::Attribute::new(schema::TypeRef::NonNegativeInteger)
+    }
+}
+
+impl CityGmlAttribute for LocalId {
+    #[inline]
+    fn parse_attribute_value(value: &str, st: &mut ParseContext) -> Result<Self, ParseError> {
+        let s = value;
+        if let Some(id) = s.strip_prefix('#') {
+            let s = id.to_string();
+            Ok(st.id_to_integer_id(s))
+        } else {
+            Err(ParseError::InvalidValue(format!(
+                "Expected a reference starts with '#' but got {}",
+                s
+            )))
+        }
+    }
+}
+
+#[derive(Debug, Default, Clone, Copy, serde::Serialize, serde::Deserialize)]
+pub struct Color {
+    pub r: f64,
+    pub g: f64,
+    pub b: f64,
+}
+
+impl Color {
+    pub fn new(r: f64, g: f64, b: f64) -> Self {
+        Self { r, g, b }
+    }
+}
+
+impl std::hash::Hash for Color {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.r.to_bits().hash(state);
+        self.g.to_bits().hash(state);
+        self.b.to_bits().hash(state);
+    }
+}
+
+impl CityGmlElement for Color {
+    fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
+        let text = st.parse_text()?;
+        let r: Result<Vec<_>, _> = text
+            .split_ascii_whitespace()
+            .map(|s| s.parse::<f64>())
+            .collect();
+        match r {
+            Ok(v) if v.len() == 3 => {
+                (self.r, self.g, self.b) = (v[0], v[1], v[2]);
+            }
+            _ => {
+                return Err(ParseError::InvalidValue(format!(
+                    "Failed to parse color value: {}",
+                    text
+                )))
+            }
+        }
+        Ok(())
+    }
+
+    fn into_object(self) -> Option<Value> {
+        Some(Value::Array(vec![
+            Value::Double(self.r),
+            Value::Double(self.g),
+            Value::Double(self.b),
+        ]))
+    }
+
+    fn collect_schema(_schema: &mut schema::Schema) -> schema::Attribute {
+        schema::Attribute {
+            type_ref: schema::TypeRef::Double,
+            min_occurs: 3,
+            max_occurs: Some(3),
+        }
+    }
+}
+
+#[derive(Debug, Default, Clone, Copy, serde::Serialize, serde::Deserialize)]
+pub struct ColorPlusOpacity {
+    pub r: Double01,
+    pub g: Double01,
+    pub b: Double01,
+    pub a: Double01,
+}
+
+impl ColorPlusOpacity {
+    pub fn new(r: f64, g: f64, b: f64, a: f64) -> Self {
+        Self { r, g, b, a }
+    }
+}
+
+impl CityGmlElement for ColorPlusOpacity {
+    fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
+        let text = st.parse_text()?;
+        let r: Result<Vec<_>, _> = text
+            .split_ascii_whitespace()
+            .map(|s| s.parse::<f64>())
+            .collect();
+        match r {
+            Ok(v) if v.len() == 3 => {
+                (self.r, self.g, self.b, self.a) = (v[0], v[1], v[2], 1.0);
+            }
+            Ok(v) if v.len() == 4 => {
+                (self.r, self.g, self.b, self.a) = (v[0], v[1], v[2], v[3]);
+            }
+            _ => {
+                return Err(ParseError::InvalidValue(format!(
+                    "Failed to parse color value: {}",
+                    text
+                )))
+            }
+        }
+        Ok(())
+    }
+
+    fn into_object(self) -> Option<Value> {
+        Some(Value::Array(vec![
+            Value::Double(self.r),
+            Value::Double(self.g),
+            Value::Double(self.b),
+            Value::Double(self.a),
+        ]))
+    }
+
+    fn collect_schema(_schema: &mut schema::Schema) -> schema::Attribute {
+        schema::Attribute {
+            type_ref: schema::TypeRef::Double,
+            min_occurs: 4,
+            max_occurs: Some(4),
+        }
+    }
+}
+
+impl<T: CityGmlElement + Default + std::fmt::Debug> CityGmlElement for Option<T> {
     #[inline]
     fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
         if self.is_some() {
@@ -499,7 +670,7 @@ where
 {
     let mut name = None;
     let mut value = None;
-    st.parse_attributes(|k, v| {
+    st.parse_attributes(|k, v, _| {
         // CityGML 2.0
         if k == b"@name" {
             name = Some(String::from_utf8_lossy(v).into());
@@ -535,7 +706,7 @@ fn parse_generic_set<R: BufRead>(
 ) -> Result<(String, GenericAttribute), ParseError> {
     let mut name = None;
     let mut value: Option<GenericAttribute> = None;
-    st.parse_attributes(|k, v| {
+    st.parse_attributes(|k, v, _| {
         if k == b"@name" {
             name = Some(String::from_utf8_lossy(v).into());
         }

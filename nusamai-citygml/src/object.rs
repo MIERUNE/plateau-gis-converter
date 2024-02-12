@@ -1,23 +1,14 @@
 //! Object representation of the city objects.
 
 use std::borrow::Cow;
-use std::sync::{Arc, RwLock};
 
-use crate::geometry::{GeometryRef, GeometryStore};
+use crate::geometry::GeometryRefs;
 use crate::values::{Code, Date, Point, URI};
 use crate::Measure;
 use serde::{Deserialize, Serialize};
 
+// TODO: Cow<'static, str> insted of String ??
 pub type Map = indexmap::IndexMap<String, Value, ahash::RandomState>;
-
-/// City objects, features, objects or data
-#[derive(Debug, Deserialize, Serialize)]
-pub struct Entity {
-    /// Attribute tree
-    pub root: Value,
-    /// All geometries referenced by the attribute tree
-    pub geometry_store: Arc<RwLock<GeometryStore>>,
-}
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct Object {
@@ -28,8 +19,13 @@ pub struct Object {
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub enum ObjectStereotype {
-    Feature { id: String, geometries: GeometryRef },
-    Object { id: String },
+    Feature {
+        id: String,
+        geometries: GeometryRefs,
+    },
+    Object {
+        id: String,
+    },
     Data,
 }
 
@@ -49,6 +45,7 @@ pub enum Value {
     String(String),
     Code(Code),
     Integer(i64),
+    NonNegativeInteger(u64),
     Double(f64),
     Measure(Measure),
     Boolean(bool),
@@ -89,6 +86,7 @@ impl Value {
             String(s) => serde_json::Value::String(s.into()),
             Code(c) => serde_json::Value::String(c.value().to_owned()),
             Integer(i) => serde_json::Value::Number((*i).into()),
+            NonNegativeInteger(i) => serde_json::Value::Number((*i).into()),
             Double(d) => serde_json::Value::Number(serde_json::Number::from_f64(*d).unwrap()),
             Measure(m) => {
                 serde_json::Value::Number(serde_json::Number::from_f64(m.value()).unwrap())

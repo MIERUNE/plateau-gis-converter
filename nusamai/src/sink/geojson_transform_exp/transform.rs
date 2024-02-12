@@ -5,9 +5,10 @@ use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
 
 use nusamai_citygml::{
-    object::{Entity, Map, Object, ObjectStereotype},
+    object::{Map, Object, ObjectStereotype},
     Value,
 };
+use nusamai_plateau::Entity;
 
 // Configure settings to control how city objects are transformed
 // Assumed to be loaded from json file
@@ -66,7 +67,7 @@ struct Param {
 //         }
 //
 //         // child_geometry_refの重複を除去する
-//         let child_geometry_refs: Vec<GeometryRefEntry> =
+//         let child_geometry_refs: Vec<GeometryRef> =
 //             child_geometry_refs
 //                 .into_iter()
 //                 .fold(Vec::new(), |mut acc, x| {
@@ -114,6 +115,7 @@ impl Transform for FeatureFlatteningTransform {
             .map(|value| Entity {
                 root: value,
                 geometry_store: entity.geometry_store.clone(),
+                appearance_store: entity.appearance_store.clone(),
             })
             .collect()
     }
@@ -137,6 +139,7 @@ impl Transform for DataFlatteningTransform {
             .map(|value| Entity {
                 root: value,
                 geometry_store: entity.geometry_store.clone(),
+                appearance_store: entity.appearance_store.clone(),
             })
             .collect()
     }
@@ -238,6 +241,7 @@ impl Transform for LodSeparationTransform {
                     },
                 }),
                 geometry_store: entity.geometry_store.to_owned(),
+                appearance_store: entity.appearance_store.to_owned(),
             });
         }
 
@@ -424,9 +428,10 @@ mod tests {
 
     use super::*;
     use nusamai_citygml::{
-        object::{self, Entity, Map, ObjectStereotype},
-        Code, GeometryRefEntry, GeometryStore, GeometryType, Value,
+        object::{self, Map, ObjectStereotype},
+        Code, GeometryRef, GeometryStore, GeometryType, Value,
     };
+    use nusamai_plateau::Entity;
 
     fn make_mapping_rule() -> Mappings {
         let json_text = r#"
@@ -489,7 +494,7 @@ mod tests {
             "Code".to_string(),
             Value::Code(Code::new("test".to_string(), "1".to_string())),
         );
-        let geometries_1 = vec![GeometryRefEntry {
+        let geometries_1 = vec![GeometryRef {
             ty: GeometryType::Surface,
             lod: 0,
             pos: 0,
@@ -511,6 +516,7 @@ mod tests {
                 ..Default::default()
             })
             .into(),
+            appearance_store: Default::default(),
         }
     }
 

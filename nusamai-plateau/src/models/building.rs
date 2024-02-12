@@ -83,7 +83,7 @@ pub struct Building {
     pub building_disaster_risk_attribute: Vec<uro::BuildingDisasterRiskAttributeProperty>, // -> uro:BuildingDisasterRiskAttribute
 
     #[citygml(path = b"uro:buildingIDAttribute/uro:BuildingIDAttribute")]
-    pub building_id_attribute: Vec<uro::BuildingIDAttribute>,
+    pub building_id_attribute: Option<uro::BuildingIDAttribute>,
 
     #[citygml(path = b"uro:ifcBuildingAttribute")]
     pub ifc_building_attribute: Vec<uro::IfcAttributeProperty>, // -> uro:IfcAttribute
@@ -176,7 +176,7 @@ pub struct BuildingPart {
     pub building_disaster_risk_attribute: Vec<uro::BuildingDisasterRiskAttributeProperty>, // -> uro:BuildingDisasterRiskAttribute
 
     #[citygml(path = b"uro:buildingIDAttribute/uro:BuildingIDAttribute")]
-    pub building_id_attribute: Vec<uro::BuildingIDAttribute>,
+    pub building_id_attribute: Option<uro::BuildingIDAttribute>,
 
     #[citygml(path = b"uro:ifcBuildingAttribute")]
     pub ifc_building_attribute: Vec<uro::IfcAttributeProperty>, // -> uro:IfcAttribute

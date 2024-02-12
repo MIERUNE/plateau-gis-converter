@@ -10,10 +10,12 @@ use syn::{parse_quote, LitByteStr};
 struct FeatureArgs {
     name: Option<LitStr>,       // "bldg:Building"
     prefix: Option<LitByteStr>, // b"bldg"
+    is_cityobj: bool,
 }
 
 impl FeatureArgs {
     fn parse(&mut self, meta: ParseNestedMeta) -> syn::parse::Result<()> {
+        self.is_cityobj = true;
         if meta.path.is_ident("name") {
             let s: LitStr = meta.value()?.parse()?;
             self.prefix = Some(LitByteStr::new(
@@ -25,6 +27,9 @@ impl FeatureArgs {
                 s.span(),
             ));
             self.name = Some(s);
+            Ok(())
+        } else if meta.path.is_ident("noncityobj") {
+            self.is_cityobj = false;
             Ok(())
         } else {
             Err(meta.error("unsupported property"))
@@ -119,16 +124,17 @@ fn modify(ty: &Stereotype, args: &FeatureArgs, input: &mut DeriveInput) -> Resul
 
                     let mut pos = 0;
 
-                    add_named_field(
-                        pos,
-                        fields,
-                        quote! {
-                            #[citygml(geom = #geom_prefix)]
-                            pub geometries: ::nusamai_citygml::GeometryRef
-
-                        },
-                    );
-                    pos += 1;
+                    if args.is_cityobj {
+                        add_named_field(
+                            pos,
+                            fields,
+                            quote! {
+                                #[citygml(geom = #geom_prefix)]
+                                pub geometries: ::nusamai_citygml::GeometryRefs
+                            },
+                        );
+                        pos += 1;
+                    }
 
                     add_named_field(
                         pos,
@@ -170,57 +176,58 @@ fn modify(ty: &Stereotype, args: &FeatureArgs, input: &mut DeriveInput) -> Resul
                     );
                     pos += 1;
 
-                    add_named_field(
-                        pos,
-                        fields,
-                        quote! {
-                            #[citygml(path = b"core:creationDate")]
-                            pub creation_date: Option<::nusamai_citygml::Date> // TODO: DateTime (CityGML 3.0)
-                        },
-                    );
-                    pos += 1;
+                    if args.is_cityobj {
+                        add_named_field(
+                            pos,
+                            fields,
+                            quote! {
+                                #[citygml(path = b"core:creationDate")]
+                                pub creation_date: Option<::nusamai_citygml::Date> // TODO: DateTime (CityGML 3.0)
+                            },
+                        );
+                        pos += 1;
 
-                    add_named_field(
-                        pos,
-                        fields,
-                        quote! {
-                            #[citygml(path = b"core:terminationDate")]
-                            pub termination_date: Option<::nusamai_citygml::Date> // TODO: DateTime (CityGML 3.0)
-                        },
-                    );
-                    pos += 1;
+                        add_named_field(
+                            pos,
+                            fields,
+                            quote! {
+                                #[citygml(path = b"core:terminationDate")]
+                                pub termination_date: Option<::nusamai_citygml::Date> // TODO: DateTime (CityGML 3.0)
+                            },
+                        );
+                        pos += 1;
 
-                    // // CityGML 3.0
-                    // add_named_field(
-                    //     pos,
-                    //     fields,
-                    //     quote! {
-                    //         #[citygml(path = b"core:validFrom")]
-                    //         pub valid_from: Option<::nusamai_citygml::Date> // TODO: DateTime (CityGML 3.0)
-                    //     },
-                    // );
-                    // pos += 1;
-                    //
-                    // // CityGML 3.0
-                    // add_named_field(
-                    //     pos,
-                    //     fields,
-                    //     quote! {
-                    //         #[citygml(path = b"core:validTo")]
-                    //         pub valid_to: Option<::nusamai_citygml::Date> // TODO: DateTime (CityGML 3.0)
-                    //     },
-                    // );
-                    // pos += 1;
+                        // // CityGML 3.0
+                        // add_named_field(
+                        //     pos,
+                        //     fields,
+                        //     quote! {
+                        //         #[citygml(path = b"core:validFrom")]
+                        //         pub valid_from: Option<::nusamai_citygml::Date> // TODO: DateTime (CityGML 3.0)
+                        //     },
+                        // );
+                        // pos += 1;
+                        //
+                        // // CityGML 3.0
+                        // add_named_field(
+                        //     pos,
+                        //     fields,
+                        //     quote! {
+                        //         #[citygml(path = b"core:validTo")]
+                        //         pub valid_to: Option<::nusamai_citygml::Date> // TODO: DateTime (CityGML 3.0)
+                        //     },
+                        // );
+                        // pos += 1;
 
-                    // TODO: not implemented yet
-                    add_named_field(
-                        pos,
-                        fields,
-                        quote! {
-                            #[citygml(generics)]
-                            pub generic_attribute: ::nusamai_citygml::GenericAttribute
-                        },
-                    );
+                        add_named_field(
+                            pos,
+                            fields,
+                            quote! {
+                                #[citygml(generics)]
+                                pub generic_attribute: ::nusamai_citygml::GenericAttribute
+                            },
+                        );
+                    }
                 }
             }
         }
