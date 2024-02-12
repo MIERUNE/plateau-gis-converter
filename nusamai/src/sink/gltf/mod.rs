@@ -39,9 +39,9 @@ pub struct BoundingVolume {
     pub max_height: f64,
 }
 
-pub struct GltfPocSinkProvider {}
+pub struct GltfSinkProvider {}
 
-impl DataSinkProvider for GltfPocSinkProvider {
+impl DataSinkProvider for GltfSinkProvider {
     fn info(&self) -> SinkInfo {
         SinkInfo {
             name: "glTF".to_string(),
