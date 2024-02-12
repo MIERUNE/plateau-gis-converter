@@ -349,7 +349,7 @@ impl DataSink for GltfSink {
 
                 // write glTF
                 let (mut bin_content, mut gltf) =
-                    build_base_gltf(&vertices, indices, all_translation, all_min, all_max);
+                    build_base_gltf(&vertices, &indices, all_translation, all_min, all_max);
                 append_gltf_extensions(
                     &mut gltf,
                     &mut bin_content,

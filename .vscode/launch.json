@@ -13,7 +13,7 @@
 				}
 			},
 			"args": [
-				"/Users/satoru/Downloads/plateau/22203_numazu-shi_2021_citygml_4_op/udx/bldg/52385608_veg_6697_op.gml",
+				"/Users/satoru/Downloads/plateau/22203_numazu-shi_2021_citygml_4_op/udx/veg/52385628_veg_6697_op.gml",
 				"--sink",
 				"gltf",
 				"--output",

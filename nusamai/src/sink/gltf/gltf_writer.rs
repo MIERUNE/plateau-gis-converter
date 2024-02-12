@@ -21,7 +21,7 @@ use super::positions::Vertex;
 
 pub fn build_base_gltf(
     vertices: &IndexSet<Vertex<u32>, RandomState>,
-    indices: impl IntoIterator<Item = u32>,
+    indices: &Vec<u32>,
     translation: [f64; 3],
     min: [f64; 3],
     max: [f64; 3],
