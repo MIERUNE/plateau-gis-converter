@@ -1,6 +1,7 @@
 //! gltf sink poc
 mod attributes;
 mod gltf_writer;
+mod positions;
 
 use std::collections::HashSet;
 use std::fs::File;
@@ -14,6 +15,7 @@ use indexmap::IndexSet;
 
 use nusamai_citygml::{object::ObjectStereotype, schema::Schema, GeometryType, Value};
 use nusamai_projection::cartesian::geographic_to_geocentric;
+use rayon::iter::{ParallelBridge, ParallelIterator};
 
 use crate::parameters::*;
 use crate::pipeline::{Feedback, PipelineError, Receiver};
@@ -22,13 +24,7 @@ use crate::{get_parameter_value, transformer};
 
 use attributes::EntityAttributes;
 use gltf_writer::{append_gltf_extensions, build_base_gltf, write_3dtiles, write_gltf};
-
-#[derive(Debug, Default, PartialEq, Eq, Clone, Copy, Hash)]
-pub struct Vertex {
-    pub position: [u32; 3],  // f32.to_bits()
-    pub tex_coord: [u32; 2], // f32.to_bits()
-    pub feature_id: u32,
-}
+use positions::Vertex;
 
 pub struct BoundingVolume {
     pub min_lng: f64,
@@ -240,8 +236,8 @@ impl DataSink for GltfPocSink {
                 // Maintain a list of type names as multiple types are mixed.
                 let mut class_names = HashSet::new();
 
-                // Binary buffer for glTF
-                let mut buffers: Vec<[f64; 4]> = Vec::new();
+                // holds all vertex coordinates and feature_id
+                let mut all_positions: Vec<[f64; 4]> = Vec::new();
 
                 // Holds all attributes of the target
                 let mut all_attributes: Vec<EntityAttributes> = Vec::new();
@@ -272,7 +268,7 @@ impl DataSink for GltfPocSink {
                             f64::max(pos_max[1], y),
                             f64::max(pos_max[2], z),
                         ];
-                        buffers.push([x, y, z, feature_id as f64]);
+                        all_positions.push([x, y, z, feature_id as f64]);
                     }
 
                     // calculate the centroid of all entities
@@ -317,7 +313,7 @@ impl DataSink for GltfPocSink {
 
                 // make vertices and indices
                 let mut vertices: IndexSet<Vertex, RandomState> = IndexSet::default();
-                let indices: Vec<u32> = buffers
+                let indices: Vec<u32> = all_positions
                     .iter()
                     .map(|&[x, y, z, feature_id]| {
                         let (x, y, z) = (
