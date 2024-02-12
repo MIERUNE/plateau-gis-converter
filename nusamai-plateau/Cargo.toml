@@ -8,20 +8,20 @@ default = ["serde"]
 
 [dependencies]
 quick-xml = "0.31.0"
-serde = { version = "1.0.193", features = ["derive"], optional = true }
+serde = { version = "1.0.196", features = ["derive"], optional = true }
 nusamai-citygml = { path = "../nusamai-citygml", features = ["serde"]}
 nusamai-geometry = { path = "../nusamai-geometry" }
 chrono = { version = "0.4.34", features = ["serde"], default-features = false }
 url = "2.5.0"
-stretto = { git = "https://github.com/ciscorn/stretto.git" , branch = "update-wg" }
+stretto = "0.8.3"
 hashbrown = "0.14.3"
-indexmap = "2.2.2"
+indexmap = "2.2.3"
 log = "0.4.20"
 
 [dev-dependencies]
 zstd = { version = "0.13.0", features = ["zdict_builder"] }
-bincode = { version = "2.0.0-rc", default-features = false, features = ["std", "serde"] }
-clap = { version = "4.4", features = ["derive"] }
-serde = { version = "1.0.193", features = ["derive"] }
-lz4_flex = "0.11.1"
-serde_json = "1.0.111"
+bincode = { version = "2.0.0-rc.3", default-features = false, features = ["std", "serde"] }
+clap = { version = "4.5", features = ["derive"] }
+serde = { version = "1.0.196", features = ["derive"] }
+lz4_flex = "0.11.2"
+serde_json = "1.0.113"
