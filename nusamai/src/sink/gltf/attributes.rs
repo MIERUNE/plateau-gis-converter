@@ -1,10 +1,11 @@
 use std::{collections::HashMap, io::Write};
 
 use ahash::RandomState;
+use hashbrown::HashSet;
 use indexmap::IndexMap;
 
 use nusamai_citygml::{
-    schema::{TypeDef, TypeRef},
+    schema::{Schema, TypeDef, TypeRef},
     Value,
 };
 use nusamai_gltf_json::extensions;
@@ -106,13 +107,13 @@ fn to_gltf_schema(type_ref: &TypeRef) -> GltfPropertyType {
     }
 }
 
-pub fn to_gltf_classes(
+pub fn to_gltf_class(
     class_name: &String,
-    schema: &TypeDef,
+    type_def: &TypeDef,
 ) -> HashMap<String, extensions::gltf::ext_structural_metadata::Class> {
     let mut gltf_property_types = Vec::new();
 
-    match schema {
+    match type_def {
         TypeDef::Feature(f) => {
             for (name, attr) in &f.attributes {
                 let mut property_type = to_gltf_schema(&attr.type_ref);
@@ -139,9 +140,9 @@ pub fn to_gltf_classes(
         );
     }
 
-    let mut classes: HashMap<String, extensions::gltf::ext_structural_metadata::Class> =
+    let mut class: HashMap<String, extensions::gltf::ext_structural_metadata::Class> =
         HashMap::new();
-    classes.insert(
+    class.insert(
         class_name.clone(),
         extensions::gltf::ext_structural_metadata::Class {
             name: Some(class_name.clone()),
@@ -151,19 +152,19 @@ pub fn to_gltf_classes(
         },
     );
 
-    classes
+    class
 }
 
-pub fn to_gltf_property_tables(
+pub fn to_gltf_property_table(
     class_name: &String,
     schema: &TypeDef,
     buffer_view_length: u32,
     feature_count: u32,
-) -> Vec<extensions::gltf::ext_structural_metadata::PropertyTable> {
+) -> (
+    extensions::gltf::ext_structural_metadata::PropertyTable,
+    u32,
+) {
     // todo: 複数の地物型が存在している時の対応を考える
-    let mut property_tables: Vec<extensions::gltf::ext_structural_metadata::PropertyTable> =
-        Vec::new();
-
     // Create Schema.property_tables
     let mut property_table: extensions::gltf::ext_structural_metadata::PropertyTable =
         extensions::gltf::ext_structural_metadata::PropertyTable {
@@ -173,7 +174,7 @@ pub fn to_gltf_property_tables(
             ..Default::default()
         };
 
-    let mut count = buffer_view_length;
+    let mut buffer_view_length = buffer_view_length;
     match schema {
         TypeDef::Feature(f) => {
             for (name, attr) in &f.attributes {
@@ -185,32 +186,32 @@ pub fn to_gltf_property_tables(
                         property_table.properties.insert(
                             name.clone(),
                             extensions::gltf::ext_structural_metadata::PropertyTableProperty {
-                                values: count,
-                                string_offsets: Some(count + 1),
+                                values: buffer_view_length,
+                                string_offsets: Some(buffer_view_length + 1),
                                 ..Default::default()
                             },
                         );
-                        count += 2;
+                        buffer_view_length += 2;
                     }
                     extensions::gltf::ext_structural_metadata::ClassPropertyType::Scalar => {
                         property_table.properties.insert(
                             name.clone(),
                             extensions::gltf::ext_structural_metadata::PropertyTableProperty {
-                                values: count,
+                                values: buffer_view_length,
                                 ..Default::default()
                             },
                         );
-                        count += 1;
+                        buffer_view_length += 1;
                     }
                     extensions::gltf::ext_structural_metadata::ClassPropertyType::Boolean => {
                         property_table.properties.insert(
                             name.clone(),
                             extensions::gltf::ext_structural_metadata::PropertyTableProperty {
-                                values: count,
+                                values: buffer_view_length,
                                 ..Default::default()
                             },
                         );
-                        count += 1;
+                        buffer_view_length += 1;
                     }
                     _ => unimplemented!(),
                 }
@@ -221,29 +222,45 @@ pub fn to_gltf_property_tables(
         TypeDef::Property(_) => unimplemented!(),
     }
 
-    property_tables.push(property_table);
-
-    property_tables
+    (property_table, buffer_view_length)
 }
 
 pub fn attributes_to_buffer(
-    schema: &TypeDef,
+    schema: &Schema,
     attributes: &Vec<Attributes>,
 ) -> IndexMap<String, Vec<u8>> {
     let mut buffers: IndexMap<String, Vec<u8>> = IndexMap::new();
 
     let mut gltf_properties = Vec::new();
 
-    match schema {
-        TypeDef::Feature(f) => {
-            for (name, attr) in &f.attributes {
-                let mut property_type = to_gltf_schema(&attr.type_ref);
-                property_type.property_name = name.clone();
-                gltf_properties.push(property_type);
+    let mut class_names = HashSet::new();
+    attributes.iter().for_each(|a| {
+        class_names.insert(a.class_name.to_string());
+    });
+
+    // schema.typesからclass_namesに対応する情報のみを抽出する
+    let type_defs = schema
+        .types
+        .iter()
+        .filter(|(class_name, _)| class_names.contains(*class_name))
+        .map(|(_, type_def)| type_def);
+
+    for type_def in type_defs {
+        match type_def {
+            TypeDef::Feature(f) => {
+                for (name, attr) in &f.attributes {
+                    let mut property_type = to_gltf_schema(&attr.type_ref);
+                    property_type.property_name = name.clone();
+                    gltf_properties.push(property_type);
+                }
+            }
+            TypeDef::Data(_) => {
+                // todo: implement
+            }
+            TypeDef::Property(_) => {
+                // todo: implement
             }
         }
-        TypeDef::Data(_) => unimplemented!(),
-        TypeDef::Property(_) => unimplemented!(),
     }
 
     for p in gltf_properties {
@@ -300,7 +317,7 @@ pub fn attributes_to_buffer(
                         buffer.write_all(&json.to_le_bytes()).unwrap();
                     }
                     Value::Point(_) => {
-                        unimplemented!();
+                        // todo: implement
                     }
                     Value::URI(u) => {
                         let json = u.value();
@@ -317,7 +334,7 @@ pub fn attributes_to_buffer(
                         }
                     }
                     Value::Date(_) => {
-                        unimplemented!();
+                        // todo: implement
                     }
                     Value::Array(a) => {
                         let json = serde_json::to_string(a).unwrap();
@@ -375,7 +392,9 @@ pub fn attributes_to_buffer(
                     } => {
                         buffer.write_all(&[0u8]).unwrap();
                     }
-                    _ => unimplemented!(),
+                    _ => {
+                        // todo: implement
+                    }
                 }
             }
         }
@@ -471,7 +490,7 @@ mod tests {
             ..Default::default()
         });
 
-        let classes = to_gltf_classes(&class_name, &feature_type_def);
+        let classes = to_gltf_class(&class_name, &feature_type_def);
         assert_eq!(classes.len(), 1);
     }
 
@@ -495,7 +514,7 @@ mod tests {
             ..Default::default()
         });
 
-        let property_tables = to_gltf_property_tables(&class_name, &feature_type_def, 0, 1);
+        let property_tables = to_gltf_property_table(&class_name, &feature_type_def, 0, 1);
         assert_eq!(property_tables.len(), 1);
     }
 }

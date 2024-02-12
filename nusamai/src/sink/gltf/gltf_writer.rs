@@ -1,4 +1,4 @@
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use std::fs::File;
 use std::io::{BufWriter, Write};
 use std::path::PathBuf;
@@ -14,7 +14,7 @@ use nusamai_gltf_json::{
 };
 
 use crate::sink::gltf::attributes::{
-    attributes_to_buffer, to_gltf_classes, to_gltf_property_tables, Attributes,
+    attributes_to_buffer, to_gltf_class, to_gltf_property_table, Attributes,
 };
 
 use super::positions::Vertex;
@@ -76,7 +76,7 @@ pub fn build_base_gltf(
         }],
         meshes: vec![Mesh {
             primitives: vec![MeshPrimitive {
-                // todo: _FEATURE_ID_〇〇は地物型が複数存在すると動的に変化するので、対応
+                // todo: _FEATURE_ID_〇〇は地物型が複数存在すると動的に変化させた方が良いかもしれない
                 attributes: vec![
                     ("POSITION".to_string(), 0),
                     ("_FEATURE_ID_0".to_string(), 2),
@@ -147,16 +147,24 @@ pub fn append_gltf_extensions(
     vertices: IndexSet<Vertex<u32>, RandomState>,
     attributes: Vec<Attributes>,
 ) {
-    // todo: 複数のクラス名があった時の対応を考える
-    let class_name = class_names.iter().next().unwrap().as_ref().to_string();
-    let schema = schema.types.get::<String>(&class_name).unwrap();
-
-    let buffer_view_count = gltf.buffer_views.len() as u32;
+    let mut buffer_view_length = gltf.buffer_views.len() as u32;
     let feature_count = vertices.iter().map(|v| v.feature_id).max().unwrap();
 
-    let classes = to_gltf_classes(&class_name, schema);
-    let property_tables =
-        to_gltf_property_tables(&class_name, schema, buffer_view_count, feature_count);
+    let mut classes = HashMap::new();
+    let mut property_tables = Vec::new();
+
+    for class_name_cow in class_names.iter() {
+        let class_name = class_name_cow.as_ref().to_string();
+        let type_def = schema.types.get::<String>(&class_name).unwrap();
+
+        let class = to_gltf_class(&class_name, type_def);
+        classes.extend(class);
+
+        let (property_table, count) =
+            to_gltf_property_table(&class_name, type_def, buffer_view_length, feature_count);
+        property_tables.push(property_table);
+        buffer_view_length = count;
+    }
 
     let extensions = extensions::gltf::Gltf {
         ext_structural_metadata: Some(
@@ -187,6 +195,7 @@ pub fn append_gltf_extensions(
         }),
         ..Default::default()
     });
+    // todo: 必ず0番目に入れる、というわけではないので対応
     gltf.meshes[0].primitives[0].extensions = mesh_primitive_extensions;
 
     let attributes_bin_contents = attributes_to_buffer(schema, &attributes);
