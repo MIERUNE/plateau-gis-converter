@@ -4,7 +4,7 @@ version.workspace = true
 edition = "2021"
 
 [dependencies]
-indexmap = { version = "2.1.0", features = ["serde"] }
+indexmap = { version = "2.2.3", features = ["serde"] }
 rayon = "1.8.0"
 serde = { version = "1.0.193", features = ["derive"] }
 nusamai-plateau = { path = "../nusamai-plateau" }
@@ -26,7 +26,7 @@ geojson = "0.24.1"
 serde_json = { version = "1.0.108", features = ["indexmap"] }
 url = "2.5.0"
 nusamai-gpkg = { path = "../nusamai-gpkg" }
-tokio = { version = "1.35.1", features = ["full"] }
+tokio = { version = "1.36", features = ["full"] }
 byteorder = "1.5.0"
 hashbrown = { version = "0.14.3", features = ["serde"] }
 ext-sort = { version = "0.1.4", features = ["memory-limit"] }
@@ -37,7 +37,7 @@ pretty_env_logger = "0.5.0"
 itertools = "0.12.0"
 prost = "0.12.3"
 bytesize = "1.3.0"
-ahash = "0.8.7"
+ahash = "0.8.8"
 nusamai-shapefile = { path = "../nusamai-shapefile" }
 shapefile = "0.5.0"
 earcut-rs = { git = "https://github.com/MIERUNE/earcut-rs.git" }
@@ -48,6 +48,6 @@ nusamai-kml = { path = "../nusamai-kml" }
 
 [dev-dependencies]
 rand = "0.8.5"
-tokio = { version = "1.35.1", features = ["full"] }
+tokio = { version = "1.36", features = ["full"] }
 nusamai-geometry = { path = "../nusamai-geometry" }
 byteorder = "1.5.0"
