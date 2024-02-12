@@ -83,12 +83,6 @@ fn to_gltf_schema(type_ref: &TypeRef) -> GltfPropertyType {
                 extensions::gltf::ext_structural_metadata::ClassPropertyType::String,
             component_type: None,
         },
-        TypeRef::DataTime => GltfPropertyType {
-            property_name: "".to_string(),
-            class_property_type:
-                extensions::gltf::ext_structural_metadata::ClassPropertyType::String,
-            component_type: None,
-        },
         TypeRef::Point => GltfPropertyType {
             property_name: "".to_string(),
             class_property_type: extensions::gltf::ext_structural_metadata::ClassPropertyType::Vec3,
@@ -276,6 +270,9 @@ pub fn attributes_to_buffer(
                     }
                     Value::Integer(i) => {
                         buffer.write_all(&i.to_le_bytes()).unwrap();
+                    }
+                    Value::NonNegativeInteger(u) => {
+                        buffer.write_all(&u.to_le_bytes()).unwrap();
                     }
                     Value::Double(d) => {
                         buffer.write_all(&d.to_le_bytes()).unwrap();

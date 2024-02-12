@@ -1,34 +1,30 @@
 //! gltf sink poc
+mod attributes;
+mod gltf_writer;
+mod positions;
 
+use std::collections::HashSet;
 use std::fs::File;
-use std::io::{BufWriter, Write};
+use std::io::BufWriter;
 use std::path::PathBuf;
 
 use ahash::RandomState;
-use byteorder::{ByteOrder, LittleEndian};
 use earcut_rs::utils_3d::project3d_to_2d;
 use earcut_rs::Earcut;
 use indexmap::IndexSet;
-use nusamai_gltf_json::extensions::mesh::ext_mesh_features::FeatureId;
-use nusamai_projection::cartesian::geographic_to_geocentric;
-use rayon::prelude::*;
 
-use nusamai_citygml::object::ObjectStereotype;
-use nusamai_citygml::schema::Schema;
-use nusamai_citygml::{GeometryType, Value};
-use nusamai_gltf_json::*;
+use nusamai_citygml::{object::ObjectStereotype, schema::Schema, GeometryType, Value};
+use nusamai_projection::cartesian::geographic_to_geocentric;
+use rayon::iter::{ParallelBridge, ParallelIterator};
 
 use crate::parameters::*;
 use crate::pipeline::{Feedback, PipelineError, Receiver};
 use crate::sink::{DataSink, DataSinkProvider, SinkInfo};
 use crate::{get_parameter_value, transformer};
 
-#[derive(Debug, Default, PartialEq, Eq, Clone, Copy, Hash)]
-pub struct Vertex {
-    pub position: [u32; 3],  // f32.to_bits()
-    pub tex_coord: [u32; 2], // f32.to_bits()
-    pub feature_id: u32,
-}
+use attributes::Attributes;
+use gltf_writer::{append_gltf_extensions, build_base_gltf, write_3dtiles, write_gltf};
+use positions::Vertex;
 
 pub struct BoundingVolume {
     pub min_lng: f64,
@@ -67,17 +63,17 @@ impl DataSinkProvider for GltfSinkProvider {
     fn create(&self, params: &Parameters) -> Box<dyn DataSink> {
         let output_path = get_parameter_value!(params, "@output", FileSystemPath);
 
-        Box::<GltfPocSink>::new(GltfPocSink {
+        Box::<GltfSink>::new(GltfSink {
             output_path: output_path.as_ref().unwrap().into(),
         })
     }
 }
 
-pub struct GltfPocSink {
+pub struct GltfSink {
     output_path: PathBuf,
 }
 
-impl DataSink for GltfPocSink {
+impl DataSink for GltfSink {
     fn make_transform_requirements(&self) -> transformer::Requirements {
         transformer::Requirements {
             ..Default::default()
@@ -88,7 +84,7 @@ impl DataSink for GltfPocSink {
         &mut self,
         upstream: Receiver,
         feedback: &Feedback,
-        _schema: &Schema,
+        schema: &Schema,
     ) -> Result<(), PipelineError> {
         let (sender, receiver) = std::sync::mpsc::sync_channel(1000);
 
@@ -104,6 +100,7 @@ impl DataSink for GltfPocSink {
                             return Err(PipelineError::Canceled);
                         }
 
+                        // This is the code to verify the operation with Cesium
                         let mut bounding_volume = BoundingVolume {
                             min_lng: f64::MAX,
                             max_lng: f64::MIN,
@@ -113,18 +110,20 @@ impl DataSink for GltfPocSink {
                             max_height: f64::MIN,
                         };
 
-                        // todo: transformerからschemaを受け取る必要がある
-
                         let entity = parcel.entity;
                         let geom_store = entity.geometry_store.read().unwrap();
 
+                        // todo: Exception handling
                         let Value::Object(obj) = &entity.root else {
                             unimplemented!()
                         };
+                        // todo: Support for other stereotypes
                         let ObjectStereotype::Feature { id: _, geometries } = &obj.stereotype
                         else {
                             unimplemented!()
                         };
+
+                        let typename = obj.typename.clone();
 
                         // Divide polygons into triangles
                         let mut earcutter = Earcut::new();
@@ -206,7 +205,7 @@ impl DataSink for GltfPocSink {
 
                         // send triangles and attributes to sender
                         if sender
-                            .send((triangles, attributes, bounding_volume))
+                            .send((triangles, attributes, bounding_volume, typename))
                             .is_err()
                         {
                             return Err(PipelineError::Canceled);
@@ -218,13 +217,12 @@ impl DataSink for GltfPocSink {
             },
             || {
                 // Write glTF to a file
-                // todo: schemaから属性定義を行う必要がある
 
-                let mut buffers: Vec<[f64; 4]> = Vec::new();
-
+                // Max and min values of all vertices
                 let mut all_max: [f64; 3] = [f64::MIN; 3];
                 let mut all_min: [f64; 3] = [f64::MAX; 3];
 
+                // BoundingVolume.region required for 3DTiles
                 let mut bounding_volume = BoundingVolume {
                     min_lng: f64::MAX,
                     max_lng: f64::MIN,
@@ -234,14 +232,36 @@ impl DataSink for GltfPocSink {
                     max_height: f64::MIN,
                 };
 
-                for (feature_id, (triangles, _attributes, _bounding_volume)) in
+                // Maintain a list of type names as multiple types are mixed.
+                let mut class_names = HashSet::new();
+
+                // holds all vertex coordinates and feature_id
+                let mut all_positions: Vec<[f64; 4]> = Vec::new();
+
+                // Holds all attributes of the entity
+                let mut all_attributes: Vec<Attributes> = Vec::new();
+
+                for (feature_id, (triangles, attributes, bounds, class_name)) in
                     receiver.into_iter().enumerate()
                 {
+                    all_attributes.push(Attributes {
+                        class_name: class_name.as_ref().to_string(),
+                        feature_id: feature_id as u32,
+                        attributes,
+                    });
+
+                    class_names.insert(class_name);
+
                     let mut pos_max = [f64::MIN; 3];
                     let mut pos_min = [f64::MAX; 3];
 
-                    // calculate the centroid and min/max
-                    for &[x, y, z] in &triangles {
+                    // add feature_id to all_positions
+                    triangles.iter().for_each(|&[x, y, z]| {
+                        all_positions.push([x, y, z, feature_id as f64]);
+                    });
+
+                    // calculate the centroid and min/max of the entity
+                    triangles.iter().for_each(|&[x, y, z]| {
                         pos_min = [
                             f64::min(pos_min[0], x),
                             f64::min(pos_min[1], y),
@@ -252,9 +272,9 @@ impl DataSink for GltfPocSink {
                             f64::max(pos_max[1], y),
                             f64::max(pos_max[2], z),
                         ];
-                        buffers.push([x, y, z, feature_id as f64]);
-                    }
+                    });
 
+                    // calculate the centroid of all entities
                     all_min = [
                         f64::min(all_min[0], pos_min[0]),
                         f64::min(all_min[1], pos_min[1]),
@@ -266,21 +286,18 @@ impl DataSink for GltfPocSink {
                         f64::max(all_max[2], pos_max[2]),
                     ];
 
-                    bounding_volume.min_lng =
-                        f64::min(bounding_volume.min_lng, _bounding_volume.min_lng);
-                    bounding_volume.max_lng =
-                        f64::max(bounding_volume.max_lng, _bounding_volume.max_lng);
-                    bounding_volume.min_lat =
-                        f64::min(bounding_volume.min_lat, _bounding_volume.min_lat);
-                    bounding_volume.max_lat =
-                        f64::max(bounding_volume.max_lat, _bounding_volume.max_lat);
+                    // calculate the bounding volume of all entities
+                    bounding_volume.min_lng = f64::min(bounding_volume.min_lng, bounds.min_lng);
+                    bounding_volume.max_lng = f64::max(bounding_volume.max_lng, bounds.max_lng);
+                    bounding_volume.min_lat = f64::min(bounding_volume.min_lat, bounds.min_lat);
+                    bounding_volume.max_lat = f64::max(bounding_volume.max_lat, bounds.max_lat);
                     bounding_volume.min_height =
-                        f64::min(bounding_volume.min_height, _bounding_volume.min_height);
+                        f64::min(bounding_volume.min_height, bounds.min_height);
                     bounding_volume.max_height =
-                        f64::max(bounding_volume.max_height, _bounding_volume.max_height);
+                        f64::max(bounding_volume.max_height, bounds.max_height);
                 }
 
-                // calculate the centroid
+                // calculate the centroid of all entities
                 let mut all_translation = [0.; 3];
                 all_translation[0] = (all_max[0] + all_min[0]) / 2.;
                 all_translation[1] = (all_max[1] + all_min[1]) / 2.;
@@ -294,9 +311,8 @@ impl DataSink for GltfPocSink {
                 all_min[2] -= all_translation[2];
 
                 // make vertices and indices
-                let mut vertices: IndexSet<Vertex, RandomState> = IndexSet::default();
-
-                let indices: Vec<u32> = buffers
+                let mut vertices: IndexSet<Vertex<u32>, RandomState> = IndexSet::default();
+                let indices: Vec<u32> = all_positions
                     .iter()
                     .map(|&[x, y, z, feature_id]| {
                         let (x, y, z) = (
@@ -321,7 +337,6 @@ impl DataSink for GltfPocSink {
                         index as u32
                     })
                     .collect();
-
                 let indices: Vec<u32> = indices
                     .chunks_exact(3)
                     .filter(|idx| (idx[0] != idx[1] && idx[1] != idx[2] && idx[2] != idx[0]))
@@ -332,8 +347,20 @@ impl DataSink for GltfPocSink {
                 let mut file = File::create(&self.output_path).unwrap();
                 let writer = BufWriter::with_capacity(1024 * 1024, &mut file);
 
-                write_gltf(writer, all_min, all_max, all_translation, vertices, indices);
+                // write glTF
+                let (mut bin_content, mut gltf) =
+                    build_base_gltf(&vertices, indices, all_translation, all_min, all_max);
+                append_gltf_extensions(
+                    &mut gltf,
+                    &mut bin_content,
+                    class_names,
+                    schema,
+                    vertices,
+                    all_attributes,
+                );
+                write_gltf(gltf, bin_content, writer);
 
+                // write 3DTiles
                 let region: [f64; 6] = [
                     bounding_volume.min_lng.to_radians(),
                     bounding_volume.min_lat.to_radians(),
@@ -342,209 +369,11 @@ impl DataSink for GltfPocSink {
                     bounding_volume.min_height,
                     bounding_volume.max_height,
                 ];
-
                 write_3dtiles(region, &self.output_path);
-
-                // todo: 属性部分をbufferにするコードを書く
             },
         );
         Ok(())
     }
-}
-
-fn write_gltf<W: Write>(
-    mut writer: W,
-    min: [f64; 3],
-    max: [f64; 3],
-    translation: [f64; 3],
-    vertices: IndexSet<Vertex, RandomState>,
-    indices: impl IntoIterator<Item = u32>,
-) {
-    let mut bin_content: Vec<u8> = Vec::new();
-
-    // write vertices
-    let vertices_offset = bin_content.len();
-    let mut buf = [0; 12];
-    let mut vertices_count = 0;
-    for vertex in vertices.clone() {
-        LittleEndian::write_u32_into(&vertex.position, &mut buf);
-        bin_content.write_all(&buf).unwrap();
-        vertices_count += 1;
-    }
-    let vertices_len: usize = bin_content.len() - vertices_offset;
-
-    // write indices
-    let indices_offset = bin_content.len();
-    let mut indices_count = 0;
-    for idx in indices {
-        bin_content.write_all(&idx.to_le_bytes()).unwrap();
-        indices_count += 1;
-    }
-    let indices_len = bin_content.len() - indices_offset;
-
-    // write feature_ids
-    let feature_ids_offset = bin_content.len();
-    let mut feature_ids_count = 0;
-    for vertex in vertices.clone() {
-        bin_content
-            .write_all(&vertex.feature_id.to_le_bytes())
-            .unwrap();
-        feature_ids_count += 1;
-    }
-    let feature_ids_len = bin_content.len() - feature_ids_offset;
-
-    let gltf = Gltf {
-        extensions_used: vec!["EXT_mesh_features".to_string()],
-        scenes: vec![Scene {
-            nodes: Some(vec![0]),
-            ..Default::default()
-        }],
-        nodes: vec![Node {
-            mesh: Some(0),
-            translation,
-            ..Default::default()
-        }],
-        meshes: vec![Mesh {
-            primitives: vec![MeshPrimitive {
-                attributes: vec![
-                    ("POSITION".to_string(), 0),
-                    ("_FEATURE_ID_0".to_string(), 2),
-                ]
-                .into_iter()
-                .collect(),
-                indices: Some(1),
-                mode: PrimitiveMode::Triangles,
-                extensions: Some(extensions::mesh::MeshPrimitive {
-                    ext_mesh_features: Some(extensions::mesh::ext_mesh_features::ExtMeshFeatures {
-                        feature_ids: vec![FeatureId {
-                            attribute: Some(0),
-                            feature_count: feature_ids_count,
-                            ..Default::default()
-                        }],
-                        ..Default::default()
-                    }),
-                    ..Default::default()
-                }),
-                ..Default::default()
-            }],
-            ..Default::default()
-        }],
-        accessors: vec![
-            Accessor {
-                buffer_view: Some(0),
-                component_type: ComponentType::Float,
-                count: vertices_count,
-                min: Some(min.to_vec()),
-                max: Some(max.to_vec()),
-                type_: AccessorType::Vec3,
-                ..Default::default()
-            },
-            Accessor {
-                buffer_view: Some(1),
-                component_type: ComponentType::UnsignedInt,
-                count: indices_count,
-                type_: AccessorType::Scalar,
-                ..Default::default()
-            },
-            Accessor {
-                buffer_view: Some(2),
-                component_type: ComponentType::UnsignedInt,
-                count: feature_ids_count,
-                type_: AccessorType::Scalar,
-                ..Default::default()
-            },
-        ],
-        buffer_views: vec![
-            BufferView {
-                byte_offset: vertices_offset as u32,
-                byte_length: vertices_len as u32,
-                target: Some(BufferViewTarget::ArrayBuffer),
-                ..Default::default()
-            },
-            BufferView {
-                byte_offset: indices_offset as u32,
-                byte_length: indices_len as u32,
-                target: Some(BufferViewTarget::ElementArrayBuffer),
-                ..Default::default()
-            },
-            BufferView {
-                byte_offset: feature_ids_offset as u32,
-                byte_length: feature_ids_len as u32,
-                target: Some(BufferViewTarget::ArrayBuffer),
-                ..Default::default()
-            },
-        ],
-        buffers: vec![Buffer {
-            byte_length: bin_content.len() as u32,
-            ..Default::default()
-        }],
-        ..Default::default()
-    };
-
-    {
-        let mut json_content = serde_json::to_vec(&gltf).unwrap();
-
-        // append padding
-        json_content.extend(vec![0x20; (4 - (json_content.len() % 4)) % 4].iter());
-        bin_content.extend(vec![0x0; (4 - (bin_content.len() % 4)) % 4].iter());
-
-        let total_size = 12 + 8 + json_content.len() + 8 + bin_content.len();
-
-        writer.write_all(b"glTF").unwrap(); // magic
-        writer.write_all(&2u32.to_le_bytes()).unwrap(); // version: 2
-        writer
-            .write_all(&(total_size as u32).to_le_bytes())
-            .unwrap(); // total size
-
-        writer
-            .write_all(&(json_content.len() as u32).to_le_bytes())
-            .unwrap(); // json content
-        writer.write_all(b"JSON").unwrap(); // chunk type
-        writer.write_all(&json_content).unwrap(); // json content
-
-        writer
-            .write_all(&(bin_content.len() as u32).to_le_bytes())
-            .unwrap(); // json content
-        writer.write_all(b"BIN\0").unwrap(); // chunk type
-        writer.write_all(&bin_content).unwrap(); // bin content
-
-        writer.flush().unwrap();
-    }
-}
-
-// FIXME: This is the code to verify the operation with Cesium
-fn write_3dtiles(bounding_volume: [f64; 6], output_path: &PathBuf) {
-    // write 3DTiles
-    let tileset_path = output_path.with_file_name("tileset.json");
-    let content_uri = output_path
-        .file_name()
-        .unwrap()
-        .to_string_lossy()
-        .into_owned();
-
-    let tileset = nusamai_3dtiles_json::tileset::Tileset {
-        geometric_error: 1e+100,
-        asset: nusamai_3dtiles_json::tileset::Asset {
-            version: "1.1".to_string(),
-            ..Default::default()
-        },
-        root: nusamai_3dtiles_json::tileset::Tile {
-            bounding_volume: nusamai_3dtiles_json::tileset::BoundingVolume {
-                region: Some(bounding_volume),
-                ..Default::default()
-            },
-            content: Some(nusamai_3dtiles_json::tileset::Content {
-                uri: content_uri,
-                ..Default::default()
-            }),
-            ..Default::default()
-        },
-        ..Default::default()
-    };
-
-    let mut tileset_file = File::create(&tileset_path).unwrap();
-    let tileset_writer = BufWriter::with_capacity(1024 * 1024, &mut tileset_file);
-    serde_json::to_writer_pretty(tileset_writer, &tileset).unwrap();
 }
 
 #[cfg(test)]
