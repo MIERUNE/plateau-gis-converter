@@ -1,5 +1,7 @@
 //! GeoPackage sink
 
+mod bbox;
+
 use std::path::PathBuf;
 use url::Url;
 
@@ -12,6 +14,7 @@ use crate::parameters::*;
 use crate::pipeline::{Feedback, PipelineError, Receiver, Result};
 use crate::sink::{DataSink, DataSinkProvider, SinkInfo};
 use crate::{get_parameter_value, transformer};
+use bbox::Bbox;
 
 use nusamai_citygml::object::{Object, ObjectStereotype, Value};
 use nusamai_citygml::schema::{Schema, TypeDef, TypeRef};
@@ -82,12 +85,7 @@ impl GpkgSink {
         handler.add_columns(attribute_columns).await.unwrap();
 
         // global bounding box, to be updated per entity
-        let mut global_bbox = Bbox {
-            min_x: f64::MAX,
-            min_y: f64::MAX,
-            max_x: f64::MIN,
-            max_y: f64::MIN,
-        };
+        let mut global_bbox: Bbox = Default::default();
 
         let (sender, mut receiver) = tokio::sync::mpsc::channel(100);
 
@@ -106,6 +104,7 @@ impl GpkgSink {
                         let Value::Object(obj) = &entity.root else {
                             return Ok(());
                         };
+                        log::info!("Processing object - typename: {:?}", obj.typename);
                         let ObjectStereotype::Feature { id: _, geometries } = &obj.stereotype
                         else {
                             return Ok(());
@@ -164,21 +163,12 @@ impl GpkgSink {
             tx.insert_feature(&gpkg_bin, &attributes).await.unwrap();
 
             // track the global bounding box values
-            global_bbox.min_x = global_bbox.min_x.min(bbox.min_x);
-            global_bbox.min_y = global_bbox.min_y.min(bbox.min_y);
-            global_bbox.max_x = global_bbox.max_x.max(bbox.max_x);
-            global_bbox.max_y = global_bbox.max_y.max(bbox.max_y);
+            global_bbox = global_bbox.merged_with(&bbox);
         }
         tx.commit().await.unwrap();
 
         handler
-            .update_bbox(
-                "mpoly3d".into(),
-                global_bbox.min_x,
-                global_bbox.min_y,
-                global_bbox.max_x,
-                global_bbox.max_y,
-            )
+            .update_bbox("mpoly3d".into(), global_bbox.to_tuple())
             .await
             .unwrap();
 
@@ -345,30 +335,15 @@ fn schema_to_columns(schema: &Schema) -> IndexMap<String, String> {
     attribute_columns
 }
 
-struct Bbox {
-    min_x: f64,
-    min_y: f64,
-    max_x: f64,
-    max_y: f64,
-}
-
 // Get Bounding box of a MultiPolygon
 fn get_indexed_multipolygon_bbox(vertices: &[[f64; 3]], mpoly: &MultiPolygon<1, u32>) -> Bbox {
-    let mut bbox = Bbox {
-        min_x: f64::MAX,
-        min_y: f64::MAX,
-        max_x: f64::MIN,
-        max_y: f64::MIN,
-    };
+    let mut bbox: Bbox = Default::default();
 
     for poly in mpoly {
         for linestring in &poly.exterior() {
             for point_idx in linestring.iter() {
                 let [x, y, _z] = vertices[*point_idx as usize];
-                bbox.min_x = bbox.min_x.min(x);
-                bbox.min_y = bbox.min_y.min(y);
-                bbox.max_x = bbox.max_x.max(x);
-                bbox.max_y = bbox.max_y.max(y);
+                bbox = bbox.updated_with(x, y);
             }
         }
     }
@@ -400,9 +375,6 @@ mod tests {
 
         let bbox = get_indexed_multipolygon_bbox(&geometries.vertices, &geometries.multipolygon);
 
-        assert_eq!(bbox.min_x, 10.);
-        assert_eq!(bbox.min_y, 100.);
-        assert_eq!(bbox.max_x, 20.);
-        assert_eq!(bbox.max_y, 200.);
+        assert_eq!(bbox.to_tuple(), (10., 100., 20., 200.));
     }
 }
