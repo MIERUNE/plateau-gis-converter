@@ -4,6 +4,7 @@ use std::io::{BufWriter, Write};
 use std::path::Path;
 
 use byteorder::{ByteOrder, LittleEndian};
+use ext_sort::buffer;
 use indexmap::{IndexMap, IndexSet};
 
 use nusamai_citygml::schema::Schema;
@@ -25,6 +26,7 @@ pub fn build_base_gltf(
     let mut vertices = IndexSet::new();
     let mut indices = Vec::new();
 
+    // まず共有部分のverticesとindicesを作成
     for (_, buffer) in buffers.iter() {
         vertices.extend(buffer.vertices.clone());
 
@@ -36,7 +38,140 @@ pub fn build_base_gltf(
         indices.extend(buffer_indices);
     }
 
-    let (bin_content, gltf) = to_gltf(&vertices, &indices, translation);
+    // 基本的なgltfを作成
+    let mut bin_content: Vec<u8> = Vec::new();
+
+    // write vertices
+    let vertices_offset = bin_content.len();
+    let mut buf = [0; 12];
+    let mut vertices_count = 0;
+    for vertex in vertices.clone() {
+        LittleEndian::write_u32_into(&vertex.position, &mut buf);
+        bin_content.write_all(&buf).unwrap();
+        vertices_count += 1;
+    }
+    let vertices_len: usize = bin_content.len() - vertices_offset;
+
+    // write indices
+    let indices_offset = bin_content.len();
+    let mut indices_count = 0;
+    for idx in indices {
+        bin_content.write_all(&idx.to_le_bytes()).unwrap();
+        indices_count += 1;
+    }
+    let indices_len = bin_content.len() - indices_offset;
+
+    let mut min = [f64::MAX; 3];
+    let mut max = [f64::MIN; 3];
+    for vertex in vertices.iter() {
+        for v in 0..3 {
+            let value = f32::from_bits(vertex.position[v]) as f64;
+            if value < min[v] {
+                min[v] = value;
+            }
+            if value > max[v] {
+                max[v] = value;
+            }
+        }
+    }
+
+    // make base gltf structure
+    let mut gltf = Gltf {
+        extensions_used: vec![
+            "EXT_mesh_features".to_string(),
+            "EXT_structural_metadata".to_string(),
+        ],
+        scenes: vec![Scene {
+            nodes: Some(vec![0]),
+            ..Default::default()
+        }],
+        nodes: vec![Node {
+            mesh: Some(0),
+            translation,
+            ..Default::default()
+        }],
+        meshes: vec![Mesh {
+            primitives: vec![MeshPrimitive {
+                attributes: vec![("POSITION".to_string(), 0)].into_iter().collect(),
+                indices: Some(1),
+                mode: PrimitiveMode::Triangles,
+                ..Default::default()
+            }],
+            ..Default::default()
+        }],
+        accessors: vec![
+            Accessor {
+                buffer_view: Some(0),
+                component_type: ComponentType::Float,
+                count: vertices_count,
+                min: Some(min.to_vec()),
+                max: Some(max.to_vec()),
+                type_: AccessorType::Vec3,
+                ..Default::default()
+            },
+            Accessor {
+                buffer_view: Some(1),
+                component_type: ComponentType::UnsignedInt,
+                count: indices_count,
+                type_: AccessorType::Scalar,
+                ..Default::default()
+            },
+        ],
+        buffer_views: vec![
+            BufferView {
+                byte_offset: vertices_offset as u32,
+                byte_length: vertices_len as u32,
+                target: Some(BufferViewTarget::ArrayBuffer),
+                ..Default::default()
+            },
+            BufferView {
+                byte_offset: indices_offset as u32,
+                byte_length: indices_len as u32,
+                target: Some(BufferViewTarget::ElementArrayBuffer),
+                ..Default::default()
+            },
+        ],
+        ..Default::default()
+    };
+
+    let mut feature_ids_length = 0;
+    for (_, buffer) in buffers.iter() {
+        let mut buffer_view_length = gltf.buffer_views.len() as u32;
+
+        // write feature_ids
+        let feature_ids_offset = bin_content.len();
+        let mut feature_ids_count = 0;
+        for vertex in buffer.vertices.clone() {
+            bin_content
+                .write_all(&vertex.feature_id.to_le_bytes())
+                .unwrap();
+            feature_ids_count += 1;
+        }
+        let feature_ids_len = bin_content.len() - feature_ids_offset;
+
+        let buffer_view = BufferView {
+            byte_offset: feature_ids_offset as u32,
+            byte_length: feature_ids_len as u32,
+            target: Some(BufferViewTarget::ArrayBuffer),
+            ..Default::default()
+        };
+        gltf.buffer_views.push(buffer_view);
+
+        let accessor = Accessor {
+            buffer_view: Some(buffer_view_length),
+            component_type: ComponentType::UnsignedInt,
+            count: feature_ids_count,
+            type_: AccessorType::Scalar,
+            ..Default::default()
+        };
+        gltf.accessors.push(accessor);
+
+        let key = format!("_FEATURE_ID_{}", feature_ids_length);
+        feature_ids_length += 1;
+        gltf.meshes[0].primitives[0]
+            .attributes
+            .insert(key, buffer_view_length);
+    }
 
     (bin_content, gltf)
 }
@@ -170,7 +305,6 @@ pub fn to_gltf(
         ..Default::default()
     };
 
-    // bin_content.extend(vec![0x0; (4 - (bin_content.len() % 4)) % 4].iter());
     (bin_content, gltf)
 }
 
