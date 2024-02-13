@@ -107,7 +107,7 @@ impl<'a> Glb<'a> {
         if &buf[0..4] != b"BIN\x00" {
             return Err(std::io::Error::new(
                 std::io::ErrorKind::InvalidData,
-                "First chunk must be 'bin'".to_string(),
+                "Second chunk must be 'BIN'".to_string(),
             ));
         }
         let mut bin_content = vec![0; bin_content_size as usize];
@@ -210,7 +210,7 @@ mod tests {
         // broken BIN\0 marker
         {
             let mut broken = valid.clone();
-            broken[28] = b'x';
+            broken[35] = b'x';
             Glb::from_reader(Cursor::new(broken)).unwrap_err();
         }
     }
