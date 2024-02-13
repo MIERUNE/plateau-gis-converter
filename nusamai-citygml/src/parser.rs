@@ -1025,6 +1025,18 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                         }
                     }
 
+                    // remove closing point
+                    {
+                        let len = self.state.fp_buf.len();
+                        if len >= 4
+                            && self.state.fp_buf[0] == self.state.fp_buf[len - 2]
+                            && self.state.fp_buf[1] == self.state.fp_buf[len - 1]
+                        {
+                            self.state.fp_buf.pop();
+                            self.state.fp_buf.pop();
+                        }
+                    }
+
                     coords = Some(mem::take(&mut self.state.fp_buf));
                 }
                 Ok(_) => (),
