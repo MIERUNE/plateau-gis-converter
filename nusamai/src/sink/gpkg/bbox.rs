@@ -51,14 +51,14 @@ mod tests {
     #[test]
     fn test_updated_with() {
         let mut bbox = Bbox::default();
+        bbox = bbox.updated_with(0.5, 0.5);
+        assert_eq!(bbox.to_tuple(), (0.5, 0.5, 0.5, 0.5));
 
-        bbox = bbox.updated_with(0.0, 0.0);
         bbox = bbox.updated_with(1.0, 1.0);
+        assert_eq!(bbox.to_tuple(), (0.5, 0.5, 1.0, 1.0));
 
-        assert_eq!(bbox.min_x, 0.0);
-        assert_eq!(bbox.min_y, 0.0);
-        assert_eq!(bbox.max_x, 1.0);
-        assert_eq!(bbox.max_y, 1.0);
+        bbox = bbox.updated_with(-1.0, -1.0);
+        assert_eq!(bbox.to_tuple(), (-1.0, -1.0, 1.0, 1.0));
     }
 
     #[test]
