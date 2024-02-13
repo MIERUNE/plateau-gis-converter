@@ -49,7 +49,20 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_merge() {
+    fn test_updated_with() {
+        let mut bbox = Bbox::default();
+
+        bbox = bbox.updated_with(0.0, 0.0);
+        bbox = bbox.updated_with(1.0, 1.0);
+
+        assert_eq!(bbox.min_x, 0.0);
+        assert_eq!(bbox.min_y, 0.0);
+        assert_eq!(bbox.max_x, 1.0);
+        assert_eq!(bbox.max_y, 1.0);
+    }
+
+    #[test]
+    fn test_merged_with() {
         let bbox1 = Bbox {
             min_x: 0.0,
             min_y: 0.0,
