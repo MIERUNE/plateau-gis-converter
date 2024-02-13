@@ -10,16 +10,20 @@ const GLB_VERSION: u32 = 2;
 const JSON_CHUNK_MARKER: &[u8; 4] = b"JSON";
 const BIN_CHUNK_MARKER: &[u8; 4] = b"BIN\x00";
 
+/// Binary glTF (GLB) format reader and writer.
+#[derive(Debug, Clone)]
 pub struct Glb<'a> {
     pub json: Cow<'a, [u8]>,
     pub bin: Option<Cow<'a, [u8]>>,
 }
 
 impl<'a> Glb<'a> {
+    /// Write GLB to writer.
     pub fn to_writer<W: std::io::Write>(&self, writer: W) -> std::io::Result<()> {
         self.to_writer_with_alignment(writer, 4)
     }
 
+    /// Write GLB to writer with specified alignment.
     pub fn to_writer_with_alignment<W: std::io::Write>(
         &self,
         mut writer: W,
@@ -66,6 +70,7 @@ impl<'a> Glb<'a> {
         Ok(())
     }
 
+    /// Read GLB from reader.
     pub fn from_reader<R: std::io::Read>(mut reader: R) -> std::io::Result<Self> {
         // GLB header
         let mut buf = [0u8; 4];
@@ -132,7 +137,7 @@ mod tests {
                 bin: Some(bin_content[..].into()),
             };
             let mut buf = Vec::new();
-            glb.to_writer_with_alignment(&mut buf, 4).unwrap();
+            glb.to_writer(&mut buf).unwrap();
             assert!(buf.len() % 4 == 0, "not satisfy 4-byte alignment");
             // 4 byte alignment
             assert_eq!(&buf[36..], b"123\0");
@@ -163,6 +168,50 @@ mod tests {
                 "{xxx}\x20\x20\x20\x20\x20\x20\x20"
             );
             assert_eq!(String::from_utf8_lossy(glb.bin.as_ref().unwrap()), "123\0");
+        }
+    }
+
+    #[test]
+    fn test_broken_glb() {
+        let json_content = b"{xxx}";
+        let bin_content = b"123";
+
+        let valid = {
+            let glb = Glb {
+                json: json_content[..].into(),
+                bin: Some(bin_content[..].into()),
+            };
+            let mut buf = Vec::new();
+            glb.to_writer(&mut buf).unwrap();
+            buf
+        };
+
+        // broken 'glTF' magic
+        {
+            let mut broken = valid.clone();
+            broken[0] = b'x';
+            Glb::from_reader(Cursor::new(broken)).unwrap_err();
+        }
+
+        // broken version
+        {
+            let mut broken = valid.clone();
+            broken[4] = b'x';
+            Glb::from_reader(Cursor::new(broken)).unwrap_err();
+        }
+
+        // broken JSON marker
+        {
+            let mut broken = valid.clone();
+            broken[16] = b'x';
+            Glb::from_reader(Cursor::new(broken)).unwrap_err();
+        }
+
+        // broken BIN\0 marker
+        {
+            let mut broken = valid.clone();
+            broken[28] = b'x';
+            Glb::from_reader(Cursor::new(broken)).unwrap_err();
         }
     }
 }
