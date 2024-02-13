@@ -134,9 +134,8 @@ pub fn build_base_gltf(
         ..Default::default()
     };
 
-    let mut feature_ids_length = 0;
-    for (_, buffer) in buffers.iter() {
-        let mut buffer_view_length = gltf.buffer_views.len() as u32;
+    for (feature_ids_length, (_, buffer)) in buffers.iter().enumerate() {
+        let buffer_view_length = gltf.buffer_views.len() as u32;
 
         // write feature_ids
         let feature_ids_offset = bin_content.len();
@@ -167,7 +166,6 @@ pub fn build_base_gltf(
         gltf.accessors.push(accessor);
 
         let key = format!("_FEATURE_ID_{}", feature_ids_length);
-        feature_ids_length += 1;
         gltf.meshes[0].primitives[0]
             .attributes
             .insert(key, buffer_view_length);
