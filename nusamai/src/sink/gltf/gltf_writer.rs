@@ -27,7 +27,13 @@ pub fn build_base_gltf(
 
     for (_, buffer) in buffers.iter() {
         vertices.extend(buffer.vertices.clone());
-        indices.extend(buffer.indices.clone());
+
+        let offset = vertices.len() as u32 - buffer.vertices.len() as u32;
+        let mut buffer_indices = buffer.indices.clone();
+        for idx in buffer_indices.iter_mut() {
+            *idx += offset;
+        }
+        indices.extend(buffer_indices);
     }
 
     let (bin_content, gltf) = to_gltf(&vertices, &indices, translation);
