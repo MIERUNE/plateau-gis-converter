@@ -8,4 +8,4 @@ edition = "2021"
 [dependencies]
 geojson = "0.24.1"
 nusamai-geometry = { path = "../nusamai-geometry" }
-serde_json = { version = "1.0.108", features = ["indexmap"] }
+serde_json = { version = "1.0.113", features = ["indexmap"] }
