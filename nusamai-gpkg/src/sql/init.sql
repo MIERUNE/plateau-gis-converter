@@ -71,3 +71,61 @@ CREATE TABLE gpkg_geometry_columns (
     CONSTRAINT fk_gc_tn FOREIGN KEY (table_name) REFERENCES gpkg_contents(table_name),
     CONSTRAINT fk_gc_srs FOREIGN KEY (srs_id) REFERENCES gpkg_spatial_ref_sys (srs_id)
 );
+
+-- Schema
+CREATE TABLE gpkg_extensions (
+    table_name TEXT,
+    column_name TEXT,
+    extension_name TEXT NOT NULL,
+    definition TEXT NOT NULL,
+    scope TEXT NOT NULL,
+    CONSTRAINT ge_tce UNIQUE (table_name, column_name, extension_name)
+);
+
+INSERT INTO
+    gpkg_extensions (
+        table_name,
+        column_name,
+        extension_name,
+        definition,
+        scope
+    )
+VALUES
+    (
+        'gpkg_data_columns',
+        NULL,
+        'gpkg_schema',
+        'https://www.geopackage.org/spec131/#extension_schema',
+        'read-write'
+    ),
+    (
+        'gpkg_data_column_constraints',
+        NULL,
+        'gpkg_schema',
+        'https://www.geopackage.org/spec131/#extension_schema',
+        'read-write'
+    );
+
+CREATE TABLE gpkg_data_columns (
+    table_name TEXT NOT NULL,
+    column_name TEXT NOT NULL,
+    name TEXT,
+    title TEXT,
+    description TEXT,
+    mime_type TEXT,
+    constraint_name TEXT,
+    CONSTRAINT pk_gdc PRIMARY KEY (table_name, column_name),
+    CONSTRAINT gdc_tn UNIQUE (table_name, name)
+);
+
+CREATE TABLE gpkg_data_column_constraints (
+    constraint_name TEXT NOT NULL,
+    constraint_type TEXT NOT NULL,
+    value TEXT,
+    min NUMERIC,
+    min_is_inclusive BOOLEAN,
+    max NUMERIC,
+    max_is_inclusive BOOLEAN,
+    description TEXT,
+    CONSTRAINT gdcc_ntv UNIQUE (constraint_name, constraint_type, value)
+)
