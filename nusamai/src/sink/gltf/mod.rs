@@ -367,6 +367,7 @@ impl DataSink for GltfSink {
 
                 // write glTF
                 // todo: 属性値格納の精度が甘いので、確認する
+                // 頂点idが連番になっていないのが問題かも？
                 let (mut bin_content, mut gltf) = build_base_gltf(&buffers, all_translation);
                 append_gltf_extensions(
                     &mut gltf,
