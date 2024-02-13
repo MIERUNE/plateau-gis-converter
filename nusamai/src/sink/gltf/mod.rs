@@ -323,6 +323,7 @@ impl DataSink for GltfSink {
                 all_max[2] -= all_translation[2];
                 all_min[2] -= all_translation[2];
 
+                // todo: 地物型が異なる場合は、それぞれの地物型ごとにバッファを作成する必要があるかもしれないので、探る
                 let mut buffers = IndexMap::new();
                 for (class_name, entities) in &all_triangulated_entities {
                     let mut vertices: IndexSet<Vertex<u32>> = IndexSet::default();
@@ -365,6 +366,7 @@ impl DataSink for GltfSink {
                 let writer = BufWriter::with_capacity(1024 * 1024, &mut file);
 
                 // write glTF
+                // todo: 属性値格納の精度が甘いので、確認する
                 let (mut bin_content, mut gltf) = build_base_gltf(&buffers, all_translation);
                 append_gltf_extensions(
                     &mut gltf,

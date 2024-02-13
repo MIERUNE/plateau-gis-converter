@@ -25,7 +25,7 @@ pub fn build_base_gltf(
     let mut vertices = IndexSet::new();
     let mut indices = Vec::new();
 
-    for (_class_name, buffer) in buffers.iter() {
+    for (_, buffer) in buffers.iter() {
         vertices.extend(buffer.vertices.clone());
         indices.extend(buffer.indices.clone());
     }
@@ -164,7 +164,7 @@ pub fn to_gltf(
         ..Default::default()
     };
 
-    bin_content.extend(vec![0x0; (4 - (bin_content.len() % 4)) % 4].iter());
+    // bin_content.extend(vec![0x0; (4 - (bin_content.len() % 4)) % 4].iter());
     (bin_content, gltf)
 }
 
@@ -184,7 +184,7 @@ pub fn append_gltf_extensions(
 
     // glTF拡張のext_structural_metadataを作成
     for (class_name, entities) in entities_list.iter() {
-        let feature_count = entities.len() as u32 - 1;
+        let feature_count = entities.len() as u32;
 
         let type_def = schema.types.get::<String>(class_name).unwrap();
 
