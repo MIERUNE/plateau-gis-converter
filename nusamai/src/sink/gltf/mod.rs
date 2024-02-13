@@ -37,6 +37,7 @@ pub struct BoundingVolume {
     pub max_height: f64,
 }
 
+#[derive(Debug, Clone)]
 pub struct TriangulatedEntity {
     pub positions: Vec<Vertex<f64>>,
     pub attributes: Attributes,
@@ -351,7 +352,7 @@ impl DataSink for GltfSink {
                 // primitivesも、クラスごとに作成する必要があるので2つになる
                 // クラス名をキーとしたIndexMapを作成し、クラスごとに頂点・インデックス・頂点IDを格納する
                 let mut buffers = IndexMap::new();
-                for (class_name, entities) in all_triangulated_entities {
+                for (class_name, entities) in &all_triangulated_entities {
                     let mut vertices: IndexSet<Vertex<u32>> = IndexSet::default();
                     let mut indices: Vec<u32> = Vec::new();
 
@@ -359,7 +360,7 @@ impl DataSink for GltfSink {
                         let mut entity_vertices: Vec<Vertex<u32>> = Vec::new();
                         let mut entity_indices: Vec<u32> = Vec::new();
 
-                        for vertex in entity.positions {
+                        for vertex in entity.positions.clone().into_iter() {
                             let (x, y, z) = (
                                 vertex.position[0] - all_translation[0],
                                 vertex.position[1] - all_translation[1],
@@ -385,7 +386,7 @@ impl DataSink for GltfSink {
                         indices.extend(entity_indices);
                     }
 
-                    buffers.insert(class_name, Buffers { vertices, indices });
+                    buffers.insert(class_name.clone(), Buffers { vertices, indices });
                 }
 
                 // make all vertices and indices for binary buffer
@@ -426,19 +427,16 @@ impl DataSink for GltfSink {
                 let writer = BufWriter::with_capacity(1024 * 1024, &mut file);
 
                 // write glTF
-                let (bin_content, gltf) =
-                    build_base_gltf(&buffers, all_translation, all_min, all_max);
+                let (mut bin_content, mut gltf) = build_base_gltf(&buffers, all_translation);
 
                 // let (mut bin_content, mut gltf) =
                 //     to_gltf(&vertices, &indices, all_translation, all_min, all_max);
-                // append_gltf_extensions(
-                //     &mut gltf,
-                //     &mut bin_content,
-                //     class_names,
-                //     schema,
-                //     vertices,
-                //     all_attributes,
-                // );
+                append_gltf_extensions(
+                    &mut gltf,
+                    &mut bin_content,
+                    schema,
+                    &all_triangulated_entities,
+                );
                 write_gltf(gltf, bin_content, writer);
 
                 // write 3DTiles

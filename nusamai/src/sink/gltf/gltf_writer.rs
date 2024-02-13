@@ -7,6 +7,8 @@ use ahash::RandomState;
 use byteorder::{ByteOrder, LittleEndian};
 use indexmap::{IndexMap, IndexSet};
 
+use itertools::Itertools;
+use nusamai_citygml::attribute;
 use nusamai_citygml::schema::Schema;
 use nusamai_gltf_json::{
     extensions, Accessor, AccessorType, Buffer, BufferView, BufferViewTarget, ComponentType, Gltf,
@@ -18,85 +20,96 @@ use crate::sink::gltf::attributes::{
 };
 
 use super::positions::Vertex;
-use super::Buffers;
+use super::{Buffers, TriangulatedEntity};
 
 pub fn build_base_gltf(
     buffers: &IndexMap<String, Buffers>,
     translation: [f64; 3],
-    min: [f64; 3],
-    max: [f64; 3],
 ) -> (Vec<u8>, Gltf) {
-    let mut bin_contents: Vec<Vec<u8>> = Vec::new();
-    let mut gltf_list = Vec::new();
+    let mut bin_contents: Vec<u8> = Vec::new();
+    let mut vertices = IndexSet::new();
+    let mut indices = Vec::new();
+
     for (_class_name, buffer) in buffers.iter() {
-        let (bin_content, gltf) = to_gltf(&buffer.vertices, &buffer.indices, translation, min, max);
-        bin_contents.push(bin_content);
-        gltf_list.push(gltf);
+        vertices.extend(buffer.vertices.clone());
+        indices.extend(buffer.indices.clone());
     }
 
-    let mut base_gltf = Gltf {
-        extensions_used: vec![
-            "EXT_mesh_features".to_string(),
-            "EXT_structural_metadata".to_string(),
-        ],
-        scenes: vec![Scene {
-            nodes: Some(vec![0]),
-            ..Default::default()
-        }],
-        nodes: vec![Node {
-            mesh: Some(0),
-            translation,
-            ..Default::default()
-        }],
-        ..Default::default()
-    };
-    for gltf in gltf_list {
-        // accessorsを整列
-        for accessor in gltf.accessors {
-            let mut new_accessor = accessor.clone();
-            new_accessor.buffer_view =
-                Some(accessor.buffer_view.unwrap() + base_gltf.buffer_views.len() as u32);
-            base_gltf.accessors.push(new_accessor);
-        }
+    let (mut bin_content, mut gltf) = to_gltf(&vertices, &indices, translation);
 
-        // buffer_viewsを整列
-        for buffer_view in gltf.buffer_views {
-            let mut new_buffer_view = buffer_view.clone();
-            new_buffer_view.byte_offset += bin_contents.len() as u32;
-            base_gltf.buffer_views.push(new_buffer_view);
-        }
+    // let mut gltf_list = Vec::new();
+    // for (_class_name, buffer) in buffers.iter() {
+    //     let (bin_content, gltf) = to_gltf(&buffer.vertices, &buffer.indices, translation);
+    //     bin_contents.extend(bin_content);
+    //     gltf_list.push(gltf);
+    // }
 
-        // meshes.primitivesを整列
-        for mesh in gltf.meshes.iter() {
-            for primitive in mesh.primitives.iter() {
-                let mut new_primitive = primitive.clone();
-                new_primitive.indices =
-                    Some(primitive.indices.unwrap() + bin_contents.len() as u32);
-                let mut new_attributes = IndexMap::new();
-                for (key, value) in primitive.attributes.clone() {
-                    new_attributes.insert(key, value + bin_contents.len() as u32);
-                }
-                let new_attributes: HashMap<String, u32> = new_attributes.into_iter().collect();
-                new_primitive.attributes = new_attributes;
-            }
-            base_gltf.meshes.push(mesh.clone());
-        }
-    }
+    // let mut base_gltf = Gltf {
+    //     extensions_used: vec![
+    //         "EXT_mesh_features".to_string(),
+    //         "EXT_structural_metadata".to_string(),
+    //     ],
+    //     scenes: vec![Scene {
+    //         nodes: Some(vec![0]),
+    //         ..Default::default()
+    //     }],
+    //     nodes: vec![Node {
+    //         mesh: Some(0),
+    //         translation,
+    //         ..Default::default()
+    //     }],
+    //     ..Default::default()
+    // };
 
-    let mut bin_content: Vec<u8> = Vec::new();
-    for content in bin_contents {
-        bin_content.extend(content.iter());
-    }
+    // let mut vertices_offset = 0;
+    // let mut indices_offset = 0;
+    // let mut feature_ids_offset = 0;
 
-    (bin_content, base_gltf)
+    // for gltf in gltf_list {
+    //     // accessorsを整列
+    //     for accessor in gltf.accessors {
+    //         let mut new_accessor = accessor.clone();
+    //         new_accessor.buffer_view =
+    //             Some(accessor.buffer_view.unwrap() + base_gltf.buffer_views.len() as u32);
+    //         base_gltf.accessors.push(new_accessor);
+    //     }
+
+    //     // buffer_viewsを整列
+    //     for buffer_view in gltf.buffer_views {
+    //         let mut new_buffer_view = buffer_view.clone();
+    //         new_buffer_view.byte_offset += bin_contents.len() as u32;
+    //         base_gltf.buffer_views.push(new_buffer_view);
+    //     }
+
+    //     // meshes.primitivesを整列
+    //     for mesh in gltf.meshes.iter() {
+    //         for primitive in mesh.primitives.iter() {
+    //             let mut new_primitive = primitive.clone();
+    //             new_primitive.indices =
+    //                 Some(primitive.indices.unwrap() + bin_contents.len() as u32);
+    //             let mut new_attributes = IndexMap::new();
+    //             for (key, value) in primitive.attributes.clone() {
+    //                 new_attributes.insert(key, value + bin_contents.len() as u32);
+    //             }
+    //             let new_attributes: HashMap<String, u32> = new_attributes.into_iter().collect();
+    //             new_primitive.attributes = new_attributes;
+    //         }
+    //         base_gltf.meshes.push(mesh.clone());
+    //     }
+    // }
+
+    // let mut bin_content: Vec<u8> = Vec::new();
+    // for content in bin_contents {
+    //     bin_content.extend(content.iter());
+    // }
+
+    (bin_content, gltf)
 }
 
 pub fn to_gltf(
     vertices: &IndexSet<Vertex<u32>>,
     indices: &Vec<u32>,
     translation: [f64; 3],
-    min: [f64; 3],
-    max: [f64; 3],
 ) -> (Vec<u8>, Gltf) {
     let mut bin_content: Vec<u8> = Vec::new();
 
@@ -130,6 +143,20 @@ pub fn to_gltf(
         feature_ids_count += 1;
     }
     let feature_ids_len = bin_content.len() - feature_ids_offset;
+
+    let mut min = [f64::MAX; 3];
+    let mut max = [f64::MIN; 3];
+    for vertex in vertices.iter() {
+        for v in 0..3 {
+            let value = f32::from_bits(vertex.position[v]) as f64;
+            if value < min[v] {
+                min[v] = value;
+            }
+            if value > max[v] {
+                max[v] = value;
+            }
+        }
+    }
 
     // make base gltf structure
     let gltf = Gltf {
@@ -208,33 +235,48 @@ pub fn to_gltf(
         ],
         ..Default::default()
     };
+
+    bin_content.extend(vec![0x0; (4 - (bin_content.len() % 4)) % 4].iter());
     (bin_content, gltf)
 }
 
 pub fn append_gltf_extensions(
     gltf: &mut Gltf,
     bin_content: &mut Vec<u8>,
-    class_names: HashSet<std::borrow::Cow<'_, str>>,
     schema: &Schema,
-    vertices: IndexSet<Vertex<u32>, RandomState>,
-    attributes: Vec<Attributes>,
+    entities_list: &IndexMap<String, Vec<TriangulatedEntity>>,
 ) {
     let mut buffer_view_length = gltf.buffer_views.len() as u32;
-    let feature_count = vertices.iter().map(|v| v.feature_id).max().unwrap();
-
     let mut classes = HashMap::new();
     let mut property_tables = Vec::new();
+    let mut feature_ids = Vec::new();
 
-    for class_name_cow in class_names.iter() {
-        let class_name = class_name_cow.as_ref().to_string();
+    for (class_name, entities) in entities_list.iter() {
+        let feature_count = entities.len() as u32;
+
         let type_def = schema.types.get::<String>(&class_name).unwrap();
 
         let class = to_gltf_class(&class_name, type_def);
+        let classes_length = classes.len() as u32;
         classes.extend(class);
 
-        let (property_table, count) =
-            to_gltf_property_table(&class_name, type_def, buffer_view_length, feature_count);
+        let (property_table, count) = to_gltf_property_table(
+            &class_name,
+            type_def,
+            buffer_view_length,
+            entities.len() as u32 - 1,
+        );
+        let property_tables_length = property_tables.len() as u32;
         property_tables.push(property_table);
+
+        let feature_id = extensions::mesh::ext_mesh_features::FeatureId {
+            attribute: Some(classes_length),
+            feature_count,
+            property_table: Some(property_tables_length),
+            ..Default::default()
+        };
+        feature_ids.push(feature_id);
+
         buffer_view_length = count;
     }
 
@@ -252,23 +294,22 @@ pub fn append_gltf_extensions(
         ..Default::default()
     };
 
-    // mesh primitiveのextensionを追加
     let mesh_primitive_extensions = Some(extensions::mesh::MeshPrimitive {
         ext_mesh_features: Some(extensions::mesh::ext_mesh_features::ExtMeshFeatures {
-            feature_ids: vec![extensions::mesh::ext_mesh_features::FeatureId {
-                // todo: 複数の地物型を出力するときには、地物型ごとにfeature_idを付与していくので、attributesやproperty_tableは動的に変化する
-                // todo: meshes.primitives.attributesには、地物型ごとのfeature_idを付与するので、以下のattributesへのインデックスも動的に変わる
-                attribute: Some(0),
-                feature_count: vertices.iter().map(|v| v.feature_id).max().unwrap(),
-                property_table: Some(0),
-                ..Default::default()
-            }],
+            feature_ids,
             ..Default::default()
         }),
         ..Default::default()
     });
-    // todo: 必ず0番目に入れる、というわけではないので対応
+    // todo: meshes.primitives自体が複製されてしまってるので修正
     gltf.meshes[0].primitives[0].extensions = mesh_primitive_extensions;
+
+    let mut attributes: Vec<Attributes> = Vec::new();
+    for (_, entities) in entities_list.iter() {
+        for entity in entities.iter() {
+            attributes.push(entity.attributes.clone());
+        }
+    }
 
     let attributes_bin_contents = attributes_to_buffer(schema, &attributes);
     let mut buffer_views: Vec<BufferView> = Vec::new();

@@ -19,6 +19,7 @@ pub struct GltfPropertyType {
 }
 
 // Attributes per vertex id
+#[derive(Debug, Clone)]
 pub struct Attributes {
     pub class_name: String,
     pub feature_id: u32,
