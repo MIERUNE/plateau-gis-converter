@@ -3,12 +3,10 @@ mod attributes;
 mod gltf_writer;
 mod positions;
 
-use std::collections::HashSet;
 use std::fs::File;
 use std::io::BufWriter;
 use std::path::PathBuf;
 
-use ahash::RandomState;
 use earcut_rs::utils_3d::project3d_to_2d;
 use earcut_rs::Earcut;
 use indexmap::{IndexMap, IndexSet};
@@ -23,7 +21,7 @@ use crate::sink::{DataSink, DataSinkProvider, SinkInfo};
 use crate::{get_parameter_value, transformer};
 
 use attributes::FeatureAttributes;
-use gltf_writer::{append_gltf_extensions, to_gltf, write_3dtiles, write_gltf};
+use gltf_writer::{append_gltf_extensions, write_3dtiles, write_gltf};
 use positions::Vertex;
 
 use self::gltf_writer::build_base_gltf;
@@ -245,15 +243,6 @@ impl DataSink for GltfSink {
                     max_height: f64::MIN,
                 };
 
-                // // Maintain a list of type names as multiple types are mixed.
-                // let mut class_names = HashSet::new();
-
-                // // holds all vertex coordinates and feature_id
-                // let mut all_positions: Vec<[f64; 4]> = Vec::new();
-
-                // // Holds all attributes of the entity
-                // let mut all_attributes: Vec<Attributes> = Vec::new();
-
                 let mut all_triangulated_entities: IndexMap<String, Vec<TriangulatedEntity>> =
                     IndexMap::new();
 
@@ -278,24 +267,11 @@ impl DataSink for GltfSink {
                     };
                     all_triangulated_entities
                         .entry(class_name.as_ref().to_string())
-                        .or_insert_with(Vec::new)
+                        .or_default()
                         .push(triangulated_entity);
-
-                    // all_attributes.push(Attributes {
-                    //     class_name: class_name.as_ref().to_string(),
-                    //     feature_id: feature_id as u32,
-                    //     attributes,
-                    // });
-
-                    // class_names.insert(class_name);
 
                     let mut pos_max = [f64::MIN; 3];
                     let mut pos_min = [f64::MAX; 3];
-
-                    // // add feature_id to all_positions
-                    // triangles.iter().for_each(|&[x, y, z]| {
-                    //     all_positions.push([x, y, z, feature_id as f64]);
-                    // });
 
                     // calculate the centroid and min/max of the entity
                     triangles.iter().for_each(|&[x, y, z]| {
@@ -347,10 +323,6 @@ impl DataSink for GltfSink {
                 all_max[2] -= all_translation[2];
                 all_min[2] -= all_translation[2];
 
-                // ベースとなるglTFを作成するために、クラスごとに頂点・インデックス・頂点IDを分ける
-                // 2クラスあるなら、6個のbufferViewが必要で、それに伴い6個のaccessorが必要になる
-                // primitivesも、クラスごとに作成する必要があるので2つになる
-                // クラス名をキーとしたIndexMapを作成し、クラスごとに頂点・インデックス・頂点IDを格納する
                 let mut buffers = IndexMap::new();
                 for (class_name, entities) in &all_triangulated_entities {
                     let mut vertices: IndexSet<Vertex<u32>> = IndexSet::default();
@@ -389,48 +361,11 @@ impl DataSink for GltfSink {
                     buffers.insert(class_name.clone(), Buffers { vertices, indices });
                 }
 
-                // make all vertices and indices for binary buffer
-                // let mut vertices: IndexSet<Vertex<u32>, RandomState> = IndexSet::default();
-                // let indices: Vec<u32> = all_positions
-                //     .iter()
-                //     .map(|&[x, y, z, feature_id]| {
-                //         let (x, y, z) = (
-                //             x - all_translation[0],
-                //             y - all_translation[1],
-                //             z - all_translation[2],
-                //         );
-                //         let vbits = [
-                //             (x as f32).to_bits(),
-                //             (y as f32).to_bits(),
-                //             (z as f32).to_bits(),
-                //         ];
-
-                //         let vertex = Vertex {
-                //             position: vbits,
-                //             feature_id: feature_id as u32,
-                //             ..Default::default()
-                //         };
-
-                //         let (index, _) = vertices.insert_full(vertex);
-
-                //         index as u32
-                //     })
-                //     .collect();
-                // let indices: Vec<u32> = indices
-                //     .chunks_exact(3)
-                //     .filter(|idx| (idx[0] != idx[1] && idx[1] != idx[2] && idx[2] != idx[0]))
-                //     .flatten()
-                //     .copied()
-                //     .collect();
-
                 let mut file = File::create(&self.output_path).unwrap();
                 let writer = BufWriter::with_capacity(1024 * 1024, &mut file);
 
                 // write glTF
                 let (mut bin_content, mut gltf) = build_base_gltf(&buffers, all_translation);
-
-                // let (mut bin_content, mut gltf) =
-                //     to_gltf(&vertices, &indices, all_translation, all_min, all_max);
                 append_gltf_extensions(
                     &mut gltf,
                     &mut bin_content,

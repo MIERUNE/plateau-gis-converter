@@ -1,16 +1,13 @@
-use std::{collections::HashMap, io::Write};
+use std::collections::HashMap;
 
 use ahash::RandomState;
-use hashbrown::HashSet;
 use indexmap::IndexMap;
 
 use nusamai_citygml::{
-    schema::{Schema, TypeDef, TypeRef},
+    schema::{TypeDef, TypeRef},
     Value,
 };
 use nusamai_gltf_json::extensions;
-
-use super::TriangulatedEntity;
 
 #[derive(Debug, Clone, Default)]
 pub struct GltfPropertyType {
@@ -112,7 +109,7 @@ fn to_gltf_schema(type_ref: &TypeRef) -> GltfPropertyType {
 }
 
 pub fn to_gltf_class(
-    class_name: &String,
+    class_name: &str,
     type_def: &TypeDef,
 ) -> HashMap<String, extensions::gltf::ext_structural_metadata::Class> {
     let mut gltf_property_types = Vec::new();
@@ -121,7 +118,7 @@ pub fn to_gltf_class(
         TypeDef::Feature(f) => {
             for (name, attr) in &f.attributes {
                 let mut property_type = to_gltf_schema(&attr.type_ref);
-                property_type.class_name = class_name.clone();
+                property_type.class_name = class_name.to_string();
                 property_type.property_name = name.clone();
                 gltf_property_types.push(property_type);
             }
@@ -148,9 +145,9 @@ pub fn to_gltf_class(
     let mut class: HashMap<String, extensions::gltf::ext_structural_metadata::Class> =
         HashMap::new();
     class.insert(
-        class_name.clone(),
+        class_name.to_string(),
         extensions::gltf::ext_structural_metadata::Class {
-            name: Some(class_name.clone()),
+            name: Some(class_name.to_string()),
             description: None,
             properties: class_properties.clone(),
             ..Default::default()
@@ -161,7 +158,7 @@ pub fn to_gltf_class(
 }
 
 pub fn to_gltf_property_table(
-    class_name: &String,
+    class_name: &str,
     schema: &TypeDef,
     buffer_view_length: u32,
     feature_count: u32,
@@ -172,7 +169,7 @@ pub fn to_gltf_property_table(
     // Create Schema.property_tables
     let mut property_table: extensions::gltf::ext_structural_metadata::PropertyTable =
         extensions::gltf::ext_structural_metadata::PropertyTable {
-            class: class_name.clone(),
+            class: class_name.to_string(),
             properties: HashMap::new(),
             count: feature_count,
             ..Default::default()
@@ -227,560 +224,6 @@ pub fn to_gltf_property_table(
     }
 
     (property_table, buffer_view_length)
-}
-
-pub fn attributes_to_buffer(
-    property_tables: &Vec<extensions::gltf::ext_structural_metadata::PropertyTable>,
-    entity_list: &IndexMap<String, Vec<TriangulatedEntity>>,
-) -> IndexMap<String, IndexMap<String, Vec<u8>>> {
-    // 属性名がキーで、値がバッファのマップを作成する
-    let mut buffers: IndexMap<String, IndexMap<String, Vec<u8>>> = IndexMap::new();
-
-    // クラスごとの属性名を取得していく
-    for property_table in property_tables {
-        let class_name = &property_table.class;
-        println!("\nprocessing {:?}...\n", class_name);
-
-        let target_entities = entity_list.get(class_name).unwrap();
-
-        for (property_name, property) in &property_table.properties {
-            let mut buffer: Vec<u8> = Vec::new();
-            let mut string_offset_buffer: Vec<u8> = Vec::new();
-
-            for entity in target_entities {
-                for (name, value) in entity.attributes.attributes.iter() {
-                    if property_name == name {
-                        println!("found: {:?}", &property_name);
-                        println!("name: {:?}", name);
-                        println!("value: {:?}", value);
-                        match value {
-                            // todo: 型ごとの処理をきちんと定義する
-                            Value::String(s) => {
-                                if s.is_empty() {
-                                    buffer.write_all(&[0u8]).unwrap();
-                                    string_offset_buffer
-                                        .write_all(&(buffer.len() as u32).to_le_bytes())
-                                        .unwrap();
-                                } else {
-                                    buffer.write_all(s.as_bytes()).unwrap();
-                                    string_offset_buffer
-                                        .write_all(&(buffer.len() as u32).to_le_bytes())
-                                        .unwrap();
-                                }
-                            }
-                            Value::Integer(i) => {
-                                buffer.write_all(&i.to_le_bytes()).unwrap();
-                            }
-                            Value::NonNegativeInteger(u) => {
-                                buffer.write_all(&u.to_le_bytes()).unwrap();
-                            }
-                            Value::Double(d) => {
-                                buffer.write_all(&d.to_le_bytes()).unwrap();
-                            }
-                            Value::Boolean(b) => {
-                                let buf: u8 = if *b { 1 } else { 0 };
-                                buffer.write_all(&buf.to_le_bytes()).unwrap();
-                            }
-                            Value::Code(c) => {
-                                let json = c.value();
-                                if json.is_empty() {
-                                    buffer.write_all(&[0u8]).unwrap();
-                                    string_offset_buffer
-                                        .write_all(&(buffer.len() as u32).to_le_bytes())
-                                        .unwrap();
-                                } else {
-                                    buffer.write_all(&json.as_bytes()).unwrap();
-                                    string_offset_buffer
-                                        .write_all(&(buffer.len() as u32).to_le_bytes())
-                                        .unwrap();
-                                }
-                            }
-                            Value::Measure(m) => {
-                                let json = m.value();
-                                buffer.write_all(&json.to_le_bytes()).unwrap();
-                            }
-                            Value::Point(_) => {
-                                // todo: implement
-                            }
-                            Value::URI(u) => {
-                                let json = u.value();
-                                if json.is_empty() {
-                                    buffer.write_all(&[0u8]).unwrap();
-                                    string_offset_buffer
-                                        .write_all(&(buffer.len() as u32).to_le_bytes())
-                                        .unwrap();
-                                } else {
-                                    buffer.write_all(u.value().as_bytes()).unwrap();
-                                    string_offset_buffer
-                                        .write_all(&(buffer.len() as u32).to_le_bytes())
-                                        .unwrap();
-                                }
-                            }
-                            Value::Date(_) => {
-                                // todo: implement
-                            }
-                            Value::Array(a) => {
-                                let json = serde_json::to_string(a).unwrap();
-                                if json.is_empty() {
-                                    buffer.write_all(&[0u8]).unwrap();
-                                    string_offset_buffer
-                                        .write_all(&(buffer.len() as u32).to_le_bytes())
-                                        .unwrap();
-                                } else {
-                                    buffer.write_all(&json.as_bytes()).unwrap();
-                                    string_offset_buffer
-                                        .write_all(&(buffer.len() as u32).to_le_bytes())
-                                        .unwrap();
-                                }
-                            }
-                            Value::Object(o) => {
-                                let json = serde_json::to_string(o).unwrap();
-                                if json.is_empty() {
-                                    buffer.write_all(&[0u8]).unwrap();
-                                    string_offset_buffer
-                                        .write_all(&(buffer.len() as u32).to_le_bytes())
-                                        .unwrap();
-                                } else {
-                                    buffer.write_all(&json.as_bytes()).unwrap();
-                                    string_offset_buffer
-                                        .write_all(&(buffer.len() as u32).to_le_bytes())
-                                        .unwrap();
-                                }
-                            }
-                        }
-                    } else {
-                        println!("not found: {:?}", &property_name);
-                        println!("property: {:?}", &property);
-                    }
-                }
-            }
-        }
-
-        let mut buffer: Vec<u8> = Vec::new();
-        let mut string_offset_buffer: Vec<u8> = Vec::new();
-
-        // スキーマの順番に従って、属性名を抽出
-        // for property_name in property_names {
-        //     for a in entity_list {
-        //         // todo: キー名が正しいのに、値が取得できない
-        //         println!(
-        //             "value: {:?}",
-        //             a.attributes.get("vegetationDataQualityAttribute").unwrap()
-        //         );
-        //         println!("value: {:?}", a.attributes.get("class").unwrap());
-        //         println!("value: {:?}", a.attributes.get("averageHeight").unwrap());
-
-        //         if let Some(value) = a.attributes.get(property_name) {
-        //             println!("found: {:?}", &property_name);
-        //             match value {
-        //                 // todo: 型ごとの処理をきちんと定義する
-        //                 Value::String(s) => {
-        //                     if s.is_empty() {
-        //                         buffer.write_all(&[0u8]).unwrap();
-        //                         string_offset_buffer
-        //                             .write_all(&(buffer.len() as u32).to_le_bytes())
-        //                             .unwrap();
-        //                     } else {
-        //                         buffer.write_all(s.as_bytes()).unwrap();
-        //                         string_offset_buffer
-        //                             .write_all(&(buffer.len() as u32).to_le_bytes())
-        //                             .unwrap();
-        //                     }
-        //                 }
-        //                 Value::Integer(i) => {
-        //                     buffer.write_all(&i.to_le_bytes()).unwrap();
-        //                 }
-        //                 Value::NonNegativeInteger(u) => {
-        //                     buffer.write_all(&u.to_le_bytes()).unwrap();
-        //                 }
-        //                 Value::Double(d) => {
-        //                     buffer.write_all(&d.to_le_bytes()).unwrap();
-        //                 }
-        //                 Value::Boolean(b) => {
-        //                     let buf: u8 = if *b { 1 } else { 0 };
-        //                     buffer.write_all(&buf.to_le_bytes()).unwrap();
-        //                 }
-        //                 Value::Code(c) => {
-        //                     let json = c.value();
-        //                     if json.is_empty() {
-        //                         buffer.write_all(&[0u8]).unwrap();
-        //                         string_offset_buffer
-        //                             .write_all(&(buffer.len() as u32).to_le_bytes())
-        //                             .unwrap();
-        //                     } else {
-        //                         buffer.write_all(&json.as_bytes()).unwrap();
-        //                         string_offset_buffer
-        //                             .write_all(&(buffer.len() as u32).to_le_bytes())
-        //                             .unwrap();
-        //                     }
-        //                 }
-        //                 Value::Measure(m) => {
-        //                     let json = m.value();
-        //                     buffer.write_all(&json.to_le_bytes()).unwrap();
-        //                 }
-        //                 Value::Point(_) => {
-        //                     // todo: implement
-        //                 }
-        //                 Value::URI(u) => {
-        //                     let json = u.value();
-        //                     if json.is_empty() {
-        //                         buffer.write_all(&[0u8]).unwrap();
-        //                         string_offset_buffer
-        //                             .write_all(&(buffer.len() as u32).to_le_bytes())
-        //                             .unwrap();
-        //                     } else {
-        //                         buffer.write_all(u.value().as_bytes()).unwrap();
-        //                         string_offset_buffer
-        //                             .write_all(&(buffer.len() as u32).to_le_bytes())
-        //                             .unwrap();
-        //                     }
-        //                 }
-        //                 Value::Date(_) => {
-        //                     // todo: implement
-        //                 }
-        //                 Value::Array(a) => {
-        //                     let json = serde_json::to_string(a).unwrap();
-        //                     if json.is_empty() {
-        //                         buffer.write_all(&[0u8]).unwrap();
-        //                         string_offset_buffer
-        //                             .write_all(&(buffer.len() as u32).to_le_bytes())
-        //                             .unwrap();
-        //                     } else {
-        //                         buffer.write_all(&json.as_bytes()).unwrap();
-        //                         string_offset_buffer
-        //                             .write_all(&(buffer.len() as u32).to_le_bytes())
-        //                             .unwrap();
-        //                     }
-        //                 }
-        //                 Value::Object(o) => {
-        //                     let json = serde_json::to_string(o).unwrap();
-        //                     if json.is_empty() {
-        //                         buffer.write_all(&[0u8]).unwrap();
-        //                         string_offset_buffer
-        //                             .write_all(&(buffer.len() as u32).to_le_bytes())
-        //                             .unwrap();
-        //                     } else {
-        //                         buffer.write_all(&json.as_bytes()).unwrap();
-        //                         string_offset_buffer
-        //                             .write_all(&(buffer.len() as u32).to_le_bytes())
-        //                             .unwrap();
-        //                     }
-        //                 }
-        //             }
-        //         }
-        //     }
-        //     // 該当する属性があるかどうかを確認する
-        // }
-    }
-    //     for attr in attributes {
-    //         if let Some(value) = attr.attributes.get(&property_name) {
-    //             match value {
-    //                 // todo: 型ごとの処理をきちんと定義する
-    //                 Value::String(s) => {
-    //                     if s.is_empty() {
-    //                         buffer.write_all(&[0u8]).unwrap();
-    //                         string_offset_buffer
-    //                             .write_all(&(buffer.len() as u32).to_le_bytes())
-    //                             .unwrap();
-    //                     } else {
-    //                         buffer.write_all(s.as_bytes()).unwrap();
-    //                         string_offset_buffer
-    //                             .write_all(&(buffer.len() as u32).to_le_bytes())
-    //                             .unwrap();
-    //                     }
-    //                 }
-    //                 Value::Integer(i) => {
-    //                     buffer.write_all(&i.to_le_bytes()).unwrap();
-    //                 }
-    //                 Value::NonNegativeInteger(u) => {
-    //                     buffer.write_all(&u.to_le_bytes()).unwrap();
-    //                 }
-    //                 Value::Double(d) => {
-    //                     buffer.write_all(&d.to_le_bytes()).unwrap();
-    //                 }
-    //                 Value::Boolean(b) => {
-    //                     let buf: u8 = if *b { 1 } else { 0 };
-    //                     buffer.write_all(&buf.to_le_bytes()).unwrap();
-    //                 }
-    //                 Value::Code(c) => {
-    //                     let json = c.value();
-    //                     if json.is_empty() {
-    //                         buffer.write_all(&[0u8]).unwrap();
-    //                         string_offset_buffer
-    //                             .write_all(&(buffer.len() as u32).to_le_bytes())
-    //                             .unwrap();
-    //                     } else {
-    //                         buffer.write_all(&json.as_bytes()).unwrap();
-    //                         string_offset_buffer
-    //                             .write_all(&(buffer.len() as u32).to_le_bytes())
-    //                             .unwrap();
-    //                     }
-    //                 }
-    //                 Value::Measure(m) => {
-    //                     let json = m.value();
-    //                     buffer.write_all(&json.to_le_bytes()).unwrap();
-    //                 }
-    //                 Value::Point(_) => {
-    //                     // todo: implement
-    //                 }
-    //                 Value::URI(u) => {
-    //                     let json = u.value();
-    //                     if json.is_empty() {
-    //                         buffer.write_all(&[0u8]).unwrap();
-    //                         string_offset_buffer
-    //                             .write_all(&(buffer.len() as u32).to_le_bytes())
-    //                             .unwrap();
-    //                     } else {
-    //                         buffer.write_all(u.value().as_bytes()).unwrap();
-    //                         string_offset_buffer
-    //                             .write_all(&(buffer.len() as u32).to_le_bytes())
-    //                             .unwrap();
-    //                     }
-    //                 }
-    //                 Value::Date(_) => {
-    //                     // todo: implement
-    //                 }
-    //                 Value::Array(a) => {
-    //                     let json = serde_json::to_string(a).unwrap();
-    //                     if json.is_empty() {
-    //                         buffer.write_all(&[0u8]).unwrap();
-    //                         string_offset_buffer
-    //                             .write_all(&(buffer.len() as u32).to_le_bytes())
-    //                             .unwrap();
-    //                     } else {
-    //                         buffer.write_all(&json.as_bytes()).unwrap();
-    //                         string_offset_buffer
-    //                             .write_all(&(buffer.len() as u32).to_le_bytes())
-    //                             .unwrap();
-    //                     }
-    //                 }
-    //                 Value::Object(o) => {
-    //                     let json = serde_json::to_string(o).unwrap();
-    //                     if json.is_empty() {
-    //                         buffer.write_all(&[0u8]).unwrap();
-    //                         string_offset_buffer
-    //                             .write_all(&(buffer.len() as u32).to_le_bytes())
-    //                             .unwrap();
-    //                     } else {
-    //                         buffer.write_all(&json.as_bytes()).unwrap();
-    //                         string_offset_buffer
-    //                             .write_all(&(buffer.len() as u32).to_le_bytes())
-    //                             .unwrap();
-    //                     }
-    //                 }
-    //             }
-    //         } else {
-    //             // If defined in the schema but not in the entity
-    //             match p {
-    //                 GltfPropertyType {
-    //                     class_property_type:
-    //                         extensions::gltf::ext_structural_metadata::ClassPropertyType::String,
-    //                     ..
-    //                 } => {
-    //                     buffer.write_all(&[0u8]).unwrap();
-    //                     string_offset_buffer
-    //                         .write_all(&(buffer.len() as u32).to_le_bytes())
-    //                         .unwrap();
-    //                 }
-    //                 GltfPropertyType {
-    //                     class_property_type:
-    //                         extensions::gltf::ext_structural_metadata::ClassPropertyType::Scalar,
-    //                     ..
-    //                 } => {
-    //                     buffer.write_all(&[0u8; 4]).unwrap();
-    //                 }
-    //                 GltfPropertyType {
-    //                     class_property_type:
-    //                         extensions::gltf::ext_structural_metadata::ClassPropertyType::Boolean,
-    //                     ..
-    //                 } => {
-    //                     buffer.write_all(&[0u8]).unwrap();
-    //                 }
-    //                 _ => {
-    //                     // 全てJSON Stringとして扱う
-    //                     buffer.write_all(&[0u8]).unwrap();
-    //                     string_offset_buffer
-    //                         .write_all(&(buffer.len() as u32).to_le_bytes())
-    //                         .unwrap();
-    //                 }
-    //             }
-    //         }
-    //     }
-
-    //     let mut value = IndexMap::new();
-    //     value.insert(p.property_name.clone(), buffer);
-    //     buffers.insert(current_class_name.clone(), value);
-    //     // todo: array_offset_bufferの対応を実装する
-    //     if !string_offset_buffer.is_empty() {
-    //         let mut value = IndexMap::new();
-    //         value.insert(
-    //             p.property_name.clone() + "_string_offsets",
-    //             string_offset_buffer,
-    //         );
-    //         buffers.insert(current_class_name.clone() + "_string_offsets", value);
-    //     }
-    // }
-
-    // for p in gltf_properties {
-    //     let mut buffer: Vec<u8> = Vec::new();
-    //     let mut string_offset_buffer: Vec<u8> = Vec::new();
-    //     // let mut array_offset_buffer: Vec<u32> = Vec::new();
-
-    //     let mut current_class_name = &"".to_string();
-
-    //     // スキーマの順番に従って、全ての地物から特定の属性のみを取り出し、バイナリに変換する
-    //     // それを、対象クラス全ての属性に対して行う
-    //     for attr in attributes {
-    //         current_class_name = &attr.class_name;
-    //         if let Some(value) = attr.attributes.get(&p.property_name) {
-    //             match value {
-    //                 // todo: 型ごとの処理をきちんと定義する
-    //                 Value::String(s) => {
-    //                     if s.is_empty() {
-    //                         buffer.write_all(&[0u8]).unwrap();
-    //                         string_offset_buffer
-    //                             .write_all(&(buffer.len() as u32).to_le_bytes())
-    //                             .unwrap();
-    //                     } else {
-    //                         buffer.write_all(s.as_bytes()).unwrap();
-    //                         string_offset_buffer
-    //                             .write_all(&(buffer.len() as u32).to_le_bytes())
-    //                             .unwrap();
-    //                     }
-    //                 }
-    //                 Value::Integer(i) => {
-    //                     buffer.write_all(&i.to_le_bytes()).unwrap();
-    //                 }
-    //                 Value::NonNegativeInteger(u) => {
-    //                     buffer.write_all(&u.to_le_bytes()).unwrap();
-    //                 }
-    //                 Value::Double(d) => {
-    //                     buffer.write_all(&d.to_le_bytes()).unwrap();
-    //                 }
-    //                 Value::Boolean(b) => {
-    //                     let buf: u8 = if *b { 1 } else { 0 };
-    //                     buffer.write_all(&buf.to_le_bytes()).unwrap();
-    //                 }
-    //                 Value::Code(c) => {
-    //                     let json = c.value();
-    //                     if json.is_empty() {
-    //                         buffer.write_all(&[0u8]).unwrap();
-    //                         string_offset_buffer
-    //                             .write_all(&(buffer.len() as u32).to_le_bytes())
-    //                             .unwrap();
-    //                     } else {
-    //                         buffer.write_all(&json.as_bytes()).unwrap();
-    //                         string_offset_buffer
-    //                             .write_all(&(buffer.len() as u32).to_le_bytes())
-    //                             .unwrap();
-    //                     }
-    //                 }
-    //                 Value::Measure(m) => {
-    //                     let json = m.value();
-    //                     buffer.write_all(&json.to_le_bytes()).unwrap();
-    //                 }
-    //                 Value::Point(_) => {
-    //                     // todo: implement
-    //                 }
-    //                 Value::URI(u) => {
-    //                     let json = u.value();
-    //                     if json.is_empty() {
-    //                         buffer.write_all(&[0u8]).unwrap();
-    //                         string_offset_buffer
-    //                             .write_all(&(buffer.len() as u32).to_le_bytes())
-    //                             .unwrap();
-    //                     } else {
-    //                         buffer.write_all(u.value().as_bytes()).unwrap();
-    //                         string_offset_buffer
-    //                             .write_all(&(buffer.len() as u32).to_le_bytes())
-    //                             .unwrap();
-    //                     }
-    //                 }
-    //                 Value::Date(_) => {
-    //                     // todo: implement
-    //                 }
-    //                 Value::Array(a) => {
-    //                     let json = serde_json::to_string(a).unwrap();
-    //                     if json.is_empty() {
-    //                         buffer.write_all(&[0u8]).unwrap();
-    //                         string_offset_buffer
-    //                             .write_all(&(buffer.len() as u32).to_le_bytes())
-    //                             .unwrap();
-    //                     } else {
-    //                         buffer.write_all(&json.as_bytes()).unwrap();
-    //                         string_offset_buffer
-    //                             .write_all(&(buffer.len() as u32).to_le_bytes())
-    //                             .unwrap();
-    //                     }
-    //                 }
-    //                 Value::Object(o) => {
-    //                     let json = serde_json::to_string(o).unwrap();
-    //                     if json.is_empty() {
-    //                         buffer.write_all(&[0u8]).unwrap();
-    //                         string_offset_buffer
-    //                             .write_all(&(buffer.len() as u32).to_le_bytes())
-    //                             .unwrap();
-    //                     } else {
-    //                         buffer.write_all(&json.as_bytes()).unwrap();
-    //                         string_offset_buffer
-    //                             .write_all(&(buffer.len() as u32).to_le_bytes())
-    //                             .unwrap();
-    //                     }
-    //                 }
-    //             }
-    //         } else {
-    //             // If defined in the schema but not in the entity
-    //             match p {
-    //                 GltfPropertyType {
-    //                     class_property_type:
-    //                         extensions::gltf::ext_structural_metadata::ClassPropertyType::String,
-    //                     ..
-    //                 } => {
-    //                     buffer.write_all(&[0u8]).unwrap();
-    //                     string_offset_buffer
-    //                         .write_all(&(buffer.len() as u32).to_le_bytes())
-    //                         .unwrap();
-    //                 }
-    //                 GltfPropertyType {
-    //                     class_property_type:
-    //                         extensions::gltf::ext_structural_metadata::ClassPropertyType::Scalar,
-    //                     ..
-    //                 } => {
-    //                     buffer.write_all(&[0u8; 4]).unwrap();
-    //                 }
-    //                 GltfPropertyType {
-    //                     class_property_type:
-    //                         extensions::gltf::ext_structural_metadata::ClassPropertyType::Boolean,
-    //                     ..
-    //                 } => {
-    //                     buffer.write_all(&[0u8]).unwrap();
-    //                 }
-    //                 _ => {
-    //                     // 全てJSON Stringとして扱う
-    //                     buffer.write_all(&[0u8]).unwrap();
-    //                     string_offset_buffer
-    //                         .write_all(&(buffer.len() as u32).to_le_bytes())
-    //                         .unwrap();
-    //                 }
-    //             }
-    //         }
-    //     }
-
-    //     let mut value = IndexMap::new();
-    //     value.insert(p.property_name.clone(), buffer);
-    //     buffers.insert(current_class_name.clone(), value);
-    //     // todo: array_offset_bufferの対応を実装する
-    //     if !string_offset_buffer.is_empty() {
-    //         let mut value = IndexMap::new();
-    //         value.insert(
-    //             p.property_name.clone() + "_string_offsets",
-    //             string_offset_buffer,
-    //         );
-    //         buffers.insert(current_class_name.clone() + "_string_offsets", value);
-    //     }
-    // }
-    // todo: buffersの数がpropertyの数と合わない
-    buffers
 }
 
 #[cfg(test)]

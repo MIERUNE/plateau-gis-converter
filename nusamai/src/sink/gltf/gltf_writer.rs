@@ -1,23 +1,19 @@
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 use std::fs::File;
 use std::io::{BufWriter, Write};
-use std::path::PathBuf;
+use std::path::Path;
 
-use ahash::RandomState;
 use byteorder::{ByteOrder, LittleEndian};
 use indexmap::{IndexMap, IndexSet};
 
-use itertools::Itertools;
 use nusamai_citygml::schema::Schema;
-use nusamai_citygml::{attribute, Value};
+use nusamai_citygml::Value;
 use nusamai_gltf_json::{
     extensions, Accessor, AccessorType, Buffer, BufferView, BufferViewTarget, ComponentType, Gltf,
     Mesh, MeshPrimitive, Node, PrimitiveMode, Scene,
 };
 
-use crate::sink::gltf::attributes::{
-    attributes_to_buffer, to_gltf_class, to_gltf_property_table, FeatureAttributes,
-};
+use crate::sink::gltf::attributes::{to_gltf_class, to_gltf_property_table};
 
 use super::positions::Vertex;
 use super::{Buffers, TriangulatedEntity};
@@ -35,72 +31,6 @@ pub fn build_base_gltf(
     }
 
     let (bin_content, gltf) = to_gltf(&vertices, &indices, translation);
-
-    // let mut gltf_list = Vec::new();
-    // for (_class_name, buffer) in buffers.iter() {
-    //     let (bin_content, gltf) = to_gltf(&buffer.vertices, &buffer.indices, translation);
-    //     bin_contents.extend(bin_content);
-    //     gltf_list.push(gltf);
-    // }
-
-    // let mut base_gltf = Gltf {
-    //     extensions_used: vec![
-    //         "EXT_mesh_features".to_string(),
-    //         "EXT_structural_metadata".to_string(),
-    //     ],
-    //     scenes: vec![Scene {
-    //         nodes: Some(vec![0]),
-    //         ..Default::default()
-    //     }],
-    //     nodes: vec![Node {
-    //         mesh: Some(0),
-    //         translation,
-    //         ..Default::default()
-    //     }],
-    //     ..Default::default()
-    // };
-
-    // let mut vertices_offset = 0;
-    // let mut indices_offset = 0;
-    // let mut feature_ids_offset = 0;
-
-    // for gltf in gltf_list {
-    //     // accessorsを整列
-    //     for accessor in gltf.accessors {
-    //         let mut new_accessor = accessor.clone();
-    //         new_accessor.buffer_view =
-    //             Some(accessor.buffer_view.unwrap() + base_gltf.buffer_views.len() as u32);
-    //         base_gltf.accessors.push(new_accessor);
-    //     }
-
-    //     // buffer_viewsを整列
-    //     for buffer_view in gltf.buffer_views {
-    //         let mut new_buffer_view = buffer_view.clone();
-    //         new_buffer_view.byte_offset += bin_contents.len() as u32;
-    //         base_gltf.buffer_views.push(new_buffer_view);
-    //     }
-
-    //     // meshes.primitivesを整列
-    //     for mesh in gltf.meshes.iter() {
-    //         for primitive in mesh.primitives.iter() {
-    //             let mut new_primitive = primitive.clone();
-    //             new_primitive.indices =
-    //                 Some(primitive.indices.unwrap() + bin_contents.len() as u32);
-    //             let mut new_attributes = IndexMap::new();
-    //             for (key, value) in primitive.attributes.clone() {
-    //                 new_attributes.insert(key, value + bin_contents.len() as u32);
-    //             }
-    //             let new_attributes: HashMap<String, u32> = new_attributes.into_iter().collect();
-    //             new_primitive.attributes = new_attributes;
-    //         }
-    //         base_gltf.meshes.push(mesh.clone());
-    //     }
-    // }
-
-    // let mut bin_content: Vec<u8> = Vec::new();
-    // for content in bin_contents {
-    //     bin_content.extend(content.iter());
-    // }
 
     (bin_content, gltf)
 }
@@ -256,27 +186,19 @@ pub fn append_gltf_extensions(
     for (class_name, entities) in entities_list.iter() {
         let feature_count = entities.len() as u32 - 1;
 
-        let type_def = schema.types.get::<String>(&class_name).unwrap();
+        let type_def = schema.types.get::<String>(class_name).unwrap();
 
         // classesを作成
-        let class = to_gltf_class(&class_name, type_def);
+        let class = to_gltf_class(class_name, type_def);
         let classes_length = classes.len() as u32;
         classes.extend(class);
 
         // property_tableを作成
         let (property_table, count) =
-            to_gltf_property_table(&class_name, type_def, buffer_view_length, feature_count);
+            to_gltf_property_table(class_name, type_def, buffer_view_length, feature_count);
         let property_tables_length = property_tables.len() as u32;
 
-        // このタイミングでbuffer_viewも作成しないと、論理的におかしくなる
-        // buffer_viewはbyte_offsetとbyte_lengthを必要とする
-        // また、propertyがstringなのかどうなのか、で複数のbuffer_viewを作成するかどうか変わる
-        // countの数によってbuffer_viewの個数が変更になる
-        // property_table.properties.0が属性名
-        // properties.1を見て、valuesの順番でソートする
-        // その後、entitiesから、valuesが若い属性名を取り出し、属性値に応じてbufferを作成する
-        // lengthを計算する
-        // その後、bufferとstring_offsetに相当するbuffer_viewを作成する
+        // buffer_viewを作成
         let mut properties = property_table.properties.iter().collect::<Vec<_>>();
         properties.sort_by(|a, b| a.1.values.cmp(&b.1.values));
 
@@ -288,7 +210,6 @@ pub fn append_gltf_extensions(
             let mut string_offset_buffer = Vec::new();
 
             // このproperty_nameに対応するbuffer_viewを作成する
-            // 全ての地物から一つ取り出す
             for entity in entities {
                 // 地物には複数の属性があるので、全て処理する
                 for (name, value) in entity.attributes.attributes.iter() {
@@ -330,7 +251,7 @@ pub fn append_gltf_extensions(
                                         .write_all(&(buf.len() as u32).to_le_bytes())
                                         .unwrap();
                                 } else {
-                                    buf.write_all(&json.as_bytes()).unwrap();
+                                    buf.write_all(json.as_bytes()).unwrap();
                                     string_offset_buffer
                                         .write_all(&(buf.len() as u32).to_le_bytes())
                                         .unwrap();
@@ -362,7 +283,7 @@ pub fn append_gltf_extensions(
                                         .write_all(&(buf.len() as u32).to_le_bytes())
                                         .unwrap();
                                 } else {
-                                    buf.write_all(&json.as_bytes()).unwrap();
+                                    buf.write_all(json.as_bytes()).unwrap();
                                     string_offset_buffer
                                         .write_all(&(buf.len() as u32).to_le_bytes())
                                         .unwrap();
@@ -376,7 +297,7 @@ pub fn append_gltf_extensions(
                                         .write_all(&(buf.len() as u32).to_le_bytes())
                                         .unwrap();
                                 } else {
-                                    buf.write_all(&json.as_bytes()).unwrap();
+                                    buf.write_all(json.as_bytes()).unwrap();
                                     string_offset_buffer
                                         .write_all(&(buf.len() as u32).to_le_bytes())
                                         .unwrap();
@@ -387,11 +308,9 @@ pub fn append_gltf_extensions(
                             }
                         }
                     } else {
-                        // 一致しない場合は、property_nameが存在した場合のスキーマに従い、密なバッファを作成する
-                        // propertyを確認する
                         // property.string_offsetが存在する場合は、string_offset_bufferを作成する
                         buf.write_all(&[0u8]).unwrap();
-                        if !property.string_offsets.is_none() {
+                        if property.string_offsets.is_some() {
                             string_offset_buffer
                                 .write_all(&(buf.len() as u32).to_le_bytes())
                                 .unwrap();
@@ -409,7 +328,7 @@ pub fn append_gltf_extensions(
         }
 
         // buffer_viewを作成
-        for (property_name, content) in buffer.iter() {
+        for (_, content) in buffer.iter() {
             let byte_offset = bin_content.len();
             let byte_length = content.len();
 
@@ -460,30 +379,6 @@ pub fn append_gltf_extensions(
         ..Default::default()
     });
     gltf.meshes[0].primitives[0].extensions = mesh_primitive_extensions;
-
-    // 作成したproperty_tableやclassesで指定した順にbufferに属性を追加していく
-    // また、属性情報に対応したbuffer_viewも追加する
-    // let mut attributes: Vec<FeatureAttributes> = Vec::new();
-    // for (_, entities) in entities_list.iter() {
-    //     for entity in entities.iter() {
-    //         attributes.push(entity.attributes.clone());
-    //     }
-    // }
-
-    // let attributes_bin_contents = attributes_to_buffer(&property_tables, entities_list);
-    // let mut buffer_views: Vec<BufferView> = Vec::new();
-    // for (_, content) in attributes_bin_contents.iter() {
-    //     let byte_offset = bin_content.len();
-    //     let byte_length = content.len();
-
-    //     bin_content.extend(content.iter());
-
-    //     buffer_views.push(BufferView {
-    //         byte_offset: byte_offset as u32,
-    //         byte_length: byte_length as u32,
-    //         ..Default::default()
-    //     });
-    // }
 
     gltf.buffer_views.extend(buffer_views);
 
@@ -537,7 +432,7 @@ pub fn write_gltf<W: Write>(gltf: Gltf, mut bin_content: Vec<u8>, mut writer: W)
 }
 
 // This is the code to verify the operation with Cesium
-pub fn write_3dtiles(bounding_volume: [f64; 6], output_path: &PathBuf) {
+pub fn write_3dtiles(bounding_volume: [f64; 6], output_path: &Path) {
     // write 3DTiles
     let tileset_path = output_path.with_file_name("tileset.json");
     let content_uri = output_path
@@ -566,7 +461,7 @@ pub fn write_3dtiles(bounding_volume: [f64; 6], output_path: &PathBuf) {
         ..Default::default()
     };
 
-    let mut tileset_file = File::create(&tileset_path).unwrap();
+    let mut tileset_file = File::create(tileset_path).unwrap();
     let tileset_writer = BufWriter::with_capacity(1024 * 1024, &mut tileset_file);
     serde_json::to_writer_pretty(tileset_writer, &tileset).unwrap();
 }
