@@ -104,7 +104,6 @@ impl GpkgSink {
                         let Value::Object(obj) = &entity.root else {
                             return Ok(());
                         };
-                        log::info!("Processing object - typename: {:?}", obj.typename);
                         let ObjectStereotype::Feature { id: _, geometries } = &obj.stereotype
                         else {
                             return Ok(());
