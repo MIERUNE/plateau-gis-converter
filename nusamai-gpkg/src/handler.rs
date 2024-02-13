@@ -62,6 +62,25 @@ impl GpkgHandler {
         Ok(())
     }
 
+    // Add column MIME type using GeoPackage Schema extension
+    pub async fn add_column_mime_type(
+        &self,
+        table_name: &str,
+        column_name: &str,
+        mime_type: &str,
+    ) -> Result<(), GpkgError> {
+        sqlx::query(
+            "INSERT INTO gpkg_data_columns (table_name, column_name, mime_type) VALUES (?, ?, ?);",
+        )
+        .bind(table_name)
+        .bind(column_name)
+        .bind(mime_type)
+        .execute(&self.pool)
+        .await?;
+
+        Ok(())
+    }
+
     pub async fn update_bbox(
         &self,
         table_name: String,

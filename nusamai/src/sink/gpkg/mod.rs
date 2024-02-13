@@ -78,8 +78,25 @@ impl GpkgSink {
         };
 
         // add attribute columns
-        let attribute_columns = schema_to_columns(schema);
-        handler.add_columns(attribute_columns).await.unwrap();
+        let attribute_column_infos = schema_to_column_infos(schema);
+
+        let mut attribute_column_datatypes = IndexMap::<String, String>::new();
+        for (column_name, column_info) in &attribute_column_infos {
+            attribute_column_datatypes.insert(column_name.into(), column_info.data_type.clone());
+        }
+        handler
+            .add_columns(attribute_column_datatypes)
+            .await
+            .unwrap();
+
+        for (column_name, column_info) in &attribute_column_infos {
+            if let Some(mime_type) = &column_info.mime_type {
+                handler
+                    .add_column_mime_type("mpoly3d", column_name, mime_type)
+                    .await
+                    .unwrap();
+            }
+        }
 
         // global bounding box, to be updated per entity
         let mut global_bbox = Bbox {
@@ -255,9 +272,14 @@ fn prepare_object_attributes(obj: &Object) -> IndexMap<String, String> {
     attributes
 }
 
+struct ColumnInfo {
+    data_type: String,
+    mime_type: Option<String>,
+}
+
 /// Check the schema, and prepare attribute column information for the SQLite table
-fn schema_to_columns(schema: &Schema) -> IndexMap<String, String> {
-    let mut attribute_columns = IndexMap::<String, String>::new();
+fn schema_to_column_infos(schema: &Schema) -> IndexMap<String, ColumnInfo> {
+    let mut attribute_columns = IndexMap::<String, ColumnInfo>::new();
     schema.types.iter().for_each(|(_name, ty)| match ty {
         TypeDef::Feature(feat_td) => {
             // TODO: consider `feat_td.additional_attributes`
@@ -265,34 +287,66 @@ fn schema_to_columns(schema: &Schema) -> IndexMap<String, String> {
                 // TODO: consider `attr.{min_occurs,max_occurs}`
                 match &attr.type_ref {
                     TypeRef::String => {
-                        attribute_columns.insert(attr_name.into(), "TEXT".into());
+                        attribute_columns.insert(attr_name.into(), ColumnInfo {
+                            data_type: "TEXT".into(),
+                            mime_type: None,
+                        });
                     }
                     TypeRef::Code => {
-                        attribute_columns.insert(attr_name.into(), "TEXT".into());
+                        attribute_columns.insert(attr_name.into(), ColumnInfo {
+                            data_type: "TEXT".into(),
+                            mime_type: None,
+                        });
                     }
                     TypeRef::Integer | TypeRef::NonNegativeInteger => {
-                        attribute_columns.insert(attr_name.into(), "INTEGER".into());
+                        attribute_columns.insert(attr_name.into(), ColumnInfo {
+                            data_type: "INTEGER".into(),
+                            mime_type: None,
+                        });
                     }
                     TypeRef::Double => {
-                        attribute_columns.insert(attr_name.into(), "REAL".into());
+                        attribute_columns.insert(attr_name.into(), ColumnInfo {
+                            data_type: "REAL".into(),
+                            mime_type: None,
+                        });
                     }
                     TypeRef::Boolean => {
-                        attribute_columns.insert(attr_name.into(), "BOOLEAN".into());
+                        attribute_columns.insert(attr_name.into(), ColumnInfo {
+                            data_type: "BOOLEAN".into(),
+                            mime_type: None,
+                        });
                     }
                     TypeRef::JsonString => {
-                        attribute_columns.insert(attr_name.into(), "TEXT".into());
+                        // Store as a SQLite TEXT
+                        // specify the MIEME type via GeoPackage Schema extension
+                        attribute_columns.insert(attr_name.into(), ColumnInfo {
+                            data_type: "TEXT".into(),
+                            mime_type: Some("application/json".into()),
+                        });
                     }
                     TypeRef::URI => {
-                        attribute_columns.insert(attr_name.into(), "TEXT".into());
+                        attribute_columns.insert(attr_name.into(), ColumnInfo {
+                            data_type: "TEXT".into(),
+                            mime_type: None,
+                        });
                     }
                     TypeRef::Date => {
-                        attribute_columns.insert(attr_name.into(), "DATE".into());
+                        attribute_columns.insert(attr_name.into(), ColumnInfo {
+                            data_type: "DATE".into(),
+                            mime_type: None,
+                        });
                     }
                     TypeRef::DateTime => {
-                        attribute_columns.insert(attr_name.into(), "TEXT".into());
+                        attribute_columns.insert(attr_name.into(), ColumnInfo {
+                            data_type: "DATE".into(),
+                            mime_type: None,
+                        });
                     }
                     TypeRef::Measure => {
-                        attribute_columns.insert(attr_name.into(), "REAL".into());
+                        attribute_columns.insert(attr_name.into(), ColumnInfo {
+                            data_type: "REAL".into(),
+                            mime_type: None,
+                        });
                     }
                     TypeRef::Point => {
                         // TODO: implement
