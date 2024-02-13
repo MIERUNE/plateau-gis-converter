@@ -273,7 +273,7 @@ pub struct EnumValue {
 }
 
 /// Property Table in EXT_structural_metadata
-#[derive(Serialize, Deserialize, Debug, Default, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, Default, PartialEq, Clone)]
 #[serde(rename_all = "camelCase")]
 #[serde(deny_unknown_fields)]
 pub struct PropertyTable {

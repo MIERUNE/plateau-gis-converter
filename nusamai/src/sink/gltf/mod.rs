@@ -22,7 +22,7 @@ use crate::pipeline::{Feedback, PipelineError, Receiver};
 use crate::sink::{DataSink, DataSinkProvider, SinkInfo};
 use crate::{get_parameter_value, transformer};
 
-use attributes::Attributes;
+use attributes::FeatureAttributes;
 use gltf_writer::{append_gltf_extensions, to_gltf, write_3dtiles, write_gltf};
 use positions::Vertex;
 
@@ -40,7 +40,7 @@ pub struct BoundingVolume {
 #[derive(Debug, Clone)]
 pub struct TriangulatedEntity {
     pub positions: Vec<Vertex<f64>>,
-    pub attributes: Attributes,
+    pub attributes: FeatureAttributes,
 }
 
 pub struct Buffers {
@@ -270,7 +270,7 @@ impl DataSink for GltfSink {
                         .collect();
                     let triangulated_entity = TriangulatedEntity {
                         positions: vertices,
-                        attributes: Attributes {
+                        attributes: FeatureAttributes {
                             class_name: class_name.as_ref().to_string(),
                             feature_id: feature_id as u32,
                             attributes,
