@@ -12,19 +12,17 @@ rust-version = "1.60"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [build-dependencies]
-tauri-build = { version = "1.5.0", features = [] }
+tauri-build = { version = "1.5.1", features = [] }
 
 [dependencies]
 serde_json = "1.0"
 serde = { version = "1.0", features = ["derive"] }
-tauri = { version = "1.5.2", features = [ "fs-read-dir", "dialog-all"] }
+tauri = { version = "1.5.4", features = [ "fs-read-dir", "dialog-all"] }
 nusamai = { path = "../../nusamai" }
 nusamai-geometry = { path = "../../nusamai-geometry" }
 nusamai-geojson = { path = "../../nusamai-geojson" }
 nusamai-plateau = { path = "../../nusamai-plateau" }
 nusamai-citygml = {path = "../../nusamai-citygml" }
-quick-xml = "0.31.0"
-geojson = "0.24.1"
 log = "0.4.20"
 pretty_env_logger = "0.5.0"
 
