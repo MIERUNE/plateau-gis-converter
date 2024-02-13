@@ -42,7 +42,6 @@ VALUES
         0
     );
 
--- TODO: add properties
 CREATE TABLE mpoly3d (
     id INTEGER NOT NULL PRIMARY KEY,
     geometry BLOB NOT NULL
