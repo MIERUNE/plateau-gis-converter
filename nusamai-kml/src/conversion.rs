@@ -212,21 +212,91 @@ mod tests {
             [15., 18., 0.],
         ]);
 
-        let multi_geom = polygon_to_kml(&poly);
+        let polygons = polygon_to_kml(&poly);
 
-        assert_eq!(multi_geom.len(), 1);
+        assert_eq!(polygons[0].outer.coords.len(), 5);
+        assert_eq!(
+            polygons[0].outer.coords[0],
+            Coord {
+                x: 10.,
+                y: 10.,
+                z: Some(0.)
+            }
+        );
+        assert_eq!(
+            polygons[0].outer.coords[1],
+            Coord {
+                x: 10.,
+                y: 20.,
+                z: Some(0.)
+            }
+        );
+        assert_eq!(
+            polygons[0].outer.coords[2],
+            Coord {
+                x: 20.,
+                y: 20.,
+                z: Some(0.)
+            }
+        );
+        assert_eq!(
+            polygons[0].outer.coords[3],
+            Coord {
+                x: 20.,
+                y: 10.,
+                z: Some(0.)
+            }
+        );
+        assert_eq!(
+            polygons[0].outer.coords[4],
+            Coord {
+                x: 10.,
+                y: 10.,
+                z: Some(0.)
+            }
+        );
 
-        assert_eq!(multi_geom[0].outer.coords[0], Coord { x: 10., y: 10., z: Some(0.) });
-        assert_eq!(multi_geom[0].outer.coords[1], Coord { x: 10., y: 20., z: Some(0.) });
-        assert_eq!(multi_geom[0].outer.coords[2], Coord { x: 20., y: 20., z: Some(0.) });
-        assert_eq!(multi_geom[0].outer.coords[3], Coord { x: 20., y: 10., z: Some(0.) });
-        assert_eq!(multi_geom[0].outer.coords[4], Coord { x: 10., y: 10., z: Some(0.) });
-
-        assert_eq!(multi_geom[0].inner[0].coords.len(), 4);
-        assert_eq!(multi_geom[0].inner[0].coords[0], Coord { x: 15., y: 15., z: Some(0.) });
-        assert_eq!(multi_geom[0].inner[0].coords[1], Coord { x: 18., y: 10., z: Some(0.) });
-        assert_eq!(multi_geom[0].inner[0].coords[2], Coord { x: 18., y: 18., z: Some(0.) });
-        assert_eq!(multi_geom[0].inner[0].coords[3], Coord { x: 15., y: 18., z: Some(0.) });
+        assert_eq!(polygons[0].inner[0].coords.len(), 5);
+        assert_eq!(
+            polygons[0].inner[0].coords[0],
+            Coord {
+                x: 15.,
+                y: 15.,
+                z: Some(0.)
+            }
+        );
+        assert_eq!(
+            polygons[0].inner[0].coords[1],
+            Coord {
+                x: 18.,
+                y: 10.,
+                z: Some(0.)
+            }
+        );
+        assert_eq!(
+            polygons[0].inner[0].coords[2],
+            Coord {
+                x: 18.,
+                y: 18.,
+                z: Some(0.)
+            }
+        );
+        assert_eq!(
+            polygons[0].inner[0].coords[3],
+            Coord {
+                x: 15.,
+                y: 18.,
+                z: Some(0.)
+            }
+        );
+        assert_eq!(
+            polygons[0].inner[0].coords[4],
+            Coord {
+                x: 15.,
+                y: 15.,
+                z: Some(0.)
+            }
+        );
     }
 
     #[test]
@@ -254,9 +324,92 @@ mod tests {
         poly.add_ring([[4], [5], [6], [7], [4]]);
         poly.add_ring([[8], [9], [10], [11], [8]]);
 
-        let multi_geom = indexed_polygon_to_kml(&vertices, &poly);
+        let polygons = indexed_polygon_to_kml(&vertices, &poly);
 
-        assert_eq!(&multi_geom.len(), &1);
-        
+        assert_eq!(polygons.len(), 1);
+
+        assert_eq!(polygons[0].outer.coords.len(), 5);
+        assert_eq!(
+            polygons[0].outer.coords[0],
+            Coord {
+                x: 0.,
+                y: 0.,
+                z: Some(111.)
+            }
+        );
+        assert_eq!(
+            polygons[0].outer.coords[1],
+            Coord {
+                x: 5.,
+                y: 0.,
+                z: Some(111.)
+            }
+        );
+        assert_eq!(
+            polygons[0].outer.coords[2],
+            Coord {
+                x: 5.,
+                y: 5.,
+                z: Some(111.)
+            }
+        );
+        assert_eq!(
+            polygons[0].outer.coords[3],
+            Coord {
+                x: 0.,
+                y: 5.,
+                z: Some(111.)
+            }
+        );
+        assert_eq!(
+            polygons[0].outer.coords[4],
+            Coord {
+                x: 0.,
+                y: 0.,
+                z: Some(111.)
+            }
+        );
+
+        assert_eq!(polygons[0].inner[0].coords.len(), 5);
+        assert_eq!(
+            polygons[0].inner[0].coords[0],
+            Coord {
+                x: 1.,
+                y: 1.,
+                z: Some(111.)
+            }
+        );
+        assert_eq!(
+            polygons[0].inner[0].coords[1],
+            Coord {
+                x: 2.,
+                y: 1.,
+                z: Some(111.)
+            }
+        );
+        assert_eq!(
+            polygons[0].inner[0].coords[2],
+            Coord {
+                x: 2.,
+                y: 2.,
+                z: Some(111.)
+            }
+        );
+        assert_eq!(
+            polygons[0].inner[0].coords[3],
+            Coord {
+                x: 1.,
+                y: 2.,
+                z: Some(111.)
+            }
+        );
+        assert_eq!(
+            polygons[0].inner[0].coords[4],
+            Coord {
+                x: 1.,
+                y: 1.,
+                z: Some(111.)
+            }
+        );
     }
 }
