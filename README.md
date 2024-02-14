@@ -73,3 +73,14 @@ Build:
 cd ./app
 npx tauri build
 ```
+
+### Test
+
+#### Coverage
+
+Codecov: https://app.codecov.io/gh/MIERUNE/nusamai
+
+```bash
+cargo llvm-cov --workspace --exclude app --html --all-features
+```
+
