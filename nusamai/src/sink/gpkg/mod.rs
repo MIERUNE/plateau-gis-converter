@@ -147,10 +147,8 @@ impl GpkgSink {
                                     // TODO: fatal error
                                 }
 
-                                // Prepare attributes
                                 let attributes = prepare_object_attributes(obj);
 
-                                // Bounding box
                                 let bbox =
                                     get_indexed_multipolygon_bbox(&geom_store.vertices, &mpoly);
 
