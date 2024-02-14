@@ -44,24 +44,6 @@ impl GpkgHandler {
         Ok(Self { pool })
     }
 
-    /// Update the bounding box of a table (min_x, min_y, max_x, max_y)
-    pub async fn update_bbox(
-        &self,
-        table_name: &str,
-        (min_x, min_y, max_x, max_y): (f64, f64, f64, f64),
-    ) -> Result<(), GpkgError> {
-        sqlx::query("UPDATE gpkg_contents SET min_x = ?, min_y = ?, max_x = ?, max_y = ? WHERE table_name = ?;"
-)
-            .bind(min_x)
-            .bind(min_y)
-            .bind(max_x)
-            .bind(max_y)
-            .bind(table_name)
-            .execute(&self.pool)
-            .await?;
-        Ok(())
-    }
-
     pub async fn bbox(&self, table_name: &str) -> Result<(f64, f64, f64, f64), GpkgError> {
         let result = sqlx::query(
             "SELECT min_x, min_y, max_x, max_y FROM gpkg_contents WHERE table_name = ?;",
@@ -288,6 +270,24 @@ impl<'c> GpkgTransaction<'c> {
 
         Ok(())
     }
+
+    /// Update the bounding box of a table (min_x, min_y, max_x, max_y)
+    pub async fn update_bbox(
+        &mut self,
+        table_name: &str,
+        (min_x, min_y, max_x, max_y): (f64, f64, f64, f64),
+    ) -> Result<(), GpkgError> {
+        let executor = self.tx.acquire().await.unwrap();
+        let query = sqlx::query("UPDATE gpkg_contents SET min_x = ?, min_y = ?, max_x = ?, max_y = ? WHERE table_name = ?;"
+)
+            .bind(min_x)
+            .bind(min_y)
+            .bind(max_x)
+            .bind(max_y)
+            .bind(table_name);
+        query.execute(&mut *executor).await?;
+        Ok(())
+    }
 }
 
 #[cfg(test)]
@@ -487,10 +487,12 @@ mod tests {
         assert_eq!(max_x, 0.0);
         assert_eq!(max_y, 0.0);
 
-        handler
-            .update_bbox(table_name, (-111.0, 222.0, 333.0, -444.0))
+        let mut tx = handler.begin().await.unwrap();
+        tx.update_bbox(table_name, (-111.0, 222.0, 333.0, -444.0))
             .await
             .unwrap();
+        tx.commit().await.unwrap();
+
         let (min_x, min_y, max_x, max_y) = handler.bbox(table_name).await.unwrap();
         assert_eq!(min_x, -111.0);
         assert_eq!(min_y, 222.0);

@@ -199,14 +199,14 @@ impl GpkgSink {
             // update the bounding box values
             table_bboxes.get_mut(&table_name).unwrap().merge(&bbox);
         }
-        tx.commit().await.unwrap();
 
         for (table_name, _bbox) in &table_bboxes {
-            handler
-                .update_bbox(table_name, table_bboxes.get(table_name).unwrap().to_tuple())
+            tx.update_bbox(table_name, table_bboxes.get(table_name).unwrap().to_tuple())
                 .await
                 .unwrap();
         }
+
+        tx.commit().await.unwrap();
 
         match producers.await.unwrap() {
             Ok(_) | Err(PipelineError::Canceled) => Ok(()),
