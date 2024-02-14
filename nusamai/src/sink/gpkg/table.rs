@@ -11,7 +11,7 @@ pub fn schema_to_table_infos(schema: &Schema) -> IndexMap<String, TableInfo> {
             name.clone(),
             TableInfo {
                 name: name.clone(),
-                has_geometry: true, // feature or attribute table
+                has_geometry: true, // TODO: true for "features" table, false for "attributes" table
                 columns: typedef_to_columns(ty),
             },
         );
