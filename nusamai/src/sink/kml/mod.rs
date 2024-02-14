@@ -16,7 +16,9 @@ use nusamai_plateau::Entity;
 use rayon::prelude::*;
 
 use kml::{
-    types::{Geometry, Kml, MultiGeometry, Placemark, Polygon as KmlPolygon},
+    types::{
+        Geometry, Kml, MultiGeometry, Placemark, Polygon as KmlPolygon, SimpleData, Element
+    },
     KmlWriter,
 };
 
@@ -79,6 +81,24 @@ impl DataSink for KmlSink {
 
                         let polygons = entity_to_kml_polygons(&parcel.entity);
 
+                        let _properties = entity_to_properties(&parcel.entity).unwrap_or_default();
+                        let _schema_data_items = property_to_schema_data_entries(&_properties);
+                        let extended_data_entry = Element {
+                            name: "ExtendedData".to_string(),
+                            attrs: HashMap::new(),
+                            content: None,
+                            children: _schema_data_items
+                                .into_iter()
+                                .map(|simple_data| Element {
+                                    name: "SimpleData".to_string(),
+                                    attrs: simple_data.attrs,
+                                    content: Some(simple_data.value),
+                                    children: Vec::new(),
+                                })
+                                .collect()
+                        };
+
+
                         let geoms = polygons.into_iter().map(Geometry::Polygon).collect();
                         let multi_geom = MultiGeometry {
                             geometries: geoms,
@@ -87,8 +107,12 @@ impl DataSink for KmlSink {
 
                         let placemark = Placemark {
                             geometry: Some(Geometry::MultiGeometry(multi_geom)),
-                            ..Default::default()
+                            children: vec![extended_data_entry],
+                            name: None,
+                            description: None,
+                            attrs: HashMap::new(),
                         };
+                        
 
                         if sender.send(placemark).is_err() {
                             return Err(PipelineError::Canceled);
@@ -143,8 +167,24 @@ fn extract_properties(value: &nusamai_citygml::object::Value) -> Option<geojson:
     }
 }
 
+pub fn entity_to_properties(entity: &Entity) -> Option<geojson::JsonObject> {
+    extract_properties(&entity.root)
+}
+
+pub fn property_to_schema_data_entries(properties: &geojson::JsonObject) -> Vec<SimpleData> {
+    let mut simple_data_entries = Vec::new();
+    for (key, value) in properties.iter() {
+        let simpledata = SimpleData {
+            name: key.to_string(),
+            value: value.to_string(),
+            attrs: HashMap::new(),
+        };
+        simple_data_entries.push(simpledata);
+    }
+    simple_data_entries
+}
+
 pub fn entity_to_kml_polygons(entity: &Entity) -> Vec<KmlPolygon> {
-    let _properties = extract_properties(&entity.root);
     let geom_store = entity.geometry_store.read().unwrap();
 
     let Value::Object(obj) = &entity.root else {
