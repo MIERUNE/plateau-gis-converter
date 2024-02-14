@@ -1,7 +1,7 @@
 //! GeoPackage sink
 
 mod bbox;
-mod schema;
+mod table;
 
 use std::path::PathBuf;
 use url::Url;
@@ -16,7 +16,7 @@ use crate::pipeline::{Feedback, PipelineError, Receiver, Result};
 use crate::sink::{DataSink, DataSinkProvider, SinkInfo};
 use crate::{get_parameter_value, transformer};
 use bbox::Bbox;
-use schema::schema_to_table_infos;
+use table::schema_to_table_infos;
 
 use nusamai_citygml::object::{Object, ObjectStereotype, Value};
 use nusamai_citygml::schema::Schema;
@@ -82,14 +82,13 @@ impl GpkgSink {
             .unwrap()
         };
 
-        // Set up the feature / attribute tables
+        // Set up the feature / attribute tables, and track the bounding box per table
         let table_infos = schema_to_table_infos(schema);
-        for tf in table_infos {
-            handler.add_table(&tf).await.unwrap();
+        let mut table_bboxes = IndexMap::<String, Bbox>::new();
+        for tf in &table_infos {
+            handler.add_table(tf).await.unwrap();
+            table_bboxes.insert(tf.name.clone(), Default::default());
         }
-
-        // global bounding box, to be updated per entity
-        let mut global_bbox: Bbox = Default::default();
 
         let (sender, mut receiver) = tokio::sync::mpsc::channel(100);
 
@@ -108,52 +107,67 @@ impl GpkgSink {
                         let Value::Object(obj) = &entity.root else {
                             return Ok(());
                         };
-                        let ObjectStereotype::Feature { id: _, geometries } = &obj.stereotype
-                        else {
-                            return Ok(());
-                        };
 
-                        let mut mpoly = nusamai_geometry::MultiPolygon::new();
+                        match &obj.stereotype {
+                            ObjectStereotype::Feature {
+                                id: _obj_id,
+                                geometries,
+                            } => {
+                                let mut mpoly = nusamai_geometry::MultiPolygon::new();
 
-                        geometries.iter().for_each(|entry| match entry.ty {
-                            GeometryType::Solid
-                            | GeometryType::Surface
-                            | GeometryType::Triangle => {
-                                for idx_poly in geom_store.multipolygon.iter_range(
-                                    entry.pos as usize..(entry.pos + entry.len) as usize,
-                                ) {
-                                    mpoly.push(idx_poly);
+                                geometries.iter().for_each(|entry| match entry.ty {
+                                    GeometryType::Solid
+                                    | GeometryType::Surface
+                                    | GeometryType::Triangle => {
+                                        for idx_poly in geom_store.multipolygon.iter_range(
+                                            entry.pos as usize..(entry.pos + entry.len) as usize,
+                                        ) {
+                                            mpoly.push(idx_poly);
+                                        }
+                                    }
+                                    GeometryType::Curve => unimplemented!(),
+                                    GeometryType::Point => unimplemented!(),
+                                });
+
+                                if mpoly.is_empty() {
+                                    return Ok(());
                                 }
+
+                                let mut bytes = Vec::new();
+                                if write_indexed_multipolygon(
+                                    &mut bytes,
+                                    &geom_store.vertices,
+                                    &mpoly,
+                                    4326,
+                                )
+                                .is_err()
+                                {
+                                    // TODO: fatal error
+                                }
+
+                                // Prepare attributes
+                                let attributes = prepare_object_attributes(obj);
+
+                                // Bounding box
+                                let bbox =
+                                    get_indexed_multipolygon_bbox(&geom_store.vertices, &mpoly);
+
+                                let table_name = obj.typename.to_string();
+
+                                if sender
+                                    .blocking_send((table_name, bytes, attributes, bbox))
+                                    .is_err()
+                                {
+                                    return Err(PipelineError::Canceled);
+                                };
                             }
-                            GeometryType::Curve => unimplemented!(),
-                            GeometryType::Point => unimplemented!(),
-                        });
-
-                        if mpoly.is_empty() {
-                            return Ok(());
+                            ObjectStereotype::Object { id: _obj_id } => {
+                                // TODO: implement
+                            }
+                            ObjectStereotype::Data => {
+                                // TODO: implement
+                            }
                         }
-
-                        let mut bytes = Vec::new();
-                        if write_indexed_multipolygon(
-                            &mut bytes,
-                            &geom_store.vertices,
-                            &mpoly,
-                            4326,
-                        )
-                        .is_err()
-                        {
-                            // TODO: fatal error
-                        }
-
-                        // Prepare attributes
-                        let attributes = prepare_object_attributes(obj);
-
-                        // Bounding box
-                        let bbox = get_indexed_multipolygon_bbox(&geom_store.vertices, &mpoly);
-
-                        if sender.blocking_send((bytes, attributes, bbox)).is_err() {
-                            return Err(PipelineError::Canceled);
-                        };
 
                         Ok(())
                     })
@@ -161,19 +175,24 @@ impl GpkgSink {
         };
 
         let mut tx = handler.begin().await.unwrap();
-        while let Some((gpkg_bin, attributes, bbox)) = receiver.recv().await {
+        while let Some((table_name, gpkg_bin, attributes, bbox)) = receiver.recv().await {
             feedback.ensure_not_canceled()?;
-            tx.insert_feature(&gpkg_bin, &attributes).await.unwrap();
+            tx.insert_feature(&table_name, &gpkg_bin, &attributes)
+                .await
+                .unwrap();
 
-            // track the global bounding box values
-            global_bbox = global_bbox.merged_with(&bbox);
+            // update the bounding box values
+            // update the value inside IndexMap table_bboxes
+            table_bboxes.get_mut(&table_name).unwrap().merge(&bbox);
         }
         tx.commit().await.unwrap();
 
-        handler
-            .update_bbox("mpoly3d".into(), global_bbox.to_tuple())
-            .await
-            .unwrap();
+        for (table_name, _bbox) in &table_bboxes {
+            handler
+                .update_bbox(table_name, table_bboxes.get(table_name).unwrap().to_tuple())
+                .await
+                .unwrap();
+        }
 
         match producers.await.unwrap() {
             Ok(_) | Err(PipelineError::Canceled) => Ok(()),

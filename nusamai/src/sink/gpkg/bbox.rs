@@ -23,6 +23,22 @@ impl Bbox {
         (self.min_x, self.min_y, self.max_x, self.max_y)
     }
 
+    /// Update the bounding box with a new point
+    pub fn update(&mut self, x: f64, y: f64) {
+        self.min_x = self.min_x.min(x);
+        self.min_y = self.min_y.min(y);
+        self.max_x = self.max_x.max(x);
+        self.max_y = self.max_y.max(y);
+    }
+
+    /// Merge with another bounding box
+    pub fn merge(&mut self, other: &Bbox) {
+        self.min_x = self.min_x.min(other.min_x);
+        self.min_y = self.min_y.min(other.min_y);
+        self.max_x = self.max_x.max(other.max_x);
+        self.max_y = self.max_y.max(other.max_y);
+    }
+
     /// Update the bounding box with a new point and return the updated bounding box
     #[must_use]
     pub fn updated_with(&mut self, x: f64, y: f64) -> Self {

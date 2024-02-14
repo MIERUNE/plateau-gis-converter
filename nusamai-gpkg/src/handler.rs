@@ -48,7 +48,8 @@ impl GpkgHandler {
     pub async fn add_table(&self, table_info: &TableInfo) -> Result<(), GpkgError> {
         // Create the table
         let mut query = format!(
-            "CREATE TABLE {} (id STRING NOT NULL PRIMARY KEY",
+            // "CREATE TABLE \"{}\" (id STRING NOT NULL PRIMARY KEY",
+            "CREATE TABLE \"{}\" (id INTEGER NOT NULL PRIMARY KEY",
             table_info.name
         );
         if table_info.has_geometry {
@@ -248,17 +249,18 @@ impl<'c> GpkgTransaction<'c> {
     }
 
     /// Add a MultiPolygonZ feature to the GeoPackage database
-    // TODO: generalize method
     // TODO: handle MultiLineString, MultiPoint
     pub async fn insert_feature(
         &mut self,
+        table_name: &str,
         bytes: &[u8],
         attributes: &IndexMap<String, String>,
     ) -> Result<(), GpkgError> {
         let executor = self.tx.acquire().await.unwrap();
 
         if attributes.is_empty() {
-            sqlx::query("INSERT INTO mpoly3d (geometry) VALUES (?)")
+            sqlx::query("INSERT INTO \"{}\" (geometry) VALUES (?)")
+                .bind(table_name)
                 .bind(bytes)
                 .execute(&mut *executor)
                 .await?;
@@ -266,7 +268,8 @@ impl<'c> GpkgTransaction<'c> {
         }
 
         let query_string = format!(
-            "INSERT INTO mpoly3d (geometry, {}) VALUES (?, {})",
+            "INSERT INTO \"{}\" (geometry, {}) VALUES (?, {})",
+            table_name,
             attributes
                 .keys()
                 .map(|key| key.to_string())

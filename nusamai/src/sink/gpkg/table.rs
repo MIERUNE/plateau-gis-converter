@@ -9,7 +9,7 @@ pub fn schema_to_table_infos(schema: &Schema) -> Vec<TableInfo> {
         .map(|(name, ty)| {
             TableInfo {
                 name: name.clone(),
-                has_geometry: false, // feature or attribute table
+                has_geometry: true, // feature or attribute table
                 columns: typedef_to_columns(ty),
             }
         })
