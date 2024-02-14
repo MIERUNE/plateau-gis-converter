@@ -189,7 +189,6 @@ impl GpkgSink {
                 .unwrap();
 
             // update the bounding box values
-            // update the value inside IndexMap table_bboxes
             table_bboxes.get_mut(&table_name).unwrap().merge(&bbox);
         }
         tx.commit().await.unwrap();
