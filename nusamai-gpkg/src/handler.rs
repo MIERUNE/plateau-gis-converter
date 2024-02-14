@@ -44,56 +44,6 @@ impl GpkgHandler {
         Ok(Self { pool })
     }
 
-    /// Set up a table for the features / attributes
-    pub async fn add_table(&self, table_info: &TableInfo) -> Result<(), GpkgError> {
-        // Create the table
-        let mut query = format!(
-            "CREATE TABLE \"{}\" (id STRING NOT NULL PRIMARY KEY",
-            table_info.name
-        );
-        if table_info.has_geometry {
-            query.push_str(", geometry BLOB NOT NULL");
-        }
-        table_info.columns.iter().for_each(|column| {
-            query.push_str(&format!(", {} {}", column.name, column.data_type));
-        });
-        query.push_str(");");
-        sqlx::query(&query).execute(&self.pool).await?;
-
-        // Add the table to `gpkg_contents`
-        sqlx::query(
-            "INSERT INTO gpkg_contents (table_name, data_type, identifier, srs_id) VALUES (?, ?, ?, ?);",
-        )
-        .bind(table_info.name.as_str())
-        .bind(if table_info.has_geometry {
-            "features"
-        } else {
-            "attributes"
-        })
-        .bind(table_info.name.as_str())
-        .bind(4326) // Fixed for now - TODO: Change according to the data
-        .execute(&self.pool)
-        .await?;
-
-        // Add the table to `gpkg_geometry_columns`
-        if table_info.has_geometry {
-            sqlx::query(
-                "INSERT INTO gpkg_geometry_columns (table_name, column_name, geometry_type_name, srs_id, z, m) VALUES (?, ?, ?, ?, ?, ?);"
-            ).bind(table_info.name.as_str())
-            .bind("geometry")
-            .bind("MULTIPOLYGON") // Fixed for now - TODO: Change according to the data
-            .bind(4326) // Fixed for now - TODO: Change according to the data
-            .bind(1)
-            .bind(0)
-            .execute(&self.pool)
-            .await?;
-        }
-
-        // TODO: add MIME type to `gpkg_data_columns`
-
-        Ok(())
-    }
-
     /// Update the bounding box of a table (min_x, min_y, max_x, max_y)
     pub async fn update_bbox(
         &self,
@@ -369,7 +319,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_add_table() {
-        let handler = GpkgHandler::from_url(&Url::parse("sqlite::memory:").unwrap())
+        let mut handler = GpkgHandler::from_url(&Url::parse("sqlite::memory:").unwrap())
             .await
             .unwrap();
 
@@ -402,7 +352,9 @@ mod tests {
             columns,
         };
 
-        handler.add_table(&table_info).await.unwrap();
+        let mut tx = handler.begin().await.unwrap();
+        tx.add_table(&table_info).await.unwrap();
+        tx.commit().await.unwrap();
 
         let table_names = handler.table_names().await;
         assert_eq!(
@@ -455,7 +407,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_add_table_no_geometry() {
-        let handler = GpkgHandler::from_url(&Url::parse("sqlite::memory:").unwrap())
+        let mut handler = GpkgHandler::from_url(&Url::parse("sqlite::memory:").unwrap())
             .await
             .unwrap();
 
@@ -471,7 +423,9 @@ mod tests {
             columns,
         };
 
-        handler.add_table(&table_info).await.unwrap();
+        let mut tx = handler.begin().await.unwrap();
+        tx.add_table(&table_info).await.unwrap();
+        tx.commit().await.unwrap();
 
         let table_names = handler.table_names().await;
         assert_eq!(
@@ -512,7 +466,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_bbox() {
-        let handler = GpkgHandler::from_url(&Url::parse("sqlite::memory:").unwrap())
+        let mut handler = GpkgHandler::from_url(&Url::parse("sqlite::memory:").unwrap())
             .await
             .unwrap();
 
@@ -522,7 +476,10 @@ mod tests {
             has_geometry: true,
             columns: vec![],
         };
-        handler.add_table(&table_info).await.unwrap();
+
+        let mut tx = handler.begin().await.unwrap();
+        tx.add_table(&table_info).await.unwrap();
+        tx.commit().await.unwrap();
 
         // initial values written in `mpoly3d.sql`
         let (min_x, min_y, max_x, max_y) = handler.bbox(table_name).await.unwrap();
