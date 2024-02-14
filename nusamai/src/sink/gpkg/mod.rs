@@ -180,7 +180,7 @@ impl GpkgSink {
             })
         };
 
-        let mut tx: nusamai_gpkg::GpkgTransaction<'_> = handler.begin().await.unwrap();
+        let mut tx = handler.begin().await.unwrap();
         while let Some((table_name, obj_id, gpkg_bin, attributes, bbox)) = receiver.recv().await {
             feedback.ensure_not_canceled()?;
 
