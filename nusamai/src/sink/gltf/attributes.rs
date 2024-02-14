@@ -27,7 +27,6 @@ pub struct FeatureAttributes {
 }
 
 fn to_gltf_schema(type_ref: &TypeRef) -> GltfPropertyType {
-    // todo: 型定義を正確に行う
     match type_ref {
         TypeRef::String => GltfPropertyType {
             class_property_type:
@@ -39,7 +38,7 @@ fn to_gltf_schema(type_ref: &TypeRef) -> GltfPropertyType {
             class_property_type:
                 extensions::gltf::ext_structural_metadata::ClassPropertyType::Scalar,
             component_type: Some(
-                extensions::gltf::ext_structural_metadata::ClassPropertyComponentType::Int32,
+                extensions::gltf::ext_structural_metadata::ClassPropertyComponentType::Int64,
             ),
             ..Default::default()
         },
@@ -61,7 +60,7 @@ fn to_gltf_schema(type_ref: &TypeRef) -> GltfPropertyType {
             class_property_type:
                 extensions::gltf::ext_structural_metadata::ClassPropertyType::Scalar,
             component_type: Some(
-                extensions::gltf::ext_structural_metadata::ClassPropertyComponentType::Int32,
+                extensions::gltf::ext_structural_metadata::ClassPropertyComponentType::Float64,
             ),
             ..Default::default()
         },
@@ -75,7 +74,7 @@ fn to_gltf_schema(type_ref: &TypeRef) -> GltfPropertyType {
             class_property_type:
                 extensions::gltf::ext_structural_metadata::ClassPropertyType::Scalar,
             component_type: Some(
-                extensions::gltf::ext_structural_metadata::ClassPropertyComponentType::Int32,
+                extensions::gltf::ext_structural_metadata::ClassPropertyComponentType::UInt64,
             ),
             ..Default::default()
         },
@@ -98,13 +97,25 @@ fn to_gltf_schema(type_ref: &TypeRef) -> GltfPropertyType {
             component_type: None,
             ..Default::default()
         },
-        // todo: その他の型についても対応（暫定的にStringとして取り扱う）
-        _ => GltfPropertyType {
+        TypeRef::URI => GltfPropertyType {
             class_property_type:
                 extensions::gltf::ext_structural_metadata::ClassPropertyType::String,
             component_type: None,
             ..Default::default()
         },
+        TypeRef::Date => GltfPropertyType {
+            class_property_type:
+                extensions::gltf::ext_structural_metadata::ClassPropertyType::String,
+            component_type: None,
+            ..Default::default()
+        },
+        TypeRef::DateTime => GltfPropertyType {
+            class_property_type:
+                extensions::gltf::ext_structural_metadata::ClassPropertyType::String,
+            component_type: None,
+            ..Default::default()
+        },
+        TypeRef::Unknown => todo!(),
     }
 }
 

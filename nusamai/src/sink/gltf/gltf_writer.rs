@@ -1,12 +1,14 @@
 use std::collections::HashMap;
 use std::fs::File;
-use std::io::{BufWriter, Write};
+use std::io::BufWriter;
+use std::io::Write;
 use std::path::Path;
 
-use byteorder::{ByteOrder, LittleEndian};
+use byteorder::{ByteOrder, LittleEndian, WriteBytesExt};
 use indexmap::IndexMap;
 
 use nusamai_citygml::schema::Schema;
+use nusamai_citygml::Measure;
 use nusamai_citygml::Value;
 use nusamai_gltf_json::{
     extensions, Accessor, AccessorType, Buffer, BufferView, BufferViewTarget, ComponentType, Gltf,
@@ -181,6 +183,88 @@ pub fn build_base_gltf(
     (bin_content, gltf)
 }
 
+// value to bytes
+trait ToBytes {
+    fn write_to_bytes(&self, buffer: &mut Vec<u8>);
+}
+
+impl ToBytes for i64 {
+    fn write_to_bytes(&self, buffer: &mut Vec<u8>) {
+        buffer.write_i64::<LittleEndian>(*self).unwrap();
+    }
+}
+
+impl ToBytes for u64 {
+    fn write_to_bytes(&self, buffer: &mut Vec<u8>) {
+        buffer.write_u64::<LittleEndian>(*self).unwrap();
+    }
+}
+
+impl ToBytes for f64 {
+    fn write_to_bytes(&self, buffer: &mut Vec<u8>) {
+        buffer.write_f64::<LittleEndian>(*self).unwrap();
+    }
+}
+
+impl ToBytes for bool {
+    fn write_to_bytes(&self, buffer: &mut Vec<u8>) {
+        let value = if *self { 1 } else { 0 };
+        buffer.write_i32::<LittleEndian>(value).unwrap();
+    }
+}
+
+impl ToBytes for Measure {
+    fn write_to_bytes(&self, buffer: &mut Vec<u8>) {
+        let value = self.value();
+        buffer.write_f64::<LittleEndian>(value).unwrap();
+    }
+}
+
+impl ToBytes for Value {
+    fn write_to_bytes(&self, buffer: &mut Vec<u8>) {
+        // todo: 残りの方を定義する
+        match self {
+            Value::Integer(i) => i.write_to_bytes(buffer),
+            Value::NonNegativeInteger(u) => u.write_to_bytes(buffer),
+            Value::Double(d) => d.write_to_bytes(buffer),
+            Value::Boolean(b) => b.write_to_bytes(buffer),
+            Value::Measure(m) => m.write_to_bytes(buffer),
+            _ => unimplemented!(),
+        }
+    }
+}
+
+trait ToBuffer {
+    fn write_to_buffer(&self, buffer: &mut Vec<u8>, string_offset_buffer: &mut Vec<u32>);
+}
+
+impl ToBuffer for Value {
+    fn write_to_buffer(&self, buffer: &mut Vec<u8>, string_offset_buffer: &mut Vec<u32>) {
+        match self {
+            Value::String(s) => {
+                string_offset_buffer.push(buffer.len() as u32);
+                buffer.write_all(s.as_bytes()).unwrap();
+            }
+            Value::Code(c) => {
+                let json = c.value();
+                string_offset_buffer.push(buffer.len() as u32);
+                buffer.write_all(json.as_bytes()).unwrap();
+            }
+            Value::Array(a) => {
+                let json = serde_json::to_string(a).unwrap();
+                string_offset_buffer.push(buffer.len() as u32);
+                buffer.write_all(json.as_bytes()).unwrap();
+            }
+            Value::Object(o) => {
+                let json = serde_json::to_string(o).unwrap();
+                string_offset_buffer.push(buffer.len() as u32);
+                buffer.write_all(json.as_bytes()).unwrap();
+            }
+            _ => self.write_to_bytes(buffer),
+        }
+    }
+}
+
 pub fn append_gltf_extensions(
     gltf: &mut Gltf,
     bin_content: &mut Vec<u8>,
@@ -196,7 +280,7 @@ pub fn append_gltf_extensions(
     // glTF拡張のext_structural_metadataを作成
     // トップレベルのクラスごとに処理
     for (class_name, entities) in entities_list.iter() {
-        let feature_count = entities.len() as u32 - 1;
+        let feature_count = entities.len() as u32;
 
         let type_def = schema.types.get::<String>(class_name).unwrap();
 
@@ -216,20 +300,24 @@ pub fn append_gltf_extensions(
 
         // 抽出するべき全ての属性がproperty_nameに入る
         for (property_name, property) in properties {
-            let mut buf = Vec::new();
+            // property_nameに対応するbuffer_viewを作成する
+
+            // todo: データ型ごとの対応をする
+            // 配列の場合は、array_offsetを書き込む必要があるなど
+            let mut buffer: Vec<u8> = Vec::new();
             let mut string_offset_buffer: Vec<u32> = Vec::new();
 
             // このproperty_nameに対応するbuffer_viewを作成する
             for entity in entities {
                 // 個別のentityから、property_nameに対応する属性を取り出す
-                // なければ、無視
+                // なければ、無視する
                 let attribute_name_list = entity.attributes.attributes.keys().collect::<Vec<_>>();
                 let is_hit = attribute_name_list.contains(&property_name);
                 if !is_hit {
                     if property.string_offsets.is_some() {
-                        string_offset_buffer.push(buf.len() as u32);
+                        string_offset_buffer.push(buffer.len() as u32);
                     }
-                    buf.write_all(&0u32.to_le_bytes()).unwrap();
+                    buffer.write_all("0".to_string().as_bytes()).unwrap();
                     continue;
                 }
 
@@ -241,64 +329,19 @@ pub fn append_gltf_extensions(
                     .iter()
                     .find(|(name, _)| *name == property_name)
                 {
-                    match value {
-                        // todo: 型ごとの処理をきちんと定義する
-                        Value::String(s) => {
-                            string_offset_buffer.push(buf.len() as u32);
-                            buf.write_all(s.as_bytes()).unwrap();
-                        }
-                        Value::Integer(i) => {
-                            buf.write_all(&i.to_le_bytes()).unwrap();
-                        }
-                        Value::NonNegativeInteger(u) => {
-                            buf.write_all(&u.to_le_bytes()).unwrap();
-                        }
-                        Value::Double(d) => {
-                            buf.write_all(&d.to_le_bytes()).unwrap();
-                        }
-                        Value::Boolean(b) => {
-                            let boolean: u8 = if *b { 1 } else { 0 };
-                            buf.write_all(&boolean.to_le_bytes()).unwrap();
-                        }
-                        Value::Code(c) => {
-                            let json = c.value();
-                            string_offset_buffer.push(buf.len() as u32);
-                            buf.write_all(json.as_bytes()).unwrap();
-                        }
-                        Value::Measure(m) => {
-                            let json = m.value();
-                            buf.write_all(&json.to_le_bytes()).unwrap();
-                        }
-                        Value::URI(u) => {
-                            string_offset_buffer.push(buf.len() as u32);
-                            buf.write_all(u.value().as_bytes()).unwrap();
-                        }
-                        Value::Array(a) => {
-                            let json = serde_json::to_string(a).unwrap();
-                            string_offset_buffer.push(buf.len() as u32);
-                            buf.write_all(json.as_bytes()).unwrap();
-                        }
-                        Value::Object(o) => {
-                            let json = serde_json::to_string(o).unwrap();
-                            string_offset_buffer.push(buf.len() as u32);
-                            buf.write_all(json.as_bytes()).unwrap();
-                        }
-                        _ => {
-                            string_offset_buffer.push(buf.len() as u32);
-                            buf.write_all("".as_bytes()).unwrap();
-                        }
-                    }
+                    // bufferに書き込み
+                    value.write_to_buffer(&mut buffer, &mut string_offset_buffer);
                 }
             }
             // offsetには文字列の最後にもインデックスが必要
-            if string_offset_buffer.is_empty() {
-                string_offset_buffer.push(buf.len() as u32);
+            if !string_offset_buffer.is_empty() {
+                string_offset_buffer.push(buffer.len() as u32);
             }
 
             let byte_offset = bin_content.len();
-            let byte_length = buf.len();
+            let byte_length = buffer.len();
 
-            bin_content.extend(buf.iter());
+            bin_content.extend(buffer.iter());
 
             buffer_views.push(BufferView {
                 byte_offset: byte_offset as u32,
@@ -306,7 +349,7 @@ pub fn append_gltf_extensions(
                 ..Default::default()
             });
 
-            if property.string_offsets.is_some() {
+            if !string_offset_buffer.is_empty() {
                 let byte_offset = bin_content.len();
                 let byte_length = string_offset_buffer.len() as u32 * 4;
 

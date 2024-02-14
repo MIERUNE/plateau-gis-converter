@@ -63,7 +63,7 @@
 					shadows: true,
 				});
 
-				// viewer.extend(Cesium.viewerCesium3DTilesInspectorMixin);
+				viewer.extend(Cesium.viewerCesium3DTilesInspectorMixin);
 
 				// Set your 3DTiles
 				// https://github.com/CesiumGS/3d-tiles-samples/blob/main/glTF/glTF-Mesh-Features-Samples-Sandcastle.js
@@ -72,6 +72,9 @@
 				);
 				viewer.scene.primitives.add(tileset);
 				viewer.zoomTo(tileset);
+
+				viewer.scene.screenSpaceCameraController.enableCollisionDetection = false;
+				viewer.scene.globe.depthTestAgainstTerrain = true;
 
 				tileset.customShader = createCustomShader();
 			}
