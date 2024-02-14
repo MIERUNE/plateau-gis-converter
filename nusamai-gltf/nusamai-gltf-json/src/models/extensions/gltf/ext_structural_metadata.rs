@@ -69,7 +69,7 @@ pub struct Schema {
 }
 
 /// Class in EXT_structural_metadata
-#[derive(Serialize, Deserialize, Debug, Default, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, Default, PartialEq, Clone)]
 #[serde(deny_unknown_fields)]
 pub struct Class {
     /// The name of the class, e.g. for display purposes.

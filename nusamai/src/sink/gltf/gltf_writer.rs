@@ -222,7 +222,6 @@ impl ToBytes for Measure {
 
 impl ToBytes for Value {
     fn write_to_bytes(&self, buffer: &mut Vec<u8>) {
-        // todo: 残りの方を定義する
         match self {
             Value::Integer(i) => i.write_to_bytes(buffer),
             Value::NonNegativeInteger(u) => u.write_to_bytes(buffer),
@@ -287,7 +286,7 @@ pub fn append_gltf_extensions(
         // classesを作成
         let class = to_gltf_class(class_name, type_def);
         let classes_length = classes.len() as u32;
-        classes.extend(class);
+        classes.extend(class.clone());
 
         // property_tableを作成
         let (property_table, count) =
@@ -313,6 +312,18 @@ pub fn append_gltf_extensions(
                 // なければ、無視する
                 let attribute_name_list = entity.attributes.attributes.keys().collect::<Vec<_>>();
                 let is_hit = attribute_name_list.contains(&property_name);
+                // classから型を取り出す
+                let p = class
+                    .get(class_name)
+                    .unwrap()
+                    .properties
+                    .get(property_name)
+                    .unwrap();
+                let property_type = &p.type_;
+                let component_type = &p.component_type;
+
+                // todo: property_nameやproperty_typeに応じて、適切なバッファを作成する
+                // write_empty_buffer的な
                 if !is_hit {
                     if property.string_offsets.is_some() {
                         string_offset_buffer.push(buffer.len() as u32);
