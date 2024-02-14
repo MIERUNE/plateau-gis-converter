@@ -62,13 +62,11 @@ impl GpkgHandler {
         Ok(())
     }
 
+    /// Update the bounding box of a table (min_x, min_y, max_x, max_y)
     pub async fn update_bbox(
         &self,
         table_name: String,
-        min_x: f64,
-        min_y: f64,
-        max_x: f64,
-        max_y: f64,
+        (min_x, min_y, max_x, max_y): (f64, f64, f64, f64),
     ) -> Result<(), GpkgError> {
         sqlx::query("UPDATE gpkg_contents SET min_x = ?, min_y = ?, max_x = ?, max_y = ? WHERE table_name = ?;"
 )
@@ -278,7 +276,7 @@ mod tests {
         assert_eq!(max_y, 45.55722222);
 
         handler
-            .update_bbox("mpoly3d".into(), -111.0, 222.0, 333.0, -444.0)
+            .update_bbox("mpoly3d".into(), (-111.0, 222.0, 333.0, -444.0))
             .await
             .unwrap();
         let (min_x, min_y, max_x, max_y) = handler.bbox("mpoly3d".into()).await.unwrap();
