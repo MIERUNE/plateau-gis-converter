@@ -366,7 +366,6 @@ impl DataSink for GltfSink {
                 let writer = BufWriter::with_capacity(1024 * 1024, &mut file);
 
                 // write glTF
-                // todo: stringOffsetや、属性値の格納方法を確認する
                 let (mut bin_content, mut gltf) = build_base_gltf(&buffers, all_translation);
                 append_gltf_extensions(
                     &mut gltf,

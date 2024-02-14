@@ -147,7 +147,6 @@ pub fn build_base_gltf(
         };
         gltf.buffer_views.push(buffer_view);
 
-        // feature_idのmin, maxも書き込んだ方がわかりやすいかも
         let feature_id_min = buffer.vertices.iter().map(|v| v.feature_id).min().unwrap();
         let feature_id_max = buffer.vertices.iter().map(|v| v.feature_id).max().unwrap();
         let accessor = Accessor {
@@ -235,8 +234,8 @@ pub fn append_gltf_extensions(
                 }
 
                 // 属性名が一致するものがあれば、ちゃんと取り出す
-                // entity.attributes.attributes.get(&property_name).unwrap();が効かないので、for文で取り出す
-                if let Some((name, value)) = entity
+                // entity.attributes.attributes.get(&property_name)が効かないので、for文で取り出す
+                if let Some((_, value)) = entity
                     .attributes
                     .attributes
                     .iter()
