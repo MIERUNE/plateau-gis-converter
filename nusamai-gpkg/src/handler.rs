@@ -187,6 +187,15 @@ impl GpkgHandler {
         Ok(columns)
     }
 
+    /// Get the number of rows in the table
+    pub async fn table_row_count(&self, table_name: &str) -> Result<i64, GpkgError> {
+        let result = sqlx::query(&format!("SELECT COUNT(*) FROM \"{}\";", table_name))
+            .fetch_one(&self.pool)
+            .await?;
+        let count: i64 = result.get(0);
+        Ok(count)
+    }
+
     pub async fn gpkg_contents(&self) -> Result<Vec<(String, String, String, i32)>, GpkgError> {
         let result =
             sqlx::query("SELECT table_name, data_type, identifier, srs_id FROM gpkg_contents;")
@@ -259,11 +268,13 @@ impl<'c> GpkgTransaction<'c> {
         let executor = self.tx.acquire().await.unwrap();
 
         if attributes.is_empty() {
-            sqlx::query("INSERT INTO \"{}\" (geometry) VALUES (?)")
-                .bind(table_name)
-                .bind(bytes)
-                .execute(&mut *executor)
-                .await?;
+            sqlx::query(&format!(
+                "INSERT INTO \"{}\" (geometry) VALUES (?)",
+                table_name
+            ))
+            .bind(bytes)
+            .execute(&mut *executor)
+            .await?;
             return Ok(());
         }
 
@@ -365,7 +376,7 @@ mod tests {
         assert_eq!(
             columns,
             vec![
-                ("id".into(), "STRING".into(), 1),
+                ("id".into(), "INTEGER".into(), 1),
                 ("geometry".into(), "BLOB".into(), 1),
                 ("attr1".into(), "TEXT".into(), 0),
                 ("attr2".into(), "INTEGER".into(), 0),
@@ -435,7 +446,7 @@ mod tests {
             columns,
             vec![
                 // No geometry column
-                ("id".into(), "STRING".into(), 1),
+                ("id".into(), "INTEGER".into(), 1),
                 ("attr1".into(), "TEXT".into(), 0),
             ]
         );
@@ -486,5 +497,32 @@ mod tests {
         assert_eq!(min_y, 222.0);
         assert_eq!(max_x, 333.0);
         assert_eq!(max_y, -444.0);
+    }
+
+    #[tokio::test]
+    async fn test_table_row_count() {
+        let mut handler = GpkgHandler::from_url(&Url::parse("sqlite::memory:").unwrap())
+            .await
+            .unwrap();
+
+        let table_name = "mpoly3d";
+        let table_info = TableInfo {
+            name: table_name.into(),
+            has_geometry: true,
+            columns: vec![],
+        };
+        handler.add_table(&table_info).await.unwrap();
+
+        let count = handler.table_row_count(table_name).await.unwrap();
+        assert_eq!(count, 0);
+
+        let mut tx = handler.begin().await.unwrap();
+        tx.insert_feature(table_name, &[0, 1, 2, 3], &IndexMap::new())
+            .await
+            .unwrap();
+        tx.commit().await.unwrap();
+
+        let count = handler.table_row_count(table_name).await.unwrap();
+        assert_eq!(count, 1);
     }
 }

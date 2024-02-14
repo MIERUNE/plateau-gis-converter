@@ -269,6 +269,7 @@ fn prepare_object_attributes(obj: &Object) -> IndexMap<String, String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use nusamai_geometry::MultiPolygon;
     use nusamai_projection::crs::EPSG_JGD2011_GEOGRAPHIC_3D;
 
     #[test]
