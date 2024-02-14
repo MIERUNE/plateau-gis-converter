@@ -161,6 +161,14 @@ impl GpkgHandler {
         Ok(rows)
     }
 
+    /// Get all rows from the specified table
+    pub async fn fetch_rows(&self, table_name: &str) -> Result<Vec<SqliteRow>, GpkgError> {
+        let result = sqlx::query(&format!("SELECT * FROM {};", table_name))
+            .fetch_all(&self.pool)
+            .await?;
+        Ok(result)
+    }
+
     pub async fn begin(&mut self) -> Result<GpkgTransaction, GpkgError> {
         Ok(GpkgTransaction::new(self.pool.begin().await?))
     }
@@ -462,6 +470,67 @@ mod tests {
         // No record in `gpkg_geometry_columns`
         let gpkg_geometry_columns = handler.gpkg_geometry_columns().await.unwrap();
         assert!(gpkg_geometry_columns.is_empty());
+    }
+
+    #[tokio::test]
+    async fn test_insert_feature() {
+        let mut handler = GpkgHandler::from_url(&Url::parse("sqlite::memory:").unwrap())
+            .await
+            .unwrap();
+        let mut tx: GpkgTransaction<'_> = handler.begin().await.unwrap();
+
+        let table_name = "mpoly3d";
+        let columns = vec![
+            ColumnInfo {
+                name: "attr1".into(),
+                data_type: "TEXT".into(),
+                mime_type: None,
+            },
+            ColumnInfo {
+                name: "attr2".into(),
+                data_type: "INTEGER".into(),
+                mime_type: None,
+            },
+            ColumnInfo {
+                name: "attr3".into(),
+                data_type: "REAL".into(),
+                mime_type: None,
+            },
+            ColumnInfo {
+                name: "attr4".into(),
+                data_type: "BOOLEAN".into(),
+                mime_type: None,
+            },
+        ];
+        let table_info = TableInfo {
+            name: table_name.into(),
+            has_geometry: true,
+            columns,
+        };
+        tx.add_table(&table_info).await.unwrap();
+
+        let attributes: IndexMap<String, String> = IndexMap::from([
+            ("attr1".into(), "value1".into()),
+            ("attr2".into(), "2".into()),
+            ("attr3".into(), "3.33".into()),
+            ("attr4".into(), "1".into()),
+        ]);
+        tx.insert_feature(table_name, "id_1", &[0, 1, 2, 3], &attributes)
+            .await
+            .unwrap();
+
+        tx.commit().await.unwrap();
+
+        let rows = handler.fetch_rows(table_name).await.unwrap();
+
+        assert_eq!(rows.len(), 1);
+        let row = rows.first().unwrap();
+        assert_eq!(row.get::<String, &str>("id"), "id_1");
+        assert_eq!(row.get::<Vec<u8>, &str>("geometry"), vec![0, 1, 2, 3]);
+        assert_eq!(row.get::<String, &str>("attr1"), "value1");
+        assert_eq!(row.get::<i64, &str>("attr2"), 2);
+        assert_eq!(row.get::<f64, &str>("attr3"), 3.33);
+        assert!(row.get::<bool, &str>("attr4"));
     }
 
     #[tokio::test]
