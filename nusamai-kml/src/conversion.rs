@@ -5,7 +5,7 @@ use nusamai_geometry::{CoordNum, MultiPoint, MultiPolygon, Polygon};
 use std::{collections::HashMap, vec};
 
 const EXTRUDE: bool = false;
-const ALTITUDEMODE: AltitudeMode = AltitudeMode::RelativeToGround;
+const ALTITUDE_MODE: AltitudeMode = AltitudeMode::RelativeToGround;
 
 pub fn multipolygon_to_kml(mpoly: &MultiPolygon<3>) -> Vec<KmlPolygon> {
     multipolygon_to_kml_with_mapping(mpoly, |c| c)
@@ -25,22 +25,19 @@ fn multipolygon_to_kml_with_mapping<const D: usize, T: CoordNum>(
     mpoly
         .iter()
         .flat_map(|poly| polygon_to_kml_with_mapping(&poly, &mapping)) // Flatten the vector of vectors
-        .collect::<Vec<_>>()
+        .collect()
 }
 
 fn polygon_to_kml_polygon_with_mapping<const D: usize, T: CoordNum>(
     poly: &Polygon<D, T>,
     mapping: impl Fn([T; D]) -> [f64; 3],
 ) -> KmlPolygon {
-    let outer = polygon_to_kml_outer_boundary_with_mapping(poly, &mapping);
-    let inner = polygon_to_kml_inner_boundary_with_mapping(poly, &mapping);
-
     KmlPolygon {
-        outer,
-        inner,
+        outer: polygon_to_kml_outer_boundary_with_mapping(poly, &mapping),
+        inner: polygon_to_kml_inner_boundary_with_mapping(poly, &mapping),
         extrude: EXTRUDE,
         tessellate: false,
-        altitude_mode: ALTITUDEMODE,
+        altitude_mode: ALTITUDE_MODE,
         attrs: HashMap::new(),
     }
 }
@@ -53,18 +50,14 @@ fn polygon_to_kml_outer_boundary_with_mapping<const D: usize, T: CoordNum>(
         .exterior()
         .iter_closed()
         .map(&mapping)
-        .map(|coords| Coord {
-            x: coords[0],
-            y: coords[1],
-            z: Some(coords[2]),
-        })
+        .map(|[x, y, z]| Coord { x, y, z: Some(z) })
         .collect();
 
     LinearRing {
         coords: outer_coords,
         extrude: EXTRUDE,
         tessellate: false,
-        altitude_mode: ALTITUDEMODE,
+        altitude_mode: ALTITUDE_MODE,
         attrs: HashMap::new(),
     }
 }
@@ -77,18 +70,14 @@ fn polygon_to_kml_inner_boundary_with_mapping<const D: usize, T: CoordNum>(
         .map(|ring| {
             ring.iter_closed()
                 .map(&mapping)
-                .map(|coords| Coord {
-                    x: coords[0],
-                    y: coords[1],
-                    z: Some(coords[2]),
-                })
-                .collect::<Vec<_>>()
+                .map(|[x, y, z]| Coord { x, y, z: Some(z) })
+                .collect()
         })
         .map(|coords| LinearRing {
             coords,
             extrude: EXTRUDE,
             tessellate: false,
-            altitude_mode: ALTITUDEMODE,
+            altitude_mode: ALTITUDE_MODE,
             attrs: HashMap::new(),
         })
         .collect()
@@ -120,15 +109,11 @@ pub fn multipoint_to_kml_with_mapping<const D: usize, T: CoordNum>(
     mpoint: &MultiPoint<D, T>,
     mapping: impl Fn([T; D]) -> [f64; 3],
 ) -> MultiGeometry {
-    let points = mpoint
-        .iter()
-        .map(&mapping)
-        .map(|coords| Point::new(coords[0], coords[1], Some(coords[2])))
-        .collect::<Vec<_>>();
     MultiGeometry {
-        geometries: points
-            .into_iter()
-            .map(|pt: Point| Geometry::Point(pt))
+        geometries: mpoint
+            .iter()
+            .map(&mapping)
+            .map(|coord| Geometry::Point(Point::new(coord[0], coord[1], Some(coord[2]))))
             .collect(),
         attrs: HashMap::new(),
     }
