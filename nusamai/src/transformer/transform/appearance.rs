@@ -23,20 +23,17 @@ impl Transform for ApplyAppearanceTransform {
                 // find and apply materials
                 {
                     let mut poly_materials = vec![None; geoms.multipolygon.len()];
-                    let mut found_use = false;
 
                     for surface in &geoms.surface_spans {
                         if let Some(&mat) = theme.surface_id_to_material.get(&surface.id) {
-                            found_use = true;
                             for idx in surface.start..surface.end {
                                 poly_materials[idx as usize] = Some(mat);
                             }
                         }
                     }
-                    if found_use {
-                        // apply materials to polygons
-                        geoms.polygon_materials = poly_materials;
-                    }
+
+                    // apply materials to polygons
+                    geoms.polygon_materials = poly_materials;
                 }
 
                 // find and apply textures
@@ -44,7 +41,6 @@ impl Transform for ApplyAppearanceTransform {
                     let mut ring_id_iter = geoms.ring_ids.iter();
                     let mut poly_textures = Vec::with_capacity(geoms.multilinestring.len());
                     let mut poly_uvs = MultiPolygon::new();
-                    let mut found_use = false;
 
                     for poly in &geoms.multipolygon {
                         for (i, ring) in poly.rings().enumerate() {
@@ -66,7 +62,6 @@ impl Transform for ApplyAppearanceTransform {
                             match tex {
                                 Some((idx, uv)) if uv.len() == ring.len() => {
                                     // texture found
-                                    found_use = true;
                                     if i == 0 {
                                         poly_textures.push(Some(*idx));
                                         poly_uvs.add_exterior(uv);
@@ -87,11 +82,11 @@ impl Transform for ApplyAppearanceTransform {
                         }
                     }
 
-                    if found_use {
-                        // apply textures to polygons
-                        geoms.polygon_textures = poly_textures;
-                        geoms.polygon_uvs = poly_uvs;
-                    }
+                    // apply textures to polygons
+                    debug_assert_eq!(poly_textures.len(), geoms.multipolygon.len());
+                    debug_assert_eq!(poly_uvs.len(), geoms.multipolygon.len());
+                    geoms.polygon_textures = poly_textures;
+                    geoms.polygon_uvs = poly_uvs;
                 }
             }
         }
