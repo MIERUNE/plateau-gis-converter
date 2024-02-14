@@ -193,6 +193,15 @@ impl GpkgSink {
                 .unwrap();
         }
 
+        // Remove empty tables
+        for tf in &table_infos {
+            let row_count = handler.table_row_count(&tf.name).await.unwrap();
+            if row_count == 0 {
+                handler.remove_table(&tf.name).await.unwrap();
+                log::info!("Removed empty table: '{}'", tf.name);
+            }
+        }
+
         match producers.await.unwrap() {
             Ok(_) | Err(PipelineError::Canceled) => Ok(()),
             error @ Err(_) => error,

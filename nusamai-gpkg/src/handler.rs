@@ -95,12 +95,23 @@ impl GpkgHandler {
         Ok(())
     }
 
+    /// Drop a feature / attribute table and its associated records
     pub async fn remove_table(&self, table_name: &str) -> Result<(), GpkgError> {
+        sqlx::query("DELETE FROM gpkg_geometry_columns WHERE table_name = ?;")
+            .bind(table_name)
+            .execute(&self.pool)
+            .await?;
+
+        sqlx::query("DELETE FROM gpkg_contents WHERE table_name = ?;")
+            .bind(table_name)
+            .execute(&self.pool)
+            .await?;
+
         sqlx::query(&format!("DROP TABLE \"{}\";", table_name))
             .execute(&self.pool)
             .await?;
 
-        // TODO: remove from `gpkg_contents`, `gpkg_geometry_columns`, `gpkg_data_columns`
+        // TODO: remove from `gpkg_data_columns`
 
         Ok(())
     }
@@ -483,14 +494,21 @@ mod tests {
             .await
             .unwrap();
 
-        let table_name = "mpoly3d";
-        let table_info = TableInfo {
-            name: table_name.into(),
+        let table_name_1 = "table_1";
+        let table_info_1 = TableInfo {
+            name: table_name_1.into(),
             has_geometry: true,
             columns: vec![],
         };
+        handler.add_table(&table_info_1).await.unwrap();
 
-        handler.add_table(&table_info).await.unwrap();
+        let table_name_2 = "table_2";
+        let table_info_2 = TableInfo {
+            name: table_name_2.into(),
+            has_geometry: true,
+            columns: vec![],
+        };
+        handler.add_table(&table_info_2).await.unwrap();
 
         let table_names = handler.table_names().await;
         assert_eq!(
@@ -499,11 +517,12 @@ mod tests {
                 "gpkg_contents",
                 "gpkg_geometry_columns",
                 "gpkg_spatial_ref_sys",
-                table_name
+                table_name_1,
+                table_name_2
             ]
         );
 
-        handler.remove_table(table_name).await.unwrap();
+        handler.remove_table(table_name_1).await.unwrap();
 
         let table_names = handler.table_names().await;
         assert_eq!(
@@ -511,8 +530,33 @@ mod tests {
             vec![
                 "gpkg_contents",
                 "gpkg_geometry_columns",
-                "gpkg_spatial_ref_sys"
+                "gpkg_spatial_ref_sys",
+                table_name_2
             ]
+        );
+
+        let gpkg_contents = handler.gpkg_contents().await.unwrap();
+        assert_eq!(
+            gpkg_contents,
+            vec![(
+                table_name_2.into(),
+                "features".into(),
+                table_name_2.into(),
+                4326
+            )]
+        );
+
+        let gpkg_geometry_columns = handler.gpkg_geometry_columns().await.unwrap();
+        assert_eq!(
+            gpkg_geometry_columns,
+            vec![(
+                table_name_2.into(),
+                "geometry".into(),
+                "MULTIPOLYGON".into(),
+                4326,
+                1,
+                0
+            )]
         );
     }
 
