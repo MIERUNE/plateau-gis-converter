@@ -198,7 +198,6 @@ impl GpkgSink {
             let row_count = handler.table_row_count(&tf.name).await.unwrap();
             if row_count == 0 {
                 handler.remove_table(&tf.name).await.unwrap();
-                log::info!("Removed empty table: '{}'", tf.name);
             }
         }
 
