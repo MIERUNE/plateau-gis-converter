@@ -194,11 +194,10 @@ impl GpkgSink {
                 .await
                 .unwrap();
 
-            // update the bounding box values
             table_bboxes.get_mut(&table_name).unwrap().merge(&bbox);
         }
 
-        for (table_name, _bbox) in &table_bboxes {
+        for table_name in table_bboxes.keys() {
             tx.update_bbox(table_name, table_bboxes.get(table_name).unwrap().to_tuple())
                 .await
                 .unwrap();
