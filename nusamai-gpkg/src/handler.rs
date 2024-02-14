@@ -481,7 +481,6 @@ mod tests {
         tx.add_table(&table_info).await.unwrap();
         tx.commit().await.unwrap();
 
-        // initial values written in `mpoly3d.sql`
         let (min_x, min_y, max_x, max_y) = handler.bbox(table_name).await.unwrap();
         assert_eq!(min_x, 0.0);
         assert_eq!(min_y, 0.0);
