@@ -1,4 +1,5 @@
-/// Bounding box
+use nusamai_geometry::MultiPolygon;
+
 pub struct Bbox {
     min_x: f64,
     min_y: f64,
@@ -38,28 +39,21 @@ impl Bbox {
         self.max_x = self.max_x.max(other.max_x);
         self.max_y = self.max_y.max(other.max_y);
     }
+}
 
-    /// Update the bounding box with a new point and return the updated bounding box
-    #[must_use]
-    pub fn updated_with(&mut self, x: f64, y: f64) -> Self {
-        Bbox {
-            min_x: self.min_x.min(x),
-            min_y: self.min_y.min(y),
-            max_x: self.max_x.max(x),
-            max_y: self.max_y.max(y),
+// Get Bounding box of a MultiPolygon
+pub fn get_indexed_multipolygon_bbox(vertices: &[[f64; 3]], mpoly: &MultiPolygon<1, u32>) -> Bbox {
+    let mut bbox: Bbox = Default::default();
+
+    for poly in mpoly {
+        for linestring in &poly.exterior() {
+            for point_idx in linestring.iter() {
+                let [x, y, _z] = vertices[*point_idx as usize];
+                bbox.update(x, y);
+            }
         }
     }
-
-    /// Merge with another bounding box and return the merged bounding box
-    #[must_use]
-    pub fn merged_with(&self, other: &Bbox) -> Bbox {
-        Bbox {
-            min_x: self.min_x.min(other.min_x),
-            min_y: self.min_y.min(other.min_y),
-            max_x: self.max_x.max(other.max_x),
-            max_y: self.max_y.max(other.max_y),
-        }
-    }
+    bbox
 }
 
 #[cfg(test)]
@@ -67,21 +61,21 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_updated_with() {
+    fn test_update() {
         let mut bbox = Bbox::default();
-        bbox = bbox.updated_with(0.5, 0.5);
+        bbox.update(0.5, 0.5);
         assert_eq!(bbox.to_tuple(), (0.5, 0.5, 0.5, 0.5));
 
-        bbox = bbox.updated_with(1.0, 1.0);
+        bbox.update(1.0, 1.0);
         assert_eq!(bbox.to_tuple(), (0.5, 0.5, 1.0, 1.0));
 
-        bbox = bbox.updated_with(-1.0, -1.0);
+        bbox.update(-1.0, -1.0);
         assert_eq!(bbox.to_tuple(), (-1.0, -1.0, 1.0, 1.0));
     }
 
     #[test]
     fn test_merged_with() {
-        let bbox1 = Bbox {
+        let mut bbox1 = Bbox {
             min_x: 0.0,
             min_y: 0.0,
             max_x: 1.0,
@@ -94,10 +88,11 @@ mod tests {
             max_y: 2.0,
         };
 
-        let merged = bbox1.merged_with(&bbox2);
-        assert_eq!(merged.min_x, 0.0);
-        assert_eq!(merged.min_y, 0.0);
-        assert_eq!(merged.max_x, 2.0);
-        assert_eq!(merged.max_y, 2.0);
+        bbox1.merge(&bbox2);
+
+        assert_eq!(bbox1.min_x, 0.0);
+        assert_eq!(bbox1.min_y, 0.0);
+        assert_eq!(bbox1.max_x, 2.0);
+        assert_eq!(bbox1.max_y, 2.0);
     }
 }

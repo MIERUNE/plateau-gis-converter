@@ -15,13 +15,12 @@ use crate::parameters::*;
 use crate::pipeline::{Feedback, PipelineError, Receiver, Result};
 use crate::sink::{DataSink, DataSinkProvider, SinkInfo};
 use crate::{get_parameter_value, transformer};
-use bbox::Bbox;
+use bbox::{get_indexed_multipolygon_bbox, Bbox};
 use table::schema_to_table_infos;
 
 use nusamai_citygml::object::{Object, ObjectStereotype, Value};
 use nusamai_citygml::schema::Schema;
 use nusamai_citygml::GeometryType;
-use nusamai_geometry::MultiPolygon;
 use nusamai_gpkg::geometry::write_indexed_multipolygon;
 use nusamai_gpkg::GpkgHandler;
 
@@ -265,21 +264,6 @@ fn prepare_object_attributes(obj: &Object) -> IndexMap<String, String> {
     }
 
     attributes
-}
-
-// Get Bounding box of a MultiPolygon
-fn get_indexed_multipolygon_bbox(vertices: &[[f64; 3]], mpoly: &MultiPolygon<1, u32>) -> Bbox {
-    let mut bbox: Bbox = Default::default();
-
-    for poly in mpoly {
-        for linestring in &poly.exterior() {
-            for point_idx in linestring.iter() {
-                let [x, y, _z] = vertices[*point_idx as usize];
-                bbox = bbox.updated_with(x, y);
-            }
-        }
-    }
-    bbox
 }
 
 #[cfg(test)]
