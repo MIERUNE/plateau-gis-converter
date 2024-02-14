@@ -25,6 +25,7 @@ pub struct GeoJsonTransformExpSinkProvider {}
 impl DataSinkProvider for GeoJsonTransformExpSinkProvider {
     fn info(&self) -> SinkInfo {
         SinkInfo {
+            id_name: "geojson-tf-exp".to_string(),
             name: "GeoJSON".to_string(),
         }
     }

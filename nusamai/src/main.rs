@@ -1,43 +1,39 @@
 use std::env;
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Mutex, OnceLock};
 
 use clap::Parser;
 
 use nusamai::pipeline::Canceller;
-use nusamai::sink::{
-    cesiumtiles::CesiumTilesSinkProvider, czml::CzmlSinkProvider, geojson::GeoJsonSinkProvider,
-    geojson_transform_exp::GeoJsonTransformExpSinkProvider, gltf_poc::GltfPocSinkProvider,
-    gpkg::GpkgSinkProvider, kml::KmlSinkProvider, mvt::MVTSinkProvider, noop::NoopSinkProvider,
-    ply::StanfordPlySinkProvider, serde::SerdeSinkProvider, shapefile::ShapefileSinkProvider,
-};
 
 use nusamai::sink::{DataSink, DataSinkProvider};
 use nusamai::source::citygml::CityGmlSourceProvider;
 use nusamai::source::{DataSource, DataSourceProvider};
 use nusamai::transformer::MultiThreadTransformer;
 use nusamai::transformer::{NusamaiTransformBuilder, TransformBuilder};
+use nusamai::BUILTIN_SINKS;
 use nusamai_citygml::CityGmlElement;
 use nusamai_plateau::models::TopLevelCityObject;
 
 #[derive(clap::Parser)]
 #[command(author, version, about, long_about = None)]
 struct Args {
+    /// Specify Source CityGML path patterns
     #[arg()]
     file_patterns: Vec<String>,
 
-    /// Sink choice
+    /// Select the output format
     #[arg(value_enum, long)]
     sink: SinkChoice,
 
-    /// Output path
+    /// Speficy the output path
     #[arg(long)]
     output: String,
 
-    /// Options for the source
+    /// Add an option for the input (CityGML)
     #[arg(short = 'i', value_parser = parse_key_val)]
     sourceopt: Vec<(String, String)>,
 
-    /// Options for the sink
+    /// Add an option for the output format
     #[arg(short = 'o', value_parser = parse_key_val)]
     sinkopt: Vec<(String, String)>,
 }
@@ -49,39 +45,41 @@ fn parse_key_val(s: &str) -> Result<(String, String), String> {
     Ok((s[..pos].into(), s[pos + 1..].into()))
 }
 
-#[derive(clap::ValueEnum, Clone)]
-enum SinkChoice {
-    Noop,
-    Serde,
-    Geojson,
-    Gpkg,
-    Mvt,
-    GeojsonTransformExp,
-    #[clap(name = "3dtiles")]
-    CesiumTiles,
-    Shapefile,
-    Czml,
-    Ply,
-    KML,
-    GltfPoc,
+#[derive(Clone)]
+struct SinkChoice(String);
+
+static SINK_CHOICE_VARIANTS: OnceLock<Vec<SinkChoice>> = OnceLock::new();
+
+impl clap::ValueEnum for SinkChoice {
+    fn value_variants<'a>() -> &'a [Self] {
+        SINK_CHOICE_VARIANTS.get_or_init(|| {
+            BUILTIN_SINKS
+                .iter()
+                .map(|provider| Self(provider.info().id_name))
+                .collect()
+        });
+        SINK_CHOICE_VARIANTS.get().unwrap()
+    }
+
+    fn to_possible_value(&self) -> Option<clap::builder::PossibleValue> {
+        BUILTIN_SINKS
+            .iter()
+            .find(|provider| provider.info().id_name == self.0)
+            .map(|provider| {
+                let info = provider.info();
+                clap::builder::PossibleValue::new(info.id_name).help(info.name)
+            })
+    }
 }
 
 impl SinkChoice {
-    fn create(&self) -> Box<dyn DataSinkProvider> {
-        match self {
-            SinkChoice::Noop => Box::new(NoopSinkProvider {}),
-            SinkChoice::Serde => Box::new(SerdeSinkProvider {}),
-            SinkChoice::Geojson => Box::new(GeoJsonSinkProvider {}),
-            SinkChoice::GeojsonTransformExp => Box::new(GeoJsonTransformExpSinkProvider {}),
-            SinkChoice::Gpkg => Box::new(GpkgSinkProvider {}),
-            SinkChoice::Mvt => Box::new(MVTSinkProvider {}),
-            SinkChoice::CesiumTiles => Box::new(CesiumTilesSinkProvider {}),
-            SinkChoice::Shapefile => Box::new(ShapefileSinkProvider {}),
-            SinkChoice::Czml => Box::new(CzmlSinkProvider {}),
-            SinkChoice::Ply => Box::new(StanfordPlySinkProvider {}),
-            SinkChoice::KML => Box::new(KmlSinkProvider {}),
-            SinkChoice::GltfPoc => Box::new(GltfPocSinkProvider {}),
+    fn create(&self) -> &dyn DataSinkProvider {
+        for &provider in nusamai::BUILTIN_SINKS {
+            if self.0 == provider.info().id_name {
+                return provider;
+            }
         }
+        panic!("Unknown sink choice: {:?}", self.0);
     }
 }
 
@@ -95,7 +93,6 @@ fn main() {
         // output path
         let mut args = Args::parse();
         args.sinkopt.push(("@output".into(), args.output.clone()));
-
         args
     };
 

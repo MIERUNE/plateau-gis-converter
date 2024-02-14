@@ -81,6 +81,7 @@ impl DataSinkProvider for DummySinkProvider {
 
     fn info(&self) -> SinkInfo {
         SinkInfo {
+            id_name: "dummy".to_string(),
             name: "Dummy Sink".to_string(),
         }
     }

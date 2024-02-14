@@ -37,6 +37,7 @@ pub struct StanfordPlySinkProvider {}
 impl DataSinkProvider for StanfordPlySinkProvider {
     fn info(&self) -> SinkInfo {
         SinkInfo {
+            id_name: "ply".to_string(),
             name: "Stanford PLY".to_string(),
         }
     }
