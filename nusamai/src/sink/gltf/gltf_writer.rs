@@ -196,7 +196,7 @@ pub fn append_gltf_extensions(
     // glTF拡張のext_structural_metadataを作成
     // トップレベルのクラスごとに処理
     for (class_name, entities) in entities_list.iter() {
-        let feature_count = entities.len() as u32;
+        let feature_count = entities.len() as u32 - 1;
 
         let type_def = schema.types.get::<String>(class_name).unwrap();
 
@@ -207,7 +207,7 @@ pub fn append_gltf_extensions(
 
         // property_tableを作成
         let (property_table, count) =
-            to_gltf_property_table(class_name, type_def, buffer_view_length, feature_count - 1);
+            to_gltf_property_table(class_name, type_def, buffer_view_length, feature_count);
         let property_tables_length = property_tables.len() as u32;
 
         // buffer_viewを作成
@@ -290,6 +290,11 @@ pub fn append_gltf_extensions(
                     }
                 }
             }
+            // offsetには文字列の最後にもインデックスが必要
+            if string_offset_buffer.is_empty() {
+                string_offset_buffer.push(buf.len() as u32);
+            }
+
             let byte_offset = bin_content.len();
             let byte_length = buf.len();
 

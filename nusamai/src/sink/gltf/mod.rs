@@ -324,6 +324,21 @@ impl DataSink for GltfSink {
                 all_min[2] -= all_translation[2];
 
                 let mut buffers = IndexMap::new();
+
+                // class名ごとにentitiesに入っているfeature_idを振り直す
+                all_triangulated_entities
+                    .iter_mut()
+                    .for_each(|(_, entities)| {
+                        entities
+                            .iter_mut()
+                            .enumerate()
+                            .for_each(|(feature_id, entity)| {
+                                entity.positions.iter_mut().for_each(|vertex| {
+                                    vertex.feature_id = feature_id as u32;
+                                });
+                            });
+                    });
+
                 for (class_name, entities) in &all_triangulated_entities {
                     let mut vertices: IndexSet<Vertex<u32>> = IndexSet::default();
                     let mut indices: Vec<u32> = Vec::new();
