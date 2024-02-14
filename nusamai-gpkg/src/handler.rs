@@ -95,6 +95,16 @@ impl GpkgHandler {
         Ok(())
     }
 
+    pub async fn remove_table(&self, table_name: &str) -> Result<(), GpkgError> {
+        sqlx::query(&format!("DROP TABLE \"{}\";", table_name))
+            .execute(&self.pool)
+            .await?;
+
+        // TODO: remove from `gpkg_contents`, `gpkg_geometry_columns`, `gpkg_data_columns`
+
+        Ok(())
+    }
+
     /// Update the bounding box of a table (min_x, min_y, max_x, max_y)
     pub async fn update_bbox(
         &self,
@@ -465,6 +475,45 @@ mod tests {
         // No record in `gpkg_geometry_columns`
         let gpkg_geometry_columns = handler.gpkg_geometry_columns().await.unwrap();
         assert!(gpkg_geometry_columns.is_empty());
+    }
+
+    #[tokio::test]
+    async fn test_remove_table() {
+        let handler = GpkgHandler::from_url(&Url::parse("sqlite::memory:").unwrap())
+            .await
+            .unwrap();
+
+        let table_name = "mpoly3d";
+        let table_info = TableInfo {
+            name: table_name.into(),
+            has_geometry: true,
+            columns: vec![],
+        };
+
+        handler.add_table(&table_info).await.unwrap();
+
+        let table_names = handler.table_names().await;
+        assert_eq!(
+            table_names,
+            vec![
+                "gpkg_contents",
+                "gpkg_geometry_columns",
+                "gpkg_spatial_ref_sys",
+                table_name
+            ]
+        );
+
+        handler.remove_table(table_name).await.unwrap();
+
+        let table_names = handler.table_names().await;
+        assert_eq!(
+            table_names,
+            vec![
+                "gpkg_contents",
+                "gpkg_geometry_columns",
+                "gpkg_spatial_ref_sys"
+            ]
+        );
     }
 
     #[tokio::test]
