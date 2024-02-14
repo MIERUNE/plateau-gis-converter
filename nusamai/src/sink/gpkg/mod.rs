@@ -28,6 +28,7 @@ pub struct GpkgSinkProvider {}
 impl DataSinkProvider for GpkgSinkProvider {
     fn info(&self) -> SinkInfo {
         SinkInfo {
+            id_name: "gpkg".to_string(),
             name: "GeoPackage".to_string(),
         }
     }

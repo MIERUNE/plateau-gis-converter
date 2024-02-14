@@ -21,6 +21,7 @@ pub struct ShapefileSinkProvider {}
 impl DataSinkProvider for ShapefileSinkProvider {
     fn info(&self) -> SinkInfo {
         SinkInfo {
+            id_name: "shapefile".to_string(),
             name: "Shapefile".to_string(),
         }
     }

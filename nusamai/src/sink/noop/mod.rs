@@ -28,7 +28,8 @@ impl DataSinkProvider for NoopSinkProvider {
 
     fn info(&self) -> SinkInfo {
         SinkInfo {
-            name: "No-op".to_string(),
+            id_name: "noop".to_string(),
+            name: "No Output".to_string(),
         }
     }
 
