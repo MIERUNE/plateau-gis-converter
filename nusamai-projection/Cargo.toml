@@ -5,4 +5,4 @@ edition = "2021"
 
 [dependencies]
 japan-geoid = { git = "https://github.com/MIERUNE/japan-geoid" }
-thiserror = "1.0.50"
+thiserror = "1.0.57"

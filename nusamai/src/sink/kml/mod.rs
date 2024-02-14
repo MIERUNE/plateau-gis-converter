@@ -25,7 +25,8 @@ pub struct KmlSinkProvider {}
 impl DataSinkProvider for KmlSinkProvider {
     fn info(&self) -> SinkInfo {
         SinkInfo {
-            name: "kml".to_string(),
+            id_name: "kml".to_string(),
+            name: "KML".to_string(),
         }
     }
 

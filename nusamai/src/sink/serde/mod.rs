@@ -20,6 +20,7 @@ pub struct SerdeSinkProvider {}
 impl DataSinkProvider for SerdeSinkProvider {
     fn info(&self) -> SinkInfo {
         SinkInfo {
+            id_name: "serde".to_string(),
             name: "Serde (bincode)".to_string(),
         }
     }

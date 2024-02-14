@@ -36,7 +36,8 @@ pub struct MVTSinkProvider {}
 impl DataSinkProvider for MVTSinkProvider {
     fn info(&self) -> SinkInfo {
         SinkInfo {
-            name: "Vector Tiles (MVT)".to_string(),
+            id_name: "mvt".to_string(),
+            name: "Mapbox Vector Tiles (MVT)".to_string(),
         }
     }
 

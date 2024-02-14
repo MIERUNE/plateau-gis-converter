@@ -24,6 +24,7 @@ pub struct GeoJsonSinkProvider {}
 impl DataSinkProvider for GeoJsonSinkProvider {
     fn info(&self) -> SinkInfo {
         SinkInfo {
+            id_name: "geojson".to_string(),
             name: "GeoJSON".to_string(),
         }
     }

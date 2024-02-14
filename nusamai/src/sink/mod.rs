@@ -6,12 +6,12 @@ pub mod geojson;
 pub mod geojson_transform_exp;
 pub mod gltf;
 pub mod gpkg;
+pub mod kml;
 pub mod mvt;
 pub mod noop;
 pub mod ply;
 pub mod serde;
 pub mod shapefile;
-pub mod kml;
 
 use nusamai_citygml::schema::Schema;
 
@@ -20,10 +20,11 @@ use crate::pipeline::{Feedback, PipelineError, Receiver};
 use crate::transformer;
 
 pub struct SinkInfo {
+    pub id_name: String,
     pub name: String,
 }
 
-pub trait DataSinkProvider {
+pub trait DataSinkProvider: Sync {
     /// Gets basic information about the sink.
     fn info(&self) -> SinkInfo;
 

@@ -25,6 +25,7 @@ pub struct CzmlSinkProvider {}
 impl DataSinkProvider for CzmlSinkProvider {
     fn info(&self) -> SinkInfo {
         SinkInfo {
+            id_name: "czml".to_string(),
             name: "CZML".to_string(),
         }
     }
