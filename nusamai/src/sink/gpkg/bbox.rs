@@ -74,7 +74,7 @@ mod tests {
     }
 
     #[test]
-    fn test_merged_with() {
+    fn test_merge() {
         let mut bbox1 = Bbox {
             min_x: 0.0,
             min_y: 0.0,
