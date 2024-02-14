@@ -19,10 +19,11 @@ use crate::pipeline::{Feedback, PipelineError, Receiver};
 use crate::transformer;
 
 pub struct SinkInfo {
+    pub id_name: String,
     pub name: String,
 }
 
-pub trait DataSinkProvider {
+pub trait DataSinkProvider: Sync {
     /// Gets basic information about the sink.
     fn info(&self) -> SinkInfo;
 

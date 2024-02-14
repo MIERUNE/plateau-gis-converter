@@ -44,6 +44,7 @@ pub struct GltfPocSinkProvider {}
 impl DataSinkProvider for GltfPocSinkProvider {
     fn info(&self) -> SinkInfo {
         SinkInfo {
+            id_name: "gltf-poc".to_string(),
             name: "glTF".to_string(),
         }
     }

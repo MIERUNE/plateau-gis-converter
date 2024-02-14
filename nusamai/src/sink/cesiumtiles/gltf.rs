@@ -4,7 +4,7 @@ use byteorder::{ByteOrder, LittleEndian};
 
 /// とりいそぎの実装
 pub fn write_gltf_glb<W: Write>(
-    mut writer: W,
+    writer: W,
     min: [f64; 3],
     max: [f64; 3],
     translation: [f64; 3],
@@ -101,29 +101,12 @@ pub fn write_gltf_glb<W: Write>(
         ..Default::default()
     };
 
-    {
-        let mut json_content = serde_json::to_vec(&gltf)?;
-
-        // append padding
-        json_content.extend(vec![0x20; (4 - (json_content.len() % 4)) % 4].iter());
-        bin_content.extend(vec![0x0; (4 - (bin_content.len() % 4)) % 4].iter());
-
-        let total_size = 12 + 8 + json_content.len() + 8 + bin_content.len();
-
-        writer.write_all(b"glTF")?; // magic
-        writer.write_all(&2u32.to_le_bytes()).unwrap(); // version: 2
-        writer.write_all(&(total_size as u32).to_le_bytes())?;
-
-        writer.write_all(&(json_content.len() as u32).to_le_bytes())?;
-        writer.write_all(b"JSON")?; // chunk type
-        writer.write_all(&json_content)?; // json content
-
-        writer.write_all(&(bin_content.len() as u32).to_le_bytes())?; // json content
-        writer.write_all(b"BIN\0")?; // chunk type
-        writer.write_all(&bin_content)?; // bin content
-
-        writer.flush()?;
+    // Write glb to the writer
+    nusamai_gltf::glb::Glb {
+        json: serde_json::to_vec(&gltf)?.into(),
+        bin: Some(bin_content.into()),
     }
+    .to_writer_with_alignment(writer, 8)?;
 
     Ok(())
 }

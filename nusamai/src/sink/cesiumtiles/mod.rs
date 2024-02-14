@@ -40,7 +40,8 @@ pub struct CesiumTilesSinkProvider {}
 impl DataSinkProvider for CesiumTilesSinkProvider {
     fn info(&self) -> SinkInfo {
         SinkInfo {
-            name: "Vector Tiles (MVT)".to_string(),
+            id_name: "3dtiles".to_string(),
+            name: "Cesium 3D Tiles".to_string(),
         }
     }
 
