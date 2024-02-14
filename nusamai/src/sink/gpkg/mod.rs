@@ -1,6 +1,7 @@
 //! GeoPackage sink
 
 mod bbox;
+mod schema;
 
 use std::path::PathBuf;
 use url::Url;
@@ -15,9 +16,10 @@ use crate::pipeline::{Feedback, PipelineError, Receiver, Result};
 use crate::sink::{DataSink, DataSinkProvider, SinkInfo};
 use crate::{get_parameter_value, transformer};
 use bbox::Bbox;
+use schema::schema_to_table_infos;
 
 use nusamai_citygml::object::{Object, ObjectStereotype, Value};
-use nusamai_citygml::schema::{Schema, TypeDef, TypeRef};
+use nusamai_citygml::schema::Schema;
 use nusamai_citygml::GeometryType;
 use nusamai_geometry::MultiPolygon;
 use nusamai_gpkg::geometry::write_indexed_multipolygon;
@@ -80,9 +82,11 @@ impl GpkgSink {
             .unwrap()
         };
 
-        // add attribute columns
-        let attribute_columns = schema_to_columns(schema);
-        handler.add_columns(attribute_columns).await.unwrap();
+        // Set up the feature / attribute tables
+        let table_infos = schema_to_table_infos(schema);
+        for tf in table_infos {
+            handler.add_table(&tf).await.unwrap();
+        }
 
         // global bounding box, to be updated per entity
         let mut global_bbox: Bbox = Default::default();
@@ -244,96 +248,6 @@ fn prepare_object_attributes(obj: &Object) -> IndexMap<String, String> {
     attributes
 }
 
-/// Check the schema, and prepare attribute column information for the SQLite table
-fn schema_to_columns(schema: &Schema) -> IndexMap<String, String> {
-    let mut attribute_columns = IndexMap::<String, String>::new();
-    schema.types.iter().for_each(|(_name, ty)| match ty {
-        TypeDef::Feature(feat_td) => {
-            // TODO: consider `feat_td.additional_attributes`
-            feat_td.attributes.iter().for_each(|(attr_name, attr)|
-                // TODO: consider `attr.{min_occurs,max_occurs}`
-                match &attr.type_ref {
-                    TypeRef::String => {
-                        attribute_columns.insert(attr_name.into(), "TEXT".into());
-                    }
-                    TypeRef::Code => {
-                        attribute_columns.insert(attr_name.into(), "TEXT".into());
-                    }
-                    TypeRef::Integer | TypeRef::NonNegativeInteger => {
-                        attribute_columns.insert(attr_name.into(), "INTEGER".into());
-                    }
-                    TypeRef::Double => {
-                        attribute_columns.insert(attr_name.into(), "REAL".into());
-                    }
-                    TypeRef::Boolean => {
-                        attribute_columns.insert(attr_name.into(), "BOOLEAN".into());
-                    }
-                    TypeRef::JsonString => {
-                        attribute_columns.insert(attr_name.into(), "TEXT".into());
-                    }
-                    TypeRef::URI => {
-                        attribute_columns.insert(attr_name.into(), "TEXT".into());
-                    }
-                    TypeRef::Date => {
-                        attribute_columns.insert(attr_name.into(), "DATE".into());
-                    }
-                    TypeRef::DateTime => {
-                        attribute_columns.insert(attr_name.into(), "TEXT".into());
-                    }
-                    TypeRef::Measure => {
-                        attribute_columns.insert(attr_name.into(), "REAL".into());
-                    }
-                    TypeRef::Point => {
-                        // TODO: implement
-                        // Point struct currently does not contain any data
-                        log::warn!(
-                            "TypeDef::Feature - Unsupported attribute type: {:?} ('{}')",
-                            attr.type_ref,
-                            attr_name
-                        );
-                    }
-                    TypeRef::Named(_name) => {
-                        // TODO: Implement
-                        log::warn!(
-                            "TypeDef::Feature - Unsupported attribute type: {:?} ('{}')",
-                            attr.type_ref,
-                            attr_name
-                        );
-                    },
-                    TypeRef::Unknown => {
-                        log::warn!(
-                            "TypeDef::Feature - Unsupported attribute type: {:?} ('{}')",
-                            attr.type_ref,
-                            attr_name
-                        );
-                    }
-                });
-        }
-        TypeDef::Data(data_td) => {
-            // TODO: implement
-            log::warn!(
-                "TypeDef::Data - Not supported yet: {:?}",
-                data_td.attributes.values()
-            );
-        }
-        TypeDef::Property(prop_td) => {
-            // TODO: implement
-            log::warn!(
-                "TypeDef::Property - Not supported yet: {} members ({:?}, etc.)",
-                prop_td.members.len(),
-                prop_td
-                    .members
-                    .iter()
-                    .map(|m| &m.type_ref)
-                    .take(3)
-                    .collect::<Vec<_>>()
-            );
-        }
-    });
-
-    attribute_columns
-}
-
 // Get Bounding box of a MultiPolygon
 fn get_indexed_multipolygon_bbox(vertices: &[[f64; 3]], mpoly: &MultiPolygon<1, u32>) -> Bbox {
     let mut bbox: Bbox = Default::default();
@@ -351,7 +265,6 @@ fn get_indexed_multipolygon_bbox(vertices: &[[f64; 3]], mpoly: &MultiPolygon<1, 
 
 #[cfg(test)]
 mod tests {
-
     use super::*;
     use nusamai_projection::crs::EPSG_JGD2011_GEOGRAPHIC_3D;
 
