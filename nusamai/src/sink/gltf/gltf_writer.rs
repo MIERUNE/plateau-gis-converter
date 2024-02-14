@@ -298,7 +298,7 @@ pub fn append_gltf_extensions(
         properties.sort_by(|a, b| a.1.values.cmp(&b.1.values));
 
         // 抽出するべき全ての属性がproperty_nameに入る
-        for (property_name, property) in properties {
+        for (property_name, _) in properties {
             // property_nameに対応するbuffer_viewを作成する
 
             // todo: データ型ごとの対応をする
@@ -322,13 +322,54 @@ pub fn append_gltf_extensions(
                 let property_type = &p.type_;
                 let component_type = &p.component_type;
 
-                // todo: property_nameやproperty_typeに応じて、適切なバッファを作成する
-                // write_empty_buffer的な
                 if !is_hit {
-                    if property.string_offsets.is_some() {
-                        string_offset_buffer.push(buffer.len() as u32);
+                    match property_type {
+                        extensions::gltf::ext_structural_metadata::ClassPropertyType::String => {
+                            string_offset_buffer.push(buffer.len() as u32);
+                            buffer.write_all("0".to_string().as_bytes()).unwrap();
+                        }
+                        extensions::gltf::ext_structural_metadata::ClassPropertyType::Boolean => {
+                            buffer.write_i32::<LittleEndian>(0).unwrap();
+                        }
+                        _ => {}
                     }
-                    buffer.write_all("0".to_string().as_bytes()).unwrap();
+
+                    // component_typeがSomeなら値を取り出す
+                    if let Some(component_type) = component_type {
+                        let component_type = component_type.clone();
+                        match component_type {
+                            extensions::gltf::ext_structural_metadata::ClassPropertyComponentType::Int8 => {
+                                buffer.write_i8(0).unwrap();
+                            },
+                            extensions::gltf::ext_structural_metadata::ClassPropertyComponentType::UInt8 => {
+                                buffer.write_u8(0).unwrap();
+                            },
+                            extensions::gltf::ext_structural_metadata::ClassPropertyComponentType::Int16 => {
+                                buffer.write_i16::<LittleEndian>(0).unwrap();
+                            },
+                            extensions::gltf::ext_structural_metadata::ClassPropertyComponentType::UInt16 => {
+                                buffer.write_u16::<LittleEndian>(0).unwrap();
+                            },
+                            extensions::gltf::ext_structural_metadata::ClassPropertyComponentType::Int32 => {
+                                buffer.write_i32::<LittleEndian>(0).unwrap();
+                            },
+                            extensions::gltf::ext_structural_metadata::ClassPropertyComponentType::UInt32 => {
+                                buffer.write_u32::<LittleEndian>(0).unwrap();
+                            },
+                            extensions::gltf::ext_structural_metadata::ClassPropertyComponentType::Float32 => {
+                                buffer.write_f32::<LittleEndian>(0.0).unwrap();
+                            },
+                            extensions::gltf::ext_structural_metadata::ClassPropertyComponentType::Float64 => {
+                                buffer.write_f64::<LittleEndian>(0.0).unwrap();
+                            },
+                            extensions::gltf::ext_structural_metadata::ClassPropertyComponentType::Int64 => {
+                                buffer.write_i64::<LittleEndian>(0).unwrap();
+                            },
+                            extensions::gltf::ext_structural_metadata::ClassPropertyComponentType::UInt64 => {
+                                buffer.write_u64::<LittleEndian>(0).unwrap();
+                            },
+                        }
+                    };
                     continue;
                 }
 
