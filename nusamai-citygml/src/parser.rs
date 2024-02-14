@@ -1025,6 +1025,12 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                         }
                     }
 
+                    if self.state.fp_buf.len() % 2 != 0 {
+                        return Err(ParseError::InvalidValue(
+                            "Length of UV coordinates must be multiple of 2".into(),
+                        ));
+                    }
+
                     // remove closing point
                     {
                         let len = self.state.fp_buf.len();
