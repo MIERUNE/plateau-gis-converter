@@ -17,7 +17,7 @@ use nusamai_plateau::models::TopLevelCityObject;
 #[derive(clap::Parser)]
 #[command(author, version, about, long_about = None)]
 struct Args {
-    /// Specify Source CityGML path patterns
+    /// Specify path patterns to the input CityGML files
     #[arg()]
     file_patterns: Vec<String>,
 
@@ -25,7 +25,7 @@ struct Args {
     #[arg(value_enum, long)]
     sink: SinkChoice,
 
-    /// Speficy the output path
+    /// Specify the output path
     #[arg(long)]
     output: String,
 
