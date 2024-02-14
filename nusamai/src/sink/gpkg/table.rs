@@ -1,19 +1,23 @@
+use indexmap::IndexMap;
 use nusamai_citygml::schema::{Schema, TypeDef, TypeRef};
 use nusamai_gpkg::table::{ColumnInfo, TableInfo};
 
 /// Check the schema, and prepare the information for the SQLite table
-pub fn schema_to_table_infos(schema: &Schema) -> Vec<TableInfo> {
-    schema
-        .types
-        .iter()
-        .map(|(name, ty)| {
+pub fn schema_to_table_infos(schema: &Schema) -> IndexMap<String, TableInfo> {
+    let mut table_infos = IndexMap::<String, TableInfo>::new();
+
+    schema.types.iter().for_each(|(name, ty)| {
+        table_infos.insert(
+            name.clone(),
             TableInfo {
                 name: name.clone(),
                 has_geometry: true, // feature or attribute table
                 columns: typedef_to_columns(ty),
-            }
-        })
-        .collect()
+            },
+        );
+    });
+
+    table_infos
 }
 
 fn typedef_to_columns(ty: &TypeDef) -> Vec<ColumnInfo> {

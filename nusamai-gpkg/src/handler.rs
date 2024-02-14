@@ -94,27 +94,6 @@ impl GpkgHandler {
         Ok(())
     }
 
-    /// Drop a feature / attribute table and its associated records
-    pub async fn remove_table(&self, table_name: &str) -> Result<(), GpkgError> {
-        sqlx::query("DELETE FROM gpkg_geometry_columns WHERE table_name = ?;")
-            .bind(table_name)
-            .execute(&self.pool)
-            .await?;
-
-        sqlx::query("DELETE FROM gpkg_contents WHERE table_name = ?;")
-            .bind(table_name)
-            .execute(&self.pool)
-            .await?;
-
-        sqlx::query(&format!("DROP TABLE \"{}\";", table_name))
-            .execute(&self.pool)
-            .await?;
-
-        // TODO: remove from `gpkg_data_columns`
-
-        Ok(())
-    }
-
     /// Update the bounding box of a table (min_x, min_y, max_x, max_y)
     pub async fn update_bbox(
         &self,
@@ -207,15 +186,6 @@ impl GpkgHandler {
         Ok(columns)
     }
 
-    /// Get the number of rows in the table
-    pub async fn table_row_count(&self, table_name: &str) -> Result<i64, GpkgError> {
-        let result = sqlx::query(&format!("SELECT COUNT(*) FROM \"{}\";", table_name))
-            .fetch_one(&self.pool)
-            .await?;
-        let count: i64 = result.get(0);
-        Ok(count)
-    }
-
     pub async fn gpkg_contents(&self) -> Result<Vec<(String, String, String, i32)>, GpkgError> {
         let result =
             sqlx::query("SELECT table_name, data_type, identifier, srs_id FROM gpkg_contents;")
@@ -277,6 +247,56 @@ impl<'c> GpkgTransaction<'c> {
         Ok(self.tx.commit().await?)
     }
 
+    /// Set up a table for the features / attributes
+    pub async fn add_table(&mut self, table_info: &TableInfo) -> Result<(), GpkgError> {
+        let executor = self.tx.acquire().await.unwrap();
+
+        // Create the table
+        let mut query_string = format!(
+            "CREATE TABLE \"{}\" (id STRING NOT NULL PRIMARY KEY",
+            table_info.name
+        );
+        if table_info.has_geometry {
+            query_string.push_str(", geometry BLOB NOT NULL");
+        }
+        table_info.columns.iter().for_each(|column| {
+            query_string.push_str(&format!(", {} {}", column.name, column.data_type));
+        });
+        query_string.push_str(");");
+        sqlx::query(&query_string).execute(&mut *executor).await?;
+
+        // Add the table to `gpkg_contents`
+        sqlx::query(
+            "INSERT INTO gpkg_contents (table_name, data_type, identifier, srs_id) VALUES (?, ?, ?, ?);",
+        )
+        .bind(table_info.name.as_str())
+        .bind(if table_info.has_geometry {
+            "features"
+        } else {
+            "attributes"
+        })
+        .bind(table_info.name.as_str())
+        .bind(4326) // Fixed for now - TODO: Change according to the data
+        .execute(&mut *executor)
+        .await?;
+
+        // Add the table to `gpkg_geometry_columns`
+        if table_info.has_geometry {
+            sqlx::query(
+                "INSERT INTO gpkg_geometry_columns (table_name, column_name, geometry_type_name, srs_id, z, m) VALUES (?, ?, ?, ?, ?, ?);"
+            ).bind(table_info.name.as_str())
+            .bind("geometry")
+            .bind("MULTIPOLYGON") // Fixed for now - TODO: Change according to the data
+            .bind(4326) // Fixed for now - TODO: Change according to the data
+            .bind(1)
+            .bind(0).execute(&mut *executor).await?;
+        }
+
+        // TODO: add MIME type to `gpkg_data_columns`
+
+        Ok(())
+    }
+
     /// Add a MultiPolygonZ feature to the GeoPackage database
     // TODO: handle MultiLineString, MultiPoint
     pub async fn insert_feature(
@@ -289,32 +309,33 @@ impl<'c> GpkgTransaction<'c> {
         let executor = self.tx.acquire().await.unwrap();
 
         if attributes.is_empty() {
-            sqlx::query(&format!(
+            let query_string = format!(
                 "INSERT INTO \"{}\" (id, geometry) VALUES (?, ?)",
                 table_name
-            ))
-            .bind(id)
-            .bind(bytes)
-            .execute(&mut *executor)
-            .await?;
-            return Ok(());
+            );
+            sqlx::query(&query_string)
+                .bind(id)
+                .bind(bytes)
+                .execute(&mut *executor)
+                .await?;
+        } else {
+            let query_string = format!(
+                "INSERT INTO \"{}\" (id, geometry, {}) VALUES (?, ?, {})",
+                table_name,
+                attributes
+                    .keys()
+                    .map(|key| key.to_string())
+                    .collect::<Vec<_>>()
+                    .join(", "),
+                vec!["?"; attributes.len()].join(", ")
+            );
+            let mut query = sqlx::query(&query_string).bind(id).bind(bytes);
+            for value in attributes.values() {
+                query = query.bind(value);
+            }
+            query.execute(&mut *executor).await?;
         }
 
-        let query_string = format!(
-            "INSERT INTO \"{}\" (id, geometry, {}) VALUES (?, ?, {})",
-            table_name,
-            attributes
-                .keys()
-                .map(|key| key.to_string())
-                .collect::<Vec<_>>()
-                .join(", "),
-            vec!["?"; attributes.len()].join(", ")
-        );
-        let mut query = sqlx::query(&query_string).bind(id).bind(bytes);
-        for value in attributes.values() {
-            query = query.bind(value);
-        }
-        query.execute(&mut *executor).await?;
         Ok(())
     }
 }
@@ -490,78 +511,6 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_remove_table() {
-        let handler = GpkgHandler::from_url(&Url::parse("sqlite::memory:").unwrap())
-            .await
-            .unwrap();
-
-        let table_name_1 = "table_1";
-        let table_info_1 = TableInfo {
-            name: table_name_1.into(),
-            has_geometry: true,
-            columns: vec![],
-        };
-        handler.add_table(&table_info_1).await.unwrap();
-
-        let table_name_2 = "table_2";
-        let table_info_2 = TableInfo {
-            name: table_name_2.into(),
-            has_geometry: true,
-            columns: vec![],
-        };
-        handler.add_table(&table_info_2).await.unwrap();
-
-        let table_names = handler.table_names().await;
-        assert_eq!(
-            table_names,
-            vec![
-                "gpkg_contents",
-                "gpkg_geometry_columns",
-                "gpkg_spatial_ref_sys",
-                table_name_1,
-                table_name_2
-            ]
-        );
-
-        handler.remove_table(table_name_1).await.unwrap();
-
-        let table_names = handler.table_names().await;
-        assert_eq!(
-            table_names,
-            vec![
-                "gpkg_contents",
-                "gpkg_geometry_columns",
-                "gpkg_spatial_ref_sys",
-                table_name_2
-            ]
-        );
-
-        let gpkg_contents = handler.gpkg_contents().await.unwrap();
-        assert_eq!(
-            gpkg_contents,
-            vec![(
-                table_name_2.into(),
-                "features".into(),
-                table_name_2.into(),
-                4326
-            )]
-        );
-
-        let gpkg_geometry_columns = handler.gpkg_geometry_columns().await.unwrap();
-        assert_eq!(
-            gpkg_geometry_columns,
-            vec![(
-                table_name_2.into(),
-                "geometry".into(),
-                "MULTIPOLYGON".into(),
-                4326,
-                1,
-                0
-            )]
-        );
-    }
-
-    #[tokio::test]
     async fn test_bbox() {
         let handler = GpkgHandler::from_url(&Url::parse("sqlite::memory:").unwrap())
             .await
@@ -591,32 +540,5 @@ mod tests {
         assert_eq!(min_y, 222.0);
         assert_eq!(max_x, 333.0);
         assert_eq!(max_y, -444.0);
-    }
-
-    #[tokio::test]
-    async fn test_table_row_count() {
-        let mut handler = GpkgHandler::from_url(&Url::parse("sqlite::memory:").unwrap())
-            .await
-            .unwrap();
-
-        let table_name = "mpoly3d";
-        let table_info = TableInfo {
-            name: table_name.into(),
-            has_geometry: true,
-            columns: vec![],
-        };
-        handler.add_table(&table_info).await.unwrap();
-
-        let count = handler.table_row_count(table_name).await.unwrap();
-        assert_eq!(count, 0);
-
-        let mut tx = handler.begin().await.unwrap();
-        tx.insert_feature(table_name, "id_1", &[0, 1, 2, 3], &IndexMap::new())
-            .await
-            .unwrap();
-        tx.commit().await.unwrap();
-
-        let count = handler.table_row_count(table_name).await.unwrap();
-        assert_eq!(count, 1);
     }
 }

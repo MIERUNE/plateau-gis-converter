@@ -4,6 +4,7 @@ mod attributes;
 mod bbox;
 mod table;
 
+use std::collections::HashSet;
 use std::path::PathBuf;
 use url::Url;
 
@@ -83,12 +84,12 @@ impl GpkgSink {
             .unwrap()
         };
 
-        // Set up the feature / attribute tables, and track the bounding box per table
         let table_infos = schema_to_table_infos(schema);
+        let mut created_tables = HashSet::<String>::new();
+
         let mut table_bboxes = IndexMap::<String, Bbox>::new();
-        for tf in &table_infos {
-            handler.add_table(tf).await.unwrap();
-            table_bboxes.insert(tf.name.clone(), Default::default());
+        for table_name in table_infos.keys() {
+            table_bboxes.insert(table_name.clone(), Default::default());
         }
 
         let (sender, mut receiver) = tokio::sync::mpsc::channel(100);
@@ -181,9 +182,16 @@ impl GpkgSink {
             })
         };
 
-        let mut tx = handler.begin().await.unwrap();
+        let mut tx: nusamai_gpkg::GpkgTransaction<'_> = handler.begin().await.unwrap();
         while let Some((table_name, obj_id, gpkg_bin, attributes, bbox)) = receiver.recv().await {
             feedback.ensure_not_canceled()?;
+
+            if !created_tables.contains(&table_name) {
+                let tf = table_infos.get(&table_name).unwrap();
+                tx.add_table(tf).await.unwrap();
+                created_tables.insert(table_name.clone());
+            }
+
             tx.insert_feature(&table_name, &obj_id, &gpkg_bin, &attributes)
                 .await
                 .unwrap();
@@ -198,14 +206,6 @@ impl GpkgSink {
                 .update_bbox(table_name, table_bboxes.get(table_name).unwrap().to_tuple())
                 .await
                 .unwrap();
-        }
-
-        // Remove empty tables
-        for tf in &table_infos {
-            let row_count = handler.table_row_count(&tf.name).await.unwrap();
-            if row_count == 0 {
-                handler.remove_table(&tf.name).await.unwrap();
-            }
         }
 
         match producers.await.unwrap() {
