@@ -24,15 +24,15 @@ fn multipolygon_to_kml_with_mapping<const D: usize, T: CoordNum>(
 ) -> Vec<KmlPolygon> {
     mpoly
         .iter()
-        .flat_map(|poly| polygon_to_kml_with_mapping(poly.clone(), &mapping)) // Flatten the vector of vectors
+        .flat_map(|poly| polygon_to_kml_with_mapping(&poly, &mapping)) // Flatten the vector of vectors
         .collect::<Vec<_>>()
 }
 
 fn polygon_to_kml_polygon_with_mapping<const D: usize, T: CoordNum>(
-    poly: Polygon<D, T>,
+    poly: &Polygon<D, T>,
     mapping: impl Fn([T; D]) -> [f64; 3],
 ) -> KmlPolygon {
-    let outer = polygon_to_kml_outer_boundary_with_mapping(poly.clone(), &mapping);
+    let outer = polygon_to_kml_outer_boundary_with_mapping(poly, &mapping);
     let inner = polygon_to_kml_inner_boundary_with_mapping(poly, &mapping);
 
     KmlPolygon {
@@ -46,7 +46,7 @@ fn polygon_to_kml_polygon_with_mapping<const D: usize, T: CoordNum>(
 }
 
 fn polygon_to_kml_outer_boundary_with_mapping<const D: usize, T: CoordNum>(
-    poly: Polygon<D, T>,
+    poly: &Polygon<D, T>,
     mapping: impl Fn([T; D]) -> [f64; 3],
 ) -> LinearRing {
     let outer_coords: Vec<Coord> = poly
@@ -70,7 +70,7 @@ fn polygon_to_kml_outer_boundary_with_mapping<const D: usize, T: CoordNum>(
 }
 
 fn polygon_to_kml_inner_boundary_with_mapping<const D: usize, T: CoordNum>(
-    poly: Polygon<D, T>,
+    poly: &Polygon<D, T>,
     mapping: impl Fn([T; D]) -> [f64; 3],
 ) -> Vec<LinearRing> {
     poly.interiors()
@@ -96,7 +96,7 @@ fn polygon_to_kml_inner_boundary_with_mapping<const D: usize, T: CoordNum>(
 
 /// Create a kml::MultiGeometry with Polygon from `nusamai_geometry::MultiPoint` with a mapping function.
 pub fn polygon_to_kml_with_mapping<const D: usize, T: CoordNum>(
-    poly: Polygon<D, T>,
+    poly: &Polygon<D, T>,
     mapping: impl Fn([T; D]) -> [f64; 3],
 ) -> Vec<KmlPolygon> {
     vec![polygon_to_kml_polygon_with_mapping(poly, mapping)]
@@ -104,7 +104,7 @@ pub fn polygon_to_kml_with_mapping<const D: usize, T: CoordNum>(
 
 /// Create a kml::MultiGeometry from a nusamai_geometry::MultiPolygon
 pub fn polygon_to_kml(poly: &Polygon<3>) -> Vec<KmlPolygon> {
-    polygon_to_kml_with_mapping(poly.clone(), |c| c)
+    polygon_to_kml_with_mapping(poly, |c| c)
 }
 
 /// Create a kml::MultiGeometry with Polygon vertices and indices.
@@ -112,7 +112,7 @@ pub fn indexed_polygon_to_kml(
     vertices: &[[f64; 3]],
     poly_idx: &Polygon<1, u32>,
 ) -> Vec<KmlPolygon> {
-    polygon_to_kml_with_mapping(poly_idx.clone(), |idx| vertices[idx[0] as usize])
+    polygon_to_kml_with_mapping(poly_idx, |idx| vertices[idx[0] as usize])
 }
 
 /// Create a kml::MultiGeometry with Points from `nusamai_geometry::MultiPoint` with a mapping function.
