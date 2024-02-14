@@ -24,6 +24,7 @@ impl Bbox {
     }
 
     /// Update the bounding box with a new point and return the updated bounding box
+    #[must_use]
     pub fn updated_with(&mut self, x: f64, y: f64) -> Self {
         Bbox {
             min_x: self.min_x.min(x),
@@ -34,6 +35,7 @@ impl Bbox {
     }
 
     /// Merge with another bounding box and return the merged bounding box
+    #[must_use]
     pub fn merged_with(&self, other: &Bbox) -> Bbox {
         Bbox {
             min_x: self.min_x.min(other.min_x),
