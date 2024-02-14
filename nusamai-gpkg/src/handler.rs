@@ -48,8 +48,7 @@ impl GpkgHandler {
     pub async fn add_table(&self, table_info: &TableInfo) -> Result<(), GpkgError> {
         // Create the table
         let mut query = format!(
-            // "CREATE TABLE \"{}\" (id STRING NOT NULL PRIMARY KEY",
-            "CREATE TABLE \"{}\" (id INTEGER NOT NULL PRIMARY KEY",
+            "CREATE TABLE \"{}\" (id STRING NOT NULL PRIMARY KEY",
             table_info.name
         );
         if table_info.has_geometry {
@@ -283,6 +282,7 @@ impl<'c> GpkgTransaction<'c> {
     pub async fn insert_feature(
         &mut self,
         table_name: &str,
+        id: &str,
         bytes: &[u8],
         attributes: &IndexMap<String, String>,
     ) -> Result<(), GpkgError> {
@@ -290,9 +290,10 @@ impl<'c> GpkgTransaction<'c> {
 
         if attributes.is_empty() {
             sqlx::query(&format!(
-                "INSERT INTO \"{}\" (geometry) VALUES (?)",
+                "INSERT INTO \"{}\" (id, geometry) VALUES (?, ?)",
                 table_name
             ))
+            .bind(id)
             .bind(bytes)
             .execute(&mut *executor)
             .await?;
@@ -300,7 +301,7 @@ impl<'c> GpkgTransaction<'c> {
         }
 
         let query_string = format!(
-            "INSERT INTO \"{}\" (geometry, {}) VALUES (?, {})",
+            "INSERT INTO \"{}\" (id, geometry, {}) VALUES (?, ?, {})",
             table_name,
             attributes
                 .keys()
@@ -309,7 +310,7 @@ impl<'c> GpkgTransaction<'c> {
                 .join(", "),
             vec!["?"; attributes.len()].join(", ")
         );
-        let mut query = sqlx::query(&query_string).bind(bytes);
+        let mut query = sqlx::query(&query_string).bind(id).bind(bytes);
         for value in attributes.values() {
             query = query.bind(value);
         }
@@ -397,7 +398,7 @@ mod tests {
         assert_eq!(
             columns,
             vec![
-                ("id".into(), "INTEGER".into(), 1),
+                ("id".into(), "STRING".into(), 1),
                 ("geometry".into(), "BLOB".into(), 1),
                 ("attr1".into(), "TEXT".into(), 0),
                 ("attr2".into(), "INTEGER".into(), 0),
@@ -467,7 +468,7 @@ mod tests {
             columns,
             vec![
                 // No geometry column
-                ("id".into(), "INTEGER".into(), 1),
+                ("id".into(), "STRING".into(), 1),
                 ("attr1".into(), "TEXT".into(), 0),
             ]
         );
@@ -610,7 +611,7 @@ mod tests {
         assert_eq!(count, 0);
 
         let mut tx = handler.begin().await.unwrap();
-        tx.insert_feature(table_name, &[0, 1, 2, 3], &IndexMap::new())
+        tx.insert_feature(table_name, "id_1", &[0, 1, 2, 3], &IndexMap::new())
             .await
             .unwrap();
         tx.commit().await.unwrap();

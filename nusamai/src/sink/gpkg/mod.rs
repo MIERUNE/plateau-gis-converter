@@ -109,7 +109,7 @@ impl GpkgSink {
 
                         match &obj.stereotype {
                             ObjectStereotype::Feature {
-                                id: _obj_id,
+                                id: obj_id,
                                 geometries,
                             } => {
                                 let mut mpoly = nusamai_geometry::MultiPolygon::new();
@@ -154,7 +154,13 @@ impl GpkgSink {
                                 let table_name = obj.typename.to_string();
 
                                 if sender
-                                    .blocking_send((table_name, bytes, attributes, bbox))
+                                    .blocking_send((
+                                        table_name,
+                                        obj_id.clone(),
+                                        bytes,
+                                        attributes,
+                                        bbox,
+                                    ))
                                     .is_err()
                                 {
                                     return Err(PipelineError::Canceled);
@@ -174,9 +180,9 @@ impl GpkgSink {
         };
 
         let mut tx = handler.begin().await.unwrap();
-        while let Some((table_name, gpkg_bin, attributes, bbox)) = receiver.recv().await {
+        while let Some((table_name, obj_id, gpkg_bin, attributes, bbox)) = receiver.recv().await {
             feedback.ensure_not_canceled()?;
-            tx.insert_feature(&table_name, &gpkg_bin, &attributes)
+            tx.insert_feature(&table_name, &obj_id, &gpkg_bin, &attributes)
                 .await
                 .unwrap();
 
