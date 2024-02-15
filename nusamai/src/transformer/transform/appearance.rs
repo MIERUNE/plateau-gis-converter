@@ -39,7 +39,7 @@ impl Transform for ApplyAppearanceTransform {
                 // find and apply textures
                 {
                     let mut ring_id_iter = geoms.ring_ids.iter();
-                    let mut poly_textures = Vec::with_capacity(geoms.multilinestring.len());
+                    let mut poly_textures = Vec::with_capacity(geoms.multipolygon.len());
                     let mut poly_uvs = MultiPolygon::new();
 
                     for poly in &geoms.multipolygon {
