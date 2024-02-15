@@ -10,6 +10,7 @@ pub struct Requirements {
     /// Whether to shorten field names to 10 characters or less for Shapefiles.
     pub shorten_names_for_shapefile: bool,
     pub tree_flattening: TreeFlatteningSpec,
+    pub resolve_appearance: bool,
     pub mergedown: MergedownSpec,
     pub key_value: KeyValueSpec,
 }
@@ -19,6 +20,7 @@ impl Default for Requirements {
         Self {
             shorten_names_for_shapefile: false,
             tree_flattening: TreeFlatteningSpec::None,
+            resolve_appearance: false,
             mergedown: MergedownSpec::RemoveDescendantFeatures,
             key_value: KeyValueSpec::Jsonify,
         }
@@ -28,6 +30,7 @@ impl Default for Requirements {
 pub struct Request {
     pub shorten_names_for_shapefile: bool,
     pub tree_flattening: TreeFlatteningSpec,
+    pub apply_appearance: bool,
     pub mergedown: MergedownSpec,
     pub key_value: KeyValueSpec,
 }
@@ -37,6 +40,7 @@ impl From<Requirements> for Request {
         Self {
             shorten_names_for_shapefile: req.shorten_names_for_shapefile,
             tree_flattening: req.tree_flattening,
+            apply_appearance: req.resolve_appearance,
             mergedown: req.mergedown,
             key_value: req.key_value,
         }
@@ -90,6 +94,11 @@ impl TransformBuilder for NusamaiTransformBuilder {
 
         // Transform the coordinate system
         transforms.push(Box::new(ProjectionTransform::new(self.jgd2wgs.clone())));
+
+        // Apply appearance to geometries
+        if self.request.apply_appearance {
+            transforms.push(Box::new(ApplyAppearanceTransform::new()));
+        }
 
         transforms.push({
             let mut renamer = Box::<EditFieldNamesTransform>::default();

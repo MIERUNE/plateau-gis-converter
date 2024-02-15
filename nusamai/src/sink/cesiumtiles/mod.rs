@@ -92,6 +92,7 @@ struct SlicedFeature<'a> {
 impl DataSink for CesiumTilesSink {
     fn make_transform_requirements(&self) -> transformer::Requirements {
         transformer::Requirements {
+            resolve_appearance: true,
             ..Default::default()
         }
     }

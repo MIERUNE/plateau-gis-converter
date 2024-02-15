@@ -81,6 +81,7 @@ pub struct GltfPocSink {
 impl DataSink for GltfPocSink {
     fn make_transform_requirements(&self) -> transformer::Requirements {
         transformer::Requirements {
+            resolve_appearance: true,
             ..Default::default()
         }
     }
