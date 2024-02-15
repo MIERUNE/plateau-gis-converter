@@ -79,10 +79,10 @@ impl DataSink for KmlSink {
 
                         let polygons = entity_to_kml_polygons(&parcel.entity);
 
-                        let _simple_data_items = property_to_schema_data_entries(
+                        let simple_data_items = property_to_schema_data_entries(
                             &entity_to_properties(&parcel.entity).unwrap_or_default(),
                         );
-                        let _schema_data = Element {
+                        let schema_data = Element {
                             name: "SchemaData".to_string(),
                             attrs: {
                                 let mut attrs = HashMap::new();
@@ -90,7 +90,7 @@ impl DataSink for KmlSink {
                                 attrs
                             },
                             content: None,
-                            children: _simple_data_items
+                            children: simple_data_items
                                 .into_iter()
                                 .map(|simple_data| Element {
                                     name: "SimpleData".to_string(),
@@ -104,7 +104,7 @@ impl DataSink for KmlSink {
                             name: "ExtendedData".to_string(),
                             attrs: HashMap::new(),
                             content: None,
-                            children: vec![_schema_data],
+                            children: vec![schema_data],
                         };
 
                         let geoms = polygons.into_iter().map(Geometry::Polygon).collect();
