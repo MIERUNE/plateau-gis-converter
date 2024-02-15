@@ -15,10 +15,10 @@ use nusamai_kml::conversion::indexed_multipolygon_to_kml;
 use nusamai_plateau::Entity;
 use rayon::prelude::*;
 
+use serde_json;
+
 use kml::{
-    types::{
-        Geometry, Kml, MultiGeometry, Placemark, Polygon as KmlPolygon, SimpleData, Element
-    },
+    types::{Element, Geometry, Kml, MultiGeometry, Placemark, Polygon as KmlPolygon, SimpleData},
     KmlWriter,
 };
 
@@ -82,12 +82,17 @@ impl DataSink for KmlSink {
                         let polygons = entity_to_kml_polygons(&parcel.entity);
 
                         let _properties = entity_to_properties(&parcel.entity).unwrap_or_default();
-                        let _schema_data_items = property_to_schema_data_entries(&_properties);
-                        let extended_data_entry = Element {
-                            name: "ExtendedData".to_string(),
+                        let _simple_data_items = property_to_schema_data_entries(&_properties);
+                        let _schema_data = Element {
+                            name: "SchemaData".to_string(),
+                            // attrs: {
+                            //     let mut attrs = HashMap::new();
+                            //     attrs.insert("schemaUrl".to_string(), "#Schema_1".to_string());
+                            //     attrs
+                            // },
                             attrs: HashMap::new(),
                             content: None,
-                            children: _schema_data_items
+                            children: _simple_data_items
                                 .into_iter()
                                 .map(|simple_data| Element {
                                     name: "SimpleData".to_string(),
@@ -95,9 +100,14 @@ impl DataSink for KmlSink {
                                     content: Some(simple_data.value),
                                     children: Vec::new(),
                                 })
-                                .collect()
+                                .collect::<Vec<_>>(),
                         };
-
+                        let extended_data_entry = Element {
+                            name: "ExtendedData".to_string(),
+                            attrs: HashMap::new(),
+                            content: None,
+                            children: vec![_schema_data],
+                        };
 
                         let geoms = polygons.into_iter().map(Geometry::Polygon).collect();
                         let multi_geom = MultiGeometry {
@@ -112,7 +122,6 @@ impl DataSink for KmlSink {
                             description: None,
                             attrs: HashMap::new(),
                         };
-                        
 
                         if sender.send(placemark).is_err() {
                             return Err(PipelineError::Canceled);
@@ -121,11 +130,67 @@ impl DataSink for KmlSink {
                     })
             },
             || {
-                let placemarks = receiver.into_iter().collect::<Vec<_>>();
-                let folder = Kml::Folder {
-                    attrs: HashMap::new(),
-                    elements: placemarks.into_iter().map(Kml::Placemark).collect(),
+                // TODO?:QGIS attribute
+                let schema_element = Element {
+                    name: "Schema".to_string(),
+                    attrs: {
+                        let mut attrs = HashMap::new();
+                        attrs.insert("name".to_string(), "Schema_1".to_string());
+                        attrs.insert("id".to_string(), "Schema_1".to_string());
+                        attrs
+                    },
+                    content: None,
+                    children:Vec::new(),
+                    // children: {
+                    //     let mut children = Vec::new();
+                    //     children.push(Element {
+                    //         name: "SimpleField".to_string(),
+                    //         attrs: {
+                    //             let mut attrs = HashMap::new();
+                    //             attrs.insert("name".to_string(), "id".to_string());
+                    //             attrs.insert("type".to_string(), "string".to_string());
+                    //             attrs
+                    //         },
+                    //         content: None,
+                    //         children: Vec::new(),
+                    //     });
+                    //     children.push(Element {
+                    //         name: "SimpleField".to_string(),
+                    //         attrs: {
+                    //             let mut attrs = HashMap::new();
+                    //             attrs.insert("name".to_string(), "type".to_string());
+                    //             attrs.insert("type".to_string(), "string".to_string());
+                    //             attrs
+                    //         },
+                    //         content: None,
+                    //         children: Vec::new(),
+                    //     });
+                    //     children
+                    // },
                 };
+
+                // let placemarks = receiver.into_iter();
+                let placemarks = receiver.into_iter().collect::<Vec<_>>();
+
+                let kml_doc = Kml::Document {
+                    attrs: HashMap::new(),
+                    elements: {
+                        let mut elements = Vec::<Kml>::new();
+                        elements.push(Kml::Element(schema_element));
+                        elements.extend(placemarks.into_iter().map(Kml::Placemark));
+                        elements
+                    },
+                };
+
+                // let folder = Kml::Folder {
+                //     attrs: HashMap::new(),
+                //     elements: {
+                //         let mut elements = Vec::<Kml>::new();
+                //         elements.push(Kml::Element(schema_element));
+                //         elements.extend(placemarks.into_iter().map(Kml::Placemark));
+                //         elements
+                //     },
+                // };
 
                 let mut file = File::create(&self.output_path).unwrap();
                 let mut buf_writer = BufWriter::with_capacity(1024 * 1024, &mut file);
@@ -136,8 +201,11 @@ impl DataSink for KmlSink {
                     r#"<kml xmlns="http://www.opengis.net/kml/2.2">"#
                 )
                 .unwrap();
+                // let mut kml_writer = KmlWriter::from_writer(&mut buf_writer);
+                // let _ = kml_writer.write(&folder);
+
                 let mut kml_writer = KmlWriter::from_writer(&mut buf_writer);
-                let _ = kml_writer.write(&folder);
+                let _ = kml_writer.write(&kml_doc);
                 writeln!(buf_writer, "</kml>").unwrap();
 
                 Ok(())
@@ -173,11 +241,16 @@ pub fn entity_to_properties(entity: &Entity) -> Option<geojson::JsonObject> {
 
 pub fn property_to_schema_data_entries(properties: &geojson::JsonObject) -> Vec<SimpleData> {
     let mut simple_data_entries = Vec::new();
+
     for (key, value) in properties.iter() {
         let simpledata = SimpleData {
             name: key.to_string(),
-            value: value.to_string(),
-            attrs: HashMap::new(),
+            value: serde_json::to_string(value).unwrap(),
+            attrs: {
+                let mut attrs = HashMap::new();
+                attrs.insert("name".to_string(), key.to_string());
+                attrs
+            },
         };
         simple_data_entries.push(simpledata);
     }
