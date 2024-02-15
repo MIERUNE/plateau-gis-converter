@@ -180,16 +180,6 @@ impl DataSink for KmlSink {
                     },
                 };
 
-                // let folder = Kml::Folder {
-                //     attrs: HashMap::new(),
-                //     elements: {
-                //         let mut elements = Vec::<Kml>::new();
-                //         elements.push(Kml::Element(schema_element));
-                //         elements.extend(placemarks.into_iter().map(Kml::Placemark));
-                //         elements
-                //     },
-                // };
-
                 let mut file = File::create(&self.output_path).unwrap();
                 let mut buf_writer = BufWriter::with_capacity(1024 * 1024, &mut file);
 
