@@ -16,7 +16,7 @@ use nusamai_plateau::Entity;
 use rayon::prelude::*;
 
 use kml::{
-    types::{Kml, MultiGeometry, Placemark},
+    types::{Geometry, Kml, MultiGeometry, Placemark, Polygon as KmlPolygon},
     KmlWriter,
 };
 
@@ -71,40 +71,37 @@ impl DataSink for KmlSink {
 
         let (ra, rb) = rayon::join(
             || {
-                // Convert CityObjects to GeoJSON objects
+                // Convert CityObjects to KML objects
                 upstream
                     .into_iter()
                     .par_bridge()
                     .try_for_each_with(sender, |sender, parcel| {
                         feedback.ensure_not_canceled()?;
 
-                        let multi_geom = entity_to_kml_mutilgeom(&parcel.entity);
+                        let polygons = entity_to_kml_polygons(&parcel.entity);
 
-                        for geom in multi_geom.geometries {
-                            if sender.send(geom).is_err() {
-                                return Err(PipelineError::Canceled);
-                            }
+                        let geoms = polygons.into_iter().map(Geometry::Polygon).collect();
+                        let multi_geom = MultiGeometry {
+                            geometries: geoms,
+                            ..Default::default()
+                        };
+
+                        let placemark = Placemark {
+                            geometry: Some(Geometry::MultiGeometry(multi_geom)),
+                            ..Default::default()
+                        };
+
+                        if sender.send(placemark).is_err() {
+                            return Err(PipelineError::Canceled);
                         }
                         Ok(())
                     })
             },
             || {
-                // Write GeoJSON to a file
-                let mut placemarks: Vec<Kml> = Vec::new();
-
-                for geom in receiver.into_iter() {
-                    let placemark = Placemark {
-                        geometry: Some(geom),
-                        ..Default::default()
-                    };
-
-                    placemarks.push(Kml::Placemark(placemark));
-                }
-                // TODO: Handle output file path
-
+                let placemarks = receiver.into_iter().collect::<Vec<_>>();
                 let folder = Kml::Folder {
                     attrs: HashMap::new(),
-                    elements: placemarks,
+                    elements: placemarks.into_iter().map(Kml::Placemark).collect(),
                 };
 
                 let mut file = File::create(&self.output_path).unwrap();
@@ -147,15 +144,15 @@ fn extract_properties(value: &nusamai_citygml::object::Value) -> Option<geojson:
     }
 }
 
-pub fn entity_to_kml_mutilgeom(entity: &Entity) -> MultiGeometry {
+pub fn entity_to_kml_polygons(entity: &Entity) -> Vec<KmlPolygon> {
     let _properties = extract_properties(&entity.root);
     let geom_store = entity.geometry_store.read().unwrap();
 
     let Value::Object(obj) = &entity.root else {
-        return MultiGeometry::default();
+        return Vec::new();
     };
     let ObjectStereotype::Feature { geometries, .. } = &obj.stereotype else {
-        return MultiGeometry::default();
+        return Vec::new();
     };
 
     let mut mpoly = nusamai_geometry::MultiPolygon::<1, u32>::new();
