@@ -32,3 +32,5 @@ jobs:
         run: mkdir -p app/build
       - name: Build App
         run: cargo build --verbose --package app
+      - name: Clippy (lint)
+        run: cargo clippy --all-targets --all-features
