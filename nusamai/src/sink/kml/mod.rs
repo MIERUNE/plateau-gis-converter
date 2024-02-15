@@ -15,8 +15,6 @@ use nusamai_kml::conversion::indexed_multipolygon_to_kml;
 use nusamai_plateau::Entity;
 use rayon::prelude::*;
 
-use serde_json;
-
 use kml::{
     types::{Element, Geometry, Kml, MultiGeometry, Placemark, Polygon as KmlPolygon, SimpleData},
     KmlWriter,
@@ -140,7 +138,7 @@ impl DataSink for KmlSink {
                         attrs
                     },
                     content: None,
-                    children:Vec::new(),
+                    children: Vec::new(),
                     // children: {
                     //     let mut children = Vec::new();
                     //     children.push(Element {
