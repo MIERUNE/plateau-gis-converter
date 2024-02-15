@@ -79,8 +79,7 @@ impl DataSink for KmlSink {
 
                         let polygons = entity_to_kml_polygons(&parcel.entity);
 
-                        let _properties = entity_to_properties(&parcel.entity).unwrap_or_default();
-                        let _simple_data_items = property_to_schema_data_entries(&_properties);
+                        let _simple_data_items = property_to_schema_data_entries(&entity_to_properties(&parcel.entity).unwrap_or_default());
                         let _schema_data = Element {
                             name: "SchemaData".to_string(),
                             // attrs: {
@@ -219,7 +218,8 @@ fn extract_properties(value: &nusamai_citygml::object::Value) -> Option<geojson:
             serde_json::Value::Object(map) => Some(map),
             _ => unreachable!(),
         },
-        _ => panic!("Root value type must be Feature, but found {:?}", value),
+        // _ => panic!("Root value type must be Feature, but found {:?}", value),
+        _ => panic!("{}", geojson::JsonObject::new())
     }
 }
 
