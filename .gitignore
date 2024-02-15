@@ -57,6 +57,3 @@ Temporary Items
 
 # emacs buckup files
 *~
-data/*
-
-*.kml
