@@ -1,7 +1,7 @@
 mod appearance;
 mod attrname;
 mod dots;
-mod flatten;
+pub(crate) mod flatten;
 mod geommerge;
 mod jsonify;
 mod lods;
