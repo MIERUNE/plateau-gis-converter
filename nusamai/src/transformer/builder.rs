@@ -48,11 +48,41 @@ impl From<Requirements> for Request {
 }
 
 pub enum TreeFlatteningSpec {
+    /// No flattening at all
+    None,
+    // Flatten with the given options
+    FlatteningOptions {
+        feature: FeatureFlatteningOption,
+        data: DataFlatteningOption,
+        object: ObjectFlatteningOption,
+    },
+}
+
+/// Flattening option for the "feature" stereotype
+pub enum FeatureFlatteningOption {
     /// No feature flattening
     None,
     /// Flatten all features except thematic surfaces
     AllExceptThematicSurfaces,
     /// Flatten all features
+    All,
+}
+
+/// Flattening option for the "data" stereotype
+pub enum DataFlatteningOption {
+    /// No data flattening
+    None,
+    /// Flatten top-level data (i.e., data that is not a child of another data)
+    TopLevelOnly,
+    /// Flatten all data
+    All,
+}
+
+/// Flattening option for the "object" stereotype
+pub enum ObjectFlatteningOption {
+    /// No object flattening
+    None,
+    /// Flatten all objects
     All,
 }
 
@@ -110,13 +140,41 @@ impl TransformBuilder for NusamaiTransformBuilder {
 
         transforms.push(Box::<FilterLodTransform>::default());
 
-        match self.request.tree_flattening {
+        match &self.request.tree_flattening {
             TreeFlatteningSpec::None => {}
-            TreeFlatteningSpec::AllExceptThematicSurfaces => {
-                transforms.push(Box::new(FlattenTreeTransform::new()));
-            }
-            TreeFlatteningSpec::All => {
-                transforms.push(Box::new(FlattenTreeTransform::new()));
+            TreeFlatteningSpec::FlatteningOptions {
+                feature,
+                data,
+                object,
+            } => {
+                let mut transform = FlattenTreeTransform::new();
+
+                match feature {
+                    FeatureFlatteningOption::None => {}
+                    FeatureFlatteningOption::AllExceptThematicSurfaces => {}
+                    FeatureFlatteningOption::All => {
+                        transform.set_split_thematic_surfaces(true);
+                    }
+                }
+
+                match data {
+                    DataFlatteningOption::None => {}
+                    DataFlatteningOption::TopLevelOnly => {
+                        // TODO: implement
+                    }
+                    DataFlatteningOption::All => {
+                        // TODO: implement
+                    }
+                }
+
+                match object {
+                    ObjectFlatteningOption::None => {}
+                    ObjectFlatteningOption::All => {
+                        // TODO: implement
+                    }
+                }
+
+                transforms.push(Box::new(transform));
             }
         }
 

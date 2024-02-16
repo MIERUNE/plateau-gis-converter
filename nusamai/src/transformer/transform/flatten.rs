@@ -11,24 +11,22 @@ use nusamai_plateau::Entity;
 #[derive(Default)]
 pub struct FlattenTreeTransform {
     split_thematic_surfaces: bool,
+    // TODO: restructure the options
     split_data_stereotype: bool,
     split_object_stereotype: bool,
 }
 
 impl FlattenTreeTransform {
-    pub fn with_split_thematic_surfaces(mut self, split: bool) -> Self {
+    pub fn set_split_thematic_surfaces(&mut self, split: bool) {
         self.split_thematic_surfaces = split;
-        self
     }
 
-    pub fn with_split_data_stereotype(mut self, split: bool) -> Self {
+    pub fn set_split_data_stereotype(&mut self, split: bool) {
         self.split_data_stereotype = split;
-        self
     }
 
-    pub fn with_split_object_stereotype(mut self, split: bool) -> Self {
+    pub fn set_split_object_stereotype(&mut self, split: bool) {
         self.split_object_stereotype = split;
-        self
     }
 }
 
