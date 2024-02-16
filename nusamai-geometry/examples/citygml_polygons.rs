@@ -215,7 +215,6 @@ end_header
 
 fn write_features(mpolys: &[MultiPolygon3], mu_lng: f64, mu_lat: f64) {
     use earcut_rs::{utils3d::project3d_to_2d, Earcut};
-
     let mut earcutter = Earcut::new();
     let mut buf3d: Vec<f64> = Vec::new();
     let mut buf2d: Vec<f64> = Vec::new();
