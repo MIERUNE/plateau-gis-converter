@@ -11,7 +11,7 @@ use std::path::{Path, PathBuf};
 use std::sync::{mpsc, Arc, Mutex};
 
 use ahash::RandomState;
-use earcut_rs::utils_3d::project3d_to_2d;
+use earcut_rs::utils3d::project3d_to_2d;
 use earcut_rs::Earcut;
 use ext_sort::{buffer::mem::MemoryLimitedBufferBuilder, ExternalSorter, ExternalSorterBuilder};
 use indexmap::IndexSet;
@@ -267,7 +267,7 @@ fn tile_writing_stage(
                     buf3d.clear();
                     buf3d.extend(poly.coords());
 
-                    if project3d_to_2d(&buf3d, num_outer, &mut buf2d) {
+                    if project3d_to_2d(&buf3d, num_outer, 3, &mut buf2d) {
                         // earcut
                         earcutter.earcut(&buf2d, poly.hole_indices(), 2, &mut triangles_buf);
                         triangles.extend(triangles_buf.iter().map(|idx| {
