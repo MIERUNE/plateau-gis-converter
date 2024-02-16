@@ -6,7 +6,7 @@ use std::path::{Path, PathBuf};
 
 use ahash::RandomState;
 use byteorder::{ByteOrder, LittleEndian};
-use earcut_rs::utils_3d::project3d_to_2d;
+use earcut_rs::utils3d::project3d_to_2d;
 use earcut_rs::Earcut;
 use indexmap::IndexSet;
 use nusamai_gltf_json::extensions::mesh::ext_mesh_features::FeatureId;
@@ -178,7 +178,7 @@ impl DataSink for GltfPocSink {
                                     buf3d.clear();
                                     buf3d.extend(poly.coords());
 
-                                    if project3d_to_2d(&buf3d, num_outer, &mut buf2d) {
+                                    if project3d_to_2d(&buf3d, num_outer, 3, &mut buf2d) {
                                         // earcut
                                         earcutter.earcut(
                                             &buf2d,

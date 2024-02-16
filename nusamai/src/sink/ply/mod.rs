@@ -5,7 +5,7 @@ use std::path::PathBuf;
 
 use ahash::RandomState;
 use byteorder::{ByteOrder, LittleEndian, WriteBytesExt};
-use earcut_rs::{utils_3d::project3d_to_2d, Earcut};
+use earcut_rs::{utils3d::project3d_to_2d, Earcut};
 use indexmap::IndexSet;
 use nusamai_citygml::{schema::Schema, GeometryType};
 
@@ -136,7 +136,7 @@ impl DataSink for StanfordPlySink {
                                     buf3d.clear();
                                     buf3d.extend(poly.coords());
 
-                                    if project3d_to_2d(&buf3d, num_outer, &mut buf2d) {
+                                    if project3d_to_2d(&buf3d, num_outer, 3, &mut buf2d) {
                                         // earcut
                                         earcutter.earcut(
                                             &buf2d,

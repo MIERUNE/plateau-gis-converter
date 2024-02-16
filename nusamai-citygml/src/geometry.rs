@@ -100,15 +100,13 @@ impl GeometryCollector {
         &mut self,
         iter: impl IntoIterator<Item = [f64; 3]>,
         ring_id: Option<LocalId>,
-    ) -> usize {
+    ) {
         self.ring_ids.push(ring_id);
         self.multipolygon.add_exterior(iter.into_iter().map(|v| {
             let vbits = [v[0].to_bits(), v[1].to_bits(), v[2].to_bits()];
             let (index, _) = self.vertices.insert_full(vbits);
             [index as u32]
         }));
-
-        self.multipolygon.len() - 1
     }
 
     pub fn add_interior_ring(

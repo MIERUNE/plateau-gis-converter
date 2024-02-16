@@ -1,5 +1,8 @@
+//! Apply appearance to geometries
+
 use crate::transformer::Transform;
 
+use itertools::Itertools;
 use nusamai_citygml::schema::Schema;
 use nusamai_geometry::MultiPolygon;
 use nusamai_plateau::Entity;
@@ -17,9 +20,9 @@ impl Transform for ApplyAppearanceTransform {
                     .or_else(|| app.themes.get("FMETheme"))
             };
 
-            if let Some(theme) = theme {
-                let mut geoms = entity.geometry_store.write().unwrap();
+            let mut geoms = entity.geometry_store.write().unwrap();
 
+            if let Some(theme) = theme {
                 // find and apply materials
                 {
                     let mut poly_materials = vec![None; geoms.multipolygon.len()];
@@ -49,8 +52,8 @@ impl Transform for ApplyAppearanceTransform {
                                 .unwrap()
                                 .and_then(|ring_id| theme.ring_id_to_texture.get(&ring_id));
 
-                            let mut add_dummy = || {
-                                let uv = [[0.0, 0.0]].into_iter().cycle().take(ring.len());
+                            let mut add_dummy_texture = || {
+                                let uv = [[0.0, 0.0]].into_iter().cycle().take(ring.len() + 1);
                                 if i == 0 {
                                     poly_textures.push(None);
                                     poly_uvs.add_exterior(uv);
@@ -60,23 +63,27 @@ impl Transform for ApplyAppearanceTransform {
                             };
 
                             match tex {
-                                Some((idx, uv)) if uv.len() == ring.len() => {
+                                Some((idx, uv)) if ring.len() == uv.len() => {
                                     // texture found
                                     if i == 0 {
                                         poly_textures.push(Some(*idx));
-                                        poly_uvs.add_exterior(uv);
+                                        poly_uvs.add_exterior(uv.iter_closed());
                                     } else {
-                                        poly_uvs.add_interior(uv);
+                                        poly_uvs.add_interior(uv.iter_closed());
                                     }
                                 }
                                 Some((_, uv)) if uv.len() != ring.len() => {
                                     // invalid texture found
-                                    log::warn!("Length of UVs does not match length of ring");
-                                    add_dummy();
+                                    log::warn!(
+                                        "Length of UVs does not match length of ring: {:?} {:?}",
+                                        ring,
+                                        uv
+                                    );
+                                    add_dummy_texture();
                                 }
                                 _ => {
                                     // no texture found
-                                    add_dummy();
+                                    add_dummy_texture();
                                 }
                             };
                         }
@@ -87,6 +94,35 @@ impl Transform for ApplyAppearanceTransform {
                     debug_assert_eq!(poly_uvs.len(), geoms.multipolygon.len());
                     geoms.polygon_textures = poly_textures;
                     geoms.polygon_uvs = poly_uvs;
+                }
+            } else {
+                // set 'null' appearance if no theme found
+                geoms.polygon_materials = vec![None; geoms.multipolygon.len()];
+                geoms.polygon_textures = vec![None; geoms.multipolygon.len()];
+                let mut poly_uvs = MultiPolygon::new();
+                for poly in &geoms.multipolygon {
+                    for (i, ring) in poly.rings().enumerate() {
+                        let uv = [[0.0, 0.0]].into_iter().cycle().take(ring.len() + 1);
+                        if i == 0 {
+                            poly_uvs.add_exterior(uv);
+                        } else {
+                            poly_uvs.add_interior(uv);
+                        }
+                    }
+                }
+                geoms.polygon_uvs = poly_uvs;
+            }
+
+            // REMOVE ME:
+            for (poly, uv_poly) in geoms.multipolygon.iter().zip_eq(geoms.polygon_uvs.iter()) {
+                for (ring, uv_ring) in poly.rings().zip_eq(uv_poly.rings()) {
+                    assert_eq!(
+                        ring.len(),
+                        uv_ring.len(),
+                        "mismatch {:?} {:?}",
+                        ring,
+                        uv_ring
+                    );
                 }
             }
         }
