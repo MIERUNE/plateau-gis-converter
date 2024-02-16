@@ -51,7 +51,7 @@ pub enum TreeFlatteningSpec {
     /// No flattening at all
     None,
     // Flatten with the given options
-    FlatteningOptions {
+    Flatten {
         feature: FeatureFlatteningOption,
         data: DataFlatteningOption,
         object: ObjectFlatteningOption,
@@ -142,7 +142,7 @@ impl TransformBuilder for NusamaiTransformBuilder {
 
         match &self.request.tree_flattening {
             TreeFlatteningSpec::None => {}
-            TreeFlatteningSpec::FlatteningOptions {
+            TreeFlatteningSpec::Flatten {
                 feature,
                 data,
                 object,
