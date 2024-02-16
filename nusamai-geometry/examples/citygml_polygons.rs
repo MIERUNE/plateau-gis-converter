@@ -214,7 +214,7 @@ end_header
 // comment crs: GEOGCRS["JGD2011",DATUM["Japanese Geodetic Datum 2011",ELLIPSOID["GRS 1980",6378137,298.257222101,LENGTHUNIT["metre",1]]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",0.0174532925199433]],CS[ellipsoidal,2],AXIS["geodetic latitude (Lat)",north,ORDER[1],ANGLEUNIT["degree",0.0174532925199433]],AXIS["geodetic longitude (Lon)",east,ORDER[2],ANGLEUNIT["degree",0.0174532925199433]],USAGE[SCOPE["Horizontal component of 3D system."],AREA["Japan - onshore and offshore."],BBOX[17.09,122.38,46.05,157.65]],ID["EPSG",6668]]
 
 fn write_features(mpolys: &[MultiPolygon3], mu_lng: f64, mu_lat: f64) {
-    use earcut_rs::{utils_3d::project3d_to_2d, Earcut};
+    use earcut_rs::{utils3d::project3d_to_2d, Earcut};
     let mut earcutter = Earcut::new();
     let mut buf3d: Vec<f64> = Vec::new();
     let mut buf2d: Vec<f64> = Vec::new();
@@ -240,7 +240,7 @@ fn write_features(mpolys: &[MultiPolygon3], mu_lng: f64, mu_lat: f64) {
                 ]
             }));
 
-            if project3d_to_2d(&buf3d, num_outer, &mut buf2d) {
+            if project3d_to_2d(&buf3d, num_outer, 3, &mut buf2d) {
                 // earcut
                 earcutter.earcut(&buf2d, poly.hole_indices(), 2, &mut triangles_out);
                 // indices and vertices
