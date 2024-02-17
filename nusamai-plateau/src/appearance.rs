@@ -19,6 +19,7 @@ pub struct Material {
     pub specular_color: Color,
     pub ambient_intensity: f64,
     // TOOD: other parameters
+    // Note: Adjust the Hash implementation if you add a new field
 }
 
 impl From<X3DMaterial> for Material {

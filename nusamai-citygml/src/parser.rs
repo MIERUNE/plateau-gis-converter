@@ -1042,9 +1042,10 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                             self.state.fp_buf.pop();
                             self.state.fp_buf.pop();
                         } else {
-                            return Err(ParseError::InvalidValue(
-                                "The last UV must be the same as the first UV".into(),
-                            ));
+                            return Err(ParseError::InvalidValue(format!(
+                                "The last UV coord must be the same as the first: {:?}",
+                                self.state.fp_buf
+                            )));
                         }
                     }
 

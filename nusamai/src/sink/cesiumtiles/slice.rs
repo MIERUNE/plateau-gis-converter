@@ -1,9 +1,11 @@
 //! Polygon slicing algorithm based on [geojson-vt](https://github.com/mapbox/geojson-vt).
 
 use hashbrown::HashMap;
+use indexmap::IndexSet;
 use itertools::Itertools;
 use serde::{Deserialize, Serialize};
 
+use super::material::Material;
 use super::tiling;
 use nusamai_citygml::{
     geometry::GeometryType,
@@ -11,12 +13,18 @@ use nusamai_citygml::{
 };
 use nusamai_geometry::{MultiPolygon, Polygon, Polygon2, Polygon3};
 use nusamai_mvt::TileZXY;
-use nusamai_plateau::Entity;
+use nusamai_plateau::{appearance, Entity};
 
 #[derive(Serialize, Deserialize)]
 pub struct SlicedFeature {
+    // polygons [x, y, z, u, v]
     pub polygons: MultiPolygon<'static, 5>,
-    pub properties: nusamai_citygml::object::Value,
+    // material ids for each polygon
+    pub polygon_material_ids: Vec<u32>,
+    // materials
+    pub materials: IndexSet<Material>,
+    // attribute values
+    pub attributes: nusamai_citygml::object::Value,
 }
 
 pub fn slice_to_tiles<E>(
@@ -42,13 +50,16 @@ pub fn slice_to_tiles<E>(
     if geom_store.multipolygon.is_empty() {
         return Ok(());
     }
+    let appearance_store = entity.appearance_store.read().unwrap();
 
-    let mut sliced_mpolys: HashMap<(u8, u32, u32), MultiPolygon<5>> = HashMap::new();
+    let mut materials: IndexSet<Material> = IndexSet::new();
+    let mut sliced_tiles: HashMap<(u8, u32, u32), SlicedFeature> = HashMap::new();
+    let default_mat = appearance::Material::default();
 
     geometries.iter().for_each(|entry| match entry.ty {
         GeometryType::Solid | GeometryType::Surface | GeometryType::Triangle => {
             // for each polygon
-            for (idx_poly, poly_uv) in geom_store
+            for ((idx_poly, poly_uv), poly_mat) in geom_store
                 .multipolygon
                 .iter_range(entry.pos as usize..(entry.pos + entry.len) as usize)
                 .zip_eq(
@@ -56,13 +67,38 @@ pub fn slice_to_tiles<E>(
                         .polygon_uvs
                         .iter_range(entry.pos as usize..(entry.pos + entry.len) as usize),
                 )
+                .zip_eq(
+                    geom_store.polygon_materials
+                        [entry.pos as usize..(entry.pos + entry.len) as usize]
+                        .iter(),
+                )
             {
                 let poly = idx_poly.transform(|c| geom_store.vertices[c[0] as usize]);
+                let orig_mat = poly_mat
+                    .and_then(|idx| appearance_store.materials.get(idx as usize))
+                    .unwrap_or(&default_mat)
+                    .clone();
 
-                // Slice for each zoom level
+                let mat = Material {
+                    base_color: orig_mat.diffuse_color.into(),
+                };
+                let (mat_idx, _) = materials.insert_full(mat);
+
+                // Slice polygon for each zoom level
                 for zoom in min_z..=max_z {
                     slice_polygon(zoom, &poly, &poly_uv, |(z, x, y), poly| {
-                        sliced_mpolys.entry((z, x, y)).or_default().push(poly);
+                        let sliced_feature =
+                            sliced_tiles
+                                .entry((z, x, y))
+                                .or_insert_with(|| SlicedFeature {
+                                    polygons: MultiPolygon::new(),
+                                    attributes: entity.root.clone(),
+                                    polygon_material_ids: Default::default(),
+                                    materials: Default::default(),
+                                });
+
+                        sliced_feature.polygons.push(poly);
+                        sliced_feature.polygon_material_ids.push(mat_idx as u32);
                     });
                 }
             }
@@ -75,17 +111,10 @@ pub fn slice_to_tiles<E>(
         }
     });
 
-    for ((z, x, y), mpoly) in sliced_mpolys {
-        if mpoly.is_empty() {
-            continue;
-        }
-        let feature = SlicedFeature {
-            polygons: mpoly,
-            properties: entity.root.clone(),
-        };
-        send_feature((z, x, y), feature)?;
+    for ((z, x, y), mut sliced_feature) in sliced_tiles {
+        sliced_feature.materials = materials.clone();
+        send_feature((z, x, y), sliced_feature)?;
     }
-
     Ok(())
 
     // TODO: linestring, point

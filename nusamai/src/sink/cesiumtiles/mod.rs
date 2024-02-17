@@ -2,10 +2,12 @@
 
 use std::fs;
 mod gltf;
+mod material;
 mod slice;
 mod sort;
 mod tiling;
 
+use indexmap::IndexSet;
 use itertools::Itertools;
 use std::io::BufWriter;
 use std::path::{Path, PathBuf};
@@ -15,7 +17,6 @@ use ahash::RandomState;
 use earcut_rs::utils3d::project3d_to_2d;
 use earcut_rs::Earcut;
 use ext_sort::{buffer::mem::MemoryLimitedBufferBuilder, ExternalSorter, ExternalSorterBuilder};
-use indexmap::IndexSet;
 use nusamai_mvt::TileZXY;
 use nusamai_projection::cartesian::geographic_to_geocentric;
 use rayon::prelude::*;
@@ -233,8 +234,13 @@ fn tile_writing_stage(
             let mut triangles = Vec::new();
 
             for serialized_feat in serialized_feats {
-                let mut feature: SlicedFeature =
-                    bincode::deserialize(&serialized_feat.body).unwrap();
+                let mut feature: SlicedFeature = bincode::deserialize(&serialized_feat.body)
+                    .map_err(|err| {
+                        PipelineError::Other(format!(
+                            "Failed to deserialize a sliced feature: {:?}",
+                            err
+                        ))
+                    })?;
 
                 feature
                     .polygons
@@ -341,12 +347,10 @@ fn tile_writing_stage(
             // write to file
             let path_glb = output_path.join(Path::new(&format!("{zoom}/{x}/{y}.glb")));
             if let Some(dir) = path_glb.parent() {
-                if let Err(e) = fs::create_dir_all(dir) {
-                    panic!("Fatal error: {:?}", e); // FIXME
-                }
+                fs::create_dir_all(dir)?;
             }
 
-            let mut file = std::fs::File::create(path_glb).unwrap();
+            let mut file = std::fs::File::create(path_glb)?;
             let mut writer = BufWriter::new(&mut file);
             write_gltf_glb(
                 &mut writer,
