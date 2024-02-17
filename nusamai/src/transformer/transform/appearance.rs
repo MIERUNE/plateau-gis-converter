@@ -114,8 +114,8 @@ impl Transform for ApplyAppearanceTransform {
             }
 
             // REMOVE ME:
-            for (poly, uv_poly) in geoms.multipolygon.iter().zip_eq(geoms.polygon_uvs.iter()) {
-                for (ring, uv_ring) in poly.rings().zip_eq(uv_poly.rings()) {
+            for (poly, poly_uv) in geoms.multipolygon.iter().zip_eq(geoms.polygon_uvs.iter()) {
+                for (ring, uv_ring) in poly.rings().zip_eq(poly_uv.rings()) {
                     assert_eq!(
                         ring.len(),
                         uv_ring.len(),

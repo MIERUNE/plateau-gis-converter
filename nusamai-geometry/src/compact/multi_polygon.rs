@@ -179,7 +179,7 @@ impl<'a, const D: usize, T: CoordNum> MultiPolygon<'a, D, T> {
     }
 
     // Adds a polygon to the multipolygon.
-    pub fn push(&mut self, poly: Polygon<D, T>) {
+    pub fn push(&mut self, poly: &Polygon<D, T>) {
         self.add_exterior(&poly.exterior());
         for hole in poly.interiors() {
             self.add_interior(&hole);
@@ -296,7 +296,7 @@ mod tests {
         poly1.add_ring([[0., 0.], [5., 0.], [5., 5.], [0., 5.]]); // exterior
         poly1.add_ring([[1., 1.], [2., 1.], [2., 2.], [1., 2.]]); // interior
         poly1.add_ring([[3., 3.], [4., 3.], [4., 4.], [3., 4.]]); // interior
-        mpoly.push(poly1);
+        mpoly.push(&poly1);
         assert!(!mpoly.is_empty());
         assert_eq!(mpoly.len(), 1);
 
@@ -304,13 +304,13 @@ mod tests {
         let mut poly2 = Polygon2::new();
         poly2.add_ring([[4., 0.], [7., 0.], [7., 3.], [4., 3.]]); // exterior
         poly2.add_ring([[5., 1.], [6., 1.], [6., 2.], [5., 2.]]); // interior
-        mpoly.push(poly2);
+        mpoly.push(&poly2);
         assert_eq!(mpoly.len(), 2);
 
         // 3rd polygon
         let mut poly3 = Polygon2::new();
         poly3.add_ring([[4., 0.], [7., 0.], [7., 3.], [4., 3.]]); // exterior
-        mpoly.push(poly3);
+        mpoly.push(&poly3);
         assert_eq!(mpoly.len(), 3);
 
         for (i, poly) in mpoly.iter().enumerate() {

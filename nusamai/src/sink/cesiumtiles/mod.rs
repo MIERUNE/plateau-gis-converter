@@ -6,6 +6,7 @@ mod slice;
 mod sort;
 mod tiling;
 
+use itertools::Itertools;
 use std::io::BufWriter;
 use std::path::{Path, PathBuf};
 use std::sync::{mpsc, Arc, Mutex};
@@ -15,14 +16,12 @@ use earcut_rs::utils3d::project3d_to_2d;
 use earcut_rs::Earcut;
 use ext_sort::{buffer::mem::MemoryLimitedBufferBuilder, ExternalSorter, ExternalSorterBuilder};
 use indexmap::IndexSet;
-use itertools::Itertools;
 use nusamai_mvt::TileZXY;
 use nusamai_projection::cartesian::geographic_to_geocentric;
 use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
 
 use nusamai_citygml::schema::Schema;
-use nusamai_geometry::MultiPolygon;
 use nusamai_mvt::tileid::TileIdMethod;
 
 use crate::parameters::*;
@@ -30,7 +29,7 @@ use crate::pipeline::{Feedback, PipelineError, Receiver, Result};
 use crate::sink::cesiumtiles::gltf::write_gltf_glb;
 use crate::sink::{DataSink, DataSinkProvider, SinkInfo};
 use crate::{get_parameter_value, transformer};
-use slice::slice_geoms;
+use slice::{slice_to_tiles, SlicedFeature};
 use sort::BincodeExternalChunk;
 
 use tiling::{TileSpec, TileTree};
@@ -81,12 +80,6 @@ struct SerializedSlicedFeature {
     tile_id: u64,
     #[serde(with = "serde_bytes")]
     body: Vec<u8>,
-}
-
-#[derive(Serialize, Deserialize)]
-struct SlicedFeature<'a> {
-    polygons: MultiPolygon<'a, 5>,
-    properties: nusamai_citygml::object::Value,
 }
 
 impl DataSink for CesiumTilesSink {
@@ -158,18 +151,14 @@ fn geometry_slicing_stage(
     upstream.into_iter().par_bridge().try_for_each(|parcel| {
         feedback.ensure_not_canceled()?;
 
-        slice_geoms(&parcel.entity, 7, 17, |(z, x, y), mpoly| {
-            let feature = SlicedFeature {
-                polygons: mpoly,
-                properties: parcel.entity.root.clone(),
-            };
+        // TODO: zoom level from parameters
+        slice_to_tiles(&parcel.entity, 7, 17, |(z, x, y), feature| {
             let bytes = bincode::serialize(&feature).unwrap();
-            let sfeat = SerializedSlicedFeature {
+            let serialized_feature = SerializedSlicedFeature {
                 tile_id: tile_id_conv.zxy_to_id(z, x, y),
                 body: bytes,
             };
-
-            if sender_sliced.send(sfeat).is_err() {
+            if sender_sliced.send(serialized_feature).is_err() {
                 return Err(PipelineError::Canceled);
             };
             Ok(())
@@ -224,7 +213,7 @@ fn tile_writing_stage(
     receiver_sorted
         .into_iter()
         .par_bridge()
-        .try_for_each(|(tile_id, sfeats)| {
+        .try_for_each(|(tile_id, serialized_feats)| {
             feedback.ensure_not_canceled()?;
 
             let mut tilespec = TileSpec {
@@ -243,10 +232,12 @@ fn tile_writing_stage(
             let mut triangles_buf: Vec<u32> = Vec::new();
             let mut triangles = Vec::new();
 
-            for ser_feat in sfeats {
-                let mut feat: SlicedFeature = bincode::deserialize(&ser_feat.body).unwrap();
+            for serialized_feat in serialized_feats {
+                let mut feature: SlicedFeature =
+                    bincode::deserialize(&serialized_feat.body).unwrap();
 
-                feat.polygons
+                feature
+                    .polygons
                     .transform_inplace(|&[lng, lat, height, u, v]| {
                         tilespec.min_lng = tilespec.min_lng.min(lng);
                         tilespec.max_lng = tilespec.max_lng.max(lng);
@@ -259,7 +250,7 @@ fn tile_writing_stage(
                         [x, z, -y, u, v]
                     });
 
-                for poly in &feat.polygons {
+                for poly in &feature.polygons {
                     let num_outer = match poly.hole_indices().first() {
                         Some(&v) => v as usize,
                         None => poly.coords().len() / 5,
