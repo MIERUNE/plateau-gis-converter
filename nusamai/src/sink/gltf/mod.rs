@@ -344,7 +344,7 @@ impl DataSink for GltfSink {
                     let mut vertices: IndexSet<Vertex<u32>> = IndexSet::default();
                     let mut indices: Vec<u32> = Vec::new();
 
-                    for (feature_id, entity) in entities.iter().enumerate() {
+                    for entity in entities.iter() {
                         let mut entity_vertices: Vec<Vertex<u32>> = Vec::new();
                         let mut entity_indices: Vec<u32> = Vec::new();
 
@@ -360,10 +360,9 @@ impl DataSink for GltfSink {
                                 (z as f32).to_bits(),
                             ];
 
-                            // feature_idが歯抜けになってしまっているので、再度振り直す
                             let vertex = Vertex {
                                 position: vbits,
-                                feature_id: feature_id as u32,
+                                feature_id: vertex.feature_id,
                                 ..Default::default()
                             };
 
