@@ -262,7 +262,7 @@ mod tests {
         );
         assert_eq!(
             gltf_property_type.component_type,
-            Some(extensions::gltf::ext_structural_metadata::ClassPropertyComponentType::Int32)
+            Some(extensions::gltf::ext_structural_metadata::ClassPropertyComponentType::Int64)
         );
 
         let type_ref = TypeRef::Double;
@@ -291,7 +291,7 @@ mod tests {
         );
         assert_eq!(
             gltf_property_type.component_type,
-            Some(extensions::gltf::ext_structural_metadata::ClassPropertyComponentType::Int32)
+            Some(extensions::gltf::ext_structural_metadata::ClassPropertyComponentType::Float64)
         );
     }
 
