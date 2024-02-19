@@ -1,3 +1,4 @@
+mod appearance;
 mod attrname;
 mod dots;
 mod flatten;
@@ -6,6 +7,7 @@ mod jsonify;
 mod lods;
 mod projection;
 
+pub use appearance::*;
 pub use attrname::*;
 pub use dots::*;
 pub use flatten::*;

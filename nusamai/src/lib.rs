@@ -9,7 +9,6 @@ pub static BUILTIN_SINKS: &[&dyn sink::DataSinkProvider] = &[
     &sink::gpkg::GpkgSinkProvider {},
     &sink::mvt::MVTSinkProvider {},
     &sink::geojson::GeoJsonSinkProvider {},
-    &sink::geojson_transform_exp::GeoJsonTransformExpSinkProvider {},
     &sink::czml::CzmlSinkProvider {},
     &sink::gltf::GltfSinkProvider {},
     &sink::kml::KmlSinkProvider {},

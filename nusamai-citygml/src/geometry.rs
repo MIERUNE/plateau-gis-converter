@@ -49,7 +49,7 @@ pub struct GeometryStore {
     /// EPSG code of the Coordinate Reference System (CRS) for this geometry
     pub epsg: EPSGCode,
 
-    /// Shared vertex buffer for all geometries
+    /// Shared vertex buffer for all geometries in this store
     pub vertices: Vec<[f64; 3]>,
 
     /// All polygons, referenced by `GeometryRefs`
@@ -63,6 +63,13 @@ pub struct GeometryStore {
     pub ring_ids: Vec<Option<LocalId>>,
     /// List of surface ids and their spans in `multipolygon`
     pub surface_spans: Vec<SurfaceSpan>,
+
+    /// Assigned materials for each polygon. Empty if appearance resolution is not enabled.
+    pub polygon_materials: Vec<Option<u32>>,
+    /// Assigned textures for each polygon. Empty if appearance resolution is not enabled.
+    pub polygon_textures: Vec<Option<u32>>,
+    /// Assigned texture UVs for each polygon. Empty if appearance resolution is not enabled.
+    pub polygon_uvs: MultiPolygon<'static, 2>,
 }
 
 #[derive(Debug)]
@@ -135,6 +142,7 @@ impl GeometryCollector {
             multipoint: self.multipoint,
             ring_ids: self.ring_ids,
             surface_spans: self.surface_spans,
+            ..Default::default()
         }
     }
 }

@@ -38,12 +38,12 @@ pub fn wellknown_prefix_from_nsres<'a>(ns: &ResolveResult<'a>) -> &'a [u8] {
                         } else {
                             b"unsupported:"
                         }
-                    } else if name == b"w3.org/1999/xlink" {
+                    } else if http_www == b"w3.org/1999/xlink" {
                         // xlink
                         b"xlink:"
                     } else {
                         // PLATEAU 1.x
-                        match *name {
+                        match http_www {
                             b"kantei.go.jp/jp/singi/tiiki/toshisaisei/itoshisaisei/iur/uro/1.4" => {
                                 b"uro:"
                             }
@@ -118,6 +118,8 @@ mod tests {
             xmlns:urf2ns="https://www.geospatial.jp/iur/urf/3.0"
             xmlns:uro15ns="https://www.chisou.go.jp/tiiki/toshisaisei/itoshisaisei/iur/uro/1.5"
             xmlns:urf15ns="https://www.chisou.go.jp/tiiki/toshisaisei/itoshisaisei/iur/urf/1.5"
+            xmlns:uro14ns="http://www.kantei.go.jp/jp/singi/tiiki/toshisaisei/itoshisaisei/iur/uro/1.4"
+            xmlns:urf14ns="http://www.kantei.go.jp/jp/singi/tiiki/toshisaisei/itoshisaisei/iur/urf/1.4"
             xmlns:xAL2ns="urn:oasis:names:tc:ciq:xsdschema:xAL:2.0"
             xmlns:xlinkns="http://www.w3.org/1999/xlink"
         >
@@ -144,7 +146,10 @@ mod tests {
             <urf2ns:urf />
             <uro15ns:uro />
             <urf15ns:urf />
+            <uro14ns:uro />
+            <urf14ns:urf />
             <xAL2ns:xAL />
+            <xlinkns:xlink />
         </core2ns:core>
         "#;
 

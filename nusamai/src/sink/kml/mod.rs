@@ -16,7 +16,7 @@ use nusamai_plateau::Entity;
 use rayon::prelude::*;
 
 use kml::{
-    types::{Kml, MultiGeometry, Placemark},
+    types::{Element, Geometry, Kml, MultiGeometry, Placemark, Polygon as KmlPolygon, SimpleData},
     KmlWriter,
 };
 
@@ -71,40 +71,114 @@ impl DataSink for KmlSink {
 
         let (ra, rb) = rayon::join(
             || {
-                // Convert CityObjects to GeoJSON objects
+                // Convert CityObjects to KML objects
                 upstream
                     .into_iter()
                     .par_bridge()
                     .try_for_each_with(sender, |sender, parcel| {
                         feedback.ensure_not_canceled()?;
 
-                        let multi_geom = entity_to_kml_mutilgeom(&parcel.entity);
+                        let polygons = entity_to_kml_polygons(&parcel.entity);
 
-                        for geom in multi_geom.geometries {
-                            if sender.send(geom).is_err() {
-                                return Err(PipelineError::Canceled);
-                            }
+                        let simple_data_items = property_to_schema_data_entries(
+                            &entity_to_properties(&parcel.entity).unwrap_or_default(),
+                        );
+                        let schema_data = Element {
+                            name: "SchemaData".to_string(),
+                            attrs: {
+                                let mut attrs = HashMap::new();
+                                attrs.insert("schemaUrl".to_string(), "#Schema_1".to_string());
+                                attrs
+                            },
+                            content: None,
+                            children: simple_data_items
+                                .into_iter()
+                                .map(|simple_data| Element {
+                                    name: "SimpleData".to_string(),
+                                    attrs: simple_data.attrs,
+                                    content: Some(simple_data.value),
+                                    children: Vec::new(),
+                                })
+                                .collect::<Vec<_>>(),
+                        };
+                        let extended_data_entry = Element {
+                            name: "ExtendedData".to_string(),
+                            attrs: HashMap::new(),
+                            content: None,
+                            children: vec![schema_data],
+                        };
+
+                        let geoms = polygons.into_iter().map(Geometry::Polygon).collect();
+                        let multi_geom = MultiGeometry {
+                            geometries: geoms,
+                            ..Default::default()
+                        };
+
+                        let placemark = Placemark {
+                            geometry: Some(Geometry::MultiGeometry(multi_geom)),
+                            children: vec![extended_data_entry],
+                            name: None,
+                            description: None,
+                            attrs: HashMap::new(),
+                        };
+
+                        if sender.send(placemark).is_err() {
+                            return Err(PipelineError::Canceled);
                         }
                         Ok(())
                     })
             },
             || {
-                // Write GeoJSON to a file
-                let mut placemarks: Vec<Kml> = Vec::new();
+                // TODO?:QGIS attribute
+                let schema_element = Element {
+                    name: "Schema".to_string(),
+                    attrs: {
+                        let mut attrs = HashMap::new();
+                        attrs.insert("name".to_string(), "Schema_1".to_string());
+                        attrs.insert("id".to_string(), "Schema_1".to_string());
+                        attrs
+                    },
+                    content: None,
+                    children: Vec::new(),
+                    // children: {
+                    //     let mut children = Vec::new();
+                    //     children.push(Element {
+                    //         name: "SimpleField".to_string(),
+                    //         attrs: {
+                    //             let mut attrs = HashMap::new();
+                    //             attrs.insert("name".to_string(), "id".to_string());
+                    //             attrs.insert("type".to_string(), "string".to_string());
+                    //             attrs
+                    //         },
+                    //         content: None,
+                    //         children: Vec::new(),
+                    //     });
+                    //     children.push(Element {
+                    //         name: "SimpleField".to_string(),
+                    //         attrs: {
+                    //             let mut attrs = HashMap::new();
+                    //             attrs.insert("name".to_string(), "type".to_string());
+                    //             attrs.insert("type".to_string(), "string".to_string());
+                    //             attrs
+                    //         },
+                    //         content: None,
+                    //         children: Vec::new(),
+                    //     });
+                    //     children
+                    // },
+                };
 
-                for geom in receiver.into_iter() {
-                    let placemark = Placemark {
-                        geometry: Some(geom),
-                        ..Default::default()
-                    };
+                // let placemarks = receiver.into_iter();
+                let placemarks = receiver.into_iter().collect::<Vec<_>>();
 
-                    placemarks.push(Kml::Placemark(placemark));
-                }
-                // TODO: Handle output file path
-
-                let folder = Kml::Folder {
+                let kml_doc = Kml::Document {
                     attrs: HashMap::new(),
-                    elements: placemarks,
+                    elements: {
+                        let mut elements = Vec::<Kml>::new();
+                        elements.push(Kml::Element(schema_element));
+                        elements.extend(placemarks.into_iter().map(Kml::Placemark));
+                        elements
+                    },
                 };
 
                 let mut file = File::create(&self.output_path).unwrap();
@@ -116,8 +190,9 @@ impl DataSink for KmlSink {
                     r#"<kml xmlns="http://www.opengis.net/kml/2.2">"#
                 )
                 .unwrap();
+
                 let mut kml_writer = KmlWriter::from_writer(&mut buf_writer);
-                let _ = kml_writer.write(&folder);
+                let _ = kml_writer.write(&kml_doc);
                 writeln!(buf_writer, "</kml>").unwrap();
 
                 Ok(())
@@ -147,15 +222,36 @@ fn extract_properties(value: &nusamai_citygml::object::Value) -> Option<geojson:
     }
 }
 
-pub fn entity_to_kml_mutilgeom(entity: &Entity) -> MultiGeometry {
-    let _properties = extract_properties(&entity.root);
+pub fn entity_to_properties(entity: &Entity) -> Option<geojson::JsonObject> {
+    extract_properties(&entity.root)
+}
+
+pub fn property_to_schema_data_entries(properties: &geojson::JsonObject) -> Vec<SimpleData> {
+    let mut simple_data_entries = Vec::new();
+
+    for (key, value) in properties.iter() {
+        let simpledata = SimpleData {
+            name: key.to_string(),
+            value: serde_json::to_string(value).unwrap(),
+            attrs: {
+                let mut attrs = HashMap::new();
+                attrs.insert("name".to_string(), key.to_string());
+                attrs
+            },
+        };
+        simple_data_entries.push(simpledata);
+    }
+    simple_data_entries
+}
+
+pub fn entity_to_kml_polygons(entity: &Entity) -> Vec<KmlPolygon> {
     let geom_store = entity.geometry_store.read().unwrap();
 
     let Value::Object(obj) = &entity.root else {
-        return MultiGeometry::default();
+        return Vec::new();
     };
     let ObjectStereotype::Feature { geometries, .. } = &obj.stereotype else {
-        return MultiGeometry::default();
+        return Vec::new();
     };
 
     let mut mpoly = nusamai_geometry::MultiPolygon::<1, u32>::new();

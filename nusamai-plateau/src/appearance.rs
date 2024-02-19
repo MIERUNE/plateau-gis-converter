@@ -8,8 +8,8 @@ use std::hash::{Hash, Hasher};
 
 #[derive(Debug, Default, serde::Serialize, serde::Deserialize)]
 pub struct Theme {
-    ring_id_to_texture: HashMap<LocalId, (u32, LineString2<'static>)>,
-    surface_id_to_material: HashMap<LocalId, u32>,
+    pub ring_id_to_texture: HashMap<LocalId, (u32, LineString2<'static>)>, // TODO: texture index is redundant
+    pub surface_id_to_material: HashMap<LocalId, u32>,
 }
 
 /// Material (CityGML's X3DMaterial)
@@ -50,9 +50,9 @@ impl Hash for Material {
 }
 #[derive(Debug, Default, serde::Serialize, serde::Deserialize)]
 pub struct AppearanceStore {
-    textures: Vec<Texture>,
-    materials: Vec<Material>,
-    themes: HashMap<String, Theme>,
+    pub textures: Vec<Texture>,
+    pub materials: Vec<Material>,
+    pub themes: HashMap<String, Theme>,
 }
 
 /// Texture (CityGML's ParameterizedTexture)

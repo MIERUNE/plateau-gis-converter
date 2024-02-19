@@ -5,122 +5,103 @@ use nusamai_geometry::{CoordNum, MultiPoint, MultiPolygon, Polygon};
 use std::{collections::HashMap, vec};
 
 const EXTRUDE: bool = false;
-const ALTITUDEMODE: AltitudeMode = AltitudeMode::RelativeToGround;
+const ALTITUDE_MODE: AltitudeMode = AltitudeMode::RelativeToGround;
 
-pub fn multipolygon_to_kml(mpoly: &MultiPolygon<3>) -> MultiGeometry {
+pub fn multipolygon_to_kml(mpoly: &MultiPolygon<3>) -> Vec<KmlPolygon> {
     multipolygon_to_kml_with_mapping(mpoly, |c| c)
 }
 
 pub fn indexed_multipolygon_to_kml(
     vertices: &[[f64; 3]],
     mpoly_idx: &MultiPolygon<1, u32>,
-) -> MultiGeometry {
+) -> Vec<KmlPolygon> {
     multipolygon_to_kml_with_mapping(mpoly_idx, |idx| vertices[idx[0] as usize])
 }
 
 fn multipolygon_to_kml_with_mapping<const D: usize, T: CoordNum>(
     mpoly: &MultiPolygon<D, T>,
     mapping: impl Fn([T; D]) -> [f64; 3],
-) -> MultiGeometry {
-    let polygons = mpoly
+) -> Vec<KmlPolygon> {
+    mpoly
         .iter()
-        .map(|poly| polygon_to_kml_with_mapping(poly.clone(), &mapping))
-        .collect::<Vec<_>>();
-    MultiGeometry {
-        geometries: polygons.into_iter().map(Geometry::MultiGeometry).collect(),
+        .flat_map(|poly| polygon_to_kml_with_mapping(&poly, &mapping)) // Flatten the vector of vectors
+        .collect()
+}
+
+fn polygon_to_kml_polygon_with_mapping<const D: usize, T: CoordNum>(
+    poly: &Polygon<D, T>,
+    mapping: impl Fn([T; D]) -> [f64; 3],
+) -> KmlPolygon {
+    KmlPolygon {
+        outer: polygon_to_kml_outer_boundary_with_mapping(poly, &mapping),
+        inner: polygon_to_kml_inner_boundary_with_mapping(poly, &mapping),
+        extrude: EXTRUDE,
+        tessellate: false,
+        altitude_mode: ALTITUDE_MODE,
         attrs: HashMap::new(),
     }
 }
 
 fn polygon_to_kml_outer_boundary_with_mapping<const D: usize, T: CoordNum>(
-    poly: Polygon<D, T>,
+    poly: &Polygon<D, T>,
     mapping: impl Fn([T; D]) -> [f64; 3],
 ) -> LinearRing {
     let outer_coords: Vec<Coord> = poly
         .exterior()
         .iter_closed()
         .map(&mapping)
-        .map(|coords| Coord {
-            x: coords[0],
-            y: coords[1],
-            z: Some(coords[2]),
-        })
+        .map(|[x, y, z]| Coord { x, y, z: Some(z) })
         .collect();
 
     LinearRing {
         coords: outer_coords,
         extrude: EXTRUDE,
         tessellate: false,
-        altitude_mode: ALTITUDEMODE,
+        altitude_mode: ALTITUDE_MODE,
         attrs: HashMap::new(),
     }
 }
 
 fn polygon_to_kml_inner_boundary_with_mapping<const D: usize, T: CoordNum>(
-    poly: Polygon<D, T>,
+    poly: &Polygon<D, T>,
     mapping: impl Fn([T; D]) -> [f64; 3],
 ) -> Vec<LinearRing> {
     poly.interiors()
         .map(|ring| {
             ring.iter_closed()
                 .map(&mapping)
-                .map(|coords| Coord {
-                    x: coords[0],
-                    y: coords[1],
-                    z: Some(coords[2]),
-                })
-                .collect::<Vec<_>>()
+                .map(|[x, y, z]| Coord { x, y, z: Some(z) })
+                .collect()
         })
         .map(|coords| LinearRing {
             coords,
             extrude: EXTRUDE,
             tessellate: false,
-            altitude_mode: ALTITUDEMODE,
+            altitude_mode: ALTITUDE_MODE,
             attrs: HashMap::new(),
         })
         .collect()
 }
 
-fn polygon_to_kml_polygon_with_mapping<const D: usize, T: CoordNum>(
-    poly: Polygon<D, T>,
-    mapping: impl Fn([T; D]) -> [f64; 3],
-) -> KmlPolygon {
-    let outer = polygon_to_kml_outer_boundary_with_mapping(poly.clone(), &mapping);
-    let inner = polygon_to_kml_inner_boundary_with_mapping(poly, &mapping);
-
-    KmlPolygon {
-        outer,
-        inner,
-        extrude: EXTRUDE,
-        tessellate: false,
-        altitude_mode: ALTITUDEMODE,
-        attrs: HashMap::new(),
-    }
-}
-
 /// Create a kml::MultiGeometry with Polygon from `nusamai_geometry::MultiPoint` with a mapping function.
 pub fn polygon_to_kml_with_mapping<const D: usize, T: CoordNum>(
-    poly: Polygon<D, T>,
+    poly: &Polygon<D, T>,
     mapping: impl Fn([T; D]) -> [f64; 3],
-) -> MultiGeometry {
-    let polygons = vec![polygon_to_kml_polygon_with_mapping(poly, mapping)];
-    MultiGeometry {
-        geometries: polygons
-            .into_iter()
-            .map(|poly: KmlPolygon| Geometry::Polygon(poly))
-            .collect(),
-        attrs: HashMap::new(),
-    }
+) -> Vec<KmlPolygon> {
+    vec![polygon_to_kml_polygon_with_mapping(poly, mapping)]
 }
 
 /// Create a kml::MultiGeometry from a nusamai_geometry::MultiPolygon
-pub fn polygon_to_kml(poly: &Polygon<3>) -> MultiGeometry {
-    polygon_to_kml_with_mapping(poly.clone(), |c| c)
+pub fn polygon_to_kml(poly: &Polygon<3>) -> Vec<KmlPolygon> {
+    polygon_to_kml_with_mapping(poly, |c| c)
 }
 
 /// Create a kml::MultiGeometry with Polygon vertices and indices.
-pub fn indexed_polygon_to_kml(vertices: &[[f64; 3]], poly_idx: &Polygon<1, u32>) -> MultiGeometry {
-    polygon_to_kml_with_mapping(poly_idx.clone(), |idx| vertices[idx[0] as usize])
+pub fn indexed_polygon_to_kml(
+    vertices: &[[f64; 3]],
+    poly_idx: &Polygon<1, u32>,
+) -> Vec<KmlPolygon> {
+    polygon_to_kml_with_mapping(poly_idx, |idx| vertices[idx[0] as usize])
 }
 
 /// Create a kml::MultiGeometry with Points from `nusamai_geometry::MultiPoint` with a mapping function.
@@ -128,15 +109,11 @@ pub fn multipoint_to_kml_with_mapping<const D: usize, T: CoordNum>(
     mpoint: &MultiPoint<D, T>,
     mapping: impl Fn([T; D]) -> [f64; 3],
 ) -> MultiGeometry {
-    let points = mpoint
-        .iter()
-        .map(&mapping)
-        .map(|coords| Point::new(coords[0], coords[1], Some(coords[2])))
-        .collect::<Vec<_>>();
     MultiGeometry {
-        geometries: points
-            .into_iter()
-            .map(|pt: Point| Geometry::Point(pt))
+        geometries: mpoint
+            .iter()
+            .map(&mapping)
+            .map(|coord| Geometry::Point(Point::new(coord[0], coord[1], Some(coord[2]))))
             .collect(),
         attrs: HashMap::new(),
     }
@@ -220,84 +197,90 @@ mod tests {
             [15., 18., 0.],
         ]);
 
-        let multi_geom = polygon_to_kml(&poly);
+        let polygons = polygon_to_kml(&poly);
 
-        assert_eq!(&multi_geom.geometries.len(), &1);
-
+        assert_eq!(polygons[0].outer.coords.len(), 5);
         assert_eq!(
-            &multi_geom.geometries[0],
-            &Geometry::Polygon(KmlPolygon {
-                outer: LinearRing {
-                    coords: vec![
-                        Coord {
-                            x: 10.,
-                            y: 10.,
-                            z: Some(0.),
-                        },
-                        Coord {
-                            x: 10.,
-                            y: 20.,
-                            z: Some(0.),
-                        },
-                        Coord {
-                            x: 20.,
-                            y: 20.,
-                            z: Some(0.),
-                        },
-                        Coord {
-                            x: 20.,
-                            y: 10.,
-                            z: Some(0.),
-                        },
-                        Coord {
-                            x: 10.0,
-                            y: 10.0,
-                            z: Some(0.0)
-                        }
-                    ],
-                    extrude: false,
-                    tessellate: false,
-                    altitude_mode: AltitudeMode::RelativeToGround,
-                    attrs: HashMap::new(),
-                },
-                inner: vec![LinearRing {
-                    coords: vec![
-                        Coord {
-                            x: 15.,
-                            y: 15.,
-                            z: Some(0.),
-                        },
-                        Coord {
-                            x: 18.,
-                            y: 10.,
-                            z: Some(0.),
-                        },
-                        Coord {
-                            x: 18.,
-                            y: 18.,
-                            z: Some(0.),
-                        },
-                        Coord {
-                            x: 15.,
-                            y: 18.,
-                            z: Some(0.),
-                        },
-                        Coord {
-                            x: 15.0,
-                            y: 15.0,
-                            z: Some(0.0)
-                        }
-                    ],
-                    extrude: false,
-                    tessellate: false,
-                    altitude_mode: AltitudeMode::RelativeToGround,
-                    attrs: HashMap::new(),
-                }],
-                extrude: false,
-                tessellate: false,
-                altitude_mode: AltitudeMode::RelativeToGround,
-                attrs: HashMap::new(),
-            })
+            polygons[0].outer.coords[0],
+            Coord {
+                x: 10.,
+                y: 10.,
+                z: Some(0.)
+            }
+        );
+        assert_eq!(
+            polygons[0].outer.coords[1],
+            Coord {
+                x: 10.,
+                y: 20.,
+                z: Some(0.)
+            }
+        );
+        assert_eq!(
+            polygons[0].outer.coords[2],
+            Coord {
+                x: 20.,
+                y: 20.,
+                z: Some(0.)
+            }
+        );
+        assert_eq!(
+            polygons[0].outer.coords[3],
+            Coord {
+                x: 20.,
+                y: 10.,
+                z: Some(0.)
+            }
+        );
+        assert_eq!(
+            polygons[0].outer.coords[4],
+            Coord {
+                x: 10.,
+                y: 10.,
+                z: Some(0.)
+            }
+        );
+
+        assert_eq!(polygons[0].inner[0].coords.len(), 5);
+        assert_eq!(
+            polygons[0].inner[0].coords[0],
+            Coord {
+                x: 15.,
+                y: 15.,
+                z: Some(0.)
+            }
+        );
+        assert_eq!(
+            polygons[0].inner[0].coords[1],
+            Coord {
+                x: 18.,
+                y: 10.,
+                z: Some(0.)
+            }
+        );
+        assert_eq!(
+            polygons[0].inner[0].coords[2],
+            Coord {
+                x: 18.,
+                y: 18.,
+                z: Some(0.)
+            }
+        );
+        assert_eq!(
+            polygons[0].inner[0].coords[3],
+            Coord {
+                x: 15.,
+                y: 18.,
+                z: Some(0.)
+            }
+        );
+        assert_eq!(
+            polygons[0].inner[0].coords[4],
+            Coord {
+                x: 15.,
+                y: 15.,
+                z: Some(0.)
+            }
         );
     }
 
@@ -326,121 +309,92 @@ mod tests {
         poly.add_ring([[4], [5], [6], [7], [4]]);
         poly.add_ring([[8], [9], [10], [11], [8]]);
 
-        let multi_geom = indexed_polygon_to_kml(&vertices, &poly);
+        let polygons = indexed_polygon_to_kml(&vertices, &poly);
 
-        assert_eq!(&multi_geom.geometries.len(), &1);
+        assert_eq!(polygons.len(), 1);
 
+        assert_eq!(polygons[0].outer.coords.len(), 5);
         assert_eq!(
-            &multi_geom.geometries[0],
-            &Geometry::Polygon(KmlPolygon {
-                outer: LinearRing {
-                    coords: vec![
-                        Coord {
-                            x: 0.,
-                            y: 0.,
-                            z: Some(111.),
-                        },
-                        Coord {
-                            x: 5.,
-                            y: 0.,
-                            z: Some(111.),
-                        },
-                        Coord {
-                            x: 5.,
-                            y: 5.,
-                            z: Some(111.),
-                        },
-                        Coord {
-                            x: 0.,
-                            y: 5.,
-                            z: Some(111.),
-                        },
-                        Coord {
-                            x: 0.0,
-                            y: 0.0,
-                            z: Some(111.0)
-                        }
-                    ],
-                    extrude: false,
-                    tessellate: false,
-                    altitude_mode: AltitudeMode::RelativeToGround,
-                    attrs: HashMap::new(),
-                },
-                inner: vec![
-                    LinearRing {
-                        coords: vec![
-                            Coord {
-                                x: 1.,
-                                y: 1.,
-                                z: Some(111.),
-                            },
-                            Coord {
-                                x: 2.,
-                                y: 1.,
-                                z: Some(111.),
-                            },
-                            Coord {
-                                x: 2.,
-                                y: 2.,
-                                z: Some(111.),
-                            },
-                            Coord {
-                                x: 1.,
-                                y: 2.,
-                                z: Some(111.),
-                            },
-                            Coord {
-                                x: 1.0,
-                                y: 1.0,
-                                z: Some(111.0)
-                            }
-                        ],
-                        extrude: false,
-                        tessellate: false,
-                        altitude_mode: AltitudeMode::RelativeToGround,
-                        attrs: HashMap::new(),
-                    },
-                    LinearRing {
-                        coords: vec![
-                            Coord {
-                                x: 3.,
-                                y: 3.,
-                                z: Some(111.),
-                            },
-                            Coord {
-                                x: 4.,
-                                y: 3.,
-                                z: Some(111.),
-                            },
-                            Coord {
-                                x: 4.,
-                                y: 4.,
-                                z: Some(111.),
-                            },
-                            Coord {
-                                x: 3.,
-                                y: 4.,
-                                z: Some(111.),
-                            },
-                            Coord {
-                                x: 3.0,
-                                y: 3.0,
-                                z: Some(111.0)
-                            }
-                        ],
-                        extrude: false,
-                        tessellate: false,
-                        altitude_mode: AltitudeMode::RelativeToGround,
-                        attrs: HashMap::new(),
-                    }
-                ],
-                extrude: false,
-                tessellate: false,
-                altitude_mode: AltitudeMode::RelativeToGround,
-                attrs: HashMap::new(),
-            })
+            polygons[0].outer.coords[0],
+            Coord {
+                x: 0.,
+                y: 0.,
+                z: Some(111.)
+            }
+        );
+        assert_eq!(
+            polygons[0].outer.coords[1],
+            Coord {
+                x: 5.,
+                y: 0.,
+                z: Some(111.)
+            }
+        );
+        assert_eq!(
+            polygons[0].outer.coords[2],
+            Coord {
+                x: 5.,
+                y: 5.,
+                z: Some(111.)
+            }
+        );
+        assert_eq!(
+            polygons[0].outer.coords[3],
+            Coord {
+                x: 0.,
+                y: 5.,
+                z: Some(111.)
+            }
+        );
+        assert_eq!(
+            polygons[0].outer.coords[4],
+            Coord {
+                x: 0.,
+                y: 0.,
+                z: Some(111.)
+            }
+        );
+
+        assert_eq!(polygons[0].inner[0].coords.len(), 5);
+        assert_eq!(
+            polygons[0].inner[0].coords[0],
+            Coord {
+                x: 1.,
+                y: 1.,
+                z: Some(111.)
+            }
+        );
+        assert_eq!(
+            polygons[0].inner[0].coords[1],
+            Coord {
+                x: 2.,
+                y: 1.,
+                z: Some(111.)
+            }
+        );
+        assert_eq!(
+            polygons[0].inner[0].coords[2],
+            Coord {
+                x: 2.,
+                y: 2.,
+                z: Some(111.)
+            }
+        );
+        assert_eq!(
+            polygons[0].inner[0].coords[3],
+            Coord {
+                x: 1.,
+                y: 2.,
+                z: Some(111.)
+            }
+        );
+        assert_eq!(
+            polygons[0].inner[0].coords[4],
+            Coord {
+                x: 1.,
+                y: 1.,
+                z: Some(111.)
+            }
         );
     }
 }
-
-

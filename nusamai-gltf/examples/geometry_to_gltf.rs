@@ -11,7 +11,7 @@
 
 use byteorder::{LittleEndian, WriteBytesExt};
 use clap::Parser;
-use earcut_rs::{utils_3d::project3d_to_2d, Earcut};
+use earcut_rs::{utils3d::project3d_to_2d, Earcut};
 use indexmap::IndexSet;
 use nusamai_geometry::MultiPolygon3;
 use nusamai_gltf_json::*;
@@ -252,7 +252,7 @@ fn tessellate(
                 ]
             }));
 
-            if project3d_to_2d(&buf3d, num_outer, &mut buf2d) {
+            if project3d_to_2d(&buf3d, num_outer, 3, &mut buf2d) {
                 // earcut
                 earcutter.earcut(&buf2d, poly.hole_indices(), 2, &mut triangles_out);
                 // indices and vertices

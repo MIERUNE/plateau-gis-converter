@@ -73,7 +73,7 @@ impl clap::ValueEnum for SinkChoice {
 }
 
 impl SinkChoice {
-    fn create(&self) -> &dyn DataSinkProvider {
+    fn create_sink(&self) -> &dyn DataSinkProvider {
         for &provider in nusamai::BUILTIN_SINKS {
             if self.0 == provider.info().id_name {
                 return provider;
@@ -131,7 +131,7 @@ fn main() {
     };
 
     let sink = {
-        let sink_provider = args.sink.create();
+        let sink_provider = args.sink.create_sink();
         let mut sink_params = sink_provider.parameters();
         if let Err(err) = sink_params.update_values_with_str(&args.sinkopt) {
             log::error!("Error parsing sink options: {:?}", err);

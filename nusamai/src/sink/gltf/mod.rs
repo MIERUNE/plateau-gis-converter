@@ -7,8 +7,7 @@ use std::fs::File;
 use std::io::BufWriter;
 use std::path::PathBuf;
 
-use earcut_rs::utils_3d::project3d_to_2d;
-use earcut_rs::Earcut;
+use earcut_rs::{utils3d::project3d_to_2d, Earcut};
 use indexmap::{IndexMap, IndexSet};
 
 use nusamai_citygml::{object::ObjectStereotype, schema::Schema, GeometryType, Value};
@@ -88,6 +87,7 @@ pub struct GltfSink {
 impl DataSink for GltfSink {
     fn make_transform_requirements(&self) -> transformer::Requirements {
         transformer::Requirements {
+            resolve_appearance: true,
             ..Default::default()
         }
     }
@@ -409,14 +409,12 @@ impl DataSink for GltfSink {
 
 #[cfg(test)]
 mod tests {
-    use std::sync::RwLock;
+    use std::{default, sync::RwLock};
 
     use super::*;
-    use nusamai_citygml::{
-        object::{Entity, Object},
-        GeometryRefEntry, Value,
-    };
+    use nusamai_citygml::{object::Object, Value};
     use nusamai_geometry::MultiPolygon;
+    use nusamai_plateau::Entity;
     use nusamai_projection::crs::EPSG_JGD2011_GEOGRAPHIC_3D;
 
     #[test]
@@ -471,6 +469,7 @@ mod tests {
             multipolygon: mpoly,
             multilinestring: Default::default(),
             multipoint: Default::default(),
+            ..Default::default()
         };
 
         let entity = Entity {
@@ -502,6 +501,7 @@ mod tests {
                 },
             }),
             geometry_store: RwLock::new(geometries).into(),
+            ..Default::default()
         };
     }
 }
