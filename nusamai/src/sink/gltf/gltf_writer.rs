@@ -327,10 +327,10 @@ pub fn append_gltf_extensions(
                     match property_type {
                         extensions::gltf::ext_structural_metadata::ClassPropertyType::String => {
                             string_offset_buffer.push(buffer.len() as u32);
-                            buffer.write_all("0".to_string().as_bytes()).unwrap();
+                            buffer.write_all(b"0").unwrap();
                         }
                         extensions::gltf::ext_structural_metadata::ClassPropertyType::Boolean => {
-                            buffer.write_i32::<LittleEndian>(0).unwrap();
+                            buffer.write_u8(0).unwrap();
                         }
                         _ => {}
                     }

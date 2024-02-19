@@ -340,6 +340,6 @@ mod tests {
         });
 
         let property_tables = to_gltf_property_table(&class_name, &feature_type_def, 0, 1);
-        assert_eq!(property_tables.len(), 1);
+        assert_eq!(property_tables.0.properties.len(), 1);
     }
 }
