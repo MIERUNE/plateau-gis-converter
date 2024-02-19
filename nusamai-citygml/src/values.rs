@@ -381,6 +381,12 @@ impl Color {
     }
 }
 
+impl From<Color> for [f32; 4] {
+    fn from(c: Color) -> [f32; 4] {
+        [c.r as f32, c.g as f32, c.b as f32, 1.]
+    }
+}
+
 impl std::hash::Hash for Color {
     fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
         self.r.to_bits().hash(state);

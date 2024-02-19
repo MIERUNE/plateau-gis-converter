@@ -159,7 +159,7 @@ pub fn entity_to_shapes(entity: &Entity) -> Vec<shapefile::Shape> {
                 .multipolygon
                 .iter_range(entry.pos as usize..(entry.pos + entry.len) as usize)
             {
-                mpoly.push(idx_poly);
+                mpoly.push(&idx_poly);
             }
         }
         GeometryType::Curve => unimplemented!(),

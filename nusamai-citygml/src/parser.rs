@@ -875,6 +875,7 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                         .fp_buf
                         .chunks_exact(3)
                         .map(|c| [c[0], c[1], c[2]]);
+
                     if is_exterior {
                         // add a new polygon
                         self.state
@@ -1040,6 +1041,11 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                         {
                             self.state.fp_buf.pop();
                             self.state.fp_buf.pop();
+                        } else {
+                            return Err(ParseError::InvalidValue(format!(
+                                "The last UV coord must be the same as the first: {:?}",
+                                self.state.fp_buf
+                            )));
                         }
                     }
 

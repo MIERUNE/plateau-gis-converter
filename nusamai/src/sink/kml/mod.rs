@@ -262,7 +262,7 @@ pub fn entity_to_kml_polygons(entity: &Entity) -> Vec<KmlPolygon> {
                 .multipolygon
                 .iter_range(entry.pos as usize..(entry.pos + entry.len) as usize)
             {
-                mpoly.push(idx_poly);
+                mpoly.push(&idx_poly);
             }
         }
 

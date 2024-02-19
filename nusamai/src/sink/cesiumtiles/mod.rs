@@ -2,10 +2,13 @@
 
 use std::fs;
 mod gltf;
+mod material;
 mod slice;
 mod sort;
 mod tiling;
 
+use indexmap::IndexSet;
+use itertools::Itertools;
 use std::io::BufWriter;
 use std::path::{Path, PathBuf};
 use std::sync::{mpsc, Arc, Mutex};
@@ -14,15 +17,12 @@ use ahash::RandomState;
 use earcut_rs::utils3d::project3d_to_2d;
 use earcut_rs::Earcut;
 use ext_sort::{buffer::mem::MemoryLimitedBufferBuilder, ExternalSorter, ExternalSorterBuilder};
-use indexmap::IndexSet;
-use itertools::Itertools;
 use nusamai_mvt::TileZXY;
 use nusamai_projection::cartesian::geographic_to_geocentric;
 use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
 
 use nusamai_citygml::schema::Schema;
-use nusamai_geometry::MultiPolygon;
 use nusamai_mvt::tileid::TileIdMethod;
 
 use crate::parameters::*;
@@ -30,7 +30,7 @@ use crate::pipeline::{Feedback, PipelineError, Receiver, Result};
 use crate::sink::cesiumtiles::gltf::write_gltf_glb;
 use crate::sink::{DataSink, DataSinkProvider, SinkInfo};
 use crate::{get_parameter_value, transformer};
-use slice::slice_cityobj_geoms;
+use slice::{slice_to_tiles, SlicedFeature};
 use sort::BincodeExternalChunk;
 
 use tiling::{TileSpec, TileTree};
@@ -81,12 +81,6 @@ struct SerializedSlicedFeature {
     tile_id: u64,
     #[serde(with = "serde_bytes")]
     body: Vec<u8>,
-}
-
-#[derive(Serialize, Deserialize)]
-struct SlicedFeature<'a> {
-    geometry: MultiPolygon<'a, 3>,
-    properties: nusamai_citygml::object::Value,
 }
 
 impl DataSink for CesiumTilesSink {
@@ -158,18 +152,14 @@ fn geometry_slicing_stage(
     upstream.into_iter().par_bridge().try_for_each(|parcel| {
         feedback.ensure_not_canceled()?;
 
-        slice_cityobj_geoms(&parcel.entity, 7, 17, |(z, x, y), mpoly| {
-            let feature = SlicedFeature {
-                geometry: mpoly,
-                properties: parcel.entity.root.clone(),
-            };
+        // TODO: zoom level from parameters
+        slice_to_tiles(&parcel.entity, 7, 17, |(z, x, y), feature| {
             let bytes = bincode::serialize(&feature).unwrap();
-            let sfeat = SerializedSlicedFeature {
+            let serialized_feature = SerializedSlicedFeature {
                 tile_id: tile_id_conv.zxy_to_id(z, x, y),
                 body: bytes,
             };
-
-            if sender_sliced.send(sfeat).is_err() {
+            if sender_sliced.send(serialized_feature).is_err() {
                 return Err(PipelineError::Canceled);
             };
             Ok(())
@@ -224,7 +214,7 @@ fn tile_writing_stage(
     receiver_sorted
         .into_iter()
         .par_bridge()
-        .try_for_each(|(tile_id, sfeats)| {
+        .try_for_each(|(tile_id, serialized_feats)| {
             feedback.ensure_not_canceled()?;
 
             let mut tilespec = TileSpec {
@@ -238,43 +228,51 @@ fn tile_writing_stage(
             };
 
             let mut earcutter = Earcut::new();
-            let mut buf3d: Vec<f64> = Vec::new();
-            let mut buf2d: Vec<f64> = Vec::new();
+            let mut buf5d: Vec<f64> = Vec::new(); // [x, y, z, u, v]
+            let mut buf2d: Vec<f64> = Vec::new(); // 2d-projected [x, y]
             let mut triangles_buf: Vec<u32> = Vec::new();
             let mut triangles = Vec::new();
 
-            for ser_feat in sfeats {
-                let mut feat: SlicedFeature = bincode::deserialize(&ser_feat.body).unwrap();
+            for serialized_feat in serialized_feats {
+                let mut feature: SlicedFeature = bincode::deserialize(&serialized_feat.body)
+                    .map_err(|err| {
+                        PipelineError::Other(format!(
+                            "Failed to deserialize a sliced feature: {:?}",
+                            err
+                        ))
+                    })?;
 
-                feat.geometry.transform_inplace(|&[lng, lat, height]| {
-                    tilespec.min_lng = tilespec.min_lng.min(lng);
-                    tilespec.max_lng = tilespec.max_lng.max(lng);
-                    tilespec.min_lat = tilespec.min_lat.min(lat);
-                    tilespec.max_lat = tilespec.max_lat.max(lat);
-                    tilespec.min_height = tilespec.min_height.min(height);
-                    tilespec.max_height = tilespec.max_height.max(height);
+                feature
+                    .polygons
+                    .transform_inplace(|&[lng, lat, height, u, v]| {
+                        tilespec.min_lng = tilespec.min_lng.min(lng);
+                        tilespec.max_lng = tilespec.max_lng.max(lng);
+                        tilespec.min_lat = tilespec.min_lat.min(lat);
+                        tilespec.max_lat = tilespec.max_lat.max(lat);
+                        tilespec.min_height = tilespec.min_height.min(height);
+                        tilespec.max_height = tilespec.max_height.max(height);
 
-                    let (x, y, z) = geographic_to_geocentric(&ellipsoid, lng, lat, height);
-                    [x, z, -y]
-                });
+                        let (x, y, z) = geographic_to_geocentric(&ellipsoid, lng, lat, height);
+                        [x, z, -y, u, v]
+                    });
 
-                for poly in &feat.geometry {
+                for poly in &feature.polygons {
                     let num_outer = match poly.hole_indices().first() {
                         Some(&v) => v as usize,
-                        None => poly.coords().len() / 3,
+                        None => poly.coords().len() / 5,
                     };
 
-                    buf3d.clear();
-                    buf3d.extend(poly.coords());
+                    buf5d.clear();
+                    buf5d.extend(poly.coords());
 
-                    if project3d_to_2d(&buf3d, num_outer, 3, &mut buf2d) {
+                    if project3d_to_2d(&buf5d, num_outer, 5, &mut buf2d) {
                         // earcut
                         earcutter.earcut(&buf2d, poly.hole_indices(), 2, &mut triangles_buf);
                         triangles.extend(triangles_buf.iter().map(|idx| {
                             [
-                                buf3d[*idx as usize * 3],
-                                buf3d[*idx as usize * 3 + 1],
-                                buf3d[*idx as usize * 3 + 2],
+                                buf5d[*idx as usize * 5],
+                                buf5d[*idx as usize * 5 + 1],
+                                buf5d[*idx as usize * 5 + 2],
                             ]
                         }));
                     }
@@ -342,21 +340,17 @@ fn tile_writing_stage(
             let (min_y, max_y) = tiling::y_slice_range(zoom, y);
             let xs = tiling::x_step(zoom, y);
             let (min_x, max_x) = tiling::x_slice_range(zoom, x as i32, xs);
-            println!(
-                "tile: z={}, x={}, y={} (lng: {} -> {}, lat: {} -> {})",
-                zoom, x, y, min_x, max_x, min_y, max_y
+            log::info!(
+                "tile: z={zoom}, x={x}, y={y} (lng: [{min_x} => {max_x}], lat: [{min_y} => {max_y})"
             );
-            println!("{:?} {:?}", vertices.len(), indices.len());
 
             // write to file
-            let path_glb = output_path.join(Path::new(&format!("{}/{}/{}.glb", zoom, x, y)));
+            let path_glb = output_path.join(Path::new(&format!("{zoom}/{x}/{y}.glb")));
             if let Some(dir) = path_glb.parent() {
-                if let Err(e) = fs::create_dir_all(dir) {
-                    panic!("Fatal error: {:?}", e); // FIXME
-                }
+                fs::create_dir_all(dir)?;
             }
 
-            let mut file = std::fs::File::create(path_glb).unwrap();
+            let mut file = std::fs::File::create(path_glb)?;
             let mut writer = BufWriter::new(&mut file);
             write_gltf_glb(
                 &mut writer,

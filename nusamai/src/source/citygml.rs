@@ -49,6 +49,8 @@ impl DataSource for CityGmlSource {
         let code_resolver = nusamai_plateau::codelist::Resolver::new();
 
         self.filenames.par_iter().try_for_each(|filename| {
+            feedback.ensure_not_canceled()?;
+
             log::info!("Parsing CityGML file: {:?} ...", filename);
             let file = std::fs::File::open(filename)?;
             let reader = std::io::BufReader::with_capacity(1024 * 1024, file);
@@ -61,6 +63,7 @@ impl DataSource for CityGmlSource {
             let mut st = citygml_reader.start_root(&mut xml_reader)?;
             match toplevel_dispatcher(&mut st, &downstream, feedback) {
                 Ok(_) => Ok::<(), PipelineError>(()),
+                Err(ParseError::Canceled) => Err(PipelineError::Canceled),
                 Err(e) => Err(e.into()),
             }
         })?;
@@ -81,7 +84,7 @@ fn toplevel_dispatcher<R: BufRead>(
 
     st.parse_children(|st| {
         if feedback.is_canceled() {
-            return Ok(());
+            return Err(ParseError::Canceled);
         }
 
         match st.current_path() {
@@ -135,6 +138,10 @@ fn toplevel_dispatcher<R: BufRead>(
     })?;
 
     for entity in entities {
+        if feedback.is_canceled() {
+            break;
+        }
+
         // merge global appearances into the entity's local appearance store
         {
             let geom_store = entity.geometry_store.read().unwrap();

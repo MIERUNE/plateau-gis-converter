@@ -1,52 +1,105 @@
 //! Polygon slicing algorithm based on [geojson-vt](https://github.com/mapbox/geojson-vt).
 
 use hashbrown::HashMap;
+use indexmap::IndexSet;
+use itertools::Itertools;
+use serde::{Deserialize, Serialize};
 
+use super::material::Material;
 use super::tiling;
 use nusamai_citygml::{
     geometry::GeometryType,
     object::{ObjectStereotype, Value},
 };
-use nusamai_geometry::{LineString3, MultiPolygon3, Polygon3};
+use nusamai_geometry::{MultiPolygon, Polygon, Polygon2, Polygon3};
 use nusamai_mvt::TileZXY;
-use nusamai_plateau::Entity;
+use nusamai_plateau::{appearance, Entity};
 
-pub fn slice_cityobj_geoms<E>(
-    obj: &Entity,
+#[derive(Serialize, Deserialize)]
+pub struct SlicedFeature {
+    // polygons [x, y, z, u, v]
+    pub polygons: MultiPolygon<'static, 5>,
+    // material ids for each polygon
+    pub polygon_material_ids: Vec<u32>,
+    // materials
+    pub materials: IndexSet<Material>,
+    // attribute values
+    pub attributes: nusamai_citygml::object::Value,
+}
+
+pub fn slice_to_tiles<E>(
+    entity: &Entity,
     min_z: u8,
     max_z: u8,
-    f: impl Fn(TileZXY, MultiPolygon3) -> Result<(), E>,
+    send_feature: impl Fn(TileZXY, SlicedFeature) -> Result<(), E>,
 ) -> Result<(), E> {
     assert!(
         max_z >= min_z,
         "max_z must be greater than or equal to min_z"
     );
 
-    let geom_store = obj.geometry_store.read().unwrap();
-    if geom_store.multipolygon.is_empty() {
-        return Ok(());
-    }
-
-    let mut tiled_mpolys = HashMap::new();
-
-    let Value::Object(obj) = &obj.root else {
+    // entity must be a Feature
+    let Value::Object(obj) = &entity.root else {
         return Ok(());
     };
     let ObjectStereotype::Feature { geometries, .. } = &obj.stereotype else {
         return Ok(());
     };
 
+    let geom_store = entity.geometry_store.read().unwrap();
+    if geom_store.multipolygon.is_empty() {
+        return Ok(());
+    }
+    let appearance_store = entity.appearance_store.read().unwrap();
+
+    let mut materials: IndexSet<Material> = IndexSet::new();
+    let mut sliced_tiles: HashMap<(u8, u32, u32), SlicedFeature> = HashMap::new();
+    let default_mat = appearance::Material::default();
+
     geometries.iter().for_each(|entry| match entry.ty {
         GeometryType::Solid | GeometryType::Surface | GeometryType::Triangle => {
-            for idx_poly in geom_store
+            // for each polygon
+            for ((idx_poly, poly_uv), poly_mat) in geom_store
                 .multipolygon
                 .iter_range(entry.pos as usize..(entry.pos + entry.len) as usize)
+                .zip_eq(
+                    geom_store
+                        .polygon_uvs
+                        .iter_range(entry.pos as usize..(entry.pos + entry.len) as usize),
+                )
+                .zip_eq(
+                    geom_store.polygon_materials
+                        [entry.pos as usize..(entry.pos + entry.len) as usize]
+                        .iter(),
+                )
             {
                 let poly = idx_poly.transform(|c| geom_store.vertices[c[0] as usize]);
+                let orig_mat = poly_mat
+                    .and_then(|idx| appearance_store.materials.get(idx as usize))
+                    .unwrap_or(&default_mat)
+                    .clone();
 
-                // Slice for each zoom level
+                let mat = Material {
+                    base_color: orig_mat.diffuse_color.into(),
+                };
+                let (mat_idx, _) = materials.insert_full(mat);
+
+                // Slice polygon for each zoom level
                 for zoom in min_z..=max_z {
-                    slice_polygon(zoom, &poly, &mut tiled_mpolys);
+                    slice_polygon(zoom, &poly, &poly_uv, |(z, x, y), poly| {
+                        let sliced_feature =
+                            sliced_tiles
+                                .entry((z, x, y))
+                                .or_insert_with(|| SlicedFeature {
+                                    polygons: MultiPolygon::new(),
+                                    attributes: entity.root.clone(),
+                                    polygon_material_ids: Default::default(),
+                                    materials: Default::default(),
+                                });
+
+                        sliced_feature.polygons.push(poly);
+                        sliced_feature.polygon_material_ids.push(mat_idx as u32);
+                    });
                 }
             }
         }
@@ -58,24 +111,27 @@ pub fn slice_cityobj_geoms<E>(
         }
     });
 
-    for ((z, x, y), mpoly) in tiled_mpolys {
-        if mpoly.is_empty() {
-            continue;
-        }
-        f((z, x, y), mpoly)?;
+    for ((z, x, y), mut sliced_feature) in sliced_tiles {
+        sliced_feature.materials = materials.clone();
+        send_feature((z, x, y), sliced_feature)?;
     }
-
     Ok(())
 
     // TODO: linestring, point
 }
 
-fn slice_polygon(zoom: u8, poly: &Polygon3, out: &mut HashMap<(u8, u32, u32), MultiPolygon3>) {
+/// Slice a polygon into tiles. The slicing algorithm is based on [geojson-vt](https://github.com/mapbox/geojson-vt).
+fn slice_polygon(
+    zoom: u8,
+    poly: &Polygon3,
+    poly_uv: &Polygon2,
+    mut send_polygon: impl FnMut(TileZXY, &Polygon<'static, 5>),
+) {
     if poly.exterior().is_empty() {
         return;
     }
 
-    let mut new_ring_buffer: Vec<[f64; 3]> = Vec::with_capacity(poly.exterior().len() + 1);
+    let mut ring_buffer: Vec<[f64; 5]> = Vec::with_capacity(poly.exterior().len() + 1);
 
     // Slice along Y-axis
     let y_range = {
@@ -88,62 +144,77 @@ fn slice_polygon(zoom: u8, poly: &Polygon3, out: &mut HashMap<(u8, u32, u32), Mu
         tiling::iter_y_slice(zoom, min_y, max_y)
     };
 
-    let mut y_sliced_polys = Vec::with_capacity(y_range.len());
+    let mut y_sliced_polys = MultiPolygon::new();
 
     for yi in y_range.clone() {
         let (k1, k2) = tiling::y_slice_range(zoom, yi);
-        let mut y_sliced_poly = Polygon3::new();
 
         // todo?: check interior bbox to optimize
 
-        for ring in poly.rings() {
+        for (ri, (ring, uv_ring)) in poly.rings().zip_eq(poly_uv.rings()).enumerate() {
             if ring.coords().is_empty() {
                 continue;
             }
 
-            new_ring_buffer.clear();
+            ring_buffer.clear();
             ring.iter_closed()
+                .zip_eq(uv_ring.iter_closed())
                 .fold(None, |a, b| {
-                    let Some(a) = a else { return Some(b) };
+                    let Some((a, a_uv)) = a else { return Some(b) };
+                    let (b, b_uv) = b;
 
                     if a[1] < k1 {
                         if b[1] > k1 {
-                            let x = (b[0] - a[0]) * (k1 - a[1]) / (b[1] - a[1]) + a[0];
-                            let z = (b[2] - a[2]) * (k1 - a[1]) / (b[1] - a[1]) + a[2];
-                            new_ring_buffer.push([x, k1, z])
+                            let t = (k1 - a[1]) / (b[1] - a[1]);
+                            let x = (b[0] - a[0]) * t + a[0];
+                            let z = (b[2] - a[2]) * t + a[2];
+                            let u = (b_uv[0] - a_uv[0]) * t + a_uv[0];
+                            let v = (b_uv[1] - a_uv[1]) * t + a_uv[1];
+                            ring_buffer.push([x, k1, z, u, v])
                         }
                     } else if a[1] > k2 {
                         if b[1] < k2 {
-                            let x = (b[0] - a[0]) * (k2 - a[1]) / (b[1] - a[1]) + a[0];
-                            let z = (b[2] - a[2]) * (k2 - a[1]) / (b[1] - a[1]) + a[2];
-                            new_ring_buffer.push([x, k2, z])
+                            let t = (k2 - a[1]) / (b[1] - a[1]);
+                            let x = (b[0] - a[0]) * t + a[0];
+                            let z = (b[2] - a[2]) * t + a[2];
+                            let u = (b_uv[0] - a_uv[0]) * t + a_uv[0];
+                            let v = (b_uv[1] - a_uv[1]) * t + a_uv[1];
+                            ring_buffer.push([x, k2, z, u, v])
                         }
                     } else {
-                        new_ring_buffer.push(a)
+                        ring_buffer.push([a[0], a[1], a[2], a_uv[0], a_uv[1]])
                     }
 
                     if b[1] < k1 && a[1] > k1 {
-                        let x = (b[0] - a[0]) * (k1 - a[1]) / (b[1] - a[1]) + a[0];
-                        let z = (b[2] - a[2]) * (k1 - a[1]) / (b[1] - a[1]) + a[2];
-                        new_ring_buffer.push([x, k1, z])
+                        let t = (k1 - a[1]) / (b[1] - a[1]);
+                        let x = (b[0] - a[0]) * t + a[0];
+                        let z = (b[2] - a[2]) * t + a[2];
+                        let u = (b_uv[0] - a_uv[0]) * t + a_uv[0];
+                        let v = (b_uv[1] - a_uv[1]) * t + a_uv[1];
+                        ring_buffer.push([x, k1, z, u, v])
                     } else if b[1] > k2 && a[1] < k2 {
-                        let x = (b[0] - a[0]) * (k2 - a[1]) / (b[1] - a[1]) + a[0];
-                        let z = (b[2] - a[2]) * (k2 - a[1]) / (b[1] - a[1]) + a[2];
-                        new_ring_buffer.push([x, k2, z])
+                        let t = (k2 - a[1]) / (b[1] - a[1]);
+                        let x = (b[0] - a[0]) * t + a[0];
+                        let z = (b[2] - a[2]) * t + a[2];
+                        let u = (b_uv[0] - a_uv[0]) * t + a_uv[0];
+                        let v = (b_uv[1] - a_uv[1]) * t + a_uv[1];
+                        ring_buffer.push([x, k2, z, u, v])
                     }
 
-                    Some(b)
+                    Some((b, b_uv))
                 })
                 .unwrap();
 
-            y_sliced_poly.add_ring(new_ring_buffer.iter().copied());
+            match ri {
+                0 => y_sliced_polys.add_exterior(ring_buffer.drain(..)),
+                _ => y_sliced_polys.add_interior(ring_buffer.drain(..)),
+            }
         }
-
-        y_sliced_polys.push(y_sliced_poly);
     }
 
     // Slice along X-axis
-    for (yi, y_sliced_poly) in y_range.zip(y_sliced_polys.iter()) {
+    let mut poly_buf: Polygon<5> = Polygon::new();
+    for (yi, y_sliced_poly) in y_range.zip_eq(y_sliced_polys.iter()) {
         let x_iter = {
             let (min_x, max_x) = y_sliced_poly
                 .exterior()
@@ -165,56 +236,64 @@ fn slice_polygon(zoom: u8, poly: &Polygon3, out: &mut HashMap<(u8, u32, u32), Mu
                 xi.rem_euclid(1 << zoom) as u32, // handling geometry crossing the antimeridian
                 yi,
             );
-            let tile_mpoly = out.entry(key).or_default();
+            poly_buf.clear();
 
-            for (ri, ring) in y_sliced_poly.rings().enumerate() {
+            for ring in y_sliced_poly.rings() {
                 if ring.coords().is_empty() {
                     continue;
                 }
 
-                new_ring_buffer.clear();
+                ring_buffer.clear();
                 ring.iter_closed()
                     .fold(None, |a, b| {
                         let Some(a) = a else { return Some(b) };
 
                         if a[0] < k1 {
                             if b[0] > k1 {
-                                let y = (b[1] - a[1]) * (k1 - a[0]) / (b[0] - a[0]) + a[1];
-                                let z = (b[2] - a[2]) * (k1 - a[0]) / (b[0] - a[0]) + a[2];
-                                new_ring_buffer.push([k1, y, z])
+                                let t = (k1 - a[0]) / (b[0] - a[0]);
+                                let y = (b[1] - a[1]) * t + a[1];
+                                let z = (b[2] - a[2]) * t + a[2];
+                                let u = (b[3] - a[3]) * t + a[3];
+                                let v = (b[4] - a[4]) * t + a[4];
+                                ring_buffer.push([k1, y, z, u, v])
                             }
                         } else if a[0] > k2 {
                             if b[0] < k2 {
-                                let y = (b[1] - a[1]) * (k2 - a[0]) / (b[0] - a[0]) + a[1];
-                                let z = (b[2] - a[2]) * (k2 - a[0]) / (b[0] - a[0]) + a[2];
-                                new_ring_buffer.push([k2, y, z])
+                                let t = (k2 - a[0]) / (b[0] - a[0]);
+                                let y = (b[1] - a[1]) * t + a[1];
+                                let z = (b[2] - a[2]) * t + a[2];
+                                let u = (b[3] - a[3]) * t + a[3];
+                                let v = (b[4] - a[4]) * t + a[4];
+                                ring_buffer.push([k2, y, z, u, v])
                             }
                         } else {
-                            new_ring_buffer.push(a)
+                            ring_buffer.push(a)
                         }
 
                         if b[0] < k1 && a[0] > k1 {
-                            let y = (b[1] - a[1]) * (k1 - a[0]) / (b[0] - a[0]) + a[1];
-                            let z = (b[2] - a[2]) * (k1 - a[0]) / (b[0] - a[0]) + a[2];
-                            new_ring_buffer.push([k1, y, z])
+                            let t = (k1 - a[0]) / (b[0] - a[0]);
+                            let y = (b[1] - a[1]) * t + a[1];
+                            let z = (b[2] - a[2]) * t + a[2];
+                            let u = (b[3] - a[3]) * t + a[3];
+                            let v = (b[4] - a[4]) * t + a[4];
+                            ring_buffer.push([k1, y, z, u, v])
                         } else if b[0] > k2 && a[0] < k2 {
-                            let y = (b[1] - a[1]) * (k2 - a[0]) / (b[0] - a[0]) + a[1];
-                            let z = (b[2] - a[2]) * (k2 - a[0]) / (b[0] - a[0]) + a[2];
-                            new_ring_buffer.push([k2, y, z])
+                            let t = (k2 - a[0]) / (b[0] - a[0]);
+                            let y = (b[1] - a[1]) * t + a[1];
+                            let z = (b[2] - a[2]) * t + a[2];
+                            let u = (b[3] - a[3]) * t + a[3];
+                            let v = (b[4] - a[4]) * t + a[4];
+                            ring_buffer.push([k2, y, z, u, v])
                         }
 
                         Some(b)
                     })
                     .unwrap();
 
-                let ring =
-                    LineString3::from_raw(new_ring_buffer.iter().flatten().copied().collect());
-
-                match ri {
-                    0 => tile_mpoly.add_exterior(ring.iter()),
-                    _ => tile_mpoly.add_interior(ring.iter()),
-                };
+                poly_buf.add_ring(ring_buffer.drain(..))
             }
+
+            send_polygon(key, &poly_buf);
         }
     }
 }

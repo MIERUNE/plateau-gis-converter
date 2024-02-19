@@ -174,7 +174,7 @@ pub fn entity_to_packet(entity: &Entity, single_part: bool) -> Vec<Packet> {
                 .multipolygon
                 .iter_range(entry.pos as usize..(entry.pos + entry.len) as usize)
             {
-                mpoly.push(idx_poly);
+                mpoly.push(&idx_poly);
             }
         }
         GeometryType::Curve => unimplemented!(),
