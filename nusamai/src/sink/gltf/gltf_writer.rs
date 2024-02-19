@@ -228,7 +228,8 @@ impl ToBytes for Value {
             Value::Double(d) => d.write_to_bytes(buffer),
             Value::Boolean(b) => b.write_to_bytes(buffer),
             Value::Measure(m) => m.write_to_bytes(buffer),
-            _ => unimplemented!(),
+            // todo: 他の型にも対応する
+            _ => {}
         }
     }
 }

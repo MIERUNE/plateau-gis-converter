@@ -83,11 +83,8 @@ fn run_czml_sink() {
 }
 
 #[test]
-fn run_gltf_poc_sink() {
-    simple_run_sink(
-        sink::gltf_poc::GltfPocSinkProvider {},
-        "/tmp/nusamai/gltf-poc".into(),
-    );
+fn run_gltf_sink() {
+    simple_run_sink(sink::gltf::GltfSinkProvider {}, "/tmp/nusamai/gltf".into());
 }
 
 #[test]
