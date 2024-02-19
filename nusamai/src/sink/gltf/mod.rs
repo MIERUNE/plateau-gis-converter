@@ -187,7 +187,7 @@ impl DataSink for GltfSink {
                                     buf3d.clear();
                                     buf3d.extend(poly.coords());
 
-                                    if project3d_to_2d(&buf3d, num_outer, &mut buf2d) {
+                                    if project3d_to_2d(&buf3d, num_outer, 3, &mut buf2d) {
                                         // earcut
                                         earcutter.earcut(
                                             &buf2d,
