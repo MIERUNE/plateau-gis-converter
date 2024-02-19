@@ -69,7 +69,7 @@ pub struct Schema {
 }
 
 /// Class in EXT_structural_metadata
-#[derive(Serialize, Deserialize, Debug, Default, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, Default, PartialEq, Clone)]
 #[serde(deny_unknown_fields)]
 pub struct Class {
     /// The name of the class, e.g. for display purposes.
@@ -94,7 +94,7 @@ pub struct Class {
 }
 
 /// ElementType enumeration
-#[derive(Serialize, Deserialize, Debug, Default, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Debug, Default, PartialEq, Eq, Clone)]
 #[serde(rename_all = "UPPERCASE")]
 pub enum ClassPropertyType {
     #[default]
@@ -111,7 +111,7 @@ pub enum ClassPropertyType {
 }
 
 /// ComponentType enumeration
-#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq, Clone)]
 #[serde(rename_all = "UPPERCASE")]
 pub enum ClassPropertyComponentType {
     Int8,
@@ -127,7 +127,7 @@ pub enum ClassPropertyComponentType {
 }
 
 /// Class Property in EXT_structural_metadata
-#[derive(Serialize, Deserialize, Debug, Default, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, Default, PartialEq, Clone)]
 #[serde(deny_unknown_fields)]
 #[serde(rename_all = "camelCase")]
 pub struct ClassProperty {
@@ -273,7 +273,7 @@ pub struct EnumValue {
 }
 
 /// Property Table in EXT_structural_metadata
-#[derive(Serialize, Deserialize, Debug, Default, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, Default, PartialEq, Clone)]
 #[serde(rename_all = "camelCase")]
 #[serde(deny_unknown_fields)]
 pub struct PropertyTable {
@@ -390,7 +390,7 @@ pub struct PropertyAttributeProperty {
 }
 
 /// OffsetType enumeration
-#[derive(Serialize, Deserialize, Debug, Default, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, Debug, Default, PartialEq, Eq, Clone)]
 #[serde(rename_all = "UPPERCASE")]
 pub enum OffsetType {
     UInt8,
@@ -401,7 +401,7 @@ pub enum OffsetType {
 }
 
 /// Property Table Property in EXT_structural_metadata
-#[derive(Serialize, Deserialize, Debug, Default, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, Default, PartialEq, Clone)]
 #[serde(rename_all = "camelCase")]
 #[serde(deny_unknown_fields)]
 pub struct PropertyTableProperty {

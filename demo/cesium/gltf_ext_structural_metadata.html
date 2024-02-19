@@ -38,18 +38,13 @@
 				const customShader = new Cesium.CustomShader({
 					fragmentShaderText: `
 						void fragmentMain(FragmentInput fsInput, inout czm_modelMaterial material) {
-							int id = fsInput.featureIds.featureId_0;
-							vec3 color = vec3(0.0, 0.0, 0.0);
-							if (id == 0) {
-							color = vec3(0.0, 1.0, 0.0);
-							} else if (id == 1) {
-							color = vec3(0.5, 0.5, 0.5);
-							} else if (id == 2) {
-							color = vec3(1.0, 0.0, 0.0);
-							} else if (id == 3) {
-							color = vec3(0.0, 0.0, 1.0);
-							}
-							material.diffuse = color;
+							int featureId = fsInput.featureIds.featureId_0;
+
+							material.diffuse *= vec3(
+								fract(sin(float(featureId)) * 43758.5453),
+								fract(sin(float(featureId + 1)) * 43758.5453),
+								fract(sin(float(featureId + 2)) * 43758.5453)
+							);
 						}
 					`,
 				});
@@ -68,26 +63,80 @@
 					shadows: true,
 				});
 
-				// viewer.extend(Cesium.viewerCesium3DTilesInspectorMixin);
+				viewer.extend(Cesium.viewerCesium3DTilesInspectorMixin);
 
-				// Set your 3DTiles
-				// https://github.com/CesiumGS/3d-tiles-samples/blob/main/glTF/glTF-Mesh-Features-Samples-Sandcastle.js
 				const tileset = await Cesium.Cesium3DTileset.fromUrl(
 					"/examples/ext_structural_metadata/tileset.json"
 				);
 				viewer.scene.primitives.add(tileset);
+				viewer.zoomTo(tileset);
 
-				tileset.modelMatrix = Cesium.Transforms.eastNorthUpToFixedFrame(
-					Cesium.Cartesian3.fromDegrees(-75.152325, 39.94704, 0)
-				);
-				const offset = new Cesium.HeadingPitchRange(
-					0,
-					Cesium.Math.toRadians(-22.5),
-					4.0
-				);
-				viewer.zoomTo(tileset, offset);
+				// let currentActiveFeatureIdLabel = 0;
+				// tileset.featureIdLabel = currentActiveFeatureIdLabel;
 
-				tileset.customShader = createCustomShader();
+				function createTooltip() {
+					const tooltip = document.createElement("div");
+					viewer.container.appendChild(tooltip);
+					tooltip.style.backgroundColor = "white";
+					tooltip.style.position = "absolute";
+					tooltip.style.left = "0";
+					tooltip.style.top = "0";
+					tooltip.style.padding = "14px";
+					tooltip.style["pointer-events"] = "none";
+					tooltip.style["block-size"] = "fit-content";
+					return tooltip;
+				}
+				const tooltip = createTooltip();
+
+				function showTooltip(screenX, screenY, htmlContent) {
+					tooltip.style.display = "block";
+					tooltip.style.left = `${screenX}px`;
+					tooltip.style.top = `${screenY}px`;
+					tooltip.innerHTML = htmlContent;
+				}
+
+				function createFeatureHtml(title, feature) {
+					if (!Cesium.defined(feature)) {
+						return `(No ${title})<br>`;
+					}
+					const propertyKeys = feature.getPropertyIds();
+					if (!Cesium.defined(propertyKeys)) {
+						return `(No properties for ${title})<br>`;
+					}
+					const featureId = feature.featureId;
+					let html = `<b>${title}:</b><br>`;
+					html += `<b>feature_id: ${featureId}:</b><br>`;
+					for (let i = 0; i < propertyKeys.length; i++) {
+						const propertyKey = propertyKeys[i];
+						const propertyValue = feature.getProperty(propertyKey);
+						html += `&nbsp;&nbsp;${propertyKey} : ${propertyValue}<br>`;
+					}
+					return html;
+				}
+
+				function obtainFeature(picked) {
+					if (!Cesium.defined(picked)) {
+						return undefined;
+					}
+					const isFeature = picked instanceof Cesium.Cesium3DTileFeature;
+					if (!isFeature) {
+						return undefined;
+					}
+					return picked;
+				}
+
+				const handler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);
+				handler.setInputAction(function (movement) {
+					let tooltipText = "";
+					const picked = viewer.scene.pick(movement.endPosition);
+
+					const feature = obtainFeature(picked);
+					tooltipText += createFeatureHtml("Feature", feature);
+
+					const screenX = movement.endPosition.x;
+					const screenY = movement.endPosition.y;
+					showTooltip(screenX, screenY, tooltipText);
+				}, Cesium.ScreenSpaceEventType.MOUSE_MOVE);
 			}
 			setup();
 		</script>

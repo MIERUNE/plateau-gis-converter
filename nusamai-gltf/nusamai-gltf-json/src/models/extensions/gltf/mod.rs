@@ -12,5 +12,5 @@ pub struct Gltf {
     pub ext_structural_metadata: Option<ext_structural_metadata::ExtStructuralMetadata>,
 
     #[serde(flatten)]
-    others: HashMap<String, Value>,
+    pub others: HashMap<String, Value>,
 }

@@ -1,0 +1,768 @@
+{
+  "extensionsUsed": [
+    "EXT_mesh_features",
+    "EXT_structural_metadata"
+  ],
+  "accessors": [
+    {
+      "bufferView": 0,
+      "componentType": 5126,
+      "count": 22562,
+      "type": "VEC3",
+      "max": [
+        527.1293573356234,
+        387.3888158304617,
+        542.6486890139058
+      ],
+      "min": [
+        -527.1293573356234,
+        -387.388815829996,
+        -542.6486890139058
+      ]
+    },
+    {
+      "bufferView": 1,
+      "componentType": 5125,
+      "count": 115440,
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 2,
+      "componentType": 5125,
+      "count": 22562,
+      "type": "SCALAR"
+    }
+  ],
+  "asset": {
+    "generator": "nusamai-gltf",
+    "version": "2.0"
+  },
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteLength": 270744,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 270744,
+      "byteLength": 461760,
+      "target": 34963
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 732504,
+      "byteLength": 90248,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 822752,
+      "byteLength": 1664
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 824416,
+      "byteLength": 6656
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 831072,
+      "byteLength": 1898
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 832970,
+      "byteLength": 6656
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 839626,
+      "byteLength": 1664
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 841290,
+      "byteLength": 6656
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 847946,
+      "byteLength": 1664
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 849610,
+      "byteLength": 6656
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 856266,
+      "byteLength": 1664
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 857930,
+      "byteLength": 6656
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 864586,
+      "byteLength": 20871
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 885457,
+      "byteLength": 6656
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 892113,
+      "byteLength": 1664
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 893777,
+      "byteLength": 6656
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 900433,
+      "byteLength": 1664
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 902097,
+      "byteLength": 6656
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 908753,
+      "byteLength": 6656
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 915409,
+      "byteLength": 6656
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 922065,
+      "byteLength": 1664
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 923729,
+      "byteLength": 6656
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 930385,
+      "byteLength": 13312
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 943697,
+      "byteLength": 6656
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 950353,
+      "byteLength": 6656
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 957009,
+      "byteLength": 1664
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 958673,
+      "byteLength": 6656
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 965329,
+      "byteLength": 1664
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 966993,
+      "byteLength": 6656
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 973649,
+      "byteLength": 1664
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 975313,
+      "byteLength": 6656
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 981969,
+      "byteLength": 1664
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 983633,
+      "byteLength": 6656
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 990289,
+      "byteLength": 1664
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 991953,
+      "byteLength": 6656
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 998609,
+      "byteLength": 1664
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 1000273,
+      "byteLength": 6656
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 1006929,
+      "byteLength": 1664
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 1008593,
+      "byteLength": 6656
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 1015249,
+      "byteLength": 1664
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 1016913,
+      "byteLength": 6656
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 1023569,
+      "byteLength": 1664
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 1025233,
+      "byteLength": 6656
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 1031889,
+      "byteLength": 1664
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 1033553,
+      "byteLength": 6656
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 1040209,
+      "byteLength": 1664
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 1041873,
+      "byteLength": 6656
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 1048529,
+      "byteLength": 1664
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 1050193,
+      "byteLength": 6656
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 1056849,
+      "byteLength": 1664
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 1058513,
+      "byteLength": 6656
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 1065169,
+      "byteLength": 266240
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 1331409,
+      "byteLength": 6656
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 1338065,
+      "byteLength": 201344
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 1539409,
+      "byteLength": 6656
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 1546065,
+      "byteLength": 1664
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 1547729,
+      "byteLength": 6656
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 1554385,
+      "byteLength": 410944
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 1965329,
+      "byteLength": 6656
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 1971985,
+      "byteLength": 1664
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 1973649,
+      "byteLength": 6656
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 1980305,
+      "byteLength": 1664
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 1981969,
+      "byteLength": 6656
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 1988625,
+      "byteLength": 1664
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 1990289,
+      "byteLength": 6656
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 1996945,
+      "byteLength": 1664
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 1998609,
+      "byteLength": 6656
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 2005265,
+      "byteLength": 1664
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 2006929,
+      "byteLength": 6656
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 2013585,
+      "byteLength": 1664
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 2015249,
+      "byteLength": 6656
+    }
+  ],
+  "buffers": [
+    {
+      "byteLength": 2021905
+    }
+  ],
+  "meshes": [
+    {
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 0,
+            "_FEATURE_ID_0": 2
+          },
+          "indices": 1,
+          "extensions": {
+            "EXT_mesh_features": {
+              "featureIds": [
+                {
+                  "featureCount": 1663,
+                  "attribute": 0,
+                  "propertyTable": 0
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "mesh": 0,
+      "translation": [
+        -3929620.269123388,
+        3649625.761440213,
+        -3439457.322811205
+      ]
+    }
+  ],
+  "scenes": [
+    {
+      "nodes": [
+        0
+      ]
+    }
+  ],
+  "extensions": {
+    "EXT_structural_metadata": {
+      "schema": {
+        "id": "",
+        "classes": {
+          "bldg:Building": {
+            "name": "bldg:Building",
+            "properties": {
+              "outerBuildingInstallation": {
+                "description": "outerBuildingInstallation",
+                "type": "STRING"
+              },
+              "boundedBy": {
+                "description": "boundedBy",
+                "type": "STRING"
+              },
+              "buildingDisasterRiskAttribute": {
+                "description": "buildingDisasterRiskAttribute",
+                "type": "STRING"
+              },
+              "indoorBuildingAttribute": {
+                "description": "indoorBuildingAttribute",
+                "type": "STRING"
+              },
+              "interiorRoom": {
+                "description": "interiorRoom",
+                "type": "STRING"
+              },
+              "address": {
+                "description": "address",
+                "type": "STRING"
+              },
+              "terminationDate": {
+                "description": "terminationDate",
+                "type": "STRING"
+              },
+              "buildingDataQualityAttribute": {
+                "description": "buildingDataQualityAttribute",
+                "type": "STRING"
+              },
+              "largeCustomerFacilityAttribute": {
+                "description": "largeCustomerFacilityAttribute",
+                "type": "STRING"
+              },
+              "consistsOfBuildingPart": {
+                "description": "consistsOfBuildingPart",
+                "type": "STRING"
+              },
+              "buildingDetailAttribute": {
+                "description": "buildingDetailAttribute",
+                "type": "STRING"
+              },
+              "keyValuePairAttribute": {
+                "description": "keyValuePairAttribute",
+                "type": "STRING"
+              },
+              "description": {
+                "description": "description",
+                "type": "STRING"
+              },
+              "storeysBelowGround": {
+                "description": "storeysBelowGround",
+                "type": "SCALAR",
+                "componentType": "INT32"
+              },
+              "storeysAboveGround": {
+                "description": "storeysAboveGround",
+                "type": "SCALAR",
+                "componentType": "INT32"
+              },
+              "function": {
+                "description": "function",
+                "type": "STRING"
+              },
+              "class": {
+                "description": "class",
+                "type": "STRING"
+              },
+              "parentId": {
+                "description": "parentId",
+                "type": "STRING"
+              },
+              "parentType": {
+                "description": "parentType",
+                "type": "STRING"
+              },
+              "bldgFacilityIdAttribute": {
+                "description": "bldgFacilityIdAttribute",
+                "type": "STRING"
+              },
+              "storeyHeightsBelowGround": {
+                "description": "storeyHeightsBelowGround",
+                "type": "STRING"
+              },
+              "genericAttribute": {
+                "description": "genericAttribute",
+                "type": "STRING"
+              },
+              "bldgDmAttribute": {
+                "description": "bldgDmAttribute",
+                "type": "STRING"
+              },
+              "usage": {
+                "description": "usage",
+                "type": "STRING"
+              },
+              "interiorBuildingInstallation": {
+                "description": "interiorBuildingInstallation",
+                "type": "STRING"
+              },
+              "ifcBuildingAttribute": {
+                "description": "ifcBuildingAttribute",
+                "type": "STRING"
+              },
+              "name": {
+                "description": "name",
+                "type": "STRING"
+              },
+              "bldgFacilityAttribute": {
+                "description": "bldgFacilityAttribute",
+                "type": "STRING"
+              },
+              "yearOfDemolition": {
+                "description": "yearOfDemolition",
+                "type": "SCALAR",
+                "componentType": "INT32"
+              },
+              "measuredHeight": {
+                "description": "measuredHeight",
+                "type": "SCALAR",
+                "componentType": "INT32"
+              },
+              "storeyHeightsAboveGround": {
+                "description": "storeyHeightsAboveGround",
+                "type": "STRING"
+              },
+              "yearOfConstruction": {
+                "description": "yearOfConstruction",
+                "type": "SCALAR",
+                "componentType": "INT32"
+              },
+              "creationDate": {
+                "description": "creationDate",
+                "type": "STRING"
+              },
+              "bldgFacilityTypeAttribute": {
+                "description": "bldgFacilityTypeAttribute",
+                "type": "STRING"
+              },
+              "buildingIDAttribute": {
+                "description": "buildingIDAttribute",
+                "type": "STRING"
+              },
+              "bldgRealEstateIDAttribute": {
+                "description": "bldgRealEstateIDAttribute",
+                "type": "STRING"
+              },
+              "roofType": {
+                "description": "roofType",
+                "type": "STRING"
+              }
+            }
+          }
+        }
+      },
+      "propertyTables": [
+        {
+          "class": "bldg:Building",
+          "count": 1663,
+          "properties": {
+            "bldgFacilityAttribute": {
+              "values": 44,
+              "stringOffsets": 45
+            },
+            "measuredHeight": {
+              "values": 23
+            },
+            "storeysBelowGround": {
+              "values": 25
+            },
+            "buildingDisasterRiskAttribute": {
+              "values": 56,
+              "stringOffsets": 57
+            },
+            "description": {
+              "values": 3,
+              "stringOffsets": 4
+            },
+            "bldgFacilityIdAttribute": {
+              "values": 46,
+              "stringOffsets": 47
+            },
+            "roofType": {
+              "values": 21,
+              "stringOffsets": 22
+            },
+            "storeyHeightsBelowGround": {
+              "values": 28,
+              "stringOffsets": 29
+            },
+            "creationDate": {
+              "values": 7,
+              "stringOffsets": 8
+            },
+            "interiorBuildingInstallation": {
+              "values": 32,
+              "stringOffsets": 33
+            },
+            "interiorRoom": {
+              "values": 36,
+              "stringOffsets": 37
+            },
+            "largeCustomerFacilityAttribute": {
+              "values": 66,
+              "stringOffsets": 67
+            },
+            "bldgDmAttribute": {
+              "values": 42,
+              "stringOffsets": 43
+            },
+            "usage": {
+              "values": 17,
+              "stringOffsets": 18
+            },
+            "bldgFacilityTypeAttribute": {
+              "values": 48,
+              "stringOffsets": 49
+            },
+            "storeyHeightsAboveGround": {
+              "values": 26,
+              "stringOffsets": 27
+            },
+            "parentType": {
+              "values": 70,
+              "stringOffsets": 71
+            },
+            "buildingDataQualityAttribute": {
+              "values": 52,
+              "stringOffsets": 53
+            },
+            "ifcBuildingAttribute": {
+              "values": 60,
+              "stringOffsets": 61
+            },
+            "boundedBy": {
+              "values": 34,
+              "stringOffsets": 35
+            },
+            "buildingIDAttribute": {
+              "values": 58,
+              "stringOffsets": 59
+            },
+            "function": {
+              "values": 15,
+              "stringOffsets": 16
+            },
+            "name": {
+              "values": 5,
+              "stringOffsets": 6
+            },
+            "yearOfConstruction": {
+              "values": 19
+            },
+            "buildingDetailAttribute": {
+              "values": 54,
+              "stringOffsets": 55
+            },
+            "outerBuildingInstallation": {
+              "values": 30,
+              "stringOffsets": 31
+            },
+            "consistsOfBuildingPart": {
+              "values": 38,
+              "stringOffsets": 39
+            },
+            "class": {
+              "values": 13,
+              "stringOffsets": 14
+            },
+            "genericAttribute": {
+              "values": 11,
+              "stringOffsets": 12
+            },
+            "parentId": {
+              "values": 68,
+              "stringOffsets": 69
+            },
+            "terminationDate": {
+              "values": 9,
+              "stringOffsets": 10
+            },
+            "yearOfDemolition": {
+              "values": 20
+            },
+            "storeysAboveGround": {
+              "values": 24
+            },
+            "bldgRealEstateIDAttribute": {
+              "values": 50,
+              "stringOffsets": 51
+            },
+            "indoorBuildingAttribute": {
+              "values": 62,
+              "stringOffsets": 63
+            },
+            "keyValuePairAttribute": {
+              "values": 64,
+              "stringOffsets": 65
+            },
+            "address": {
+              "values": 40,
+              "stringOffsets": 41
+            }
+          }
+        }
+      ]
+    }
+  }
+}

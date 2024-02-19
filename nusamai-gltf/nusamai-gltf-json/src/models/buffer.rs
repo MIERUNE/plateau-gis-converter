@@ -46,7 +46,7 @@ pub struct BufferExtensions {
 }
 
 /// A view into a buffer generally representing a subset of the buffer.
-#[derive(Serialize, Deserialize, Debug, Default, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, Default, PartialEq, Clone)]
 #[serde(rename_all = "camelCase")]
 #[serde(deny_unknown_fields)]
 pub struct BufferView {

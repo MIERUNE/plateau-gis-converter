@@ -7,7 +7,7 @@ use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
-#[derive(Serialize, Deserialize, Debug, Default, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, Default, PartialEq, Clone)]
 pub struct MeshPrimitive {
     #[serde(skip_serializing_if = "Option::is_none")]
     #[serde(rename = "EXT_mesh_features")]
