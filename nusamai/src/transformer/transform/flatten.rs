@@ -142,9 +142,10 @@ impl Transform for FlattenTreeTransform {
     }
 }
 
-struct Parent {
-    id: String,
-    typename: String,
+enum Parent {
+    Feature { id: String, typename: String },
+    Data { typename: String }, // Data stereotype does not have an id
+    Object { id: String, typename: String },
 }
 
 impl FlattenTreeTransform {
@@ -158,10 +159,19 @@ impl FlattenTreeTransform {
     ) -> Option<Value> {
         match value {
             Value::Object(mut obj) => {
-                let new_parent = obj.stereotype.id().map(|id| Parent {
-                    id: id.to_string(),
-                    typename: obj.typename.to_string(),
-                });
+                let new_parent = match &obj.stereotype {
+                    ObjectStereotype::Feature { id, .. } => Some(Parent::Feature {
+                        id: id.to_string(),
+                        typename: obj.typename.to_string(),
+                    }),
+                    ObjectStereotype::Data => Some(Parent::Data {
+                        typename: obj.typename.to_string(),
+                    }),
+                    ObjectStereotype::Object { id, .. } => Some(Parent::Object {
+                        id: id.to_string(),
+                        typename: obj.typename.to_string(),
+                    }),
+                };
 
                 // Attributes
                 let mut new_attribs = Map::default();
@@ -174,25 +184,40 @@ impl FlattenTreeTransform {
                 }
                 obj.attributes = new_attribs;
 
-                // if this object is a feature
-                if let ObjectStereotype::Feature { .. } = &obj.stereotype {
-                    if self.is_split_target(&obj) {
-                        // set parent id and type to attributes
-                        if let Some(Parent { id, typename }) = parent {
-                            obj.attributes
-                                .insert("parentId".to_string(), Value::String(id.to_string()));
-                            obj.attributes.insert(
-                                "parentType".to_string(),
-                                Value::String(typename.to_string()),
-                            );
+                if self.is_flatten_target(&obj, parent) {
+                    // set parent id and type to attributes
+                    if let Some(parent) = parent {
+                        match parent {
+                            Parent::Feature { id, typename } => {
+                                obj.attributes
+                                    .insert("parentId".to_string(), Value::String(id.to_string()));
+                                obj.attributes.insert(
+                                    "parentType".to_string(),
+                                    Value::String(typename.to_string()),
+                                );
+                            }
+                            Parent::Data { typename } => {
+                                obj.attributes.insert(
+                                    "parentType".to_string(),
+                                    Value::String(typename.to_string()),
+                                );
+                            }
+                            Parent::Object { id, typename } => {
+                                obj.attributes
+                                    .insert("parentId".to_string(), Value::String(id.to_string()));
+                                obj.attributes.insert(
+                                    "parentType".to_string(),
+                                    Value::String(typename.to_string()),
+                                );
+                            }
                         }
-                        out.push(Entity {
-                            root: Value::Object(obj),
-                            geometry_store: geom_store.clone(),
-                            appearance_store: appearance_store.clone(),
-                        });
-                        return None;
                     }
+                    out.push(Entity {
+                        root: Value::Object(obj),
+                        geometry_store: geom_store.clone(),
+                        appearance_store: appearance_store.clone(),
+                    });
+                    return None;
                 }
 
                 Some(Value::Object(obj))
@@ -216,9 +241,9 @@ impl FlattenTreeTransform {
         }
     }
 
-    fn is_split_target(&self, obj: &Object) -> bool {
-        if let ObjectStereotype::Feature { .. } = &obj.stereotype {
-            match self.feature {
+    fn is_flatten_target(&self, obj: &Object, parent: &Option<Parent>) -> bool {
+        match obj.stereotype {
+            ObjectStereotype::Feature { .. } => match self.feature {
                 FeatureFlatteningOption::None => false,
                 FeatureFlatteningOption::All => true,
                 FeatureFlatteningOption::AllExceptThematicSurfaces => {
@@ -227,9 +252,23 @@ impl FlattenTreeTransform {
                         && !obj.typename.ends_with(":Door")
                         && !obj.typename.ends_with("TrafficArea")
                 }
-            }
-        } else {
-            false
+            },
+            ObjectStereotype::Data => match self.data {
+                DataFlatteningOption::None => false,
+                DataFlatteningOption::TopLevelOnly => {
+                    if let Some(parent) = parent {
+                        // If the parent is Data, do not flatten
+                        !matches!(parent, Parent::Data { .. })
+                    } else {
+                        true
+                    }
+                }
+                DataFlatteningOption::All => true,
+            },
+            ObjectStereotype::Object { .. } => match self.object {
+                ObjectFlatteningOption::None => false,
+                ObjectFlatteningOption::All => true,
+            },
         }
     }
 }
