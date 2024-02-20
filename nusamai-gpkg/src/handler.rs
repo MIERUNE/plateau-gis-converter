@@ -561,6 +561,64 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn test_insert_attribute() {
+        let mut handler = GpkgHandler::from_url(&Url::parse("sqlite::memory:").unwrap())
+            .await
+            .unwrap();
+        let mut tx: GpkgTransaction<'_> = handler.begin().await.unwrap();
+
+        let table_name = "without_geometry";
+        let columns = vec![
+            ColumnInfo {
+                name: "attr1".into(),
+                data_type: "TEXT".into(),
+                mime_type: None,
+            },
+            ColumnInfo {
+                name: "attr2".into(),
+                data_type: "INTEGER".into(),
+                mime_type: None,
+            },
+            ColumnInfo {
+                name: "attr3".into(),
+                data_type: "REAL".into(),
+                mime_type: None,
+            },
+            ColumnInfo {
+                name: "attr4".into(),
+                data_type: "BOOLEAN".into(),
+                mime_type: None,
+            },
+        ];
+        let table_info = TableInfo {
+            name: table_name.into(),
+            has_geometry: false, // No geometry
+            columns,
+        };
+        tx.add_table(&table_info).await.unwrap();
+
+        let attributes: IndexMap<String, String> = IndexMap::from([
+            ("attr1".into(), "value1".into()),
+            ("attr2".into(), "2".into()),
+            ("attr3".into(), "3.33".into()),
+            ("attr4".into(), "1".into()),
+        ]);
+        tx.insert_attribute(table_name, &attributes).await.unwrap();
+
+        tx.commit().await.unwrap();
+
+        let rows = handler.fetch_rows(table_name).await.unwrap();
+
+        assert_eq!(rows.len(), 1);
+        let row = rows.first().unwrap();
+        assert_eq!(row.get::<i64, &str>("id"), 1);
+        assert_eq!(row.get::<String, &str>("attr1"), "value1");
+        assert_eq!(row.get::<i64, &str>("attr2"), 2);
+        assert_eq!(row.get::<f64, &str>("attr3"), 3.33);
+        assert!(row.get::<bool, &str>("attr4"));
+    }
+
+    #[tokio::test]
     async fn test_bbox() {
         let mut handler = GpkgHandler::from_url(&Url::parse("sqlite::memory:").unwrap())
             .await
