@@ -1,0 +1,38 @@
+{
+  "metadata": [
+  ],
+  "build": {
+      "globalMetadata": {
+          "_disableContribution": true,
+          "_enableSearch": true,
+          "_appLogoPath": "resources/logo.svg"
+      },
+      "content": [
+          {
+              "files": [
+                  "toc.yml",
+                  "index.md"
+              ],
+              "exclude": [
+                "doc/**"
+              ]
+          },
+          {
+              "src": "manual",
+              "files": [
+                  "toc.yml",
+                  "*.md"
+              ],
+              "dest": "manual"
+          }
+      ],
+      "resource": [
+          {
+              "files": [
+                  "resources/**/*"
+              ]
+          }
+      ],
+      "output": "../"
+  }
+}
