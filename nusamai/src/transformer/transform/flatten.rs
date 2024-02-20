@@ -92,7 +92,7 @@ impl Transform for FlattenTreeTransform {
     fn transform(&mut self, entity: Entity, out: &mut Vec<Entity>) {
         let geom_store = entity.geometry_store;
         let appearance_store = entity.appearance_store;
-        self.flatten_feature(entity.root, &geom_store, &appearance_store, out, &None);
+        self.flatten_entity(entity.root, &geom_store, &appearance_store, out, &None);
     }
 
     fn transform_schema(&self, schema: &mut Schema) {
@@ -125,7 +125,7 @@ struct Parent {
 }
 
 impl FlattenTreeTransform {
-    fn flatten_feature(
+    fn flatten_entity(
         &self,
         value: Value,
         geom_store: &Arc<RwLock<GeometryStore>>,
@@ -144,7 +144,7 @@ impl FlattenTreeTransform {
                 let mut new_attribs = Map::default();
                 for (key, value) in obj.attributes.drain(..) {
                     if let Some(v) =
-                        self.flatten_feature(value, geom_store, appearance_store, out, &new_parent)
+                        self.flatten_entity(value, geom_store, appearance_store, out, &new_parent)
                     {
                         new_attribs.insert(key, v);
                     }
@@ -178,7 +178,7 @@ impl FlattenTreeTransform {
                 let mut new_arr = Vec::with_capacity(arr.len());
                 for value in arr.drain(..) {
                     if let Some(v) =
-                        self.flatten_feature(value, geom_store, appearance_store, out, parent)
+                        self.flatten_entity(value, geom_store, appearance_store, out, parent)
                     {
                         new_arr.push(v)
                     }
