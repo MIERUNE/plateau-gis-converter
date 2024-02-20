@@ -46,8 +46,8 @@ PLATEAU-GIS-Converterは利用者アンケートを実施しています。
 
 ※todo: リンク先を更新
 
-- ソフトウェアの最新版は[Releaseページ](https://github.com/Project-PLATEAU/PLATEAU-SDK-for-Unity/releases)からダウンロードしてください。
-- 詳しい利用方法については、こちらの[マニュアル](https://Project-PLATEAU.github.io/PLATEAU-SDK-for-Unity/index.html) をご覧ください。
+- ソフトウェアの最新版は[Releaseページ]()からダウンロードしてください。
+- 詳しい利用方法については、こちらの[マニュアル]() をご覧ください。
 
 ## ライセンス
 
