@@ -30,7 +30,7 @@ pub fn prepare_object_attributes(obj: &Object) -> IndexMap<String, String> {
                 // 0 for false and 1 for true in SQLite
                 attributes.insert(attr_name.into(), if *b { "1".into() } else { "0".into() });
             }
-            Value::URI(u) => {
+            Value::Uri(u) => {
                 // value of the URI
                 attributes.insert(attr_name.into(), u.value().to_string());
             }

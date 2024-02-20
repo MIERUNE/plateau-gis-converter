@@ -19,4 +19,4 @@ quick-xml = "0.31"
 serde = { version = "1.0", features = ["derive"], optional = true }
 serde_json = { version = "1.0.113", features = ["indexmap"], optional = true }
 thiserror = "1.0"
-url = "2.5.0"
+url = { version = "2.5.0", features = ["serde"] }

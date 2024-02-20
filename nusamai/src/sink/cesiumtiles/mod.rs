@@ -270,7 +270,7 @@ fn tile_writing_stage(
                         tilespec.max_height = tilespec.max_height.max(height);
 
                         let (x, y, z) = geographic_to_geocentric(&ellipsoid, lng, lat, height);
-                        [x - translation[0], z - translation[1], -y - translation[2], u, v]
+                        [x - translation[0], z - translation[1], -y - translation[2], u, 1.0 - v]
                     });
 
                 for (poly, orig_mat_id) in feature.polygons.iter().zip_eq(feature.polygon_material_ids.iter()) {

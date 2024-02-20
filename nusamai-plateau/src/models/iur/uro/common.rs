@@ -1,4 +1,4 @@
-use nusamai_citygml::{citygml_data, CityGmlElement, Code, Date, Length, Measure, Point, URI};
+use nusamai_citygml::{citygml_data, CityGmlElement, Code, Date, Length, Measure, Point, Uri};
 
 #[citygml_data(name = "uro:UserDefinedValue")]
 pub struct UserDefinedValue {
@@ -18,7 +18,7 @@ pub struct UserDefinedValue {
     pub date_value: Option<Date>,
 
     #[citygml(path = b"uro:uriValue")]
-    pub uri_value: Option<URI>,
+    pub uri_value: Option<Uri>,
 
     #[citygml(path = b"uro:measuredValue")]
     pub measured_value: Option<Measure>,

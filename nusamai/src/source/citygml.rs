@@ -57,7 +57,7 @@ impl DataSource for CityGmlSource {
             let mut xml_reader = quick_xml::NsReader::from_reader(reader);
             let source_url = Url::from_file_path(fs::canonicalize(Path::new(filename))?).unwrap();
 
-            let context = nusamai_citygml::ParseContext::new(source_url, &code_resolver);
+            let context = nusamai_citygml::ParseContext::new(source_url.clone(), &code_resolver);
             let mut citygml_reader = CityGmlReader::new(context);
 
             let mut st = citygml_reader.start_root(&mut xml_reader)?;
@@ -100,6 +100,7 @@ fn toplevel_dispatcher<R: BufRead>(
                 if let Some(root) = cityobj.into_object() {
                     let entity = Entity {
                         root,
+                        base_url: url::Url::parse("file:///dummy").unwrap(),
                         geometry_store: RwLock::new(geometry_store).into(),
                         appearance_store: Default::default(), // TODO: from local appearances
                     };

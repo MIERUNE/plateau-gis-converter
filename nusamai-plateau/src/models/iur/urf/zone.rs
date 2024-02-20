@@ -1,6 +1,6 @@
 use nusamai_citygml::{
     citygml_data, citygml_feature, citygml_property, CityGmlElement, Code, Date, GYear, Length,
-    Measure, URI,
+    Measure, Uri,
 };
 
 #[citygml_property(name = "urf:DistrictFacilityProperty")]
@@ -95,7 +95,7 @@ pub struct Zone {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -173,7 +173,7 @@ pub struct Agreement {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -257,7 +257,7 @@ pub struct AircraftNoiseControlZone {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -338,7 +338,7 @@ pub struct AreaClassification {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -419,7 +419,7 @@ pub struct CollectiveFacilitiesForReconstruction {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -530,7 +530,7 @@ pub struct CollectiveFacilitiesForReconstructionAndRevitalization {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -641,7 +641,7 @@ pub struct CollectiveFacilitiesForTsunamiDisasterPrevention {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -752,7 +752,7 @@ pub struct CollectiveGovernmentAndPublicOfficeFacilities {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -848,7 +848,7 @@ pub struct CollectiveHousingFacilities {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -956,7 +956,7 @@ pub struct CollectiveUrbanDisasterPreventionFacilities {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -1058,7 +1058,7 @@ pub struct ConservationZoneForClustersOfTraditionalStructures {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -1139,7 +1139,7 @@ pub struct DisasterPreventionBlockImprovementProject {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -1229,7 +1229,7 @@ pub struct DisasterPreventionBlockImprovementZonePlan {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -1328,7 +1328,7 @@ pub struct DistributionBusinessPark {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -1436,7 +1436,7 @@ pub struct DistributionBusinessZone {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -1520,7 +1520,7 @@ pub struct District {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -1658,7 +1658,7 @@ pub struct DistrictDevelopmentPlan {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -1757,7 +1757,7 @@ pub struct DistrictFacility {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -1837,7 +1837,7 @@ pub struct DistrictImprovementPlanForDisasterPreventionBlockImprovementZonePlan 
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -1938,7 +1938,7 @@ pub struct DistrictImprovementPlanForHistoricSceneryMaintenanceAndImprovementDis
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -2037,7 +2037,7 @@ pub struct DistrictPlan {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -2133,7 +2133,7 @@ pub struct DistrictsAndZones {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -2214,7 +2214,7 @@ pub struct EducationalAndCulturalFacility {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -2298,7 +2298,7 @@ pub struct ExceptionalFloorAreaRateDistrict {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -2382,7 +2382,7 @@ pub struct FirePreventionDistrict {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -2463,7 +2463,7 @@ pub struct FireProtectionFacility {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -2553,7 +2553,7 @@ pub struct FloodPreventionFacility {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -2643,7 +2643,7 @@ pub struct GlobalHubCityDevelopmentProject {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -2730,7 +2730,7 @@ pub struct GreenSpaceConservationDistrict {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -2811,7 +2811,7 @@ pub struct HeightControlDistrict {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -2898,7 +2898,7 @@ pub struct HighLevelUseDistrict {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -2994,7 +2994,7 @@ pub struct HighRiseResidentialAttractionDistrict {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -3084,7 +3084,7 @@ pub struct HistoricSceneryMaintenanceAndImprovementDistrictPlan {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -3177,7 +3177,7 @@ pub struct HousingControlArea {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -3258,7 +3258,7 @@ pub struct IndustrialParkDevelopmentProject {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -3345,7 +3345,7 @@ pub struct LandReadjustmentProject {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -3432,7 +3432,7 @@ pub struct LandReadjustmentPromotionArea {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -3516,7 +3516,7 @@ pub struct LandReadjustmentPromotionAreasForCoreBusinessUrbanDevelopment {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -3600,7 +3600,7 @@ pub struct LandscapeZone {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -3696,7 +3696,7 @@ pub struct MarketsSlaughterhousesCrematoria {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -3780,7 +3780,7 @@ pub struct MedicalFacility {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -3864,7 +3864,7 @@ pub struct NewHousingAndUrbanDevelopmentProject {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -3954,7 +3954,7 @@ pub struct NewUrbanInfrastructureProject {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -4044,7 +4044,7 @@ pub struct OpenSpaceForPublicUse {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -4131,7 +4131,7 @@ pub struct ParkingPlaceDevelopmentZone {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -4212,7 +4212,7 @@ pub struct PortZone {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -4296,7 +4296,7 @@ pub struct PrivateUrbanRenewalProjectPlan {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -4380,7 +4380,7 @@ pub struct ProductiveGreenZone {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -4467,7 +4467,7 @@ pub struct ProjectPromotionArea {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -4551,7 +4551,7 @@ pub struct PromotionDistrict {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -4629,7 +4629,7 @@ pub struct QuasiUrbanPlanningArea {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -4716,7 +4716,7 @@ pub struct Regulation {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -4794,7 +4794,7 @@ pub struct ResidenceAttractionArea {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -4872,7 +4872,7 @@ pub struct ResidentialBlockConstructionProject {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -4965,7 +4965,7 @@ pub struct ResidentialBlockConstructionPromotionArea {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -5049,7 +5049,7 @@ pub struct ResidentialEnvironmentImprovementDistrict {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -5148,7 +5148,7 @@ pub struct RoadsideDistrictFacility {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -5226,7 +5226,7 @@ pub struct RoadsideDistrictImprovementPlan {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -5328,7 +5328,7 @@ pub struct RoadsideDistrictPlan {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -5424,7 +5424,7 @@ pub struct RuralDistrictFacility {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -5502,7 +5502,7 @@ pub struct RuralDistrictImprovementPlan {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -5604,7 +5604,7 @@ pub struct RuralDistrictPlan {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -5694,7 +5694,7 @@ pub struct SandControlFacility {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -5784,7 +5784,7 @@ pub struct ScenicDistrict {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -5877,7 +5877,7 @@ pub struct ScheduledAreaForCollectiveGovernmentAndPublicOfficeFacilities {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -5958,7 +5958,7 @@ pub struct ScheduledAreaForCollectiveHousingFacilities {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -6039,7 +6039,7 @@ pub struct ScheduledAreaForDistributionBusinessPark {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -6120,7 +6120,7 @@ pub struct ScheduledAreaForIndustrialParkDevelopmentProjects {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -6201,7 +6201,7 @@ pub struct ScheduledAreaForNewHousingAndUrbanDevelopmentProjects {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -6282,7 +6282,7 @@ pub struct ScheduledAreaForNewUrbanInfrastructureProjects {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -6363,7 +6363,7 @@ pub struct ScheduledAreaForUrbanDevelopmentProject {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -6444,7 +6444,7 @@ pub struct SedimentDisasterProneArea {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -6537,7 +6537,7 @@ pub struct SnowProtectionFacility {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -6627,7 +6627,7 @@ pub struct SocialWelfareFacility {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -6711,7 +6711,7 @@ pub struct SpecialGreenSpaceConservationDistrict {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -6795,7 +6795,7 @@ pub struct SpecialUrbanRenaissanceDistrict {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -6900,7 +6900,7 @@ pub struct SpecialUseAttractionDistrict {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -6999,7 +6999,7 @@ pub struct SpecialUseDistrict {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -7086,7 +7086,7 @@ pub struct SpecialUseRestrictionDistrict {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -7173,7 +7173,7 @@ pub struct SpecialZoneForPreservationOfHistoricalLandscape {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -7254,7 +7254,7 @@ pub struct SpecifiedBlock {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -7344,7 +7344,7 @@ pub struct SpecifiedBuildingZoneImprovementPlan {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -7443,7 +7443,7 @@ pub struct SpecifiedDisasterPreventionBlockImprovementZone {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -7536,7 +7536,7 @@ pub struct SpecifiedUrgentUrbanRenewalArea {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -7629,7 +7629,7 @@ pub struct SupplyFacility {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -7716,7 +7716,7 @@ pub struct TelecommunicationFacility {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -7806,7 +7806,7 @@ pub struct TideFacility {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -7896,7 +7896,7 @@ pub struct TrafficFacility {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -8009,7 +8009,7 @@ pub struct TreatmentFacility {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -8096,7 +8096,7 @@ pub struct TreePlantingDistrict {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -8180,7 +8180,7 @@ pub struct UnclassifiedBlankArea {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -8258,7 +8258,7 @@ pub struct UnclassifiedUseDistrict {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -8336,7 +8336,7 @@ pub struct UnusedLandUsePromotionArea {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -8414,7 +8414,7 @@ pub struct UrbanDevelopmentProject {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -8495,7 +8495,7 @@ pub struct UrbanDisasterRecoveryPromotionArea {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -8582,7 +8582,7 @@ pub struct UrbanFacility {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -8666,7 +8666,7 @@ pub struct UrbanFacilityStipulatedByCabinetOrder {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -8756,7 +8756,7 @@ pub struct UrbanFunctionAttractionArea {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -8834,7 +8834,7 @@ pub struct UrbanPlanningArea {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -8936,7 +8936,7 @@ pub struct UrbanRedevelopmentProject {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -9035,7 +9035,7 @@ pub struct UrbanRedevelopmentPromotionArea {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -9125,7 +9125,7 @@ pub struct UrbanRenewalProject {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -9224,7 +9224,7 @@ pub struct UrgentUrbanRenewalArea {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -9314,7 +9314,7 @@ pub struct UseDistrict {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -9431,7 +9431,7 @@ pub struct Waterway {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -9530,7 +9530,7 @@ pub struct WindProtectionFacility {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -9620,7 +9620,7 @@ pub struct ZonalDisasterPreventionFacility {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -9701,7 +9701,7 @@ pub struct ZoneForPreservationOfHistoricalLandscape {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,
@@ -9782,7 +9782,7 @@ pub struct ThreeDimensionalExtent {
     pub city: Option<Code>,
 
     #[citygml(path = b"urf:reference")]
-    pub reference: Option<URI>,
+    pub reference: Option<Uri>,
 
     #[citygml(path = b"urf:reason")]
     pub reason: Option<String>,

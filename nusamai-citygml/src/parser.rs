@@ -71,7 +71,7 @@ impl<'a> InternalState<'a> {
 }
 
 pub struct ParseContext<'a> {
-    source_uri: Option<Url>,
+    source_uri: Url,
     code_resolver: &'a dyn CodeResolver,
     // Mapping a string gml:id to an integer ID, unique in a single document
     id_map: indexmap::IndexSet<String, ahash::RandomState>,
@@ -80,14 +80,14 @@ pub struct ParseContext<'a> {
 impl<'a> ParseContext<'a> {
     pub fn new(source_uri: Url, code_resolver: &'a dyn CodeResolver) -> Self {
         Self {
-            source_uri: Some(source_uri),
+            source_uri,
             code_resolver,
             ..Default::default()
         }
     }
 
-    pub fn source_url(&self) -> Option<&Url> {
-        self.source_uri.as_ref()
+    pub fn source_url(&self) -> &Url {
+        &self.source_uri
     }
 
     pub fn code_resolver(&self) -> &dyn CodeResolver {
@@ -103,7 +103,7 @@ impl<'a> ParseContext<'a> {
 impl<'a> Default for ParseContext<'a> {
     fn default() -> Self {
         Self {
-            source_uri: None,
+            source_uri: Url::parse("file:///").unwrap(),
             code_resolver: &codelist::NoopResolver {},
             id_map: indexmap::IndexSet::default(),
         }

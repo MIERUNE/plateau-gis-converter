@@ -97,6 +97,7 @@ mod tests {
                         geometries: Default::default(),
                     },
                 }),
+                base_url: url::Url::parse("file:///dummy").unwrap(),
                 geometry_store: RwLock::new(GeometryStore::default()).into(),
                 appearance_store: Default::default(),
             },
