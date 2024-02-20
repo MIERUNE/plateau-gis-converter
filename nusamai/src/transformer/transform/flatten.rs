@@ -97,23 +97,46 @@ impl Transform for FlattenTreeTransform {
 
     fn transform_schema(&self, schema: &mut Schema) {
         for ty in schema.types.values_mut() {
-            if let TypeDef::Feature(feature) = ty {
-                feature.attributes.insert(
-                    "parentId".into(),
-                    Attribute {
-                        type_ref: TypeRef::String,
-                        min_occurs: 0,
-                        max_occurs: Some(1),
-                    },
-                );
-                feature.attributes.insert(
-                    "parentType".into(),
-                    Attribute {
-                        type_ref: TypeRef::String,
-                        min_occurs: 0,
-                        max_occurs: Some(1),
-                    },
-                );
+            match ty {
+                TypeDef::Feature(typedef) => {
+                    typedef.attributes.insert(
+                        "parentId".into(),
+                        Attribute {
+                            type_ref: TypeRef::String,
+                            min_occurs: 0,
+                            max_occurs: Some(1),
+                        },
+                    );
+                    typedef.attributes.insert(
+                        "parentType".into(),
+                        Attribute {
+                            type_ref: TypeRef::String,
+                            min_occurs: 0,
+                            max_occurs: Some(1),
+                        },
+                    );
+                }
+                TypeDef::Data(typedef) => {
+                    typedef.attributes.insert(
+                        "parentId".into(),
+                        Attribute {
+                            type_ref: TypeRef::String,
+                            min_occurs: 0,
+                            max_occurs: Some(1),
+                        },
+                    );
+                    typedef.attributes.insert(
+                        "parentType".into(),
+                        Attribute {
+                            type_ref: TypeRef::String,
+                            min_occurs: 0,
+                            max_occurs: Some(1),
+                        },
+                    );
+                }
+                TypeDef::Property(_) => {
+                    // Do nothing
+                }
             }
         }
     }
