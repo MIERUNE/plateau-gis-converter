@@ -3,6 +3,7 @@ use nusamai_citygml::schema::{Attribute, Schema, TypeDef, TypeRef};
 use nusamai_gpkg::table::{ColumnInfo, TableInfo};
 
 /// Check the schema, and prepare the information for the SQLite table
+#[must_use]
 pub fn schema_to_table_infos(schema: &Schema) -> IndexMap<String, TableInfo> {
     let mut table_infos = IndexMap::<String, TableInfo>::new();
 
@@ -20,6 +21,7 @@ pub fn schema_to_table_infos(schema: &Schema) -> IndexMap<String, TableInfo> {
     table_infos
 }
 
+#[must_use]
 fn typedef_to_columns(ty: &TypeDef) -> Vec<ColumnInfo> {
     let mut columns: Vec<ColumnInfo> = vec![];
     match ty {
@@ -56,6 +58,7 @@ fn typedef_to_columns(ty: &TypeDef) -> Vec<ColumnInfo> {
     columns
 }
 
+#[must_use]
 fn attribute_to_column(attr_name: &str, attr: &Attribute) -> Option<ColumnInfo> {
     // Note: `attr.max_occurs` is expected to be 1 (handled by the transformer in the earlier step)
     match &attr.type_ref {
@@ -136,5 +139,183 @@ fn attribute_to_column(attr_name: &str, attr: &Attribute) -> Option<ColumnInfo> 
             );
             None
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use nusamai_citygml::schema::{DataTypeDef, FeatureTypeDef, PropertyTypeDef};
+
+    #[test]
+    fn test_schema_to_table_infos() {
+        let mut types = IndexMap::with_hasher(ahash::RandomState::default());
+
+        let mut attrs_1 = IndexMap::with_hasher(ahash::RandomState::default());
+        attrs_1.insert("text".into(), Attribute::new(TypeRef::String));
+        attrs_1.insert("number".into(), Attribute::new(TypeRef::Integer));
+        attrs_1.insert("date".into(), Attribute::new(TypeRef::Date));
+        types.insert(
+            "feature".into(),
+            TypeDef::Feature(FeatureTypeDef {
+                attributes: attrs_1,
+                additional_attributes: false,
+            }),
+        );
+
+        let mut attrs_2 = IndexMap::with_hasher(ahash::RandomState::default());
+        attrs_2.insert("json".into(), Attribute::new(TypeRef::JsonString));
+        attrs_2.insert("measure".into(), Attribute::new(TypeRef::Measure));
+        attrs_2.insert("bool".into(), Attribute::new(TypeRef::Boolean));
+        types.insert(
+            "data".into(),
+            TypeDef::Data(DataTypeDef {
+                attributes: attrs_2,
+                additional_attributes: false,
+            }),
+        );
+        let schema = Schema { types };
+
+        let table_infos = schema_to_table_infos(&schema);
+
+        assert_eq!(table_infos.len(), 2);
+        assert_eq!(
+            table_infos.get("feature").unwrap(),
+            &TableInfo {
+                name: "feature".into(),
+                has_geometry: true,
+                columns: vec![
+                    ColumnInfo {
+                        name: "text".into(),
+                        data_type: "TEXT".into(),
+                        mime_type: None,
+                    },
+                    ColumnInfo {
+                        name: "number".into(),
+                        data_type: "INTEGER".into(),
+                        mime_type: None,
+                    },
+                    ColumnInfo {
+                        name: "date".into(),
+                        data_type: "DATE".into(),
+                        mime_type: None,
+                    },
+                ]
+            }
+        );
+        assert_eq!(
+            table_infos.get("data").unwrap(),
+            &TableInfo {
+                name: "data".into(),
+                has_geometry: false,
+                columns: vec![
+                    ColumnInfo {
+                        name: "json".into(),
+                        data_type: "TEXT".into(),
+                        mime_type: None,
+                    },
+                    ColumnInfo {
+                        name: "measure".into(),
+                        data_type: "REAL".into(),
+                        mime_type: None,
+                    },
+                    ColumnInfo {
+                        name: "bool".into(),
+                        data_type: "BOOLEAN".into(),
+                        mime_type: None,
+                    },
+                ]
+            }
+        );
+    }
+
+    #[test]
+    fn test_typedef_to_columns() {
+        let mut attrs_1 = IndexMap::with_hasher(ahash::RandomState::default());
+        attrs_1.insert("text".into(), Attribute::new(TypeRef::String));
+        attrs_1.insert("number".into(), Attribute::new(TypeRef::Integer));
+        attrs_1.insert("date".into(), Attribute::new(TypeRef::Date));
+        let typedef_feature = TypeDef::Feature(FeatureTypeDef {
+            attributes: attrs_1,
+            additional_attributes: false,
+        });
+        assert_eq!(
+            typedef_to_columns(&typedef_feature),
+            vec![
+                ColumnInfo {
+                    name: "text".into(),
+                    data_type: "TEXT".into(),
+                    mime_type: None,
+                },
+                ColumnInfo {
+                    name: "number".into(),
+                    data_type: "INTEGER".into(),
+                    mime_type: None,
+                },
+                ColumnInfo {
+                    name: "date".into(),
+                    data_type: "DATE".into(),
+                    mime_type: None,
+                },
+            ]
+        );
+
+        let mut attrs_2 = IndexMap::with_hasher(ahash::RandomState::default());
+        attrs_2.insert("json".into(), Attribute::new(TypeRef::JsonString));
+        attrs_2.insert("measure".into(), Attribute::new(TypeRef::Measure));
+        attrs_2.insert("bool".into(), Attribute::new(TypeRef::Boolean));
+        let typedef_data = TypeDef::Data(DataTypeDef {
+            attributes: attrs_2,
+            additional_attributes: false,
+        });
+        assert_eq!(
+            typedef_to_columns(&typedef_data),
+            vec![
+                ColumnInfo {
+                    name: "json".into(),
+                    data_type: "TEXT".into(),
+                    mime_type: None,
+                },
+                ColumnInfo {
+                    name: "measure".into(),
+                    data_type: "REAL".into(),
+                    mime_type: None,
+                },
+                ColumnInfo {
+                    name: "bool".into(),
+                    data_type: "BOOLEAN".into(),
+                    mime_type: None,
+                },
+            ]
+        );
+
+        let typedef_property = TypeDef::Property(PropertyTypeDef { members: vec![] });
+        assert_eq!(typedef_to_columns(&typedef_property), vec![]);
+    }
+
+    #[test]
+    fn test_attribute_to_column() {
+        let result_1 = attribute_to_column("description", &Attribute::new(TypeRef::String));
+        assert_eq!(
+            result_1,
+            Some(ColumnInfo {
+                name: "description".into(),
+                data_type: "TEXT".into(),
+                mime_type: None,
+            })
+        );
+
+        let result_2 = attribute_to_column("json", &Attribute::new(TypeRef::JsonString));
+        assert_eq!(
+            result_2,
+            Some(ColumnInfo {
+                name: "json".into(),
+                data_type: "TEXT".into(),
+                mime_type: None,
+            })
+        );
+
+        let result_3 = attribute_to_column("unknown", &Attribute::new(TypeRef::Unknown));
+        assert_eq!(result_3, None);
     }
 }
