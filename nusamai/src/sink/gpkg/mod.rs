@@ -66,6 +66,20 @@ pub struct GpkgSink {
     output_path: PathBuf,
 }
 
+// An ephimeral container to wrap and pass the data in the pipeline
+// Corresponds to a record in the features/attributes table of GeoPackage
+enum Record {
+    Feature {
+        obj_id: String,
+        geometry: Vec<u8>,
+        bbox: Bbox,
+        attributes: IndexMap<String, String>,
+    },
+    Attribute {
+        attributes: IndexMap<String, String>,
+    },
+}
+
 impl GpkgSink {
     pub async fn run_async(
         &mut self,
@@ -148,31 +162,35 @@ impl GpkgSink {
                                     // TODO: fatal error
                                 }
 
-                                let attributes = prepare_object_attributes(obj);
-
-                                let bbox =
-                                    get_indexed_multipolygon_bbox(&geom_store.vertices, &mpoly);
-
                                 let table_name = obj.typename.to_string();
-
-                                if sender
-                                    .blocking_send((
-                                        table_name,
-                                        obj_id.clone(),
-                                        bytes,
-                                        attributes,
-                                        bbox,
-                                    ))
-                                    .is_err()
-                                {
+                                let record = Record::Feature {
+                                    obj_id: obj_id.clone(),
+                                    geometry: bytes,
+                                    bbox: get_indexed_multipolygon_bbox(
+                                        &geom_store.vertices,
+                                        &mpoly,
+                                    ),
+                                    attributes: prepare_object_attributes(obj),
+                                };
+                                if sender.blocking_send((table_name, record)).is_err() {
                                     return Err(PipelineError::Canceled);
                                 };
                             }
-                            ObjectStereotype::Object { id: _obj_id } => {
-                                // TODO: implement
-                            }
                             ObjectStereotype::Data => {
-                                // TODO: implement
+                                let table_name = obj.typename.to_string();
+                                let record = Record::Attribute {
+                                    attributes: prepare_object_attributes(obj),
+                                };
+                                if sender.blocking_send((table_name, record)).is_err() {
+                                    return Err(PipelineError::Canceled);
+                                };
+                            }
+                            ObjectStereotype::Object { id: obj_id } => {
+                                // TODO: implement (you will also need the corresponding TypeDef::Object in the schema)
+                                log::warn!(
+                                    "ObjectStereotype::Object is not supported yet: id = {}",
+                                    obj_id
+                                );
                             }
                         }
 
@@ -182,7 +200,7 @@ impl GpkgSink {
         };
 
         let mut tx = handler.begin().await.unwrap();
-        while let Some((table_name, obj_id, gpkg_bin, attributes, bbox)) = receiver.recv().await {
+        while let Some((table_name, record)) = receiver.recv().await {
             feedback.ensure_not_canceled()?;
 
             if !created_tables.contains(&table_name) {
@@ -191,11 +209,22 @@ impl GpkgSink {
                 created_tables.insert(table_name.clone());
             }
 
-            tx.insert_feature(&table_name, &obj_id, &gpkg_bin, &attributes)
-                .await
-                .unwrap();
-
-            table_bboxes.get_mut(&table_name).unwrap().merge(&bbox);
+            match record {
+                Record::Feature {
+                    obj_id,
+                    geometry,
+                    bbox,
+                    attributes,
+                } => {
+                    tx.insert_feature(&table_name, &obj_id, &geometry, &attributes)
+                        .await
+                        .unwrap();
+                    table_bboxes.get_mut(&table_name).unwrap().merge(&bbox);
+                }
+                Record::Attribute { attributes } => {
+                    tx.insert_attribute(&table_name, &attributes).await.unwrap();
+                }
+            }
         }
 
         for table_name in table_bboxes.keys() {
