@@ -40,18 +40,8 @@ fn typedef_to_columns(ty: &TypeDef) -> Vec<ColumnInfo> {
                 }
             });
         }
-        TypeDef::Property(prop_td) => {
-            // Note: expected to be handled by the tranformer in the earlier step
-            log::warn!(
-                "TypeDef::Property - Not supported: {} members ({:?}, etc.)",
-                prop_td.members.len(),
-                prop_td
-                    .members
-                    .iter()
-                    .map(|m| &m.type_ref)
-                    .take(3)
-                    .collect::<Vec<_>>()
-            );
+        TypeDef::Property(_) => {
+            // Do nothing
         }
     };
 
