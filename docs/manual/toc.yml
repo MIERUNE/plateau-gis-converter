@@ -1,8 +1,10 @@
-- name: カーボンニュートラル施策推進支援システム
+- name: PLATEAU GIS Converter
   href: ../index.md
-- name: 利用を開始する
+- name: コンバーターの利用方法
   items:
-  - name: 環境構築手順書
-    href: devMan.md
-  - name: 操作マニュアル
-    href: userMan.md
+  - name: インストール
+    href: install.md
+  - name: GUIでの利用
+    href: useGui.md
+  - name: コマンドラインでの利用
+    href: useCommandLine.md
