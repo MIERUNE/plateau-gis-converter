@@ -16,7 +16,7 @@ const filetypeOptions: Record<string, { label: string; extensions: string[] }> =
 		extensions: ['json']
 	},
 	cesiumtiles: {
-		label: '3DTiles',
+		label: '3D Tiles',
 		extensions: ['']
 	},
 	kml: {
@@ -31,8 +31,8 @@ const filetypeOptions: Record<string, { label: string; extensions: string[] }> =
 		label: 'PLY',
 		extensions: ['ply']
 	},
-	glb: {
-		label: 'GLB',
+	gltf: {
+		label: 'glTF',
 		extensions: ['glb']
 	},
 	serde: {
