@@ -215,6 +215,8 @@ mod tests {
             .arg("noop")
             .arg("--output")
             .arg("dummy")
+            .arg("--schema")
+            .arg("schema.json")
             .assert();
         assert.success();
     }
