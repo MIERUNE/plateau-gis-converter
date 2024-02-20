@@ -11,7 +11,7 @@ pub fn schema_to_table_infos(schema: &Schema) -> IndexMap<String, TableInfo> {
             name.clone(),
             TableInfo {
                 name: name.clone(),
-                has_geometry: true, // TODO: true for "features" table, false for "attributes" table
+                has_geometry: matches!(ty, TypeDef::Feature(_)),
                 columns: typedef_to_columns(ty),
             },
         );
@@ -24,9 +24,9 @@ fn typedef_to_columns(ty: &TypeDef) -> Vec<ColumnInfo> {
     let mut columns: Vec<ColumnInfo> = vec![];
     match ty {
         TypeDef::Feature(feat_td) => {
-            // TODO: consider `feat_td.additional_attributes`
+            // Note: `feat_td.additional_attributes` is expected to be false (treated by the transformer already)
             feat_td.attributes.iter().for_each(|(attr_name, attr)|
-                // TODO: consider `attr.{min_occurs,max_occurs}`
+                // Note: `attr.max_occurs` is expected to be 1 (treated by the transformer already)
                 match &attr.type_ref {
                     TypeRef::String => {
                         columns.push(ColumnInfo {
