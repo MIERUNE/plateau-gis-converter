@@ -4,18 +4,13 @@ use hashbrown::HashMap;
 use indexmap::IndexSet;
 use itertools::Itertools;
 use serde::{Deserialize, Serialize};
-use indexmap::IndexSet;
-use itertools::Itertools;
-use serde::{Deserialize, Serialize};
 
 use nusamai_citygml::{
     geometry::GeometryType,
     object::{ObjectStereotype, Value},
 };
 use nusamai_geometry::{MultiPolygon, Polygon, Polygon2, Polygon3};
-use nusamai_geometry::{MultiPolygon, Polygon, Polygon2, Polygon3};
 use nusamai_mvt::TileZXY;
-use nusamai_plateau::{appearance, Entity};
 use nusamai_plateau::{appearance, Entity};
 
 use super::material::Material;
@@ -39,15 +34,12 @@ pub fn slice_to_tiles<E>(
     min_z: u8,
     max_z: u8,
     send_feature: impl Fn(TileZXY, SlicedFeature) -> Result<(), E>,
-    send_feature: impl Fn(TileZXY, SlicedFeature) -> Result<(), E>,
 ) -> Result<(), E> {
     assert!(
         max_z >= min_z,
         "max_z must be greater than or equal to min_z"
     );
 
-    // entity must be a Feature
-    let Value::Object(obj) = &entity.root else {
     // entity must be a Feature
     let Value::Object(obj) = &entity.root else {
         return Ok(());
@@ -140,13 +132,6 @@ pub fn slice_to_tiles<E>(
     // TODO: linestring, point
 }
 
-/// Slice a polygon into tiles. The slicing algorithm is based on [geojson-vt](https://github.com/mapbox/geojson-vt).
-fn slice_polygon(
-    zoom: u8,
-    poly: &Polygon3,
-    poly_uv: &Polygon2,
-    mut send_polygon: impl FnMut(TileZXY, &Polygon<'static, 5>),
-) {
 /// Slice a polygon into tiles. The slicing algorithm is based on [geojson-vt](https://github.com/mapbox/geojson-vt).
 fn slice_polygon(
     zoom: u8,

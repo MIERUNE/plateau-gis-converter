@@ -2,8 +2,7 @@
 
 use std::hash::Hash;
 
-use indexmap::IndexSet;
-use nusamai_gltf_json::BufferView;
+use image::io::Reader as ImageReader;
 use indexmap::IndexSet;
 use nusamai_gltf_json::BufferView;
 use serde::{Deserialize, Serialize};
@@ -13,25 +12,10 @@ use url::Url;
 pub struct Material {
     pub base_color: [f32; 4],
     pub base_texture: Option<Texture>,
-    pub base_texture: Option<Texture>,
     // NOTE: Adjust the hash implementation if you add more fields
 }
 
 impl Material {
-    pub fn to_gltf(
-        &self,
-        texture_set: &mut IndexSet<Texture, ahash::RandomState>,
-    ) -> nusamai_gltf_json::Material {
-        let tex = if let Some(texture) = &self.base_texture {
-            let (tex_idx, _) = texture_set.insert_full(texture.clone());
-            Some(nusamai_gltf_json::TextureInfo {
-                index: tex_idx as u32,
-                tex_coord: 0,
-                ..Default::default()
-            })
-        } else {
-            None
-        };
     pub fn to_gltf(
         &self,
         texture_set: &mut IndexSet<Texture, ahash::RandomState>,
@@ -99,10 +83,8 @@ impl Image {
         buffer_view: &mut Vec<BufferView>,
         bin_content: &mut Vec<u8>,
     ) -> std::io::Result<nusamai_gltf_json::Image> {
-        println!("image: {}", self.uri);
-
         if let Ok(path) = self.uri.to_file_path() {
-            let content = std::fs::read(path)?;
+            let image = ImageReader::open(path)?.decode();
 
             buffer_view.push(BufferView {
                 byte_offset: bin_content.len() as u32,

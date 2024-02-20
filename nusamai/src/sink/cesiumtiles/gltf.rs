@@ -1,13 +1,10 @@
 use std::io::Write;
 
 use super::material;
-use super::material;
 use ahash::HashMap;
 use byteorder::{ByteOrder, LittleEndian};
 use indexmap::IndexSet;
-use indexmap::IndexSet;
 
-pub type Primitives = HashMap<material::Material, Vec<u32>>;
 pub type Primitives = HashMap<material::Material, Vec<u32>>;
 
 /// とりいそぎの実装
