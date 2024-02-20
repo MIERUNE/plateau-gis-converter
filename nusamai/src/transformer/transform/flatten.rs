@@ -8,27 +8,83 @@ use nusamai_citygml::GeometryStore;
 use nusamai_plateau::appearance::AppearanceStore;
 use nusamai_plateau::Entity;
 
-#[derive(Default)]
 pub struct FlattenTreeTransform {
-    split_thematic_surfaces: bool,
-    split_data_stereotype: bool,
-    split_object_stereotype: bool,
+    feature: FeatureFlatteningOption,
+    data: DataFlatteningOption,
+    object: ObjectFlatteningOption,
+}
+
+/// Flattening option for the "feature" stereotype
+// TODO: Use this to implement flattening process
+#[derive(Debug, Copy, Clone)]
+pub enum FeatureFlatteningOption {
+    /// No feature flattening
+    None,
+    /// Flatten all features except thematic surfaces
+    AllExceptThematicSurfaces,
+    /// Flatten all features
+    All,
+}
+
+/// Flattening option for the "data" stereotype
+// TODO: Use this to implement flattening process
+#[derive(Debug, Copy, Clone)]
+pub enum DataFlatteningOption {
+    /// No data flattening
+    None,
+    /// Flatten top-level data (i.e., data that is not a child of another data)
+    TopLevelOnly,
+    /// Flatten all data
+    All,
+}
+
+/// Flattening option for the "object" stereotype
+// TODO: Use this to implement flattening process
+#[derive(Debug, Copy, Clone)]
+pub enum ObjectFlatteningOption {
+    /// No object flattening
+    None,
+    /// Flatten all objects
+    All,
+}
+
+impl Default for FlattenTreeTransform {
+    fn default() -> Self {
+        Self {
+            feature: FeatureFlatteningOption::None,
+            data: DataFlatteningOption::None,
+            object: ObjectFlatteningOption::None,
+        }
+    }
 }
 
 impl FlattenTreeTransform {
-    pub fn with_split_thematic_surfaces(mut self, split: bool) -> Self {
-        self.split_thematic_surfaces = split;
-        self
+    pub fn new() -> Self {
+        Default::default()
     }
 
-    pub fn with_split_data_stereotype(mut self, split: bool) -> Self {
-        self.split_data_stereotype = split;
-        self
+    pub fn with_options(
+        feature: FeatureFlatteningOption,
+        data: DataFlatteningOption,
+        object: ObjectFlatteningOption,
+    ) -> Self {
+        Self {
+            feature,
+            data,
+            object,
+        }
     }
 
-    pub fn with_split_object_stereotype(mut self, split: bool) -> Self {
-        self.split_object_stereotype = split;
-        self
+    pub fn set_feature_option(&mut self, option: FeatureFlatteningOption) {
+        self.feature = option;
+    }
+
+    pub fn set_data_option(&mut self, option: DataFlatteningOption) {
+        self.data = option;
+    }
+
+    pub fn set_object_option(&mut self, option: ObjectFlatteningOption) {
+        self.object = option;
     }
 }
 
@@ -69,10 +125,6 @@ struct Parent {
 }
 
 impl FlattenTreeTransform {
-    pub fn new() -> Self {
-        Default::default()
-    }
-
     fn flatten_feature(
         &self,
         value: Value,
@@ -144,13 +196,15 @@ impl FlattenTreeTransform {
 
     fn is_split_target(&self, obj: &Object) -> bool {
         if let ObjectStereotype::Feature { .. } = &obj.stereotype {
-            if self.split_thematic_surfaces {
-                true
-            } else {
-                !obj.typename.ends_with("Surface")
-                    && !obj.typename.ends_with(":Window")
-                    && !obj.typename.ends_with(":Door")
-                    && !obj.typename.ends_with("TrafficArea")
+            match self.feature {
+                FeatureFlatteningOption::None => false,
+                FeatureFlatteningOption::All => true,
+                FeatureFlatteningOption::AllExceptThematicSurfaces => {
+                    !obj.typename.ends_with("Surface")
+                        && !obj.typename.ends_with(":Window")
+                        && !obj.typename.ends_with(":Door")
+                        && !obj.typename.ends_with("TrafficArea")
+                }
             }
         } else {
             false

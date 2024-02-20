@@ -3,11 +3,14 @@
 use std::fs;
 mod gltf;
 mod material;
+mod material;
 mod slice;
 mod sort;
 mod tiling;
 
 use indexmap::IndexSet;
+use indexmap::IndexSet;
+use itertools::Itertools;
 use itertools::Itertools;
 use std::io::BufWriter;
 use std::path::{Path, PathBuf};
@@ -277,6 +280,7 @@ fn tile_writing_stage(
                     let num_outer = match poly.hole_indices().first() {
                         Some(&v) => v as usize,
                         None => poly.coords().len() / 5,
+                        None => poly.coords().len() / 5,
                     };
 
                     let mat = feature.materials[*orig_mat_id as usize].clone();
@@ -310,6 +314,7 @@ fn tile_writing_stage(
             let path_glb =
                 output_path.join(Path::new(&format!("{tile_zoom}/{tile_x}/{tile_y}.glb")));
             if let Some(dir) = path_glb.parent() {
+                fs::create_dir_all(dir)?;
                 fs::create_dir_all(dir)?;
             }
 

@@ -7,7 +7,7 @@ use serde_json::Value;
 use std::collections::HashMap;
 
 /// EXT_structural_metadata glTF Mesh Primitive extension
-#[derive(Serialize, Deserialize, Debug, Default, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, Default, PartialEq, Clone)]
 pub struct ExtStructuralMetadata {
     /// An array of indexes of property textures in the root `EXT_structural_metadata` object.
     #[serde(skip_serializing_if = "Option::is_none")]

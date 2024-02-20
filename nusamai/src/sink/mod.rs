@@ -3,7 +3,7 @@
 pub mod cesiumtiles;
 pub mod czml;
 pub mod geojson;
-pub mod gltf_poc;
+pub mod gltf;
 pub mod gpkg;
 pub mod kml;
 pub mod mvt;
