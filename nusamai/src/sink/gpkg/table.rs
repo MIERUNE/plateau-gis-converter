@@ -24,9 +24,9 @@ fn typedef_to_columns(ty: &TypeDef) -> Vec<ColumnInfo> {
     let mut columns: Vec<ColumnInfo> = vec![];
     match ty {
         TypeDef::Feature(feat_td) => {
-            // Note: `feat_td.additional_attributes` is expected to be false (treated by the transformer already)
+            // Note: `feat_td.additional_attributes` is expected to be false (handled by the transformer in the earlier step)
             feat_td.attributes.iter().for_each(|(attr_name, attr)|
-                // Note: `attr.max_occurs` is expected to be 1 (treated by the transformer already)
+                // Note: `attr.max_occurs` is expected to be 1 (handled by the transformer in the earlier step)
                 match &attr.type_ref {
                     TypeRef::String => {
                         columns.push(ColumnInfo {
@@ -132,9 +132,9 @@ fn typedef_to_columns(ty: &TypeDef) -> Vec<ColumnInfo> {
             );
         }
         TypeDef::Property(prop_td) => {
-            // TODO: implement
+            // Note: expected to be handled by the tranformer in the earlier step
             log::warn!(
-                "TypeDef::Property - Not supported yet: {} members ({:?}, etc.)",
+                "TypeDef::Property - Not supported: {} members ({:?}, etc.)",
                 prop_td.members.len(),
                 prop_td
                     .members
