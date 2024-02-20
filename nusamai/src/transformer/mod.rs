@@ -6,7 +6,7 @@ pub mod transform;
 
 pub use builder::*;
 pub use runner::*;
-pub use transform::flatten::{
+pub use transform::{
     DataFlatteningOption, FeatureFlatteningOption, ObjectFlatteningOption,
 };
 
