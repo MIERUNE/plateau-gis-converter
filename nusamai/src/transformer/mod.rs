@@ -6,6 +6,9 @@ pub mod transform;
 
 pub use builder::*;
 pub use runner::*;
+pub use transform::{
+    DataFlatteningOption, FeatureFlatteningOption, ObjectFlatteningOption,
+};
 
 use crate::pipeline::{Feedback, Parcel, Receiver, Result, Sender};
 

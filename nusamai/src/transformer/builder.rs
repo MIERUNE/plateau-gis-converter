@@ -48,12 +48,14 @@ impl From<Requirements> for Request {
 }
 
 pub enum TreeFlatteningSpec {
-    /// No feature flattening
+    /// No flattening at all
     None,
-    /// Flatten all features except thematic surfaces
-    AllExceptThematicSurfaces,
-    /// Flatten all features
-    All,
+    // Flatten with the given options
+    Flatten {
+        feature: FeatureFlatteningOption,
+        data: DataFlatteningOption,
+        object: ObjectFlatteningOption,
+    },
 }
 
 pub enum MergedownSpec {
@@ -112,11 +114,14 @@ impl TransformBuilder for NusamaiTransformBuilder {
 
         match self.request.tree_flattening {
             TreeFlatteningSpec::None => {}
-            TreeFlatteningSpec::AllExceptThematicSurfaces => {
-                transforms.push(Box::new(FlattenTreeTransform::new()));
-            }
-            TreeFlatteningSpec::All => {
-                transforms.push(Box::new(FlattenTreeTransform::new()));
+            TreeFlatteningSpec::Flatten {
+                feature,
+                data,
+                object,
+            } => {
+                transforms.push(Box::new(FlattenTreeTransform::with_options(
+                    feature, data, object,
+                )));
             }
         }
 

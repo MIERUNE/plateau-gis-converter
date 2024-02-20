@@ -216,6 +216,12 @@ impl GpkgSink {
 impl DataSink for GpkgSink {
     fn make_transform_requirements(&self) -> transformer::Requirements {
         transformer::Requirements {
+            tree_flattening: transformer::TreeFlatteningSpec::Flatten {
+                // TODO: set properly after the flattening transformer is implemented
+                feature: transformer::FeatureFlatteningOption::None,
+                data: transformer::DataFlatteningOption::None,
+                object: transformer::ObjectFlatteningOption::None,
+            },
             ..Default::default()
         }
     }
