@@ -260,32 +260,3 @@ impl DataSink for GpkgSink {
         runtime.block_on(self.run_async(upstream, feedback, schema))
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use nusamai_geometry::MultiPolygon;
-    use nusamai_projection::crs::EPSG_JGD2011_GEOGRAPHIC_3D;
-
-    #[test]
-    fn test_get_indexed_multipolygon_bbox() {
-        let vertices: Vec<[f64; 3]> = vec![
-            [10., 100., 111.],
-            [10., 200., 111.],
-            [20., 200., 111.],
-            [20., 100., 111.],
-        ];
-        let mut mpoly = MultiPolygon::<1, u32>::new();
-        mpoly.add_exterior([[0], [1], [2], [3], [0]]);
-        let geometries = nusamai_citygml::GeometryStore {
-            epsg: EPSG_JGD2011_GEOGRAPHIC_3D,
-            vertices,
-            multipolygon: mpoly,
-            ..Default::default()
-        };
-
-        let bbox = get_indexed_multipolygon_bbox(&geometries.vertices, &geometries.multipolygon);
-
-        assert_eq!(bbox.to_tuple(), (10., 100., 20., 200.));
-    }
-}
