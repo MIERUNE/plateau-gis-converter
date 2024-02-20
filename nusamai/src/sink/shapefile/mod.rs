@@ -14,7 +14,6 @@ use crate::{get_parameter_value, transformer};
 use nusamai_citygml::object::{ObjectStereotype, Value};
 use nusamai_plateau::Entity;
 use nusamai_shapefile::conversion::indexed_multipolygon_to_shape;
-use shapefile;
 
 pub struct ShapefileSinkProvider {}
 
