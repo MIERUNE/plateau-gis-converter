@@ -120,7 +120,7 @@ fn attribute_to_column(attr_name: &str, attr: &Attribute) -> Option<ColumnInfo> 
             None
         }
         TypeRef::Named(_name) => {
-            // TODO: Implement
+            // Note: expected to be handled by the tranformer in the earlier step (flatten)
             log::warn!(
                 "TypeDef::Feature - Unsupported attribute type: {:?} ('{}')",
                 attr.type_ref,
