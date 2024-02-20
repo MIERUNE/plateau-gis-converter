@@ -353,6 +353,101 @@ mod tests {
     }
 
     #[test]
+    fn test_flatten_entity_feature_and_data() {
+        // Prepare test entity hierarchy
+        let mut attributes = Map::default();
+        attributes.insert("attr_1".into(), Value::String("value1".into()));
+        attributes.insert(
+            "child_feat_1".into(),
+            Value::Object(Object {
+                typename: "child_feat_1".into(),
+                stereotype: ObjectStereotype::Feature {
+                    id: "child_feat_1_id".into(),
+                    geometries: Vec::default(),
+                },
+                attributes: Map::default(),
+            }),
+        );
+        attributes.insert(
+            "child_data_1".into(),
+            Value::Object(Object {
+                typename: "child_data_1".into(),
+                stereotype: ObjectStereotype::Data, // No id
+                attributes: Map::default(),
+            }),
+        );
+        let root: Value = Value::Object(Object {
+            typename: "root".into(),
+            stereotype: ObjectStereotype::Feature {
+                id: "root_id".into(),
+                geometries: Vec::default(),
+            },
+            attributes,
+        });
+
+        // Apply flatten transform with the options
+        let transform = FlattenTreeTransform {
+            feature: FeatureFlatteningOption::All,
+            data: DataFlatteningOption::All, // flatten data as well
+            object: ObjectFlatteningOption::None,
+        };
+        let geom_store = Arc::new(RwLock::new(GeometryStore::default()));
+        let appearance_store = Arc::new(RwLock::new(AppearanceStore::default()));
+        let mut out: Vec<Entity> = vec![];
+        transform.flatten_entity(root, &geom_store, &appearance_store, &mut out, &None);
+
+        // Check the result
+        assert_eq!(out.len(), 3);
+        out.iter().enumerate().for_each(|(i, entity)| match i {
+            0 => {
+                if let Value::Object(obj) = &entity.root {
+                    assert_eq!(obj.typename, "child_feat_1"); // feature child
+                    assert_eq!(obj.attributes.len(), 2); // 2 items (parentId, parentType) added
+                    assert_eq!(
+                        obj.attributes.get("parentId").unwrap(),
+                        &Value::String("root_id".into())
+                    );
+                    assert_eq!(
+                        obj.attributes.get("parentType").unwrap(),
+                        &Value::String("root".into())
+                    );
+                } else {
+                    panic!("Expected Value::Object, but got {:?}", entity.root);
+                }
+            }
+            1 => {
+                if let Value::Object(obj) = &entity.root {
+                    assert_eq!(obj.typename, "child_data_1"); // data child
+                    assert_eq!(obj.attributes.len(), 2); // 2 items (parentId, parentType) added
+                    assert_eq!(
+                        obj.attributes.get("parentId").unwrap(),
+                        &Value::String("root_id".into())
+                    );
+                    assert_eq!(
+                        obj.attributes.get("parentType").unwrap(),
+                        &Value::String("root".into())
+                    );
+                } else {
+                    panic!("Expected Value::Object, but got {:?}", entity.root);
+                }
+            }
+            2 => {
+                if let Value::Object(obj) = &entity.root {
+                    assert_eq!(obj.typename, "root");
+                    assert_eq!(obj.attributes.len(), 1); // child_feature_1 is removed
+                    assert_eq!(
+                        obj.attributes.get("attr_1").unwrap(),
+                        &Value::String("value1".into())
+                    );
+                } else {
+                    panic!("Expected Value::Object, but got {:?}", entity.root);
+                }
+            }
+            _ => panic!("Unexpected entity"),
+        });
+    }
+
+    #[test]
     fn test_flatten_entity_feature_nested() {
         // Prepare test entity hierarchy
         let mut attributes_child = Map::default();
