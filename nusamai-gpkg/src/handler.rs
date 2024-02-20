@@ -192,12 +192,12 @@ impl<'c> GpkgTransaction<'c> {
         let executor = self.tx.acquire().await.unwrap();
 
         // Create the table
-        let mut query_string = format!(
-            "CREATE TABLE \"{}\" (id STRING NOT NULL PRIMARY KEY",
-            table_info.name
-        );
+        let mut query_string = format!("CREATE TABLE \"{}\" (", table_info.name);
         if table_info.has_geometry {
+            query_string.push_str("id STRING NOT NULL PRIMARY KEY");
             query_string.push_str(", geometry BLOB NOT NULL");
+        } else {
+            query_string.push_str("id INTEGER NOT NULL PRIMARY KEY");
         }
         table_info.columns.iter().for_each(|column| {
             query_string.push_str(&format!(", {} {}", column.name, column.data_type));
@@ -237,8 +237,8 @@ impl<'c> GpkgTransaction<'c> {
         Ok(())
     }
 
-    /// Add a MultiPolygonZ feature to the GeoPackage database
-    // TODO: handle MultiLineString, MultiPoint
+    /// Add a record to the feature table
+    // TODO: handle MultiLineString, MultiPoint (currently only MultiPolygonZ is supported)
     pub async fn insert_feature(
         &mut self,
         table_name: &str,
@@ -275,6 +275,33 @@ impl<'c> GpkgTransaction<'c> {
             }
             query.execute(&mut *executor).await?;
         }
+
+        Ok(())
+    }
+
+    /// Add a record to the attribute table
+    pub async fn insert_attribute(
+        &mut self,
+        table_name: &str,
+        attributes: &IndexMap<String, String>,
+    ) -> Result<(), GpkgError> {
+        let query_string = format!(
+            "INSERT INTO \"{}\" ({}) VALUES ({})",
+            table_name,
+            attributes
+                .keys()
+                .map(|key| key.to_string())
+                .collect::<Vec<_>>()
+                .join(", "),
+            vec!["?"; attributes.len()].join(", ")
+        );
+        let mut query = sqlx::query(&query_string);
+        for value in attributes.values() {
+            query = query.bind(value);
+        }
+
+        let executor: &mut SqliteConnection = self.tx.acquire().await.unwrap();
+        query.execute(&mut *executor).await?;
 
         Ok(())
     }
@@ -451,7 +478,7 @@ mod tests {
             columns,
             vec![
                 // No geometry column
-                ("id".into(), "STRING".into(), 1),
+                ("id".into(), "INTEGER".into(), 1),
                 ("attr1".into(), "TEXT".into(), 0),
             ]
         );
