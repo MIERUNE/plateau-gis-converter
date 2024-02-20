@@ -99,40 +99,44 @@ impl Transform for FlattenTreeTransform {
         for ty in schema.types.values_mut() {
             match ty {
                 TypeDef::Feature(typedef) => {
-                    typedef.attributes.insert(
-                        "parentId".into(),
-                        Attribute {
-                            type_ref: TypeRef::String,
-                            min_occurs: 0,
-                            max_occurs: Some(1),
-                        },
-                    );
-                    typedef.attributes.insert(
-                        "parentType".into(),
-                        Attribute {
-                            type_ref: TypeRef::String,
-                            min_occurs: 0,
-                            max_occurs: Some(1),
-                        },
-                    );
+                    if !matches!(self.feature, FeatureFlatteningOption::None) {
+                        typedef.attributes.insert(
+                            "parentId".into(),
+                            Attribute {
+                                type_ref: TypeRef::String,
+                                min_occurs: 0,
+                                max_occurs: Some(1),
+                            },
+                        );
+                        typedef.attributes.insert(
+                            "parentType".into(),
+                            Attribute {
+                                type_ref: TypeRef::String,
+                                min_occurs: 0,
+                                max_occurs: Some(1),
+                            },
+                        );
+                    }
                 }
                 TypeDef::Data(typedef) => {
-                    typedef.attributes.insert(
-                        "parentId".into(),
-                        Attribute {
-                            type_ref: TypeRef::String,
-                            min_occurs: 0,
-                            max_occurs: Some(1),
-                        },
-                    );
-                    typedef.attributes.insert(
-                        "parentType".into(),
-                        Attribute {
-                            type_ref: TypeRef::String,
-                            min_occurs: 0,
-                            max_occurs: Some(1),
-                        },
-                    );
+                    if !matches!(self.data, DataFlatteningOption::None) {
+                        typedef.attributes.insert(
+                            "parentId".into(),
+                            Attribute {
+                                type_ref: TypeRef::String,
+                                min_occurs: 0,
+                                max_occurs: Some(1),
+                            },
+                        );
+                        typedef.attributes.insert(
+                            "parentType".into(),
+                            Attribute {
+                                type_ref: TypeRef::String,
+                                min_occurs: 0,
+                                max_occurs: Some(1),
+                            },
+                        );
+                    }
                 }
                 TypeDef::Property(_) => {
                     // Do nothing
