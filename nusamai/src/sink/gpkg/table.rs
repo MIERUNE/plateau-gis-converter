@@ -90,7 +90,7 @@ fn attribute_to_column(attr_name: &str, attr: &Attribute) -> Option<ColumnInfo> 
         TypeRef::JsonString => Some(ColumnInfo {
             name: attr_name.to_string(),
             data_type: "TEXT".into(),
-            mime_type: None,
+            mime_type: Some("application/json".into()),
         }),
         TypeRef::URI => Some(ColumnInfo {
             name: attr_name.to_string(),
@@ -212,7 +212,7 @@ mod tests {
                     ColumnInfo {
                         name: "json".into(),
                         data_type: "TEXT".into(),
-                        mime_type: None,
+                        mime_type: Some("application/json".into()),
                     },
                     ColumnInfo {
                         name: "measure".into(),
@@ -274,7 +274,7 @@ mod tests {
                 ColumnInfo {
                     name: "json".into(),
                     data_type: "TEXT".into(),
-                    mime_type: None,
+                    mime_type: Some("application/json".into()),
                 },
                 ColumnInfo {
                     name: "measure".into(),
@@ -311,7 +311,7 @@ mod tests {
             Some(ColumnInfo {
                 name: "json".into(),
                 data_type: "TEXT".into(),
-                mime_type: None,
+                mime_type: Some("application/json".into()),
             })
         );
 
