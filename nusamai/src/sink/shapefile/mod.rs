@@ -58,6 +58,7 @@ pub struct ShapefileSink {
 impl DataSink for ShapefileSink {
     fn make_transform_requirements(&self) -> transformer::Requirements {
         transformer::Requirements {
+            shorten_names_for_shapefile: true,
             ..Default::default()
         }
     }
