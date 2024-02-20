@@ -57,11 +57,11 @@ impl DataSource for CityGmlSource {
             let mut xml_reader = quick_xml::NsReader::from_reader(reader);
             let source_url = Url::from_file_path(fs::canonicalize(Path::new(filename))?).unwrap();
 
-            let context = nusamai_citygml::ParseContext::new(source_url, &code_resolver);
+            let context = nusamai_citygml::ParseContext::new(source_url.clone(), &code_resolver);
             let mut citygml_reader = CityGmlReader::new(context);
 
             let mut st = citygml_reader.start_root(&mut xml_reader)?;
-            match toplevel_dispatcher(&mut st, &downstream, feedback) {
+            match toplevel_dispatcher(&mut st, &source_url, &downstream, feedback) {
                 Ok(_) => Ok::<(), PipelineError>(()),
                 Err(ParseError::Canceled) => Err(PipelineError::Canceled),
                 Err(e) => Err(e.into()),
@@ -75,6 +75,7 @@ impl DataSource for CityGmlSource {
 // TODO: Move this to nusamai-plateau ?
 fn toplevel_dispatcher<R: BufRead>(
     st: &mut SubTreeReader<R>,
+    base_url: &Url,
     downstream: &Sender,
     feedback: &Feedback,
 ) -> Result<(), ParseError> {
@@ -100,6 +101,7 @@ fn toplevel_dispatcher<R: BufRead>(
                 if let Some(root) = cityobj.into_object() {
                     let entity = Entity {
                         root,
+                        base_url: url::Url::parse("file:///dummy").unwrap(),
                         geometry_store: RwLock::new(geometry_store).into(),
                         appearance_store: Default::default(), // TODO: from local appearances
                     };
@@ -136,6 +138,10 @@ fn toplevel_dispatcher<R: BufRead>(
             ))),
         }
     })?;
+
+    // for texture in &mut global_appearances.textures {
+    //     texture.image_url = base_url.join(texture.image_url.as_str()).unwrap();
+    // }
 
     for entity in entities {
         if feedback.is_canceled() {

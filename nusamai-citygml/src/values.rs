@@ -5,6 +5,7 @@ use crate::{CityGmlElement, ParseContext};
 pub use chrono::NaiveDate;
 use serde::{Deserialize, Serialize};
 use std::io::BufRead;
+use url::Url;
 
 // type aliases
 pub type Date = chrono::NaiveDate;
@@ -33,27 +34,46 @@ impl CityGmlElement for String {
     }
 }
 
-#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, Default, PartialEq, Eq)]
-pub struct URI(String);
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, PartialEq, Eq)]
+pub struct Uri(url::Url);
 
-impl URI {
-    pub fn new(s: &str) -> Self {
-        Self(s.into())
+impl Uri {
+    pub fn new(s: url::Url) -> Self {
+        Self(s)
     }
-    pub fn value(&self) -> &String {
+    pub fn value(&self) -> &Url {
         &self.0
+    }
+    pub fn into_inner(self) -> Url {
+        self.0
     }
 }
 
-impl CityGmlElement for URI {
+impl From<url::Url> for Uri {
+    fn from(url: url::Url) -> Self {
+        Self(url)
+    }
+}
+
+impl Default for Uri {
+    fn default() -> Self {
+        Self(Url::parse("file:///default").unwrap())
+    }
+}
+
+impl CityGmlElement for Uri {
     #[inline]
     fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
-        self.0.push_str(st.parse_text()?);
+        let text = st.parse_text()?.to_string();
+        let base_url = st.context().source_url();
+        self.0 = base_url
+            .join(&text)
+            .map_err(|_| ParseError::InvalidValue("Invalid URI: {text}".to_string()))?;
         Ok(())
     }
 
     fn into_object(self) -> Option<Value> {
-        Some(Value::String(self.0))
+        Some(Value::String(self.0.to_string()))
     }
 
     fn collect_schema(_schema: &mut schema::Schema) -> schema::Attribute {
@@ -88,23 +108,22 @@ impl CityGmlElement for Code {
         self.code = code.clone();
 
         if let Some(code_space) = code_space {
-            if let Some(base_url) = st.context().source_url() {
-                match st
-                    .context()
-                    .code_resolver()
-                    .resolve(base_url, &code_space, &code)
-                {
-                    Ok(Some(v)) => {
-                        self.value = v;
-                        return Ok(());
-                    }
-                    Ok(None) => {}
-                    Err(_) => {
-                        // FIXME
-                        log::warn!("Failed to lookup code {} form {}", code, code_space);
-                        self.value = code;
-                        return Ok(());
-                    }
+            let base_url = st.context().source_url();
+            match st
+                .context()
+                .code_resolver()
+                .resolve(base_url, &code_space, &code)
+            {
+                Ok(Some(v)) => {
+                    self.value = v;
+                    return Ok(());
+                }
+                Ok(None) => {}
+                Err(_) => {
+                    // FIXME
+                    log::warn!("Failed to lookup code {} form {}", code, code_space);
+                    self.value = code;
+                    return Ok(());
                 }
             }
         }
@@ -569,7 +588,7 @@ pub struct GenericAttribute {
     pub measure_attrs: Vec<(String, Measure)>,
     pub code_attrs: Vec<(String, Code)>,
     pub date_attrs: Vec<(String, Date)>,
-    pub uri_attrs: Vec<(String, URI)>,
+    pub uri_attrs: Vec<(String, Uri)>,
     pub generic_attr_set: Vec<(String, GenericAttribute)>,
 }
 
@@ -634,7 +653,7 @@ impl CityGmlElement for GenericAttribute {
                 .into_iter()
                 .map(|(k, v)| (k, Value::Date(v))),
         );
-        map.extend(self.uri_attrs.into_iter().map(|(k, v)| (k, Value::URI(v))));
+        map.extend(self.uri_attrs.into_iter().map(|(k, v)| (k, Value::Uri(v))));
         map.extend(
             self.generic_attr_set
                 .into_iter()

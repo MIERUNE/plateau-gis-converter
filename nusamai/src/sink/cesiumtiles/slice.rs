@@ -5,8 +5,6 @@ use indexmap::IndexSet;
 use itertools::Itertools;
 use serde::{Deserialize, Serialize};
 
-use super::material::Material;
-use super::tiling;
 use nusamai_citygml::{
     geometry::GeometryType,
     object::{ObjectStereotype, Value},
@@ -14,6 +12,10 @@ use nusamai_citygml::{
 use nusamai_geometry::{MultiPolygon, Polygon, Polygon2, Polygon3};
 use nusamai_mvt::TileZXY;
 use nusamai_plateau::{appearance, Entity};
+
+use super::material::Material;
+use super::tiling;
+use crate::sink::cesiumtiles::material::Texture;
 
 #[derive(Serialize, Deserialize)]
 pub struct SlicedFeature {
@@ -52,14 +54,14 @@ pub fn slice_to_tiles<E>(
     }
     let appearance_store = entity.appearance_store.read().unwrap();
 
-    let mut materials: IndexSet<Material> = IndexSet::new();
     let mut sliced_tiles: HashMap<(u8, u32, u32), SlicedFeature> = HashMap::new();
+    let mut materials: IndexSet<Material> = IndexSet::new();
     let default_mat = appearance::Material::default();
 
     geometries.iter().for_each(|entry| match entry.ty {
         GeometryType::Solid | GeometryType::Surface | GeometryType::Triangle => {
             // for each polygon
-            for ((idx_poly, poly_uv), poly_mat) in geom_store
+            for (((idx_poly, poly_uv), poly_mat), poly_tex) in geom_store
                 .multipolygon
                 .iter_range(entry.pos as usize..(entry.pos + entry.len) as usize)
                 .zip_eq(
@@ -72,15 +74,24 @@ pub fn slice_to_tiles<E>(
                         [entry.pos as usize..(entry.pos + entry.len) as usize]
                         .iter(),
                 )
+                .zip_eq(
+                    geom_store.polygon_textures
+                        [entry.pos as usize..(entry.pos + entry.len) as usize]
+                        .iter(),
+                )
             {
                 let poly = idx_poly.transform(|c| geom_store.vertices[c[0] as usize]);
                 let orig_mat = poly_mat
                     .and_then(|idx| appearance_store.materials.get(idx as usize))
                     .unwrap_or(&default_mat)
                     .clone();
+                let orig_tex = poly_tex.and_then(|idx| appearance_store.textures.get(idx as usize));
 
                 let mat = Material {
                     base_color: orig_mat.diffuse_color.into(),
+                    base_texture: orig_tex.map(|tex| Texture {
+                        uri: tex.image_url.clone(),
+                    }),
                 };
                 let (mat_idx, _) = materials.insert_full(mat);
 
@@ -111,6 +122,7 @@ pub fn slice_to_tiles<E>(
         }
     });
 
+    // Send tiled features
     for ((z, x, y), mut sliced_feature) in sliced_tiles {
         sliced_feature.materials = materials.clone();
         send_feature((z, x, y), sliced_feature)?;

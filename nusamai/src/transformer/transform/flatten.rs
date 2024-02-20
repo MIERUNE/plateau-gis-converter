@@ -113,6 +113,7 @@ impl FlattenTreeTransform {
                         }
                         out.push(Entity {
                             root: Value::Object(obj),
+                            base_url: url::Url::parse("file:///dummy").unwrap(),
                             geometry_store: geom_store.clone(),
                             appearance_store: appearance_store.clone(),
                         });

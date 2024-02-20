@@ -329,7 +329,7 @@ fn load_road_example() {
         vec![Code::new("歩道部の段差".into(), "2000".into())]
     );
     assert_eq!(
-        road.road_structure_attribute.as_ref().unwrap().width,
+        road.road_structure_attribute[0].width,
         Some(Measure::new(22.0)),
     );
     assert_eq!(

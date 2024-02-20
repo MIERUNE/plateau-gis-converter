@@ -1,10 +1,11 @@
 use std::io::Write;
 
-use super::material::Material;
+use super::material;
 use ahash::HashMap;
 use byteorder::{ByteOrder, LittleEndian};
+use indexmap::IndexSet;
 
-pub type Primitives = HashMap<Material, Vec<u32>>;
+pub type Primitives = HashMap<material::Material, Vec<u32>>;
 
 /// とりいそぎの実装
 pub fn write_gltf_glb<W: Write>(
@@ -15,64 +16,75 @@ pub fn write_gltf_glb<W: Write>(
 ) -> std::io::Result<()> {
     use nusamai_gltf_json::*;
 
+    // The buffer for the BIN part
     let mut bin_content: Vec<u8> = Vec::new();
-
-    // calculate the min/max
-    let mut position_max = [f64::MIN; 3];
-    let mut position_min = [f64::MAX; 3];
+    let mut gltf_buffer_views = vec![];
+    let mut gltf_accessors = vec![];
 
     // vertices
-    let vertices_offset = bin_content.len();
-    let mut buf = [0; 4 * 5];
-    let mut vertices_count = 0;
-    for v in vertices {
-        let [x, y, z, u, v] = v;
-        position_min = [
-            f64::min(position_min[0], f32::from_bits(x) as f64),
-            f64::min(position_min[1], f32::from_bits(y) as f64),
-            f64::min(position_min[2], f32::from_bits(z) as f64),
-        ];
-        position_max = [
-            f64::max(position_max[0], f32::from_bits(x) as f64),
-            f64::max(position_max[1], f32::from_bits(y) as f64),
-            f64::max(position_max[2], f32::from_bits(z) as f64),
-        ];
+    {
+        let mut vertices_count = 0;
+        let mut position_max = [f64::MIN; 3];
+        let mut position_min = [f64::MAX; 3];
 
-        LittleEndian::write_u32_into(&[x, y, z, u, v], &mut buf);
-        bin_content.write_all(&buf)?;
-        vertices_count += 1;
-    }
-    let vertices_len = bin_content.len() - vertices_offset;
+        let buffer_offset = bin_content.len();
+        let mut buf = [0; 4 * 5];
+        for v in vertices {
+            let [x, y, z, u, v] = v;
+            position_min = [
+                f64::min(position_min[0], f32::from_bits(x) as f64),
+                f64::min(position_min[1], f32::from_bits(y) as f64),
+                f64::min(position_min[2], f32::from_bits(z) as f64),
+            ];
+            position_max = [
+                f64::max(position_max[0], f32::from_bits(x) as f64),
+                f64::max(position_max[1], f32::from_bits(y) as f64),
+                f64::max(position_max[2], f32::from_bits(z) as f64),
+            ];
 
-    // accessors
-    let mut gltf_accessors = vec![
-        Accessor {
-            buffer_view: Some(0),
+            LittleEndian::write_u32_into(&[x, y, z, u, v], &mut buf);
+            bin_content.write_all(&buf)?;
+            vertices_count += 1;
+        }
+
+        gltf_buffer_views.push(BufferView {
+            byte_offset: buffer_offset as u32,
+            byte_length: (bin_content.len() - buffer_offset) as u32,
+            byte_stride: Some(4 * 5),
+            target: Some(BufferViewTarget::ArrayBuffer),
+            ..Default::default()
+        });
+
+        // accessor (positions)
+        gltf_accessors.push(Accessor {
+            buffer_view: Some(gltf_buffer_views.len() as u32 - 1),
             component_type: ComponentType::Float,
             count: vertices_count,
             min: Some(position_min.to_vec()),
             max: Some(position_max.to_vec()),
             type_: AccessorType::Vec3,
             ..Default::default()
-        },
-        Accessor {
-            buffer_view: Some(0),
+        });
+
+        // accessor (texcoords)
+        gltf_accessors.push(Accessor {
+            buffer_view: Some(gltf_buffer_views.len() as u32 - 1),
             byte_offset: 4 * 3,
             component_type: ComponentType::Float,
             count: vertices_count,
             type_: AccessorType::Vec2,
             ..Default::default()
-        },
-    ];
+        });
+    }
 
     let mut gltf_primitives = vec![];
 
     // indices
-    let indices_offset = bin_content.len();
     {
-        let mut byte_offset = 0;
+        let indices_offset = bin_content.len();
 
-        for (mat_i, primitive) in primitives.values().enumerate() {
+        let mut byte_offset = 0;
+        for (mat_i, (mat, primitive)) in primitives.iter().enumerate() {
             let mut indices_count = 0;
             for idx in primitive {
                 bin_content.write_all(&idx.to_le_bytes())?;
@@ -80,7 +92,7 @@ pub fn write_gltf_glb<W: Write>(
             }
 
             gltf_accessors.push(Accessor {
-                buffer_view: Some(1),
+                buffer_view: Some(gltf_buffer_views.len() as u32),
                 byte_offset,
                 component_type: ComponentType::UnsignedInt,
                 count: indices_count,
@@ -88,10 +100,13 @@ pub fn write_gltf_glb<W: Write>(
                 ..Default::default()
             });
 
+            let mut attributes = vec![("POSITION".to_string(), 0)];
+            if mat.base_texture.is_some() {
+                attributes.push(("TEXCOORD_0".to_string(), 1));
+            }
+
             gltf_primitives.push(MeshPrimitive {
-                attributes: vec![("POSITION".to_string(), 0), ("TEXCOORD_0".to_string(), 1)]
-                    .into_iter()
-                    .collect(),
+                attributes: attributes.into_iter().collect(),
                 indices: Some(gltf_accessors.len() as u32 - 1),
                 material: Some(mat_i as u32), // TODO
                 mode: PrimitiveMode::Triangles,
@@ -100,14 +115,40 @@ pub fn write_gltf_glb<W: Write>(
 
             byte_offset += indices_count * 4;
         }
+
+        let indices_len = bin_content.len() - indices_offset;
+
+        gltf_buffer_views.push(BufferView {
+            byte_offset: indices_offset as u32,
+            byte_length: indices_len as u32,
+            target: Some(BufferViewTarget::ElementArrayBuffer),
+            ..Default::default()
+        })
     }
-    let indices_len = bin_content.len() - indices_offset;
+
+    let mut image_set: IndexSet<material::Image, ahash::RandomState> = Default::default();
+    let mut texture_set: IndexSet<material::Texture, ahash::RandomState> = Default::default();
 
     // materials
     let gltf_materials = primitives
         .keys()
-        .map(|material| material.to_gltf())
+        .map(|material| material.to_gltf(&mut texture_set))
         .collect();
+
+    let gltf_textures: Vec<_> = texture_set
+        .into_iter()
+        .map(|t| t.to_gltf(&mut image_set))
+        .collect();
+
+    let gltf_images: Vec<_> = image_set
+        .into_iter()
+        .map(|img| img.to_gltf(&mut gltf_buffer_views, &mut bin_content))
+        .collect();
+
+    let gltf_buffers = vec![Buffer {
+        byte_length: bin_content.len() as u32,
+        ..Default::default()
+    }];
 
     // Build the JSON part of glTF
     let gltf = Gltf {
@@ -120,31 +161,16 @@ pub fn write_gltf_glb<W: Write>(
             translation,
             ..Default::default()
         }],
-        materials: gltf_materials,
         meshes: vec![Mesh {
             primitives: gltf_primitives,
             ..Default::default()
         }],
+        materials: gltf_materials,
+        textures: gltf_textures,
+        images: gltf_images,
         accessors: gltf_accessors,
-        buffer_views: vec![
-            BufferView {
-                byte_offset: vertices_offset as u32,
-                byte_length: vertices_len as u32,
-                byte_stride: Some(4 * 5),
-                target: Some(BufferViewTarget::ArrayBuffer),
-                ..Default::default()
-            },
-            BufferView {
-                byte_offset: indices_offset as u32,
-                byte_length: indices_len as u32,
-                target: Some(BufferViewTarget::ElementArrayBuffer),
-                ..Default::default()
-            },
-        ],
-        buffers: vec![Buffer {
-            byte_length: bin_content.len() as u32,
-            ..Default::default()
-        }],
+        buffer_views: gltf_buffer_views,
+        buffers: gltf_buffers,
         ..Default::default()
     };
 

@@ -2,9 +2,10 @@
 
 use crate::models::appearance::{self, ParameterizedTexture, SurfaceDataProperty, X3DMaterial};
 use hashbrown::HashMap;
-use nusamai_citygml::{appearance::TextureAssociation, Color, LocalId, SurfaceSpan, URI};
+use nusamai_citygml::{appearance::TextureAssociation, Color, LocalId, SurfaceSpan};
 use nusamai_geometry::LineString2;
 use std::hash::{Hash, Hasher};
+use url::Url;
 
 #[derive(Debug, Default, serde::Serialize, serde::Deserialize)]
 pub struct Theme {
@@ -59,19 +60,20 @@ pub struct AppearanceStore {
 /// Texture (CityGML's ParameterizedTexture)
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct Texture {
-    pub image_uri: String,
-    // TOOD: other parameters
+    pub image_url: Url,
+    // TODO: other parameters
 }
 
 impl From<ParameterizedTexture> for Texture {
     fn from(src: ParameterizedTexture) -> Self {
-        let url = src.image_uri.unwrap_or_else(|| {
-            log::warn!("image_uri is not set");
-            URI::new("url_not_found.jpg")
-        });
-        Self {
-            image_uri: url.value().to_string(),
-        }
+        let image_url = src
+            .image_uri
+            .map(|uri| uri.into_inner())
+            .unwrap_or_else(|| {
+                log::warn!("image_uri is not set");
+                url::Url::parse("url_not_found.jpg").unwrap()
+            });
+        Self { image_url }
     }
 }
 
@@ -187,13 +189,13 @@ mod tests {
 
         {
             app_local.textures.push(Texture {
-                image_uri: "local1.jpg".to_string(),
+                image_url: Url::parse("local1.jpg").unwrap(),
             });
             app_local.textures.push(Texture {
-                image_uri: "local2.jpg".to_string(),
+                image_url: Url::parse("local2.jpg").unwrap(),
             });
             app_local.textures.push(Texture {
-                image_uri: "local3.jpg".to_string(),
+                image_url: Url::parse("local3.jpg").unwrap(),
             });
             app_local.materials.push(Material::default());
             app_local.materials.push(Material::default());
@@ -214,13 +216,13 @@ mod tests {
 
         {
             app_global.textures.push(Texture {
-                image_uri: "global1.jpg".to_string(),
+                image_url: Url::parse("global1.jpg").unwrap(),
             });
             app_global.textures.push(Texture {
-                image_uri: "global2.jpg".to_string(),
+                image_url: Url::parse("global2.jpg").unwrap(),
             });
             app_global.textures.push(Texture {
-                image_uri: "global3.jpg".to_string(),
+                image_url: Url::parse("global3.jpg").unwrap(),
             });
             app_global.materials.push(Material::default());
             app_global.materials.push(Material::default());

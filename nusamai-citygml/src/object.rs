@@ -3,7 +3,7 @@
 use std::borrow::Cow;
 
 use crate::geometry::GeometryRefs;
-use crate::values::{Code, Date, Point, URI};
+use crate::values::{Code, Date, Point, Uri};
 use crate::Measure;
 use serde::{Deserialize, Serialize};
 
@@ -49,7 +49,7 @@ pub enum Value {
     Double(f64),
     Measure(Measure),
     Boolean(bool),
-    URI(URI),
+    Uri(Uri),
     Date(Date),
     Point(Point),
     Array(Vec<Value>),
@@ -92,7 +92,7 @@ impl Value {
                 serde_json::Value::Number(serde_json::Number::from_f64(m.value()).unwrap())
             }
             Boolean(b) => serde_json::Value::Bool(*b),
-            URI(u) => serde_json::Value::String(u.value().clone()),
+            Uri(u) => serde_json::Value::String(u.value().to_string()),
             Date(d) => serde_json::Value::String(d.to_string()), // ISO 8601
             Point(_) => {
                 // TODO: Handle Point
@@ -149,7 +149,7 @@ mod tests {
         let obj = Value::Boolean(true);
         assert_eq!(obj.to_attribute_json(), json!(true));
 
-        let obj = Value::URI(URI::new("http://example.com"));
+        let obj = Value::Uri(Uri::new(url::Url::parse("http://example.com").unwrap()));
         assert_eq!(obj.to_attribute_json(), json!("http://example.com"));
 
         let obj = Value::Date(Date::from_ymd_opt(2020, 1, 1).unwrap());

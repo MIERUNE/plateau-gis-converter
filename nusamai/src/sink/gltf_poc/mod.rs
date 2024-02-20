@@ -642,6 +642,7 @@ mod tests {
                     ],
                 },
             }),
+            base_url: url::Url::parse("file:///dummy").unwrap(),
             geometry_store: RwLock::new(geometries).into(),
             appearance_store: Default::default(),
         };
