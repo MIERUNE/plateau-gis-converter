@@ -641,4 +641,77 @@ mod tests {
             _ => panic!("Unexpected entity"),
         });
     }
+
+    #[test]
+    fn test_flatten_entity_generic_attribute() {
+        // Prepare test entity hierarchy
+        let mut attributes_root = Map::default();
+        attributes_root.insert("attr_1".into(), Value::String("value1".into()));
+        attributes_root.insert(
+            "child_data_1".into(),
+            Value::Object(Object {
+                typename: "gen:genericAttribute".into(),
+                stereotype: ObjectStereotype::Data,
+                attributes: Map::default(),
+            }),
+        );
+        attributes_root.insert(
+            "child_data_2".into(),
+            Value::Object(Object {
+                typename: "child_data_2".into(),
+                stereotype: ObjectStereotype::Data,
+                attributes: Map::default(),
+            }),
+        );
+        let root: Value = Value::Object(Object {
+            typename: "root".into(),
+            stereotype: ObjectStereotype::Feature {
+                id: "root_id".into(),
+                geometries: Vec::default(),
+            },
+            attributes: attributes_root,
+        });
+
+        // Apply flatten transform with the options
+        let transform = FlattenTreeTransform {
+            feature: FeatureFlatteningOption::All,
+            data: DataFlatteningOption::TopLevelOnly, // flatten data, but only top-level
+            object: ObjectFlatteningOption::None,
+        };
+        let geom_store = Arc::new(RwLock::new(GeometryStore::default()));
+        let appearance_store = Arc::new(RwLock::new(AppearanceStore::default()));
+        let mut out: Vec<Entity> = vec![];
+        transform.flatten_entity(root, &geom_store, &appearance_store, &mut out, &None);
+
+        // Check the result
+        assert_eq!(out.len(), 2); // a "generic attribute" is not flattened
+        out.iter().enumerate().for_each(|(i, entity)| match i {
+            0 => {
+                if let Value::Object(obj) = &entity.root {
+                    assert_eq!(obj.typename, "child_data_2");
+                    assert_eq!(obj.attributes.len(), 2);
+                } else {
+                    panic!("Expected Value::Object, but got {:?}", entity.root);
+                }
+            }
+            1 => {
+                if let Value::Object(obj) = &entity.root {
+                    assert_eq!(obj.typename, "root");
+                    assert_eq!(obj.attributes.len(), 2);
+                    // this child is not flattened
+                    assert_eq!(
+                        obj.attributes.get("child_data_1").unwrap(),
+                        &Value::Object(Object {
+                            typename: "gen:genericAttribute".into(),
+                            stereotype: ObjectStereotype::Data,
+                            attributes: Map::default(),
+                        })
+                    );
+                } else {
+                    panic!("Expected Value::Object, but got {:?}", entity.root);
+                }
+            }
+            _ => panic!("Unexpected entity"),
+        });
+    }
 }
