@@ -11,17 +11,33 @@ const filetypeOptions: Record<string, { label: string; extensions: string[] }> =
 		label: 'Vector Tiles',
 		extensions: ['']
 	},
+	czml: {
+		label: 'CZML',
+		extensions: ['json']
+	},
+	cesiumtiles: {
+		label: '3D Tiles',
+		extensions: ['']
+	},
+	kml: {
+		label: 'KML',
+		extensions: ['kml']
+	},
 	shapefile: {
 		label: 'Shapefile',
 		extensions: ['shp']
 	},
+	ply: {
+		label: 'PLY',
+		extensions: ['ply']
+	},
+	gltf: {
+		label: 'glTF',
+		extensions: ['glb']
+	},
 	serde: {
 		label: 'Serde',
 		extensions: ['']
-	},
-	czml: {
-		label: 'CZML',
-		extensions: ['json']
 	}
 };
 

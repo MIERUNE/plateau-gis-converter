@@ -9,8 +9,9 @@ use std::sync::{Arc, Mutex};
 use nusamai::pipeline::Canceller;
 use nusamai::sink::DataSinkProvider;
 use nusamai::sink::{
-    czml::CzmlSinkProvider, geojson::GeoJsonSinkProvider, gpkg::GpkgSinkProvider,
-    mvt::MVTSinkProvider, serde::SerdeSinkProvider, shapefile::ShapefileSinkProvider,
+    cesiumtiles::CesiumTilesSinkProvider, czml::CzmlSinkProvider, geojson::GeoJsonSinkProvider,
+    gltf::GltfSinkProvider, gpkg::GpkgSinkProvider, kml::KmlSinkProvider, mvt::MVTSinkProvider,
+    ply::StanfordPlySinkProvider, serde::SerdeSinkProvider, shapefile::ShapefileSinkProvider,
 };
 use nusamai::source::citygml::CityGmlSourceProvider;
 use nusamai::source::DataSourceProvider;
@@ -40,6 +41,10 @@ fn select_sink_provider(filetype: &str) -> Box<dyn DataSinkProvider> {
         "mvt" => Box::new(MVTSinkProvider {}),
         "shapefile" => Box::new(ShapefileSinkProvider {}),
         "czml" => Box::new(CzmlSinkProvider {}),
+        "kml" => Box::new(KmlSinkProvider {}),
+        "gltf" => Box::new(GltfSinkProvider {}),
+        "ply" => Box::new(StanfordPlySinkProvider {}),
+        "cesiumtiles" => Box::new(CesiumTilesSinkProvider {}),
         _ => panic!("Unknown filetype: {}", filetype),
     }
 }

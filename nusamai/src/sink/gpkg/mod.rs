@@ -12,7 +12,6 @@ use indexmap::IndexMap;
 
 use rayon::prelude::*;
 
-use crate::parameters::Parameters;
 use crate::parameters::*;
 use crate::pipeline::{Feedback, PipelineError, Receiver, Result};
 use crate::sink::{DataSink, DataSinkProvider, SinkInfo};
@@ -103,9 +102,6 @@ impl GpkgSink {
         let mut created_tables = HashSet::<String>::new();
 
         let mut table_bboxes = IndexMap::<String, Bbox>::new();
-        for table_name in table_infos.keys() {
-            table_bboxes.insert(table_name.clone(), Default::default());
-        }
 
         let (sender, mut receiver) = tokio::sync::mpsc::channel(100);
 
@@ -219,7 +215,7 @@ impl GpkgSink {
                     tx.insert_feature(&table_name, &obj_id, &geometry, &attributes)
                         .await
                         .unwrap();
-                    table_bboxes.get_mut(&table_name).unwrap().merge(&bbox);
+                    table_bboxes.entry(table_name).or_default().merge(&bbox);
                 }
                 Record::Attribute { attributes } => {
                     tx.insert_attribute(&table_name, &attributes).await.unwrap();
@@ -227,10 +223,8 @@ impl GpkgSink {
             }
         }
 
-        for table_name in table_bboxes.keys() {
-            tx.update_bbox(table_name, table_bboxes.get(table_name).unwrap().to_tuple())
-                .await
-                .unwrap();
+        for (table_name, bbox) in table_bboxes {
+            tx.update_bbox(&table_name, bbox.to_tuple()).await.unwrap();
         }
 
         tx.commit().await.unwrap();
@@ -245,12 +239,13 @@ impl GpkgSink {
 impl DataSink for GpkgSink {
     fn make_transform_requirements(&self) -> transformer::Requirements {
         transformer::Requirements {
-            tree_flattening: transformer::TreeFlatteningSpec::Flatten {
-                // TODO: set properly after the flattening transformer is implemented
-                feature: transformer::FeatureFlatteningOption::None,
-                data: transformer::DataFlatteningOption::None,
-                object: transformer::ObjectFlatteningOption::None,
-            },
+            // TODO: set properly after the flattening transformer is implemented
+            tree_flattening: transformer::TreeFlatteningSpec::None,
+            // transformer::TreeFlatteningSpec::Flatten {
+            //     feature: transformer::FeatureFlatteningOption::None,
+            //     data: transformer::DataFlatteningOption::None,
+            //     object: transformer::ObjectFlatteningOption::None,
+            // },
             ..Default::default()
         }
     }

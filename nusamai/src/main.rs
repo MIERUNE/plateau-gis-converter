@@ -1,4 +1,5 @@
 use std::env;
+use std::io::Write;
 use std::sync::{Arc, Mutex, OnceLock};
 
 use clap::Parser;
@@ -28,6 +29,10 @@ struct Args {
     /// Specify the output path
     #[arg(long)]
     output: String,
+
+    /// Output schema
+    #[arg(long)]
+    schema: Option<String>,
 
     /// Add an option for the input (CityGML)
     #[arg(short = 'i', value_parser = parse_key_val)]
@@ -144,10 +149,11 @@ fn main() {
         sink_provider.create(&sink_params)
     };
 
-    run(source, sink, &mut canceller);
+    run(&args, source, sink, &mut canceller);
 }
 
 fn run(
+    args: &Args,
     source: Box<dyn DataSource>,
     sink: Box<dyn DataSink>,
     canceller: &mut Arc<Mutex<Canceller>>,
@@ -161,6 +167,14 @@ fn run(
         let mut schema = nusamai_citygml::schema::Schema::default();
         TopLevelCityObject::collect_schema(&mut schema);
         transform_builder.transform_schema(&mut schema);
+
+        if let Some(schema_path) = &args.schema {
+            // TODO: error handling
+            let mut file = std::fs::File::create(schema_path).unwrap();
+            file.write_all(serde_json::to_string_pretty(&schema).unwrap().as_bytes())
+                .unwrap();
+        }
+
         let transformer = Box::new(MultiThreadTransformer::new(transform_builder));
         (transformer, schema)
     };
@@ -201,6 +215,8 @@ mod tests {
             .arg("noop")
             .arg("--output")
             .arg("dummy")
+            .arg("--schema")
+            .arg("schema.json")
             .assert();
         assert.success();
     }

@@ -6,7 +6,6 @@ use std::fs::File;
 use std::io::{BufWriter, Write};
 use std::path::PathBuf;
 
-use bincode;
 use nusamai_citygml::schema::Schema;
 use rayon::prelude::*;
 
