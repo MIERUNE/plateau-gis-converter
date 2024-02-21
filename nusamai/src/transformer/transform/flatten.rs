@@ -246,6 +246,14 @@ impl FlattenTreeTransform {
     }
 
     fn is_flatten_target(&self, obj: &Object, parent: &Option<Parent>) -> bool {
+        // Do not flattten generic attributes:
+        // It may hold any arbitrary attributes, therefore you cannot have schema information about it in advance.
+        // (In schema, generic attribute has `additional_attributes = true`)
+        // This is problematic for the GeoPackage sink, as it requires schema information to create a table.
+        if obj.typename == "gen:genericAttribute" {
+            return false;
+        }
+
         match obj.stereotype {
             ObjectStereotype::Feature { .. } => match self.feature {
                 FeatureFlatteningOption::None => false,
