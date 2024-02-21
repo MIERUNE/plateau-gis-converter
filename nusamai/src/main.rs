@@ -9,7 +9,7 @@ use nusamai::pipeline::Canceller;
 use nusamai::sink::{DataSink, DataSinkProvider};
 use nusamai::source::citygml::CityGmlSourceProvider;
 use nusamai::source::{DataSource, DataSourceProvider};
-use nusamai::transformer::MultiThreadTransformer;
+use nusamai::transformer::{MultiThreadTransformer, Requirements};
 use nusamai::transformer::{NusamaiTransformBuilder, TransformBuilder};
 use nusamai::BUILTIN_SINKS;
 use nusamai_citygml::CityGmlElement;
@@ -111,6 +111,22 @@ fn main() {
         .expect("Error setting Ctrl-C handler");
     }
 
+    let sink = {
+        let sink_provider = args.sink.create_sink();
+        let mut sink_params = sink_provider.parameters();
+        if let Err(err) = sink_params.update_values_with_str(&args.sinkopt) {
+            log::error!("Error parsing sink options: {:?}", err);
+            return;
+        };
+        if let Err(err) = sink_params.validate() {
+            log::error!("Error validating source parameters: {:?}", err);
+            return;
+        }
+        sink_provider.create(&sink_params)
+    };
+
+    let requirements = sink.make_transform_requirements();
+
     let source = {
         // glob input file patterns
         let mut filenames = vec![];
@@ -132,29 +148,20 @@ fn main() {
             log::error!("Error validating source parameters: {:?}", err);
             return;
         }
-        source_provider.create(&source_params)
+
+        // create source
+        let mut source = source_provider.create(&source_params);
+        source.set_appearance_resolution(requirements.resolve_appearance);
+        source
     };
 
-    let sink = {
-        let sink_provider = args.sink.create_sink();
-        let mut sink_params = sink_provider.parameters();
-        if let Err(err) = sink_params.update_values_with_str(&args.sinkopt) {
-            log::error!("Error parsing sink options: {:?}", err);
-            return;
-        };
-        if let Err(err) = sink_params.validate() {
-            log::error!("Error validating source parameters: {:?}", err);
-            return;
-        }
-        sink_provider.create(&sink_params)
-    };
-
-    run(&args, source, sink, &mut canceller);
+    run(&args, source, requirements, sink, &mut canceller);
 }
 
 fn run(
     args: &Args,
     source: Box<dyn DataSource>,
+    requirements: Requirements,
     sink: Box<dyn DataSink>,
     canceller: &mut Arc<Mutex<Canceller>>,
 ) {
@@ -162,7 +169,6 @@ fn run(
 
     // Prepare the transformer for the pipeline and transform the schema
     let (transformer, schema) = {
-        let requirements = sink.make_transform_requirements();
         let transform_builder = NusamaiTransformBuilder::new(requirements.into());
         let mut schema = nusamai_citygml::schema::Schema::default();
         TopLevelCityObject::collect_schema(&mut schema);
