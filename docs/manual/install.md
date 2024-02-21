@@ -11,4 +11,8 @@ MacOSを利用している方は、`nusamai_<最新バージョン>_x64.dmg`を�
 
 ## windowsでのインストール
 
+ダウンロードした`nusamai_<最新バージョン>_x64-setup.exe`を実行します。
+
+
+
 ## MacOSでのインストール
