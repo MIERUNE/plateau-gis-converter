@@ -2,6 +2,9 @@ name: Release
 on:
   release:
     types: [published]
+  push:
+    branches:
+      - fix-release-action
 
 jobs:
   release:
@@ -17,23 +20,23 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Rust setup
-        uses: dtolnay/rust-toolchain@stable
+      # - name: Rust setup
+      #   uses: dtolnay/rust-toolchain@stable
 
-      - name: Rust cache
-        uses: swatinem/rust-cache@v2
-        with:
-          workspaces: './src-tauri -> target'
+      # - name: Rust cache
+      #   uses: swatinem/rust-cache@v2
+      #   with:
+      #     workspaces: "./src-tauri -> target"
 
       - name: Sync node version and setup cache
         uses: actions/setup-node@v4
         with:
-          node-version: 'lts/*'
-          cache: 'npm' 
-          cache-dependency-path: ./app/package-lock.json 
+          node-version: "lts/*"
+          cache: "npm"
+          cache-dependency-path: ./app/package-lock.json
 
       - name: Install frontend dependencies
-        run: npm install 
+        run: npm install
         working-directory: ./app
 
       - name: Set optimization options
@@ -47,7 +50,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tagName: ${{ github.event.release.tag_name }}
-          releaseName: "PLATEAU Converter v__VERSION__"
+          releaseName: "PLATEAU GIS Converter v__VERSION__"
           releaseDraft: true
           prerelease: false
-          
