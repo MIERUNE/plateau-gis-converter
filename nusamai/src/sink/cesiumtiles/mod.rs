@@ -17,7 +17,6 @@ use ahash::RandomState;
 use earcut_rs::utils3d::project3d_to_2d;
 use earcut_rs::Earcut;
 use ext_sort::{buffer::mem::MemoryLimitedBufferBuilder, ExternalSorter, ExternalSorterBuilder};
-use nusamai_mvt::TileZXY;
 use nusamai_projection::cartesian::geographic_to_geocentric;
 use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
@@ -114,7 +113,11 @@ impl DataSink for CesiumTilesSink {
             // Sort features by tile_id (using external sorter)
             {
                 s.spawn(move || {
-                    feature_sorting_stage(receiver_sliced, sender_sorted);
+                    if let Err(error) =
+                        feature_sorting_stage(feedback, receiver_sliced, sender_sorted)
+                    {
+                        feedback.report_fatal_error(error);
+                    }
                 });
             }
 
@@ -154,6 +157,8 @@ fn geometry_slicing_stage(
 
         // TODO: zoom level from parameters
         slice_to_tiles(&parcel.entity, 7, 17, |(z, x, y), feature| {
+            feedback.ensure_not_canceled()?;
+
             let bytes = bincode::serialize(&feature).unwrap();
             let serialized_feature = SerializedSlicedFeature {
                 tile_id: tile_id_conv.zxy_to_id(z, x, y),
@@ -170,9 +175,10 @@ fn geometry_slicing_stage(
 }
 
 fn feature_sorting_stage(
+    feedback: &Feedback,
     receiver_sliced: mpsc::Receiver<SerializedSlicedFeature>,
     sender_sorted: mpsc::SyncSender<(u64, Vec<SerializedSlicedFeature>)>,
-) {
+) -> Result<()> {
     let sorter: ExternalSorter<
         SerializedSlicedFeature,
         std::io::Error,
@@ -195,11 +201,15 @@ fn feature_sorting_stage(
         .map(std::result::Result::unwrap)
         .group_by(|ser_feat| ser_feat.tile_id)
     {
+        feedback.ensure_not_canceled()?;
+
         let ser_feats: Vec<_> = ser_feats.collect();
         if sender_sorted.send((tile_id, ser_feats)).is_err() {
-            return;
+            return Err(PipelineError::Canceled);
         };
     }
+
+    Ok(())
 }
 
 fn tile_writing_stage(
@@ -211,6 +221,7 @@ fn tile_writing_stage(
     let ellipsoid = nusamai_projection::ellipsoid::wgs84();
     let tiles: Arc<Mutex<Vec<TileSpec>>> = Default::default();
 
+    // Make a glTF (.glb) file for each tile
     receiver_sorted
         .into_iter()
         .par_bridge()
@@ -218,7 +229,7 @@ fn tile_writing_stage(
             feedback.ensure_not_canceled()?;
 
             let mut tilespec = TileSpec {
-                zxy: (0, 0, 0),
+                zxy: tile_id_conv.id_to_zxy(tile_id),
                 min_lng: f64::MAX,
                 max_lng: f64::MIN,
                 min_lat: f64::MAX,
@@ -227,13 +238,32 @@ fn tile_writing_stage(
                 max_height: f64::MIN,
             };
 
-            let mut earcutter = Earcut::new();
-            let mut buf5d: Vec<f64> = Vec::new(); // [x, y, z, u, v]
-            let mut buf2d: Vec<f64> = Vec::new(); // 2d-projected [x, y]
-            let mut triangles_buf: Vec<u32> = Vec::new();
-            let mut triangles = Vec::new();
+            // Tile information
+            let (tile_zoom, tile_x, tile_y) = tilespec.zxy;
+            let (min_lat, max_lat) = tiling::y_slice_range(tile_zoom, tile_y);
+            let (min_lng, max_lng) = tiling::x_slice_range(tile_zoom, tile_x as i32, tiling::x_step(tile_zoom, tile_y));
+            log::info!(
+                "tile: z={tile_zoom}, x={tile_x}, y={tile_y} (lng: [{min_lng} => {max_lng}], lat: [{min_lat} => {max_lat})"
+            );
 
+            // Use the tile center as the translation of glTF
+            let translation = {
+                let (tx, ty, tz) = geographic_to_geocentric(&ellipsoid, (min_lng + max_lng) / 2.0, (min_lat + max_lat) / 2.0, 0.);
+                [tx, tz, -ty]
+            };
+
+            // Triangulation
+            let mut earcutter = Earcut::new();
+            let mut buf2d: Vec<f64> = Vec::new(); // 2d-projected [x, y]
+            let mut index_buf: Vec<u32> = Vec::new();
+
+            let mut vertices: IndexSet<[u32; 5], RandomState> = IndexSet::default();
+            let mut primitives: gltf::Primitives = Default::default();
+
+            // make vertices and indices
             for serialized_feat in serialized_feats {
+                feedback.ensure_not_canceled()?;
+
                 let mut feature: SlicedFeature = bincode::deserialize(&serialized_feat.body)
                     .map_err(|err| {
                         PipelineError::Other(format!(
@@ -253,117 +283,61 @@ fn tile_writing_stage(
                         tilespec.max_height = tilespec.max_height.max(height);
 
                         let (x, y, z) = geographic_to_geocentric(&ellipsoid, lng, lat, height);
-                        [x, z, -y, u, v]
+                        [x - translation[0], z - translation[1], -y - translation[2], u, 1.0 - v]
                     });
 
-                for poly in &feature.polygons {
+                for (poly, orig_mat_id) in feature.polygons.iter().zip_eq(feature.polygon_material_ids.iter()) {
                     let num_outer = match poly.hole_indices().first() {
                         Some(&v) => v as usize,
                         None => poly.coords().len() / 5,
                     };
 
-                    buf5d.clear();
-                    buf5d.extend(poly.coords());
+                    let mat = feature.materials[*orig_mat_id as usize].clone();
+                    let indices = primitives.entry(mat).or_default();
 
-                    if project3d_to_2d(&buf5d, num_outer, 5, &mut buf2d) {
+                    if project3d_to_2d(poly.coords(), num_outer, 5, &mut buf2d) {
                         // earcut
-                        earcutter.earcut(&buf2d, poly.hole_indices(), 2, &mut triangles_buf);
-                        triangles.extend(triangles_buf.iter().map(|idx| {
-                            [
-                                buf5d[*idx as usize * 5],
-                                buf5d[*idx as usize * 5 + 1],
-                                buf5d[*idx as usize * 5 + 2],
-                            ]
+                        earcutter.earcut(&buf2d, poly.hole_indices(), 2, &mut index_buf);
+
+                        // collect triangles
+                        indices.extend(index_buf.iter().map(|idx| {
+                            let pos = *idx as usize * 5;
+                            let [x, y, z, u, v] = poly.coords()[pos..pos + 5].try_into().unwrap();
+                            let vbits = [
+                                (x as f32).to_bits(),
+                                (y as f32).to_bits(),
+                                (z as f32).to_bits(),
+                                (u as f32).to_bits(),
+                                (v as f32).to_bits(),
+                            ];
+                            let (index, _) = vertices.insert_full(vbits);
+                            index as u32
                         }));
                     }
                 }
             }
 
-            // calculate the centroid and min/max
-            let mut pos_max = [f64::MIN; 3];
-            let mut pos_min = [f64::MAX; 3];
-            let mut translation = [0.; 3];
-
-            for &[x, y, z] in &triangles {
-                pos_min = [
-                    f64::min(pos_min[0], x),
-                    f64::min(pos_min[1], y),
-                    f64::min(pos_min[2], z),
-                ];
-                pos_max = [
-                    f64::max(pos_max[0], x),
-                    f64::max(pos_max[1], y),
-                    f64::max(pos_max[2], z),
-                ];
-            }
-            // TODO: Use a library for 3d linalg
-            translation[0] = (pos_max[0] + pos_min[0]) / 2.;
-            translation[1] = (pos_max[1] + pos_min[1]) / 2.;
-            translation[2] = (pos_max[2] + pos_min[2]) / 2.;
-            pos_min[0] -= translation[0];
-            pos_max[0] -= translation[0];
-            pos_min[1] -= translation[1];
-            pos_max[1] -= translation[1];
-            pos_min[2] -= translation[2];
-            pos_max[2] -= translation[2];
-
-            // make vertices and indices
-            let mut vertices: IndexSet<[u32; 3], RandomState> = IndexSet::default();
-            let indices: Vec<_> = triangles
-                .iter()
-                .map(|&[x, y, z]| {
-                    let (x, y, z) = (x - translation[0], y - translation[1], z - translation[2]);
-                    let vbits = [
-                        (x as f32).to_bits(),
-                        (y as f32).to_bits(),
-                        (z as f32).to_bits(),
-                    ];
-                    let (index, _) = vertices.insert_full(vbits);
-                    index as u32
-                })
-                .collect();
-
-            // Remove degenerate triangles
-            let indices: Vec<u32> = indices
-                .chunks_exact(3)
-                .filter(|idx| (idx[0] != idx[1] && idx[1] != idx[2] && idx[2] != idx[0]))
-                .flatten()
-                .copied()
-                .collect();
-
-            let zxy: TileZXY = tile_id_conv.id_to_zxy(tile_id);
-            let (zoom, x, y) = zxy;
-            tilespec.zxy = zxy;
             tiles.lock().unwrap().push(tilespec);
 
-            // print tile information
-            let (min_y, max_y) = tiling::y_slice_range(zoom, y);
-            let xs = tiling::x_step(zoom, y);
-            let (min_x, max_x) = tiling::x_slice_range(zoom, x as i32, xs);
-            log::info!(
-                "tile: z={zoom}, x={x}, y={y} (lng: [{min_x} => {max_x}], lat: [{min_y} => {max_y})"
-            );
-
             // write to file
-            let path_glb = output_path.join(Path::new(&format!("{zoom}/{x}/{y}.glb")));
+            let path_glb =
+                output_path.join(Path::new(&format!("{tile_zoom}/{tile_x}/{tile_y}.glb")));
             if let Some(dir) = path_glb.parent() {
                 fs::create_dir_all(dir)?;
             }
 
             let mut file = std::fs::File::create(path_glb)?;
-            let mut writer = BufWriter::new(&mut file);
             write_gltf_glb(
-                &mut writer,
-                pos_min,
-                pos_max,
+                &mut BufWriter::new(&mut file),
                 translation,
                 vertices,
-                indices,
+                primitives,
             )?;
 
             Ok::<(), PipelineError>(())
         })?;
 
+    // Generate tileset.json
     let mut tree = TileTree::default();
     for tilespec in tiles.lock().unwrap().drain(..) {
         tree.add_node(tilespec);

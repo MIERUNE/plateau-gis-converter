@@ -38,7 +38,7 @@ pub struct Road {
     pub road_status: Vec<uro::RoadType>,
 
     #[citygml(path = b"uro:roadStructureAttribute/uro:RoadStructureAttribute")]
-    pub road_structure_attribute: Option<uro::RoadStructureAttribute>,
+    pub road_structure_attribute: Vec<uro::RoadStructureAttribute>,
 
     #[citygml(path = b"uro:trafficVolumeAttribute/uro:TrafficVolumeAttribute")]
     pub traffic_volume_attribute: Option<uro::TrafficVolumeAttribute>,

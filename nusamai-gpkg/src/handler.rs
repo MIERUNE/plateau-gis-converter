@@ -191,12 +191,12 @@ impl<'c> GpkgTransaction<'c> {
         let executor = self.tx.acquire().await.unwrap();
 
         // Create the table
-        let mut query_string = format!(
-            "CREATE TABLE \"{}\" (id STRING NOT NULL PRIMARY KEY",
-            table_info.name
-        );
+        let mut query_string = format!("CREATE TABLE \"{}\" (", table_info.name);
         if table_info.has_geometry {
+            query_string.push_str("id STRING NOT NULL PRIMARY KEY");
             query_string.push_str(", geometry BLOB NOT NULL");
+        } else {
+            query_string.push_str("id INTEGER NOT NULL PRIMARY KEY");
         }
         table_info.columns.iter().for_each(|column| {
             query_string.push_str(&format!(", {} {}", column.name, column.data_type));
@@ -236,8 +236,8 @@ impl<'c> GpkgTransaction<'c> {
         Ok(())
     }
 
-    /// Add a MultiPolygonZ feature to the GeoPackage database
-    // TODO: handle MultiLineString, MultiPoint
+    /// Add a record to the feature table
+    // TODO: handle MultiLineString, MultiPoint (currently only MultiPolygonZ is supported)
     pub async fn insert_feature(
         &mut self,
         table_name: &str,
@@ -274,6 +274,33 @@ impl<'c> GpkgTransaction<'c> {
             }
             query.execute(&mut *executor).await?;
         }
+
+        Ok(())
+    }
+
+    /// Add a record to the attribute table
+    pub async fn insert_attribute(
+        &mut self,
+        table_name: &str,
+        attributes: &IndexMap<String, String>,
+    ) -> Result<(), GpkgError> {
+        let query_string = format!(
+            "INSERT INTO \"{}\" ({}) VALUES ({})",
+            table_name,
+            attributes
+                .keys()
+                .map(|key| key.to_string())
+                .collect::<Vec<_>>()
+                .join(", "),
+            vec!["?"; attributes.len()].join(", ")
+        );
+        let mut query = sqlx::query(&query_string);
+        for value in attributes.values() {
+            query = query.bind(value);
+        }
+
+        let executor: &mut SqliteConnection = self.tx.acquire().await.unwrap();
+        query.execute(&mut *executor).await?;
 
         Ok(())
     }
@@ -450,7 +477,7 @@ mod tests {
             columns,
             vec![
                 // No geometry column
-                ("id".into(), "STRING".into(), 1),
+                ("id".into(), "INTEGER".into(), 1),
                 ("attr1".into(), "TEXT".into(), 0),
             ]
         );
@@ -526,6 +553,64 @@ mod tests {
         let row = rows.first().unwrap();
         assert_eq!(row.get::<String, &str>("id"), "id_1");
         assert_eq!(row.get::<Vec<u8>, &str>("geometry"), vec![0, 1, 2, 3]);
+        assert_eq!(row.get::<String, &str>("attr1"), "value1");
+        assert_eq!(row.get::<i64, &str>("attr2"), 2);
+        assert_eq!(row.get::<f64, &str>("attr3"), 3.33);
+        assert!(row.get::<bool, &str>("attr4"));
+    }
+
+    #[tokio::test]
+    async fn test_insert_attribute() {
+        let mut handler = GpkgHandler::from_url(&Url::parse("sqlite::memory:").unwrap())
+            .await
+            .unwrap();
+        let mut tx: GpkgTransaction<'_> = handler.begin().await.unwrap();
+
+        let table_name = "without_geometry";
+        let columns = vec![
+            ColumnInfo {
+                name: "attr1".into(),
+                data_type: "TEXT".into(),
+                mime_type: None,
+            },
+            ColumnInfo {
+                name: "attr2".into(),
+                data_type: "INTEGER".into(),
+                mime_type: None,
+            },
+            ColumnInfo {
+                name: "attr3".into(),
+                data_type: "REAL".into(),
+                mime_type: None,
+            },
+            ColumnInfo {
+                name: "attr4".into(),
+                data_type: "BOOLEAN".into(),
+                mime_type: None,
+            },
+        ];
+        let table_info = TableInfo {
+            name: table_name.into(),
+            has_geometry: false, // No geometry
+            columns,
+        };
+        tx.add_table(&table_info).await.unwrap();
+
+        let attributes: IndexMap<String, String> = IndexMap::from([
+            ("attr1".into(), "value1".into()),
+            ("attr2".into(), "2".into()),
+            ("attr3".into(), "3.33".into()),
+            ("attr4".into(), "1".into()),
+        ]);
+        tx.insert_attribute(table_name, &attributes).await.unwrap();
+
+        tx.commit().await.unwrap();
+
+        let rows = handler.fetch_rows(table_name).await.unwrap();
+
+        assert_eq!(rows.len(), 1);
+        let row = rows.first().unwrap();
+        assert_eq!(row.get::<i64, &str>("id"), 1);
         assert_eq!(row.get::<String, &str>("attr1"), "value1");
         assert_eq!(row.get::<i64, &str>("attr2"), 2);
         assert_eq!(row.get::<f64, &str>("attr3"), 3.33);

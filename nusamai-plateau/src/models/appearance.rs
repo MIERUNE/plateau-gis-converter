@@ -1,7 +1,7 @@
 use nusamai_citygml::appearance::TextureAssociation;
 use nusamai_citygml::{
     citygml_feature, citygml_property, CityGmlElement, Code, Color, ColorPlusOpacity, Double01,
-    LocalId, Point, URI,
+    LocalId, Point, Uri,
 };
 
 type TextureType = String; // TODO?
@@ -72,7 +72,7 @@ pub struct ParameterizedTexture {
     pub is_front: Option<bool>,
 
     #[citygml(path = b"app:imageURI", required)]
-    pub image_uri: Option<URI>,
+    pub image_uri: Option<Uri>,
 
     #[citygml(path = b"app:mimeType")]
     pub mime_type: Option<Code>,
@@ -96,7 +96,7 @@ pub struct GeoreferencedTexture {
     pub is_front: Option<bool>,
 
     #[citygml(path = b"app:imageURI", required)]
-    pub image_uri: Option<URI>,
+    pub image_uri: Option<Uri>,
 
     #[citygml(path = b"app:mimeType")]
     pub mime_type: Option<Code>,
@@ -120,5 +120,5 @@ pub struct GeoreferencedTexture {
     pub orientation: Option<TransformationMatrix2x2>,
 
     #[citygml(path = b"app:target")]
-    pub target: Vec<URI>,
+    pub target: Vec<Uri>,
 }

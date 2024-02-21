@@ -23,23 +23,23 @@ jobs:
       - name: Rust cache
         uses: swatinem/rust-cache@v2
         with:
-          workspaces: './src-tauri -> target'
+          workspaces: "./src-tauri -> target"
 
       - name: Sync node version and setup cache
         uses: actions/setup-node@v4
         with:
-          node-version: 'lts/*'
-          cache: 'npm' 
-          cache-dependency-path: ./app/package-lock.json 
+          node-version: "lts/*"
+          cache: "npm"
+          cache-dependency-path: ./app/package-lock.json
 
       - name: Install frontend dependencies
-        run: npm install 
+        run: npm install
         working-directory: ./app
 
       - name: Set optimization options
         run: |
-          echo 'profile.release.lto = true' >> Cargo.toml
-          echo 'profile.release.panic = abort' >> Cargo.toml
+          echo 'profile.release.lto = "true"' >> Cargo.toml
+          echo 'profile.release.panic = "abort"' >> Cargo.toml
 
       - name: Build the app
         uses: tauri-apps/tauri-action@v0
@@ -47,7 +47,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tagName: ${{ github.event.release.tag_name }}
-          releaseName: "PLATEAU Converter v__VERSION__"
+          releaseName: "PLATEAU GIS Converter v__VERSION__"
           releaseDraft: true
           prerelease: false
-          

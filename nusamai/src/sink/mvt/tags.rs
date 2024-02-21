@@ -29,7 +29,7 @@ pub fn convert_properties(
         nusamai_citygml::Value::Boolean(v) => {
             tags.extend(tags_enc.add(name, (*v).into()));
         }
-        nusamai_citygml::Value::URI(v) => {
+        nusamai_citygml::Value::Uri(v) => {
             tags.extend(tags_enc.add(name, v.value().to_string().into()));
         }
         nusamai_citygml::Value::Date(v) => {
