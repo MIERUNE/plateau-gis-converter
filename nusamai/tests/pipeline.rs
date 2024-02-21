@@ -9,6 +9,7 @@ use nusamai::transformer::{self, Transformer};
 use nusamai_citygml::schema::Schema;
 use nusamai_plateau::Entity;
 use rand::prelude::*;
+use url::Url;
 
 static INIT: Once = Once::new();
 
@@ -42,6 +43,7 @@ impl DataSource for DummySource {
             let obj = Parcel {
                 entity: Entity {
                     root: nusamai_citygml::Value::Double(0.),
+                    base_url: Url::parse("file:///dummy").unwrap(),
                     geometry_store: Default::default(),
                     appearance_store: Default::default(),
                 },

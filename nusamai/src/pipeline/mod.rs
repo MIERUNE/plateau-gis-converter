@@ -16,9 +16,10 @@ pub use runner::*;
 pub type Sender = mpsc::SyncSender<Parcel>;
 pub type Receiver = mpsc::Receiver<Parcel>;
 
-/// Message passing through pipeline stages
+/// Message passing through the main processing pipeline
 #[derive(Debug)]
 pub struct Parcel {
+    // Entity (Feature, Data, etc.)
     pub entity: Entity,
 }
 

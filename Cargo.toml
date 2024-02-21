@@ -15,3 +15,6 @@ authors = ["MIERUNE Inc. <info@mierune.co.jp>"]
 inherits = "release"
 lto = "fat"
 panic = "abort"
+
+[profile.dev.package.zune-image]
+opt-level = 3
