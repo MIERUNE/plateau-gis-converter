@@ -7,16 +7,10 @@ GitHubリポジトリの[リリースページ](https://github.com/MIERUNE/PLATE
 windowsを利用している方は、`nusamai_<最新バージョン>_x64-setup.exe`をダウンロードしてください。
 MacOSを利用している方は、`nusamai_<最新バージョン>_x64.dmg`をダウンロードしてください。
 
-![alt text](../resources/image-1.png)
-
 ## windowsでのインストール
 
 ダウンロードした`nusamai_<最新バージョン>_x64-setup.exe`を実行します。
 
-![alt text](../resources/image-2.png)
-
 インストールウィザードが表示されるので、指示に従ってインストールを行ってください。
-
-![alt text](../resources/image-3.png)
 
 ## MacOSでのインストール
