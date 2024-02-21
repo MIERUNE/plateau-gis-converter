@@ -61,7 +61,7 @@ impl DataSource for CityGmlSource {
             let mut citygml_reader = CityGmlReader::new(context);
 
             let mut st = citygml_reader.start_root(&mut xml_reader)?;
-            match toplevel_dispatcher(&mut st, &source_url, &downstream, feedback) {
+            match toplevel_dispatcher(&mut st, &downstream, feedback) {
                 Ok(_) => Ok::<(), PipelineError>(()),
                 Err(ParseError::Canceled) => Err(PipelineError::Canceled),
                 Err(e) => Err(e.into()),
@@ -75,7 +75,6 @@ impl DataSource for CityGmlSource {
 // TODO: Move this to nusamai-plateau ?
 fn toplevel_dispatcher<R: BufRead>(
     st: &mut SubTreeReader<R>,
-    base_url: &Url,
     downstream: &Sender,
     feedback: &Feedback,
 ) -> Result<(), ParseError> {

@@ -1,8 +1,7 @@
 //! Material mangement
 
-use std::hash::Hash;
+use std::{hash::Hash, path::Path, time::Instant};
 
-use image::io::Reader as ImageReader;
 use indexmap::IndexSet;
 use nusamai_gltf_json::BufferView;
 use serde::{Deserialize, Serialize};
@@ -13,6 +12,15 @@ pub struct Material {
     pub base_color: [f32; 4],
     pub base_texture: Option<Texture>,
     // NOTE: Adjust the hash implementation if you add more fields
+}
+
+impl Eq for Material {}
+
+impl Hash for Material {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.base_color.iter().for_each(|c| c.to_bits().hash(state));
+        self.base_texture.hash(state);
+    }
 }
 
 impl Material {
@@ -40,15 +48,6 @@ impl Material {
             }),
             ..Default::default()
         }
-    }
-}
-
-impl Eq for Material {}
-
-impl Hash for Material {
-    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
-        self.base_color.iter().for_each(|c| c.to_bits().hash(state));
-        self.base_texture.hash(state);
     }
 }
 
@@ -84,7 +83,8 @@ impl Image {
         bin_content: &mut Vec<u8>,
     ) -> std::io::Result<nusamai_gltf_json::Image> {
         if let Ok(path) = self.uri.to_file_path() {
-            let image = ImageReader::open(path)?.decode();
+            // NOTE: temporary implementation
+            let content = load_image(&path)?;
 
             buffer_view.push(BufferView {
                 byte_offset: bin_content.len() as u32,
@@ -105,6 +105,52 @@ impl Image {
                 ..Default::default()
             })
         }
+    }
+}
+
+// NOTE: temporary implementation
+fn load_image(path: &Path) -> std::io::Result<Vec<u8>> {
+    log::info!("Decoding image: {:?}", path);
+
+    if let Some(ext) = path.extension() {
+        match ext.to_str().unwrap() {
+            // use `image crate` for TIFF
+            "tif" | "tiff" => {
+                let t = Instant::now();
+                let image = image::open(path)
+                    .map_err(|err| std::io::Error::new(std::io::ErrorKind::InvalidData, err))?;
+                log::debug!("Image decoding took {:?}", t.elapsed());
+
+                let content: Vec<u8> = Vec::new();
+                let mut writer = std::io::Cursor::new(content);
+                image
+                    .write_to(&mut writer, image::ImageOutputFormat::Jpeg(100))
+                    .map_err(|err| std::io::Error::new(std::io::ErrorKind::InvalidData, err))?;
+                Ok(writer.into_inner())
+            }
+            // use `zune-image` crate for JPEG and PNG
+            "png" | "jpg" | "jpeg" => {
+                let t = Instant::now();
+                let image = zune_image::image::Image::open(path)
+                    .map_err(|err| std::io::Error::new(std::io::ErrorKind::InvalidData, err))?;
+                log::debug!("Image decoding took {:?}", t.elapsed());
+
+                let content = image
+                    .write_to_vec(zune_image::codecs::ImageFormat::JPEG)
+                    .map_err(|err| std::io::Error::new(std::io::ErrorKind::InvalidData, err))?;
+                log::debug!("Image encoding took {:?}", t.elapsed());
+                Ok(content)
+            }
+            _ => {
+                let err = format!("Unsupported image format: {:?}", path);
+                log::error!("{}", err);
+                Err(std::io::Error::new(std::io::ErrorKind::InvalidData, err))
+            }
+        }
+    } else {
+        let err = format!("Unsupported image format: {:?}", path);
+        log::error!("{}", err);
+        Err(std::io::Error::new(std::io::ErrorKind::InvalidData, err))
     }
 }
 

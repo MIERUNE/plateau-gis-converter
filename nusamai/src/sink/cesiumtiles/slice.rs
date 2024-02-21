@@ -58,67 +58,70 @@ pub fn slice_to_tiles<E>(
     let mut materials: IndexSet<Material> = IndexSet::new();
     let default_mat = appearance::Material::default();
 
-    geometries.iter().for_each(|entry| match entry.ty {
-        GeometryType::Solid | GeometryType::Surface | GeometryType::Triangle => {
-            // for each polygon
-            for (((idx_poly, poly_uv), poly_mat), poly_tex) in geom_store
-                .multipolygon
-                .iter_range(entry.pos as usize..(entry.pos + entry.len) as usize)
-                .zip_eq(
-                    geom_store
-                        .polygon_uvs
-                        .iter_range(entry.pos as usize..(entry.pos + entry.len) as usize),
-                )
-                .zip_eq(
-                    geom_store.polygon_materials
-                        [entry.pos as usize..(entry.pos + entry.len) as usize]
-                        .iter(),
-                )
-                .zip_eq(
-                    geom_store.polygon_textures
-                        [entry.pos as usize..(entry.pos + entry.len) as usize]
-                        .iter(),
-                )
-            {
-                let poly = idx_poly.transform(|c| geom_store.vertices[c[0] as usize]);
-                let orig_mat = poly_mat
-                    .and_then(|idx| appearance_store.materials.get(idx as usize))
-                    .unwrap_or(&default_mat)
-                    .clone();
-                let orig_tex = poly_tex.and_then(|idx| appearance_store.textures.get(idx as usize));
+    geometries.iter().for_each(|entry| {
+        match entry.ty {
+            GeometryType::Solid | GeometryType::Surface | GeometryType::Triangle => {
+                // for each polygon
+                for (((idx_poly, poly_uv), poly_mat), poly_tex) in geom_store
+                    .multipolygon
+                    .iter_range(entry.pos as usize..(entry.pos + entry.len) as usize)
+                    .zip_eq(
+                        geom_store
+                            .polygon_uvs
+                            .iter_range(entry.pos as usize..(entry.pos + entry.len) as usize),
+                    )
+                    .zip_eq(
+                        geom_store.polygon_materials
+                            [entry.pos as usize..(entry.pos + entry.len) as usize]
+                            .iter(),
+                    )
+                    .zip_eq(
+                        geom_store.polygon_textures
+                            [entry.pos as usize..(entry.pos + entry.len) as usize]
+                            .iter(),
+                    )
+                {
+                    let poly = idx_poly.transform(|c| geom_store.vertices[c[0] as usize]);
+                    let orig_mat = poly_mat
+                        .and_then(|idx| appearance_store.materials.get(idx as usize))
+                        .unwrap_or(&default_mat)
+                        .clone();
+                    let orig_tex =
+                        poly_tex.and_then(|idx| appearance_store.textures.get(idx as usize));
 
-                let mat = Material {
-                    base_color: orig_mat.diffuse_color.into(),
-                    base_texture: orig_tex.map(|tex| Texture {
-                        uri: tex.image_url.clone(),
-                    }),
-                };
-                let (mat_idx, _) = materials.insert_full(mat);
+                    let mat = Material {
+                        base_color: orig_mat.diffuse_color.into(),
+                        base_texture: orig_tex.map(|tex| Texture {
+                            uri: tex.image_url.clone(),
+                        }),
+                    };
+                    let (mat_idx, _) = materials.insert_full(mat);
 
-                // Slice polygon for each zoom level
-                for zoom in min_z..=max_z {
-                    slice_polygon(zoom, &poly, &poly_uv, |(z, x, y), poly| {
-                        let sliced_feature =
-                            sliced_tiles
-                                .entry((z, x, y))
-                                .or_insert_with(|| SlicedFeature {
-                                    polygons: MultiPolygon::new(),
-                                    attributes: entity.root.clone(),
-                                    polygon_material_ids: Default::default(),
-                                    materials: Default::default(),
-                                });
+                    // Slice polygon for each zoom level
+                    for zoom in min_z..=max_z {
+                        slice_polygon(zoom, &poly, &poly_uv, |(z, x, y), poly| {
+                            let sliced_feature =
+                                sliced_tiles
+                                    .entry((z, x, y))
+                                    .or_insert_with(|| SlicedFeature {
+                                        polygons: MultiPolygon::new(),
+                                        attributes: entity.root.clone(),
+                                        polygon_material_ids: Default::default(),
+                                        materials: Default::default(),
+                                    });
 
-                        sliced_feature.polygons.push(poly);
-                        sliced_feature.polygon_material_ids.push(mat_idx as u32);
-                    });
+                            sliced_feature.polygons.push(poly);
+                            sliced_feature.polygon_material_ids.push(mat_idx as u32);
+                        });
+                    }
                 }
             }
-        }
-        GeometryType::Curve => {
-            // TODO: implement
-        }
-        GeometryType::Point => {
-            // TODO: implement
+            GeometryType::Curve => {
+                // TODO: implement
+            }
+            GeometryType::Point => {
+                // TODO: implement
+            }
         }
     });
 

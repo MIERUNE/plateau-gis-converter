@@ -113,7 +113,11 @@ impl DataSink for CesiumTilesSink {
             // Sort features by tile_id (using external sorter)
             {
                 s.spawn(move || {
-                    feature_sorting_stage(receiver_sliced, sender_sorted);
+                    if let Err(error) =
+                        feature_sorting_stage(feedback, receiver_sliced, sender_sorted)
+                    {
+                        feedback.report_fatal_error(error);
+                    }
                 });
             }
 
@@ -153,6 +157,8 @@ fn geometry_slicing_stage(
 
         // TODO: zoom level from parameters
         slice_to_tiles(&parcel.entity, 7, 17, |(z, x, y), feature| {
+            feedback.ensure_not_canceled()?;
+
             let bytes = bincode::serialize(&feature).unwrap();
             let serialized_feature = SerializedSlicedFeature {
                 tile_id: tile_id_conv.zxy_to_id(z, x, y),
@@ -169,9 +175,10 @@ fn geometry_slicing_stage(
 }
 
 fn feature_sorting_stage(
+    feedback: &Feedback,
     receiver_sliced: mpsc::Receiver<SerializedSlicedFeature>,
     sender_sorted: mpsc::SyncSender<(u64, Vec<SerializedSlicedFeature>)>,
-) {
+) -> Result<()> {
     let sorter: ExternalSorter<
         SerializedSlicedFeature,
         std::io::Error,
@@ -194,11 +201,15 @@ fn feature_sorting_stage(
         .map(std::result::Result::unwrap)
         .group_by(|ser_feat| ser_feat.tile_id)
     {
+        feedback.ensure_not_canceled()?;
+
         let ser_feats: Vec<_> = ser_feats.collect();
         if sender_sorted.send((tile_id, ser_feats)).is_err() {
-            return;
+            return Err(PipelineError::Canceled);
         };
     }
+
+    Ok(())
 }
 
 fn tile_writing_stage(
@@ -251,6 +262,8 @@ fn tile_writing_stage(
 
             // make vertices and indices
             for serialized_feat in serialized_feats {
+                feedback.ensure_not_canceled()?;
+
                 let mut feature: SlicedFeature = bincode::deserialize(&serialized_feat.body)
                     .map_err(|err| {
                         PipelineError::Other(format!(
