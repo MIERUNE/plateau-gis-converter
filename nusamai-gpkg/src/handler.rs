@@ -1,8 +1,7 @@
 use crate::table::TableInfo;
 use indexmap::IndexMap;
 use sqlx::{sqlite::*, ConnectOptions};
-use sqlx::{Acquire, Row};
-use sqlx::{Pool, Sqlite};
+use sqlx::{Acquire, Pool, Row};
 use std::path::Path;
 use thiserror::Error;
 use url::Url;
