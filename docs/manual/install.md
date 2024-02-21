@@ -2,6 +2,8 @@
 
 ## ダウンロード
 
+※todo: `nusamai`は開発時のコードネームです。正式名称へ変更予定です。
+
 GitHubリポジトリの[リリースページ](https://github.com/MIERUNE/PLATEAU-GIS-Converter/releases)からダウンロードすることが可能です。
 
 windowsを利用している方は、`nusamai_<最新バージョン>_x64-setup.exe`をダウンロードしてください。
