@@ -239,8 +239,6 @@ pub fn to_gltf_property_table(
 
 #[cfg(test)]
 mod tests {
-    use ahash::RandomState;
-    use indexmap::IndexMap;
     use nusamai_citygml::schema::FeatureTypeDef;
 
     use super::*;
