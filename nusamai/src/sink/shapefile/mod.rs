@@ -14,7 +14,6 @@ use crate::{get_parameter_value, transformer};
 use nusamai_citygml::object::{ObjectStereotype, Value};
 use nusamai_plateau::Entity;
 use nusamai_shapefile::conversion::indexed_multipolygon_to_shape;
-use shapefile;
 
 pub struct ShapefileSinkProvider {}
 
@@ -58,6 +57,7 @@ pub struct ShapefileSink {
 impl DataSink for ShapefileSink {
     fn make_transform_requirements(&self) -> transformer::Requirements {
         transformer::Requirements {
+            shorten_names_for_shapefile: true,
             ..Default::default()
         }
     }
@@ -183,9 +183,8 @@ mod tests {
     use std::sync::RwLock;
 
     use super::*;
-    use nusamai_citygml::{object::Object, GeometryRef, Value};
+    use nusamai_citygml::{object::Object, GeometryRef};
     use nusamai_geometry::MultiPolygon;
-    use nusamai_plateau::Entity;
     use nusamai_projection::crs::EPSG_JGD2011_GEOGRAPHIC_3D;
     use shapefile::NO_DATA;
 
