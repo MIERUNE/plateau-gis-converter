@@ -189,13 +189,13 @@ mod tests {
 
         {
             app_local.textures.push(Texture {
-                image_url: Url::parse("local1.jpg").unwrap(),
+                image_url: Url::parse("file:///local1.jpg").unwrap(),
             });
             app_local.textures.push(Texture {
-                image_url: Url::parse("local2.jpg").unwrap(),
+                image_url: Url::parse("file:///local2.jpg").unwrap(),
             });
             app_local.textures.push(Texture {
-                image_url: Url::parse("local3.jpg").unwrap(),
+                image_url: Url::parse("file:///local3.jpg").unwrap(),
             });
             app_local.materials.push(Material::default());
             app_local.materials.push(Material::default());
@@ -216,13 +216,13 @@ mod tests {
 
         {
             app_global.textures.push(Texture {
-                image_url: Url::parse("global1.jpg").unwrap(),
+                image_url: Url::parse("file:///global1.jpg").unwrap(),
             });
             app_global.textures.push(Texture {
-                image_url: Url::parse("global2.jpg").unwrap(),
+                image_url: Url::parse("file:///global2.jpg").unwrap(),
             });
             app_global.textures.push(Texture {
-                image_url: Url::parse("global3.jpg").unwrap(),
+                image_url: Url::parse("file:///global3.jpg").unwrap(),
             });
             app_global.materials.push(Material::default());
             app_global.materials.push(Material::default());
