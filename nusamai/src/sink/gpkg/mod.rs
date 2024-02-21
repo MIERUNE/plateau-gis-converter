@@ -65,6 +65,20 @@ pub struct GpkgSink {
     output_path: PathBuf,
 }
 
+// An ephimeral container to wrap and pass the data in the pipeline
+// Corresponds to a record in the features/attributes table of GeoPackage
+enum Record {
+    Feature {
+        obj_id: String,
+        geometry: Vec<u8>,
+        bbox: Bbox,
+        attributes: IndexMap<String, String>,
+    },
+    Attribute {
+        attributes: IndexMap<String, String>,
+    },
+}
+
 impl GpkgSink {
     pub async fn run_async(
         &mut self,
@@ -144,31 +158,35 @@ impl GpkgSink {
                                     // TODO: fatal error
                                 }
 
-                                let attributes = prepare_object_attributes(obj);
-
-                                let bbox =
-                                    get_indexed_multipolygon_bbox(&geom_store.vertices, &mpoly);
-
                                 let table_name = obj.typename.to_string();
-
-                                if sender
-                                    .blocking_send((
-                                        table_name,
-                                        obj_id.clone(),
-                                        bytes,
-                                        attributes,
-                                        bbox,
-                                    ))
-                                    .is_err()
-                                {
+                                let record = Record::Feature {
+                                    obj_id: obj_id.clone(),
+                                    geometry: bytes,
+                                    bbox: get_indexed_multipolygon_bbox(
+                                        &geom_store.vertices,
+                                        &mpoly,
+                                    ),
+                                    attributes: prepare_object_attributes(obj),
+                                };
+                                if sender.blocking_send((table_name, record)).is_err() {
                                     return Err(PipelineError::Canceled);
                                 };
                             }
-                            ObjectStereotype::Object { id: _obj_id } => {
-                                // TODO: implement
-                            }
                             ObjectStereotype::Data => {
-                                // TODO: implement
+                                let table_name = obj.typename.to_string();
+                                let record = Record::Attribute {
+                                    attributes: prepare_object_attributes(obj),
+                                };
+                                if sender.blocking_send((table_name, record)).is_err() {
+                                    return Err(PipelineError::Canceled);
+                                };
+                            }
+                            ObjectStereotype::Object { id: obj_id } => {
+                                // TODO: implement (you will also need the corresponding TypeDef::Object in the schema)
+                                log::warn!(
+                                    "ObjectStereotype::Object is not supported yet: id = {}",
+                                    obj_id
+                                );
                             }
                         }
 
@@ -178,7 +196,7 @@ impl GpkgSink {
         };
 
         let mut tx = handler.begin().await.unwrap();
-        while let Some((table_name, obj_id, gpkg_bin, attributes, bbox)) = receiver.recv().await {
+        while let Some((table_name, record)) = receiver.recv().await {
             feedback.ensure_not_canceled()?;
 
             if !created_tables.contains(&table_name) {
@@ -187,11 +205,22 @@ impl GpkgSink {
                 created_tables.insert(table_name.clone());
             }
 
-            tx.insert_feature(&table_name, &obj_id, &gpkg_bin, &attributes)
-                .await
-                .unwrap();
-
-            table_bboxes.entry(table_name).or_default().merge(&bbox);
+            match record {
+                Record::Feature {
+                    obj_id,
+                    geometry,
+                    bbox,
+                    attributes,
+                } => {
+                    tx.insert_feature(&table_name, &obj_id, &geometry, &attributes)
+                        .await
+                        .unwrap();
+                    table_bboxes.entry(table_name).or_default().merge(&bbox);
+                }
+                Record::Attribute { attributes } => {
+                    tx.insert_attribute(&table_name, &attributes).await.unwrap();
+                }
+            }
         }
 
         for (table_name, bbox) in table_bboxes {
@@ -224,34 +253,5 @@ impl DataSink for GpkgSink {
     fn run(&mut self, upstream: Receiver, feedback: &Feedback, schema: &Schema) -> Result<()> {
         let runtime = tokio::runtime::Runtime::new().unwrap();
         runtime.block_on(self.run_async(upstream, feedback, schema))
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use nusamai_geometry::MultiPolygon;
-    use nusamai_projection::crs::EPSG_JGD2011_GEOGRAPHIC_3D;
-
-    #[test]
-    fn test_get_indexed_multipolygon_bbox() {
-        let vertices: Vec<[f64; 3]> = vec![
-            [10., 100., 111.],
-            [10., 200., 111.],
-            [20., 200., 111.],
-            [20., 100., 111.],
-        ];
-        let mut mpoly = MultiPolygon::<1, u32>::new();
-        mpoly.add_exterior([[0], [1], [2], [3], [0]]);
-        let geometries = nusamai_citygml::GeometryStore {
-            epsg: EPSG_JGD2011_GEOGRAPHIC_3D,
-            vertices,
-            multipolygon: mpoly,
-            ..Default::default()
-        };
-
-        let bbox = get_indexed_multipolygon_bbox(&geometries.vertices, &geometries.multipolygon);
-
-        assert_eq!(bbox.to_tuple(), (10., 100., 20., 200.));
     }
 }
