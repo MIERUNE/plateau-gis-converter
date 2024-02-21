@@ -150,7 +150,7 @@ mod tests {
         assert_eq!(obj.to_attribute_json(), json!(true));
 
         let obj = Value::Uri(Uri::new(url::Url::parse("http://example.com").unwrap()));
-        assert_eq!(obj.to_attribute_json(), json!("http://example.com"));
+        assert_eq!(obj.to_attribute_json(), json!("http://example.com/"));
 
         let obj = Value::Date(Date::from_ymd_opt(2020, 1, 1).unwrap());
         assert_eq!(obj.to_attribute_json(), json!("2020-01-01"));
