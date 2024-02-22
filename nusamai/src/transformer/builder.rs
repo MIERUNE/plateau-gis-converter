@@ -9,6 +9,7 @@ use crate::transformer;
 pub struct Requirements {
     /// Whether to shorten field names to 10 characters or less for Shapefiles.
     pub shorten_names_for_shapefile: bool,
+    pub rename_rules: Option<transformer::mapping_rules::RenameRules>,
     pub tree_flattening: TreeFlatteningSpec,
     pub resolve_appearance: bool,
     pub mergedown: MergedownSpec,
@@ -19,6 +20,7 @@ impl Default for Requirements {
     fn default() -> Self {
         Self {
             shorten_names_for_shapefile: false,
+            rename_rules: None,
             tree_flattening: TreeFlatteningSpec::None,
             resolve_appearance: false,
             mergedown: MergedownSpec::RemoveDescendantFeatures,
@@ -29,6 +31,7 @@ impl Default for Requirements {
 
 pub struct Request {
     pub shorten_names_for_shapefile: bool,
+    pub rename_rules: Option<transformer::mapping_rules::RenameRules>,
     pub tree_flattening: TreeFlatteningSpec,
     pub apply_appearance: bool,
     pub mergedown: MergedownSpec,
@@ -39,6 +42,7 @@ impl From<Requirements> for Request {
     fn from(req: Requirements) -> Self {
         Self {
             shorten_names_for_shapefile: req.shorten_names_for_shapefile,
+            rename_rules: req.rename_rules,
             tree_flattening: req.tree_flattening,
             apply_appearance: req.resolve_appearance,
             mergedown: req.mergedown,
@@ -106,6 +110,10 @@ impl TransformBuilder for NusamaiTransformBuilder {
             let mut renamer = Box::<EditFieldNamesTransform>::default();
             if self.request.shorten_names_for_shapefile {
                 renamer.load_default_map_for_shape();
+            }
+            // Called after the load_default_map_for_shape() - therefore the user's rules will override them
+            if let Some(rename_rules) = &self.request.rename_rules {
+                renamer.extend_rename_map(rename_rules.clone());
             }
             renamer
         });
