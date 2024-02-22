@@ -241,7 +241,7 @@ mod tests {
             .arg("--output")
             .arg("dummy")
             .arg("--rules")
-            .arg("rules.json")
+            .arg("./tests/rules.json")
             .arg("--schema")
             .arg("schema.json")
             .assert();
