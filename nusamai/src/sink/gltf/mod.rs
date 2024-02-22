@@ -10,7 +10,6 @@ use std::path::PathBuf;
 use earcut_rs::{utils3d::project3d_to_2d, Earcut};
 use indexmap::{IndexMap, IndexSet};
 
-use nusamai_3dtiles_json::tileset::Content;
 use nusamai_citygml::{object::ObjectStereotype, schema::Schema, GeometryType, Value};
 use nusamai_projection::cartesian::geographic_to_geocentric;
 use rayon::iter::{ParallelBridge, ParallelIterator};
@@ -24,7 +23,7 @@ use attributes::FeatureAttributes;
 use gltf_writer::{append_gltf_extensions, write_3dtiles, write_gltf};
 use positions::Vertex;
 
-use self::gltf_writer::{build_base_gltf, build_base_gltfs};
+use self::gltf_writer::build_base_gltf;
 
 pub struct BoundingVolume {
     pub min_lng: f64,

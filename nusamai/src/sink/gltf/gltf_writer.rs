@@ -185,170 +185,6 @@ pub fn build_base_gltf(class_name: &str, buffer: &Buffers, translation: [f64; 3]
     }
 }
 
-pub fn build_base_gltfs(
-    buffers: &IndexMap<String, Buffers>,
-    translation: [f64; 3],
-) -> (Vec<u8>, Gltf) {
-    // make base gltf structure
-    let mut gltf = Gltf {
-        extensions_used: vec![
-            "EXT_mesh_features".to_string(),
-            "EXT_structural_metadata".to_string(),
-        ],
-        scenes: vec![Scene {
-            nodes: Some(vec![0]),
-            ..Default::default()
-        }],
-        nodes: vec![Node {
-            mesh: Some(0),
-            translation,
-            ..Default::default()
-        }],
-        meshes: vec![Mesh {
-            primitives: vec![MeshPrimitive {
-                attributes: vec![("POSITION".to_string(), 0)].into_iter().collect(),
-                indices: Some(1),
-                mode: PrimitiveMode::Triangles,
-                ..Default::default()
-            }],
-            ..Default::default()
-        }],
-        ..Default::default()
-    };
-
-    let mut bin_content: Vec<u8> = Vec::new();
-    let mut mesh_primitives = Vec::new();
-
-    for (feature_ids_length, (_, buffer)) in buffers.iter().enumerate() {
-        let vertices = buffer.vertices.clone();
-        let indices = buffer.indices.clone();
-
-        // write vertices
-        let vertices_offset = bin_content.len();
-        let mut buf = [0; 12];
-        let mut vertices_count = 0;
-        for vertex in vertices.clone() {
-            LittleEndian::write_u32_into(&vertex.position, &mut buf);
-            bin_content.write_all(&buf).unwrap();
-            vertices_count += 1;
-        }
-        let vertices_len: usize = bin_content.len() - vertices_offset;
-
-        // write indices
-        let indices_offset = bin_content.len();
-        let mut indices_count = 0;
-        for idx in indices.clone() {
-            bin_content.write_all(&idx.to_le_bytes()).unwrap();
-            indices_count += 1;
-        }
-        let indices_len = bin_content.len() - indices_offset;
-
-        let mut min = [f64::MAX; 3];
-        let mut max = [f64::MIN; 3];
-        for vertex in vertices.iter() {
-            for v in 0..3 {
-                let value = f32::from_bits(vertex.position[v]) as f64;
-                if value < min[v] {
-                    min[v] = value;
-                }
-                if value > max[v] {
-                    max[v] = value;
-                }
-            }
-        }
-
-        let buffer_views = vec![
-            BufferView {
-                byte_offset: vertices_offset as u32,
-                byte_length: vertices_len as u32,
-                target: Some(BufferViewTarget::ArrayBuffer),
-                ..Default::default()
-            },
-            BufferView {
-                byte_offset: indices_offset as u32,
-                byte_length: indices_len as u32,
-                target: Some(BufferViewTarget::ElementArrayBuffer),
-                ..Default::default()
-            },
-        ];
-        gltf.buffer_views.extend(buffer_views);
-
-        let accessors = vec![
-            Accessor {
-                buffer_view: Some(gltf.buffer_views.len() as u32 - 2),
-                component_type: ComponentType::Float,
-                count: vertices_count,
-                min: Some(min.to_vec()),
-                max: Some(max.to_vec()),
-                type_: AccessorType::Vec3,
-                ..Default::default()
-            },
-            Accessor {
-                buffer_view: Some(gltf.buffer_views.len() as u32 - 1),
-                component_type: ComponentType::UnsignedInt,
-                count: indices_count,
-                type_: AccessorType::Scalar,
-                ..Default::default()
-            },
-        ];
-        gltf.accessors.extend(accessors);
-
-        let buffer_view_length = gltf.buffer_views.len() as u32;
-
-        // write feature_ids
-        let feature_ids_offset = bin_content.len();
-        let mut feature_ids_count = 0;
-        for vertex in buffer.vertices.clone() {
-            bin_content
-                .write_all(&vertex.feature_id.to_le_bytes())
-                .unwrap();
-            feature_ids_count += 1;
-        }
-        let feature_ids_len = bin_content.len() - feature_ids_offset;
-
-        let buffer_view = BufferView {
-            byte_offset: feature_ids_offset as u32,
-            byte_length: feature_ids_len as u32,
-            byte_stride: Some(4),
-            target: Some(BufferViewTarget::ArrayBuffer),
-            ..Default::default()
-        };
-        gltf.buffer_views.push(buffer_view);
-
-        let feature_id_min = buffer.vertices.iter().map(|v| v.feature_id).min().unwrap();
-        let feature_id_max = buffer.vertices.iter().map(|v| v.feature_id).max().unwrap();
-        let accessor = Accessor {
-            buffer_view: Some(buffer_view_length),
-            component_type: ComponentType::UnsignedInt,
-            count: feature_ids_count,
-            type_: AccessorType::Scalar,
-            min: Some(vec![feature_id_min as f64]),
-            max: Some(vec![feature_id_max as f64]),
-            ..Default::default()
-        };
-        gltf.accessors.push(accessor);
-
-        let primitives = vec![MeshPrimitive {
-            attributes: vec![
-                ("POSITION".to_string(), buffer_view_length - 2),
-                (
-                    format!("_FEATURE_ID_{}", feature_ids_length),
-                    buffer_view_length,
-                ),
-            ]
-            .into_iter()
-            .collect(),
-            indices: Some(buffer_view_length - 1),
-            mode: PrimitiveMode::Triangles,
-            ..Default::default()
-        }];
-        mesh_primitives.extend(primitives);
-    }
-    gltf.meshes[0].primitives = mesh_primitives;
-
-    (bin_content, gltf)
-}
-
 // value to bytes
 trait ToBytes {
     fn write_to_bytes(&self, buffer: &mut Vec<u8>);
@@ -437,10 +273,10 @@ pub fn append_gltf_extensions(
     entities_list: &IndexMap<String, Vec<TriangulatedEntity>>,
 ) {
     let class_name = &content.class_name;
-    let mut gltf = &mut content.gltf;
-    let mut bin_content = &mut content.bin_content;
+    let gltf = &mut content.gltf;
+    let bin_content = &mut content.bin_content;
 
-    let mut buffer_view_length = gltf.buffer_views.len() as u32;
+    let buffer_view_length = gltf.buffer_views.len() as u32;
     let mut classes = HashMap::new();
     let mut property_tables = Vec::new();
 
@@ -460,7 +296,7 @@ pub fn append_gltf_extensions(
     classes.extend(class.clone());
 
     // property_tableを作成
-    let (property_table, count) =
+    let property_table =
         to_gltf_property_table(class_name, type_def, buffer_view_length, feature_count);
     let property_tables_length = property_tables.len() as u32;
 
@@ -595,8 +431,6 @@ pub fn append_gltf_extensions(
         property_table: Some(property_tables_length),
         ..Default::default()
     };
-
-    buffer_view_length = count;
 
     let mesh_primitive_extensions = Some(extensions::mesh::MeshPrimitive {
         ext_mesh_features: Some(extensions::mesh::ext_mesh_features::ExtMeshFeatures {
