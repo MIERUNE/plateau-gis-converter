@@ -1,7 +1,8 @@
 use nusamai_citygml::{
     citygml_feature, values, CityGmlElement, CityGmlReader, Date, Measure, ParseContext,
-    ParseError, Value, URI,
+    ParseError, Uri, Value,
 };
+use url::Url;
 
 #[test]
 fn parse_date() {
@@ -79,7 +80,7 @@ fn parse_basic_types() {
         #[citygml(path = b"measure")]
         measure: Option<Measure>,
         #[citygml(path = b"uri")]
-        uri: Option<URI>,
+        uri: Option<Uri>,
         #[citygml(path = b"date")]
         date: Option<Date>,
     }
@@ -109,7 +110,7 @@ fn parse_basic_types() {
             assert!((root.measure.as_ref().unwrap().value() - 3.4).abs() < 1e-15);
             assert_eq!(root.string.as_ref().unwrap(), "hello");
             assert_eq!(
-                root.uri.as_ref().unwrap().value(),
+                root.uri.as_ref().unwrap().value().to_string(),
                 "https://example.com/foo?bar=2000"
             );
             assert!(root.bool.unwrap());
@@ -244,7 +245,9 @@ fn generics() {
         );
         assert_eq!(
             data.attributes["u1"],
-            Value::URI(values::URI::new("https://foo.com/hoge"))
+            Value::Uri(values::Uri::new(
+                Url::parse("https://foo.com/hoge").unwrap()
+            ))
         );
 
         let Value::Object(set1) = &data.attributes["set1"] else {

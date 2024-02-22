@@ -1,6 +1,6 @@
 use crate::models::core::Address;
 use nusamai_citygml::{
-    citygml_data, citygml_property, CityGmlElement, Code, Date, DoubleList, Measure, Point, URI,
+    citygml_data, citygml_property, CityGmlElement, Code, Date, DoubleList, Measure, Point, Uri,
 };
 
 // TODO?
@@ -248,7 +248,7 @@ pub struct IfcBuildingStorey {
 #[citygml_data(name = "uro:IfcClassificationReference")]
 pub struct IfcClassificationReference {
     #[citygml(path = b"uro:location")]
-    pub location: Option<URI>,
+    pub location: Option<Uri>,
 
     #[citygml(path = b"uro:itemReference")]
     pub item_reference: Option<Code>,

@@ -10,6 +10,8 @@ use crate::appearance::AppearanceStore;
 pub struct Entity {
     /// Attribute tree
     pub root: Value,
+    /// Base url of the entity
+    pub base_url: url::Url,
     /// All geometries referenced by the attribute tree
     pub geometry_store: Arc<RwLock<GeometryStore>>,
     /// All appearances used in this city object
