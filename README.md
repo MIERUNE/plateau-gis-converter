@@ -46,8 +46,8 @@ PLATEAU-GIS-Converterは利用者アンケートを実施しています。
 
 ※todo: リンク先を更新
 
-- ソフトウェアの最新版は[Releaseページ]()からダウンロードしてください。
-- 詳しい利用方法については、こちらの[マニュアル]() をご覧ください。
+- ソフトウェアの最新版は[Releaseページ](https://github.com/MIERUNE/PLATEAU-GIS-Converter/releases)からダウンロードしてください。
+- 詳しい利用方法については、こちらの[マニュアル](https://MIERUNE.github.io/PLATEAU-GIS-Converter/index.html) をご覧ください。
 
 ## ライセンス
 
@@ -107,7 +107,7 @@ cargo run -- ~/path/to/PLATEAU/15100_niigata-shi_2022_citygml_1_op/udx/bldg/*.gm
 # Release (最適化コンパイル、実用速度)
 cargo run --release -- ~/path/to/PLATEAU/15100_niigata-shi_2022_citygml_1_op/udx/bldg/*.gml --sink geojson --output foobar.geojson
 # Release (LTO有効のプロダクションビルド、最高速)
-cargo run --profile release-lto -- ~/path/to/Desktop/PLATEAU/15100_niigata-shi_2022_citygml_1_op/udx/bldg/*.gml --sink geojson --output foobar.geojson
+cargo run --profile release-lto -- ~/path/to/PLATEAU/15100_niigata-shi_2022_citygml_1_op/udx/bldg/*.gml --sink geojson --output foobar.geojson
 ```
 
 #### GUI
