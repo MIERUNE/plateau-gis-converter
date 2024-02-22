@@ -9,7 +9,8 @@ use crate::transformer;
 pub struct Requirements {
     /// Whether to shorten field names to 10 characters or less for Shapefiles.
     pub shorten_names_for_shapefile: bool,
-    pub rename_rules: Option<transformer::mapping_rules::RenameRules>,
+    /// Rules to rename the attribute names
+    pub rename_rules: Option<transformer::RenameRules>,
     pub tree_flattening: TreeFlatteningSpec,
     pub resolve_appearance: bool,
     pub mergedown: MergedownSpec,
@@ -31,7 +32,7 @@ impl Default for Requirements {
 
 pub struct Request {
     pub shorten_names_for_shapefile: bool,
-    pub rename_rules: Option<transformer::mapping_rules::RenameRules>,
+    pub rename_rules: Option<transformer::RenameRules>,
     pub tree_flattening: TreeFlatteningSpec,
     pub apply_appearance: bool,
     pub mergedown: MergedownSpec,

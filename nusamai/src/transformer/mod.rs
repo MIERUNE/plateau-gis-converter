@@ -6,7 +6,7 @@ mod runner;
 pub mod transform;
 
 pub use builder::*;
-pub use mapping_rules::MappingRules;
+pub use mapping_rules::*;
 pub use runner::*;
 pub use transform::{DataFlatteningOption, FeatureFlatteningOption, ObjectFlatteningOption};
 
