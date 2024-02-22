@@ -9,8 +9,8 @@ use crate::transformer;
 pub struct Requirements {
     /// Whether to shorten field names to 10 characters or less for Shapefiles.
     pub shorten_names_for_shapefile: bool,
-    /// Rules to rename the attribute names
-    pub rename_rules: Option<transformer::RenameRules>,
+    /// Mapping rules defined by the user
+    pub mapping_rules: Option<transformer::MappingRules>,
     pub tree_flattening: TreeFlatteningSpec,
     pub resolve_appearance: bool,
     pub mergedown: MergedownSpec,
@@ -21,7 +21,7 @@ impl Default for Requirements {
     fn default() -> Self {
         Self {
             shorten_names_for_shapefile: false,
-            rename_rules: None,
+            mapping_rules: None,
             tree_flattening: TreeFlatteningSpec::None,
             resolve_appearance: false,
             mergedown: MergedownSpec::RemoveDescendantFeatures,
@@ -32,7 +32,7 @@ impl Default for Requirements {
 
 pub struct Request {
     pub shorten_names_for_shapefile: bool,
-    pub rename_rules: Option<transformer::RenameRules>,
+    pub mapping_rules: Option<transformer::MappingRules>,
     pub tree_flattening: TreeFlatteningSpec,
     pub apply_appearance: bool,
     pub mergedown: MergedownSpec,
@@ -43,7 +43,7 @@ impl From<Requirements> for Request {
     fn from(req: Requirements) -> Self {
         Self {
             shorten_names_for_shapefile: req.shorten_names_for_shapefile,
-            rename_rules: req.rename_rules,
+            mapping_rules: req.mapping_rules,
             tree_flattening: req.tree_flattening,
             apply_appearance: req.resolve_appearance,
             mergedown: req.mergedown,
@@ -114,8 +114,8 @@ impl TransformBuilder for NusamaiTransformBuilder {
             }
             // Rename rules by the user are set after `load_default_map_for_shape()`,
             // therefore it will override the default shapefile renames if there are conflicts
-            if let Some(rename_rules) = &self.request.rename_rules {
-                renamer.extend_rename_map(rename_rules.clone());
+            if let Some(mapping_rules) = &self.request.mapping_rules {
+                renamer.extend_rename_map(mapping_rules.rename.clone());
             }
             renamer
         });

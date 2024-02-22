@@ -139,7 +139,7 @@ fn main() {
             mapping_rules
         };
         Requirements {
-            rename_rules: Some(mapping_rules.rename),
+            mapping_rules: Some(mapping_rules),
             ..sink.make_transform_requirements()
         }
     } else {
