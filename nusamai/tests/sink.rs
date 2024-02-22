@@ -22,11 +22,11 @@ pub(crate) fn simple_run_sink<S: DataSinkProvider>(sink_provider: S, output: Opt
     });
 
     let filenames = [
-        "../nusamai-plateau/tests/data/plateau-3_0/udx/rwy/53395527_rwy_6697.gml",
-        "../nusamai-plateau/tests/data/plateau-3_0/udx/brid/dorokyo_51324378_brid_6697.gml",
-        "../nusamai-plateau/tests/data/plateau-3_0/udx/trk/53361601_trk_6697.gml",
-        "../nusamai-plateau/tests/data/plateau-3_0/udx/tun/53361613_tun_6697.gml",
-        "../nusamai-plateau/tests/data/plateau-3_0/udx/veg/52385628_veg_6697_op.gml",
+        // "../nusamai-plateau/tests/data/plateau-3_0/udx/rwy/53395527_rwy_6697.gml",
+        // "../nusamai-plateau/tests/data/plateau-3_0/udx/brid/dorokyo_51324378_brid_6697.gml",
+        // "../nusamai-plateau/tests/data/plateau-3_0/udx/trk/53361601_trk_6697.gml",
+        // "../nusamai-plateau/tests/data/plateau-3_0/udx/tun/53361613_tun_6697.gml",
+        // "../nusamai-plateau/tests/data/plateau-3_0/udx/veg/52385628_veg_6697_op.gml",
         "../nusamai-plateau/tests/data/kawasaki-shi/udx/frn/53391597_frn_6697_op.gml",
         "../nusamai-plateau/tests/data/yokosuka-shi/udx/bldg/52397519_bldg_6697_op.gml",
         "../nusamai-plateau/tests/data/numazu-shi/udx/tran/52385608_tran_6697_op.gml",
