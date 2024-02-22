@@ -509,7 +509,7 @@ pub fn write_gltf<W: Write>(gltf: Gltf, mut bin_content: Vec<u8>, mut writer: W)
 // This is the code to verify the operation with Cesium
 pub fn write_3dtiles(bounding_volume: [f64; 6], output_path: &Path, filenames: &[String]) {
     // write 3DTiles
-    let tileset_path = output_path.with_file_name("tileset.json");
+    let tileset_path = output_path.join("tileset.json");
 
     let contents: Vec<nusamai_3dtiles_json::tileset::Content> = filenames
         .iter()

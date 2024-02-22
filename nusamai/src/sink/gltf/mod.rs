@@ -377,12 +377,16 @@ impl DataSink for GltfSink {
                     buffers.insert(class_name.clone(), Buffers { vertices, indices });
                 }
 
+                // make folders
+                std::fs::create_dir_all(&self.output_path).unwrap();
+
                 // write glTFs
                 let mut filenames = Vec::new();
                 for (class_name, buffer) in &buffers {
                     let mut file_path = self.output_path.clone();
                     let c_name = class_name.split(':').last().unwrap();
-                    file_path.set_file_name(&format!("{}.glb", c_name));
+                    // 作成されたフォルダにファイルを保存
+                    file_path.push(&format!("{}.glb", c_name));
                     filenames.push(format!("{}.glb", c_name));
 
                     let mut file = File::create(&file_path).unwrap();
