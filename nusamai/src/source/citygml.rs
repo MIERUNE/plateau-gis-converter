@@ -26,6 +26,7 @@ impl DataSourceProvider for CityGmlSourceProvider {
     fn create(&self, _params: &Parameters) -> Box<dyn DataSource> {
         Box::new(CityGmlSource {
             filenames: self.filenames.clone(),
+            parse_appearances: false,
         })
     }
 
@@ -42,9 +43,14 @@ impl DataSourceProvider for CityGmlSourceProvider {
 
 pub struct CityGmlSource {
     filenames: Vec<PathBuf>,
+    parse_appearances: bool,
 }
 
 impl DataSource for CityGmlSource {
+    fn set_appearance_resolution(&mut self, value: bool) {
+        self.parse_appearances = value;
+    }
+
     fn run(&mut self, downstream: Sender, feedback: &Feedback) -> pipeline::Result<()> {
         let code_resolver = nusamai_plateau::codelist::Resolver::new();
 
@@ -61,7 +67,7 @@ impl DataSource for CityGmlSource {
             let mut citygml_reader = CityGmlReader::new(context);
 
             let mut st = citygml_reader.start_root(&mut xml_reader)?;
-            match toplevel_dispatcher(&mut st, &downstream, feedback) {
+            match toplevel_dispatcher(&mut st, &downstream, feedback, self.parse_appearances) {
                 Ok(_) => Ok::<(), PipelineError>(()),
                 Err(ParseError::Canceled) => Err(PipelineError::Canceled),
                 Err(e) => Err(e.into()),
@@ -77,8 +83,8 @@ fn toplevel_dispatcher<R: BufRead>(
     st: &mut SubTreeReader<R>,
     downstream: &Sender,
     feedback: &Feedback,
+    parse_appearances: bool,
 ) -> Result<(), ParseError> {
-    let parse_appearances = true;
     let mut entities = Vec::new();
     let mut global_appearances = AppearanceStore::default();
 
@@ -138,30 +144,70 @@ fn toplevel_dispatcher<R: BufRead>(
         }
     })?;
 
-    // for texture in &mut global_appearances.textures {
-    //     texture.image_url = base_url.join(texture.image_url.as_str()).unwrap();
-    // }
+    if parse_appearances {
+        for entity in entities {
+            if feedback.is_canceled() {
+                break;
+            }
 
-    for entity in entities {
-        if feedback.is_canceled() {
-            break;
-        }
+            // merge global appearances into the entity's local appearance store
+            {
+                let geom_store = entity.geometry_store.read().unwrap();
+                entity.appearance_store.write().unwrap().merge_global(
+                    &mut global_appearances,
+                    &geom_store.ring_ids,
+                    &geom_store.surface_spans,
+                );
+            }
 
-        // merge global appearances into the entity's local appearance store
-        {
-            let geom_store = entity.geometry_store.read().unwrap();
-            entity.appearance_store.write().unwrap().merge_global(
-                &mut global_appearances,
-                &geom_store.ring_ids,
-                &geom_store.surface_spans,
-            );
-        }
-
-        if downstream.send(Parcel { entity }).is_err() {
-            feedback.cancel();
-            break;
+            if downstream.send(Parcel { entity }).is_err() {
+                feedback.cancel();
+                break;
+            }
         }
     }
 
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use self::pipeline::feedback;
+    use std::sync::mpsc::sync_channel;
+
+    use super::*;
+
+    #[test]
+    fn with_and_without_appearance() {
+        for use_appearance in [false, true] {
+            let (sender, receiver) = sync_channel(100);
+            let source_provider = CityGmlSourceProvider {
+                filenames: vec![
+                    PathBuf::from("../nusamai-plateau/tests/data/yokosuka-shi/udx/bldg/52397519_bldg_6697_op.gml"),
+                    PathBuf::from("../nusamai-plateau/tests/data/plateau-3_0/udx/veg/52385628_veg_6697_op.gml"),
+                ],
+            };
+            let mut source = source_provider.create(&Parameters::default());
+            source.set_appearance_resolution(use_appearance);
+            let (_, feedback, _) = feedback::watcher();
+
+            // Start the CityGML source
+            std::thread::scope(|scope| {
+                scope.spawn(move || {
+                    source.run(sender, &feedback).unwrap();
+                });
+
+                let mut found_mat_or_tex = false;
+                for parcel in receiver.iter() {
+                    let appearance = parcel.entity.appearance_store.read().unwrap();
+                    assert!(use_appearance || appearance.themes.is_empty());
+                    assert!(use_appearance || appearance.textures.is_empty());
+                    assert!(use_appearance || appearance.materials.is_empty());
+                    found_mat_or_tex |= !appearance.materials.is_empty();
+                    found_mat_or_tex |= !appearance.textures.is_empty();
+                }
+                assert_eq!(found_mat_or_tex, use_appearance);
+            });
+        }
+    }
 }

@@ -23,4 +23,7 @@ pub trait DataSourceProvider {
 
 pub trait DataSource: Send {
     fn run(&mut self, sink: Sender, feedback: &Feedback) -> Result<()>;
+
+    /// Set whether to resolve appearances
+    fn set_appearance_resolution(&mut self, _value: bool);
 }
