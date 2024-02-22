@@ -1,0 +1,26 @@
+{
+	"version": "0.2.0",
+	"configurations": [
+		{
+			"type": "lldb",
+			"request": "launch",
+			"name": "Debug gpkg Sink",
+			"cargo": {
+				"args": ["build", "--bin=nusamai", "--package=nusamai"],
+				"filter": {
+					"name": "nusamai",
+					"kind": "bin"
+				}
+			},
+			"args": [
+				"/Users/satoru/Downloads/plateau/22203_numazu-shi_2021_citygml_4_op/udx/veg/52385628_veg_6697_op.gml",
+				// "/Users/satoru/Downloads/plateau/22203_numazu-shi_2021_citygml_4_op/udx/bldg/52385654_bldg_6697_op.gml",
+				"--sink",
+				"gltf",
+				"--output",
+				"/Users/satoru/github.com/MIERUNE/nusamai/demo/cesium/examples/ext_structural_metadata/test.glb"
+			],
+			"cwd": "${workspaceFolder}"
+		}
+	]
+}
