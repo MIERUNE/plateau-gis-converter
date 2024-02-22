@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - documentation
   workflow_dispatch:
 
 permissions:
@@ -26,14 +27,14 @@ jobs:
         with:
           name: dotnet_doc
           path: .docs/_site
-          
+
       - uses: actions/upload-pages-artifact@v1
         with:
           path: .docs/_site
 
   deploy:
     needs: build
-    runs-on: ubuntu-latest 
+    runs-on: ubuntu-latest
     timeout-minutes: 5
     environment:
       name: github-pages
