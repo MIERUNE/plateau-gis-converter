@@ -10,6 +10,26 @@ $ python3 schema_to_doc.py
 import json
 from typing import Any, TextIO
 
+ORDER_MAP = {
+    "_": -2,
+    "gml": -1,
+    "core": 0,
+    "bldg": 1,
+    "tran": 2,
+    "luse": 3,
+    "brid": 4,
+    "tun": 5,
+    "cons": 6,
+    "frn": 7,
+    "veg": 8,
+    "wtr": 9,
+    "dem": 10,
+    "grp": 11,
+    "gen": 12,
+    "uro": 13,
+    "urf": 14,
+}
+
 
 def _to_anchor_id(name: str) -> str:
     return name.lower().replace(":", "").replace(" ", "-").replace("/", "-")
@@ -52,7 +72,7 @@ def print_property(ty, f: TextIO):
 def name_sort_key(item: tuple[str, Any]):
     (key, _) = item
     ns, name = key.split(":")
-    return (ns, name)
+    return (ORDER_MAP[ns], name)
 
 
 def generate_docs(schema, f: TextIO):
@@ -66,6 +86,8 @@ def generate_docs(schema, f: TextIO):
     f.write("## Properties \n\n")
 
     for ty_name, ty in sorted(schema["types"].items(), key=name_sort_key):
+        if ty_name.startswith("_:"):
+            continue
         if ty["type"] == "Property":
             f.write(f"### {ty_name}\n\n")
             print_property(ty, f)

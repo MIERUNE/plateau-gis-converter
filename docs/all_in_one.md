@@ -271,6 +271,144 @@
 | ifcOpeningAttribute | JSON (<code><a href="#uroifcattributeproperty">uro:IfcAttributeProperty</a>[]</code>) |
 | indoorOpeningAttribute | JSON (<code><a href="#uroindoorattributeproperty">uro:IndoorAttributeProperty</a>[]</code>) |
 
+### tran:AuxiliaryTrafficArea
+
+| field | type |
+|-------|------|
+| description | String |
+| name | JSON (<code><a href="#code">Code</a>[]</code>) |
+| creationDate | Date |
+| terminationDate | Date |
+| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) |
+| tranDmAttribute | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) |
+| class | Code |
+| function | JSON (<code><a href="#code">Code</a>[]</code>) |
+| usage | JSON (<code><a href="#code">Code</a>[]</code>) |
+| surfaceMaterial | Code |
+
+### tran:Railway
+
+| field | type |
+|-------|------|
+| description | String |
+| name | JSON (<code><a href="#code">Code</a>[]</code>) |
+| creationDate | Date |
+| terminationDate | Date |
+| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) |
+| tranDmAttribute | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) |
+| class | Code |
+| function | JSON (<code><a href="#code">Code</a>[]</code>) |
+| usage | JSON (<code><a href="#code">Code</a>[]</code>) |
+| trafficArea | JSON (<code><a href="#trantrafficarea">tran:TrafficArea</a>[]</code>) |
+| auxiliaryTrafficArea | JSON (<code><a href="#tranauxiliarytrafficarea">tran:AuxiliaryTrafficArea</a>[]</code>) |
+| tranDataQualityAttribute | JSON (<code><a href="#urotransportationdataqualityattribute">uro:TransportationDataQualityAttribute</a></code>) |
+| tranFacilityAttribute | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) |
+| tranFacilityIdAttribute | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) |
+| tranFacilityTypeAttribute | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) |
+| railwayRouteAttribute | JSON (<code><a href="#urorailwayrouteattribute">uro:RailwayRouteAttribute</a></code>) |
+
+### tran:Road
+
+| field | type |
+|-------|------|
+| description | String |
+| name | JSON (<code><a href="#code">Code</a>[]</code>) |
+| creationDate | Date |
+| terminationDate | Date |
+| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) |
+| tranDmAttribute | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) |
+| class | Code |
+| function | JSON (<code><a href="#code">Code</a>[]</code>) |
+| usage | JSON (<code><a href="#code">Code</a>[]</code>) |
+| trafficArea | JSON (<code><a href="#trantrafficarea">tran:TrafficArea</a>[]</code>) |
+| auxiliaryTrafficArea | JSON (<code><a href="#tranauxiliarytrafficarea">tran:AuxiliaryTrafficArea</a>[]</code>) |
+| tranDataQualityAttribute | JSON (<code><a href="#urotransportationdataqualityattribute">uro:TransportationDataQualityAttribute</a></code>) |
+| tranFacilityAttribute | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) |
+| tranFacilityIdAttribute | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) |
+| tranFacilityTypeAttribute | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) |
+| roadStatus | JSON (<code><a href="#uroroadtype">uro:RoadType</a>[]</code>) |
+| roadStructureAttribute | JSON (<code><a href="#uroroadstructureattribute">uro:RoadStructureAttribute</a>[]</code>) |
+| trafficVolumeAttribute | JSON (<code><a href="#urotrafficvolumeattribute">uro:TrafficVolumeAttribute</a></code>) |
+
+### tran:Square
+
+| field | type |
+|-------|------|
+| description | String |
+| name | JSON (<code><a href="#code">Code</a>[]</code>) |
+| creationDate | Date |
+| terminationDate | Date |
+| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) |
+| tranDmAttribute | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) |
+| class | Code |
+| function | JSON (<code><a href="#code">Code</a>[]</code>) |
+| usage | JSON (<code><a href="#code">Code</a>[]</code>) |
+| trafficArea | JSON (<code><a href="#trantrafficarea">tran:TrafficArea</a>[]</code>) |
+| auxiliaryTrafficArea | JSON (<code><a href="#tranauxiliarytrafficarea">tran:AuxiliaryTrafficArea</a>[]</code>) |
+| tranDataQualityAttribute | JSON (<code><a href="#urotransportationdataqualityattribute">uro:TransportationDataQualityAttribute</a></code>) |
+| tranFacilityAttribute | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) |
+| tranFacilityIdAttribute | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) |
+| tranFacilityTypeAttribute | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) |
+| squareUrbanPlanAttribute | JSON (<code><a href="#urosquareurbanplanattributeproperty">uro:SquareUrbanPlanAttributeProperty</a></code>) |
+
+### tran:Track
+
+| field | type |
+|-------|------|
+| description | String |
+| name | JSON (<code><a href="#code">Code</a>[]</code>) |
+| creationDate | Date |
+| terminationDate | Date |
+| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) |
+| tranDmAttribute | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) |
+| class | Code |
+| function | JSON (<code><a href="#code">Code</a>[]</code>) |
+| usage | JSON (<code><a href="#code">Code</a>[]</code>) |
+| trafficArea | JSON (<code><a href="#trantrafficarea">tran:TrafficArea</a>[]</code>) |
+| auxiliaryTrafficArea | JSON (<code><a href="#tranauxiliarytrafficarea">tran:AuxiliaryTrafficArea</a>[]</code>) |
+| tranDataQualityAttribute | JSON (<code><a href="#urotransportationdataqualityattribute">uro:TransportationDataQualityAttribute</a></code>) |
+| tranFacilityAttribute | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) |
+| tranFacilityIdAttribute | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) |
+| tranFacilityTypeAttribute | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) |
+| trackAttribute | JSON (<code><a href="#urotrackattribute">uro:TrackAttribute</a></code>) |
+
+### tran:TrafficArea
+
+| field | type |
+|-------|------|
+| description | String |
+| name | JSON (<code><a href="#code">Code</a>[]</code>) |
+| creationDate | Date |
+| terminationDate | Date |
+| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) |
+| tranDmAttribute | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) |
+| class | Code |
+| function | JSON (<code><a href="#code">Code</a>[]</code>) |
+| usage | JSON (<code><a href="#code">Code</a>[]</code>) |
+| surfaceMaterial | Code |
+| railwayTrackAttribute | JSON (<code><a href="#urorailwaytrackattribute">uro:RailwayTrackAttribute</a>[]</code>) |
+| trafficAreaStructureAttribute | JSON (<code><a href="#urotrafficareastructureattribute">uro:TrafficAreaStructureAttribute</a></code>) |
+
+### luse:LandUse
+
+| field | type |
+|-------|------|
+| description | String |
+| name | JSON (<code><a href="#code">Code</a>[]</code>) |
+| creationDate | Date |
+| terminationDate | Date |
+| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) |
+| class | Code |
+| function | JSON (<code><a href="#code">Code</a>[]</code>) |
+| usage | JSON (<code><a href="#code">Code</a>[]</code>) |
+| ifcLandUseAttribute | JSON (<code><a href="#uroifcattributeproperty">uro:IfcAttributeProperty</a>[]</code>) |
+| landUseDetailAttribute | JSON (<code><a href="#urolandusedetailattribute">uro:LandUseDetailAttribute</a></code>) |
+| luseDataQualityAttribute | JSON (<code><a href="#urolandusedataqualityattribute">uro:LandUseDataQualityAttribute</a></code>) |
+| luseDmAttribute | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) |
+| luseFacilityAttribute | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) |
+| luseFacilityIdAttribute | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) |
+| luseFacilityTypeAttribute | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) |
+
 ### brid:Bridge
 
 | field | type |
@@ -514,267 +652,6 @@
 | terminationDate | Date |
 | genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) |
 
-### dem:BreaklineRelief
-
-| field | type |
-|-------|------|
-| description | String |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) |
-| creationDate | Date |
-| terminationDate | Date |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) |
-| lod | NonNegativeInteger |
-| demDmAttribute | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) |
-
-### dem:MassPointRelief
-
-| field | type |
-|-------|------|
-| description | String |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) |
-| creationDate | Date |
-| terminationDate | Date |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) |
-| lod | NonNegativeInteger |
-| demDmAttribute | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) |
-
-### dem:RasterRelief
-
-| field | type |
-|-------|------|
-| description | String |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) |
-| creationDate | Date |
-| terminationDate | Date |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) |
-| lod | NonNegativeInteger |
-| demDmAttribute | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) |
-| grid | JSON (<code><a href="#gmlrectifiedgridcoverage">gml:RectifiedGridCoverage</a></code>) |
-
-### dem:ReliefFeature
-
-| field | type |
-|-------|------|
-| description | String |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) |
-| creationDate | Date |
-| terminationDate | Date |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) |
-| lod | NonNegativeInteger |
-| reliefComponent | JSON (<code><a href="#dem_reliefcomponentproperty">dem:_ReliefComponentProperty</a>[]</code>) |
-
-### dem:TINRelief
-
-| field | type |
-|-------|------|
-| description | String |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) |
-| creationDate | Date |
-| terminationDate | Date |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) |
-| lod | NonNegativeInteger |
-| demDmAttribute | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) |
-
-### frn:CityFurniture
-
-| field | type |
-|-------|------|
-| description | String |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) |
-| creationDate | Date |
-| terminationDate | Date |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) |
-| class | Code |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) |
-| cityFurnitureDataQualityAttribute | JSON (<code><a href="#urocityfurnituredataqualityattribute">uro:CityFurnitureDataQualityAttribute</a></code>) |
-| cityFurnitureDetailAttribute | JSON (<code><a href="#urocityfurnituredetailattribute">uro:CityFurnitureDetailAttribute</a>[]</code>) |
-| frnDmAttribute | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) |
-| frnFacilityAttribute | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) |
-| frnFacilityIdAttribute | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) |
-| frnFacilityTypeAttribute | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) |
-
-### gen:GenericCityObject
-
-| field | type |
-|-------|------|
-| description | String |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) |
-| creationDate | Date |
-| terminationDate | Date |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) |
-| class | Code |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) |
-
-### grp:CityObjectGroup
-
-| field | type |
-|-------|------|
-| description | String |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) |
-| creationDate | Date |
-| terminationDate | Date |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) |
-| class | Code |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) |
-| groupMember | JSON (<code><a href="#grp_cityobjectorref">grp:_CityObjectOrRef</a>[]</code>) |
-| parent | JSON (<code><a href="#grp_cityobjectorref">grp:_CityObjectOrRef</a></code>) |
-| fiscalYearOfPublication | JSON (<code><a href="#string">String</a>[]</code>) |
-| ifcBuildingStoreyAttribute | JSON (<code><a href="#uroifcattributeproperty">uro:IfcAttributeProperty</a>[]</code>) |
-| indoorStoreyAttribute | JSON (<code><a href="#uroindoorattributeproperty">uro:IndoorAttributeProperty</a>[]</code>) |
-| language | JSON (<code><a href="#code">Code</a>[]</code>) |
-
-### grp:_CityObjectOrRef
-
-| field | type |
-|-------|------|
-| description | String |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) |
-| creationDate | Date |
-| terminationDate | Date |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) |
-| href | String |
-
-### luse:LandUse
-
-| field | type |
-|-------|------|
-| description | String |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) |
-| creationDate | Date |
-| terminationDate | Date |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) |
-| class | Code |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) |
-| ifcLandUseAttribute | JSON (<code><a href="#uroifcattributeproperty">uro:IfcAttributeProperty</a>[]</code>) |
-| landUseDetailAttribute | JSON (<code><a href="#urolandusedetailattribute">uro:LandUseDetailAttribute</a></code>) |
-| luseDataQualityAttribute | JSON (<code><a href="#urolandusedataqualityattribute">uro:LandUseDataQualityAttribute</a></code>) |
-| luseDmAttribute | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) |
-| luseFacilityAttribute | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) |
-| luseFacilityIdAttribute | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) |
-| luseFacilityTypeAttribute | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) |
-
-### tran:AuxiliaryTrafficArea
-
-| field | type |
-|-------|------|
-| description | String |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) |
-| creationDate | Date |
-| terminationDate | Date |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) |
-| tranDmAttribute | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) |
-| class | Code |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) |
-| surfaceMaterial | Code |
-
-### tran:Railway
-
-| field | type |
-|-------|------|
-| description | String |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) |
-| creationDate | Date |
-| terminationDate | Date |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) |
-| tranDmAttribute | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) |
-| class | Code |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) |
-| trafficArea | JSON (<code><a href="#trantrafficarea">tran:TrafficArea</a>[]</code>) |
-| auxiliaryTrafficArea | JSON (<code><a href="#tranauxiliarytrafficarea">tran:AuxiliaryTrafficArea</a>[]</code>) |
-| tranDataQualityAttribute | JSON (<code><a href="#urotransportationdataqualityattribute">uro:TransportationDataQualityAttribute</a></code>) |
-| tranFacilityAttribute | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) |
-| tranFacilityIdAttribute | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) |
-| tranFacilityTypeAttribute | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) |
-| railwayRouteAttribute | JSON (<code><a href="#urorailwayrouteattribute">uro:RailwayRouteAttribute</a></code>) |
-
-### tran:Road
-
-| field | type |
-|-------|------|
-| description | String |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) |
-| creationDate | Date |
-| terminationDate | Date |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) |
-| tranDmAttribute | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) |
-| class | Code |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) |
-| trafficArea | JSON (<code><a href="#trantrafficarea">tran:TrafficArea</a>[]</code>) |
-| auxiliaryTrafficArea | JSON (<code><a href="#tranauxiliarytrafficarea">tran:AuxiliaryTrafficArea</a>[]</code>) |
-| tranDataQualityAttribute | JSON (<code><a href="#urotransportationdataqualityattribute">uro:TransportationDataQualityAttribute</a></code>) |
-| tranFacilityAttribute | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) |
-| tranFacilityIdAttribute | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) |
-| tranFacilityTypeAttribute | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) |
-| roadStatus | JSON (<code><a href="#uroroadtype">uro:RoadType</a>[]</code>) |
-| roadStructureAttribute | JSON (<code><a href="#uroroadstructureattribute">uro:RoadStructureAttribute</a>[]</code>) |
-| trafficVolumeAttribute | JSON (<code><a href="#urotrafficvolumeattribute">uro:TrafficVolumeAttribute</a></code>) |
-
-### tran:Square
-
-| field | type |
-|-------|------|
-| description | String |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) |
-| creationDate | Date |
-| terminationDate | Date |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) |
-| tranDmAttribute | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) |
-| class | Code |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) |
-| trafficArea | JSON (<code><a href="#trantrafficarea">tran:TrafficArea</a>[]</code>) |
-| auxiliaryTrafficArea | JSON (<code><a href="#tranauxiliarytrafficarea">tran:AuxiliaryTrafficArea</a>[]</code>) |
-| tranDataQualityAttribute | JSON (<code><a href="#urotransportationdataqualityattribute">uro:TransportationDataQualityAttribute</a></code>) |
-| tranFacilityAttribute | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) |
-| tranFacilityIdAttribute | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) |
-| tranFacilityTypeAttribute | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) |
-| squareUrbanPlanAttribute | JSON (<code><a href="#urosquareurbanplanattributeproperty">uro:SquareUrbanPlanAttributeProperty</a></code>) |
-
-### tran:Track
-
-| field | type |
-|-------|------|
-| description | String |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) |
-| creationDate | Date |
-| terminationDate | Date |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) |
-| tranDmAttribute | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) |
-| class | Code |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) |
-| trafficArea | JSON (<code><a href="#trantrafficarea">tran:TrafficArea</a>[]</code>) |
-| auxiliaryTrafficArea | JSON (<code><a href="#tranauxiliarytrafficarea">tran:AuxiliaryTrafficArea</a>[]</code>) |
-| tranDataQualityAttribute | JSON (<code><a href="#urotransportationdataqualityattribute">uro:TransportationDataQualityAttribute</a></code>) |
-| tranFacilityAttribute | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) |
-| tranFacilityIdAttribute | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) |
-| tranFacilityTypeAttribute | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) |
-| trackAttribute | JSON (<code><a href="#urotrackattribute">uro:TrackAttribute</a></code>) |
-
-### tran:TrafficArea
-
-| field | type |
-|-------|------|
-| description | String |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) |
-| creationDate | Date |
-| terminationDate | Date |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) |
-| tranDmAttribute | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) |
-| class | Code |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) |
-| surfaceMaterial | Code |
-| railwayTrackAttribute | JSON (<code><a href="#urorailwaytrackattribute">uro:RailwayTrackAttribute</a>[]</code>) |
-| trafficAreaStructureAttribute | JSON (<code><a href="#urotrafficareastructureattribute">uro:TrafficAreaStructureAttribute</a></code>) |
-
 ### tun:CeilingSurface
 
 | field | type |
@@ -996,6 +873,842 @@
 | creationDate | Date |
 | terminationDate | Date |
 | genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) |
+
+### frn:CityFurniture
+
+| field | type |
+|-------|------|
+| description | String |
+| name | JSON (<code><a href="#code">Code</a>[]</code>) |
+| creationDate | Date |
+| terminationDate | Date |
+| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) |
+| class | Code |
+| function | JSON (<code><a href="#code">Code</a>[]</code>) |
+| usage | JSON (<code><a href="#code">Code</a>[]</code>) |
+| cityFurnitureDataQualityAttribute | JSON (<code><a href="#urocityfurnituredataqualityattribute">uro:CityFurnitureDataQualityAttribute</a></code>) |
+| cityFurnitureDetailAttribute | JSON (<code><a href="#urocityfurnituredetailattribute">uro:CityFurnitureDetailAttribute</a>[]</code>) |
+| frnDmAttribute | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) |
+| frnFacilityAttribute | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) |
+| frnFacilityIdAttribute | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) |
+| frnFacilityTypeAttribute | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) |
+
+### veg:PlantCover
+
+| field | type |
+|-------|------|
+| description | String |
+| name | JSON (<code><a href="#code">Code</a>[]</code>) |
+| creationDate | Date |
+| terminationDate | Date |
+| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) |
+| vegDmAttribute | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) |
+| vegFacilityAttribute | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) |
+| vegFacilityIdAttribute | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) |
+| vegFacilityTypeAttribute | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) |
+| vegetationDataQualityAttribute | JSON (<code><a href="#urovegetationdataqualityattribute">uro:VegetationDataQualityAttribute</a></code>) |
+| class | Code |
+| function | JSON (<code><a href="#code">Code</a>[]</code>) |
+| usage | JSON (<code><a href="#code">Code</a>[]</code>) |
+| averageHeight | Measure |
+
+### veg:SolitaryVegetationObject
+
+| field | type |
+|-------|------|
+| description | String |
+| name | JSON (<code><a href="#code">Code</a>[]</code>) |
+| creationDate | Date |
+| terminationDate | Date |
+| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) |
+| vegDmAttribute | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) |
+| vegFacilityAttribute | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) |
+| vegFacilityIdAttribute | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) |
+| vegFacilityTypeAttribute | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) |
+| vegetationDataQualityAttribute | JSON (<code><a href="#urovegetationdataqualityattribute">uro:VegetationDataQualityAttribute</a></code>) |
+| class | Code |
+| function | JSON (<code><a href="#code">Code</a>[]</code>) |
+| usage | JSON (<code><a href="#code">Code</a>[]</code>) |
+| species | Code |
+| height | Measure |
+| trunkDiameter | Measure |
+| crownDiameter | Measure |
+
+### wtr:WaterBody
+
+| field | type |
+|-------|------|
+| description | String |
+| name | JSON (<code><a href="#code">Code</a>[]</code>) |
+| creationDate | Date |
+| terminationDate | Date |
+| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) |
+| class | Code |
+| function | JSON (<code><a href="#code">Code</a>[]</code>) |
+| usage | JSON (<code><a href="#code">Code</a>[]</code>) |
+| boundedBy | JSON (<code><a href="#wtr_waterboundarysurfaceproperty">wtr:_WaterBoundarySurfaceProperty</a>[]</code>) |
+| floodingRiskAttribute | JSON (<code><a href="#urowaterbodyfloodingriskattributeproperty">uro:WaterBodyFloodingRiskAttributeProperty</a>[]</code>) |
+| waterBodyDetailAttribute | JSON (<code><a href="#urowaterbodydetailattribute">uro:WaterBodyDetailAttribute</a></code>) |
+| wtrDmAttribute | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) |
+| wtrFacilityAttribute | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) |
+| wtrFacilityIdAttribute | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) |
+| wtrFacilityTypeAttribute | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) |
+
+### wtr:WaterClosureSurface
+
+| field | type |
+|-------|------|
+| description | String |
+| name | JSON (<code><a href="#code">Code</a>[]</code>) |
+| creationDate | Date |
+| terminationDate | Date |
+| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) |
+
+### wtr:WaterGroundSurface
+
+| field | type |
+|-------|------|
+| description | String |
+| name | JSON (<code><a href="#code">Code</a>[]</code>) |
+| creationDate | Date |
+| terminationDate | Date |
+| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) |
+
+### wtr:WaterSurface
+
+| field | type |
+|-------|------|
+| description | String |
+| name | JSON (<code><a href="#code">Code</a>[]</code>) |
+| creationDate | Date |
+| terminationDate | Date |
+| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) |
+| waterLevel | Code |
+
+### dem:BreaklineRelief
+
+| field | type |
+|-------|------|
+| description | String |
+| name | JSON (<code><a href="#code">Code</a>[]</code>) |
+| creationDate | Date |
+| terminationDate | Date |
+| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) |
+| lod | NonNegativeInteger |
+| demDmAttribute | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) |
+
+### dem:MassPointRelief
+
+| field | type |
+|-------|------|
+| description | String |
+| name | JSON (<code><a href="#code">Code</a>[]</code>) |
+| creationDate | Date |
+| terminationDate | Date |
+| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) |
+| lod | NonNegativeInteger |
+| demDmAttribute | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) |
+
+### dem:RasterRelief
+
+| field | type |
+|-------|------|
+| description | String |
+| name | JSON (<code><a href="#code">Code</a>[]</code>) |
+| creationDate | Date |
+| terminationDate | Date |
+| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) |
+| lod | NonNegativeInteger |
+| demDmAttribute | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) |
+| grid | JSON (<code><a href="#gmlrectifiedgridcoverage">gml:RectifiedGridCoverage</a></code>) |
+
+### dem:ReliefFeature
+
+| field | type |
+|-------|------|
+| description | String |
+| name | JSON (<code><a href="#code">Code</a>[]</code>) |
+| creationDate | Date |
+| terminationDate | Date |
+| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) |
+| lod | NonNegativeInteger |
+| reliefComponent | JSON (<code><a href="#dem_reliefcomponentproperty">dem:_ReliefComponentProperty</a>[]</code>) |
+
+### dem:TINRelief
+
+| field | type |
+|-------|------|
+| description | String |
+| name | JSON (<code><a href="#code">Code</a>[]</code>) |
+| creationDate | Date |
+| terminationDate | Date |
+| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) |
+| lod | NonNegativeInteger |
+| demDmAttribute | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) |
+
+### grp:CityObjectGroup
+
+| field | type |
+|-------|------|
+| description | String |
+| name | JSON (<code><a href="#code">Code</a>[]</code>) |
+| creationDate | Date |
+| terminationDate | Date |
+| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) |
+| class | Code |
+| function | JSON (<code><a href="#code">Code</a>[]</code>) |
+| usage | JSON (<code><a href="#code">Code</a>[]</code>) |
+| groupMember | JSON (<code><a href="#grp_cityobjectorref">grp:_CityObjectOrRef</a>[]</code>) |
+| parent | JSON (<code><a href="#grp_cityobjectorref">grp:_CityObjectOrRef</a></code>) |
+| fiscalYearOfPublication | JSON (<code><a href="#string">String</a>[]</code>) |
+| ifcBuildingStoreyAttribute | JSON (<code><a href="#uroifcattributeproperty">uro:IfcAttributeProperty</a>[]</code>) |
+| indoorStoreyAttribute | JSON (<code><a href="#uroindoorattributeproperty">uro:IndoorAttributeProperty</a>[]</code>) |
+| language | JSON (<code><a href="#code">Code</a>[]</code>) |
+
+### grp:_CityObjectOrRef
+
+| field | type |
+|-------|------|
+| description | String |
+| name | JSON (<code><a href="#code">Code</a>[]</code>) |
+| creationDate | Date |
+| terminationDate | Date |
+| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) |
+| href | String |
+
+### gen:GenericCityObject
+
+| field | type |
+|-------|------|
+| description | String |
+| name | JSON (<code><a href="#code">Code</a>[]</code>) |
+| creationDate | Date |
+| terminationDate | Date |
+| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) |
+| class | Code |
+| function | JSON (<code><a href="#code">Code</a>[]</code>) |
+| usage | JSON (<code><a href="#code">Code</a>[]</code>) |
+
+### uro:Appurtenance
+
+| field | type |
+|-------|------|
+| description | String |
+| name | JSON (<code><a href="#code">Code</a>[]</code>) |
+| creationDate | Date |
+| terminationDate | Date |
+| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) |
+| class | Code |
+| function | JSON (<code><a href="#code">Code</a>[]</code>) |
+| usage | JSON (<code><a href="#code">Code</a>[]</code>) |
+| cityFurnitureDataQualityAttribute | JSON (<code><a href="#urocityfurnituredataqualityattribute">uro:CityFurnitureDataQualityAttribute</a></code>) |
+| cityFurnitureDetailAttribute | JSON (<code><a href="#urocityfurnituredetailattribute">uro:CityFurnitureDetailAttribute</a>[]</code>) |
+| frnDmAttribute | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) |
+| frnFacilityAttribute | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) |
+| frnFacilityIdAttribute | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) |
+| frnFacilityTypeAttribute | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) |
+| occupierType | Code |
+| occupierName | Code |
+| year | String |
+| yearType | Code |
+| administrator | Code |
+| offsetDepth | JSON (<code><a href="#urooffsetdepth">uro:OffsetDepth</a>[]</code>) |
+| thematicShape | JSON (<code><a href="#urothematicshape">uro:ThematicShape</a>[]</code>) |
+| previousLink | JSON (<code><a href="#string">String</a>[]</code>) |
+| nextLink | JSON (<code><a href="#string">String</a>[]</code>) |
+| rotationAngle | Double |
+| appurtenanceType | Code |
+
+### uro:Cable
+
+| field | type |
+|-------|------|
+| description | String |
+| name | JSON (<code><a href="#code">Code</a>[]</code>) |
+| creationDate | Date |
+| terminationDate | Date |
+| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) |
+| class | Code |
+| function | JSON (<code><a href="#code">Code</a>[]</code>) |
+| usage | JSON (<code><a href="#code">Code</a>[]</code>) |
+| cityFurnitureDataQualityAttribute | JSON (<code><a href="#urocityfurnituredataqualityattribute">uro:CityFurnitureDataQualityAttribute</a></code>) |
+| cityFurnitureDetailAttribute | JSON (<code><a href="#urocityfurnituredetailattribute">uro:CityFurnitureDetailAttribute</a>[]</code>) |
+| frnDmAttribute | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) |
+| frnFacilityAttribute | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) |
+| frnFacilityIdAttribute | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) |
+| frnFacilityTypeAttribute | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) |
+| occupierType | Code |
+| occupierName | Code |
+| year | String |
+| yearType | Code |
+| administrator | Code |
+| offsetDepth | JSON (<code><a href="#urooffsetdepth">uro:OffsetDepth</a>[]</code>) |
+| thematicShape | JSON (<code><a href="#urothematicshape">uro:ThematicShape</a>[]</code>) |
+| routeStartNode | String |
+| startNode | String |
+| routeEndNode | String |
+| endNode | String |
+| depth | Measure |
+| minDepth | Measure |
+| maxDepth | Measure |
+| maxWidth | Measure |
+| offset | Measure |
+| material | Code |
+| lengthAttribute | JSON (<code><a href="#urolengthattribute">uro:LengthAttribute</a>[]</code>) |
+| columns | Integer |
+| rows | Integer |
+| cables | Integer |
+
+### uro:ClosureSurface
+
+| field | type |
+|-------|------|
+| description | String |
+| name | JSON (<code><a href="#code">Code</a>[]</code>) |
+| creationDate | Date |
+| terminationDate | Date |
+| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) |
+
+### uro:ConstructionInstallation
+
+| field | type |
+|-------|------|
+| description | String |
+| name | JSON (<code><a href="#code">Code</a>[]</code>) |
+| creationDate | Date |
+| terminationDate | Date |
+| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) |
+| class | Code |
+| function | JSON (<code><a href="#code">Code</a>[]</code>) |
+| usage | JSON (<code><a href="#code">Code</a>[]</code>) |
+
+### uro:Duct
+
+| field | type |
+|-------|------|
+| description | String |
+| name | JSON (<code><a href="#code">Code</a>[]</code>) |
+| creationDate | Date |
+| terminationDate | Date |
+| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) |
+| class | Code |
+| function | JSON (<code><a href="#code">Code</a>[]</code>) |
+| usage | JSON (<code><a href="#code">Code</a>[]</code>) |
+| cityFurnitureDataQualityAttribute | JSON (<code><a href="#urocityfurnituredataqualityattribute">uro:CityFurnitureDataQualityAttribute</a></code>) |
+| cityFurnitureDetailAttribute | JSON (<code><a href="#urocityfurnituredetailattribute">uro:CityFurnitureDetailAttribute</a>[]</code>) |
+| frnDmAttribute | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) |
+| frnFacilityAttribute | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) |
+| frnFacilityIdAttribute | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) |
+| frnFacilityTypeAttribute | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) |
+| occupierType | Code |
+| occupierName | Code |
+| year | String |
+| yearType | Code |
+| administrator | Code |
+| offsetDepth | JSON (<code><a href="#urooffsetdepth">uro:OffsetDepth</a>[]</code>) |
+| thematicShape | JSON (<code><a href="#urothematicshape">uro:ThematicShape</a>[]</code>) |
+| routeStartNode | String |
+| startNode | String |
+| routeEndNode | String |
+| endNode | String |
+| depth | Measure |
+| minDepth | Measure |
+| maxDepth | Measure |
+| maxWidth | Measure |
+| offset | Measure |
+| material | Code |
+| lengthAttribute | JSON (<code><a href="#urolengthattribute">uro:LengthAttribute</a>[]</code>) |
+| width | Measure |
+
+### uro:ElectricityCable
+
+| field | type |
+|-------|------|
+| description | String |
+| name | JSON (<code><a href="#code">Code</a>[]</code>) |
+| creationDate | Date |
+| terminationDate | Date |
+| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) |
+| class | Code |
+| function | JSON (<code><a href="#code">Code</a>[]</code>) |
+| usage | JSON (<code><a href="#code">Code</a>[]</code>) |
+| cityFurnitureDataQualityAttribute | JSON (<code><a href="#urocityfurnituredataqualityattribute">uro:CityFurnitureDataQualityAttribute</a></code>) |
+| cityFurnitureDetailAttribute | JSON (<code><a href="#urocityfurnituredetailattribute">uro:CityFurnitureDetailAttribute</a>[]</code>) |
+| frnDmAttribute | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) |
+| frnFacilityAttribute | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) |
+| frnFacilityIdAttribute | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) |
+| frnFacilityTypeAttribute | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) |
+| occupierType | Code |
+| occupierName | Code |
+| year | String |
+| yearType | Code |
+| administrator | Code |
+| offsetDepth | JSON (<code><a href="#urooffsetdepth">uro:OffsetDepth</a>[]</code>) |
+| thematicShape | JSON (<code><a href="#urothematicshape">uro:ThematicShape</a>[]</code>) |
+| routeStartNode | String |
+| startNode | String |
+| routeEndNode | String |
+| endNode | String |
+| depth | Measure |
+| minDepth | Measure |
+| maxDepth | Measure |
+| maxWidth | Measure |
+| offset | Measure |
+| material | Code |
+| lengthAttribute | JSON (<code><a href="#urolengthattribute">uro:LengthAttribute</a>[]</code>) |
+| columns | Integer |
+| rows | Integer |
+| cables | Integer |
+
+### uro:GroundSurface
+
+| field | type |
+|-------|------|
+| description | String |
+| name | JSON (<code><a href="#code">Code</a>[]</code>) |
+| creationDate | Date |
+| terminationDate | Date |
+| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) |
+
+### uro:Handhole
+
+| field | type |
+|-------|------|
+| description | String |
+| name | JSON (<code><a href="#code">Code</a>[]</code>) |
+| creationDate | Date |
+| terminationDate | Date |
+| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) |
+| class | Code |
+| function | JSON (<code><a href="#code">Code</a>[]</code>) |
+| usage | JSON (<code><a href="#code">Code</a>[]</code>) |
+| cityFurnitureDataQualityAttribute | JSON (<code><a href="#urocityfurnituredataqualityattribute">uro:CityFurnitureDataQualityAttribute</a></code>) |
+| cityFurnitureDetailAttribute | JSON (<code><a href="#urocityfurnituredetailattribute">uro:CityFurnitureDetailAttribute</a>[]</code>) |
+| frnDmAttribute | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) |
+| frnFacilityAttribute | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) |
+| frnFacilityIdAttribute | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) |
+| frnFacilityTypeAttribute | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) |
+| occupierType | Code |
+| occupierName | Code |
+| year | String |
+| yearType | Code |
+| administrator | Code |
+| offsetDepth | JSON (<code><a href="#urooffsetdepth">uro:OffsetDepth</a>[]</code>) |
+| thematicShape | JSON (<code><a href="#urothematicshape">uro:ThematicShape</a>[]</code>) |
+| containerType | Code |
+| innerDiamiterLong | Measure |
+| outerDiamiterLong | Measure |
+| innerDiamiterShort | Measure |
+| outerDiamiterShort | Measure |
+| depth | Measure |
+| appurtenance | JSON (<code><a href="#string">String</a>[]</code>) |
+| rotationAngle | Double |
+
+### uro:Manhole
+
+| field | type |
+|-------|------|
+| description | String |
+| name | JSON (<code><a href="#code">Code</a>[]</code>) |
+| creationDate | Date |
+| terminationDate | Date |
+| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) |
+| class | Code |
+| function | JSON (<code><a href="#code">Code</a>[]</code>) |
+| usage | JSON (<code><a href="#code">Code</a>[]</code>) |
+| cityFurnitureDataQualityAttribute | JSON (<code><a href="#urocityfurnituredataqualityattribute">uro:CityFurnitureDataQualityAttribute</a></code>) |
+| cityFurnitureDetailAttribute | JSON (<code><a href="#urocityfurnituredetailattribute">uro:CityFurnitureDetailAttribute</a>[]</code>) |
+| frnDmAttribute | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) |
+| frnFacilityAttribute | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) |
+| frnFacilityIdAttribute | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) |
+| frnFacilityTypeAttribute | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) |
+| occupierType | Code |
+| occupierName | Code |
+| year | String |
+| yearType | Code |
+| administrator | Code |
+| offsetDepth | JSON (<code><a href="#urooffsetdepth">uro:OffsetDepth</a>[]</code>) |
+| thematicShape | JSON (<code><a href="#urothematicshape">uro:ThematicShape</a>[]</code>) |
+| containerType | Code |
+| innerDiamiterLong | Measure |
+| outerDiamiterLong | Measure |
+| innerDiamiterShort | Measure |
+| outerDiamiterShort | Measure |
+| depth | Measure |
+| appurtenance | JSON (<code><a href="#string">String</a>[]</code>) |
+| rotationAngle | Double |
+
+### uro:OilGasChemicalsPipe
+
+| field | type |
+|-------|------|
+| description | String |
+| name | JSON (<code><a href="#code">Code</a>[]</code>) |
+| creationDate | Date |
+| terminationDate | Date |
+| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) |
+| class | Code |
+| function | JSON (<code><a href="#code">Code</a>[]</code>) |
+| usage | JSON (<code><a href="#code">Code</a>[]</code>) |
+| cityFurnitureDataQualityAttribute | JSON (<code><a href="#urocityfurnituredataqualityattribute">uro:CityFurnitureDataQualityAttribute</a></code>) |
+| cityFurnitureDetailAttribute | JSON (<code><a href="#urocityfurnituredetailattribute">uro:CityFurnitureDetailAttribute</a>[]</code>) |
+| frnDmAttribute | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) |
+| frnFacilityAttribute | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) |
+| frnFacilityIdAttribute | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) |
+| frnFacilityTypeAttribute | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) |
+| occupierType | Code |
+| occupierName | Code |
+| year | String |
+| yearType | Code |
+| administrator | Code |
+| offsetDepth | JSON (<code><a href="#urooffsetdepth">uro:OffsetDepth</a>[]</code>) |
+| thematicShape | JSON (<code><a href="#urothematicshape">uro:ThematicShape</a>[]</code>) |
+| routeStartNode | String |
+| startNode | String |
+| routeEndNode | String |
+| endNode | String |
+| depth | Measure |
+| minDepth | Measure |
+| maxDepth | Measure |
+| maxWidth | Measure |
+| offset | Measure |
+| material | Code |
+| lengthAttribute | JSON (<code><a href="#urolengthattribute">uro:LengthAttribute</a>[]</code>) |
+| innerDiamiter | Measure |
+| outerDiamiter | Measure |
+| sleeveType | Code |
+
+### uro:OtherConstruction
+
+| field | type |
+|-------|------|
+| description | String |
+| name | JSON (<code><a href="#code">Code</a>[]</code>) |
+| creationDate | Date |
+| terminationDate | Date |
+| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) |
+| conditionOfConstruction | String |
+| dateOfConstruction | Date |
+| dateOfDemolition | Date |
+| constructionEvent | JSON (<code><a href="#uroconstructionevent">uro:ConstructionEvent</a>[]</code>) |
+| elevation | JSON (<code><a href="#uroelevation">uro:Elevation</a>[]</code>) |
+| height | JSON (<code><a href="#uroheight">uro:Height</a>[]</code>) |
+| occupancy | JSON (<code><a href="#urooccupancy">uro:Occupancy</a>[]</code>) |
+| consFacilityTypeAttribute | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) |
+| consFacilityIdAttribute | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) |
+| consFacilityAttribute | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) |
+| consBaseAttribute | JSON (<code><a href="#uroconstructionbaseattribute">uro:ConstructionBaseAttribute</a></code>) |
+| consStructureAttribute | JSON (<code><a href="#uroconstructionstructureattributeproperty">uro:ConstructionStructureAttributeProperty</a></code>) |
+| consDisasterRiskAttribute | JSON (<code><a href="#urodisasterriskattributeproperty">uro:DisasterRiskAttributeProperty</a>[]</code>) |
+| consDmAttribute | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) |
+| consDataQualityAttribute | JSON (<code><a href="#uroconstructiondataqualityattribute">uro:ConstructionDataQualityAttribute</a></code>) |
+| boundedBy | JSON (<code><a href="#uro_boundarysurfaceproperty">uro:_BoundarySurfaceProperty</a>[]</code>) |
+| constructionInstallation | JSON (<code><a href="#uroconstructioninstallation">uro:ConstructionInstallation</a>[]</code>) |
+| class | Code |
+| function | JSON (<code><a href="#code">Code</a>[]</code>) |
+| usage | JSON (<code><a href="#code">Code</a>[]</code>) |
+
+### uro:OuterCeilingSurface
+
+| field | type |
+|-------|------|
+| description | String |
+| name | JSON (<code><a href="#code">Code</a>[]</code>) |
+| creationDate | Date |
+| terminationDate | Date |
+| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) |
+
+### uro:OuterFloorSurface
+
+| field | type |
+|-------|------|
+| description | String |
+| name | JSON (<code><a href="#code">Code</a>[]</code>) |
+| creationDate | Date |
+| terminationDate | Date |
+| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) |
+
+### uro:Pipe
+
+| field | type |
+|-------|------|
+| description | String |
+| name | JSON (<code><a href="#code">Code</a>[]</code>) |
+| creationDate | Date |
+| terminationDate | Date |
+| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) |
+| class | Code |
+| function | JSON (<code><a href="#code">Code</a>[]</code>) |
+| usage | JSON (<code><a href="#code">Code</a>[]</code>) |
+| cityFurnitureDataQualityAttribute | JSON (<code><a href="#urocityfurnituredataqualityattribute">uro:CityFurnitureDataQualityAttribute</a></code>) |
+| cityFurnitureDetailAttribute | JSON (<code><a href="#urocityfurnituredetailattribute">uro:CityFurnitureDetailAttribute</a>[]</code>) |
+| frnDmAttribute | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) |
+| frnFacilityAttribute | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) |
+| frnFacilityIdAttribute | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) |
+| frnFacilityTypeAttribute | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) |
+| occupierType | Code |
+| occupierName | Code |
+| year | String |
+| yearType | Code |
+| administrator | Code |
+| offsetDepth | JSON (<code><a href="#urooffsetdepth">uro:OffsetDepth</a>[]</code>) |
+| thematicShape | JSON (<code><a href="#urothematicshape">uro:ThematicShape</a>[]</code>) |
+| routeStartNode | String |
+| startNode | String |
+| routeEndNode | String |
+| endNode | String |
+| depth | Measure |
+| minDepth | Measure |
+| maxDepth | Measure |
+| maxWidth | Measure |
+| offset | Measure |
+| material | Code |
+| lengthAttribute | JSON (<code><a href="#urolengthattribute">uro:LengthAttribute</a>[]</code>) |
+| innerDiamiter | Measure |
+| outerDiamiter | Measure |
+| sleeveType | Code |
+
+### uro:RoofSurface
+
+| field | type |
+|-------|------|
+| description | String |
+| name | JSON (<code><a href="#code">Code</a>[]</code>) |
+| creationDate | Date |
+| terminationDate | Date |
+| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) |
+
+### uro:SewerPipe
+
+| field | type |
+|-------|------|
+| description | String |
+| name | JSON (<code><a href="#code">Code</a>[]</code>) |
+| creationDate | Date |
+| terminationDate | Date |
+| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) |
+| class | Code |
+| function | JSON (<code><a href="#code">Code</a>[]</code>) |
+| usage | JSON (<code><a href="#code">Code</a>[]</code>) |
+| cityFurnitureDataQualityAttribute | JSON (<code><a href="#urocityfurnituredataqualityattribute">uro:CityFurnitureDataQualityAttribute</a></code>) |
+| cityFurnitureDetailAttribute | JSON (<code><a href="#urocityfurnituredetailattribute">uro:CityFurnitureDetailAttribute</a>[]</code>) |
+| frnDmAttribute | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) |
+| frnFacilityAttribute | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) |
+| frnFacilityIdAttribute | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) |
+| frnFacilityTypeAttribute | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) |
+| occupierType | Code |
+| occupierName | Code |
+| year | String |
+| yearType | Code |
+| administrator | Code |
+| offsetDepth | JSON (<code><a href="#urooffsetdepth">uro:OffsetDepth</a>[]</code>) |
+| thematicShape | JSON (<code><a href="#urothematicshape">uro:ThematicShape</a>[]</code>) |
+| routeStartNode | String |
+| startNode | String |
+| routeEndNode | String |
+| endNode | String |
+| depth | Measure |
+| minDepth | Measure |
+| maxDepth | Measure |
+| maxWidth | Measure |
+| offset | Measure |
+| material | Code |
+| lengthAttribute | JSON (<code><a href="#urolengthattribute">uro:LengthAttribute</a>[]</code>) |
+| innerDiamiter | Measure |
+| outerDiamiter | Measure |
+| sleeveType | Code |
+| slope | Measure |
+
+### uro:TelecommunicationsCable
+
+| field | type |
+|-------|------|
+| description | String |
+| name | JSON (<code><a href="#code">Code</a>[]</code>) |
+| creationDate | Date |
+| terminationDate | Date |
+| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) |
+| class | Code |
+| function | JSON (<code><a href="#code">Code</a>[]</code>) |
+| usage | JSON (<code><a href="#code">Code</a>[]</code>) |
+| cityFurnitureDataQualityAttribute | JSON (<code><a href="#urocityfurnituredataqualityattribute">uro:CityFurnitureDataQualityAttribute</a></code>) |
+| cityFurnitureDetailAttribute | JSON (<code><a href="#urocityfurnituredetailattribute">uro:CityFurnitureDetailAttribute</a>[]</code>) |
+| frnDmAttribute | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) |
+| frnFacilityAttribute | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) |
+| frnFacilityIdAttribute | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) |
+| frnFacilityTypeAttribute | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) |
+| occupierType | Code |
+| occupierName | Code |
+| year | String |
+| yearType | Code |
+| administrator | Code |
+| offsetDepth | JSON (<code><a href="#urooffsetdepth">uro:OffsetDepth</a>[]</code>) |
+| thematicShape | JSON (<code><a href="#urothematicshape">uro:ThematicShape</a>[]</code>) |
+| routeStartNode | String |
+| startNode | String |
+| routeEndNode | String |
+| endNode | String |
+| depth | Measure |
+| minDepth | Measure |
+| maxDepth | Measure |
+| maxWidth | Measure |
+| offset | Measure |
+| material | Code |
+| lengthAttribute | JSON (<code><a href="#urolengthattribute">uro:LengthAttribute</a>[]</code>) |
+| columns | Integer |
+| rows | Integer |
+| cables | Integer |
+
+### uro:ThermalPipe
+
+| field | type |
+|-------|------|
+| description | String |
+| name | JSON (<code><a href="#code">Code</a>[]</code>) |
+| creationDate | Date |
+| terminationDate | Date |
+| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) |
+| class | Code |
+| function | JSON (<code><a href="#code">Code</a>[]</code>) |
+| usage | JSON (<code><a href="#code">Code</a>[]</code>) |
+| cityFurnitureDataQualityAttribute | JSON (<code><a href="#urocityfurnituredataqualityattribute">uro:CityFurnitureDataQualityAttribute</a></code>) |
+| cityFurnitureDetailAttribute | JSON (<code><a href="#urocityfurnituredetailattribute">uro:CityFurnitureDetailAttribute</a>[]</code>) |
+| frnDmAttribute | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) |
+| frnFacilityAttribute | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) |
+| frnFacilityIdAttribute | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) |
+| frnFacilityTypeAttribute | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) |
+| occupierType | Code |
+| occupierName | Code |
+| year | String |
+| yearType | Code |
+| administrator | Code |
+| offsetDepth | JSON (<code><a href="#urooffsetdepth">uro:OffsetDepth</a>[]</code>) |
+| thematicShape | JSON (<code><a href="#urothematicshape">uro:ThematicShape</a>[]</code>) |
+| routeStartNode | String |
+| startNode | String |
+| routeEndNode | String |
+| endNode | String |
+| depth | Measure |
+| minDepth | Measure |
+| maxDepth | Measure |
+| maxWidth | Measure |
+| offset | Measure |
+| material | Code |
+| lengthAttribute | JSON (<code><a href="#urolengthattribute">uro:LengthAttribute</a>[]</code>) |
+| innerDiamiter | Measure |
+| outerDiamiter | Measure |
+| sleeveType | Code |
+
+### uro:UndergroundBuilding
+
+| field | type |
+|-------|------|
+| description | String |
+| name | JSON (<code><a href="#code">Code</a>[]</code>) |
+| creationDate | Date |
+| terminationDate | Date |
+| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) |
+| class | Code |
+| function | JSON (<code><a href="#code">Code</a>[]</code>) |
+| usage | JSON (<code><a href="#code">Code</a>[]</code>) |
+| yearOfConstruction | String |
+| yearOfDemolition | String |
+| roofType | Code |
+| measuredHeight | Measure |
+| storeysAboveGround | NonNegativeInteger |
+| storeysBelowGround | NonNegativeInteger |
+| storeyHeightsAboveGround | String |
+| storeyHeightsBelowGround | String |
+| outerBuildingInstallation | JSON (<code><a href="#bldgbuildinginstallation">bldg:BuildingInstallation</a>[]</code>) |
+| interiorBuildingInstallation | JSON (<code><a href="#bldgbuildinginstallation">bldg:BuildingInstallation</a>[]</code>) |
+| boundedBy | JSON (<code><a href="#bldg_boundarysurfaceproperty">bldg:_BoundarySurfaceProperty</a>[]</code>) |
+| interiorRoom | JSON (<code><a href="#bldgroom">bldg:Room</a>[]</code>) |
+| consistsOfBuildingPart | JSON (<code><a href="#bldgbuildingpart">bldg:BuildingPart</a>[]</code>) |
+| address | JSON (<code><a href="#coreaddress">core:Address</a>[]</code>) |
+| bldgDmAttribute | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) |
+| bldgFacilityAttribute | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) |
+| bldgFacilityIdAttribute | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) |
+| bldgFacilityTypeAttribute | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) |
+| bldgRealEstateIDAttribute | JSON (<code><a href="#urorealestateidattribute">uro:RealEstateIDAttribute</a></code>) |
+| buildingDataQualityAttribute | JSON (<code><a href="#urobuildingdataqualityattribute">uro:BuildingDataQualityAttribute</a></code>) |
+| buildingDetailAttribute | JSON (<code><a href="#urobuildingdetailattribute">uro:BuildingDetailAttribute</a>[]</code>) |
+| buildingDisasterRiskAttribute | JSON (<code><a href="#urobuildingdisasterriskattributeproperty">uro:BuildingDisasterRiskAttributeProperty</a>[]</code>) |
+| buildingIDAttribute | JSON (<code><a href="#urobuildingidattribute">uro:BuildingIDAttribute</a>[]</code>) |
+| ifcBuildingAttribute | JSON (<code><a href="#uroifcattributeproperty">uro:IfcAttributeProperty</a>[]</code>) |
+| indoorBuildingAttribute | JSON (<code><a href="#uroindoorattributeproperty">uro:IndoorAttributeProperty</a>[]</code>) |
+| keyValuePairAttribute | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |
+| largeCustomerFacilityAttribute | JSON (<code><a href="#urolargecustomerfacilityattribute">uro:LargeCustomerFacilityAttribute</a>[]</code>) |
+
+### uro:WallSurface
+
+| field | type |
+|-------|------|
+| description | String |
+| name | JSON (<code><a href="#code">Code</a>[]</code>) |
+| creationDate | Date |
+| terminationDate | Date |
+| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) |
+
+### uro:WaterPipe
+
+| field | type |
+|-------|------|
+| description | String |
+| name | JSON (<code><a href="#code">Code</a>[]</code>) |
+| creationDate | Date |
+| terminationDate | Date |
+| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) |
+| class | Code |
+| function | JSON (<code><a href="#code">Code</a>[]</code>) |
+| usage | JSON (<code><a href="#code">Code</a>[]</code>) |
+| cityFurnitureDataQualityAttribute | JSON (<code><a href="#urocityfurnituredataqualityattribute">uro:CityFurnitureDataQualityAttribute</a></code>) |
+| cityFurnitureDetailAttribute | JSON (<code><a href="#urocityfurnituredetailattribute">uro:CityFurnitureDetailAttribute</a>[]</code>) |
+| frnDmAttribute | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) |
+| frnFacilityAttribute | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) |
+| frnFacilityIdAttribute | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) |
+| frnFacilityTypeAttribute | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) |
+| occupierType | Code |
+| occupierName | Code |
+| year | String |
+| yearType | Code |
+| administrator | Code |
+| offsetDepth | JSON (<code><a href="#urooffsetdepth">uro:OffsetDepth</a>[]</code>) |
+| thematicShape | JSON (<code><a href="#urothematicshape">uro:ThematicShape</a>[]</code>) |
+| routeStartNode | String |
+| startNode | String |
+| routeEndNode | String |
+| endNode | String |
+| depth | Measure |
+| minDepth | Measure |
+| maxDepth | Measure |
+| maxWidth | Measure |
+| offset | Measure |
+| material | Code |
+| lengthAttribute | JSON (<code><a href="#urolengthattribute">uro:LengthAttribute</a>[]</code>) |
+| innerDiamiter | Measure |
+| outerDiamiter | Measure |
+| sleeveType | Code |
+
+### uro:Waterway
+
+| field | type |
+|-------|------|
+| description | String |
+| name | JSON (<code><a href="#code">Code</a>[]</code>) |
+| creationDate | Date |
+| terminationDate | Date |
+| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) |
+| tranDmAttribute | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) |
+| class | Code |
+| function | JSON (<code><a href="#code">Code</a>[]</code>) |
+| usage | JSON (<code><a href="#code">Code</a>[]</code>) |
+| trafficArea | JSON (<code><a href="#trantrafficarea">tran:TrafficArea</a>[]</code>) |
+| auxiliaryTrafficArea | JSON (<code><a href="#tranauxiliarytrafficarea">tran:AuxiliaryTrafficArea</a>[]</code>) |
+| tranDataQualityAttribute | JSON (<code><a href="#urotransportationdataqualityattribute">uro:TransportationDataQualityAttribute</a></code>) |
+| tranFacilityAttribute | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) |
+| tranFacilityIdAttribute | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) |
+| tranFacilityTypeAttribute | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) |
+| waterwayDetailAttribute | JSON (<code><a href="#urowaterwaydetailattribute">uro:WaterwayDetailAttribute</a></code>) |
 
 ### urf:Agreement
 
@@ -5231,863 +5944,7 @@
 | location | String |
 | areaInTotal | Measure |
 
-### uro:Appurtenance
-
-| field | type |
-|-------|------|
-| description | String |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) |
-| creationDate | Date |
-| terminationDate | Date |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) |
-| class | Code |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) |
-| cityFurnitureDataQualityAttribute | JSON (<code><a href="#urocityfurnituredataqualityattribute">uro:CityFurnitureDataQualityAttribute</a></code>) |
-| cityFurnitureDetailAttribute | JSON (<code><a href="#urocityfurnituredetailattribute">uro:CityFurnitureDetailAttribute</a>[]</code>) |
-| frnDmAttribute | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) |
-| frnFacilityAttribute | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) |
-| frnFacilityIdAttribute | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) |
-| frnFacilityTypeAttribute | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) |
-| occupierType | Code |
-| occupierName | Code |
-| year | String |
-| yearType | Code |
-| administrator | Code |
-| offsetDepth | JSON (<code><a href="#urooffsetdepth">uro:OffsetDepth</a>[]</code>) |
-| thematicShape | JSON (<code><a href="#urothematicshape">uro:ThematicShape</a>[]</code>) |
-| previousLink | JSON (<code><a href="#string">String</a>[]</code>) |
-| nextLink | JSON (<code><a href="#string">String</a>[]</code>) |
-| rotationAngle | Double |
-| appurtenanceType | Code |
-
-### uro:Cable
-
-| field | type |
-|-------|------|
-| description | String |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) |
-| creationDate | Date |
-| terminationDate | Date |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) |
-| class | Code |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) |
-| cityFurnitureDataQualityAttribute | JSON (<code><a href="#urocityfurnituredataqualityattribute">uro:CityFurnitureDataQualityAttribute</a></code>) |
-| cityFurnitureDetailAttribute | JSON (<code><a href="#urocityfurnituredetailattribute">uro:CityFurnitureDetailAttribute</a>[]</code>) |
-| frnDmAttribute | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) |
-| frnFacilityAttribute | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) |
-| frnFacilityIdAttribute | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) |
-| frnFacilityTypeAttribute | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) |
-| occupierType | Code |
-| occupierName | Code |
-| year | String |
-| yearType | Code |
-| administrator | Code |
-| offsetDepth | JSON (<code><a href="#urooffsetdepth">uro:OffsetDepth</a>[]</code>) |
-| thematicShape | JSON (<code><a href="#urothematicshape">uro:ThematicShape</a>[]</code>) |
-| routeStartNode | String |
-| startNode | String |
-| routeEndNode | String |
-| endNode | String |
-| depth | Measure |
-| minDepth | Measure |
-| maxDepth | Measure |
-| maxWidth | Measure |
-| offset | Measure |
-| material | Code |
-| lengthAttribute | JSON (<code><a href="#urolengthattribute">uro:LengthAttribute</a>[]</code>) |
-| columns | Integer |
-| rows | Integer |
-| cables | Integer |
-
-### uro:ClosureSurface
-
-| field | type |
-|-------|------|
-| description | String |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) |
-| creationDate | Date |
-| terminationDate | Date |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) |
-
-### uro:ConstructionInstallation
-
-| field | type |
-|-------|------|
-| description | String |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) |
-| creationDate | Date |
-| terminationDate | Date |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) |
-| class | Code |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) |
-
-### uro:Duct
-
-| field | type |
-|-------|------|
-| description | String |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) |
-| creationDate | Date |
-| terminationDate | Date |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) |
-| class | Code |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) |
-| cityFurnitureDataQualityAttribute | JSON (<code><a href="#urocityfurnituredataqualityattribute">uro:CityFurnitureDataQualityAttribute</a></code>) |
-| cityFurnitureDetailAttribute | JSON (<code><a href="#urocityfurnituredetailattribute">uro:CityFurnitureDetailAttribute</a>[]</code>) |
-| frnDmAttribute | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) |
-| frnFacilityAttribute | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) |
-| frnFacilityIdAttribute | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) |
-| frnFacilityTypeAttribute | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) |
-| occupierType | Code |
-| occupierName | Code |
-| year | String |
-| yearType | Code |
-| administrator | Code |
-| offsetDepth | JSON (<code><a href="#urooffsetdepth">uro:OffsetDepth</a>[]</code>) |
-| thematicShape | JSON (<code><a href="#urothematicshape">uro:ThematicShape</a>[]</code>) |
-| routeStartNode | String |
-| startNode | String |
-| routeEndNode | String |
-| endNode | String |
-| depth | Measure |
-| minDepth | Measure |
-| maxDepth | Measure |
-| maxWidth | Measure |
-| offset | Measure |
-| material | Code |
-| lengthAttribute | JSON (<code><a href="#urolengthattribute">uro:LengthAttribute</a>[]</code>) |
-| width | Measure |
-
-### uro:ElectricityCable
-
-| field | type |
-|-------|------|
-| description | String |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) |
-| creationDate | Date |
-| terminationDate | Date |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) |
-| class | Code |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) |
-| cityFurnitureDataQualityAttribute | JSON (<code><a href="#urocityfurnituredataqualityattribute">uro:CityFurnitureDataQualityAttribute</a></code>) |
-| cityFurnitureDetailAttribute | JSON (<code><a href="#urocityfurnituredetailattribute">uro:CityFurnitureDetailAttribute</a>[]</code>) |
-| frnDmAttribute | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) |
-| frnFacilityAttribute | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) |
-| frnFacilityIdAttribute | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) |
-| frnFacilityTypeAttribute | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) |
-| occupierType | Code |
-| occupierName | Code |
-| year | String |
-| yearType | Code |
-| administrator | Code |
-| offsetDepth | JSON (<code><a href="#urooffsetdepth">uro:OffsetDepth</a>[]</code>) |
-| thematicShape | JSON (<code><a href="#urothematicshape">uro:ThematicShape</a>[]</code>) |
-| routeStartNode | String |
-| startNode | String |
-| routeEndNode | String |
-| endNode | String |
-| depth | Measure |
-| minDepth | Measure |
-| maxDepth | Measure |
-| maxWidth | Measure |
-| offset | Measure |
-| material | Code |
-| lengthAttribute | JSON (<code><a href="#urolengthattribute">uro:LengthAttribute</a>[]</code>) |
-| columns | Integer |
-| rows | Integer |
-| cables | Integer |
-
-### uro:GroundSurface
-
-| field | type |
-|-------|------|
-| description | String |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) |
-| creationDate | Date |
-| terminationDate | Date |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) |
-
-### uro:Handhole
-
-| field | type |
-|-------|------|
-| description | String |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) |
-| creationDate | Date |
-| terminationDate | Date |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) |
-| class | Code |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) |
-| cityFurnitureDataQualityAttribute | JSON (<code><a href="#urocityfurnituredataqualityattribute">uro:CityFurnitureDataQualityAttribute</a></code>) |
-| cityFurnitureDetailAttribute | JSON (<code><a href="#urocityfurnituredetailattribute">uro:CityFurnitureDetailAttribute</a>[]</code>) |
-| frnDmAttribute | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) |
-| frnFacilityAttribute | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) |
-| frnFacilityIdAttribute | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) |
-| frnFacilityTypeAttribute | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) |
-| occupierType | Code |
-| occupierName | Code |
-| year | String |
-| yearType | Code |
-| administrator | Code |
-| offsetDepth | JSON (<code><a href="#urooffsetdepth">uro:OffsetDepth</a>[]</code>) |
-| thematicShape | JSON (<code><a href="#urothematicshape">uro:ThematicShape</a>[]</code>) |
-| containerType | Code |
-| innerDiamiterLong | Measure |
-| outerDiamiterLong | Measure |
-| innerDiamiterShort | Measure |
-| outerDiamiterShort | Measure |
-| depth | Measure |
-| appurtenance | JSON (<code><a href="#string">String</a>[]</code>) |
-| rotationAngle | Double |
-
-### uro:Manhole
-
-| field | type |
-|-------|------|
-| description | String |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) |
-| creationDate | Date |
-| terminationDate | Date |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) |
-| class | Code |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) |
-| cityFurnitureDataQualityAttribute | JSON (<code><a href="#urocityfurnituredataqualityattribute">uro:CityFurnitureDataQualityAttribute</a></code>) |
-| cityFurnitureDetailAttribute | JSON (<code><a href="#urocityfurnituredetailattribute">uro:CityFurnitureDetailAttribute</a>[]</code>) |
-| frnDmAttribute | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) |
-| frnFacilityAttribute | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) |
-| frnFacilityIdAttribute | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) |
-| frnFacilityTypeAttribute | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) |
-| occupierType | Code |
-| occupierName | Code |
-| year | String |
-| yearType | Code |
-| administrator | Code |
-| offsetDepth | JSON (<code><a href="#urooffsetdepth">uro:OffsetDepth</a>[]</code>) |
-| thematicShape | JSON (<code><a href="#urothematicshape">uro:ThematicShape</a>[]</code>) |
-| containerType | Code |
-| innerDiamiterLong | Measure |
-| outerDiamiterLong | Measure |
-| innerDiamiterShort | Measure |
-| outerDiamiterShort | Measure |
-| depth | Measure |
-| appurtenance | JSON (<code><a href="#string">String</a>[]</code>) |
-| rotationAngle | Double |
-
-### uro:OilGasChemicalsPipe
-
-| field | type |
-|-------|------|
-| description | String |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) |
-| creationDate | Date |
-| terminationDate | Date |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) |
-| class | Code |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) |
-| cityFurnitureDataQualityAttribute | JSON (<code><a href="#urocityfurnituredataqualityattribute">uro:CityFurnitureDataQualityAttribute</a></code>) |
-| cityFurnitureDetailAttribute | JSON (<code><a href="#urocityfurnituredetailattribute">uro:CityFurnitureDetailAttribute</a>[]</code>) |
-| frnDmAttribute | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) |
-| frnFacilityAttribute | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) |
-| frnFacilityIdAttribute | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) |
-| frnFacilityTypeAttribute | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) |
-| occupierType | Code |
-| occupierName | Code |
-| year | String |
-| yearType | Code |
-| administrator | Code |
-| offsetDepth | JSON (<code><a href="#urooffsetdepth">uro:OffsetDepth</a>[]</code>) |
-| thematicShape | JSON (<code><a href="#urothematicshape">uro:ThematicShape</a>[]</code>) |
-| routeStartNode | String |
-| startNode | String |
-| routeEndNode | String |
-| endNode | String |
-| depth | Measure |
-| minDepth | Measure |
-| maxDepth | Measure |
-| maxWidth | Measure |
-| offset | Measure |
-| material | Code |
-| lengthAttribute | JSON (<code><a href="#urolengthattribute">uro:LengthAttribute</a>[]</code>) |
-| innerDiamiter | Measure |
-| outerDiamiter | Measure |
-| sleeveType | Code |
-
-### uro:OtherConstruction
-
-| field | type |
-|-------|------|
-| description | String |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) |
-| creationDate | Date |
-| terminationDate | Date |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) |
-| conditionOfConstruction | String |
-| dateOfConstruction | Date |
-| dateOfDemolition | Date |
-| constructionEvent | JSON (<code><a href="#uroconstructionevent">uro:ConstructionEvent</a>[]</code>) |
-| elevation | JSON (<code><a href="#uroelevation">uro:Elevation</a>[]</code>) |
-| height | JSON (<code><a href="#uroheight">uro:Height</a>[]</code>) |
-| occupancy | JSON (<code><a href="#urooccupancy">uro:Occupancy</a>[]</code>) |
-| consFacilityTypeAttribute | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) |
-| consFacilityIdAttribute | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) |
-| consFacilityAttribute | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) |
-| consBaseAttribute | JSON (<code><a href="#uroconstructionbaseattribute">uro:ConstructionBaseAttribute</a></code>) |
-| consStructureAttribute | JSON (<code><a href="#uroconstructionstructureattributeproperty">uro:ConstructionStructureAttributeProperty</a></code>) |
-| consDisasterRiskAttribute | JSON (<code><a href="#urodisasterriskattributeproperty">uro:DisasterRiskAttributeProperty</a>[]</code>) |
-| consDmAttribute | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) |
-| consDataQualityAttribute | JSON (<code><a href="#uroconstructiondataqualityattribute">uro:ConstructionDataQualityAttribute</a></code>) |
-| boundedBy | JSON (<code><a href="#uro_boundarysurfaceproperty">uro:_BoundarySurfaceProperty</a>[]</code>) |
-| constructionInstallation | JSON (<code><a href="#uroconstructioninstallation">uro:ConstructionInstallation</a>[]</code>) |
-| class | Code |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) |
-
-### uro:OuterCeilingSurface
-
-| field | type |
-|-------|------|
-| description | String |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) |
-| creationDate | Date |
-| terminationDate | Date |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) |
-
-### uro:OuterFloorSurface
-
-| field | type |
-|-------|------|
-| description | String |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) |
-| creationDate | Date |
-| terminationDate | Date |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) |
-
-### uro:Pipe
-
-| field | type |
-|-------|------|
-| description | String |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) |
-| creationDate | Date |
-| terminationDate | Date |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) |
-| class | Code |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) |
-| cityFurnitureDataQualityAttribute | JSON (<code><a href="#urocityfurnituredataqualityattribute">uro:CityFurnitureDataQualityAttribute</a></code>) |
-| cityFurnitureDetailAttribute | JSON (<code><a href="#urocityfurnituredetailattribute">uro:CityFurnitureDetailAttribute</a>[]</code>) |
-| frnDmAttribute | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) |
-| frnFacilityAttribute | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) |
-| frnFacilityIdAttribute | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) |
-| frnFacilityTypeAttribute | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) |
-| occupierType | Code |
-| occupierName | Code |
-| year | String |
-| yearType | Code |
-| administrator | Code |
-| offsetDepth | JSON (<code><a href="#urooffsetdepth">uro:OffsetDepth</a>[]</code>) |
-| thematicShape | JSON (<code><a href="#urothematicshape">uro:ThematicShape</a>[]</code>) |
-| routeStartNode | String |
-| startNode | String |
-| routeEndNode | String |
-| endNode | String |
-| depth | Measure |
-| minDepth | Measure |
-| maxDepth | Measure |
-| maxWidth | Measure |
-| offset | Measure |
-| material | Code |
-| lengthAttribute | JSON (<code><a href="#urolengthattribute">uro:LengthAttribute</a>[]</code>) |
-| innerDiamiter | Measure |
-| outerDiamiter | Measure |
-| sleeveType | Code |
-
-### uro:RoofSurface
-
-| field | type |
-|-------|------|
-| description | String |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) |
-| creationDate | Date |
-| terminationDate | Date |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) |
-
-### uro:SewerPipe
-
-| field | type |
-|-------|------|
-| description | String |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) |
-| creationDate | Date |
-| terminationDate | Date |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) |
-| class | Code |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) |
-| cityFurnitureDataQualityAttribute | JSON (<code><a href="#urocityfurnituredataqualityattribute">uro:CityFurnitureDataQualityAttribute</a></code>) |
-| cityFurnitureDetailAttribute | JSON (<code><a href="#urocityfurnituredetailattribute">uro:CityFurnitureDetailAttribute</a>[]</code>) |
-| frnDmAttribute | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) |
-| frnFacilityAttribute | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) |
-| frnFacilityIdAttribute | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) |
-| frnFacilityTypeAttribute | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) |
-| occupierType | Code |
-| occupierName | Code |
-| year | String |
-| yearType | Code |
-| administrator | Code |
-| offsetDepth | JSON (<code><a href="#urooffsetdepth">uro:OffsetDepth</a>[]</code>) |
-| thematicShape | JSON (<code><a href="#urothematicshape">uro:ThematicShape</a>[]</code>) |
-| routeStartNode | String |
-| startNode | String |
-| routeEndNode | String |
-| endNode | String |
-| depth | Measure |
-| minDepth | Measure |
-| maxDepth | Measure |
-| maxWidth | Measure |
-| offset | Measure |
-| material | Code |
-| lengthAttribute | JSON (<code><a href="#urolengthattribute">uro:LengthAttribute</a>[]</code>) |
-| innerDiamiter | Measure |
-| outerDiamiter | Measure |
-| sleeveType | Code |
-| slope | Measure |
-
-### uro:TelecommunicationsCable
-
-| field | type |
-|-------|------|
-| description | String |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) |
-| creationDate | Date |
-| terminationDate | Date |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) |
-| class | Code |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) |
-| cityFurnitureDataQualityAttribute | JSON (<code><a href="#urocityfurnituredataqualityattribute">uro:CityFurnitureDataQualityAttribute</a></code>) |
-| cityFurnitureDetailAttribute | JSON (<code><a href="#urocityfurnituredetailattribute">uro:CityFurnitureDetailAttribute</a>[]</code>) |
-| frnDmAttribute | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) |
-| frnFacilityAttribute | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) |
-| frnFacilityIdAttribute | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) |
-| frnFacilityTypeAttribute | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) |
-| occupierType | Code |
-| occupierName | Code |
-| year | String |
-| yearType | Code |
-| administrator | Code |
-| offsetDepth | JSON (<code><a href="#urooffsetdepth">uro:OffsetDepth</a>[]</code>) |
-| thematicShape | JSON (<code><a href="#urothematicshape">uro:ThematicShape</a>[]</code>) |
-| routeStartNode | String |
-| startNode | String |
-| routeEndNode | String |
-| endNode | String |
-| depth | Measure |
-| minDepth | Measure |
-| maxDepth | Measure |
-| maxWidth | Measure |
-| offset | Measure |
-| material | Code |
-| lengthAttribute | JSON (<code><a href="#urolengthattribute">uro:LengthAttribute</a>[]</code>) |
-| columns | Integer |
-| rows | Integer |
-| cables | Integer |
-
-### uro:ThermalPipe
-
-| field | type |
-|-------|------|
-| description | String |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) |
-| creationDate | Date |
-| terminationDate | Date |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) |
-| class | Code |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) |
-| cityFurnitureDataQualityAttribute | JSON (<code><a href="#urocityfurnituredataqualityattribute">uro:CityFurnitureDataQualityAttribute</a></code>) |
-| cityFurnitureDetailAttribute | JSON (<code><a href="#urocityfurnituredetailattribute">uro:CityFurnitureDetailAttribute</a>[]</code>) |
-| frnDmAttribute | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) |
-| frnFacilityAttribute | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) |
-| frnFacilityIdAttribute | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) |
-| frnFacilityTypeAttribute | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) |
-| occupierType | Code |
-| occupierName | Code |
-| year | String |
-| yearType | Code |
-| administrator | Code |
-| offsetDepth | JSON (<code><a href="#urooffsetdepth">uro:OffsetDepth</a>[]</code>) |
-| thematicShape | JSON (<code><a href="#urothematicshape">uro:ThematicShape</a>[]</code>) |
-| routeStartNode | String |
-| startNode | String |
-| routeEndNode | String |
-| endNode | String |
-| depth | Measure |
-| minDepth | Measure |
-| maxDepth | Measure |
-| maxWidth | Measure |
-| offset | Measure |
-| material | Code |
-| lengthAttribute | JSON (<code><a href="#urolengthattribute">uro:LengthAttribute</a>[]</code>) |
-| innerDiamiter | Measure |
-| outerDiamiter | Measure |
-| sleeveType | Code |
-
-### uro:UndergroundBuilding
-
-| field | type |
-|-------|------|
-| description | String |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) |
-| creationDate | Date |
-| terminationDate | Date |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) |
-| class | Code |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) |
-| yearOfConstruction | String |
-| yearOfDemolition | String |
-| roofType | Code |
-| measuredHeight | Measure |
-| storeysAboveGround | NonNegativeInteger |
-| storeysBelowGround | NonNegativeInteger |
-| storeyHeightsAboveGround | String |
-| storeyHeightsBelowGround | String |
-| outerBuildingInstallation | JSON (<code><a href="#bldgbuildinginstallation">bldg:BuildingInstallation</a>[]</code>) |
-| interiorBuildingInstallation | JSON (<code><a href="#bldgbuildinginstallation">bldg:BuildingInstallation</a>[]</code>) |
-| boundedBy | JSON (<code><a href="#bldg_boundarysurfaceproperty">bldg:_BoundarySurfaceProperty</a>[]</code>) |
-| interiorRoom | JSON (<code><a href="#bldgroom">bldg:Room</a>[]</code>) |
-| consistsOfBuildingPart | JSON (<code><a href="#bldgbuildingpart">bldg:BuildingPart</a>[]</code>) |
-| address | JSON (<code><a href="#coreaddress">core:Address</a>[]</code>) |
-| bldgDmAttribute | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) |
-| bldgFacilityAttribute | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) |
-| bldgFacilityIdAttribute | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) |
-| bldgFacilityTypeAttribute | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) |
-| bldgRealEstateIDAttribute | JSON (<code><a href="#urorealestateidattribute">uro:RealEstateIDAttribute</a></code>) |
-| buildingDataQualityAttribute | JSON (<code><a href="#urobuildingdataqualityattribute">uro:BuildingDataQualityAttribute</a></code>) |
-| buildingDetailAttribute | JSON (<code><a href="#urobuildingdetailattribute">uro:BuildingDetailAttribute</a>[]</code>) |
-| buildingDisasterRiskAttribute | JSON (<code><a href="#urobuildingdisasterriskattributeproperty">uro:BuildingDisasterRiskAttributeProperty</a>[]</code>) |
-| buildingIDAttribute | JSON (<code><a href="#urobuildingidattribute">uro:BuildingIDAttribute</a>[]</code>) |
-| ifcBuildingAttribute | JSON (<code><a href="#uroifcattributeproperty">uro:IfcAttributeProperty</a>[]</code>) |
-| indoorBuildingAttribute | JSON (<code><a href="#uroindoorattributeproperty">uro:IndoorAttributeProperty</a>[]</code>) |
-| keyValuePairAttribute | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |
-| largeCustomerFacilityAttribute | JSON (<code><a href="#urolargecustomerfacilityattribute">uro:LargeCustomerFacilityAttribute</a>[]</code>) |
-
-### uro:WallSurface
-
-| field | type |
-|-------|------|
-| description | String |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) |
-| creationDate | Date |
-| terminationDate | Date |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) |
-
-### uro:WaterPipe
-
-| field | type |
-|-------|------|
-| description | String |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) |
-| creationDate | Date |
-| terminationDate | Date |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) |
-| class | Code |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) |
-| cityFurnitureDataQualityAttribute | JSON (<code><a href="#urocityfurnituredataqualityattribute">uro:CityFurnitureDataQualityAttribute</a></code>) |
-| cityFurnitureDetailAttribute | JSON (<code><a href="#urocityfurnituredetailattribute">uro:CityFurnitureDetailAttribute</a>[]</code>) |
-| frnDmAttribute | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) |
-| frnFacilityAttribute | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) |
-| frnFacilityIdAttribute | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) |
-| frnFacilityTypeAttribute | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) |
-| occupierType | Code |
-| occupierName | Code |
-| year | String |
-| yearType | Code |
-| administrator | Code |
-| offsetDepth | JSON (<code><a href="#urooffsetdepth">uro:OffsetDepth</a>[]</code>) |
-| thematicShape | JSON (<code><a href="#urothematicshape">uro:ThematicShape</a>[]</code>) |
-| routeStartNode | String |
-| startNode | String |
-| routeEndNode | String |
-| endNode | String |
-| depth | Measure |
-| minDepth | Measure |
-| maxDepth | Measure |
-| maxWidth | Measure |
-| offset | Measure |
-| material | Code |
-| lengthAttribute | JSON (<code><a href="#urolengthattribute">uro:LengthAttribute</a>[]</code>) |
-| innerDiamiter | Measure |
-| outerDiamiter | Measure |
-| sleeveType | Code |
-
-### uro:Waterway
-
-| field | type |
-|-------|------|
-| description | String |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) |
-| creationDate | Date |
-| terminationDate | Date |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) |
-| tranDmAttribute | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) |
-| class | Code |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) |
-| trafficArea | JSON (<code><a href="#trantrafficarea">tran:TrafficArea</a>[]</code>) |
-| auxiliaryTrafficArea | JSON (<code><a href="#tranauxiliarytrafficarea">tran:AuxiliaryTrafficArea</a>[]</code>) |
-| tranDataQualityAttribute | JSON (<code><a href="#urotransportationdataqualityattribute">uro:TransportationDataQualityAttribute</a></code>) |
-| tranFacilityAttribute | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) |
-| tranFacilityIdAttribute | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) |
-| tranFacilityTypeAttribute | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) |
-| waterwayDetailAttribute | JSON (<code><a href="#urowaterwaydetailattribute">uro:WaterwayDetailAttribute</a></code>) |
-
-### veg:PlantCover
-
-| field | type |
-|-------|------|
-| description | String |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) |
-| creationDate | Date |
-| terminationDate | Date |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) |
-| vegDmAttribute | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) |
-| vegFacilityAttribute | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) |
-| vegFacilityIdAttribute | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) |
-| vegFacilityTypeAttribute | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) |
-| vegetationDataQualityAttribute | JSON (<code><a href="#urovegetationdataqualityattribute">uro:VegetationDataQualityAttribute</a></code>) |
-| class | Code |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) |
-| averageHeight | Measure |
-
-### veg:SolitaryVegetationObject
-
-| field | type |
-|-------|------|
-| description | String |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) |
-| creationDate | Date |
-| terminationDate | Date |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) |
-| vegDmAttribute | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) |
-| vegFacilityAttribute | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) |
-| vegFacilityIdAttribute | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) |
-| vegFacilityTypeAttribute | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) |
-| vegetationDataQualityAttribute | JSON (<code><a href="#urovegetationdataqualityattribute">uro:VegetationDataQualityAttribute</a></code>) |
-| class | Code |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) |
-| species | Code |
-| height | Measure |
-| trunkDiameter | Measure |
-| crownDiameter | Measure |
-
-### wtr:WaterBody
-
-| field | type |
-|-------|------|
-| description | String |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) |
-| creationDate | Date |
-| terminationDate | Date |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) |
-| class | Code |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) |
-| boundedBy | JSON (<code><a href="#wtr_waterboundarysurfaceproperty">wtr:_WaterBoundarySurfaceProperty</a>[]</code>) |
-| floodingRiskAttribute | JSON (<code><a href="#urowaterbodyfloodingriskattributeproperty">uro:WaterBodyFloodingRiskAttributeProperty</a>[]</code>) |
-| waterBodyDetailAttribute | JSON (<code><a href="#urowaterbodydetailattribute">uro:WaterBodyDetailAttribute</a></code>) |
-| wtrDmAttribute | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) |
-| wtrFacilityAttribute | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) |
-| wtrFacilityIdAttribute | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) |
-| wtrFacilityTypeAttribute | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) |
-
-### wtr:WaterClosureSurface
-
-| field | type |
-|-------|------|
-| description | String |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) |
-| creationDate | Date |
-| terminationDate | Date |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) |
-
-### wtr:WaterGroundSurface
-
-| field | type |
-|-------|------|
-| description | String |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) |
-| creationDate | Date |
-| terminationDate | Date |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) |
-
-### wtr:WaterSurface
-
-| field | type |
-|-------|------|
-| description | String |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) |
-| creationDate | Date |
-| terminationDate | Date |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) |
-| waterLevel | Code |
-
 ## Properties 
-
-### _:TopLevelFeatureProperty
-
-以下のいずれかの型の値をとる：
-
-- <a href='#bldgbuilding'>bldg:Building</a>
-- <a href='#tranroad'>tran:Road</a>
-- <a href='#tranrailway'>tran:Railway</a>
-- <a href='#trantrack'>tran:Track</a>
-- <a href='#transquare'>tran:Square</a>
-- <a href='#bridbridge'>brid:Bridge</a>
-- <a href='#frncityfurniture'>frn:CityFurniture</a>
-- <a href='#vegsolitaryvegetationobject'>veg:SolitaryVegetationObject</a>
-- <a href='#vegplantcover'>veg:PlantCover</a>
-- <a href='#luselanduse'>luse:LandUse</a>
-- <a href='#tuntunnel'>tun:Tunnel</a>
-- <a href='#demrelieffeature'>dem:ReliefFeature</a>
-- <a href='#wtrwaterbody'>wtr:WaterBody</a>
-- <a href='#gengenericcityobject'>gen:GenericCityObject</a>
-- <a href='#grpcityobjectgroup'>grp:CityObjectGroup</a>
-- <a href='#urowaterway'>uro:Waterway</a>
-- <a href='#urootherconstruction'>uro:OtherConstruction</a>
-- <a href='#uroundergroundbuilding'>uro:UndergroundBuilding</a>
-- <a href='#uroappurtenance'>uro:Appurtenance</a>
-- <a href='#urocable'>uro:Cable</a>
-- <a href='#uroduct'>uro:Duct</a>
-- <a href='#uroelectricitycable'>uro:ElectricityCable</a>
-- <a href='#urohandhole'>uro:Handhole</a>
-- <a href='#uromanhole'>uro:Manhole</a>
-- <a href='#urooilgaschemicalspipe'>uro:OilGasChemicalsPipe</a>
-- <a href='#uropipe'>uro:Pipe</a>
-- <a href='#urosewerpipe'>uro:SewerPipe</a>
-- <a href='#urotelecommunicationscable'>uro:TelecommunicationsCable</a>
-- <a href='#urothermalpipe'>uro:ThermalPipe</a>
-- <a href='#urowaterpipe'>uro:WaterPipe</a>
-- <a href='#urfzone'>urf:Zone</a>
-- <a href='#urfagreement'>urf:Agreement</a>
-- <a href='#urfaircraftnoisecontrolzone'>urf:AircraftNoiseControlZone</a>
-- <a href='#urfareaclassification'>urf:AreaClassification</a>
-- <a href='#urfcollectivefacilitiesforreconstruction'>urf:CollectiveFacilitiesForReconstruction</a>
-- <a href='#urfcollectivefacilitiesforreconstructionandrevitalization'>urf:CollectiveFacilitiesForReconstructionAndRevitalization</a>
-- <a href='#urfcollectivefacilitiesfortsunamidisasterprevention'>urf:CollectiveFacilitiesForTsunamiDisasterPrevention</a>
-- <a href='#urfcollectivegovernmentandpublicofficefacilities'>urf:CollectiveGovernmentAndPublicOfficeFacilities</a>
-- <a href='#urfcollectivehousingfacilities'>urf:CollectiveHousingFacilities</a>
-- <a href='#urfcollectiveurbandisasterpreventionfacilities'>urf:CollectiveUrbanDisasterPreventionFacilities</a>
-- <a href='#urfconservationzoneforclustersoftraditionalstructures'>urf:ConservationZoneForClustersOfTraditionalStructures</a>
-- <a href='#urfdisasterpreventionblockimprovementproject'>urf:DisasterPreventionBlockImprovementProject</a>
-- <a href='#urfdisasterpreventionblockimprovementzoneplan'>urf:DisasterPreventionBlockImprovementZonePlan</a>
-- <a href='#urfdistributionbusinesspark'>urf:DistributionBusinessPark</a>
-- <a href='#urfdistributionbusinesszone'>urf:DistributionBusinessZone</a>
-- <a href='#urfdistrict'>urf:District</a>
-- <a href='#urfdistrictdevelopmentplan'>urf:DistrictDevelopmentPlan</a>
-- <a href='#urfdistrictfacility'>urf:DistrictFacility</a>
-- <a href='#urfdistrictimprovementplanfordisasterpreventionblockimprovementzoneplan'>urf:DistrictImprovementPlanForDisasterPreventionBlockImprovementZonePlan</a>
-- <a href='#urfdistrictimprovementplanforhistoricscenerymaintenanceandimprovementdistrict'>urf:DistrictImprovementPlanForHistoricSceneryMaintenanceAndImprovementDistrict</a>
-- <a href='#urfdistrictplan'>urf:DistrictPlan</a>
-- <a href='#urfdistrictsandzones'>urf:DistrictsAndZones</a>
-- <a href='#urfeducationalandculturalfacility'>urf:EducationalAndCulturalFacility</a>
-- <a href='#urfexceptionalfloorarearatedistrict'>urf:ExceptionalFloorAreaRateDistrict</a>
-- <a href='#urffirepreventiondistrict'>urf:FirePreventionDistrict</a>
-- <a href='#urffireprotectionfacility'>urf:FireProtectionFacility</a>
-- <a href='#urffloodpreventionfacility'>urf:FloodPreventionFacility</a>
-- <a href='#urfglobalhubcitydevelopmentproject'>urf:GlobalHubCityDevelopmentProject</a>
-- <a href='#urfgreenspaceconservationdistrict'>urf:GreenSpaceConservationDistrict</a>
-- <a href='#urfheightcontroldistrict'>urf:HeightControlDistrict</a>
-- <a href='#urfhighlevelusedistrict'>urf:HighLevelUseDistrict</a>
-- <a href='#urfhighriseresidentialattractiondistrict'>urf:HighRiseResidentialAttractionDistrict</a>
-- <a href='#urfhistoricscenerymaintenanceandimprovementdistrictplan'>urf:HistoricSceneryMaintenanceAndImprovementDistrictPlan</a>
-- <a href='#urfhousingcontrolarea'>urf:HousingControlArea</a>
-- <a href='#urfindustrialparkdevelopmentproject'>urf:IndustrialParkDevelopmentProject</a>
-- <a href='#urflandreadjustmentproject'>urf:LandReadjustmentProject</a>
-- <a href='#urflandreadjustmentpromotionarea'>urf:LandReadjustmentPromotionArea</a>
-- <a href='#urflandreadjustmentpromotionareasforcorebusinessurbandevelopment'>urf:LandReadjustmentPromotionAreasForCoreBusinessUrbanDevelopment</a>
-- <a href='#urflandscapezone'>urf:LandscapeZone</a>
-- <a href='#urfmarketsslaughterhousescrematoria'>urf:MarketsSlaughterhousesCrematoria</a>
-- <a href='#urfmedicalfacility'>urf:MedicalFacility</a>
-- <a href='#urfnewhousingandurbandevelopmentproject'>urf:NewHousingAndUrbanDevelopmentProject</a>
-- <a href='#urfnewurbaninfrastructureproject'>urf:NewUrbanInfrastructureProject</a>
-- <a href='#urfopenspaceforpublicuse'>urf:OpenSpaceForPublicUse</a>
-- <a href='#urfparkingplacedevelopmentzone'>urf:ParkingPlaceDevelopmentZone</a>
-- <a href='#urfportzone'>urf:PortZone</a>
-- <a href='#urfprivateurbanrenewalprojectplan'>urf:PrivateUrbanRenewalProjectPlan</a>
-- <a href='#urfproductivegreenzone'>urf:ProductiveGreenZone</a>
-- <a href='#urfprojectpromotionarea'>urf:ProjectPromotionArea</a>
-- <a href='#urfpromotiondistrict'>urf:PromotionDistrict</a>
-- <a href='#urfquasiurbanplanningarea'>urf:QuasiUrbanPlanningArea</a>
-- <a href='#urfregulation'>urf:Regulation</a>
-- <a href='#urfresidenceattractionarea'>urf:ResidenceAttractionArea</a>
-- <a href='#urfresidentialblockconstructionproject'>urf:ResidentialBlockConstructionProject</a>
-- <a href='#urfresidentialblockconstructionpromotionarea'>urf:ResidentialBlockConstructionPromotionArea</a>
-- <a href='#urfresidentialenvironmentimprovementdistrict'>urf:ResidentialEnvironmentImprovementDistrict</a>
-- <a href='#urfroadsidedistrictfacility'>urf:RoadsideDistrictFacility</a>
-- <a href='#urfroadsidedistrictimprovementplan'>urf:RoadsideDistrictImprovementPlan</a>
-- <a href='#urfroadsidedistrictplan'>urf:RoadsideDistrictPlan</a>
-- <a href='#urfruraldistrictfacility'>urf:RuralDistrictFacility</a>
-- <a href='#urfruraldistrictimprovementplan'>urf:RuralDistrictImprovementPlan</a>
-- <a href='#urfruraldistrictplan'>urf:RuralDistrictPlan</a>
-- <a href='#urfsandcontrolfacility'>urf:SandControlFacility</a>
-- <a href='#urfscenicdistrict'>urf:ScenicDistrict</a>
-- <a href='#urfscheduledareaforcollectivegovernmentandpublicofficefacilities'>urf:ScheduledAreaForCollectiveGovernmentAndPublicOfficeFacilities</a>
-- <a href='#urfscheduledareaforcollectivehousingfacilities'>urf:ScheduledAreaForCollectiveHousingFacilities</a>
-- <a href='#urfscheduledareafordistributionbusinesspark'>urf:ScheduledAreaForDistributionBusinessPark</a>
-- <a href='#urfscheduledareaforindustrialparkdevelopmentprojects'>urf:ScheduledAreaForIndustrialParkDevelopmentProjects</a>
-- <a href='#urfscheduledareafornewhousingandurbandevelopmentprojects'>urf:ScheduledAreaForNewHousingAndUrbanDevelopmentProjects</a>
-- <a href='#urfscheduledareafornewurbaninfrastructureprojects'>urf:ScheduledAreaForNewUrbanInfrastructureProjects</a>
-- <a href='#urfscheduledareaforurbandevelopmentproject'>urf:ScheduledAreaForUrbanDevelopmentProject</a>
-- <a href='#urfsedimentdisasterpronearea'>urf:SedimentDisasterProneArea</a>
-- <a href='#urfsnowprotectionfacility'>urf:SnowProtectionFacility</a>
-- <a href='#urfsocialwelfarefacility'>urf:SocialWelfareFacility</a>
-- <a href='#urfspecialgreenspaceconservationdistrict'>urf:SpecialGreenSpaceConservationDistrict</a>
-- <a href='#urfspecialurbanrenaissancedistrict'>urf:SpecialUrbanRenaissanceDistrict</a>
-- <a href='#urfspecialuseattractiondistrict'>urf:SpecialUseAttractionDistrict</a>
-- <a href='#urfspecialusedistrict'>urf:SpecialUseDistrict</a>
-- <a href='#urfspecialuserestrictiondistrict'>urf:SpecialUseRestrictionDistrict</a>
-- <a href='#urfspecialzoneforpreservationofhistoricallandscape'>urf:SpecialZoneForPreservationOfHistoricalLandscape</a>
-- <a href='#urfspecifiedblock'>urf:SpecifiedBlock</a>
-- <a href='#urfspecifiedbuildingzoneimprovementplan'>urf:SpecifiedBuildingZoneImprovementPlan</a>
-- <a href='#urfspecifieddisasterpreventionblockimprovementzone'>urf:SpecifiedDisasterPreventionBlockImprovementZone</a>
-- <a href='#urfspecifiedurgenturbanrenewalarea'>urf:SpecifiedUrgentUrbanRenewalArea</a>
-- <a href='#urfsupplyfacility'>urf:SupplyFacility</a>
-- <a href='#urftelecommunicationfacility'>urf:TelecommunicationFacility</a>
-- <a href='#urftidefacility'>urf:TideFacility</a>
-- <a href='#urftrafficfacility'>urf:TrafficFacility</a>
-- <a href='#urftreatmentfacility'>urf:TreatmentFacility</a>
-- <a href='#urftreeplantingdistrict'>urf:TreePlantingDistrict</a>
-- <a href='#urfunclassifiedblankarea'>urf:UnclassifiedBlankArea</a>
-- <a href='#urfunclassifiedusedistrict'>urf:UnclassifiedUseDistrict</a>
-- <a href='#urfunusedlandusepromotionarea'>urf:UnusedLandUsePromotionArea</a>
-- <a href='#urfurbandevelopmentproject'>urf:UrbanDevelopmentProject</a>
-- <a href='#urfurbandisasterrecoverypromotionarea'>urf:UrbanDisasterRecoveryPromotionArea</a>
-- <a href='#urfurbanfacility'>urf:UrbanFacility</a>
-- <a href='#urfurbanfacilitystipulatedbycabinetorder'>urf:UrbanFacilityStipulatedByCabinetOrder</a>
-- <a href='#urfurbanfunctionattractionarea'>urf:UrbanFunctionAttractionArea</a>
-- <a href='#urfurbanplanningarea'>urf:UrbanPlanningArea</a>
-- <a href='#urfurbanredevelopmentproject'>urf:UrbanRedevelopmentProject</a>
-- <a href='#urfurbanredevelopmentpromotionarea'>urf:UrbanRedevelopmentPromotionArea</a>
-- <a href='#urfurbanrenewalproject'>urf:UrbanRenewalProject</a>
-- <a href='#urfurgenturbanrenewalarea'>urf:UrgentUrbanRenewalArea</a>
-- <a href='#urfusedistrict'>urf:UseDistrict</a>
-- <a href='#urfwaterway'>urf:Waterway</a>
-- <a href='#urfwindprotectionfacility'>urf:WindProtectionFacility</a>
-- <a href='#urfzonaldisasterpreventionfacility'>urf:ZonalDisasterPreventionFacility</a>
-- <a href='#urfzoneforpreservationofhistoricallandscape'>urf:ZoneForPreservationOfHistoricalLandscape</a>
 
 ### bldg:_BoundarySurfaceProperty
 
@@ -6131,15 +5988,6 @@
 - <a href='#briddoor'>brid:Door</a>
 - <a href='#bridwindow'>brid:Window</a>
 
-### dem:_ReliefComponentProperty
-
-以下のいずれかの型の値をとる：
-
-- <a href='#dembreaklinerelief'>dem:BreaklineRelief</a>
-- <a href='#demmasspointrelief'>dem:MassPointRelief</a>
-- <a href='#demrasterrelief'>dem:RasterRelief</a>
-- <a href='#demtinrelief'>dem:TINRelief</a>
-
 ### tun:_BoundarySurfaceProperty
 
 以下のいずれかの型の値をとる：
@@ -6161,24 +6009,22 @@
 - <a href='#tundoor'>tun:Door</a>
 - <a href='#tunwindow'>tun:Window</a>
 
-### urf:DistrictDevelopmentPlanProperty
+### wtr:_WaterBoundarySurfaceProperty
 
 以下のいずれかの型の値をとる：
 
-- <a href='#urfdistrictdevelopmentplan'>urf:DistrictDevelopmentPlan</a>
-- <a href='#urfdistrictimprovementplanfordisasterpreventionblockimprovementzoneplan'>urf:DistrictImprovementPlanForDisasterPreventionBlockImprovementZonePlan</a>
-- <a href='#urfdistrictimprovementplanforhistoricscenerymaintenanceandimprovementdistrict'>urf:DistrictImprovementPlanForHistoricSceneryMaintenanceAndImprovementDistrict</a>
-- <a href='#urfroadsidedistrictimprovementplan'>urf:RoadsideDistrictImprovementPlan</a>
-- <a href='#urfruraldistrictimprovementplan'>urf:RuralDistrictImprovementPlan</a>
-- <a href='#urfspecifiedbuildingzoneimprovementplan'>urf:SpecifiedBuildingZoneImprovementPlan</a>
+- <a href='#wtrwaterclosuresurface'>wtr:WaterClosureSurface</a>
+- <a href='#wtrwatergroundsurface'>wtr:WaterGroundSurface</a>
+- <a href='#wtrwatersurface'>wtr:WaterSurface</a>
 
-### urf:DistrictFacilityProperty
+### dem:_ReliefComponentProperty
 
 以下のいずれかの型の値をとる：
 
-- <a href='#urfdistrictfacility'>urf:DistrictFacility</a>
-- <a href='#urfroadsidedistrictfacility'>urf:RoadsideDistrictFacility</a>
-- <a href='#urfruraldistrictfacility'>urf:RuralDistrictFacility</a>
+- <a href='#dembreaklinerelief'>dem:BreaklineRelief</a>
+- <a href='#demmasspointrelief'>dem:MassPointRelief</a>
+- <a href='#demrasterrelief'>dem:RasterRelief</a>
+- <a href='#demtinrelief'>dem:TINRelief</a>
 
 ### uro:BuildingDisasterRiskAttributeProperty
 
@@ -6341,25 +6187,26 @@
 - <a href='#uroroofsurface'>uro:RoofSurface</a>
 - <a href='#urowallsurface'>uro:WallSurface</a>
 
-### wtr:_WaterBoundarySurfaceProperty
+### urf:DistrictDevelopmentPlanProperty
 
 以下のいずれかの型の値をとる：
 
-- <a href='#wtrwaterclosuresurface'>wtr:WaterClosureSurface</a>
-- <a href='#wtrwatergroundsurface'>wtr:WaterGroundSurface</a>
-- <a href='#wtrwatersurface'>wtr:WaterSurface</a>
+- <a href='#urfdistrictdevelopmentplan'>urf:DistrictDevelopmentPlan</a>
+- <a href='#urfdistrictimprovementplanfordisasterpreventionblockimprovementzoneplan'>urf:DistrictImprovementPlanForDisasterPreventionBlockImprovementZonePlan</a>
+- <a href='#urfdistrictimprovementplanforhistoricscenerymaintenanceandimprovementdistrict'>urf:DistrictImprovementPlanForHistoricSceneryMaintenanceAndImprovementDistrict</a>
+- <a href='#urfroadsidedistrictimprovementplan'>urf:RoadsideDistrictImprovementPlan</a>
+- <a href='#urfruraldistrictimprovementplan'>urf:RuralDistrictImprovementPlan</a>
+- <a href='#urfspecifiedbuildingzoneimprovementplan'>urf:SpecifiedBuildingZoneImprovementPlan</a>
+
+### urf:DistrictFacilityProperty
+
+以下のいずれかの型の値をとる：
+
+- <a href='#urfdistrictfacility'>urf:DistrictFacility</a>
+- <a href='#urfroadsidedistrictfacility'>urf:RoadsideDistrictFacility</a>
+- <a href='#urfruraldistrictfacility'>urf:RuralDistrictFacility</a>
 
 ## Data 
-
-### core:Address
-
-| field | type |
-|-------|------|
-
-### gen:genericAttribute
-
-| field | type |
-|-------|------|
 
 ### gml:CoverageFunction
 
@@ -6400,89 +6247,15 @@
 |-------|------|
 | RectifiedGrid | JSON (<code><a href="#gmlrectifiedgrid">gml:RectifiedGrid</a></code>) |
 
-### urf:Boundary
+### core:Address
 
 | field | type |
 |-------|------|
-| class | Code |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) |
-| offset | Measure |
-| offsetDirection | String |
 
-### urf:ParkAttribute
+### gen:genericAttribute
 
 | field | type |
 |-------|------|
-| parkTypeNumber | Code |
-| parkSizeNumber | Code |
-| parkSerialNumber | String |
-
-### urf:ParkingPlaceAttribute
-
-| field | type |
-|-------|------|
-| storeysAboveGround | NonNegativeInteger |
-| storeysBelowGround | NonNegativeInteger |
-
-### urf:SewerSystemAttribute
-
-| field | type |
-|-------|------|
-| startLocation | String |
-| endLocation | String |
-| systemType | Code |
-| drainageArea | String |
-
-### urf:StructureDetails
-
-| field | type |
-|-------|------|
-| startLocation | String |
-| endLocation | String |
-| viaLocations | String |
-| length | Measure |
-| structureType | Code |
-| minimumWidth | Measure |
-| maximumWidth | Measure |
-| standardWidth | Measure |
-| crossType | Code |
-
-### urf:UrbanRapidTransitRailroadAttribute
-
-| field | type |
-|-------|------|
-| structureType | Code |
-| crossType | Code |
-| structuralDetails | JSON (<code><a href="#urfstructuredetails">urf:StructureDetails</a>[]</code>) |
-
-### urf:UrbanRoadAttribute
-
-| field | type |
-|-------|------|
-| routeTypeNumber | Code |
-| routeSizeNumber | Code |
-| routeSerialNumber | String |
-| roadType | Code |
-| numberOfLanes | Integer |
-| roadStructure | String |
-| structureType | Code |
-| crossType | Code |
-| trafficPlazas | Code |
-| structuralDetails | JSON (<code><a href="#urfstructuredetails">urf:StructureDetails</a>[]</code>) |
-
-### urf:VehicleTerminalAttribute
-
-| field | type |
-|-------|------|
-| terminalType | Code |
-
-### urf:WaterWorksAttribute
-
-| field | type |
-|-------|------|
-| startLocation | String |
-| endLocation | String |
 
 ### uro:BridgeFunctionalAttribute
 
@@ -8315,4 +8088,88 @@
 | plannedDepth | Measure |
 | speedLimit | Measure |
 | targetShipType | JSON (<code><a href="#string">String</a>[]</code>) |
+
+### urf:Boundary
+
+| field | type |
+|-------|------|
+| class | Code |
+| function | JSON (<code><a href="#code">Code</a>[]</code>) |
+| usage | JSON (<code><a href="#code">Code</a>[]</code>) |
+| offset | Measure |
+| offsetDirection | String |
+
+### urf:ParkAttribute
+
+| field | type |
+|-------|------|
+| parkTypeNumber | Code |
+| parkSizeNumber | Code |
+| parkSerialNumber | String |
+
+### urf:ParkingPlaceAttribute
+
+| field | type |
+|-------|------|
+| storeysAboveGround | NonNegativeInteger |
+| storeysBelowGround | NonNegativeInteger |
+
+### urf:SewerSystemAttribute
+
+| field | type |
+|-------|------|
+| startLocation | String |
+| endLocation | String |
+| systemType | Code |
+| drainageArea | String |
+
+### urf:StructureDetails
+
+| field | type |
+|-------|------|
+| startLocation | String |
+| endLocation | String |
+| viaLocations | String |
+| length | Measure |
+| structureType | Code |
+| minimumWidth | Measure |
+| maximumWidth | Measure |
+| standardWidth | Measure |
+| crossType | Code |
+
+### urf:UrbanRapidTransitRailroadAttribute
+
+| field | type |
+|-------|------|
+| structureType | Code |
+| crossType | Code |
+| structuralDetails | JSON (<code><a href="#urfstructuredetails">urf:StructureDetails</a>[]</code>) |
+
+### urf:UrbanRoadAttribute
+
+| field | type |
+|-------|------|
+| routeTypeNumber | Code |
+| routeSizeNumber | Code |
+| routeSerialNumber | String |
+| roadType | Code |
+| numberOfLanes | Integer |
+| roadStructure | String |
+| structureType | Code |
+| crossType | Code |
+| trafficPlazas | Code |
+| structuralDetails | JSON (<code><a href="#urfstructuredetails">urf:StructureDetails</a>[]</code>) |
+
+### urf:VehicleTerminalAttribute
+
+| field | type |
+|-------|------|
+| terminalType | Code |
+
+### urf:WaterWorksAttribute
+
+| field | type |
+|-------|------|
+| startLocation | String |
+| endLocation | String |
 
