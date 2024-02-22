@@ -1,12 +1,13 @@
 name: Documentation
 
-# 現状はプライベートなリポジトリなので、普段は動作させたくないため、特定の条件でのみ実行出来るようにしています
 on:
   push:
     branches:
-      - gh-pages
-    tags:
-      - documentation
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
   build:
@@ -19,10 +20,27 @@ jobs:
         run: choco install -y docfx
 
       - name: Build Document
-        run: docfx Documentation/docfx.json
+        run: docfx docs/docfx.json
 
-      - name: Publish Documentation on GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
+      - uses: actions/upload-artifact@v3
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: .docs/_site
+          name: dotnet_doc
+          path: .docs/_site
+          
+      - uses: actions/upload-pages-artifact@v1
+        with:
+          path: .docs/_site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest 
+    timeout-minutes: 5
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    permissions:
+      pages: write
+      id-token: write
+    steps:
+      - uses: actions/deploy-pages@v1
+        id: deployment
