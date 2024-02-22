@@ -1,12 +1,12 @@
 //! The transformer stage that preprocesses the attributes and geometry of the entities.
 
 mod builder;
-mod mapping_rules;
+mod rules;
 mod runner;
 pub mod transform;
 
 pub use builder::*;
-pub use mapping_rules::*;
+pub use rules::*;
 pub use runner::*;
 pub use transform::{DataFlatteningOption, FeatureFlatteningOption, ObjectFlatteningOption};
 
