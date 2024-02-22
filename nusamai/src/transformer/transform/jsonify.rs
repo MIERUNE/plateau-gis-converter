@@ -29,10 +29,14 @@ impl Transform for JsonifyTransform {
                 TypeDef::Feature(FeatureTypeDef { attributes, .. })
                 | TypeDef::Data(DataTypeDef { attributes, .. }) => {
                     for attr in attributes.values_mut() {
-                        if let TypeRef::Named(_) = attr.type_ref {
-                            attr.type_ref = TypeRef::JsonString;
-                        } else if attr.max_occurs != Some(1) {
-                            attr.type_ref = TypeRef::JsonString;
+                        match attr.type_ref {
+                            TypeRef::Named(_) => {
+                                attr.type_ref = TypeRef::JsonString(attr.clone().into());
+                            }
+                            _ if attr.max_occurs != Some(1) => {
+                                attr.type_ref = TypeRef::JsonString(attr.clone().into());
+                            }
+                            _ => {}
                         }
                     }
                 }
