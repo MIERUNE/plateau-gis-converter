@@ -1,22 +1,23 @@
 {
-  "asset": {
-    "version": "1.1"
-  },
-  "geometricError": 1e100,
-  "root": {
-    "boundingVolume": {
-      "region": [
-        2.422514660698311,
-        0.6130460028679996,
-        2.4227337221977407,
-        0.613193587380084,
-        43.14595939151907,
-        60.139444661009875
-      ]
-    },
-    "geometricError": 0.0,
-    "content": {
-      "uri": "test.glb"
-    }
-  }
+	"asset": {
+		"version": "1.1"
+	},
+	"geometricError": 1e100,
+	"root": {
+		"boundingVolume": {
+			"region": [
+				2.423545352784276, 0.6126113632476141, 2.423568686412357,
+				0.6126530152363875, 48.27812072424482, 61.914851977799785
+			]
+		},
+		"geometricError": 0.0,
+		"contents": [
+			{
+				"uri": "PlantCover.glb"
+			},
+			{
+				"uri": "SolitaryVegetationObject.glb"
+			}
+		]
+	}
 }

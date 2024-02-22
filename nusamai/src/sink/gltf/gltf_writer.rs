@@ -673,14 +673,20 @@ pub fn write_gltf<W: Write>(gltf: Gltf, mut bin_content: Vec<u8>, mut writer: W)
 }
 
 // This is the code to verify the operation with Cesium
-pub fn write_3dtiles(bounding_volume: [f64; 6], output_path: &Path) {
+pub fn write_3dtiles(bounding_volume: [f64; 6], output_path: &Path, filenames: &[String]) {
     // write 3DTiles
     let tileset_path = output_path.with_file_name("tileset.json");
-    let content_uri = output_path
-        .file_name()
-        .unwrap()
-        .to_string_lossy()
-        .into_owned();
+
+    let contents: Vec<nusamai_3dtiles_json::tileset::Content> = filenames
+        .iter()
+        .map(|filename| {
+            let uri = filename.to_string();
+            nusamai_3dtiles_json::tileset::Content {
+                uri,
+                ..Default::default()
+            }
+        })
+        .collect();
 
     let tileset = nusamai_3dtiles_json::tileset::Tileset {
         geometric_error: 1e+100,
@@ -693,10 +699,7 @@ pub fn write_3dtiles(bounding_volume: [f64; 6], output_path: &Path) {
                 region: Some(bounding_volume),
                 ..Default::default()
             },
-            content: Some(nusamai_3dtiles_json::tileset::Content {
-                uri: content_uri,
-                ..Default::default()
-            }),
+            contents: Some(contents),
             ..Default::default()
         },
         ..Default::default()

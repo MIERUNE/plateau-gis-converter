@@ -378,13 +378,15 @@ impl DataSink for GltfSink {
                     buffers.insert(class_name.clone(), Buffers { vertices, indices });
                 }
 
-                // todo: 個別に、複数ファイルで出力する
-                // write glTF
+                // write glTFs
+                let mut filenames = Vec::new();
                 for (class_name, buffer) in &buffers {
-                    let mut file_name = self.output_path.clone();
-                    file_name.set_file_name(&format!("{}.glb", class_name));
+                    let mut file_path = self.output_path.clone();
+                    let c_name = class_name.split(':').last().unwrap();
+                    file_path.set_file_name(&format!("{}.glb", c_name));
+                    filenames.push(format!("{}.glb", c_name));
 
-                    let mut file = File::create(&file_name).unwrap();
+                    let mut file = File::create(&file_path).unwrap();
                     let writer = BufWriter::with_capacity(1024 * 1024, &mut file);
 
                     let mut content = build_base_gltf(class_name, buffer, all_translation);
@@ -401,7 +403,7 @@ impl DataSink for GltfSink {
                     bounding_volume.min_height,
                     bounding_volume.max_height,
                 ];
-                write_3dtiles(region, &self.output_path);
+                write_3dtiles(region, &self.output_path, &filenames);
             },
         );
         Ok(())
