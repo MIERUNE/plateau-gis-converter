@@ -15,9 +15,9 @@ PLATEAU-GIS-ConverterはCityGML形式の3D都市モデルを標準的なGISデ�
 - CZML
 - Mapbox Vector Tiles
 
-[静岡県沼津市の CityGML (v2)](https://www.geospatial.jp/ckan/dataset/plateau-22203-numazu-shi-2021/resource/758fe63a-b20f-4d5d-817d-c35eac530143) を読み込んで、3DTilesに変換した例
+[東京都23区の CityGML (v2)](https://www.geospatial.jp/ckan/dataset/plateau-tokyo23ku-2022/resource/55c72dd0-32eb-4107-9526-71fc0af8d50f3) を読み込んで、3DTilesに変換した例
 
-※todo: 画像を貼る
+![alt text](docs/resources/README_image.png)
 
 PLATEAU-GIS-Converterを利用することで、3D都市モデルを用いた様々な分析・開発を行うことが可能です。
 
