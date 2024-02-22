@@ -8,7 +8,11 @@ $ python3 schema_to_doc.py
 """
 
 import json
-from typing import TextIO
+from typing import Any, TextIO
+
+
+def _to_anchor_id(name: str) -> str:
+    return name.lower().replace(":", "").replace(" ", "-").replace("/", "-")
 
 
 def format_referenced_type(ref) -> str:
@@ -17,9 +21,11 @@ def format_referenced_type(ref) -> str:
             return type_desc
         case {"JsonString": orignal_attr}:
             type_desc = format_referenced_type(orignal_attr["ref"])
+            anchor = _to_anchor_id(type_desc)
+            type_desc = f'<a href="#{anchor}">{type_desc}</a>'
             if orignal_attr.get("max_occurs", 1) != 1:
-                type_desc = type_desc + "[]"
-            return f"JSON (`{type_desc}`)"
+                type_desc += "[]"
+            return f"JSON (<code>{type_desc}</code>)"
         case basic_type_name:
             return str(basic_type_name)
 
@@ -35,24 +41,41 @@ def print_type(ty, f: TextIO):
 
 
 def print_property(ty, f: TextIO):
-    f.write("以下のいずれかの型をとります：\n\n")
+    f.write("以下のいずれかの型の値をとる：\n\n")
     for member in ty["members"]:
         name = member["ref"]["Named"]
-        f.write(f"- {name}\n")
+        link = f"<a href='#{_to_anchor_id(name)}'>{name}</a>"
+        f.write(f"- {link}\n")
     f.write("\n")
 
 
-def generate_docs(schema, f: TextIO):
-    for ty_name, ty in schema["types"].items():
-        f.write(f"## {ty_name}\n\n")
+def name_sort_key(item: tuple[str, Any]):
+    (key, _) = item
+    ns, name = key.split(":")
+    return (ns, name)
 
-        match ty["type"]:
-            case "Feature" | "Data":
-                print_type(ty, f)
-            case "Property":
-                print_property(ty, f)
-            case _:
-                raise ValueError(f"Unknown type: {ty['type']}")
+
+def generate_docs(schema, f: TextIO):
+    f.write("## Features \n\n")
+
+    for ty_name, ty in sorted(schema["types"].items(), key=name_sort_key):
+        if ty["type"] == "Feature":
+            f.write(f"### {ty_name}\n\n")
+            print_type(ty, f)
+
+    f.write("## Properties \n\n")
+
+    for ty_name, ty in sorted(schema["types"].items(), key=name_sort_key):
+        if ty["type"] == "Property":
+            f.write(f"### {ty_name}\n\n")
+            print_property(ty, f)
+
+    f.write("## Data \n\n")
+
+    for ty_name, ty in sorted(schema["types"].items(), key=name_sort_key):
+        if ty["type"] in "Data":
+            f.write(f"### {ty_name}\n\n")
+            print_type(ty, f)
 
 
 def main():
