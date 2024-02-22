@@ -380,6 +380,7 @@ impl DataSink for GltfSink {
                 let mut file = File::create(&self.output_path).unwrap();
                 let writer = BufWriter::with_capacity(1024 * 1024, &mut file);
 
+                // todo: 個別に、複数ファイルで出力する
                 // write glTF
                 let (mut bin_content, mut gltf) = build_base_gltf(&buffers, all_translation);
                 append_gltf_extensions(
