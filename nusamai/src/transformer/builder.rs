@@ -112,7 +112,8 @@ impl TransformBuilder for NusamaiTransformBuilder {
             if self.request.shorten_names_for_shapefile {
                 renamer.load_default_map_for_shape();
             }
-            // Called after the load_default_map_for_shape() - therefore the user's rules will override them
+            // Rename rules by the user are set after `load_default_map_for_shape()`,
+            // therefore it will override the default shapefile renames if there are conflicts
             if let Some(rename_rules) = &self.request.rename_rules {
                 renamer.extend_rename_map(rename_rules.clone());
             }
