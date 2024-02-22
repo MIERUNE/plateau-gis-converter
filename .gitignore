@@ -57,3 +57,6 @@ Temporary Items
 
 # emacs buckup files
 *~
+
+.docs
+docs/obj
