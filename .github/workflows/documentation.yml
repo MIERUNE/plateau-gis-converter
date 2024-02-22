@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - documentation
   workflow_dispatch:
 
 permissions:
