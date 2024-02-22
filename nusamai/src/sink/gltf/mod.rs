@@ -10,6 +10,7 @@ use std::path::PathBuf;
 use earcut_rs::{utils3d::project3d_to_2d, Earcut};
 use indexmap::{IndexMap, IndexSet};
 
+use nusamai_3dtiles_json::tileset::Content;
 use nusamai_citygml::{object::ObjectStereotype, schema::Schema, GeometryType, Value};
 use nusamai_projection::cartesian::geographic_to_geocentric;
 use rayon::iter::{ParallelBridge, ParallelIterator};
@@ -23,7 +24,7 @@ use attributes::FeatureAttributes;
 use gltf_writer::{append_gltf_extensions, write_3dtiles, write_gltf};
 use positions::Vertex;
 
-use self::gltf_writer::build_base_gltf;
+use self::gltf_writer::{build_base_gltf, build_base_gltfs};
 
 pub struct BoundingVolume {
     pub min_lng: f64,
@@ -377,19 +378,19 @@ impl DataSink for GltfSink {
                     buffers.insert(class_name.clone(), Buffers { vertices, indices });
                 }
 
-                let mut file = File::create(&self.output_path).unwrap();
-                let writer = BufWriter::with_capacity(1024 * 1024, &mut file);
-
                 // todo: 個別に、複数ファイルで出力する
                 // write glTF
-                let (mut bin_content, mut gltf) = build_base_gltf(&buffers, all_translation);
-                append_gltf_extensions(
-                    &mut gltf,
-                    &mut bin_content,
-                    schema,
-                    &all_triangulated_entities,
-                );
-                write_gltf(gltf, bin_content, writer);
+                for (class_name, buffer) in &buffers {
+                    let mut file_name = self.output_path.clone();
+                    file_name.set_file_name(&format!("{}.glb", class_name));
+
+                    let mut file = File::create(&file_name).unwrap();
+                    let writer = BufWriter::with_capacity(1024 * 1024, &mut file);
+
+                    let mut content = build_base_gltf(class_name, buffer, all_translation);
+                    append_gltf_extensions(&mut content, schema, &all_triangulated_entities);
+                    write_gltf(content.gltf, content.bin_content, writer);
+                }
 
                 // write 3DTiles
                 let region: [f64; 6] = [
