@@ -1,6 +1,6 @@
 use nusamai_citygml::{
-    citygml_feature, values, CityGmlElement, CityGmlReader, Date, Measure, ParseContext,
-    ParseError, Uri, Value,
+    citygml_feature, values, CityGmlElement, CityGmlReader, Color, ColorPlusOpacity, Date, Measure,
+    ParseContext, ParseError, Uri, Value,
 };
 use url::Url;
 
@@ -65,7 +65,7 @@ fn parse_boolean() {
 
 #[test]
 fn parse_basic_types() {
-    #[derive(CityGmlElement, Default)]
+    #[derive(CityGmlElement, Debug, Default)]
     struct Root {
         #[citygml(path = b"int")]
         int: Option<i64>,
@@ -83,6 +83,12 @@ fn parse_basic_types() {
         uri: Option<Uri>,
         #[citygml(path = b"date")]
         date: Option<Date>,
+        #[citygml(path = b"color")]
+        color: Option<Color>,
+        #[citygml(path = b"color-plus-opacity")]
+        color_plus_opacity: Option<ColorPlusOpacity>,
+        #[citygml(path = b"boxed")]
+        boxed: Box<Option<Root>>,
     }
 
     let mut xml_reader = quick_xml::NsReader::from_reader(std::io::Cursor::new(
@@ -96,6 +102,12 @@ fn parse_basic_types() {
             <measure>3.4</measure>
             <date>2000-12-25</date>
             <uri>https://example.com/foo?bar=2000</uri>
+            <color>1.0 0.5 0.0</color>
+            <color-plus-opacity>1.0 0.5 0.0 0.8</color-plus-opacity>
+            <boxed>
+                <int>123</int>
+                <float>1234.5</float>
+            </boxed>
         </root>
         "#,
     ));
@@ -114,6 +126,11 @@ fn parse_basic_types() {
                 "https://example.com/foo?bar=2000"
             );
             assert!(root.bool.unwrap());
+            assert_eq!(root.color.unwrap(), Color::new(1.0, 0.5, 0.0));
+            assert_eq!(
+                root.color_plus_opacity.unwrap(),
+                ColorPlusOpacity::new(1.0, 0.5, 0.0, 0.8)
+            );
             root.into_object();
         }
         Err(e) => panic!("Err: {:?}", e),
@@ -144,6 +161,8 @@ fn parse_basic_types_invalid() {
     expect_invalid::<bool>(r#"<root>123</root>"#); // not boolean
     expect_invalid::<Measure>(r#"<root>foo</root>"#); // not float
     expect_invalid::<Date>(r#"<root>2022-13-00</root>"#); // not valid date
+    expect_invalid::<Color>(r#"<root>0.0 0.0 0.0 0.0</root>"#); // not valid color
+    expect_invalid::<ColorPlusOpacity>(r#"<root>0.0 0.0 0.0 1.0</root>"#); // not valid colorPlusOpacity
 }
 
 #[test]

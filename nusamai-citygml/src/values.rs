@@ -387,7 +387,7 @@ impl CityGmlAttribute for LocalId {
     }
 }
 
-#[derive(Debug, Default, Clone, Copy, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Default, Clone, Copy, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Color {
     pub r: f64,
     pub g: f64,
@@ -452,12 +452,21 @@ impl CityGmlElement for Color {
     }
 }
 
-#[derive(Debug, Default, Clone, Copy, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Default, Clone, Copy, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct ColorPlusOpacity {
     pub r: Double01,
     pub g: Double01,
     pub b: Double01,
     pub a: Double01,
+}
+
+impl std::hash::Hash for ColorPlusOpacity {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.r.to_bits().hash(state);
+        self.g.to_bits().hash(state);
+        self.b.to_bits().hash(state);
+        self.a.to_bits().hash(state);
+    }
 }
 
 impl ColorPlusOpacity {
