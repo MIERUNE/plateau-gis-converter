@@ -78,7 +78,7 @@ fn to_gltf_schema(type_ref: &TypeRef) -> GltfPropertyType {
             ),
             ..Default::default()
         },
-        TypeRef::JsonString => GltfPropertyType {
+        TypeRef::JsonString(_) => GltfPropertyType {
             class_property_type:
                 extensions::gltf::ext_structural_metadata::ClassPropertyType::String,
             component_type: None,

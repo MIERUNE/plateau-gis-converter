@@ -38,7 +38,7 @@ pub struct PropertyTypeDef {
     pub members: Vec<Attribute>,
 }
 
-#[derive(Debug, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct Attribute {
     #[serde(rename = "ref")]
     pub type_ref: TypeRef,
@@ -67,7 +67,7 @@ impl Default for Attribute {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Eq, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
 pub enum TypeRef {
     Unknown,
     String,
@@ -76,8 +76,8 @@ pub enum TypeRef {
     NonNegativeInteger,
     Double,
     Boolean,
-    /// String containing a valid JSON.
-    JsonString,
+    /// A string containing a valid JSON. It contains the original attribute definition.
+    JsonString(Box<Attribute>),
     URI,
     Date,
     DateTime,

@@ -77,7 +77,7 @@ fn attribute_to_column(attr_name: &str, attr: &Attribute) -> Option<ColumnInfo> 
             data_type: "BOOLEAN".into(),
             mime_type: None,
         }),
-        TypeRef::JsonString => Some(ColumnInfo {
+        TypeRef::JsonString(_) => Some(ColumnInfo {
             name: attr_name.to_string(),
             data_type: "TEXT".into(),
             mime_type: Some("application/json".into()),
@@ -154,7 +154,10 @@ mod tests {
         );
 
         let mut attrs_2 = IndexMap::with_hasher(ahash::RandomState::default());
-        attrs_2.insert("json".into(), Attribute::new(TypeRef::JsonString));
+        attrs_2.insert(
+            "json".into(),
+            Attribute::new(TypeRef::JsonString(Attribute::new(TypeRef::String).into())),
+        );
         attrs_2.insert("measure".into(), Attribute::new(TypeRef::Measure));
         attrs_2.insert("bool".into(), Attribute::new(TypeRef::Boolean));
         types.insert(
@@ -251,7 +254,10 @@ mod tests {
         );
 
         let mut attrs_2 = IndexMap::with_hasher(ahash::RandomState::default());
-        attrs_2.insert("json".into(), Attribute::new(TypeRef::JsonString));
+        attrs_2.insert(
+            "json".into(),
+            Attribute::new(TypeRef::JsonString(Attribute::new(TypeRef::String).into())),
+        );
         attrs_2.insert("measure".into(), Attribute::new(TypeRef::Measure));
         attrs_2.insert("bool".into(), Attribute::new(TypeRef::Boolean));
         let typedef_data = TypeDef::Data(DataTypeDef {
@@ -295,7 +301,10 @@ mod tests {
             })
         );
 
-        let result_2 = attribute_to_column("json", &Attribute::new(TypeRef::JsonString));
+        let result_2 = attribute_to_column(
+            "json",
+            &Attribute::new(TypeRef::JsonString(Attribute::new(TypeRef::String).into())),
+        );
         assert_eq!(
             result_2,
             Some(ColumnInfo {
