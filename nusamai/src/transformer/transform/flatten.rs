@@ -104,6 +104,7 @@ impl Transform for FlattenTreeTransform {
                         type_ref: TypeRef::String,
                         min_occurs: 0,
                         max_occurs: Some(1),
+                        original_name: None,
                     },
                 );
                 feature.attributes.insert(
@@ -112,6 +113,7 @@ impl Transform for FlattenTreeTransform {
                         type_ref: TypeRef::String,
                         min_occurs: 0,
                         max_occurs: Some(1),
+                        original_name: None,
                     },
                 );
             }

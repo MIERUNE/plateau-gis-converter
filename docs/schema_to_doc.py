@@ -30,6 +30,9 @@ ORDER_MAP = {
     "urf": 14,
 }
 
+with open("../nusamai/data/plateau_spec.json", encoding="utf-8") as f:
+    spec = json.load(f)
+
 
 def _to_anchor_id(name: str) -> str:
     return name.lower().replace(":", "").replace(" ", "-").replace("/", "-")
@@ -50,12 +53,25 @@ def format_referenced_type(ref) -> str:
             return str(basic_type_name)
 
 
-def print_type(ty, f: TextIO):
-    f.write("| field | type |\n")
-    f.write("|-------|------|\n")
+def get_attr_ja(ty_name: str, attr_name: str) -> str:
+    if attr_name == "gen:genericAttribute":
+        return "汎用属性"
+    if type_spec := spec.get(ty_name):
+        attr = type_spec["attributes"].get(attr_name)
+        if attr:
+            return attr.get("name_ja", "")
+    return ""
+
+
+def print_type(ty_name, ty, f: TextIO):
+    f.write("| フィールド名 | 型 | 日本語名 | CityGML 属性名 |\n")
+    f.write("|-----------|----|--------|---------------|\n")
+
     for attr_name, attr in ty["attributes"].items():
         ref_type = format_referenced_type(attr["ref"])
-        f.write(f"| {attr_name} | { ref_type } |\n")
+        original_name = attr.get("original_name") or attr_name
+        ja = get_attr_ja(ty_name, original_name)
+        f.write(f"| {attr_name} | {ref_type} | {ja} | { original_name} |\n")
 
     f.write("\n")
 
@@ -75,15 +91,23 @@ def name_sort_key(item: tuple[str, Any]):
     return (ORDER_MAP[ns], name)
 
 
+def write_header(ty_name: str, f: TextIO):
+    f.write(f"### {ty_name}\n\n")
+    if ty_name in spec:
+        ja = spec[ty_name]["name_ja"]
+        f.write(f"{ja}\n")
+    f.write("\n")
+
+
 def generate_docs(schema, f: TextIO):
-    f.write("## Features \n\n")
+    f.write("## 地物 (Feature stereotype)\n\n")
 
     for ty_name, ty in sorted(schema["types"].items(), key=name_sort_key):
         if ty["type"] == "Feature":
-            f.write(f"### {ty_name}\n\n")
-            print_type(ty, f)
+            write_header(ty_name, f)
+            print_type(ty_name, ty, f)
 
-    f.write("## Properties \n\n")
+    f.write("## プロパティ (Property stereotype)\n\n")
 
     for ty_name, ty in sorted(schema["types"].items(), key=name_sort_key):
         if ty_name.startswith("_:"):
@@ -92,12 +116,12 @@ def generate_docs(schema, f: TextIO):
             f.write(f"### {ty_name}\n\n")
             print_property(ty, f)
 
-    f.write("## Data \n\n")
+    f.write("## データ (Data stereotype)\n\n")
 
     for ty_name, ty in sorted(schema["types"].items(), key=name_sort_key):
         if ty["type"] in "Data":
-            f.write(f"### {ty_name}\n\n")
-            print_type(ty, f)
+            write_header(ty_name, f)
+            print_type(ty_name, ty, f)
 
 
 def main():

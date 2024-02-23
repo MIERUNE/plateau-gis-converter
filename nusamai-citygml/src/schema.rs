@@ -46,6 +46,7 @@ pub struct Attribute {
     pub min_occurs: u16,
     #[serde(default, skip_serializing_if = "is_some_one")]
     pub max_occurs: Option<u16>,
+    pub original_name: Option<String>,
 }
 
 impl Attribute {
@@ -63,6 +64,7 @@ impl Default for Attribute {
             type_ref: TypeRef::Unknown,
             min_occurs: 0,
             max_occurs: Some(1),
+            original_name: None,
         }
     }
 }
