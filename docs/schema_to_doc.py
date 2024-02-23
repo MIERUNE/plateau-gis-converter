@@ -38,6 +38,16 @@ def _to_anchor_id(name: str) -> str:
     return name.lower().replace(":", "").replace(" ", "-").replace("/", "-")
 
 
+def _to_anchor_id(name: str) -> str:
+    return (
+        name.lower()
+        .replace(":", "")
+        .replace(" ", "-")
+        .replace("/", "-")
+        .replace("_", "-")
+    )
+
+
 def format_referenced_type(ref) -> str:
     match ref:
         case {"Named": type_desc}:

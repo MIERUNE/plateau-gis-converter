@@ -34,6 +34,10 @@ impl DataSourceProvider for DummySourceProvider {
 pub struct DummySource {}
 
 impl DataSource for DummySource {
+    fn set_appearance_resolution(&mut self, _value: bool) {
+        // do nothing
+    }
+
     fn run(&mut self, sink: Sender, feedback: &Feedback) -> Result<()> {
         for _i in 0..100 {
             feedback.ensure_not_canceled()?;

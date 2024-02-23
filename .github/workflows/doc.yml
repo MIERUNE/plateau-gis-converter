@@ -1,12 +1,12 @@
 name: Docs
 
-on:
-  push:
-    branches:
-      - main
+# Stop auto-deployment once to prioritize hosting with documentation.yml
 
-env: 
-  CARGO_TERM_COLOR: always    
+on:
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
 
 permissions:
   contents: read
@@ -28,7 +28,7 @@ jobs:
         uses: actions/upload-pages-artifact@v1
         with:
           path: target/doc
-      
+
   pages:
     needs: build
     permissions:
