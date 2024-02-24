@@ -25,7 +25,7 @@ jobs:
       - name: Build Doc
         run: cargo doc --no-deps
       - name: Upload Doc
-        uses: actions/upload-pages-artifact@v1
+        uses: actions/upload-pages-artifact@v3
         with:
           path: target/doc
 
