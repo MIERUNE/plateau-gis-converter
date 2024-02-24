@@ -162,7 +162,7 @@ fn parse_basic_types_invalid() {
     expect_invalid::<Measure>(r#"<root>foo</root>"#); // not float
     expect_invalid::<Date>(r#"<root>2022-13-00</root>"#); // not valid date
     expect_invalid::<Color>(r#"<root>0.0 0.0 0.0 0.0</root>"#); // not valid color
-    expect_invalid::<ColorPlusOpacity>(r#"<root>0.0 0.0 0.0 1.0</root>"#); // not valid colorPlusOpacity
+    expect_invalid::<ColorPlusOpacity>(r#"<root>0.0 0.0 0.0 0.0 1.0</root>"#); // not valid colorPlusOpacity
 }
 
 #[test]
