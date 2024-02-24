@@ -33,7 +33,7 @@ const filetypeOptions: Record<string, { label: string; extensions: string[] }> =
 	},
 	gltf: {
 		label: 'glTF',
-		extensions: ['glb']
+		extensions: ['']
 	},
 	serde: {
 		label: 'Serde',

@@ -173,10 +173,7 @@ pub fn to_gltf_property_table(
     schema: &TypeDef,
     buffer_view_length: u32,
     feature_count: u32,
-) -> (
-    extensions::gltf::ext_structural_metadata::PropertyTable,
-    u32,
-) {
+) -> extensions::gltf::ext_structural_metadata::PropertyTable {
     // Create Schema.property_tables
     let mut property_table: extensions::gltf::ext_structural_metadata::PropertyTable =
         extensions::gltf::ext_structural_metadata::PropertyTable {
@@ -234,7 +231,7 @@ pub fn to_gltf_property_table(
         TypeDef::Property(_) => unimplemented!(),
     }
 
-    (property_table, buffer_view_length)
+    property_table
 }
 
 #[cfg(test)]
@@ -338,6 +335,6 @@ mod tests {
         });
 
         let property_tables = to_gltf_property_table(&class_name, &feature_type_def, 0, 1);
-        assert_eq!(property_tables.0.properties.len(), 1);
+        assert_eq!(property_tables.properties.len(), 1);
     }
 }

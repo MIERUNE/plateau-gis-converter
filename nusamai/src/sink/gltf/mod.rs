@@ -377,18 +377,25 @@ impl DataSink for GltfSink {
                     buffers.insert(class_name.clone(), Buffers { vertices, indices });
                 }
 
-                let mut file = File::create(&self.output_path).unwrap();
-                let writer = BufWriter::with_capacity(1024 * 1024, &mut file);
+                // make folders
+                std::fs::create_dir_all(&self.output_path).unwrap();
 
-                // write glTF
-                let (mut bin_content, mut gltf) = build_base_gltf(&buffers, all_translation);
-                append_gltf_extensions(
-                    &mut gltf,
-                    &mut bin_content,
-                    schema,
-                    &all_triangulated_entities,
-                );
-                write_gltf(gltf, bin_content, writer);
+                // write glTFs
+                let mut filenames = Vec::new();
+                for (class_name, buffer) in &buffers {
+                    let mut file_path = self.output_path.clone();
+                    let c_name = class_name.split(':').last().unwrap();
+                    // 作成されたフォルダにファイルを保存
+                    file_path.push(&format!("{}.glb", c_name));
+                    filenames.push(format!("{}.glb", c_name));
+
+                    let mut file = File::create(&file_path).unwrap();
+                    let writer = BufWriter::with_capacity(1024 * 1024, &mut file);
+
+                    let mut content = build_base_gltf(class_name, buffer, all_translation);
+                    append_gltf_extensions(&mut content, schema, &all_triangulated_entities);
+                    write_gltf(content.gltf, content.bin_content, writer);
+                }
 
                 // write 3DTiles
                 let region: [f64; 6] = [
@@ -399,7 +406,7 @@ impl DataSink for GltfSink {
                     bounding_volume.min_height,
                     bounding_volume.max_height,
                 ];
-                write_3dtiles(region, &self.output_path);
+                write_3dtiles(region, &self.output_path, &filenames);
             },
         );
         Ok(())
