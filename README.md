@@ -1,34 +1,35 @@
-# BRIDGE 都市デジタルツイン・GISコンバータ（PLATEAU-GIS-Converter）
+# BRIDGE 都市デジタルツイン・GISコンバータ (PLATEAU GIS Converter)
 
-[![Test Tauri App](https://github.com/MIERUNE/nusamai/actions/workflows/test_app.yml/badge.svg)](https://github.com/MIERUNE/nusamai/actions/workflows/test_app.yml)
-[![Test Libraries](https://github.com/MIERUNE/nusamai/actions/workflows/test_libs.yml/badge.svg)](https://github.com/MIERUNE/nusamai/actions/workflows/test_libs.yml)
-[![codecov](https://codecov.io/gh/MIERUNE/nusamai/graph/badge.svg?token=oa62wDWoqu)](https://codecov.io/gh/MIERUNE/nusamai)
-[![Docs](https://github.com/MIERUNE/nusamai/actions/workflows/doc.yml/badge.svg)](https://mierune.github.io/nusamai/app/)
+[![Test Tauri App](https://github.com/MIERUNE/PLATEAU-GIS-Converter/actions/workflows/test_app.yml/badge.svg)](https://github.com/MIERUNE/nusamai/actions/workflows/test_app.yml)
+[![Test Libraries](https://github.com/MIERUNE/PLATEAU-GIS-Converter/actions/workflows/test_libs.yml/badge.svg)](https://github.com/MIERUNE/nusamai/actions/workflows/test_libs.yml)
+[![codecov](https://codecov.io/gh/MIERUNE/PLATEAU-GIS-Converter/graph/badge.svg?token=oa62wDWoqu)](https://codecov.io/gh/MIERUNE/PLATEAU-GIS-Converter)
+<!--
+[![Docs](https://github.com/MIERUNE/PLATEAU-GIS-Converter/actions/workflows/doc.yml/badge.svg)](https://mierune.github.io/nusamai/app/)
+-->
 
-PLATEAU-GIS-ConverterはCityGML形式の3D都市モデルを標準的なGISデータに変換するオーサリングツールです。本ツールでは3D都市モデルを以下の形式に変換することが可能です。
+PLATEAU GIS Converter は、[PLATEAU](https://www.mlit.go.jp/plateau/)プロジェクトのCityGML形式の3D都市モデルを他の一般的なGISデータ形式に変換するツールです。本ツールは3D都市モデルを以下の形式に変換できます：
 
+- 3D Tiles
+- Mapbox Vector Tiles (MVT)
+- GeoPackage
 - GeoJSON
 - Shapefile
-- GeoPackage
-- 3DTiles
 - KML
 - CZML
-- Mapbox Vector Tiles
 
-[東京都23区の CityGML (v2)](https://www.geospatial.jp/ckan/dataset/plateau-tokyo23ku-2022/resource/55c72dd0-32eb-4107-9526-71fc0af8d50f3) を読み込んで、3DTilesに変換した例
+[東京都23区の CityGML (v2)](https://www.geospatial.jp/ckan/dataset/plateau-tokyo23ku-2022/resource/55c72dd0-32eb-4107-9526-71fc0af8d50f3) を読み込んで、3DTilesに変換した例：
 
 ![alt text](docs/resources/README_image.png)
 
-PLATEAU-GIS-Converterを利用することで、3D都市モデルを用いた様々な分析・開発を行うことが可能です。
+PLATEAU GIS Converter を利用することで、3D都市モデルを用いた様々な分析・開発を行うことができます：
 
-- KMLによるGoogle Earthでの可視化
-- GeoPackageによるQGIS等での解析
-- Mapbox Vector Tilesを用いた大規模データの高速描画
-- 3DTilesを利用したCesiumでの可視化
+- GeoPackage 形式による QGIS 等での解析
+- Mapbox Vector Tiles (MVT) 形式による、大規模データのWeb等での高速描画
+- KML 形式による Google Earth での可視化
+- 3D Tiles 形式による Cesium 等での可視化
 - など
 
-PLATEAU-GIS-Converterは利用者アンケートを実施しています。
-今後の開発の参考にするため、ユーザーの皆様の忌憚ないご意見をお聞かせください。
+PLATEAU GIS Converter は利用者アンケートを実施しています。今後の開発の参考にするため、ユーザーの皆様の忌憚ないご意見をお聞かせください。
 
 ※todo: Googleフォームのリンクを貼る
 
@@ -38,36 +39,35 @@ PLATEAU-GIS-Converterは利用者アンケートを実施しています。
 
 ※todo: 動作環境は要検証
 
-- Windows（x86_64）
-- MacOS（ARM）
-- MacOS (Intel)
+- Windows（Intel）
+- macOS（Apple Silicon, Intel）
 
 # 利用手順
 
 ※todo: リンク先を更新
 
 - ソフトウェアの最新版は[Releaseページ](https://github.com/MIERUNE/PLATEAU-GIS-Converter/releases)からダウンロードしてください。
-- 詳しい利用方法については、こちらの[マニュアル](https://MIERUNE.github.io/PLATEAU-GIS-Converter/index.html) をご覧ください。
+- 詳しい利用方法については、こちらの[マニュアル](https://MIERUNE.github.io/PLATEAU-GIS-Converter/index.html)をご覧ください。
 
 ## ライセンス
 
 - 本リポジトリはMITライセンスで提供されています。
-- 本ソフトウェアの開発は[株式会社 MIERUNE](https://www.mierune.co.jp/)が行なっています。
+- 本ソフトウェアの開発は[株式会社MIERUNE](https://www.mierune.co.jp/)が行っています。
 - ソースコードおよび関連ドキュメントの著作権は国土交通省に帰属します。
 
 ## 注意事項
 
-- 本リポジトリは参考資料として提供しているものです。動作の保証は行っておりません。
+- 本リポジトリおよびソフトウェアは Project PLATEAU の参考資料として提供しているものです。動作の保証は行っておりません。
 - 本リポジトリの内容は予告なく変更・削除する場合があります。
-- 本リポジトリおよび本プラグインの利用により生じた損失及び損害等について、国土交通省はいかなる責任も負わないものとします。
+- 本リポジトリおよび本▽ソフトウェアの利用により生じた損失及び損害等について、国土交通省および開発者はいかなる責任も負わないものとします。
 
-## 開発者向け情報
+## Development (開発者向け情報)
 
 ### リポジトリ構成
 
 - アプリケーション：
   - [`app`](./app/) &mdash; Tauri による GUI 実装
-  - [`nusamai`](./nusamai/) &mdash; バックエンドおよびコマンドライン版実装
+  - [`nusamai`](./nusamai/) &mdash; バックエンドおよびコマンドライン版の実装
 - 基盤・ユーティリティ：
   - [`nusamai-geometry`](./nusamai-geometry/) &mdash; ジオメトリ型
   - [`nusamai-projection`](./nusamai-projection/) &mdash; 投影法変換
@@ -75,7 +75,7 @@ PLATEAU-GIS-Converterは利用者アンケートを実施しています。
   - [`nusamai-citygml`](./nusamai-plateau/citygml/) &mdash; CityGML パーサ実装支援ライブラリ
     - [`macros`](./nusamai-plateau/citygml/macros/) &mdash; パーサ導出用の proc macros
   - [`nusamai-plateau`](./nusamai-plateau/) &mdash; PLATEAU 用の CityGML モデルおよびパーサ
-- 変換先形式のための支援ライブラリ（本プロジェクトのユースケースが混入しないように開発する）
+- 変換先形式のための支援ライブラリ（本プロジェクトのユースケースと癒着しないように構成する）
   - [`nusamai-3dtiles`](./nusamai-3dtiles/) &mdash; 3D Tiles
   - [`nusamai-mvt`](./nusamai-mvt/) &mdash; Mapbox Vector Tiles (MVT)
   - [`nusamai-gpkg`](./nusamai-gpkg/) &mdash; GeoPackage
@@ -88,13 +88,16 @@ PLATEAU-GIS-Converterは利用者アンケートを実施しています。
 ### 外部リポジトリ
 
 - [MIERUNE/earcut-rs](https://github.com/MIERUNE/earcut-rs) &mdash; ポリゴン三角形化アルゴリズム
-- [MIERUNE/japan-geoid](https://github.com/MIERUNE/japan-geoid) &mdash; 日本のジオイドモデル (JGD2011 → WGS 84 の変換に必要)
+- [MIERUNE/japan-geoid](https://github.com/MIERUNE/japan-geoid) &mdash; 日本のジオイドモデル (JGD2011 → WGS 84 の変換)
 
-### その他のリポジトリ
+### その他参考リポジトリ
 
 - [MIERUNE/plateau-qgis-plugin](https://github.com/MIERUNE/plateau-qgis-plugin) &mdash; PLATEAU QGIS Plugin の実装
+
+<!--
 - [MIERUNE/plateau-schema-experiment](https://github.com/MIERUNE/plateau-schema-experiment) &mdash; CityGML 2.0 と i-UR の XML Schema を解析する実験コード群。QGIS Pluginの属性列挙に使用。
 - [MIERUNE/3dtiles-research](https://github.com/MIERUNE/3dtiles-research) &mdash; 3D Tiles / glTF の実験コード群
+-->
 
 ### Build &amp; Run
 
