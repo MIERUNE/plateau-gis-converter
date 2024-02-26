@@ -186,7 +186,6 @@ fn feature_sorting_stage(
         BincodeExternalChunk<_>,
         // TODO: Implement an external sorter by ourselves?
     > = ExternalSorterBuilder::new()
-        .with_tmp_dir(Path::new("./"))
         .with_buffer(MemoryLimitedBufferBuilder::new(200 * 1024 * 1024)) // TODO
         .with_threads_number(8) // TODO
         .build()
