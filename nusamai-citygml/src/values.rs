@@ -448,6 +448,7 @@ impl CityGmlElement for Color {
             type_ref: schema::TypeRef::Double,
             min_occurs: 3,
             max_occurs: Some(3),
+            original_name: None,
         }
     }
 }
@@ -513,6 +514,7 @@ impl CityGmlElement for ColorPlusOpacity {
             type_ref: schema::TypeRef::Double,
             min_occurs: 4,
             max_occurs: Some(4),
+            original_name: None,
         }
     }
 }

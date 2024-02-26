@@ -48,8 +48,9 @@ impl Transform for EditFieldNamesTransform {
                 TypeDef::Feature(feat) => &mut feat.attributes,
                 TypeDef::Property(_) => continue,
             };
-            atrs.retain2(|key, _| {
+            atrs.retain2(|key, value| {
                 if let Some(new_name) = self.rename(key) {
+                    value.original_name = Some(key.clone());
                     *key = new_name.to_string();
                 }
                 true

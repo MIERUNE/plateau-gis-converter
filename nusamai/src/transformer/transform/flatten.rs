@@ -106,6 +106,7 @@ impl Transform for FlattenTreeTransform {
                                 type_ref: TypeRef::String,
                                 min_occurs: 0,
                                 max_occurs: Some(1),
+                                original_name: None,
                             },
                         );
                         typedef.attributes.insert(
@@ -114,6 +115,7 @@ impl Transform for FlattenTreeTransform {
                                 type_ref: TypeRef::String,
                                 min_occurs: 0,
                                 max_occurs: Some(1),
+                                original_name: None,
                             },
                         );
                     }
@@ -126,6 +128,7 @@ impl Transform for FlattenTreeTransform {
                                 type_ref: TypeRef::String,
                                 min_occurs: 0,
                                 max_occurs: Some(1),
+                                original_name: None,
                             },
                         );
                         typedef.attributes.insert(
@@ -134,6 +137,7 @@ impl Transform for FlattenTreeTransform {
                                 type_ref: TypeRef::String,
                                 min_occurs: 0,
                                 max_occurs: Some(1),
+                                original_name: None,
                             },
                         );
                     }
