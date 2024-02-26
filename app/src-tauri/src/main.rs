@@ -16,6 +16,7 @@ use nusamai::sink::{
 use nusamai::source::citygml::CityGmlSourceProvider;
 use nusamai::source::DataSourceProvider;
 use nusamai::transformer::MultiThreadTransformer;
+use nusamai::transformer::{MappingRules, Requirements};
 use nusamai::transformer::{NusamaiTransformBuilder, TransformBuilder};
 use nusamai_plateau::models::TopLevelCityObject;
 
@@ -50,7 +51,7 @@ fn select_sink_provider(filetype: &str) -> Box<dyn DataSinkProvider> {
 }
 
 #[tauri::command]
-fn run(input_paths: Vec<String>, output_path: String, filetype: String) {
+fn run(input_paths: Vec<String>, output_path: String, filetype: String, rules_path: String) {
     let sinkopt: Vec<(String, String)> = vec![("@output".into(), output_path)];
 
     log::info!("Running pipeline with input: {:?}", input_paths);
@@ -89,7 +90,27 @@ fn run(input_paths: Vec<String>, output_path: String, filetype: String) {
 
     let (transformer, schema) = {
         use nusamai_citygml::CityGmlElement;
-        let requirements = sink.make_transform_requirements();
+
+        let requirements = if rules_path.is_empty() {
+            sink.make_transform_requirements()
+        } else {
+            let file_contents = std::fs::read_to_string(&rules_path);
+            if let Ok(contents) = file_contents {
+                if let Ok(mapping_rules) = serde_json::from_str::<MappingRules>(&contents) {
+                    Requirements {
+                        mapping_rules: Some(mapping_rules),
+                        ..sink.make_transform_requirements()
+                    }
+                } else {
+                    log::error!("Error parsing rules file");
+                    return;
+                }
+            } else {
+                log::error!("Error reading rules file");
+                return;
+            }
+        };
+
         let transform_builder = NusamaiTransformBuilder::new(requirements.into());
         let mut schema = nusamai_citygml::schema::Schema::default();
         TopLevelCityObject::collect_schema(&mut schema);
