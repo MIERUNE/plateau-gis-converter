@@ -7,7 +7,7 @@
 [![Docs](https://github.com/MIERUNE/PLATEAU-GIS-Converter/actions/workflows/doc.yml/badge.svg)](https://mierune.github.io/nusamai/app/)
 -->
 
-## 1.概要
+## 1. 概要
 
 PLATEAU GIS Converter は、[PLATEAU](https://www.mlit.go.jp/plateau/)プロジェクトのCityGML形式の3D都市モデルを他の一般的なGISデータ形式に変換するソフトウェアです。
 
@@ -15,7 +15,7 @@ PLATEAU GIS Converter は、[PLATEAU](https://www.mlit.go.jp/plateau/)プロジ�
 
 ![alt text](docs/resources/README_image.png)
 
-## 2.「GISコンバータ」について
+## 2. 「GISコンバータ」について
 
 PLATEAUの標準仕様に準拠したCityGML2.0形式の3D都市モデルは、専門のGISツールやCUIツールを用いて他のGIS形式に変換して用いられることが一般的ですが、一般ユーザーが簡易に利用可能な汎用的ツールは存在しません。
 このため、流通や活用の範囲が専門家や技術者に限られていました。
@@ -27,12 +27,12 @@ PLATEAUの標準仕様に準拠したCityGML2.0形式の3D都市モデルは、�
 - 3D Tiles 形式による Cesium 等での可視化
 - など
 
-## 3.利用手順
+## 3. 利用手順
 
 - ソフトウェアの最新版は[Releaseページ](https://github.com/MIERUNE/PLATEAU-GIS-Converter/releases)からダウンロードしてください。
 - 詳しい利用方法については、こちらの[マニュアル](https://MIERUNE.github.io/PLATEAU-GIS-Converter/index.html)をご覧ください。
 
-## 4.システム概要
+## 4. システム概要
 
 本ソフトウェアの機能は以下の通りです。
 
@@ -48,7 +48,7 @@ PLATEAUの標準仕様に準拠したCityGML2.0形式の3D都市モデルは、�
 - 属性マッピングルールの取り込み
 - 特定の座標系へ座標変換して出力
 
-## 5.利用技術
+## 5. 利用技術
 
 - UI
   - [Tauri](https://github.com/tauri-apps/tauri)
@@ -56,12 +56,12 @@ PLATEAUの標準仕様に準拠したCityGML2.0形式の3D都市モデルは、�
 - バックエンド
   - [Rust](https://www.rust-lang.org/)
 
-## 6.動作環境
+## 6. 動作環境
 
 - Windows（Intel）
 - macOS（Apple Silicon, Intel）
 
-## 7.本リポジトリのフォルダ構成
+## 7. 本リポジトリのフォルダ構成
 
 - アプリケーション：
   - [`app`](./app/) &mdash; Tauri による GUI 実装
@@ -83,19 +83,19 @@ PLATEAUの標準仕様に準拠したCityGML2.0形式の3D都市モデルは、�
   - [`nusamai-czml`](./nusamai-kml/) &mdash; CZML
   - [`nusamai-shapefile`](./nusamai-shapefile/) &mdash; Shapefile
 
-## 8.ライセンス
+## 8. ライセンス
 
 - 本リポジトリはMITライセンスで提供されています。
 - 本ソフトウェアの開発は[株式会社MIERUNE](https://www.mierune.co.jp/)が行っています。
 - ソースコードおよび関連ドキュメントの著作権は国土交通省に帰属します。
 
-## 9.注意事項
+## 9. 注意事項
 
 - 本リポジトリおよびソフトウェアは Project PLATEAU の参考資料として提供しているものです。動作の保証は行っておりません。
 - 本リポジトリの内容は予告なく変更・削除する場合があります。
 - 本リポジトリおよび本▽ソフトウェアの利用により生じた損失及び損害等について、国土交通省および開発者はいかなる責任も負わないものとします。
 
-## 10.参考資料
+## 10. 参考資料
 
 - [PLATEAU プロジェクト](https://www.mlit.go.jp/plateau/)
 - [3D都市モデル標準製品仕様書](https://www.mlit.go.jp/plateaudocument/)
