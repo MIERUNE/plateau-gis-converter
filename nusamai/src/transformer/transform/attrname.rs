@@ -33,6 +33,11 @@ impl EditFieldNamesTransform {
             }
         }
     }
+
+    pub fn extend_rename_map(&mut self, map: HashMap<String, String>) {
+        // Note: the value is updated if the key already exists
+        self.rename_map.extend(map);
+    }
 }
 
 impl Transform for EditFieldNamesTransform {

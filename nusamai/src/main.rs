@@ -9,6 +9,7 @@ use nusamai::pipeline::Canceller;
 use nusamai::sink::{DataSink, DataSinkProvider};
 use nusamai::source::citygml::CityGmlSourceProvider;
 use nusamai::source::{DataSource, DataSourceProvider};
+use nusamai::transformer::MappingRules;
 use nusamai::transformer::{MultiThreadTransformer, Requirements};
 use nusamai::transformer::{NusamaiTransformBuilder, TransformBuilder};
 use nusamai::BUILTIN_SINKS;
@@ -29,6 +30,10 @@ struct Args {
     /// Specify the output path
     #[arg(long)]
     output: String,
+
+    /// Specify the mapping rules JSON file
+    #[arg(long)]
+    rules: Option<String>,
 
     /// Output schema
     #[arg(long)]
@@ -125,7 +130,21 @@ fn main() {
         sink_provider.create(&sink_params)
     };
 
-    let requirements = sink.make_transform_requirements();
+    let requirements = if let Some(rules_path) = &args.rules {
+        let mapping_rules = {
+            let file_contents =
+                std::fs::read_to_string(rules_path).expect("Error reading rules file");
+            let mapping_rules: MappingRules =
+                serde_json::from_str(&file_contents).expect("Error parsing rules file");
+            mapping_rules
+        };
+        Requirements {
+            mapping_rules: Some(mapping_rules),
+            ..sink.make_transform_requirements()
+        }
+    } else {
+        sink.make_transform_requirements()
+    };
 
     let source = {
         // glob input file patterns
@@ -221,6 +240,8 @@ mod tests {
             .arg("noop")
             .arg("--output")
             .arg("dummy")
+            .arg("--rules")
+            .arg("./tests/rules.json")
             .arg("--schema")
             .arg("schema.json")
             .assert();

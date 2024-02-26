@@ -1,14 +1,14 @@
 //! The transformer stage that preprocesses the attributes and geometry of the entities.
 
 mod builder;
+mod rules;
 mod runner;
 pub mod transform;
 
 pub use builder::*;
+pub use rules::*;
 pub use runner::*;
-pub use transform::{
-    DataFlatteningOption, FeatureFlatteningOption, ObjectFlatteningOption,
-};
+pub use transform::{DataFlatteningOption, FeatureFlatteningOption, ObjectFlatteningOption};
 
 use crate::pipeline::{Feedback, Parcel, Receiver, Result, Sender};
 
