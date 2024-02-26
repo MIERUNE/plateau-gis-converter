@@ -1,3 +1,5 @@
+# GeoPackage マッピングルール
+
 ## 地物 (Feature stereotype)
 
 ### bldg:Building
@@ -8814,4 +8816,3 @@ nan
 |-----------|----|--------|---------------|
 | startLocation | String | 起点 | urf:startLocation |
 | endLocation | String | 終点 | urf:endLocation |
-
