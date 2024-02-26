@@ -8,7 +8,7 @@
 
 	let inputPaths: string[] = [];
 	let filetype: string;
-	let mappingRulePath = '';
+	let rulesPath = '';
 	let outputPath = '';
 	let isRunning = false;
 
@@ -26,7 +26,8 @@
 		await invoke('run', {
 			inputPaths,
 			outputPath,
-			filetype
+			filetype,
+			rulesPath
 		});
 		isRunning = false;
 		alert(`${filetype}形式で '${outputPath}' に出力しました。`);
@@ -50,7 +51,7 @@
 
 		<InputSelector bind:inputPaths />
 
-		<SettingSelector bind:filetype bind:mappingRulePath />
+		<SettingSelector bind:filetype bind:rulesPath />
 
 		<OutputSelector {filetype} bind:outputPath />
 

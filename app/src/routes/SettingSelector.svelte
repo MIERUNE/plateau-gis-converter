@@ -4,9 +4,9 @@
 	import { filetypeOptions, crsOptions } from '$lib/settings';
 
 	export let filetype: string;
-	export let mappingRulePath: string;
+	export let rulesPath: string;
 
-	async function openMappingRuleDialog() {
+	async function openRulesPathDialog() {
 		const res = await dialog.open({
 			filters: [
 				{
@@ -16,11 +16,11 @@
 			]
 		});
 		if (!res) return;
-		mappingRulePath = Array.isArray(res) ? res[0] : res;
+		rulesPath = Array.isArray(res) ? res[0] : res;
 	}
 
-	function clearMappingRule() {
-		mappingRulePath = '';
+	function clearRulesPath() {
+		rulesPath = '';
 	}
 </script>
 
@@ -54,14 +54,14 @@
 			<label for="crs-select" class="font-bold">属性マッピングルール</label>
 			<div class="flex items-center gap-3">
 				<button
-					on:click={openMappingRuleDialog}
+					on:click={openRulesPathDialog}
 					class="bg-accent1 font-semibold rounded px-4 py-0.5 shadow hover:opacity-75">選択</button
 				>
-				<div class="text-sm" class:opacity-50={!mappingRulePath}>
-					{#if mappingRulePath}
+				<div class="text-sm" class:opacity-50={!rulesPath}>
+					{#if rulesPath}
 						<div class="flex justify-center items-center gap-1.5">
-							<p><code>{mappingRulePath}</code></p>
-							<button on:click={clearMappingRule} class="hover:opacity-75">
+							<p><code>{rulesPath}</code></p>
+							<button on:click={clearRulesPath} class="hover:opacity-75">
 								<Icon icon="material-symbols:cancel" />
 							</button>
 						</div>
