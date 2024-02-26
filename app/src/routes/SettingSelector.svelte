@@ -1,8 +1,27 @@
 <script lang="ts">
+	import { dialog } from '@tauri-apps/api';
 	import Icon from '@iconify/svelte';
 	import { filetypeOptions, crsOptions } from '$lib/settings';
 
 	export let filetype: string;
+	export let mappingRulePath: string;
+
+	async function openMappingRuleDialog() {
+		const res = await dialog.open({
+			filters: [
+				{
+					name: 'Mapping rule format',
+					extensions: ['json']
+				}
+			]
+		});
+		if (!res) return;
+		mappingRulePath = Array.isArray(res) ? res[0] : res;
+	}
+
+	function clearMappingRule() {
+		mappingRulePath = '';
+	}
 </script>
 
 <div>
@@ -31,13 +50,25 @@
 			</select>
 		</div>
 
-		<div class=" flex flex-col gap-1.5 opacity-50">
-			<label for="crs-select" class="font-bold">属性マッピング</label>
+		<div class=" flex flex-col gap-1.5">
+			<label for="crs-select" class="font-bold">属性マッピングルール</label>
 			<div class="flex items-center gap-3">
-				<button class="bg-accent1 font-semibold rounded px-4 py-0.5 shadow hover:opacity-75"
-					>選択</button
+				<button
+					on:click={openMappingRuleDialog}
+					class="bg-accent1 font-semibold rounded px-4 py-0.5 shadow hover:opacity-75">選択</button
 				>
-				<div class="text-sm">設定ファイルが選択されていません</div>
+				<div class="text-sm" class:opacity-50={!mappingRulePath}>
+					{#if mappingRulePath}
+						<div class="flex justify-center items-center gap-1.5">
+							<p><code>{mappingRulePath}</code></p>
+							<button on:click={clearMappingRule} class="hover:opacity-75">
+								<Icon icon="material-symbols:cancel" />
+							</button>
+						</div>
+					{:else}
+						<p>設定ファイルが選択されていません</p>
+					{/if}
+				</div>
 			</div>
 		</div>
 	</div>

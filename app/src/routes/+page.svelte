@@ -8,6 +8,7 @@
 
 	let inputPaths: string[] = [];
 	let filetype: string;
+	let mappingRulePath = '';
 	let outputPath = '';
 	let isRunning = false;
 
@@ -49,7 +50,7 @@
 
 		<InputSelector bind:inputPaths />
 
-		<SettingSelector bind:filetype />
+		<SettingSelector bind:filetype bind:mappingRulePath />
 
 		<OutputSelector {filetype} bind:outputPath />
 
