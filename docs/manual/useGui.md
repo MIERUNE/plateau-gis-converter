@@ -203,8 +203,7 @@ Serving HTTP on :: port 8000 (http://[::]:8000/) ...
 
 ![alt text](../resources/useGui_image-16.png)
 
-###
-i 属性名を変換する
+### 属性名を変換する
 
 - 属性名などに日本語名などを利用したい場合は、`rules.json`を利用して属性名を変換することができます。
 - 以下のような、属性名変換用の`rules.json`を作成します。
