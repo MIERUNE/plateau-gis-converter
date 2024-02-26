@@ -94,16 +94,20 @@ fn run(input_paths: Vec<String>, output_path: String, filetype: String, rules_pa
         let requirements = if rules_path.is_empty() {
             sink.make_transform_requirements()
         } else {
-            let mapping_rules = {
-                let file_contents =
-                    std::fs::read_to_string(rules_path).expect("Error reading rules file");
-                let mapping_rules: MappingRules =
-                    serde_json::from_str(&file_contents).expect("Error parsing rules file");
-                mapping_rules
-            };
-            Requirements {
-                mapping_rules: Some(mapping_rules),
-                ..sink.make_transform_requirements()
+            let file_contents = std::fs::read_to_string(&rules_path);
+            if let Ok(contents) = file_contents {
+                if let Ok(mapping_rules) = serde_json::from_str::<MappingRules>(&contents) {
+                    Requirements {
+                        mapping_rules: Some(mapping_rules),
+                        ..sink.make_transform_requirements()
+                    }
+                } else {
+                    log::error!("Error parsing rules file");
+                    return;
+                }
+            } else {
+                log::error!("Error reading rules file");
+                return;
             }
         };
 
