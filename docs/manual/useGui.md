@@ -28,11 +28,8 @@ Windowsで利用する場合も、同様のUI・手順で利用することが�
 
 ![alt text](../resources/useGui_image-2.png)
 
-- 座標参照系を変換したい座標系に変える
-
-※todo: 機能開発中です
-
-- 属性マッピング用の`mapping.json`を選択します。
+- 座標参照系を変換したい座標系に変えます。
+  - 座標参照系は、GeoPackageおよびShapefile選択時にのみ変更することができます。
 
 ※todo: 機能開発中です
 
@@ -54,6 +51,38 @@ Windowsで利用する場合も、同様のUI・手順で利用することが�
 ![alt text](../resources/useGui_image-6.png)
 
 - QGISの利用方法については[こちら](https://www.mlit.go.jp/plateau/learning/tpc05-1/)を参照してください。
+
+#### 属性名を変換する
+
+- 属性名などに日本語名などを利用したい場合は、`rules.json`を利用して属性名を変換することができます。
+- 以下のような、属性名変換用の`rules.json`を作成します。
+  - `rename`に変換前の属性名と変換後の属性名を記述します。
+  - 例えば、`buildingIDAttribute`を`建物ID`に変換したい場合は、以下のように記述します。
+
+```json
+{
+    "rename": {
+        "buildingIDAttribute": "建物ID",
+        "address": "住所",
+        "buildingDataQualityAttribute": "データ品質",
+        "buildingDetailAttribute": "建物詳細",
+        "genericAttribute": "ジェネリック",
+        "measuredHeight": "高さ",
+        "buildingDisasterRiskAttribute": "災害リスク",
+        "name": "名前"
+    }
+}
+```
+
+- `設定`の`属性マッピングルール`に`rules.json`を指定します。
+
+![alt text](../resources/useGui_image-17.png)
+
+- `変換`ボタンをクリックし、データを変換すると、属性名が変換されたGeoPackageが出力されます。
+
+![alt text](../resources/useGui_image-18.png)
+
+- 設定を行わない場合のデフォルトの属性名は
 
 ### Mapbox Vector Tilesに変換する
 
