@@ -86,7 +86,13 @@ impl GpkgSink {
         feedback: &Feedback,
         schema: &Schema,
     ) -> Result<()> {
-        let mut handler = {
+        let mut handler = if self.output_path.to_string_lossy().starts_with("sqlite:") {
+            // note: unlike the case of the file system path, the database is not cleared even if it already exists
+            // this is mainly expected to be used with `sqlite::memory:` for the testing purpose
+            GpkgHandler::from_url(&Url::parse(self.output_path.to_str().unwrap()).unwrap())
+                .await
+                .unwrap()
+        } else {
             // delete the db file first is already exists
             if self.output_path.exists() {
                 std::fs::remove_file(&self.output_path).unwrap();
