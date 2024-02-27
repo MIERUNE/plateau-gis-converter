@@ -86,11 +86,12 @@ impl GpkgSink {
         feedback: &Feedback,
         schema: &Schema,
     ) -> Result<()> {
-        let mut handler = if self.output_path.to_string_lossy().starts_with("sqlite:") {
-            GpkgHandler::from_url(&Url::parse(self.output_path.to_str().unwrap()).unwrap())
-                .await
-                .unwrap()
-        } else {
+        let mut handler = {
+            // delete the db file first is already exists
+            if self.output_path.exists() {
+                std::fs::remove_file(&self.output_path).unwrap();
+            }
+
             GpkgHandler::from_url(
                 &Url::parse(&format!("sqlite://{}", self.output_path.to_str().unwrap())).unwrap(),
             )
