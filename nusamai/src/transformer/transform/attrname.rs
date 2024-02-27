@@ -102,3 +102,19 @@ impl EditFieldNamesTransform {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_rename() {
+        let mut transform = EditFieldNamesTransform::new();
+        let mut map = HashMap::new();
+        map.insert("old_name".to_string(), "new_name".to_string());
+        transform.extend_rename_map(map);
+
+        assert_eq!(transform.rename("ns:old_name"), Some("new_name"));
+        assert_eq!(transform.rename("ns:old_name2"), Some("old_name2"));
+    }
+}
