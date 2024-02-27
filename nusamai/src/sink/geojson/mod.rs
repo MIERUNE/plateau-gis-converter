@@ -89,7 +89,6 @@ impl DataSink for GeoJsonSink {
             },
             || {
                 // Write GeoJSON to a file
-
                 let mut file = File::create(&self.output_path)?;
                 let mut writer = BufWriter::with_capacity(1024 * 1024, &mut file);
 
