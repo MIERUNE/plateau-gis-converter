@@ -133,12 +133,11 @@ mod tests {
     fn test_rename() {
         let mut transform = EditFieldNamesTransform::new();
         let mut map = HashMap::new();
+
         map.insert("*:class".to_string(), "分類".to_string());
         map.insert("luse:class".to_string(), "土地利用区分".to_string());
+        map.insert("wo_namespace".to_string(), "wo_namespace_new".to_string());
         transform.extend_rename_map(map);
-
-        // No namespace prefix in the original string, and no exact match
-        assert_eq!(transform.rename("foo"), None);
 
         // In any case, namespace suffix is removed
         assert_eq!(transform.rename("namespace:foo"), Some("foo"));
@@ -146,6 +145,10 @@ mod tests {
         // Rule written with specific namespace takes precedence
         assert_eq!(transform.rename("bldg:class"), Some("分類"));
         assert_eq!(transform.rename("luse:class"), Some("土地利用区分"));
+
+        // When the input string has not namespace prefix
+        assert_eq!(transform.rename("foo"), None);
+        assert_eq!(transform.rename("wo_namespace"), Some("wo_namespace_new"));
     }
 
     #[test]
