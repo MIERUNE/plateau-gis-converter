@@ -13,6 +13,7 @@ use nusamai_plateau::Entity;
 ///
 /// - Remove the namespace prefix from the field names
 /// - Rename the field names for Shapefile according to the dictionary
+/// - Rename the field names given the rules by the user
 #[derive(Default, Clone)]
 pub struct EditFieldNamesTransform {
     rename_map: HashMap<String, String>,
