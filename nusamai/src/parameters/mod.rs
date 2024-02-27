@@ -117,15 +117,17 @@ impl ParameterEntry {
             ParameterType::FileSystemPath(p) => p.validate(self.required),
             ParameterType::String(p) => p.validate(self.required),
             ParameterType::Boolean(p) => p.validate(self.required),
+            ParameterType::Integer(p) => p.validate(self.required),
         }
     }
 
-    /// Updates the parameter value with the given string.
+    /// Updates the parameter value with a string.
     pub fn update_value_with_str(&mut self, s: &str) -> Result<(), Error> {
         match &mut self.parameter {
             ParameterType::FileSystemPath(p) => p.update_value_with_str(s),
             ParameterType::String(p) => p.update_value_with_str(s),
             ParameterType::Boolean(p) => p.update_value_with_str(s),
+            ParameterType::Integer(p) => p.update_value_with_str(s),
         }
     }
 
@@ -135,6 +137,7 @@ impl ParameterEntry {
             ParameterType::FileSystemPath(p) => p.update_value_with_json(v),
             ParameterType::String(p) => p.update_value_with_json(v),
             ParameterType::Boolean(p) => p.update_value_with_json(v),
+            ParameterType::Integer(p) => p.update_value_with_json(v),
         }
     }
 }
@@ -144,6 +147,7 @@ pub enum ParameterType {
     FileSystemPath(FileSystemPathParameter),
     String(StringParameter),
     Boolean(BooleanParameter),
+    Integer(IntegerParameter),
     // and so on ...
 }
 
@@ -209,7 +213,7 @@ impl StringParameter {
             self.value = Some(s.clone());
             Ok(())
         } else {
-            Err(Error::InvalidValue("Invalid value type.".into()))
+            Err(Error::InvalidValue("Value must be a string.".into()))
         }
     }
 }
@@ -233,7 +237,7 @@ impl BooleanParameter {
 
     pub fn update_value_with_str(&mut self, s: &str) -> Result<(), Error> {
         let Ok(v) = s.parse::<bool>() else {
-            return Err(Error::InvalidValue("Invalid value type.".into()));
+            return Err(Error::InvalidValue("Value must be a boolean.".into()));
         };
         self.value = Some(v);
         Ok(())
@@ -244,7 +248,66 @@ impl BooleanParameter {
             self.value = Some(s);
             Ok(())
         } else {
-            Err(Error::InvalidValue("Invalid value type.".into()))
+            Err(Error::InvalidValue("Value must be a boolean.".into()))
+        }
+    }
+}
+
+#[derive(Debug, Serialize)]
+pub struct IntegerParameter {
+    pub value: Option<i64>,
+    pub min: Option<i64>,
+    pub max: Option<i64>,
+}
+
+impl IntegerParameter {
+    pub fn validate(&self, required: bool) -> Result<(), Error> {
+        match self.value {
+            Some(v) => {
+                if let Some(min) = self.min {
+                    if v < min {
+                        return Err(Error::InvalidValue(format!(
+                            "Value must be greater than or equal to {}.",
+                            min
+                        )));
+                    }
+                }
+                if let Some(max) = self.max {
+                    if v > max {
+                        return Err(Error::InvalidValue(format!(
+                            "Value must be less than or equal to {}.",
+                            max
+                        )));
+                    }
+                }
+                Ok(())
+            }
+            None => {
+                if required {
+                    return Err(Error::RequiredValueNotProvided);
+                }
+                Ok(())
+            }
+        }
+    }
+
+    pub fn update_value_with_str(&mut self, s: &str) -> Result<(), Error> {
+        let Ok(v) = s.parse::<i64>() else {
+            return Err(Error::InvalidValue("Value must be an integer.".into()));
+        };
+        self.value = Some(v);
+        Ok(())
+    }
+
+    pub fn update_value_with_json(&mut self, v: &serde_json::Value) -> Result<(), Error> {
+        if let serde_json::Value::Number(n) = v {
+            let Some(v) = n.as_i64() else {
+                return Err(Error::InvalidValue("Value must be an integer.".into()));
+            };
+            self.value = Some(v);
+            Ok(())
+        } else {
+            Err(Error::InvalidValue("Value must be an integer.".into()))
         }
     }
 }
@@ -279,5 +342,100 @@ mod tests {
         let errors = result.unwrap_err();
         assert_eq!(errors.len(), 1);
         assert!(errors.contains_key("test"));
+    }
+
+    #[test]
+    fn boolean() {
+        let mut params = Parameters::new();
+        params.define(
+            "test".into(),
+            ParameterEntry {
+                description: "test".into(),
+                required: true,
+                parameter: ParameterType::Boolean(BooleanParameter { value: None }),
+            },
+        );
+        params.define(
+            "test2".into(),
+            ParameterEntry {
+                description: "test2".into(),
+                required: false,
+                parameter: ParameterType::Boolean(BooleanParameter { value: None }),
+            },
+        );
+
+        // validation should fail
+        let result = params.validate();
+        assert!(result.is_err());
+
+        let errors = result.unwrap_err();
+        assert_eq!(errors.len(), 1);
+        assert!(errors.contains_key("test"));
+
+        // set proper values
+        params
+            .update_values_with_str(&vec![("test".into(), "true".into())])
+            .unwrap();
+
+        let result = params.validate();
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn interger() {
+        let mut params = Parameters::new();
+        params.define(
+            "test".into(),
+            ParameterEntry {
+                description: "test".into(),
+                required: true,
+                parameter: ParameterType::Integer(IntegerParameter {
+                    value: None,
+                    min: Some(4),
+                    max: Some(10),
+                }),
+            },
+        );
+        params.define(
+            "test2".into(),
+            ParameterEntry {
+                description: "test2".into(),
+                required: false,
+                parameter: ParameterType::Integer(IntegerParameter {
+                    value: None,
+                    min: Some(4),
+                    max: Some(10),
+                }),
+            },
+        );
+
+        // validation should fail
+        let result = params.validate();
+        assert!(result.is_err());
+
+        let errors = result.unwrap_err();
+        assert_eq!(errors.len(), 1);
+        assert!(errors.contains_key("test"));
+
+        // set invalid value
+        params
+            .update_values_with_str(&vec![("test".into(), "3".into())])
+            .unwrap();
+        let result = params.validate();
+        assert!(result.is_err());
+
+        // set proper value
+        params
+            .update_values_with_str(&vec![("test".into(), "4".into())])
+            .unwrap();
+        let result = params.validate();
+        assert!(result.is_ok());
+
+        // set invalid value
+        params
+            .update_values_with_str(&vec![("test2".into(), "11".into())])
+            .unwrap();
+        let result = params.validate();
+        assert!(result.is_err());
     }
 }
