@@ -118,6 +118,7 @@ mod tests {
         assert_eq!(transform.rename("namespace:foo"), Some("foo")); // ns removed
         assert_eq!(transform.rename("namespace:attr1"), Some("attr1_new"));
         assert_eq!(transform.rename("veg:attr1"), Some("attr1_new"));
+        // note: a rule written with specific namespace takes precedence, compared to the general rule with "*"
         assert_eq!(transform.rename("bldg:attr1"), Some("atrr1_bldg"));
     }
 }
