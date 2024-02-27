@@ -18,7 +18,7 @@ use serde::{Deserialize, Serialize};
 
 use nusamai_citygml::object;
 use nusamai_citygml::schema::Schema;
-use nusamai_geometry::MultiPolygon;
+use nusamai_geometry::MultiPolygon2;
 use nusamai_mvt::geometry::GeometryEncoder;
 use nusamai_mvt::tag::TagsEncoder;
 use nusamai_mvt::{tileid::TileIdMethod, vector_tile};
@@ -81,7 +81,7 @@ struct SerializedSlicedFeature {
 
 #[derive(Serialize, Deserialize)]
 struct SlicedFeature<'a> {
-    geometry: MultiPolygon<'a, 2, i16>,
+    geometry: MultiPolygon2<'a>,
     properties: nusamai_citygml::object::Value,
 }
 
@@ -233,15 +233,56 @@ fn tile_writing_stage(
     receiver_sorted
         .into_iter()
         .par_bridge()
-        .try_for_each(|(tile_id, sfeats)| {
+        .try_for_each(|(tile_id, serialized_feats)| {
             feedback.ensure_not_canceled()?;
+
             let (zoom, x, y) = tile_id_conv.id_to_zxy(tile_id);
 
             let mut layers: HashMap<String, LayerData> = HashMap::new();
 
-            for ser_feat in sfeats {
-                let feat: SlicedFeature = bincode::deserialize(&ser_feat.body).unwrap();
-                let mpoly = feat.geometry;
+            if serialized_feats.len() > 200_000 {
+                log::warn!(
+                    "Too many features in a tile ({} features)",
+                    serialized_feats.len()
+                );
+            }
+
+            let mut simplified_buf = Vec::new();
+
+            for serialized_feat in serialized_feats {
+                let feat: SlicedFeature = bincode::deserialize(&serialized_feat.body).unwrap();
+                let mut mpoly = feat.geometry;
+
+                let mut int_mpoly = Mul
+
+                {
+                    simplified_buf.clear();
+                    simplified_buf.push(mpoly[0]);
+                    for c in int_coords_buf.windows(3) {
+                        let &[prev, curr, next] = c else {
+                            unreachable!()
+                        };
+
+                        // Remove duplicate points
+                        if prev == curr {
+                            continue;
+                        }
+
+                        // Reject collinear points
+                        let [curr_x, curr_y] = curr;
+                        let [prev_x, prev_y] = prev;
+                        let [next_x, next_y] = next;
+                        if curr != next
+                            && ((next_y - prev_y) as i32 * (curr_x - prev_x) as i32).abs()
+                                == ((curr_y - prev_y) as i32 * (next_x - prev_x) as i32).abs()
+                        {
+                            continue;
+                        }
+
+                        simplified_buf.push(curr);
+                    }
+                    simplified_buf.push(*int_coords_buf.last().unwrap());
+                }
 
                 // encode geometry
                 let mut geom_enc = GeometryEncoder::new();

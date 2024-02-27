@@ -16,7 +16,7 @@ pub fn slice_cityobj_geoms<E>(
     max_z: u8,
     max_detail: u32,
     buffer_pixels: u32,
-    f: impl Fn(TileZXY, MultiPolygon2<i16>) -> Result<(), E>,
+    f: impl Fn(TileZXY, MultiPolygon2) -> Result<(), E>,
 ) -> Result<(), E> {
     assert!(
         max_z >= min_z,
@@ -98,7 +98,7 @@ fn slice_polygon(
     extent: u32,
     buffer: u32,
     poly: &Polygon2,
-    out: &mut HashMap<(u8, u32, u32), MultiPolygon2<i16>>,
+    out: &mut HashMap<(u8, u32, u32), MultiPolygon2>,
 ) {
     if poly.exterior().is_empty() {
         return;
@@ -175,7 +175,6 @@ fn slice_polygon(
     }
 
     let mut int_coords_buf = Vec::new();
-    let mut simplified_buf = Vec::new();
 
     // Slice along X-axis
     for (yi, y_sliced_poly) in y_range.zip(y_sliced_polys.iter()) {
@@ -246,8 +245,8 @@ fn slice_polygon(
                 {
                     int_coords_buf.clear();
                     int_coords_buf.extend(new_ring_buffer.iter().map(|&[x, y]| {
-                        let tx = (((x * z_scale - xi as f64) * (extent as f64)) + 0.5) as i16;
-                        let ty = (((y * z_scale - yi as f64) * (extent as f64)) + 0.5) as i16;
+                        let tx = (x * z_scale - xi as f64) * (extent as f64);
+                        let ty = (y * z_scale - yi as f64) * (extent as f64);
                         [tx, ty]
                     }));
 
@@ -261,38 +260,10 @@ fn slice_polygon(
                     if int_coords_buf.len() < 3 {
                         continue;
                     }
-
-                    simplified_buf.clear();
-                    simplified_buf.push(int_coords_buf[0]);
-
-                    for c in int_coords_buf.windows(3) {
-                        let &[prev, curr, next] = c else {
-                            unreachable!()
-                        };
-
-                        // Remove duplicate points
-                        if prev == curr {
-                            continue;
-                        }
-
-                        // Reject collinear points
-                        let [curr_x, curr_y] = curr;
-                        let [prev_x, prev_y] = prev;
-                        let [next_x, next_y] = next;
-                        if curr != next
-                            && ((next_y - prev_y) as i32 * (curr_x - prev_x) as i32).abs()
-                                == ((curr_y - prev_y) as i32 * (next_x - prev_x) as i32).abs()
-                        {
-                            continue;
-                        }
-
-                        simplified_buf.push(curr);
-                    }
-                    simplified_buf.push(*int_coords_buf.last().unwrap());
                 }
 
                 let mut ring =
-                    LineString2::from_raw(simplified_buf.iter().flatten().copied().collect());
+                    LineString2::from_raw(int_coords_buf.iter().flatten().copied().collect());
                 ring.reverse_inplace();
 
                 // Skip the polygon if:
