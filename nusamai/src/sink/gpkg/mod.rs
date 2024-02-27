@@ -90,7 +90,7 @@ impl GpkgSink {
             // delete the db file first is already exists
             if self.output_path.exists() {
                 std::fs::remove_file(&self.output_path).unwrap();
-            }
+            };
 
             GpkgHandler::from_url(
                 &Url::parse(&format!("sqlite://{}", self.output_path.to_str().unwrap())).unwrap(),
