@@ -43,10 +43,6 @@ struct Args {
     #[arg(short = 'i', value_parser = parse_key_val)]
     sourceopt: Vec<(String, String)>,
 
-    /// Specify the transformers
-    #[arg(short = 't', value_parser = parse_key_val)]
-    transformopt: Vec<(String, String)>,
-
     /// Add an option for the output format
     #[arg(short = 'o', value_parser = parse_key_val)]
     sinkopt: Vec<(String, String)>,
