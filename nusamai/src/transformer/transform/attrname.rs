@@ -111,10 +111,13 @@ mod tests {
     fn test_rename() {
         let mut transform = EditFieldNamesTransform::new();
         let mut map = HashMap::new();
-        map.insert("old_name".to_string(), "new_name".to_string());
+        map.insert("*:attr1".to_string(), "atrr1_new".to_string());
+        map.insert("bldg:attr1".to_string(), "atrr1_bldg".to_string());
         transform.extend_rename_map(map);
 
-        assert_eq!(transform.rename("ns:old_name"), Some("new_name"));
-        assert_eq!(transform.rename("ns:old_name2"), Some("old_name2"));
+        assert_eq!(transform.rename("namespace:foo"), Some("foo")); // ns removed
+        assert_eq!(transform.rename("namespace:attr1"), Some("attr1_new"));
+        assert_eq!(transform.rename("veg:attr1"), Some("attr1_new"));
+        assert_eq!(transform.rename("bldg:attr1"), Some("atrr1_bldg"));
     }
 }
