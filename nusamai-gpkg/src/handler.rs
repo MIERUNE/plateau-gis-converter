@@ -2,7 +2,6 @@ use crate::table::TableInfo;
 use indexmap::IndexMap;
 use sqlx::{sqlite::*, ConnectOptions};
 use sqlx::{Acquire, Pool, Row};
-use std::path::Path;
 use thiserror::Error;
 use url::Url;
 
@@ -12,22 +11,11 @@ pub struct GpkgHandler {
 
 #[derive(Error, Debug)]
 pub enum GpkgError {
-    #[error("Database file already exists: {0}")]
-    DatabaseExists(String),
     #[error("SQLx error: {0}")]
     SqlxError(#[from] sqlx::Error),
 }
 
 impl GpkgHandler {
-    /// Create and initialize new GeoPackage database at the specified path
-    pub async fn from_path(path: &Path) -> Result<Self, GpkgError> {
-        if path.exists() {
-            return Err(GpkgError::DatabaseExists(format!("{:?}", path)));
-        }
-        let url = Url::parse(&format!("sqlite://{}", path.to_str().unwrap())).unwrap();
-        Self::from_url(&url).await
-    }
-
     /// Create and initialize new GeoPackage database at the specified URL
     pub async fn from_url(url: &Url) -> Result<Self, GpkgError> {
         let conn_opts = SqliteConnectOptions::from_url(url)?
