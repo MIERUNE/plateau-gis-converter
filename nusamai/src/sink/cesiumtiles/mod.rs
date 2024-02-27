@@ -256,11 +256,11 @@ fn tile_writing_stage(
             let mut buf2d: Vec<f64> = Vec::new(); // 2d-projected [x, y]
             let mut index_buf: Vec<u32> = Vec::new();
 
-            let mut vertices: IndexSet<[u32; 5], RandomState> = IndexSet::default();
+            let mut vertices: IndexSet<[u32; 6], RandomState> = IndexSet::default(); // [x, y, z, u, v, feature_id]
             let mut primitives: gltf::Primitives = Default::default();
 
             // make vertices and indices
-            for serialized_feat in serialized_feats {
+            for (feature_idx, serialized_feat) in serialized_feats.into_iter().enumerate() {
                 feedback.ensure_not_canceled()?;
 
                 let mut feature: SlicedFeature = bincode::deserialize(&serialized_feat.body)
@@ -292,14 +292,15 @@ fn tile_writing_stage(
                     };
 
                     let mat = feature.materials[*orig_mat_id as usize].clone();
-                    let indices = primitives.entry(mat).or_default();
+                    let primitive = primitives.entry(mat).or_default();
+                    primitive.feature_ids.insert(feature_idx as u32);
 
                     if project3d_to_2d(poly.coords(), num_outer, 5, &mut buf2d) {
                         // earcut
                         earcutter.earcut(&buf2d, poly.hole_indices(), 2, &mut index_buf);
 
                         // collect triangles
-                        indices.extend(index_buf.iter().map(|idx| {
+                        primitive.indices.extend(index_buf.iter().map(|idx| {
                             let pos = *idx as usize * 5;
                             let [x, y, z, u, v] = poly.coords()[pos..pos + 5].try_into().unwrap();
                             let vbits = [
@@ -308,6 +309,7 @@ fn tile_writing_stage(
                                 (z as f32).to_bits(),
                                 (u as f32).to_bits(),
                                 (v as f32).to_bits(),
+                                (feature_idx as f32).to_bits(), // UNSIGNED_INT can't be used for vertex attribute
                             ];
                             let (index, _) = vertices.insert_full(vbits);
                             index as u32
