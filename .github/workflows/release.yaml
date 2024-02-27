@@ -38,8 +38,9 @@ jobs:
 
       - name: Set optimization options
         run: |
-          echo 'profile.release.lto = "true"' >> Cargo.toml
-          echo 'profile.release.panic = "abort"' >> Cargo.toml
+          echo '\n[profile.release]' >> Cargo.toml
+          echo 'lto = true' >> Cargo.toml
+          echo 'panic = "abort"' >> Cargo.toml
 
       - name: Build the app
         uses: tauri-apps/tauri-action@v0
