@@ -16,7 +16,7 @@ use nusamai_plateau::Entity;
 /// - Rename the field names given the rules by the user
 ///
 /// You may specify the rules in two ways:
-/// - Exact match: Rename the field name if the key matches exactly (e.g., `{"ns:foo: "bar"}`)
+/// - Exact match: Rename the field name if the key matches exactly (e.g., `{"ns:foo": "bar"}`)
 /// - Wildcard match: Rename the field name for any namespace prefix `*:` (e.g., `{"*:foo": "bar"}`)
 /// Note that the exact match takes precedence over the wildcard match.
 #[derive(Default, Clone)]
