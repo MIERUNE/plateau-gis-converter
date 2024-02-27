@@ -137,6 +137,9 @@ mod tests {
         map.insert("luse:class".to_string(), "土地利用区分".to_string());
         transform.extend_rename_map(map);
 
+        // No namespace prefix in the original string, and no exact match
+        assert_eq!(transform.rename("foo"), None);
+
         // In any case, namespace suffix is removed
         assert_eq!(transform.rename("namespace:foo"), Some("foo"));
 
