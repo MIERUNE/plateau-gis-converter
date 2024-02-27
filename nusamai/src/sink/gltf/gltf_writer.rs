@@ -134,7 +134,7 @@ pub fn build_base_gltf(class_name: &str, buffer: &Buffers, translation: [f64; 3]
     let feature_ids_offset = bin_content.len();
     let mut feature_ids_count = 0;
     for vertex in buffer.vertices.clone() {
-        // MeshPrimitive does not support UnsignedInt
+        // UnsignedInt cannot be used as vertix attributes in MeshPrimitive
         // https://github.com/CesiumGS/glTF/blob/proposal-EXT_mesh_features/extensions/2.0/Vendor/EXT_mesh_features/README.md#feature-id-by-vertex
         let vertex = vertex.feature_id as f32;
         bin_content.write_all(&vertex.to_le_bytes()).unwrap();
