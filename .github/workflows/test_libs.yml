@@ -12,6 +12,7 @@ on:
       - "nusamai-*/**"
       - ".github/**"
       - "demo/**"
+      - "docs/**"
       - "*"
 
 env: 
