@@ -1,6 +1,6 @@
 # PostGISにインポートする
 
-*todo: 未整備です。
+*todo: ドキュメント未整備です。
 
 ## GeoPackageに変換する
 

@@ -12,7 +12,7 @@
 			},
 			{
 				"src": "manual",
-				"files": ["toc.yml", "*.md"],
+				"files": ["toc.yml", "**/*.md"],
 				"dest": "manual"
 			}
 		],
