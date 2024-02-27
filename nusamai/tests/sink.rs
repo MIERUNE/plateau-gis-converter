@@ -104,7 +104,7 @@ fn run_gpkg_sink() {
 
 #[test]
 fn run_mvt_sink() {
-    simple_run_sink(sink::mvt::MVTSinkProvider {}, "/tmp/nusamai/mvt/".into());
+    simple_run_sink(sink::mvt::MvtSinkProvider {}, "/tmp/nusamai/mvt/".into());
 }
 
 #[test]
