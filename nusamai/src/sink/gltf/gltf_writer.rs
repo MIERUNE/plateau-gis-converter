@@ -134,9 +134,10 @@ pub fn build_base_gltf(class_name: &str, buffer: &Buffers, translation: [f64; 3]
     let feature_ids_offset = bin_content.len();
     let mut feature_ids_count = 0;
     for vertex in buffer.vertices.clone() {
-        bin_content
-            .write_all(&vertex.feature_id.to_le_bytes())
-            .unwrap();
+        // UnsignedInt cannot be used as vertix attributes in MeshPrimitive
+        // https://github.com/CesiumGS/glTF/blob/proposal-EXT_mesh_features/extensions/2.0/Vendor/EXT_mesh_features/README.md#feature-id-by-vertex
+        let vertex = vertex.feature_id as f32;
+        bin_content.write_all(&vertex.to_le_bytes()).unwrap();
         feature_ids_count += 1;
     }
     let feature_ids_len = bin_content.len() - feature_ids_offset;
@@ -154,7 +155,7 @@ pub fn build_base_gltf(class_name: &str, buffer: &Buffers, translation: [f64; 3]
     let feature_id_max = buffer.vertices.iter().map(|v| v.feature_id).max().unwrap();
     let accessor = Accessor {
         buffer_view: Some(buffer_view_length),
-        component_type: ComponentType::UnsignedInt,
+        component_type: ComponentType::Float,
         count: feature_ids_count,
         type_: AccessorType::Scalar,
         min: Some(vec![feature_id_min as f64]),
