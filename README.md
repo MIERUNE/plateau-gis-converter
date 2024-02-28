@@ -11,6 +11,10 @@
 
 PLATEAU GIS Converter は、[PLATEAU](https://www.mlit.go.jp/plateau/)プロジェクトのCityGML形式の3D都市モデルを他の一般的なGISデータ形式に変換するソフトウェアです。
 
+アプリケーションのメイン画面:
+
+![alt text](docs/resources/README_image-1.png)
+
 [東京都23区の CityGML (v2)](https://www.geospatial.jp/ckan/dataset/plateau-tokyo23ku-2022/resource/55c72dd0-32eb-4107-9526-71fc0af8d50f3) を読み込んで、3DTilesに変換した例：
 
 ![alt text](docs/resources/README_image.png)
@@ -50,16 +54,36 @@ PLATEAUの標準仕様に準拠したCityGML2.0形式の3D都市モデルは、�
 
 ## 5. 利用技術
 
-- UI
-  - [Tauri](https://github.com/tauri-apps/tauri)
-  - [Svelte](https://svelte.dev/)
-- バックエンド
-  - [Rust](https://www.rust-lang.org/)
+利用技術は以下の通りです。
+
+### UI
+
+UIの構築には以下の技術を利用しています。
+
+- ネイティブアプリケーション構築フレームワーク: [Tauri](https://github.com/tauri-apps/tauri)
+- UI構築フレームワーク: [Svelte](https://svelte.dev/)
+
+### メインロジック
+
+メインロジックは全てRustで実装しています。
+
+- プログラミング言語: [Rust](https://www.rust-lang.org/)
 
 ## 6. 動作環境
 
-- Windows（Intel）
-- macOS（Apple Silicon, Intel）
+- 本ソフトウェアは以下の環境で動作することを想定しています。
+- OS:
+  - Windows（Intel）
+  - macOS（Apple Silicon）
+- CPU:
+  - 特に制限はありませんが、変換対象の範囲や出力形式によっては処理時間に大きな影響があります
+- メモリ:
+  - 特に制限はありませんが、変換対象が広い場合、変換時には多くのメモリが必要になります
+- ネットワーク:
+  - インターネット接続は不要です
+- ストレージ:
+  - インストールには30MB程度の空き容量が必要です
+  - 変換時には、変換元データとほぼ同等、もしくはそれ以上の空き容量が必要です
 
 ## 7. 本リポジトリのフォルダ構成
 
