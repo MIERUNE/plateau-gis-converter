@@ -1,7 +1,9 @@
 //! Japan Plane Rectangular Coordinate Systems
 
+use crate::crs::*;
 use crate::{ellipsoid::grs80, etmerc::ExtendedTransverseMercatorProjection};
 
+#[derive(Debug, PartialEq)]
 pub enum JPRZone {
     Zone1,
     Zone2,
@@ -52,28 +54,105 @@ impl JPRZone {
     }
 
     /// Get the zone from the zone number.
-    pub const fn from_number(no: usize) -> Self {
+    pub const fn from_number(no: usize) -> Option<Self> {
         match no {
-            1 => JPRZone::Zone1,
-            2 => JPRZone::Zone2,
-            3 => JPRZone::Zone3,
-            4 => JPRZone::Zone4,
-            5 => JPRZone::Zone5,
-            6 => JPRZone::Zone6,
-            7 => JPRZone::Zone7,
-            8 => JPRZone::Zone8,
-            9 => JPRZone::Zone9,
-            10 => JPRZone::Zone10,
-            11 => JPRZone::Zone11,
-            12 => JPRZone::Zone12,
-            13 => JPRZone::Zone13,
-            14 => JPRZone::Zone14,
-            15 => JPRZone::Zone15,
-            16 => JPRZone::Zone16,
-            17 => JPRZone::Zone17,
-            18 => JPRZone::Zone18,
-            19 => JPRZone::Zone19,
-            _ => panic!("invalid zone number"),
+            1 => Some(JPRZone::Zone1),
+            2 => Some(JPRZone::Zone2),
+            3 => Some(JPRZone::Zone3),
+            4 => Some(JPRZone::Zone4),
+            5 => Some(JPRZone::Zone5),
+            6 => Some(JPRZone::Zone6),
+            7 => Some(JPRZone::Zone7),
+            8 => Some(JPRZone::Zone8),
+            9 => Some(JPRZone::Zone9),
+            10 => Some(JPRZone::Zone10),
+            11 => Some(JPRZone::Zone11),
+            12 => Some(JPRZone::Zone12),
+            13 => Some(JPRZone::Zone13),
+            14 => Some(JPRZone::Zone14),
+            15 => Some(JPRZone::Zone15),
+            16 => Some(JPRZone::Zone16),
+            17 => Some(JPRZone::Zone17),
+            18 => Some(JPRZone::Zone18),
+            19 => Some(JPRZone::Zone19),
+            _ => None,
+        }
+    }
+
+    /// Get the zone from the EPSG code.
+    pub const fn from_epsg(epsg: EPSGCode) -> Option<Self> {
+        match epsg {
+            EPSG_JGD2011_JPRECT_I_JGD2011_HEIGHT
+            | EPSG_JGD2011_JPRECT_I
+            | EPSG_JGD2000_JPRECT_I
+            | EPSG_TOKYO_JPRECT_I => Some(JPRZone::Zone1),
+            EPSG_JGD2011_JPRECT_II_JGD2011_HEIGHT
+            | EPSG_JGD2011_JPRECT_II
+            | EPSG_JGD2000_JPRECT_II
+            | EPSG_TOKYO_JPRECT_II => Some(JPRZone::Zone2),
+            EPSG_JGD2011_JPRECT_III_JGD2011_HEIGHT
+            | EPSG_JGD2011_JPRECT_III
+            | EPSG_JGD2000_JPRECT_III
+            | EPSG_TOKYO_JPRECT_III => Some(JPRZone::Zone3),
+            EPSG_JGD2011_JPRECT_IV_JGD2011_HEIGHT
+            | EPSG_JGD2011_JPRECT_IV
+            | EPSG_JGD2000_JPRECT_IV
+            | EPSG_TOKYO_JPRECT_IV => Some(JPRZone::Zone4),
+            EPSG_JGD2011_JPRECT_V_JGD2011_HEIGHT
+            | EPSG_JGD2011_JPRECT_V
+            | EPSG_JGD2000_JPRECT_V
+            | EPSG_TOKYO_JPRECT_V => Some(JPRZone::Zone5),
+            EPSG_JGD2011_JPRECT_VI_JGD2011_HEIGHT
+            | EPSG_JGD2011_JPRECT_VI
+            | EPSG_JGD2000_JPRECT_VI
+            | EPSG_TOKYO_JPRECT_VI => Some(JPRZone::Zone6),
+            EPSG_JGD2011_JPRECT_VII_JGD2011_HEIGHT
+            | EPSG_JGD2011_JPRECT_VII
+            | EPSG_JGD2000_JPRECT_VII
+            | EPSG_TOKYO_JPRECT_VII => Some(JPRZone::Zone7),
+            EPSG_JGD2011_JPRECT_VIII_JGD2011_HEIGHT
+            | EPSG_JGD2011_JPRECT_VIII
+            | EPSG_JGD2000_JPRECT_VIII
+            | EPSG_TOKYO_JPRECT_VIII => Some(JPRZone::Zone8),
+            EPSG_JGD2011_JPRECT_IX_JGD2011_HEIGHT
+            | EPSG_JGD2011_JPRECT_IX
+            | EPSG_JGD2000_JPRECT_IX
+            | EPSG_TOKYO_JPRECT_IX => Some(JPRZone::Zone9),
+            EPSG_JGD2011_JPRECT_X_JGD2011_HEIGHT
+            | EPSG_JGD2011_JPRECT_X
+            | EPSG_JGD2000_JPRECT_X
+            | EPSG_TOKYO_JPRECT_X => Some(JPRZone::Zone10),
+            EPSG_JGD2011_JPRECT_XI_JGD2011_HEIGHT
+            | EPSG_JGD2011_JPRECT_XI
+            | EPSG_JGD2000_JPRECT_XI
+            | EPSG_TOKYO_JPRECT_XI => Some(JPRZone::Zone11),
+            EPSG_JGD2011_JPRECT_XII_JGD2011_HEIGHT
+            | EPSG_JGD2011_JPRECT_XII
+            | EPSG_JGD2000_JPRECT_XII
+            | EPSG_TOKYO_JPRECT_XII => Some(JPRZone::Zone12),
+            EPSG_JGD2011_JPRECT_XIII_JGD2011_HEIGHT
+            | EPSG_JGD2011_JPRECT_XIII
+            | EPSG_JGD2000_JPRECT_XIII
+            | EPSG_TOKYO_JPRECT_XIII => Some(JPRZone::Zone13),
+            EPSG_JGD2011_JPRECT_XIV | EPSG_JGD2000_JPRECT_XIV | EPSG_TOKYO_JPRECT_XIV => {
+                Some(JPRZone::Zone14)
+            }
+            EPSG_JGD2011_JPRECT_XV | EPSG_JGD2000_JPRECT_XV | EPSG_TOKYO_JPRECT_XV => {
+                Some(JPRZone::Zone15)
+            }
+            EPSG_JGD2011_JPRECT_XVI | EPSG_JGD2000_JPRECT_XVI | EPSG_TOKYO_JPRECT_XVI => {
+                Some(JPRZone::Zone16)
+            }
+            EPSG_JGD2011_JPRECT_XVII | EPSG_JGD2000_JPRECT_XVII | EPSG_TOKYO_JPRECT_XVII => {
+                Some(JPRZone::Zone17)
+            }
+            EPSG_JGD2011_JPRECT_XVIII | EPSG_JGD2000_JPRECT_XVIII | EPSG_TOKYO_JPRECT_XVIII => {
+                Some(JPRZone::Zone18)
+            }
+            EPSG_JGD2011_JPRECT_XIX | EPSG_JGD2000_JPRECT_XIX | EPSG_TOKYO_JPRECT_XIX => {
+                Some(JPRZone::Zone19)
+            }
+            _ => None,
         }
     }
 
@@ -239,7 +318,7 @@ mod tests {
         ];
 
         for zone_no in 1..=19 {
-            let zone = JPRZone::from_number(zone_no);
+            let zone = JPRZone::from_number(zone_no).unwrap();
             assert_eq!(zone.zone_number(), zone_no);
             assert!(!zone.zone_roman().is_empty());
 
@@ -266,14 +345,29 @@ mod tests {
     }
 
     #[test]
-    #[should_panic]
-    fn invalid_zone_0() {
-        let _ = JPRZone::from_number(0);
+    fn from_number_invalid_zones() {
+        let zone = JPRZone::from_number(0);
+        assert_eq!(zone, None);
+
+        let zone = JPRZone::from_number(20);
+        assert_eq!(zone, None);
     }
 
     #[test]
-    #[should_panic]
-    fn invalid_zone_20() {
-        let _ = JPRZone::from_number(20);
+    fn from_epsg() {
+        let zone = JPRZone::from_epsg(EPSG_JGD2011_JPRECT_I_JGD2011_HEIGHT);
+        assert_eq!(zone, Some(JPRZone::Zone1));
+
+        let zone = JPRZone::from_epsg(EPSG_JGD2011_JPRECT_XIX);
+        assert_eq!(zone, Some(JPRZone::Zone19));
+
+        let zone = JPRZone::from_epsg(EPSG_JGD2000_JPRECT_XIX);
+        assert_eq!(zone, Some(JPRZone::Zone19));
+
+        let zone = JPRZone::from_epsg(EPSG_TOKYO_JPRECT_XIX);
+        assert_eq!(zone, Some(JPRZone::Zone19));
+
+        let zone = JPRZone::from_epsg(EPSG_JGD2011_GEOGRAPHIC_3D);
+        assert_eq!(zone, None);
     }
 }
