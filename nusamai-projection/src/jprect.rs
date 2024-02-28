@@ -1,7 +1,9 @@
 //! Japan Plane Rectangular Coordinate Systems
 
+use crate::crs::*;
 use crate::{ellipsoid::grs80, etmerc::ExtendedTransverseMercatorProjection};
 
+#[derive(Debug, PartialEq)]
 pub enum JPRZone {
     Zone1,
     Zone2,
@@ -74,6 +76,82 @@ impl JPRZone {
             18 => JPRZone::Zone18,
             19 => JPRZone::Zone19,
             _ => panic!("invalid zone number"),
+        }
+    }
+
+    pub const fn from_epsg(epsg: EPSGCode) -> Self {
+        match epsg {
+            EPSG_JGD2011_JPRECT_I_JGD2011_HEIGHT
+            | EPSG_JGD2011_JPRECT_I
+            | EPSG_JGD2000_JPRECT_I
+            | EPSG_TOKYO_JPRECT_I => JPRZone::Zone1,
+            EPSG_JGD2011_JPRECT_II_JGD2011_HEIGHT
+            | EPSG_JGD2011_JPRECT_II
+            | EPSG_JGD2000_JPRECT_II
+            | EPSG_TOKYO_JPRECT_II => JPRZone::Zone2,
+            EPSG_JGD2011_JPRECT_III_JGD2011_HEIGHT
+            | EPSG_JGD2011_JPRECT_III
+            | EPSG_JGD2000_JPRECT_III
+            | EPSG_TOKYO_JPRECT_III => JPRZone::Zone3,
+            EPSG_JGD2011_JPRECT_IV_JGD2011_HEIGHT
+            | EPSG_JGD2011_JPRECT_IV
+            | EPSG_JGD2000_JPRECT_IV
+            | EPSG_TOKYO_JPRECT_IV => JPRZone::Zone4,
+            EPSG_JGD2011_JPRECT_V_JGD2011_HEIGHT
+            | EPSG_JGD2011_JPRECT_V
+            | EPSG_JGD2000_JPRECT_V
+            | EPSG_TOKYO_JPRECT_V => JPRZone::Zone5,
+            EPSG_JGD2011_JPRECT_VI_JGD2011_HEIGHT
+            | EPSG_JGD2011_JPRECT_VI
+            | EPSG_JGD2000_JPRECT_VI
+            | EPSG_TOKYO_JPRECT_VI => JPRZone::Zone6,
+            EPSG_JGD2011_JPRECT_VII_JGD2011_HEIGHT
+            | EPSG_JGD2011_JPRECT_VII
+            | EPSG_JGD2000_JPRECT_VII
+            | EPSG_TOKYO_JPRECT_VII => JPRZone::Zone7,
+            EPSG_JGD2011_JPRECT_VIII_JGD2011_HEIGHT
+            | EPSG_JGD2011_JPRECT_VIII
+            | EPSG_JGD2000_JPRECT_VIII
+            | EPSG_TOKYO_JPRECT_VIII => JPRZone::Zone8,
+            EPSG_JGD2011_JPRECT_IX_JGD2011_HEIGHT
+            | EPSG_JGD2011_JPRECT_IX
+            | EPSG_JGD2000_JPRECT_IX
+            | EPSG_TOKYO_JPRECT_IX => JPRZone::Zone9,
+            EPSG_JGD2011_JPRECT_X_JGD2011_HEIGHT
+            | EPSG_JGD2011_JPRECT_X
+            | EPSG_JGD2000_JPRECT_X
+            | EPSG_TOKYO_JPRECT_X => JPRZone::Zone10,
+            EPSG_JGD2011_JPRECT_XI_JGD2011_HEIGHT
+            | EPSG_JGD2011_JPRECT_XI
+            | EPSG_JGD2000_JPRECT_XI
+            | EPSG_TOKYO_JPRECT_XI => JPRZone::Zone11,
+            EPSG_JGD2011_JPRECT_XII_JGD2011_HEIGHT
+            | EPSG_JGD2011_JPRECT_XII
+            | EPSG_JGD2000_JPRECT_XII
+            | EPSG_TOKYO_JPRECT_XII => JPRZone::Zone12,
+            EPSG_JGD2011_JPRECT_XIII_JGD2011_HEIGHT
+            | EPSG_JGD2011_JPRECT_XIII
+            | EPSG_JGD2000_JPRECT_XIII
+            | EPSG_TOKYO_JPRECT_XIII => JPRZone::Zone13,
+            EPSG_JGD2011_JPRECT_XIV | EPSG_JGD2000_JPRECT_XIV | EPSG_TOKYO_JPRECT_XIV => {
+                JPRZone::Zone14
+            }
+            EPSG_JGD2011_JPRECT_XV | EPSG_JGD2000_JPRECT_XV | EPSG_TOKYO_JPRECT_XV => {
+                JPRZone::Zone15
+            }
+            EPSG_JGD2011_JPRECT_XVI | EPSG_JGD2000_JPRECT_XVI | EPSG_TOKYO_JPRECT_XVI => {
+                JPRZone::Zone16
+            }
+            EPSG_JGD2011_JPRECT_XVII | EPSG_JGD2000_JPRECT_XVII | EPSG_TOKYO_JPRECT_XVII => {
+                JPRZone::Zone17
+            }
+            EPSG_JGD2011_JPRECT_XVIII | EPSG_JGD2000_JPRECT_XVIII | EPSG_TOKYO_JPRECT_XVIII => {
+                JPRZone::Zone18
+            }
+            EPSG_JGD2011_JPRECT_XIX | EPSG_JGD2000_JPRECT_XIX | EPSG_TOKYO_JPRECT_XIX => {
+                JPRZone::Zone19
+            }
+            _ => panic!("unsupported EPSG code"),
         }
     }
 
@@ -275,5 +353,26 @@ mod tests {
     #[should_panic]
     fn invalid_zone_20() {
         let _ = JPRZone::from_number(20);
+    }
+
+    #[test]
+    fn from_epsg() {
+        let zone = JPRZone::from_epsg(EPSG_JGD2011_JPRECT_I_JGD2011_HEIGHT);
+        assert_eq!(zone, JPRZone::Zone1);
+
+        let zone = JPRZone::from_epsg(EPSG_JGD2011_JPRECT_XIX);
+        assert_eq!(zone, JPRZone::Zone19);
+
+        let zone = JPRZone::from_epsg(EPSG_JGD2000_JPRECT_XIX);
+        assert_eq!(zone, JPRZone::Zone19);
+
+        let zone = JPRZone::from_epsg(EPSG_TOKYO_JPRECT_XIX);
+        assert_eq!(zone, JPRZone::Zone19);
+    }
+
+    #[test]
+    #[should_panic]
+    fn from_epsg_invalid() {
+        let _ = JPRZone::from_epsg(EPSG_JGD2011_GEOGRAPHIC_3D);
     }
 }
