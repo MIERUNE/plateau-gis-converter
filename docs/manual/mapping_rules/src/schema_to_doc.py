@@ -10,6 +10,8 @@ $ python3 schema_to_doc.py
 import json
 from typing import Any, TextIO
 
+FILE_FORMAT_LIST = ["gpkg", "shapefile"]
+
 ORDER_MAP = {
     "_": -2,
     "gml": -1,
@@ -30,7 +32,7 @@ ORDER_MAP = {
     "urf": 14,
 }
 
-with open("../nusamai/data/plateau_spec.json", encoding="utf-8") as f:
+with open("../../../../nusamai/data/plateau_spec.json", encoding="utf-8") as f:
     spec = json.load(f)
 
 
@@ -135,11 +137,12 @@ def generate_docs(schema, f: TextIO):
 
 
 def main():
-    with open("schema.json", encoding="utf-8") as f:
-        schema = json.load(f)
+    for file_format in FILE_FORMAT_LIST:
+        with open(f"schema_{file_format}.json", encoding="utf-8") as f:
+            schema = json.load(f)
 
-    with open("all_in_one.md", "w", encoding="utf-8") as f:
-        generate_docs(schema, f)
+        with open(f"{file_format}.md", "w", encoding="utf-8") as f:
+            generate_docs(schema, f)
 
 
 if __name__ == "__main__":

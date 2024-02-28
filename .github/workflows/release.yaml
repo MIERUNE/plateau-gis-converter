@@ -38,7 +38,7 @@ jobs:
 
       - name: Set optimization options
         run: |
-          echo '\n[profile.release]' >> Cargo.toml
+          echo '[profile.release]' >> Cargo.toml
           echo 'lto = true' >> Cargo.toml
           echo 'panic = "abort"' >> Cargo.toml
 
