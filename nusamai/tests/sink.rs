@@ -94,7 +94,10 @@ fn run_noop_sink() {
 
 #[test]
 fn run_geojson_sink() {
-    simple_run_sink(sink::geojson::GeoJsonSinkProvider {}, "/dev/null".into());
+    simple_run_sink(
+        sink::geojson::GeoJsonSinkProvider {},
+        "/tmp/nusamai/geojson".into(),
+    );
 }
 
 #[test]
