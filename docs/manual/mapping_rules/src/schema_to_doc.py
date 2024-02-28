@@ -10,7 +10,7 @@ $ python3 schema_to_doc.py
 import json
 from typing import Any, TextIO
 
-FILE_FORMAT_LIST = ["gpkg", "shapefile"]
+FILE_FORMAT_LIST = ["gpkg", "shapefile", "geojson", "czml", "kml", "mvt", "3dtiles"]
 
 ORDER_MAP = {
     "_": -2,
@@ -138,11 +138,15 @@ def generate_docs(schema, f: TextIO):
 
 def main():
     for file_format in FILE_FORMAT_LIST:
-        with open(f"schema_{file_format}.json", encoding="utf-8") as f:
-            schema = json.load(f)
+        try:
+            with open(f"schema_{file_format}.json", encoding="utf-8") as f:
+                schema = json.load(f)
 
-        with open(f"{file_format}.md", "w", encoding="utf-8") as f:
-            generate_docs(schema, f)
+            with open(f"{file_format}.md", "w", encoding="utf-8") as f:
+                generate_docs(schema, f)
+        except FileNotFoundError:
+            print(f"schema_{file_format}.json not found")
+            pass
 
 
 if __name__ == "__main__":
