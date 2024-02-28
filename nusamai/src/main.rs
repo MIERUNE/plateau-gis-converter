@@ -39,13 +39,13 @@ struct Args {
     #[arg(long)]
     schema: Option<String>,
 
-    /// Add an option for the input (CityGML)
-    #[arg(short = 'i', value_parser = parse_key_val)]
-    sourceopt: Vec<(String, String)>,
-
-    /// Add an option for the output format
+    /// Add an option for the output format (key=value)
     #[arg(short = 'o', value_parser = parse_key_val)]
     sinkopt: Vec<(String, String)>,
+
+    /// Add an option for the input source (key=value)
+    #[arg(short = 'i', value_parser = parse_key_val)]
+    sourceopt: Vec<(String, String)>,
 }
 
 fn parse_key_val(s: &str) -> Result<(String, String), String> {

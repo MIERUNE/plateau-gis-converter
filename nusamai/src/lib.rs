@@ -7,7 +7,7 @@ pub mod transformer;
 pub static BUILTIN_SINKS: &[&dyn sink::DataSinkProvider] = &[
     &sink::cesiumtiles::CesiumTilesSinkProvider {},
     &sink::gpkg::GpkgSinkProvider {},
-    &sink::mvt::MVTSinkProvider {},
+    &sink::mvt::MvtSinkProvider {},
     &sink::geojson::GeoJsonSinkProvider {},
     &sink::czml::CzmlSinkProvider {},
     &sink::gltf::GltfSinkProvider {},

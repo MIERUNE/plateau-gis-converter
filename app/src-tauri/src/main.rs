@@ -10,7 +10,7 @@ use nusamai::pipeline::Canceller;
 use nusamai::sink::DataSinkProvider;
 use nusamai::sink::{
     cesiumtiles::CesiumTilesSinkProvider, czml::CzmlSinkProvider, geojson::GeoJsonSinkProvider,
-    gltf::GltfSinkProvider, gpkg::GpkgSinkProvider, kml::KmlSinkProvider, mvt::MVTSinkProvider,
+    gltf::GltfSinkProvider, gpkg::GpkgSinkProvider, kml::KmlSinkProvider, mvt::MvtSinkProvider,
     ply::StanfordPlySinkProvider, serde::SerdeSinkProvider, shapefile::ShapefileSinkProvider,
 };
 use nusamai::source::citygml::CityGmlSourceProvider;
@@ -39,7 +39,7 @@ fn select_sink_provider(filetype: &str) -> Box<dyn DataSinkProvider> {
         "serde" => Box::new(SerdeSinkProvider {}),
         "geojson" => Box::new(GeoJsonSinkProvider {}),
         "gpkg" => Box::new(GpkgSinkProvider {}),
-        "mvt" => Box::new(MVTSinkProvider {}),
+        "mvt" => Box::new(MvtSinkProvider {}),
         "shapefile" => Box::new(ShapefileSinkProvider {}),
         "czml" => Box::new(CzmlSinkProvider {}),
         "kml" => Box::new(KmlSinkProvider {}),

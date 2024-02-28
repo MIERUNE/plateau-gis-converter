@@ -31,9 +31,9 @@ use slice::slice_cityobj_geoms;
 use sort::BincodeExternalChunk;
 use tags::convert_properties;
 
-pub struct MVTSinkProvider {}
+pub struct MvtSinkProvider {}
 
-impl DataSinkProvider for MVTSinkProvider {
+impl DataSinkProvider for MvtSinkProvider {
     fn info(&self) -> SinkInfo {
         SinkInfo {
             id_name: "mvt".to_string(),
@@ -54,22 +54,53 @@ impl DataSinkProvider for MVTSinkProvider {
                 }),
             },
         );
-        // TODO: min Zoom
-        // TODO: max Zoom
+        params.define(
+            "min_z".into(),
+            ParameterEntry {
+                description: "Minumum zoom level".into(),
+                required: true,
+                parameter: ParameterType::Integer(IntegerParameter {
+                    value: Some(7),
+                    min: Some(0),
+                    max: Some(20),
+                }),
+            },
+        );
+        params.define(
+            "max_z".into(),
+            ParameterEntry {
+                description: "Maximum zoom level".into(),
+                required: true,
+                parameter: ParameterType::Integer(IntegerParameter {
+                    value: Some(15),
+                    min: Some(0),
+                    max: Some(20),
+                }),
+            },
+        );
         params
     }
 
     fn create(&self, params: &Parameters) -> Box<dyn DataSink> {
         let output_path = get_parameter_value!(params, "@output", FileSystemPath);
+        let min_z = get_parameter_value!(params, "min_z", Integer).unwrap() as u8;
+        let max_z = get_parameter_value!(params, "max_z", Integer).unwrap() as u8;
 
-        Box::<MVTSink>::new(MVTSink {
+        Box::<MvtSink>::new(MvtSink {
             output_path: output_path.as_ref().unwrap().into(),
+            mvt_options: MvtParams { min_z, max_z },
         })
     }
 }
 
-struct MVTSink {
+struct MvtSink {
     output_path: PathBuf,
+    mvt_options: MvtParams,
+}
+
+struct MvtParams {
+    min_z: u8,
+    max_z: u8,
 }
 
 #[derive(Serialize, Deserialize, deepsize::DeepSizeOf)]
@@ -85,7 +116,7 @@ struct SlicedFeature<'a> {
     properties: nusamai_citygml::object::Value,
 }
 
-impl DataSink for MVTSink {
+impl DataSink for MvtSink {
     fn make_transform_requirements(&self) -> transformer::Requirements {
         transformer::Requirements {
             key_value: transformer::KeyValueSpec::DotNotation,
@@ -105,9 +136,13 @@ impl DataSink for MVTSink {
             // Slicing geometry along the tile boundaries
             {
                 s.spawn(|| {
-                    if let Err(error) =
-                        geometry_slicing_stage(feedback, upstream, tile_id_conv, sender_sliced)
-                    {
+                    if let Err(error) = geometry_slicing_stage(
+                        feedback,
+                        upstream,
+                        tile_id_conv,
+                        sender_sliced,
+                        &self.mvt_options,
+                    ) {
                         feedback.report_fatal_error(error);
                     }
                 });
@@ -149,6 +184,7 @@ fn geometry_slicing_stage(
     upstream: mpsc::Receiver<crate::pipeline::Parcel>,
     tile_id_conv: TileIdMethod,
     sender_sliced: mpsc::SyncSender<SerializedSlicedFeature>,
+    mvt_options: &MvtParams,
 ) -> Result<()> {
     // Convert CityObjects to sliced features
     upstream.into_iter().par_bridge().try_for_each(|parcel| {
@@ -158,8 +194,8 @@ fn geometry_slicing_stage(
         let buffer_pixels = 5;
         slice_cityobj_geoms(
             &parcel.entity,
-            7,
-            16,
+            mvt_options.min_z,
+            mvt_options.max_z,
             max_detail,
             buffer_pixels,
             |(z, x, y), mpoly| {
