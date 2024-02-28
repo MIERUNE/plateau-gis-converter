@@ -1,11 +1,16 @@
+use assert_cmd::output;
 use nusamai_citygml::schema::Schema;
 
 use super::{transform::*, Transform};
 use crate::transformer;
 
+use nusamai_projection::crs::*;
+
 pub struct Requirements {
     /// Whether to shorten field names to 10 characters or less for Shapefiles.
     pub shorten_names_for_shapefile: bool,
+    /// Output EPSG code
+    pub output_epsg: EPSGCode,
     /// Mapping rules defined by the user
     pub mapping_rules: Option<transformer::MappingRules>,
     pub tree_flattening: TreeFlatteningSpec,
@@ -19,6 +24,7 @@ impl Default for Requirements {
         Self {
             shorten_names_for_shapefile: false,
             mapping_rules: None,
+            output_epsg: EPSG_WGS84_GEOGRAPHIC_3D,
             tree_flattening: TreeFlatteningSpec::None,
             resolve_appearance: false,
             mergedown: MergedownSpec::RemoveDescendantFeatures,
@@ -29,6 +35,7 @@ impl Default for Requirements {
 
 pub struct Request {
     pub shorten_names_for_shapefile: bool,
+    pub output_epsg: EPSGCode,
     pub mapping_rules: Option<transformer::MappingRules>,
     pub tree_flattening: TreeFlatteningSpec,
     pub apply_appearance: bool,
@@ -40,6 +47,7 @@ impl From<Requirements> for Request {
     fn from(req: Requirements) -> Self {
         Self {
             shorten_names_for_shapefile: req.shorten_names_for_shapefile,
+            output_epsg: req.output_epsg,
             mapping_rules: req.mapping_rules,
             tree_flattening: req.tree_flattening,
             apply_appearance: req.resolve_appearance,
@@ -96,7 +104,7 @@ impl TransformBuilder for NusamaiTransformBuilder {
         // TODO: build transformation based on config file
 
         // Transform the coordinate system
-        transforms.push(Box::new(ProjectionTransform::new()));
+        transforms.push(Box::new(ProjectionTransform::new(self.request.output_epsg)));
 
         // Apply appearance to geometries
         if self.request.apply_appearance {
