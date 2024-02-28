@@ -271,7 +271,7 @@ fn tile_writing_stage(
     tile_id_conv: TileIdMethod,
 ) -> Result<()> {
     let default_detail = 12;
-    let min_detail = 8;
+    let min_detail = 9;
 
     receiver_sorted
         .into_iter()
@@ -294,9 +294,10 @@ fn tile_writing_stage(
             }
 
             for detail in (min_detail..=default_detail).rev() {
+                // Make a MVT tile binary
                 let bytes = make_tile(detail, &serialized_feats)?;
 
-                // Retry with a lower detail level if the tile is too large
+                // Retry with a lower detail level if the compressed tile size is too large
                 let compressed_size = {
                     let mut e = ZlibEncoder::new(Vec::new(), Compression::default());
                     e.write_all(&bytes)?;
@@ -345,6 +346,7 @@ fn make_tile(default_detail: i32, serialized_feats: &[SerializedSlicedFeature]) 
                     [x, y]
                 }));
 
+                // some simplification
                 {
                     int_ring_buf2.clear();
                     int_ring_buf2.push(int_ring_buf[0]);
@@ -383,12 +385,12 @@ fn make_tile(default_detail: i32, serialized_feats: &[SerializedSlicedFeature]) 
         let mut geom_enc = GeometryEncoder::new();
         for poly in &int_mpoly {
             let exterior = poly.exterior();
-            if exterior.is_ccw() {
+            if exterior.signed_ring_area() > 0.0 {
                 geom_enc.add_ring(&exterior);
-            }
-            for interior in poly.interiors() {
-                if interior.is_cw() {
-                    geom_enc.add_ring(&interior);
+                for interior in poly.interiors() {
+                    if interior.is_cw() {
+                        geom_enc.add_ring(&interior);
+                    }
                 }
             }
         }

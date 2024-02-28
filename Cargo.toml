@@ -13,7 +13,7 @@ authors = ["MIERUNE Inc. <info@mierune.co.jp>"]
 
 [profile.release-lto]
 inherits = "release"
-lto = "thin"
+lto = true
 panic = "abort"
 
 [profile.dev.package.zune-image]
