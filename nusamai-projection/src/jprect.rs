@@ -79,6 +79,7 @@ impl JPRZone {
         }
     }
 
+    /// Get the zone from the EPSG code.
     pub const fn from_epsg(epsg: EPSGCode) -> Self {
         match epsg {
             EPSG_JGD2011_JPRECT_I_JGD2011_HEIGHT
