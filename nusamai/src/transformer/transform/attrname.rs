@@ -82,26 +82,19 @@ impl Transform for EditFieldNamesTransform {
 
 impl EditFieldNamesTransform {
     fn rename<'a>(&'a self, name: &'a str) -> Option<&str> {
-        let mut new_name = None;
-
         // Lookup and rename: exact match
         if let Some(new_key) = self.exact_rename_map.get(name) {
-            new_name = Some(new_key.as_ref());
-            return new_name;
+            return Some(new_key.as_ref());
         }
 
-        // Remove the namespace prefix, then rename:
-        // General match (consider the string after the namespace prefix)
-        if let Some(pos) = name.find(':') {
+        name.find(':').map(|pos| {
             let key = &name[pos + 1..]; // remove the namespace prefix
-            new_name = if let Some(new_key) = self.general_rename_map.get(key) {
-                Some(new_key.as_ref())
+            if let Some(new_key) = self.general_rename_map.get(key) {
+                new_key.as_ref()
             } else {
-                Some(key)
+                key
             }
-        }
-
-        new_name
+        })
     }
 
     fn edit_tree(&self, value: &mut Value) {
