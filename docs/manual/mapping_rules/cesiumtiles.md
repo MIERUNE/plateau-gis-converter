@@ -1,3 +1,5 @@
+# Cesium 3D Tiles マッピングルール
+
 ## 地物 (Feature stereotype)
 
 ### bldg:Building
@@ -24,7 +26,7 @@
 | storeyHeightsBelowGround | String |  | bldg:storeyHeightsBelowGround |
 | outerBuildingInstallation | JSON (<code><a href="#bldgbuildinginstallation">bldg:BuildingInstallation</a>[]</code>) | 建物付属物 | bldg:outerBuildingInstallation |
 | interiorBuildingInstallation | JSON (<code><a href="#bldgbuildinginstallation">bldg:BuildingInstallation</a>[]</code>) | 屋内付属物 | bldg:interiorBuildingInstallation |
-| boundedBy | JSON (<code><a href="#bldg_boundarysurfaceproperty">bldg:_BoundarySurfaceProperty</a>[]</code>) | 境界面 | bldg:boundedBy |
+| boundedBy | JSON (<code><a href="#bldg-boundarysurfaceproperty">bldg:_BoundarySurfaceProperty</a>[]</code>) | 境界面 | bldg:boundedBy |
 | interiorRoom | JSON (<code><a href="#bldgroom">bldg:Room</a>[]</code>) | 部屋 | bldg:interiorRoom |
 | consistsOfBuildingPart | JSON (<code><a href="#bldgbuildingpart">bldg:BuildingPart</a>[]</code>) | 建物部品 | bldg:consistsOfBuildingPart |
 | address | JSON (<code><a href="#coreaddress">core:Address</a>[]</code>) | 住所 | bldg:address |
@@ -72,7 +74,7 @@
 | class | Code | 分類 | bldg:class |
 | function | JSON (<code><a href="#code">Code</a>[]</code>) | 機能 | bldg:function |
 | usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | bldg:usage |
-| boundedBy | JSON (<code><a href="#bldg_boundarysurfaceproperty">bldg:_BoundarySurfaceProperty</a>[]</code>) | 境界面 | bldg:boundedBy |
+| boundedBy | JSON (<code><a href="#bldg-boundarysurfaceproperty">bldg:_BoundarySurfaceProperty</a>[]</code>) | 境界面 | bldg:boundedBy |
 | ifcBuildingInstallationAttribute | JSON (<code><a href="#uroifcattributeproperty">uro:IfcAttributeProperty</a>[]</code>) | IFC属性 | uro:ifcBuildingInstallationAttribute |
 
 ### bldg:BuildingPart
@@ -99,7 +101,7 @@
 | storeyHeightsBelowGround | String |  | bldg:storeyHeightsBelowGround |
 | outerBuildingInstallation | JSON (<code><a href="#bldgbuildinginstallation">bldg:BuildingInstallation</a>[]</code>) | 建物付属物 | bldg:outerBuildingInstallation |
 | interiorBuildingInstallation | JSON (<code><a href="#bldgbuildinginstallation">bldg:BuildingInstallation</a>[]</code>) | 屋内付属物 | bldg:interiorBuildingInstallation |
-| boundedBy | JSON (<code><a href="#bldg_boundarysurfaceproperty">bldg:_BoundarySurfaceProperty</a>[]</code>) | 境界面 | bldg:boundedBy |
+| boundedBy | JSON (<code><a href="#bldg-boundarysurfaceproperty">bldg:_BoundarySurfaceProperty</a>[]</code>) | 境界面 | bldg:boundedBy |
 | interiorRoom | JSON (<code><a href="#bldgroom">bldg:Room</a>[]</code>) | 部屋 | bldg:interiorRoom |
 | consistsOfBuildingPart | JSON (<code><a href="#bldgbuildingpart">bldg:BuildingPart</a>[]</code>) | ー | bldg:consistsOfBuildingPart |
 | address | JSON (<code><a href="#coreaddress">core:Address</a>[]</code>) | 住所 | bldg:address |
@@ -128,7 +130,7 @@
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
 | genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
-| opening | JSON (<code><a href="#bldg_openingproperty">bldg:_OpeningProperty</a>[]</code>) | 開口部 | bldg:opening |
+| opening | JSON (<code><a href="#bldg-openingproperty">bldg:_OpeningProperty</a>[]</code>) | 開口部 | bldg:opening |
 | ifcBoundarySurfaceAttribute | JSON (<code><a href="#uroifcattributeproperty">uro:IfcAttributeProperty</a>[]</code>) | IFC属性 | uro:ifcBoundarySurfaceAttribute |
 | indoorBoundarySurfaceAttribute | JSON (<code><a href="#uroindoorattributeproperty">uro:IndoorAttributeProperty</a>[]</code>) | 屋内ナビゲーション属性 | uro:indoorBoundarySurfaceAttribute |
 
@@ -143,7 +145,7 @@
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
 | genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
-| opening | JSON (<code><a href="#bldg_openingproperty">bldg:_OpeningProperty</a>[]</code>) | 開口部 | bldg:opening |
+| opening | JSON (<code><a href="#bldg-openingproperty">bldg:_OpeningProperty</a>[]</code>) | 開口部 | bldg:opening |
 | ifcBoundarySurfaceAttribute | JSON (<code><a href="#uroifcattributeproperty">uro:IfcAttributeProperty</a>[]</code>) | IFC属性 | uro:ifcBoundarySurfaceAttribute |
 | indoorBoundarySurfaceAttribute | JSON (<code><a href="#uroindoorattributeproperty">uro:IndoorAttributeProperty</a>[]</code>) |  | uro:indoorBoundarySurfaceAttribute |
 
@@ -173,7 +175,7 @@
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
 | genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
-| opening | JSON (<code><a href="#bldg_openingproperty">bldg:_OpeningProperty</a>[]</code>) | 開口部 | bldg:opening |
+| opening | JSON (<code><a href="#bldg-openingproperty">bldg:_OpeningProperty</a>[]</code>) | 開口部 | bldg:opening |
 | ifcBoundarySurfaceAttribute | JSON (<code><a href="#uroifcattributeproperty">uro:IfcAttributeProperty</a>[]</code>) | IFC属性 | uro:ifcBoundarySurfaceAttribute |
 | indoorBoundarySurfaceAttribute | JSON (<code><a href="#uroindoorattributeproperty">uro:IndoorAttributeProperty</a>[]</code>) | 屋内ナビゲーション属性 | uro:indoorBoundarySurfaceAttribute |
 
@@ -187,7 +189,7 @@
 | creationDate | Date |  | core:creationDate |
 | terminationDate | Date |  | core:terminationDate |
 | genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
-| opening | JSON (<code><a href="#bldg_openingproperty">bldg:_OpeningProperty</a>[]</code>) |  | bldg:opening |
+| opening | JSON (<code><a href="#bldg-openingproperty">bldg:_OpeningProperty</a>[]</code>) |  | bldg:opening |
 | ifcBoundarySurfaceAttribute | JSON (<code><a href="#uroifcattributeproperty">uro:IfcAttributeProperty</a>[]</code>) |  | uro:ifcBoundarySurfaceAttribute |
 | indoorBoundarySurfaceAttribute | JSON (<code><a href="#uroindoorattributeproperty">uro:IndoorAttributeProperty</a>[]</code>) |  | uro:indoorBoundarySurfaceAttribute |
 
@@ -202,7 +204,7 @@
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
 | genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
-| opening | JSON (<code><a href="#bldg_openingproperty">bldg:_OpeningProperty</a>[]</code>) | 開口部 | bldg:opening |
+| opening | JSON (<code><a href="#bldg-openingproperty">bldg:_OpeningProperty</a>[]</code>) | 開口部 | bldg:opening |
 | ifcBoundarySurfaceAttribute | JSON (<code><a href="#uroifcattributeproperty">uro:IfcAttributeProperty</a>[]</code>) | IFC属性 | uro:ifcBoundarySurfaceAttribute |
 | indoorBoundarySurfaceAttribute | JSON (<code><a href="#uroindoorattributeproperty">uro:IndoorAttributeProperty</a>[]</code>) | 屋内ナビゲーション属性 | uro:indoorBoundarySurfaceAttribute |
 
@@ -217,7 +219,7 @@
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
 | genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
-| opening | JSON (<code><a href="#bldg_openingproperty">bldg:_OpeningProperty</a>[]</code>) | 開口部 | bldg:opening |
+| opening | JSON (<code><a href="#bldg-openingproperty">bldg:_OpeningProperty</a>[]</code>) | 開口部 | bldg:opening |
 | ifcBoundarySurfaceAttribute | JSON (<code><a href="#uroifcattributeproperty">uro:IfcAttributeProperty</a>[]</code>) | IFC属性 | uro:ifcBoundarySurfaceAttribute |
 | indoorBoundarySurfaceAttribute | JSON (<code><a href="#uroindoorattributeproperty">uro:IndoorAttributeProperty</a>[]</code>) |  | uro:indoorBoundarySurfaceAttribute |
 
@@ -232,7 +234,7 @@
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
 | genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
-| opening | JSON (<code><a href="#bldg_openingproperty">bldg:_OpeningProperty</a>[]</code>) | 開口部 | bldg:opening |
+| opening | JSON (<code><a href="#bldg-openingproperty">bldg:_OpeningProperty</a>[]</code>) | 開口部 | bldg:opening |
 | ifcBoundarySurfaceAttribute | JSON (<code><a href="#uroifcattributeproperty">uro:IfcAttributeProperty</a>[]</code>) | IFC属性 | uro:ifcBoundarySurfaceAttribute |
 | indoorBoundarySurfaceAttribute | JSON (<code><a href="#uroindoorattributeproperty">uro:IndoorAttributeProperty</a>[]</code>) |  | uro:indoorBoundarySurfaceAttribute |
 
@@ -247,7 +249,7 @@
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
 | genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
-| opening | JSON (<code><a href="#bldg_openingproperty">bldg:_OpeningProperty</a>[]</code>) | 開口部 | bldg:opening |
+| opening | JSON (<code><a href="#bldg-openingproperty">bldg:_OpeningProperty</a>[]</code>) | 開口部 | bldg:opening |
 | ifcBoundarySurfaceAttribute | JSON (<code><a href="#uroifcattributeproperty">uro:IfcAttributeProperty</a>[]</code>) | IFC属性 | uro:ifcBoundarySurfaceAttribute |
 | indoorBoundarySurfaceAttribute | JSON (<code><a href="#uroindoorattributeproperty">uro:IndoorAttributeProperty</a>[]</code>) |  | uro:indoorBoundarySurfaceAttribute |
 
@@ -265,7 +267,7 @@
 | class | Code | 分類 | bldg:class |
 | function | JSON (<code><a href="#code">Code</a>[]</code>) | 機能 | bldg:function |
 | usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | bldg:usage |
-| boundedBy | JSON (<code><a href="#bldg_boundarysurfaceproperty">bldg:_BoundarySurfaceProperty</a>[]</code>) | 境界面 | bldg:boundedBy |
+| boundedBy | JSON (<code><a href="#bldg-boundarysurfaceproperty">bldg:_BoundarySurfaceProperty</a>[]</code>) | 境界面 | bldg:boundedBy |
 | interiorFurniture | JSON (<code><a href="#bldgbuildingfurniture">bldg:BuildingFurniture</a>[]</code>) | 家具 | bldg:interiorFurniture |
 | roomInstallation | JSON (<code><a href="#bldgbuildinginstallation">bldg:BuildingInstallation</a>[]</code>) | 屋内付属物 | bldg:roomInstallation |
 | ifcRoomAttribute | JSON (<code><a href="#uroifcattributeproperty">uro:IfcAttributeProperty</a>[]</code>) | IFC属性 | uro:ifcRoomAttribute |
@@ -283,7 +285,7 @@
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
 | genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
-| opening | JSON (<code><a href="#bldg_openingproperty">bldg:_OpeningProperty</a>[]</code>) | 開口部 | bldg:opening |
+| opening | JSON (<code><a href="#bldg-openingproperty">bldg:_OpeningProperty</a>[]</code>) | 開口部 | bldg:opening |
 | ifcBoundarySurfaceAttribute | JSON (<code><a href="#uroifcattributeproperty">uro:IfcAttributeProperty</a>[]</code>) | IFC属性 | uro:ifcBoundarySurfaceAttribute |
 | indoorBoundarySurfaceAttribute | JSON (<code><a href="#uroindoorattributeproperty">uro:IndoorAttributeProperty</a>[]</code>) |  | uro:indoorBoundarySurfaceAttribute |
 
@@ -473,7 +475,7 @@
 | outerBridgeConstruction | JSON (<code><a href="#bridbridgeconstructionelement">brid:BridgeConstructionElement</a>[]</code>) | 橋梁部材 | brid:outerBridgeConstruction |
 | outerBridgeInstallation | JSON (<code><a href="#bridbridgeinstallation">brid:BridgeInstallation</a>[]</code>) | 橋梁付属物 | brid:outerBridgeInstallation |
 | interiorBridgeInstallation | JSON (<code><a href="#bridbridgeinstallation">brid:BridgeInstallation</a>[]</code>) | 橋梁内部付属物 | brid:interiorBridgeInstallation |
-| boundedBy | JSON (<code><a href="#brid_boundarysurfaceproperty">brid:_BoundarySurfaceProperty</a>[]</code>) | 境界面 | brid:boundedBy |
+| boundedBy | JSON (<code><a href="#brid-boundarysurfaceproperty">brid:_BoundarySurfaceProperty</a>[]</code>) | 境界面 | brid:boundedBy |
 | interiorBridgeRoom | JSON (<code><a href="#bridbridgeroom">brid:BridgeRoom</a>[]</code>) | 橋梁内部 | brid:interiorBridgeRoom |
 | consistsOfBridgePart | JSON (<code><a href="#bridbridgepart">brid:BridgePart</a>[]</code>) | 橋梁部分 | brid:consistsOfBridgePart |
 | address | JSON (<code><a href="#coreaddress">core:Address</a>[]</code>) | 住所 | brid:address |
@@ -502,7 +504,7 @@
 | class | Code | 分類 | brid:class |
 | function | JSON (<code><a href="#code">Code</a>[]</code>) | 機能 | brid:function |
 | usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | brid:usage |
-| boundedBy | JSON (<code><a href="#brid_boundarysurfaceproperty">brid:_BoundarySurfaceProperty</a>[]</code>) | 境界面 | brid:boundedBy |
+| boundedBy | JSON (<code><a href="#brid-boundarysurfaceproperty">brid:_BoundarySurfaceProperty</a>[]</code>) | 境界面 | brid:boundedBy |
 
 ### brid:BridgeFurniture
 
@@ -533,7 +535,7 @@
 | class | Code | 分類 | brid:class |
 | function | JSON (<code><a href="#code">Code</a>[]</code>) | 機能 | brid:function |
 | usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | brid:usage |
-| boundedBy | JSON (<code><a href="#brid_boundarysurfaceproperty">brid:_BoundarySurfaceProperty</a>[]</code>) | 境界面 | brid:boundedBy |
+| boundedBy | JSON (<code><a href="#brid-boundarysurfaceproperty">brid:_BoundarySurfaceProperty</a>[]</code>) | 境界面 | brid:boundedBy |
 
 ### brid:BridgePart
 
@@ -555,7 +557,7 @@
 | outerBridgeConstruction | JSON (<code><a href="#bridbridgeconstructionelement">brid:BridgeConstructionElement</a>[]</code>) | 橋梁部材 | brid:outerBridgeConstruction |
 | outerBridgeInstallation | JSON (<code><a href="#bridbridgeinstallation">brid:BridgeInstallation</a>[]</code>) | 橋梁付属物 | brid:outerBridgeInstallation |
 | interiorBridgeInstallation | JSON (<code><a href="#bridbridgeinstallation">brid:BridgeInstallation</a>[]</code>) | 橋梁内部付属物 | brid:interiorBridgeInstallation |
-| boundedBy | JSON (<code><a href="#brid_boundarysurfaceproperty">brid:_BoundarySurfaceProperty</a>[]</code>) | 境界面 | brid:boundedBy |
+| boundedBy | JSON (<code><a href="#brid-boundarysurfaceproperty">brid:_BoundarySurfaceProperty</a>[]</code>) | 境界面 | brid:boundedBy |
 | interiorBridgeRoom | JSON (<code><a href="#bridbridgeroom">brid:BridgeRoom</a>[]</code>) | 橋梁内部 | brid:interiorBridgeRoom |
 | consistsOfBridgePart | JSON (<code><a href="#bridbridgepart">brid:BridgePart</a>[]</code>) | 橋梁部分 | brid:consistsOfBridgePart |
 | address | JSON (<code><a href="#coreaddress">core:Address</a>[]</code>) | 住所 | brid:address |
@@ -584,7 +586,7 @@
 | class | Code | 分類 | brid:class |
 | function | JSON (<code><a href="#code">Code</a>[]</code>) | 機能 | brid:function |
 | usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | brid:usage |
-| boundedBy | JSON (<code><a href="#brid_boundarysurfaceproperty">brid:_BoundarySurfaceProperty</a>[]</code>) | 境界面 | brid:boundedBy |
+| boundedBy | JSON (<code><a href="#brid-boundarysurfaceproperty">brid:_BoundarySurfaceProperty</a>[]</code>) | 境界面 | brid:boundedBy |
 | interiorFurniture | JSON (<code><a href="#bridbridgefurniture">brid:BridgeFurniture</a>[]</code>) | 設置物 | brid:interiorFurniture |
 | bridgeRoomInstallation | JSON (<code><a href="#bridbridgeinstallation">brid:BridgeInstallation</a>[]</code>) | 内部付属物 | brid:bridgeRoomInstallation |
 
@@ -599,7 +601,7 @@
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
 | genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
-| opening | JSON (<code><a href="#brid_openingproperty">brid:_OpeningProperty</a>[]</code>) | 開口部 | brid:opening |
+| opening | JSON (<code><a href="#brid-openingproperty">brid:_OpeningProperty</a>[]</code>) | 開口部 | brid:opening |
 
 ### brid:ClosureSurface
 
@@ -612,7 +614,7 @@
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
 | genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
-| opening | JSON (<code><a href="#brid_openingproperty">brid:_OpeningProperty</a>[]</code>) | 開口部 | brid:opening |
+| opening | JSON (<code><a href="#brid-openingproperty">brid:_OpeningProperty</a>[]</code>) | 開口部 | brid:opening |
 
 ### brid:Door
 
@@ -638,7 +640,7 @@
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
 | genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
-| opening | JSON (<code><a href="#brid_openingproperty">brid:_OpeningProperty</a>[]</code>) | 開口部 | brid:opening |
+| opening | JSON (<code><a href="#brid-openingproperty">brid:_OpeningProperty</a>[]</code>) | 開口部 | brid:opening |
 
 ### brid:GroundSurface
 
@@ -651,7 +653,7 @@
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
 | genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
-| opening | JSON (<code><a href="#brid_openingproperty">brid:_OpeningProperty</a>[]</code>) | 開口部 | brid:opening |
+| opening | JSON (<code><a href="#brid-openingproperty">brid:_OpeningProperty</a>[]</code>) | 開口部 | brid:opening |
 
 ### brid:InteriorWallSurface
 
@@ -664,7 +666,7 @@
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
 | genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
-| opening | JSON (<code><a href="#brid_openingproperty">brid:_OpeningProperty</a>[]</code>) | 開口部 | brid:opening |
+| opening | JSON (<code><a href="#brid-openingproperty">brid:_OpeningProperty</a>[]</code>) | 開口部 | brid:opening |
 
 ### brid:OuterCeilingSurface
 
@@ -677,7 +679,7 @@
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
 | genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
-| opening | JSON (<code><a href="#brid_openingproperty">brid:_OpeningProperty</a>[]</code>) | 開口部 | brid:opening |
+| opening | JSON (<code><a href="#brid-openingproperty">brid:_OpeningProperty</a>[]</code>) | 開口部 | brid:opening |
 
 ### brid:OuterFloorSurface
 
@@ -690,7 +692,7 @@
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
 | genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
-| opening | JSON (<code><a href="#brid_openingproperty">brid:_OpeningProperty</a>[]</code>) | 開口部 | brid:opening |
+| opening | JSON (<code><a href="#brid-openingproperty">brid:_OpeningProperty</a>[]</code>) | 開口部 | brid:opening |
 
 ### brid:RoofSurface
 
@@ -703,7 +705,7 @@
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
 | genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
-| opening | JSON (<code><a href="#brid_openingproperty">brid:_OpeningProperty</a>[]</code>) | 開口部 | brid:opening |
+| opening | JSON (<code><a href="#brid-openingproperty">brid:_OpeningProperty</a>[]</code>) | 開口部 | brid:opening |
 
 ### brid:WallSurface
 
@@ -716,7 +718,7 @@
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
 | genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
-| opening | JSON (<code><a href="#brid_openingproperty">brid:_OpeningProperty</a>[]</code>) | 開口部 | brid:opening |
+| opening | JSON (<code><a href="#brid-openingproperty">brid:_OpeningProperty</a>[]</code>) | 開口部 | brid:opening |
 
 ### brid:Window
 
@@ -741,7 +743,7 @@
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
 | genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
-| opening | JSON (<code><a href="#tun_openingproperty">tun:_OpeningProperty</a>[]</code>) | 開口部 | tun:opening |
+| opening | JSON (<code><a href="#tun-openingproperty">tun:_OpeningProperty</a>[]</code>) | 開口部 | tun:opening |
 
 ### tun:ClosureSurface
 
@@ -754,7 +756,7 @@
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
 | genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
-| opening | JSON (<code><a href="#tun_openingproperty">tun:_OpeningProperty</a>[]</code>) | 開口部 | tun:opening |
+| opening | JSON (<code><a href="#tun-openingproperty">tun:_OpeningProperty</a>[]</code>) | 開口部 | tun:opening |
 
 ### tun:Door
 
@@ -779,7 +781,7 @@
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
 | genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
-| opening | JSON (<code><a href="#tun_openingproperty">tun:_OpeningProperty</a>[]</code>) | 開口部 | tun:opening |
+| opening | JSON (<code><a href="#tun-openingproperty">tun:_OpeningProperty</a>[]</code>) | 開口部 | tun:opening |
 
 ### tun:GroundSurface
 
@@ -792,7 +794,7 @@
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
 | genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
-| opening | JSON (<code><a href="#tun_openingproperty">tun:_OpeningProperty</a>[]</code>) | 開口部 | tun:opening |
+| opening | JSON (<code><a href="#tun-openingproperty">tun:_OpeningProperty</a>[]</code>) | 開口部 | tun:opening |
 
 ### tun:HollowSpace
 
@@ -808,7 +810,7 @@
 | class | Code | 分類 | tun:class |
 | function | JSON (<code><a href="#code">Code</a>[]</code>) | 機能 | tun:function |
 | usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | tun:usage |
-| boundedBy | JSON (<code><a href="#tun_boundarysurfaceproperty">tun:_BoundarySurfaceProperty</a>[]</code>) | 境界面 | tun:boundedBy |
+| boundedBy | JSON (<code><a href="#tun-boundarysurfaceproperty">tun:_BoundarySurfaceProperty</a>[]</code>) | 境界面 | tun:boundedBy |
 | interiorFurniture | JSON (<code><a href="#tuntunnelfurniture">tun:TunnelFurniture</a>[]</code>) | 設置物 | tun:interiorFurniture |
 | hollowSpaceInstallation | JSON (<code><a href="#tuntunnelinstallation">tun:TunnelInstallation</a>[]</code>) | 内部付属物 | tun:hollowSpaceInstallation |
 
@@ -823,7 +825,7 @@
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
 | genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
-| opening | JSON (<code><a href="#tun_openingproperty">tun:_OpeningProperty</a>[]</code>) | 開口部 | tun:opening |
+| opening | JSON (<code><a href="#tun-openingproperty">tun:_OpeningProperty</a>[]</code>) | 開口部 | tun:opening |
 
 ### tun:OuterCeilingSurface
 
@@ -836,7 +838,7 @@
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
 | genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
-| opening | JSON (<code><a href="#tun_openingproperty">tun:_OpeningProperty</a>[]</code>) | 開口部 | tun:opening |
+| opening | JSON (<code><a href="#tun-openingproperty">tun:_OpeningProperty</a>[]</code>) | 開口部 | tun:opening |
 
 ### tun:OuterFloorSurface
 
@@ -849,7 +851,7 @@
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
 | genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
-| opening | JSON (<code><a href="#tun_openingproperty">tun:_OpeningProperty</a>[]</code>) | 開口部 | tun:opening |
+| opening | JSON (<code><a href="#tun-openingproperty">tun:_OpeningProperty</a>[]</code>) | 開口部 | tun:opening |
 
 ### tun:RoofSurface
 
@@ -862,7 +864,7 @@
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
 | genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
-| opening | JSON (<code><a href="#tun_openingproperty">tun:_OpeningProperty</a>[]</code>) | 開口部 | tun:opening |
+| opening | JSON (<code><a href="#tun-openingproperty">tun:_OpeningProperty</a>[]</code>) | 開口部 | tun:opening |
 
 ### tun:Tunnel
 
@@ -882,7 +884,7 @@
 | yearOfDemolition | String | 解体年 | tun:yearOfDemolition |
 | outerTunnelInstallation | JSON (<code><a href="#tuntunnelinstallation">tun:TunnelInstallation</a>[]</code>) | トンネル付属物 | tun:outerTunnelInstallation |
 | interiorTunnelInstallation | JSON (<code><a href="#tuntunnelinstallation">tun:TunnelInstallation</a>[]</code>) | トンネル内部付属物 | tun:interiorTunnelInstallation |
-| boundedBy | JSON (<code><a href="#tun_boundarysurfaceproperty">tun:_BoundarySurfaceProperty</a>[]</code>) | 境界面 | tun:boundedBy |
+| boundedBy | JSON (<code><a href="#tun-boundarysurfaceproperty">tun:_BoundarySurfaceProperty</a>[]</code>) | 境界面 | tun:boundedBy |
 | interiorHollowSpace | JSON (<code><a href="#tunhollowspace">tun:HollowSpace</a>[]</code>) | トンネル内部空間 | tun:interiorHollowSpace |
 | consistsOfTunnelPart | JSON (<code><a href="#tuntunnelpart">tun:TunnelPart</a>[]</code>) | トンネル部分 | tun:consistsOfTunnelPart |
 | tunBaseAttribute | JSON (<code><a href="#uroconstructionbaseattribute">uro:ConstructionBaseAttribute</a></code>) | 構造物基本属性 | uro:tunBaseAttribute |
@@ -925,7 +927,7 @@
 | class | Code | 分類 | tun:class |
 | function | JSON (<code><a href="#code">Code</a>[]</code>) | 機能 | tun:function |
 | usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | tun:usage |
-| boundedBy | JSON (<code><a href="#tun_boundarysurfaceproperty">tun:_BoundarySurfaceProperty</a>[]</code>) | 境界面 | tun:boundedBy |
+| boundedBy | JSON (<code><a href="#tun-boundarysurfaceproperty">tun:_BoundarySurfaceProperty</a>[]</code>) | 境界面 | tun:boundedBy |
 
 ### tun:TunnelPart
 
@@ -944,7 +946,7 @@
 | yearOfDemolition | String |  | tun:yearOfDemolition |
 | outerTunnelInstallation | JSON (<code><a href="#tuntunnelinstallation">tun:TunnelInstallation</a>[]</code>) |  | tun:outerTunnelInstallation |
 | interiorTunnelInstallation | JSON (<code><a href="#tuntunnelinstallation">tun:TunnelInstallation</a>[]</code>) |  | tun:interiorTunnelInstallation |
-| boundedBy | JSON (<code><a href="#tun_boundarysurfaceproperty">tun:_BoundarySurfaceProperty</a>[]</code>) |  | tun:boundedBy |
+| boundedBy | JSON (<code><a href="#tun-boundarysurfaceproperty">tun:_BoundarySurfaceProperty</a>[]</code>) |  | tun:boundedBy |
 | interiorHollowSpace | JSON (<code><a href="#tunhollowspace">tun:HollowSpace</a>[]</code>) |  | tun:interiorHollowSpace |
 | consistsOfTunnelPart | JSON (<code><a href="#tuntunnelpart">tun:TunnelPart</a>[]</code>) |  | tun:consistsOfTunnelPart |
 | tunBaseAttribute | JSON (<code><a href="#uroconstructionbaseattribute">uro:ConstructionBaseAttribute</a></code>) |  | uro:tunBaseAttribute |
@@ -969,7 +971,7 @@
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
 | genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
-| opening | JSON (<code><a href="#tun_openingproperty">tun:_OpeningProperty</a>[]</code>) | 開口部 | tun:opening |
+| opening | JSON (<code><a href="#tun-openingproperty">tun:_OpeningProperty</a>[]</code>) | 開口部 | tun:opening |
 
 ### tun:Window
 
@@ -1063,7 +1065,7 @@
 | class | Code | 分類 | wtr:class |
 | function | JSON (<code><a href="#code">Code</a>[]</code>) | 機能 | wtr:function |
 | usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | wtr:usage |
-| boundedBy | JSON (<code><a href="#wtr_waterboundarysurfaceproperty">wtr:_WaterBoundarySurfaceProperty</a>[]</code>) |  | wtr:boundedBy |
+| boundedBy | JSON (<code><a href="#wtr-waterboundarysurfaceproperty">wtr:_WaterBoundarySurfaceProperty</a>[]</code>) |  | wtr:boundedBy |
 | floodingRiskAttribute | JSON (<code><a href="#urowaterbodyfloodingriskattributeproperty">uro:WaterBodyFloodingRiskAttributeProperty</a>[]</code>) | 災害リスク | uro:floodingRiskAttribute |
 | waterBodyDetailAttribute | JSON (<code><a href="#urowaterbodydetailattribute">uro:WaterBodyDetailAttribute</a></code>) | 水部詳細属性 | uro:waterBodyDetailAttribute |
 | wtrDmAttribute | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) | 図式属性 | uro:wtrDmAttribute |
@@ -1162,7 +1164,7 @@
 | terminationDate | Date | 消滅日 | core:terminationDate |
 | genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
 | lod | NonNegativeInteger | lod | dem:lod |
-| reliefComponent | JSON (<code><a href="#dem_reliefcomponentproperty">dem:_ReliefComponentProperty</a>[]</code>) | 地形構成要素 | dem:reliefComponent |
+| reliefComponent | JSON (<code><a href="#dem-reliefcomponentproperty">dem:_ReliefComponentProperty</a>[]</code>) | 地形構成要素 | dem:reliefComponent |
 
 ### dem:TINRelief
 
@@ -1191,8 +1193,8 @@ TIN地形
 | class | Code |  | grp:class |
 | function | JSON (<code><a href="#code">Code</a>[]</code>) |  | grp:function |
 | usage | JSON (<code><a href="#code">Code</a>[]</code>) |  | grp:usage |
-| groupMember | JSON (<code><a href="#grp_cityobjectorref">grp:_CityObjectOrRef</a>[]</code>) |  | grp:groupMember |
-| parent | JSON (<code><a href="#grp_cityobjectorref">grp:_CityObjectOrRef</a></code>) |  | grp:parent |
+| groupMember | JSON (<code><a href="#grp-cityobjectorref">grp:_CityObjectOrRef</a>[]</code>) |  | grp:groupMember |
+| parent | JSON (<code><a href="#grp-cityobjectorref">grp:_CityObjectOrRef</a></code>) |  | grp:parent |
 | fiscalYearOfPublication | JSON (<code><a href="#string">String</a>[]</code>) |  | uro:fiscalYearOfPublication |
 | ifcBuildingStoreyAttribute | JSON (<code><a href="#uroifcattributeproperty">uro:IfcAttributeProperty</a>[]</code>) |  | uro:ifcBuildingStoreyAttribute |
 | indoorStoreyAttribute | JSON (<code><a href="#uroindoorattributeproperty">uro:IndoorAttributeProperty</a>[]</code>) |  | uro:indoorStoreyAttribute |
@@ -1558,7 +1560,7 @@ TIN地形
 | consDisasterRiskAttribute | JSON (<code><a href="#urodisasterriskattributeproperty">uro:DisasterRiskAttributeProperty</a>[]</code>) | 災害リスク属性 | uro:consDisasterRiskAttribute |
 | consDmAttribute | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) | 図式属性 | uro:consDmAttribute |
 | consDataQualityAttribute | JSON (<code><a href="#uroconstructiondataqualityattribute">uro:ConstructionDataQualityAttribute</a></code>) | 品質属性 | uro:consDataQualityAttribute |
-| boundedBy | JSON (<code><a href="#uro_boundarysurfaceproperty">uro:_BoundarySurfaceProperty</a>[]</code>) | 境界面 | uro:boundedBy |
+| boundedBy | JSON (<code><a href="#uro-boundarysurfaceproperty">uro:_BoundarySurfaceProperty</a>[]</code>) | 境界面 | uro:boundedBy |
 | constructionInstallation | JSON (<code><a href="#uroconstructioninstallation">uro:ConstructionInstallation</a>[]</code>) | 付属物 | uro:constructionInstallation |
 | class | Code | 分類 | uro:class |
 | function | JSON (<code><a href="#code">Code</a>[]</code>) | 機能 | uro:function |
@@ -1793,7 +1795,7 @@ TIN地形
 | storeyHeightsBelowGround | String |  | bldg:storeyHeightsBelowGround |
 | outerBuildingInstallation | JSON (<code><a href="#bldgbuildinginstallation">bldg:BuildingInstallation</a>[]</code>) | 建物付属物 | bldg:outerBuildingInstallation |
 | interiorBuildingInstallation | JSON (<code><a href="#bldgbuildinginstallation">bldg:BuildingInstallation</a>[]</code>) | 屋内付属物 | bldg:interiorBuildingInstallation |
-| boundedBy | JSON (<code><a href="#bldg_boundarysurfaceproperty">bldg:_BoundarySurfaceProperty</a>[]</code>) | 境界面 | bldg:boundedBy |
+| boundedBy | JSON (<code><a href="#bldg-boundarysurfaceproperty">bldg:_BoundarySurfaceProperty</a>[]</code>) | 境界面 | bldg:boundedBy |
 | interiorRoom | JSON (<code><a href="#bldgroom">bldg:Room</a>[]</code>) | 部屋 | bldg:interiorRoom |
 | consistsOfBuildingPart | JSON (<code><a href="#bldgbuildingpart">bldg:BuildingPart</a>[]</code>) | 建物部品 | bldg:consistsOfBuildingPart |
 | address | JSON (<code><a href="#coreaddress">core:Address</a>[]</code>) | 住所 | bldg:address |
@@ -8814,4 +8816,5 @@ nan
 |-----------|----|--------|---------------|
 | startLocation | String | 起点 | urf:startLocation |
 | endLocation | String | 終点 | urf:endLocation |
+
 

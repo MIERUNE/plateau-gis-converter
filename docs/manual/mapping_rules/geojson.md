@@ -1,4 +1,4 @@
-# KML マッピングルール
+# GeoJSON マッピングルール
 
 ## 地物 (Feature stereotype)
 
