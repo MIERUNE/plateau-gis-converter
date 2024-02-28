@@ -15,6 +15,7 @@ pub struct Requirements {
     pub resolve_appearance: bool,
     pub mergedown: MergedownSpec,
     pub key_value: KeyValueSpec,
+    pub lod_filter: LodFilterSpec,
 }
 
 impl Default for Requirements {
@@ -26,6 +27,7 @@ impl Default for Requirements {
             resolve_appearance: false,
             mergedown: MergedownSpec::RemoveDescendantFeatures,
             key_value: KeyValueSpec::Jsonify,
+            lod_filter: LodFilterSpec::default(),
         }
     }
 }
@@ -37,6 +39,7 @@ pub struct Request {
     pub apply_appearance: bool,
     pub mergedown: MergedownSpec,
     pub key_value: KeyValueSpec,
+    pub lod_filter: LodFilterSpec,
 }
 
 impl From<Requirements> for Request {
@@ -48,6 +51,21 @@ impl From<Requirements> for Request {
             apply_appearance: req.resolve_appearance,
             mergedown: req.mergedown,
             key_value: req.key_value,
+            lod_filter: req.lod_filter,
+        }
+    }
+}
+
+pub struct LodFilterSpec {
+    pub mask: LodMask,
+    pub mode: LodFilterMode,
+}
+
+impl Default for LodFilterSpec {
+    fn default() -> Self {
+        Self {
+            mask: LodMask::all(),
+            mode: LodFilterMode::Highest,
         }
     }
 }
@@ -120,7 +138,10 @@ impl TransformBuilder for NusamaiTransformBuilder {
             renamer
         });
 
-        transforms.push(Box::<FilterLodTransform>::default());
+        transforms.push(Box::new(FilterLodTransform::new(
+            self.request.lod_filter.mask,
+            self.request.lod_filter.mode,
+        )));
 
         match self.request.tree_flattening {
             TreeFlatteningSpec::None => {}
