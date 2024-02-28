@@ -50,7 +50,15 @@ impl Transform for ProjectionTransform {
 }
 
 impl ProjectionTransform {
-    pub fn new(jgd2wgs: Arc<Jgd2011ToWgs84>) -> Self {
-        Self { jgd2wgs }
+    pub fn new() -> Self {
+        Self {
+            jgd2wgs: Jgd2011ToWgs84::default().into(),
+        }
+    }
+}
+
+impl Default for ProjectionTransform {
+    fn default() -> Self {
+        Self::new()
     }
 }

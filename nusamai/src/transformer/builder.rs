@@ -91,7 +91,6 @@ pub trait TransformBuilder: Send + Sync {
 
 pub struct NusamaiTransformBuilder {
     request: transformer::Request,
-    jgd2wgs: Arc<Jgd2011ToWgs84>,
 }
 
 impl TransformBuilder for NusamaiTransformBuilder {
@@ -100,7 +99,7 @@ impl TransformBuilder for NusamaiTransformBuilder {
         // TODO: build transformation based on config file
 
         // Transform the coordinate system
-        transforms.push(Box::new(ProjectionTransform::new(self.jgd2wgs.clone())));
+        transforms.push(Box::new(ProjectionTransform::new()));
 
         // Apply appearance to geometries
         if self.request.apply_appearance {
@@ -163,9 +162,6 @@ impl TransformBuilder for NusamaiTransformBuilder {
 
 impl NusamaiTransformBuilder {
     pub fn new(req: transformer::Request) -> Self {
-        Self {
-            request: req,
-            jgd2wgs: Jgd2011ToWgs84::default().into(),
-        }
+        Self { request: req }
     }
 }
