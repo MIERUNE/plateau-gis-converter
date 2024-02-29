@@ -270,7 +270,7 @@ Serving HTTP on :: port 8000 (http://[::]:8000/) ...
       "bldg:address": "住所",
       "uro:buildingDataQualityAttribute": "データ品質",
       "uro:buildingDetailAttribute": "建物詳細",
-      "gen:genericAttribute": "ジェネリック"
+      "gen:genericAttribute": "ジェネリック",
       "bldg:measuredHeight": "高さ",
       "uro:buildingDisasterRiskAttribute": "災害リスク",
       "gml:name": "名前"
