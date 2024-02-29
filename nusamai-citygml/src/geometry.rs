@@ -47,7 +47,7 @@ pub type GeometryRefs = Vec<GeometryRef>;
 #[derive(Debug, Default)]
 pub struct GeometryStore {
     /// EPSG code of the Coordinate Reference System (CRS) for this geometry
-    pub epsg: EPSGCode,
+    pub epsg: EpsgCode,
 
     /// Shared vertex buffer for all geometries in this store
     pub vertices: Vec<[f64; 3]>,
