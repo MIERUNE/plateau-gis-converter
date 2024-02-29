@@ -12,4 +12,4 @@ RUN apt-get update && apt-get install -y \
 ENV CPLUS_INCLUDE_PATH=/usr/include/gdal
 ENV C_INCLUDE_PATH=/usr/include/gdal
 
-RUN pip3 install geopandas psycopg2-binary geoalchemy2
+RUN pip3 install geopandas==0.14.3 psycopg2-binary==2.9.9 geoalchemy2==0.14.4
