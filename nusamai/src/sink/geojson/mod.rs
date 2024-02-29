@@ -100,16 +100,14 @@ impl DataSink for GeoJsonSink {
             || {
                 let mut data: HashMap<String, Vec<geojson::Feature>> = HashMap::new();
 
-                receiver.into_iter().for_each(|(class_name, feature)| {
-                    data.entry(class_name.to_string())
-                        .or_default()
-                        .push(feature);
+                receiver.into_iter().for_each(|(typename, feature)| {
+                    data.entry(typename.to_string()).or_default().push(feature);
                 });
 
                 std::fs::create_dir_all(&self.output_path).unwrap();
-                data.iter().for_each(|(class_name, features)| {
+                data.iter().for_each(|(typename, features)| {
                     let mut file_path = self.output_path.clone();
-                    let c_name = class_name.split(':').last().unwrap();
+                    let c_name = typename.split(':').last().unwrap();
                     file_path.push(&format!("{}.geojson", c_name));
 
                     let mut file = File::create(&file_path).unwrap();
