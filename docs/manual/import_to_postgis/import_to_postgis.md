@@ -19,7 +19,7 @@
 - 以下のDocker環境を利用してJupyter Notebook環境を構築することができます。
 
 ```bash
-cd docs/manual/import_to_postgis
+cd demo/postgis
 docker compose up
 ```
 
