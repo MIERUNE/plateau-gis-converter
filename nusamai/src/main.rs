@@ -135,7 +135,7 @@ fn main() {
         sink_provider.create(&sink_params)
     };
 
-    let requiremnts = {
+    let requirements = {
         let mapping_rules = if let Some(rules_path) = &args.rules {
             let file_contents =
                 std::fs::read_to_string(rules_path).expect("Error reading rules file");
@@ -158,22 +158,6 @@ fn main() {
                 ..sink.make_transform_requirements()
             }
         }
-    };
-
-    let requirements = if let Some(rules_path) = &args.rules {
-        let mapping_rules = {
-            let file_contents =
-                std::fs::read_to_string(rules_path).expect("Error reading rules file");
-            let mapping_rules: MappingRules =
-                serde_json::from_str(&file_contents).expect("Error parsing rules file");
-            mapping_rules
-        };
-        Requirements {
-            mapping_rules: Some(mapping_rules),
-            ..sink.make_transform_requirements()
-        }
-    } else {
-        sink.make_transform_requirements()
     };
 
     let source = {
