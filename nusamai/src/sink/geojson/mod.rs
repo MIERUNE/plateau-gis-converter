@@ -64,7 +64,7 @@ impl DataSink for GeoJsonSink {
         transformer::Requirements {
             tree_flattening: transformer::TreeFlatteningSpec::Flatten {
                 feature: transformer::FeatureFlatteningOption::AllExceptThematicSurfaces,
-                data: transformer::DataFlatteningOption::TopLevelOnly,
+                data: transformer::DataFlatteningOption::None,
                 object: transformer::ObjectFlatteningOption::None,
             },
             ..Default::default()
