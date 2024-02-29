@@ -15,6 +15,7 @@ use nusamai::transformer::{NusamaiTransformBuilder, TransformBuilder};
 use nusamai::BUILTIN_SINKS;
 use nusamai_citygml::CityGmlElement;
 use nusamai_plateau::models::TopLevelCityObject;
+use nusamai_projection::crs::EpsgCode;
 
 #[derive(clap::Parser)]
 #[command(author, version, about, long_about = None)]
@@ -30,6 +31,10 @@ struct Args {
     /// Specify the output path
     #[arg(long)]
     output: String,
+
+    /// Specify the output EPSG code
+    #[arg(long)]
+    epsg: Option<EpsgCode>,
 
     /// Specify the mapping rules JSON file
     #[arg(long)]
@@ -128,6 +133,31 @@ fn main() {
             return;
         }
         sink_provider.create(&sink_params)
+    };
+
+    let requiremnts = {
+        let mapping_rules = if let Some(rules_path) = &args.rules {
+            let file_contents =
+                std::fs::read_to_string(rules_path).expect("Error reading rules file");
+            let mapping_rules: MappingRules =
+                serde_json::from_str(&file_contents).expect("Error parsing rules file");
+            Some(mapping_rules)
+        } else {
+            None
+        };
+
+        if let Some(output_epsg) = args.epsg {
+            Requirements {
+                output_epsg,
+                mapping_rules,
+                ..sink.make_transform_requirements()
+            }
+        } else {
+            Requirements {
+                mapping_rules,
+                ..sink.make_transform_requirements()
+            }
+        }
     };
 
     let requirements = if let Some(rules_path) = &args.rules {
@@ -240,6 +270,8 @@ mod tests {
             .arg("noop")
             .arg("--output")
             .arg("dummy")
+            .args("epsg")
+            .arg("4979")
             .arg("--rules")
             .arg("./tests/rules.json")
             .arg("--schema")
