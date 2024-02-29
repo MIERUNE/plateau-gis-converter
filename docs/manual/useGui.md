@@ -282,7 +282,7 @@ Serving HTTP on :: port 8000 (http://[::]:8000/) ...
 
 ![alt text](../resources/useGui_image-17.png)
 
-- `変換`ボタンをクリックし、データを変換すると、属性名が変換された GeoPackage が出力されます。
+- `変換`ボタンをクリックし、データを変換すると、属性名が変換されたGeoPackageが出力されます。
 
 ![alt text](../resources/useGui_image-18.png)
 
