@@ -254,7 +254,7 @@ mod tests {
             .arg("noop")
             .arg("--output")
             .arg("dummy")
-            .args("--epsg")
+            .arg("--epsg")
             .arg("4979")
             .arg("--rules")
             .arg("./tests/rules.json")
