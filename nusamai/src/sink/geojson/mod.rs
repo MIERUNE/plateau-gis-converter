@@ -88,11 +88,10 @@ impl DataSink for GeoJsonSink {
                             // Skip non-Feature objects
                             return Ok(());
                         };
-                        let typename = object.typename.clone();
 
                         let features = entity_to_geojson_features(&parcel.entity);
                         for feature in features {
-                            if sender.send((typename.clone(), feature)).is_err() {
+                            if sender.send((object.typename.clone(), feature)).is_err() {
                                 return Err(PipelineError::Canceled);
                             };
                         }
@@ -100,39 +99,45 @@ impl DataSink for GeoJsonSink {
                     })
             },
             || {
-                let mut data: HashMap<String, Vec<geojson::Feature>> = HashMap::new();
+                let mut categorized_features: HashMap<String, Vec<geojson::Feature>> =
+                    HashMap::new();
 
                 receiver.into_iter().for_each(|(typename, feature)| {
-                    data.entry(typename.to_string()).or_default().push(feature);
+                    categorized_features
+                        .entry(typename.to_string())
+                        .or_default()
+                        .push(feature);
                 });
 
                 std::fs::create_dir_all(&self.output_path).unwrap();
-                data.iter().for_each(|(typename, features)| {
-                    let mut file_path = self.output_path.clone();
-                    let c_name = typename.split(':').last().unwrap();
-                    file_path.push(&format!("{}.geojson", c_name));
+                categorized_features
+                    .iter()
+                    .for_each(|(typename, features)| {
+                        let mut file_path = self.output_path.clone();
+                        let c_name = typename.split(':').last().unwrap();
+                        file_path.push(&format!("{}.geojson", c_name));
 
-                    let mut file = File::create(&file_path).unwrap();
-                    let mut writer = BufWriter::with_capacity(1024 * 1024, &mut file);
+                        let mut file = File::create(&file_path).unwrap();
+                        let mut writer = BufWriter::with_capacity(1024 * 1024, &mut file);
 
-                    // Write the FeatureCollection header
-                    writer
-                        .write_all(b"{\"type\":\"FeatureCollection\",\"features\":[")
-                        .unwrap();
+                        // Write the FeatureCollection header
+                        writer
+                            .write_all(b"{\"type\":\"FeatureCollection\",\"features\":[")
+                            .unwrap();
 
-                    // Write each Feature
-                    let mut iter = features.iter().peekable();
-                    while let Some(feature) = iter.next() {
-                        let bytes = serde_json::to_vec(&feature).unwrap();
-                        writer.write_all(&bytes).unwrap();
-                        if iter.peek().is_some() {
-                            writer.write_all(b",").unwrap();
-                        };
-                    }
+                        // Write each Feature
+                        let mut iter = features.iter().peekable();
+                        while let Some(feature) = iter.next() {
+                            let bytes = serde_json::to_vec(&feature).unwrap();
+                            writer.write_all(&bytes).unwrap();
+                            if iter.peek().is_some() {
+                                writer.write_all(b",").unwrap();
+                            };
+                        }
 
-                    // Write the FeautureCollection footer and EOL
-                    writer.write_all(b"]}\n").unwrap();
-                });
+                        // Write the FeautureCollection footer and EOL
+                        writer.write_all(b"]}\n").unwrap();
+                    });
 
                 Ok(())
             },
