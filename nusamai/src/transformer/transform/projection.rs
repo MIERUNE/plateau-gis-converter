@@ -52,7 +52,7 @@ impl Transform for ProjectionTransform {
                     let proj = zone.projection();
                     let mut geom_store = entity.geometry_store.write().unwrap();
                     geom_store.vertices.iter_mut().for_each(|v| {
-                        let (lng, lat, height) = (v[1], v[0], v[2]);
+                        let (lng, lat) = (v[1], v[0]);
                         // Change x and y; keep the height
                         (v[0], v[1], _) = proj.project_forward(lng, lat, 0.).unwrap();
                     });
