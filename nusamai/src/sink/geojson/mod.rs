@@ -86,11 +86,11 @@ impl DataSink for GeoJsonSink {
                         let Value::Object(object) = &parcel.entity.root else {
                             unimplemented!()
                         };
-                        let class_name = object.typename.clone();
+                        let typename = object.typename.clone();
 
                         let features = entity_to_geojson_features(&parcel.entity);
                         for feature in features {
-                            if sender.send((class_name.clone(), feature)).is_err() {
+                            if sender.send((typename.clone(), feature)).is_err() {
                                 return Err(PipelineError::Canceled);
                             };
                         }
