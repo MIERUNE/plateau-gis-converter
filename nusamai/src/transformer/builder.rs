@@ -6,7 +6,10 @@ use nusamai_projection::vshift::Jgd2011ToWgs84;
 use super::{transform::*, Transform};
 use crate::transformer;
 
+use nusamai_projection::crs;
+
 pub struct Requirements {
+    pub output_epsg: crs::EpsgCode,
     /// Whether to shorten field names to 10 characters or less for Shapefiles.
     pub shorten_names_for_shapefile: bool,
     /// Mapping rules defined by the user
@@ -21,6 +24,7 @@ pub struct Requirements {
 impl Default for Requirements {
     fn default() -> Self {
         Self {
+            output_epsg: crs::EPSG_WGS84_GEOGRAPHIC_3D,
             shorten_names_for_shapefile: false,
             mapping_rules: None,
             tree_flattening: TreeFlatteningSpec::None,
@@ -33,6 +37,7 @@ impl Default for Requirements {
 }
 
 pub struct Request {
+    pub output_epsg: crs::EpsgCode,
     pub shorten_names_for_shapefile: bool,
     pub mapping_rules: Option<transformer::MappingRules>,
     pub tree_flattening: TreeFlatteningSpec,
@@ -45,6 +50,7 @@ pub struct Request {
 impl From<Requirements> for Request {
     fn from(req: Requirements) -> Self {
         Self {
+            output_epsg: req.output_epsg,
             shorten_names_for_shapefile: req.shorten_names_for_shapefile,
             mapping_rules: req.mapping_rules,
             tree_flattening: req.tree_flattening,
@@ -118,7 +124,10 @@ impl TransformBuilder for NusamaiTransformBuilder {
         // TODO: build transformation based on config file
 
         // Transform the coordinate system
-        transforms.push(Box::new(ProjectionTransform::new(self.jgd2wgs.clone())));
+        transforms.push(Box::new(ProjectionTransform::new(
+            self.jgd2wgs.clone(),
+            self.request.output_epsg,
+        )));
 
         // Apply appearance to geometries
         if self.request.apply_appearance {
