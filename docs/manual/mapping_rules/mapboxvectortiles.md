@@ -1,4 +1,4 @@
-# KML マッピングルール
+# Mapbox Vector Tiles マッピングルール
 
 ## 地物 (Feature stereotype)
 
@@ -9,13 +9,13 @@
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | bldg:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 機能 | bldg:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | bldg:usage |
+| function | Code | 機能 | bldg:function |
+| usage | Code | 用途 | bldg:usage |
 | yearOfConstruction | NonNegativeInteger | 建築年 | bldg:yearOfConstruction |
 | yearOfDemolition | NonNegativeInteger | 解体年 | bldg:yearOfDemolition |
 | roofType | Code | 屋根の種別 | bldg:roofType |
@@ -24,25 +24,25 @@
 | storeysBelowGround | NonNegativeInteger | 地下階数 | bldg:storeysBelowGround |
 | storeyHeightsAboveGround | String | 地下階高さリスト | bldg:storeyHeightsAboveGround |
 | storeyHeightsBelowGround | String |  | bldg:storeyHeightsBelowGround |
-| outerBuildingInstallation | JSON (<code><a href="#bldgbuildinginstallation">bldg:BuildingInstallation</a>[]</code>) | 建物付属物 | bldg:outerBuildingInstallation |
-| interiorBuildingInstallation | JSON (<code><a href="#bldgbuildinginstallation">bldg:BuildingInstallation</a>[]</code>) | 屋内付属物 | bldg:interiorBuildingInstallation |
-| boundedBy | JSON (<code><a href="#bldg-boundarysurfaceproperty">bldg:_BoundarySurfaceProperty</a>[]</code>) | 境界面 | bldg:boundedBy |
-| interiorRoom | JSON (<code><a href="#bldgroom">bldg:Room</a>[]</code>) | 部屋 | bldg:interiorRoom |
-| consistsOfBuildingPart | JSON (<code><a href="#bldgbuildingpart">bldg:BuildingPart</a>[]</code>) | 建物部品 | bldg:consistsOfBuildingPart |
-| address | JSON (<code><a href="#coreaddress">core:Address</a>[]</code>) | 住所 | bldg:address |
-| bldgDmAttribute | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) | 図式属性 | uro:bldgDmAttribute |
-| bldgFacilityAttribute | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) | 施設詳細属性 | uro:bldgFacilityAttribute |
-| bldgFacilityIdAttribute | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) | 施設識別属性 | uro:bldgFacilityIdAttribute |
-| bldgFacilityTypeAttribute | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) | 施設属性 | uro:bldgFacilityTypeAttribute |
-| bldgRealEstateIDAttribute | JSON (<code><a href="#urorealestateidattribute">uro:RealEstateIDAttribute</a></code>) | 不動産ID | uro:bldgRealEstateIDAttribute |
-| buildingDataQualityAttribute | JSON (<code><a href="#urobuildingdataqualityattribute">uro:BuildingDataQualityAttribute</a></code>) | データ品質 | uro:buildingDataQualityAttribute |
-| buildingDetailAttribute | JSON (<code><a href="#urobuildingdetailattribute">uro:BuildingDetailAttribute</a>[]</code>) | 建物利用現況 | uro:buildingDetailAttribute |
-| buildingDisasterRiskAttribute | JSON (<code><a href="#urobuildingdisasterriskattributeproperty">uro:BuildingDisasterRiskAttributeProperty</a>[]</code>) | 災害リスク | uro:buildingDisasterRiskAttribute |
-| buildingIDAttribute | JSON (<code><a href="#urobuildingidattribute">uro:BuildingIDAttribute</a></code>) | 建物識別情報 | uro:buildingIDAttribute |
-| ifcBuildingAttribute | JSON (<code><a href="#uroifcattributeproperty">uro:IfcAttributeProperty</a>[]</code>) | IFC属性 | uro:ifcBuildingAttribute |
-| indoorBuildingAttribute | JSON (<code><a href="#uroindoorattributeproperty">uro:IndoorAttributeProperty</a>[]</code>) | 屋内ナビゲーション属性 | uro:indoorBuildingAttribute |
-| keyValuePairAttribute | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) | 拡張属性 | uro:keyValuePairAttribute |
-| largeCustomerFacilityAttribute | JSON (<code><a href="#urolargecustomerfacilityattribute">uro:LargeCustomerFacilityAttribute</a>[]</code>) | 大規模小売店舗等の立地状況 | uro:largeCustomerFacilityAttribute |
+| outerBuildingInstallation | bldg:BuildingInstallation | 建物付属物 | bldg:outerBuildingInstallation |
+| interiorBuildingInstallation | bldg:BuildingInstallation | 屋内付属物 | bldg:interiorBuildingInstallation |
+| boundedBy | bldg:_BoundarySurfaceProperty | 境界面 | bldg:boundedBy |
+| interiorRoom | bldg:Room | 部屋 | bldg:interiorRoom |
+| consistsOfBuildingPart | bldg:BuildingPart | 建物部品 | bldg:consistsOfBuildingPart |
+| address | core:Address | 住所 | bldg:address |
+| bldgDmAttribute | uro:DmAttributeProperty | 図式属性 | uro:bldgDmAttribute |
+| bldgFacilityAttribute | uro:FacilityAttributeProperty | 施設詳細属性 | uro:bldgFacilityAttribute |
+| bldgFacilityIdAttribute | uro:FacilityIdAttributeProperty | 施設識別属性 | uro:bldgFacilityIdAttribute |
+| bldgFacilityTypeAttribute | uro:FacilityTypeAttribute | 施設属性 | uro:bldgFacilityTypeAttribute |
+| bldgRealEstateIDAttribute | uro:RealEstateIDAttribute | 不動産ID | uro:bldgRealEstateIDAttribute |
+| buildingDataQualityAttribute | uro:BuildingDataQualityAttribute | データ品質 | uro:buildingDataQualityAttribute |
+| buildingDetailAttribute | uro:BuildingDetailAttribute | 建物利用現況 | uro:buildingDetailAttribute |
+| buildingDisasterRiskAttribute | uro:BuildingDisasterRiskAttributeProperty | 災害リスク | uro:buildingDisasterRiskAttribute |
+| buildingIDAttribute | uro:BuildingIDAttribute | 建物識別情報 | uro:buildingIDAttribute |
+| ifcBuildingAttribute | uro:IfcAttributeProperty | IFC属性 | uro:ifcBuildingAttribute |
+| indoorBuildingAttribute | uro:IndoorAttributeProperty | 屋内ナビゲーション属性 | uro:indoorBuildingAttribute |
+| keyValuePairAttribute | uro:KeyValuePairAttribute | 拡張属性 | uro:keyValuePairAttribute |
+| largeCustomerFacilityAttribute | uro:LargeCustomerFacilityAttribute | 大規模小売店舗等の立地状況 | uro:largeCustomerFacilityAttribute |
 
 ### bldg:BuildingFurniture
 
@@ -50,15 +50,15 @@
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String |  | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) |  | gml:name |
+| name | Code |  | gml:name |
 | creationDate | Date |  | core:creationDate |
 | terminationDate | Date |  | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code |  | bldg:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) |  | bldg:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) |  | bldg:usage |
-| ifcBuildingFurnitureAttribute | JSON (<code><a href="#uroifcattributeproperty">uro:IfcAttributeProperty</a>[]</code>) |  | uro:ifcBuildingFurnitureAttribute |
-| indoorFutnitureAttribute | JSON (<code><a href="#uroindoorattributeproperty">uro:IndoorAttributeProperty</a>[]</code>) |  | uro:indoorFutnitureAttribute |
+| function | Code |  | bldg:function |
+| usage | Code |  | bldg:usage |
+| ifcBuildingFurnitureAttribute | uro:IfcAttributeProperty |  | uro:ifcBuildingFurnitureAttribute |
+| indoorFutnitureAttribute | uro:IndoorAttributeProperty |  | uro:indoorFutnitureAttribute |
 
 ### bldg:BuildingInstallation
 
@@ -67,15 +67,15 @@
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | bldg:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 機能 | bldg:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | bldg:usage |
-| boundedBy | JSON (<code><a href="#bldg-boundarysurfaceproperty">bldg:_BoundarySurfaceProperty</a>[]</code>) | 境界面 | bldg:boundedBy |
-| ifcBuildingInstallationAttribute | JSON (<code><a href="#uroifcattributeproperty">uro:IfcAttributeProperty</a>[]</code>) | IFC属性 | uro:ifcBuildingInstallationAttribute |
+| function | Code | 機能 | bldg:function |
+| usage | Code | 用途 | bldg:usage |
+| boundedBy | bldg:_BoundarySurfaceProperty | 境界面 | bldg:boundedBy |
+| ifcBuildingInstallationAttribute | uro:IfcAttributeProperty | IFC属性 | uro:ifcBuildingInstallationAttribute |
 
 ### bldg:BuildingPart
 
@@ -84,13 +84,13 @@
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | bldg:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 機能 | bldg:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | bldg:usage |
+| function | Code | 機能 | bldg:function |
+| usage | Code | 用途 | bldg:usage |
 | yearOfConstruction | String | 建築年 | bldg:yearOfConstruction |
 | yearOfDemolition | String | 解体年 | bldg:yearOfDemolition |
 | roofType | Code | 屋根の種別 | bldg:roofType |
@@ -99,25 +99,25 @@
 | storeysBelowGround | NonNegativeInteger | 地下階数 | bldg:storeysBelowGround |
 | storeyHeightsAboveGround | String | 地下階高さリスト | bldg:storeyHeightsAboveGround |
 | storeyHeightsBelowGround | String |  | bldg:storeyHeightsBelowGround |
-| outerBuildingInstallation | JSON (<code><a href="#bldgbuildinginstallation">bldg:BuildingInstallation</a>[]</code>) | 建物付属物 | bldg:outerBuildingInstallation |
-| interiorBuildingInstallation | JSON (<code><a href="#bldgbuildinginstallation">bldg:BuildingInstallation</a>[]</code>) | 屋内付属物 | bldg:interiorBuildingInstallation |
-| boundedBy | JSON (<code><a href="#bldg-boundarysurfaceproperty">bldg:_BoundarySurfaceProperty</a>[]</code>) | 境界面 | bldg:boundedBy |
-| interiorRoom | JSON (<code><a href="#bldgroom">bldg:Room</a>[]</code>) | 部屋 | bldg:interiorRoom |
-| consistsOfBuildingPart | JSON (<code><a href="#bldgbuildingpart">bldg:BuildingPart</a>[]</code>) | ー | bldg:consistsOfBuildingPart |
-| address | JSON (<code><a href="#coreaddress">core:Address</a>[]</code>) | 住所 | bldg:address |
-| bldgDmAttribute | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) | 図式属性 | uro:bldgDmAttribute |
-| bldgFacilityAttribute | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) | 施設詳細属性 | uro:bldgFacilityAttribute |
-| bldgFacilityIdAttribute | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) | 施設識別属性 | uro:bldgFacilityIdAttribute |
-| bldgFacilityTypeAttribute | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) | 施設属性 | uro:bldgFacilityTypeAttribute |
-| bldgRealEstateIDAttribute | JSON (<code><a href="#urorealestateidattribute">uro:RealEstateIDAttribute</a></code>) |  | uro:bldgRealEstateIDAttribute |
-| buildingDataQualityAttribute | JSON (<code><a href="#urobuildingdataqualityattribute">uro:BuildingDataQualityAttribute</a></code>) | ー | uro:buildingDataQualityAttribute |
-| buildingDetailAttribute | JSON (<code><a href="#urobuildingdetailattribute">uro:BuildingDetailAttribute</a>[]</code>) | 建物利用現況 | uro:buildingDetailAttribute |
-| buildingDisasterRiskAttribute | JSON (<code><a href="#urobuildingdisasterriskattributeproperty">uro:BuildingDisasterRiskAttributeProperty</a>[]</code>) | ー | uro:buildingDisasterRiskAttribute |
-| buildingIDAttribute | JSON (<code><a href="#urobuildingidattribute">uro:BuildingIDAttribute</a></code>) | 建物識別属性 | uro:buildingIDAttribute |
-| ifcBuildingAttribute | JSON (<code><a href="#uroifcattributeproperty">uro:IfcAttributeProperty</a>[]</code>) | IFC属性 | uro:ifcBuildingAttribute |
-| indoorBuildingAttribute | JSON (<code><a href="#uroindoorattributeproperty">uro:IndoorAttributeProperty</a>[]</code>) | 屋内属性 | uro:indoorBuildingAttribute |
-| keyValuePairAttribute | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) | ー | uro:keyValuePairAttribute |
-| largeCustomerFacilityAttribute | JSON (<code><a href="#urolargecustomerfacilityattribute">uro:LargeCustomerFacilityAttribute</a>[]</code>) | 大規模小売店舗等の立地状況 | uro:largeCustomerFacilityAttribute |
+| outerBuildingInstallation | bldg:BuildingInstallation | 建物付属物 | bldg:outerBuildingInstallation |
+| interiorBuildingInstallation | bldg:BuildingInstallation | 屋内付属物 | bldg:interiorBuildingInstallation |
+| boundedBy | bldg:_BoundarySurfaceProperty | 境界面 | bldg:boundedBy |
+| interiorRoom | bldg:Room | 部屋 | bldg:interiorRoom |
+| consistsOfBuildingPart | bldg:BuildingPart | ー | bldg:consistsOfBuildingPart |
+| address | core:Address | 住所 | bldg:address |
+| bldgDmAttribute | uro:DmAttributeProperty | 図式属性 | uro:bldgDmAttribute |
+| bldgFacilityAttribute | uro:FacilityAttributeProperty | 施設詳細属性 | uro:bldgFacilityAttribute |
+| bldgFacilityIdAttribute | uro:FacilityIdAttributeProperty | 施設識別属性 | uro:bldgFacilityIdAttribute |
+| bldgFacilityTypeAttribute | uro:FacilityTypeAttribute | 施設属性 | uro:bldgFacilityTypeAttribute |
+| bldgRealEstateIDAttribute | uro:RealEstateIDAttribute |  | uro:bldgRealEstateIDAttribute |
+| buildingDataQualityAttribute | uro:BuildingDataQualityAttribute | ー | uro:buildingDataQualityAttribute |
+| buildingDetailAttribute | uro:BuildingDetailAttribute | 建物利用現況 | uro:buildingDetailAttribute |
+| buildingDisasterRiskAttribute | uro:BuildingDisasterRiskAttributeProperty | ー | uro:buildingDisasterRiskAttribute |
+| buildingIDAttribute | uro:BuildingIDAttribute | 建物識別属性 | uro:buildingIDAttribute |
+| ifcBuildingAttribute | uro:IfcAttributeProperty | IFC属性 | uro:ifcBuildingAttribute |
+| indoorBuildingAttribute | uro:IndoorAttributeProperty | 屋内属性 | uro:indoorBuildingAttribute |
+| keyValuePairAttribute | uro:KeyValuePairAttribute | ー | uro:keyValuePairAttribute |
+| largeCustomerFacilityAttribute | uro:LargeCustomerFacilityAttribute | 大規模小売店舗等の立地状況 | uro:largeCustomerFacilityAttribute |
 
 ### bldg:CeilingSurface
 
@@ -126,13 +126,13 @@
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
-| opening | JSON (<code><a href="#bldg-openingproperty">bldg:_OpeningProperty</a>[]</code>) | 開口部 | bldg:opening |
-| ifcBoundarySurfaceAttribute | JSON (<code><a href="#uroifcattributeproperty">uro:IfcAttributeProperty</a>[]</code>) | IFC属性 | uro:ifcBoundarySurfaceAttribute |
-| indoorBoundarySurfaceAttribute | JSON (<code><a href="#uroindoorattributeproperty">uro:IndoorAttributeProperty</a>[]</code>) | 屋内ナビゲーション属性 | uro:indoorBoundarySurfaceAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
+| opening | bldg:_OpeningProperty | 開口部 | bldg:opening |
+| ifcBoundarySurfaceAttribute | uro:IfcAttributeProperty | IFC属性 | uro:ifcBoundarySurfaceAttribute |
+| indoorBoundarySurfaceAttribute | uro:IndoorAttributeProperty | 屋内ナビゲーション属性 | uro:indoorBoundarySurfaceAttribute |
 
 ### bldg:ClosureSurface
 
@@ -141,13 +141,13 @@
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
-| opening | JSON (<code><a href="#bldg-openingproperty">bldg:_OpeningProperty</a>[]</code>) | 開口部 | bldg:opening |
-| ifcBoundarySurfaceAttribute | JSON (<code><a href="#uroifcattributeproperty">uro:IfcAttributeProperty</a>[]</code>) | IFC属性 | uro:ifcBoundarySurfaceAttribute |
-| indoorBoundarySurfaceAttribute | JSON (<code><a href="#uroindoorattributeproperty">uro:IndoorAttributeProperty</a>[]</code>) |  | uro:indoorBoundarySurfaceAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
+| opening | bldg:_OpeningProperty | 開口部 | bldg:opening |
+| ifcBoundarySurfaceAttribute | uro:IfcAttributeProperty | IFC属性 | uro:ifcBoundarySurfaceAttribute |
+| indoorBoundarySurfaceAttribute | uro:IndoorAttributeProperty |  | uro:indoorBoundarySurfaceAttribute |
 
 ### bldg:Door
 
@@ -156,13 +156,13 @@
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
-| ifcOpeningAttribute | JSON (<code><a href="#uroifcattributeproperty">uro:IfcAttributeProperty</a>[]</code>) | IFC属性 | uro:ifcOpeningAttribute |
-| indoorOpeningAttribute | JSON (<code><a href="#uroindoorattributeproperty">uro:IndoorAttributeProperty</a>[]</code>) | 屋内ナビゲーション属性 | uro:indoorOpeningAttribute |
-| address | JSON (<code><a href="#coreaddress">core:Address</a>[]</code>) |  | bldg:address |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
+| ifcOpeningAttribute | uro:IfcAttributeProperty | IFC属性 | uro:ifcOpeningAttribute |
+| indoorOpeningAttribute | uro:IndoorAttributeProperty | 屋内ナビゲーション属性 | uro:indoorOpeningAttribute |
+| address | core:Address |  | bldg:address |
 
 ### bldg:FloorSurface
 
@@ -171,13 +171,13 @@
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
-| opening | JSON (<code><a href="#bldg-openingproperty">bldg:_OpeningProperty</a>[]</code>) | 開口部 | bldg:opening |
-| ifcBoundarySurfaceAttribute | JSON (<code><a href="#uroifcattributeproperty">uro:IfcAttributeProperty</a>[]</code>) | IFC属性 | uro:ifcBoundarySurfaceAttribute |
-| indoorBoundarySurfaceAttribute | JSON (<code><a href="#uroindoorattributeproperty">uro:IndoorAttributeProperty</a>[]</code>) | 屋内ナビゲーション属性 | uro:indoorBoundarySurfaceAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
+| opening | bldg:_OpeningProperty | 開口部 | bldg:opening |
+| ifcBoundarySurfaceAttribute | uro:IfcAttributeProperty | IFC属性 | uro:ifcBoundarySurfaceAttribute |
+| indoorBoundarySurfaceAttribute | uro:IndoorAttributeProperty | 屋内ナビゲーション属性 | uro:indoorBoundarySurfaceAttribute |
 
 ### bldg:GroundSurface
 
@@ -185,13 +185,13 @@
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String |  | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) |  | gml:name |
+| name | Code |  | gml:name |
 | creationDate | Date |  | core:creationDate |
 | terminationDate | Date |  | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
-| opening | JSON (<code><a href="#bldg-openingproperty">bldg:_OpeningProperty</a>[]</code>) |  | bldg:opening |
-| ifcBoundarySurfaceAttribute | JSON (<code><a href="#uroifcattributeproperty">uro:IfcAttributeProperty</a>[]</code>) |  | uro:ifcBoundarySurfaceAttribute |
-| indoorBoundarySurfaceAttribute | JSON (<code><a href="#uroindoorattributeproperty">uro:IndoorAttributeProperty</a>[]</code>) |  | uro:indoorBoundarySurfaceAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
+| opening | bldg:_OpeningProperty |  | bldg:opening |
+| ifcBoundarySurfaceAttribute | uro:IfcAttributeProperty |  | uro:ifcBoundarySurfaceAttribute |
+| indoorBoundarySurfaceAttribute | uro:IndoorAttributeProperty |  | uro:indoorBoundarySurfaceAttribute |
 
 ### bldg:InteriorWallSurface
 
@@ -200,13 +200,13 @@
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
-| opening | JSON (<code><a href="#bldg-openingproperty">bldg:_OpeningProperty</a>[]</code>) | 開口部 | bldg:opening |
-| ifcBoundarySurfaceAttribute | JSON (<code><a href="#uroifcattributeproperty">uro:IfcAttributeProperty</a>[]</code>) | IFC属性 | uro:ifcBoundarySurfaceAttribute |
-| indoorBoundarySurfaceAttribute | JSON (<code><a href="#uroindoorattributeproperty">uro:IndoorAttributeProperty</a>[]</code>) | 屋内ナビゲーション属性 | uro:indoorBoundarySurfaceAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
+| opening | bldg:_OpeningProperty | 開口部 | bldg:opening |
+| ifcBoundarySurfaceAttribute | uro:IfcAttributeProperty | IFC属性 | uro:ifcBoundarySurfaceAttribute |
+| indoorBoundarySurfaceAttribute | uro:IndoorAttributeProperty | 屋内ナビゲーション属性 | uro:indoorBoundarySurfaceAttribute |
 
 ### bldg:OuterCeilingSurface
 
@@ -215,13 +215,13 @@
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
-| opening | JSON (<code><a href="#bldg-openingproperty">bldg:_OpeningProperty</a>[]</code>) | 開口部 | bldg:opening |
-| ifcBoundarySurfaceAttribute | JSON (<code><a href="#uroifcattributeproperty">uro:IfcAttributeProperty</a>[]</code>) | IFC属性 | uro:ifcBoundarySurfaceAttribute |
-| indoorBoundarySurfaceAttribute | JSON (<code><a href="#uroindoorattributeproperty">uro:IndoorAttributeProperty</a>[]</code>) |  | uro:indoorBoundarySurfaceAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
+| opening | bldg:_OpeningProperty | 開口部 | bldg:opening |
+| ifcBoundarySurfaceAttribute | uro:IfcAttributeProperty | IFC属性 | uro:ifcBoundarySurfaceAttribute |
+| indoorBoundarySurfaceAttribute | uro:IndoorAttributeProperty |  | uro:indoorBoundarySurfaceAttribute |
 
 ### bldg:OuterFloorSurface
 
@@ -230,13 +230,13 @@
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
-| opening | JSON (<code><a href="#bldg-openingproperty">bldg:_OpeningProperty</a>[]</code>) | 開口部 | bldg:opening |
-| ifcBoundarySurfaceAttribute | JSON (<code><a href="#uroifcattributeproperty">uro:IfcAttributeProperty</a>[]</code>) | IFC属性 | uro:ifcBoundarySurfaceAttribute |
-| indoorBoundarySurfaceAttribute | JSON (<code><a href="#uroindoorattributeproperty">uro:IndoorAttributeProperty</a>[]</code>) |  | uro:indoorBoundarySurfaceAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
+| opening | bldg:_OpeningProperty | 開口部 | bldg:opening |
+| ifcBoundarySurfaceAttribute | uro:IfcAttributeProperty | IFC属性 | uro:ifcBoundarySurfaceAttribute |
+| indoorBoundarySurfaceAttribute | uro:IndoorAttributeProperty |  | uro:indoorBoundarySurfaceAttribute |
 
 ### bldg:RoofSurface
 
@@ -245,13 +245,13 @@
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
-| opening | JSON (<code><a href="#bldg-openingproperty">bldg:_OpeningProperty</a>[]</code>) | 開口部 | bldg:opening |
-| ifcBoundarySurfaceAttribute | JSON (<code><a href="#uroifcattributeproperty">uro:IfcAttributeProperty</a>[]</code>) | IFC属性 | uro:ifcBoundarySurfaceAttribute |
-| indoorBoundarySurfaceAttribute | JSON (<code><a href="#uroindoorattributeproperty">uro:IndoorAttributeProperty</a>[]</code>) |  | uro:indoorBoundarySurfaceAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
+| opening | bldg:_OpeningProperty | 開口部 | bldg:opening |
+| ifcBoundarySurfaceAttribute | uro:IfcAttributeProperty | IFC属性 | uro:ifcBoundarySurfaceAttribute |
+| indoorBoundarySurfaceAttribute | uro:IndoorAttributeProperty |  | uro:indoorBoundarySurfaceAttribute |
 
 ### bldg:Room
 
@@ -260,19 +260,19 @@
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | bldg:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 機能 | bldg:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | bldg:usage |
-| boundedBy | JSON (<code><a href="#bldg-boundarysurfaceproperty">bldg:_BoundarySurfaceProperty</a>[]</code>) | 境界面 | bldg:boundedBy |
-| interiorFurniture | JSON (<code><a href="#bldgbuildingfurniture">bldg:BuildingFurniture</a>[]</code>) | 家具 | bldg:interiorFurniture |
-| roomInstallation | JSON (<code><a href="#bldgbuildinginstallation">bldg:BuildingInstallation</a>[]</code>) | 屋内付属物 | bldg:roomInstallation |
-| ifcRoomAttribute | JSON (<code><a href="#uroifcattributeproperty">uro:IfcAttributeProperty</a>[]</code>) | IFC属性 | uro:ifcRoomAttribute |
-| indoorRoomAttribute | JSON (<code><a href="#uroindoorattributeproperty">uro:IndoorAttributeProperty</a>[]</code>) | 屋内ナビゲーション属性 | uro:indoorRoomAttribute |
-| roomDataQualityAttribute | JSON (<code><a href="#uroroomdataqualityattribute">uro:RoomDataQualityAttribute</a></code>) |  | uro:roomDataQualityAttribute |
+| function | Code | 機能 | bldg:function |
+| usage | Code | 用途 | bldg:usage |
+| boundedBy | bldg:_BoundarySurfaceProperty | 境界面 | bldg:boundedBy |
+| interiorFurniture | bldg:BuildingFurniture | 家具 | bldg:interiorFurniture |
+| roomInstallation | bldg:BuildingInstallation | 屋内付属物 | bldg:roomInstallation |
+| ifcRoomAttribute | uro:IfcAttributeProperty | IFC属性 | uro:ifcRoomAttribute |
+| indoorRoomAttribute | uro:IndoorAttributeProperty | 屋内ナビゲーション属性 | uro:indoorRoomAttribute |
+| roomDataQualityAttribute | uro:RoomDataQualityAttribute |  | uro:roomDataQualityAttribute |
 
 ### bldg:WallSurface
 
@@ -281,13 +281,13 @@
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
-| opening | JSON (<code><a href="#bldg-openingproperty">bldg:_OpeningProperty</a>[]</code>) | 開口部 | bldg:opening |
-| ifcBoundarySurfaceAttribute | JSON (<code><a href="#uroifcattributeproperty">uro:IfcAttributeProperty</a>[]</code>) | IFC属性 | uro:ifcBoundarySurfaceAttribute |
-| indoorBoundarySurfaceAttribute | JSON (<code><a href="#uroindoorattributeproperty">uro:IndoorAttributeProperty</a>[]</code>) |  | uro:indoorBoundarySurfaceAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
+| opening | bldg:_OpeningProperty | 開口部 | bldg:opening |
+| ifcBoundarySurfaceAttribute | uro:IfcAttributeProperty | IFC属性 | uro:ifcBoundarySurfaceAttribute |
+| indoorBoundarySurfaceAttribute | uro:IndoorAttributeProperty |  | uro:indoorBoundarySurfaceAttribute |
 
 ### bldg:Window
 
@@ -296,12 +296,12 @@
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
-| ifcOpeningAttribute | JSON (<code><a href="#uroifcattributeproperty">uro:IfcAttributeProperty</a>[]</code>) | IFC属性 | uro:ifcOpeningAttribute |
-| indoorOpeningAttribute | JSON (<code><a href="#uroindoorattributeproperty">uro:IndoorAttributeProperty</a>[]</code>) | 屋内ナビゲーション属性 | uro:indoorOpeningAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
+| ifcOpeningAttribute | uro:IfcAttributeProperty | IFC属性 | uro:ifcOpeningAttribute |
+| indoorOpeningAttribute | uro:IndoorAttributeProperty | 屋内ナビゲーション属性 | uro:indoorOpeningAttribute |
 
 ### tran:AuxiliaryTrafficArea
 
@@ -310,14 +310,14 @@
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
-| tranDmAttribute | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) | 図式属性 | uro:tranDmAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
+| tranDmAttribute | uro:DmAttributeProperty | 図式属性 | uro:tranDmAttribute |
 | class | Code | 分類 | tran:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 機能 | tran:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | tran:usage |
+| function | Code | 機能 | tran:function |
+| usage | Code | 用途 | tran:usage |
 | surfaceMaterial | Code | 舗装種類 | tran:surfaceMaterial |
 
 ### tran:Railway
@@ -327,21 +327,21 @@
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
-| tranDmAttribute | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) | 図式属性 | uro:tranDmAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
+| tranDmAttribute | uro:DmAttributeProperty | 図式属性 | uro:tranDmAttribute |
 | class | Code | 分類 | tran:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 機能 | tran:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | tran:usage |
-| trafficArea | JSON (<code><a href="#trantrafficarea">tran:TrafficArea</a>[]</code>) | 交通領域 | tran:trafficArea |
-| auxiliaryTrafficArea | JSON (<code><a href="#tranauxiliarytrafficarea">tran:AuxiliaryTrafficArea</a>[]</code>) | 交通補助領域 | tran:auxiliaryTrafficArea |
-| tranDataQualityAttribute | JSON (<code><a href="#urotransportationdataqualityattribute">uro:TransportationDataQualityAttribute</a></code>) | データ品質 | uro:tranDataQualityAttribute |
-| tranFacilityAttribute | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) | 施設詳細属性 | uro:tranFacilityAttribute |
-| tranFacilityIdAttribute | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) | 施設識別属性 | uro:tranFacilityIdAttribute |
-| tranFacilityTypeAttribute | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) | 施設属性 | uro:tranFacilityTypeAttribute |
-| railwayRouteAttribute | JSON (<code><a href="#urorailwayrouteattribute">uro:RailwayRouteAttribute</a></code>) | 鉄道路線属性 | uro:railwayRouteAttribute |
+| function | Code | 機能 | tran:function |
+| usage | Code | 用途 | tran:usage |
+| trafficArea | tran:TrafficArea | 交通領域 | tran:trafficArea |
+| auxiliaryTrafficArea | tran:AuxiliaryTrafficArea | 交通補助領域 | tran:auxiliaryTrafficArea |
+| tranDataQualityAttribute | uro:TransportationDataQualityAttribute | データ品質 | uro:tranDataQualityAttribute |
+| tranFacilityAttribute | uro:FacilityAttributeProperty | 施設詳細属性 | uro:tranFacilityAttribute |
+| tranFacilityIdAttribute | uro:FacilityIdAttributeProperty | 施設識別属性 | uro:tranFacilityIdAttribute |
+| tranFacilityTypeAttribute | uro:FacilityTypeAttribute | 施設属性 | uro:tranFacilityTypeAttribute |
+| railwayRouteAttribute | uro:RailwayRouteAttribute | 鉄道路線属性 | uro:railwayRouteAttribute |
 
 ### tran:Road
 
@@ -350,23 +350,23 @@
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
-| tranDmAttribute | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) | 図式属性 | uro:tranDmAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
+| tranDmAttribute | uro:DmAttributeProperty | 図式属性 | uro:tranDmAttribute |
 | class | Code | 分類 | tran:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 機能 | tran:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | tran:usage |
-| trafficArea | JSON (<code><a href="#trantrafficarea">tran:TrafficArea</a>[]</code>) | 交通領域 | tran:trafficArea |
-| auxiliaryTrafficArea | JSON (<code><a href="#tranauxiliarytrafficarea">tran:AuxiliaryTrafficArea</a>[]</code>) | 交通補助領域 | tran:auxiliaryTrafficArea |
-| tranDataQualityAttribute | JSON (<code><a href="#urotransportationdataqualityattribute">uro:TransportationDataQualityAttribute</a></code>) | データ品質 | uro:tranDataQualityAttribute |
-| tranFacilityAttribute | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) | 施設詳細属性 | uro:tranFacilityAttribute |
-| tranFacilityIdAttribute | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) | 施設識別属性 | uro:tranFacilityIdAttribute |
-| tranFacilityTypeAttribute | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) | 施設属性 | uro:tranFacilityTypeAttribute |
-| roadStatus | JSON (<code><a href="#uroroadtype">uro:RoadType</a>[]</code>) |  | uro:roadStatus |
-| roadStructureAttribute | JSON (<code><a href="#uroroadstructureattribute">uro:RoadStructureAttribute</a>[]</code>) | 道路構造属性 | uro:roadStructureAttribute |
-| trafficVolumeAttribute | JSON (<code><a href="#urotrafficvolumeattribute">uro:TrafficVolumeAttribute</a></code>) | 交通量属性 | uro:trafficVolumeAttribute |
+| function | Code | 機能 | tran:function |
+| usage | Code | 用途 | tran:usage |
+| trafficArea | tran:TrafficArea | 交通領域 | tran:trafficArea |
+| auxiliaryTrafficArea | tran:AuxiliaryTrafficArea | 交通補助領域 | tran:auxiliaryTrafficArea |
+| tranDataQualityAttribute | uro:TransportationDataQualityAttribute | データ品質 | uro:tranDataQualityAttribute |
+| tranFacilityAttribute | uro:FacilityAttributeProperty | 施設詳細属性 | uro:tranFacilityAttribute |
+| tranFacilityIdAttribute | uro:FacilityIdAttributeProperty | 施設識別属性 | uro:tranFacilityIdAttribute |
+| tranFacilityTypeAttribute | uro:FacilityTypeAttribute | 施設属性 | uro:tranFacilityTypeAttribute |
+| roadStatus | uro:RoadType |  | uro:roadStatus |
+| roadStructureAttribute | uro:RoadStructureAttribute | 道路構造属性 | uro:roadStructureAttribute |
+| trafficVolumeAttribute | uro:TrafficVolumeAttribute | 交通量属性 | uro:trafficVolumeAttribute |
 
 ### tran:Square
 
@@ -375,21 +375,21 @@
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
-| tranDmAttribute | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) | 図式属性 | uro:tranDmAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
+| tranDmAttribute | uro:DmAttributeProperty | 図式属性 | uro:tranDmAttribute |
 | class | Code | 分類 | tran:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 機能 | tran:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | tran:usage |
-| trafficArea | JSON (<code><a href="#trantrafficarea">tran:TrafficArea</a>[]</code>) | 交通領域 | tran:trafficArea |
-| auxiliaryTrafficArea | JSON (<code><a href="#tranauxiliarytrafficarea">tran:AuxiliaryTrafficArea</a>[]</code>) | 交通補助領域 | tran:auxiliaryTrafficArea |
-| tranDataQualityAttribute | JSON (<code><a href="#urotransportationdataqualityattribute">uro:TransportationDataQualityAttribute</a></code>) | データ品質 | uro:tranDataQualityAttribute |
-| tranFacilityAttribute | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) | 施設詳細属性 | uro:tranFacilityAttribute |
-| tranFacilityIdAttribute | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) | 施設識別属性 | uro:tranFacilityIdAttribute |
-| tranFacilityTypeAttribute | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) | 施設属性 | uro:tranFacilityTypeAttribute |
-| squareUrbanPlanAttribute | JSON (<code><a href="#urosquareurbanplanattributeproperty">uro:SquareUrbanPlanAttributeProperty</a></code>) | 都市計画施設現況属性 | uro:squareUrbanPlanAttribute |
+| function | Code | 機能 | tran:function |
+| usage | Code | 用途 | tran:usage |
+| trafficArea | tran:TrafficArea | 交通領域 | tran:trafficArea |
+| auxiliaryTrafficArea | tran:AuxiliaryTrafficArea | 交通補助領域 | tran:auxiliaryTrafficArea |
+| tranDataQualityAttribute | uro:TransportationDataQualityAttribute | データ品質 | uro:tranDataQualityAttribute |
+| tranFacilityAttribute | uro:FacilityAttributeProperty | 施設詳細属性 | uro:tranFacilityAttribute |
+| tranFacilityIdAttribute | uro:FacilityIdAttributeProperty | 施設識別属性 | uro:tranFacilityIdAttribute |
+| tranFacilityTypeAttribute | uro:FacilityTypeAttribute | 施設属性 | uro:tranFacilityTypeAttribute |
+| squareUrbanPlanAttribute | uro:SquareUrbanPlanAttributeProperty | 都市計画施設現況属性 | uro:squareUrbanPlanAttribute |
 
 ### tran:Track
 
@@ -398,21 +398,21 @@
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
-| tranDmAttribute | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) | 図式属性 | uro:tranDmAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
+| tranDmAttribute | uro:DmAttributeProperty | 図式属性 | uro:tranDmAttribute |
 | class | Code | 分類 | tran:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 機能 | tran:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | tran:usage |
-| trafficArea | JSON (<code><a href="#trantrafficarea">tran:TrafficArea</a>[]</code>) | 交通領域 | tran:trafficArea |
-| auxiliaryTrafficArea | JSON (<code><a href="#tranauxiliarytrafficarea">tran:AuxiliaryTrafficArea</a>[]</code>) | 交通補助領域 | tran:auxiliaryTrafficArea |
-| tranDataQualityAttribute | JSON (<code><a href="#urotransportationdataqualityattribute">uro:TransportationDataQualityAttribute</a></code>) | データ品質 | uro:tranDataQualityAttribute |
-| tranFacilityAttribute | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) | 施設詳細属性 | uro:tranFacilityAttribute |
-| tranFacilityIdAttribute | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) | 施設識別属性 | uro:tranFacilityIdAttribute |
-| tranFacilityTypeAttribute | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) | 施設属性 | uro:tranFacilityTypeAttribute |
-| trackAttribute | JSON (<code><a href="#urotrackattribute">uro:TrackAttribute</a></code>) | 徒歩道属性 | uro:trackAttribute |
+| function | Code | 機能 | tran:function |
+| usage | Code | 用途 | tran:usage |
+| trafficArea | tran:TrafficArea | 交通領域 | tran:trafficArea |
+| auxiliaryTrafficArea | tran:AuxiliaryTrafficArea | 交通補助領域 | tran:auxiliaryTrafficArea |
+| tranDataQualityAttribute | uro:TransportationDataQualityAttribute | データ品質 | uro:tranDataQualityAttribute |
+| tranFacilityAttribute | uro:FacilityAttributeProperty | 施設詳細属性 | uro:tranFacilityAttribute |
+| tranFacilityIdAttribute | uro:FacilityIdAttributeProperty | 施設識別属性 | uro:tranFacilityIdAttribute |
+| tranFacilityTypeAttribute | uro:FacilityTypeAttribute | 施設属性 | uro:tranFacilityTypeAttribute |
+| trackAttribute | uro:TrackAttribute | 徒歩道属性 | uro:trackAttribute |
 
 ### tran:TrafficArea
 
@@ -421,17 +421,17 @@
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
-| tranDmAttribute | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) |  | uro:tranDmAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
+| tranDmAttribute | uro:DmAttributeProperty |  | uro:tranDmAttribute |
 | class | Code | 分類 | tran:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 機能 | tran:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | tran:usage |
+| function | Code | 機能 | tran:function |
+| usage | Code | 用途 | tran:usage |
 | surfaceMaterial | Code | 舗装種類 | tran:surfaceMaterial |
-| railwayTrackAttribute | JSON (<code><a href="#urorailwaytrackattribute">uro:RailwayTrackAttribute</a>[]</code>) | 軌道中心線線形情報 | uro:railwayTrackAttribute |
-| trafficAreaStructureAttribute | JSON (<code><a href="#urotrafficareastructureattribute">uro:TrafficAreaStructureAttribute</a></code>) | 道路構造属性 | uro:trafficAreaStructureAttribute |
+| railwayTrackAttribute | uro:RailwayTrackAttribute | 軌道中心線線形情報 | uro:railwayTrackAttribute |
+| trafficAreaStructureAttribute | uro:TrafficAreaStructureAttribute | 道路構造属性 | uro:trafficAreaStructureAttribute |
 
 ### luse:LandUse
 
@@ -440,20 +440,20 @@
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 土地利用区分 | luse:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 機能 | luse:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | luse:usage |
-| ifcLandUseAttribute | JSON (<code><a href="#uroifcattributeproperty">uro:IfcAttributeProperty</a>[]</code>) |  | uro:ifcLandUseAttribute |
-| landUseDetailAttribute | JSON (<code><a href="#urolandusedetailattribute">uro:LandUseDetailAttribute</a></code>) |  | uro:landUseDetailAttribute |
-| luseDataQualityAttribute | JSON (<code><a href="#urolandusedataqualityattribute">uro:LandUseDataQualityAttribute</a></code>) |  | uro:luseDataQualityAttribute |
-| luseDmAttribute | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) | 図式属性 | uro:luseDmAttribute |
-| luseFacilityAttribute | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) | 施設詳細属性 | uro:luseFacilityAttribute |
-| luseFacilityIdAttribute | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) | 施設属性 | uro:luseFacilityIdAttribute |
-| luseFacilityTypeAttribute | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) | 施設識別属性 | uro:luseFacilityTypeAttribute |
+| function | Code | 機能 | luse:function |
+| usage | Code | 用途 | luse:usage |
+| ifcLandUseAttribute | uro:IfcAttributeProperty |  | uro:ifcLandUseAttribute |
+| landUseDetailAttribute | uro:LandUseDetailAttribute |  | uro:landUseDetailAttribute |
+| luseDataQualityAttribute | uro:LandUseDataQualityAttribute |  | uro:luseDataQualityAttribute |
+| luseDmAttribute | uro:DmAttributeProperty | 図式属性 | uro:luseDmAttribute |
+| luseFacilityAttribute | uro:FacilityAttributeProperty | 施設詳細属性 | uro:luseFacilityAttribute |
+| luseFacilityIdAttribute | uro:FacilityIdAttributeProperty | 施設属性 | uro:luseFacilityIdAttribute |
+| luseFacilityTypeAttribute | uro:FacilityTypeAttribute | 施設識別属性 | uro:luseFacilityTypeAttribute |
 
 ### brid:Bridge
 
@@ -462,33 +462,33 @@
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | brid:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 機能 | brid:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | brid:usage |
+| function | Code | 機能 | brid:function |
+| usage | Code | 用途 | brid:usage |
 | yearOfConstruction | String | 建設年 | brid:yearOfConstruction |
 | yearOfDemolition | String | 解体年 | brid:yearOfDemolition |
 | isMovable | Boolean | 可動橋区分 | brid:isMovable |
-| outerBridgeConstruction | JSON (<code><a href="#bridbridgeconstructionelement">brid:BridgeConstructionElement</a>[]</code>) | 橋梁部材 | brid:outerBridgeConstruction |
-| outerBridgeInstallation | JSON (<code><a href="#bridbridgeinstallation">brid:BridgeInstallation</a>[]</code>) | 橋梁付属物 | brid:outerBridgeInstallation |
-| interiorBridgeInstallation | JSON (<code><a href="#bridbridgeinstallation">brid:BridgeInstallation</a>[]</code>) | 橋梁内部付属物 | brid:interiorBridgeInstallation |
-| boundedBy | JSON (<code><a href="#brid-boundarysurfaceproperty">brid:_BoundarySurfaceProperty</a>[]</code>) | 境界面 | brid:boundedBy |
-| interiorBridgeRoom | JSON (<code><a href="#bridbridgeroom">brid:BridgeRoom</a>[]</code>) | 橋梁内部 | brid:interiorBridgeRoom |
-| consistsOfBridgePart | JSON (<code><a href="#bridbridgepart">brid:BridgePart</a>[]</code>) | 橋梁部分 | brid:consistsOfBridgePart |
-| address | JSON (<code><a href="#coreaddress">core:Address</a>[]</code>) | 住所 | brid:address |
-| bridBaseAttribute | JSON (<code><a href="#uroconstructionbaseattribute">uro:ConstructionBaseAttribute</a></code>) | 構造物基本属性 | uro:bridBaseAttribute |
-| bridDataQualityAttribute | JSON (<code><a href="#uroconstructiondataqualityattribute">uro:ConstructionDataQualityAttribute</a></code>) | データ品質 | uro:bridDataQualityAttribute |
-| bridDisasterRiskAttribute | JSON (<code><a href="#urodisasterriskattributeproperty">uro:DisasterRiskAttributeProperty</a>[]</code>) | 災害リスク属性 | uro:bridDisasterRiskAttribute |
-| bridDmAttribute | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) | 図式属性 | uro:bridDmAttribute |
-| bridFacilityAttribute | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) | 施設詳細属性 | uro:bridFacilityAttribute |
-| bridFacilityIdAttribute | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) | 施設識別属性 | uro:bridFacilityIdAttribute |
-| bridFacilityTypeAttribute | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) | 施設属性 | uro:bridFacilityTypeAttribute |
-| bridFunctionalAttribute | JSON (<code><a href="#urobridgefunctionalattribute">uro:BridgeFunctionalAttribute</a></code>) | 橋梁機能属性 | uro:bridFunctionalAttribute |
-| bridRiskAssessmentAttribute | JSON (<code><a href="#uroconstructionriskassessmentattribute">uro:ConstructionRiskAssessmentAttribute</a></code>) | 構造物リスク評価属性 | uro:bridRiskAssessmentAttribute |
-| bridStructureAttribute | JSON (<code><a href="#urobridgestructureattribute">uro:BridgeStructureAttribute</a></code>) | 橋梁構造属性 | uro:bridStructureAttribute |
+| outerBridgeConstruction | brid:BridgeConstructionElement | 橋梁部材 | brid:outerBridgeConstruction |
+| outerBridgeInstallation | brid:BridgeInstallation | 橋梁付属物 | brid:outerBridgeInstallation |
+| interiorBridgeInstallation | brid:BridgeInstallation | 橋梁内部付属物 | brid:interiorBridgeInstallation |
+| boundedBy | brid:_BoundarySurfaceProperty | 境界面 | brid:boundedBy |
+| interiorBridgeRoom | brid:BridgeRoom | 橋梁内部 | brid:interiorBridgeRoom |
+| consistsOfBridgePart | brid:BridgePart | 橋梁部分 | brid:consistsOfBridgePart |
+| address | core:Address | 住所 | brid:address |
+| bridBaseAttribute | uro:ConstructionBaseAttribute | 構造物基本属性 | uro:bridBaseAttribute |
+| bridDataQualityAttribute | uro:ConstructionDataQualityAttribute | データ品質 | uro:bridDataQualityAttribute |
+| bridDisasterRiskAttribute | uro:DisasterRiskAttributeProperty | 災害リスク属性 | uro:bridDisasterRiskAttribute |
+| bridDmAttribute | uro:DmAttributeProperty | 図式属性 | uro:bridDmAttribute |
+| bridFacilityAttribute | uro:FacilityAttributeProperty | 施設詳細属性 | uro:bridFacilityAttribute |
+| bridFacilityIdAttribute | uro:FacilityIdAttributeProperty | 施設識別属性 | uro:bridFacilityIdAttribute |
+| bridFacilityTypeAttribute | uro:FacilityTypeAttribute | 施設属性 | uro:bridFacilityTypeAttribute |
+| bridFunctionalAttribute | uro:BridgeFunctionalAttribute | 橋梁機能属性 | uro:bridFunctionalAttribute |
+| bridRiskAssessmentAttribute | uro:ConstructionRiskAssessmentAttribute | 構造物リスク評価属性 | uro:bridRiskAssessmentAttribute |
+| bridStructureAttribute | uro:BridgeStructureAttribute | 橋梁構造属性 | uro:bridStructureAttribute |
 
 ### brid:BridgeConstructionElement
 
@@ -497,14 +497,14 @@
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | brid:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 機能 | brid:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | brid:usage |
-| boundedBy | JSON (<code><a href="#brid-boundarysurfaceproperty">brid:_BoundarySurfaceProperty</a>[]</code>) | 境界面 | brid:boundedBy |
+| function | Code | 機能 | brid:function |
+| usage | Code | 用途 | brid:usage |
+| boundedBy | brid:_BoundarySurfaceProperty | 境界面 | brid:boundedBy |
 
 ### brid:BridgeFurniture
 
@@ -513,13 +513,13 @@
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | brid:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 機能 | brid:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | brid:usage |
+| function | Code | 機能 | brid:function |
+| usage | Code | 用途 | brid:usage |
 
 ### brid:BridgeInstallation
 
@@ -528,14 +528,14 @@
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | brid:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 機能 | brid:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | brid:usage |
-| boundedBy | JSON (<code><a href="#brid-boundarysurfaceproperty">brid:_BoundarySurfaceProperty</a>[]</code>) | 境界面 | brid:boundedBy |
+| function | Code | 機能 | brid:function |
+| usage | Code | 用途 | brid:usage |
+| boundedBy | brid:_BoundarySurfaceProperty | 境界面 | brid:boundedBy |
 
 ### brid:BridgePart
 
@@ -544,33 +544,33 @@
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | brid:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 機能 | brid:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | brid:usage |
+| function | Code | 機能 | brid:function |
+| usage | Code | 用途 | brid:usage |
 | yearOfConstruction | String | 建設年 | brid:yearOfConstruction |
 | yearOfDemolition | String | 解体年 | brid:yearOfDemolition |
 | isMovable | Boolean | 可動橋区分 | brid:isMovable |
-| outerBridgeConstruction | JSON (<code><a href="#bridbridgeconstructionelement">brid:BridgeConstructionElement</a>[]</code>) | 橋梁部材 | brid:outerBridgeConstruction |
-| outerBridgeInstallation | JSON (<code><a href="#bridbridgeinstallation">brid:BridgeInstallation</a>[]</code>) | 橋梁付属物 | brid:outerBridgeInstallation |
-| interiorBridgeInstallation | JSON (<code><a href="#bridbridgeinstallation">brid:BridgeInstallation</a>[]</code>) | 橋梁内部付属物 | brid:interiorBridgeInstallation |
-| boundedBy | JSON (<code><a href="#brid-boundarysurfaceproperty">brid:_BoundarySurfaceProperty</a>[]</code>) | 境界面 | brid:boundedBy |
-| interiorBridgeRoom | JSON (<code><a href="#bridbridgeroom">brid:BridgeRoom</a>[]</code>) | 橋梁内部 | brid:interiorBridgeRoom |
-| consistsOfBridgePart | JSON (<code><a href="#bridbridgepart">brid:BridgePart</a>[]</code>) | 橋梁部分 | brid:consistsOfBridgePart |
-| address | JSON (<code><a href="#coreaddress">core:Address</a>[]</code>) | 住所 | brid:address |
-| bridBaseAttribute | JSON (<code><a href="#uroconstructionbaseattribute">uro:ConstructionBaseAttribute</a></code>) | 構造物基本属性 | uro:bridBaseAttribute |
-| bridDataQualityAttribute | JSON (<code><a href="#uroconstructiondataqualityattribute">uro:ConstructionDataQualityAttribute</a></code>) | データ品質 | uro:bridDataQualityAttribute |
-| bridDisasterRiskAttribute | JSON (<code><a href="#urodisasterriskattributeproperty">uro:DisasterRiskAttributeProperty</a>[]</code>) | 災害リスク属性 | uro:bridDisasterRiskAttribute |
-| bridDmAttribute | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) | 図式属性 | uro:bridDmAttribute |
-| bridFacilityAttribute | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) | 施設詳細属性 | uro:bridFacilityAttribute |
-| bridFacilityIdAttribute | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) | 施設識別属性 | uro:bridFacilityIdAttribute |
-| bridFacilityTypeAttribute | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) | 施設属性 | uro:bridFacilityTypeAttribute |
-| bridFunctionalAttribute | JSON (<code><a href="#urobridgefunctionalattribute">uro:BridgeFunctionalAttribute</a></code>) | 機能属性 | uro:bridFunctionalAttribute |
-| bridRiskAssessmentAttribute | JSON (<code><a href="#uroconstructionriskassessmentattribute">uro:ConstructionRiskAssessmentAttribute</a></code>) | 構造物リスク評価属性 | uro:bridRiskAssessmentAttribute |
-| bridStructureAttribute | JSON (<code><a href="#urobridgestructureattribute">uro:BridgeStructureAttribute</a></code>) | 構造属性 | uro:bridStructureAttribute |
+| outerBridgeConstruction | brid:BridgeConstructionElement | 橋梁部材 | brid:outerBridgeConstruction |
+| outerBridgeInstallation | brid:BridgeInstallation | 橋梁付属物 | brid:outerBridgeInstallation |
+| interiorBridgeInstallation | brid:BridgeInstallation | 橋梁内部付属物 | brid:interiorBridgeInstallation |
+| boundedBy | brid:_BoundarySurfaceProperty | 境界面 | brid:boundedBy |
+| interiorBridgeRoom | brid:BridgeRoom | 橋梁内部 | brid:interiorBridgeRoom |
+| consistsOfBridgePart | brid:BridgePart | 橋梁部分 | brid:consistsOfBridgePart |
+| address | core:Address | 住所 | brid:address |
+| bridBaseAttribute | uro:ConstructionBaseAttribute | 構造物基本属性 | uro:bridBaseAttribute |
+| bridDataQualityAttribute | uro:ConstructionDataQualityAttribute | データ品質 | uro:bridDataQualityAttribute |
+| bridDisasterRiskAttribute | uro:DisasterRiskAttributeProperty | 災害リスク属性 | uro:bridDisasterRiskAttribute |
+| bridDmAttribute | uro:DmAttributeProperty | 図式属性 | uro:bridDmAttribute |
+| bridFacilityAttribute | uro:FacilityAttributeProperty | 施設詳細属性 | uro:bridFacilityAttribute |
+| bridFacilityIdAttribute | uro:FacilityIdAttributeProperty | 施設識別属性 | uro:bridFacilityIdAttribute |
+| bridFacilityTypeAttribute | uro:FacilityTypeAttribute | 施設属性 | uro:bridFacilityTypeAttribute |
+| bridFunctionalAttribute | uro:BridgeFunctionalAttribute | 機能属性 | uro:bridFunctionalAttribute |
+| bridRiskAssessmentAttribute | uro:ConstructionRiskAssessmentAttribute | 構造物リスク評価属性 | uro:bridRiskAssessmentAttribute |
+| bridStructureAttribute | uro:BridgeStructureAttribute | 構造属性 | uro:bridStructureAttribute |
 
 ### brid:BridgeRoom
 
@@ -579,16 +579,16 @@
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | brid:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 機能 | brid:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | brid:usage |
-| boundedBy | JSON (<code><a href="#brid-boundarysurfaceproperty">brid:_BoundarySurfaceProperty</a>[]</code>) | 境界面 | brid:boundedBy |
-| interiorFurniture | JSON (<code><a href="#bridbridgefurniture">brid:BridgeFurniture</a>[]</code>) | 設置物 | brid:interiorFurniture |
-| bridgeRoomInstallation | JSON (<code><a href="#bridbridgeinstallation">brid:BridgeInstallation</a>[]</code>) | 内部付属物 | brid:bridgeRoomInstallation |
+| function | Code | 機能 | brid:function |
+| usage | Code | 用途 | brid:usage |
+| boundedBy | brid:_BoundarySurfaceProperty | 境界面 | brid:boundedBy |
+| interiorFurniture | brid:BridgeFurniture | 設置物 | brid:interiorFurniture |
+| bridgeRoomInstallation | brid:BridgeInstallation | 内部付属物 | brid:bridgeRoomInstallation |
 
 ### brid:CeilingSurface
 
@@ -597,11 +597,11 @@
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
-| opening | JSON (<code><a href="#brid-openingproperty">brid:_OpeningProperty</a>[]</code>) | 開口部 | brid:opening |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
+| opening | brid:_OpeningProperty | 開口部 | brid:opening |
 
 ### brid:ClosureSurface
 
@@ -610,11 +610,11 @@
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
-| opening | JSON (<code><a href="#brid-openingproperty">brid:_OpeningProperty</a>[]</code>) | 開口部 | brid:opening |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
+| opening | brid:_OpeningProperty | 開口部 | brid:opening |
 
 ### brid:Door
 
@@ -623,11 +623,11 @@
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
-| address | JSON (<code><a href="#coreaddress">core:Address</a>[]</code>) |  | brid:address |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
+| address | core:Address |  | brid:address |
 
 ### brid:FloorSurface
 
@@ -636,11 +636,11 @@
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
-| opening | JSON (<code><a href="#brid-openingproperty">brid:_OpeningProperty</a>[]</code>) | 開口部 | brid:opening |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
+| opening | brid:_OpeningProperty | 開口部 | brid:opening |
 
 ### brid:GroundSurface
 
@@ -649,11 +649,11 @@
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
-| opening | JSON (<code><a href="#brid-openingproperty">brid:_OpeningProperty</a>[]</code>) | 開口部 | brid:opening |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
+| opening | brid:_OpeningProperty | 開口部 | brid:opening |
 
 ### brid:InteriorWallSurface
 
@@ -662,11 +662,11 @@
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
-| opening | JSON (<code><a href="#brid-openingproperty">brid:_OpeningProperty</a>[]</code>) | 開口部 | brid:opening |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
+| opening | brid:_OpeningProperty | 開口部 | brid:opening |
 
 ### brid:OuterCeilingSurface
 
@@ -675,11 +675,11 @@
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
-| opening | JSON (<code><a href="#brid-openingproperty">brid:_OpeningProperty</a>[]</code>) | 開口部 | brid:opening |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
+| opening | brid:_OpeningProperty | 開口部 | brid:opening |
 
 ### brid:OuterFloorSurface
 
@@ -688,11 +688,11 @@
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
-| opening | JSON (<code><a href="#brid-openingproperty">brid:_OpeningProperty</a>[]</code>) | 開口部 | brid:opening |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
+| opening | brid:_OpeningProperty | 開口部 | brid:opening |
 
 ### brid:RoofSurface
 
@@ -701,11 +701,11 @@
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
-| opening | JSON (<code><a href="#brid-openingproperty">brid:_OpeningProperty</a>[]</code>) | 開口部 | brid:opening |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
+| opening | brid:_OpeningProperty | 開口部 | brid:opening |
 
 ### brid:WallSurface
 
@@ -714,11 +714,11 @@
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
-| opening | JSON (<code><a href="#brid-openingproperty">brid:_OpeningProperty</a>[]</code>) | 開口部 | brid:opening |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
+| opening | brid:_OpeningProperty | 開口部 | brid:opening |
 
 ### brid:Window
 
@@ -727,10 +727,10 @@
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 
 ### tun:CeilingSurface
 
@@ -739,11 +739,11 @@
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
-| opening | JSON (<code><a href="#tun-openingproperty">tun:_OpeningProperty</a>[]</code>) | 開口部 | tun:opening |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
+| opening | tun:_OpeningProperty | 開口部 | tun:opening |
 
 ### tun:ClosureSurface
 
@@ -752,11 +752,11 @@
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
-| opening | JSON (<code><a href="#tun-openingproperty">tun:_OpeningProperty</a>[]</code>) | 開口部 | tun:opening |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
+| opening | tun:_OpeningProperty | 開口部 | tun:opening |
 
 ### tun:Door
 
@@ -765,10 +765,10 @@
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 
 ### tun:FloorSurface
 
@@ -777,11 +777,11 @@
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
-| opening | JSON (<code><a href="#tun-openingproperty">tun:_OpeningProperty</a>[]</code>) | 開口部 | tun:opening |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
+| opening | tun:_OpeningProperty | 開口部 | tun:opening |
 
 ### tun:GroundSurface
 
@@ -790,11 +790,11 @@
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
-| opening | JSON (<code><a href="#tun-openingproperty">tun:_OpeningProperty</a>[]</code>) | 開口部 | tun:opening |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
+| opening | tun:_OpeningProperty | 開口部 | tun:opening |
 
 ### tun:HollowSpace
 
@@ -803,16 +803,16 @@
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | tun:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 機能 | tun:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | tun:usage |
-| boundedBy | JSON (<code><a href="#tun-boundarysurfaceproperty">tun:_BoundarySurfaceProperty</a>[]</code>) | 境界面 | tun:boundedBy |
-| interiorFurniture | JSON (<code><a href="#tuntunnelfurniture">tun:TunnelFurniture</a>[]</code>) | 設置物 | tun:interiorFurniture |
-| hollowSpaceInstallation | JSON (<code><a href="#tuntunnelinstallation">tun:TunnelInstallation</a>[]</code>) | 内部付属物 | tun:hollowSpaceInstallation |
+| function | Code | 機能 | tun:function |
+| usage | Code | 用途 | tun:usage |
+| boundedBy | tun:_BoundarySurfaceProperty | 境界面 | tun:boundedBy |
+| interiorFurniture | tun:TunnelFurniture | 設置物 | tun:interiorFurniture |
+| hollowSpaceInstallation | tun:TunnelInstallation | 内部付属物 | tun:hollowSpaceInstallation |
 
 ### tun:InteriorWallSurface
 
@@ -821,11 +821,11 @@
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
-| opening | JSON (<code><a href="#tun-openingproperty">tun:_OpeningProperty</a>[]</code>) | 開口部 | tun:opening |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
+| opening | tun:_OpeningProperty | 開口部 | tun:opening |
 
 ### tun:OuterCeilingSurface
 
@@ -834,11 +834,11 @@
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
-| opening | JSON (<code><a href="#tun-openingproperty">tun:_OpeningProperty</a>[]</code>) | 開口部 | tun:opening |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
+| opening | tun:_OpeningProperty | 開口部 | tun:opening |
 
 ### tun:OuterFloorSurface
 
@@ -847,11 +847,11 @@
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
-| opening | JSON (<code><a href="#tun-openingproperty">tun:_OpeningProperty</a>[]</code>) | 開口部 | tun:opening |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
+| opening | tun:_OpeningProperty | 開口部 | tun:opening |
 
 ### tun:RoofSurface
 
@@ -860,11 +860,11 @@
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
-| opening | JSON (<code><a href="#tun-openingproperty">tun:_OpeningProperty</a>[]</code>) | 開口部 | tun:opening |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
+| opening | tun:_OpeningProperty | 開口部 | tun:opening |
 
 ### tun:Tunnel
 
@@ -873,30 +873,30 @@
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | tun:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 機能 | tun:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | tun:usage |
+| function | Code | 機能 | tun:function |
+| usage | Code | 用途 | tun:usage |
 | yearOfConstruction | String | 建設年 | tun:yearOfConstruction |
 | yearOfDemolition | String | 解体年 | tun:yearOfDemolition |
-| outerTunnelInstallation | JSON (<code><a href="#tuntunnelinstallation">tun:TunnelInstallation</a>[]</code>) | トンネル付属物 | tun:outerTunnelInstallation |
-| interiorTunnelInstallation | JSON (<code><a href="#tuntunnelinstallation">tun:TunnelInstallation</a>[]</code>) | トンネル内部付属物 | tun:interiorTunnelInstallation |
-| boundedBy | JSON (<code><a href="#tun-boundarysurfaceproperty">tun:_BoundarySurfaceProperty</a>[]</code>) | 境界面 | tun:boundedBy |
-| interiorHollowSpace | JSON (<code><a href="#tunhollowspace">tun:HollowSpace</a>[]</code>) | トンネル内部空間 | tun:interiorHollowSpace |
-| consistsOfTunnelPart | JSON (<code><a href="#tuntunnelpart">tun:TunnelPart</a>[]</code>) | トンネル部分 | tun:consistsOfTunnelPart |
-| tunBaseAttribute | JSON (<code><a href="#uroconstructionbaseattribute">uro:ConstructionBaseAttribute</a></code>) | 構造物基本属性 | uro:tunBaseAttribute |
-| tunDataQualityAttribute | JSON (<code><a href="#uroconstructiondataqualityattribute">uro:ConstructionDataQualityAttribute</a></code>) | データ品質 | uro:tunDataQualityAttribute |
-| tunDisasterRiskAttribute | JSON (<code><a href="#urodisasterriskattributeproperty">uro:DisasterRiskAttributeProperty</a>[]</code>) | 災害リスク属性 | uro:tunDisasterRiskAttribute |
-| tunDmAttribute | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) | 図式属性 | uro:tunDmAttribute |
-| tunFacilityAttribute | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) | 施設詳細属性 | uro:tunFacilityAttribute |
-| tunFacilityIdAttribute | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) | 施設識別属性 | uro:tunFacilityIdAttribute |
-| tunFacilityTypeAttribute | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) | 施設属性 | uro:tunFacilityTypeAttribute |
-| tunFunctionalAttribute | JSON (<code><a href="#urotunnelfunctionalattribute">uro:TunnelFunctionalAttribute</a></code>) | トンネル機能属性 | uro:tunFunctionalAttribute |
-| tunRiskAssessmentAttribute | JSON (<code><a href="#uroconstructionriskassessmentattribute">uro:ConstructionRiskAssessmentAttribute</a></code>) | 構造物リスク評価属性 | uro:tunRiskAssessmentAttribute |
-| tunStructureAttribute | JSON (<code><a href="#urotunnelstructureattribute">uro:TunnelStructureAttribute</a></code>) | トンネル構造属性 | uro:tunStructureAttribute |
+| outerTunnelInstallation | tun:TunnelInstallation | トンネル付属物 | tun:outerTunnelInstallation |
+| interiorTunnelInstallation | tun:TunnelInstallation | トンネル内部付属物 | tun:interiorTunnelInstallation |
+| boundedBy | tun:_BoundarySurfaceProperty | 境界面 | tun:boundedBy |
+| interiorHollowSpace | tun:HollowSpace | トンネル内部空間 | tun:interiorHollowSpace |
+| consistsOfTunnelPart | tun:TunnelPart | トンネル部分 | tun:consistsOfTunnelPart |
+| tunBaseAttribute | uro:ConstructionBaseAttribute | 構造物基本属性 | uro:tunBaseAttribute |
+| tunDataQualityAttribute | uro:ConstructionDataQualityAttribute | データ品質 | uro:tunDataQualityAttribute |
+| tunDisasterRiskAttribute | uro:DisasterRiskAttributeProperty | 災害リスク属性 | uro:tunDisasterRiskAttribute |
+| tunDmAttribute | uro:DmAttributeProperty | 図式属性 | uro:tunDmAttribute |
+| tunFacilityAttribute | uro:FacilityAttributeProperty | 施設詳細属性 | uro:tunFacilityAttribute |
+| tunFacilityIdAttribute | uro:FacilityIdAttributeProperty | 施設識別属性 | uro:tunFacilityIdAttribute |
+| tunFacilityTypeAttribute | uro:FacilityTypeAttribute | 施設属性 | uro:tunFacilityTypeAttribute |
+| tunFunctionalAttribute | uro:TunnelFunctionalAttribute | トンネル機能属性 | uro:tunFunctionalAttribute |
+| tunRiskAssessmentAttribute | uro:ConstructionRiskAssessmentAttribute | 構造物リスク評価属性 | uro:tunRiskAssessmentAttribute |
+| tunStructureAttribute | uro:TunnelStructureAttribute | トンネル構造属性 | uro:tunStructureAttribute |
 
 ### tun:TunnelFurniture
 
@@ -905,13 +905,13 @@
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | tun:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 機能 | tun:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | tun:usage |
+| function | Code | 機能 | tun:function |
+| usage | Code | 用途 | tun:usage |
 
 ### tun:TunnelInstallation
 
@@ -920,14 +920,14 @@
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | tun:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 機能 | tun:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | tun:usage |
-| boundedBy | JSON (<code><a href="#tun-boundarysurfaceproperty">tun:_BoundarySurfaceProperty</a>[]</code>) | 境界面 | tun:boundedBy |
+| function | Code | 機能 | tun:function |
+| usage | Code | 用途 | tun:usage |
+| boundedBy | tun:_BoundarySurfaceProperty | 境界面 | tun:boundedBy |
 
 ### tun:TunnelPart
 
@@ -935,30 +935,30 @@
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String |  | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) |  | gml:name |
+| name | Code |  | gml:name |
 | creationDate | Date |  | core:creationDate |
 | terminationDate | Date |  | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code |  | tun:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) |  | tun:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) |  | tun:usage |
+| function | Code |  | tun:function |
+| usage | Code |  | tun:usage |
 | yearOfConstruction | String |  | tun:yearOfConstruction |
 | yearOfDemolition | String |  | tun:yearOfDemolition |
-| outerTunnelInstallation | JSON (<code><a href="#tuntunnelinstallation">tun:TunnelInstallation</a>[]</code>) |  | tun:outerTunnelInstallation |
-| interiorTunnelInstallation | JSON (<code><a href="#tuntunnelinstallation">tun:TunnelInstallation</a>[]</code>) |  | tun:interiorTunnelInstallation |
-| boundedBy | JSON (<code><a href="#tun-boundarysurfaceproperty">tun:_BoundarySurfaceProperty</a>[]</code>) |  | tun:boundedBy |
-| interiorHollowSpace | JSON (<code><a href="#tunhollowspace">tun:HollowSpace</a>[]</code>) |  | tun:interiorHollowSpace |
-| consistsOfTunnelPart | JSON (<code><a href="#tuntunnelpart">tun:TunnelPart</a>[]</code>) |  | tun:consistsOfTunnelPart |
-| tunBaseAttribute | JSON (<code><a href="#uroconstructionbaseattribute">uro:ConstructionBaseAttribute</a></code>) |  | uro:tunBaseAttribute |
-| tunDataQualityAttribute | JSON (<code><a href="#uroconstructiondataqualityattribute">uro:ConstructionDataQualityAttribute</a></code>) |  | uro:tunDataQualityAttribute |
-| tunDisasterRiskAttribute | JSON (<code><a href="#urodisasterriskattributeproperty">uro:DisasterRiskAttributeProperty</a>[]</code>) |  | uro:tunDisasterRiskAttribute |
-| tunDmAttribute | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) |  | uro:tunDmAttribute |
-| tunFacilityAttribute | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) |  | uro:tunFacilityAttribute |
-| tunFacilityIdAttribute | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) |  | uro:tunFacilityIdAttribute |
-| tunFacilityTypeAttribute | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) |  | uro:tunFacilityTypeAttribute |
-| tunFunctionalAttribute | JSON (<code><a href="#urotunnelfunctionalattribute">uro:TunnelFunctionalAttribute</a></code>) |  | uro:tunFunctionalAttribute |
-| tunRiskAssessmentAttribute | JSON (<code><a href="#uroconstructionriskassessmentattribute">uro:ConstructionRiskAssessmentAttribute</a></code>) |  | uro:tunRiskAssessmentAttribute |
-| tunStructureAttribute | JSON (<code><a href="#urotunnelstructureattribute">uro:TunnelStructureAttribute</a></code>) |  | uro:tunStructureAttribute |
+| outerTunnelInstallation | tun:TunnelInstallation |  | tun:outerTunnelInstallation |
+| interiorTunnelInstallation | tun:TunnelInstallation |  | tun:interiorTunnelInstallation |
+| boundedBy | tun:_BoundarySurfaceProperty |  | tun:boundedBy |
+| interiorHollowSpace | tun:HollowSpace |  | tun:interiorHollowSpace |
+| consistsOfTunnelPart | tun:TunnelPart |  | tun:consistsOfTunnelPart |
+| tunBaseAttribute | uro:ConstructionBaseAttribute |  | uro:tunBaseAttribute |
+| tunDataQualityAttribute | uro:ConstructionDataQualityAttribute |  | uro:tunDataQualityAttribute |
+| tunDisasterRiskAttribute | uro:DisasterRiskAttributeProperty |  | uro:tunDisasterRiskAttribute |
+| tunDmAttribute | uro:DmAttributeProperty |  | uro:tunDmAttribute |
+| tunFacilityAttribute | uro:FacilityAttributeProperty |  | uro:tunFacilityAttribute |
+| tunFacilityIdAttribute | uro:FacilityIdAttributeProperty |  | uro:tunFacilityIdAttribute |
+| tunFacilityTypeAttribute | uro:FacilityTypeAttribute |  | uro:tunFacilityTypeAttribute |
+| tunFunctionalAttribute | uro:TunnelFunctionalAttribute |  | uro:tunFunctionalAttribute |
+| tunRiskAssessmentAttribute | uro:ConstructionRiskAssessmentAttribute |  | uro:tunRiskAssessmentAttribute |
+| tunStructureAttribute | uro:TunnelStructureAttribute |  | uro:tunStructureAttribute |
 
 ### tun:WallSurface
 
@@ -967,11 +967,11 @@
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
-| opening | JSON (<code><a href="#tun-openingproperty">tun:_OpeningProperty</a>[]</code>) | 開口部 | tun:opening |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
+| opening | tun:_OpeningProperty | 開口部 | tun:opening |
 
 ### tun:Window
 
@@ -980,10 +980,10 @@
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 
 ### frn:CityFurniture
 
@@ -992,19 +992,19 @@
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | frn:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 機能 | frn:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | frn:usage |
-| cityFurnitureDataQualityAttribute | JSON (<code><a href="#urocityfurnituredataqualityattribute">uro:CityFurnitureDataQualityAttribute</a></code>) | データ品質 | uro:cityFurnitureDataQualityAttribute |
-| cityFurnitureDetailAttribute | JSON (<code><a href="#urocityfurnituredetailattribute">uro:CityFurnitureDetailAttribute</a>[]</code>) | 都市設備詳細属性 | uro:cityFurnitureDetailAttribute |
-| frnDmAttribute | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) | 図式属性 | uro:frnDmAttribute |
-| frnFacilityAttribute | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) | 施設詳細属性 | uro:frnFacilityAttribute |
-| frnFacilityIdAttribute | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) | 施設属性 | uro:frnFacilityIdAttribute |
-| frnFacilityTypeAttribute | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) | 施設識別属性 | uro:frnFacilityTypeAttribute |
+| function | Code | 機能 | frn:function |
+| usage | Code | 用途 | frn:usage |
+| cityFurnitureDataQualityAttribute | uro:CityFurnitureDataQualityAttribute | データ品質 | uro:cityFurnitureDataQualityAttribute |
+| cityFurnitureDetailAttribute | uro:CityFurnitureDetailAttribute | 都市設備詳細属性 | uro:cityFurnitureDetailAttribute |
+| frnDmAttribute | uro:DmAttributeProperty | 図式属性 | uro:frnDmAttribute |
+| frnFacilityAttribute | uro:FacilityAttributeProperty | 施設詳細属性 | uro:frnFacilityAttribute |
+| frnFacilityIdAttribute | uro:FacilityIdAttributeProperty | 施設属性 | uro:frnFacilityIdAttribute |
+| frnFacilityTypeAttribute | uro:FacilityTypeAttribute | 施設識別属性 | uro:frnFacilityTypeAttribute |
 
 ### veg:PlantCover
 
@@ -1013,18 +1013,18 @@
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
-| vegDmAttribute | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) | 図式属性 | uro:vegDmAttribute |
-| vegFacilityAttribute | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) | 施設詳細属性 | uro:vegFacilityAttribute |
-| vegFacilityIdAttribute | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) | 施設属性 | uro:vegFacilityIdAttribute |
-| vegFacilityTypeAttribute | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) | 施設識別属性 | uro:vegFacilityTypeAttribute |
-| vegetationDataQualityAttribute | JSON (<code><a href="#urovegetationdataqualityattribute">uro:VegetationDataQualityAttribute</a></code>) | データ品質 | uro:vegetationDataQualityAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
+| vegDmAttribute | uro:DmAttributeProperty | 図式属性 | uro:vegDmAttribute |
+| vegFacilityAttribute | uro:FacilityAttributeProperty | 施設詳細属性 | uro:vegFacilityAttribute |
+| vegFacilityIdAttribute | uro:FacilityIdAttributeProperty | 施設属性 | uro:vegFacilityIdAttribute |
+| vegFacilityTypeAttribute | uro:FacilityTypeAttribute | 施設識別属性 | uro:vegFacilityTypeAttribute |
+| vegetationDataQualityAttribute | uro:VegetationDataQualityAttribute | データ品質 | uro:vegetationDataQualityAttribute |
 | class | Code | 分類 | veg:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 機能 | veg:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | veg:usage |
+| function | Code | 機能 | veg:function |
+| usage | Code | 用途 | veg:usage |
 | averageHeight | Measure | 平均高 | veg:averageHeight |
 
 ### veg:SolitaryVegetationObject
@@ -1034,18 +1034,18 @@
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
-| vegDmAttribute | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) | 図式属性 | uro:vegDmAttribute |
-| vegFacilityAttribute | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) | 施設詳細属性 | uro:vegFacilityAttribute |
-| vegFacilityIdAttribute | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) | 施設属性 | uro:vegFacilityIdAttribute |
-| vegFacilityTypeAttribute | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) | 施設識別属性 | uro:vegFacilityTypeAttribute |
-| vegetationDataQualityAttribute | JSON (<code><a href="#urovegetationdataqualityattribute">uro:VegetationDataQualityAttribute</a></code>) | データ品質 | uro:vegetationDataQualityAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
+| vegDmAttribute | uro:DmAttributeProperty | 図式属性 | uro:vegDmAttribute |
+| vegFacilityAttribute | uro:FacilityAttributeProperty | 施設詳細属性 | uro:vegFacilityAttribute |
+| vegFacilityIdAttribute | uro:FacilityIdAttributeProperty | 施設属性 | uro:vegFacilityIdAttribute |
+| vegFacilityTypeAttribute | uro:FacilityTypeAttribute | 施設識別属性 | uro:vegFacilityTypeAttribute |
+| vegetationDataQualityAttribute | uro:VegetationDataQualityAttribute | データ品質 | uro:vegetationDataQualityAttribute |
 | class | Code | 分類 | veg:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 機能 | veg:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | veg:usage |
+| function | Code | 機能 | veg:function |
+| usage | Code | 用途 | veg:usage |
 | species | Code | 樹種 | veg:species |
 | height | Measure | 樹高 | veg:height |
 | trunkDiameter | Measure |  | veg:trunkDiameter |
@@ -1058,20 +1058,20 @@
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | wtr:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 機能 | wtr:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | wtr:usage |
-| boundedBy | JSON (<code><a href="#wtr-waterboundarysurfaceproperty">wtr:_WaterBoundarySurfaceProperty</a>[]</code>) |  | wtr:boundedBy |
-| floodingRiskAttribute | JSON (<code><a href="#urowaterbodyfloodingriskattributeproperty">uro:WaterBodyFloodingRiskAttributeProperty</a>[]</code>) | 災害リスク | uro:floodingRiskAttribute |
-| waterBodyDetailAttribute | JSON (<code><a href="#urowaterbodydetailattribute">uro:WaterBodyDetailAttribute</a></code>) | 水部詳細属性 | uro:waterBodyDetailAttribute |
-| wtrDmAttribute | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) | 図式属性 | uro:wtrDmAttribute |
-| wtrFacilityAttribute | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) | 施設詳細属性 | uro:wtrFacilityAttribute |
-| wtrFacilityIdAttribute | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) | 施設属性 | uro:wtrFacilityIdAttribute |
-| wtrFacilityTypeAttribute | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) | 施設識別属性 | uro:wtrFacilityTypeAttribute |
+| function | Code | 機能 | wtr:function |
+| usage | Code | 用途 | wtr:usage |
+| boundedBy | wtr:_WaterBoundarySurfaceProperty |  | wtr:boundedBy |
+| floodingRiskAttribute | uro:WaterBodyFloodingRiskAttributeProperty | 災害リスク | uro:floodingRiskAttribute |
+| waterBodyDetailAttribute | uro:WaterBodyDetailAttribute | 水部詳細属性 | uro:waterBodyDetailAttribute |
+| wtrDmAttribute | uro:DmAttributeProperty | 図式属性 | uro:wtrDmAttribute |
+| wtrFacilityAttribute | uro:FacilityAttributeProperty | 施設詳細属性 | uro:wtrFacilityAttribute |
+| wtrFacilityIdAttribute | uro:FacilityIdAttributeProperty | 施設属性 | uro:wtrFacilityIdAttribute |
+| wtrFacilityTypeAttribute | uro:FacilityTypeAttribute | 施設識別属性 | uro:wtrFacilityTypeAttribute |
 
 ### wtr:WaterClosureSurface
 
@@ -1080,10 +1080,10 @@
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 
 ### wtr:WaterGroundSurface
 
@@ -1092,10 +1092,10 @@
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 
 ### wtr:WaterSurface
 
@@ -1104,10 +1104,10 @@
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | waterLevel | Code |  | wtr:waterLevel |
 
 ### dem:BreaklineRelief
@@ -1117,12 +1117,12 @@
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | lod | NonNegativeInteger | lod | dem:lod |
-| demDmAttribute | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) | 図式属性 | uro:demDmAttribute |
+| demDmAttribute | uro:DmAttributeProperty | 図式属性 | uro:demDmAttribute |
 
 ### dem:MassPointRelief
 
@@ -1131,12 +1131,12 @@
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | lod | NonNegativeInteger | lod | dem:lod |
-| demDmAttribute | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) | 図式属性 | uro:demDmAttribute |
+| demDmAttribute | uro:DmAttributeProperty | 図式属性 | uro:demDmAttribute |
 
 ### dem:RasterRelief
 
@@ -1144,13 +1144,13 @@
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String |  | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) |  | gml:name |
+| name | Code |  | gml:name |
 | creationDate | Date |  | core:creationDate |
 | terminationDate | Date |  | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | lod | NonNegativeInteger |  | dem:lod |
-| demDmAttribute | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) |  | uro:demDmAttribute |
-| grid | JSON (<code><a href="#gmlrectifiedgridcoverage">gml:RectifiedGridCoverage</a></code>) |  | dem:grid |
+| demDmAttribute | uro:DmAttributeProperty |  | uro:demDmAttribute |
+| grid | gml:RectifiedGridCoverage |  | dem:grid |
 
 ### dem:ReliefFeature
 
@@ -1159,12 +1159,12 @@
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | lod | NonNegativeInteger | lod | dem:lod |
-| reliefComponent | JSON (<code><a href="#dem-reliefcomponentproperty">dem:_ReliefComponentProperty</a>[]</code>) | 地形構成要素 | dem:reliefComponent |
+| reliefComponent | dem:_ReliefComponentProperty | 地形構成要素 | dem:reliefComponent |
 
 ### dem:TINRelief
 
@@ -1173,12 +1173,12 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | lod | NonNegativeInteger | lod | dem:lod |
-| demDmAttribute | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) | 図式属性 | uro:demDmAttribute |
+| demDmAttribute | uro:DmAttributeProperty | 図式属性 | uro:demDmAttribute |
 
 ### grp:CityObjectGroup
 
@@ -1186,19 +1186,19 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String |  | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) |  | gml:name |
+| name | Code |  | gml:name |
 | creationDate | Date |  | core:creationDate |
 | terminationDate | Date |  | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code |  | grp:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) |  | grp:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) |  | grp:usage |
-| groupMember | JSON (<code><a href="#grp-cityobjectorref">grp:_CityObjectOrRef</a>[]</code>) |  | grp:groupMember |
-| parent | JSON (<code><a href="#grp-cityobjectorref">grp:_CityObjectOrRef</a></code>) |  | grp:parent |
-| fiscalYearOfPublication | JSON (<code><a href="#string">String</a>[]</code>) |  | uro:fiscalYearOfPublication |
-| ifcBuildingStoreyAttribute | JSON (<code><a href="#uroifcattributeproperty">uro:IfcAttributeProperty</a>[]</code>) |  | uro:ifcBuildingStoreyAttribute |
-| indoorStoreyAttribute | JSON (<code><a href="#uroindoorattributeproperty">uro:IndoorAttributeProperty</a>[]</code>) |  | uro:indoorStoreyAttribute |
-| language | JSON (<code><a href="#code">Code</a>[]</code>) |  | uro:language |
+| function | Code |  | grp:function |
+| usage | Code |  | grp:usage |
+| groupMember | grp:_CityObjectOrRef |  | grp:groupMember |
+| parent | grp:_CityObjectOrRef |  | grp:parent |
+| fiscalYearOfPublication | String |  | uro:fiscalYearOfPublication |
+| ifcBuildingStoreyAttribute | uro:IfcAttributeProperty |  | uro:ifcBuildingStoreyAttribute |
+| indoorStoreyAttribute | uro:IndoorAttributeProperty |  | uro:indoorStoreyAttribute |
+| language | Code |  | uro:language |
 
 ### grp:_CityObjectOrRef
 
@@ -1206,10 +1206,10 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String |  | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) |  | gml:name |
+| name | Code |  | gml:name |
 | creationDate | Date |  | core:creationDate |
 | terminationDate | Date |  | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | href | String |  | @xlink:href |
 
 ### gen:GenericCityObject
@@ -1218,13 +1218,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String |  | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) |  | gml:name |
+| name | Code |  | gml:name |
 | creationDate | Date |  | core:creationDate |
 | terminationDate | Date |  | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code |  | gen:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) |  | gen:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) |  | gen:usage |
+| function | Code |  | gen:function |
+| usage | Code |  | gen:usage |
 
 ### uro:Appurtenance
 
@@ -1233,28 +1233,28 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | frn:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 機能 | frn:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | frn:usage |
-| cityFurnitureDataQualityAttribute | JSON (<code><a href="#urocityfurnituredataqualityattribute">uro:CityFurnitureDataQualityAttribute</a></code>) | データ品質 | uro:cityFurnitureDataQualityAttribute |
-| cityFurnitureDetailAttribute | JSON (<code><a href="#urocityfurnituredetailattribute">uro:CityFurnitureDetailAttribute</a>[]</code>) | 都市設備詳細属性 | uro:cityFurnitureDetailAttribute |
-| frnDmAttribute | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) | 図式属性 | uro:frnDmAttribute |
-| frnFacilityAttribute | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) | 施設詳細属性 | uro:frnFacilityAttribute |
-| frnFacilityIdAttribute | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) | 施設属性 | uro:frnFacilityIdAttribute |
-| frnFacilityTypeAttribute | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) | 施設識別属性 | uro:frnFacilityTypeAttribute |
+| function | Code | 機能 | frn:function |
+| usage | Code | 用途 | frn:usage |
+| cityFurnitureDataQualityAttribute | uro:CityFurnitureDataQualityAttribute | データ品質 | uro:cityFurnitureDataQualityAttribute |
+| cityFurnitureDetailAttribute | uro:CityFurnitureDetailAttribute | 都市設備詳細属性 | uro:cityFurnitureDetailAttribute |
+| frnDmAttribute | uro:DmAttributeProperty | 図式属性 | uro:frnDmAttribute |
+| frnFacilityAttribute | uro:FacilityAttributeProperty | 施設詳細属性 | uro:frnFacilityAttribute |
+| frnFacilityIdAttribute | uro:FacilityIdAttributeProperty | 施設属性 | uro:frnFacilityIdAttribute |
+| frnFacilityTypeAttribute | uro:FacilityTypeAttribute | 施設識別属性 | uro:frnFacilityTypeAttribute |
 | occupierType | Code | 事業者種類 | uro:occupierType |
 | occupierName | Code | 事業者名 | uro:occupierName |
 | year | String | 埋設年度 | uro:year |
 | yearType | Code | 埋設年度の確からしさ | uro:yearType |
 | administrator | Code | 主管事業者 | uro:administrator |
-| offsetDepth | JSON (<code><a href="#urooffsetdepth">uro:OffsetDepth</a>[]</code>) | オフセットデプス情報 | uro:offsetDepth |
-| thematicShape | JSON (<code><a href="#urothematicshape">uro:ThematicShape</a>[]</code>) | 主題図形 | uro:thematicShape |
-| previousLink | JSON (<code><a href="#string">String</a>[]</code>) | 前のリンク | uro:previousLink |
-| nextLink | JSON (<code><a href="#string">String</a>[]</code>) | 次のリンク | uro:nextLink |
+| offsetDepth | uro:OffsetDepth | オフセットデプス情報 | uro:offsetDepth |
+| thematicShape | uro:ThematicShape | 主題図形 | uro:thematicShape |
+| previousLink | String | 前のリンク | uro:previousLink |
+| nextLink | String | 次のリンク | uro:nextLink |
 | rotationAngle | Double | 回転角度 | uro:rotationAngle |
 | appurtenanceType | Code | 設備区分 | uro:appurtenanceType |
 
@@ -1265,26 +1265,26 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | frn:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 機能 | frn:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | frn:usage |
-| cityFurnitureDataQualityAttribute | JSON (<code><a href="#urocityfurnituredataqualityattribute">uro:CityFurnitureDataQualityAttribute</a></code>) | データ品質 | uro:cityFurnitureDataQualityAttribute |
-| cityFurnitureDetailAttribute | JSON (<code><a href="#urocityfurnituredetailattribute">uro:CityFurnitureDetailAttribute</a>[]</code>) | 都市設備詳細属性 | uro:cityFurnitureDetailAttribute |
-| frnDmAttribute | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) | 図式属性 | uro:frnDmAttribute |
-| frnFacilityAttribute | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) | 施設詳細属性 | uro:frnFacilityAttribute |
-| frnFacilityIdAttribute | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) | 施設属性 | uro:frnFacilityIdAttribute |
-| frnFacilityTypeAttribute | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) | 施設識別属性 | uro:frnFacilityTypeAttribute |
+| function | Code | 機能 | frn:function |
+| usage | Code | 用途 | frn:usage |
+| cityFurnitureDataQualityAttribute | uro:CityFurnitureDataQualityAttribute | データ品質 | uro:cityFurnitureDataQualityAttribute |
+| cityFurnitureDetailAttribute | uro:CityFurnitureDetailAttribute | 都市設備詳細属性 | uro:cityFurnitureDetailAttribute |
+| frnDmAttribute | uro:DmAttributeProperty | 図式属性 | uro:frnDmAttribute |
+| frnFacilityAttribute | uro:FacilityAttributeProperty | 施設詳細属性 | uro:frnFacilityAttribute |
+| frnFacilityIdAttribute | uro:FacilityIdAttributeProperty | 施設属性 | uro:frnFacilityIdAttribute |
+| frnFacilityTypeAttribute | uro:FacilityTypeAttribute | 施設識別属性 | uro:frnFacilityTypeAttribute |
 | occupierType | Code | 事業者種類 | uro:occupierType |
 | occupierName | Code | 事業者名 | uro:occupierName |
 | year | String | 埋設年度 | uro:year |
 | yearType | Code | 埋設年度の確からしさ | uro:yearType |
 | administrator | Code | 主管事業者 | uro:administrator |
-| offsetDepth | JSON (<code><a href="#urooffsetdepth">uro:OffsetDepth</a>[]</code>) | オフセットデプス情報 | uro:offsetDepth |
-| thematicShape | JSON (<code><a href="#urothematicshape">uro:ThematicShape</a>[]</code>) | 主題図形 | uro:thematicShape |
+| offsetDepth | uro:OffsetDepth | オフセットデプス情報 | uro:offsetDepth |
+| thematicShape | uro:ThematicShape | 主題図形 | uro:thematicShape |
 | routeStartNode | String | 路線開始ノード | uro:routeStartNode |
 | startNode | String | 開始ノード | uro:startNode |
 | routeEndNode | String | 路線終了ノード | uro:routeEndNode |
@@ -1295,7 +1295,7 @@ TIN地形
 | maxWidth | Measure | 最大幅 | uro:maxWidth |
 | offset | Measure | オフセット量 | uro:offset |
 | material | Code | 管きょ材質 | uro:material |
-| lengthAttribute | JSON (<code><a href="#urolengthattribute">uro:LengthAttribute</a>[]</code>) | 長さ情報 | uro:lengthAttribute |
+| lengthAttribute | uro:LengthAttribute | 長さ情報 | uro:lengthAttribute |
 | columns | Integer | 列数 | uro:columns |
 | rows | Integer | 段数 | uro:rows |
 | cables | Integer | 条数 | uro:cables |
@@ -1307,10 +1307,10 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 
 ### uro:ConstructionInstallation
 
@@ -1319,13 +1319,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | uro:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 機能 | uro:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | uro:usage |
+| function | Code | 機能 | uro:function |
+| usage | Code | 用途 | uro:usage |
 
 ### uro:Duct
 
@@ -1334,26 +1334,26 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | frn:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 機能 | frn:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | frn:usage |
-| cityFurnitureDataQualityAttribute | JSON (<code><a href="#urocityfurnituredataqualityattribute">uro:CityFurnitureDataQualityAttribute</a></code>) | データ品質 | uro:cityFurnitureDataQualityAttribute |
-| cityFurnitureDetailAttribute | JSON (<code><a href="#urocityfurnituredetailattribute">uro:CityFurnitureDetailAttribute</a>[]</code>) | 都市設備詳細属性 | uro:cityFurnitureDetailAttribute |
-| frnDmAttribute | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) | 図式属性 | uro:frnDmAttribute |
-| frnFacilityAttribute | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) | 施設詳細属性 | uro:frnFacilityAttribute |
-| frnFacilityIdAttribute | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) | 施設属性 | uro:frnFacilityIdAttribute |
-| frnFacilityTypeAttribute | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) | 施設識別属性 | uro:frnFacilityTypeAttribute |
+| function | Code | 機能 | frn:function |
+| usage | Code | 用途 | frn:usage |
+| cityFurnitureDataQualityAttribute | uro:CityFurnitureDataQualityAttribute | データ品質 | uro:cityFurnitureDataQualityAttribute |
+| cityFurnitureDetailAttribute | uro:CityFurnitureDetailAttribute | 都市設備詳細属性 | uro:cityFurnitureDetailAttribute |
+| frnDmAttribute | uro:DmAttributeProperty | 図式属性 | uro:frnDmAttribute |
+| frnFacilityAttribute | uro:FacilityAttributeProperty | 施設詳細属性 | uro:frnFacilityAttribute |
+| frnFacilityIdAttribute | uro:FacilityIdAttributeProperty | 施設属性 | uro:frnFacilityIdAttribute |
+| frnFacilityTypeAttribute | uro:FacilityTypeAttribute | 施設識別属性 | uro:frnFacilityTypeAttribute |
 | occupierType | Code | 事業者種類 | uro:occupierType |
 | occupierName | Code | 事業者名 | uro:occupierName |
 | year | String | 埋設年度 | uro:year |
 | yearType | Code | 埋設年度の確からしさ | uro:yearType |
 | administrator | Code | 主管事業者 | uro:administrator |
-| offsetDepth | JSON (<code><a href="#urooffsetdepth">uro:OffsetDepth</a>[]</code>) | オフセットデプス情報 | uro:offsetDepth |
-| thematicShape | JSON (<code><a href="#urothematicshape">uro:ThematicShape</a>[]</code>) | 主題図形 | uro:thematicShape |
+| offsetDepth | uro:OffsetDepth | オフセットデプス情報 | uro:offsetDepth |
+| thematicShape | uro:ThematicShape | 主題図形 | uro:thematicShape |
 | routeStartNode | String | 路線開始ノード | uro:routeStartNode |
 | startNode | String | 開始ノード | uro:startNode |
 | routeEndNode | String | 路線終了ノード | uro:routeEndNode |
@@ -1364,7 +1364,7 @@ TIN地形
 | maxWidth | Measure | 最大幅 | uro:maxWidth |
 | offset | Measure | オフセット量 | uro:offset |
 | material | Code | 管きょ材質 | uro:material |
-| lengthAttribute | JSON (<code><a href="#urolengthattribute">uro:LengthAttribute</a>[]</code>) | 長さ情報 | uro:lengthAttribute |
+| lengthAttribute | uro:LengthAttribute | 長さ情報 | uro:lengthAttribute |
 | width | Measure | 外側幅 | uro:width |
 
 ### uro:ElectricityCable
@@ -1374,26 +1374,26 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | frn:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 機能 | frn:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | frn:usage |
-| cityFurnitureDataQualityAttribute | JSON (<code><a href="#urocityfurnituredataqualityattribute">uro:CityFurnitureDataQualityAttribute</a></code>) | データ品質 | uro:cityFurnitureDataQualityAttribute |
-| cityFurnitureDetailAttribute | JSON (<code><a href="#urocityfurnituredetailattribute">uro:CityFurnitureDetailAttribute</a>[]</code>) | 都市設備詳細属性 | uro:cityFurnitureDetailAttribute |
-| frnDmAttribute | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) | 図式属性 | uro:frnDmAttribute |
-| frnFacilityAttribute | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) | 施設詳細属性 | uro:frnFacilityAttribute |
-| frnFacilityIdAttribute | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) | 施設属性 | uro:frnFacilityIdAttribute |
-| frnFacilityTypeAttribute | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) | 施設識別属性 | uro:frnFacilityTypeAttribute |
+| function | Code | 機能 | frn:function |
+| usage | Code | 用途 | frn:usage |
+| cityFurnitureDataQualityAttribute | uro:CityFurnitureDataQualityAttribute | データ品質 | uro:cityFurnitureDataQualityAttribute |
+| cityFurnitureDetailAttribute | uro:CityFurnitureDetailAttribute | 都市設備詳細属性 | uro:cityFurnitureDetailAttribute |
+| frnDmAttribute | uro:DmAttributeProperty | 図式属性 | uro:frnDmAttribute |
+| frnFacilityAttribute | uro:FacilityAttributeProperty | 施設詳細属性 | uro:frnFacilityAttribute |
+| frnFacilityIdAttribute | uro:FacilityIdAttributeProperty | 施設属性 | uro:frnFacilityIdAttribute |
+| frnFacilityTypeAttribute | uro:FacilityTypeAttribute | 施設識別属性 | uro:frnFacilityTypeAttribute |
 | occupierType | Code | 事業者種類 | uro:occupierType |
 | occupierName | Code | 事業者名 | uro:occupierName |
 | year | String | 埋設年度 | uro:year |
 | yearType | Code | 埋設年度の確からしさ | uro:yearType |
 | administrator | Code | 主管事業者 | uro:administrator |
-| offsetDepth | JSON (<code><a href="#urooffsetdepth">uro:OffsetDepth</a>[]</code>) | オフセットデプス情報 | uro:offsetDepth |
-| thematicShape | JSON (<code><a href="#urothematicshape">uro:ThematicShape</a>[]</code>) | 主題図形 | uro:thematicShape |
+| offsetDepth | uro:OffsetDepth | オフセットデプス情報 | uro:offsetDepth |
+| thematicShape | uro:ThematicShape | 主題図形 | uro:thematicShape |
 | routeStartNode | String | 路線開始ノード | uro:routeStartNode |
 | startNode | String | 開始ノード | uro:startNode |
 | routeEndNode | String | 路線終了ノード | uro:routeEndNode |
@@ -1404,7 +1404,7 @@ TIN地形
 | maxWidth | Measure | 最大幅 | uro:maxWidth |
 | offset | Measure | オフセット量 | uro:offset |
 | material | Code | 管きょ材質 | uro:material |
-| lengthAttribute | JSON (<code><a href="#urolengthattribute">uro:LengthAttribute</a>[]</code>) | 長さ情報 | uro:lengthAttribute |
+| lengthAttribute | uro:LengthAttribute | 長さ情報 | uro:lengthAttribute |
 | columns | Integer | 列数 | uro:columns |
 | rows | Integer | 段数 | uro:rows |
 | cables | Integer | 条数 | uro:cables |
@@ -1416,10 +1416,10 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 
 ### uro:Handhole
 
@@ -1428,33 +1428,33 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | frn:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 機能 | frn:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | frn:usage |
-| cityFurnitureDataQualityAttribute | JSON (<code><a href="#urocityfurnituredataqualityattribute">uro:CityFurnitureDataQualityAttribute</a></code>) | データ品質 | uro:cityFurnitureDataQualityAttribute |
-| cityFurnitureDetailAttribute | JSON (<code><a href="#urocityfurnituredetailattribute">uro:CityFurnitureDetailAttribute</a>[]</code>) | 都市設備詳細属性 | uro:cityFurnitureDetailAttribute |
-| frnDmAttribute | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) | 図式属性 | uro:frnDmAttribute |
-| frnFacilityAttribute | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) | 施設詳細属性 | uro:frnFacilityAttribute |
-| frnFacilityIdAttribute | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) | 施設属性 | uro:frnFacilityIdAttribute |
-| frnFacilityTypeAttribute | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) | 施設識別属性 | uro:frnFacilityTypeAttribute |
+| function | Code | 機能 | frn:function |
+| usage | Code | 用途 | frn:usage |
+| cityFurnitureDataQualityAttribute | uro:CityFurnitureDataQualityAttribute | データ品質 | uro:cityFurnitureDataQualityAttribute |
+| cityFurnitureDetailAttribute | uro:CityFurnitureDetailAttribute | 都市設備詳細属性 | uro:cityFurnitureDetailAttribute |
+| frnDmAttribute | uro:DmAttributeProperty | 図式属性 | uro:frnDmAttribute |
+| frnFacilityAttribute | uro:FacilityAttributeProperty | 施設詳細属性 | uro:frnFacilityAttribute |
+| frnFacilityIdAttribute | uro:FacilityIdAttributeProperty | 施設属性 | uro:frnFacilityIdAttribute |
+| frnFacilityTypeAttribute | uro:FacilityTypeAttribute | 施設識別属性 | uro:frnFacilityTypeAttribute |
 | occupierType | Code | 事業者種類 | uro:occupierType |
 | occupierName | Code | 事業者名 | uro:occupierName |
 | year | String | 埋設年度 | uro:year |
 | yearType | Code | 埋設年度の確からしさ | uro:yearType |
 | administrator | Code | 主管事業者 | uro:administrator |
-| offsetDepth | JSON (<code><a href="#urooffsetdepth">uro:OffsetDepth</a>[]</code>) | オフセットデプス情報 | uro:offsetDepth |
-| thematicShape | JSON (<code><a href="#urothematicshape">uro:ThematicShape</a>[]</code>) | 主題図形 | uro:thematicShape |
+| offsetDepth | uro:OffsetDepth | オフセットデプス情報 | uro:offsetDepth |
+| thematicShape | uro:ThematicShape | 主題図形 | uro:thematicShape |
 | containerType | Code | 構造物種類 | uro:containerType |
 | innerDiamiterLong | Measure | 長辺の内径 | uro:innerDiamiterLong |
 | outerDiamiterLong | Measure | 長辺の外径 | uro:outerDiamiterLong |
 | innerDiamiterShort | Measure | 短辺の内径 | uro:innerDiamiterShort |
 | outerDiamiterShort | Measure | 短辺の外径 | uro:outerDiamiterShort |
 | depth | Measure | 深さ | uro:depth |
-| appurtenance | JSON (<code><a href="#string">String</a>[]</code>) | 識別子 | uro:appurtenance |
+| appurtenance | String | 識別子 | uro:appurtenance |
 | rotationAngle | Double | 回転角度 | uro:rotationAngle |
 
 ### uro:Manhole
@@ -1464,33 +1464,33 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | frn:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 機能 | frn:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | frn:usage |
-| cityFurnitureDataQualityAttribute | JSON (<code><a href="#urocityfurnituredataqualityattribute">uro:CityFurnitureDataQualityAttribute</a></code>) | データ品質 | uro:cityFurnitureDataQualityAttribute |
-| cityFurnitureDetailAttribute | JSON (<code><a href="#urocityfurnituredetailattribute">uro:CityFurnitureDetailAttribute</a>[]</code>) | 都市設備詳細属性 | uro:cityFurnitureDetailAttribute |
-| frnDmAttribute | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) | 図式属性 | uro:frnDmAttribute |
-| frnFacilityAttribute | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) | 施設詳細属性 | uro:frnFacilityAttribute |
-| frnFacilityIdAttribute | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) | 施設属性 | uro:frnFacilityIdAttribute |
-| frnFacilityTypeAttribute | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) | 施設識別属性 | uro:frnFacilityTypeAttribute |
+| function | Code | 機能 | frn:function |
+| usage | Code | 用途 | frn:usage |
+| cityFurnitureDataQualityAttribute | uro:CityFurnitureDataQualityAttribute | データ品質 | uro:cityFurnitureDataQualityAttribute |
+| cityFurnitureDetailAttribute | uro:CityFurnitureDetailAttribute | 都市設備詳細属性 | uro:cityFurnitureDetailAttribute |
+| frnDmAttribute | uro:DmAttributeProperty | 図式属性 | uro:frnDmAttribute |
+| frnFacilityAttribute | uro:FacilityAttributeProperty | 施設詳細属性 | uro:frnFacilityAttribute |
+| frnFacilityIdAttribute | uro:FacilityIdAttributeProperty | 施設属性 | uro:frnFacilityIdAttribute |
+| frnFacilityTypeAttribute | uro:FacilityTypeAttribute | 施設識別属性 | uro:frnFacilityTypeAttribute |
 | occupierType | Code | 事業者種類 | uro:occupierType |
 | occupierName | Code | 事業者名 | uro:occupierName |
 | year | String | 埋設年度 | uro:year |
 | yearType | Code | 埋設年度の確からしさ | uro:yearType |
 | administrator | Code | 主管事業者 | uro:administrator |
-| offsetDepth | JSON (<code><a href="#urooffsetdepth">uro:OffsetDepth</a>[]</code>) | オフセットデプス情報 | uro:offsetDepth |
-| thematicShape | JSON (<code><a href="#urothematicshape">uro:ThematicShape</a>[]</code>) | 主題図形 | uro:thematicShape |
+| offsetDepth | uro:OffsetDepth | オフセットデプス情報 | uro:offsetDepth |
+| thematicShape | uro:ThematicShape | 主題図形 | uro:thematicShape |
 | containerType | Code | 構造物種類 | uro:containerType |
 | innerDiamiterLong | Measure | 長辺の内径 | uro:innerDiamiterLong |
 | outerDiamiterLong | Measure | 長辺の外径 | uro:outerDiamiterLong |
 | innerDiamiterShort | Measure | 短辺の内径 | uro:innerDiamiterShort |
 | outerDiamiterShort | Measure | 短辺の外径 | uro:outerDiamiterShort |
 | depth | Measure | 深さ | uro:depth |
-| appurtenance | JSON (<code><a href="#string">String</a>[]</code>) | 識別子 | uro:appurtenance |
+| appurtenance | String | 識別子 | uro:appurtenance |
 | rotationAngle | Double | 回転角度 | uro:rotationAngle |
 
 ### uro:OilGasChemicalsPipe
@@ -1499,26 +1499,26 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String |  | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) |  | gml:name |
+| name | Code |  | gml:name |
 | creationDate | Date |  | core:creationDate |
 | terminationDate | Date |  | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code |  | frn:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) |  | frn:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) |  | frn:usage |
-| cityFurnitureDataQualityAttribute | JSON (<code><a href="#urocityfurnituredataqualityattribute">uro:CityFurnitureDataQualityAttribute</a></code>) |  | uro:cityFurnitureDataQualityAttribute |
-| cityFurnitureDetailAttribute | JSON (<code><a href="#urocityfurnituredetailattribute">uro:CityFurnitureDetailAttribute</a>[]</code>) |  | uro:cityFurnitureDetailAttribute |
-| frnDmAttribute | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) |  | uro:frnDmAttribute |
-| frnFacilityAttribute | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) |  | uro:frnFacilityAttribute |
-| frnFacilityIdAttribute | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) |  | uro:frnFacilityIdAttribute |
-| frnFacilityTypeAttribute | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) |  | uro:frnFacilityTypeAttribute |
+| function | Code |  | frn:function |
+| usage | Code |  | frn:usage |
+| cityFurnitureDataQualityAttribute | uro:CityFurnitureDataQualityAttribute |  | uro:cityFurnitureDataQualityAttribute |
+| cityFurnitureDetailAttribute | uro:CityFurnitureDetailAttribute |  | uro:cityFurnitureDetailAttribute |
+| frnDmAttribute | uro:DmAttributeProperty |  | uro:frnDmAttribute |
+| frnFacilityAttribute | uro:FacilityAttributeProperty |  | uro:frnFacilityAttribute |
+| frnFacilityIdAttribute | uro:FacilityIdAttributeProperty |  | uro:frnFacilityIdAttribute |
+| frnFacilityTypeAttribute | uro:FacilityTypeAttribute |  | uro:frnFacilityTypeAttribute |
 | occupierType | Code |  | uro:occupierType |
 | occupierName | Code |  | uro:occupierName |
 | year | String |  | uro:year |
 | yearType | Code |  | uro:yearType |
 | administrator | Code |  | uro:administrator |
-| offsetDepth | JSON (<code><a href="#urooffsetdepth">uro:OffsetDepth</a>[]</code>) |  | uro:offsetDepth |
-| thematicShape | JSON (<code><a href="#urothematicshape">uro:ThematicShape</a>[]</code>) |  | uro:thematicShape |
+| offsetDepth | uro:OffsetDepth |  | uro:offsetDepth |
+| thematicShape | uro:ThematicShape |  | uro:thematicShape |
 | routeStartNode | String |  | uro:routeStartNode |
 | startNode | String |  | uro:startNode |
 | routeEndNode | String |  | uro:routeEndNode |
@@ -1529,7 +1529,7 @@ TIN地形
 | maxWidth | Measure |  | uro:maxWidth |
 | offset | Measure |  | uro:offset |
 | material | Code |  | uro:material |
-| lengthAttribute | JSON (<code><a href="#urolengthattribute">uro:LengthAttribute</a>[]</code>) |  | uro:lengthAttribute |
+| lengthAttribute | uro:LengthAttribute |  | uro:lengthAttribute |
 | innerDiamiter | Measure |  | uro:innerDiamiter |
 | outerDiamiter | Measure |  | uro:outerDiamiter |
 | sleeveType | Code |  | uro:sleeveType |
@@ -1541,30 +1541,30 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | conditionOfConstruction | String | 稼働状況 | uro:conditionOfConstruction |
 | dateOfConstruction | Date | 完成年月日 | uro:dateOfConstruction |
 | dateOfDemolition | Date | 解体年月日 | uro:dateOfDemolition |
-| constructionEvent | JSON (<code><a href="#uroconstructionevent">uro:ConstructionEvent</a>[]</code>) | 建設イベント | uro:constructionEvent |
-| elevation | JSON (<code><a href="#uroelevation">uro:Elevation</a>[]</code>) | 標高 | uro:elevation |
-| height | JSON (<code><a href="#uroheight">uro:Height</a>[]</code>) | 高さ | uro:height |
-| occupancy | JSON (<code><a href="#urooccupancy">uro:Occupancy</a>[]</code>) | 占有状況 | uro:occupancy |
-| consFacilityTypeAttribute | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) | 施設属性 | uro:consFacilityTypeAttribute |
-| consFacilityIdAttribute | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) | 施設識別属性 | uro:consFacilityIdAttribute |
-| consFacilityAttribute | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) | 施設詳細属性 | uro:consFacilityAttribute |
-| consBaseAttribute | JSON (<code><a href="#uroconstructionbaseattribute">uro:ConstructionBaseAttribute</a></code>) | 構造物基本情報 | uro:consBaseAttribute |
-| consStructureAttribute | JSON (<code><a href="#uroconstructionstructureattributeproperty">uro:ConstructionStructureAttributeProperty</a></code>) | 構造属性 | uro:consStructureAttribute |
-| consDisasterRiskAttribute | JSON (<code><a href="#urodisasterriskattributeproperty">uro:DisasterRiskAttributeProperty</a>[]</code>) | 災害リスク属性 | uro:consDisasterRiskAttribute |
-| consDmAttribute | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) | 図式属性 | uro:consDmAttribute |
-| consDataQualityAttribute | JSON (<code><a href="#uroconstructiondataqualityattribute">uro:ConstructionDataQualityAttribute</a></code>) | 品質属性 | uro:consDataQualityAttribute |
-| boundedBy | JSON (<code><a href="#uro-boundarysurfaceproperty">uro:_BoundarySurfaceProperty</a>[]</code>) | 境界面 | uro:boundedBy |
-| constructionInstallation | JSON (<code><a href="#uroconstructioninstallation">uro:ConstructionInstallation</a>[]</code>) | 付属物 | uro:constructionInstallation |
+| constructionEvent | uro:ConstructionEvent | 建設イベント | uro:constructionEvent |
+| elevation | uro:Elevation | 標高 | uro:elevation |
+| height | uro:Height | 高さ | uro:height |
+| occupancy | uro:Occupancy | 占有状況 | uro:occupancy |
+| consFacilityTypeAttribute | uro:FacilityTypeAttribute | 施設属性 | uro:consFacilityTypeAttribute |
+| consFacilityIdAttribute | uro:FacilityIdAttributeProperty | 施設識別属性 | uro:consFacilityIdAttribute |
+| consFacilityAttribute | uro:FacilityAttributeProperty | 施設詳細属性 | uro:consFacilityAttribute |
+| consBaseAttribute | uro:ConstructionBaseAttribute | 構造物基本情報 | uro:consBaseAttribute |
+| consStructureAttribute | uro:ConstructionStructureAttributeProperty | 構造属性 | uro:consStructureAttribute |
+| consDisasterRiskAttribute | uro:DisasterRiskAttributeProperty | 災害リスク属性 | uro:consDisasterRiskAttribute |
+| consDmAttribute | uro:DmAttributeProperty | 図式属性 | uro:consDmAttribute |
+| consDataQualityAttribute | uro:ConstructionDataQualityAttribute | 品質属性 | uro:consDataQualityAttribute |
+| boundedBy | uro:_BoundarySurfaceProperty | 境界面 | uro:boundedBy |
+| constructionInstallation | uro:ConstructionInstallation | 付属物 | uro:constructionInstallation |
 | class | Code | 分類 | uro:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 機能 | uro:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | uro:usage |
+| function | Code | 機能 | uro:function |
+| usage | Code | 用途 | uro:usage |
 
 ### uro:OuterCeilingSurface
 
@@ -1573,10 +1573,10 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 
 ### uro:OuterFloorSurface
 
@@ -1585,10 +1585,10 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 
 ### uro:Pipe
 
@@ -1597,26 +1597,26 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | frn:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 機能 | frn:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | frn:usage |
-| cityFurnitureDataQualityAttribute | JSON (<code><a href="#urocityfurnituredataqualityattribute">uro:CityFurnitureDataQualityAttribute</a></code>) | データ品質 | uro:cityFurnitureDataQualityAttribute |
-| cityFurnitureDetailAttribute | JSON (<code><a href="#urocityfurnituredetailattribute">uro:CityFurnitureDetailAttribute</a>[]</code>) | 都市設備詳細属性 | uro:cityFurnitureDetailAttribute |
-| frnDmAttribute | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) | 図式属性 | uro:frnDmAttribute |
-| frnFacilityAttribute | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) | 施設詳細属性 | uro:frnFacilityAttribute |
-| frnFacilityIdAttribute | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) | 施設属性 | uro:frnFacilityIdAttribute |
-| frnFacilityTypeAttribute | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) | 施設識別属性 | uro:frnFacilityTypeAttribute |
+| function | Code | 機能 | frn:function |
+| usage | Code | 用途 | frn:usage |
+| cityFurnitureDataQualityAttribute | uro:CityFurnitureDataQualityAttribute | データ品質 | uro:cityFurnitureDataQualityAttribute |
+| cityFurnitureDetailAttribute | uro:CityFurnitureDetailAttribute | 都市設備詳細属性 | uro:cityFurnitureDetailAttribute |
+| frnDmAttribute | uro:DmAttributeProperty | 図式属性 | uro:frnDmAttribute |
+| frnFacilityAttribute | uro:FacilityAttributeProperty | 施設詳細属性 | uro:frnFacilityAttribute |
+| frnFacilityIdAttribute | uro:FacilityIdAttributeProperty | 施設属性 | uro:frnFacilityIdAttribute |
+| frnFacilityTypeAttribute | uro:FacilityTypeAttribute | 施設識別属性 | uro:frnFacilityTypeAttribute |
 | occupierType | Code | 事業者種類 | uro:occupierType |
 | occupierName | Code | 事業者名 | uro:occupierName |
 | year | String | 埋設年度 | uro:year |
 | yearType | Code | 埋設年度の確からしさ | uro:yearType |
 | administrator | Code | 主管事業者 | uro:administrator |
-| offsetDepth | JSON (<code><a href="#urooffsetdepth">uro:OffsetDepth</a>[]</code>) | オフセットデプス情報 | uro:offsetDepth |
-| thematicShape | JSON (<code><a href="#urothematicshape">uro:ThematicShape</a>[]</code>) | 主題図形 | uro:thematicShape |
+| offsetDepth | uro:OffsetDepth | オフセットデプス情報 | uro:offsetDepth |
+| thematicShape | uro:ThematicShape | 主題図形 | uro:thematicShape |
 | routeStartNode | String | 路線開始ノード | uro:routeStartNode |
 | startNode | String | 開始ノード | uro:startNode |
 | routeEndNode | String | 路線終了ノード | uro:routeEndNode |
@@ -1627,7 +1627,7 @@ TIN地形
 | maxWidth | Measure | 最大幅 | uro:maxWidth |
 | offset | Measure | オフセット量 | uro:offset |
 | material | Code | 管きょ材質 | uro:material |
-| lengthAttribute | JSON (<code><a href="#urolengthattribute">uro:LengthAttribute</a>[]</code>) | 長さ情報 | uro:lengthAttribute |
+| lengthAttribute | uro:LengthAttribute | 長さ情報 | uro:lengthAttribute |
 | innerDiamiter | Measure | 内径 | uro:innerDiamiter |
 | outerDiamiter | Measure | 外径 | uro:outerDiamiter |
 | sleeveType | Code | 被覆区分 | uro:sleeveType |
@@ -1639,10 +1639,10 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 
 ### uro:SewerPipe
 
@@ -1651,26 +1651,26 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | frn:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 機能 | frn:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | frn:usage |
-| cityFurnitureDataQualityAttribute | JSON (<code><a href="#urocityfurnituredataqualityattribute">uro:CityFurnitureDataQualityAttribute</a></code>) | データ品質 | uro:cityFurnitureDataQualityAttribute |
-| cityFurnitureDetailAttribute | JSON (<code><a href="#urocityfurnituredetailattribute">uro:CityFurnitureDetailAttribute</a>[]</code>) | 都市設備詳細属性 | uro:cityFurnitureDetailAttribute |
-| frnDmAttribute | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) | 図式属性 | uro:frnDmAttribute |
-| frnFacilityAttribute | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) | 施設詳細属性 | uro:frnFacilityAttribute |
-| frnFacilityIdAttribute | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) | 施設属性 | uro:frnFacilityIdAttribute |
-| frnFacilityTypeAttribute | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) | 施設識別属性 | uro:frnFacilityTypeAttribute |
+| function | Code | 機能 | frn:function |
+| usage | Code | 用途 | frn:usage |
+| cityFurnitureDataQualityAttribute | uro:CityFurnitureDataQualityAttribute | データ品質 | uro:cityFurnitureDataQualityAttribute |
+| cityFurnitureDetailAttribute | uro:CityFurnitureDetailAttribute | 都市設備詳細属性 | uro:cityFurnitureDetailAttribute |
+| frnDmAttribute | uro:DmAttributeProperty | 図式属性 | uro:frnDmAttribute |
+| frnFacilityAttribute | uro:FacilityAttributeProperty | 施設詳細属性 | uro:frnFacilityAttribute |
+| frnFacilityIdAttribute | uro:FacilityIdAttributeProperty | 施設属性 | uro:frnFacilityIdAttribute |
+| frnFacilityTypeAttribute | uro:FacilityTypeAttribute | 施設識別属性 | uro:frnFacilityTypeAttribute |
 | occupierType | Code | 事業者種類 | uro:occupierType |
 | occupierName | Code | 事業者名 | uro:occupierName |
 | year | String | 埋設年度 | uro:year |
 | yearType | Code | 埋設年度の確からしさ | uro:yearType |
 | administrator | Code | 主管事業者 | uro:administrator |
-| offsetDepth | JSON (<code><a href="#urooffsetdepth">uro:OffsetDepth</a>[]</code>) | オフセットデプス情報 | uro:offsetDepth |
-| thematicShape | JSON (<code><a href="#urothematicshape">uro:ThematicShape</a>[]</code>) | 主題図形 | uro:thematicShape |
+| offsetDepth | uro:OffsetDepth | オフセットデプス情報 | uro:offsetDepth |
+| thematicShape | uro:ThematicShape | 主題図形 | uro:thematicShape |
 | routeStartNode | String | 路線開始ノード | uro:routeStartNode |
 | startNode | String | 開始ノード | uro:startNode |
 | routeEndNode | String | 路線終了ノード | uro:routeEndNode |
@@ -1681,7 +1681,7 @@ TIN地形
 | maxWidth | Measure | 最大幅 | uro:maxWidth |
 | offset | Measure | オフセット量 | uro:offset |
 | material | Code | 管きょ材質 | uro:material |
-| lengthAttribute | JSON (<code><a href="#urolengthattribute">uro:LengthAttribute</a>[]</code>) | 長さ情報 | uro:lengthAttribute |
+| lengthAttribute | uro:LengthAttribute | 長さ情報 | uro:lengthAttribute |
 | innerDiamiter | Measure | 内径 | uro:innerDiamiter |
 | outerDiamiter | Measure | 外径 | uro:outerDiamiter |
 | sleeveType | Code | 被覆区分 | uro:sleeveType |
@@ -1694,26 +1694,26 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | frn:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 機能 | frn:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | frn:usage |
-| cityFurnitureDataQualityAttribute | JSON (<code><a href="#urocityfurnituredataqualityattribute">uro:CityFurnitureDataQualityAttribute</a></code>) | データ品質 | uro:cityFurnitureDataQualityAttribute |
-| cityFurnitureDetailAttribute | JSON (<code><a href="#urocityfurnituredetailattribute">uro:CityFurnitureDetailAttribute</a>[]</code>) | 都市設備詳細属性 | uro:cityFurnitureDetailAttribute |
-| frnDmAttribute | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) | 図式属性 | uro:frnDmAttribute |
-| frnFacilityAttribute | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) | 施設詳細属性 | uro:frnFacilityAttribute |
-| frnFacilityIdAttribute | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) | 施設属性 | uro:frnFacilityIdAttribute |
-| frnFacilityTypeAttribute | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) | 施設識別属性 | uro:frnFacilityTypeAttribute |
+| function | Code | 機能 | frn:function |
+| usage | Code | 用途 | frn:usage |
+| cityFurnitureDataQualityAttribute | uro:CityFurnitureDataQualityAttribute | データ品質 | uro:cityFurnitureDataQualityAttribute |
+| cityFurnitureDetailAttribute | uro:CityFurnitureDetailAttribute | 都市設備詳細属性 | uro:cityFurnitureDetailAttribute |
+| frnDmAttribute | uro:DmAttributeProperty | 図式属性 | uro:frnDmAttribute |
+| frnFacilityAttribute | uro:FacilityAttributeProperty | 施設詳細属性 | uro:frnFacilityAttribute |
+| frnFacilityIdAttribute | uro:FacilityIdAttributeProperty | 施設属性 | uro:frnFacilityIdAttribute |
+| frnFacilityTypeAttribute | uro:FacilityTypeAttribute | 施設識別属性 | uro:frnFacilityTypeAttribute |
 | occupierType | Code | 事業者種類 | uro:occupierType |
 | occupierName | Code | 事業者名 | uro:occupierName |
 | year | String | 埋設年度 | uro:year |
 | yearType | Code | 埋設年度の確からしさ | uro:yearType |
 | administrator | Code | 主管事業者 | uro:administrator |
-| offsetDepth | JSON (<code><a href="#urooffsetdepth">uro:OffsetDepth</a>[]</code>) | オフセットデプス情報 | uro:offsetDepth |
-| thematicShape | JSON (<code><a href="#urothematicshape">uro:ThematicShape</a>[]</code>) | 主題図形 | uro:thematicShape |
+| offsetDepth | uro:OffsetDepth | オフセットデプス情報 | uro:offsetDepth |
+| thematicShape | uro:ThematicShape | 主題図形 | uro:thematicShape |
 | routeStartNode | String | 路線開始ノード | uro:routeStartNode |
 | startNode | String | 開始ノード | uro:startNode |
 | routeEndNode | String | 路線終了ノード | uro:routeEndNode |
@@ -1724,7 +1724,7 @@ TIN地形
 | maxWidth | Measure | 最大幅 | uro:maxWidth |
 | offset | Measure | オフセット量 | uro:offset |
 | material | Code | 管きょ材質 | uro:material |
-| lengthAttribute | JSON (<code><a href="#urolengthattribute">uro:LengthAttribute</a>[]</code>) | 長さ情報 | uro:lengthAttribute |
+| lengthAttribute | uro:LengthAttribute | 長さ情報 | uro:lengthAttribute |
 | columns | Integer | 列数 | uro:columns |
 | rows | Integer | 段数 | uro:rows |
 | cables | Integer | 条数 | uro:cables |
@@ -1736,26 +1736,26 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | frn:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 機能 | frn:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | frn:usage |
-| cityFurnitureDataQualityAttribute | JSON (<code><a href="#urocityfurnituredataqualityattribute">uro:CityFurnitureDataQualityAttribute</a></code>) | データ品質 | uro:cityFurnitureDataQualityAttribute |
-| cityFurnitureDetailAttribute | JSON (<code><a href="#urocityfurnituredetailattribute">uro:CityFurnitureDetailAttribute</a>[]</code>) | 都市設備詳細属性 | uro:cityFurnitureDetailAttribute |
-| frnDmAttribute | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) | 図式属性 | uro:frnDmAttribute |
-| frnFacilityAttribute | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) | 施設詳細属性 | uro:frnFacilityAttribute |
-| frnFacilityIdAttribute | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) | 施設属性 | uro:frnFacilityIdAttribute |
-| frnFacilityTypeAttribute | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) | 施設識別属性 | uro:frnFacilityTypeAttribute |
+| function | Code | 機能 | frn:function |
+| usage | Code | 用途 | frn:usage |
+| cityFurnitureDataQualityAttribute | uro:CityFurnitureDataQualityAttribute | データ品質 | uro:cityFurnitureDataQualityAttribute |
+| cityFurnitureDetailAttribute | uro:CityFurnitureDetailAttribute | 都市設備詳細属性 | uro:cityFurnitureDetailAttribute |
+| frnDmAttribute | uro:DmAttributeProperty | 図式属性 | uro:frnDmAttribute |
+| frnFacilityAttribute | uro:FacilityAttributeProperty | 施設詳細属性 | uro:frnFacilityAttribute |
+| frnFacilityIdAttribute | uro:FacilityIdAttributeProperty | 施設属性 | uro:frnFacilityIdAttribute |
+| frnFacilityTypeAttribute | uro:FacilityTypeAttribute | 施設識別属性 | uro:frnFacilityTypeAttribute |
 | occupierType | Code | 事業者種類 | uro:occupierType |
 | occupierName | Code | 事業者名 | uro:occupierName |
 | year | String | 埋設年度 | uro:year |
 | yearType | Code | 埋設年度の確からしさ | uro:yearType |
 | administrator | Code | 主管事業者 | uro:administrator |
-| offsetDepth | JSON (<code><a href="#urooffsetdepth">uro:OffsetDepth</a>[]</code>) | オフセットデプス情報 | uro:offsetDepth |
-| thematicShape | JSON (<code><a href="#urothematicshape">uro:ThematicShape</a>[]</code>) | 主題図形 | uro:thematicShape |
+| offsetDepth | uro:OffsetDepth | オフセットデプス情報 | uro:offsetDepth |
+| thematicShape | uro:ThematicShape | 主題図形 | uro:thematicShape |
 | routeStartNode | String | 路線開始ノード | uro:routeStartNode |
 | startNode | String | 開始ノード | uro:startNode |
 | routeEndNode | String | 路線終了ノード | uro:routeEndNode |
@@ -1766,7 +1766,7 @@ TIN地形
 | maxWidth | Measure | 最大幅 | uro:maxWidth |
 | offset | Measure | オフセット量 | uro:offset |
 | material | Code | 管きょ材質 | uro:material |
-| lengthAttribute | JSON (<code><a href="#urolengthattribute">uro:LengthAttribute</a>[]</code>) | 長さ情報 | uro:lengthAttribute |
+| lengthAttribute | uro:LengthAttribute | 長さ情報 | uro:lengthAttribute |
 | innerDiamiter | Measure | 内径 | uro:innerDiamiter |
 | outerDiamiter | Measure | 外径 | uro:outerDiamiter |
 | sleeveType | Code | 被覆区分 | uro:sleeveType |
@@ -1778,13 +1778,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | bldg:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 機能 | bldg:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | bldg:usage |
+| function | Code | 機能 | bldg:function |
+| usage | Code | 用途 | bldg:usage |
 | yearOfConstruction | String | 建築年 | bldg:yearOfConstruction |
 | yearOfDemolition | String | 解体年 | bldg:yearOfDemolition |
 | roofType | Code | 屋根の種別 | bldg:roofType |
@@ -1793,25 +1793,25 @@ TIN地形
 | storeysBelowGround | NonNegativeInteger | 地下階数 | bldg:storeysBelowGround |
 | storeyHeightsAboveGround | String | 地下階高さリスト | bldg:storeyHeightsAboveGround |
 | storeyHeightsBelowGround | String |  | bldg:storeyHeightsBelowGround |
-| outerBuildingInstallation | JSON (<code><a href="#bldgbuildinginstallation">bldg:BuildingInstallation</a>[]</code>) | 建物付属物 | bldg:outerBuildingInstallation |
-| interiorBuildingInstallation | JSON (<code><a href="#bldgbuildinginstallation">bldg:BuildingInstallation</a>[]</code>) | 屋内付属物 | bldg:interiorBuildingInstallation |
-| boundedBy | JSON (<code><a href="#bldg-boundarysurfaceproperty">bldg:_BoundarySurfaceProperty</a>[]</code>) | 境界面 | bldg:boundedBy |
-| interiorRoom | JSON (<code><a href="#bldgroom">bldg:Room</a>[]</code>) | 部屋 | bldg:interiorRoom |
-| consistsOfBuildingPart | JSON (<code><a href="#bldgbuildingpart">bldg:BuildingPart</a>[]</code>) | 建物部品 | bldg:consistsOfBuildingPart |
-| address | JSON (<code><a href="#coreaddress">core:Address</a>[]</code>) | 住所 | bldg:address |
-| bldgDmAttribute | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) | 図式属性 | uro:bldgDmAttribute |
-| bldgFacilityAttribute | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) | 施設詳細属性 | uro:bldgFacilityAttribute |
-| bldgFacilityIdAttribute | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) | 施設識別属性 | uro:bldgFacilityIdAttribute |
-| bldgFacilityTypeAttribute | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) | 施設属性 | uro:bldgFacilityTypeAttribute |
-| bldgRealEstateIDAttribute | JSON (<code><a href="#urorealestateidattribute">uro:RealEstateIDAttribute</a></code>) |  | uro:bldgRealEstateIDAttribute |
-| buildingDataQualityAttribute | JSON (<code><a href="#urobuildingdataqualityattribute">uro:BuildingDataQualityAttribute</a></code>) | データ品質 | uro:buildingDataQualityAttribute |
-| buildingDetailAttribute | JSON (<code><a href="#urobuildingdetailattribute">uro:BuildingDetailAttribute</a>[]</code>) | 建物利用現況 | uro:buildingDetailAttribute |
-| buildingDisasterRiskAttribute | JSON (<code><a href="#urobuildingdisasterriskattributeproperty">uro:BuildingDisasterRiskAttributeProperty</a>[]</code>) | 災害リスク | uro:buildingDisasterRiskAttribute |
-| buildingIDAttribute | JSON (<code><a href="#urobuildingidattribute">uro:BuildingIDAttribute</a>[]</code>) | 建物識別情報 | uro:buildingIDAttribute |
-| ifcBuildingAttribute | JSON (<code><a href="#uroifcattributeproperty">uro:IfcAttributeProperty</a>[]</code>) | IFC属性 | uro:ifcBuildingAttribute |
-| indoorBuildingAttribute | JSON (<code><a href="#uroindoorattributeproperty">uro:IndoorAttributeProperty</a>[]</code>) | 屋内ナビゲーション属性 | uro:indoorBuildingAttribute |
-| keyValuePairAttribute | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) | 拡張属性 | uro:keyValuePairAttribute |
-| largeCustomerFacilityAttribute | JSON (<code><a href="#urolargecustomerfacilityattribute">uro:LargeCustomerFacilityAttribute</a>[]</code>) | 大規模小売店舗等の立地状況 | uro:largeCustomerFacilityAttribute |
+| outerBuildingInstallation | bldg:BuildingInstallation | 建物付属物 | bldg:outerBuildingInstallation |
+| interiorBuildingInstallation | bldg:BuildingInstallation | 屋内付属物 | bldg:interiorBuildingInstallation |
+| boundedBy | bldg:_BoundarySurfaceProperty | 境界面 | bldg:boundedBy |
+| interiorRoom | bldg:Room | 部屋 | bldg:interiorRoom |
+| consistsOfBuildingPart | bldg:BuildingPart | 建物部品 | bldg:consistsOfBuildingPart |
+| address | core:Address | 住所 | bldg:address |
+| bldgDmAttribute | uro:DmAttributeProperty | 図式属性 | uro:bldgDmAttribute |
+| bldgFacilityAttribute | uro:FacilityAttributeProperty | 施設詳細属性 | uro:bldgFacilityAttribute |
+| bldgFacilityIdAttribute | uro:FacilityIdAttributeProperty | 施設識別属性 | uro:bldgFacilityIdAttribute |
+| bldgFacilityTypeAttribute | uro:FacilityTypeAttribute | 施設属性 | uro:bldgFacilityTypeAttribute |
+| bldgRealEstateIDAttribute | uro:RealEstateIDAttribute |  | uro:bldgRealEstateIDAttribute |
+| buildingDataQualityAttribute | uro:BuildingDataQualityAttribute | データ品質 | uro:buildingDataQualityAttribute |
+| buildingDetailAttribute | uro:BuildingDetailAttribute | 建物利用現況 | uro:buildingDetailAttribute |
+| buildingDisasterRiskAttribute | uro:BuildingDisasterRiskAttributeProperty | 災害リスク | uro:buildingDisasterRiskAttribute |
+| buildingIDAttribute | uro:BuildingIDAttribute | 建物識別情報 | uro:buildingIDAttribute |
+| ifcBuildingAttribute | uro:IfcAttributeProperty | IFC属性 | uro:ifcBuildingAttribute |
+| indoorBuildingAttribute | uro:IndoorAttributeProperty | 屋内ナビゲーション属性 | uro:indoorBuildingAttribute |
+| keyValuePairAttribute | uro:KeyValuePairAttribute | 拡張属性 | uro:keyValuePairAttribute |
+| largeCustomerFacilityAttribute | uro:LargeCustomerFacilityAttribute | 大規模小売店舗等の立地状況 | uro:largeCustomerFacilityAttribute |
 
 ### uro:WallSurface
 
@@ -1820,10 +1820,10 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 
 ### uro:WaterPipe
 
@@ -1832,26 +1832,26 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | frn:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 機能 | frn:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | frn:usage |
-| cityFurnitureDataQualityAttribute | JSON (<code><a href="#urocityfurnituredataqualityattribute">uro:CityFurnitureDataQualityAttribute</a></code>) | データ品質 | uro:cityFurnitureDataQualityAttribute |
-| cityFurnitureDetailAttribute | JSON (<code><a href="#urocityfurnituredetailattribute">uro:CityFurnitureDetailAttribute</a>[]</code>) | 都市設備詳細属性 | uro:cityFurnitureDetailAttribute |
-| frnDmAttribute | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) | 図式属性 | uro:frnDmAttribute |
-| frnFacilityAttribute | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) | 施設詳細属性 | uro:frnFacilityAttribute |
-| frnFacilityIdAttribute | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) | 施設属性 | uro:frnFacilityIdAttribute |
-| frnFacilityTypeAttribute | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) | 施設識別属性 | uro:frnFacilityTypeAttribute |
+| function | Code | 機能 | frn:function |
+| usage | Code | 用途 | frn:usage |
+| cityFurnitureDataQualityAttribute | uro:CityFurnitureDataQualityAttribute | データ品質 | uro:cityFurnitureDataQualityAttribute |
+| cityFurnitureDetailAttribute | uro:CityFurnitureDetailAttribute | 都市設備詳細属性 | uro:cityFurnitureDetailAttribute |
+| frnDmAttribute | uro:DmAttributeProperty | 図式属性 | uro:frnDmAttribute |
+| frnFacilityAttribute | uro:FacilityAttributeProperty | 施設詳細属性 | uro:frnFacilityAttribute |
+| frnFacilityIdAttribute | uro:FacilityIdAttributeProperty | 施設属性 | uro:frnFacilityIdAttribute |
+| frnFacilityTypeAttribute | uro:FacilityTypeAttribute | 施設識別属性 | uro:frnFacilityTypeAttribute |
 | occupierType | Code | 事業者種類 | uro:occupierType |
 | occupierName | Code | 事業者名 | uro:occupierName |
 | year | String | 埋設年度 | uro:year |
 | yearType | Code | 埋設年度の確からしさ | uro:yearType |
 | administrator | Code | 主管事業者 | uro:administrator |
-| offsetDepth | JSON (<code><a href="#urooffsetdepth">uro:OffsetDepth</a>[]</code>) | オフセットデプス情報 | uro:offsetDepth |
-| thematicShape | JSON (<code><a href="#urothematicshape">uro:ThematicShape</a>[]</code>) | 主題図形 | uro:thematicShape |
+| offsetDepth | uro:OffsetDepth | オフセットデプス情報 | uro:offsetDepth |
+| thematicShape | uro:ThematicShape | 主題図形 | uro:thematicShape |
 | routeStartNode | String | 路線開始ノード | uro:routeStartNode |
 | startNode | String | 開始ノード | uro:startNode |
 | routeEndNode | String | 路線終了ノード | uro:routeEndNode |
@@ -1862,7 +1862,7 @@ TIN地形
 | maxWidth | Measure | 最大幅 | uro:maxWidth |
 | offset | Measure | オフセット量 | uro:offset |
 | material | Code | 管きょ材質 | uro:material |
-| lengthAttribute | JSON (<code><a href="#urolengthattribute">uro:LengthAttribute</a>[]</code>) | 長さ情報 | uro:lengthAttribute |
+| lengthAttribute | uro:LengthAttribute | 長さ情報 | uro:lengthAttribute |
 | innerDiamiter | Measure | 内径 | uro:innerDiamiter |
 | outerDiamiter | Measure | 外径 | uro:outerDiamiter |
 | sleeveType | Code | 被覆区分 | uro:sleeveType |
@@ -1874,21 +1874,21 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
-| tranDmAttribute | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) | 図式属性 | uro:tranDmAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
+| tranDmAttribute | uro:DmAttributeProperty | 図式属性 | uro:tranDmAttribute |
 | class | Code | 分類 | tran:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 機能 | tran:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | tran:usage |
-| trafficArea | JSON (<code><a href="#trantrafficarea">tran:TrafficArea</a>[]</code>) | 交通領域 | tran:trafficArea |
-| auxiliaryTrafficArea | JSON (<code><a href="#tranauxiliarytrafficarea">tran:AuxiliaryTrafficArea</a>[]</code>) | 交通補助領域 | tran:auxiliaryTrafficArea |
-| tranDataQualityAttribute | JSON (<code><a href="#urotransportationdataqualityattribute">uro:TransportationDataQualityAttribute</a></code>) | データ品質 | uro:tranDataQualityAttribute |
-| tranFacilityAttribute | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) | 施設詳細属性 | uro:tranFacilityAttribute |
-| tranFacilityIdAttribute | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) | 施設識別属性 | uro:tranFacilityIdAttribute |
-| tranFacilityTypeAttribute | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) | 施設属性 | uro:tranFacilityTypeAttribute |
-| waterwayDetailAttribute | JSON (<code><a href="#urowaterwaydetailattribute">uro:WaterwayDetailAttribute</a></code>) | 航路属性 | uro:waterwayDetailAttribute |
+| function | Code | 機能 | tran:function |
+| usage | Code | 用途 | tran:usage |
+| trafficArea | tran:TrafficArea | 交通領域 | tran:trafficArea |
+| auxiliaryTrafficArea | tran:AuxiliaryTrafficArea | 交通補助領域 | tran:auxiliaryTrafficArea |
+| tranDataQualityAttribute | uro:TransportationDataQualityAttribute | データ品質 | uro:tranDataQualityAttribute |
+| tranFacilityAttribute | uro:FacilityAttributeProperty | 施設詳細属性 | uro:tranFacilityAttribute |
+| tranFacilityIdAttribute | uro:FacilityIdAttributeProperty | 施設識別属性 | uro:tranFacilityIdAttribute |
+| tranFacilityTypeAttribute | uro:FacilityTypeAttribute | 施設属性 | uro:tranFacilityTypeAttribute |
+| waterwayDetailAttribute | uro:WaterwayDetailAttribute | 航路属性 | uro:waterwayDetailAttribute |
 
 ### urf:Agreement
 
@@ -1896,13 +1896,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String |  | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) |  | gml:name |
+| name | Code |  | gml:name |
 | creationDate | Date |  | core:creationDate |
 | terminationDate | Date |  | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code |  | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) |  | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) |  | urf:usage |
+| function | Code |  | urf:function |
+| usage | Code |  | urf:usage |
 | validFrom | Date |  | urf:validFrom |
 | validFromType | Code |  | urf:validFromType |
 | enactmentFiscalYear | String |  | urf:enactmentFiscalYear |
@@ -1923,7 +1923,7 @@ TIN地形
 | reason | String |  | urf:reason |
 | note | String |  | urf:note |
 | surveyYear | String |  | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) |  | urf:boundary |
+| boundary | urf:Boundary |  | urf:boundary |
 | location | String |  | urf:location |
 | applicableArea | Measure |  | urf:applicableArea |
 | expiration | Date |  | urf:expiration |
@@ -1935,13 +1935,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 地域地区の種類 | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | urf:usage |
+| function | Code | 地域地区の種類 | urf:function |
+| usage | Code | 用途 | urf:usage |
 | validFrom | Date | 効力を生じる日(当初の決定年月日） | urf:validFrom |
 | validFromType | Code | 効力を生じる日の区分 | urf:validFromType |
 | enactmentFiscalYear | String | 決定年度 | urf:enactmentFiscalYear |
@@ -1962,7 +1962,7 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
+| boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
 | areaInTotal | Measure | 面積（合計） | urf:areaInTotal |
 
@@ -1973,13 +1973,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 区域の種類 | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | urf:usage |
+| function | Code | 区域の種類 | urf:function |
+| usage | Code | 用途 | urf:usage |
 | validFrom | Date | 効力を生じる日(当初の決定年月日） | urf:validFrom |
 | validFromType | Code | 効力を生じる日の区分 | urf:validFromType |
 | enactmentFiscalYear | String | 決定年度 | urf:enactmentFiscalYear |
@@ -2000,7 +2000,7 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
+| boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
 | population | Integer | 人口 | urf:population |
 
@@ -2011,13 +2011,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 都市施設の種類 | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | urf:usage |
+| function | Code | 都市施設の種類 | urf:function |
+| usage | Code | 用途 | urf:usage |
 | validFrom | Date | 効力を生じる日(当初の決定年月日） | urf:validFrom |
 | validFromType | Code | 効力を生じる日の区分 | urf:validFromType |
 | enactmentFiscalYear | String | 決定年度 | urf:enactmentFiscalYear |
@@ -2038,10 +2038,10 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
+| boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
 | number | String | 番号 | urf:number |
-| threeDimensionalExtent | JSON (<code><a href="#urfthreedimensionalextent">urf:ThreeDimensionalExtent</a>[]</code>) | 立体的な範囲 | urf:threeDimensionalExtent |
+| threeDimensionalExtent | urf:ThreeDimensionalExtent | 立体的な範囲 | urf:threeDimensionalExtent |
 | housingFacilities | String | 住宅施設の位置及び規模 | urf:housingFacilities |
 | supecificBusinessFacilities | String | 特定業務施設の位置及び規模 | urf:supecificBusinessFacilities |
 | publicFacilities | String | 公共施設の位置及び規模 | urf:publicFacilities |
@@ -2059,13 +2059,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 都市施設の種類 | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | urf:usage |
+| function | Code | 都市施設の種類 | urf:function |
+| usage | Code | 用途 | urf:usage |
 | validFrom | Date | 効力を生じる日(当初の決定年月日） | urf:validFrom |
 | validFromType | Code | 効力を生じる日の区分 | urf:validFromType |
 | enactmentFiscalYear | String | 決定年度 | urf:enactmentFiscalYear |
@@ -2086,10 +2086,10 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
+| boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
 | number | String | 番号 | urf:number |
-| threeDimensionalExtent | JSON (<code><a href="#urfthreedimensionalextent">urf:ThreeDimensionalExtent</a>[]</code>) | 立体的な範囲 | urf:threeDimensionalExtent |
+| threeDimensionalExtent | urf:ThreeDimensionalExtent | 立体的な範囲 | urf:threeDimensionalExtent |
 | housingFacilities | String | 住宅施設の位置及び規模 | urf:housingFacilities |
 | supecificBusinessFacilities | String | 特定業務施設の位置及び規模 | urf:supecificBusinessFacilities |
 | publicFacilities | String | 公共施設の位置及び規模 | urf:publicFacilities |
@@ -2107,13 +2107,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 都市施設の種類 | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | urf:usage |
+| function | Code | 都市施設の種類 | urf:function |
+| usage | Code | 用途 | urf:usage |
 | validFrom | Date | 効力を生じる日(当初の決定年月日） | urf:validFrom |
 | validFromType | Code | 効力を生じる日の区分 | urf:validFromType |
 | enactmentFiscalYear | String | 決定年度 | urf:enactmentFiscalYear |
@@ -2134,10 +2134,10 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
+| boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
 | number | String | 番号 | urf:number |
-| threeDimensionalExtent | JSON (<code><a href="#urfthreedimensionalextent">urf:ThreeDimensionalExtent</a>[]</code>) | 立体的な範囲 | urf:threeDimensionalExtent |
+| threeDimensionalExtent | urf:ThreeDimensionalExtent | 立体的な範囲 | urf:threeDimensionalExtent |
 | housingFacilities | String | 住宅施設の位置及び規模 | urf:housingFacilities |
 | supecificBusinessFacilities | String | 特定業務施設の位置及び規模 | urf:supecificBusinessFacilities |
 | publicFacilities | String | 公共施設の位置及び規模 | urf:publicFacilities |
@@ -2155,13 +2155,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 都市施設の種類 | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | urf:usage |
+| function | Code | 都市施設の種類 | urf:function |
+| usage | Code | 用途 | urf:usage |
 | validFrom | Date | 効力を生じる日(当初の決定年月日） | urf:validFrom |
 | validFromType | Code | 効力を生じる日の区分 | urf:validFromType |
 | enactmentFiscalYear | String | 決定年度 | urf:enactmentFiscalYear |
@@ -2182,10 +2182,10 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
+| boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
 | number | String | 番号 | urf:number |
-| threeDimensionalExtent | JSON (<code><a href="#urfthreedimensionalextent">urf:ThreeDimensionalExtent</a>[]</code>) | 立体的な範囲 | urf:threeDimensionalExtent |
+| threeDimensionalExtent | urf:ThreeDimensionalExtent | 立体的な範囲 | urf:threeDimensionalExtent |
 | buildingCoverageRate | Double | 建ぺい率の限度 | urf:buildingCoverageRate |
 | floorAreaRate | Double | 容積率の限度 | urf:floorAreaRate |
 | publicFacilitiesAllocationPolicy | String | 公益的施設、住宅及び公共施設の配置方針 | urf:publicFacilitiesAllocationPolicy |
@@ -2198,13 +2198,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 都市施設の種類 | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | urf:usage |
+| function | Code | 都市施設の種類 | urf:function |
+| usage | Code | 用途 | urf:usage |
 | validFrom | Date | 効力を生じる日(当初の決定年月日） | urf:validFrom |
 | validFromType | Code | 効力を生じる日の区分 | urf:validFromType |
 | enactmentFiscalYear | String | 決定年度 | urf:enactmentFiscalYear |
@@ -2225,10 +2225,10 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
+| boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
 | number | String | 番号 | urf:number |
-| threeDimensionalExtent | JSON (<code><a href="#urfthreedimensionalextent">urf:ThreeDimensionalExtent</a>[]</code>) | 立体的な範囲 | urf:threeDimensionalExtent |
+| threeDimensionalExtent | urf:ThreeDimensionalExtent | 立体的な範囲 | urf:threeDimensionalExtent |
 | buildingCoverageRate | Double | 建ぺい率の限度 | urf:buildingCoverageRate |
 | floorAreaRate | Double | 容積率の限度 | urf:floorAreaRate |
 | numberOfLowRiseHousing | Integer | 低層住宅の予定戸数 | urf:numberOfLowRiseHousing |
@@ -2245,13 +2245,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 都市施設の種類 | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | urf:usage |
+| function | Code | 都市施設の種類 | urf:function |
+| usage | Code | 用途 | urf:usage |
 | validFrom | Date | 効力を生じる日(当初の決定年月日） | urf:validFrom |
 | validFromType | Code | 効力を生じる日の区分 | urf:validFromType |
 | enactmentFiscalYear | String | 決定年度 | urf:enactmentFiscalYear |
@@ -2272,10 +2272,10 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
+| boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
 | number | String | 番号 | urf:number |
-| threeDimensionalExtent | JSON (<code><a href="#urfthreedimensionalextent">urf:ThreeDimensionalExtent</a>[]</code>) | 立体的な範囲 | urf:threeDimensionalExtent |
+| threeDimensionalExtent | urf:ThreeDimensionalExtent | 立体的な範囲 | urf:threeDimensionalExtent |
 | specificUtilityAndPublicFacilities | String | 特定公益施設及び公共施設の位置及び規模 | urf:specificUtilityAndPublicFacilities |
 | maximumBuildingHeight | Measure | 高さの最高限度 | urf:maximumBuildingHeight |
 | minimumBuildingHeight | Measure | 高さの最低 | urf:minimumBuildingHeight |
@@ -2290,13 +2290,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 地域地区の種類 | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | urf:usage |
+| function | Code | 地域地区の種類 | urf:function |
+| usage | Code | 用途 | urf:usage |
 | validFrom | Date | 効力を生じる日(当初の決定年月日） | urf:validFrom |
 | validFromType | Code | 効力を生じる日の区分 | urf:validFromType |
 | enactmentFiscalYear | String | 決定年度 | urf:enactmentFiscalYear |
@@ -2317,7 +2317,7 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
+| boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
 | areaInTotal | Measure | 面積（合計） | urf:areaInTotal |
 
@@ -2328,13 +2328,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 市街地開発事業の種類 | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | urf:usage |
+| function | Code | 市街地開発事業の種類 | urf:function |
+| usage | Code | 用途 | urf:usage |
 | validFrom | Date | 効力を生じる日(当初の決定年月日） | urf:validFrom |
 | validFromType | Code | 効力を生じる日の区分 | urf:validFromType |
 | enactmentFiscalYear | String | 決定年度 | urf:enactmentFiscalYear |
@@ -2355,7 +2355,7 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
+| boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
 | scheduledExecutor | String | 施行予定者 | urf:scheduledExecutor |
 | disasterPreventionPublicFacilityAllocation | String | 防災公共施設の配置及び規模 | urf:disasterPreventionPublicFacilityAllocation |
@@ -2369,13 +2369,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 地区計画の種類 | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | urf:usage |
+| function | Code | 地区計画の種類 | urf:function |
+| usage | Code | 用途 | urf:usage |
 | validFrom | Date | 効力を生じる日(当初の決定年月日） | urf:validFrom |
 | validFromType | Code | 効力を生じる日の区分 | urf:validFromType |
 | enactmentFiscalYear | String | 決定年度 | urf:enactmentFiscalYear |
@@ -2396,15 +2396,15 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
+| boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
 | objectives | String | 地区計画の目標 | urf:objectives |
 | policy | String | 方針 | urf:policy |
-| districtDevelopmentPlan | JSON (<code><a href="#urfdistrictdevelopmentplanproperty">urf:DistrictDevelopmentPlanProperty</a>[]</code>) | 特定建築物地区整備計画及び防災街区整備地区整備計画 | urf:districtDevelopmentPlan |
-| promotionDistrict | JSON (<code><a href="#urfpromotiondistrict">urf:PromotionDistrict</a>[]</code>) | nan | urf:promotionDistrict |
+| districtDevelopmentPlan | urf:DistrictDevelopmentPlanProperty | 特定建築物地区整備計画及び防災街区整備地区整備計画 | urf:districtDevelopmentPlan |
+| promotionDistrict | urf:PromotionDistrict | nan | urf:promotionDistrict |
 | zonalDisasterPreventionFacilitiesAllocation | String | 地区防災施設の区域。 | urf:zonalDisasterPreventionFacilitiesAllocation |
 | specifiedZonalDisasterPreventionFacilitiesAllocation | String | 特定地区防災施設の区域。 | urf:specifiedZonalDisasterPreventionFacilitiesAllocation |
-| zonalDisasterPreventionFacilities | JSON (<code><a href="#urfzonaldisasterpreventionfacility">urf:ZonalDisasterPreventionFacility</a>[]</code>) | 地区防災施設の区域及び特定地区防災施設 | urf:zonalDisasterPreventionFacilities |
+| zonalDisasterPreventionFacilities | urf:ZonalDisasterPreventionFacility | 地区防災施設の区域及び特定地区防災施設 | urf:zonalDisasterPreventionFacilities |
 
 ### urf:DistributionBusinessPark
 
@@ -2413,13 +2413,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 都市施設の種類 | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | urf:usage |
+| function | Code | 都市施設の種類 | urf:function |
+| usage | Code | 用途 | urf:usage |
 | validFrom | Date | 効力を生じる日(当初の決定年月日） | urf:validFrom |
 | validFromType | Code | 効力を生じる日の区分 | urf:validFromType |
 | enactmentFiscalYear | String | 決定年度 | urf:enactmentFiscalYear |
@@ -2440,10 +2440,10 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
+| boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
 | number | String | 番号 | urf:number |
-| threeDimensionalExtent | JSON (<code><a href="#urfthreedimensionalextent">urf:ThreeDimensionalExtent</a>[]</code>) | 立体的な範囲 | urf:threeDimensionalExtent |
+| threeDimensionalExtent | urf:ThreeDimensionalExtent | 立体的な範囲 | urf:threeDimensionalExtent |
 | distributionBusinessPark | String | 流通業務施設の敷地の位置及び規模 | urf:distributionBusinessPark |
 | publicAndUtilityFacilities | String | 公共施設及び公益施設の位置及び規模 | urf:publicAndUtilityFacilities |
 | buildingCoverageRate | Double | 建ぺい率の限度 | urf:buildingCoverageRate |
@@ -2460,13 +2460,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 地域地区の種類 | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | urf:usage |
+| function | Code | 地域地区の種類 | urf:function |
+| usage | Code | 用途 | urf:usage |
 | validFrom | Date | 効力を生じる日(当初の決定年月日） | urf:validFrom |
 | validFromType | Code | 効力を生じる日の区分 | urf:validFromType |
 | enactmentFiscalYear | String | 決定年度 | urf:enactmentFiscalYear |
@@ -2487,7 +2487,7 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
+| boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
 | areaInTotal | Measure | 面積（合計） | urf:areaInTotal |
 | guidelinePublicationDate | Date | 基本方針が定められた日 | urf:guidelinePublicationDate |
@@ -2499,13 +2499,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 地区の種類 | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | urf:usage |
+| function | Code | 地区の種類 | urf:function |
+| usage | Code | 用途 | urf:usage |
 | validFrom | Date | 効力を生じる日(当初の決定年月日） | urf:validFrom |
 | validFromType | Code | 効力を生じる日の区分 | urf:validFromType |
 | enactmentFiscalYear | String | 決定年度 | urf:enactmentFiscalYear |
@@ -2526,7 +2526,7 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
+| boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
 | buildingRestrictions | String | 建築物に関する制限 | urf:buildingRestrictions |
 | useRestrictions | String | 建築物の用途の制限 | urf:useRestrictions |
@@ -2556,13 +2556,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 地区整備計画の種類 | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | urf:usage |
+| function | Code | 地区整備計画の種類 | urf:function |
+| usage | Code | 用途 | urf:usage |
 | validFrom | Date | 効力を生じる日(当初の決定年月日） | urf:validFrom |
 | validFromType | Code | 効力を生じる日の区分 | urf:validFromType |
 | enactmentFiscalYear | String | 決定年度 | urf:enactmentFiscalYear |
@@ -2583,15 +2583,15 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
+| boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
 | districtFacilitiesAllocation | String | 地区施設の配置及び規模 | urf:districtFacilitiesAllocation |
 | buildingRestrictions | String | 建築物等の制限 | urf:buildingRestrictions |
 | urbanGreenSpaceConservation | String | 樹林地、草地等の保全に関する事項 | urf:urbanGreenSpaceConservation |
 | activityRestrictionInFarmland | String | 農地での行為の制限 | urf:activityRestrictionInFarmland |
 | landuseRestrictions | String | 土地の利用に関する事項 | urf:landuseRestrictions |
-| districtFacility | JSON (<code><a href="#urfdistrictfacilityproperty">urf:DistrictFacilityProperty</a>[]</code>) | 地区施設 | urf:districtFacility |
-| district | JSON (<code><a href="#urfdistrict">urf:District</a>[]</code>) | 地区 | urf:district |
+| districtFacility | urf:DistrictFacilityProperty | 地区施設 | urf:districtFacility |
+| district | urf:District | 地区 | urf:district |
 
 ### urf:DistrictFacility
 
@@ -2600,13 +2600,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 地区施設の種類 | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | urf:usage |
+| function | Code | 地区施設の種類 | urf:function |
+| usage | Code | 用途 | urf:usage |
 | validFrom | Date | 効力を生じる日(当初の決定年月日） | urf:validFrom |
 | validFromType | Code | 効力を生じる日の区分 | urf:validFromType |
 | enactmentFiscalYear | String | 決定年度 | urf:enactmentFiscalYear |
@@ -2627,7 +2627,7 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
+| boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
 
 ### urf:DistrictImprovementPlanForDisasterPreventionBlockImprovementZonePlan
@@ -2637,13 +2637,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 地区整備計画の種類 | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | urf:usage |
+| function | Code | 地区整備計画の種類 | urf:function |
+| usage | Code | 用途 | urf:usage |
 | validFrom | Date | 効力を生じる日(当初の決定年月日） | urf:validFrom |
 | validFromType | Code | 効力を生じる日の区分 | urf:validFromType |
 | enactmentFiscalYear | String | 決定年度 | urf:enactmentFiscalYear |
@@ -2664,15 +2664,15 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
+| boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
 | districtFacilitiesAllocation | String | 地区施設の配置及び規模 | urf:districtFacilitiesAllocation |
 | buildingRestrictions | String | 建築物等の制限 | urf:buildingRestrictions |
 | urbanGreenSpaceConservation | String | 樹林地、草地等の保全に関する事項 | urf:urbanGreenSpaceConservation |
 | activityRestrictionInFarmland | String | 農地での行為の制限 | urf:activityRestrictionInFarmland |
 | landuseRestrictions | String | 土地の利用に関する事項 | urf:landuseRestrictions |
-| districtFacility | JSON (<code><a href="#urfdistrictfacilityproperty">urf:DistrictFacilityProperty</a>[]</code>) | 地区施設 | urf:districtFacility |
-| district | JSON (<code><a href="#urfdistrict">urf:District</a>[]</code>) | 防災地区 | urf:district |
+| districtFacility | urf:DistrictFacilityProperty | 地区施設 | urf:districtFacility |
+| district | urf:District | 防災地区 | urf:district |
 
 ### urf:DistrictImprovementPlanForHistoricSceneryMaintenanceAndImprovementDistrict
 
@@ -2681,13 +2681,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 地区整備計画の種類 | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | urf:usage |
+| function | Code | 地区整備計画の種類 | urf:function |
+| usage | Code | 用途 | urf:usage |
 | validFrom | Date | 効力を生じる日(当初の決定年月日） | urf:validFrom |
 | validFromType | Code | 効力を生じる日の区分 | urf:validFromType |
 | enactmentFiscalYear | String | 決定年度 | urf:enactmentFiscalYear |
@@ -2708,15 +2708,15 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
+| boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
 | districtFacilitiesAllocation | String | 地区施設の配置及び規模 | urf:districtFacilitiesAllocation |
 | buildingRestrictions | String | 建築物等の制限 | urf:buildingRestrictions |
 | urbanGreenSpaceConservation | String | 樹林地、草地等の保全に関する事項 | urf:urbanGreenSpaceConservation |
 | activityRestrictionInFarmland | String | 農地での行為の制限 | urf:activityRestrictionInFarmland |
 | landuseRestrictions | String | 土地の利用に関する事項 | urf:landuseRestrictions |
-| districtFacility | JSON (<code><a href="#urfdistrictfacilityproperty">urf:DistrictFacilityProperty</a>[]</code>) | 地区施設 | urf:districtFacility |
-| district | JSON (<code><a href="#urfdistrict">urf:District</a>[]</code>) | 地区 | urf:district |
+| districtFacility | urf:DistrictFacilityProperty | 地区施設 | urf:districtFacility |
+| district | urf:District | 地区 | urf:district |
 
 ### urf:DistrictPlan
 
@@ -2725,13 +2725,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 地区計画の種類 | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | urf:usage |
+| function | Code | 地区計画の種類 | urf:function |
+| usage | Code | 用途 | urf:usage |
 | validFrom | Date | 効力を生じる日(当初の決定年月日） | urf:validFrom |
 | validFromType | Code | 効力を生じる日の区分 | urf:validFromType |
 | enactmentFiscalYear | String | 決定年度 | urf:enactmentFiscalYear |
@@ -2752,12 +2752,12 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
+| boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
 | objectives | String | 地区計画の目標 | urf:objectives |
 | policy | String | 区域の整備、開発及び保全に関する方針 | urf:policy |
-| districtDevelopmentPlan | JSON (<code><a href="#urfdistrictdevelopmentplanproperty">urf:DistrictDevelopmentPlanProperty</a>[]</code>) | 地区整備計画 | urf:districtDevelopmentPlan |
-| promotionDistrict | JSON (<code><a href="#urfpromotiondistrict">urf:PromotionDistrict</a>[]</code>) | 促進区 | urf:promotionDistrict |
+| districtDevelopmentPlan | urf:DistrictDevelopmentPlanProperty | 地区整備計画 | urf:districtDevelopmentPlan |
+| promotionDistrict | urf:PromotionDistrict | 促進区 | urf:promotionDistrict |
 | facilityAllocation | String | 施設の配置及び方針 | urf:facilityAllocation |
 | landUsePolicy | String | 土地利用に関する基本方針 | urf:landUsePolicy |
 
@@ -2768,13 +2768,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 地域地区の種類 | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | urf:usage |
+| function | Code | 地域地区の種類 | urf:function |
+| usage | Code | 用途 | urf:usage |
 | validFrom | Date | 効力を生じる日(当初の決定年月日） | urf:validFrom |
 | validFromType | Code | 効力を生じる日の区分 | urf:validFromType |
 | enactmentFiscalYear | String | 決定年度 | urf:enactmentFiscalYear |
@@ -2795,7 +2795,7 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
+| boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
 | areaInTotal | Measure | 面積（合計） | urf:areaInTotal |
 
@@ -2806,13 +2806,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 都市施設の種類 | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | urf:usage |
+| function | Code | 都市施設の種類 | urf:function |
+| usage | Code | 用途 | urf:usage |
 | validFrom | Date | 効力を生じる日(当初の決定年月日） | urf:validFrom |
 | validFromType | Code | 効力を生じる日の区分 | urf:validFromType |
 | enactmentFiscalYear | String | 決定年度 | urf:enactmentFiscalYear |
@@ -2833,10 +2833,10 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
+| boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
 | number | String | 番号 | urf:number |
-| threeDimensionalExtent | JSON (<code><a href="#urfthreedimensionalextent">urf:ThreeDimensionalExtent</a>[]</code>) | 立体的な範囲 | urf:threeDimensionalExtent |
+| threeDimensionalExtent | urf:ThreeDimensionalExtent | 立体的な範囲 | urf:threeDimensionalExtent |
 
 ### urf:ExceptionalFloorAreaRateDistrict
 
@@ -2845,13 +2845,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 地域地区の種類 | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | urf:usage |
+| function | Code | 地域地区の種類 | urf:function |
+| usage | Code | 用途 | urf:usage |
 | validFrom | Date | 効力を生じる日(当初の決定年月日） | urf:validFrom |
 | validFromType | Code | 効力を生じる日の区分 | urf:validFromType |
 | enactmentFiscalYear | String | 決定年度 | urf:enactmentFiscalYear |
@@ -2872,7 +2872,7 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
+| boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
 | areaInTotal | Measure | 面積（合計） | urf:areaInTotal |
 | buildingHeightLimits | Measure | 建築物の高さの最高限度 | urf:buildingHeightLimits |
@@ -2884,13 +2884,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 地域地区の種類 | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 防火地域又は準防火地域の種類 | urf:usage |
+| function | Code | 地域地区の種類 | urf:function |
+| usage | Code | 防火地域又は準防火地域の種類 | urf:usage |
 | validFrom | Date | 効力を生じる日(当初の決定年月日） | urf:validFrom |
 | validFromType | Code | 効力を生じる日の区分 | urf:validFromType |
 | enactmentFiscalYear | String | 決定年度 | urf:enactmentFiscalYear |
@@ -2911,7 +2911,7 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
+| boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
 | areaInTotal | Measure | 面積（合計） | urf:areaInTotal |
 
@@ -2922,13 +2922,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 都市施設の種類 | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | urf:usage |
+| function | Code | 都市施設の種類 | urf:function |
+| usage | Code | 用途 | urf:usage |
 | validFrom | Date | 効力を生じる日(当初の決定年月日） | urf:validFrom |
 | validFromType | Code | 効力を生じる日の区分 | urf:validFromType |
 | enactmentFiscalYear | String | 決定年度 | urf:enactmentFiscalYear |
@@ -2949,10 +2949,10 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
+| boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
 | number | String | 番号 | urf:number |
-| threeDimensionalExtent | JSON (<code><a href="#urfthreedimensionalextent">urf:ThreeDimensionalExtent</a>[]</code>) | 立体的な範囲 | urf:threeDimensionalExtent |
+| threeDimensionalExtent | urf:ThreeDimensionalExtent | 立体的な範囲 | urf:threeDimensionalExtent |
 | length | Measure | 延長 | urf:length |
 | width | Measure | 幅員 | urf:width |
 
@@ -2963,13 +2963,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 都市施設の種類 | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | urf:usage |
+| function | Code | 都市施設の種類 | urf:function |
+| usage | Code | 用途 | urf:usage |
 | validFrom | Date | 効力を生じる日(当初の決定年月日） | urf:validFrom |
 | validFromType | Code | 効力を生じる日の区分 | urf:validFromType |
 | enactmentFiscalYear | String | 決定年度 | urf:enactmentFiscalYear |
@@ -2990,10 +2990,10 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
+| boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
 | number | String | 番号 | urf:number |
-| threeDimensionalExtent | JSON (<code><a href="#urfthreedimensionalextent">urf:ThreeDimensionalExtent</a>[]</code>) | 立体的な範囲 | urf:threeDimensionalExtent |
+| threeDimensionalExtent | urf:ThreeDimensionalExtent | 立体的な範囲 | urf:threeDimensionalExtent |
 | length | Measure | 延長 | urf:length |
 | width | Measure | 幅員 | urf:width |
 
@@ -3003,13 +3003,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String |  | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) |  | gml:name |
+| name | Code |  | gml:name |
 | creationDate | Date |  | core:creationDate |
 | terminationDate | Date |  | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code |  | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) |  | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) |  | urf:usage |
+| function | Code |  | urf:function |
+| usage | Code |  | urf:usage |
 | validFrom | Date |  | urf:validFrom |
 | validFromType | Code |  | urf:validFromType |
 | enactmentFiscalYear | String |  | urf:enactmentFiscalYear |
@@ -3030,7 +3030,7 @@ TIN地形
 | reason | String |  | urf:reason |
 | note | String |  | urf:note |
 | surveyYear | String |  | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) |  | urf:boundary |
+| boundary | urf:Boundary |  | urf:boundary |
 | location | String |  | urf:location |
 | implementationBody | String |  | urf:implementationBody |
 | implementationPeriod | String |  | urf:implementationPeriod |
@@ -3043,13 +3043,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 地域地区の種類 | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | urf:usage |
+| function | Code | 地域地区の種類 | urf:function |
+| usage | Code | 用途 | urf:usage |
 | validFrom | Date | 効力を生じる日(当初の決定年月日） | urf:validFrom |
 | validFromType | Code | 効力を生じる日の区分 | urf:validFromType |
 | enactmentFiscalYear | String | 決定年度 | urf:enactmentFiscalYear |
@@ -3070,7 +3070,7 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
+| boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
 | areaInTotal | Measure | 面積（合計） | urf:areaInTotal |
 
@@ -3081,13 +3081,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 地域地区の種類 | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | urf:usage |
+| function | Code | 地域地区の種類 | urf:function |
+| usage | Code | 用途 | urf:usage |
 | validFrom | Date | 効力を生じる日(当初の決定年月日） | urf:validFrom |
 | validFromType | Code | 効力を生じる日の区分 | urf:validFromType |
 | enactmentFiscalYear | String | 決定年度 | urf:enactmentFiscalYear |
@@ -3108,7 +3108,7 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
+| boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
 | areaInTotal | Measure | 面積（合計） | urf:areaInTotal |
 | maximumBuildingHeight | Measure | 高さの最高限度 | urf:maximumBuildingHeight |
@@ -3121,13 +3121,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 地域地区の種類 | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | urf:usage |
+| function | Code | 地域地区の種類 | urf:function |
+| usage | Code | 用途 | urf:usage |
 | validFrom | Date | 効力を生じる日(当初の決定年月日） | urf:validFrom |
 | validFromType | Code | 効力を生じる日の区分 | urf:validFromType |
 | enactmentFiscalYear | String | 決定年度 | urf:enactmentFiscalYear |
@@ -3148,13 +3148,13 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
+| boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
 | areaInTotal | Measure | 面積（合計） | urf:areaInTotal |
-| maximumFloorAreaRate | JSON (<code><a href="#double">Double</a>[]</code>) | 容積率の最高限度 | urf:maximumFloorAreaRate |
-| minimumFloorAreaRate | JSON (<code><a href="#double">Double</a>[]</code>) | 容積率の最低限度 | urf:minimumFloorAreaRate |
-| maximumBuildingCoverageRate | JSON (<code><a href="#double">Double</a>[]</code>) | 建蔽率の最高限度 | urf:maximumBuildingCoverageRate |
-| minimumBuildingArea | JSON (<code><a href="#measure">Measure</a>[]</code>) | 建築面積の最低限度 | urf:minimumBuildingArea |
+| maximumFloorAreaRate | Double | 容積率の最高限度 | urf:maximumFloorAreaRate |
+| minimumFloorAreaRate | Double | 容積率の最低限度 | urf:minimumFloorAreaRate |
+| maximumBuildingCoverageRate | Double | 建蔽率の最高限度 | urf:maximumBuildingCoverageRate |
+| minimumBuildingArea | Measure | 建築面積の最低限度 | urf:minimumBuildingArea |
 | setbackSize | String | 外壁の後退距離 | urf:setbackSize |
 
 ### urf:HighRiseResidentialAttractionDistrict
@@ -3164,13 +3164,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 地域地区の種類 | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | urf:usage |
+| function | Code | 地域地区の種類 | urf:function |
+| usage | Code | 用途 | urf:usage |
 | validFrom | Date | 効力を生じる日(当初の決定年月日） | urf:validFrom |
 | validFromType | Code | 効力を生じる日の区分 | urf:validFromType |
 | enactmentFiscalYear | String | 決定年度 | urf:enactmentFiscalYear |
@@ -3191,7 +3191,7 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
+| boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
 | areaInTotal | Measure | 面積（合計） | urf:areaInTotal |
 | floorAreaRate | Double | 容積率 | urf:floorAreaRate |
@@ -3205,13 +3205,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 地区計画の種類 | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | urf:usage |
+| function | Code | 地区計画の種類 | urf:function |
+| usage | Code | 用途 | urf:usage |
 | validFrom | Date | 効力を生じる日(当初の決定年月日） | urf:validFrom |
 | validFromType | Code | 効力を生じる日の区分 | urf:validFromType |
 | enactmentFiscalYear | String | 決定年度 | urf:enactmentFiscalYear |
@@ -3232,12 +3232,12 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
+| boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
 | objectives | String | 地区計画の目標 | urf:objectives |
 | policy | String | 方針 | urf:policy |
-| districtDevelopmentPlan | JSON (<code><a href="#urfdistrictdevelopmentplanproperty">urf:DistrictDevelopmentPlanProperty</a>[]</code>) | 地区整備計画 | urf:districtDevelopmentPlan |
-| promotionDistrict | JSON (<code><a href="#urfpromotiondistrict">urf:PromotionDistrict</a>[]</code>) | 促進区 | urf:promotionDistrict |
+| districtDevelopmentPlan | urf:DistrictDevelopmentPlanProperty | 地区整備計画 | urf:districtDevelopmentPlan |
+| promotionDistrict | urf:PromotionDistrict | 促進区 | urf:promotionDistrict |
 | landUsePolicy | String | 土地利用に関する基本方針 | urf:landUsePolicy |
 
 ### urf:HousingControlArea
@@ -3247,13 +3247,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 地域地区の種類 | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | urf:usage |
+| function | Code | 地域地区の種類 | urf:function |
+| usage | Code | 用途 | urf:usage |
 | validFrom | Date | 効力を生じる日(当初の決定年月日） | urf:validFrom |
 | validFromType | Code | 効力を生じる日の区分 | urf:validFromType |
 | enactmentFiscalYear | String | 決定年度 | urf:enactmentFiscalYear |
@@ -3274,7 +3274,7 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
+| boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
 | areaInTotal | Measure | 面積（合計） | urf:areaInTotal |
 
@@ -3285,13 +3285,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 市街地開発事業の種類 | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | urf:usage |
+| function | Code | 市街地開発事業の種類 | urf:function |
+| usage | Code | 用途 | urf:usage |
 | validFrom | Date | 効力を生じる日(当初の決定年月日） | urf:validFrom |
 | validFromType | Code | 効力を生じる日の区分 | urf:validFromType |
 | enactmentFiscalYear | String | 決定年度 | urf:enactmentFiscalYear |
@@ -3312,7 +3312,7 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
+| boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
 | scheduledExecutor | String | 施行予定者 | urf:scheduledExecutor |
 | publicFacilityAllocation | String | 公共施設の配置及び規模 | urf:publicFacilityAllocation |
@@ -3325,13 +3325,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 市街地開発事業の種類 | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | urf:usage |
+| function | Code | 市街地開発事業の種類 | urf:function |
+| usage | Code | 用途 | urf:usage |
 | validFrom | Date | 効力を生じる日(当初の決定年月日） | urf:validFrom |
 | validFromType | Code | 効力を生じる日の区分 | urf:validFromType |
 | enactmentFiscalYear | String | 決定年度 | urf:enactmentFiscalYear |
@@ -3352,7 +3352,7 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
+| boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
 | scheduledExecutor | String | 施行予定者 | urf:scheduledExecutor |
 | publicFacilityAllocation | String | 公共施設の配置 | urf:publicFacilityAllocation |
@@ -3365,13 +3365,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 地域地区の種類 | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | urf:usage |
+| function | Code | 地域地区の種類 | urf:function |
+| usage | Code | 用途 | urf:usage |
 | validFrom | Date | 効力を生じる日(当初の決定年月日） | urf:validFrom |
 | validFromType | Code | 効力を生じる日の区分 | urf:validFromType |
 | enactmentFiscalYear | String | 決定年度 | urf:enactmentFiscalYear |
@@ -3392,7 +3392,7 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
+| boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
 | developmentPolicy | String | 住宅市街地としての開発方針 | urf:developmentPolicy |
 | publicFacilitiesPlans | String | 公共施設に関する都市計画 | urf:publicFacilitiesPlans |
@@ -3404,13 +3404,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 地域地区の種類 | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | urf:usage |
+| function | Code | 地域地区の種類 | urf:function |
+| usage | Code | 用途 | urf:usage |
 | validFrom | Date | 効力を生じる日(当初の決定年月日） | urf:validFrom |
 | validFromType | Code | 効力を生じる日の区分 | urf:validFromType |
 | enactmentFiscalYear | String | 決定年度 | urf:enactmentFiscalYear |
@@ -3431,7 +3431,7 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
+| boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
 | developmentPolicy | String | 開発の方針 | urf:developmentPolicy |
 | publicFacilitiesPlans | String | 公共施設に関する都市計画 | urf:publicFacilitiesPlans |
@@ -3443,13 +3443,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 地域地区の種類 | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | urf:usage |
+| function | Code | 地域地区の種類 | urf:function |
+| usage | Code | 用途 | urf:usage |
 | validFrom | Date | 効力を生じる日(当初の決定年月日） | urf:validFrom |
 | validFromType | Code | 効力を生じる日の区分 | urf:validFromType |
 | enactmentFiscalYear | String | 決定年度 | urf:enactmentFiscalYear |
@@ -3470,7 +3470,7 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
+| boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
 | areaInTotal | Measure | 面積（合計） | urf:areaInTotal |
 | buildingDesignRestriction | String | 建築物の形態にかかる制限 | urf:buildingDesignRestriction |
@@ -3486,13 +3486,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 都市施設の種類 | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | urf:usage |
+| function | Code | 都市施設の種類 | urf:function |
+| usage | Code | 用途 | urf:usage |
 | validFrom | Date | 効力を生じる日(当初の決定年月日） | urf:validFrom |
 | validFromType | Code | 効力を生じる日の区分 | urf:validFromType |
 | enactmentFiscalYear | String | 決定年度 | urf:enactmentFiscalYear |
@@ -3513,10 +3513,10 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
+| boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
 | number | String | 番号 | urf:number |
-| threeDimensionalExtent | JSON (<code><a href="#urfthreedimensionalextent">urf:ThreeDimensionalExtent</a>[]</code>) | 立体的な範囲 | urf:threeDimensionalExtent |
+| threeDimensionalExtent | urf:ThreeDimensionalExtent | 立体的な範囲 | urf:threeDimensionalExtent |
 
 ### urf:MedicalFacility
 
@@ -3525,13 +3525,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 都市施設の種類 | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | urf:usage |
+| function | Code | 都市施設の種類 | urf:function |
+| usage | Code | 用途 | urf:usage |
 | validFrom | Date | 効力を生じる日(当初の決定年月日） | urf:validFrom |
 | validFromType | Code | 効力を生じる日の区分 | urf:validFromType |
 | enactmentFiscalYear | String | 決定年度 | urf:enactmentFiscalYear |
@@ -3552,10 +3552,10 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
+| boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
 | number | String | 番号 | urf:number |
-| threeDimensionalExtent | JSON (<code><a href="#urfthreedimensionalextent">urf:ThreeDimensionalExtent</a>[]</code>) | 立体的な範囲 | urf:threeDimensionalExtent |
+| threeDimensionalExtent | urf:ThreeDimensionalExtent | 立体的な範囲 | urf:threeDimensionalExtent |
 
 ### urf:NewHousingAndUrbanDevelopmentProject
 
@@ -3564,13 +3564,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 市街地開発事業の種類 | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | urf:usage |
+| function | Code | 市街地開発事業の種類 | urf:function |
+| usage | Code | 用途 | urf:usage |
 | validFrom | Date | 効力を生じる日(当初の決定年月日） | urf:validFrom |
 | validFromType | Code | 効力を生じる日の区分 | urf:validFromType |
 | enactmentFiscalYear | String | 決定年度 | urf:enactmentFiscalYear |
@@ -3591,7 +3591,7 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
+| boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
 | scheduledExecutor | String | 施行予定者 | urf:scheduledExecutor |
 | housing | String | 住区 | urf:housing |
@@ -3605,13 +3605,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 市街地開発事業の種類 | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | urf:usage |
+| function | Code | 市街地開発事業の種類 | urf:function |
+| usage | Code | 用途 | urf:usage |
 | validFrom | Date | 効力を生じる日(当初の決定年月日） | urf:validFrom |
 | validFromType | Code | 効力を生じる日の区分 | urf:validFromType |
 | enactmentFiscalYear | String | 決定年度 | urf:enactmentFiscalYear |
@@ -3632,7 +3632,7 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
+| boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
 | scheduledExecutor | String | 施行予定者 | urf:scheduledExecutor |
 | landForCentralPublicFacilities | String | 公共施設の用に供するべき土地の区域 | urf:landForCentralPublicFacilities |
@@ -3646,13 +3646,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 都市施設の種類 | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | urf:usage |
+| function | Code | 都市施設の種類 | urf:function |
+| usage | Code | 用途 | urf:usage |
 | validFrom | Date | 効力を生じる日(当初の決定年月日） | urf:validFrom |
 | validFromType | Code | 効力を生じる日の区分 | urf:validFromType |
 | enactmentFiscalYear | String | 決定年度 | urf:enactmentFiscalYear |
@@ -3673,11 +3673,11 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
+| boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
 | number | String | 番号 | urf:number |
-| threeDimensionalExtent | JSON (<code><a href="#urfthreedimensionalextent">urf:ThreeDimensionalExtent</a>[]</code>) | 立体的な範囲 | urf:threeDimensionalExtent |
-| parkAttribute | JSON (<code><a href="#urfparkattribute">urf:ParkAttribute</a></code>) | 公園属性 | urf:parkAttribute |
+| threeDimensionalExtent | urf:ThreeDimensionalExtent | 立体的な範囲 | urf:threeDimensionalExtent |
+| parkAttribute | urf:ParkAttribute | 公園属性 | urf:parkAttribute |
 
 ### urf:ParkingPlaceDevelopmentZone
 
@@ -3686,13 +3686,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 地域地区の種類 | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | urf:usage |
+| function | Code | 地域地区の種類 | urf:function |
+| usage | Code | 用途 | urf:usage |
 | validFrom | Date | 効力を生じる日(当初の決定年月日） | urf:validFrom |
 | validFromType | Code | 効力を生じる日の区分 | urf:validFromType |
 | enactmentFiscalYear | String | 決定年度 | urf:enactmentFiscalYear |
@@ -3713,7 +3713,7 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
+| boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
 | areaInTotal | Measure | 面積（合計） | urf:areaInTotal |
 
@@ -3724,13 +3724,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 地域地区の種類 | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 分区 | urf:usage |
+| function | Code | 地域地区の種類 | urf:function |
+| usage | Code | 分区 | urf:usage |
 | validFrom | Date | 効力を生じる日(当初の決定年月日） | urf:validFrom |
 | validFromType | Code | 効力を生じる日の区分 | urf:validFromType |
 | enactmentFiscalYear | String | 決定年度 | urf:enactmentFiscalYear |
@@ -3751,7 +3751,7 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
+| boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
 | areaInTotal | Measure | 面積（合計） | urf:areaInTotal |
 | floorAreaRate | Double | 容積率 | urf:floorAreaRate |
@@ -3762,13 +3762,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String |  | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) |  | gml:name |
+| name | Code |  | gml:name |
 | creationDate | Date |  | core:creationDate |
 | terminationDate | Date |  | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code |  | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) |  | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) |  | urf:usage |
+| function | Code |  | urf:function |
+| usage | Code |  | urf:usage |
 | validFrom | Date |  | urf:validFrom |
 | validFromType | Code |  | urf:validFromType |
 | enactmentFiscalYear | String |  | urf:enactmentFiscalYear |
@@ -3789,7 +3789,7 @@ TIN地形
 | reason | String |  | urf:reason |
 | note | String |  | urf:note |
 | surveyYear | String |  | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) |  | urf:boundary |
+| boundary | urf:Boundary |  | urf:boundary |
 | location | String |  | urf:location |
 | developer | String |  | urf:developer |
 | plan | String |  | urf:plan |
@@ -3801,13 +3801,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 地域地区の種類 | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | urf:usage |
+| function | Code | 地域地区の種類 | urf:function |
+| usage | Code | 用途 | urf:usage |
 | validFrom | Date | 効力を生じる日(当初の決定年月日） | urf:validFrom |
 | validFromType | Code | 効力を生じる日の区分 | urf:validFromType |
 | enactmentFiscalYear | String | 決定年度 | urf:enactmentFiscalYear |
@@ -3828,7 +3828,7 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
+| boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
 | areaInTotal | Measure | 面積（合計） | urf:areaInTotal |
 | zoneNumber | String | 生産緑地区番号 | urf:zoneNumber |
@@ -3841,13 +3841,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 地域地区の種類 | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | urf:usage |
+| function | Code | 地域地区の種類 | urf:function |
+| usage | Code | 用途 | urf:usage |
 | validFrom | Date | 効力を生じる日(当初の決定年月日） | urf:validFrom |
 | validFromType | Code | 効力を生じる日の区分 | urf:validFromType |
 | enactmentFiscalYear | String | 決定年度 | urf:enactmentFiscalYear |
@@ -3868,7 +3868,7 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
+| boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
 | developmentPolicy | String | 開発の方針 | urf:developmentPolicy |
 | publicFacilitiesPlans | String | 公共施設に関する都市計画 | urf:publicFacilitiesPlans |
@@ -3879,13 +3879,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String |  | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) |  | gml:name |
+| name | Code |  | gml:name |
 | creationDate | Date |  | core:creationDate |
 | terminationDate | Date |  | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code |  | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) |  | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) |  | urf:usage |
+| function | Code |  | urf:function |
+| usage | Code |  | urf:usage |
 | validFrom | Date |  | urf:validFrom |
 | validFromType | Code |  | urf:validFromType |
 | enactmentFiscalYear | String |  | urf:enactmentFiscalYear |
@@ -3906,7 +3906,7 @@ TIN地形
 | reason | String |  | urf:reason |
 | note | String |  | urf:note |
 | surveyYear | String |  | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) |  | urf:boundary |
+| boundary | urf:Boundary |  | urf:boundary |
 | location | String |  | urf:location |
 
 ### urf:QuasiUrbanPlanningArea
@@ -3916,13 +3916,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 区域の種類 | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | urf:usage |
+| function | Code | 区域の種類 | urf:function |
+| usage | Code | 用途 | urf:usage |
 | validFrom | Date | 効力を生じる日(当初の決定年月日） | urf:validFrom |
 | validFromType | Code | 効力を生じる日の区分 | urf:validFromType |
 | enactmentFiscalYear | String | 決定年度 | urf:enactmentFiscalYear |
@@ -3943,7 +3943,7 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
+| boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
 | population | Integer | 準都市計画区域内の総人口 | urf:population |
 | cityArea | Measure | 準都市計画区域面積（市区町村内） | urf:cityArea |
@@ -3955,13 +3955,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String |  | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) |  | gml:name |
+| name | Code |  | gml:name |
 | creationDate | Date |  | core:creationDate |
 | terminationDate | Date |  | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code |  | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) |  | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) |  | urf:usage |
+| function | Code |  | urf:function |
+| usage | Code |  | urf:usage |
 | validFrom | Date |  | urf:validFrom |
 | validFromType | Code |  | urf:validFromType |
 | enactmentFiscalYear | String |  | urf:enactmentFiscalYear |
@@ -3982,7 +3982,7 @@ TIN地形
 | reason | String |  | urf:reason |
 | note | String |  | urf:note |
 | surveyYear | String |  | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) |  | urf:boundary |
+| boundary | urf:Boundary |  | urf:boundary |
 | location | String |  | urf:location |
 
 ### urf:ResidenceAttractionArea
@@ -3991,13 +3991,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String |  | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) |  | gml:name |
+| name | Code |  | gml:name |
 | creationDate | Date |  | core:creationDate |
 | terminationDate | Date |  | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code |  | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) |  | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) |  | urf:usage |
+| function | Code |  | urf:function |
+| usage | Code |  | urf:usage |
 | validFrom | Date |  | urf:validFrom |
 | validFromType | Code |  | urf:validFromType |
 | enactmentFiscalYear | String |  | urf:enactmentFiscalYear |
@@ -4018,7 +4018,7 @@ TIN地形
 | reason | String |  | urf:reason |
 | note | String |  | urf:note |
 | surveyYear | String |  | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) |  | urf:boundary |
+| boundary | urf:Boundary |  | urf:boundary |
 | location | String |  | urf:location |
 
 ### urf:ResidentialBlockConstructionProject
@@ -4028,13 +4028,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 市街地開発事業の種類 | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | urf:usage |
+| function | Code | 市街地開発事業の種類 | urf:function |
+| usage | Code | 用途 | urf:usage |
 | validFrom | Date | 効力を生じる日(当初の決定年月日） | urf:validFrom |
 | validFromType | Code | 効力を生じる日の区分 | urf:validFromType |
 | enactmentFiscalYear | String | 決定年度 | urf:enactmentFiscalYear |
@@ -4055,7 +4055,7 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
+| boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
 | scheduledExecutor | String | 施行予定者 | urf:scheduledExecutor |
 | publicFacilityAllocation | String | 公共施設の配置及び規模 | urf:publicFacilityAllocation |
@@ -4069,13 +4069,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String |  | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) |  | gml:name |
+| name | Code |  | gml:name |
 | creationDate | Date |  | core:creationDate |
 | terminationDate | Date |  | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code |  | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) |  | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) |  | urf:usage |
+| function | Code |  | urf:function |
+| usage | Code |  | urf:usage |
 | validFrom | Date |  | urf:validFrom |
 | validFromType | Code |  | urf:validFromType |
 | enactmentFiscalYear | String |  | urf:enactmentFiscalYear |
@@ -4096,7 +4096,7 @@ TIN地形
 | reason | String |  | urf:reason |
 | note | String |  | urf:note |
 | surveyYear | String |  | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) |  | urf:boundary |
+| boundary | urf:Boundary |  | urf:boundary |
 | location | String |  | urf:location |
 | developmentPolicy | String |  | urf:developmentPolicy |
 | publicFacilitiesPlans | String |  | urf:publicFacilitiesPlans |
@@ -4108,13 +4108,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 地域地区の種類 | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | urf:usage |
+| function | Code | 地域地区の種類 | urf:function |
+| usage | Code | 用途 | urf:usage |
 | validFrom | Date | 効力を生じる日(当初の決定年月日） | urf:validFrom |
 | validFromType | Code | 効力を生じる日の区分 | urf:validFromType |
 | enactmentFiscalYear | String | 決定年度 | urf:enactmentFiscalYear |
@@ -4135,7 +4135,7 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
+| boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
 | areaInTotal | Measure | 面積（合計） | urf:areaInTotal |
 | useToBeInduced | String | 誘導すべき用途 | urf:useToBeInduced |
@@ -4152,13 +4152,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 地区施設の種類 | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | urf:usage |
+| function | Code | 地区施設の種類 | urf:function |
+| usage | Code | 用途 | urf:usage |
 | validFrom | Date | 効力を生じる日(当初の決定年月日） | urf:validFrom |
 | validFromType | Code | 効力を生じる日の区分 | urf:validFromType |
 | enactmentFiscalYear | String | 決定年度 | urf:enactmentFiscalYear |
@@ -4179,7 +4179,7 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
+| boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
 
 ### urf:RoadsideDistrictImprovementPlan
@@ -4189,13 +4189,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 地区整備計画の種類 | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | urf:usage |
+| function | Code | 地区整備計画の種類 | urf:function |
+| usage | Code | 用途 | urf:usage |
 | validFrom | Date | 効力を生じる日(当初の決定年月日） | urf:validFrom |
 | validFromType | Code | 効力を生じる日の区分 | urf:validFromType |
 | enactmentFiscalYear | String | 決定年度 | urf:enactmentFiscalYear |
@@ -4216,15 +4216,15 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
+| boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
 | districtFacilitiesAllocation | String | 地区施設の配置及び規模 | urf:districtFacilitiesAllocation |
 | buildingRestrictions | String | 建築物等の制限 | urf:buildingRestrictions |
 | urbanGreenSpaceConservation | String | 樹林地、草地等の保全に関する事項 | urf:urbanGreenSpaceConservation |
 | activityRestrictionInFarmland | String | 農地での行為の制限 | urf:activityRestrictionInFarmland |
 | landuseRestrictions | String | 土地の利用に関する事項 | urf:landuseRestrictions |
-| districtFacility | JSON (<code><a href="#urfdistrictfacilityproperty">urf:DistrictFacilityProperty</a>[]</code>) | 地区施設 | urf:districtFacility |
-| district | JSON (<code><a href="#urfdistrict">urf:District</a>[]</code>) | 沿道地区 | urf:district |
+| districtFacility | urf:DistrictFacilityProperty | 地区施設 | urf:districtFacility |
+| district | urf:District | 沿道地区 | urf:district |
 | roadsideDistrictFacilitiesAllocation | String | 沿道地区施設の配置及び規模 | urf:roadsideDistrictFacilitiesAllocation |
 
 ### urf:RoadsideDistrictPlan
@@ -4234,13 +4234,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 地区計画の種類 | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | urf:usage |
+| function | Code | 地区計画の種類 | urf:function |
+| usage | Code | 用途 | urf:usage |
 | validFrom | Date | 効力を生じる日(当初の決定年月日） | urf:validFrom |
 | validFromType | Code | 効力を生じる日の区分 | urf:validFromType |
 | enactmentFiscalYear | String | 決定年度 | urf:enactmentFiscalYear |
@@ -4261,12 +4261,12 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
+| boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
 | objectives | String | 地区計画の目標 | urf:objectives |
 | policy | String | 区域の整備、開発及び保全に関する方針 | urf:policy |
-| districtDevelopmentPlan | JSON (<code><a href="#urfdistrictdevelopmentplanproperty">urf:DistrictDevelopmentPlanProperty</a>[]</code>) | 沿道地区整備計画 | urf:districtDevelopmentPlan |
-| promotionDistrict | JSON (<code><a href="#urfpromotiondistrict">urf:PromotionDistrict</a>[]</code>) | 沿道開発等促進区 | urf:promotionDistrict |
+| districtDevelopmentPlan | urf:DistrictDevelopmentPlanProperty | 沿道地区整備計画 | urf:districtDevelopmentPlan |
+| promotionDistrict | urf:PromotionDistrict | 沿道開発等促進区 | urf:promotionDistrict |
 | facilitiesAllocation | String |  | urf:facilitiesAllocation |
 | landUsePolicy | String | 土地利用に関する基本方針 | urf:landUsePolicy |
 
@@ -4277,13 +4277,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 地区施設の種類 | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | urf:usage |
+| function | Code | 地区施設の種類 | urf:function |
+| usage | Code | 用途 | urf:usage |
 | validFrom | Date | 効力を生じる日(当初の決定年月日） | urf:validFrom |
 | validFromType | Code | 効力を生じる日の区分 | urf:validFromType |
 | enactmentFiscalYear | String | 決定年度 | urf:enactmentFiscalYear |
@@ -4304,7 +4304,7 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
+| boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
 
 ### urf:RuralDistrictImprovementPlan
@@ -4314,13 +4314,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 地区整備計画の種類 | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | urf:usage |
+| function | Code | 地区整備計画の種類 | urf:function |
+| usage | Code | 用途 | urf:usage |
 | validFrom | Date | 効力を生じる日(当初の決定年月日） | urf:validFrom |
 | validFromType | Code | 効力を生じる日の区分 | urf:validFromType |
 | enactmentFiscalYear | String | 決定年度 | urf:enactmentFiscalYear |
@@ -4341,15 +4341,15 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
+| boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
 | districtFacilitiesAllocation | String | 地区施設の配置及び規模 | urf:districtFacilitiesAllocation |
 | buildingRestrictions | String | 建築物等の制限 | urf:buildingRestrictions |
 | urbanGreenSpaceConservation | String | 樹林地、草地等の保全に関する事項 | urf:urbanGreenSpaceConservation |
 | activityRestrictionInFarmland | String | 農地での行為の制限 | urf:activityRestrictionInFarmland |
 | landuseRestrictions | String | 土地の利用に関する事項 | urf:landuseRestrictions |
-| districtFacility | JSON (<code><a href="#urfdistrictfacilityproperty">urf:DistrictFacilityProperty</a>[]</code>) | 地区施設 | urf:districtFacility |
-| district | JSON (<code><a href="#urfdistrict">urf:District</a>[]</code>) | 集落地区 | urf:district |
+| districtFacility | urf:DistrictFacilityProperty | 地区施設 | urf:districtFacility |
+| district | urf:District | 集落地区 | urf:district |
 | ruralDistrictFacilitiesAllocation | String | 集落地区施設の配置及び規模 | urf:ruralDistrictFacilitiesAllocation |
 
 ### urf:RuralDistrictPlan
@@ -4359,13 +4359,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 地区計画の種類 | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | urf:usage |
+| function | Code | 地区計画の種類 | urf:function |
+| usage | Code | 用途 | urf:usage |
 | validFrom | Date | 効力を生じる日(当初の決定年月日） | urf:validFrom |
 | validFromType | Code | 効力を生じる日の区分 | urf:validFromType |
 | enactmentFiscalYear | String | 決定年度 | urf:enactmentFiscalYear |
@@ -4386,12 +4386,12 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
+| boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
 | objectives | String | 地区計画の目標 | urf:objectives |
 | policy | String | 区域の整備、開発及び保全に関する方針 | urf:policy |
-| districtDevelopmentPlan | JSON (<code><a href="#urfdistrictdevelopmentplanproperty">urf:DistrictDevelopmentPlanProperty</a>[]</code>) | 集落地区整備計画 | urf:districtDevelopmentPlan |
-| promotionDistrict | JSON (<code><a href="#urfpromotiondistrict">urf:PromotionDistrict</a>[]</code>) | 促進区 | urf:promotionDistrict |
+| districtDevelopmentPlan | urf:DistrictDevelopmentPlanProperty | 集落地区整備計画 | urf:districtDevelopmentPlan |
+| promotionDistrict | urf:PromotionDistrict | 促進区 | urf:promotionDistrict |
 
 ### urf:SandControlFacility
 
@@ -4400,13 +4400,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 都市施設の種類 | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | urf:usage |
+| function | Code | 都市施設の種類 | urf:function |
+| usage | Code | 用途 | urf:usage |
 | validFrom | Date | 効力を生じる日(当初の決定年月日） | urf:validFrom |
 | validFromType | Code | 効力を生じる日の区分 | urf:validFromType |
 | enactmentFiscalYear | String | 決定年度 | urf:enactmentFiscalYear |
@@ -4427,10 +4427,10 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
+| boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
 | number | String | 番号 | urf:number |
-| threeDimensionalExtent | JSON (<code><a href="#urfthreedimensionalextent">urf:ThreeDimensionalExtent</a>[]</code>) | 立体的な範囲 | urf:threeDimensionalExtent |
+| threeDimensionalExtent | urf:ThreeDimensionalExtent | 立体的な範囲 | urf:threeDimensionalExtent |
 | length | Measure | 延長 | urf:length |
 | width | Measure | 幅員 | urf:width |
 
@@ -4441,13 +4441,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 地域地区の種類 | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 風致地区の種類 | urf:usage |
+| function | Code | 地域地区の種類 | urf:function |
+| usage | Code | 風致地区の種類 | urf:usage |
 | validFrom | Date | 効力を生じる日(当初の決定年月日） | urf:validFrom |
 | validFromType | Code | 効力を生じる日の区分 | urf:validFromType |
 | enactmentFiscalYear | String | 決定年度 | urf:enactmentFiscalYear |
@@ -4468,7 +4468,7 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
+| boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
 | areaInTotal | Measure | 面積（合計） | urf:areaInTotal |
 | buildingCoverageRate | Double | 建蔽率 | urf:buildingCoverageRate |
@@ -4483,13 +4483,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 予定区域の種類 | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | urf:usage |
+| function | Code | 予定区域の種類 | urf:function |
+| usage | Code | 用途 | urf:usage |
 | validFrom | Date | 効力を生じる日(当初の決定年月日） | urf:validFrom |
 | validFromType | Code | 効力を生じる日の区分 | urf:validFromType |
 | enactmentFiscalYear | String | 決定年度 | urf:enactmentFiscalYear |
@@ -4510,7 +4510,7 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
+| boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
 | scheduledExecutor | String | 施行予定者 | urf:scheduledExecutor |
 
@@ -4521,13 +4521,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 予定区域の種類 | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | urf:usage |
+| function | Code | 予定区域の種類 | urf:function |
+| usage | Code | 用途 | urf:usage |
 | validFrom | Date | 効力を生じる日(当初の決定年月日） | urf:validFrom |
 | validFromType | Code | 効力を生じる日の区分 | urf:validFromType |
 | enactmentFiscalYear | String | 決定年度 | urf:enactmentFiscalYear |
@@ -4548,7 +4548,7 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
+| boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
 | scheduledExecutor | String | 施行予定者 | urf:scheduledExecutor |
 
@@ -4559,13 +4559,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 予定区域の種類 | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | urf:usage |
+| function | Code | 予定区域の種類 | urf:function |
+| usage | Code | 用途 | urf:usage |
 | validFrom | Date | 効力を生じる日(当初の決定年月日） | urf:validFrom |
 | validFromType | Code | 効力を生じる日の区分 | urf:validFromType |
 | enactmentFiscalYear | String | 決定年度 | urf:enactmentFiscalYear |
@@ -4586,7 +4586,7 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
+| boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
 | scheduledExecutor | String | 施行予定者 | urf:scheduledExecutor |
 
@@ -4597,13 +4597,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 予定区域の種類 | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | urf:usage |
+| function | Code | 予定区域の種類 | urf:function |
+| usage | Code | 用途 | urf:usage |
 | validFrom | Date | 効力を生じる日(当初の決定年月日） | urf:validFrom |
 | validFromType | Code | 効力を生じる日の区分 | urf:validFromType |
 | enactmentFiscalYear | String | 決定年度 | urf:enactmentFiscalYear |
@@ -4624,7 +4624,7 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
+| boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
 | scheduledExecutor | String | 施行予定者 | urf:scheduledExecutor |
 
@@ -4635,13 +4635,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 予定区域の種類 | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | urf:usage |
+| function | Code | 予定区域の種類 | urf:function |
+| usage | Code | 用途 | urf:usage |
 | validFrom | Date | 効力を生じる日(当初の決定年月日） | urf:validFrom |
 | validFromType | Code | 効力を生じる日の区分 | urf:validFromType |
 | enactmentFiscalYear | String | 決定年度 | urf:enactmentFiscalYear |
@@ -4662,7 +4662,7 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
+| boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
 | scheduledExecutor | String | 施行予定者 | urf:scheduledExecutor |
 
@@ -4673,13 +4673,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 予定区域の種類 | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | urf:usage |
+| function | Code | 予定区域の種類 | urf:function |
+| usage | Code | 用途 | urf:usage |
 | validFrom | Date | 効力を生じる日(当初の決定年月日） | urf:validFrom |
 | validFromType | Code | 効力を生じる日の区分 | urf:validFromType |
 | enactmentFiscalYear | String | 決定年度 | urf:enactmentFiscalYear |
@@ -4700,7 +4700,7 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
+| boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
 | scheduledExecutor | String | 施行予定者 | urf:scheduledExecutor |
 
@@ -4711,13 +4711,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 予定区域の種類 | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | urf:usage |
+| function | Code | 予定区域の種類 | urf:function |
+| usage | Code | 用途 | urf:usage |
 | validFrom | Date | 効力を生じる日(当初の決定年月日） | urf:validFrom |
 | validFromType | Code | 効力を生じる日の区分 | urf:validFromType |
 | enactmentFiscalYear | String | 決定年度 | urf:enactmentFiscalYear |
@@ -4738,7 +4738,7 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
+| boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
 | scheduledExecutor | String | 施行予定者 | urf:scheduledExecutor |
 
@@ -4749,13 +4749,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 区域の種類 | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | urf:usage |
+| function | Code | 区域の種類 | urf:function |
+| usage | Code | 用途 | urf:usage |
 | validFrom | Date | 効力を生じる日 | urf:validFrom |
 | validFromType | Code | 効力を生じる日の区分 | urf:validFromType |
 | enactmentFiscalYear | String | 決定年度 | urf:enactmentFiscalYear |
@@ -4776,7 +4776,7 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
+| boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 所在地 | urf:location |
 | disasterType | Code | 災害種別 | urf:disasterType |
 | areaType | Code | 区域区分 | urf:areaType |
@@ -4791,13 +4791,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 都市施設の種類 | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | urf:usage |
+| function | Code | 都市施設の種類 | urf:function |
+| usage | Code | 用途 | urf:usage |
 | validFrom | Date | 効力を生じる日(当初の決定年月日） | urf:validFrom |
 | validFromType | Code | 効力を生じる日の区分 | urf:validFromType |
 | enactmentFiscalYear | String | 決定年度 | urf:enactmentFiscalYear |
@@ -4818,10 +4818,10 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
+| boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
 | number | String | 番号 | urf:number |
-| threeDimensionalExtent | JSON (<code><a href="#urfthreedimensionalextent">urf:ThreeDimensionalExtent</a>[]</code>) | 立体的な範囲 | urf:threeDimensionalExtent |
+| threeDimensionalExtent | urf:ThreeDimensionalExtent | 立体的な範囲 | urf:threeDimensionalExtent |
 | length | Measure | 延長 | urf:length |
 | width | Measure | 幅員 | urf:width |
 
@@ -4832,13 +4832,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 都市施設の種類 | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | urf:usage |
+| function | Code | 都市施設の種類 | urf:function |
+| usage | Code | 用途 | urf:usage |
 | validFrom | Date | 効力を生じる日(当初の決定年月日） | urf:validFrom |
 | validFromType | Code | 効力を生じる日の区分 | urf:validFromType |
 | enactmentFiscalYear | String | 決定年度 | urf:enactmentFiscalYear |
@@ -4859,10 +4859,10 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
+| boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
 | number | String | 番号 | urf:number |
-| threeDimensionalExtent | JSON (<code><a href="#urfthreedimensionalextent">urf:ThreeDimensionalExtent</a>[]</code>) | 立体的な範囲 | urf:threeDimensionalExtent |
+| threeDimensionalExtent | urf:ThreeDimensionalExtent | 立体的な範囲 | urf:threeDimensionalExtent |
 
 ### urf:SpecialGreenSpaceConservationDistrict
 
@@ -4871,13 +4871,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 地域地区の種類 | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | urf:usage |
+| function | Code | 地域地区の種類 | urf:function |
+| usage | Code | 用途 | urf:usage |
 | validFrom | Date | 効力を生じる日(当初の決定年月日） | urf:validFrom |
 | validFromType | Code | 効力を生じる日の区分 | urf:validFromType |
 | enactmentFiscalYear | String | 決定年度 | urf:enactmentFiscalYear |
@@ -4898,7 +4898,7 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
+| boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
 | areaInTotal | Measure | 面積（合計） | urf:areaInTotal |
 | requirement | Code | 指定の要件 | urf:requirement |
@@ -4910,13 +4910,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 地域地区の種類 | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | urf:usage |
+| function | Code | 地域地区の種類 | urf:function |
+| usage | Code | 用途 | urf:usage |
 | validFrom | Date | 効力を生じる日(当初の決定年月日） | urf:validFrom |
 | validFromType | Code | 効力を生じる日の区分 | urf:validFromType |
 | enactmentFiscalYear | String | 決定年度 | urf:enactmentFiscalYear |
@@ -4937,7 +4937,7 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
+| boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
 | areaInTotal | Measure | 面積（合計） | urf:areaInTotal |
 | useToBeInduced | String | 誘導すべき用途 | urf:useToBeInduced |
@@ -4956,13 +4956,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 地域地区の種類 | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | urf:usage |
+| function | Code | 地域地区の種類 | urf:function |
+| usage | Code | 用途 | urf:usage |
 | validFrom | Date | 効力を生じる日(当初の決定年月日） | urf:validFrom |
 | validFromType | Code | 効力を生じる日の区分 | urf:validFromType |
 | enactmentFiscalYear | String | 決定年度 | urf:enactmentFiscalYear |
@@ -4983,7 +4983,7 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
+| boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
 | areaInTotal | Measure | 面積（合計） | urf:areaInTotal |
 | useToBeInduced | String | 誘導すべき用途 | urf:useToBeInduced |
@@ -5000,13 +5000,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 地域地区の種類 | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 特別用途地区の種類 | urf:usage |
+| function | Code | 地域地区の種類 | urf:function |
+| usage | Code | 特別用途地区の種類 | urf:usage |
 | validFrom | Date | 効力を生じる日(当初の決定年月日） | urf:validFrom |
 | validFromType | Code | 効力を生じる日の区分 | urf:validFromType |
 | enactmentFiscalYear | String | 決定年度 | urf:enactmentFiscalYear |
@@ -5027,7 +5027,7 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
+| boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
 | areaInTotal | Measure | 面積（合計） | urf:areaInTotal |
 | buildingRestrictions | String | 建築物の制限 | urf:buildingRestrictions |
@@ -5040,13 +5040,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 地域地区の種類 | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | urf:usage |
+| function | Code | 地域地区の種類 | urf:function |
+| usage | Code | 用途 | urf:usage |
 | validFrom | Date | 効力を生じる日(当初の決定年月日） | urf:validFrom |
 | validFromType | Code | 効力を生じる日の区分 | urf:validFromType |
 | enactmentFiscalYear | String | 決定年度 | urf:enactmentFiscalYear |
@@ -5067,7 +5067,7 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
+| boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
 | areaInTotal | Measure | 面積（合計） | urf:areaInTotal |
 | buildingRestrictions | String | 建築物の制限 | urf:buildingRestrictions |
@@ -5080,13 +5080,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 地域地区の種類 | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | urf:usage |
+| function | Code | 地域地区の種類 | urf:function |
+| usage | Code | 用途 | urf:usage |
 | validFrom | Date | 効力を生じる日(当初の決定年月日） | urf:validFrom |
 | validFromType | Code | 効力を生じる日の区分 | urf:validFromType |
 | enactmentFiscalYear | String | 決定年度 | urf:enactmentFiscalYear |
@@ -5107,7 +5107,7 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
+| boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
 | areaInTotal | Measure | 面積（合計） | urf:areaInTotal |
 
@@ -5118,13 +5118,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 地域地区の種類 | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | urf:usage |
+| function | Code | 地域地区の種類 | urf:function |
+| usage | Code | 用途 | urf:usage |
 | validFrom | Date | 効力を生じる日(当初の決定年月日） | urf:validFrom |
 | validFromType | Code | 効力を生じる日の区分 | urf:validFromType |
 | enactmentFiscalYear | String | 決定年度 | urf:enactmentFiscalYear |
@@ -5145,7 +5145,7 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
+| boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
 | areaInTotal | Measure | 面積（合計） | urf:areaInTotal |
 | floorAreaRate | Double | 容積率 | urf:floorAreaRate |
@@ -5159,13 +5159,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 地区整備計画の種類 | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | urf:usage |
+| function | Code | 地区整備計画の種類 | urf:function |
+| usage | Code | 用途 | urf:usage |
 | validFrom | Date | 効力を生じる日(当初の決定年月日） | urf:validFrom |
 | validFromType | Code | 効力を生じる日の区分 | urf:validFromType |
 | enactmentFiscalYear | String | 決定年度 | urf:enactmentFiscalYear |
@@ -5186,15 +5186,15 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
+| boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
 | districtFacilitiesAllocation | String | 地区施設の配置及び規模 | urf:districtFacilitiesAllocation |
 | buildingRestrictions | String | 建築物等の制限 | urf:buildingRestrictions |
 | urbanGreenSpaceConservation | String | 樹林地、草地等の保全に関する事項 | urf:urbanGreenSpaceConservation |
 | activityRestrictionInFarmland | String | 農地での行為の制限 | urf:activityRestrictionInFarmland |
 | landuseRestrictions | String | 土地の利用に関する事項 | urf:landuseRestrictions |
-| districtFacility | JSON (<code><a href="#urfdistrictfacilityproperty">urf:DistrictFacilityProperty</a>[]</code>) | 地区施設 | urf:districtFacility |
-| district | JSON (<code><a href="#urfdistrict">urf:District</a>[]</code>) | 防災地区 | urf:district |
+| districtFacility | urf:DistrictFacilityProperty | 地区施設 | urf:districtFacility |
+| district | urf:District | 防災地区 | urf:district |
 
 ### urf:SpecifiedDisasterPreventionBlockImprovementZone
 
@@ -5203,13 +5203,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 地域地区の種類 | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | urf:usage |
+| function | Code | 地域地区の種類 | urf:function |
+| usage | Code | 用途 | urf:usage |
 | validFrom | Date | 効力を生じる日(当初の決定年月日） | urf:validFrom |
 | validFromType | Code | 効力を生じる日の区分 | urf:validFromType |
 | enactmentFiscalYear | String | 決定年度 | urf:enactmentFiscalYear |
@@ -5230,7 +5230,7 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
+| boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
 | areaInTotal | Measure | 面積（合計） | urf:areaInTotal |
 | minimumSiteArea | Measure | 敷地面積の最低限度 | urf:minimumSiteArea |
@@ -5244,13 +5244,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String |  | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) |  | gml:name |
+| name | Code |  | gml:name |
 | creationDate | Date |  | core:creationDate |
 | terminationDate | Date |  | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code |  | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) |  | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) |  | urf:usage |
+| function | Code |  | urf:function |
+| usage | Code |  | urf:usage |
 | validFrom | Date |  | urf:validFrom |
 | validFromType | Code |  | urf:validFromType |
 | enactmentFiscalYear | String |  | urf:enactmentFiscalYear |
@@ -5271,13 +5271,13 @@ TIN地形
 | reason | String |  | urf:reason |
 | note | String |  | urf:note |
 | surveyYear | String |  | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) |  | urf:boundary |
+| boundary | urf:Boundary |  | urf:boundary |
 | location | String |  | urf:location |
 | developmentPolicy | String |  | urf:developmentPolicy |
-| privateProject | JSON (<code><a href="#urfprivateurbanrenewalprojectplan">urf:PrivateUrbanRenewalProjectPlan</a>[]</code>) |  | urf:privateProject |
-| specifiedArea | JSON (<code><a href="#urfspecifiedurgenturbanrenewalarea">urf:SpecifiedUrgentUrbanRenewalArea</a>[]</code>) |  | urf:specifiedArea |
-| specialDistrict | JSON (<code><a href="#urfspecialurbanrenaissancedistrict">urf:SpecialUrbanRenaissanceDistrict</a>[]</code>) |  | urf:specialDistrict |
-| developmentProject | JSON (<code><a href="#urfglobalhubcitydevelopmentproject">urf:GlobalHubCityDevelopmentProject</a>[]</code>) |  | urf:developmentProject |
+| privateProject | urf:PrivateUrbanRenewalProjectPlan |  | urf:privateProject |
+| specifiedArea | urf:SpecifiedUrgentUrbanRenewalArea |  | urf:specifiedArea |
+| specialDistrict | urf:SpecialUrbanRenaissanceDistrict |  | urf:specialDistrict |
+| developmentProject | urf:GlobalHubCityDevelopmentProject |  | urf:developmentProject |
 
 ### urf:SupplyFacility
 
@@ -5286,13 +5286,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 都市施設の種類 | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | urf:usage |
+| function | Code | 都市施設の種類 | urf:function |
+| usage | Code | 用途 | urf:usage |
 | validFrom | Date | 効力を生じる日(当初の決定年月日） | urf:validFrom |
 | validFromType | Code | 効力を生じる日の区分 | urf:validFromType |
 | enactmentFiscalYear | String | 決定年度 | urf:enactmentFiscalYear |
@@ -5313,11 +5313,11 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
+| boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
 | number | String | 番号 | urf:number |
-| threeDimensionalExtent | JSON (<code><a href="#urfthreedimensionalextent">urf:ThreeDimensionalExtent</a>[]</code>) | 立体的な範囲 | urf:threeDimensionalExtent |
-| waterWorksAttribute | JSON (<code><a href="#urfwaterworksattribute">urf:WaterWorksAttribute</a></code>) | 水道属性 | urf:waterWorksAttribute |
+| threeDimensionalExtent | urf:ThreeDimensionalExtent | 立体的な範囲 | urf:threeDimensionalExtent |
+| waterWorksAttribute | urf:WaterWorksAttribute | 水道属性 | urf:waterWorksAttribute |
 
 ### urf:TelecommunicationFacility
 
@@ -5326,13 +5326,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 都市施設の種類 | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | urf:usage |
+| function | Code | 都市施設の種類 | urf:function |
+| usage | Code | 用途 | urf:usage |
 | validFrom | Date | 効力を生じる日(当初の決定年月日） | urf:validFrom |
 | validFromType | Code | 効力を生じる日の区分 | urf:validFromType |
 | enactmentFiscalYear | String | 決定年度 | urf:enactmentFiscalYear |
@@ -5353,10 +5353,10 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
+| boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
 | number | String | 番号 | urf:number |
-| threeDimensionalExtent | JSON (<code><a href="#urfthreedimensionalextent">urf:ThreeDimensionalExtent</a>[]</code>) | 立体的な範囲 | urf:threeDimensionalExtent |
+| threeDimensionalExtent | urf:ThreeDimensionalExtent | 立体的な範囲 | urf:threeDimensionalExtent |
 | length | Measure | 延長 | urf:length |
 | width | Measure | 幅員 | urf:width |
 
@@ -5367,13 +5367,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 機能 | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 対象となる都市施設の種類 | urf:usage |
+| function | Code | 機能 | urf:function |
+| usage | Code | 対象となる都市施設の種類 | urf:usage |
 | validFrom | Date | 効力を生じる日(当初の決定年月日） | urf:validFrom |
 | validFromType | Code | 効力を生じる日の区分 | urf:validFromType |
 | enactmentFiscalYear | String | 決定年度 | urf:enactmentFiscalYear |
@@ -5404,13 +5404,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 都市施設の種類 | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | urf:usage |
+| function | Code | 都市施設の種類 | urf:function |
+| usage | Code | 用途 | urf:usage |
 | validFrom | Date | 効力を生じる日(当初の決定年月日） | urf:validFrom |
 | validFromType | Code | 効力を生じる日の区分 | urf:validFromType |
 | enactmentFiscalYear | String | 決定年度 | urf:enactmentFiscalYear |
@@ -5431,10 +5431,10 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
+| boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
 | number | String | 番号 | urf:number |
-| threeDimensionalExtent | JSON (<code><a href="#urfthreedimensionalextent">urf:ThreeDimensionalExtent</a>[]</code>) | 立体的な範囲 | urf:threeDimensionalExtent |
+| threeDimensionalExtent | urf:ThreeDimensionalExtent | 立体的な範囲 | urf:threeDimensionalExtent |
 | length | Measure | 延長 | urf:length |
 | width | Measure | 幅員 | urf:width |
 
@@ -5445,13 +5445,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 都市施設の種類 | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | urf:usage |
+| function | Code | 都市施設の種類 | urf:function |
+| usage | Code | 用途 | urf:usage |
 | validFrom | Date | 効力を生じる日(当初の決定年月日） | urf:validFrom |
 | validFromType | Code | 効力を生じる日の区分 | urf:validFromType |
 | enactmentFiscalYear | String | 決定年度 | urf:enactmentFiscalYear |
@@ -5472,19 +5472,19 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
+| boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
 | number | String | 番号 | urf:number |
-| threeDimensionalExtent | JSON (<code><a href="#urfthreedimensionalextent">urf:ThreeDimensionalExtent</a>[]</code>) | 立体的な範囲 | urf:threeDimensionalExtent |
+| threeDimensionalExtent | urf:ThreeDimensionalExtent | 立体的な範囲 | urf:threeDimensionalExtent |
 | startLocation | String | 起点 | urf:startLocation |
 | endLocation | String | 終点 | urf:endLocation |
 | viaLocations | String | 経過地 | urf:viaLocations |
 | length | Measure | 延長 | urf:length |
 | width | Measure | 幅員 | urf:width |
-| urbanRoadAttribute | JSON (<code><a href="#urfurbanroadattribute">urf:UrbanRoadAttribute</a></code>) | 道路属性 | urf:urbanRoadAttribute |
-| urbanRapidTransitRailroadAttribute | JSON (<code><a href="#urfurbanrapidtransitrailroadattribute">urf:UrbanRapidTransitRailroadAttribute</a></code>) | 都市高速鉄道属性 | urf:urbanRapidTransitRailroadAttribute |
-| parkingPlaceAttribute | JSON (<code><a href="#urfparkingplaceattribute">urf:ParkingPlaceAttribute</a></code>) | 駐車場属性 | urf:parkingPlaceAttribute |
-| vehicleTerminalAttribute | JSON (<code><a href="#urfvehicleterminalattribute">urf:VehicleTerminalAttribute</a></code>) | 自動車ターミナル属性 | urf:vehicleTerminalAttribute |
+| urbanRoadAttribute | urf:UrbanRoadAttribute | 道路属性 | urf:urbanRoadAttribute |
+| urbanRapidTransitRailroadAttribute | urf:UrbanRapidTransitRailroadAttribute | 都市高速鉄道属性 | urf:urbanRapidTransitRailroadAttribute |
+| parkingPlaceAttribute | urf:ParkingPlaceAttribute | 駐車場属性 | urf:parkingPlaceAttribute |
+| vehicleTerminalAttribute | urf:VehicleTerminalAttribute | 自動車ターミナル属性 | urf:vehicleTerminalAttribute |
 
 ### urf:TreatmentFacility
 
@@ -5493,13 +5493,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 都市施設の種類 | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | urf:usage |
+| function | Code | 都市施設の種類 | urf:function |
+| usage | Code | 用途 | urf:usage |
 | validFrom | Date | 効力を生じる日(当初の決定年月日） | urf:validFrom |
 | validFromType | Code | 効力を生じる日の区分 | urf:validFromType |
 | enactmentFiscalYear | String | 決定年度 | urf:enactmentFiscalYear |
@@ -5520,11 +5520,11 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
+| boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
 | number | String | 番号 | urf:number |
-| threeDimensionalExtent | JSON (<code><a href="#urfthreedimensionalextent">urf:ThreeDimensionalExtent</a>[]</code>) | 立体的な範囲 | urf:threeDimensionalExtent |
-| sewerSystemsAttribute | JSON (<code><a href="#urfsewersystemattribute">urf:SewerSystemAttribute</a></code>) |  | urf:sewerSystemsAttribute |
+| threeDimensionalExtent | urf:ThreeDimensionalExtent | 立体的な範囲 | urf:threeDimensionalExtent |
+| sewerSystemsAttribute | urf:SewerSystemAttribute |  | urf:sewerSystemsAttribute |
 
 ### urf:TreePlantingDistrict
 
@@ -5533,13 +5533,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 地域地区の種類 | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | urf:usage |
+| function | Code | 地域地区の種類 | urf:function |
+| usage | Code | 用途 | urf:usage |
 | validFrom | Date | 効力を生じる日(当初の決定年月日） | urf:validFrom |
 | validFromType | Code | 効力を生じる日の区分 | urf:validFromType |
 | enactmentFiscalYear | String | 決定年度 | urf:enactmentFiscalYear |
@@ -5560,7 +5560,7 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
+| boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
 | areaInTotal | Measure | 面積（合計） | urf:areaInTotal |
 | minimumGreeningRate | Double |  | urf:minimumGreeningRate |
@@ -5571,13 +5571,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String |  | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) |  | gml:name |
+| name | Code |  | gml:name |
 | creationDate | Date |  | core:creationDate |
 | terminationDate | Date |  | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code |  | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) |  | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) |  | urf:usage |
+| function | Code |  | urf:function |
+| usage | Code |  | urf:usage |
 | validFrom | Date |  | urf:validFrom |
 | validFromType | Code |  | urf:validFromType |
 | enactmentFiscalYear | String |  | urf:enactmentFiscalYear |
@@ -5598,7 +5598,7 @@ TIN地形
 | reason | String |  | urf:reason |
 | note | String |  | urf:note |
 | surveyYear | String |  | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) |  | urf:boundary |
+| boundary | urf:Boundary |  | urf:boundary |
 | location | String |  | urf:location |
 
 ### urf:UnclassifiedUseDistrict
@@ -5607,13 +5607,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String |  | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) |  | gml:name |
+| name | Code |  | gml:name |
 | creationDate | Date |  | core:creationDate |
 | terminationDate | Date |  | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code |  | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) |  | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) |  | urf:usage |
+| function | Code |  | urf:function |
+| usage | Code |  | urf:usage |
 | validFrom | Date |  | urf:validFrom |
 | validFromType | Code |  | urf:validFromType |
 | enactmentFiscalYear | String |  | urf:enactmentFiscalYear |
@@ -5634,7 +5634,7 @@ TIN地形
 | reason | String |  | urf:reason |
 | note | String |  | urf:note |
 | surveyYear | String |  | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) |  | urf:boundary |
+| boundary | urf:Boundary |  | urf:boundary |
 | location | String |  | urf:location |
 
 ### urf:UnusedLandUsePromotionArea
@@ -5644,13 +5644,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 区域の種類 | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | urf:usage |
+| function | Code | 区域の種類 | urf:function |
+| usage | Code | 用途 | urf:usage |
 | validFrom | Date | 効力を生じる日(当初の決定年月日） | urf:validFrom |
 | validFromType | Code | 効力を生じる日の区分 | urf:validFromType |
 | enactmentFiscalYear | String | 決定年度 | urf:enactmentFiscalYear |
@@ -5671,7 +5671,7 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
+| boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
 
 ### urf:UrbanDevelopmentProject
@@ -5681,13 +5681,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 市街地開発事業の種類 | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | urf:usage |
+| function | Code | 市街地開発事業の種類 | urf:function |
+| usage | Code | 用途 | urf:usage |
 | validFrom | Date | 効力を生じる日(当初の決定年月日） | urf:validFrom |
 | validFromType | Code | 効力を生じる日の区分 | urf:validFromType |
 | enactmentFiscalYear | String | 決定年度 | urf:enactmentFiscalYear |
@@ -5708,7 +5708,7 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
+| boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
 | scheduledExecutor | String | 施行予定者 | urf:scheduledExecutor |
 
@@ -5719,13 +5719,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 区域の種類 | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | urf:usage |
+| function | Code | 区域の種類 | urf:function |
+| usage | Code | 用途 | urf:usage |
 | validFrom | Date | 効力を生じる日(当初の決定年月日） | urf:validFrom |
 | validFromType | Code | 効力を生じる日の区分 | urf:validFromType |
 | enactmentFiscalYear | String | 決定年度 | urf:enactmentFiscalYear |
@@ -5746,7 +5746,7 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
+| boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
 | expirationDate | Date | 期間満了の日 | urf:expirationDate |
 | emergencyRecoveryPolicy | String | 市街地の整備改善の方針 | urf:emergencyRecoveryPolicy |
@@ -5759,13 +5759,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 都市施設の種類 | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | urf:usage |
+| function | Code | 都市施設の種類 | urf:function |
+| usage | Code | 用途 | urf:usage |
 | validFrom | Date | 効力を生じる日(当初の決定年月日） | urf:validFrom |
 | validFromType | Code | 効力を生じる日の区分 | urf:validFromType |
 | enactmentFiscalYear | String | 決定年度 | urf:enactmentFiscalYear |
@@ -5786,10 +5786,10 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
+| boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
 | number | String | 番号 | urf:number |
-| threeDimensionalExtent | JSON (<code><a href="#urfthreedimensionalextent">urf:ThreeDimensionalExtent</a>[]</code>) | 立体的な範囲 | urf:threeDimensionalExtent |
+| threeDimensionalExtent | urf:ThreeDimensionalExtent | 立体的な範囲 | urf:threeDimensionalExtent |
 
 ### urf:UrbanFacilityStipulatedByCabinetOrder
 
@@ -5798,13 +5798,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 都市施設の種類 | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | urf:usage |
+| function | Code | 都市施設の種類 | urf:function |
+| usage | Code | 用途 | urf:usage |
 | validFrom | Date | 効力を生じる日(当初の決定年月日） | urf:validFrom |
 | validFromType | Code | 効力を生じる日の区分 | urf:validFromType |
 | enactmentFiscalYear | String | 決定年度 | urf:enactmentFiscalYear |
@@ -5825,10 +5825,10 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
+| boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
 | number | String | 番号 | urf:number |
-| threeDimensionalExtent | JSON (<code><a href="#urfthreedimensionalextent">urf:ThreeDimensionalExtent</a>[]</code>) | 立体的な範囲 | urf:threeDimensionalExtent |
+| threeDimensionalExtent | urf:ThreeDimensionalExtent | 立体的な範囲 | urf:threeDimensionalExtent |
 | length | Measure | 延長 | urf:length |
 | width | Measure | 幅員 | urf:width |
 
@@ -5838,13 +5838,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String |  | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) |  | gml:name |
+| name | Code |  | gml:name |
 | creationDate | Date |  | core:creationDate |
 | terminationDate | Date |  | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code |  | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) |  | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) |  | urf:usage |
+| function | Code |  | urf:function |
+| usage | Code |  | urf:usage |
 | validFrom | Date |  | urf:validFrom |
 | validFromType | Code |  | urf:validFromType |
 | enactmentFiscalYear | String |  | urf:enactmentFiscalYear |
@@ -5865,7 +5865,7 @@ TIN地形
 | reason | String |  | urf:reason |
 | note | String |  | urf:note |
 | surveyYear | String |  | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) |  | urf:boundary |
+| boundary | urf:Boundary |  | urf:boundary |
 | location | String |  | urf:location |
 
 ### urf:UrbanPlanningArea
@@ -5875,13 +5875,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 区域の種類 | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | urf:usage |
+| function | Code | 区域の種類 | urf:function |
+| usage | Code | 用途 | urf:usage |
 | validFrom | Date | 効力を生じる日(当初の決定年月日） | urf:validFrom |
 | validFromType | Code | 効力を生じる日の区分 | urf:validFromType |
 | enactmentFiscalYear | String | 決定年度 | urf:enactmentFiscalYear |
@@ -5902,7 +5902,7 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
+| boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
 | areaClassification | Code | 区域区分の決定の有無 | urf:areaClassification |
 | reasonForAreaClassification | String | 区域区分を決定する理由又はしない理由 | urf:reasonForAreaClassification |
@@ -5920,13 +5920,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 市街地開発事業の種類 | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | urf:usage |
+| function | Code | 市街地開発事業の種類 | urf:function |
+| usage | Code | 用途 | urf:usage |
 | validFrom | Date | 効力を生じる日(当初の決定年月日） | urf:validFrom |
 | validFromType | Code | 効力を生じる日の区分 | urf:validFromType |
 | enactmentFiscalYear | String | 決定年度 | urf:enactmentFiscalYear |
@@ -5947,7 +5947,7 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
+| boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
 | scheduledExecutor | String | 施行予定者 | urf:scheduledExecutor |
 | publicFacilityAllocation | String | 公共施設の配置及び規模 | urf:publicFacilityAllocation |
@@ -5964,13 +5964,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 地域地区の種類 | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | urf:usage |
+| function | Code | 地域地区の種類 | urf:function |
+| usage | Code | 用途 | urf:usage |
 | validFrom | Date | 効力を生じる日(当初の決定年月日） | urf:validFrom |
 | validFromType | Code | 効力を生じる日の区分 | urf:validFromType |
 | enactmentFiscalYear | String | 決定年度 | urf:enactmentFiscalYear |
@@ -5991,7 +5991,7 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
+| boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
 | developmentPolicy | String | 開発の方針 | urf:developmentPolicy |
 | publicFacilitiesPlans | String | 公共施設に関する都市計画 | urf:publicFacilitiesPlans |
@@ -6005,13 +6005,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 市街地開発事業の種類 | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | urf:usage |
+| function | Code | 市街地開発事業の種類 | urf:function |
+| usage | Code | 用途 | urf:usage |
 | validFrom | Date | 効力を生じる日(当初の決定年月日） | urf:validFrom |
 | validFromType | Code | 効力を生じる日の区分 | urf:validFromType |
 | enactmentFiscalYear | String | 決定年度 | urf:enactmentFiscalYear |
@@ -6032,7 +6032,7 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
+| boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
 | scheduledExecutor | String | 施行予定者 | urf:scheduledExecutor |
 | storeysAboveGround | NonNegativeInteger | 建築物の地上階数 | urf:storeysAboveGround |
@@ -6048,13 +6048,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String |  | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) |  | gml:name |
+| name | Code |  | gml:name |
 | creationDate | Date |  | core:creationDate |
 | terminationDate | Date |  | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code |  | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) |  | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) |  | urf:usage |
+| function | Code |  | urf:function |
+| usage | Code |  | urf:usage |
 | validFrom | Date |  | urf:validFrom |
 | validFromType | Code |  | urf:validFromType |
 | enactmentFiscalYear | String |  | urf:enactmentFiscalYear |
@@ -6075,12 +6075,12 @@ TIN地形
 | reason | String |  | urf:reason |
 | note | String |  | urf:note |
 | surveyYear | String |  | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) |  | urf:boundary |
+| boundary | urf:Boundary |  | urf:boundary |
 | location | String |  | urf:location |
 | developmentPolicy | String |  | urf:developmentPolicy |
-| privateProject | JSON (<code><a href="#urfprivateurbanrenewalprojectplan">urf:PrivateUrbanRenewalProjectPlan</a>[]</code>) |  | urf:privateProject |
-| specifiedArea | JSON (<code><a href="#urfspecifiedurgenturbanrenewalarea">urf:SpecifiedUrgentUrbanRenewalArea</a>[]</code>) |  | urf:specifiedArea |
-| specialDistrict | JSON (<code><a href="#urfspecialurbanrenaissancedistrict">urf:SpecialUrbanRenaissanceDistrict</a>[]</code>) |  | urf:specialDistrict |
+| privateProject | urf:PrivateUrbanRenewalProjectPlan |  | urf:privateProject |
+| specifiedArea | urf:SpecifiedUrgentUrbanRenewalArea |  | urf:specifiedArea |
+| specialDistrict | urf:SpecialUrbanRenaissanceDistrict |  | urf:specialDistrict |
 
 ### urf:UseDistrict
 
@@ -6089,13 +6089,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 用途地域の種類 | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | urf:usage |
+| function | Code | 用途地域の種類 | urf:function |
+| usage | Code | 用途 | urf:usage |
 | validFrom | Date | 効力を生じる日(当初の決定年月日） | urf:validFrom |
 | validFromType | Code | 効力を生じる日の区分 | urf:validFromType |
 | enactmentFiscalYear | String | 決定年度 | urf:enactmentFiscalYear |
@@ -6116,7 +6116,7 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
+| boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
 | areaInTotal | Measure | 面積（合計） | urf:areaInTotal |
 | floorAreaRate | Double | 容積率 | urf:floorAreaRate |
@@ -6138,13 +6138,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String |  | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) |  | gml:name |
+| name | Code |  | gml:name |
 | creationDate | Date |  | core:creationDate |
 | terminationDate | Date |  | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code |  | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) |  | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) |  | urf:usage |
+| function | Code |  | urf:function |
+| usage | Code |  | urf:usage |
 | validFrom | Date |  | urf:validFrom |
 | validFromType | Code |  | urf:validFromType |
 | enactmentFiscalYear | String |  | urf:enactmentFiscalYear |
@@ -6165,10 +6165,10 @@ TIN地形
 | reason | String |  | urf:reason |
 | note | String |  | urf:note |
 | surveyYear | String |  | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) |  | urf:boundary |
+| boundary | urf:Boundary |  | urf:boundary |
 | location | String |  | urf:location |
 | number | String |  | urf:number |
-| threeDimensionalExtent | JSON (<code><a href="#urfthreedimensionalextent">urf:ThreeDimensionalExtent</a>[]</code>) |  | urf:threeDimensionalExtent |
+| threeDimensionalExtent | urf:ThreeDimensionalExtent |  | urf:threeDimensionalExtent |
 | startLocation | String |  | urf:startLocation |
 | endLocation | String |  | urf:endLocation |
 | structure | Code |  | urf:structure |
@@ -6182,13 +6182,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 都市施設の種類 | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | urf:usage |
+| function | Code | 都市施設の種類 | urf:function |
+| usage | Code | 用途 | urf:usage |
 | validFrom | Date | 効力を生じる日(当初の決定年月日） | urf:validFrom |
 | validFromType | Code | 効力を生じる日の区分 | urf:validFromType |
 | enactmentFiscalYear | String | 決定年度 | urf:enactmentFiscalYear |
@@ -6209,10 +6209,10 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
+| boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
 | number | String | 番号 | urf:number |
-| threeDimensionalExtent | JSON (<code><a href="#urfthreedimensionalextent">urf:ThreeDimensionalExtent</a>[]</code>) | 立体的な範囲 | urf:threeDimensionalExtent |
+| threeDimensionalExtent | urf:ThreeDimensionalExtent | 立体的な範囲 | urf:threeDimensionalExtent |
 | length | Measure | 延長 | urf:length |
 | width | Measure | 幅員 | urf:width |
 
@@ -6223,13 +6223,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 機能 | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 地区防災施設の用途 | urf:usage |
+| function | Code | 機能 | urf:function |
+| usage | Code | 地区防災施設の用途 | urf:usage |
 | validFrom | Date | 効力を生じる日(当初の決定年月日） | urf:validFrom |
 | validFromType | Code | 効力を生じる日の区分 | urf:validFromType |
 | enactmentFiscalYear | String | 決定年度 | urf:enactmentFiscalYear |
@@ -6250,7 +6250,7 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
+| boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
 | facilityType | Code | 地区防災施設の種類 | urf:facilityType |
 
@@ -6261,13 +6261,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 区域の種類 | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | urf:usage |
+| function | Code | 区域の種類 | urf:function |
+| usage | Code | 用途 | urf:usage |
 | validFrom | Date | 効力を生じる日 | urf:validFrom |
 | validFromType | Code | 効力を生じる日の区分 | urf:validFromType |
 | enactmentFiscalYear | String | 決定年度 | urf:enactmentFiscalYear |
@@ -6288,7 +6288,7 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
+| boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String |  | urf:location |
 
 ### urf:ZoneForPreservationOfHistoricalLandscape
@@ -6298,13 +6298,13 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | description | String | 説明 | gml:description |
-| name | JSON (<code><a href="#code">Code</a>[]</code>) | 名称 | gml:name |
+| name | Code | 名称 | gml:name |
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
-| genericAttribute | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | class | Code | 分類 | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 地域地区の種類 | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | urf:usage |
+| function | Code | 地域地区の種類 | urf:function |
+| usage | Code | 用途 | urf:usage |
 | validFrom | Date | 効力を生じる日(当初の決定年月日） | urf:validFrom |
 | validFromType | Code | 効力を生じる日の区分 | urf:validFromType |
 | enactmentFiscalYear | String | 決定年度 | urf:enactmentFiscalYear |
@@ -6325,7 +6325,7 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
-| boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
+| boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
 | areaInTotal | Measure | 面積（合計） | urf:areaInTotal |
 
@@ -6599,7 +6599,7 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | MappingRule | String |  | gml:MappingRule |
-| GridFunction | JSON (<code><a href="#gmlgridfunction">gml:GridFunction</a></code>) |  | gml:GridFunction |
+| GridFunction | gml:GridFunction |  | gml:GridFunction |
 
 ### gml:GridEnvelope
 
@@ -6618,25 +6618,25 @@ TIN地形
 
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
-| limits | JSON (<code><a href="#gmlgridenvelope">gml:GridEnvelope</a></code>) |  | gml:limits |
-| axisName | JSON (<code><a href="#string">String</a>[]</code>) |  | gml:axisName |
+| limits | gml:GridEnvelope |  | gml:limits |
+| axisName | String |  | gml:axisName |
 | origin | Point |  | gml:origin |
-| offsetVector | JSON (<code><a href="#point">Point</a>[]</code>) |  | gml:offsetVector |
+| offsetVector | Point |  | gml:offsetVector |
 
 ### gml:RectifiedGridCoverage
 
 
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
-| rectifiedGridDomain | JSON (<code><a href="#gmlrectifiedgriddomain">gml:RectifiedGridDomain</a></code>) |  | gml:rectifiedGridDomain |
-| coverageFunction | JSON (<code><a href="#gmlcoveragefunction">gml:CoverageFunction</a></code>) |  | gml:coverageFunction |
+| rectifiedGridDomain | gml:RectifiedGridDomain |  | gml:rectifiedGridDomain |
+| coverageFunction | gml:CoverageFunction |  | gml:coverageFunction |
 
 ### gml:RectifiedGridDomain
 
 
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
-| RectifiedGrid | JSON (<code><a href="#gmlrectifiedgrid">gml:RectifiedGrid</a></code>) |  | gml:RectifiedGrid |
+| RectifiedGrid | gml:RectifiedGrid |  | gml:RectifiedGrid |
 
 ### core:Address
 
@@ -6682,12 +6682,12 @@ TIN地形
 
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
-| srcScale | JSON (<code><a href="#code">Code</a>[]</code>) |  | uro:srcScale |
-| geometrySrcDesc | JSON (<code><a href="#code">Code</a>[]</code>) |  | uro:geometrySrcDesc |
-| thematicSrcDesc | JSON (<code><a href="#code">Code</a>[]</code>) |  | uro:thematicSrcDesc |
-| appearanceSrcDesc | JSON (<code><a href="#code">Code</a>[]</code>) |  | uro:appearanceSrcDesc |
+| srcScale | Code |  | uro:srcScale |
+| geometrySrcDesc | Code |  | uro:geometrySrcDesc |
+| thematicSrcDesc | Code |  | uro:thematicSrcDesc |
+| appearanceSrcDesc | Code |  | uro:appearanceSrcDesc |
 | lod1HeightType | Code |  | uro:lod1HeightType |
-| lodType | JSON (<code><a href="#code">Code</a>[]</code>) |  | uro:lodType |
+| lodType | Code |  | uro:lodType |
 
 ### uro:BuildingDetailAttribute
 
@@ -6707,7 +6707,7 @@ TIN地形
 | implementingBody | String | 事業主体 | uro:implementingBody |
 | urbanPlanType | Code | 都市計画区域 | uro:urbanPlanType |
 | areaClassificationType | Code | 区域区分 | uro:areaClassificationType |
-| districtsAndZonesType | JSON (<code><a href="#code">Code</a>[]</code>) | 地域地区 | uro:districtsAndZonesType |
+| districtsAndZonesType | Code | 地域地区 | uro:districtsAndZonesType |
 | landUseType | Code | 土地利用区分 | uro:landUseType |
 | reference | String | 図面対象番号 | uro:reference |
 | majorUsage | Code | 建物利用現況（大分類） | uro:majorUsage |
@@ -6846,10 +6846,10 @@ TIN地形
 
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
-| srcScale | JSON (<code><a href="#code">Code</a>[]</code>) |  | uro:srcScale |
-| geometrySrcDesc | JSON (<code><a href="#code">Code</a>[]</code>) |  | uro:geometrySrcDesc |
-| thematicSrcDesc | JSON (<code><a href="#code">Code</a>[]</code>) |  | uro:thematicSrcDesc |
-| appearanceSrcDesc | JSON (<code><a href="#code">Code</a>[]</code>) |  | uro:appearanceSrcDesc |
+| srcScale | Code |  | uro:srcScale |
+| geometrySrcDesc | Code |  | uro:geometrySrcDesc |
+| thematicSrcDesc | Code |  | uro:thematicSrcDesc |
+| appearanceSrcDesc | Code |  | uro:appearanceSrcDesc |
 | lodType | Code |  | uro:lodType |
 
 ### uro:CityFurnitureDetailAttribute
@@ -6888,14 +6888,14 @@ TIN地形
 
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
-| srcScale | JSON (<code><a href="#code">Code</a>[]</code>) | 地図情報レベル | uro:srcScale |
-| geometrySrcDesc | JSON (<code><a href="#code">Code</a>[]</code>) | 幾何属性作成方法 | uro:geometrySrcDesc |
-| thematicSrcDesc | JSON (<code><a href="#code">Code</a>[]</code>) | 主題属性作成方法 | uro:thematicSrcDesc |
-| appearanceSrcDesc | JSON (<code><a href="#code">Code</a>[]</code>) | テクスチャ作成方法 | uro:appearanceSrcDesc |
+| srcScale | Code | 地図情報レベル | uro:srcScale |
+| geometrySrcDesc | Code | 幾何属性作成方法 | uro:geometrySrcDesc |
+| thematicSrcDesc | Code | 主題属性作成方法 | uro:thematicSrcDesc |
+| appearanceSrcDesc | Code | テクスチャ作成方法 | uro:appearanceSrcDesc |
 | dataAcquisition | String | データ取得方法 | uro:dataAcquisition |
 | photoScale | Integer | 写真縮尺 | uro:photoScale |
 | lod1HeightType | Code | LOD1高さ | uro:lod1HeightType |
-| lodType | JSON (<code><a href="#code">Code</a>[]</code>) | 詳細LOD | uro:lodType |
+| lodType | Code | 詳細LOD | uro:lodType |
 
 ### uro:ConstructionEvent
 
@@ -6939,7 +6939,7 @@ TIN地形
 | startPost | String | 開始キロ程 | uro:startPost |
 | endPost | String | 終了キロ程 | uro:endPost |
 | function | Code | 変化点種類 | uro:function |
-| parameter | JSON (<code><a href="#urocontrolpointtype">uro:ControlPointType</a></code>) | パラメータ | uro:parameter |
+| parameter | uro:ControlPointType | パラメータ | uro:parameter |
 | startPoint | Point | 開始位置 | uro:startPoint |
 | endPoint | Point | 終了位置 | uro:endPoint |
 
@@ -7020,7 +7020,7 @@ DM注記情報
 |-----------|----|--------|---------------|
 | dmCode | Code | 分類コード | uro:dmCode |
 | meshCode | Code | 図郭番号 | uro:meshCode |
-| dmElement | JSON (<code><a href="#urodmelement">uro:DmElement</a></code>) | 要素情報 | uro:dmElement |
+| dmElement | uro:DmElement | 要素情報 | uro:dmElement |
 | geometryType | Code | レコードタイプ | uro:geometryType |
 | shapeType | Code | 図形区分 | uro:shapeType |
 | label | String | 注記文字列 | uro:label |
@@ -7061,7 +7061,7 @@ DM図形情報
 |-----------|----|--------|---------------|
 | dmCode | Code | 分類コード | uro:dmCode |
 | meshCode | Code | 図郭番号 | uro:meshCode |
-| dmElement | JSON (<code><a href="#urodmelement">uro:DmElement</a></code>) | 要素情報 | uro:dmElement |
+| dmElement | uro:DmElement | 要素情報 | uro:dmElement |
 | geometryType | Code | レコードタイプ | uro:geometryType |
 | mapLevel | Code | 地図情報レベル | uro:mapLevel |
 | shapeType | Code | 図形区分 | uro:shapeType |
@@ -7106,14 +7106,14 @@ DM図形情報
 | id | String |  | uro:id |
 | partId | String |  | uro:partId |
 | branchId | String |  | uro:branchId |
-| prefecture | JSON (<code><a href="#code">Code</a>[]</code>) |  | uro:prefecture |
-| city | JSON (<code><a href="#code">Code</a>[]</code>) |  | uro:city |
+| prefecture | Code |  | uro:prefecture |
+| city | Code |  | uro:city |
 | route | String |  | uro:route |
 | startPost | String |  | uro:startPost |
 | endPost | String |  | uro:endPost |
 | startLat | Double |  | uro:startLat |
 | startLong | Double |  | uro:startLong |
-| alternativeName | JSON (<code><a href="#string">String</a>[]</code>) |  | uro:alternativeName |
+| alternativeName | String |  | uro:alternativeName |
 
 ### uro:FacilityTypeAttribute
 
@@ -7122,7 +7122,7 @@ DM図形情報
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | class | Code | 区分 | uro:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | uro:function |
+| function | Code | 用途 | uro:function |
 
 ### uro:FishingPortCapacity
 
@@ -7165,9 +7165,9 @@ DM図形情報
 | portType | Code | 漁港の種類 | uro:portType |
 | address | String | 所在地 | uro:address |
 | designatedArea | String | 区域 | uro:designatedArea |
-| designation | JSON (<code><a href="#string">String</a>[]</code>) | 漁港の指定 | uro:designation |
-| designatedAdministrator | JSON (<code><a href="#string">String</a>[]</code>) | 漁港管理者の指定 | uro:designatedAdministrator |
-| referenceNumber | JSON (<code><a href="#string">String</a>[]</code>) | 漁港の平面図対象番号 | uro:referenceNumber |
+| designation | String | 漁港の指定 | uro:designation |
+| designatedAdministrator | String | 漁港管理者の指定 | uro:designatedAdministrator |
+| referenceNumber | String | 漁港の平面図対象番号 | uro:referenceNumber |
 | grantType | Code | 施設区分名 | uro:grantType |
 | administrator | String | 所有者の名称 | uro:administrator |
 | facilityManager | String | 管理者の名称 | uro:facilityManager |
@@ -7212,7 +7212,7 @@ DM図形情報
 | outerArea | Measure | 面積_防波堤等の外側 | uro:outerArea |
 | totalCost | Integer | 事業費－総額 | uro:totalCost |
 | subsidy | Integer | 事業費－補助金額 | uro:subsidy |
-| note | JSON (<code><a href="#string">String</a>[]</code>) | 備考 | uro:note |
+| note | String | 備考 | uro:note |
 
 ### uro:Height
 
@@ -7260,7 +7260,7 @@ IFC建物
 | compositionType | String | 構成型 | uro:compositionType |
 | elevationOfRefHeight | Measure | 基準海抜高度 | uro:elevationOfRefHeight |
 | elevationOfTerrain | Measure | 地盤最小海抜高度 | uro:elevationOfTerrain |
-| buildingAddress | JSON (<code><a href="#coreaddress">core:Address</a></code>) | 建物住所 | uro:buildingAddress |
+| buildingAddress | core:Address | 建物住所 | uro:buildingAddress |
 
 ### uro:IfcBuildingElement
 
@@ -7317,7 +7317,7 @@ IFC分類諸元
 | location | URI |  | uro:location |
 | itemReference | Code |  | uro:itemReference |
 | name | String |  | uro:name |
-| referenceSource | JSON (<code><a href="#uroifcclassification">uro:IfcClassification</a></code>) |  | uro:referenceSource |
+| referenceSource | uro:IfcClassification |  | uro:referenceSource |
 
 ### uro:IfcCoordinateReferenceSystem
 
@@ -7397,7 +7397,7 @@ IFC設置物
 | contextType | String |  | uro:contextType |
 | coordinateSpaceDimension | Integer |  | uro:coordinateSpaceDimension |
 | precision | Double |  | uro:precision |
-| worldCoordinateSystem | JSON (<code><a href="#uroifcaxis2placement3d">uro:IfcAxis2Placement3D</a></code>) |  | uro:worldCoordinateSystem |
+| worldCoordinateSystem | uro:IfcAxis2Placement3D |  | uro:worldCoordinateSystem |
 | trueNorth | String |  | uro:trueNorth |
 
 ### uro:IfcGroup
@@ -7416,8 +7416,8 @@ IFC座標変換
 
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
-| sourceCRS | JSON (<code><a href="#uroifccoordinatereferencesystemselecttype">uro:IfcCoordinateReferenceSystemSelectType</a></code>) |  | uro:sourceCRS |
-| targetCRS | JSON (<code><a href="#uroifccoordinatereferencesystemproperty">uro:IfcCoordinateReferenceSystemProperty</a></code>) |  | uro:targetCRS |
+| sourceCRS | uro:IfcCoordinateReferenceSystemSelectType |  | uro:sourceCRS |
+| targetCRS | uro:IfcCoordinateReferenceSystemProperty |  | uro:targetCRS |
 | eastings | Measure |  | uro:eastings |
 | northings | Measure |  | uro:northings |
 | orthogonalHeight | Measure |  | uro:orthogonalHeight |
@@ -7451,8 +7451,8 @@ IFCプロジェクト
 | objectType | String | オブジェクトタイプ | uro:objectType |
 | longName | String | 名称定義 | uro:longName |
 | phase | String | プロジェクトの状態 | uro:phase |
-| representationContexts | JSON (<code><a href="#uroifcgeometricrepresentationcontext">uro:IfcGeometricRepresentationContext</a></code>) | 形状表現 | uro:representationContexts |
-| unitsInContext | JSON (<code><a href="#uroifcunit">uro:IfcUnit</a>[]</code>) | 単位系 | uro:unitsInContext |
+| representationContexts | uro:IfcGeometricRepresentationContext | 形状表現 | uro:representationContexts |
+| unitsInContext | uro:IfcUnit | 単位系 | uro:unitsInContext |
 
 ### uro:IfcProjectedCRS
 
@@ -7599,7 +7599,7 @@ IFC屋根
 | refLatitude | Double |  | uro:refLatitude |
 | refElevation | Measure |  | uro:refElevation |
 | landTitleNumber | String |  | uro:landTitleNumber |
-| siteAddress | JSON (<code><a href="#coreaddress">core:Address</a></code>) |  | uro:siteAddress |
+| siteAddress | core:Address |  | uro:siteAddress |
 
 ### uro:IfcSpace
 
@@ -7823,7 +7823,7 @@ IFC窓
 |-----------|----|--------|---------------|
 | source | Code | 原典 | uro:source |
 | name | String | 名称 | uro:name |
-| nominalValue | JSON (<code><a href="#urouserdefinedvalue">uro:UserDefinedValue</a></code>) | 値 | uro:nominalValue |
+| nominalValue | uro:UserDefinedValue | 値 | uro:nominalValue |
 | description | String | 説明 | uro:description |
 | unit | String | 単位 | uro:unit |
 
@@ -7870,9 +7870,9 @@ nan
 
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
-| srcScale | JSON (<code><a href="#code">Code</a>[]</code>) |  | uro:srcScale |
-| geometrySrcDesc | JSON (<code><a href="#code">Code</a>[]</code>) |  | uro:geometrySrcDesc |
-| thematicSrcDesc | JSON (<code><a href="#code">Code</a>[]</code>) |  | uro:thematicSrcDesc |
+| srcScale | Code |  | uro:srcScale |
+| geometrySrcDesc | Code |  | uro:geometrySrcDesc |
+| thematicSrcDesc | Code |  | uro:thematicSrcDesc |
 
 ### uro:LandUseDetailAttribute
 
@@ -7893,7 +7893,7 @@ nan
 | standardFloorAreaRate | Double |  | uro:standardFloorAreaRate |
 | urbanPlanType | Code |  | uro:urbanPlanType |
 | areaClassificationType | Code |  | uro:areaClassificationType |
-| districtsAndZonesType | JSON (<code><a href="#code">Code</a>[]</code>) |  | uro:districtsAndZonesType |
+| districtsAndZonesType | Code |  | uro:districtsAndZonesType |
 | prefecture | Code |  | uro:prefecture |
 | city | Code |  | uro:city |
 | reference | String |  | uro:reference |
@@ -7919,7 +7919,7 @@ nan
 | availability | Boolean | 利用可能性 | uro:availability |
 | urbanPlanType | Code | 都市計画区域 | uro:urbanPlanType |
 | areaClassificationType | Code | 区域区分 | uro:areaClassificationType |
-| districtsAndZonesType | JSON (<code><a href="#code">Code</a>[]</code>) | 地域地区 | uro:districtsAndZonesType |
+| districtsAndZonesType | Code | 地域地区 | uro:districtsAndZonesType |
 | landUseType | Code | 土地利用区分 | uro:landUseType |
 | reference | String | 図面対象番号 | uro:reference |
 | note | String | 備考 | uro:note |
@@ -8143,7 +8143,7 @@ nan
 | mainMaterial | Code | 主要用材 | uro:mainMaterial |
 | totalCost | Integer | 事業費－総額 | uro:totalCost |
 | subsidy | Integer | 事業費－補助金額 | uro:subsidy |
-| note | JSON (<code><a href="#string">String</a>[]</code>) | 備考 | uro:note |
+| note | String | 備考 | uro:note |
 
 ### uro:PortStorageFacility
 
@@ -8262,7 +8262,7 @@ nan
 |-----------|----|--------|---------------|
 | operatorType | Code | 鉄道事業者区分 | uro:operatorType |
 | operator | String | 鉄道事業者名 | uro:operator |
-| alternativeName | JSON (<code><a href="#string">String</a>[]</code>) | 路線別称 | uro:alternativeName |
+| alternativeName | String | 路線別称 | uro:alternativeName |
 | railwayType | Code | 鉄道区分 | uro:railwayType |
 | startStation | String | 起点駅名 | uro:startStation |
 | endStation | String | 終点駅名 | uro:endStation |
@@ -8279,7 +8279,7 @@ nan
 | startPost | String | 開始キロ程 | uro:startPost |
 | endPost | String | 終了キロ程 | uro:endPost |
 | alignmentType | Code | 線形種別 | uro:alignmentType |
-| controlPoint | JSON (<code><a href="#urocontrolpoint">uro:ControlPoint</a>[]</code>) | 線形変化点 | uro:controlPoint |
+| controlPoint | uro:ControlPoint | 線形変化点 | uro:controlPoint |
 
 ### uro:RealEstateIDAttribute
 
@@ -8289,9 +8289,9 @@ nan
 |-----------|----|--------|---------------|
 | realEstateIDOfBuilding | String | 建築物不動産ID | uro:realEstateIDOfBuilding |
 | numberOfBuildingUnitOwnership | Integer | 区分所有数 | uro:numberOfBuildingUnitOwnership |
-| realEstateIDOfBuildingUnitOwnership | JSON (<code><a href="#string">String</a>[]</code>) | 区分不動産ID | uro:realEstateIDOfBuildingUnitOwnership |
+| realEstateIDOfBuildingUnitOwnership | String | 区分不動産ID | uro:realEstateIDOfBuildingUnitOwnership |
 | numberOfRealEstateIDOfLand | Integer | 土地不動産ID数 | uro:numberOfRealEstateIDOfLand |
-| realEstateIDOfLand | JSON (<code><a href="#string">String</a>[]</code>) | 土地不動産ID数 | uro:realEstateIDOfLand |
+| realEstateIDOfLand | String | 土地不動産ID数 | uro:realEstateIDOfLand |
 | matchingScore | Integer | マッチングスコア | uro:matchingScore |
 
 ### uro:RiverFacilityIdAttribute
@@ -8303,14 +8303,14 @@ nan
 | id | String |  | uro:id |
 | partId | String |  | uro:partId |
 | branchId | String |  | uro:branchId |
-| prefecture | JSON (<code><a href="#code">Code</a>[]</code>) |  | uro:prefecture |
-| city | JSON (<code><a href="#code">Code</a>[]</code>) |  | uro:city |
+| prefecture | Code |  | uro:prefecture |
+| city | Code |  | uro:city |
 | route | String |  | uro:route |
 | startPost | String |  | uro:startPost |
 | endPost | String |  | uro:endPost |
 | startLat | Double |  | uro:startLat |
 | startLong | Double |  | uro:startLong |
-| alternativeName | JSON (<code><a href="#string">String</a>[]</code>) |  | uro:alternativeName |
+| alternativeName | String |  | uro:alternativeName |
 | riverCode | Code |  | uro:riverCode |
 | riverName | String |  | uro:riverName |
 | sideType | Code |  | uro:sideType |
@@ -8371,10 +8371,10 @@ nan
 
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
-| srcScale | JSON (<code><a href="#code">Code</a>[]</code>) |  | uro:srcScale |
-| geometrySrcDesc | JSON (<code><a href="#code">Code</a>[]</code>) |  | uro:geometrySrcDesc |
-| thematicSrcDesc | JSON (<code><a href="#code">Code</a>[]</code>) |  | uro:thematicSrcDesc |
-| appearanceSrcDesc | JSON (<code><a href="#code">Code</a>[]</code>) |  | uro:appearanceSrcDesc |
+| srcScale | Code |  | uro:srcScale |
+| geometrySrcDesc | Code |  | uro:geometrySrcDesc |
+| thematicSrcDesc | Code |  | uro:thematicSrcDesc |
+| appearanceSrcDesc | Code |  | uro:appearanceSrcDesc |
 | lodType | Code |  | uro:lodType |
 
 ### uro:ShipServiceFacility
@@ -8420,9 +8420,9 @@ nan
 | prefecture | Code | 都道府県 | uro:prefecture |
 | city | Code | 市区町村 | uro:city |
 | urbanPlanningAreaName | String | 都市計画区域名称 | uro:urbanPlanningAreaName |
-| enforcer | JSON (<code><a href="#string">String</a>[]</code>) | 施行者名 | uro:enforcer |
+| enforcer | String | 施行者名 | uro:enforcer |
 | dateOfDecision | Date | 決定日 | uro:dateOfDecision |
-| dateOfRevision | JSON (<code><a href="#date">Date</a>[]</code>) | 変更日 | uro:dateOfRevision |
+| dateOfRevision | Date | 変更日 | uro:dateOfRevision |
 | areaPlanned | Measure | 計画面積 | uro:areaPlanned |
 | areaInService | Measure | 供用面積 | uro:areaInService |
 | remarks | String | 摘要 | uro:remarks |
@@ -8445,9 +8445,9 @@ nan
 | prefecture | Code | 都道府県 | uro:prefecture |
 | city | Code | 市区町村 | uro:city |
 | urbanPlanningAreaName | String | 都市計画区域名称 | uro:urbanPlanningAreaName |
-| enforcer | JSON (<code><a href="#string">String</a>[]</code>) | 施行者名 | uro:enforcer |
+| enforcer | String | 施行者名 | uro:enforcer |
 | dateOfDecision | Date | 決定日 | uro:dateOfDecision |
-| dateOfRevision | JSON (<code><a href="#date">Date</a>[]</code>) | 変更日 | uro:dateOfRevision |
+| dateOfRevision | Date | 変更日 | uro:dateOfRevision |
 | areaPlanned | Measure | 計画面積 | uro:areaPlanned |
 | areaInService | Measure | 供用面積 | uro:areaInService |
 | remarks | String | 摘要 | uro:remarks |
@@ -8460,9 +8460,9 @@ nan
 | isAuthorized | Boolean | 認可区分 | uro:isAuthorized |
 | purpose | String | 目的 | uro:purpose |
 | note | String | その他特筆事項 | uro:note |
-| station | JSON (<code><a href="#string">String</a>[]</code>) | 駅名 | uro:station |
-| route | JSON (<code><a href="#string">String</a>[]</code>) | 路線名 | uro:route |
-| railwayType | JSON (<code><a href="#code">Code</a>[]</code>) | 鉄道種別 | uro:railwayType |
+| station | String | 駅名 | uro:station |
+| route | String | 路線名 | uro:route |
+| railwayType | Code | 鉄道種別 | uro:railwayType |
 
 ### uro:TerminalAttribute
 
@@ -8473,9 +8473,9 @@ nan
 | prefecture | Code | 都道府県 | uro:prefecture |
 | city | Code | 市区町村 | uro:city |
 | urbanPlanningAreaName | String | 都市計画区域名称 | uro:urbanPlanningAreaName |
-| enforcer | JSON (<code><a href="#string">String</a>[]</code>) | 施行者名 | uro:enforcer |
+| enforcer | String | 施行者名 | uro:enforcer |
 | dateOfDecision | Date | 決定日 | uro:dateOfDecision |
-| dateOfRevision | JSON (<code><a href="#date">Date</a>[]</code>) | 変更日 | uro:dateOfRevision |
+| dateOfRevision | Date | 変更日 | uro:dateOfRevision |
 | areaPlanned | Measure | 計画面積 | uro:areaPlanned |
 | areaInService | Measure | 供用面積 | uro:areaInService |
 | remarks | String | 摘要 | uro:remarks |
@@ -8509,7 +8509,7 @@ nan
 
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
-| alternativeName | JSON (<code><a href="#string">String</a>[]</code>) | 別名 | uro:alternativeName |
+| alternativeName | String | 別名 | uro:alternativeName |
 | adminType | Code | 管理区分 | uro:adminType |
 | relativeLevel | Integer | 階層準 | uro:relativeLevel |
 | widthType | Code | 幅員区分 | uro:widthType |
@@ -8562,10 +8562,10 @@ nan
 
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
-| srcScale | JSON (<code><a href="#code">Code</a>[]</code>) | 地図情報レベル | uro:srcScale |
-| geometrySrcDesc | JSON (<code><a href="#code">Code</a>[]</code>) | 幾何属性作成方法 | uro:geometrySrcDesc |
-| thematicSrcDesc | JSON (<code><a href="#code">Code</a>[]</code>) | 主題属性作成方法 | uro:thematicSrcDesc |
-| appearanceSrcDesc | JSON (<code><a href="#code">Code</a>[]</code>) | テクスチャ作成方法 | uro:appearanceSrcDesc |
+| srcScale | Code | 地図情報レベル | uro:srcScale |
+| geometrySrcDesc | Code | 幾何属性作成方法 | uro:geometrySrcDesc |
+| thematicSrcDesc | Code | 主題属性作成方法 | uro:thematicSrcDesc |
+| appearanceSrcDesc | Code | テクスチャ作成方法 | uro:appearanceSrcDesc |
 | lodType | Code | 詳細LOD | uro:lodType |
 
 ### uro:TsunamiRiskAttribute
@@ -8596,7 +8596,7 @@ nan
 |-----------|----|--------|---------------|
 | tunnelType | Code | 種類 | uro:tunnelType |
 | tunnelSubtype | Code | 詳細種類 | uro:tunnelSubtype |
-| mouthType | JSON (<code><a href="#code">Code</a>[]</code>) | 坑口区分 | uro:mouthType |
+| mouthType | Code | 坑口区分 | uro:mouthType |
 | length | Measure | 長さ | uro:length |
 | width | Measure | 幅員 | uro:width |
 | area | Measure | 面積 | uro:area |
@@ -8622,10 +8622,10 @@ nan
 
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
-| srcScale | JSON (<code><a href="#code">Code</a>[]</code>) |  | uro:srcScale |
-| geometrySrcDesc | JSON (<code><a href="#code">Code</a>[]</code>) |  | uro:geometrySrcDesc |
-| thematicSrcDesc | JSON (<code><a href="#code">Code</a>[]</code>) |  | uro:thematicSrcDesc |
-| appearanceSrcDesc | JSON (<code><a href="#code">Code</a>[]</code>) |  | uro:appearanceSrcDesc |
+| srcScale | Code |  | uro:srcScale |
+| geometrySrcDesc | Code |  | uro:geometrySrcDesc |
+| thematicSrcDesc | Code |  | uro:thematicSrcDesc |
+| appearanceSrcDesc | Code |  | uro:appearanceSrcDesc |
 
 ### uro:VerticalCurveType
 
@@ -8651,8 +8651,8 @@ nan
 | waterSurfaceElevation | Measure | 水面標高 | uro:waterSurfaceElevation |
 | area | Measure | 面積 | uro:area |
 | measurementYearMonth | String | 測量年月 | uro:measurementYearMonth |
-| prefecture | JSON (<code><a href="#code">Code</a>[]</code>) | 都道府県 | uro:prefecture |
-| city | JSON (<code><a href="#code">Code</a>[]</code>) | 市区町村 | uro:city |
+| prefecture | Code | 都道府県 | uro:prefecture |
+| city | Code | 市区町村 | uro:city |
 
 ### uro:WaterBodyHighTideRiskAttribute
 
@@ -8713,7 +8713,7 @@ nan
 | navigation | String | 航法 | uro:navigation |
 | plannedDepth | Measure | 計画水深 | uro:plannedDepth |
 | speedLimit | Measure | 速力制限 | uro:speedLimit |
-| targetShipType | JSON (<code><a href="#string">String</a>[]</code>) | 対象船型 | uro:targetShipType |
+| targetShipType | String | 対象船型 | uro:targetShipType |
 
 ### urf:Boundary
 
@@ -8722,8 +8722,8 @@ nan
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | class | Code | 分類 | urf:class |
-| function | JSON (<code><a href="#code">Code</a>[]</code>) | 境界線の確定根拠 | urf:function |
-| usage | JSON (<code><a href="#code">Code</a>[]</code>) | 区域の種類 | urf:usage |
+| function | Code | 境界線の確定根拠 | urf:function |
+| usage | Code | 区域の種類 | urf:usage |
 | offset | Measure | オフセット値 | urf:offset |
 | offsetDirection | String | オフセット値の方向 | urf:offsetDirection |
 
@@ -8781,7 +8781,7 @@ nan
 |-----------|----|--------|---------------|
 | structureType | Code | 構造種別 | urf:structureType |
 | crossType | Code | 交差種別 | urf:crossType |
-| structuralDetails | JSON (<code><a href="#urfstructuredetails">urf:StructureDetails</a>[]</code>) |  | urf:structuralDetails |
+| structuralDetails | urf:StructureDetails |  | urf:structuralDetails |
 
 ### urf:UrbanRoadAttribute
 
@@ -8798,7 +8798,7 @@ nan
 | structureType | Code | 構造種別 | urf:structureType |
 | crossType | Code | 交差種別 | urf:crossType |
 | trafficPlazas | Code | 交通広場の有無 | urf:trafficPlazas |
-| structuralDetails | JSON (<code><a href="#urfstructuredetails">urf:StructureDetails</a>[]</code>) | 構造の内訳 | urf:structuralDetails |
+| structuralDetails | urf:StructureDetails | 構造の内訳 | urf:structuralDetails |
 
 ### urf:VehicleTerminalAttribute
 
