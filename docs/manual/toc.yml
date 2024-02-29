@@ -11,7 +11,7 @@
   - name: コマンドラインでの利用
     href: useCommandLine.md
   - name: PostGISへのインポートする
-    href: ./import_to_postgis/import_to_postgis.md
+    href: import_to_postgis.md
   - name: 属性マッピングルール
     items:
     - name: 属性マッピングルールとは
