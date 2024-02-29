@@ -84,7 +84,9 @@ impl DataSink for GeoJsonSink {
                         feedback.ensure_not_canceled()?;
 
                         let Value::Object(object) = &parcel.entity.root else {
-                            unimplemented!()
+                            // Since root is always assumed to be an Object, skip if unexpected data comes in
+                            // Skip non-Feature objects
+                            return Ok(());
                         };
                         let typename = object.typename.clone();
 
