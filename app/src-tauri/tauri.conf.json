@@ -7,7 +7,7 @@
 		"distDir": "../build"
 	},
 	"package": {
-		"productName": "nusamai",
+		"productName": "PLATEAU GIS Converter",
 		"version": "0.1.0"
 	},
 	"tauri": {
