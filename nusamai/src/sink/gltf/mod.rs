@@ -154,7 +154,7 @@ impl DataSink for GltfSink {
             max_height: f64::MIN,
         };
 
-        let mut features: Mutex<Features> = Mutex::new(Vec::new());
+        let mut categorized_features: Mutex<CategorizedFeatures> = Mutex::new(Default::default());
 
         // build a Feature
         {
@@ -178,6 +178,7 @@ impl DataSink for GltfSink {
                     return Ok(());
                 }
                 let appearance_store = entity.appearance_store.read().unwrap();
+                let typename = obj.typename.clone();
 
                 let mut materials: IndexSet<Material> = IndexSet::new();
                 let default_mat = appearance::Material::default();
@@ -253,14 +254,16 @@ impl DataSink for GltfSink {
                 });
 
                 feature.materials = materials;
-                features.lock().unwrap().push(feature);
+                categorized_features
+                    .lock()
+                    .unwrap()
+                    .entry(typename.into_owned())
+                    .or_default()
+                    .push(feature);
 
                 Ok(())
             });
         }
-
-        // classify by typename
-        {}
 
         // triangulation and make vertices and primitives
         {}
