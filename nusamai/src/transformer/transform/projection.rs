@@ -95,8 +95,8 @@ impl Transform for ProjectionTransform {
         out.push(entity);
     }
 
-    fn transform_schema(&self, _schema: &mut Schema) {
-        // TODO: Change the CRS information in the schema
+    fn transform_schema(&self, schema: &mut Schema) {
+        schema.epsg = Some(self.output_epsg);
     }
 }
 
