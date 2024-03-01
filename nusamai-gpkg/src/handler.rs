@@ -28,6 +28,10 @@ impl GpkgHandler {
         let create_query = include_str!("sql/init.sql");
         sqlx::query(create_query).execute(&pool).await?;
 
+        // Set spatial reference systems
+        let srs_query = include_str!("sql/srs.sql");
+        sqlx::query(srs_query).execute(&pool).await?;
+
         Ok(Self { pool })
     }
 
