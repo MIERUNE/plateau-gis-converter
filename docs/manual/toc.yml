@@ -5,11 +5,11 @@
   - name: インストール
     href: install.md
   - name: 3D都市モデルのダウンロード
-    href: downloadCityGml.md
+    href: download_city_gml.md
   - name: GUIでの利用
-    href: useGui.md
+    href: use_gui.md
   - name: コマンドラインでの利用
-    href: useCommandLine.md
+    href: use_command_line.md
   - name: PostGISへのインポートする
     href: import_to_postgis.md
   - name: 属性マッピングルール
