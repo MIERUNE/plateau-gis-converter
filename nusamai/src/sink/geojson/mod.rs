@@ -109,15 +109,14 @@ impl DataSink for GeoJsonSink {
                         .push(feature);
                 });
 
-                std::fs::create_dir_all(&self.output_path).unwrap();
-                categorized_features
-                    .iter()
-                    .for_each(|(typename, features)| {
+                std::fs::create_dir_all(&self.output_path)?;
+                let _ = categorized_features.iter().try_for_each(
+                    |(typename, features)| -> Result<()> {
                         let mut file_path = self.output_path.clone();
                         let c_name = typename.split(':').last().unwrap();
                         file_path.push(&format!("{}.geojson", c_name));
 
-                        let mut file = File::create(&file_path).unwrap();
+                        let mut file = File::create(&file_path)?;
                         let mut writer = BufWriter::with_capacity(1024 * 1024, &mut file);
 
                         // Write the FeatureCollection header
@@ -137,7 +136,10 @@ impl DataSink for GeoJsonSink {
 
                         // Write the FeautureCollection footer and EOL
                         writer.write_all(b"]}\n").unwrap();
-                    });
+
+                        Ok(())
+                    },
+                );
 
                 Ok(())
             },
