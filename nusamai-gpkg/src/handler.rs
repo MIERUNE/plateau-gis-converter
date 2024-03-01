@@ -109,7 +109,7 @@ impl GpkgHandler {
         Ok(columns)
     }
 
-    pub async fn gpkg_contents(&self) -> Result<Vec<(String, String, String, i32)>, GpkgError> {
+    pub async fn gpkg_contents(&self) -> Result<Vec<(String, String, String, u16)>, GpkgError> {
         let result =
             sqlx::query("SELECT table_name, data_type, identifier, srs_id FROM gpkg_contents;")
                 .fetch_all(&self.pool)
@@ -122,7 +122,7 @@ impl GpkgHandler {
                     row.get::<String, &str>("table_name"),
                     row.get::<String, &str>("data_type"),
                     row.get::<String, &str>("identifier"),
-                    row.get::<i32, _>("srs_id"),
+                    row.get::<u16, _>("srs_id"),
                 )
             })
             .collect();
@@ -131,7 +131,7 @@ impl GpkgHandler {
 
     pub async fn gpkg_geometry_columns(
         &self,
-    ) -> Result<Vec<(String, String, String, i32, i8, i8)>, GpkgError> {
+    ) -> Result<Vec<(String, String, String, u16, i8, i8)>, GpkgError> {
         let result = sqlx::query("SELECT table_name, column_name, geometry_type_name, srs_id, z, m FROM gpkg_geometry_columns;")
             .fetch_all(&self.pool)
             .await?;
@@ -143,7 +143,7 @@ impl GpkgHandler {
                     row.get::<String, &str>("table_name"),
                     row.get::<String, &str>("column_name"),
                     row.get::<String, &str>("geometry_type_name"),
-                    row.get::<i32, _>("srs_id"),
+                    row.get::<u16, _>("srs_id"),
                     row.get::<i8, _>("z"),
                     row.get::<i8, _>("m"),
                 )
@@ -179,7 +179,11 @@ impl<'c> GpkgTransaction<'c> {
     }
 
     /// Set up a table for the features / attributes
-    pub async fn add_table(&mut self, table_info: &TableInfo) -> Result<(), GpkgError> {
+    pub async fn add_table(
+        &mut self,
+        table_info: &TableInfo,
+        srs_id: u16,
+    ) -> Result<(), GpkgError> {
         let executor = self.tx.acquire().await.unwrap();
 
         // Create the table
@@ -207,7 +211,7 @@ impl<'c> GpkgTransaction<'c> {
             "attributes"
         })
         .bind(table_info.name.as_str())
-        .bind(4326) // Fixed for now - TODO: Change according to the data
+        .bind(srs_id)
         .execute(&mut *executor)
         .await?;
 
@@ -218,7 +222,7 @@ impl<'c> GpkgTransaction<'c> {
             ).bind(table_info.name.as_str())
             .bind("geometry")
             .bind("MULTIPOLYGON") // Fixed for now - TODO: Change according to the data
-            .bind(4326) // Fixed for now - TODO: Change according to the data
+            .bind(srs_id)
             .bind(1)
             .bind(0).execute(&mut *executor).await?;
         }
@@ -349,6 +353,7 @@ mod tests {
             .await
             .unwrap();
 
+        let srs_id = 4326;
         let table_name = "mpoly3d";
         let columns = vec![
             ColumnInfo {
@@ -379,7 +384,7 @@ mod tests {
         };
 
         let mut tx = handler.begin().await.unwrap();
-        tx.add_table(&table_info).await.unwrap();
+        tx.add_table(&table_info, srs_id).await.unwrap();
         tx.commit().await.unwrap();
 
         let table_names = handler.table_names().await;
@@ -413,7 +418,7 @@ mod tests {
                 table_name.into(),
                 "features".into(),
                 table_name.into(),
-                4326
+                srs_id
             )]
         );
 
@@ -424,7 +429,7 @@ mod tests {
                 table_name.into(),
                 "geometry".into(),
                 "MULTIPOLYGON".into(),
-                4326,
+                srs_id,
                 1,
                 0
             )]
@@ -437,6 +442,7 @@ mod tests {
             .await
             .unwrap();
 
+        let srs_id = 4326;
         let table_name = "without_geometry";
         let columns = vec![ColumnInfo {
             name: "attr1".into(),
@@ -450,7 +456,7 @@ mod tests {
         };
 
         let mut tx = handler.begin().await.unwrap();
-        tx.add_table(&table_info).await.unwrap();
+        tx.add_table(&table_info, srs_id).await.unwrap();
         tx.commit().await.unwrap();
 
         let table_names = handler.table_names().await;
@@ -481,7 +487,7 @@ mod tests {
                 table_name.into(),
                 "attributes".into(), // "attributes", not "features"
                 table_name.into(),
-                4326
+                srs_id
             )]
         );
 
@@ -497,6 +503,7 @@ mod tests {
             .unwrap();
         let mut tx: GpkgTransaction<'_> = handler.begin().await.unwrap();
 
+        let srs_id = 4326;
         let table_name = "mpoly3d";
         let columns = vec![
             ColumnInfo {
@@ -525,7 +532,7 @@ mod tests {
             has_geometry: true,
             columns,
         };
-        tx.add_table(&table_info).await.unwrap();
+        tx.add_table(&table_info, srs_id).await.unwrap();
 
         let attributes: IndexMap<String, String> = IndexMap::from([
             ("attr1".into(), "value1".into()),
@@ -558,6 +565,7 @@ mod tests {
             .unwrap();
         let mut tx: GpkgTransaction<'_> = handler.begin().await.unwrap();
 
+        let srs_id = 4326;
         let table_name = "without_geometry";
         let columns = vec![
             ColumnInfo {
@@ -586,7 +594,7 @@ mod tests {
             has_geometry: false, // No geometry
             columns,
         };
-        tx.add_table(&table_info).await.unwrap();
+        tx.add_table(&table_info, srs_id).await.unwrap();
 
         let attributes: IndexMap<String, String> = IndexMap::from([
             ("attr1".into(), "value1".into()),
@@ -615,6 +623,7 @@ mod tests {
             .await
             .unwrap();
 
+        let srs_id = 4326;
         let table_name = "mpoly3d";
         let table_info = TableInfo {
             name: table_name.into(),
@@ -623,7 +632,7 @@ mod tests {
         };
 
         let mut tx = handler.begin().await.unwrap();
-        tx.add_table(&table_info).await.unwrap();
+        tx.add_table(&table_info, srs_id).await.unwrap();
         tx.commit().await.unwrap();
 
         let (min_x, min_y, max_x, max_y) = handler.bbox(table_name).await.unwrap();
