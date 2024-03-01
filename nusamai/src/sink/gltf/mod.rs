@@ -25,7 +25,7 @@ use crate::sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo};
 
 use attributes::FeatureAttributes;
 use gltf_writer::{append_gltf_extensions, write_3dtiles, write_gltf};
-use positions::Vertex;
+// use positions::Vertex;
 
 use self::gltf_writer::build_base_gltf;
 use self::material::Material;
@@ -69,6 +69,26 @@ pub struct GltfSink {
     output_path: PathBuf,
 }
 
+pub struct BoundingVolume {
+    pub min_lng: f64,
+    pub max_lng: f64,
+    pub min_lat: f64,
+    pub max_lat: f64,
+    pub min_height: f64,
+    pub max_height: f64,
+}
+
+#[derive(Debug, Clone)]
+pub struct TriangulatedEntity {
+    pub positions: Vec<Vertex<f64>>,
+    pub attributes: FeatureAttributes,
+}
+
+pub struct Buffers {
+    pub vertices: IndexSet<Vertex<u32>>,
+    pub indices: Vec<u32>,
+}
+
 #[derive(Serialize, Deserialize)]
 pub struct Feature {
     // polygons [x, y, z, u, v]
@@ -89,24 +109,19 @@ pub struct PrimitiveInfo {
 
 pub type Primitives = HashMap<material::Material, PrimitiveInfo>;
 
-pub struct BoundingVolume {
-    pub min_lng: f64,
-    pub max_lng: f64,
-    pub min_lat: f64,
-    pub max_lat: f64,
-    pub min_height: f64,
-    pub max_height: f64,
+#[derive(Debug, Default, PartialEq, Eq, Clone, Copy, Hash)]
+pub struct Vertex<T> {
+    pub position: [T; 3],
+    pub tex_coord: [T; 2],
+    pub feature_id: u32,
 }
 
-#[derive(Debug, Clone)]
-pub struct TriangulatedEntity {
-    pub positions: Vec<Vertex<f64>>,
-    pub attributes: FeatureAttributes,
-}
+pub type Vertices = Vec<Vertex<f64>>;
 
-pub struct Buffers {
-    pub vertices: IndexSet<Vertex<u32>>,
-    pub indices: Vec<u32>,
+pub struct Attributes {
+    pub typename: String,
+    pub feature_id: u32,
+    pub attributes: nusamai_citygml::object::Value,
 }
 
 impl DataSink for GltfSink {
