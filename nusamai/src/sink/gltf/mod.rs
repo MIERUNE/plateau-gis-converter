@@ -1,18 +1,22 @@
 //! gltf sink poc
 mod attributes;
 mod gltf_writer;
+mod material;
 mod positions;
 
 use std::fs::File;
 use std::io::BufWriter;
 use std::path::PathBuf;
 
+use ahash::{HashMap, HashSet};
 use earcut_rs::{utils3d::project3d_to_2d, Earcut};
 use indexmap::{IndexMap, IndexSet};
 
 use nusamai_citygml::{object::ObjectStereotype, schema::Schema, GeometryType, Value};
+use nusamai_geometry::MultiPolygon;
 use nusamai_projection::cartesian::geographic_to_geocentric;
 use rayon::iter::{ParallelBridge, ParallelIterator};
+use serde::{Deserialize, Serialize};
 
 use crate::parameters::*;
 use crate::pipeline::{Feedback, PipelineError, Receiver};
@@ -24,26 +28,7 @@ use gltf_writer::{append_gltf_extensions, write_3dtiles, write_gltf};
 use positions::Vertex;
 
 use self::gltf_writer::build_base_gltf;
-
-pub struct BoundingVolume {
-    pub min_lng: f64,
-    pub max_lng: f64,
-    pub min_lat: f64,
-    pub max_lat: f64,
-    pub min_height: f64,
-    pub max_height: f64,
-}
-
-#[derive(Debug, Clone)]
-pub struct TriangulatedEntity {
-    pub positions: Vec<Vertex<f64>>,
-    pub attributes: FeatureAttributes,
-}
-
-pub struct Buffers {
-    pub vertices: IndexSet<Vertex<u32>>,
-    pub indices: Vec<u32>,
-}
+use self::material::Material;
 
 pub struct GltfSinkProvider {}
 
@@ -84,6 +69,46 @@ pub struct GltfSink {
     output_path: PathBuf,
 }
 
+#[derive(Serialize, Deserialize)]
+pub struct Feature {
+    // polygons [x, y, z, u, v]
+    pub polygons: MultiPolygon<'static, 5>,
+    // material ids for each polygon
+    pub polygon_material_ids: Vec<u32>,
+    // materials
+    pub materials: IndexSet<Material>,
+    // attribute values
+    pub attributes: nusamai_citygml::object::Value,
+}
+
+#[derive(Default)]
+pub struct PrimitiveInfo {
+    pub indices: Vec<u32>,
+    pub feature_ids: HashSet<u32>,
+}
+
+pub type Primitives = HashMap<material::Material, PrimitiveInfo>;
+
+pub struct BoundingVolume {
+    pub min_lng: f64,
+    pub max_lng: f64,
+    pub min_lat: f64,
+    pub max_lat: f64,
+    pub min_height: f64,
+    pub max_height: f64,
+}
+
+#[derive(Debug, Clone)]
+pub struct TriangulatedEntity {
+    pub positions: Vec<Vertex<f64>>,
+    pub attributes: FeatureAttributes,
+}
+
+pub struct Buffers {
+    pub vertices: IndexSet<Vertex<u32>>,
+    pub indices: Vec<u32>,
+}
+
 impl DataSink for GltfSink {
     fn make_transform_requirements(&self) -> transformer::Requirements {
         transformer::Requirements {
@@ -98,6 +123,30 @@ impl DataSink for GltfSink {
         feedback: &Feedback,
         schema: &Schema,
     ) -> Result<(), PipelineError> {
+        // build a serialized Feature with bincode
+        {}
+
+        // classify by typename
+        {}
+
+        // triangulation and make vertices and primitives
+        {}
+
+        // build glTF
+        {
+            // make accessors of positions and texcoords and feature_ids from vertices
+            {}
+
+            // make primitives from indices and feature_ids
+            {}
+
+            // make classes from schema
+            {}
+
+            // make propertyTable and bufferView from attributes
+            {}
+        }
+
         let (sender, receiver) = std::sync::mpsc::sync_channel(1000);
 
         rayon::join(
