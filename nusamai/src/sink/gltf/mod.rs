@@ -125,14 +125,14 @@ impl DataSink for GltfSink {
                         let entity = parcel.entity;
                         let geom_store = entity.geometry_store.read().unwrap();
 
-                        // todo: Exception handling
                         let Value::Object(obj) = &entity.root else {
-                            unimplemented!()
+                            // Since root is always assumed to be an Object, skip if unexpected data comes in
+                            return Ok(());
                         };
-                        // todo: Support for other stereotypes
                         let ObjectStereotype::Feature { id: _, geometries } = &obj.stereotype
                         else {
-                            unimplemented!()
+                            // Since root is always assumed to be an Object, skip if unexpected data comes in
+                            return Ok(());
                         };
 
                         let typename = obj.typename.clone();
