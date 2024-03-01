@@ -3,9 +3,9 @@ use std::sync::Once;
 use nusamai::parameters::Parameters;
 use nusamai::pipeline::{self, Parcel, Receiver};
 use nusamai::pipeline::{Feedback, FeedbackMessage, Result, Sender};
-use nusamai::sink::{DataSink, DataSinkProvider, SinkInfo};
+use nusamai::sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo};
 use nusamai::source::{DataSource, DataSourceProvider, SourceInfo};
-use nusamai::transformer::{self, Transformer};
+use nusamai::transformer::Transformer;
 use nusamai_citygml::schema::Schema;
 use nusamai_plateau::Entity;
 use rand::prelude::*;
@@ -116,8 +116,8 @@ impl DataSink for DummySink {
         Ok(())
     }
 
-    fn make_transform_requirements(&self) -> transformer::Requirements {
-        transformer::Requirements {
+    fn make_requirements(&self) -> DataRequirements {
+        DataRequirements {
             ..Default::default()
         }
     }

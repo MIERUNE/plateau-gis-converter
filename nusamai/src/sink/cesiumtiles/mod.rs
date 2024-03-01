@@ -24,11 +24,11 @@ use serde::{Deserialize, Serialize};
 use nusamai_citygml::schema::Schema;
 use nusamai_mvt::tileid::TileIdMethod;
 
+use crate::get_parameter_value;
 use crate::parameters::*;
 use crate::pipeline::{Feedback, PipelineError, Receiver, Result};
 use crate::sink::cesiumtiles::gltf::write_gltf_glb;
-use crate::sink::{DataSink, DataSinkProvider, SinkInfo};
-use crate::{get_parameter_value, transformer};
+use crate::sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo};
 use slice::{slice_to_tiles, SlicedFeature};
 use sort::BincodeExternalChunk;
 
@@ -83,8 +83,8 @@ struct SerializedSlicedFeature {
 }
 
 impl DataSink for CesiumTilesSink {
-    fn make_transform_requirements(&self) -> transformer::Requirements {
-        transformer::Requirements {
+    fn make_requirements(&self) -> DataRequirements {
+        DataRequirements {
             resolve_appearance: true,
             ..Default::default()
         }
