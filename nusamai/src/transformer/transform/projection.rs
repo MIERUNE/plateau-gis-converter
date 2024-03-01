@@ -5,14 +5,16 @@ use crate::transformer::Transform;
 use nusamai_citygml::schema::Schema;
 use nusamai_plateau::Entity;
 use nusamai_projection::crs::*;
+use nusamai_projection::etmerc::ExtendedTransverseMercatorProjection;
 use nusamai_projection::jprect::JPRZone;
 use nusamai_projection::vshift::Jgd2011ToWgs84;
 
-/// Coordinate transformation. Currently supports only JGD2011 to WGS 84.
+/// Coordinate transformation
 #[derive(Clone)]
 pub struct ProjectionTransform {
     jgd2wgs: Arc<Jgd2011ToWgs84>,
     output_epsg: EpsgCode,
+    jpr_zone_proj: Option<ExtendedTransverseMercatorProjection>,
 }
 
 impl Transform for ProjectionTransform {
@@ -48,8 +50,7 @@ impl Transform for ProjectionTransform {
                 | EPSG_JGD2011_JPRECT_XII_JGD2011_HEIGHT
                 | EPSG_JGD2011_JPRECT_XIII_JGD2011_HEIGHT => {
                     // To Japan Plane Rectangular CS
-                    let zone = JPRZone::from_epsg(EPSG_JGD2011_JPRECT_I_JGD2011_HEIGHT).unwrap();
-                    let proj = zone.projection();
+                    let proj = self.jpr_zone_proj.as_ref().unwrap();
                     let mut geom_store = entity.geometry_store.write().unwrap();
                     geom_store.vertices.iter_mut().for_each(|v| {
                         let (lng, lat) = (v[1], v[0]);
@@ -101,9 +102,13 @@ impl Transform for ProjectionTransform {
 
 impl ProjectionTransform {
     pub fn new(jgd2wgs: Arc<Jgd2011ToWgs84>, output_epsg: EpsgCode) -> Self {
+        // For Japan Plane Rectangular CS
+        let jpr_zone_proj = JPRZone::from_epsg(output_epsg).map(|zone| zone.projection());
+
         Self {
             jgd2wgs,
             output_epsg,
+            jpr_zone_proj,
         }
     }
 }
