@@ -44,5 +44,32 @@ pub trait DataSink: Send {
     ) -> Result<(), PipelineError>;
 
     /// Make a transform requirements
-    fn make_transform_requirements(&self) -> transformer::Requirements;
+    fn make_requirements(&self) -> DataRequirements;
+}
+
+pub struct DataRequirements {
+    /// Whether to shorten field names to 10 characters or less for Shapefiles.
+    pub shorten_names_for_shapefile: bool,
+    pub tree_flattening: transformer::TreeFlatteningSpec,
+    /// Whether to use appearance information (if false, the pipeline can skip the appearance parsing)
+    pub use_apperance: bool,
+    /// Whether to bind appearance information to the geometry
+    pub resolve_appearance: bool,
+    pub mergedown: transformer::MergedownSpec,
+    pub key_value: transformer::KeyValueSpec,
+    pub lod_filter: transformer::LodFilterSpec,
+}
+
+impl Default for DataRequirements {
+    fn default() -> Self {
+        Self {
+            shorten_names_for_shapefile: false,
+            tree_flattening: transformer::TreeFlatteningSpec::None,
+            use_apperance: false,
+            resolve_appearance: false,
+            mergedown: transformer::MergedownSpec::RemoveDescendantFeatures,
+            key_value: transformer::KeyValueSpec::Jsonify,
+            lod_filter: transformer::LodFilterSpec::default(),
+        }
+    }
 }

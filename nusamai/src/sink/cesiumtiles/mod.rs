@@ -23,10 +23,10 @@ use serde::{Deserialize, Serialize};
 use nusamai_citygml::schema::Schema;
 use nusamai_mvt::tileid::TileIdMethod;
 
+use crate::get_parameter_value;
 use crate::parameters::*;
 use crate::pipeline::{Feedback, PipelineError, Receiver, Result};
-use crate::sink::{DataSink, DataSinkProvider, SinkInfo};
-use crate::{get_parameter_value, transformer};
+use crate::sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo};
 use gltf::write_gltf_glb;
 use slice::{slice_to_tiles, SlicedFeature};
 use sort::BincodeExternalChunk;
@@ -81,8 +81,8 @@ struct SerializedSlicedFeature {
 }
 
 impl DataSink for CesiumTilesSink {
-    fn make_transform_requirements(&self) -> transformer::Requirements {
-        transformer::Requirements {
+    fn make_requirements(&self) -> DataRequirements {
+        DataRequirements {
             resolve_appearance: true,
             ..Default::default()
         }
@@ -311,6 +311,8 @@ fn tile_writing_stage(
 
                     if tile_zoom < max_zoom {
                         // Skip the feature if the size is smaller than geometricError
+                        //
+                        // TODO: better method ? (bounding sphere, etc.)
                         let approx_dx = ellipsoid.a() * feature_min_lat.to_radians().cos() * (feature_max_lng - feature_min_lng).to_radians();
                         let approx_dy = ellipsoid.a() * (feature_max_lng - feature_min_lng).to_radians();
                         let approx_dh = feature_max_height - feature_min_height;

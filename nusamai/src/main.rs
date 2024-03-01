@@ -6,11 +6,11 @@ use clap::Parser;
 
 use nusamai::pipeline::Canceller;
 
-use nusamai::sink::{DataSink, DataSinkProvider};
+use nusamai::sink::{DataRequirements, DataSink, DataSinkProvider};
 use nusamai::source::citygml::CityGmlSourceProvider;
 use nusamai::source::{DataSource, DataSourceProvider};
-use nusamai::transformer::MappingRules;
-use nusamai::transformer::{MultiThreadTransformer, Requirements};
+use nusamai::transformer::MultiThreadTransformer;
+use nusamai::transformer::{self, MappingRules};
 use nusamai::transformer::{NusamaiTransformBuilder, TransformBuilder};
 use nusamai::BUILTIN_SINKS;
 use nusamai_citygml::CityGmlElement;
@@ -130,20 +130,21 @@ fn main() {
         sink_provider.create(&sink_params)
     };
 
-    let requirements = if let Some(rules_path) = &args.rules {
-        let mapping_rules = {
-            let file_contents =
-                std::fs::read_to_string(rules_path).expect("Error reading rules file");
-            let mapping_rules: MappingRules =
-                serde_json::from_str(&file_contents).expect("Error parsing rules file");
-            mapping_rules
-        };
-        Requirements {
-            mapping_rules: Some(mapping_rules),
-            ..sink.make_transform_requirements()
+    let requirements = sink.make_requirements();
+
+    let mapping_rules = match &args.rules {
+        Some(rules_path) => {
+            let Ok(file_contents) = std::fs::read_to_string(rules_path) else {
+                log::error!("Error reading rules file: {}", rules_path);
+                return;
+            };
+            let Ok(mapping_rules) = serde_json::from_str::<MappingRules>(&file_contents) else {
+                log::error!("Error parsing rules file");
+                return;
+            };
+            Some(mapping_rules)
         }
-    } else {
-        sink.make_transform_requirements()
+        None => None,
     };
 
     let source = {
@@ -170,17 +171,25 @@ fn main() {
 
         // create source
         let mut source = source_provider.create(&source_params);
-        source.enable_appearance(requirements.resolve_appearance);
+        source.set_appearance_parsing(requirements.resolve_appearance);
         source
     };
 
-    run(&args, source, requirements, sink, &mut canceller);
+    run(
+        &args,
+        source,
+        requirements,
+        mapping_rules,
+        sink,
+        &mut canceller,
+    );
 }
 
 fn run(
     args: &Args,
     source: Box<dyn DataSource>,
-    requirements: Requirements,
+    requirements: DataRequirements,
+    mapping_rules: Option<MappingRules>,
     sink: Box<dyn DataSink>,
     canceller: &mut Arc<Mutex<Canceller>>,
 ) {
@@ -188,7 +197,12 @@ fn run(
 
     // Prepare the transformer for the pipeline and transform the schema
     let (transformer, schema) = {
-        let transform_builder = NusamaiTransformBuilder::new(requirements.into());
+        let request = {
+            let mut request = transformer::Request::from(requirements);
+            request.set_mapping_rules(mapping_rules);
+            request
+        };
+        let transform_builder = NusamaiTransformBuilder::new(request);
         let mut schema = nusamai_citygml::schema::Schema::default();
         TopLevelCityObject::collect_schema(&mut schema);
         transform_builder.transform_schema(&mut schema);

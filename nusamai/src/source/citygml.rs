@@ -47,9 +47,8 @@ pub struct CityGmlSource {
 }
 
 impl DataSource for CityGmlSource {
-    fn enable_appearance(&mut self, value: bool) {
+    fn set_appearance_parsing(&mut self, value: bool) {
         self.appearance_parsing = value;
-        self.appearance_parsing = false;
     }
 
     fn run(&mut self, downstream: Sender, feedback: &Feedback) -> pipeline::Result<()> {
@@ -189,7 +188,7 @@ mod tests {
                 ],
             };
             let mut source = source_provider.create(&Parameters::default());
-            source.enable_appearance(use_appearance);
+            source.set_appearance_parsing(use_appearance);
             let (_, feedback, _) = feedback::watcher();
 
             // Start the CityGML source

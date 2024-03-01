@@ -26,10 +26,11 @@ use nusamai_mvt::geometry::GeometryEncoder;
 use nusamai_mvt::tag::TagsEncoder;
 use nusamai_mvt::{tileid::TileIdMethod, vector_tile};
 
+use crate::get_parameter_value;
 use crate::parameters::*;
 use crate::pipeline::{Feedback, PipelineError, Receiver, Result};
-use crate::sink::{DataSink, DataSinkProvider, SinkInfo};
-use crate::{get_parameter_value, transformer};
+use crate::sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo};
+use crate::transformer;
 use slice::slice_cityobj_geoms;
 use sort::BincodeExternalChunk;
 use tags::convert_properties;
@@ -120,8 +121,8 @@ struct SlicedFeature<'a> {
 }
 
 impl DataSink for MvtSink {
-    fn make_transform_requirements(&self) -> transformer::Requirements {
-        transformer::Requirements {
+    fn make_requirements(&self) -> DataRequirements {
+        DataRequirements {
             key_value: transformer::KeyValueSpec::DotNotation,
             lod_filter: transformer::LodFilterSpec {
                 mode: transformer::LodFilterMode::Lowest,

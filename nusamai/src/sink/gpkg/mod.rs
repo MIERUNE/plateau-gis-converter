@@ -12,10 +12,11 @@ use indexmap::IndexMap;
 
 use rayon::prelude::*;
 
+use crate::get_parameter_value;
 use crate::parameters::*;
 use crate::pipeline::{Feedback, PipelineError, Receiver, Result};
-use crate::sink::{DataSink, DataSinkProvider, SinkInfo};
-use crate::{get_parameter_value, transformer};
+use crate::sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo};
+use crate::transformer;
 use attributes::prepare_object_attributes;
 use bbox::{get_indexed_multipolygon_bbox, Bbox};
 use table::schema_to_table_infos;
@@ -244,8 +245,8 @@ impl GpkgSink {
 }
 
 impl DataSink for GpkgSink {
-    fn make_transform_requirements(&self) -> transformer::Requirements {
-        transformer::Requirements {
+    fn make_requirements(&self) -> DataRequirements {
+        DataRequirements {
             tree_flattening: transformer::TreeFlatteningSpec::Flatten {
                 feature: transformer::FeatureFlatteningOption::AllExceptThematicSurfaces,
                 data: transformer::DataFlatteningOption::TopLevelOnly,

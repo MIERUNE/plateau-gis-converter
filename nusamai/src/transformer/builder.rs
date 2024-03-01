@@ -4,34 +4,7 @@ use nusamai_citygml::schema::Schema;
 use nusamai_projection::vshift::Jgd2011ToWgs84;
 
 use super::{transform::*, Transform};
-use crate::transformer;
-
-pub struct Requirements {
-    /// Whether to shorten field names to 10 characters or less for Shapefiles.
-    pub shorten_names_for_shapefile: bool,
-    /// Mapping rules defined by the user
-    pub mapping_rules: Option<transformer::MappingRules>,
-    pub tree_flattening: TreeFlatteningSpec,
-    /// Bind the appearance to the geometry
-    pub resolve_appearance: bool,
-    pub mergedown: MergedownSpec,
-    pub key_value: KeyValueSpec,
-    pub lod_filter: LodFilterSpec,
-}
-
-impl Default for Requirements {
-    fn default() -> Self {
-        Self {
-            shorten_names_for_shapefile: false,
-            mapping_rules: None,
-            tree_flattening: TreeFlatteningSpec::None,
-            resolve_appearance: false,
-            mergedown: MergedownSpec::RemoveDescendantFeatures,
-            key_value: KeyValueSpec::Jsonify,
-            lod_filter: LodFilterSpec::default(),
-        }
-    }
-}
+use crate::{sink::DataRequirements, transformer};
 
 pub struct Request {
     pub shorten_names_for_shapefile: bool,
@@ -43,11 +16,17 @@ pub struct Request {
     pub lod_filter: LodFilterSpec,
 }
 
-impl From<Requirements> for Request {
-    fn from(req: Requirements) -> Self {
+impl Request {
+    pub fn set_mapping_rules(&mut self, rules: Option<transformer::MappingRules>) {
+        self.mapping_rules = rules;
+    }
+}
+
+impl From<DataRequirements> for Request {
+    fn from(req: DataRequirements) -> Self {
         Self {
             shorten_names_for_shapefile: req.shorten_names_for_shapefile,
-            mapping_rules: req.mapping_rules,
+            mapping_rules: None,
             tree_flattening: req.tree_flattening,
             apply_appearance: req.resolve_appearance,
             mergedown: req.mergedown,

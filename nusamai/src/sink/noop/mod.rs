@@ -6,7 +6,7 @@ use nusamai_citygml::schema::Schema;
 
 use crate::parameters::{FileSystemPathParameter, ParameterEntry, ParameterType, Parameters};
 use crate::pipeline::{Feedback, Receiver, Result};
-use crate::sink::{DataSink, DataSinkProvider, SinkInfo};
+use crate::sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo};
 
 use crate::transformer;
 
@@ -59,8 +59,8 @@ pub struct NoopSink {
 }
 
 impl DataSink for NoopSink {
-    fn make_transform_requirements(&self) -> transformer::Requirements {
-        transformer::Requirements {
+    fn make_requirements(&self) -> DataRequirements {
+        DataRequirements {
             ..Default::default()
         }
     }
