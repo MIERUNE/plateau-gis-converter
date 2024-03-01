@@ -14,10 +14,10 @@ use nusamai_citygml::{object::ObjectStereotype, schema::Schema, GeometryType, Va
 use nusamai_projection::cartesian::geographic_to_geocentric;
 use rayon::iter::{ParallelBridge, ParallelIterator};
 
+use crate::get_parameter_value;
 use crate::parameters::*;
 use crate::pipeline::{Feedback, PipelineError, Receiver};
-use crate::sink::{DataSink, DataSinkProvider, SinkInfo};
-use crate::{get_parameter_value, transformer};
+use crate::sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo};
 
 use attributes::FeatureAttributes;
 use gltf_writer::{append_gltf_extensions, write_3dtiles, write_gltf};
@@ -85,8 +85,8 @@ pub struct GltfSink {
 }
 
 impl DataSink for GltfSink {
-    fn make_transform_requirements(&self) -> transformer::Requirements {
-        transformer::Requirements {
+    fn make_requirements(&self) -> DataRequirements {
+        DataRequirements {
             resolve_appearance: true,
             ..Default::default()
         }

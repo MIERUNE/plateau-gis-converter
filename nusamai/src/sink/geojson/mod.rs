@@ -9,10 +9,11 @@ use nusamai_citygml::schema::Schema;
 use nusamai_citygml::GeometryType;
 use rayon::prelude::*;
 
+use crate::get_parameter_value;
 use crate::parameters::*;
 use crate::pipeline::{Feedback, PipelineError, Receiver, Result};
-use crate::sink::{DataSink, DataSinkProvider, SinkInfo};
-use crate::{get_parameter_value, transformer};
+use crate::sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo};
+use crate::transformer;
 
 use nusamai_citygml::object::{ObjectStereotype, Value};
 use nusamai_geojson::conversion::{
@@ -60,8 +61,8 @@ pub struct GeoJsonSink {
 }
 
 impl DataSink for GeoJsonSink {
-    fn make_transform_requirements(&self) -> transformer::Requirements {
-        transformer::Requirements {
+    fn make_requirements(&self) -> DataRequirements {
+        DataRequirements {
             tree_flattening: transformer::TreeFlatteningSpec::Flatten {
                 feature: transformer::FeatureFlatteningOption::AllExceptThematicSurfaces,
                 data: transformer::DataFlatteningOption::None,
