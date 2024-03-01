@@ -85,7 +85,6 @@ impl DataSink for GeoJsonSink {
 
                         let Value::Object(object) = &parcel.entity.root else {
                             // Since root is always assumed to be an Object, skip if unexpected data comes in
-                            // Skip non-Feature objects
                             return Ok(());
                         };
 
