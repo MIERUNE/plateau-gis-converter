@@ -34,7 +34,7 @@ impl DataSourceProvider for DummySourceProvider {
 pub struct DummySource {}
 
 impl DataSource for DummySource {
-    fn set_appearance_resolution(&mut self, _value: bool) {
+    fn enable_appearance(&mut self, _value: bool) {
         // do nothing
     }
 

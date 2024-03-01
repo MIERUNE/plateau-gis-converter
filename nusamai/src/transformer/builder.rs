@@ -12,6 +12,7 @@ pub struct Requirements {
     /// Mapping rules defined by the user
     pub mapping_rules: Option<transformer::MappingRules>,
     pub tree_flattening: TreeFlatteningSpec,
+    /// Bind the appearance to the geometry
     pub resolve_appearance: bool,
     pub mergedown: MergedownSpec,
     pub key_value: KeyValueSpec,

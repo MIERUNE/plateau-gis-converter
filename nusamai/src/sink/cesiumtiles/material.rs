@@ -115,7 +115,7 @@ fn load_image(path: &Path) -> std::io::Result<Vec<u8>> {
     if let Some(ext) = path.extension() {
         match ext.to_str().unwrap() {
             // use `image crate` for TIFF
-            "tif" | "tiff" => {
+            "tif" | "tiff" | "png" | "jpg" | "jpeg" => {
                 let t = Instant::now();
                 let image = image::open(path)
                     .map_err(|err| std::io::Error::new(std::io::ErrorKind::InvalidData, err))?;
@@ -127,19 +127,6 @@ fn load_image(path: &Path) -> std::io::Result<Vec<u8>> {
                     .write_to(&mut writer, image::ImageOutputFormat::Jpeg(100))
                     .map_err(|err| std::io::Error::new(std::io::ErrorKind::InvalidData, err))?;
                 Ok(writer.into_inner())
-            }
-            // use `zune-image` crate for JPEG and PNG
-            "png" | "jpg" | "jpeg" => {
-                let t = Instant::now();
-                let image = zune_image::image::Image::open(path)
-                    .map_err(|err| std::io::Error::new(std::io::ErrorKind::InvalidData, err))?;
-                log::debug!("Image decoding took {:?}", t.elapsed());
-
-                let content = image
-                    .write_to_vec(zune_image::codecs::ImageFormat::JPEG)
-                    .map_err(|err| std::io::Error::new(std::io::ErrorKind::InvalidData, err))?;
-                log::debug!("Image encoding took {:?}", t.elapsed());
-                Ok(content)
             }
             _ => {
                 let err = format!("Unsupported image format: {:?}", path);
