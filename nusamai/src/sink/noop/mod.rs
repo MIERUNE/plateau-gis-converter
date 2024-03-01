@@ -8,8 +8,6 @@ use crate::parameters::{FileSystemPathParameter, ParameterEntry, ParameterType, 
 use crate::pipeline::{Feedback, Receiver, Result};
 use crate::sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo};
 
-use crate::transformer;
-
 pub struct NoopSinkProvider {}
 
 impl DataSinkProvider for NoopSinkProvider {

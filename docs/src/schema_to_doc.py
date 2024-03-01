@@ -32,7 +32,7 @@ ORDER_MAP = {
     "urf": 14,
 }
 
-with open("../../../../nusamai/data/plateau_spec.json", encoding="utf-8") as f:
+with open("../../nusamai/data/plateau_spec.json", encoding="utf-8") as f:
     spec = json.load(f)
 
 
@@ -142,7 +142,9 @@ def main():
             with open(f"schema_{file_format}.json", encoding="utf-8") as f:
                 schema = json.load(f)
 
-            with open(f"{file_format}.md", "w", encoding="utf-8") as f:
+            with open(
+                f"../manual/mapping_rules/{file_format}.md", "w", encoding="utf-8"
+            ) as f:
                 generate_docs(schema, f)
         except FileNotFoundError:
             print(f"schema_{file_format}.json not found")

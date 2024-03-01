@@ -13,6 +13,7 @@ pub mod serde;
 pub mod shapefile;
 
 use nusamai_citygml::schema::Schema;
+use nusamai_projection::crs;
 
 use crate::parameters::Parameters;
 use crate::pipeline::{Feedback, PipelineError, Receiver};
@@ -48,11 +49,12 @@ pub trait DataSink: Send {
 }
 
 pub struct DataRequirements {
+    pub output_epsg: crs::EpsgCode,
     /// Whether to shorten field names to 10 characters or less for Shapefiles.
     pub shorten_names_for_shapefile: bool,
     pub tree_flattening: transformer::TreeFlatteningSpec,
     /// Whether to use appearance information (if false, the pipeline can skip the appearance parsing)
-    pub use_apperance: bool,
+    pub use_appearance: bool,
     /// Whether to bind appearance information to the geometry
     pub resolve_appearance: bool,
     pub mergedown: transformer::MergedownSpec,
@@ -63,9 +65,10 @@ pub struct DataRequirements {
 impl Default for DataRequirements {
     fn default() -> Self {
         Self {
+            output_epsg: crs::EPSG_WGS84_GEOGRAPHIC_3D,
             shorten_names_for_shapefile: false,
             tree_flattening: transformer::TreeFlatteningSpec::None,
-            use_apperance: false,
+            use_appearance: false,
             resolve_appearance: false,
             mergedown: transformer::MergedownSpec::RemoveDescendantFeatures,
             key_value: transformer::KeyValueSpec::Jsonify,
