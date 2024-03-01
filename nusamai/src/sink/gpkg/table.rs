@@ -167,7 +167,11 @@ mod tests {
                 additional_attributes: false,
             }),
         );
-        let schema = Schema { types };
+        let srs_id = 4326;
+        let schema = Schema {
+            types,
+            epsg: Some(srs_id),
+        };
 
         let table_infos = schema_to_table_infos(&schema);
 
