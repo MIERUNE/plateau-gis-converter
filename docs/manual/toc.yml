@@ -17,11 +17,11 @@
     - name: 属性マッピングルールとは
       href: ./mapping_rules/index.md
     - name: 3D Tiles
-      href: ./mapping_rules/cesiumtiles.md
+      href: ./mapping_rules/3dtiles.md
     - name: Mapbox Vector Tiles
-      href: ./mapping_rules/mapboxvectortiles.md
+      href: ./mapping_rules/mvt.md
     - name: GeoPackage
-      href: ./mapping_rules/geopackage.md
+      href: ./mapping_rules/gpkg.md
     - name: GeoJSON
       href: ./mapping_rules/geojson.md
     - name: Shapefile

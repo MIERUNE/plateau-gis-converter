@@ -1,5 +1,3 @@
-# Shapefile マッピングルール
-
 ## 地物 (Feature stereotype)
 
 ### bldg:Building
