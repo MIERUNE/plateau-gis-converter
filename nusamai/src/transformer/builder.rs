@@ -6,7 +6,10 @@ use nusamai_projection::vshift::Jgd2011ToWgs84;
 use super::{transform::*, Transform};
 use crate::{sink::DataRequirements, transformer};
 
+use nusamai_projection::crs;
+
 pub struct Request {
+    pub output_epsg: crs::EpsgCode,
     pub shorten_names_for_shapefile: bool,
     pub mapping_rules: Option<transformer::MappingRules>,
     pub tree_flattening: TreeFlatteningSpec,
@@ -25,6 +28,7 @@ impl Request {
 impl From<DataRequirements> for Request {
     fn from(req: DataRequirements) -> Self {
         Self {
+            output_epsg: req.output_epsg,
             shorten_names_for_shapefile: req.shorten_names_for_shapefile,
             mapping_rules: None,
             tree_flattening: req.tree_flattening,
@@ -98,7 +102,10 @@ impl TransformBuilder for NusamaiTransformBuilder {
         // TODO: build transformation based on config file
 
         // Transform the coordinate system
-        transforms.push(Box::new(ProjectionTransform::new(self.jgd2wgs.clone())));
+        transforms.push(Box::new(ProjectionTransform::new(
+            self.jgd2wgs.clone(),
+            self.request.output_epsg,
+        )));
 
         // Apply appearance to geometries
         if self.request.apply_appearance {

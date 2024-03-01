@@ -1,7 +1,7 @@
 const filetypeOptions: Record<string, { label: string; extensions: string[] }> = {
 	geojson: {
 		label: 'GeoJSON',
-		extensions: ['json', 'geojson']
+		extensions: []
 	},
 	gpkg: {
 		label: 'GeoPackage',

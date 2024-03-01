@@ -4,6 +4,7 @@ use std::fs::File;
 use std::io::{BufWriter, Write};
 use std::path::PathBuf;
 
+use hashbrown::HashMap;
 use nusamai_citygml::schema::Schema;
 use nusamai_citygml::GeometryType;
 use rayon::prelude::*;
@@ -12,6 +13,7 @@ use crate::get_parameter_value;
 use crate::parameters::*;
 use crate::pipeline::{Feedback, PipelineError, Receiver, Result};
 use crate::sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo};
+use crate::transformer;
 
 use nusamai_citygml::object::{ObjectStereotype, Value};
 use nusamai_geojson::conversion::{
@@ -61,6 +63,11 @@ pub struct GeoJsonSink {
 impl DataSink for GeoJsonSink {
     fn make_requirements(&self) -> DataRequirements {
         DataRequirements {
+            tree_flattening: transformer::TreeFlatteningSpec::Flatten {
+                feature: transformer::FeatureFlatteningOption::AllExceptThematicSurfaces,
+                data: transformer::DataFlatteningOption::None,
+                object: transformer::ObjectFlatteningOption::None,
+            },
             ..Default::default()
         }
     }
@@ -77,10 +84,14 @@ impl DataSink for GeoJsonSink {
                     .try_for_each_with(sender, |sender, parcel| {
                         feedback.ensure_not_canceled()?;
 
+                        let Value::Object(object) = &parcel.entity.root else {
+                            // Since root is always assumed to be an Object, skip if unexpected data comes in
+                            return Ok(());
+                        };
+
                         let features = entity_to_geojson_features(&parcel.entity);
                         for feature in features {
-                            let bytes = serde_json::to_vec(&feature).unwrap();
-                            if sender.send(bytes).is_err() {
+                            if sender.send((object.typename.clone(), feature)).is_err() {
                                 return Err(PipelineError::Canceled);
                             };
                         }
@@ -88,26 +99,47 @@ impl DataSink for GeoJsonSink {
                     })
             },
             || {
-                // Write GeoJSON to a file
-                let mut file = File::create(&self.output_path)?;
-                let mut writer = BufWriter::with_capacity(1024 * 1024, &mut file);
+                let mut categorized_features: HashMap<String, Vec<geojson::Feature>> =
+                    HashMap::new();
 
-                // Write the FeatureCollection header
-                writer
-                    .write_all(b"{\"type\":\"FeatureCollection\",\"features\":[")
-                    .unwrap();
+                receiver.into_iter().for_each(|(typename, feature)| {
+                    categorized_features
+                        .entry(typename.to_string())
+                        .or_default()
+                        .push(feature);
+                });
 
-                // Write each Feature
-                let mut iter = receiver.into_iter().peekable();
-                while let Some(bytes) = iter.next() {
-                    writer.write_all(&bytes).unwrap();
-                    if iter.peek().is_some() {
-                        writer.write_all(b",").unwrap();
-                    };
-                }
+                std::fs::create_dir_all(&self.output_path)?;
+                let _ = categorized_features.iter().try_for_each(
+                    |(typename, features)| -> Result<()> {
+                        let mut file_path = self.output_path.clone();
+                        let c_name = typename.split(':').last().unwrap();
+                        file_path.push(&format!("{}.geojson", c_name));
 
-                // Write the FeautureCollection footer and EOL
-                writer.write_all(b"]}\n").unwrap();
+                        let mut file = File::create(&file_path)?;
+                        let mut writer = BufWriter::with_capacity(1024 * 1024, &mut file);
+
+                        // Write the FeatureCollection header
+                        writer
+                            .write_all(b"{\"type\":\"FeatureCollection\",\"features\":[")
+                            .unwrap();
+
+                        // Write each Feature
+                        let mut iter = features.iter().peekable();
+                        while let Some(feature) = iter.next() {
+                            let bytes = serde_json::to_vec(&feature).unwrap();
+                            writer.write_all(&bytes).unwrap();
+                            if iter.peek().is_some() {
+                                writer.write_all(b",").unwrap();
+                            };
+                        }
+
+                        // Write the FeautureCollection footer and EOL
+                        writer.write_all(b"]}\n").unwrap();
+
+                        Ok(())
+                    },
+                );
 
                 Ok(())
             },
