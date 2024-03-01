@@ -48,7 +48,7 @@ impl Transform for ProjectionTransform {
                 | EPSG_JGD2011_JPRECT_XII_JGD2011_HEIGHT
                 | EPSG_JGD2011_JPRECT_XIII_JGD2011_HEIGHT => {
                     // To Japan Plane Rectangular CS
-                    let zone = JPRZone::from_epsg(EPSG_JGD2011_JPRECT_I_JGD2011_HEIGHT).unwrap();
+                    let zone = JPRZone::from_epsg(self.output_epsg).unwrap();
                     let proj = zone.projection();
                     let mut geom_store = entity.geometry_store.write().unwrap();
                     geom_store.vertices.iter_mut().for_each(|v| {
