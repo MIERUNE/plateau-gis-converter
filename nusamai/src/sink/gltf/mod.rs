@@ -276,6 +276,17 @@ impl DataSink for GltfSink {
 
         // triangulation and make vertices and primitives
         {
+            let bbox = bounding_volume.lock().unwrap();
+            let translation = {
+                let (tx, ty, tz) = geographic_to_geocentric(
+                    &ellipsoid,
+                    (bbox.min_lng + bbox.max_lng) / 2.0,
+                    (bbox.min_lat + bbox.max_lat) / 2.0,
+                    (bbox.min_height + bbox.max_height) / 2.0,
+                );
+                [tx, tz, -ty]
+            };
+
             for (typename, mut features) in categorized_features.lock().unwrap().clone().into_iter()
             {
                 // todo: bboxを算出したり、三角分割したり
@@ -293,8 +304,20 @@ impl DataSink for GltfSink {
                         .polygons
                         .transform_inplace(|&[lng, lat, height, u, v]| {
                             let (x, y, z) = geographic_to_geocentric(&ellipsoid, lng, lat, height);
-                            [x, y, z, u, v]
+                            [
+                                x - translation[0],
+                                z - translation[1],
+                                -y - translation[2],
+                                u,
+                                1.0 - v,
+                            ]
                         });
+
+                    for (poly, orig_mat_id) in feature
+                        .polygons
+                        .iter()
+                        .zip_eq(feature.polygon_material_ids.iter())
+                    {}
                 }
             }
         }
