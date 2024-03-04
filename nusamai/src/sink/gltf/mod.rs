@@ -140,6 +140,7 @@ pub struct Attributes {
 impl DataSink for GltfSink {
     fn make_requirements(&self) -> DataRequirements {
         DataRequirements {
+            use_appearance: true,
             resolve_appearance: true,
             ..Default::default()
         }
@@ -147,8 +148,9 @@ impl DataSink for GltfSink {
 
     fn run(&mut self, upstream: Receiver, feedback: &Feedback, schema: &Schema) -> Result<()> {
         let ellipsoid = nusamai_projection::ellipsoid::wgs84();
+
         // This is the code to verify the operation with Cesium
-        let mut bounding_volume = Mutex::new(BoundingVolume {
+        let bounding_volume = Mutex::new(BoundingVolume {
             min_lng: f64::MAX,
             max_lng: f64::MIN,
             min_lat: f64::MAX,
@@ -157,12 +159,11 @@ impl DataSink for GltfSink {
             max_height: f64::MIN,
         });
 
-        let mut categorized_features: Mutex<CategorizedFeatures> = Mutex::new(Default::default());
+        let categorized_features: Mutex<CategorizedFeatures> = Mutex::new(Default::default());
 
         // Construct a Feature classified by typename from Entity
         // Features have polygons, attributes and materials
         // The coordinates of polygon store the actual coordinate values (WGS84) and UV coordinates, not the index.
-
         let _ = upstream.into_iter().par_bridge().try_for_each(|parcel| {
             if feedback.is_canceled() {
                 return Err(PipelineError::Canceled);
@@ -186,7 +187,7 @@ impl DataSink for GltfSink {
             let typename = obj.typename.clone();
 
             let mut materials: IndexSet<Material> = IndexSet::new();
-            let default_mat = appearance::Material::default();
+            let default_material = appearance::Material::default();
 
             let mut feature = Feature {
                 polygons: MultiPolygon::new(),
@@ -198,7 +199,7 @@ impl DataSink for GltfSink {
             geometries.iter().for_each(|entry| {
                 match entry.ty {
                     GeometryType::Solid | GeometryType::Surface | GeometryType::Triangle => {
-                        // for each polygon
+                        // extract the polygon, material, and texture
                         for (((idx_poly, poly_uv), poly_mat), poly_tex) in
                             geom_store
                                 .multipolygon
@@ -217,10 +218,11 @@ impl DataSink for GltfSink {
                                         .iter(),
                                 )
                         {
+                            // convert to idx_poly to polygon
                             let poly = idx_poly.transform(|c| geom_store.vertices[c[0] as usize]);
                             let orig_mat = poly_mat
                                 .and_then(|idx| appearance_store.materials.get(idx as usize))
-                                .unwrap_or(&default_mat)
+                                .unwrap_or(&default_material)
                                 .clone();
                             let orig_tex = poly_tex
                                 .and_then(|idx| appearance_store.textures.get(idx as usize));
@@ -277,7 +279,6 @@ impl DataSink for GltfSink {
         });
 
         // triangulation and make vertices and primitives
-
         let bbox = bounding_volume.lock().unwrap();
         let translation = {
             let (tx, ty, tz) = geographic_to_geocentric(
@@ -377,14 +378,6 @@ impl DataSink for GltfSink {
                 primitives,
                 feature_id as usize,
             )?;
-
-            // make accessors of positions and tex_coords and feature_ids from vertices
-
-            // make primitives from indices and feature_ids
-
-            // make classes from schema
-
-            // make propertyTable and bufferView from attributes
         }
 
         // let (sender, receiver) = std::sync::mpsc::sync_channel(1000);
