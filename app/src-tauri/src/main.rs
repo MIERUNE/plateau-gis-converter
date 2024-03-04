@@ -96,14 +96,14 @@ fn run(input_paths: Vec<String>, output_path: String, filetype: String, rules_pa
         use nusamai_citygml::CityGmlElement;
 
         let mapping_rules = if rules_path.is_empty() {
+            None
+        } else {
             // FIXME: error handling
             let file_contents =
                 std::fs::read_to_string(rules_path).expect("Error reading rules file");
             let mapping_rules: MappingRules =
                 serde_json::from_str(&file_contents).expect("Error parsing rules file");
             Some(mapping_rules)
-        } else {
-            None
         };
 
         let request = {
