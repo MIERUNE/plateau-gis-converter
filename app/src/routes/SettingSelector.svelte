@@ -7,8 +7,8 @@
 	export let epsg: number = 4979;
 	export let rulesPath: string;
 
-	$: crsOptions = filetypeOptions[filetype]?.crs || [];
-	$: disableCrsOptions = crsOptions.length < 2;
+	$: epsgOptions = filetypeOptions[filetype]?.epsg || [];
+	$: disableCrsOptions = epsgOptions.length < 2;
 
 	async function openRulesPathDialog() {
 		const res = await dialog.open({
@@ -46,17 +46,17 @@
 		</div>
 
 		<div class=" flex flex-col gap-1.5">
-			<label for="crs-select" class="font-bold">座標参照系</label>
+			<label for="epsg-select" class="font-bold">座標参照系</label>
 			<select
 				bind:value={epsg}
-				name="crs"
-				id="crs-select"
+				name="epsg"
+				id="epsg-select"
 				class="w-64"
 				disabled={disableCrsOptions}
 				class:opacity-50={disableCrsOptions}
 			>
-				{#each crsOptions as crs}
-					<option value={crs.value}>{crs.label}</option>
+				{#each epsgOptions as option}
+					<option value={option.value}>{option.label}</option>
 				{/each}
 			</select>
 		</div>
