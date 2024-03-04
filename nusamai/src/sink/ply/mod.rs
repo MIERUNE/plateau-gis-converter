@@ -12,10 +12,10 @@ use nusamai_citygml::{schema::Schema, GeometryType};
 use nusamai_projection::cartesian::geographic_to_geocentric;
 use rayon::prelude::*;
 
+use crate::get_parameter_value;
 use crate::parameters::*;
 use crate::pipeline::{Feedback, PipelineError, Receiver};
-use crate::sink::{DataSink, DataSinkProvider, SinkInfo};
-use crate::{get_parameter_value, transformer};
+use crate::sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo};
 
 use nusamai_citygml::object::{ObjectStereotype, Value};
 
@@ -72,8 +72,8 @@ pub struct StanfordPlySink {
 }
 
 impl DataSink for StanfordPlySink {
-    fn make_transform_requirements(&self) -> transformer::Requirements {
-        transformer::Requirements {
+    fn make_requirements(&self) -> DataRequirements {
+        DataRequirements {
             ..Default::default()
         }
     }

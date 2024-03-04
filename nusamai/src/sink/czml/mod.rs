@@ -15,10 +15,10 @@ use nusamai_czml::{
 };
 use nusamai_plateau::Entity;
 
+use crate::get_parameter_value;
 use crate::parameters::*;
 use crate::pipeline::{Feedback, PipelineError, Receiver, Result};
-use crate::sink::{DataSink, DataSinkProvider, SinkInfo};
-use crate::{get_parameter_value, transformer};
+use crate::sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo};
 
 pub struct CzmlSinkProvider {}
 
@@ -60,8 +60,8 @@ pub struct CzmlSink {
 }
 
 impl DataSink for CzmlSink {
-    fn make_transform_requirements(&self) -> transformer::Requirements {
-        transformer::Requirements {
+    fn make_requirements(&self) -> DataRequirements {
+        DataRequirements {
             ..Default::default()
         }
     }

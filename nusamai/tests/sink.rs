@@ -55,7 +55,7 @@ pub(crate) fn simple_run_sink<S: DataSinkProvider>(sink_provider: S, output: Opt
     };
 
     let (transformer, schema) = {
-        let transform_req = sink.make_transform_requirements();
+        let transform_req = sink.make_requirements();
         let transform_builder = NusamaiTransformBuilder::new(transform_req.into());
         let mut schema = nusamai_citygml::schema::Schema::default();
         TopLevelCityObject::collect_schema(&mut schema);
@@ -94,7 +94,10 @@ fn run_noop_sink() {
 
 #[test]
 fn run_geojson_sink() {
-    simple_run_sink(sink::geojson::GeoJsonSinkProvider {}, "/dev/null".into());
+    simple_run_sink(
+        sink::geojson::GeoJsonSinkProvider {},
+        "/tmp/nusamai/geojson".into(),
+    );
 }
 
 #[test]

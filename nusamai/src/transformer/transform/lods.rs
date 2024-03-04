@@ -1,4 +1,4 @@
-use std::ops::BitOrAssign;
+use std::ops::{BitAnd, BitAndAssign, BitOrAssign};
 
 use crate::transformer::Transform;
 
@@ -6,15 +6,34 @@ use nusamai_citygml::object::{ObjectStereotype, Value};
 use nusamai_citygml::schema::Schema;
 use nusamai_plateau::Entity;
 
-#[derive(Default, Clone)]
-pub struct FilterLodTransform {}
+#[derive(Clone, Copy)]
+pub enum LodFilterMode {
+    Highest,
+    Lowest,
+}
+
+#[derive()]
+pub struct FilterLodTransform {
+    mask: LodMask,
+    mode: LodFilterMode,
+}
+
+impl FilterLodTransform {
+    pub fn new(mask: LodMask, mode: LodFilterMode) -> Self {
+        Self { mask, mode }
+    }
+}
 
 /// Transform to filter and split the LODs
 impl Transform for FilterLodTransform {
     fn transform(&mut self, mut entity: Entity, out: &mut Vec<Entity>) {
-        let lodmask = find_lods(&entity.root);
-        let target_lod = lodmask.highest_lod();
-        // Use the highest LOD as the target LOD for now.
+        let lods = find_lods(&entity.root) & self.mask;
+
+        let target_lod = match self.mode {
+            LodFilterMode::Highest => lods.highest_lod(),
+            LodFilterMode::Lowest => lods.lowest_lod(),
+        };
+
         if let Some(target_lod) = target_lod {
             edit_tree(&mut entity.root, target_lod);
             out.push(entity);
@@ -71,13 +90,16 @@ fn find_lods(value: &Value) -> LodMask {
     mask
 }
 
-#[derive(Default, Clone)]
+#[derive(Default, Clone, Copy)]
 pub struct LodMask(
     u8, // lods bit mask
-    u8, // lods_has_texture bit mask (TODO)
 );
 
 impl LodMask {
+    pub fn all() -> Self {
+        Self(0b11111)
+    }
+
     pub fn add_lod(&mut self, lod_no: u8) {
         self.0 |= 1 << lod_no;
     }
@@ -114,15 +136,29 @@ impl LodMask {
 impl BitOrAssign for LodMask {
     fn bitor_assign(&mut self, rhs: Self) {
         self.0 |= rhs.0;
-        self.1 |= rhs.1;
+    }
+}
+
+impl BitAndAssign for LodMask {
+    fn bitand_assign(&mut self, rhs: Self) {
+        self.0 &= rhs.0;
+    }
+}
+
+impl BitAnd for LodMask {
+    type Output = LodMask;
+
+    fn bitand(self, rhs: Self) -> Self::Output {
+        Self(self.0 & rhs.0)
     }
 }
 
 #[cfg(test)]
 mod tests {
+    use super::*;
     #[test]
     fn test_lod_mask() {
-        let mut mask = super::LodMask::default();
+        let mut mask = LodMask::default();
         assert_eq!(mask.lowest_lod(), None);
         assert_eq!(mask.highest_lod(), None);
 
@@ -140,5 +176,11 @@ mod tests {
         assert_eq!(mask.lowest_lod(), Some(1));
         assert_eq!(mask.highest_lod(), Some(3));
         assert!(mask.has_lod(3));
+
+        // bitand
+        let mut mask2 = LodMask::default();
+        mask2.add_lod(3);
+        assert!((mask & mask2).has_lod(3));
+        assert!(!(mask & mask2).has_lod(1));
     }
 }

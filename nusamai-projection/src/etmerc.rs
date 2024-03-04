@@ -9,7 +9,7 @@ const ETMERC_ORDER: usize = 6;
 
 type Coeffs = [f64; ETMERC_ORDER];
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct PoderEngsager {
     /// Merid. quad., scaled to the projection
     pub q_n: f64,
@@ -25,6 +25,7 @@ struct PoderEngsager {
     pub gtu: Coeffs,
 }
 
+#[derive(Debug, Clone)]
 pub struct ExtendedTransverseMercatorProjection {
     q: PoderEngsager,
     /// false longitude (radians)

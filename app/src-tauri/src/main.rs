@@ -16,7 +16,7 @@ use nusamai::sink::{
 use nusamai::source::citygml::CityGmlSourceProvider;
 use nusamai::source::DataSourceProvider;
 use nusamai::transformer::MultiThreadTransformer;
-use nusamai::transformer::{MappingRules, Requirements};
+use nusamai::transformer::{self, MappingRules};
 use nusamai::transformer::{NusamaiTransformBuilder, TransformBuilder};
 use nusamai_plateau::models::TopLevelCityObject;
 
@@ -59,21 +59,6 @@ fn run(input_paths: Vec<String>, output_path: String, filetype: String, rules_pa
     // TODO: set cancellation handler
     let canceller = Arc::new(Mutex::new(Canceller::default()));
 
-    let source = {
-        let source_provider: Box<dyn DataSourceProvider> = Box::new(CityGmlSourceProvider {
-            filenames: input_paths
-                .iter()
-                .map(|s| PathBuf::from_str(s).unwrap())
-                .collect(),
-        });
-        let mut source_params = source_provider.parameters();
-        if let Err(err) = source_params.validate() {
-            log::error!("Error validating source parameters: {:?}", err);
-            return;
-        }
-        source_provider.create(&source_params)
-    };
-
     let sink = {
         let sink_provider = select_sink_provider(&filetype);
         let mut sink_params = sink_provider.parameters();
@@ -88,30 +73,45 @@ fn run(input_paths: Vec<String>, output_path: String, filetype: String, rules_pa
         sink_provider.create(&sink_params)
     };
 
+    let requirements = sink.make_requirements();
+
+    let source = {
+        let source_provider: Box<dyn DataSourceProvider> = Box::new(CityGmlSourceProvider {
+            filenames: input_paths
+                .iter()
+                .map(|s| PathBuf::from_str(s).unwrap())
+                .collect(),
+        });
+        let mut source_params = source_provider.parameters();
+        if let Err(err) = source_params.validate() {
+            log::error!("Error validating source parameters: {:?}", err);
+            return;
+        }
+        let mut source = source_provider.create(&source_params);
+        source.set_appearance_parsing(requirements.use_appearance);
+        source
+    };
+
     let (transformer, schema) = {
         use nusamai_citygml::CityGmlElement;
 
-        let requirements = if rules_path.is_empty() {
-            sink.make_transform_requirements()
+        let mapping_rules = if rules_path.is_empty() {
+            // FIXME: error handling
+            let file_contents =
+                std::fs::read_to_string(rules_path).expect("Error reading rules file");
+            let mapping_rules: MappingRules =
+                serde_json::from_str(&file_contents).expect("Error parsing rules file");
+            Some(mapping_rules)
         } else {
-            let file_contents = std::fs::read_to_string(&rules_path);
-            if let Ok(contents) = file_contents {
-                if let Ok(mapping_rules) = serde_json::from_str::<MappingRules>(&contents) {
-                    Requirements {
-                        mapping_rules: Some(mapping_rules),
-                        ..sink.make_transform_requirements()
-                    }
-                } else {
-                    log::error!("Error parsing rules file");
-                    return;
-                }
-            } else {
-                log::error!("Error reading rules file");
-                return;
-            }
+            None
         };
 
-        let transform_builder = NusamaiTransformBuilder::new(requirements.into());
+        let request = {
+            let mut request = transformer::Request::from(requirements);
+            request.set_mapping_rules(mapping_rules);
+            request
+        };
+        let transform_builder = NusamaiTransformBuilder::new(request);
         let mut schema = nusamai_citygml::schema::Schema::default();
         TopLevelCityObject::collect_schema(&mut schema);
         transform_builder.transform_schema(&mut schema);

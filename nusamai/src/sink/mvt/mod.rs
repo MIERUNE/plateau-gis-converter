@@ -12,21 +12,25 @@ use ext_sort::{buffer::mem::MemoryLimitedBufferBuilder, ExternalSorter, External
 use hashbrown::HashMap;
 use itertools::Itertools;
 
+use flate2::write::ZlibEncoder;
+use flate2::Compression;
 use prost::Message;
 use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
+use std::io::prelude::*;
 
 use nusamai_citygml::object;
 use nusamai_citygml::schema::Schema;
-use nusamai_geometry::MultiPolygon;
+use nusamai_geometry::MultiPolygon2;
 use nusamai_mvt::geometry::GeometryEncoder;
 use nusamai_mvt::tag::TagsEncoder;
 use nusamai_mvt::{tileid::TileIdMethod, vector_tile};
 
+use crate::get_parameter_value;
 use crate::parameters::*;
 use crate::pipeline::{Feedback, PipelineError, Receiver, Result};
-use crate::sink::{DataSink, DataSinkProvider, SinkInfo};
-use crate::{get_parameter_value, transformer};
+use crate::sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo};
+use crate::transformer;
 use slice::slice_cityobj_geoms;
 use sort::BincodeExternalChunk;
 use tags::convert_properties;
@@ -112,14 +116,18 @@ struct SerializedSlicedFeature {
 
 #[derive(Serialize, Deserialize)]
 struct SlicedFeature<'a> {
-    geometry: MultiPolygon<'a, 2, i16>,
+    geometry: MultiPolygon2<'a>,
     properties: nusamai_citygml::object::Value,
 }
 
 impl DataSink for MvtSink {
-    fn make_transform_requirements(&self) -> transformer::Requirements {
-        transformer::Requirements {
+    fn make_requirements(&self) -> DataRequirements {
+        DataRequirements {
             key_value: transformer::KeyValueSpec::DotNotation,
+            lod_filter: transformer::LodFilterSpec {
+                mode: transformer::LodFilterMode::Lowest,
+                ..Default::default()
+            },
             ..Default::default()
         }
     }
@@ -263,108 +271,186 @@ fn tile_writing_stage(
     receiver_sorted: mpsc::Receiver<(u64, Vec<SerializedSlicedFeature>)>,
     tile_id_conv: TileIdMethod,
 ) -> Result<()> {
-    let detail = 12;
-    let extent = 1 << detail;
+    let default_detail = 12;
+    let min_detail = 9;
 
     receiver_sorted
         .into_iter()
         .par_bridge()
-        .try_for_each(|(tile_id, sfeats)| {
+        .try_for_each(|(tile_id, serialized_feats)| {
             feedback.ensure_not_canceled()?;
+
             let (zoom, x, y) = tile_id_conv.id_to_zxy(tile_id);
 
-            let mut layers: HashMap<String, LayerData> = HashMap::new();
-
-            for ser_feat in sfeats {
-                let feat: SlicedFeature = bincode::deserialize(&ser_feat.body).unwrap();
-                let mpoly = feat.geometry;
-
-                // encode geometry
-                let mut geom_enc = GeometryEncoder::new();
-                for poly in &mpoly {
-                    let exterior = poly.exterior();
-                    if exterior.is_ccw() {
-                        geom_enc.add_ring(&exterior);
-                    }
-                    for interior in poly.interiors() {
-                        if interior.is_cw() {
-                            geom_enc.add_ring(&interior);
-                        }
-                    }
-                }
-                let geometry = geom_enc.into_vec();
-                if geometry.is_empty() {
-                    continue;
-                }
-
-                let mut id = None;
-                let mut tags: Vec<u32> = Vec::new();
-
-                let layer = if let object::Value::Object(obj) = &feat.properties {
-                    let layer = layers.entry_ref(obj.typename.as_ref()).or_default();
-
-                    // Encode attributes as MVT tags
-                    for (key, value) in &obj.attributes {
-                        convert_properties(&mut tags, &mut layer.tags_enc, key, value);
-                    }
-
-                    // Make a MVT feature id (u64) by hashing the original feature id string.
-                    id = obj.stereotype.id().map(|id| {
-                        id.as_bytes()
-                            .iter()
-                            .fold(5381u64, |a, c| a.wrapping_mul(33) ^ *c as u64)
-                    });
-
-                    layer
-                } else {
-                    layers.entry_ref("Unknown").or_default()
-                };
-
-                layer.features.push(vector_tile::tile::Feature {
-                    id,
-                    tags,
-                    r#type: Some(vector_tile::tile::GeomType::Polygon as i32),
-                    geometry,
-                });
+            if serialized_feats.len() > 200_000 {
+                log::warn!(
+                    "Too many features in a tile ({} features)",
+                    serialized_feats.len()
+                );
             }
 
-            let layers = layers
-                .into_iter()
-                .flat_map(|(name, layer_data)| {
-                    if layer_data.features.is_empty() {
-                        return None;
-                    }
-                    let (keys, values) = layer_data.tags_enc.into_keys_and_values();
-                    Some(vector_tile::tile::Layer {
-                        version: 2,
-                        name: name.to_string(),
-                        features: layer_data.features,
-                        keys,
-                        values,
-                        extent: Some(extent),
-                    })
-                })
-                .collect();
-
-            let tile = vector_tile::Tile { layers };
-
-            let path = output_path.join(Path::new(&format!("{}/{}/{}.pbf", zoom, x, y)));
-
+            let path = output_path.join(Path::new(&format!("{zoom}/{x}/{y}.pbf")));
             if let Some(dir) = path.parent() {
                 fs::create_dir_all(dir)?;
             }
-            let bytes = tile.encode_to_vec();
 
-            log::info!(
-                "Writing a tile: {} ({})",
-                &path.to_string_lossy(),
-                bytesize::to_string(bytes.len() as u64, true)
-            );
+            for detail in (min_detail..=default_detail).rev() {
+                // Make a MVT tile binary
+                let bytes = make_tile(detail, &serialized_feats)?;
 
-            fs::write(&path, &bytes)?;
+                // Retry with a lower detail level if the compressed tile size is too large
+                let compressed_size = {
+                    let mut e = ZlibEncoder::new(Vec::new(), Compression::default());
+                    e.write_all(&bytes)?;
+                    let compressed_bytes = e.finish()?;
+                    compressed_bytes.len()
+                };
+                if detail != min_detail && compressed_size > 500_000 {
+                    // If the tile is too large, try a lower detail level
+                    let extent = 1 << detail;
+                    log::info!("Tile size is too large: {zoom}/{x}/{y} (extent: {extent}), trying a lower detail level.");
+                    continue;
+                }
+
+                log::info!(
+                    "Writing a tile: {} ({} bytes, {} compressed)",
+                    &path.to_string_lossy(),
+                    bytesize::to_string(bytes.len() as u64, true),
+                    bytesize::to_string(compressed_size as u64, true),
+                );
+                fs::write(&path, &bytes)?;
+                break;
+            }
 
             Ok::<(), PipelineError>(())
         })?;
 
     Ok(())
+}
+
+fn make_tile(default_detail: i32, serialized_feats: &[SerializedSlicedFeature]) -> Result<Vec<u8>> {
+    let mut layers: HashMap<String, LayerData> = HashMap::new();
+    let mut int_ring_buf = Vec::new();
+    let mut int_ring_buf2 = Vec::new();
+    let extent = 1 << default_detail;
+    for serialized_feat in serialized_feats {
+        let feat: SlicedFeature = bincode::deserialize(&serialized_feat.body).unwrap();
+        let mpoly = feat.geometry;
+        let mut int_mpoly = MultiPolygon2::<i16>::new();
+
+        for poly in &mpoly {
+            for (ri, ring) in poly.rings().enumerate() {
+                int_ring_buf.clear();
+                int_ring_buf.extend(ring.into_iter().map(|[x, y]| {
+                    let x = (x * extent as f64 + 0.5) as i16;
+                    let y = (y * extent as f64 + 0.5) as i16;
+                    [x, y]
+                }));
+
+                // some simplification
+                {
+                    int_ring_buf2.clear();
+                    int_ring_buf2.push(int_ring_buf[0]);
+                    for c in int_ring_buf.windows(3) {
+                        let &[prev, curr, next] = c.try_into().unwrap();
+
+                        // Remove duplicate points
+                        if prev == curr {
+                            continue;
+                        }
+
+                        // Reject collinear points
+                        let [curr_x, curr_y] = curr;
+                        let [prev_x, prev_y] = prev;
+                        let [next_x, next_y] = next;
+                        if curr != next
+                            && ((next_y - prev_y) as i32 * (curr_x - prev_x) as i32).abs()
+                                == ((curr_y - prev_y) as i32 * (next_x - prev_x) as i32).abs()
+                        {
+                            continue;
+                        }
+
+                        int_ring_buf2.push(curr);
+                    }
+                    int_ring_buf2.push(*int_ring_buf.last().unwrap());
+                }
+
+                match ri {
+                    0 => int_mpoly.add_exterior(int_ring_buf2.drain(..)),
+                    _ => int_mpoly.add_interior(int_ring_buf2.drain(..)),
+                }
+            }
+        }
+
+        // encode geometry
+        let mut geom_enc = GeometryEncoder::new();
+        for poly in &int_mpoly {
+            let exterior = poly.exterior();
+            if exterior.signed_ring_area() > 0.0 {
+                geom_enc.add_ring(&exterior);
+                for interior in poly.interiors() {
+                    if interior.is_cw() {
+                        geom_enc.add_ring(&interior);
+                    }
+                }
+            }
+        }
+        let geometry = geom_enc.into_vec();
+        if geometry.is_empty() {
+            continue;
+        }
+
+        let mut id = None;
+        let mut tags: Vec<u32> = Vec::new();
+
+        let layer = if let object::Value::Object(obj) = &feat.properties {
+            let layer = layers.entry_ref(obj.typename.as_ref()).or_default();
+
+            // Encode attributes as MVT tags
+            for (key, value) in &obj.attributes {
+                convert_properties(&mut tags, &mut layer.tags_enc, key, value);
+            }
+
+            // Make a MVT feature id (u64) by hashing the original feature id string.
+            id = obj.stereotype.id().map(|id| {
+                id.as_bytes()
+                    .iter()
+                    .fold(5381u64, |a, c| a.wrapping_mul(33) ^ *c as u64)
+            });
+
+            layer
+        } else {
+            layers.entry_ref("Unknown").or_default()
+        };
+
+        layer.features.push(vector_tile::tile::Feature {
+            id,
+            tags,
+            r#type: Some(vector_tile::tile::GeomType::Polygon as i32),
+            geometry,
+        });
+    }
+
+    let layers = layers
+        .into_iter()
+        .flat_map(|(name, layer_data)| {
+            if layer_data.features.is_empty() {
+                return None;
+            }
+            let (keys, values) = layer_data.tags_enc.into_keys_and_values();
+            Some(vector_tile::tile::Layer {
+                version: 2,
+                name: name.to_string(),
+                features: layer_data.features,
+                keys,
+                values,
+                extent: Some(extent),
+            })
+        })
+        .collect();
+
+    let tile = vector_tile::Tile { layers };
+
+    let bytes = tile.encode_to_vec();
+    Ok(bytes)
 }

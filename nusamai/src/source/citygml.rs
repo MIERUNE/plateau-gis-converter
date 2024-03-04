@@ -26,7 +26,7 @@ impl DataSourceProvider for CityGmlSourceProvider {
     fn create(&self, _params: &Parameters) -> Box<dyn DataSource> {
         Box::new(CityGmlSource {
             filenames: self.filenames.clone(),
-            parse_appearances: false,
+            appearance_parsing: false,
         })
     }
 
@@ -43,12 +43,12 @@ impl DataSourceProvider for CityGmlSourceProvider {
 
 pub struct CityGmlSource {
     filenames: Vec<PathBuf>,
-    parse_appearances: bool,
+    appearance_parsing: bool,
 }
 
 impl DataSource for CityGmlSource {
-    fn set_appearance_resolution(&mut self, value: bool) {
-        self.parse_appearances = value;
+    fn set_appearance_parsing(&mut self, value: bool) {
+        self.appearance_parsing = value;
     }
 
     fn run(&mut self, downstream: Sender, feedback: &Feedback) -> pipeline::Result<()> {
@@ -67,7 +67,7 @@ impl DataSource for CityGmlSource {
             let mut citygml_reader = CityGmlReader::new(context);
 
             let mut st = citygml_reader.start_root(&mut xml_reader)?;
-            match toplevel_dispatcher(&mut st, &downstream, feedback, self.parse_appearances) {
+            match toplevel_dispatcher(&mut st, &downstream, feedback, self.appearance_parsing) {
                 Ok(_) => Ok::<(), PipelineError>(()),
                 Err(ParseError::Canceled) => Err(PipelineError::Canceled),
                 Err(e) => Err(e.into()),
@@ -188,7 +188,7 @@ mod tests {
                 ],
             };
             let mut source = source_provider.create(&Parameters::default());
-            source.set_appearance_resolution(use_appearance);
+            source.set_appearance_parsing(use_appearance);
             let (_, feedback, _) = feedback::watcher();
 
             // Start the CityGML source
