@@ -109,7 +109,7 @@ impl GpkgHandler {
         Ok(columns)
     }
 
-    pub async fn gpkg_contents(&self) -> Result<Vec<(String, String, String, u16)>, GpkgError> {
+    pub async fn gpkg_contents(&self) -> Result<Vec<(String, String, String, i32)>, GpkgError> {
         let result =
             sqlx::query("SELECT table_name, data_type, identifier, srs_id FROM gpkg_contents;")
                 .fetch_all(&self.pool)
@@ -122,7 +122,7 @@ impl GpkgHandler {
                     row.get::<String, &str>("table_name"),
                     row.get::<String, &str>("data_type"),
                     row.get::<String, &str>("identifier"),
-                    row.get::<u16, _>("srs_id"),
+                    row.get::<i32, _>("srs_id"),
                 )
             })
             .collect();
@@ -131,7 +131,7 @@ impl GpkgHandler {
 
     pub async fn gpkg_geometry_columns(
         &self,
-    ) -> Result<Vec<(String, String, String, u16, i8, i8)>, GpkgError> {
+    ) -> Result<Vec<(String, String, String, i32, i8, i8)>, GpkgError> {
         let result = sqlx::query("SELECT table_name, column_name, geometry_type_name, srs_id, z, m FROM gpkg_geometry_columns;")
             .fetch_all(&self.pool)
             .await?;
@@ -143,7 +143,7 @@ impl GpkgHandler {
                     row.get::<String, &str>("table_name"),
                     row.get::<String, &str>("column_name"),
                     row.get::<String, &str>("geometry_type_name"),
-                    row.get::<u16, _>("srs_id"),
+                    row.get::<i32, _>("srs_id"),
                     row.get::<i8, _>("z"),
                     row.get::<i8, _>("m"),
                 )
@@ -418,7 +418,7 @@ mod tests {
                 table_name.into(),
                 "features".into(),
                 table_name.into(),
-                srs_id
+                srs_id as i32
             )]
         );
 
@@ -429,7 +429,7 @@ mod tests {
                 table_name.into(),
                 "geometry".into(),
                 "MULTIPOLYGON".into(),
-                srs_id,
+                srs_id as i32,
                 1,
                 0
             )]
@@ -487,7 +487,7 @@ mod tests {
                 table_name.into(),
                 "attributes".into(), // "attributes", not "features"
                 table_name.into(),
-                srs_id
+                srs_id as i32
             )]
         );
 
