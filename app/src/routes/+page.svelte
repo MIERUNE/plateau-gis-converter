@@ -8,6 +8,7 @@
 
 	let inputPaths: string[] = [];
 	let filetype: string;
+	let selectedCrs: number;
 	let rulesPath = '';
 	let outputPath = '';
 	let isRunning = false;
@@ -51,7 +52,7 @@
 
 		<InputSelector bind:inputPaths />
 
-		<SettingSelector bind:filetype bind:rulesPath />
+		<SettingSelector bind:filetype bind:selectedCrs bind:rulesPath />
 
 		<OutputSelector {filetype} bind:outputPath />
 
