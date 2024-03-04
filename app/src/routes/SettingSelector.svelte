@@ -49,7 +49,7 @@
 			<select
 				name="crs"
 				id="crs-select"
-				class="w-36"
+				class="w-64"
 				disabled={disableCrsOptions}
 				class:opacity-50={disableCrsOptions}
 			>
