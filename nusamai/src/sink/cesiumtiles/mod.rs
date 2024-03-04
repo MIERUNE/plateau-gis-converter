@@ -146,14 +146,9 @@ impl DataSink for CesiumTilesSink {
                         .build()
                         .unwrap();
                     pool.install(|| {
-                        if let Err(error) = tile_writing_stage(
-                            output_path,
-                            feedback,
-                            receiver_sorted,
-                            tile_id_conv,
-                            min_zoom,
-                            max_zoom,
-                        ) {
+                        if let Err(error) =
+                            tile_writing_stage(output_path, feedback, receiver_sorted, tile_id_conv)
+                        {
                             feedback.report_fatal_error(error);
                         }
                     })
@@ -249,8 +244,6 @@ fn tile_writing_stage(
     feedback: &Feedback,
     receiver_sorted: mpsc::Receiver<((u64, String), Vec<SerializedSlicedFeature>)>,
     tile_id_conv: TileIdMethod,
-    _min_zoom: u8,
-    _max_zoom: u8,
 ) -> Result<()> {
     let ellipsoid = nusamai_projection::ellipsoid::wgs84();
     let contents: Arc<Mutex<Vec<TileContent>>> = Default::default();
