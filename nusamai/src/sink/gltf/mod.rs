@@ -285,12 +285,15 @@ impl DataSink for GltfSink {
                 &ellipsoid,
                 (bbox.min_lng + bbox.max_lng) / 2.0,
                 (bbox.min_lat + bbox.max_lat) / 2.0,
-                (bbox.min_height + bbox.max_height) / 2.0,
+                0.,
             );
-            [tx, tz, -ty]
+            // z-up to y-up
+            let [tx, ty, tz] = [tx, tz, -ty];
+            // double-precision to single-precision
+            [(tx as f32) as f64, (ty as f32) as f64, (tz as f32) as f64]
         };
 
-        for (typename, mut features) in categorized_features.lock().unwrap().clone().into_iter() {
+        for (typename, features) in categorized_features.lock().unwrap().clone().into_iter() {
             // Triangulation
             let mut earcutter: Earcut<f64> = Earcut::new();
             let mut buf2d: Vec<f64> = Vec::new(); // 2d-projected [x, y]

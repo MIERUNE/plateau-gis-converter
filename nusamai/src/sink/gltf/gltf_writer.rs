@@ -98,7 +98,7 @@ pub fn write_gltf_glb<W: Write>(
             // accessor (texcoords)
             gltf_accessors.push(Accessor {
                 buffer_view: Some(gltf_buffer_views.len() as u32 - 1),
-                byte_offset: 4 * 4,
+                byte_offset: 4 * 3,
                 component_type: ComponentType::Float,
                 count: vertices_count,
                 type_: AccessorType::Vec2,
