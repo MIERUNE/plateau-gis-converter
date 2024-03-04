@@ -289,8 +289,6 @@ impl DataSink for GltfSink {
 
             for (typename, mut features) in categorized_features.lock().unwrap().clone().into_iter()
             {
-                // todo: bboxを算出したり、三角分割したり
-
                 // Triangulation
                 let mut earcutter: Earcut<f64> = Earcut::new();
                 let mut buf2d: Vec<f64> = Vec::new(); // 2d-projected [x, y]
@@ -299,11 +297,17 @@ impl DataSink for GltfSink {
                 let mut vertices: IndexSet<[u32; 6], RandomState> = IndexSet::default(); // [x, y, z, u, v, feature_id]
                 let mut primitives: Primitives = Default::default();
 
-                for (feature_idx, mut feature) in features.into_iter().enumerate() {
+                // make vertices and indices
+                let mut feature_id = 0;
+
+                for mut feature in features.into_iter() {
                     feature
                         .polygons
                         .transform_inplace(|&[lng, lat, height, u, v]| {
                             let (x, y, z) = geographic_to_geocentric(&ellipsoid, lng, lat, height);
+                            // z-up to y-up
+                            // subtract the translation
+                            // flip the texture v-coordinate
                             [
                                 x - translation[0],
                                 z - translation[1],
@@ -325,7 +329,7 @@ impl DataSink for GltfSink {
 
                         let mat = feature.materials[*orig_mat_id as usize].clone();
                         let primitive = primitives.entry(mat).or_default();
-                        primitive.feature_ids.insert(feature_idx as u32);
+                        primitive.feature_ids.insert(feature_id as u32);
 
                         if project3d_to_2d(poly.coords(), num_outer, 5, &mut buf2d) {
                             // earcut
@@ -342,7 +346,7 @@ impl DataSink for GltfSink {
                                     (z as f32).to_bits(),
                                     (u as f32).to_bits(),
                                     (v as f32).to_bits(),
-                                    (feature_idx as f32).to_bits(),
+                                    (feature_id as f32).to_bits(),
                                 ];
                                 let (index, _) = vertices.insert_full(vbits);
                                 index as u32
@@ -351,8 +355,7 @@ impl DataSink for GltfSink {
                     }
                 }
 
-                println!("{:?}", vertices.len());
-                println!("{:?}", primitives.len());
+                feature_id += 1;
             }
         }
 
