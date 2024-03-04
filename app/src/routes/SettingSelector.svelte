@@ -8,7 +8,7 @@
 	export let rulesPath: string;
 
 	$: epsgOptions = filetypeOptions[filetype]?.epsg || [];
-	$: disableCrsOptions = epsgOptions.length < 2;
+	$: disableEpsgOptions = epsgOptions.length < 2;
 
 	async function openRulesPathDialog() {
 		const res = await dialog.open({
@@ -52,8 +52,8 @@
 				name="epsg"
 				id="epsg-select"
 				class="w-64"
-				disabled={disableCrsOptions}
-				class:opacity-50={disableCrsOptions}
+				disabled={disableEpsgOptions}
+				class:opacity-50={disableEpsgOptions}
 			>
 				{#each epsgOptions as option}
 					<option value={option.value}>{option.label}</option>
