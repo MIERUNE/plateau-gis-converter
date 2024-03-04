@@ -31,6 +31,10 @@ struct Args {
     #[arg(long)]
     output: String,
 
+    /// Specify the output EPSG code (default: WGS84 3D)
+    #[arg(long, default_value_t = 4979)]
+    epsg: u16,
+
     /// Specify the mapping rules JSON file
     #[arg(long)]
     rules: Option<String>,
