@@ -2,24 +2,28 @@
 
 mod gltf;
 mod material;
+mod metadata;
 mod slice;
 mod sort;
 mod tiling;
+mod utils;
 
+use std::cmp::Ordering;
 use std::fs;
 use std::io::BufWriter;
 use std::path::{Path, PathBuf};
 use std::sync::{mpsc, Arc, Mutex};
 
 use ahash::RandomState;
-use earcut_rs::{Earcut, utils3d::project3d_to_2d};
+use earcut_rs::{utils3d::project3d_to_2d, Earcut};
 use ext_sort::{buffer::mem::MemoryLimitedBufferBuilder, ExternalSorter, ExternalSorterBuilder};
-use nusamai_projection::cartesian::geographic_to_geocentric;
 use indexmap::IndexSet;
 use itertools::Itertools;
+use nusamai_projection::cartesian::geographic_to_geocentric;
 use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
 
+use nusamai_citygml::object::Value;
 use nusamai_citygml::schema::Schema;
 use nusamai_mvt::tileid::TileIdMethod;
 
@@ -30,14 +34,16 @@ use crate::sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo};
 use gltf::write_gltf_glb;
 use slice::{slice_to_tiles, SlicedFeature};
 use sort::BincodeExternalChunk;
-use tiling::{TileSpec, TileTree};
+use tiling::{TileContent, TileTree};
+
+use self::utils::calculate_normal;
 
 pub struct CesiumTilesSinkProvider {}
 
 impl DataSinkProvider for CesiumTilesSinkProvider {
     fn info(&self) -> SinkInfo {
         SinkInfo {
-            id_name: "3d-tiles".to_string(),
+            id_name: "3dtiles".to_string(),
             name: "Cesium 3D Tiles".to_string(),
         }
     }
@@ -76,6 +82,7 @@ struct CesiumTilesSink {
 #[derive(Serialize, Deserialize, deepsize::DeepSizeOf)]
 struct SerializedSlicedFeature {
     tile_id: u64,
+    typename: String,
     #[serde(with = "serde_bytes")]
     body: Vec<u8>,
 }
@@ -83,6 +90,7 @@ struct SerializedSlicedFeature {
 impl DataSink for CesiumTilesSink {
     fn make_requirements(&self) -> DataRequirements {
         DataRequirements {
+            // use_appearance: true,
             resolve_appearance: true,
             ..Default::default()
         }
@@ -96,7 +104,7 @@ impl DataSink for CesiumTilesSink {
 
         // TODO: configurable
         let min_zoom = 12;
-        let max_zoom = 17;
+        let max_zoom = 18;
 
         // TODO: refactoring
 
@@ -104,9 +112,14 @@ impl DataSink for CesiumTilesSink {
             // Slicing geometry along the tile boundaries
             {
                 s.spawn(move || {
-                    if let Err(error) =
-                        geometry_slicing_stage(feedback, upstream, tile_id_conv, sender_sliced, min_zoom, max_zoom)
-                    {
+                    if let Err(error) = geometry_slicing_stage(
+                        feedback,
+                        upstream,
+                        tile_id_conv,
+                        sender_sliced,
+                        min_zoom,
+                        max_zoom,
+                    ) {
                         feedback.report_fatal_error(error);
                     }
                 });
@@ -133,9 +146,14 @@ impl DataSink for CesiumTilesSink {
                         .build()
                         .unwrap();
                     pool.install(|| {
-                        if let Err(error) =
-                            tile_writing_stage(output_path, feedback, receiver_sorted, tile_id_conv, min_zoom, max_zoom)
-                        {
+                        if let Err(error) = tile_writing_stage(
+                            output_path,
+                            feedback,
+                            receiver_sorted,
+                            tile_id_conv,
+                            min_zoom,
+                            max_zoom,
+                        ) {
                             feedback.report_fatal_error(error);
                         }
                     })
@@ -163,14 +181,18 @@ fn geometry_slicing_stage(
         slice_to_tiles(&parcel.entity, min_zoom, max_zoom, |(z, x, y), feature| {
             feedback.ensure_not_canceled()?;
 
-            let bytes = bincode::serialize(&feature).unwrap();
-            let serialized_feature = SerializedSlicedFeature {
-                tile_id: tile_id_conv.zxy_to_id(z, x, y),
-                body: bytes,
-            };
-            if sender_sliced.send(serialized_feature).is_err() {
-                return Err(PipelineError::Canceled);
-            };
+            if let Value::Object(obj) = &parcel.entity.root {
+                let bytes = bincode::serialize(&feature).unwrap();
+                let serialized_feature = SerializedSlicedFeature {
+                    tile_id: tile_id_conv.zxy_to_id(z, x, y),
+                    typename: obj.typename.to_string(),
+                    body: bytes,
+                };
+                if sender_sliced.send(serialized_feature).is_err() {
+                    return Err(PipelineError::Canceled);
+                };
+            }
+
             Ok(())
         })
     })?;
@@ -181,7 +203,7 @@ fn geometry_slicing_stage(
 fn feature_sorting_stage(
     feedback: &Feedback,
     receiver_sliced: mpsc::Receiver<SerializedSlicedFeature>,
-    sender_sorted: mpsc::SyncSender<(u64, Vec<SerializedSlicedFeature>)>,
+    sender_sorted: mpsc::SyncSender<((u64, String), Vec<SerializedSlicedFeature>)>,
 ) -> Result<()> {
     let sorter: ExternalSorter<
         SerializedSlicedFeature,
@@ -196,18 +218,25 @@ fn feature_sorting_stage(
         .unwrap();
     let sorted = sorter
         .sort_by(receiver_sliced.into_iter().map(Ok), |a, b| {
-            a.tile_id.cmp(&b.tile_id)
+            // sort by tile_id and typename
+            match a.tile_id.cmp(&b.tile_id) {
+                Ordering::Equal => a.typename.cmp(&b.typename),
+                ord => ord,
+            }
         })
         .unwrap();
 
-    for (tile_id, ser_feats) in &sorted
+    for ((tile_id, typename), ser_feats) in &sorted
         .map(std::result::Result::unwrap)
-        .group_by(|ser_feat| ser_feat.tile_id)
+        .group_by(|ser_feat| (ser_feat.tile_id, ser_feat.typename.clone()))
     {
         feedback.ensure_not_canceled()?;
 
         let ser_feats: Vec<_> = ser_feats.collect();
-        if sender_sorted.send((tile_id, ser_feats)).is_err() {
+        if sender_sorted
+            .send(((tile_id, typename), ser_feats))
+            .is_err()
+        {
             return Err(PipelineError::Canceled);
         };
     }
@@ -218,44 +247,52 @@ fn feature_sorting_stage(
 fn tile_writing_stage(
     output_path: &Path,
     feedback: &Feedback,
-    receiver_sorted: mpsc::Receiver<(u64, Vec<SerializedSlicedFeature>)>,
+    receiver_sorted: mpsc::Receiver<((u64, String), Vec<SerializedSlicedFeature>)>,
     tile_id_conv: TileIdMethod,
     _min_zoom: u8,
-    max_zoom: u8,
+    _max_zoom: u8,
 ) -> Result<()> {
     let ellipsoid = nusamai_projection::ellipsoid::wgs84();
-    let tiles: Arc<Mutex<Vec<TileSpec>>> = Default::default();
+    let contents: Arc<Mutex<Vec<TileContent>>> = Default::default();
 
     // Make a glTF (.glb) file for each tile
     receiver_sorted
         .into_iter()
         .par_bridge()
-        .try_for_each(|(tile_id, serialized_feats)| {
+        .try_for_each(|((tile_id, typename), serialized_feats)| {
             feedback.ensure_not_canceled()?;
 
-            let mut tilespec = TileSpec {
-                zxy: tile_id_conv.id_to_zxy(tile_id),
-                min_lng: f64::MAX,
-                max_lng: f64::MIN,
-                min_lat: f64::MAX,
-                max_lat: f64::MIN,
-                min_height: f64::MAX,
-                max_height: f64::MIN,
-            };
-
             // Tile information
-            let (tile_zoom, tile_x, tile_y) = tilespec.zxy;
-            let (min_lat, max_lat) = tiling::y_slice_range(tile_zoom, tile_y);
-            let (min_lng, max_lng) = tiling::x_slice_range(tile_zoom, tile_x as i32, tiling::x_step(tile_zoom, tile_y));
-            let geom_error = tiling::geometric_error(tile_zoom, tile_y);
-            log::info!(
-                "tile: z={tile_zoom}, x={tile_x}, y={tile_y} (lng: [{min_lng} => {max_lng}], lat: [{min_lat} => {max_lat}) geometricError: {geom_error}"
-            );
+            let (mut content, translation) = {
+                let zxy = tile_id_conv.id_to_zxy(tile_id);
+                let (tile_zoom, tile_x, tile_y) = zxy;
+                let (min_lat, max_lat) = tiling::y_slice_range(tile_zoom, tile_y);
+                let (min_lng, max_lng) = tiling::x_slice_range(tile_zoom, tile_x as i32, tiling::x_step(tile_zoom, tile_y));
+                // Use the tile center as the translation of the glTF mesh
+                let translation = {
+                    let (tx, ty, tz) = geographic_to_geocentric(&ellipsoid, (min_lng + max_lng) / 2.0, (min_lat + max_lat) / 2.0, 0.);
+                    [tx, tz, -ty]
+                };
+                let geom_error = tiling::geometric_error(tile_zoom, tile_y);
+                log::info!(
+                    "tile: z={tile_zoom}, x={tile_x}, y={tile_y} (lng: [{min_lng} => {max_lng}], lat: [{min_lat} => {max_lat}) geometricError: {geom_error}"
+                );
+                let content_path = {
+                    let normalized_typename = typename.replace(':', "_");
+                    format!("{tile_zoom}/{tile_x}/{tile_y}_{normalized_typename}.glb")
+                };
+                let content = TileContent {
+                    zxy,
+                    content_path,
+                    min_lng: f64::MAX,
+                    max_lng: f64::MIN,
+                    min_lat: f64::MAX,
+                    max_lat: f64::MIN,
+                    min_height: f64::MAX,
+                    max_height: f64::MIN,
+                };
 
-            // Use the tile center as the translation of the glTF mesh
-            let translation = {
-                let (tx, ty, tz) = geographic_to_geocentric(&ellipsoid, (min_lng + max_lng) / 2.0, (min_lat + max_lat) / 2.0, 0.);
-                [tx, tz, -ty]
+                (content, translation)
             };
 
             // Triangulation
@@ -263,11 +300,12 @@ fn tile_writing_stage(
             let mut buf2d: Vec<f64> = Vec::new(); // 2d-projected [x, y]
             let mut index_buf: Vec<u32> = Vec::new();
 
-            let mut vertices: IndexSet<[u32; 6], RandomState> = IndexSet::default(); // [x, y, z, u, v, feature_id]
+            let mut vertices: IndexSet<[u32; 9], RandomState> = IndexSet::default(); // [x, y, z, u, v, feature_id]
             let mut primitives: gltf::Primitives = Default::default();
 
             // make vertices and indices
-            for (feature_idx, serialized_feat) in serialized_feats.into_iter().enumerate() {
+            let mut feature_id = 0;
+            for serialized_feat in serialized_feats.into_iter() {
                 feedback.ensure_not_canceled()?;
 
                 let mut feature: SlicedFeature = bincode::deserialize(&serialized_feat.body)
@@ -279,48 +317,20 @@ fn tile_writing_stage(
                     })?;
 
                 {
-                    let mut feature_min_lng = f64::MAX;
-                    let mut feature_max_lng = f64::MIN;
-                    let mut feature_min_lat = f64::MAX;
-                    let mut feature_max_lat = f64::MIN;
-                    let mut feature_min_height = f64::MAX;
-                    let mut feature_max_height = f64::MIN;
-
                     feature
                         .polygons
                         .transform_inplace(|&[lng, lat, height, u, v]| {
-                            // feature boundary
-                            feature_min_lng = feature_min_lng.min(lng);        
-                            feature_max_lng = feature_max_lng.max(lng);        
-                            feature_min_lat = feature_min_lat.min(lat);        
-                            feature_max_lat = feature_max_lat.max(lat);        
-                            feature_min_height = feature_min_height.min(height);        
-                            feature_max_height = feature_max_height.max(height);        
-
                             // tile boundary
-                            tilespec.min_lng = tilespec.min_lng.min(lng);
-                            tilespec.max_lng = tilespec.max_lng.max(lng);
-                            tilespec.min_lat = tilespec.min_lat.min(lat);
-                            tilespec.max_lat = tilespec.max_lat.max(lat);
-                            tilespec.min_height = tilespec.min_height.min(height);
-                            tilespec.max_height = tilespec.max_height.max(height);
+                            content.min_lng = content.min_lng.min(lng);
+                            content.max_lng = content.max_lng.max(lng);
+                            content.min_lat = content.min_lat.min(lat);
+                            content.max_lat = content.max_lat.max(lat);
+                            content.min_height = content.min_height.min(height);
+                            content.max_height = content.max_height.max(height);
 
                             let (x, y, z) = geographic_to_geocentric(&ellipsoid, lng, lat, height);
                             [x - translation[0], z - translation[1], -y - translation[2], u, 1.0 - v]
                         });
-
-                    if tile_zoom < max_zoom {
-                        // Skip the feature if the size is smaller than geometricError
-                        //
-                        // TODO: better method ? (bounding sphere, etc.)
-                        let approx_dx = ellipsoid.a() * feature_min_lat.to_radians().cos() * (feature_max_lng - feature_min_lng).to_radians();
-                        let approx_dy = ellipsoid.a() * (feature_max_lng - feature_min_lng).to_radians();
-                        let approx_dh = feature_max_height - feature_min_height;
-                        let threshold = geom_error * 1.0;  // TODO: adjustable
-                        if approx_dx < threshold && approx_dy < threshold && approx_dh < threshold {
-                            continue;
-                        }
-                    }
                 }
 
                 for (poly, orig_mat_id) in feature.polygons.iter().zip_eq(feature.polygon_material_ids.iter()) {
@@ -331,39 +341,45 @@ fn tile_writing_stage(
 
                     let mat = feature.materials[*orig_mat_id as usize].clone();
                     let primitive = primitives.entry(mat).or_default();
-                    primitive.feature_ids.insert(feature_idx as u32);
+                    primitive.feature_ids.insert(feature_id as u32);
 
-                    if project3d_to_2d(poly.coords(), num_outer, 5, &mut buf2d) {
-                        // earcut
-                        earcutter.earcut(&buf2d, poly.hole_indices(), 2, &mut index_buf);
+                    if let Some((nx, ny, nz)) = calculate_normal(poly.exterior().coords(), 5) {
+                        if project3d_to_2d(poly.coords(), num_outer, 5, &mut buf2d) {
+                            // earcut
+                            earcutter.earcut(&buf2d, poly.hole_indices(), 2, &mut index_buf);
 
-                        // collect triangles
-                        primitive.indices.extend(index_buf.iter().map(|idx| {
-                            let pos = *idx as usize * 5;
-                            let [x, y, z, u, v] = poly.coords()[pos..pos + 5].try_into().unwrap();
-                            let vbits = [
-                                (x as f32).to_bits(),
-                                (y as f32).to_bits(),
-                                (z as f32).to_bits(),
-                                (u as f32).to_bits(),
-                                (v as f32).to_bits(),
-                                (feature_idx as f32).to_bits(), // UNSIGNED_INT can't be used for vertex attribute
-                            ];
-                            let (index, _) = vertices.insert_full(vbits);
-                            index as u32
-                        }));
+                            // collect triangles
+                            primitive.indices.extend(index_buf.iter().map(|idx| {
+                                let pos = *idx as usize * 5;
+                                let [x, y, z, u, v] = poly.coords()[pos..pos + 5].try_into().unwrap();
+                                let vbits = [
+                                    (x as f32).to_bits(),
+                                    (y as f32).to_bits(),
+                                    (z as f32).to_bits(),
+                                    (nx as f32).to_bits(),
+                                    (ny as f32).to_bits(),
+                                    (nz as f32).to_bits(),
+                                    (u as f32).to_bits(),
+                                    (v as f32).to_bits(),
+                                    (feature_id as f32).to_bits(), // UNSIGNED_INT can't be used for vertex attribute
+                                ];
+                                let (index, _) = vertices.insert_full(vbits);
+                                index as u32
+                            }));
+                        }
                     }
                 }
+
+                feature_id += 1;
             }
 
-            tiles.lock().unwrap().push(tilespec);
-
             // write to file
-            let path_glb =
-                output_path.join(Path::new(&format!("{tile_zoom}/{tile_x}/{tile_y}.glb")));
+            let path_glb = output_path.join(Path::new(&content.content_path));
             if let Some(dir) = path_glb.parent() {
                 fs::create_dir_all(dir)?;
             }
+
+            contents.lock().unwrap().push(content);
 
             let mut file = std::fs::File::create(path_glb)?;
             write_gltf_glb(
@@ -371,6 +387,7 @@ fn tile_writing_stage(
                 translation,
                 vertices,
                 primitives,
+                feature_id, // number of features
             )?;
 
             Ok::<(), PipelineError>(())
@@ -380,8 +397,8 @@ fn tile_writing_stage(
 
     // Generate tileset.json
     let mut tree = TileTree::default();
-    for tilespec in tiles.lock().unwrap().drain(..) {
-        tree.add_node(tilespec);
+    for content in contents.lock().unwrap().drain(..) {
+        tree.add_content(content);
     }
 
     let tileset = nusamai_3dtiles_json::tileset::Tileset {

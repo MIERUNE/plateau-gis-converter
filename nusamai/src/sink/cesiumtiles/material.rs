@@ -79,14 +79,14 @@ pub struct Image {
 impl Image {
     pub fn to_gltf(
         &self,
-        buffer_view: &mut Vec<BufferView>,
+        buffer_views: &mut Vec<BufferView>,
         bin_content: &mut Vec<u8>,
     ) -> std::io::Result<nusamai_gltf_json::Image> {
         if let Ok(path) = self.uri.to_file_path() {
             // NOTE: temporary implementation
             let content = load_image(&path)?;
 
-            buffer_view.push(BufferView {
+            buffer_views.push(BufferView {
                 byte_offset: bin_content.len() as u32,
                 byte_length: content.len() as u32,
                 ..Default::default()
@@ -96,7 +96,7 @@ impl Image {
 
             Ok(nusamai_gltf_json::Image {
                 mime_type: Some(nusamai_gltf_json::MimeType::ImageJpeg),
-                buffer_view: Some(buffer_view.len() as u32 - 1),
+                buffer_view: Some(buffer_views.len() as u32 - 1),
                 ..Default::default()
             })
         } else {

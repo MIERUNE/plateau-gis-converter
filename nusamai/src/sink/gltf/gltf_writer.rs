@@ -349,19 +349,19 @@ pub fn append_gltf_extensions(
                             extensions::gltf::ext_structural_metadata::ClassPropertyComponentType::Int8 => {
                                 buffer.write_i8(0).unwrap();
                             },
-                            extensions::gltf::ext_structural_metadata::ClassPropertyComponentType::UInt8 => {
+                            extensions::gltf::ext_structural_metadata::ClassPropertyComponentType::Uint8 => {
                                 buffer.write_u8(0).unwrap();
                             },
                             extensions::gltf::ext_structural_metadata::ClassPropertyComponentType::Int16 => {
                                 buffer.write_i16::<LittleEndian>(0).unwrap();
                             },
-                            extensions::gltf::ext_structural_metadata::ClassPropertyComponentType::UInt16 => {
+                            extensions::gltf::ext_structural_metadata::ClassPropertyComponentType::Uint16 => {
                                 buffer.write_u16::<LittleEndian>(0).unwrap();
                             },
                             extensions::gltf::ext_structural_metadata::ClassPropertyComponentType::Int32 => {
                                 buffer.write_i32::<LittleEndian>(0).unwrap();
                             },
-                            extensions::gltf::ext_structural_metadata::ClassPropertyComponentType::UInt32 => {
+                            extensions::gltf::ext_structural_metadata::ClassPropertyComponentType::Uint32 => {
                                 buffer.write_u32::<LittleEndian>(0).unwrap();
                             },
                             extensions::gltf::ext_structural_metadata::ClassPropertyComponentType::Float32 => {
@@ -373,7 +373,7 @@ pub fn append_gltf_extensions(
                             extensions::gltf::ext_structural_metadata::ClassPropertyComponentType::Int64 => {
                                 buffer.write_i64::<LittleEndian>(0).unwrap();
                             },
-                            extensions::gltf::ext_structural_metadata::ClassPropertyComponentType::UInt64 => {
+                            extensions::gltf::ext_structural_metadata::ClassPropertyComponentType::Uint64 => {
                                 buffer.write_u64::<LittleEndian>(0).unwrap();
                             },
                         }

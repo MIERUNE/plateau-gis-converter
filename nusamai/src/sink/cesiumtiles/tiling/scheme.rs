@@ -1,5 +1,7 @@
 use std::ops::Range;
 
+/// Our tiling scheme for the 3D Tiles
+
 fn msb(d: u32) -> u32 {
     u32::BITS - d.leading_zeros()
 }
@@ -18,12 +20,20 @@ pub fn x_step(z: u8, y: u32) -> u32 {
     }
 }
 
-fn get_size_for_z(z: u8) -> (u32, u32) {
+fn size_for_z(z: u8) -> (u32, u32) {
     match z {
         0 => (1, 1),
         1 => (2, 2),
         _ => (1 << z, 1 << (z - 1)),
     }
+}
+
+pub fn zxy_from_lng_lat(z: u8, lng: f64, lat: f64) -> (u8, u32, u32) {
+    let (x_size, y_size) = size_for_z(z);
+    let y = ((90.0 - lat) / 180.0 * y_size as f64).floor() as u32;
+    let xs = x_step(z, y) as i32;
+    let x = ((180.0 + lng) / 360.0 * x_size as f64).floor() as i32;
+    (z, (x - x.rem_euclid(xs)) as u32, y)
 }
 
 pub fn calc_parent_zxy(z: u8, x: u32, y: u32) -> (u8, u32, u32) {
@@ -36,7 +46,7 @@ pub fn calc_parent_zxy(z: u8, x: u32, y: u32) -> (u8, u32, u32) {
 }
 
 pub fn y_slice_range(z: u8, y: u32) -> (f64, f64) {
-    let (_, y_size) = get_size_for_z(z);
+    let (_, y_size) = size_for_z(z);
     let y = y as f64;
     let north = 90.0 - 180.0 * y / y_size as f64;
     let south = 90.0 - 180.0 * (y + 1.0) / y_size as f64;
@@ -44,14 +54,14 @@ pub fn y_slice_range(z: u8, y: u32) -> (f64, f64) {
 }
 
 pub fn x_slice_range(z: u8, x: i32, xs: u32) -> (f64, f64) {
-    let (x_size, _) = get_size_for_z(z);
+    let (x_size, _) = size_for_z(z);
     let west = -180.0 + 360.0 * x as f64 / x_size as f64;
     let east = -180.0 + 360.0 * (x + xs as i32) as f64 / x_size as f64;
     (west, east)
 }
 
 pub fn iter_y_slice(z: u8, south: f64, north: f64) -> Range<u32> {
-    let (_, y_size) = get_size_for_z(z);
+    let (_, y_size) = size_for_z(z);
     let north = north.clamp(-90.0, 90.0);
     let south = south.clamp(-90.0, 90.0);
     let y_north = ((90.0 - north) / 180.0 * y_size as f64).floor() as u32;
@@ -60,7 +70,7 @@ pub fn iter_y_slice(z: u8, south: f64, north: f64) -> Range<u32> {
 }
 
 pub fn iter_x_slice(z: u8, y: u32, west: f64, east: f64) -> impl Iterator<Item = (i32, u32)> {
-    let (x_size, _) = get_size_for_z(z);
+    let (x_size, _) = size_for_z(z);
     let x_west = ((180.0 + west) / 360.0 * x_size as f64).floor() as i32;
     let x_east = ((180.0 + east) / 360.0 * x_size as f64).ceil() as i32;
     let xs = x_step(z, y) as i32;
@@ -70,7 +80,7 @@ pub fn iter_x_slice(z: u8, y: u32, west: f64, east: f64) -> impl Iterator<Item =
 }
 
 pub fn geometric_error(z: u8, y: u32) -> f64 {
-    let (_, y_size) = get_size_for_z(z);
+    let (_, y_size) = size_for_z(z);
     if y >= y_size {
         panic!("y out of range");
     }
@@ -158,10 +168,10 @@ mod tests {
 
     #[test]
     fn test_get_size_for_z() {
-        assert_eq!(get_size_for_z(0), (1, 1));
-        assert_eq!(get_size_for_z(1), (2, 2));
-        assert_eq!(get_size_for_z(2), (4, 2));
-        assert_eq!(get_size_for_z(3), (8, 4));
+        assert_eq!(size_for_z(0), (1, 1));
+        assert_eq!(size_for_z(1), (2, 2));
+        assert_eq!(size_for_z(2), (4, 2));
+        assert_eq!(size_for_z(3), (8, 4));
     }
 
     #[test]
