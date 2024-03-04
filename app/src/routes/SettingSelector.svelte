@@ -4,7 +4,7 @@
 	import { filetypeOptions } from '$lib/settings';
 
 	export let selectedFiletype: string = 'gpkg';
-	export let selectedCrs: number = 4979;
+	export let selectedEpsg: number = 4979;
 	export let rulesPath: string;
 
 	$: crsOptions = filetypeOptions[selectedFiletype]?.crs || [];
@@ -48,7 +48,7 @@
 		<div class=" flex flex-col gap-1.5">
 			<label for="crs-select" class="font-bold">座標参照系</label>
 			<select
-				bind:value={selectedCrs}
+				bind:value={selectedEpsg}
 				name="crs"
 				id="crs-select"
 				class="w-64"

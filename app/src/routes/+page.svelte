@@ -8,7 +8,7 @@
 
 	let inputPaths: string[] = [];
 	let selectedFiletype: string;
-	let selectedCrs: number;
+	let selectedEpsg: number;
 	let rulesPath = '';
 	let outputPath = '';
 	let isRunning = false;
@@ -28,7 +28,7 @@
 			inputPaths,
 			outputPath,
 			selectedFiletype,
-			selectedCrs,
+			selectedEpsg,
 			rulesPath
 		});
 		isRunning = false;
@@ -53,7 +53,7 @@
 
 		<InputSelector bind:inputPaths />
 
-		<SettingSelector bind:selectedFiletype bind:selectedCrs bind:rulesPath />
+		<SettingSelector bind:selectedFiletype bind:selectedEpsg bind:rulesPath />
 
 		<OutputSelector {selectedFiletype} bind:outputPath />
 
