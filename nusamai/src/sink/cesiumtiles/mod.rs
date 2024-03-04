@@ -261,11 +261,16 @@ fn tile_writing_stage(
                 let (tile_zoom, tile_x, tile_y) = zxy;
                 let (min_lat, max_lat) = tiling::y_slice_range(tile_zoom, tile_y);
                 let (min_lng, max_lng) = tiling::x_slice_range(tile_zoom, tile_x as i32, tiling::x_step(tile_zoom, tile_y));
+
                 // Use the tile center as the translation of the glTF mesh
                 let translation = {
                     let (tx, ty, tz) = geographic_to_geocentric(&ellipsoid, (min_lng + max_lng) / 2.0, (min_lat + max_lat) / 2.0, 0.);
-                    [tx, tz, -ty]
+                    // z-up to y-up
+                    let [tx, ty, tz] = [tx, tz, -ty];
+                    // double-precision to single-precision
+                    [(tx as f32) as f64, (ty as f32) as f64, (tz as f32) as f64]
                 };
+
                 let geom_error = tiling::geometric_error(tile_zoom, tile_y);
                 log::info!(
                     "tile: z={tile_zoom}, x={tile_x}, y={tile_y} (lng: [{min_lng} => {max_lng}], lat: [{min_lat} => {max_lat}) geometricError: {geom_error}"
@@ -322,6 +327,9 @@ fn tile_writing_stage(
                             content.max_height = content.max_height.max(height);
 
                             let (x, y, z) = geographic_to_geocentric(&ellipsoid, lng, lat, height);
+                            // - z-up to y-up
+                            // - subtract the translation
+                            // - flip the texture v-coordinate
                             [x - translation[0], z - translation[1], -y - translation[2], u, 1.0 - v]
                         });
                 }
