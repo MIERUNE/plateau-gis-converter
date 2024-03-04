@@ -108,6 +108,7 @@ impl GpkgSink {
 
         let table_infos = schema_to_table_infos(schema);
         let mut created_tables = HashSet::<String>::new();
+        let srs_id = schema.epsg.unwrap_or(0); // 0 means 'Undefined Geographic'
 
         let mut table_bboxes = IndexMap::<String, Bbox>::new();
 
@@ -209,7 +210,7 @@ impl GpkgSink {
 
             if !created_tables.contains(&table_name) {
                 let tf = table_infos.get(&table_name).unwrap();
-                tx.add_table(tf).await.unwrap();
+                tx.add_table(tf, srs_id).await.unwrap();
                 created_tables.insert(table_name.clone());
             }
 
