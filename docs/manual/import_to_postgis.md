@@ -40,31 +40,18 @@ URL例：
 `http://127.0.0.1:8888/lab?token=******`
 
 - 取り込む処理の実行
-<<<<<<< HEAD
-  `import_to_postgis.ipynb`を開き、データベース情報と投入するGeoPackageファイルの情報を書き換え、実行することによって、データベースにデータを読み込むことができます。 
-  
-  <img src="../../resources/posgis_jupyter.png" width="1000" >
-=======
+
   `import_to_postgis.ipynb`を開き、データベース情報と投入するGeoPackageファイルの情報を書き換え、実行することによって、データベースにデータを読み込むことができます。
 
 ![alt text](../resources/import_to_postgis_image.png)
->>>>>>> main
 
 ## QGISで表示する
 
 - データベースへ接続します
   QGISのブラウザにある「PostgreSQL」項目を右クリック→New Connectionをクリックします。データベース情報を入力し、データベースに接続します。
 
-<<<<<<< HEAD
-<img src="../../resources/postgis_dbconnection.png" width="300">
-
-- 読み込まれたテーブル名をダブルクリックし、QGISに表示されます。
-
-<img src="../../resources/postgis_qgis_view.png" width="1000" >
-=======
 ![alt text](../resources/import_to_postgis_image-1.png)
 
 - 読み込まれたテーブル名をダブルクリックし、QGISに表示されます。
 
 ![alt text](../resources/import_to_postgis_image-2.png)
->>>>>>> main
