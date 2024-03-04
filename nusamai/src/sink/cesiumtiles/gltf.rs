@@ -34,7 +34,7 @@ pub fn write_gltf_glb<W: Write>(
         let mut position_max = [f64::MIN; 3];
         let mut position_min = [f64::MAX; 3];
 
-        const VERTEX_BYTE_STRIDE: usize = 4 * 6; // 4-bytes (u32) x 6
+        const VERTEX_BYTE_STRIDE: usize = 4 * 6; // 4-bytes (f32) x 6
 
         let buffer_offset = bin_content.len();
         let mut buf = [0; VERTEX_BYTE_STRIDE];
@@ -184,6 +184,14 @@ pub fn write_gltf_glb<W: Write>(
         ..Default::default()
     }];
 
+    let mut gltf_meshes = vec![];
+    if !gltf_primitives.is_empty() {
+        gltf_meshes.push(Mesh {
+            primitives: gltf_primitives,
+            ..Default::default()
+        });
+    }
+
     // Build the JSON part of glTF
     let gltf = Gltf {
         scenes: vec![Scene {
@@ -191,14 +199,11 @@ pub fn write_gltf_glb<W: Write>(
             ..Default::default()
         }],
         nodes: vec![Node {
-            mesh: Some(0),
+            mesh: (!primitives.is_empty()).then_some(0),
             translation,
             ..Default::default()
         }],
-        meshes: vec![Mesh {
-            primitives: gltf_primitives,
-            ..Default::default()
-        }],
+        meshes: gltf_meshes,
         materials: gltf_materials,
         textures: gltf_textures,
         images: gltf_images,

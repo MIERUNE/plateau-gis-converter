@@ -54,7 +54,7 @@ pub struct DataRequirements {
     pub shorten_names_for_shapefile: bool,
     pub tree_flattening: transformer::TreeFlatteningSpec,
     /// Whether to use appearance information (if false, the pipeline can skip the appearance parsing)
-    pub use_apperance: bool,
+    pub use_appearance: bool,
     /// Whether to bind appearance information to the geometry
     pub resolve_appearance: bool,
     pub mergedown: transformer::MergedownSpec,
@@ -68,7 +68,7 @@ impl Default for DataRequirements {
             output_epsg: crs::EPSG_WGS84_GEOGRAPHIC_3D,
             shorten_names_for_shapefile: false,
             tree_flattening: transformer::TreeFlatteningSpec::None,
-            use_apperance: false,
+            use_appearance: false,
             resolve_appearance: false,
             mergedown: transformer::MergedownSpec::RemoveDescendantFeatures,
             key_value: transformer::KeyValueSpec::Jsonify,

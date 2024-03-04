@@ -176,7 +176,7 @@ fn main() {
 
         // create source
         let mut source = source_provider.create(&source_params);
-        source.set_appearance_resolution(requirements.use_apperance);
+        source.set_appearance_parsing(requirements.use_appearance);
         source
     };
 
