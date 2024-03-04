@@ -28,6 +28,7 @@
 			inputPaths,
 			outputPath,
 			filetype,
+			selectedCrs,
 			rulesPath
 		});
 		isRunning = false;
