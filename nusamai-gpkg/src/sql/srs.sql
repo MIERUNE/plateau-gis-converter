@@ -31,6 +31,29 @@ VALUES
         'Undefined'
     );
 
+-- WGS 84 (3D)
+-- cf. https://epsg.org/crs_4979/WGS-84.html
+INSERT INTO
+    gpkg_spatial_ref_sys (
+        srs_name,
+        srs_id,
+        organization,
+        organization_coordsys_id,
+        definition
+    )
+VALUES
+    (
+        'WGS 84 (3D)',
+        4979,
+        'EPSG',
+        4979,
+        'GEOGCRS ["WGS 84",ENSEMBLE["World Geodetic System 1984 ensemble", MEMBER["World Geodetic System 1984 (Transit)", ID["EPSG",1166]], MEMBER["World Geodetic System 1984 (G730)", ID["EPSG",1152]], MEMBER["World Geodetic System 1984 (G873)", ID["EPSG",1153]], MEMBER["World Geodetic System 1984 (G1150)", ID["EPSG",1154]], MEMBER["World Geodetic System 1984 (G1674)", ID["EPSG",1155]], MEMBER["World Geodetic System 1984 (G1762)", ID["EPSG",1156]], MEMBER["World Geodetic System 1984 (G2139)", ID["EPSG",1309]], ELLIPSOID["WGS 84",6378137,298.257223563,LENGTHUNIT["metre",1,ID["EPSG",9001]],ID["EPSG",7030]], ENSEMBLEACCURACY[2],
+ID ["EPSG",6326]],CS[ellipsoidal,3,ID["EPSG",6423]],AXIS["Geodetic latitude (Lat)",north,ANGLEUNIT["degree",0.0174532925199433,ID["EPSG",9102]]],
+AXIS ["Geodetic longitude (Lon)",east,ANGLEUNIT["degree",0.0174532925199433,ID["EPSG",9102]]],
+AXIS ["Ellipsoidal height (h)",up,LENGTHUNIT["metre",1,ID["EPSG",9001]]],
+ID ["EPSG",4979]]'
+    );
+
 -- Japan Plane Rectangular CS
 -- cf. https://epsg.org/crs_10162/JGD2011-Japan-Plane-Rectangular-CS-I-JGD2011-vertical-height.html, etc.
 INSERT INTO
