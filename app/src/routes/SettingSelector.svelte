@@ -1,10 +1,12 @@
 <script lang="ts">
 	import { dialog } from '@tauri-apps/api';
 	import Icon from '@iconify/svelte';
-	import { filetypeOptions, crsOptions } from '$lib/settings';
+	import { filetypeOptions } from '$lib/settings';
 
 	export let filetype: string;
 	export let rulesPath: string;
+
+	$: crsOptions = filetypeOptions[filetype]?.crs || [];
 
 	async function openRulesPathDialog() {
 		const res = await dialog.open({
@@ -41,7 +43,7 @@
 			</select>
 		</div>
 
-		<div class=" flex flex-col gap-1.5 opacity-50">
+		<div class=" flex flex-col gap-1.5">
 			<label for="crs-select" class="font-bold">座標参照系</label>
 			<select name="crs" id="crs-select" class="w-80">
 				{#each crsOptions as crs}
