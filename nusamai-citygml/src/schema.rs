@@ -4,9 +4,12 @@ use indexmap::IndexMap;
 
 use serde::{Deserialize, Serialize};
 
+use nusamai_projection::crs::EpsgCode;
+
 #[derive(Debug, Serialize, Deserialize, Default)]
 pub struct Schema {
     pub types: IndexMap<String, TypeDef, ahash::RandomState>,
+    pub epsg: Option<EpsgCode>,
 }
 
 #[derive(Debug, Serialize, Deserialize, PartialEq)]

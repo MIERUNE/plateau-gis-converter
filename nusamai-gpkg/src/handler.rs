@@ -28,6 +28,10 @@ impl GpkgHandler {
         let create_query = include_str!("sql/init.sql");
         sqlx::query(create_query).execute(&pool).await?;
 
+        // Set spatial reference systems
+        let srs_query = include_str!("sql/srs.sql");
+        sqlx::query(srs_query).execute(&pool).await?;
+
         Ok(Self { pool })
     }
 
@@ -175,7 +179,11 @@ impl<'c> GpkgTransaction<'c> {
     }
 
     /// Set up a table for the features / attributes
-    pub async fn add_table(&mut self, table_info: &TableInfo) -> Result<(), GpkgError> {
+    pub async fn add_table(
+        &mut self,
+        table_info: &TableInfo,
+        srs_id: u16,
+    ) -> Result<(), GpkgError> {
         let executor = self.tx.acquire().await.unwrap();
 
         // Create the table
@@ -203,7 +211,7 @@ impl<'c> GpkgTransaction<'c> {
             "attributes"
         })
         .bind(table_info.name.as_str())
-        .bind(4326) // Fixed for now - TODO: Change according to the data
+        .bind(srs_id)
         .execute(&mut *executor)
         .await?;
 
@@ -214,7 +222,7 @@ impl<'c> GpkgTransaction<'c> {
             ).bind(table_info.name.as_str())
             .bind("geometry")
             .bind("MULTIPOLYGON") // Fixed for now - TODO: Change according to the data
-            .bind(4326) // Fixed for now - TODO: Change according to the data
+            .bind(srs_id)
             .bind(1)
             .bind(0).execute(&mut *executor).await?;
         }
@@ -345,6 +353,7 @@ mod tests {
             .await
             .unwrap();
 
+        let srs_id = 4326;
         let table_name = "mpoly3d";
         let columns = vec![
             ColumnInfo {
@@ -375,7 +384,7 @@ mod tests {
         };
 
         let mut tx = handler.begin().await.unwrap();
-        tx.add_table(&table_info).await.unwrap();
+        tx.add_table(&table_info, srs_id).await.unwrap();
         tx.commit().await.unwrap();
 
         let table_names = handler.table_names().await;
@@ -409,7 +418,7 @@ mod tests {
                 table_name.into(),
                 "features".into(),
                 table_name.into(),
-                4326
+                srs_id as i32
             )]
         );
 
@@ -420,7 +429,7 @@ mod tests {
                 table_name.into(),
                 "geometry".into(),
                 "MULTIPOLYGON".into(),
-                4326,
+                srs_id as i32,
                 1,
                 0
             )]
@@ -433,6 +442,7 @@ mod tests {
             .await
             .unwrap();
 
+        let srs_id = 4326;
         let table_name = "without_geometry";
         let columns = vec![ColumnInfo {
             name: "attr1".into(),
@@ -446,7 +456,7 @@ mod tests {
         };
 
         let mut tx = handler.begin().await.unwrap();
-        tx.add_table(&table_info).await.unwrap();
+        tx.add_table(&table_info, srs_id).await.unwrap();
         tx.commit().await.unwrap();
 
         let table_names = handler.table_names().await;
@@ -477,7 +487,7 @@ mod tests {
                 table_name.into(),
                 "attributes".into(), // "attributes", not "features"
                 table_name.into(),
-                4326
+                srs_id as i32
             )]
         );
 
@@ -493,6 +503,7 @@ mod tests {
             .unwrap();
         let mut tx: GpkgTransaction<'_> = handler.begin().await.unwrap();
 
+        let srs_id = 4326;
         let table_name = "mpoly3d";
         let columns = vec![
             ColumnInfo {
@@ -521,7 +532,7 @@ mod tests {
             has_geometry: true,
             columns,
         };
-        tx.add_table(&table_info).await.unwrap();
+        tx.add_table(&table_info, srs_id).await.unwrap();
 
         let attributes: IndexMap<String, String> = IndexMap::from([
             ("attr1".into(), "value1".into()),
@@ -554,6 +565,7 @@ mod tests {
             .unwrap();
         let mut tx: GpkgTransaction<'_> = handler.begin().await.unwrap();
 
+        let srs_id = 4326;
         let table_name = "without_geometry";
         let columns = vec![
             ColumnInfo {
@@ -582,7 +594,7 @@ mod tests {
             has_geometry: false, // No geometry
             columns,
         };
-        tx.add_table(&table_info).await.unwrap();
+        tx.add_table(&table_info, srs_id).await.unwrap();
 
         let attributes: IndexMap<String, String> = IndexMap::from([
             ("attr1".into(), "value1".into()),
@@ -611,6 +623,7 @@ mod tests {
             .await
             .unwrap();
 
+        let srs_id = 4326;
         let table_name = "mpoly3d";
         let table_info = TableInfo {
             name: table_name.into(),
@@ -619,7 +632,7 @@ mod tests {
         };
 
         let mut tx = handler.begin().await.unwrap();
-        tx.add_table(&table_info).await.unwrap();
+        tx.add_table(&table_info, srs_id).await.unwrap();
         tx.commit().await.unwrap();
 
         let (min_x, min_y, max_x, max_y) = handler.bbox(table_name).await.unwrap();

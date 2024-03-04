@@ -115,13 +115,13 @@ pub enum ClassPropertyType {
 #[serde(rename_all = "UPPERCASE")]
 pub enum ClassPropertyComponentType {
     Int8,
-    UInt8,
+    Uint8,
     Int16,
-    UInt16,
+    Uint16,
     Int32,
-    UInt32,
+    Uint32,
     Int64,
-    UInt64,
+    Uint64,
     Float32,
     Float64,
 }
@@ -209,14 +209,14 @@ pub struct ClassProperty {
 #[serde(rename_all = "UPPERCASE")]
 pub enum EnumValueType {
     Int8,
-    UInt8,
+    Uint8,
     Int16,
     #[default]
-    UInt16,
+    Uint16,
     Int32,
-    UInt32,
+    Uint32,
     Int64,
-    UInt64,
+    Uint64,
 }
 
 /// Enum in EXT_structural_metadata
@@ -251,7 +251,7 @@ pub struct Enum {
 /// Enum Value in EXT_structural_metadata
 #[derive(Serialize, Deserialize, Debug, Default, PartialEq)]
 #[serde(rename_all = "camelCase")]
-#[serde(deny_unknown_fields)]
+// #[serde(deny_unknown_fields)]
 pub struct EnumValue {
     /// The name of the enum value.
     pub name: String,
@@ -262,14 +262,14 @@ pub struct EnumValue {
 
     /// The integer enum value.
     pub value: i32,
+    //
+    // /// JSON object with extension-specific objects.
+    // #[serde(skip_serializing_if = "Option::is_none")]
+    // pub extensions: Option<HashMap<String, Value>>,
 
-    /// JSON object with extension-specific objects.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub extensions: Option<HashMap<String, Value>>,
-
-    /// Application-specific data.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub extras: Option<Value>,
+    // /// Application-specific data.
+    // #[serde(skip_serializing_if = "Option::is_none")]
+    // pub extras: Option<Value>,
 }
 
 /// Property Table in EXT_structural_metadata
@@ -393,11 +393,11 @@ pub struct PropertyAttributeProperty {
 #[derive(Serialize, Deserialize, Debug, Default, PartialEq, Eq, Clone)]
 #[serde(rename_all = "UPPERCASE")]
 pub enum OffsetType {
-    UInt8,
-    UInt16,
+    Uint8,
+    Uint16,
     #[default]
-    UInt32,
-    UInt64,
+    Uint32,
+    Uint64,
 }
 
 /// Property Table Property in EXT_structural_metadata

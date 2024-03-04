@@ -48,7 +48,7 @@ pub enum Value {
     Float([u8; 4]),
     Double([u8; 8]),
     Int(i64),
-    UInt(u64),
+    Uint(u64),
     SInt(i64),
     Bool(bool),
 }
@@ -73,7 +73,7 @@ impl Value {
                 int_value: Some(v),
                 ..Default::default()
             },
-            UInt(v) => tile::Value {
+            Uint(v) => tile::Value {
                 uint_value: Some(v),
                 ..Default::default()
             },
@@ -101,18 +101,18 @@ impl From<String> for Value {
 }
 impl From<u64> for Value {
     fn from(v: u64) -> Self {
-        Value::UInt(v)
+        Value::Uint(v)
     }
 }
 impl From<u32> for Value {
     fn from(v: u32) -> Self {
-        Value::UInt(v as u64)
+        Value::Uint(v as u64)
     }
 }
 impl From<i64> for Value {
     fn from(v: i64) -> Self {
         if v >= 0 {
-            Value::UInt(v as u64)
+            Value::Uint(v as u64)
         } else {
             Value::SInt(v)
         }
@@ -121,7 +121,7 @@ impl From<i64> for Value {
 impl From<i32> for Value {
     fn from(v: i32) -> Self {
         if v >= 0 {
-            Value::UInt(v as u64)
+            Value::Uint(v as u64)
         } else {
             Value::SInt(v as i64)
         }

@@ -1,10 +1,13 @@
+//! Tileset encoder
+
 use super::scheme::{calc_parent_zxy, geometric_error};
 use nusamai_3dtiles_json::tileset;
 use nusamai_mvt::TileZXY;
 
 #[derive(Debug)]
-pub struct TileSpec {
+pub struct TileContent {
     pub zxy: TileZXY,
+    pub content_path: String,
     pub min_lng: f64,
     pub max_lng: f64,
     pub min_lat: f64,
@@ -13,10 +16,11 @@ pub struct TileSpec {
     pub max_height: f64,
 }
 
-impl Default for TileSpec {
+impl Default for TileContent {
     fn default() -> Self {
-        TileSpec {
+        TileContent {
             zxy: (0, u32::MAX, u32::MAX),
+            content_path: String::new(),
             min_lng: f64::MAX,
             max_lng: f64::MIN,
             min_lat: f64::MAX,
@@ -27,19 +31,44 @@ impl Default for TileSpec {
     }
 }
 
-#[derive(Default, Debug)]
+#[derive(Debug)]
 pub struct Tile {
-    spec: TileSpec,
-    has_content: bool,
+    zxy: TileZXY,
+    contents: Vec<TileContent>,
     child00: Option<Box<Tile>>,
     child01: Option<Box<Tile>>,
     child10: Option<Box<Tile>>,
     child11: Option<Box<Tile>>,
+    pub min_lng: f64,
+    pub max_lng: f64,
+    pub min_lat: f64,
+    pub max_lat: f64,
+    pub min_height: f64,
+    pub max_height: f64,
+}
+
+impl Default for Tile {
+    fn default() -> Self {
+        Tile {
+            zxy: (0, u32::MAX, u32::MAX),
+            child00: None,
+            child01: None,
+            child10: None,
+            child11: None,
+            contents: vec![],
+            min_lng: f64::MAX,
+            max_lng: f64::MIN,
+            min_lat: f64::MAX,
+            max_lat: f64::MIN,
+            min_height: f64::MAX,
+            max_height: f64::MIN,
+        }
+    }
 }
 
 impl Tile {
     fn update_boundary(&mut self) {
-        for c in [
+        for child in [
             &mut self.child00,
             &mut self.child01,
             &mut self.child10,
@@ -48,13 +77,21 @@ impl Tile {
         .into_iter()
         .flatten()
         {
-            c.update_boundary();
-            self.spec.min_lng = self.spec.min_lng.min(c.spec.min_lng);
-            self.spec.max_lng = self.spec.max_lng.max(c.spec.max_lng);
-            self.spec.min_lat = self.spec.min_lat.min(c.spec.min_lat);
-            self.spec.max_lat = self.spec.max_lat.max(c.spec.max_lat);
-            self.spec.min_height = self.spec.min_height.min(c.spec.min_height);
-            self.spec.max_height = self.spec.max_height.max(c.spec.max_height);
+            child.update_boundary();
+            self.min_lng = self.min_lng.min(child.min_lng);
+            self.max_lng = self.max_lng.max(child.max_lng);
+            self.min_lat = self.min_lat.min(child.min_lat);
+            self.max_lat = self.max_lat.max(child.max_lat);
+            self.min_height = self.min_height.min(child.min_height);
+            self.max_height = self.max_height.max(child.max_height);
+        }
+        for content in &self.contents {
+            self.min_lng = self.min_lng.min(content.min_lng);
+            self.max_lng = self.max_lng.max(content.max_lng);
+            self.min_lat = self.min_lat.min(content.min_lat);
+            self.max_lat = self.max_lat.max(content.max_lat);
+            self.min_height = self.min_height.min(content.min_height);
+            self.max_height = self.max_height.max(content.max_height);
         }
     }
 
@@ -74,28 +111,44 @@ impl Tile {
             }
         };
 
-        let (z, x, y) = self.spec.zxy;
-        let content = if self.has_content {
-            Some(tileset::Content {
-                uri: format!("{}/{}/{}.glb", z, x, y),
-                ..Default::default()
-            })
-        } else {
-            None
+        let (content, contents) = {
+            match self.contents.len() {
+                0 => (None, None),
+                1 => {
+                    let content = tileset::Content {
+                        uri: self.contents[0].content_path.clone(),
+                        ..Default::default()
+                    };
+                    (Some(content), None)
+                }
+                _ => {
+                    let contents: Vec<_> = self
+                        .contents
+                        .into_iter()
+                        .map(|content| tileset::Content {
+                            uri: content.content_path,
+                            ..Default::default()
+                        })
+                        .collect();
+                    (None, Some(contents))
+                }
+            }
         };
 
+        let (z, _, y) = self.zxy;
         tileset::Tile {
             geometric_error: geometric_error(z, y),
             refine: Some(tileset::Refine::Replace),
             bounding_volume: tileset::BoundingVolume::new_region([
-                self.spec.min_lng.to_radians(),
-                self.spec.min_lat.to_radians(),
-                self.spec.max_lng.to_radians(),
-                self.spec.max_lat.to_radians(),
-                self.spec.min_height,
-                self.spec.max_height,
+                self.min_lng.to_radians(),
+                self.min_lat.to_radians(),
+                self.max_lng.to_radians(),
+                self.max_lat.to_radians(),
+                self.min_height,
+                self.max_height,
             ]),
             content,
+            contents,
             children,
             ..Default::default()
         }
@@ -103,10 +156,7 @@ impl Tile {
 
     fn new(zxy: TileZXY) -> Self {
         Tile {
-            spec: TileSpec {
-                zxy,
-                ..Default::default()
-            },
+            zxy,
             ..Default::default()
         }
     }
@@ -121,10 +171,7 @@ impl Default for TileTree {
     fn default() -> Self {
         Self {
             root: Tile {
-                spec: TileSpec {
-                    zxy: (0, 0, 0),
-                    ..Default::default()
-                },
+                zxy: (0, 0, 0),
                 ..Default::default()
             },
         }
@@ -136,10 +183,9 @@ impl TileTree {
         self.root.into_tileset_tile()
     }
 
-    pub fn add_node(&mut self, tilespec: TileSpec) {
-        let node = self.get_node(tilespec.zxy);
-        node.has_content = true;
-        node.spec = tilespec;
+    pub fn add_content(&mut self, content: TileContent) {
+        let node = self.get_node(content.zxy);
+        node.contents.push(content);
     }
 
     fn get_node(&mut self, zxy: TileZXY) -> &mut Tile {
