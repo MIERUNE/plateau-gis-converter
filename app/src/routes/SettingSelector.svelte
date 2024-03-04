@@ -45,7 +45,7 @@
 
 		<div class=" flex flex-col gap-1.5">
 			<label for="crs-select" class="font-bold">座標参照系</label>
-			<select name="crs" id="crs-select" class="w-80">
+			<select name="crs" id="crs-select" class="w-36">
 				{#each crsOptions as crs}
 					<option value={crs.value}>{crs.label}</option>
 				{/each}
