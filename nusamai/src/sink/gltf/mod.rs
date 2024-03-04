@@ -2,6 +2,7 @@
 mod attributes;
 mod gltf_writer;
 mod material;
+mod metadata;
 mod positions;
 
 use std::fs::File;
@@ -12,6 +13,7 @@ use std::sync::Mutex;
 
 use ahash::{HashMap, HashSet, RandomState};
 use earcut_rs::{utils3d::project3d_to_2d, Earcut};
+use flate2::write;
 use indexmap::{IndexMap, IndexSet};
 
 use itertools::Itertools;
@@ -34,6 +36,7 @@ use gltf_writer::{append_gltf_extensions, write_3dtiles, write_gltf};
 // use positions::Vertex;
 
 use self::gltf_writer::build_base_gltf;
+use self::gltf_writer::write_gltf_glb;
 use self::material::Material;
 use self::material::Texture;
 
@@ -159,44 +162,45 @@ impl DataSink for GltfSink {
         // Construct a Feature classified by typename from Entity
         // Features have polygons, attributes and materials
         // The coordinates of polygon store the actual coordinate values (WGS84) and UV coordinates, not the index.
-        {
-            let _ = upstream.into_iter().par_bridge().try_for_each(|parcel| {
-                if feedback.is_canceled() {
-                    return Err(PipelineError::Canceled);
-                }
 
-                let entity = parcel.entity;
+        let _ = upstream.into_iter().par_bridge().try_for_each(|parcel| {
+            if feedback.is_canceled() {
+                return Err(PipelineError::Canceled);
+            }
 
-                // entity must be a Feature
-                let Value::Object(obj) = &entity.root else {
-                    return Ok(());
-                };
-                let ObjectStereotype::Feature { geometries, .. } = &obj.stereotype else {
-                    return Ok(());
-                };
+            let entity = parcel.entity;
 
-                let geom_store = entity.geometry_store.read().unwrap();
-                if geom_store.multipolygon.is_empty() {
-                    return Ok(());
-                }
-                let appearance_store = entity.appearance_store.read().unwrap();
-                let typename = obj.typename.clone();
+            // entity must be a Feature
+            let Value::Object(obj) = &entity.root else {
+                return Ok(());
+            };
+            let ObjectStereotype::Feature { geometries, .. } = &obj.stereotype else {
+                return Ok(());
+            };
 
-                let mut materials: IndexSet<Material> = IndexSet::new();
-                let default_mat = appearance::Material::default();
+            let geom_store = entity.geometry_store.read().unwrap();
+            if geom_store.multipolygon.is_empty() {
+                return Ok(());
+            }
+            let appearance_store = entity.appearance_store.read().unwrap();
+            let typename = obj.typename.clone();
 
-                let mut feature = Feature {
-                    polygons: MultiPolygon::new(),
-                    attributes: entity.root.clone(),
-                    polygon_material_ids: Default::default(),
-                    materials: Default::default(),
-                };
+            let mut materials: IndexSet<Material> = IndexSet::new();
+            let default_mat = appearance::Material::default();
 
-                geometries.iter().for_each(|entry| {
-                    match entry.ty {
-                        GeometryType::Solid | GeometryType::Surface | GeometryType::Triangle => {
-                            // for each polygon
-                            for (((idx_poly, poly_uv), poly_mat), poly_tex) in geom_store
+            let mut feature = Feature {
+                polygons: MultiPolygon::new(),
+                attributes: entity.root.clone(),
+                polygon_material_ids: Default::default(),
+                materials: Default::default(),
+            };
+
+            geometries.iter().for_each(|entry| {
+                match entry.ty {
+                    GeometryType::Solid | GeometryType::Surface | GeometryType::Triangle => {
+                        // for each polygon
+                        for (((idx_poly, poly_uv), poly_mat), poly_tex) in
+                            geom_store
                                 .multipolygon
                                 .iter_range(entry.pos as usize..(entry.pos + entry.len) as usize)
                                 .zip_eq(geom_store.polygon_uvs.iter_range(
@@ -212,166 +216,175 @@ impl DataSink for GltfSink {
                                         [entry.pos as usize..(entry.pos + entry.len) as usize]
                                         .iter(),
                                 )
+                        {
+                            let poly = idx_poly.transform(|c| geom_store.vertices[c[0] as usize]);
+                            let orig_mat = poly_mat
+                                .and_then(|idx| appearance_store.materials.get(idx as usize))
+                                .unwrap_or(&default_mat)
+                                .clone();
+                            let orig_tex = poly_tex
+                                .and_then(|idx| appearance_store.textures.get(idx as usize));
+
+                            let mat = Material {
+                                base_color: orig_mat.diffuse_color.into(),
+                                base_texture: orig_tex.map(|tex| Texture {
+                                    uri: tex.image_url.clone(),
+                                }),
+                            };
+                            let (mat_idx, _) = materials.insert_full(mat);
+
+                            let mut ling_buf: Vec<[f64; 5]> = Vec::new();
+                            for (xyz, uv) in poly
+                                .coords()
+                                .chunks_exact(3)
+                                .zip(poly_uv.coords().chunks_exact(2))
                             {
-                                let poly =
-                                    idx_poly.transform(|c| geom_store.vertices[c[0] as usize]);
-                                let orig_mat = poly_mat
-                                    .and_then(|idx| appearance_store.materials.get(idx as usize))
-                                    .unwrap_or(&default_mat)
-                                    .clone();
-                                let orig_tex = poly_tex
-                                    .and_then(|idx| appearance_store.textures.get(idx as usize));
-
-                                let mat = Material {
-                                    base_color: orig_mat.diffuse_color.into(),
-                                    base_texture: orig_tex.map(|tex| Texture {
-                                        uri: tex.image_url.clone(),
-                                    }),
-                                };
-                                let (mat_idx, _) = materials.insert_full(mat);
-
-                                let mut ling_buf: Vec<[f64; 5]> = Vec::new();
-                                for (xyz, uv) in poly
-                                    .coords()
-                                    .chunks_exact(3)
-                                    .zip(poly_uv.coords().chunks_exact(2))
-                                {
-                                    ling_buf.push([xyz[0], xyz[1], xyz[2], uv[0], uv[1]]);
-                                    let mut bounds = bounding_volume.lock().unwrap();
-                                    bounds.min_lng = bounds.min_lng.min(xyz[0]);
-                                    bounds.max_lng = bounds.max_lng.max(xyz[0]);
-                                    bounds.min_lat = bounds.min_lat.min(xyz[1]);
-                                    bounds.max_lat = bounds.max_lat.max(xyz[1]);
-                                    bounds.min_height = bounds.min_height.min(xyz[2]);
-                                    bounds.max_height = bounds.max_height.max(xyz[2]);
-                                }
-
-                                let mut poly_buf: Polygon<5> = Polygon::new();
-                                poly_buf.add_ring(ling_buf);
-
-                                feature.polygons.push(&poly_buf);
-                                feature.polygon_material_ids.push(mat_idx as u32);
+                                ling_buf.push([xyz[0], xyz[1], xyz[2], uv[0], uv[1]]);
+                                let mut bounds = bounding_volume.lock().unwrap();
+                                bounds.min_lng = bounds.min_lng.min(xyz[0]);
+                                bounds.max_lng = bounds.max_lng.max(xyz[0]);
+                                bounds.min_lat = bounds.min_lat.min(xyz[1]);
+                                bounds.max_lat = bounds.max_lat.max(xyz[1]);
+                                bounds.min_height = bounds.min_height.min(xyz[2]);
+                                bounds.max_height = bounds.max_height.max(xyz[2]);
                             }
-                        }
-                        GeometryType::Curve => {
-                            // TODO: implement
-                        }
-                        GeometryType::Point => {
-                            // TODO: implement
+
+                            let mut poly_buf: Polygon<5> = Polygon::new();
+                            poly_buf.add_ring(ling_buf);
+
+                            feature.polygons.push(&poly_buf);
+                            feature.polygon_material_ids.push(mat_idx as u32);
                         }
                     }
-                });
-
-                feature.materials = materials;
-                categorized_features
-                    .lock()
-                    .unwrap()
-                    .entry(typename.into_owned())
-                    .or_default()
-                    .push(feature);
-
-                Ok(())
-            });
-        }
-
-        // triangulation and make vertices and primitives
-        {
-            let bbox = bounding_volume.lock().unwrap();
-            let translation = {
-                let (tx, ty, tz) = geographic_to_geocentric(
-                    &ellipsoid,
-                    (bbox.min_lng + bbox.max_lng) / 2.0,
-                    (bbox.min_lat + bbox.max_lat) / 2.0,
-                    (bbox.min_height + bbox.max_height) / 2.0,
-                );
-                [tx, tz, -ty]
-            };
-
-            for (typename, mut features) in categorized_features.lock().unwrap().clone().into_iter()
-            {
-                // Triangulation
-                let mut earcutter: Earcut<f64> = Earcut::new();
-                let mut buf2d: Vec<f64> = Vec::new(); // 2d-projected [x, y]
-                let mut index_buf: Vec<u32> = Vec::new();
-
-                let mut vertices: IndexSet<[u32; 6], RandomState> = IndexSet::default(); // [x, y, z, u, v, feature_id]
-                let mut primitives: Primitives = Default::default();
-
-                // make vertices and indices
-                let mut feature_id = 0;
-
-                for mut feature in features.into_iter() {
-                    feature
-                        .polygons
-                        .transform_inplace(|&[lng, lat, height, u, v]| {
-                            let (x, y, z) = geographic_to_geocentric(&ellipsoid, lng, lat, height);
-                            // z-up to y-up
-                            // subtract the translation
-                            // flip the texture v-coordinate
-                            [
-                                x - translation[0],
-                                z - translation[1],
-                                -y - translation[2],
-                                u,
-                                1.0 - v,
-                            ]
-                        });
-
-                    for (poly, orig_mat_id) in feature
-                        .polygons
-                        .iter()
-                        .zip_eq(feature.polygon_material_ids.iter())
-                    {
-                        let num_outer = match poly.hole_indices().first() {
-                            Some(&v) => v as usize,
-                            None => poly.coords().len() / 5,
-                        };
-
-                        let mat = feature.materials[*orig_mat_id as usize].clone();
-                        let primitive = primitives.entry(mat).or_default();
-                        primitive.feature_ids.insert(feature_id as u32);
-
-                        if project3d_to_2d(poly.coords(), num_outer, 5, &mut buf2d) {
-                            // earcut
-                            earcutter.earcut(&buf2d, poly.hole_indices(), 2, &mut index_buf);
-
-                            // collect triangles
-                            primitive.indices.extend(index_buf.iter().map(|idx| {
-                                let pos = *idx as usize * 5;
-                                let [x, y, z, u, v] =
-                                    poly.coords()[pos..pos + 5].try_into().unwrap();
-                                let vbits = [
-                                    (x as f32).to_bits(),
-                                    (y as f32).to_bits(),
-                                    (z as f32).to_bits(),
-                                    (u as f32).to_bits(),
-                                    (v as f32).to_bits(),
-                                    (feature_id as f32).to_bits(),
-                                ];
-                                let (index, _) = vertices.insert_full(vbits);
-                                index as u32
-                            }));
-                        }
+                    GeometryType::Curve => {
+                        // TODO: implement
+                    }
+                    GeometryType::Point => {
+                        // TODO: implement
                     }
                 }
+            });
 
-                feature_id += 1;
+            feature.materials = materials;
+            categorized_features
+                .lock()
+                .unwrap()
+                .entry(typename.into_owned())
+                .or_default()
+                .push(feature);
+
+            Ok(())
+        });
+
+        // triangulation and make vertices and primitives
+
+        let bbox = bounding_volume.lock().unwrap();
+        let translation = {
+            let (tx, ty, tz) = geographic_to_geocentric(
+                &ellipsoid,
+                (bbox.min_lng + bbox.max_lng) / 2.0,
+                (bbox.min_lat + bbox.max_lat) / 2.0,
+                (bbox.min_height + bbox.max_height) / 2.0,
+            );
+            [tx, tz, -ty]
+        };
+
+        for (typename, mut features) in categorized_features.lock().unwrap().clone().into_iter() {
+            // Triangulation
+            let mut earcutter: Earcut<f64> = Earcut::new();
+            let mut buf2d: Vec<f64> = Vec::new(); // 2d-projected [x, y]
+            let mut index_buf: Vec<u32> = Vec::new();
+
+            let mut vertices: IndexSet<[u32; 6], RandomState> = IndexSet::default(); // [x, y, z, u, v, feature_id]
+            let mut primitives: Primitives = Default::default();
+
+            // make vertices and indices
+            let mut feature_id = 0;
+
+            for mut feature in features.into_iter() {
+                feature
+                    .polygons
+                    .transform_inplace(|&[lng, lat, height, u, v]| {
+                        let (x, y, z) = geographic_to_geocentric(&ellipsoid, lng, lat, height);
+                        // z-up to y-up
+                        // subtract the translation
+                        // flip the texture v-coordinate
+                        [
+                            x - translation[0],
+                            z - translation[1],
+                            -y - translation[2],
+                            u,
+                            1.0 - v,
+                        ]
+                    });
+
+                for (poly, orig_mat_id) in feature
+                    .polygons
+                    .iter()
+                    .zip_eq(feature.polygon_material_ids.iter())
+                {
+                    let num_outer = match poly.hole_indices().first() {
+                        Some(&v) => v as usize,
+                        None => poly.coords().len() / 5,
+                    };
+
+                    let mat = feature.materials[*orig_mat_id as usize].clone();
+                    let primitive = primitives.entry(mat).or_default();
+                    primitive.feature_ids.insert(feature_id as u32);
+
+                    if project3d_to_2d(poly.coords(), num_outer, 5, &mut buf2d) {
+                        // earcut
+                        earcutter.earcut(&buf2d, poly.hole_indices(), 2, &mut index_buf);
+
+                        // collect triangles
+                        primitive.indices.extend(index_buf.iter().map(|idx| {
+                            let pos = *idx as usize * 5;
+                            let [x, y, z, u, v] = poly.coords()[pos..pos + 5].try_into().unwrap();
+                            let vbits = [
+                                (x as f32).to_bits(),
+                                (y as f32).to_bits(),
+                                (z as f32).to_bits(),
+                                (u as f32).to_bits(),
+                                (v as f32).to_bits(),
+                                (feature_id as f32).to_bits(),
+                            ];
+                            let (index, _) = vertices.insert_full(vbits);
+                            index as u32
+                        }));
+                    }
+                }
             }
-        }
 
-        // build glTF
-        {
+            feature_id += 1;
+
+            // make folders
+            std::fs::create_dir_all(&self.output_path).unwrap();
+
+            // write glTFs
+            let mut filenames = Vec::new();
+            let mut file_path = self.output_path.clone();
+            let c_name = typename.split(':').last().unwrap();
+            file_path.push(&format!("{}.glb", c_name));
+            filenames.push(format!("{}.glb", c_name));
+
+            let mut file = File::create(&file_path).unwrap();
+            let writer = BufWriter::with_capacity(1024 * 1024, &mut file);
+
+            write_gltf_glb(
+                writer,
+                translation,
+                vertices,
+                primitives,
+                feature_id as usize,
+            )?;
+
             // make accessors of positions and tex_coords and feature_ids from vertices
-            {}
 
             // make primitives from indices and feature_ids
-            {}
 
             // make classes from schema
-            {}
 
             // make propertyTable and bufferView from attributes
-            {}
         }
 
         // let (sender, receiver) = std::sync::mpsc::sync_channel(1000);
