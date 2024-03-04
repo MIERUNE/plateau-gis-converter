@@ -31,6 +31,10 @@ struct Args {
     #[arg(long)]
     output: String,
 
+    /// Specify the output EPSG code (default: WGS84 3D)
+    #[arg(long, default_value_t = 4979)]
+    epsg: u16,
+
     /// Specify the mapping rules JSON file
     #[arg(long)]
     rules: Option<String>,
@@ -130,7 +134,8 @@ fn main() {
         sink_provider.create(&sink_params)
     };
 
-    let requirements = sink.make_requirements();
+    let mut requirements = sink.make_requirements();
+    requirements.set_output_epsg(args.epsg);
 
     let mapping_rules = match &args.rules {
         Some(rules_path) => {
