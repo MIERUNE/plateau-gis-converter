@@ -10,7 +10,7 @@ use std::ops::Mul;
 use std::path::PathBuf;
 use std::sync::Mutex;
 
-use ahash::{HashMap, HashSet};
+use ahash::{HashMap, HashSet, RandomState};
 use earcut_rs::{utils3d::project3d_to_2d, Earcut};
 use indexmap::{IndexMap, IndexSet};
 
@@ -96,7 +96,7 @@ pub struct Buffers {
     pub indices: Vec<u32>,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Feature {
     // polygons [x, y, z, u, v]
     pub polygons: MultiPolygon<'static, 5>,
@@ -145,18 +145,20 @@ impl DataSink for GltfSink {
     fn run(&mut self, upstream: Receiver, feedback: &Feedback, schema: &Schema) -> Result<()> {
         let ellipsoid = nusamai_projection::ellipsoid::wgs84();
         // This is the code to verify the operation with Cesium
-        let mut bounding_volume = BoundingVolume {
+        let mut bounding_volume = Mutex::new(BoundingVolume {
             min_lng: f64::MAX,
             max_lng: f64::MIN,
             min_lat: f64::MAX,
             max_lat: f64::MIN,
             min_height: f64::MAX,
             max_height: f64::MIN,
-        };
+        });
 
         let mut categorized_features: Mutex<CategorizedFeatures> = Mutex::new(Default::default());
 
-        // build a Feature
+        // Construct a Feature classified by typename from Entity
+        // Features have polygons, attributes and materials
+        // The coordinates of polygon store the actual coordinate values (WGS84) and UV coordinates, not the index.
         {
             let _ = upstream.into_iter().par_bridge().try_for_each(|parcel| {
                 if feedback.is_canceled() {
@@ -235,6 +237,13 @@ impl DataSink for GltfSink {
                                     .zip(poly_uv.coords().chunks_exact(2))
                                 {
                                     ling_buf.push([xyz[0], xyz[1], xyz[2], uv[0], uv[1]]);
+                                    let mut bounds = bounding_volume.lock().unwrap();
+                                    bounds.min_lng = bounds.min_lng.min(xyz[0]);
+                                    bounds.max_lng = bounds.max_lng.max(xyz[0]);
+                                    bounds.min_lat = bounds.min_lat.min(xyz[1]);
+                                    bounds.max_lat = bounds.max_lat.max(xyz[1]);
+                                    bounds.min_height = bounds.min_height.min(xyz[2]);
+                                    bounds.max_height = bounds.max_height.max(xyz[2]);
                                 }
 
                                 let mut poly_buf: Polygon<5> = Polygon::new();
@@ -266,11 +275,33 @@ impl DataSink for GltfSink {
         }
 
         // triangulation and make vertices and primitives
-        {}
+        {
+            for (typename, mut features) in categorized_features.lock().unwrap().clone().into_iter()
+            {
+                // todo: bboxを算出したり、三角分割したり
+
+                // Triangulation
+                let mut earcutter: Earcut<f64> = Earcut::new();
+                let mut buf2d: Vec<f64> = Vec::new(); // 2d-projected [x, y]
+                let mut index_buf: Vec<u32> = Vec::new();
+
+                let mut vertices: IndexSet<[u32; 6], RandomState> = IndexSet::default(); // [x, y, z, u, v, feature_id]
+                let mut primitives: Primitives = Default::default();
+
+                for (feature_idx, mut feature) in features.into_iter().enumerate() {
+                    feature
+                        .polygons
+                        .transform_inplace(|&[lng, lat, height, u, v]| {
+                            let (x, y, z) = geographic_to_geocentric(&ellipsoid, lng, lat, height);
+                            [x, y, z, u, v]
+                        });
+                }
+            }
+        }
 
         // build glTF
         {
-            // make accessors of positions and texcoords and feature_ids from vertices
+            // make accessors of positions and tex_coords and feature_ids from vertices
             {}
 
             // make primitives from indices and feature_ids
