@@ -317,8 +317,42 @@ impl DataSink for GltfSink {
                         .polygons
                         .iter()
                         .zip_eq(feature.polygon_material_ids.iter())
-                    {}
+                    {
+                        let num_outer = match poly.hole_indices().first() {
+                            Some(&v) => v as usize,
+                            None => poly.coords().len() / 5,
+                        };
+
+                        let mat = feature.materials[*orig_mat_id as usize].clone();
+                        let primitive = primitives.entry(mat).or_default();
+                        primitive.feature_ids.insert(feature_idx as u32);
+
+                        if project3d_to_2d(poly.coords(), num_outer, 5, &mut buf2d) {
+                            // earcut
+                            earcutter.earcut(&buf2d, poly.hole_indices(), 2, &mut index_buf);
+
+                            // collect triangles
+                            primitive.indices.extend(index_buf.iter().map(|idx| {
+                                let pos = *idx as usize * 5;
+                                let [x, y, z, u, v] =
+                                    poly.coords()[pos..pos + 5].try_into().unwrap();
+                                let vbits = [
+                                    (x as f32).to_bits(),
+                                    (y as f32).to_bits(),
+                                    (z as f32).to_bits(),
+                                    (u as f32).to_bits(),
+                                    (v as f32).to_bits(),
+                                    (feature_idx as f32).to_bits(),
+                                ];
+                                let (index, _) = vertices.insert_full(vbits);
+                                index as u32
+                            }));
+                        }
+                    }
                 }
+
+                println!("{:?}", vertices.len());
+                println!("{:?}", primitives.len());
             }
         }
 
