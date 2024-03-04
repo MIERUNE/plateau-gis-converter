@@ -74,7 +74,7 @@ fn to_gltf_schema(type_ref: &TypeRef) -> GltfPropertyType {
             class_property_type:
                 extensions::gltf::ext_structural_metadata::ClassPropertyType::Scalar,
             component_type: Some(
-                extensions::gltf::ext_structural_metadata::ClassPropertyComponentType::UInt64,
+                extensions::gltf::ext_structural_metadata::ClassPropertyComponentType::Uint64,
             ),
             ..Default::default()
         },

@@ -15,7 +15,7 @@ use nusamai_plateau::{appearance, Entity};
 
 use super::material::Material;
 use super::tiling;
-use crate::sink::cesiumtiles::material::Texture;
+use crate::sink::cesiumtiles::{material::Texture, tiling::zxy_from_lng_lat};
 
 #[derive(Serialize, Deserialize)]
 pub struct SlicedFeature {
@@ -31,14 +31,18 @@ pub struct SlicedFeature {
 
 pub fn slice_to_tiles<E>(
     entity: &Entity,
-    min_z: u8,
-    max_z: u8,
+    min_zoom: u8,
+    max_zoom: u8,
     send_feature: impl Fn(TileZXY, SlicedFeature) -> Result<(), E>,
 ) -> Result<(), E> {
+    let ellipsoid = nusamai_projection::ellipsoid::wgs84();
+
     assert!(
-        max_z >= min_z,
+        max_zoom >= min_zoom,
         "max_z must be greater than or equal to min_z"
     );
+
+    let slicing_enabled = true;
 
     // entity must be a Feature
     let Value::Object(obj) = &entity.root else {
@@ -56,7 +60,36 @@ pub fn slice_to_tiles<E>(
 
     let mut sliced_tiles: HashMap<(u8, u32, u32), SlicedFeature> = HashMap::new();
     let mut materials: IndexSet<Material> = IndexSet::new();
-    let default_mat = appearance::Material::default();
+    let default_material = appearance::Material::default();
+
+    let (lng_center, lat_center, approx_dx, approx_dy, approx_dh) = {
+        let mut min_lng = f64::MAX;
+        let mut max_lng = f64::MIN;
+        let mut min_lat = f64::MAX;
+        let mut max_lat = f64::MIN;
+        let mut min_height = f64::MAX;
+        let mut max_height = f64::MIN;
+        geom_store.vertices.iter().for_each(|&[lng, lat, height]| {
+            min_lng = min_lng.min(lng);
+            max_lng = max_lng.max(lng);
+            min_lat = min_lat.min(lat);
+            max_lat = max_lat.max(lat);
+            min_height = min_height.min(height);
+            max_height = max_height.max(height);
+        });
+        let approx_dx =
+            ellipsoid.a() * min_lat.to_radians().cos() * (max_lng - min_lng).to_radians();
+        let approx_dy = ellipsoid.a() * (max_lng - min_lng).to_radians();
+        let approx_dh = max_height - min_height;
+        (
+            (min_lng + max_lng) / 2.0,
+            (min_lat + max_lat) / 2.0,
+            approx_dx,
+            approx_dy,
+            approx_dh,
+        )
+    };
+    let mut ring_buffer: Vec<[f64; 5]> = Vec::new();
 
     geometries.iter().for_each(|entry| {
         match entry.ty {
@@ -84,7 +117,7 @@ pub fn slice_to_tiles<E>(
                     let poly = idx_poly.transform(|c| geom_store.vertices[c[0] as usize]);
                     let orig_mat = poly_mat
                         .and_then(|idx| appearance_store.materials.get(idx as usize))
-                        .unwrap_or(&default_mat)
+                        .unwrap_or(&default_material)
                         .clone();
                     let orig_tex =
                         poly_tex.and_then(|idx| appearance_store.textures.get(idx as usize));
@@ -98,8 +131,42 @@ pub fn slice_to_tiles<E>(
                     let (mat_idx, _) = materials.insert_full(mat);
 
                     // Slice polygon for each zoom level
-                    for zoom in min_z..=max_z {
-                        slice_polygon(zoom, &poly, &poly_uv, |(z, x, y), poly| {
+                    for zoom in min_zoom..=max_zoom {
+                        // Skip the feature if the size is small for geometricError.
+                        // TODO: better method ? (bounding sphere, etc.)
+                        if zoom < max_zoom {
+                            let geom_error = {
+                                let (_, _, y) =
+                                    tiling::scheme::zxy_from_lng_lat(zoom, lng_center, lat_center);
+                                tiling::scheme::geometric_error(zoom, y)
+                            };
+                            let threshold = geom_error * 1.5; // TODO: adjustable
+                            if approx_dx < threshold
+                                && approx_dy < threshold
+                                && approx_dh < threshold
+                            {
+                                continue;
+                            }
+                        }
+
+                        if slicing_enabled {
+                            // slicing enabled
+                            slice_polygon(zoom, &poly, &poly_uv, |(z, x, y), poly| {
+                                let sliced_feature =
+                                    sliced_tiles.entry((z, x, y)).or_insert_with(|| {
+                                        SlicedFeature {
+                                            polygons: MultiPolygon::new(),
+                                            attributes: entity.root.clone(),
+                                            polygon_material_ids: Default::default(),
+                                            materials: Default::default(), // set later
+                                        }
+                                    });
+                                sliced_feature.polygons.push(poly);
+                                sliced_feature.polygon_material_ids.push(mat_idx as u32);
+                            });
+                        } else {
+                            // slicing disabled
+                            let (z, x, y) = zxy_from_lng_lat(zoom, lng_center, lat_center);
                             let sliced_feature =
                                 sliced_tiles
                                     .entry((z, x, y))
@@ -107,12 +174,20 @@ pub fn slice_to_tiles<E>(
                                         polygons: MultiPolygon::new(),
                                         attributes: entity.root.clone(),
                                         polygon_material_ids: Default::default(),
-                                        materials: Default::default(),
+                                        materials: Default::default(), // set later
                                     });
-
-                            sliced_feature.polygons.push(poly);
-                            sliced_feature.polygon_material_ids.push(mat_idx as u32);
-                        });
+                            poly.rings()
+                                .zip_eq(poly_uv.rings())
+                                .for_each(|(ring, uv_ring)| {
+                                    ring.iter_closed().zip_eq(uv_ring.iter_closed()).for_each(
+                                        |(c, uv)| {
+                                            ring_buffer.push([c[0], c[1], c[2], uv[0], uv[1]]);
+                                        },
+                                    );
+                                    sliced_feature.polygons.add_exterior(ring_buffer.drain(..));
+                                    sliced_feature.polygon_material_ids.push(mat_idx as u32);
+                                });
+                        }
                     }
                 }
             }

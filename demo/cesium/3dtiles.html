@@ -34,6 +34,8 @@
   <body>
     <div id="cesiumContainer"></div>
     <script>
+      // Cesium ion token for the plateau-terrain-streaming
+      // https://github.com/Project-PLATEAU/plateau-streaming-tutorial/blob/main/terrain/plateau-terrain-streaming.md
       Cesium.Ion.defaultAccessToken =
         "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI5N2UyMjcwOS00MDY1LTQxYjEtYjZjMy00YTU0ZTg5MmViYWQiLCJpZCI6ODAzMDYsImlhdCI6MTY0Mjc0ODI2MX0.dkwAL1CcljUV7NA7fDbhXXnmyZQU_c-G5zRx8PtEcxE";
 
@@ -45,6 +47,16 @@
           ),
           shadows: true,
         });
+
+        const ambientOcclusion =
+          viewer.scene.postProcessStages.ambientOcclusion;
+        ambientOcclusion.enabled = true;
+        ambientOcclusion.uniforms.intensity = 0.5;
+        ambientOcclusion.uniforms.lengthCap = 5;
+        // ambientOcclusion.uniforms.ambientOcclusionOnly = true;
+
+        viewer.shadowMap.size = 8192;
+        viewer.shadowMap.darkness = 0.6;
 
         viewer.extend(Cesium.viewerCesium3DTilesInspectorMixin);
 
@@ -58,7 +70,6 @@
         viewer.scene.screenSpaceCameraController.enableCollisionDetection = false;
         viewer.scene.globe.depthTestAgainstTerrain = true;
 
-        // Set your 3DTiles
         const tileset = await Cesium.Cesium3DTileset.fromUrl(
           "/examples/3dtiles/tileset.json"
         );
