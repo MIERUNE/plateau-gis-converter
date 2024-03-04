@@ -3,7 +3,7 @@
 	import Icon from '@iconify/svelte';
 	import { filetypeOptions } from '$lib/settings';
 
-	export let filetype: string;
+	export let filetype: string = 'gpkg';
 	export let selectedCrs: number = 4979;
 	export let rulesPath: string;
 
