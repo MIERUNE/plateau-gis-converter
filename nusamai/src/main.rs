@@ -134,7 +134,8 @@ fn main() {
         sink_provider.create(&sink_params)
     };
 
-    let requirements = sink.make_requirements();
+    let mut requirements = sink.make_requirements();
+    requirements.set_output_epsg(args.epsg);
 
     let mapping_rules = match &args.rules {
         Some(rules_path) => {

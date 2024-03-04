@@ -76,3 +76,9 @@ impl Default for DataRequirements {
         }
     }
 }
+
+impl DataRequirements {
+    pub fn set_output_epsg(&mut self, epsg: crs::EpsgCode) {
+        self.output_epsg = epsg;
+    }
+}
