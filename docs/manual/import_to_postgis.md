@@ -1,6 +1,5 @@
 # PostGISにインポートする
 
-
 - 本ページでは、GeoPackageファイルをPostGISにインポートする手順を説明します。
 - インポート手順は以下の通りです。
   1. GeoPackageに変換する
@@ -40,7 +39,6 @@ URL例：
 `http://127.0.0.1:8888/lab?token=******`
 
 - 取り込む処理の実行
-
   `import_to_postgis.ipynb`を開き、データベース情報と投入するGeoPackageファイルの情報を書き換え、実行することによって、データベースにデータを読み込むことができます。
 
 ![alt text](../resources/import_to_postgis_image.png)
