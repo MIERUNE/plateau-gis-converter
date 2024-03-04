@@ -7,7 +7,7 @@
 	import LoadingAnimation from './LoadingAnimation.svelte';
 
 	let inputPaths: string[] = [];
-	let filetype: string;
+	let selectedFiletype: string;
 	let selectedCrs: number;
 	let rulesPath = '';
 	let outputPath = '';
@@ -27,12 +27,12 @@
 		await invoke('run', {
 			inputPaths,
 			outputPath,
-			filetype,
+			selectedFiletype,
 			selectedCrs,
 			rulesPath
 		});
 		isRunning = false;
-		alert(`${filetype}形式で '${outputPath}' に出力しました。`);
+		alert(`'${outputPath}' に出力しました。`);
 	}
 </script>
 
@@ -53,9 +53,9 @@
 
 		<InputSelector bind:inputPaths />
 
-		<SettingSelector bind:filetype bind:selectedCrs bind:rulesPath />
+		<SettingSelector bind:selectedFiletype bind:selectedCrs bind:rulesPath />
 
-		<OutputSelector {filetype} bind:outputPath />
+		<OutputSelector {selectedFiletype} bind:outputPath />
 
 		<div class="flex justify-end">
 			<button
