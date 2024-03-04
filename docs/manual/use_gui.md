@@ -205,25 +205,78 @@ Serving HTTP on :: port 8000 (http://[::]:8000/) ...
 
 ### 属性名を変換する
 
-- 属性名などに日本語名などを利用したい場合は、`rules.json`を利用して属性名を変換することができます。
-- 以下のような、属性名変換用の`rules.json`を作成します。
-  - `rename`に変換前の属性名と変換後の属性名を記述します。
-  - 例えば、`buildingIDAttribute`を`建物ID`に変換したい場合は、以下のように記述します。
+- 属性名などに日本語名などを利用したい場合は、`rules.json`を利用して属性名を変換します。
+- 属性名変換用の`rules.json`の構文を以下に説明します。
+  
+  `rename`にnamespace、元の属性名、変換後の属性名を記述します。
 
-```json
-{
-    "rename": {
-        "buildingIDAttribute": "建物ID",
-        "address": "住所",
-        "buildingDataQualityAttribute": "データ品質",
-        "buildingDetailAttribute": "建物詳細",
-        "genericAttribute": "ジェネリック",
-        "measuredHeight": "高さ",
-        "buildingDisasterRiskAttribute": "災害リスク",
-        "name": "名前"
+    ```json
+    {
+      "rename": {
+        "{namespace}:{元の属性名}": "{変更後の属性名}" ,
+        ...,
+      }
     }
-}
-```
+    ```
+
+  例えば、`uro:buildingIDAttribute`を`建物ID`に変換したい場合は、以下のように記述します。
+
+    ```json
+    {
+      "rename": {
+        "uro:buildingIDAttribute": "建物ID",
+      }
+    }
+    ```
+
+  また、このようにnamespaceを`*`とすることによってrenameルールが全てのnamespaceに適用されます。
+
+    ```json
+    {
+      "rename": {
+        "*:{元の属性名}": "{変更後の属性名}" ,
+        ...,
+      }
+    }
+    ```
+
+    例：
+
+    ```json
+    {
+      "rename": {
+        "*:buildingIDAttribute": "建物ID",
+      }
+    }
+  ```
+
+  `*`を利用し、異なるnamespaceの同名属性に対してrenameルールを指定する場合、より具体的なnamespace表記が優先されます。例えば、以下のように指定する場合、`luse:class`が`土地利用区分`に変換され、namespaceが`luse`以外の`class`属性が`分類`に変換されます。`*`の利用は`*:{元の属性名}`の形に限ります。
+
+    ```json
+    {
+      "rename": {
+        "*:class": "分類",
+        "luse:class": "土地利用区分"
+      }
+    }
+    ```
+
+- `rules.json`例
+
+  ```json
+  {
+    "rename": {
+      "uro:buildingIDAttribute": "建物ID",
+      "bldg:address": "住所",
+      "uro:buildingDataQualityAttribute": "データ品質",
+      "uro:buildingDetailAttribute": "建物詳細",
+      "gen:genericAttribute": "ジェネリック",
+      "bldg:measuredHeight": "高さ",
+      "uro:buildingDisasterRiskAttribute": "災害リスク",
+      "gml:name": "名前"
+    }
+  }
+  ```
 
 - `設定`の`属性マッピングルール`に`rules.json`を指定します。
 
