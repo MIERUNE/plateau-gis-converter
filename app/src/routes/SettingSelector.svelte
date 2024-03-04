@@ -3,11 +3,11 @@
 	import Icon from '@iconify/svelte';
 	import { filetypeOptions } from '$lib/settings';
 
-	export let selectedFiletype: string = 'gpkg';
+	export let filetype: string;
 	export let selectedEpsg: number = 4979;
 	export let rulesPath: string;
 
-	$: crsOptions = filetypeOptions[selectedFiletype]?.crs || [];
+	$: crsOptions = filetypeOptions[filetype]?.crs || [];
 	$: disableCrsOptions = crsOptions.length < 2;
 
 	async function openRulesPathDialog() {
@@ -38,7 +38,7 @@
 	<div class="flex flex-col gap-5 mt-3 ml-2">
 		<div class=" flex flex-col gap-1.5">
 			<label for="filetype-select" class="font-bold">ファイル形式</label>
-			<select bind:value={selectedFiletype} name="filetype" id="filetype-select" class="w-36">
+			<select bind:value={filetype} name="filetype" id="filetype-select" class="w-36">
 				{#each Object.entries(filetypeOptions) as [value, item]}
 					<option {value}>{item.label}</option>
 				{/each}

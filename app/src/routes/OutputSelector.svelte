@@ -4,7 +4,7 @@
 	import { abbreviatePath } from '$lib/utils';
 	import { filetypeOptions } from '$lib/settings';
 
-	export let selectedFiletype: string;
+	export let filetype: string;
 	export let outputPath: string;
 
 	async function openOutputDialog() {
@@ -12,7 +12,7 @@
 			filters: [
 				{
 					name: 'Output format',
-					extensions: filetypeOptions[selectedFiletype].extensions
+					extensions: filetypeOptions[filetype].extensions
 				}
 			]
 		});

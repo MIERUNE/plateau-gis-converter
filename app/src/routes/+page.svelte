@@ -7,7 +7,7 @@
 	import LoadingAnimation from './LoadingAnimation.svelte';
 
 	let inputPaths: string[] = [];
-	let selectedFiletype: string;
+	let filetype: string;
 	let selectedEpsg: number;
 	let rulesPath = '';
 	let outputPath = '';
@@ -27,8 +27,7 @@
 		await invoke('run', {
 			inputPaths,
 			outputPath,
-			selectedFiletype,
-			selectedEpsg,
+			filetype,
 			rulesPath
 		});
 		isRunning = false;
@@ -53,9 +52,9 @@
 
 		<InputSelector bind:inputPaths />
 
-		<SettingSelector bind:selectedFiletype bind:selectedEpsg bind:rulesPath />
+		<SettingSelector bind:filetype bind:selectedEpsg bind:rulesPath />
 
-		<OutputSelector {selectedFiletype} bind:outputPath />
+		<OutputSelector {filetype} bind:outputPath />
 
 		<div class="flex justify-end">
 			<button
