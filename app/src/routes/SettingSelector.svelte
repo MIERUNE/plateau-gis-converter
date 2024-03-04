@@ -62,7 +62,7 @@
 		</div>
 
 		<div class=" flex flex-col gap-1.5">
-			<label for="crs-select" class="font-bold">属性マッピングルール</label>
+			<label for="mapping-rule-select" class="font-bold">属性マッピングルール</label>
 			<div class="flex items-center gap-3">
 				<button
 					on:click={openRulesPathDialog}
