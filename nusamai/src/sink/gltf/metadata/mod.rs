@@ -55,12 +55,10 @@ pub fn make_metadata(
             ..Default::default()
         });
 
-        vec![PropertyTable {
-            class: "Class_01".to_string(),
-            count: num_features as u32,
-            properties,
-            ..Default::default()
-        }]
+        let property_table =
+            to_gltf_property_table(typename, type_def, buffer_views.len() as u32, num_features);
+
+        vec![property_table]
     };
 
     Some(ExtStructuralMetadata {
@@ -146,4 +144,71 @@ fn schema_to_gltf_property_type(
         TypeRef::DateTime => (ClassPropertyType::String, None),
         TypeRef::Unknown => todo!(),
     }
+}
+
+pub fn to_gltf_property_table(
+    typename: &str,
+    schema: &TypeDef,
+    buffer_view_length: u32,
+    num_features: usize,
+) -> PropertyTable {
+    // Create Schema.propertyTables
+    let mut property_table: PropertyTable = PropertyTable {
+        class: typename.to_string(),
+        properties: HashMap::new(),
+        count: num_features as u32,
+        ..Default::default()
+    };
+
+    let mut buffer_view_length = buffer_view_length;
+    match schema {
+        TypeDef::Feature(f) => {
+            for (name, attr) in &f.attributes {
+                let (class_property_type, class_property_component_type) =
+                    schema_to_gltf_property_type(&attr.type_ref);
+                match class_property_type {
+                    ClassPropertyType::String => {
+                        property_table.properties.insert(
+                            name.clone(),
+                            PropertyTableProperty {
+                                values: buffer_view_length,
+                                string_offsets: Some(buffer_view_length + 1),
+                                ..Default::default()
+                            },
+                        );
+                        buffer_view_length += 2;
+                    }
+                    ClassPropertyType::Scalar => {
+                        property_table.properties.insert(
+                            name.clone(),
+                            PropertyTableProperty {
+                                values: buffer_view_length,
+                                ..Default::default()
+                            },
+                        );
+                        buffer_view_length += 1;
+                    }
+                    ClassPropertyType::Boolean => {
+                        property_table.properties.insert(
+                            name.clone(),
+                            PropertyTableProperty {
+                                values: buffer_view_length,
+                                ..Default::default()
+                            },
+                        );
+                        buffer_view_length += 1;
+                    }
+                    _ => unimplemented!(),
+                }
+            }
+        }
+        TypeDef::Data(_) => {
+            // todo: implement
+        }
+        TypeDef::Property(_) => {
+            // todo: implement
+        }
+    }
+
+    property_table
 }

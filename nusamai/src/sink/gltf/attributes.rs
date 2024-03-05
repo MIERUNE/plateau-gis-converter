@@ -168,71 +168,71 @@ pub struct FeatureAttributes {
 //     class
 // }
 
-pub fn to_gltf_property_table(
-    class_name: &str,
-    schema: &TypeDef,
-    buffer_view_length: u32,
-    feature_count: u32,
-) -> extensions::gltf::ext_structural_metadata::PropertyTable {
-    // Create Schema.property_tables
-    let mut property_table: extensions::gltf::ext_structural_metadata::PropertyTable =
-        extensions::gltf::ext_structural_metadata::PropertyTable {
-            class: class_name.to_string(),
-            properties: HashMap::new(),
-            count: feature_count,
-            ..Default::default()
-        };
+// pub fn to_gltf_property_table(
+//     class_name: &str,
+//     schema: &TypeDef,
+//     buffer_view_length: u32,
+//     feature_count: u32,
+// ) -> extensions::gltf::ext_structural_metadata::PropertyTable {
+//     // Create Schema.property_tables
+//     let mut property_table: extensions::gltf::ext_structural_metadata::PropertyTable =
+//         extensions::gltf::ext_structural_metadata::PropertyTable {
+//             class: class_name.to_string(),
+//             properties: HashMap::new(),
+//             count: feature_count,
+//             ..Default::default()
+//         };
 
-    let mut buffer_view_length = buffer_view_length;
-    match schema {
-        TypeDef::Feature(f) => {
-            for (name, attr) in &f.attributes {
-                let property_type = to_gltf_schema(&attr.type_ref);
-                // property_typeによって、PropertyTablePropertyの構造が変化する
-                // todo: その他の型についても対応
-                match property_type.class_property_type {
-                    extensions::gltf::ext_structural_metadata::ClassPropertyType::String => {
-                        property_table.properties.insert(
-                            name.clone(),
-                            extensions::gltf::ext_structural_metadata::PropertyTableProperty {
-                                values: buffer_view_length,
-                                string_offsets: Some(buffer_view_length + 1),
-                                ..Default::default()
-                            },
-                        );
-                        buffer_view_length += 2;
-                    }
-                    extensions::gltf::ext_structural_metadata::ClassPropertyType::Scalar => {
-                        property_table.properties.insert(
-                            name.clone(),
-                            extensions::gltf::ext_structural_metadata::PropertyTableProperty {
-                                values: buffer_view_length,
-                                ..Default::default()
-                            },
-                        );
-                        buffer_view_length += 1;
-                    }
-                    extensions::gltf::ext_structural_metadata::ClassPropertyType::Boolean => {
-                        property_table.properties.insert(
-                            name.clone(),
-                            extensions::gltf::ext_structural_metadata::PropertyTableProperty {
-                                values: buffer_view_length,
-                                ..Default::default()
-                            },
-                        );
-                        buffer_view_length += 1;
-                    }
-                    _ => unimplemented!(),
-                }
-            }
-        }
-        // todo: feature 以外の型も実装する
-        TypeDef::Data(_) => unimplemented!(),
-        TypeDef::Property(_) => unimplemented!(),
-    }
+//     let mut buffer_view_length = buffer_view_length;
+//     match schema {
+//         TypeDef::Feature(f) => {
+//             for (name, attr) in &f.attributes {
+//                 let property_type = to_gltf_schema(&attr.type_ref);
+//                 // property_typeによって、PropertyTablePropertyの構造が変化する
+//                 // todo: その他の型についても対応
+//                 match property_type.class_property_type {
+//                     extensions::gltf::ext_structural_metadata::ClassPropertyType::String => {
+//                         property_table.properties.insert(
+//                             name.clone(),
+//                             extensions::gltf::ext_structural_metadata::PropertyTableProperty {
+//                                 values: buffer_view_length,
+//                                 string_offsets: Some(buffer_view_length + 1),
+//                                 ..Default::default()
+//                             },
+//                         );
+//                         buffer_view_length += 2;
+//                     }
+//                     extensions::gltf::ext_structural_metadata::ClassPropertyType::Scalar => {
+//                         property_table.properties.insert(
+//                             name.clone(),
+//                             extensions::gltf::ext_structural_metadata::PropertyTableProperty {
+//                                 values: buffer_view_length,
+//                                 ..Default::default()
+//                             },
+//                         );
+//                         buffer_view_length += 1;
+//                     }
+//                     extensions::gltf::ext_structural_metadata::ClassPropertyType::Boolean => {
+//                         property_table.properties.insert(
+//                             name.clone(),
+//                             extensions::gltf::ext_structural_metadata::PropertyTableProperty {
+//                                 values: buffer_view_length,
+//                                 ..Default::default()
+//                             },
+//                         );
+//                         buffer_view_length += 1;
+//                     }
+//                     _ => unimplemented!(),
+//                 }
+//             }
+//         }
+//         // todo: feature 以外の型も実装する
+//         TypeDef::Data(_) => unimplemented!(),
+//         TypeDef::Property(_) => unimplemented!(),
+//     }
 
-    property_table
-}
+//     property_table
+// }
 
 #[cfg(test)]
 mod tests {

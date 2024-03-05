@@ -16,7 +16,7 @@ use nusamai_gltf_json::{
     Image, Mesh, MeshPrimitive, Node, PrimitiveMode, Scene,
 };
 
-use crate::sink::gltf::attributes::{to_gltf_class, to_gltf_property_table};
+// use crate::sink::gltf::attributes::{to_gltf_class, to_gltf_property_table};
 
 use super::material;
 use super::metadata::make_metadata;
@@ -759,40 +759,40 @@ impl ToBuffer for Value {
 //     writer.flush().unwrap();
 // }
 
-// // This is the code to verify the operation with Cesium
-// pub fn write_3dtiles(bounding_volume: [f64; 6], output_path: &Path, filenames: &[String]) {
-//     // write 3DTiles
-//     let tileset_path = output_path.join("tileset.json");
+// This is the code to verify the operation with Cesium
+pub fn write_3dtiles(bounding_volume: [f64; 6], output_path: &Path, filenames: &[String]) {
+    // write 3DTiles
+    let tileset_path = output_path.join("tileset.json");
 
-//     let contents: Vec<nusamai_3dtiles_json::tileset::Content> = filenames
-//         .iter()
-//         .map(|filename| {
-//             let uri = filename.to_string();
-//             nusamai_3dtiles_json::tileset::Content {
-//                 uri,
-//                 ..Default::default()
-//             }
-//         })
-//         .collect();
+    let contents: Vec<nusamai_3dtiles_json::tileset::Content> = filenames
+        .iter()
+        .map(|filename| {
+            let uri = filename.to_string();
+            nusamai_3dtiles_json::tileset::Content {
+                uri,
+                ..Default::default()
+            }
+        })
+        .collect();
 
-//     let tileset = nusamai_3dtiles_json::tileset::Tileset {
-//         geometric_error: 1e+100,
-//         asset: nusamai_3dtiles_json::tileset::Asset {
-//             version: "1.1".to_string(),
-//             ..Default::default()
-//         },
-//         root: nusamai_3dtiles_json::tileset::Tile {
-//             bounding_volume: nusamai_3dtiles_json::tileset::BoundingVolume {
-//                 region: Some(bounding_volume),
-//                 ..Default::default()
-//             },
-//             contents: Some(contents),
-//             ..Default::default()
-//         },
-//         ..Default::default()
-//     };
+    let tileset = nusamai_3dtiles_json::tileset::Tileset {
+        geometric_error: 1e+100,
+        asset: nusamai_3dtiles_json::tileset::Asset {
+            version: "1.1".to_string(),
+            ..Default::default()
+        },
+        root: nusamai_3dtiles_json::tileset::Tile {
+            bounding_volume: nusamai_3dtiles_json::tileset::BoundingVolume {
+                region: Some(bounding_volume),
+                ..Default::default()
+            },
+            contents: Some(contents),
+            ..Default::default()
+        },
+        ..Default::default()
+    };
 
-//     let mut tileset_file = File::create(tileset_path).unwrap();
-//     let tileset_writer = BufWriter::with_capacity(1024 * 1024, &mut tileset_file);
-//     serde_json::to_writer_pretty(tileset_writer, &tileset).unwrap();
-// }
+    let mut tileset_file = File::create(tileset_path).unwrap();
+    let tileset_writer = BufWriter::with_capacity(1024 * 1024, &mut tileset_file);
+    serde_json::to_writer_pretty(tileset_writer, &tileset).unwrap();
+}

@@ -32,7 +32,7 @@ use crate::pipeline::{Feedback, PipelineError, Receiver, Result};
 use crate::sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo};
 
 use attributes::FeatureAttributes;
-// use gltf_writer::{append_gltf_extensions, write_3dtiles, write_gltf};
+use gltf_writer::write_3dtiles;
 // use positions::Vertex;
 
 // use self::gltf_writer::build_base_gltf;
@@ -105,6 +105,7 @@ pub struct GltfSink {
 //     pub attributes: nusamai_citygml::object::Value,
 // }
 
+#[derive(Serialize, Deserialize, Clone)]
 pub struct BoundingVolume {
     pub min_lng: f64,
     pub max_lng: f64,
@@ -161,7 +162,9 @@ impl DataSink for GltfSink {
             max_height: f64::MIN,
         });
 
-        let categorized_features: Mutex<CategorizedFeatures> = Mutex::new(Default::default());
+        let categorized_features: Mutex<CategorizedFeatures> = Default::default();
+
+        let mut filenames: Vec<String> = Vec::new();
 
         // Construct a Feature classified by typename from Entity
         // Features have polygons, attributes and materials
@@ -282,12 +285,12 @@ impl DataSink for GltfSink {
         });
 
         // triangulation and make vertices and primitives
-        let bbox = bounding_volume.lock().unwrap();
         let translation = {
+            let bounds = bounding_volume.lock().unwrap();
             let (tx, ty, tz) = geographic_to_geocentric(
                 &ellipsoid,
-                (bbox.min_lng + bbox.max_lng) / 2.0,
-                (bbox.min_lat + bbox.max_lat) / 2.0,
+                (bounds.min_lng + bounds.max_lng) / 2.0,
+                (bounds.min_lat + bounds.max_lat) / 2.0,
                 0.,
             );
             // z-up to y-up
@@ -314,7 +317,9 @@ impl DataSink for GltfSink {
                 feature
                     .polygons
                     .transform_inplace(|&[lng, lat, height, u, v]| {
+                        // geographic to geocentric
                         let (x, y, z) = geographic_to_geocentric(&ellipsoid, lng, lat, height);
+
                         // z-up to y-up
                         // subtract the translation
                         // flip the texture v-coordinate
@@ -370,10 +375,11 @@ impl DataSink for GltfSink {
             std::fs::create_dir_all(&self.output_path).unwrap();
 
             // write glTFs
-            let mut filenames = Vec::new();
             let mut file_path = self.output_path.clone();
             let c_name = typename.split(':').last().unwrap();
             file_path.push(&format!("{}.glb", c_name));
+
+            // save filename referenced from 3D Tiles
             filenames.push(format!("{}.glb", c_name));
 
             let mut file = File::create(&file_path).unwrap();
@@ -390,6 +396,18 @@ impl DataSink for GltfSink {
                 feature_id as usize,
             )?;
         }
+
+        // write 3DTiles
+        let bounds = bounding_volume.lock().unwrap();
+        let region: [f64; 6] = [
+            bounds.min_lng.to_radians(),
+            bounds.min_lat.to_radians(),
+            bounds.max_lng.to_radians(),
+            bounds.max_lat.to_radians(),
+            bounds.min_height,
+            bounds.max_height,
+        ];
+        write_3dtiles(region, &self.output_path, &filenames);
 
         // let (sender, receiver) = std::sync::mpsc::sync_channel(1000);
 
