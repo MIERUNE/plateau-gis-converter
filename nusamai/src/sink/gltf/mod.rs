@@ -3,7 +3,7 @@ mod attributes;
 mod gltf_writer;
 mod material;
 mod metadata;
-mod positions;
+// mod positions;
 
 use std::fs::File;
 use std::io::BufWriter;
@@ -32,10 +32,10 @@ use crate::pipeline::{Feedback, PipelineError, Receiver, Result};
 use crate::sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo};
 
 use attributes::FeatureAttributes;
-use gltf_writer::{append_gltf_extensions, write_3dtiles, write_gltf};
+// use gltf_writer::{append_gltf_extensions, write_3dtiles, write_gltf};
 // use positions::Vertex;
 
-use self::gltf_writer::build_base_gltf;
+// use self::gltf_writer::build_base_gltf;
 use self::gltf_writer::write_gltf_glb;
 use self::material::Material;
 use self::material::Texture;
@@ -79,6 +79,32 @@ pub struct GltfSink {
     output_path: PathBuf,
 }
 
+// #[derive(Debug, Clone)]
+// pub struct TriangulatedEntity {
+//     pub positions: Vec<Vertex<f64>>,
+//     pub attributes: FeatureAttributes,
+// }
+
+// pub struct Buffers {
+//     pub vertices: IndexSet<Vertex<u32>>,
+//     pub indices: Vec<u32>,
+// }
+
+// #[derive(Debug, Default, PartialEq, Eq, Clone, Copy, Hash)]
+// pub struct Vertex<T> {
+//     pub position: [T; 3],
+//     pub tex_coord: [T; 2],
+//     pub feature_id: u32,
+// }
+
+// pub type Vertices = Vec<Vertex<f64>>;
+
+// pub struct Attributes {
+//     pub typename: String,
+//     pub feature_id: u32,
+//     pub attributes: nusamai_citygml::object::Value,
+// }
+
 pub struct BoundingVolume {
     pub min_lng: f64,
     pub max_lng: f64,
@@ -86,17 +112,6 @@ pub struct BoundingVolume {
     pub max_lat: f64,
     pub min_height: f64,
     pub max_height: f64,
-}
-
-#[derive(Debug, Clone)]
-pub struct TriangulatedEntity {
-    pub positions: Vec<Vertex<f64>>,
-    pub attributes: FeatureAttributes,
-}
-
-pub struct Buffers {
-    pub vertices: IndexSet<Vertex<u32>>,
-    pub indices: Vec<u32>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -109,6 +124,8 @@ pub struct Feature {
     pub materials: IndexSet<Material>,
     // attribute values
     pub attributes: nusamai_citygml::object::Value,
+    // feature_id
+    pub feature_id: Option<u32>,
 }
 
 pub type Features = Vec<Feature>;
@@ -121,21 +138,6 @@ pub struct PrimitiveInfo {
 }
 
 pub type Primitives = HashMap<material::Material, PrimitiveInfo>;
-
-#[derive(Debug, Default, PartialEq, Eq, Clone, Copy, Hash)]
-pub struct Vertex<T> {
-    pub position: [T; 3],
-    pub tex_coord: [T; 2],
-    pub feature_id: u32,
-}
-
-pub type Vertices = Vec<Vertex<f64>>;
-
-pub struct Attributes {
-    pub typename: String,
-    pub feature_id: u32,
-    pub attributes: nusamai_citygml::object::Value,
-}
 
 impl DataSink for GltfSink {
     fn make_requirements(&self) -> DataRequirements {
@@ -194,6 +196,7 @@ impl DataSink for GltfSink {
                 attributes: entity.root.clone(),
                 polygon_material_ids: Default::default(),
                 materials: Default::default(),
+                feature_id: None,
             };
 
             geometries.iter().for_each(|entry| {
@@ -305,7 +308,9 @@ impl DataSink for GltfSink {
             // make vertices and indices
             let mut feature_id = 0;
 
-            for mut feature in features.into_iter() {
+            for mut feature in features.clone().into_iter() {
+                feature.feature_id = Some(feature_id);
+
                 feature
                     .polygons
                     .transform_inplace(|&[lng, lat, height, u, v]| {
@@ -379,6 +384,9 @@ impl DataSink for GltfSink {
                 translation,
                 vertices,
                 primitives,
+                features,
+                schema,
+                &typename,
                 feature_id as usize,
             )?;
         }

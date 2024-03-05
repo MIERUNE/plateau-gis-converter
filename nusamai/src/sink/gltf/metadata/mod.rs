@@ -9,8 +9,9 @@ use nusamai_gltf_json::{
     BufferView,
 };
 
-pub fn make_dummy_metadata(
+pub fn make_metadata(
     num_features: usize,
+    typename: &str,
     buffer: &mut Vec<u8>,
     buffer_views: &mut Vec<BufferView>,
 ) -> Option<ExtStructuralMetadata> {
