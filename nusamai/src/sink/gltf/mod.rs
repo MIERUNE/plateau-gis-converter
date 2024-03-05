@@ -143,7 +143,7 @@ pub type Primitives = HashMap<material::Material, PrimitiveInfo>;
 impl DataSink for GltfSink {
     fn make_requirements(&self) -> DataRequirements {
         DataRequirements {
-            // use_appearance: true,
+            use_appearance: true,
             resolve_appearance: true,
             ..Default::default()
         }
@@ -309,10 +309,8 @@ impl DataSink for GltfSink {
             let mut primitives: Primitives = Default::default();
 
             // make vertices and indices
-            let mut feature_id = 0;
-            for feature in features.iter_mut() {
+            for (feature_id, feature) in features.iter_mut().enumerate() {
                 feature
-                    .clone()
                     .polygons
                     .transform_inplace(|&[lng, lat, height, u, v]| {
                         // geographic to geocentric
@@ -342,6 +340,7 @@ impl DataSink for GltfSink {
 
                     let mat = feature.materials[*orig_mat_id as usize].clone();
                     let primitive = primitives.entry(mat).or_default();
+                    primitive.feature_ids.insert(feature_id as u32);
 
                     if project3d_to_2d(poly.coords(), num_outer, 5, &mut buf2d) {
                         // earcut
@@ -363,9 +362,8 @@ impl DataSink for GltfSink {
                             index as u32
                         }));
                     }
-                    feature.feature_id = Some(feature_id);
+                    feature.feature_id = Some(feature_id as u32);
                 }
-                feature_id += 1;
             }
 
             // make folders

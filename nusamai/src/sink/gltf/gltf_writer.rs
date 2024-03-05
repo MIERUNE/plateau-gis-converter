@@ -33,6 +33,14 @@ pub fn write_gltf_glb<W: Write>(
     typename: &str,
     num_features: &usize,
 ) -> std::io::Result<()> {
+    // todo: BufferViewが作成されすぎ（98個くらいできているが、propertyTablesから利用しているのは31個）
+    // 色は分かれてたので、feature_idは個別に分かれていると思われる
+    // ただ、propertyTableのカウントの数とbufferが合わない
+    // propertyTableのカウントの数は実際の地物と合っている
+    // カウントを1にすると、表示できた
+    // つまり、bufferには1つの地物しか存在しないと思われている
+    // byteOffsetがおかしいのかもしれない
+
     // The buffer for the BIN part
     let mut bin_content: Vec<u8> = Vec::new();
     let mut gltf_buffer_views = vec![];
@@ -68,6 +76,7 @@ pub fn write_gltf_glb<W: Write>(
 
         let len_vertices = bin_content.len() - buffer_offset;
         if len_vertices > 0 {
+            // make bufferView for positions, normals, tex_coords, feature_id
             gltf_buffer_views.push(BufferView {
                 byte_offset: buffer_offset as u32,
                 byte_length: len_vertices as u32,
@@ -97,7 +106,7 @@ pub fn write_gltf_glb<W: Write>(
             //     ..Default::default()
             // });
 
-            // accessor (texcoords)
+            // accessor (tex_coords)
             gltf_accessors.push(Accessor {
                 buffer_view: Some(gltf_buffer_views.len() as u32 - 1),
                 byte_offset: 4 * 3,
@@ -157,7 +166,7 @@ pub fn write_gltf_glb<W: Write>(
                 extensions: extensions::mesh::MeshPrimitive {
                     ext_mesh_features: extensions::mesh::ext_mesh_features::ExtMeshFeatures {
                         feature_ids: vec![extensions::mesh::ext_mesh_features::FeatureId {
-                            feature_count: *num_features as u32, // primitive.feature_ids.len() as u32,
+                            feature_count: primitive.feature_ids.len() as u32, // primitive.feature_ids.len() as u32,
                             attribute: Some(0),
                             property_table: Some(0),
                             ..Default::default()
@@ -212,6 +221,7 @@ pub fn write_gltf_glb<W: Write>(
         });
     }
 
+    // metadata
     let ext_structural_metadata = make_metadata(
         *num_features,
         typename,
@@ -439,87 +449,87 @@ pub fn write_gltf_glb<W: Write>(
 //     }
 // }
 
-// value to bytes
-trait ToBytes {
-    fn write_to_bytes(&self, buffer: &mut Vec<u8>);
-}
+// // value to bytes
+// trait ToBytes {
+//     fn write_to_bytes(&self, buffer: &mut Vec<u8>);
+// }
 
-impl ToBytes for i64 {
-    fn write_to_bytes(&self, buffer: &mut Vec<u8>) {
-        buffer.write_i64::<LittleEndian>(*self).unwrap();
-    }
-}
+// impl ToBytes for i64 {
+//     fn write_to_bytes(&self, buffer: &mut Vec<u8>) {
+//         buffer.write_i64::<LittleEndian>(*self).unwrap();
+//     }
+// }
 
-impl ToBytes for u64 {
-    fn write_to_bytes(&self, buffer: &mut Vec<u8>) {
-        buffer.write_u64::<LittleEndian>(*self).unwrap();
-    }
-}
+// impl ToBytes for u64 {
+//     fn write_to_bytes(&self, buffer: &mut Vec<u8>) {
+//         buffer.write_u64::<LittleEndian>(*self).unwrap();
+//     }
+// }
 
-impl ToBytes for f64 {
-    fn write_to_bytes(&self, buffer: &mut Vec<u8>) {
-        buffer.write_f64::<LittleEndian>(*self).unwrap();
-    }
-}
+// impl ToBytes for f64 {
+//     fn write_to_bytes(&self, buffer: &mut Vec<u8>) {
+//         buffer.write_f64::<LittleEndian>(*self).unwrap();
+//     }
+// }
 
-impl ToBytes for bool {
-    fn write_to_bytes(&self, buffer: &mut Vec<u8>) {
-        let value = if *self { 1 } else { 0 };
-        buffer.write_i32::<LittleEndian>(value).unwrap();
-    }
-}
+// impl ToBytes for bool {
+//     fn write_to_bytes(&self, buffer: &mut Vec<u8>) {
+//         let value = if *self { 1 } else { 0 };
+//         buffer.write_i32::<LittleEndian>(value).unwrap();
+//     }
+// }
 
-impl ToBytes for Measure {
-    fn write_to_bytes(&self, buffer: &mut Vec<u8>) {
-        let value = self.value();
-        buffer.write_f64::<LittleEndian>(value).unwrap();
-    }
-}
+// impl ToBytes for Measure {
+//     fn write_to_bytes(&self, buffer: &mut Vec<u8>) {
+//         let value = self.value();
+//         buffer.write_f64::<LittleEndian>(value).unwrap();
+//     }
+// }
 
-impl ToBytes for Value {
-    fn write_to_bytes(&self, buffer: &mut Vec<u8>) {
-        match self {
-            Value::Integer(i) => i.write_to_bytes(buffer),
-            Value::NonNegativeInteger(u) => u.write_to_bytes(buffer),
-            Value::Double(d) => d.write_to_bytes(buffer),
-            Value::Boolean(b) => b.write_to_bytes(buffer),
-            Value::Measure(m) => m.write_to_bytes(buffer),
-            // todo: 他の型にも対応する
-            _ => {}
-        }
-    }
-}
+// impl ToBytes for Value {
+//     fn write_to_bytes(&self, buffer: &mut Vec<u8>) {
+//         match self {
+//             Value::Integer(i) => i.write_to_bytes(buffer),
+//             Value::NonNegativeInteger(u) => u.write_to_bytes(buffer),
+//             Value::Double(d) => d.write_to_bytes(buffer),
+//             Value::Boolean(b) => b.write_to_bytes(buffer),
+//             Value::Measure(m) => m.write_to_bytes(buffer),
+//             // todo: 他の型にも対応する
+//             _ => {}
+//         }
+//     }
+// }
 
-trait ToBuffer {
-    fn write_to_buffer(&self, buffer: &mut Vec<u8>, string_offset_buffer: &mut Vec<u32>);
-}
+// trait ToBuffer {
+//     fn write_to_buffer(&self, buffer: &mut Vec<u8>, string_offset_buffer: &mut Vec<u32>);
+// }
 
-impl ToBuffer for Value {
-    fn write_to_buffer(&self, buffer: &mut Vec<u8>, string_offset_buffer: &mut Vec<u32>) {
-        match self {
-            Value::String(s) => {
-                string_offset_buffer.push(buffer.len() as u32);
-                buffer.write_all(s.as_bytes()).unwrap();
-            }
-            Value::Code(c) => {
-                let json = c.value();
-                string_offset_buffer.push(buffer.len() as u32);
-                buffer.write_all(json.as_bytes()).unwrap();
-            }
-            Value::Array(a) => {
-                let json = serde_json::to_string(a).unwrap();
-                string_offset_buffer.push(buffer.len() as u32);
-                buffer.write_all(json.as_bytes()).unwrap();
-            }
-            Value::Object(o) => {
-                let json = serde_json::to_string(o).unwrap();
-                string_offset_buffer.push(buffer.len() as u32);
-                buffer.write_all(json.as_bytes()).unwrap();
-            }
-            _ => self.write_to_bytes(buffer),
-        }
-    }
-}
+// impl ToBuffer for Value {
+//     fn write_to_buffer(&self, buffer: &mut Vec<u8>, string_offset_buffer: &mut Vec<u32>) {
+//         match self {
+//             Value::String(s) => {
+//                 string_offset_buffer.push(buffer.len() as u32);
+//                 buffer.write_all(s.as_bytes()).unwrap();
+//             }
+//             Value::Code(c) => {
+//                 let json = c.value();
+//                 string_offset_buffer.push(buffer.len() as u32);
+//                 buffer.write_all(json.as_bytes()).unwrap();
+//             }
+//             Value::Array(a) => {
+//                 let json = serde_json::to_string(a).unwrap();
+//                 string_offset_buffer.push(buffer.len() as u32);
+//                 buffer.write_all(json.as_bytes()).unwrap();
+//             }
+//             Value::Object(o) => {
+//                 let json = serde_json::to_string(o).unwrap();
+//                 string_offset_buffer.push(buffer.len() as u32);
+//                 buffer.write_all(json.as_bytes()).unwrap();
+//             }
+//             _ => self.write_to_bytes(buffer),
+//         }
+//     }
+// }
 
 // pub fn append_gltf_extensions(
 //     content: &mut GltfContent,

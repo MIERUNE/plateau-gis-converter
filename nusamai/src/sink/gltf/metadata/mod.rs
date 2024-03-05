@@ -34,32 +34,16 @@ pub fn make_metadata(
 
     // schema to gltf `Class`
     let classes = schema_to_gltf_classes(typename, type_def);
-
     // schema to gltf `Enums`
     // let enums: HashMap<String, Enum> = Default::default();
 
     let property_tables = {
-        let mut properties: HashMap<String, PropertyTableProperty> = Default::default();
-        properties.insert(
-            "class".to_string(),
-            PropertyTableProperty {
-                values: buffer_views.len() as u32,
-                ..Default::default()
-            },
+        let property_table = schema_to_gltf_property_table(
+            typename,
+            type_def,
+            buffer_views.len() as u32,
+            num_features,
         );
-
-        let start = buffer.len();
-        for _ in 0..num_features {
-            buffer.write_u32::<LittleEndian>(0).unwrap();
-        }
-        buffer_views.push(BufferView {
-            byte_offset: start as u32,
-            byte_length: (buffer.len() - start) as u32,
-            ..Default::default()
-        });
-
-        let property_table =
-            to_gltf_property_table(typename, type_def, buffer_views.len() as u32, num_features);
 
         // make buffer_view for each property
         let mut properties = property_table.properties.iter().collect::<Vec<_>>();
@@ -82,8 +66,8 @@ pub fn make_metadata(
                     let attribute_name_list: Vec<&String> =
                         attributes.attributes.keys().collect::<Vec<_>>();
                     let is_hit = attribute_name_list.contains(&property_name);
-                    // classから型を取り出す
 
+                    // classから型を取り出す
                     let p = &classes
                         .get(typename)
                         .unwrap()
@@ -280,7 +264,7 @@ fn schema_to_gltf_property_type(
     }
 }
 
-pub fn to_gltf_property_table(
+pub fn schema_to_gltf_property_table(
     typename: &str,
     schema: &TypeDef,
     buffer_view_length: u32,
@@ -290,7 +274,8 @@ pub fn to_gltf_property_table(
     let mut property_table: PropertyTable = PropertyTable {
         class: typename.to_string(),
         properties: HashMap::new(),
-        count: num_features as u32,
+        // count: num_features as u32,
+        count: 1,
         ..Default::default()
     };
 
@@ -298,8 +283,7 @@ pub fn to_gltf_property_table(
     match schema {
         TypeDef::Feature(f) => {
             for (name, attr) in &f.attributes {
-                let (class_property_type, class_property_component_type) =
-                    schema_to_gltf_property_type(&attr.type_ref);
+                let (class_property_type, _) = schema_to_gltf_property_type(&attr.type_ref);
                 match class_property_type {
                     ClassPropertyType::String => {
                         property_table.properties.insert(
