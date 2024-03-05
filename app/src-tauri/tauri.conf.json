@@ -17,6 +17,9 @@
 			},
 			"fs": {
 				"readDir": true
+			},
+			"shell": {
+				"open": true
 			}
 		},
 		"bundle": {
