@@ -33,14 +33,6 @@ pub fn write_gltf_glb<W: Write>(
     typename: &str,
     num_features: &usize,
 ) -> std::io::Result<()> {
-    // todo: BufferViewが作成されすぎ（98個くらいできているが、propertyTablesから利用しているのは31個）
-    // 色は分かれてたので、feature_idは個別に分かれていると思われる
-    // ただ、propertyTableのカウントの数とbufferが合わない
-    // propertyTableのカウントの数は実際の地物と合っている
-    // カウントを1にすると、表示できた
-    // つまり、bufferには1つの地物しか存在しないと思われている
-    // byteOffsetがおかしいのかもしれない
-
     // The buffer for the BIN part
     let mut bin_content: Vec<u8> = Vec::new();
     let mut gltf_buffer_views = vec![];
@@ -166,7 +158,7 @@ pub fn write_gltf_glb<W: Write>(
                 extensions: extensions::mesh::MeshPrimitive {
                     ext_mesh_features: extensions::mesh::ext_mesh_features::ExtMeshFeatures {
                         feature_ids: vec![extensions::mesh::ext_mesh_features::FeatureId {
-                            feature_count: primitive.feature_ids.len() as u32, // primitive.feature_ids.len() as u32,
+                            feature_count: primitive.feature_ids.len() as u32,
                             attribute: Some(0),
                             property_table: Some(0),
                             ..Default::default()

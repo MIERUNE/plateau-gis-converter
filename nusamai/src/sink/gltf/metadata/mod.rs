@@ -62,13 +62,13 @@ pub fn make_metadata(
             let mut string_offset_buffer: Vec<u32> = Vec::new();
 
             for feature in features {
-                if let Value::Object(attributes) = &feature.attributes {
+                if let Value::Object(object) = &feature.attributes {
                     let attribute_name_list: Vec<&String> =
-                        attributes.attributes.keys().collect::<Vec<_>>();
+                        object.attributes.keys().collect::<Vec<_>>();
                     let is_hit = attribute_name_list.contains(&property_name);
 
                     // classから型を取り出す
-                    let p = &classes
+                    let p = classes
                         .get(typename)
                         .unwrap()
                         .properties
@@ -77,6 +77,7 @@ pub fn make_metadata(
                     let property_type = &p.type_;
                     let component_type = &p.component_type;
 
+                    // featureのattributesに属性が存在しない場合は、bufferにデフォルト値を書き込む
                     if !is_hit {
                         match property_type {
                             ClassPropertyType::String => {
@@ -89,7 +90,7 @@ pub fn make_metadata(
                             _ => {}
                         }
 
-                        // component_typeがSomeなら値を取り出す
+                        // component_typeがSomeなら数値だが、その場合は0を書き込む
                         if let Some(component_type) = component_type {
                             let component_type = component_type.clone();
                             match component_type {
@@ -125,46 +126,47 @@ pub fn make_metadata(
                                 }
                             }
                         };
+                        // 次のfeatureへ
                         continue;
                     }
 
-                    if let Some((_, value)) = attributes
+                    if let Some((_, value)) = object
                         .attributes
                         .iter()
                         .find(|(name, _)| *name == property_name)
                     {
-                        // bufferに書き込み
+                        // 値があるなら、ルールに従ってbufferに書き込み
                         value.write_to_buffer(&mut buf, &mut string_offset_buffer);
                     }
                 }
-                // offsetには文字列の最後にもインデックスが必要
-                if !string_offset_buffer.is_empty() {
-                    string_offset_buffer.push(buf.len() as u32);
-                }
+            }
+            // offsetには文字列の最後にもインデックスが必要
+            if !string_offset_buffer.is_empty() {
+                string_offset_buffer.push(buf.len() as u32);
+            }
 
+            let byte_offset = buffer.len();
+            let byte_length = buf.len();
+
+            buffer.extend(buf.iter());
+
+            buffer_views.push(BufferView {
+                byte_offset: byte_offset as u32,
+                byte_length: byte_length as u32,
+                ..Default::default()
+            });
+
+            if !string_offset_buffer.is_empty() {
                 let byte_offset = buffer.len();
-                let byte_length = buf.len();
+                let byte_length = string_offset_buffer.len() as u32 * 4;
 
-                buffer.extend(buf.iter());
+                buffer.extend(string_offset_buffer.iter().flat_map(|x| x.to_le_bytes()));
 
                 buffer_views.push(BufferView {
                     byte_offset: byte_offset as u32,
-                    byte_length: byte_length as u32,
+                    byte_length,
                     ..Default::default()
                 });
-
-                if !string_offset_buffer.is_empty() {
-                    let byte_offset = buffer.len();
-                    let byte_length = string_offset_buffer.len() as u32 * 4;
-
-                    buffer.extend(string_offset_buffer.iter().flat_map(|x| x.to_le_bytes()));
-
-                    buffer_views.push(BufferView {
-                        byte_offset: byte_offset as u32,
-                        byte_length,
-                        ..Default::default()
-                    });
-                }
             }
         }
 
@@ -274,8 +276,7 @@ pub fn schema_to_gltf_property_table(
     let mut property_table: PropertyTable = PropertyTable {
         class: typename.to_string(),
         properties: HashMap::new(),
-        // count: num_features as u32,
-        count: 1,
+        count: num_features as u32,
         ..Default::default()
     };
 
