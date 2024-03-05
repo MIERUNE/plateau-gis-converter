@@ -407,7 +407,7 @@ impl DataSink for GltfSink {
             bounds.min_height,
             bounds.max_height,
         ];
-        write_3dtiles(region, &self.output_path, &filenames);
+        write_3dtiles(region, &self.output_path, &filenames)?;
 
         // let (sender, receiver) = std::sync::mpsc::sync_channel(1000);
 

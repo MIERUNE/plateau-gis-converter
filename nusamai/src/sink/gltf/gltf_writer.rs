@@ -760,7 +760,11 @@ impl ToBuffer for Value {
 // }
 
 // This is the code to verify the operation with Cesium
-pub fn write_3dtiles(bounding_volume: [f64; 6], output_path: &Path, filenames: &[String]) {
+pub fn write_3dtiles(
+    bounding_volume: [f64; 6],
+    output_path: &Path,
+    filenames: &[String],
+) -> std::io::Result<()> {
     // write 3DTiles
     let tileset_path = output_path.join("tileset.json");
 
@@ -795,4 +799,6 @@ pub fn write_3dtiles(bounding_volume: [f64; 6], output_path: &Path, filenames: &
     let mut tileset_file = File::create(tileset_path).unwrap();
     let tileset_writer = BufWriter::with_capacity(1024 * 1024, &mut tileset_file);
     serde_json::to_writer_pretty(tileset_writer, &tileset).unwrap();
+
+    Ok(())
 }
