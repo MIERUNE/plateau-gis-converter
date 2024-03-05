@@ -1,8 +1,6 @@
 use std::io::Write;
 
-use crate::sink::cesiumtiles::metadata::make_dummy_metadata;
-
-use super::material;
+use super::{material, metadata::MetadataEncoder};
 use ahash::{HashMap, HashSet};
 use byteorder::{ByteOrder, LittleEndian};
 use indexmap::IndexSet;
@@ -16,13 +14,13 @@ pub struct PrimitiveInfo {
 
 pub type Primitives = HashMap<material::Material, PrimitiveInfo>;
 
-/// とりいそぎの実装
 pub fn write_gltf_glb<W: Write>(
     writer: W,
     translation: [f64; 3],
     vertices: impl IntoIterator<Item = [u32; 9]>,
     primitives: Primitives,
     num_features: usize,
+    metadata_encoder: MetadataEncoder,
 ) -> std::io::Result<()> {
     use nusamai_gltf_json::*;
 
@@ -62,6 +60,7 @@ pub fn write_gltf_glb<W: Write>(
         let len_vertices = bin_content.len() - buffer_offset;
         if len_vertices > 0 {
             gltf_buffer_views.push(BufferView {
+                name: Some("vertices".to_string()),
                 byte_offset: buffer_offset as u32,
                 byte_length: len_vertices as u32,
                 byte_stride: Some(VERTEX_BYTE_STRIDE as u8),
@@ -71,6 +70,7 @@ pub fn write_gltf_glb<W: Write>(
 
             // accessor (positions)
             gltf_accessors.push(Accessor {
+                name: Some("positions".to_string()),
                 buffer_view: Some(gltf_buffer_views.len() as u32 - 1),
                 component_type: ComponentType::Float,
                 count: vertices_count,
@@ -82,6 +82,7 @@ pub fn write_gltf_glb<W: Write>(
 
             // accessor (normal)
             gltf_accessors.push(Accessor {
+                name: Some("normals".to_string()),
                 buffer_view: Some(gltf_buffer_views.len() as u32 - 1),
                 byte_offset: 4 * 3,
                 component_type: ComponentType::Float,
@@ -92,6 +93,7 @@ pub fn write_gltf_glb<W: Write>(
 
             // accessor (texcoords)
             gltf_accessors.push(Accessor {
+                name: Some("texcoords".to_string()),
                 buffer_view: Some(gltf_buffer_views.len() as u32 - 1),
                 byte_offset: 4 * 6,
                 component_type: ComponentType::Float,
@@ -102,6 +104,7 @@ pub fn write_gltf_glb<W: Write>(
 
             // accessor (feature_id)
             gltf_accessors.push(Accessor {
+                name: Some("_feature_ids".to_string()),
                 buffer_view: Some(gltf_buffer_views.len() as u32 - 1),
                 byte_offset: 4 * 8,
                 component_type: ComponentType::Float,
@@ -113,6 +116,9 @@ pub fn write_gltf_glb<W: Write>(
     }
 
     let mut gltf_primitives = vec![];
+
+    let structural_metadata =
+        metadata_encoder.into_metadata(&mut bin_content, &mut gltf_buffer_views);
 
     // indices
     {
@@ -127,6 +133,7 @@ pub fn write_gltf_glb<W: Write>(
             }
 
             gltf_accessors.push(Accessor {
+                name: Some("indices".to_string()),
                 buffer_view: Some(gltf_buffer_views.len() as u32),
                 byte_offset,
                 component_type: ComponentType::UnsignedInt,
@@ -170,6 +177,7 @@ pub fn write_gltf_glb<W: Write>(
         let indices_len = bin_content.len() - indices_offset;
         if indices_len > 0 {
             gltf_buffer_views.push(BufferView {
+                name: Some("indices".to_string()),
                 byte_offset: indices_offset as u32,
                 byte_length: indices_len as u32,
                 target: Some(BufferViewTarget::ElementArrayBuffer),
@@ -205,9 +213,6 @@ pub fn write_gltf_glb<W: Write>(
         });
     }
 
-    let ext_structural_metadata =
-        make_dummy_metadata(num_features, &mut bin_content, &mut gltf_buffer_views);
-
     let gltf_buffers = {
         let mut buffers = vec![];
         if !bin_content.is_empty() {
@@ -238,7 +243,7 @@ pub fn write_gltf_glb<W: Write>(
         buffer_views: gltf_buffer_views,
         buffers: gltf_buffers,
         extensions: nusamai_gltf_json::extensions::gltf::Gltf {
-            ext_structural_metadata,
+            ext_structural_metadata: structural_metadata,
             ..Default::default()
         }
         .into(),

@@ -77,8 +77,10 @@ pub enum MergedownSpec {
 /// Specifies how to transform nested objects and arrays
 pub enum KeyValueSpec {
     None,
-    // JSONify nested objects and arrays
-    Jsonify,
+    // Jsonify nested objects and arrays
+    JsonifyObjectsAndArrays,
+    // Jsonify nested objects (but not arrays)
+    JsonifyObjects,
     // Flatten nested objects and arrays as dot-split keys (e.g. `buildingDisasterRiskAttribute.0.rankOrg`)
     DotNotation,
 }
@@ -154,8 +156,11 @@ impl TransformBuilder for NusamaiTransformBuilder {
         }
 
         match self.request.key_value {
-            KeyValueSpec::Jsonify => {
-                transforms.push(Box::<JsonifyTransform>::default());
+            KeyValueSpec::JsonifyObjectsAndArrays => {
+                transforms.push(Box::new(JsonifyTransform::default().jsonify_array(true)));
+            }
+            KeyValueSpec::JsonifyObjects => {
+                transforms.push(Box::new(JsonifyTransform::default().jsonify_array(false)));
             }
             KeyValueSpec::DotNotation => {
                 transforms.push(Box::<DotNotationTransform>::default());
