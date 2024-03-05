@@ -217,6 +217,7 @@ pub fn write_gltf_glb<W: Write>(
         typename,
         &mut bin_content,
         &mut gltf_buffer_views,
+        schema,
     );
 
     let gltf_buffers = {
