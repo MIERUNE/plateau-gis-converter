@@ -27,34 +27,12 @@ pub fn make_metadata(
     // schema to gltf `Class`
     let classes = schema_to_gltf_classes(typename, type_def);
 
-    // let mut classes = HashMap::new();
-    // classes.extend(class.clone());
-
     // Schema
-    let schema = {
-        // let enums = {
-        //     let mut enums: HashMap<String, Enum> = HashMap::new();
-        //     enums.insert(
-        //         "Enum_01".to_string(),
-        //         Enum {
-        //             value_type: EnumValueType::Uint32,
-        //             values: vec![EnumValue {
-        //                 value: 0,
-        //                 name: "dummy_enum_name".to_string(),
-        //                 ..Default::default()
-        //             }],
-        //             ..Default::default()
-        //         },
-        //     );
-        //     enums
-        // };
-
-        Schema {
-            id: typename.to_string(),
-            classes,
-            // enums,
-            ..Default::default()
-        }
+    let schema = Schema {
+        id: typename.to_string(),
+        classes,
+        // enums,
+        ..Default::default()
     };
 
     let property_tables = {
