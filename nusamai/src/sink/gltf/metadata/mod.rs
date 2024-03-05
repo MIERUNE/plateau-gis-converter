@@ -1,8 +1,13 @@
 use byteorder::{LittleEndian, WriteBytesExt};
 use bytesize::to_string;
-use std::collections::HashMap;
+use std::{collections::HashMap, io::Write};
 
-use nusamai_citygml::schema::{Schema as NusamaiSchema, TypeDef, TypeRef};
+use nusamai_citygml::{
+    attribute,
+    object::Object,
+    schema::{Schema as NusamaiSchema, TypeDef, TypeRef},
+    Measure, Value,
+};
 use nusamai_gltf_json::{
     extensions::gltf::ext_structural_metadata::{
         Class, ClassProperty, ClassPropertyComponentType, ClassPropertyType, Enum, EnumValue,
@@ -32,14 +37,6 @@ pub fn make_metadata(
 
     // schema to gltf `Enums`
     // let enums: HashMap<String, Enum> = Default::default();
-
-    // Schema
-    let schema = Schema {
-        id: typename.to_string(),
-        classes,
-        // enums,
-        ..Default::default()
-    };
 
     let property_tables = {
         let mut properties: HashMap<String, PropertyTableProperty> = Default::default();
@@ -77,119 +74,125 @@ pub fn make_metadata(
         for (property_name, _) in properties {
             // property_nameに対応するbuffer_viewを作成する
             // todo: データ型ごとの対応をする（配列の場合は、array_offsetを書き込む必要があるなど）
-            let mut buffer: Vec<u8> = Vec::new();
+            let mut buf: Vec<u8> = Vec::new();
             let mut string_offset_buffer: Vec<u32> = Vec::new();
 
-            //     // このproperty_nameに対応するbuffer_viewを作成する
-            //     for entity in entities {
-            //         // 個別のentityから、property_nameに対応する属性を取り出す
-            //         // なければ、無視する
-            //         let attribute_name_list = entity.attributes.attributes.keys().collect::<Vec<_>>();
-            //         let is_hit = attribute_name_list.contains(&property_name);
-            //         // classから型を取り出す
-            //         let p = class
-            //             .get(class_name)
-            //             .unwrap()
-            //             .properties
-            //             .get(property_name)
-            //             .unwrap();
-            //         let property_type = &p.type_;
-            //         let component_type = &p.component_type;
+            for feature in features {
+                if let Value::Object(attributes) = &feature.attributes {
+                    let attribute_name_list: Vec<&String> =
+                        attributes.attributes.keys().collect::<Vec<_>>();
+                    let is_hit = attribute_name_list.contains(&property_name);
+                    // classから型を取り出す
 
-            //         if !is_hit {
-            //             match property_type {
-            //                 extensions::gltf::ext_structural_metadata::ClassPropertyType::String => {
-            //                     string_offset_buffer.push(buffer.len() as u32);
-            //                     buffer.write_all(b"0").unwrap();
-            //                 }
-            //                 extensions::gltf::ext_structural_metadata::ClassPropertyType::Boolean => {
-            //                     buffer.write_u8(0).unwrap();
-            //                 }
-            //                 _ => {}
-            //             }
+                    let p = &classes
+                        .get(typename)
+                        .unwrap()
+                        .properties
+                        .get(property_name)
+                        .unwrap();
+                    let property_type = &p.type_;
+                    let component_type = &p.component_type;
 
-            //             // component_typeがSomeなら値を取り出す
-            //             if let Some(component_type) = component_type {
-            //                 let component_type = component_type.clone();
-            //                 match component_type {
-            //                         extensions::gltf::ext_structural_metadata::ClassPropertyComponentType::Int8 => {
-            //                             buffer.write_i8(0).unwrap();
-            //                         },
-            //                         extensions::gltf::ext_structural_metadata::ClassPropertyComponentType::Uint8 => {
-            //                             buffer.write_u8(0).unwrap();
-            //                         },
-            //                         extensions::gltf::ext_structural_metadata::ClassPropertyComponentType::Int16 => {
-            //                             buffer.write_i16::<LittleEndian>(0).unwrap();
-            //                         },
-            //                         extensions::gltf::ext_structural_metadata::ClassPropertyComponentType::Uint16 => {
-            //                             buffer.write_u16::<LittleEndian>(0).unwrap();
-            //                         },
-            //                         extensions::gltf::ext_structural_metadata::ClassPropertyComponentType::Int32 => {
-            //                             buffer.write_i32::<LittleEndian>(0).unwrap();
-            //                         },
-            //                         extensions::gltf::ext_structural_metadata::ClassPropertyComponentType::Uint32 => {
-            //                             buffer.write_u32::<LittleEndian>(0).unwrap();
-            //                         },
-            //                         extensions::gltf::ext_structural_metadata::ClassPropertyComponentType::Float32 => {
-            //                             buffer.write_f32::<LittleEndian>(0.0).unwrap();
-            //                         },
-            //                         extensions::gltf::ext_structural_metadata::ClassPropertyComponentType::Float64 => {
-            //                             buffer.write_f64::<LittleEndian>(0.0).unwrap();
-            //                         },
-            //                         extensions::gltf::ext_structural_metadata::ClassPropertyComponentType::Int64 => {
-            //                             buffer.write_i64::<LittleEndian>(0).unwrap();
-            //                         },
-            //                         extensions::gltf::ext_structural_metadata::ClassPropertyComponentType::Uint64 => {
-            //                             buffer.write_u64::<LittleEndian>(0).unwrap();
-            //                         },
-            //                     }
-            //             };
-            //             continue;
-            //         }
+                    if !is_hit {
+                        match property_type {
+                            ClassPropertyType::String => {
+                                string_offset_buffer.push(buf.len() as u32);
+                                buf.write_all(b"0").unwrap();
+                            }
+                            ClassPropertyType::Boolean => {
+                                buf.write_u8(0).unwrap();
+                            }
+                            _ => {}
+                        }
 
-            //         // 属性名が一致するものがあれば、ちゃんと取り出す
-            //         // entity.attributes.attributes.get(&property_name)が効かないので、for文で取り出す
-            //         if let Some((_, value)) = entity
-            //             .attributes
-            //             .attributes
-            //             .iter()
-            //             .find(|(name, _)| *name == property_name)
-            //         {
-            //             // bufferに書き込み
-            //             value.write_to_buffer(&mut buffer, &mut string_offset_buffer);
-            //         }
-            //     }
-            //     // offsetには文字列の最後にもインデックスが必要
-            //     if !string_offset_buffer.is_empty() {
-            //         string_offset_buffer.push(buffer.len() as u32);
-            //     }
+                        // component_typeがSomeなら値を取り出す
+                        if let Some(component_type) = component_type {
+                            let component_type = component_type.clone();
+                            match component_type {
+                                ClassPropertyComponentType::Int8 => {
+                                    buf.write_i8(0).unwrap();
+                                }
+                                ClassPropertyComponentType::Uint8 => {
+                                    buf.write_u8(0).unwrap();
+                                }
+                                ClassPropertyComponentType::Int16 => {
+                                    buf.write_i16::<LittleEndian>(0).unwrap();
+                                }
+                                ClassPropertyComponentType::Uint16 => {
+                                    buf.write_u16::<LittleEndian>(0).unwrap();
+                                }
+                                ClassPropertyComponentType::Int32 => {
+                                    buf.write_i32::<LittleEndian>(0).unwrap();
+                                }
+                                ClassPropertyComponentType::Uint32 => {
+                                    buf.write_u32::<LittleEndian>(0).unwrap();
+                                }
+                                ClassPropertyComponentType::Float32 => {
+                                    buf.write_f32::<LittleEndian>(0.0).unwrap();
+                                }
+                                ClassPropertyComponentType::Float64 => {
+                                    buf.write_f64::<LittleEndian>(0.0).unwrap();
+                                }
+                                ClassPropertyComponentType::Int64 => {
+                                    buf.write_i64::<LittleEndian>(0).unwrap();
+                                }
+                                ClassPropertyComponentType::Uint64 => {
+                                    buf.write_u64::<LittleEndian>(0).unwrap();
+                                }
+                            }
+                        };
+                        continue;
+                    }
 
-            //     let byte_offset = bin_content.len();
-            //     let byte_length = buffer.len();
+                    if let Some((_, value)) = attributes
+                        .attributes
+                        .iter()
+                        .find(|(name, _)| *name == property_name)
+                    {
+                        // bufferに書き込み
+                        value.write_to_buffer(&mut buf, &mut string_offset_buffer);
+                    }
+                }
+                // offsetには文字列の最後にもインデックスが必要
+                if !string_offset_buffer.is_empty() {
+                    string_offset_buffer.push(buf.len() as u32);
+                }
 
-            //     bin_content.extend(buffer.iter());
+                let byte_offset = buffer.len();
+                let byte_length = buf.len();
 
-            //     buffer_views.push(BufferView {
-            //         byte_offset: byte_offset as u32,
-            //         byte_length: byte_length as u32,
-            //         ..Default::default()
-            //     });
+                buffer.extend(buf.iter());
 
-            //     if !string_offset_buffer.is_empty() {
-            //         let byte_offset = bin_content.len();
-            //         let byte_length = string_offset_buffer.len() as u32 * 4;
+                buffer_views.push(BufferView {
+                    byte_offset: byte_offset as u32,
+                    byte_length: byte_length as u32,
+                    ..Default::default()
+                });
 
-            //         bin_content.extend(string_offset_buffer.iter().flat_map(|x| x.to_le_bytes()));
+                if !string_offset_buffer.is_empty() {
+                    let byte_offset = buffer.len();
+                    let byte_length = string_offset_buffer.len() as u32 * 4;
 
-            //         buffer_views.push(BufferView {
-            //             byte_offset: byte_offset as u32,
-            //             byte_length,
-            //             ..Default::default()
-            //         });
-            //     }
+                    buffer.extend(string_offset_buffer.iter().flat_map(|x| x.to_le_bytes()));
+
+                    buffer_views.push(BufferView {
+                        byte_offset: byte_offset as u32,
+                        byte_length,
+                        ..Default::default()
+                    });
+                }
+            }
         }
 
         vec![property_table]
+    };
+
+    // Schema
+    let schema = Schema {
+        id: typename.to_string(),
+        classes: classes.clone(),
+        // enums,
+        ..Default::default()
     };
 
     Some(ExtStructuralMetadata {
@@ -342,4 +345,86 @@ pub fn to_gltf_property_table(
     }
 
     property_table
+}
+
+// value to bytes
+trait ToBytes {
+    fn write_to_bytes(&self, buffer: &mut Vec<u8>);
+}
+
+impl ToBytes for i64 {
+    fn write_to_bytes(&self, buffer: &mut Vec<u8>) {
+        buffer.write_i64::<LittleEndian>(*self).unwrap();
+    }
+}
+
+impl ToBytes for u64 {
+    fn write_to_bytes(&self, buffer: &mut Vec<u8>) {
+        buffer.write_u64::<LittleEndian>(*self).unwrap();
+    }
+}
+
+impl ToBytes for f64 {
+    fn write_to_bytes(&self, buffer: &mut Vec<u8>) {
+        buffer.write_f64::<LittleEndian>(*self).unwrap();
+    }
+}
+
+impl ToBytes for bool {
+    fn write_to_bytes(&self, buffer: &mut Vec<u8>) {
+        let value = if *self { 1 } else { 0 };
+        buffer.write_i32::<LittleEndian>(value).unwrap();
+    }
+}
+
+impl ToBytes for Measure {
+    fn write_to_bytes(&self, buffer: &mut Vec<u8>) {
+        let value = self.value();
+        buffer.write_f64::<LittleEndian>(value).unwrap();
+    }
+}
+
+impl ToBytes for Value {
+    fn write_to_bytes(&self, buffer: &mut Vec<u8>) {
+        match self {
+            Value::Integer(i) => i.write_to_bytes(buffer),
+            Value::NonNegativeInteger(u) => u.write_to_bytes(buffer),
+            Value::Double(d) => d.write_to_bytes(buffer),
+            Value::Boolean(b) => b.write_to_bytes(buffer),
+            Value::Measure(m) => m.write_to_bytes(buffer),
+            // todo: 他の型にも対応する
+            _ => {}
+        }
+    }
+}
+
+trait ToBuffer {
+    fn write_to_buffer(&self, buffer: &mut Vec<u8>, string_offset_buffer: &mut Vec<u32>);
+}
+
+impl ToBuffer for Value {
+    fn write_to_buffer(&self, buffer: &mut Vec<u8>, string_offset_buffer: &mut Vec<u32>) {
+        match self {
+            Value::String(s) => {
+                string_offset_buffer.push(buffer.len() as u32);
+                buffer.write_all(s.as_bytes()).unwrap();
+            }
+            Value::Code(c) => {
+                let json = c.value();
+                string_offset_buffer.push(buffer.len() as u32);
+                buffer.write_all(json.as_bytes()).unwrap();
+            }
+            Value::Array(a) => {
+                let json = serde_json::to_string(a).unwrap();
+                string_offset_buffer.push(buffer.len() as u32);
+                buffer.write_all(json.as_bytes()).unwrap();
+            }
+            Value::Object(o) => {
+                let json = serde_json::to_string(o).unwrap();
+                string_offset_buffer.push(buffer.len() as u32);
+                buffer.write_all(json.as_bytes()).unwrap();
+            }
+            _ => self.write_to_bytes(buffer),
+        }
+    }
 }
