@@ -1,17 +1,14 @@
 use byteorder::{LittleEndian, WriteBytesExt};
-use bytesize::to_string;
 use std::{collections::HashMap, io::Write};
 
 use nusamai_citygml::{
-    attribute,
-    object::Object,
     schema::{Schema as NusamaiSchema, TypeDef, TypeRef},
     Measure, Value,
 };
 use nusamai_gltf_json::{
     extensions::gltf::ext_structural_metadata::{
-        Class, ClassProperty, ClassPropertyComponentType, ClassPropertyType, Enum, EnumValue,
-        EnumValueType, ExtStructuralMetadata, PropertyTable, PropertyTableProperty, Schema,
+        Class, ClassProperty, ClassPropertyComponentType, ClassPropertyType, ExtStructuralMetadata,
+        PropertyTable, PropertyTableProperty, Schema,
     },
     BufferView,
 };
@@ -49,17 +46,18 @@ pub fn make_metadata(
         let mut properties = property_table.properties.iter().collect::<Vec<_>>();
         properties.sort_by(|a, b| a.1.values.cmp(&b.1.values));
 
-        // featuresをfeature_idの順にソート
         features
             .clone()
             .sort_by(|a, b| a.feature_id.cmp(&b.feature_id));
 
-        // 抽出するべき全ての属性がproperty_nameに入る
+        // we need to write buffers for each column in the same order as in the propertyTable generated from the schema
+        // and also need to start from the 0th record of the feature_id
+        // todo: whenever they are null, we need to modify them so that they are not written
         for (property_name, _) in properties {
-            // property_nameに対応するbuffer_viewを作成する
-            // todo: データ型ごとの対応をする（配列の場合は、array_offsetを書き込む必要があるなど）
             let mut buf: Vec<u8> = Vec::new();
             let mut string_offset_buffer: Vec<u32> = Vec::new();
+            // todo: implement array offset buffer
+            // let mut array_offset_buffer: Vec<u32> = Vec::new();
 
             for feature in features {
                 if let Value::Object(object) = &feature.attributes {
@@ -67,7 +65,6 @@ pub fn make_metadata(
                         object.attributes.keys().collect::<Vec<_>>();
                     let is_hit = attribute_name_list.contains(&property_name);
 
-                    // classから型を取り出す
                     let p = classes
                         .get(typename)
                         .unwrap()
@@ -77,7 +74,7 @@ pub fn make_metadata(
                     let property_type = &p.type_;
                     let component_type = &p.component_type;
 
-                    // featureのattributesに属性が存在しない場合は、bufferにデフォルト値を書き込む
+                    // if the value does not exist, write a default value to the buffer
                     if !is_hit {
                         match property_type {
                             ClassPropertyType::String => {
@@ -90,7 +87,7 @@ pub fn make_metadata(
                             _ => {}
                         }
 
-                        // component_typeがSomeなら数値だが、その場合は0を書き込む
+                        // if component_type is Some, write a numeric value to the buffer
                         if let Some(component_type) = component_type {
                             let component_type = component_type.clone();
                             match component_type {
@@ -126,7 +123,7 @@ pub fn make_metadata(
                                 }
                             }
                         };
-                        // 次のfeatureへ
+                        // next feature
                         continue;
                     }
 
@@ -135,12 +132,12 @@ pub fn make_metadata(
                         .iter()
                         .find(|(name, _)| *name == property_name)
                     {
-                        // 値があるなら、ルールに従ってbufferに書き込み
+                        // If the value exists, write to buffer according to the rules
                         value.write_to_buffer(&mut buf, &mut string_offset_buffer);
                     }
                 }
             }
-            // offsetには文字列の最後にもインデックスが必要
+            // Offset also requires an index at the end of the string
             if !string_offset_buffer.is_empty() {
                 string_offset_buffer.push(buf.len() as u32);
             }
@@ -377,8 +374,9 @@ impl ToBytes for Value {
             Value::Double(d) => d.write_to_bytes(buffer),
             Value::Boolean(b) => b.write_to_bytes(buffer),
             Value::Measure(m) => m.write_to_bytes(buffer),
-            // todo: 他の型にも対応する
-            _ => {}
+            _ => {
+                // todo: implement
+            }
         }
     }
 }
