@@ -199,7 +199,7 @@ impl DataSink for GltfSink {
                 attributes: entity.root.clone(),
                 polygon_material_ids: Default::default(),
                 materials: Default::default(),
-                feature_id: None,
+                feature_id: None, // feature_id is set later
             };
 
             geometries.iter().for_each(|entry| {
@@ -299,7 +299,7 @@ impl DataSink for GltfSink {
             [(tx as f32) as f64, (ty as f32) as f64, (tz as f32) as f64]
         };
 
-        for (typename, features) in categorized_features.lock().unwrap().clone().into_iter() {
+        for (typename, mut features) in categorized_features.lock().unwrap().clone().into_iter() {
             // Triangulation
             let mut earcutter: Earcut<f64> = Earcut::new();
             let mut buf2d: Vec<f64> = Vec::new(); // 2d-projected [x, y]
@@ -310,11 +310,9 @@ impl DataSink for GltfSink {
 
             // make vertices and indices
             let mut feature_id = 0;
-
-            for mut feature in features.clone().into_iter() {
-                feature.feature_id = Some(feature_id);
-
+            for feature in features.iter_mut() {
                 feature
+                    .clone()
                     .polygons
                     .transform_inplace(|&[lng, lat, height, u, v]| {
                         // geographic to geocentric
@@ -344,7 +342,6 @@ impl DataSink for GltfSink {
 
                     let mat = feature.materials[*orig_mat_id as usize].clone();
                     let primitive = primitives.entry(mat).or_default();
-                    primitive.feature_ids.insert(feature_id as u32);
 
                     if project3d_to_2d(poly.coords(), num_outer, 5, &mut buf2d) {
                         // earcut
@@ -366,10 +363,10 @@ impl DataSink for GltfSink {
                             index as u32
                         }));
                     }
+                    feature.feature_id = Some(feature_id);
                 }
+                feature_id += 1;
             }
-
-            feature_id += 1;
 
             // make folders
             std::fs::create_dir_all(&self.output_path).unwrap();
@@ -385,6 +382,8 @@ impl DataSink for GltfSink {
             let mut file = File::create(&file_path).unwrap();
             let writer = BufWriter::with_capacity(1024 * 1024, &mut file);
 
+            let num_features = &features.len();
+
             write_gltf_glb(
                 writer,
                 translation,
@@ -393,7 +392,7 @@ impl DataSink for GltfSink {
                 features,
                 schema,
                 &typename,
-                feature_id as usize,
+                num_features,
             )?;
         }
 

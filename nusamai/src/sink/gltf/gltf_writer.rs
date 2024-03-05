@@ -20,7 +20,7 @@ use nusamai_gltf_json::{
 
 use super::material;
 use super::metadata::make_metadata;
-use super::Feature;
+use super::Features;
 use super::Primitives;
 
 pub fn write_gltf_glb<W: Write>(
@@ -28,10 +28,10 @@ pub fn write_gltf_glb<W: Write>(
     translation: [f64; 3],
     vertices: impl IntoIterator<Item = [u32; 6]>,
     primitives: Primitives,
-    features: Vec<Feature>,
+    features: Features,
     schema: &Schema,
     typename: &str,
-    num_features: usize,
+    num_features: &usize,
 ) -> std::io::Result<()> {
     // The buffer for the BIN part
     let mut bin_content: Vec<u8> = Vec::new();
@@ -157,7 +157,7 @@ pub fn write_gltf_glb<W: Write>(
                 extensions: extensions::mesh::MeshPrimitive {
                     ext_mesh_features: extensions::mesh::ext_mesh_features::ExtMeshFeatures {
                         feature_ids: vec![extensions::mesh::ext_mesh_features::FeatureId {
-                            feature_count: num_features as u32, // primitive.feature_ids.len() as u32,
+                            feature_count: *num_features as u32, // primitive.feature_ids.len() as u32,
                             attribute: Some(0),
                             property_table: Some(0),
                             ..Default::default()
@@ -213,8 +213,9 @@ pub fn write_gltf_glb<W: Write>(
     }
 
     let ext_structural_metadata = make_metadata(
-        num_features,
+        *num_features,
         typename,
+        &features,
         &mut bin_content,
         &mut gltf_buffer_views,
         schema,
@@ -271,11 +272,11 @@ pub fn write_gltf_glb<W: Write>(
     Ok(())
 }
 
-pub struct GltfContent {
-    pub class_name: String,
-    pub gltf: Gltf,
-    pub bin_content: Vec<u8>,
-}
+// pub struct GltfContent {
+//     pub class_name: String,
+//     pub gltf: Gltf,
+//     pub bin_content: Vec<u8>,
+// }
 
 // pub fn build_base_gltf(class_name: &str, buffer: &Buffers, translation: [f64; 3]) -> GltfContent {
 //     let mut gltf = Gltf {
