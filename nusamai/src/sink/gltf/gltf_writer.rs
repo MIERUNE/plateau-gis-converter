@@ -17,6 +17,7 @@ use super::metadata::make_metadata;
 use super::Features;
 use super::Primitives;
 
+#[allow(clippy::too_many_arguments)]
 pub fn write_gltf_glb<W: Write>(
     writer: W,
     translation: [f64; 3],
