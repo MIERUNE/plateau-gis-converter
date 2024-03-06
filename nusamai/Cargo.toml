@@ -48,6 +48,7 @@ kml = "0.8.5"
 nusamai-kml = { path = "../nusamai-kml" }
 image = { version = "0.24.8", default-features = false, features = ["tiff", "jpeg", "jpeg_rayon", "webp-encoder"] }
 flate2 = "1.0.28"
+chrono = "0.4.35"
 
 [dev-dependencies]
 rand = "0.8.5"

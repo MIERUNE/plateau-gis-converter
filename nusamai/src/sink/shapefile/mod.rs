@@ -2,9 +2,11 @@
 
 use std::path::PathBuf;
 
+use chrono::Datelike;
 use hashbrown::HashMap;
 use indexmap::IndexMap;
 use rayon::prelude::*;
+use shapefile::dbase::{Date, FieldValue};
 
 use nusamai_citygml::object::{self, ObjectStereotype, Value};
 use nusamai_citygml::schema::Schema;
@@ -139,45 +141,54 @@ impl DataSink for ShapefileSink {
     }
 }
 
-fn prepare_object_attributes(object: &nusamai_citygml::object::Object) -> IndexMap<String, String> {
-    let mut attributes = IndexMap::<String, String>::new();
+fn prepare_shapefile_attributes(
+    object: &nusamai_citygml::object::Object,
+) -> IndexMap<String, FieldValue> {
+    let mut attributes = IndexMap::<String, FieldValue>::new();
 
+    // todo: 長いフィールドはどうなるのか。落ちる？勝手に切られる？
     for (attr_name, attr_value) in &object.attributes {
         match attr_value {
             Value::String(s) => {
-                attributes.insert(attr_name.into(), s.into());
+                attributes.insert(attr_name.into(), FieldValue::Character(Some(s.to_owned())));
             }
             Value::Code(c) => {
                 // value of the code
-                attributes.insert(attr_name.into(), c.value().into());
+                attributes.insert(
+                    attr_name.into(),
+                    FieldValue::Character(Some(c.value().to_owned())),
+                );
             }
             Value::Integer(i) => {
-                attributes.insert(attr_name.into(), i.to_string());
+                attributes.insert(attr_name.into(), FieldValue::Integer(i.to_owned() as i32));
             }
             Value::NonNegativeInteger(i) => {
-                attributes.insert(attr_name.into(), i.to_string());
+                attributes.insert(attr_name.into(), FieldValue::Integer(i.to_owned() as i32));
             }
             Value::Double(d) => {
-                attributes.insert(attr_name.into(), d.to_string());
+                attributes.insert(attr_name.into(), FieldValue::Double(d.to_owned()));
             }
             Value::Measure(m) => {
-                attributes.insert(attr_name.into(), m.value().to_string());
+                attributes.insert(attr_name.into(), FieldValue::Double(m.value().to_owned()));
             }
             Value::Boolean(b) => {
-                // 0 for false and 1 for true in SQLite
-                attributes.insert(attr_name.into(), if *b { "1".into() } else { "0".into() });
+                attributes.insert(attr_name.into(), FieldValue::Logical(Some(b.to_owned())));
             }
             Value::Uri(u) => {
-                // value of the URI
-                attributes.insert(attr_name.into(), u.value().to_string());
+                attributes.insert(
+                    attr_name.into(),
+                    FieldValue::Character(Some(u.value().to_string())),
+                );
             }
             Value::Date(d) => {
                 // Date represented as an ISO8601 string
-                attributes.insert(attr_name.into(), d.to_string());
+                attributes.insert(
+                    attr_name.into(),
+                    FieldValue::Date(Some(Date::new(d.day(), d.month(), d.year() as u32))),
+                );
             }
             Value::Point(_p) => {
                 // TODO: implement
-                // Point struct currently does not contain any data
             }
             Value::Array(_arr) => {
                 // TODO: handle multiple values
@@ -204,8 +215,6 @@ pub fn entity_to_shapes(entity: &Entity) -> Vec<shapefile::Shape> {
 
     let geom_store = entity.geometry_store.read().unwrap();
 
-    let attributes = prepare_object_attributes(obj);
-
     let mut mpoly = nusamai_geometry::MultiPolygon::<1, u32>::new();
 
     geometries.iter().for_each(|entry| match entry.ty {
@@ -220,6 +229,8 @@ pub fn entity_to_shapes(entity: &Entity) -> Vec<shapefile::Shape> {
         GeometryType::Curve => unimplemented!(),
         GeometryType::Point => unimplemented!(),
     });
+
+    let attributes = prepare_shapefile_attributes(obj);
 
     let mut shapes = vec![];
     if !mpoly.is_empty() {
