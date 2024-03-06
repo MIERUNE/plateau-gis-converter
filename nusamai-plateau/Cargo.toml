@@ -5,16 +5,17 @@ edition = "2021"
 
 [features]
 default = ["serde"]
+serde = ["dep:serde"]
 
 [dependencies]
 quick-xml = "0.31.0"
-serde = { version = "1.0.196", features = ["derive"], optional = true }
+serde = { version = "1.0.196", features = ["derive", "rc"], optional = true }
 nusamai-citygml = { path = "../nusamai-citygml", features = ["serde"]}
 nusamai-geometry = { path = "../nusamai-geometry" }
 chrono = { version = "0.4.34", features = ["serde"], default-features = false }
 url = "2.5.0"
 stretto = "0.8.3"
-hashbrown = "0.14.3"
+hashbrown = { version = "0.14.3", features = ["serde"] }
 indexmap = "2.2.3"
 log = "0.4.20"
 
