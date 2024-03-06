@@ -1,15 +1,17 @@
 //! Shapefile sink
 
 use std::path::PathBuf;
+use std::sync::Mutex;
 
 use chrono::Datelike;
 use hashbrown::HashMap;
 use indexmap::IndexMap;
+use quick_xml::events::attributes;
 use rayon::prelude::*;
-use shapefile::dbase::{self, Date, FieldValue};
+use shapefile::dbase::{self, Date, FieldName, FieldValue};
 
 use nusamai_citygml::object::{self, ObjectStereotype, Value};
-use nusamai_citygml::schema::Schema;
+use nusamai_citygml::schema::{Schema, TypeDef, TypeRef};
 use nusamai_citygml::GeometryType;
 use nusamai_plateau::Entity;
 use nusamai_shapefile::conversion::indexed_multipolygon_to_shape;
@@ -102,11 +104,9 @@ impl DataSink for ShapefileSink {
             || {
                 // Write Shapefile to a file
 
-                let s = schema.clone();
-
                 // Attribute fields for the features
                 // FieldName byte representation cannot exceed 11 bytes
-                let table_builder = shapefile::dbase::TableWriterBuilder::new();
+                let table_builder = prepare_table_builder("bldg:Building", schema);
 
                 // Create all the files needed for the shapefile to be complete (.shp, .shx, .dbf)
                 std::fs::create_dir_all(&self.output_path)?;
@@ -148,6 +148,114 @@ impl DataSink for ShapefileSink {
 
         Ok(())
     }
+}
+
+struct DynamicTableWriterBuilder {
+    builder: dbase::TableWriterBuilder,
+}
+
+impl DynamicTableWriterBuilder {
+    pub fn new() -> Self {
+        Self {
+            builder: dbase::TableWriterBuilder::new(),
+        }
+    }
+
+    pub fn add_field(mut self, field_type: &TypeRef, name: &str, size: u8) -> Self {
+        match field_type {
+            TypeRef::String | TypeRef::Code | TypeRef::URI => {
+                self.builder = self
+                    .builder
+                    .add_character_field(name.try_into().unwrap(), size);
+            }
+            TypeRef::Integer | TypeRef::NonNegativeInteger => {
+                self.builder = self.builder.add_integer_field(name.try_into().unwrap());
+            }
+            TypeRef::Double | TypeRef::Measure => {
+                self.builder = self.builder.add_double_field(name.try_into().unwrap());
+            }
+            TypeRef::Boolean => {
+                self.builder = self.builder.add_logical_field(name.try_into().unwrap());
+            }
+            TypeRef::Date => {
+                self.builder = self.builder.add_date_field(name.try_into().unwrap());
+            }
+            TypeRef::Point => {
+                // todo
+            }
+            TypeRef::Unknown => {
+                // todo
+            }
+            TypeRef::Named(_) => {
+                // todo
+            }
+            TypeRef::JsonString(_) => {
+                // todo
+            }
+            TypeRef::DateTime => {
+                // todo
+            }
+        }
+        self
+    }
+
+    fn build(self) -> dbase::TableWriterBuilder {
+        self.builder
+    }
+}
+
+fn prepare_table_builder(typename: &str, schema: &Schema) -> dbase::TableWriterBuilder {
+    let mut table_builder = DynamicTableWriterBuilder::new();
+
+    let target_schema = &schema.types[typename];
+
+    match target_schema {
+        TypeDef::Feature(feature) => {
+            for (field_name, attribute) in &feature.attributes {
+                match attribute.type_ref {
+                    TypeRef::String | TypeRef::Code | TypeRef::URI => {
+                        table_builder =
+                            table_builder.add_field(&attribute.type_ref, field_name, 255);
+                    }
+                    TypeRef::Integer | TypeRef::NonNegativeInteger => {
+                        table_builder = table_builder.add_field(&attribute.type_ref, field_name, 4);
+                    }
+                    TypeRef::Double | TypeRef::Measure => {
+                        table_builder = table_builder.add_field(&attribute.type_ref, field_name, 8);
+                    }
+                    TypeRef::Boolean => {
+                        table_builder = table_builder.add_field(&attribute.type_ref, field_name, 1);
+                    }
+                    TypeRef::Date => {
+                        table_builder = table_builder.add_field(&attribute.type_ref, field_name, 8);
+                    }
+                    TypeRef::Point => {
+                        // todo
+                    }
+                    TypeRef::Unknown => {
+                        // todo
+                    }
+                    TypeRef::Named(_) => {
+                        // todo
+                    }
+                    TypeRef::JsonString(_) => {
+                        // todo
+                    }
+                    TypeRef::DateTime => {
+                        // todo
+                    }
+                }
+            }
+        }
+        TypeDef::Data(_) => {
+            // todo
+        }
+        TypeDef::Property(_) => {
+            // todo
+        }
+    }
+
+    table_builder.build()
 }
 
 fn prepare_shapefile_attributes(
