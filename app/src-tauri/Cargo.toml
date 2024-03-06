@@ -22,7 +22,7 @@ nusamai-geojson = { path = "../../nusamai-geojson" }
 nusamai-plateau = { path = "../../nusamai-plateau" }
 nusamai-citygml = {path = "../../nusamai-citygml" }
 log = "0.4.20"
-tauri-plugin-log = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v1", features = ["colored"] }
+tauri-plugin-log = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v1" }
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem and the built-in dev server is disabled.
