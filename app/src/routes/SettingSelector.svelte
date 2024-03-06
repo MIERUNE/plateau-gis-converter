@@ -1,13 +1,13 @@
 <script lang="ts">
 	import { dialog } from '@tauri-apps/api';
 	import Icon from '@iconify/svelte';
-	import { filetypeOptions } from '$lib/settings';
+	import { filetypeOptions, optionDivider } from '$lib/settings';
 
 	export let filetype: string;
 	export let epsg: number = 4979;
 	export let rulesPath: string;
 
-	$: epsgOptions = filetypeOptions[filetype]?.epsg || [];
+	$: epsgOptions = filetypeOptions[0]?.epsg || [];
 	$: disableEpsgOptions = epsgOptions.length < 2;
 
 	async function openRulesPathDialog() {
@@ -39,8 +39,12 @@
 		<div class=" flex flex-col gap-1.5">
 			<label for="filetype-select" class="font-bold">ファイル形式</label>
 			<select bind:value={filetype} name="filetype" id="filetype-select" class="w-36">
-				{#each Object.entries(filetypeOptions) as [value, item]}
-					<option {value}>{item.label}</option>
+				{#each filetypeOptions as option}
+					{#if option === optionDivider}
+						<hr />
+					{:else}
+						<option value={option.sinkId}>{option.label}</option>
+					{/if}
 				{/each}
 			</select>
 		</div>
