@@ -51,7 +51,13 @@ fn select_sink_provider(filetype: &str) -> Box<dyn DataSinkProvider> {
 }
 
 #[tauri::command]
-fn run(input_paths: Vec<String>, output_path: String, filetype: String, rules_path: String) {
+fn run(
+    input_paths: Vec<String>,
+    output_path: String,
+    filetype: String,
+    epsg: u16,
+    rules_path: String,
+) {
     let sinkopt: Vec<(String, String)> = vec![("@output".into(), output_path)];
 
     log::info!("Running pipeline with input: {:?}", input_paths);
@@ -73,7 +79,8 @@ fn run(input_paths: Vec<String>, output_path: String, filetype: String, rules_pa
         sink_provider.create(&sink_params)
     };
 
-    let requirements = sink.make_requirements();
+    let mut requirements = sink.make_requirements();
+    requirements.set_output_epsg(epsg);
 
     let source = {
         let source_provider: Box<dyn DataSourceProvider> = Box::new(CityGmlSourceProvider {

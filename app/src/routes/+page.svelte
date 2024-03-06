@@ -8,6 +8,7 @@
 
 	let inputPaths: string[] = [];
 	let filetype: string;
+	let epsg: number;
 	let rulesPath = '';
 	let outputPath = '';
 	let isRunning = false;
@@ -27,10 +28,11 @@
 			inputPaths,
 			outputPath,
 			filetype,
+			epsg,
 			rulesPath
 		});
 		isRunning = false;
-		alert(`${filetype}形式で '${outputPath}' に出力しました。`);
+		alert(`'${outputPath}' に出力しました。`);
 	}
 </script>
 
@@ -51,7 +53,7 @@
 
 		<InputSelector bind:inputPaths />
 
-		<SettingSelector bind:filetype bind:rulesPath />
+		<SettingSelector bind:filetype bind:epsg bind:rulesPath />
 
 		<OutputSelector {filetype} bind:outputPath />
 
