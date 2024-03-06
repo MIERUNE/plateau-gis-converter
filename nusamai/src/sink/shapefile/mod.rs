@@ -2,18 +2,19 @@
 
 use std::path::PathBuf;
 
+use rayon::prelude::*;
+
+use nusamai_citygml::object::{ObjectStereotype, Value};
 use nusamai_citygml::schema::Schema;
 use nusamai_citygml::GeometryType;
-use rayon::prelude::*;
+use nusamai_plateau::Entity;
+use nusamai_shapefile::conversion::indexed_multipolygon_to_shape;
 
 use crate::get_parameter_value;
 use crate::parameters::*;
 use crate::pipeline::{Feedback, PipelineError, Receiver, Result};
 use crate::sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo};
-
-use nusamai_citygml::object::{ObjectStereotype, Value};
-use nusamai_plateau::Entity;
-use nusamai_shapefile::conversion::indexed_multipolygon_to_shape;
+use crate::transformer;
 
 pub struct ShapefileSinkProvider {}
 
@@ -58,6 +59,11 @@ impl DataSink for ShapefileSink {
     fn make_requirements(&self) -> DataRequirements {
         DataRequirements {
             shorten_names_for_shapefile: true,
+            tree_flattening: transformer::TreeFlatteningSpec::Flatten {
+                feature: transformer::FeatureFlatteningOption::AllExceptThematicSurfaces,
+                data: transformer::DataFlatteningOption::None,
+                object: transformer::ObjectFlatteningOption::None,
+            },
             ..Default::default()
         }
     }
@@ -92,8 +98,15 @@ impl DataSink for ShapefileSink {
                 // FieldName byte representation cannot exceed 11 bytes
                 let table_builder = shapefile::dbase::TableWriterBuilder::new();
 
+                // フォルダを作成
+                std::fs::create_dir_all(&self.output_path)?;
+
                 // Create all the files needed for the shapefile to be complete (.shp, .shx, .dbf)
-                let mut writer = shapefile::Writer::from_path(&self.output_path, table_builder)?;
+                // output_pathの文字列の後ろにsample.shpをつける
+                let mut file_path = self.output_path.clone();
+                file_path.push(format!("{}.shp", "sample"));
+
+                let mut writer = shapefile::Writer::from_path(file_path, table_builder)?;
 
                 // Write each feature
                 receiver.into_iter().for_each(|shape| match shape {
@@ -137,7 +150,7 @@ fn extract_properties(tree: &nusamai_citygml::object::Value) -> Option<geojson::
     }
 }
 
-/// Create Shapefile features from a TopLevelCityObject
+/// Create Shapefile features from a Entity
 /// Each feature for MultiPolygon, MultiLineString, and MultiPoint will be created (if it exists)
 /// TODO: Implement MultiLineString and MultiPoint handling
 pub fn entity_to_shapes(entity: &Entity) -> Vec<shapefile::Shape> {
