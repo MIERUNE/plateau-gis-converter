@@ -2,11 +2,6 @@ type epsgOption = { value: number; label: string };
 
 const filetypeOptions: Record<string, { label: string; extensions: string[]; epsg: epsgOption[] }> =
 	{
-		geojson: {
-			label: 'GeoJSON',
-			extensions: [],
-			epsg: [{ value: 4979, label: 'WGS84' }]
-		},
 		gpkg: {
 			label: 'GeoPackage',
 			extensions: ['gpkg'],
@@ -27,19 +22,26 @@ const filetypeOptions: Record<string, { label: string; extensions: string[]; eps
 				{ value: 10174, label: 'JGD 2011 / 平面直角座標系 XIII' }
 			]
 		},
+		geojson: {
+			label: 'GeoJSON',
+			extensions: [],
+			epsg: [{ value: 4979, label: 'WGS84' }]
+		},
+
+		cesiumtiles: {
+			label: '3D Tiles',
+			extensions: [''],
+			epsg: [{ value: 4979, label: 'WGS84' }]
+		},
 		mvt: {
 			label: 'Vector Tiles',
 			extensions: [''],
 			epsg: [{ value: 4979, label: 'WGS84' }]
 		},
+
 		czml: {
 			label: 'CZML',
 			extensions: ['json'],
-			epsg: [{ value: 4979, label: 'WGS84' }]
-		},
-		cesiumtiles: {
-			label: '3D Tiles',
-			extensions: [''],
 			epsg: [{ value: 4979, label: 'WGS84' }]
 		},
 		kml: {
@@ -47,14 +49,7 @@ const filetypeOptions: Record<string, { label: string; extensions: string[]; eps
 			extensions: ['kml'],
 			epsg: [{ value: 4979, label: 'WGS84' }]
 		},
-		shapefile: {
-			label: 'Shapefile',
-			extensions: ['shp'],
-			epsg: [
-				{ value: 4979, label: 'WGS84' }
-				// TODO: more epsg options
-			]
-		},
+
 		ply: {
 			label: 'PLY',
 			extensions: ['ply'],
@@ -69,6 +64,15 @@ const filetypeOptions: Record<string, { label: string; extensions: string[]; eps
 			label: 'Serde',
 			extensions: [''],
 			epsg: [{ value: 4979, label: 'WGS84' }]
+		},
+
+		shapefile: {
+			label: 'Shapefile',
+			extensions: ['shp'],
+			epsg: [
+				{ value: 4979, label: 'WGS84' }
+				// TODO: more epsg options
+			]
 		}
 	};
 
