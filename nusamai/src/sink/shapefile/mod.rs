@@ -6,7 +6,7 @@ use chrono::Datelike;
 use hashbrown::HashMap;
 use indexmap::IndexMap;
 use rayon::prelude::*;
-use shapefile::dbase::{Date, FieldValue};
+use shapefile::dbase::{self, Date, FieldValue};
 
 use nusamai_citygml::object::{self, ObjectStereotype, Value};
 use nusamai_citygml::schema::Schema;
@@ -72,7 +72,7 @@ impl DataSink for ShapefileSink {
         }
     }
 
-    fn run(&mut self, upstream: Receiver, feedback: &Feedback, _schema: &Schema) -> Result<()> {
+    fn run(&mut self, upstream: Receiver, feedback: &Feedback, schema: &Schema) -> Result<()> {
         let (sender, receiver) = std::sync::mpsc::sync_channel(1000);
 
         let (ra, rb) = rayon::join(
@@ -85,18 +85,24 @@ impl DataSink for ShapefileSink {
                     .try_for_each_with(sender, |sender, parcel| {
                         feedback.ensure_not_canceled()?;
 
-                        let shapes = entity_to_shapes(&parcel.entity);
-                        for shape in shapes {
-                            if sender.send(shape).is_err() {
-                                return Err(PipelineError::Canceled);
-                            };
-                        }
+                        let Value::Object(object) = &parcel.entity.root else {
+                            return Ok(());
+                        };
+                        let typename = object.typename.clone();
+
+                        let (shape, attributes) = entity_to_shapes(&parcel.entity);
+
+                        if sender.send((typename, shape, attributes)).is_err() {
+                            return Err(PipelineError::Canceled);
+                        };
 
                         Ok(())
                     })
             },
             || {
                 // Write Shapefile to a file
+
+                let s = schema.clone();
 
                 // Attribute fields for the features
                 // FieldName byte representation cannot exceed 11 bytes
@@ -110,16 +116,19 @@ impl DataSink for ShapefileSink {
                 let mut writer = shapefile::Writer::from_path(file_path, table_builder)?;
 
                 // Write each feature
-                receiver.into_iter().for_each(|shape| match shape {
-                    shapefile::Shape::PolygonZ(polygon) => {
-                        let record = shapefile::dbase::Record::default(); // for attributes
-                        writer.write_shape_and_record(&polygon, &record).unwrap();
-                    }
-                    shapefile::Shape::NullShape => {}
-                    _ => {
-                        log::warn!("Unsupported shape type");
-                    }
-                });
+                receiver
+                    .into_iter()
+                    .for_each(|(typename, shape, attributes)| match shape {
+                        shapefile::Shape::PolygonZ(polygon) => {
+                            writer
+                                .write_shape_and_record(&polygon, &attributes)
+                                .unwrap();
+                        }
+                        shapefile::Shape::NullShape => {}
+                        _ => {
+                            log::warn!("Unsupported shape type");
+                        }
+                    });
 
                 Ok::<(), shapefile::Error>(())
             },
@@ -205,12 +214,14 @@ fn prepare_shapefile_attributes(
 /// Create Shapefile features from a Entity
 /// Each feature for MultiPolygon, MultiLineString, and MultiPoint will be created (if it exists)
 /// TODO: Implement MultiLineString and MultiPoint handling
-pub fn entity_to_shapes(entity: &Entity) -> Vec<shapefile::Shape> {
+pub fn entity_to_shapes(entity: &Entity) -> (shapefile::Shape, dbase::Record) {
+    let mut record = dbase::Record::default();
+
     let Value::Object(obj) = &entity.root else {
-        return vec![shapefile::Shape::NullShape];
+        return (shapefile::Shape::NullShape, record);
     };
     let ObjectStereotype::Feature { id: _, geometries } = &obj.stereotype else {
-        return vec![shapefile::Shape::NullShape];
+        return (shapefile::Shape::NullShape, record);
     };
 
     let geom_store = entity.geometry_store.read().unwrap();
@@ -230,19 +241,18 @@ pub fn entity_to_shapes(entity: &Entity) -> Vec<shapefile::Shape> {
         GeometryType::Point => unimplemented!(),
     });
 
-    let attributes = prepare_shapefile_attributes(obj);
-
-    let mut shapes = vec![];
     if !mpoly.is_empty() {
-        let shape = indexed_multipolygon_to_shape(&geom_store.vertices, &mpoly);
-        // todo: write attributes
-        shapes.push(shapefile::Shape::PolygonZ(shape));
-    }
-    if !shapes.is_empty() {
-        return shapes;
+        let shape =
+            shapefile::Shape::PolygonZ(indexed_multipolygon_to_shape(&geom_store.vertices, &mpoly));
+
+        let attributes = prepare_shapefile_attributes(obj);
+        for (field_name, field_value) in attributes {
+            record.insert(field_name, field_value);
+        }
+        return (shape, record);
     }
 
-    vec![shapefile::Shape::NullShape]
+    (shapefile::Shape::NullShape, record)
 }
 
 #[cfg(test)]
