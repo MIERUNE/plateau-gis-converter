@@ -2,9 +2,11 @@
 
 use std::path::PathBuf;
 
+use hashbrown::HashMap;
+use indexmap::IndexMap;
 use rayon::prelude::*;
 
-use nusamai_citygml::object::{ObjectStereotype, Value};
+use nusamai_citygml::object::{self, ObjectStereotype, Value};
 use nusamai_citygml::schema::Schema;
 use nusamai_citygml::GeometryType;
 use nusamai_plateau::Entity;
@@ -137,29 +139,72 @@ impl DataSink for ShapefileSink {
     }
 }
 
-fn extract_properties(tree: &nusamai_citygml::object::Value) -> Option<geojson::JsonObject> {
-    match &tree {
-        obj @ nusamai_citygml::Value::Object(_) => match obj.to_attribute_json() {
-            serde_json::Value::Object(map) => Some(map),
-            _ => unreachable!(),
-        },
-        _ => panic!("Root value type must be Feature, but found {:?}", tree),
+fn prepare_object_attributes(object: &nusamai_citygml::object::Object) -> IndexMap<String, String> {
+    let mut attributes = IndexMap::<String, String>::new();
+
+    for (attr_name, attr_value) in &object.attributes {
+        match attr_value {
+            Value::String(s) => {
+                attributes.insert(attr_name.into(), s.into());
+            }
+            Value::Code(c) => {
+                // value of the code
+                attributes.insert(attr_name.into(), c.value().into());
+            }
+            Value::Integer(i) => {
+                attributes.insert(attr_name.into(), i.to_string());
+            }
+            Value::NonNegativeInteger(i) => {
+                attributes.insert(attr_name.into(), i.to_string());
+            }
+            Value::Double(d) => {
+                attributes.insert(attr_name.into(), d.to_string());
+            }
+            Value::Measure(m) => {
+                attributes.insert(attr_name.into(), m.value().to_string());
+            }
+            Value::Boolean(b) => {
+                // 0 for false and 1 for true in SQLite
+                attributes.insert(attr_name.into(), if *b { "1".into() } else { "0".into() });
+            }
+            Value::Uri(u) => {
+                // value of the URI
+                attributes.insert(attr_name.into(), u.value().to_string());
+            }
+            Value::Date(d) => {
+                // Date represented as an ISO8601 string
+                attributes.insert(attr_name.into(), d.to_string());
+            }
+            Value::Point(_p) => {
+                // TODO: implement
+                // Point struct currently does not contain any data
+            }
+            Value::Array(_arr) => {
+                // TODO: handle multiple values
+            }
+            Value::Object(_obj) => {
+                // TODO: handle nested objects
+            }
+        };
     }
+
+    attributes
 }
 
 /// Create Shapefile features from a Entity
 /// Each feature for MultiPolygon, MultiLineString, and MultiPoint will be created (if it exists)
 /// TODO: Implement MultiLineString and MultiPoint handling
 pub fn entity_to_shapes(entity: &Entity) -> Vec<shapefile::Shape> {
-    let _properties = extract_properties(&entity.root);
-    let geom_store = entity.geometry_store.read().unwrap();
-
     let Value::Object(obj) = &entity.root else {
         return vec![shapefile::Shape::NullShape];
     };
     let ObjectStereotype::Feature { id: _, geometries } = &obj.stereotype else {
         return vec![shapefile::Shape::NullShape];
     };
+
+    let geom_store = entity.geometry_store.read().unwrap();
+
+    let attributes = prepare_object_attributes(obj);
 
     let mut mpoly = nusamai_geometry::MultiPolygon::<1, u32>::new();
 
@@ -179,6 +224,7 @@ pub fn entity_to_shapes(entity: &Entity) -> Vec<shapefile::Shape> {
     let mut shapes = vec![];
     if !mpoly.is_empty() {
         let shape = indexed_multipolygon_to_shape(&geom_store.vertices, &mpoly);
+        // todo: write attributes
         shapes.push(shapefile::Shape::PolygonZ(shape));
     }
     if !shapes.is_empty() {
