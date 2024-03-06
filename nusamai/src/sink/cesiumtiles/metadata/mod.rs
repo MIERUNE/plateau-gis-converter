@@ -171,7 +171,8 @@ impl Class {
                 if prop.is_array {
                     match prop.type_ {
                         PropertyType::String => {
-                            prop.array_offsets.push(prop.string_offsets.len() as u32);
+                            prop.array_offsets
+                                .push(prop.string_offsets.len() as u32 - 1);
                         }
                         PropertyType::Boolean => todo!(), // TODO
                         _ => {
@@ -219,9 +220,9 @@ impl Class {
                 continue;
             }
 
-            if prop.type_ == PropertyType::String {
-                continue;
-            }
+            // if prop.type_ == PropertyType::String && prop.is_array {
+            //     continue;
+            // }
 
             class_properties.insert(
                 name.to_string(),
@@ -247,8 +248,9 @@ impl Class {
                         _ => None,
                     },
                     array: prop.is_array,
-                    no_data: match prop.type_ {
-                        PropertyType::Enum => {
+                    no_data: match (prop.type_, prop.is_array) {
+                        (_, true) => Some(serde_json::Value::Array(vec![])),
+                        (PropertyType::Enum, false) => {
                             Some(serde_json::Value::String(ENUM_NO_DATA_NAME.to_string()))
                         }
                         _ => None,
@@ -270,7 +272,7 @@ impl Class {
             add_padding(buffer, 4);
 
             // arrayOffsets
-            let array_offsets_idx = if prop.array_offsets.len() > 1 {
+            let array_offsets_idx = if prop.is_array {
                 let start = buffer.len();
                 for offset in prop.array_offsets {
                     buffer.extend(offset.to_le_bytes());
@@ -287,7 +289,7 @@ impl Class {
             };
 
             // stringOffsets
-            let string_offsets_idx = if prop.string_offsets.len() > 1 {
+            let string_offsets_idx = if prop.type_ == PropertyType::String {
                 let start = buffer.len();
                 for offset in prop.string_offsets {
                     buffer.extend(offset.to_le_bytes());
@@ -394,7 +396,8 @@ fn encode_value(
 
             match prop.type_ {
                 PropertyType::String => {
-                    prop.array_offsets.push(prop.string_offsets.len() as u32);
+                    prop.array_offsets
+                        .push(prop.string_offsets.len() as u32 - 1);
                 }
                 PropertyType::Boolean => todo!(), // TODO
                 _ => {
@@ -464,7 +467,7 @@ impl From<&Attribute> for Property {
     }
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum PropertyType {
     Int64,
     Uint64,
