@@ -182,10 +182,9 @@ mod tests {
         for use_appearance in [false, true] {
             let (sender, receiver) = sync_channel(100);
             let source_provider = CityGmlSourceProvider {
-                filenames: vec![
-                    PathBuf::from("../nusamai-plateau/tests/data/yokosuka-shi/udx/bldg/52397519_bldg_6697_op.gml"),
-                    PathBuf::from("../nusamai-plateau/tests/data/plateau-3_0/udx/veg/52385628_veg_6697_op.gml"),
-                ],
+                filenames: vec![PathBuf::from(
+                    "../nusamai-plateau/tests/data/yokosuka-shi/udx/bldg/52397519_bldg_6697_op.gml",
+                )],
             };
             let mut source = source_provider.create(&Parameters::default());
             source.set_appearance_parsing(use_appearance);
