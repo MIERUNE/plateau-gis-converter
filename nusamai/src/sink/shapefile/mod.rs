@@ -106,29 +106,72 @@ impl DataSink for ShapefileSink {
 
                 // Attribute fields for the features
                 // FieldName byte representation cannot exceed 11 bytes
-                let table_builder = prepare_table_builder("bldg:Building", schema);
 
-                // Create all the files needed for the shapefile to be complete (.shp, .shx, .dbf)
-                std::fs::create_dir_all(&self.output_path)?;
-                let mut file_path = self.output_path.clone();
-                file_path.push(format!("{}.shp", "sample"));
+                // todo: receiverからtypenameごとに分けてデータを収集し、複数ファイル作成する際にテーブルを動的に切り替える
+                // まず、categorized_shapesを作って、typenameごとに分ける
+                // それぞれのcategorized_shapesを処理して、table_builderだけ作る
+                // featureをtable_infoと、実際のattributeを比較し、余計な属性を排除した上で、再度table_builderを作る
 
-                let mut writer = shapefile::Writer::from_path(file_path, table_builder)?;
+                let mut categorized_shapes =
+                    IndexMap::<String, Vec<(shapefile::Shape, dbase::Record)>>::new();
 
-                // Write each feature
                 receiver
                     .into_iter()
-                    .for_each(|(typename, shape, attributes)| match shape {
-                        shapefile::Shape::PolygonZ(polygon) => {
-                            writer
-                                .write_shape_and_record(&polygon, &attributes)
-                                .unwrap();
-                        }
-                        shapefile::Shape::NullShape => {}
-                        _ => {
-                            log::warn!("Unsupported shape type");
-                        }
+                    .for_each(|(typename, shape, attributes)| {
+                        categorized_shapes
+                            .entry(typename.to_string())
+                            .or_default()
+                            .push((shape, attributes));
                     });
+
+                for (typename, feature) in categorized_shapes {
+                    let table_builder = prepare_table_builder(&typename, schema);
+
+                    // Create all the files needed for the shapefile to be complete (.shp, .shx, .dbf)
+                    std::fs::create_dir_all(&self.output_path)?;
+                    let mut file_path = self.output_path.clone();
+                    file_path.push(format!("{}.shp", typename));
+
+                    let mut writer = shapefile::Writer::from_path(file_path, table_builder)?;
+
+                    // Write each feature
+                    feature
+                        .into_iter()
+                        .for_each(|(shape, attributes)| match shape {
+                            shapefile::Shape::PolygonZ(polygon) => {
+                                writer
+                                    .write_shape_and_record(&polygon, &attributes)
+                                    .unwrap();
+                            }
+                            shapefile::Shape::NullShape => {}
+                            _ => {
+                                log::warn!("Unsupported shape type");
+                            }
+                        });
+                }
+                // let table_builder = prepare_table_builder("bldg:Building", schema);
+
+                // // Create all the files needed for the shapefile to be complete (.shp, .shx, .dbf)
+                // std::fs::create_dir_all(&self.output_path)?;
+                // let mut file_path = self.output_path.clone();
+                // file_path.push(format!("{}.shp", "sample"));
+
+                // let mut writer = shapefile::Writer::from_path(file_path, table_builder)?;
+
+                // Write each feature
+                // receiver
+                //     .into_iter()
+                //     .for_each(|(typename, shape, attributes)| match shape {
+                //         shapefile::Shape::PolygonZ(polygon) => {
+                //             writer
+                //                 .write_shape_and_record(&polygon, &attributes)
+                //                 .unwrap();
+                //         }
+                //         shapefile::Shape::NullShape => {}
+                //         _ => {
+                //             log::warn!("Unsupported shape type");
+                //         }
+                //     });
 
                 Ok::<(), shapefile::Error>(())
             },
@@ -150,11 +193,11 @@ impl DataSink for ShapefileSink {
     }
 }
 
-struct DynamicTableWriterBuilder {
+struct TableWriterBuilderWrapper {
     builder: dbase::TableWriterBuilder,
 }
 
-impl DynamicTableWriterBuilder {
+impl TableWriterBuilderWrapper {
     pub fn new() -> Self {
         Self {
             builder: dbase::TableWriterBuilder::new(),
@@ -205,9 +248,9 @@ impl DynamicTableWriterBuilder {
 }
 
 fn prepare_table_builder(typename: &str, schema: &Schema) -> dbase::TableWriterBuilder {
-    let mut table_builder = DynamicTableWriterBuilder::new();
+    let mut table_builder = TableWriterBuilderWrapper::new();
 
-    let target_schema = &schema.types[typename];
+    let target_schema = &schema.types.get(typename).unwrap();
 
     match target_schema {
         TypeDef::Feature(feature) => {
