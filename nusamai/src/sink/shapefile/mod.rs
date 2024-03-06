@@ -98,11 +98,8 @@ impl DataSink for ShapefileSink {
                 // FieldName byte representation cannot exceed 11 bytes
                 let table_builder = shapefile::dbase::TableWriterBuilder::new();
 
-                // フォルダを作成
-                std::fs::create_dir_all(&self.output_path)?;
-
                 // Create all the files needed for the shapefile to be complete (.shp, .shx, .dbf)
-                // output_pathの文字列の後ろにsample.shpをつける
+                std::fs::create_dir_all(&self.output_path)?;
                 let mut file_path = self.output_path.clone();
                 file_path.push(format!("{}.shp", "sample"));
 
