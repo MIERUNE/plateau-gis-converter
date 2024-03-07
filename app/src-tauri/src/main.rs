@@ -36,6 +36,7 @@ fn main() {
         .rotation_strategy(RotationStrategy::KeepOne)
         .timezone_strategy(TimezoneStrategy::UseLocal)
         .level(LOG_LEVEL)
+        .level_for("sqlx", LevelFilter::Info) // suppress sqlx logs, as it's too verbose in DEBUG level
         .build();
 
     tauri::Builder::default()
