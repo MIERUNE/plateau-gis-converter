@@ -5,7 +5,7 @@ mod attributes;
 use std::path::PathBuf;
 
 use indexmap::IndexMap;
-use rayon::iter::ParallelBridge;
+use rayon::iter::{ParallelBridge, ParallelIterator};
 use shapefile::dbase::{self};
 
 use nusamai_citygml::object::{ObjectStereotype, Value};
