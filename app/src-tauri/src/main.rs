@@ -6,6 +6,8 @@ use std::path::PathBuf;
 use std::str::FromStr;
 use std::sync::{Arc, Mutex};
 
+use thiserror::Error;
+
 use nusamai::pipeline::Canceller;
 use nusamai::sink::DataSinkProvider;
 use nusamai::sink::{
@@ -50,6 +52,24 @@ fn select_sink_provider(filetype: &str) -> Box<dyn DataSinkProvider> {
     }
 }
 
+#[derive(Error, Debug)]
+enum Error {
+    #[error(transparent)]
+    Io(#[from] std::io::Error),
+    #[error("Invalid setting: {0}")]
+    InvalidSetting(String),
+}
+
+// Everything returned from Tauri commands must implement serde::Serialize
+impl serde::Serialize for Error {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::ser::Serializer,
+    {
+        serializer.serialize_str(self.to_string().as_ref())
+    }
+}
+
 #[tauri::command]
 fn run(
     input_paths: Vec<String>,
@@ -57,7 +77,7 @@ fn run(
     filetype: String,
     epsg: u16,
     rules_path: String,
-) {
+) -> Result<(), Error> {
     let sinkopt: Vec<(String, String)> = vec![("@output".into(), output_path)];
 
     log::info!("Running pipeline with input: {:?}", input_paths);
@@ -69,12 +89,14 @@ fn run(
         let sink_provider = select_sink_provider(&filetype);
         let mut sink_params = sink_provider.parameters();
         if let Err(err) = sink_params.update_values_with_str(&sinkopt) {
-            log::error!("Error parsing sink options: {:?}", err);
-            return;
+            let msg = format!("Error parsing sink options: {:?}", err);
+            log::error!("{}", msg);
+            return Err(Error::InvalidSetting(msg));
         };
         if let Err(err) = sink_params.validate() {
-            log::error!("Error validating source parameters: {:?}", err);
-            return;
+            let msg = format!("Error validating sink parameters: {:?}", err);
+            log::error!("{}", msg);
+            return Err(Error::InvalidSetting(msg));
         }
         sink_provider.create(&sink_params)
     };
@@ -91,8 +113,9 @@ fn run(
         });
         let mut source_params = source_provider.parameters();
         if let Err(err) = source_params.validate() {
-            log::error!("Error validating source parameters: {:?}", err);
-            return;
+            let msg = format!("Error validating source parameters: {:?}", err);
+            log::error!("{}", msg);
+            return Err(Error::InvalidSetting(msg));
         }
         let mut source = source_provider.create(&source_params);
         source.set_appearance_parsing(requirements.use_appearance);
@@ -144,5 +167,7 @@ fn run(
     handle.join();
     if canceller.lock().unwrap().is_canceled() {
         log::info!("Pipeline canceled");
-    }
+    };
+
+    Ok(())
 }

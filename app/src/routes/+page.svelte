@@ -24,15 +24,21 @@
 		}
 
 		isRunning = true;
-		await invoke('run', {
-			inputPaths,
-			outputPath,
-			filetype,
-			epsg,
-			rulesPath
-		});
+
+		try {
+			await invoke('run', {
+				inputPaths,
+				outputPath,
+				filetype,
+				epsg,
+				rulesPath
+			});
+			alert(`変換が完了しました。\n'${outputPath}' に出力しました。`);
+		} catch (error) {
+			alert(`エラーが発生しました。\n\n${error}`);
+		}
+
 		isRunning = false;
-		alert(`'${outputPath}' に出力しました。`);
 	}
 </script>
 
