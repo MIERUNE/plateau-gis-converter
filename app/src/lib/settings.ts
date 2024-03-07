@@ -60,11 +60,6 @@ const filetypeOptions: Record<string, { label: string; extensions: string[]; eps
 			extensions: ['ply'],
 			epsg: [{ value: 4979, label: 'WGS84' }]
 		},
-		serde: {
-			label: 'Serde',
-			extensions: [''],
-			epsg: [{ value: 4979, label: 'WGS84' }]
-		},
 
 		shapefile: {
 			label: 'Shapefile',
