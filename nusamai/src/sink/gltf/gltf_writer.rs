@@ -306,9 +306,9 @@ pub fn write_3dtiles(
         ..Default::default()
     };
 
-    let mut tileset_file = File::create(tileset_path).unwrap();
+    let mut tileset_file = File::create(tileset_path)?;
     let tileset_writer = BufWriter::with_capacity(1024 * 1024, &mut tileset_file);
-    serde_json::to_writer_pretty(tileset_writer, &tileset).unwrap();
+    serde_json::to_writer_pretty(tileset_writer, &tileset)?;
 
     Ok(())
 }

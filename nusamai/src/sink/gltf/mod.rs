@@ -74,7 +74,7 @@ pub struct GltfSink {
     output_path: PathBuf,
 }
 
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize)]
 pub struct BoundingVolume {
     pub min_lng: f64,
     pub max_lng: f64,
@@ -133,7 +133,7 @@ impl DataSink for GltfSink {
 
         let categorized_features: Mutex<CategorizedFeatures> = Default::default();
 
-        let mut filenames: Vec<String> = Vec::new();
+        let mut glb_files: Vec<String> = Vec::new();
 
         // Construct a Feature classified by typename from Entity
         // Features have polygons, attributes and materials
@@ -158,7 +158,6 @@ impl DataSink for GltfSink {
                 return Ok(());
             }
             let appearance_store = entity.appearance_store.read().unwrap();
-            let typename = obj.typename.clone();
 
             let mut materials: IndexSet<Material> = IndexSet::new();
             let default_material = appearance::Material::default();
@@ -246,7 +245,7 @@ impl DataSink for GltfSink {
             categorized_features
                 .lock()
                 .unwrap()
-                .entry(typename.into_owned())
+                .entry(obj.typename.to_string())
                 .or_default()
                 .push(feature);
 
@@ -268,7 +267,7 @@ impl DataSink for GltfSink {
             [(tx as f32) as f64, (ty as f32) as f64, (tz as f32) as f64]
         };
 
-        for (typename, mut features) in categorized_features.lock().unwrap().clone().into_iter() {
+        for (typename, mut features) in categorized_features.lock().unwrap().drain() {
             // Triangulation
             let mut earcutter: Earcut<f64> = Earcut::new();
             let mut buf2d: Vec<f64> = Vec::new(); // 2d-projected [x, y]
@@ -279,6 +278,7 @@ impl DataSink for GltfSink {
 
             // make vertices and indices
             for (feature_id, feature) in features.iter_mut().enumerate() {
+                feature.feature_id = Some(feature_id as u32);
                 feature
                     .polygons
                     .transform_inplace(|&[lng, lat, height, u, v]| {
@@ -331,22 +331,23 @@ impl DataSink for GltfSink {
                             index as u32
                         }));
                     }
-                    feature.feature_id = Some(feature_id as u32);
                 }
             }
 
             // make folders
-            std::fs::create_dir_all(&self.output_path).unwrap();
+            std::fs::create_dir_all(&self.output_path)?;
 
             // write glTFs
-            let mut file_path = self.output_path.clone();
-            let c_name = typename.split(':').last().unwrap();
-            file_path.push(&format!("{}.glb", c_name));
+            let c_name = typename
+                .split_once(':')
+                .map(|(_, s)| s)
+                .unwrap_or(&typename);
+            let file_path = self.output_path.join(&format!("{}.glb", c_name));
 
             // save filename referenced from 3D Tiles
-            filenames.push(format!("{}.glb", c_name));
+            glb_files.push(format!("{}.glb", c_name));
 
-            let mut file = File::create(&file_path).unwrap();
+            let mut file = File::create(&file_path)?;
             let writer = BufWriter::with_capacity(1024 * 1024, &mut file);
 
             let num_features = &features.len();
@@ -373,7 +374,7 @@ impl DataSink for GltfSink {
             bounds.min_height,
             bounds.max_height,
         ];
-        write_3dtiles(region, &self.output_path, &filenames)?;
+        write_3dtiles(region, &self.output_path, &glb_files)?;
 
         Ok(())
     }
