@@ -17,10 +17,14 @@ use nusamai_gltf_json::{
 
 use super::utils::add_padding;
 
+const ENUM_NO_DATA: u32 = 0;
 const ENUM_NO_DATA_NAME: &str = "";
+const FLOAT_NO_DATA: f64 = 1e+300;
+const INT64_NO_DATA: i64 = i64::MIN;
+const UINT64_NO_DATA: u64 = u64::MAX;
 
 pub struct MetadataEncoder<'a> {
-    /// City model schema (Not the 3D metadata schema)
+    /// The original city model schema
     original_schema: &'a Schema,
     /// typename -> Class
     classes: IndexMap<String, Class>,
@@ -131,6 +135,9 @@ struct Class {
 impl From<&FeatureTypeDef> for Class {
     fn from(feature_def: &FeatureTypeDef) -> Self {
         let mut properties = IndexMap::new();
+        // id
+        properties.insert("id".to_string(), Property::new(PropertyType::String, false));
+        // attributes
         for (name, attr) in &feature_def.attributes {
             properties.insert(name.to_string(), Property::from(attr));
         }
@@ -150,8 +157,14 @@ impl Class {
         use nusamai_citygml::object::Value;
 
         if let Value::Object(obj) = attributes {
-            // let id = obj.stereotype.id();
-            // ...
+            // Encode id
+            if let Some(id) = obj.stereotype.id() {
+                let value = Value::String(id.to_string());
+                if let Some(prop) = self.properties.get_mut("id") {
+                    encode_value(&value, prop, enum_set);
+                    prop.used = true;
+                }
+            }
 
             // Encode attributes
             for (attr_name, value) in &obj.attributes {
@@ -174,21 +187,27 @@ impl Class {
                             prop.array_offsets
                                 .push(prop.string_offsets.len() as u32 - 1);
                         }
-                        PropertyType::Boolean => todo!(), // TODO
+                        // PropertyType::Boolean => todo!(), // TODO
                         _ => {
-                            prop.array_offsets.push(prop.count); // FIXME
+                            prop.array_offsets.push(prop.count);
                         }
                     }
                 } else {
                     match prop.type_ {
-                        PropertyType::Int64 => prop.value_buffer.extend(0i64.to_le_bytes()),
-                        PropertyType::Uint64 => prop.value_buffer.extend(0u64.to_le_bytes()),
-                        PropertyType::Float64 => prop.value_buffer.extend(0.0f64.to_le_bytes()),
+                        PropertyType::Int64 => {
+                            prop.value_buffer.extend(INT64_NO_DATA.to_le_bytes())
+                        }
+                        PropertyType::Uint64 => {
+                            prop.value_buffer.extend(UINT64_NO_DATA.to_le_bytes())
+                        }
+                        PropertyType::Float64 => {
+                            prop.value_buffer.extend(FLOAT_NO_DATA.to_le_bytes())
+                        }
                         PropertyType::String => {
                             prop.string_offsets.push(prop.value_buffer.len() as u32)
                         }
-                        PropertyType::Enum => prop.value_buffer.extend(0u32.to_le_bytes()),
-                        PropertyType::Boolean => todo!(),
+                        PropertyType::Enum => prop.value_buffer.extend(ENUM_NO_DATA.to_le_bytes()),
+                        // PropertyType::Boolean => todo!(),
                     };
                 }
             }
@@ -232,7 +251,7 @@ impl Class {
                         PropertyType::Uint64 => ClassPropertyType::Scalar,
                         PropertyType::Float64 => ClassPropertyType::Scalar,
                         PropertyType::String => ClassPropertyType::String,
-                        PropertyType::Boolean => ClassPropertyType::Boolean,
+                        // PropertyType::Boolean => ClassPropertyType::Boolean,
                         PropertyType::Enum => ClassPropertyType::Enum,
                     },
                     component_type: match prop.type_ {
@@ -240,8 +259,8 @@ impl Class {
                         PropertyType::Uint64 => Some(ClassPropertyComponentType::Uint64),
                         PropertyType::Float64 => Some(ClassPropertyComponentType::Float64),
                         PropertyType::String => None,
-                        PropertyType::Boolean => None,
                         PropertyType::Enum => None,
+                        //PropertyType::Boolean => None,
                     },
                     enum_type: match prop.type_ {
                         PropertyType::Enum => Some("Enum01".to_string()),
@@ -253,7 +272,18 @@ impl Class {
                         (PropertyType::Enum, false) => {
                             Some(serde_json::Value::String(ENUM_NO_DATA_NAME.to_string()))
                         }
-                        _ => None,
+                        (PropertyType::String, false) => {
+                            Some(serde_json::Value::String("".to_string()))
+                        }
+                        (PropertyType::Float64, false) => Some(serde_json::Value::Number(
+                            serde_json::Number::from_f64(FLOAT_NO_DATA).unwrap(),
+                        )),
+                        (PropertyType::Int64, false) => Some(serde_json::Value::Number(
+                            serde_json::Number::from(INT64_NO_DATA),
+                        )),
+                        (PropertyType::Uint64, false) => Some(serde_json::Value::Number(
+                            serde_json::Number::from(UINT64_NO_DATA),
+                        )),
                     },
                     ..Default::default()
                 },
@@ -384,8 +414,9 @@ fn encode_value(
             prop.value_buffer.extend(b);
             prop.count += 1;
         }
-        Value::Boolean(_) => {
-            todo!(); // TODO
+        Value::Boolean(b) => {
+            let b: [u8; 8] = (*b as u64).to_le_bytes(); // ensure: 8 bytes
+            prop.value_buffer.extend(b);
             prop.count += 1;
         }
         Value::Point(_) => todo!(), // TOOD
@@ -399,7 +430,7 @@ fn encode_value(
                     prop.array_offsets
                         .push(prop.string_offsets.len() as u32 - 1);
                 }
-                PropertyType::Boolean => todo!(), // TODO
+                // PropertyType::Boolean => todo!(), // TODO
                 _ => {
                     prop.array_offsets.push(prop.count);
                 }
@@ -452,13 +483,13 @@ impl From<&Attribute> for Property {
             TypeRef::Integer => PropertyType::Int64,
             TypeRef::NonNegativeInteger => PropertyType::Uint64,
             TypeRef::Double => PropertyType::Float64,
-            TypeRef::Boolean => PropertyType::Boolean,
+            TypeRef::Boolean => PropertyType::Int64, // TODO: Boolean bitstream
             TypeRef::JsonString(_) => PropertyType::String,
             TypeRef::URI => PropertyType::String,
             TypeRef::Date => PropertyType::String,
             TypeRef::DateTime => PropertyType::String,
             TypeRef::Measure => PropertyType::Float64,
-            TypeRef::Point => PropertyType::String, // TODO
+            TypeRef::Point => PropertyType::String, // TODO: VEC3<f64>
             TypeRef::Named(_) => unreachable!(),
             TypeRef::Unknown => unreachable!(),
         };
@@ -473,6 +504,6 @@ enum PropertyType {
     Uint64,
     Float64,
     String,
-    Boolean,
+    // Boolean,
     Enum,
 }
