@@ -75,7 +75,7 @@ impl DataSink for ShapefileSink {
         }
     }
 
-    fn run(&mut self, upstream: Receiver, feedback: &Feedback, schema: &Schema) -> Result<()> {
+    fn run(&mut self, upstream: Receiver, feedback: &Feedback, _schema: &Schema) -> Result<()> {
         let (sender, receiver) = std::sync::mpsc::sync_channel(1000);
 
         let (ra, rb) = rayon::join(
@@ -120,12 +120,12 @@ impl DataSink for ShapefileSink {
                     });
 
                 for (typename, features) in categorized_shapes {
-                    let table_builder = prepare_table_builder(&typename, schema, &features);
+                    let table_builder = prepare_table_builder(&features);
 
                     // Create all the files needed for the shapefile to be complete (.shp, .shx, .dbf)
                     std::fs::create_dir_all(&self.output_path)?;
                     let mut file_path = self.output_path.clone();
-                    file_path.push(format!("{}.shp", typename));
+                    file_path.push(format!("{}.shp", typename.replace(':', "_")));
 
                     let mut writer = shapefile::Writer::from_path(file_path, table_builder)?;
 
@@ -185,44 +185,6 @@ impl<'a> TableBuilder {
         }
     }
 
-    pub fn add_field(mut self, field_type: &TypeRef, name: &str, size: u8) -> Self {
-        match field_type {
-            TypeRef::String | TypeRef::Code | TypeRef::URI => {
-                self.builder = self
-                    .builder
-                    .add_character_field(name.try_into().unwrap(), size);
-            }
-            TypeRef::Integer | TypeRef::NonNegativeInteger => {
-                self.builder = self.builder.add_integer_field(name.try_into().unwrap());
-            }
-            TypeRef::Double | TypeRef::Measure => {
-                self.builder = self.builder.add_double_field(name.try_into().unwrap());
-            }
-            TypeRef::Boolean => {
-                self.builder = self.builder.add_logical_field(name.try_into().unwrap());
-            }
-            TypeRef::Date => {
-                self.builder = self.builder.add_date_field(name.try_into().unwrap());
-            }
-            TypeRef::Point => {
-                // todo
-            }
-            TypeRef::Unknown => {
-                // todo
-            }
-            TypeRef::Named(_) => {
-                // todo
-            }
-            TypeRef::JsonString(_) => {
-                // todo
-            }
-            TypeRef::DateTime => {
-                // todo
-            }
-        }
-        self
-    }
-
     fn build(mut self) -> dbase::TableWriterBuilder {
         for (field_name, field_info) in self.fields {
             match field_info.field_type {
@@ -274,10 +236,8 @@ impl<'a> TableBuilder {
 }
 
 fn prepare_table_builder(
-    schema: &Schema,
     features: &Vec<(shapefile::Shape, dbase::Record)>,
 ) -> dbase::TableWriterBuilder {
-    // let table_builder = TableWriterBuilderWrapper::new(schema);
     let mut fields: FieldInfoList = Default::default();
 
     for (_, attributes) in features {
@@ -386,7 +346,6 @@ fn prepare_shapefile_attributes(
 ) -> IndexMap<String, FieldValue> {
     let mut attributes = IndexMap::<String, FieldValue>::new();
 
-    // todo: 長いフィールドはどうなるのか。落ちる？勝手に切られる？
     for (attr_name, attr_value) in &object.attributes {
         match attr_value {
             Value::String(s) => {
