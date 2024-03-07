@@ -181,19 +181,18 @@ impl DataSink for KmlSink {
                     },
                 };
 
-                let mut file = File::create(&self.output_path).unwrap();
+                let mut file = File::create(&self.output_path)?;
                 let mut buf_writer = BufWriter::with_capacity(1024 * 1024, &mut file);
 
-                writeln!(buf_writer, r#"<?xml version="1.0" encoding="UTF-8"?>"#).unwrap();
+                writeln!(buf_writer, r#"<?xml version="1.0" encoding="UTF-8"?>"#)?;
                 writeln!(
                     buf_writer,
                     r#"<kml xmlns="http://www.opengis.net/kml/2.2">"#
-                )
-                .unwrap();
+                )?;
 
                 let mut kml_writer = KmlWriter::from_writer(&mut buf_writer);
                 let _ = kml_writer.write(&kml_doc);
-                writeln!(buf_writer, "</kml>").unwrap();
+                writeln!(buf_writer, "</kml>")?;
 
                 Ok(())
             },

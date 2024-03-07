@@ -1,13 +1,18 @@
 <script lang="ts">
-	import Icon from '@iconify/svelte';
 	import { invoke } from '@tauri-apps/api/tauri';
+	import { attachConsole } from 'tauri-plugin-log-api';
+
+	import Icon from '@iconify/svelte';
 	import InputSelector from './InputSelector.svelte';
 	import SettingSelector from './SettingSelector.svelte';
 	import OutputSelector from './OutputSelector.svelte';
 	import LoadingAnimation from './LoadingAnimation.svelte';
 
+	attachConsole(); // For Tauri log in the webview console
+
 	let inputPaths: string[] = [];
 	let filetype: string;
+	let epsg: number;
 	let rulesPath = '';
 	let outputPath = '';
 	let isRunning = false;
@@ -23,14 +28,21 @@
 		}
 
 		isRunning = true;
-		await invoke('run', {
-			inputPaths,
-			outputPath,
-			filetype,
-			rulesPath
-		});
+
+		try {
+			await invoke('run', {
+				inputPaths,
+				outputPath,
+				filetype,
+				epsg,
+				rulesPath
+			});
+			alert(`変換が完了しました。\n'${outputPath}' に出力しました。`);
+		} catch (error) {
+			alert(`エラーが発生しました。\n\n${error}`);
+		}
+
 		isRunning = false;
-		alert(`${filetype}形式で '${outputPath}' に出力しました。`);
 	}
 </script>
 
@@ -43,7 +55,7 @@
 <div class="grid place-items-center h-screen">
 	<div class="max-w-2xl flex flex-col gap-12">
 		<div class="flex items-center gap-1.5">
-			<h1 class="font-bold text-2xl">BRIDGE 都市デジタルツイン・GISコンバータ</h1>
+			<h1 class="font-bold text-2xl">PLATEAU 都市デジタルツイン・GISコンバータ</h1>
 			<a href="/about" class="hover:text-accent1">
 				<Icon class="text-2xl mt-0.5" icon="mingcute:information-line" />
 			</a>
@@ -51,7 +63,7 @@
 
 		<InputSelector bind:inputPaths />
 
-		<SettingSelector bind:filetype bind:rulesPath />
+		<SettingSelector bind:filetype bind:epsg bind:rulesPath />
 
 		<OutputSelector {filetype} bind:outputPath />
 

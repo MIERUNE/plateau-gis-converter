@@ -78,7 +78,7 @@ impl DataSink for CzmlSink {
                     .try_for_each_with(sender, |sender, parcel| {
                         feedback.ensure_not_canceled()?;
 
-                        let packets = entity_to_packet(&parcel.entity, true);
+                        let packets = entity_to_packet(parcel.entity, true);
                         for packet in packets {
                             let bytes = serde_json::to_vec(&packet).unwrap();
                             if sender.send(bytes).is_err() {
@@ -100,7 +100,7 @@ impl DataSink for CzmlSink {
                     version: Some("1.0".into()),
                     ..Default::default()
                 };
-                write!(writer, r#"[{},"#, serde_json::to_string(&doc).unwrap()).unwrap();
+                write!(writer, r#"[{},"#, serde_json::to_string(&doc).unwrap())?;
 
                 // Write each Packet
                 let mut iter = receiver.into_iter().peekable();
@@ -151,17 +151,18 @@ fn map_to_html_table(map: &serde_json::Map<String, serde_json::Value>) -> String
 }
 
 /// Create CZML Packet from a Entity
-pub fn entity_to_packet(entity: &Entity, single_part: bool) -> Vec<Packet> {
+pub fn entity_to_packet(entity: Entity, single_part: bool) -> Vec<Packet> {
     let properties = extract_properties(&entity.root);
     let geom_store = entity.geometry_store.read().unwrap();
 
-    let Value::Object(obj) = &entity.root else {
+    let Value::Object(obj) = entity.root else {
         return Vec::default();
     };
+
     let ObjectStereotype::Feature {
         id: parent_id,
         geometries,
-    } = &obj.stereotype
+    } = obj.stereotype
     else {
         return Vec::default();
     };
@@ -197,11 +198,10 @@ pub fn entity_to_packet(entity: &Entity, single_part: bool) -> Vec<Packet> {
                 // In Cesium, if perPositionHeight is false, the polygon height is fixed
                 czml_polygon.per_position_height = CzmlBoolean::Boolean(true);
 
-                let reference_string = parent_id.clone() + "#description";
                 let packet = Packet {
                     polygon: Some(czml_polygon),
                     description: Some(StringValueType::Object(StringProperties {
-                        reference: Some(reference_string),
+                        reference: Some(format!("{parent_id}#description")),
                         ..Default::default()
                     })),
                     parent: Some(parent_id.clone()),
@@ -319,7 +319,7 @@ mod tests {
             appearance_store: Default::default(),
         };
 
-        let packets = entity_to_packet(&entity, true);
+        let packets = entity_to_packet(entity, true);
         assert_eq!(packets.len(), 4);
 
         // test parent packet

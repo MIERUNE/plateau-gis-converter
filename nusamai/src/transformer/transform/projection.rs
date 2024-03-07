@@ -55,6 +55,7 @@ impl Transform for ProjectionTransform {
                     geom_store.vertices.iter_mut().for_each(|v| {
                         let (lng, lat) = (v[1], v[0]);
                         // Change x and y; keep the height
+                        // TODO: error handling
                         (v[0], v[1], _) = proj.project_forward(lng, lat, 0.).unwrap();
                     });
                     geom_store.epsg = self.output_epsg;

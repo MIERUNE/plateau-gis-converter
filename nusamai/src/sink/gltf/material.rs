@@ -113,9 +113,9 @@ fn load_image(path: &Path) -> std::io::Result<Vec<u8>> {
     log::info!("Decoding image: {:?}", path);
 
     if let Some(ext) = path.extension() {
-        match ext.to_str().unwrap() {
+        match ext.to_str() {
             // use `image crate` for TIFF
-            "tif" | "tiff" | "png" | "jpg" | "jpeg" => {
+            Some("tif" | "tiff" | "png" | "jpg" | "jpeg") => {
                 let t = Instant::now();
                 let image = image::open(path)
                     .map_err(|err| std::io::Error::new(std::io::ErrorKind::InvalidData, err))?;

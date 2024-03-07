@@ -6,6 +6,10 @@ use std::path::PathBuf;
 use std::str::FromStr;
 use std::sync::{Arc, Mutex};
 
+use log::LevelFilter;
+use tauri_plugin_log::{LogTarget, RotationStrategy, TimezoneStrategy};
+use thiserror::Error;
+
 use nusamai::pipeline::Canceller;
 use nusamai::sink::DataSinkProvider;
 use nusamai::sink::{
@@ -20,38 +24,73 @@ use nusamai::transformer::{self, MappingRules};
 use nusamai::transformer::{NusamaiTransformBuilder, TransformBuilder};
 use nusamai_plateau::models::TopLevelCityObject;
 
+#[cfg(debug_assertions)]
+const LOG_LEVEL: LevelFilter = LevelFilter::Debug;
+
+#[cfg(not(debug_assertions))]
+const LOG_LEVEL: LevelFilter = LevelFilter::Info;
+
 fn main() {
-    if env::var("RUST_LOG").is_err() {
-        env::set_var("RUST_LOG", "info")
-    }
-    pretty_env_logger::init();
+    let tauri_loggger = tauri_plugin_log::Builder::default()
+        .targets([LogTarget::Stdout, LogTarget::LogDir, LogTarget::Webview])
+        .max_file_size(1_000_000) // in bytes
+        .rotation_strategy(RotationStrategy::KeepOne)
+        .timezone_strategy(TimezoneStrategy::UseLocal)
+        .level(LOG_LEVEL)
+        .level_for("sqlx", LevelFilter::Info) // suppress sqlx logs, as it's too verbose in DEBUG level
+        .build();
 
     tauri::Builder::default()
+        .plugin(tauri_loggger)
         .invoke_handler(tauri::generate_handler![run])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
 
-fn select_sink_provider(filetype: &str) -> Box<dyn DataSinkProvider> {
+#[derive(Error, Debug)]
+enum Error {
+    #[error(transparent)]
+    Io(#[from] std::io::Error),
+    #[error("Invalid setting: {0}")]
+    InvalidSetting(String),
+}
+
+fn select_sink_provider(filetype: &str) -> Option<Box<dyn DataSinkProvider>> {
     // TODO: share possible options with the frontend types (src/lib/settings.ts)
     match filetype {
-        "noop" => Box::new(nusamai::sink::noop::NoopSinkProvider {}),
-        "serde" => Box::new(SerdeSinkProvider {}),
-        "geojson" => Box::new(GeoJsonSinkProvider {}),
-        "gpkg" => Box::new(GpkgSinkProvider {}),
-        "mvt" => Box::new(MvtSinkProvider {}),
-        "shapefile" => Box::new(ShapefileSinkProvider {}),
-        "czml" => Box::new(CzmlSinkProvider {}),
-        "kml" => Box::new(KmlSinkProvider {}),
-        "gltf" => Box::new(GltfSinkProvider {}),
-        "ply" => Box::new(StanfordPlySinkProvider {}),
-        "cesiumtiles" => Box::new(CesiumTilesSinkProvider {}),
-        _ => panic!("Unknown filetype: {}", filetype),
+        "noop" => Some(Box::new(nusamai::sink::noop::NoopSinkProvider {})),
+        "serde" => Some(Box::new(SerdeSinkProvider {})),
+        "geojson" => Some(Box::new(GeoJsonSinkProvider {})),
+        "gpkg" => Some(Box::new(GpkgSinkProvider {})),
+        "mvt" => Some(Box::new(MvtSinkProvider {})),
+        "shapefile" => Some(Box::new(ShapefileSinkProvider {})),
+        "czml" => Some(Box::new(CzmlSinkProvider {})),
+        "kml" => Some(Box::new(KmlSinkProvider {})),
+        "gltf" => Some(Box::new(GltfSinkProvider {})),
+        "ply" => Some(Box::new(StanfordPlySinkProvider {})),
+        "cesiumtiles" => Some(Box::new(CesiumTilesSinkProvider {})),
+        _ => None,
+    }
+}
+
+// Everything returned from Tauri commands must implement serde::Serialize
+impl serde::Serialize for Error {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::ser::Serializer,
+    {
+        serializer.serialize_str(self.to_string().as_ref())
     }
 }
 
 #[tauri::command]
-fn run(input_paths: Vec<String>, output_path: String, filetype: String, rules_path: String) {
+fn run(
+    input_paths: Vec<String>,
+    output_path: String,
+    filetype: String,
+    epsg: u16,
+    rules_path: String,
+) -> Result<(), Error> {
     let sinkopt: Vec<(String, String)> = vec![("@output".into(), output_path)];
 
     log::info!("Running pipeline with input: {:?}", input_paths);
@@ -60,20 +99,28 @@ fn run(input_paths: Vec<String>, output_path: String, filetype: String, rules_pa
     let canceller = Arc::new(Mutex::new(Canceller::default()));
 
     let sink = {
-        let sink_provider = select_sink_provider(&filetype);
+        let sink_provider = select_sink_provider(&filetype).ok_or_else(|| {
+            let msg = format!("Invalid sink type: {}", filetype);
+            log::error!("{}", msg);
+            Error::InvalidSetting(msg)
+        })?;
+
         let mut sink_params = sink_provider.parameters();
         if let Err(err) = sink_params.update_values_with_str(&sinkopt) {
-            log::error!("Error parsing sink options: {:?}", err);
-            return;
+            let msg = format!("Error parsing sink options: {:?}", err);
+            log::error!("{}", msg);
+            return Err(Error::InvalidSetting(msg));
         };
         if let Err(err) = sink_params.validate() {
-            log::error!("Error validating source parameters: {:?}", err);
-            return;
+            let msg = format!("Error validating sink parameters: {:?}", err);
+            log::error!("{}", msg);
+            return Err(Error::InvalidSetting(msg));
         }
         sink_provider.create(&sink_params)
     };
 
-    let requirements = sink.make_requirements();
+    let mut requirements = sink.make_requirements();
+    requirements.set_output_epsg(epsg);
 
     let source = {
         let source_provider: Box<dyn DataSourceProvider> = Box::new(CityGmlSourceProvider {
@@ -84,8 +131,9 @@ fn run(input_paths: Vec<String>, output_path: String, filetype: String, rules_pa
         });
         let mut source_params = source_provider.parameters();
         if let Err(err) = source_params.validate() {
-            log::error!("Error validating source parameters: {:?}", err);
-            return;
+            let msg = format!("Error validating source parameters: {:?}", err);
+            log::error!("{}", msg);
+            return Err(Error::InvalidSetting(msg));
         }
         let mut source = source_provider.create(&source_params);
         source.set_appearance_parsing(requirements.use_appearance);
@@ -137,5 +185,7 @@ fn run(input_paths: Vec<String>, output_path: String, filetype: String, rules_pa
     handle.join();
     if canceller.lock().unwrap().is_canceled() {
         log::info!("Pipeline canceled");
-    }
+    };
+
+    Ok(())
 }

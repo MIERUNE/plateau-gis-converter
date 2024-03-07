@@ -1,10 +1,14 @@
 <script lang="ts">
 	import { dialog } from '@tauri-apps/api';
 	import Icon from '@iconify/svelte';
-	import { filetypeOptions, crsOptions } from '$lib/settings';
+	import { filetypeOptions } from '$lib/settings';
 
 	export let filetype: string;
+	export let epsg: number = 4979;
 	export let rulesPath: string;
+
+	$: epsgOptions = filetypeOptions[filetype]?.epsg || [];
+	$: disableEpsgOptions = epsgOptions.length < 2;
 
 	async function openRulesPathDialog() {
 		const res = await dialog.open({
@@ -34,24 +38,31 @@
 	<div class="flex flex-col gap-5 mt-3 ml-2">
 		<div class=" flex flex-col gap-1.5">
 			<label for="filetype-select" class="font-bold">ファイル形式</label>
-			<select bind:value={filetype} name="filetype" id="filetype-select" class="w-36">
+			<select bind:value={filetype} name="filetype" id="filetype-select" class="w-64">
 				{#each Object.entries(filetypeOptions) as [value, item]}
 					<option {value}>{item.label}</option>
 				{/each}
 			</select>
 		</div>
 
-		<div class=" flex flex-col gap-1.5 opacity-50">
-			<label for="crs-select" class="font-bold">座標参照系</label>
-			<select name="crs" id="crs-select" class="w-80">
-				{#each crsOptions as crs}
-					<option value={crs.value}>{crs.label}</option>
+		<div class=" flex flex-col gap-1.5">
+			<label for="epsg-select" class="font-bold">座標参照系</label>
+			<select
+				bind:value={epsg}
+				name="epsg"
+				id="epsg-select"
+				class="w-64"
+				disabled={disableEpsgOptions}
+				class:opacity-50={disableEpsgOptions}
+			>
+				{#each epsgOptions as option}
+					<option value={option.value}>{option.label}</option>
 				{/each}
 			</select>
 		</div>
 
 		<div class=" flex flex-col gap-1.5">
-			<label for="crs-select" class="font-bold">属性マッピングルール</label>
+			<label for="mapping-rule-select" class="font-bold">属性マッピングルール</label>
 			<div class="flex items-center gap-3">
 				<button
 					on:click={openRulesPathDialog}

@@ -213,10 +213,9 @@ fn run(
         transform_builder.transform_schema(&mut schema);
 
         if let Some(schema_path) = &args.schema {
-            // TODO: error handling
             let mut file = std::fs::File::create(schema_path).unwrap();
             file.write_all(serde_json::to_string_pretty(&schema).unwrap().as_bytes())
-                .unwrap();
+                .unwrap(); // FIXME: error handling
         }
 
         let transformer = Box::new(MultiThreadTransformer::new(transform_builder));

@@ -34,7 +34,8 @@ impl EditFieldNamesTransform {
 
     pub fn load_default_map_for_shape(&mut self) {
         const SHAPE_DICT: &str = include_str!("./shp_field_dict.json");
-        let map: HashMap<String, String> = serde_json::from_str(SHAPE_DICT).unwrap();
+        let map: HashMap<String, String> =
+            serde_json::from_str(SHAPE_DICT).expect("should be valid");
         // This applies to field names with any namespace prefix (general match)
         self.general_rename_map.extend(map);
         for value in self.general_rename_map.values() {
