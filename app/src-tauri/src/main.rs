@@ -6,6 +6,8 @@ use std::path::PathBuf;
 use std::str::FromStr;
 use std::sync::{Arc, Mutex};
 
+use log::LevelFilter;
+use tauri_plugin_log::{LogTarget, RotationStrategy, TimezoneStrategy};
 use thiserror::Error;
 
 use nusamai::pipeline::Canceller;
@@ -22,13 +24,24 @@ use nusamai::transformer::{self, MappingRules};
 use nusamai::transformer::{NusamaiTransformBuilder, TransformBuilder};
 use nusamai_plateau::models::TopLevelCityObject;
 
+#[cfg(debug_assertions)]
+const LOG_LEVEL: LevelFilter = LevelFilter::Debug;
+
+#[cfg(not(debug_assertions))]
+const LOG_LEVEL: LevelFilter = LevelFilter::Info;
+
 fn main() {
-    if env::var("RUST_LOG").is_err() {
-        env::set_var("RUST_LOG", "info")
-    }
-    pretty_env_logger::init();
+    let tauri_loggger = tauri_plugin_log::Builder::default()
+        .targets([LogTarget::Stdout, LogTarget::LogDir, LogTarget::Webview])
+        .max_file_size(1_000_000) // in bytes
+        .rotation_strategy(RotationStrategy::KeepOne)
+        .timezone_strategy(TimezoneStrategy::UseLocal)
+        .level(LOG_LEVEL)
+        .level_for("sqlx", LevelFilter::Info) // suppress sqlx logs, as it's too verbose in DEBUG level
+        .build();
 
     tauri::Builder::default()
+        .plugin(tauri_loggger)
         .invoke_handler(tauri::generate_handler![run])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
