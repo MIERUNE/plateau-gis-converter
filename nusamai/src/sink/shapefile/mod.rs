@@ -1,5 +1,6 @@
 //! Shapefile sink
 
+use std::hash::Hash;
 use std::path::PathBuf;
 use std::sync::Mutex;
 
@@ -8,7 +9,7 @@ use hashbrown::HashMap;
 use indexmap::IndexMap;
 use quick_xml::events::attributes;
 use rayon::prelude::*;
-use shapefile::dbase::{self, Date, FieldName, FieldValue};
+use shapefile::dbase::{self, Date, FieldName, FieldValue, Record};
 
 use nusamai_citygml::object::{self, ObjectStereotype, Value};
 use nusamai_citygml::schema::{Schema, TypeDef, TypeRef};
@@ -106,12 +107,6 @@ impl DataSink for ShapefileSink {
 
                 // Attribute fields for the features
                 // FieldName byte representation cannot exceed 11 bytes
-
-                // todo: receiverからtypenameごとに分けてデータを収集し、複数ファイル作成する際にテーブルを動的に切り替える
-                // まず、categorized_shapesを作って、typenameごとに分ける
-                // それぞれのcategorized_shapesを処理して、table_builderだけ作る
-                // featureをtable_infoと、実際のattributeを比較し、余計な属性を排除した上で、再度table_builderを作る
-
                 let mut categorized_shapes =
                     IndexMap::<String, Vec<(shapefile::Shape, dbase::Record)>>::new();
 
@@ -124,8 +119,8 @@ impl DataSink for ShapefileSink {
                             .push((shape, attributes));
                     });
 
-                for (typename, feature) in categorized_shapes {
-                    let table_builder = prepare_table_builder(&typename, schema);
+                for (typename, features) in categorized_shapes {
+                    let table_builder = prepare_table_builder(&typename, schema, &features);
 
                     // Create all the files needed for the shapefile to be complete (.shp, .shx, .dbf)
                     std::fs::create_dir_all(&self.output_path)?;
@@ -135,7 +130,7 @@ impl DataSink for ShapefileSink {
                     let mut writer = shapefile::Writer::from_path(file_path, table_builder)?;
 
                     // Write each feature
-                    feature
+                    features
                         .into_iter()
                         .for_each(|(shape, attributes)| match shape {
                             shapefile::Shape::PolygonZ(polygon) => {
@@ -149,29 +144,6 @@ impl DataSink for ShapefileSink {
                             }
                         });
                 }
-                // let table_builder = prepare_table_builder("bldg:Building", schema);
-
-                // // Create all the files needed for the shapefile to be complete (.shp, .shx, .dbf)
-                // std::fs::create_dir_all(&self.output_path)?;
-                // let mut file_path = self.output_path.clone();
-                // file_path.push(format!("{}.shp", "sample"));
-
-                // let mut writer = shapefile::Writer::from_path(file_path, table_builder)?;
-
-                // Write each feature
-                // receiver
-                //     .into_iter()
-                //     .for_each(|(typename, shape, attributes)| match shape {
-                //         shapefile::Shape::PolygonZ(polygon) => {
-                //             writer
-                //                 .write_shape_and_record(&polygon, &attributes)
-                //                 .unwrap();
-                //         }
-                //         shapefile::Shape::NullShape => {}
-                //         _ => {
-                //             log::warn!("Unsupported shape type");
-                //         }
-                //     });
 
                 Ok::<(), shapefile::Error>(())
             },
@@ -193,13 +165,22 @@ impl DataSink for ShapefileSink {
     }
 }
 
-struct TableWriterBuilderWrapper {
+pub struct FieldInfo {
+    field_type: TypeRef,
+    size: u8,
+}
+
+pub type FieldInfoList = HashMap<String, FieldInfo>;
+
+struct TableBuilder {
+    fields: FieldInfoList,
     builder: dbase::TableWriterBuilder,
 }
 
-impl TableWriterBuilderWrapper {
-    pub fn new() -> Self {
+impl<'a> TableBuilder {
+    pub fn new(fields: FieldInfoList) -> Self {
         Self {
+            fields,
             builder: dbase::TableWriterBuilder::new(),
         }
     }
@@ -242,62 +223,161 @@ impl TableWriterBuilderWrapper {
         self
     }
 
-    fn build(self) -> dbase::TableWriterBuilder {
+    fn build(mut self) -> dbase::TableWriterBuilder {
+        for (field_name, field_info) in self.fields {
+            match field_info.field_type {
+                TypeRef::String | TypeRef::Code | TypeRef::URI => {
+                    self.builder = self.builder.add_character_field(
+                        field_name.as_str().try_into().unwrap(),
+                        field_info.size,
+                    );
+                }
+                TypeRef::Integer | TypeRef::NonNegativeInteger => {
+                    self.builder = self
+                        .builder
+                        .add_integer_field(field_name.as_str().try_into().unwrap());
+                }
+                TypeRef::Double | TypeRef::Measure => {
+                    self.builder = self
+                        .builder
+                        .add_double_field(field_name.as_str().try_into().unwrap());
+                }
+                TypeRef::Boolean => {
+                    self.builder = self
+                        .builder
+                        .add_logical_field(field_name.as_str().try_into().unwrap());
+                }
+                TypeRef::Date => {
+                    self.builder = self
+                        .builder
+                        .add_date_field(field_name.as_str().try_into().unwrap());
+                }
+                TypeRef::Point => {
+                    // todo
+                }
+                TypeRef::Unknown => {
+                    // todo
+                }
+                TypeRef::Named(_) => {
+                    // todo
+                }
+                TypeRef::JsonString(_) => {
+                    // todo
+                }
+                TypeRef::DateTime => {
+                    // todo
+                }
+            }
+        }
         self.builder
     }
 }
 
-fn prepare_table_builder(typename: &str, schema: &Schema) -> dbase::TableWriterBuilder {
-    let mut table_builder = TableWriterBuilderWrapper::new();
+fn prepare_table_builder(
+    schema: &Schema,
+    features: &Vec<(shapefile::Shape, dbase::Record)>,
+) -> dbase::TableWriterBuilder {
+    // let table_builder = TableWriterBuilderWrapper::new(schema);
+    let mut fields: FieldInfoList = Default::default();
 
-    let target_schema = &schema.types.get(typename).unwrap();
-
-    match target_schema {
-        TypeDef::Feature(feature) => {
-            for (field_name, attribute) in &feature.attributes {
-                match attribute.type_ref {
-                    TypeRef::String | TypeRef::Code | TypeRef::URI => {
-                        table_builder =
-                            table_builder.add_field(&attribute.type_ref, field_name, 255);
-                    }
-                    TypeRef::Integer | TypeRef::NonNegativeInteger => {
-                        table_builder = table_builder.add_field(&attribute.type_ref, field_name, 4);
-                    }
-                    TypeRef::Double | TypeRef::Measure => {
-                        table_builder = table_builder.add_field(&attribute.type_ref, field_name, 8);
-                    }
-                    TypeRef::Boolean => {
-                        table_builder = table_builder.add_field(&attribute.type_ref, field_name, 1);
-                    }
-                    TypeRef::Date => {
-                        table_builder = table_builder.add_field(&attribute.type_ref, field_name, 8);
-                    }
-                    TypeRef::Point => {
-                        // todo
-                    }
-                    TypeRef::Unknown => {
-                        // todo
-                    }
-                    TypeRef::Named(_) => {
-                        // todo
-                    }
-                    TypeRef::JsonString(_) => {
-                        // todo
-                    }
-                    TypeRef::DateTime => {
-                        // todo
-                    }
+    for (_, attributes) in features {
+        for (field_name, field_value) in attributes.clone().into_iter() {
+            match field_value {
+                FieldValue::Character(_) => {
+                    fields.insert(
+                        field_name.clone(),
+                        FieldInfo {
+                            field_type: TypeRef::String,
+                            size: 255,
+                        },
+                    );
+                }
+                FieldValue::Numeric(_) => {
+                    fields.insert(
+                        field_name.clone(),
+                        FieldInfo {
+                            field_type: TypeRef::Double,
+                            size: 8,
+                        },
+                    );
+                }
+                FieldValue::Logical(_) => {
+                    fields.insert(
+                        field_name.clone(),
+                        FieldInfo {
+                            field_type: TypeRef::Boolean,
+                            size: 1,
+                        },
+                    );
+                }
+                FieldValue::Date(_) => {
+                    fields.insert(
+                        field_name.clone(),
+                        FieldInfo {
+                            field_type: TypeRef::Date,
+                            size: 8,
+                        },
+                    );
+                }
+                FieldValue::Float(_) => {
+                    fields.insert(
+                        field_name.clone(),
+                        FieldInfo {
+                            field_type: TypeRef::Double,
+                            size: 8,
+                        },
+                    );
+                }
+                FieldValue::Integer(_) => {
+                    fields.insert(
+                        field_name.clone(),
+                        FieldInfo {
+                            field_type: TypeRef::Integer,
+                            size: 4,
+                        },
+                    );
+                }
+                FieldValue::Currency(_) => {
+                    fields.insert(
+                        field_name.clone(),
+                        FieldInfo {
+                            field_type: TypeRef::Double,
+                            size: 8,
+                        },
+                    );
+                }
+                FieldValue::DateTime(_) => {
+                    fields.insert(
+                        field_name.clone(),
+                        FieldInfo {
+                            field_type: TypeRef::DateTime,
+                            size: 8,
+                        },
+                    );
+                }
+                FieldValue::Double(_) => {
+                    fields.insert(
+                        field_name.clone(),
+                        FieldInfo {
+                            field_type: TypeRef::Double,
+                            size: 8,
+                        },
+                    );
+                }
+                FieldValue::Memo(_) => {
+                    fields.insert(
+                        field_name.clone(),
+                        FieldInfo {
+                            field_type: TypeRef::String,
+                            size: 255,
+                        },
+                    );
                 }
             }
         }
-        TypeDef::Data(_) => {
-            // todo
-        }
-        TypeDef::Property(_) => {
-            // todo
-        }
     }
 
+    let table_builder = TableBuilder::new(fields);
     table_builder.build()
 }
 
