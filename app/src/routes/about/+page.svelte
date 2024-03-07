@@ -4,7 +4,7 @@
 
 <div class="grid place-items-center h-screen">
 	<div class="max-w-md flex flex-col gap-9">
-		<h1 class="font-semibold text-lg">BRIDGE 都市デジタルツイン・GISコンバータ</h1>
+		<h1 class="font-semibold text-lg">PLATEAU 都市デジタルツイン・GISコンバータ</h1>
 
 		<p>国土交通省によるPLATEAUデータを、各種ファイル形式へ変換するためのツールです。</p>
 		<p>
