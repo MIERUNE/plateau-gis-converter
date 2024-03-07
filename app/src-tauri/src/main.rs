@@ -32,7 +32,7 @@ const LOG_LEVEL: LevelFilter = LevelFilter::Info;
 fn main() {
     let tauri_loggger = tauri_plugin_log::Builder::default()
         .targets([LogTarget::Stdout, LogTarget::LogDir, LogTarget::Webview])
-        .max_file_size(10_000_000) // in bytes
+        .max_file_size(1_000_000) // in bytes
         .rotation_strategy(RotationStrategy::KeepOne)
         .timezone_strategy(TimezoneStrategy::UseLocal)
         .level(LOG_LEVEL)
