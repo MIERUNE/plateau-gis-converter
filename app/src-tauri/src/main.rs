@@ -6,6 +6,8 @@ use std::path::PathBuf;
 use std::str::FromStr;
 use std::sync::{Arc, Mutex};
 
+use thiserror::Error;
+
 use nusamai::pipeline::Canceller;
 use nusamai::sink::DataSinkProvider;
 use nusamai::sink::{
@@ -32,21 +34,39 @@ fn main() {
         .expect("error while running tauri application");
 }
 
-fn select_sink_provider(filetype: &str) -> Box<dyn DataSinkProvider> {
+#[derive(Error, Debug)]
+enum Error {
+    #[error(transparent)]
+    Io(#[from] std::io::Error),
+    #[error("Invalid setting: {0}")]
+    InvalidSetting(String),
+}
+
+fn select_sink_provider(filetype: &str) -> Option<Box<dyn DataSinkProvider>> {
     // TODO: share possible options with the frontend types (src/lib/settings.ts)
     match filetype {
-        "noop" => Box::new(nusamai::sink::noop::NoopSinkProvider {}),
-        "serde" => Box::new(SerdeSinkProvider {}),
-        "geojson" => Box::new(GeoJsonSinkProvider {}),
-        "gpkg" => Box::new(GpkgSinkProvider {}),
-        "mvt" => Box::new(MvtSinkProvider {}),
-        "shapefile" => Box::new(ShapefileSinkProvider {}),
-        "czml" => Box::new(CzmlSinkProvider {}),
-        "kml" => Box::new(KmlSinkProvider {}),
-        "gltf" => Box::new(GltfSinkProvider {}),
-        "ply" => Box::new(StanfordPlySinkProvider {}),
-        "cesiumtiles" => Box::new(CesiumTilesSinkProvider {}),
-        _ => panic!("Unknown filetype: {}", filetype),
+        "noop" => Some(Box::new(nusamai::sink::noop::NoopSinkProvider {})),
+        "serde" => Some(Box::new(SerdeSinkProvider {})),
+        "geojson" => Some(Box::new(GeoJsonSinkProvider {})),
+        "gpkg" => Some(Box::new(GpkgSinkProvider {})),
+        "mvt" => Some(Box::new(MvtSinkProvider {})),
+        "shapefile" => Some(Box::new(ShapefileSinkProvider {})),
+        "czml" => Some(Box::new(CzmlSinkProvider {})),
+        "kml" => Some(Box::new(KmlSinkProvider {})),
+        "gltf" => Some(Box::new(GltfSinkProvider {})),
+        "ply" => Some(Box::new(StanfordPlySinkProvider {})),
+        "cesiumtiles" => Some(Box::new(CesiumTilesSinkProvider {})),
+        _ => None,
+    }
+}
+
+// Everything returned from Tauri commands must implement serde::Serialize
+impl serde::Serialize for Error {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::ser::Serializer,
+    {
+        serializer.serialize_str(self.to_string().as_ref())
     }
 }
 
@@ -57,7 +77,7 @@ fn run(
     filetype: String,
     epsg: u16,
     rules_path: String,
-) {
+) -> Result<(), Error> {
     let sinkopt: Vec<(String, String)> = vec![("@output".into(), output_path)];
 
     log::info!("Running pipeline with input: {:?}", input_paths);
@@ -66,15 +86,22 @@ fn run(
     let canceller = Arc::new(Mutex::new(Canceller::default()));
 
     let sink = {
-        let sink_provider = select_sink_provider(&filetype);
+        let sink_provider = select_sink_provider(&filetype).ok_or_else(|| {
+            let msg = format!("Invalid sink type: {}", filetype);
+            log::error!("{}", msg);
+            Error::InvalidSetting(msg)
+        })?;
+
         let mut sink_params = sink_provider.parameters();
         if let Err(err) = sink_params.update_values_with_str(&sinkopt) {
-            log::error!("Error parsing sink options: {:?}", err);
-            return;
+            let msg = format!("Error parsing sink options: {:?}", err);
+            log::error!("{}", msg);
+            return Err(Error::InvalidSetting(msg));
         };
         if let Err(err) = sink_params.validate() {
-            log::error!("Error validating source parameters: {:?}", err);
-            return;
+            let msg = format!("Error validating sink parameters: {:?}", err);
+            log::error!("{}", msg);
+            return Err(Error::InvalidSetting(msg));
         }
         sink_provider.create(&sink_params)
     };
@@ -91,8 +118,9 @@ fn run(
         });
         let mut source_params = source_provider.parameters();
         if let Err(err) = source_params.validate() {
-            log::error!("Error validating source parameters: {:?}", err);
-            return;
+            let msg = format!("Error validating source parameters: {:?}", err);
+            log::error!("{}", msg);
+            return Err(Error::InvalidSetting(msg));
         }
         let mut source = source_provider.create(&source_params);
         source.set_appearance_parsing(requirements.use_appearance);
@@ -144,5 +172,7 @@ fn run(
     handle.join();
     if canceller.lock().unwrap().is_canceled() {
         log::info!("Pipeline canceled");
-    }
+    };
+
+    Ok(())
 }
