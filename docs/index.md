@@ -1,6 +1,6 @@
-# PLATEAU 都市デジタルツイン・GISコンバータ（PLATEAU-GIS-Converter）
+# PLATEAU 都市デジタルツイン・GISコンバータ（PLATEAU GIS Converter）
 
-PLATEAU-GIS-ConverterはCityGML形式の3D都市モデルを標準的なGISデータに変換するオーサリングツールです。本ツールでは3D都市モデルを以下の形式に変換することが可能です。
+PLATEAU GIS ConverterはCityGML形式の3D都市モデルを標準的なGISデータに変換するオーサリングツールです。本ツールでは3D都市モデルを以下の形式に変換することが可能です。
 
 - GeoJSON
 - Shapefile
