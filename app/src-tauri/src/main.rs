@@ -34,30 +34,30 @@ fn main() {
         .expect("error while running tauri application");
 }
 
-fn select_sink_provider(filetype: &str) -> Box<dyn DataSinkProvider> {
-    // TODO: share possible options with the frontend types (src/lib/settings.ts)
-    match filetype {
-        "noop" => Box::new(nusamai::sink::noop::NoopSinkProvider {}),
-        "serde" => Box::new(SerdeSinkProvider {}),
-        "geojson" => Box::new(GeoJsonSinkProvider {}),
-        "gpkg" => Box::new(GpkgSinkProvider {}),
-        "mvt" => Box::new(MvtSinkProvider {}),
-        "shapefile" => Box::new(ShapefileSinkProvider {}),
-        "czml" => Box::new(CzmlSinkProvider {}),
-        "kml" => Box::new(KmlSinkProvider {}),
-        "gltf" => Box::new(GltfSinkProvider {}),
-        "ply" => Box::new(StanfordPlySinkProvider {}),
-        "cesiumtiles" => Box::new(CesiumTilesSinkProvider {}),
-        _ => panic!("Unknown filetype: {}", filetype),
-    }
-}
-
 #[derive(Error, Debug)]
 enum Error {
     #[error(transparent)]
     Io(#[from] std::io::Error),
     #[error("Invalid setting: {0}")]
     InvalidSetting(String),
+}
+
+fn select_sink_provider(filetype: &str) -> Option<Box<dyn DataSinkProvider>> {
+    // TODO: share possible options with the frontend types (src/lib/settings.ts)
+    match filetype {
+        "noop" => Some(Box::new(nusamai::sink::noop::NoopSinkProvider {})),
+        "serde" => Some(Box::new(SerdeSinkProvider {})),
+        "geojson" => Some(Box::new(GeoJsonSinkProvider {})),
+        "gpkg" => Some(Box::new(GpkgSinkProvider {})),
+        "mvt" => Some(Box::new(MvtSinkProvider {})),
+        "shapefile" => Some(Box::new(ShapefileSinkProvider {})),
+        "czml" => Some(Box::new(CzmlSinkProvider {})),
+        "kml" => Some(Box::new(KmlSinkProvider {})),
+        "gltf" => Some(Box::new(GltfSinkProvider {})),
+        "ply" => Some(Box::new(StanfordPlySinkProvider {})),
+        "cesiumtiles" => Some(Box::new(CesiumTilesSinkProvider {})),
+        _ => None,
+    }
 }
 
 // Everything returned from Tauri commands must implement serde::Serialize
@@ -86,7 +86,12 @@ fn run(
     let canceller = Arc::new(Mutex::new(Canceller::default()));
 
     let sink = {
-        let sink_provider = select_sink_provider(&filetype);
+        let sink_provider = select_sink_provider(&filetype).ok_or_else(|| {
+            let msg = format!("Invalid sink type: {}", filetype);
+            log::error!("{}", msg);
+            Error::InvalidSetting(msg)
+        })?;
+
         let mut sink_params = sink_provider.parameters();
         if let Err(err) = sink_params.update_values_with_str(&sinkopt) {
             let msg = format!("Error parsing sink options: {:?}", err);
