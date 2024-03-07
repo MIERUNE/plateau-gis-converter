@@ -19,7 +19,7 @@ use super::utils::add_padding;
 
 const ENUM_NO_DATA: u32 = 0;
 const ENUM_NO_DATA_NAME: &str = "";
-const FLOAT_NO_DATA: f64 = 1e+300;
+const FLOAT_NO_DATA: f64 = f64::MAX;
 const INT64_NO_DATA: i64 = i64::MIN;
 const UINT64_NO_DATA: u64 = u64::MAX;
 
@@ -238,10 +238,6 @@ impl Class {
             if !prop.used {
                 continue;
             }
-
-            // if prop.type_ == PropertyType::String && prop.is_array {
-            //     continue;
-            // }
 
             class_properties.insert(
                 name.to_string(),
