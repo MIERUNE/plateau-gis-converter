@@ -9,6 +9,8 @@
 
 ## 1. 概要
 
+本リポジトリでは、Project PLATEAUの令和5年度「都市デジタルツインの実現に向けた研究開発及び実証調査業務」におけるCm23-09「GISコンバータ作成」において開発した「GISコンバータ (PLATEAU GIS Converter)」のソースコードを公開しています。
+
 PLATEAU GIS Converter は、[PLATEAU](https://www.mlit.go.jp/plateau/)プロジェクトのCityGML形式の3D都市モデルを他の一般的なGISデータ形式に変換するソフトウェアです。
 
 ソフトウェアのメイン画面:
