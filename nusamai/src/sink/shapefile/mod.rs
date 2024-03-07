@@ -20,7 +20,7 @@ use crate::pipeline::{Feedback, PipelineError, Receiver, Result};
 use crate::sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo};
 use crate::transformer;
 
-use attributes::{prepare_shapefile_attributes, prepare_table_builder};
+use self::attributes::TableBuilder;
 
 pub struct ShapefileSinkProvider {}
 
@@ -119,36 +119,38 @@ impl DataSink for ShapefileSink {
                     });
 
                 // 方針
-                // 一回attributesからFieldInfoListを作成する
-                // この時に、attributesはrecordではなく、元のValue::Objectを使う
+                // ⚪︎一回featuresからFieldInfoListを作成する
+                // ⚪︎この時に、attributesはrecordではなく、元のValue::Objectを使う
                 // その後、もう一回attributesを捜査して、FieldInfoListに存在している属性は、型に合わせてnullを入れる
                 // 同時にattributesをRecordに変換してTableBuilderを作成する
 
                 // output file per typename
                 for (typename, features) in categorized_shapes {
-                    let table_builder = prepare_table_builder(&features);
+                    // let table_builder = prepare_table_builder(&features);
+                    let table_builder = TableBuilder::new(features);
+                    // let field_info_list = feature_attributes_to_field_list(&features);
 
                     // Create all the files needed for the shapefile to be complete (.shp, .shx, .dbf)
                     std::fs::create_dir_all(&self.output_path)?;
                     let mut file_path = self.output_path.clone();
                     file_path.push(format!("{}.shp", typename.replace(':', "_")));
 
-                    let mut writer = shapefile::Writer::from_path(file_path, table_builder)?;
+                    // let mut writer = shapefile::Writer::from_path(file_path, table_builder)?;
 
                     // Write each feature
-                    features
-                        .into_iter()
-                        .for_each(|(shape, attributes)| match shape {
-                            shapefile::Shape::PolygonZ(polygon) => {
-                                writer
-                                    .write_shape_and_record(&polygon, &attributes)
-                                    .unwrap();
-                            }
-                            shapefile::Shape::NullShape => {}
-                            _ => {
-                                log::warn!("Unsupported shape type");
-                            }
-                        });
+                    // features
+                    //     .into_iter()
+                    //     .for_each(|(shape, attributes)| match shape {
+                    //         shapefile::Shape::PolygonZ(polygon) => {
+                    //             writer
+                    //                 .write_shape_and_record(&polygon, &attributes)
+                    //                 .unwrap();
+                    //         }
+                    //         shapefile::Shape::NullShape => {}
+                    //         _ => {
+                    //             log::warn!("Unsupported shape type");
+                    //         }
+                    //     });
                 }
 
                 Ok::<(), shapefile::Error>(())
@@ -176,13 +178,13 @@ impl DataSink for ShapefileSink {
 /// TODO: Implement MultiLineString and MultiPoint handling
 pub fn entity_to_shapes(entity: &Entity) -> (shapefile::Shape, Map) {
     // let mut record = dbase::Record::default();
-    let mut map: IndexMap<String, Value, ahash::RandomState> = Map::default();
+    let mut attributes: IndexMap<String, Value, ahash::RandomState> = Map::default();
 
     let Value::Object(obj) = &entity.root else {
-        return (shapefile::Shape::NullShape, map);
+        return (shapefile::Shape::NullShape, attributes);
     };
     let ObjectStereotype::Feature { id: _, geometries } = &obj.stereotype else {
-        return (shapefile::Shape::NullShape, map);
+        return (shapefile::Shape::NullShape, attributes);
     };
 
     let geom_store = entity.geometry_store.read().unwrap();
@@ -210,10 +212,13 @@ pub fn entity_to_shapes(entity: &Entity) -> (shapefile::Shape, Map) {
         // for (field_name, field_value) in attributes {
         //     record.insert(field_name, field_value);
         // }
-        return (shape, obj.attributes);
+        for (k, v) in &obj.attributes {
+            attributes.insert(k.clone(), v.clone());
+        }
+        return (shape, attributes);
     }
 
-    (shapefile::Shape::NullShape, map)
+    (shapefile::Shape::NullShape, attributes)
 }
 
 #[cfg(test)]

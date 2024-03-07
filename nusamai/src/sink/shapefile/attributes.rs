@@ -3,8 +3,9 @@ use hashbrown::HashMap;
 use indexmap::IndexMap;
 use shapefile::dbase::{self, Date, FieldValue};
 
-use nusamai_citygml::object::Value;
+use nusamai_citygml::object::{Map, Value};
 use nusamai_citygml::schema::TypeRef;
+use shapefile::Shape;
 
 pub struct FieldInfo {
     field_type: TypeRef,
@@ -13,16 +14,92 @@ pub struct FieldInfo {
 
 pub type FieldInfoList = HashMap<String, FieldInfo>;
 
-struct TableBuilder {
-    fields: FieldInfoList,
-    builder: dbase::TableWriterBuilder,
+pub type Features = Vec<(Shape, IndexMap<String, Value, ahash::RandomState>)>;
+
+pub struct TableBuilder {
+    pub original_features: Features,
+    pub fields: FieldInfoList,
+    pub builder: dbase::TableWriterBuilder,
 }
 
 impl TableBuilder {
-    pub fn new(fields: FieldInfoList) -> Self {
+    pub fn new(original_features: Features) -> Self {
         Self {
-            fields,
+            original_features,
+            fields: Default::default(),
             builder: dbase::TableWriterBuilder::new(),
+        }
+    }
+
+    pub fn make_field_list(mut self) {
+        for (_, attributes) in self.original_features {
+            for (field_name, field_value) in attributes {
+                match field_value {
+                    Value::String(_) | Value::Code(_) | Value::Uri(_) => {
+                        self.fields.insert(
+                            field_name.clone(),
+                            FieldInfo {
+                                field_type: TypeRef::String,
+                                size: 255,
+                            },
+                        );
+                    }
+                    Value::Integer(_) | Value::NonNegativeInteger(_) => {
+                        self.fields.insert(
+                            field_name.clone(),
+                            FieldInfo {
+                                field_type: TypeRef::Integer,
+                                size: 4,
+                            },
+                        );
+                    }
+                    Value::Double(_) | Value::Measure(_) => {
+                        self.fields.insert(
+                            field_name.clone(),
+                            FieldInfo {
+                                field_type: TypeRef::Double,
+                                size: 8,
+                            },
+                        );
+                    }
+                    Value::Boolean(_) => {
+                        self.fields.insert(
+                            field_name.clone(),
+                            FieldInfo {
+                                field_type: TypeRef::Boolean,
+                                size: 1,
+                            },
+                        );
+                    }
+                    Value::Uri(_) => {
+                        self.fields.insert(
+                            field_name.clone(),
+                            FieldInfo {
+                                field_type: TypeRef::String,
+                                size: 255,
+                            },
+                        );
+                    }
+                    Value::Date(_) => {
+                        self.fields.insert(
+                            field_name.clone(),
+                            FieldInfo {
+                                field_type: TypeRef::Date,
+                                size: 8,
+                            },
+                        );
+                    }
+                    Value::Point(_) => {
+                        // todo
+                    }
+                    Value::Array(_) => {
+                        // todo
+                    }
+                    Value::Object(_) => {
+                        // todo
+                    }
+                }
+            }
         }
     }
 
@@ -186,6 +263,84 @@ pub fn prepare_table_builder(
 
     let table_builder = TableBuilder::new(fields);
     table_builder.build()
+}
+
+pub fn feature_attributes_to_field_list(
+    features: &Vec<(Shape, IndexMap<String, Value, ahash::RandomState>)>,
+) -> FieldInfoList {
+    let mut fields: FieldInfoList = Default::default();
+
+    for (_, attributes) in features {
+        for (field_name, field_value) in attributes {
+            match field_value {
+                Value::String(_) | Value::Code(_) | Value::Uri(_) => {
+                    fields.insert(
+                        field_name.clone(),
+                        FieldInfo {
+                            field_type: TypeRef::String,
+                            size: 255,
+                        },
+                    );
+                }
+                Value::Integer(_) | Value::NonNegativeInteger(_) => {
+                    fields.insert(
+                        field_name.clone(),
+                        FieldInfo {
+                            field_type: TypeRef::Integer,
+                            size: 4,
+                        },
+                    );
+                }
+                Value::Double(_) | Value::Measure(_) => {
+                    fields.insert(
+                        field_name.clone(),
+                        FieldInfo {
+                            field_type: TypeRef::Double,
+                            size: 8,
+                        },
+                    );
+                }
+                Value::Boolean(_) => {
+                    fields.insert(
+                        field_name.clone(),
+                        FieldInfo {
+                            field_type: TypeRef::Boolean,
+                            size: 1,
+                        },
+                    );
+                }
+                Value::Uri(_) => {
+                    fields.insert(
+                        field_name.clone(),
+                        FieldInfo {
+                            field_type: TypeRef::String,
+                            size: 255,
+                        },
+                    );
+                }
+                Value::Date(_) => {
+                    fields.insert(
+                        field_name.clone(),
+                        FieldInfo {
+                            field_type: TypeRef::Date,
+                            size: 8,
+                        },
+                    );
+                }
+                Value::Point(_) => {
+                    // todo
+                }
+                Value::Array(_) => {
+                    // todo
+                }
+                Value::Object(_) => {
+                    // todo
+                }
+            }
+        }
+    }
+
+    fields
 }
 
 pub fn prepare_shapefile_attributes(
