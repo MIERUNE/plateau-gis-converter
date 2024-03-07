@@ -40,10 +40,13 @@ impl TableBuilder {
                         .builder
                         .add_integer_field(field_name.as_str().try_into().unwrap());
                 }
+                // Handle as Float
                 TypeRef::Double | TypeRef::Measure => {
-                    self.builder = self
-                        .builder
-                        .add_double_field(field_name.as_str().try_into().unwrap());
+                    self.builder = self.builder.add_float_field(
+                        field_name.as_str().try_into().unwrap(),
+                        50,
+                        10,
+                    );
                 }
                 TypeRef::Boolean => {
                     self.builder = self
@@ -205,11 +208,19 @@ pub fn prepare_shapefile_attributes(
             Value::NonNegativeInteger(i) => {
                 attributes.insert(attr_name.into(), FieldValue::Integer(i.to_owned() as i32));
             }
+            // Handle as Float
             Value::Double(d) => {
-                attributes.insert(attr_name.into(), FieldValue::Double(d.to_owned()));
+                attributes.insert(
+                    attr_name.into(),
+                    FieldValue::Float(Some(d.to_owned() as f32)),
+                );
             }
+            // Handle as Float
             Value::Measure(m) => {
-                attributes.insert(attr_name.into(), FieldValue::Double(m.value().to_owned()));
+                attributes.insert(
+                    attr_name.into(),
+                    FieldValue::Float(Some(m.value().to_owned() as f32)),
+                );
             }
             Value::Boolean(b) => {
                 attributes.insert(attr_name.into(), FieldValue::Logical(Some(b.to_owned())));
