@@ -79,6 +79,7 @@ impl TableBuilder {
     }
 }
 
+// Returns a TableBuilder with the minimum necessary field information
 pub fn prepare_table_builder(
     features: &Vec<(shapefile::Shape, dbase::Record)>,
 ) -> dbase::TableWriterBuilder {
@@ -180,6 +181,8 @@ pub fn prepare_table_builder(
             }
         }
     }
+
+    // todo: attributesとfieldsの属性を突き合わせて、足りないattributeはnullで埋める
 
     let table_builder = TableBuilder::new(fields);
     table_builder.build()

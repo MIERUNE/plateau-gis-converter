@@ -8,7 +8,7 @@ use indexmap::IndexMap;
 use rayon::iter::{ParallelBridge, ParallelIterator};
 use shapefile::dbase::{self};
 
-use nusamai_citygml::object::{ObjectStereotype, Value};
+use nusamai_citygml::object::{Map, ObjectStereotype, Value};
 use nusamai_citygml::schema::Schema;
 use nusamai_citygml::GeometryType;
 use nusamai_plateau::Entity;
@@ -107,7 +107,7 @@ impl DataSink for ShapefileSink {
                 // Attribute fields for the features
                 // FieldName byte representation cannot exceed 11 bytes
                 let mut categorized_shapes =
-                    IndexMap::<String, Vec<(shapefile::Shape, dbase::Record)>>::new();
+                    IndexMap::<String, Vec<(shapefile::Shape, Map)>>::new();
 
                 receiver
                     .into_iter()
@@ -118,6 +118,13 @@ impl DataSink for ShapefileSink {
                             .push((shape, attributes));
                     });
 
+                // 方針
+                // 一回attributesからFieldInfoListを作成する
+                // この時に、attributesはrecordではなく、元のValue::Objectを使う
+                // その後、もう一回attributesを捜査して、FieldInfoListに存在している属性は、型に合わせてnullを入れる
+                // 同時にattributesをRecordに変換してTableBuilderを作成する
+
+                // output file per typename
                 for (typename, features) in categorized_shapes {
                     let table_builder = prepare_table_builder(&features);
 
@@ -167,14 +174,15 @@ impl DataSink for ShapefileSink {
 /// Create Shapefile features from a Entity
 /// Each feature for MultiPolygon, MultiLineString, and MultiPoint will be created (if it exists)
 /// TODO: Implement MultiLineString and MultiPoint handling
-pub fn entity_to_shapes(entity: &Entity) -> (shapefile::Shape, dbase::Record) {
-    let mut record = dbase::Record::default();
+pub fn entity_to_shapes(entity: &Entity) -> (shapefile::Shape, Map) {
+    // let mut record = dbase::Record::default();
+    let mut map: IndexMap<String, Value, ahash::RandomState> = Map::default();
 
     let Value::Object(obj) = &entity.root else {
-        return (shapefile::Shape::NullShape, record);
+        return (shapefile::Shape::NullShape, map);
     };
     let ObjectStereotype::Feature { id: _, geometries } = &obj.stereotype else {
-        return (shapefile::Shape::NullShape, record);
+        return (shapefile::Shape::NullShape, map);
     };
 
     let geom_store = entity.geometry_store.read().unwrap();
@@ -198,14 +206,14 @@ pub fn entity_to_shapes(entity: &Entity) -> (shapefile::Shape, dbase::Record) {
         let shape =
             shapefile::Shape::PolygonZ(indexed_multipolygon_to_shape(&geom_store.vertices, &mpoly));
 
-        let attributes = prepare_shapefile_attributes(obj);
-        for (field_name, field_value) in attributes {
-            record.insert(field_name, field_value);
-        }
-        return (shape, record);
+        // let attributes = prepare_shapefile_attributes(obj);
+        // for (field_name, field_value) in attributes {
+        //     record.insert(field_name, field_value);
+        // }
+        return (shape, obj.attributes);
     }
 
-    (shapefile::Shape::NullShape, record)
+    (shapefile::Shape::NullShape, map)
 }
 
 #[cfg(test)]
