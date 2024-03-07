@@ -96,18 +96,19 @@ impl DataSink for ShapefileSink {
                 let mut writer = shapefile::Writer::from_path(&self.output_path, table_builder)?;
 
                 // Write each feature
-                receiver.into_iter().for_each(|shape| match shape {
-                    shapefile::Shape::PolygonZ(polygon) => {
-                        let record = shapefile::dbase::Record::default(); // for attributes
-                        writer.write_shape_and_record(&polygon, &record).unwrap();
+                receiver.into_iter().try_for_each(|shape| {
+                    match shape {
+                        shapefile::Shape::PolygonZ(polygon) => {
+                            let record = shapefile::dbase::Record::default(); // for attributes
+                            writer.write_shape_and_record(&polygon, &record)?;
+                        }
+                        shapefile::Shape::NullShape => {}
+                        _ => {
+                            log::warn!("Unsupported shape type");
+                        }
                     }
-                    shapefile::Shape::NullShape => {}
-                    _ => {
-                        log::warn!("Unsupported shape type");
-                    }
-                });
-
-                Ok::<(), shapefile::Error>(())
+                    Ok(())
+                })
             },
         );
 

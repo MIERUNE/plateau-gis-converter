@@ -113,29 +113,27 @@ impl DataSink for GeoJsonSink {
                 let _ = categorized_features.iter().try_for_each(
                     |(typename, features)| -> Result<()> {
                         let mut file_path = self.output_path.clone();
-                        let c_name = typename.split(':').last().unwrap();
+                        let c_name = typename.split_once(':').map(|v| v.1).unwrap_or(typename);
                         file_path.push(&format!("{}.geojson", c_name));
 
                         let mut file = File::create(&file_path)?;
                         let mut writer = BufWriter::with_capacity(1024 * 1024, &mut file);
 
                         // Write the FeatureCollection header
-                        writer
-                            .write_all(b"{\"type\":\"FeatureCollection\",\"features\":[")
-                            .unwrap();
+                        writer.write_all(b"{\"type\":\"FeatureCollection\",\"features\":[")?;
 
                         // Write each Feature
                         let mut iter = features.iter().peekable();
                         while let Some(feature) = iter.next() {
                             let bytes = serde_json::to_vec(&feature).unwrap();
-                            writer.write_all(&bytes).unwrap();
+                            writer.write_all(&bytes)?;
                             if iter.peek().is_some() {
-                                writer.write_all(b",").unwrap();
+                                writer.write_all(b",")?;
                             };
                         }
 
                         // Write the FeautureCollection footer and EOL
-                        writer.write_all(b"]}\n").unwrap();
+                        writer.write_all(b"]}\n")?;
 
                         Ok(())
                     },

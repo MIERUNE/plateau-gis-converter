@@ -46,10 +46,6 @@ pub fn make_metadata(
         let mut properties = property_table.properties.iter().collect::<Vec<_>>();
         properties.sort_by(|a, b| a.1.values.cmp(&b.1.values));
 
-        features
-            .clone()
-            .sort_by(|a, b| a.feature_id.cmp(&b.feature_id));
-
         // we need to write buffers for each column in the same order as in the propertyTable generated from the schema
         // and also need to start from the 0th record of the feature_id
         // todo: whenever they are null, we need to modify them so that they are not written
@@ -89,7 +85,6 @@ pub fn make_metadata(
 
                         // if component_type is Some, write a numeric value to the buffer
                         if let Some(component_type) = component_type {
-                            let component_type = component_type.clone();
                             match component_type {
                                 ClassPropertyComponentType::Int8 => {
                                     buf.write_i8(0).unwrap();
@@ -173,7 +168,7 @@ pub fn make_metadata(
     // Schema
     let schema = Schema {
         id: typename.to_string(),
-        classes: classes.clone(),
+        classes,
         // enums,
         ..Default::default()
     };
@@ -372,7 +367,7 @@ impl ToBytes for Value {
             Value::Integer(i) => i.write_to_bytes(buffer),
             Value::NonNegativeInteger(u) => u.write_to_bytes(buffer),
             Value::Double(d) => d.write_to_bytes(buffer),
-            Value::Boolean(b) => b.write_to_bytes(buffer),
+            Value::Boolean(b) => b.write_to_bytes(buffer), // FIXME: boolean value must be stored as bitstream.
             Value::Measure(m) => m.write_to_bytes(buffer),
             _ => {
                 // todo: implement
