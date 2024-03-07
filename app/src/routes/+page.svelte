@@ -12,6 +12,7 @@
 
 	let inputPaths: string[] = [];
 	let filetype: string;
+	let epsg: number;
 	let rulesPath = '';
 	let outputPath = '';
 	let isRunning = false;
@@ -27,14 +28,21 @@
 		}
 
 		isRunning = true;
-		await invoke('run', {
-			inputPaths,
-			outputPath,
-			filetype,
-			rulesPath
-		});
+
+		try {
+			await invoke('run', {
+				inputPaths,
+				outputPath,
+				filetype,
+				epsg,
+				rulesPath
+			});
+			alert(`変換が完了しました。\n'${outputPath}' に出力しました。`);
+		} catch (error) {
+			alert(`エラーが発生しました。\n\n${error}`);
+		}
+
 		isRunning = false;
-		alert(`${filetype}形式で '${outputPath}' に出力しました。`);
 	}
 </script>
 
@@ -55,7 +63,7 @@
 
 		<InputSelector bind:inputPaths />
 
-		<SettingSelector bind:filetype bind:rulesPath />
+		<SettingSelector bind:filetype bind:epsg bind:rulesPath />
 
 		<OutputSelector {filetype} bind:outputPath />
 
