@@ -21,9 +21,8 @@
 
 	// When filetype changes, reset outputPath
 	$: {
-		if (filetype) {
-			outputPath = '';
-		}
+		filetype;
+		outputPath = '';
 	}
 </script>
 
