@@ -69,7 +69,7 @@ impl DataSink for ShapefileSink {
             shorten_names_for_shapefile: true,
             tree_flattening: transformer::TreeFlatteningSpec::Flatten {
                 feature: transformer::FeatureFlatteningOption::AllExceptThematicSurfaces,
-                data: transformer::DataFlatteningOption::None,
+                data: transformer::DataFlatteningOption::TopLevelOnly,
                 object: transformer::ObjectFlatteningOption::None,
             },
 
@@ -146,7 +146,11 @@ impl DataSink for ShapefileSink {
                             shapefile::Shape::PolygonZ(polygon) => {
                                 writer.write_shape_and_record(&polygon, &record).unwrap();
                             }
-                            shapefile::Shape::NullShape => {}
+                            shapefile::Shape::NullShape => {
+                                use shapefile::Point;
+                                let point = Point::default();
+                                writer.write_shape_and_record(&point, &record).unwrap();
+                            }
                             _ => {
                                 log::warn!("Unsupported shape type");
                             }
@@ -183,6 +187,10 @@ pub fn entity_to_shapes(entity: &Entity) -> (shapefile::Shape, Map) {
     let Value::Object(obj) = &entity.root else {
         return (shapefile::Shape::NullShape, attributes);
     };
+    for (k, v) in &obj.attributes {
+        attributes.insert(k.clone(), v.clone());
+    }
+
     let ObjectStereotype::Feature { id: _, geometries } = &obj.stereotype else {
         return (shapefile::Shape::NullShape, attributes);
     };
@@ -208,9 +216,6 @@ pub fn entity_to_shapes(entity: &Entity) -> (shapefile::Shape, Map) {
         let shape =
             shapefile::Shape::PolygonZ(indexed_multipolygon_to_shape(&geom_store.vertices, &mpoly));
 
-        for (k, v) in &obj.attributes {
-            attributes.insert(k.clone(), v.clone());
-        }
         return (shape, attributes);
     }
 
