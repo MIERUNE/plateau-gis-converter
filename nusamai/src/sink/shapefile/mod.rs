@@ -175,7 +175,6 @@ impl DataSink for ShapefileSink {
 /// Each feature for MultiPolygon, MultiLineString, and MultiPoint will be created (if it exists)
 /// TODO: Implement MultiLineString and MultiPoint handling
 pub fn entity_to_shapes(entity: &Entity) -> (shapefile::Shape, Map) {
-    // let mut record = dbase::Record::default();
     let mut attributes: IndexMap<String, Value, ahash::RandomState> = Map::default();
 
     let Value::Object(obj) = &entity.root else {
@@ -206,10 +205,6 @@ pub fn entity_to_shapes(entity: &Entity) -> (shapefile::Shape, Map) {
         let shape =
             shapefile::Shape::PolygonZ(indexed_multipolygon_to_shape(&geom_store.vertices, &mpoly));
 
-        // let attributes = prepare_shapefile_attributes(obj);
-        // for (field_name, field_value) in attributes {
-        //     record.insert(field_name, field_value);
-        // }
         for (k, v) in &obj.attributes {
             attributes.insert(k.clone(), v.clone());
         }
@@ -265,10 +260,10 @@ mod tests {
             appearance_store: Default::default(),
         };
 
-        let shapes = entity_to_shapes(&obj);
-        assert_eq!(shapes.len(), 1);
+        let (shapes, attributes) = entity_to_shapes(&obj);
+        assert_eq!(attributes.len(), 0);
 
-        if let shapefile::Shape::PolygonZ(polygon) = &shapes[0] {
+        if let shapefile::Shape::PolygonZ(polygon) = &shapes {
             assert_eq!(polygon.rings().len(), 1);
             assert_eq!(
                 polygon.ring(0).unwrap(),
