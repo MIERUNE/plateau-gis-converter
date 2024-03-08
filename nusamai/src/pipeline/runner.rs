@@ -43,7 +43,7 @@ fn spawn_source_thread(
             .unwrap();
         pool.install(move || {
             if let Err(error) = source.run(sender, &feedback) {
-                feedback.report_fatal_error(error);
+                feedback.fatal_error(error);
             }
         });
         log::info!("Source thread finished.");
@@ -66,7 +66,7 @@ fn spawn_transformer_thread(
             .unwrap();
         pool.install(move || {
             if let Err(error) = transformer.run(upstream, sender, &feedback) {
-                feedback.report_fatal_error(error);
+                feedback.fatal_error(error);
             }
         });
         log::info!("Transformer thread finished.");
@@ -92,7 +92,7 @@ fn spawn_sink_thread(
             .unwrap();
         pool.install(move || {
             if let Err(error) = sink.run(upstream, &feedback, &schema) {
-                feedback.report_fatal_error(error);
+                feedback.fatal_error(error);
             }
         });
         log::info!("Sink thread finished.");
@@ -134,18 +134,18 @@ pub fn run(
     // Start the pipeline
     let (source_thread_handle, source_receiver) = spawn_source_thread(
         source,
-        feedback.component_span(super::FeedbackSourceComponent::Source),
+        feedback.component_span(super::SourceComponent::Source),
     );
     let (transformer_thread_handle, transformer_receiver) = spawn_transformer_thread(
         transformer,
         source_receiver,
-        feedback.component_span(super::FeedbackSourceComponent::Transformer),
+        feedback.component_span(super::SourceComponent::Transformer),
     );
     let sink_thread_handle = spawn_sink_thread(
         sink,
         schema,
         transformer_receiver,
-        feedback.component_span(super::FeedbackSourceComponent::Sink),
+        feedback.component_span(super::SourceComponent::Sink),
     );
 
     let handle = PipelineHandle {

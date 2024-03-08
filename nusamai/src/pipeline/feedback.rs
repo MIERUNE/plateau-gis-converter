@@ -8,12 +8,14 @@ use super::PipelineError;
 const FEEDBACK_CHANNEL_BOUND: usize = 10000;
 
 #[derive(Debug)]
-pub struct FeedbackMessage {
+pub struct Message {
+    /// Log message body
     pub message: String,
-    /// Message source (source, transformer, sink, etc.)
-    pub source_component: FeedbackSourceComponent,
+    /// Log level
+    pub level: log::Level,
+    /// Message source (source, transformer, sink, pipeline, etc.)
+    pub source_component: SourceComponent,
     pub error: Option<PipelineError>,
-    // severity:
     // progress:
     // etc.
 }
@@ -21,16 +23,16 @@ pub struct FeedbackMessage {
 #[derive(Clone)]
 pub struct Feedback {
     canceled: Arc<AtomicBool>,
-    source_component: FeedbackSourceComponent,
-    sender: std::sync::mpsc::SyncSender<FeedbackMessage>,
+    source_component: SourceComponent,
+    sender: std::sync::mpsc::SyncSender<Message>,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum FeedbackSourceComponent {
+pub enum SourceComponent {
     Source,
     Transformer,
     Sink,
-    Unknown,
+    Pipeline,
 }
 
 impl Feedback {
@@ -58,7 +60,7 @@ impl Feedback {
 
     /// Create a new feedback span for the pipeline component
     #[inline]
-    pub fn component_span(&self, source: FeedbackSourceComponent) -> Self {
+    pub fn component_span(&self, source: SourceComponent) -> Self {
         Self {
             source_component: source,
             ..self.clone()
@@ -67,17 +69,52 @@ impl Feedback {
 
     /// Send a message to the feedback channel
     #[inline]
-    pub fn feedback_raw(&self, msg: FeedbackMessage) {
+    pub fn send_raw_message(&self, msg: Message) {
         // don't care if the receiver is dropped.
         let _ = self.sender.send(msg);
     }
 
+    #[inline]
+    pub fn send_message(&self, message: String, level: log::Level) {
+        self.send_raw_message(Message {
+            message,
+            level,
+            source_component: self.source_component,
+            error: None,
+        })
+    }
+
+    /// Send a debug log
+    #[inline]
+    pub fn debug(&self, message: String) {
+        self.send_message(message, log::Level::Debug)
+    }
+
+    /// Send a info log
+    #[inline]
+    pub fn info(&self, message: String) {
+        self.send_message(message, log::Level::Info)
+    }
+
+    /// Send a warning log
+    #[inline]
+    pub fn warning(&self, message: String) {
+        self.send_message(message, log::Level::Warn)
+    }
+
+    /// Send an error log
+    #[inline]
+    pub fn error(&self, message: String) {
+        self.send_message(message, log::Level::Error)
+    }
+
     /// Report a fatal error and cancel the pipeline
     #[inline]
-    pub fn report_fatal_error(&self, error: PipelineError) {
+    pub fn fatal_error(&self, error: PipelineError) {
         self.cancel();
-        let _ = self.sender.send(FeedbackMessage {
+        let _ = self.sender.send(Message {
             message: "Fatal error".to_string(),
+            level: log::Level::Error,
             source_component: self.source_component,
             error: Some(error),
         });
@@ -85,12 +122,12 @@ impl Feedback {
 }
 
 pub struct Watcher {
-    receiver: std::sync::mpsc::Receiver<FeedbackMessage>,
+    receiver: std::sync::mpsc::Receiver<Message>,
 }
 
 impl IntoIterator for Watcher {
-    type Item = FeedbackMessage;
-    type IntoIter = std::sync::mpsc::IntoIter<FeedbackMessage>;
+    type Item = Message;
+    type IntoIter = std::sync::mpsc::IntoIter<Message>;
 
     fn into_iter(self) -> Self::IntoIter {
         self.receiver.into_iter()
@@ -123,7 +160,7 @@ pub(crate) fn watcher() -> (Watcher, Feedback, Canceller) {
     };
     let feedback = Feedback {
         canceled: canceled.clone(),
-        source_component: FeedbackSourceComponent::Unknown,
+        source_component: SourceComponent::Pipeline,
         sender,
     };
     (watcher, feedback, canceller)

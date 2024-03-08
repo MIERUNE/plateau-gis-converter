@@ -234,9 +234,11 @@ fn run(
                 let msg_source = format!("{:?}", msg.source_component);
                 match msg.error {
                     Some(error) => {
-                        log::error!("An error occured in the pipeline: {error:?}");
+                        log::log!(msg.level, "[{msg_source}]: {}: {error:?}", msg.message);
                     }
-                    None => log::info!("[{msg_source}]: {}", msg.message),
+                    None => {
+                        log::log!(msg.level, "[{msg_source}]: {}", msg.message);
+                    }
                 }
             }
         });
