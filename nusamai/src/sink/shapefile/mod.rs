@@ -92,11 +92,13 @@ impl DataSink for ShapefileSink {
                         let Value::Object(object) = &parcel.entity.root else {
                             return Ok(());
                         };
-                        let typename = object.typename.clone();
 
                         let (shape, attributes) = entity_to_shapes(&parcel.entity);
 
-                        if sender.send((typename, shape, attributes)).is_err() {
+                        if sender
+                            .send((object.typename.clone(), shape, attributes))
+                            .is_err()
+                        {
                             return Err(PipelineError::Canceled);
                         };
 
@@ -141,6 +143,7 @@ impl DataSink for ShapefileSink {
                     features.into_iter().zip_eq(records).for_each(
                         |((shape, _), record)| match shape {
                             shapefile::Shape::PolygonZ(polygon) => {
+                                println!("record: {:?}", record);
                                 writer.write_shape_and_record(&polygon, &record).unwrap();
                             }
                             shapefile::Shape::NullShape => {}
