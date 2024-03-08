@@ -5,6 +5,7 @@ mod attributes;
 use std::path::PathBuf;
 
 use indexmap::IndexMap;
+use itertools::Itertools;
 use rayon::iter::{ParallelBridge, ParallelIterator};
 use shapefile::dbase::{self};
 
@@ -20,7 +21,9 @@ use crate::pipeline::{Feedback, PipelineError, Receiver, Result};
 use crate::sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo};
 use crate::transformer;
 
-use self::attributes::TableBuilder;
+use self::attributes::{
+    fill_missing_fields, make_field_list, prepare_shapefile_attributes, TableBuilder,
+};
 
 pub struct ShapefileSinkProvider {}
 
@@ -118,39 +121,35 @@ impl DataSink for ShapefileSink {
                             .push((shape, attributes));
                     });
 
-                // 方針
-                // ⚪︎一回featuresからFieldInfoListを作成する
-                // ⚪︎この時に、attributesはrecordではなく、元のValue::Objectを使う
-                // その後、もう一回attributesを捜査して、FieldInfoListに存在している属性は、型に合わせてnullを入れる
-                // 同時にattributesをRecordに変換してTableBuilderを作成する
-
                 // output file per typename
-                for (typename, features) in categorized_shapes {
-                    // let table_builder = prepare_table_builder(&features);
-                    let table_builder = TableBuilder::new(features);
-                    // let field_info_list = feature_attributes_to_field_list(&features);
+                for (typename, mut features) in categorized_shapes {
+                    let table_info = make_field_list(&features);
+                    fill_missing_fields(&mut features, &table_info);
+
+                    let table_builder = TableBuilder::new(table_info);
+
+                    let records = prepare_shapefile_attributes(&features);
 
                     // Create all the files needed for the shapefile to be complete (.shp, .shx, .dbf)
                     std::fs::create_dir_all(&self.output_path)?;
                     let mut file_path = self.output_path.clone();
                     file_path.push(format!("{}.shp", typename.replace(':', "_")));
 
-                    // let mut writer = shapefile::Writer::from_path(file_path, table_builder)?;
+                    let mut writer =
+                        shapefile::Writer::from_path(file_path, table_builder.build())?;
 
                     // Write each feature
-                    // features
-                    //     .into_iter()
-                    //     .for_each(|(shape, attributes)| match shape {
-                    //         shapefile::Shape::PolygonZ(polygon) => {
-                    //             writer
-                    //                 .write_shape_and_record(&polygon, &attributes)
-                    //                 .unwrap();
-                    //         }
-                    //         shapefile::Shape::NullShape => {}
-                    //         _ => {
-                    //             log::warn!("Unsupported shape type");
-                    //         }
-                    //     });
+                    features.into_iter().zip_eq(records).for_each(
+                        |((shape, _), record)| match shape {
+                            shapefile::Shape::PolygonZ(polygon) => {
+                                writer.write_shape_and_record(&polygon, &record).unwrap();
+                            }
+                            shapefile::Shape::NullShape => {}
+                            _ => {
+                                log::warn!("Unsupported shape type");
+                            }
+                        },
+                    );
                 }
 
                 Ok::<(), shapefile::Error>(())
