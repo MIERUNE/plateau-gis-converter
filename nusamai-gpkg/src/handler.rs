@@ -255,11 +255,11 @@ impl<'c> GpkgTransaction<'c> {
                 .await?;
         } else {
             let query_string = format!(
-                "INSERT INTO \"{}\" (id, geometry, \"{}\") VALUES (?, ?, {})",
+                "INSERT INTO \"{}\" (id, geometry, {}) VALUES (?, ?, {})",
                 table_name,
                 attributes
                     .keys()
-                    .map(|key| key.to_string())
+                    .map(|key| format!("\"{}\"", key))
                     .collect::<Vec<_>>()
                     .join(", "),
                 vec!["?"; attributes.len()].join(", ")
