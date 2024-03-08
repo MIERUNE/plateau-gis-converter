@@ -20,12 +20,12 @@
 
 	async function convertAndSave() {
 		if (!inputPaths) {
-			message('入力フォルダ/ファイルを選択してください', { type: 'warning' });
+			await message('入力フォルダ/ファイルを選択してください', { type: 'warning' });
 			return;
 		}
 
 		if (!outputPath) {
-			message('出力先を選択してください', { type: 'warning' });
+			await message('出力先を選択してください', { type: 'warning' });
 			return;
 		}
 
@@ -39,9 +39,9 @@
 				epsg,
 				rulesPath
 			});
-			message(`変換が完了しました。\n'${outputPath}' に出力しました。`, { type: 'info' });
+			await message(`変換が完了しました。\n'${outputPath}' に出力しました。`, { type: 'info' });
 		} catch (error) {
-			message(`エラーが発生しました。\n\n${error}`, { type: 'error' });
+			await message(`エラーが発生しました。\n\n${error}`, { type: 'error' });
 		}
 
 		isRunning = false;
