@@ -196,6 +196,7 @@ pub fn prepare_shapefile_attributes(features: &Features) -> Vec<Record> {
         for (attr_name, attr_value) in feature_attributes {
             match attr_value {
                 Value::String(s) => {
+                    // Shapefile string type can only store up to 255 characters.
                     if s.len() > 255 {
                         log::warn!("{} value too long, truncating to 255 characters", attr_name);
                         record.insert(
