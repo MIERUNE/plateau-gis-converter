@@ -1,19 +1,28 @@
 //! Shapefile sink
 
+mod attributes;
+
 use std::path::PathBuf;
 
+use indexmap::IndexMap;
+use itertools::Itertools;
+use rayon::iter::{ParallelBridge, ParallelIterator};
+
+use nusamai_citygml::object::{Map, ObjectStereotype, Value};
 use nusamai_citygml::schema::Schema;
 use nusamai_citygml::GeometryType;
-use rayon::prelude::*;
+use nusamai_plateau::Entity;
+use nusamai_shapefile::conversion::indexed_multipolygon_to_shape;
 
 use crate::get_parameter_value;
 use crate::parameters::*;
 use crate::pipeline::{Feedback, PipelineError, Receiver, Result};
 use crate::sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo};
+use crate::transformer;
 
-use nusamai_citygml::object::{ObjectStereotype, Value};
-use nusamai_plateau::Entity;
-use nusamai_shapefile::conversion::indexed_multipolygon_to_shape;
+use self::attributes::{
+    fill_missing_fields, make_field_list, prepare_shapefile_attributes, TableBuilder,
+};
 
 pub struct ShapefileSinkProvider {}
 
@@ -58,6 +67,12 @@ impl DataSink for ShapefileSink {
     fn make_requirements(&self) -> DataRequirements {
         DataRequirements {
             shorten_names_for_shapefile: true,
+            tree_flattening: transformer::TreeFlatteningSpec::Flatten {
+                feature: transformer::FeatureFlatteningOption::AllExceptThematicSurfaces,
+                data: transformer::DataFlatteningOption::None,
+                object: transformer::ObjectFlatteningOption::None,
+            },
+
             ..Default::default()
         }
     }
@@ -75,12 +90,18 @@ impl DataSink for ShapefileSink {
                     .try_for_each_with(sender, |sender, parcel| {
                         feedback.ensure_not_canceled()?;
 
-                        let shapes = entity_to_shapes(&parcel.entity);
-                        for shape in shapes {
-                            if sender.send(shape).is_err() {
-                                return Err(PipelineError::Canceled);
-                            };
-                        }
+                        let Value::Object(object) = &parcel.entity.root else {
+                            return Ok(());
+                        };
+
+                        let (shape, attributes) = entity_to_shapes(&parcel.entity);
+
+                        if sender
+                            .send((object.typename.clone(), shape, attributes))
+                            .is_err()
+                        {
+                            return Err(PipelineError::Canceled);
+                        };
 
                         Ok(())
                     })
@@ -90,25 +111,50 @@ impl DataSink for ShapefileSink {
 
                 // Attribute fields for the features
                 // FieldName byte representation cannot exceed 11 bytes
-                let table_builder = shapefile::dbase::TableWriterBuilder::new();
+                let mut categorized_shapes =
+                    IndexMap::<String, Vec<(shapefile::Shape, Map)>>::new();
 
-                // Create all the files needed for the shapefile to be complete (.shp, .shx, .dbf)
-                let mut writer = shapefile::Writer::from_path(&self.output_path, table_builder)?;
+                receiver
+                    .into_iter()
+                    .for_each(|(typename, shape, attributes)| {
+                        categorized_shapes
+                            .entry(typename.to_string())
+                            .or_default()
+                            .push((shape, attributes));
+                    });
 
-                // Write each feature
-                receiver.into_iter().try_for_each(|shape| {
-                    match shape {
-                        shapefile::Shape::PolygonZ(polygon) => {
-                            let record = shapefile::dbase::Record::default(); // for attributes
-                            writer.write_shape_and_record(&polygon, &record)?;
-                        }
-                        shapefile::Shape::NullShape => {}
-                        _ => {
-                            log::warn!("Unsupported shape type");
-                        }
-                    }
-                    Ok(())
-                })
+                // output file per typename
+                for (typename, mut features) in categorized_shapes {
+                    let table_info = make_field_list(&features);
+                    fill_missing_fields(&mut features, &table_info);
+
+                    let table_builder = TableBuilder::new(table_info);
+
+                    let records = prepare_shapefile_attributes(&features);
+
+                    // Create all the files needed for the shapefile to be complete (.shp, .shx, .dbf)
+                    std::fs::create_dir_all(&self.output_path)?;
+                    let mut file_path = self.output_path.clone();
+                    file_path.push(format!("{}.shp", typename.replace(':', "_")));
+
+                    let mut writer =
+                        shapefile::Writer::from_path(file_path, table_builder.build())?;
+
+                    // Write each feature
+                    features.into_iter().zip_eq(records).for_each(
+                        |((shape, _), record)| match shape {
+                            shapefile::Shape::PolygonZ(polygon) => {
+                                writer.write_shape_and_record(&polygon, &record).unwrap();
+                            }
+                            shapefile::Shape::NullShape => {}
+                            _ => {
+                                log::warn!("Unsupported shape type");
+                            }
+                        },
+                    );
+                }
+
+                Ok::<(), shapefile::Error>(())
             },
         );
 
@@ -128,29 +174,20 @@ impl DataSink for ShapefileSink {
     }
 }
 
-fn extract_properties(tree: &nusamai_citygml::object::Value) -> Option<geojson::JsonObject> {
-    match &tree {
-        obj @ nusamai_citygml::Value::Object(_) => match obj.to_attribute_json() {
-            serde_json::Value::Object(map) => Some(map),
-            _ => unreachable!(),
-        },
-        _ => panic!("Root value type must be Feature, but found {:?}", tree),
-    }
-}
-
-/// Create Shapefile features from a TopLevelCityObject
+/// Create Shapefile features from a Entity
 /// Each feature for MultiPolygon, MultiLineString, and MultiPoint will be created (if it exists)
 /// TODO: Implement MultiLineString and MultiPoint handling
-pub fn entity_to_shapes(entity: &Entity) -> Vec<shapefile::Shape> {
-    let _properties = extract_properties(&entity.root);
-    let geom_store = entity.geometry_store.read().unwrap();
+pub fn entity_to_shapes(entity: &Entity) -> (shapefile::Shape, Map) {
+    let mut attributes: IndexMap<String, Value, ahash::RandomState> = Map::default();
 
     let Value::Object(obj) = &entity.root else {
-        return vec![shapefile::Shape::NullShape];
+        return (shapefile::Shape::NullShape, attributes);
     };
     let ObjectStereotype::Feature { id: _, geometries } = &obj.stereotype else {
-        return vec![shapefile::Shape::NullShape];
+        return (shapefile::Shape::NullShape, attributes);
     };
+
+    let geom_store = entity.geometry_store.read().unwrap();
 
     let mut mpoly = nusamai_geometry::MultiPolygon::<1, u32>::new();
 
@@ -167,16 +204,17 @@ pub fn entity_to_shapes(entity: &Entity) -> Vec<shapefile::Shape> {
         GeometryType::Point => unimplemented!(),
     });
 
-    let mut shapes = vec![];
     if !mpoly.is_empty() {
-        let shape = indexed_multipolygon_to_shape(&geom_store.vertices, &mpoly);
-        shapes.push(shapefile::Shape::PolygonZ(shape));
-    }
-    if !shapes.is_empty() {
-        return shapes;
+        let shape =
+            shapefile::Shape::PolygonZ(indexed_multipolygon_to_shape(&geom_store.vertices, &mpoly));
+
+        for (k, v) in &obj.attributes {
+            attributes.insert(k.clone(), v.clone());
+        }
+        return (shape, attributes);
     }
 
-    vec![shapefile::Shape::NullShape]
+    (shapefile::Shape::NullShape, attributes)
 }
 
 #[cfg(test)]
@@ -225,10 +263,10 @@ mod tests {
             appearance_store: Default::default(),
         };
 
-        let shapes = entity_to_shapes(&obj);
-        assert_eq!(shapes.len(), 1);
+        let (shapes, attributes) = entity_to_shapes(&obj);
+        assert_eq!(attributes.len(), 0);
 
-        if let shapefile::Shape::PolygonZ(polygon) = &shapes[0] {
+        if let shapefile::Shape::PolygonZ(polygon) = &shapes {
             assert_eq!(polygon.rings().len(), 1);
             assert_eq!(
                 polygon.ring(0).unwrap(),
