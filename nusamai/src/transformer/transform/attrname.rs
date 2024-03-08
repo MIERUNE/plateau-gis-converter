@@ -90,11 +90,18 @@ impl EditFieldNamesTransform {
 
         name.find(':').map(|pos| {
             let key = &name[pos + 1..]; // remove the namespace prefix
+
             if let Some(new_key) = self.general_rename_map.get(key) {
-                new_key.as_ref()
-            } else {
-                key
+                return new_key.as_ref();
             }
+
+            // If the namespace is removed, it will conflict with the global "id" column (= "gml:id").
+            // Therefore, don't remove the namespace prefix
+            if key == "id" {
+                return name;
+            }
+
+            key
         })
     }
 

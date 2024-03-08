@@ -195,7 +195,7 @@ impl<'c> GpkgTransaction<'c> {
             query_string.push_str("id INTEGER NOT NULL PRIMARY KEY");
         }
         table_info.columns.iter().for_each(|column| {
-            query_string.push_str(&format!(", {} {}", column.name, column.data_type));
+            query_string.push_str(&format!(", \"{}\" {}", column.name, column.data_type));
         });
         query_string.push_str(");");
         sqlx::query(&query_string).execute(&mut *executor).await?;
@@ -255,7 +255,7 @@ impl<'c> GpkgTransaction<'c> {
                 .await?;
         } else {
             let query_string = format!(
-                "INSERT INTO \"{}\" (id, geometry, {}) VALUES (?, ?, {})",
+                "INSERT INTO \"{}\" (id, geometry, \"{}\") VALUES (?, ?, {})",
                 table_name,
                 attributes
                     .keys()
