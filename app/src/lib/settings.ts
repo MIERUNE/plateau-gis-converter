@@ -63,7 +63,7 @@ const filetypeOptions: Record<string, { label: string; extensions: string[]; eps
 
 		shapefile: {
 			label: 'Shapefile',
-			extensions: ['shp'],
+			extensions: [''],
 			epsg: [
 				{ value: 4979, label: 'WGS84' }
 				// TODO: more epsg options
