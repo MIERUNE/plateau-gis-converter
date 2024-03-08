@@ -1,6 +1,7 @@
 //! Shapefile sink
 
 mod attributes;
+mod write_null_shape;
 
 use std::path::PathBuf;
 
@@ -23,6 +24,7 @@ use crate::transformer;
 use self::attributes::{
     fill_missing_fields, make_field_list, prepare_shapefile_attributes, TableBuilder,
 };
+use self::write_null_shape::write;
 
 pub struct ShapefileSinkProvider {}
 
@@ -138,7 +140,7 @@ impl DataSink for ShapefileSink {
                     file_path.push(format!("{}.shp", typename.replace(':', "_")));
 
                     let mut writer =
-                        shapefile::Writer::from_path(file_path, table_builder.build())?;
+                        shapefile::Writer::from_path(&file_path, table_builder.build())?;
 
                     // Write each feature
                     features.into_iter().zip_eq(records).for_each(
@@ -150,6 +152,7 @@ impl DataSink for ShapefileSink {
                                 use shapefile::Point;
                                 let point = Point::default();
                                 writer.write_shape_and_record(&point, &record).unwrap();
+                                let _ = write(&file_path.to_string_lossy());
                             }
                             _ => {
                                 log::warn!("Unsupported shape type");
