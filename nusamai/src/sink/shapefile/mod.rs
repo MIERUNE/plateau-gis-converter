@@ -132,6 +132,8 @@ impl DataSink for ShapefileSink {
 
                     let records = prepare_shapefile_attributes(&features);
 
+                    // Create all the files needed for the shapefile to be complete (.shp, .shx, .dbf)
+                    std::fs::create_dir_all(&self.output_path)?;
                     let mut file_path = self.output_path.clone();
                     file_path.push(format!("{}.shp", typename.replace(':', "_")));
 
@@ -142,7 +144,6 @@ impl DataSink for ShapefileSink {
                     features.into_iter().zip_eq(records).for_each(
                         |((shape, _), record)| match shape {
                             shapefile::Shape::PolygonZ(polygon) => {
-                                println!("record: {:?}", record);
                                 writer.write_shape_and_record(&polygon, &record).unwrap();
                             }
                             shapefile::Shape::NullShape => {}

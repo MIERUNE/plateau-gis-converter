@@ -196,7 +196,15 @@ pub fn prepare_shapefile_attributes(features: &Features) -> Vec<Record> {
         for (attr_name, attr_value) in feature_attributes {
             match attr_value {
                 Value::String(s) => {
-                    record.insert(attr_name.into(), FieldValue::Character(Some(s.to_owned())));
+                    if s.len() > 255 {
+                        log::warn!("{} value too long, truncating to 255 characters", attr_name);
+                        record.insert(
+                            attr_name.into(),
+                            FieldValue::Character(Some(s[0..255].to_owned())),
+                        );
+                    } else {
+                        record.insert(attr_name.into(), FieldValue::Character(Some(s.to_owned())));
+                    }
                 }
                 Value::Code(c) => {
                     // value of the code
