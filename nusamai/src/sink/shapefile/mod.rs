@@ -72,6 +72,7 @@ impl DataSink for ShapefileSink {
                 data: transformer::DataFlatteningOption::None,
                 object: transformer::ObjectFlatteningOption::None,
             },
+
             ..Default::default()
         }
     }
@@ -131,8 +132,6 @@ impl DataSink for ShapefileSink {
 
                     let records = prepare_shapefile_attributes(&features);
 
-                    // Create all the files needed for the shapefile to be complete (.shp, .shx, .dbf)
-                    std::fs::create_dir_all(&self.output_path)?;
                     let mut file_path = self.output_path.clone();
                     file_path.push(format!("{}.shp", typename.replace(':', "_")));
 
