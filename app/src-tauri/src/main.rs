@@ -53,6 +53,8 @@ enum Error {
     Io(#[from] std::io::Error),
     #[error("Invalid setting: {0}")]
     InvalidSetting(String),
+    #[error("Invalid mapping rules: {0}")]
+    InvalidMappingRules(String),
 }
 
 fn select_sink_provider(filetype: &str) -> Option<Box<dyn DataSinkProvider>> {
@@ -146,11 +148,17 @@ fn run(
         let mapping_rules = if rules_path.is_empty() {
             None
         } else {
-            // FIXME: error handling
-            let file_contents =
-                std::fs::read_to_string(rules_path).expect("Error reading rules file");
+            let file_contents = std::fs::read_to_string(rules_path).map_err(|e| {
+                let msg = format!("Error reading mapping rules file: {}", e);
+                log::error!("{}", msg);
+                Error::InvalidMappingRules(msg)
+            })?;
             let mapping_rules: MappingRules =
-                serde_json::from_str(&file_contents).expect("Error parsing rules file");
+                serde_json::from_str(&file_contents).map_err(|e| {
+                    let msg = format!("Error parsing mapping rules: {}", e);
+                    log::error!("{}", msg);
+                    Error::InvalidMappingRules(msg)
+                })?;
             Some(mapping_rules)
         };
 
