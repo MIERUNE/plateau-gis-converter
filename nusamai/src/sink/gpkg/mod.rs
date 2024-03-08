@@ -92,7 +92,7 @@ impl GpkgSink {
             // this is mainly expected to be used with `sqlite::memory:` for the testing purpose
             GpkgHandler::from_url(&Url::parse(self.output_path.to_str().unwrap()).unwrap())
                 .await
-                .unwrap()
+                .map_err(|e| PipelineError::Other(e.to_string()))?
         } else {
             // delete the db file first is already exists
             if self.output_path.exists() {
@@ -103,7 +103,7 @@ impl GpkgSink {
                 &Url::parse(&format!("sqlite://{}", self.output_path.to_str().unwrap())).unwrap(),
             )
             .await
-            .unwrap()
+            .map_err(|e| PipelineError::Other(e.to_string()))?
         };
 
         let table_infos = schema_to_table_infos(schema);
@@ -204,13 +204,18 @@ impl GpkgSink {
             })
         };
 
-        let mut tx = handler.begin().await.unwrap();
+        let mut tx = handler
+            .begin()
+            .await
+            .map_err(|e| PipelineError::Other(e.to_string()))?;
         while let Some((table_name, record)) = receiver.recv().await {
             feedback.ensure_not_canceled()?;
 
             if !created_tables.contains(&table_name) {
                 let tf = table_infos.get(&table_name).unwrap();
-                tx.add_table(tf, srs_id).await.unwrap();
+                tx.add_table(tf, srs_id)
+                    .await
+                    .map_err(|e| PipelineError::Other(e.to_string()))?;
                 created_tables.insert(table_name.clone());
             }
 
@@ -223,20 +228,26 @@ impl GpkgSink {
                 } => {
                     tx.insert_feature(&table_name, &obj_id, &geometry, &attributes)
                         .await
-                        .unwrap();
+                        .map_err(|e| PipelineError::Other(e.to_string()))?;
                     table_bboxes.entry(table_name).or_default().merge(&bbox);
                 }
                 Record::Attribute { attributes } => {
-                    tx.insert_attribute(&table_name, &attributes).await.unwrap();
+                    tx.insert_attribute(&table_name, &attributes)
+                        .await
+                        .map_err(|e| PipelineError::Other(e.to_string()))?;
                 }
             }
         }
 
         for (table_name, bbox) in table_bboxes {
-            tx.update_bbox(&table_name, bbox.to_tuple()).await.unwrap();
+            tx.update_bbox(&table_name, bbox.to_tuple())
+                .await
+                .map_err(|e| PipelineError::Other(e.to_string()))?;
         }
 
-        tx.commit().await.unwrap();
+        tx.commit()
+            .await
+            .map_err(|e| PipelineError::Other(e.to_string()))?;
 
         match producers.await.unwrap() {
             Ok(_) | Err(PipelineError::Canceled) => Ok(()),
