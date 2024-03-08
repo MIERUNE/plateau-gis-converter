@@ -80,7 +80,7 @@ fn spawn_sink_thread(
     upstream: Receiver,
     feedback: Feedback,
 ) -> std::thread::JoinHandle<()> {
-    spawn_thread("pipeline-transformer".to_string(), move || {
+    spawn_thread("pipeline-sink".to_string(), move || {
         log::info!("Sink thread started.");
         let num_threads = std::thread::available_parallelism()
             .map(|v| v.get() * 3)
