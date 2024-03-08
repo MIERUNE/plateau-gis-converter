@@ -194,6 +194,8 @@ fn geometry_slicing_stage(
     sender_sliced: mpsc::SyncSender<SerializedSlicedFeature>,
     mvt_options: &MvtParams,
 ) -> Result<()> {
+    let bincode_config = bincode::config::standard();
+
     // Convert CityObjects to sliced features
     upstream.into_iter().par_bridge().try_for_each(|parcel| {
         feedback.ensure_not_canceled()?;
@@ -211,7 +213,7 @@ fn geometry_slicing_stage(
                     geometry: mpoly,
                     properties: parcel.entity.root.clone(),
                 };
-                let bytes = bincode::serialize(&feature).unwrap();
+                let bytes = bincode::serde::encode_to_vec(&feature, bincode_config).unwrap();
                 let sfeat = SerializedSlicedFeature {
                     tile_id: tile_id_conv.zxy_to_id(z, x, y),
                     body: bytes,
@@ -333,9 +335,18 @@ fn make_tile(default_detail: i32, serialized_feats: &[SerializedSlicedFeature]) 
     let mut int_ring_buf = Vec::new();
     let mut int_ring_buf2 = Vec::new();
     let extent = 1 << default_detail;
+    let bincode_config = bincode::config::standard();
+
     for serialized_feat in serialized_feats {
-        let feat: SlicedFeature = bincode::deserialize(&serialized_feat.body).unwrap();
-        let mpoly = feat.geometry;
+        let (feature, _): (SlicedFeature, _) = bincode::serde::decode_from_slice(
+            &serialized_feat.body,
+            bincode_config,
+        )
+        .map_err(|err| {
+            PipelineError::Other(format!("Failed to deserialize a sliced feature: {:?}", err))
+        })?;
+
+        let mpoly = feature.geometry;
         let mut int_mpoly = MultiPolygon2::<i16>::new();
 
         for poly in &mpoly {
@@ -403,7 +414,7 @@ fn make_tile(default_detail: i32, serialized_feats: &[SerializedSlicedFeature]) 
         let mut id = None;
         let mut tags: Vec<u32> = Vec::new();
 
-        let layer = if let object::Value::Object(obj) = &feat.properties {
+        let layer = if let object::Value::Object(obj) = &feature.properties {
             let layer = layers.entry_ref(obj.typename.as_ref()).or_default();
 
             // Encode attributes as MVT tags

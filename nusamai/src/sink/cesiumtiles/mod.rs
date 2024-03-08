@@ -173,6 +173,8 @@ fn geometry_slicing_stage(
     min_zoom: u8,
     max_zoom: u8,
 ) -> Result<()> {
+    let bincode_config = bincode::config::standard();
+
     // Convert CityObjects to sliced features
     upstream.into_iter().par_bridge().try_for_each(|parcel| {
         feedback.ensure_not_canceled()?;
@@ -182,7 +184,7 @@ fn geometry_slicing_stage(
             feedback.ensure_not_canceled()?;
 
             if let Value::Object(obj) = &parcel.entity.root {
-                let bytes = bincode::serialize(&feature).unwrap();
+                let bytes = bincode::serde::encode_to_vec(&feature, bincode_config).unwrap();
                 let serialized_feature = SerializedSlicedFeature {
                     tile_id: tile_id_conv.zxy_to_id(z, x, y),
                     typename: obj.typename.to_string(),
@@ -253,6 +255,7 @@ fn tile_writing_stage(
 ) -> Result<()> {
     let ellipsoid = nusamai_projection::ellipsoid::wgs84();
     let contents: Arc<Mutex<Vec<TileContent>>> = Default::default();
+    let bincode_config = bincode::config::standard();
 
     // Make a glTF (.glb) file for each tile
     receiver_sorted
@@ -314,7 +317,7 @@ fn tile_writing_stage(
                 feedback.ensure_not_canceled()?;
 
                 let feature = {
-                    let mut feature: SlicedFeature = bincode::deserialize(&serialized_feat.body)
+                    let (mut feature, _): (SlicedFeature, _) = bincode::serde::decode_from_slice(&serialized_feat.body, bincode_config)
                         .map_err(|err| {
                             PipelineError::Other(format!(
                                 "Failed to deserialize a sliced feature: {:?}",

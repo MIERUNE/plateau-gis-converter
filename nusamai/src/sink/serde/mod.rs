@@ -66,6 +66,7 @@ impl DataSink for SerdeSink {
 
     fn run(&mut self, upstream: Receiver, feedback: &Feedback, _schema: &Schema) -> Result<()> {
         let (sender, receiver) = std::sync::mpsc::sync_channel(1000);
+        let bincode_config = bincode::config::standard();
 
         let (ra, rb) = rayon::join(
             || {
@@ -76,7 +77,8 @@ impl DataSink for SerdeSink {
                         feedback.ensure_not_canceled()?;
 
                         buf.clear();
-                        bincode::serialize_into(buf as &mut Vec<u8>, &parcel.entity).unwrap();
+                        bincode::serde::encode_into_std_write(parcel.entity, buf, bincode_config)
+                            .unwrap();
                         if sender.send(lz4_flex::compress_prepend_size(buf)).is_err() {
                             return Err(PipelineError::Canceled);
                         };

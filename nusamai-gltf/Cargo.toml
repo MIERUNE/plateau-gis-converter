@@ -7,14 +7,14 @@ version = "0.1.0"
 
 [dependencies]
 nusamai-gltf-json = { "path" = "nusamai-gltf-json" }
-clap = { version = "4.5.0", features = ["derive"] }
+clap = { version = "4.5.2", features = ["derive"] }
 nusamai-geometry = { path = "../nusamai-geometry" }
 quick-xml = "0.31.0"
 thiserror = "1.0.57"
 earcut-rs = { git = "https://github.com/MIERUNE/earcut-rs.git" }
-indexmap = "2.2.3"
+indexmap = "2.2.5"
 byteorder = "1.5.0"
-serde_json = "1.0.113"
+serde_json = "1.0.114"
 
 [dev-dependencies]
 glob = "0.3.1"
