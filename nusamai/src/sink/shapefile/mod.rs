@@ -7,7 +7,6 @@ use std::path::PathBuf;
 use indexmap::IndexMap;
 use itertools::Itertools;
 use rayon::iter::{ParallelBridge, ParallelIterator};
-use shapefile::dbase::{self};
 
 use nusamai_citygml::object::{Map, ObjectStereotype, Value};
 use nusamai_citygml::schema::Schema;

@@ -3,7 +3,7 @@ use hashbrown::HashMap;
 use indexmap::IndexMap;
 use shapefile::dbase::{self, Date, FieldValue, Record};
 
-use nusamai_citygml::object::{Map, Value};
+use nusamai_citygml::object::Value;
 use nusamai_citygml::schema::TypeRef;
 use shapefile::Shape;
 
