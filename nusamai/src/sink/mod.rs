@@ -71,7 +71,7 @@ impl Default for DataRequirements {
             use_appearance: false,
             resolve_appearance: false,
             mergedown: transformer::MergedownSpec::RemoveDescendantFeatures,
-            key_value: transformer::KeyValueSpec::Jsonify,
+            key_value: transformer::KeyValueSpec::JsonifyObjectsAndArrays,
             lod_filter: transformer::LodFilterSpec::default(),
         }
     }

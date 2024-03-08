@@ -92,11 +92,12 @@ impl DataSink for CesiumTilesSink {
         DataRequirements {
             // use_appearance: true,
             resolve_appearance: true,
+            key_value: crate::transformer::KeyValueSpec::JsonifyObjects,
             ..Default::default()
         }
     }
 
-    fn run(&mut self, upstream: Receiver, feedback: &Feedback, _schema: &Schema) -> Result<()> {
+    fn run(&mut self, upstream: Receiver, feedback: &Feedback, schema: &Schema) -> Result<()> {
         let (sender_sliced, receiver_sliced) = mpsc::sync_channel(2000);
         let (sender_sorted, receiver_sorted) = mpsc::sync_channel(2000);
 
@@ -146,9 +147,13 @@ impl DataSink for CesiumTilesSink {
                         .build()
                         .unwrap();
                     pool.install(|| {
-                        if let Err(error) =
-                            tile_writing_stage(output_path, feedback, receiver_sorted, tile_id_conv)
-                        {
+                        if let Err(error) = tile_writing_stage(
+                            output_path,
+                            feedback,
+                            receiver_sorted,
+                            tile_id_conv,
+                            schema,
+                        ) {
                             feedback.report_fatal_error(error);
                         }
                     })
@@ -244,6 +249,7 @@ fn tile_writing_stage(
     feedback: &Feedback,
     receiver_sorted: mpsc::Receiver<((u64, String), Vec<SerializedSlicedFeature>)>,
     tile_id_conv: TileIdMethod,
+    schema: &Schema,
 ) -> Result<()> {
     let ellipsoid = nusamai_projection::ellipsoid::wgs84();
     let contents: Arc<Mutex<Vec<TileContent>>> = Default::default();
@@ -293,7 +299,6 @@ fn tile_writing_stage(
                 (content, translation)
             };
 
-            // Triangulation
             let mut earcutter = Earcut::new();
             let mut buf2d: Vec<f64> = Vec::new(); // 2d-projected [x, y]
             let mut index_buf: Vec<u32> = Vec::new();
@@ -301,24 +306,26 @@ fn tile_writing_stage(
             let mut vertices: IndexSet<[u32; 9], RandomState> = IndexSet::default(); // [x, y, z, u, v, feature_id]
             let mut primitives: gltf::Primitives = Default::default();
 
-            // make vertices and indices
+            let mut metadata_encoder = metadata::MetadataEncoder::new(schema);
+
+            // For each feature
             let mut feature_id = 0;
             for serialized_feat in serialized_feats.into_iter() {
                 feedback.ensure_not_canceled()?;
 
-                let mut feature: SlicedFeature = bincode::deserialize(&serialized_feat.body)
-                    .map_err(|err| {
-                        PipelineError::Other(format!(
-                            "Failed to deserialize a sliced feature: {:?}",
-                            err
-                        ))
-                    })?;
+                let feature = {
+                    let mut feature: SlicedFeature = bincode::deserialize(&serialized_feat.body)
+                        .map_err(|err| {
+                            PipelineError::Other(format!(
+                                "Failed to deserialize a sliced feature: {:?}",
+                                err
+                            ))
+                        })?;
 
-                {
                     feature
                         .polygons
                         .transform_inplace(|&[lng, lat, height, u, v]| {
-                            // tile boundary
+                            // Update tile boundary
                             content.min_lng = content.min_lng.min(lng);
                             content.max_lng = content.max_lng.max(lng);
                             content.min_lat = content.min_lat.min(lat);
@@ -326,14 +333,25 @@ fn tile_writing_stage(
                             content.min_height = content.min_height.min(height);
                             content.max_height = content.max_height.max(height);
 
-                            let (x, y, z) = geographic_to_geocentric(&ellipsoid, lng, lat, height);
+                            // Coordinate transformation
+                            // - geographic to geocentric
                             // - z-up to y-up
                             // - subtract the translation
                             // - flip the texture v-coordinate
+                            let (x, y, z) = geographic_to_geocentric(&ellipsoid, lng, lat, height);
                             [x - translation[0], z - translation[1], -y - translation[2], u, 1.0 - v]
                         });
+
+                    feature
+                };
+
+                // Encode properties
+                if metadata_encoder.add_feature(&typename, &feature.attributes).is_err() {
+                    log::warn!("Failed to encode feature attributes");
+                    continue
                 }
 
+                // Triangulation, etc.
                 for (poly, orig_mat_id) in feature.polygons.iter().zip_eq(feature.polygon_material_ids.iter()) {
                     let num_outer = match poly.hole_indices().first() {
                         Some(&v) => v as usize,
@@ -374,7 +392,7 @@ fn tile_writing_stage(
                 feature_id += 1;
             }
 
-            // write to file
+            // Write to file
             let path_glb = output_path.join(Path::new(&content.content_path));
             if let Some(dir) = path_glb.parent() {
                 fs::create_dir_all(dir)?;
@@ -389,6 +407,7 @@ fn tile_writing_stage(
                 vertices,
                 primitives,
                 feature_id, // number of features
+                metadata_encoder,
             )?;
 
             Ok::<(), PipelineError>(())

@@ -2,7 +2,6 @@
 
 use crate::transformer::Transform;
 
-use itertools::Itertools;
 use nusamai_citygml::schema::Schema;
 use nusamai_geometry::MultiPolygon;
 use nusamai_plateau::Entity;
@@ -111,19 +110,6 @@ impl Transform for ApplyAppearanceTransform {
                     }
                 }
                 geoms.polygon_uvs = poly_uvs;
-            }
-
-            // REMOVE ME:
-            for (poly, poly_uv) in geoms.multipolygon.iter().zip_eq(geoms.polygon_uvs.iter()) {
-                for (ring, uv_ring) in poly.rings().zip_eq(poly_uv.rings()) {
-                    assert_eq!(
-                        ring.len(),
-                        uv_ring.len(),
-                        "mismatch {:?} {:?}",
-                        ring,
-                        uv_ring
-                    );
-                }
             }
         }
 

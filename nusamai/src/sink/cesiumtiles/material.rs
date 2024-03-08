@@ -87,6 +87,7 @@ impl Image {
             let content = load_image(&path)?;
 
             buffer_views.push(BufferView {
+                name: Some("image".to_string()),
                 byte_offset: bin_content.len() as u32,
                 byte_length: content.len() as u32,
                 ..Default::default()
