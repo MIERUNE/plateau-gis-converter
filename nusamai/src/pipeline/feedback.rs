@@ -7,20 +7,30 @@ use super::PipelineError;
 
 const FEEDBACK_CHANNEL_BOUND: usize = 10000;
 
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub struct FeedbackMessage {
     pub message: String,
+    /// Message source (source, transformer, sink, etc.)
+    pub source_component: FeedbackSourceComponent,
     pub error: Option<PipelineError>,
     // severity:
     // progress:
-    // source:
     // etc.
 }
 
 #[derive(Clone)]
 pub struct Feedback {
     canceled: Arc<AtomicBool>,
+    source_component: FeedbackSourceComponent,
     sender: std::sync::mpsc::SyncSender<FeedbackMessage>,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum FeedbackSourceComponent {
+    Source,
+    Transformer,
+    Sink,
+    Unknown,
 }
 
 impl Feedback {
@@ -46,6 +56,15 @@ impl Feedback {
         self.canceled.store(true, Ordering::Relaxed)
     }
 
+    /// Create a new feedback span for the pipeline component
+    #[inline]
+    pub fn component_span(&self, source: FeedbackSourceComponent) -> Self {
+        Self {
+            source_component: source,
+            ..self.clone()
+        }
+    }
+
     /// Send a message to the feedback channel
     #[inline]
     pub fn feedback_raw(&self, msg: FeedbackMessage) {
@@ -59,6 +78,7 @@ impl Feedback {
         self.cancel();
         let _ = self.sender.send(FeedbackMessage {
             message: "Fatal error".to_string(),
+            source_component: self.source_component,
             error: Some(error),
         });
     }
@@ -103,6 +123,7 @@ pub(crate) fn watcher() -> (Watcher, Feedback, Canceller) {
     };
     let feedback = Feedback {
         canceled: canceled.clone(),
+        source_component: FeedbackSourceComponent::Unknown,
         sender,
     };
     (watcher, feedback, canceller)

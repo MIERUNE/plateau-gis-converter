@@ -1,4 +1,5 @@
 use std::sync::{mpsc::sync_channel, Arc};
+use std::thread;
 
 use nusamai_citygml::schema::Schema;
 use rayon::ThreadPoolBuilder;
@@ -14,12 +15,23 @@ use crate::{pipeline::Receiver, transformer::Transformer};
 const SOURCE_OUTPUT_CHANNEL_BOUND: usize = 10000;
 const TRANSFORMER_OUTPUT_CHANNEL_BOUND: usize = 10000;
 
-fn run_source_thread(
+fn spawn_thread<F, T>(name: String, f: F) -> std::thread::JoinHandle<T>
+where
+    F: FnOnce() -> T + Send + 'static,
+    T: Send + 'static,
+{
+    thread::Builder::new()
+        .name(name)
+        .spawn(f)
+        .expect("Failed to spawn thread")
+}
+
+fn spawn_source_thread(
     mut source: Box<dyn DataSource>,
     feedback: Feedback,
 ) -> (std::thread::JoinHandle<()>, Receiver) {
     let (sender, receiver) = sync_channel(SOURCE_OUTPUT_CHANNEL_BOUND);
-    let handle = std::thread::spawn(move || {
+    let handle = spawn_thread("pipeline-source".to_string(), move || {
         log::info!("Source thread started.");
         let num_threads = std::thread::available_parallelism()
             .map(|v| v.get() * 3)
@@ -39,13 +51,14 @@ fn run_source_thread(
     (handle, receiver)
 }
 
-fn run_transformer_thread(
+fn spawn_transformer_thread(
     transformer: Box<dyn Transformer>,
     upstream: Receiver,
     feedback: Feedback,
 ) -> (std::thread::JoinHandle<()>, Receiver) {
     let (sender, receiver) = sync_channel(TRANSFORMER_OUTPUT_CHANNEL_BOUND);
-    let handle = std::thread::spawn(move || {
+
+    let handle = spawn_thread("pipeline-transformer".to_string(), move || {
         log::info!("Transformer thread started.");
         let pool = ThreadPoolBuilder::new()
             .use_current_thread()
@@ -61,13 +74,13 @@ fn run_transformer_thread(
     (handle, receiver)
 }
 
-fn run_sink_thread(
+fn spawn_sink_thread(
     mut sink: Box<dyn DataSink>,
     schema: Arc<Schema>,
     upstream: Receiver,
     feedback: Feedback,
 ) -> std::thread::JoinHandle<()> {
-    std::thread::spawn(move || {
+    spawn_thread("pipeline-transformer".to_string(), move || {
         log::info!("Sink thread started.");
         let num_threads = std::thread::available_parallelism()
             .map(|v| v.get() * 3)
@@ -87,15 +100,23 @@ fn run_sink_thread(
 }
 
 pub struct PipelineHandle {
-    thread_handles: Vec<std::thread::JoinHandle<()>>,
+    source_thread_handle: std::thread::JoinHandle<()>,
+    transformer_thread_handle: std::thread::JoinHandle<()>,
+    sink_thread_handle: std::thread::JoinHandle<()>,
 }
 
 impl PipelineHandle {
     // Wait for the pipeline to terminate
     pub fn join(self) {
-        self.thread_handles.into_iter().for_each(|handle| {
-            handle.join().unwrap();
-        });
+        if self.source_thread_handle.join().is_err() {
+            log::error!("Source thread panicked");
+        }
+        if self.transformer_thread_handle.join().is_err() {
+            log::error!("Transformer thread panicked");
+        }
+        if self.sink_thread_handle.join().is_err() {
+            log::error!("Sink thread panicked");
+        }
     }
 }
 
@@ -111,13 +132,26 @@ pub fn run(
     let (watcher, feedback, canceller) = watcher();
 
     // Start the pipeline
-    let (source_thread, source_receiver) = run_source_thread(source, feedback.clone());
-    let (transformer_thread, transformer_receiver) =
-        run_transformer_thread(transformer, source_receiver, feedback.clone());
-    let sink_thread = run_sink_thread(sink, schema, transformer_receiver, feedback.clone());
+    let (source_thread_handle, source_receiver) = spawn_source_thread(
+        source,
+        feedback.component_span(super::FeedbackSourceComponent::Source),
+    );
+    let (transformer_thread_handle, transformer_receiver) = spawn_transformer_thread(
+        transformer,
+        source_receiver,
+        feedback.component_span(super::FeedbackSourceComponent::Transformer),
+    );
+    let sink_thread_handle = spawn_sink_thread(
+        sink,
+        schema,
+        transformer_receiver,
+        feedback.component_span(super::FeedbackSourceComponent::Sink),
+    );
 
     let handle = PipelineHandle {
-        thread_handles: vec![source_thread, transformer_thread, sink_thread],
+        source_thread_handle,
+        transformer_thread_handle,
+        sink_thread_handle,
     };
     (handle, watcher, canceller)
 }

@@ -231,7 +231,13 @@ fn run(
         // log watcher
         scope.spawn(move || {
             for msg in watcher {
-                log::info!("Feedback message from the pipeline {:?}", msg);
+                let msg_source = format!("{:?}", msg.source_component);
+                match msg.error {
+                    Some(error) => {
+                        log::error!("An error occured in the pipeline: {error:?}");
+                    }
+                    None => log::info!("[{msg_source}]: {}", msg.message),
+                }
             }
         });
     });
