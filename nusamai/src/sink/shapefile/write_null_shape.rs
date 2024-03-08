@@ -36,6 +36,7 @@ pub fn write(file_path: &str, feature_count: &usize) -> Result<()> {
 
 fn write_header(file: &mut File, feature_count: &usize) -> Result<()> {
     file.write_u32::<BigEndian>(9994)?; // file code
+
     for _ in 0..5 {
         file.write_u32::<BigEndian>(0)?; // unused area
     }
