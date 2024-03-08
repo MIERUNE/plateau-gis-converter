@@ -18,6 +18,12 @@
 		});
 		outputPath = Array.isArray(res) ? res[0] : res;
 	}
+
+	// When filetype changes, reset outputPath
+	$: {
+		filetype;
+		outputPath = '';
+	}
 </script>
 
 <div>

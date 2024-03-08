@@ -82,7 +82,7 @@
 					{:else}
 						<div class="flex items-center gap-1">
 							<p>
-								<b>{inputFolders.length}</b> フォルダ （計 <b>{inputPaths.length}</b> ファイル）
+								<b>{inputFolders.length}</b> フォルダ （計 <b>{inputPaths.length}</b> GMLファイル）
 							</p>
 							<button class="tooltip hover:text-accent1">
 								<Icon class="text-2xl" icon="material-symbols-light:list-alt-rounded" />

@@ -51,8 +51,12 @@ fn main() {
 enum Error {
     #[error(transparent)]
     Io(#[from] std::io::Error),
+    #[error("Invalid path: {0}")]
+    InvalidPath(String),
     #[error("Invalid setting: {0}")]
     InvalidSetting(String),
+    #[error("Invalid mapping rules: {0}")]
+    InvalidMappingRules(String),
 }
 
 fn select_sink_provider(filetype: &str) -> Option<Box<dyn DataSinkProvider>> {
@@ -91,6 +95,29 @@ fn run(
     epsg: u16,
     rules_path: String,
 ) -> Result<(), Error> {
+    // Check the existence of the input paths
+    for path in input_paths.iter() {
+        if !PathBuf::from_str(path).unwrap().exists() {
+            let msg = format!("Input file does not exist: {}", path);
+            log::error!("{}", msg);
+            return Err(Error::InvalidPath(msg));
+        }
+    }
+    // Check if the mapping rules file is set, and if it exists
+    if !rules_path.is_empty() && !PathBuf::from_str(&rules_path).unwrap().exists() {
+        let msg = format!("Mapping rules file does not exist: {}", rules_path);
+        log::error!("{}", msg);
+        return Err(Error::InvalidPath(msg));
+    };
+
+    // If the directory for the output path does not exist, create it
+    let output_path_buf = PathBuf::from_str(&output_path).unwrap();
+    let output_parent_dir = output_path_buf.parent().unwrap();
+    if !output_parent_dir.exists() {
+        std::fs::create_dir_all(output_parent_dir)?;
+        log::info!("Created output directory: {:?}", output_parent_dir);
+    }
+
     let sinkopt: Vec<(String, String)> = vec![("@output".into(), output_path)];
 
     log::info!("Running pipeline with input: {:?}", input_paths);
@@ -146,11 +173,17 @@ fn run(
         let mapping_rules = if rules_path.is_empty() {
             None
         } else {
-            // FIXME: error handling
-            let file_contents =
-                std::fs::read_to_string(rules_path).expect("Error reading rules file");
+            let file_contents = std::fs::read_to_string(rules_path).map_err(|e| {
+                let msg = format!("Error reading mapping rules file: {}", e);
+                log::error!("{}", msg);
+                Error::InvalidMappingRules(msg)
+            })?;
             let mapping_rules: MappingRules =
-                serde_json::from_str(&file_contents).expect("Error parsing rules file");
+                serde_json::from_str(&file_contents).map_err(|e| {
+                    let msg = format!("Error parsing mapping rules: {}", e);
+                    log::error!("{}", msg);
+                    Error::InvalidMappingRules(msg)
+                })?;
             Some(mapping_rules)
         };
 

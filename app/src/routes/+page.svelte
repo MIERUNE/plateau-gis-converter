@@ -22,6 +22,12 @@
 			alert('入力フォルダ/ファイルを選択してください');
 			return;
 		}
+
+		if (inputPaths.length === 0) {
+			alert('選択されたフォルダにGMLファイルがありません');
+			return;
+		}
+
 		if (!outputPath) {
 			alert('出力先を選択してください');
 			return;
