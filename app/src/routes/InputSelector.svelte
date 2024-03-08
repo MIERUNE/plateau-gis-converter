@@ -49,6 +49,11 @@
 		if (!res) return;
 		inputPaths = Array.isArray(res) ? res : [res];
 	}
+
+	function clearSelected() {
+		inputFolders = [];
+		inputPaths = [];
+	}
 </script>
 
 <div>
@@ -101,6 +106,9 @@
 									</ol>
 								</div>
 							</button>
+							<button on:click={clearSelected} class="hover:opacity-75">
+								<Icon icon="material-symbols:cancel" />
+							</button>
 						</div>
 					{/if}
 				{:else if inputPaths.length === 0}
@@ -117,6 +125,9 @@
 									{/each}
 								</ol>
 							</div>
+						</button>
+						<button on:click={clearSelected} class="hover:opacity-75">
+							<Icon icon="material-symbols:cancel" />
 						</button>
 					</div>
 				{/if}

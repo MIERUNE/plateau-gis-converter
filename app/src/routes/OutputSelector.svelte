@@ -24,6 +24,10 @@
 		filetype;
 		outputPath = '';
 	}
+
+	function clearSelected() {
+		outputPath = '';
+	}
 </script>
 
 <div>
@@ -41,7 +45,12 @@
 			>
 			<div class="text-sm" class:opacity-50={!outputPath}>
 				{#if outputPath}
-					<p><code>{abbreviatePath(outputPath, 40)}</code></p>
+					<div class="flex justify-center items-center gap-1.5">
+						<p><code>{abbreviatePath(outputPath, 40)}</code></p>
+						<button on:click={clearSelected} class="hover:opacity-75">
+							<Icon icon="material-symbols:cancel" />
+						</button>
+					</div>
 				{:else}
 					<p>出力先が選択されていません</p>
 				{/if}
