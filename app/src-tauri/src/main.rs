@@ -93,7 +93,7 @@ fn run(
     epsg: u16,
     rules_path: String,
 ) -> Result<(), Error> {
-    // Check the existence of the paths
+    // Check the existence of the input paths
     for path in input_paths.iter() {
         if !PathBuf::from_str(path).unwrap().exists() {
             let msg = format!("Input file does not exist: {}", path);
@@ -101,7 +101,8 @@ fn run(
             return Err(Error::InvalidPath(msg));
         }
     }
-    if !PathBuf::from_str(&rules_path).unwrap().exists() {
+    // Check if the mapping rules file is set, and if it exists
+    if !rules_path.is_empty() && !PathBuf::from_str(&rules_path).unwrap().exists() {
         let msg = format!("Mapping rules file does not exist: {}", rules_path);
         log::error!("{}", msg);
         return Err(Error::InvalidPath(msg));
