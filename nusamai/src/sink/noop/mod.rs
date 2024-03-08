@@ -70,7 +70,7 @@ impl DataSink for NoopSink {
             self.num_features += 1;
             self.num_vertices += parcel.entity.geometry_store.read().unwrap().vertices.len();
 
-            log::info!("feature: {:?}", parcel.entity.root);
+            // log::info!("feature: {:?}", parcel.entity.root);
         }
 
         feedback.ensure_not_canceled()?;

@@ -1,7 +1,8 @@
+//! Our tiling scheme for the 3D Tiles
+
 use std::ops::Range;
 
-/// Our tiling scheme for the 3D Tiles
-
+// Get the position of the most significant bit
 fn msb(d: u32) -> u32 {
     u32::BITS - d.leading_zeros()
 }

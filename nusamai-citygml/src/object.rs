@@ -113,10 +113,10 @@ impl Value {
                         .iter()
                         .map(|(k, v)| (k.into(), v.to_attribute_json())),
                 );
-                m.insert("type".into(), cls.typename.clone().into());
                 if let Some(id) = cls.stereotype.id() {
                     m.insert("id".into(), serde_json::Value::String(id.into()));
                 }
+                m.insert("type".into(), cls.typename.clone().into());
                 serde_json::Value::Object(m)
             }
         }

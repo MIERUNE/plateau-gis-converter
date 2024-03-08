@@ -160,14 +160,14 @@ impl DataSink for ShapefileSink {
 
         match ra {
             Ok(_) | Err(PipelineError::Canceled) => {}
-            Err(error) => feedback.report_fatal_error(error),
+            Err(error) => feedback.fatal_error(error),
         }
         match rb {
             Ok(_) => {}
             Err(shapefile::Error::IoError(error)) => {
-                feedback.report_fatal_error(PipelineError::IoError(error))
+                feedback.fatal_error(PipelineError::IoError(error))
             }
-            Err(error) => feedback.report_fatal_error(PipelineError::Other(error.to_string())),
+            Err(error) => feedback.fatal_error(PipelineError::Other(error.to_string())),
         }
 
         Ok(())

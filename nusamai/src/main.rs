@@ -231,7 +231,15 @@ fn run(
         // log watcher
         scope.spawn(move || {
             for msg in watcher {
-                log::info!("Feedback message from the pipeline {:?}", msg);
+                let msg_source = format!("{:?}", msg.source_component);
+                match msg.error {
+                    Some(error) => {
+                        log::log!(msg.level, "[{msg_source}]: {}: {error:?}", msg.message);
+                    }
+                    None => {
+                        log::log!(msg.level, "[{msg_source}]: {}", msg.message);
+                    }
+                }
             }
         });
     });

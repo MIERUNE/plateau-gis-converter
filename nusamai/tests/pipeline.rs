@@ -2,7 +2,7 @@ use std::sync::Once;
 
 use nusamai::parameters::Parameters;
 use nusamai::pipeline::{self, Parcel, Receiver};
-use nusamai::pipeline::{Feedback, FeedbackMessage, Result, Sender};
+use nusamai::pipeline::{Feedback, Result, Sender};
 use nusamai::sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo};
 use nusamai::source::{DataSource, DataSourceProvider, SourceInfo};
 use nusamai::transformer::Transformer;
@@ -52,10 +52,7 @@ impl DataSource for DummySource {
                     appearance_store: Default::default(),
                 },
             };
-            feedback.feedback_raw(FeedbackMessage {
-                message: format!("generating: {:?}", obj),
-                ..Default::default()
-            });
+            feedback.info(format!("generating: {:?}", obj));
             if sink.send(obj).is_err() {
                 break;
             }
@@ -107,10 +104,7 @@ impl DataSink for DummySink {
             std::thread::sleep(std::time::Duration::from_millis(
                 (5.0 + random::<f32>() * 20.0) as u64,
             ));
-            feedback.feedback_raw(FeedbackMessage {
-                message: format!("dummy sink received: {:?}", parcel),
-                ..Default::default()
-            })
+            feedback.info(format!("dummy sink received: {:?}", parcel))
         }
 
         Ok(())

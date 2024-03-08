@@ -121,7 +121,7 @@ impl DataSink for CesiumTilesSink {
                         min_zoom,
                         max_zoom,
                     ) {
-                        feedback.report_fatal_error(error);
+                        feedback.fatal_error(error);
                     }
                 });
             }
@@ -132,7 +132,7 @@ impl DataSink for CesiumTilesSink {
                     if let Err(error) =
                         feature_sorting_stage(feedback, receiver_sliced, sender_sorted)
                     {
-                        feedback.report_fatal_error(error);
+                        feedback.fatal_error(error);
                     }
                 });
             }
@@ -154,7 +154,7 @@ impl DataSink for CesiumTilesSink {
                             tile_id_conv,
                             schema,
                         ) {
-                            feedback.report_fatal_error(error);
+                            feedback.fatal_error(error);
                         }
                     })
                 });

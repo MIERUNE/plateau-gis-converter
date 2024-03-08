@@ -119,11 +119,11 @@ impl DataSink for CzmlSink {
 
         match ra {
             Ok(_) | Err(PipelineError::Canceled) => {}
-            Err(error) => feedback.report_fatal_error(error),
+            Err(error) => feedback.fatal_error(error),
         }
         match rb {
             Ok(_) | Err(PipelineError::Canceled) => {}
-            Err(error) => feedback.report_fatal_error(error),
+            Err(error) => feedback.fatal_error(error),
         }
 
         Ok(())

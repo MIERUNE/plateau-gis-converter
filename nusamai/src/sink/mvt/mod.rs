@@ -151,7 +151,7 @@ impl DataSink for MvtSink {
                         sender_sliced,
                         &self.mvt_options,
                     ) {
-                        feedback.report_fatal_error(error);
+                        feedback.fatal_error(error);
                     }
                 });
             }
@@ -176,7 +176,7 @@ impl DataSink for MvtSink {
                         if let Err(error) =
                             tile_writing_stage(output_path, feedback, receiver_sorted, tile_id_conv)
                         {
-                            feedback.report_fatal_error(error);
+                            feedback.fatal_error(error);
                         }
                     })
                 });
