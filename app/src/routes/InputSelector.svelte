@@ -26,6 +26,13 @@
 			const gmlFiles = files.filter((d) => d.name?.endsWith('.gml'));
 			inputPaths = inputPaths.concat(gmlFiles.map((d) => d.path));
 		}
+
+		if (inputPaths.length === 0) {
+			await dialog.message('選択したフォルダにGMLファイルが含まれていません', {
+				type: 'warning'
+			});
+			inputFolders = [];
+		}
 	}
 
 	async function openFileDialog() {
