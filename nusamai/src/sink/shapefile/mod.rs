@@ -143,22 +143,30 @@ impl DataSink for ShapefileSink {
                         shapefile::Writer::from_path(&file_path, table_builder.build())?;
 
                     // Write each feature
+                    let features_len = features.len();
+                    let null_shape_len = features
+                        .iter()
+                        .filter(|(shape, _)| matches!(shape, shapefile::Shape::NullShape))
+                        .count();
                     features.into_iter().zip_eq(records).for_each(
                         |((shape, _), record)| match shape {
                             shapefile::Shape::PolygonZ(polygon) => {
                                 writer.write_shape_and_record(&polygon, &record).unwrap();
                             }
                             shapefile::Shape::NullShape => {
+                                // Write dummy data once because shapefile-rs cannot write NullShape file
                                 use shapefile::Point;
                                 let point = Point::default();
                                 writer.write_shape_and_record(&point, &record).unwrap();
-                                let _ = write(&file_path.to_string_lossy());
                             }
                             _ => {
                                 log::warn!("Unsupported shape type");
                             }
                         },
                     );
+                    if features_len == null_shape_len {
+                        let _ = write(&file_path.to_string_lossy(), &features_len);
+                    }
                 }
 
                 Ok::<(), shapefile::Error>(())
