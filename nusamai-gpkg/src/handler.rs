@@ -195,7 +195,7 @@ impl<'c> GpkgTransaction<'c> {
             query_string.push_str("id INTEGER NOT NULL PRIMARY KEY");
         }
         table_info.columns.iter().for_each(|column| {
-            query_string.push_str(&format!(", {} {}", column.name, column.data_type));
+            query_string.push_str(&format!(", \"{}\" {}", column.name, column.data_type));
         });
         query_string.push_str(");");
         sqlx::query(&query_string).execute(&mut *executor).await?;
@@ -259,7 +259,7 @@ impl<'c> GpkgTransaction<'c> {
                 table_name,
                 attributes
                     .keys()
-                    .map(|key| key.to_string())
+                    .map(|key| format!("\"{}\"", key))
                     .collect::<Vec<_>>()
                     .join(", "),
                 vec!["?"; attributes.len()].join(", ")
