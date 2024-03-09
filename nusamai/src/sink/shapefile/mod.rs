@@ -1,7 +1,7 @@
 //! Shapefile sink
 
 mod attributes;
-mod write_null_shape;
+mod null_shape;
 
 use std::path::PathBuf;
 
@@ -24,7 +24,6 @@ use crate::transformer;
 use self::attributes::{
     fill_missing_fields, make_field_list, prepare_shapefile_attributes, TableBuilder,
 };
-use self::write_null_shape::write;
 
 pub struct ShapefileSinkProvider {}
 
@@ -165,7 +164,7 @@ impl DataSink for ShapefileSink {
                         },
                     );
                     if features_len == null_shape_len {
-                        let _ = write(&file_path.to_string_lossy(), &features_len);
+                        let _ = null_shape::write(&file_path.to_string_lossy(), &features_len);
                     }
                 }
 
