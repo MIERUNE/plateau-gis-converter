@@ -3,10 +3,11 @@
 mod attributes;
 mod null_shape;
 
+use std::fs::{remove_file, File};
+use std::io::BufWriter;
 use std::path::PathBuf;
 
 use indexmap::IndexMap;
-use itertools::Itertools;
 use rayon::iter::{ParallelBridge, ParallelIterator};
 
 use nusamai_citygml::object::{Map, ObjectStereotype, Value};
@@ -21,9 +22,7 @@ use crate::pipeline::{Feedback, PipelineError, Receiver, Result};
 use crate::sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo};
 use crate::transformer;
 
-use self::attributes::{
-    fill_missing_fields, make_field_list, prepare_shapefile_attributes, TableBuilder,
-};
+use attributes::{attributes_to_record, fill_missing_fields, make_field_list, make_table_builder};
 
 pub struct ShapefileSinkProvider {}
 
@@ -94,13 +93,11 @@ impl DataSink for ShapefileSink {
                         let Value::Object(object) = &parcel.entity.root else {
                             return Ok(());
                         };
+                        let typename = object.typename.clone();
 
-                        let (shape, attributes) = entity_to_shapes(&parcel.entity);
+                        let (shape, attributes) = entity_to_shape(parcel.entity);
 
-                        if sender
-                            .send((object.typename.clone(), shape, attributes))
-                            .is_err()
-                        {
+                        if sender.send((typename, shape, attributes)).is_err() {
                             return Err(PipelineError::Canceled);
                         };
 
@@ -112,63 +109,74 @@ impl DataSink for ShapefileSink {
 
                 // Attribute fields for the features
                 // FieldName byte representation cannot exceed 11 bytes
-                let mut categorized_shapes =
-                    IndexMap::<String, Vec<(shapefile::Shape, Map)>>::new();
+                let mut grouped_features = IndexMap::<String, Vec<(shapefile::Shape, Map)>>::new();
 
                 receiver
                     .into_iter()
                     .for_each(|(typename, shape, attributes)| {
-                        categorized_shapes
+                        grouped_features
                             .entry(typename.to_string())
                             .or_default()
                             .push((shape, attributes));
                     });
 
-                // output file per typename
-                for (typename, mut features) in categorized_shapes {
+                // Write a Shapefile file set for each typename
+                for (typename, features) in grouped_features {
                     let table_info = make_field_list(&features);
-                    fill_missing_fields(&mut features, &table_info);
-
-                    let table_builder = TableBuilder::new(table_info);
-
-                    let records = prepare_shapefile_attributes(&features);
+                    let table_builder = make_table_builder(&table_info);
 
                     // Create all the files needed for the shapefile to be complete (.shp, .shx, .dbf)
                     std::fs::create_dir_all(&self.output_path)?;
-                    let mut file_path = self.output_path.clone();
-                    file_path.push(format!("{}.shp", typename.replace(':', "_")));
+                    let shp_path = self
+                        .output_path
+                        .join(format!("{}.shp", typename.replace(':', "_")));
 
-                    let features_len = features.len();
-                    let is_null_shape = features
+                    let feature_count = features.len();
+                    let has_no_geometry = features
                         .iter()
                         .all(|(shape, _)| matches!(shape, shapefile::Shape::NullShape));
 
+                    // NOTE: Need to be scoped to drop the writer before removing .shp/.shx
                     {
-                        let mut writer =
-                            shapefile::Writer::from_path(&file_path, table_builder.build())?;
+                        let mut writer = shapefile::Writer::from_path(&shp_path, table_builder)?;
 
                         // Write each feature
-                        features
-                            .into_iter()
-                            .zip_eq(records)
-                            .for_each(|((shape, _), record)| match shape {
+                        for (shape, mut attributes) in features {
+                            fill_missing_fields(&mut attributes, &table_info);
+                            let record = attributes_to_record(attributes);
+
+                            match shape {
                                 shapefile::Shape::PolygonZ(polygon) => {
-                                    writer.write_shape_and_record(&polygon, &record).unwrap();
+                                    writer.write_shape_and_record(&polygon, &record)
                                 }
                                 shapefile::Shape::NullShape => {
                                     // Write dummy data once because shapefile-rs cannot write NullShape file
                                     use shapefile::Point;
                                     let point = Point::default();
-                                    writer.write_shape_and_record(&point, &record).unwrap();
+                                    writer.write_shape_and_record(&point, &record)
                                 }
                                 _ => {
                                     log::warn!("Unsupported shape type");
+                                    Ok(())
                                 }
-                            });
+                            }?;
+                        }
                     }
 
-                    if is_null_shape {
-                        let _ = null_shape::write(&file_path, &features_len);
+                    // If this type has no geometry (i.e. Data or Object stereotype)
+                    if has_no_geometry {
+                        // Remove dummy .shp and .shx and write a NullShape file.
+                        remove_file(&shp_path)?;
+                        let shx_path = shp_path.with_extension("shx");
+                        remove_file(&shx_path)?;
+                        null_shape::write_shp(
+                            BufWriter::new(File::create(shp_path)?),
+                            feature_count,
+                        )?;
+                        null_shape::write_shx(
+                            BufWriter::new(File::create(shx_path)?),
+                            feature_count,
+                        )?;
                     }
                 }
 
@@ -195,18 +203,13 @@ impl DataSink for ShapefileSink {
 /// Create Shapefile features from a Entity
 /// Each feature for MultiPolygon, MultiLineString, and MultiPoint will be created (if it exists)
 /// TODO: Implement MultiLineString and MultiPoint handling
-pub fn entity_to_shapes(entity: &Entity) -> (shapefile::Shape, Map) {
-    let mut attributes: IndexMap<String, Value, ahash::RandomState> = Map::default();
-
-    let Value::Object(obj) = &entity.root else {
-        return (shapefile::Shape::NullShape, attributes);
+pub fn entity_to_shape(entity: Entity) -> (shapefile::Shape, Map) {
+    let Value::Object(obj) = entity.root else {
+        return (shapefile::Shape::NullShape, Map::default());
     };
-    for (k, v) in &obj.attributes {
-        attributes.insert(k.clone(), v.clone());
-    }
 
     let ObjectStereotype::Feature { id: _, geometries } = &obj.stereotype else {
-        return (shapefile::Shape::NullShape, attributes);
+        return (shapefile::Shape::NullShape, obj.attributes);
     };
 
     let geom_store = entity.geometry_store.read().unwrap();
@@ -230,10 +233,10 @@ pub fn entity_to_shapes(entity: &Entity) -> (shapefile::Shape, Map) {
         let shape =
             shapefile::Shape::PolygonZ(indexed_multipolygon_to_shape(&geom_store.vertices, &mpoly));
 
-        return (shape, attributes);
+        return (shape, obj.attributes);
     }
 
-    (shapefile::Shape::NullShape, attributes)
+    (shapefile::Shape::NullShape, obj.attributes)
 }
 
 #[cfg(test)]
@@ -282,7 +285,7 @@ mod tests {
             appearance_store: Default::default(),
         };
 
-        let (shapes, attributes) = entity_to_shapes(&obj);
+        let (shapes, attributes) = entity_to_shape(obj);
         assert_eq!(attributes.len(), 0);
 
         if let shapefile::Shape::PolygonZ(polygon) = &shapes {
