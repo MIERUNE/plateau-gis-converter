@@ -168,7 +168,7 @@ impl DataSink for ShapefileSink {
                     }
 
                     if is_null_shape {
-                        let _ = null_shape::write(&file_path.to_string_lossy(), &features_len);
+                        let _ = null_shape::write(&file_path, &features_len);
                     }
                 }
 

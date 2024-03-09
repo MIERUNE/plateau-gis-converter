@@ -1,13 +1,14 @@
 use byteorder::{BigEndian, LittleEndian, WriteBytesExt};
 use std::fs::{remove_file, File};
 use std::io::Result;
+use std::path::PathBuf;
 
-pub fn write(file_path: &str, feature_count: &usize) -> Result<()> {
-    let shp_path = file_path.to_string();
-    let shx_path = shp_path.replace(".shp", ".shx");
+pub fn write(file_path: &PathBuf, feature_count: &usize) -> Result<()> {
+    let shp_path = file_path;
+    let shx_path = &shp_path.with_extension("shx");
 
-    remove_file(shp_path.as_str())?;
-    remove_file(shx_path.as_str())?;
+    remove_file(shp_path)?;
+    remove_file(shx_path)?;
 
     let mut shp_file = File::create(shp_path)?;
     let mut shx_file = File::create(shx_path)?;
