@@ -26,6 +26,13 @@
 			const gmlFiles = files.filter((d) => d.name?.endsWith('.gml'));
 			inputPaths = inputPaths.concat(gmlFiles.map((d) => d.path));
 		}
+
+		if (inputPaths.length === 0) {
+			await dialog.message('選択したフォルダにGMLファイルが含まれていません', {
+				type: 'warning'
+			});
+			inputFolders = [];
+		}
 	}
 
 	async function openFileDialog() {
@@ -41,6 +48,11 @@
 		});
 		if (!res) return;
 		inputPaths = Array.isArray(res) ? res : [res];
+	}
+
+	function clearSelected() {
+		inputFolders = [];
+		inputPaths = [];
 	}
 </script>
 
@@ -94,6 +106,9 @@
 									</ol>
 								</div>
 							</button>
+							<button on:click={clearSelected} class="hover:opacity-75">
+								<Icon icon="material-symbols:cancel" />
+							</button>
 						</div>
 					{/if}
 				{:else if inputPaths.length === 0}
@@ -110,6 +125,9 @@
 									{/each}
 								</ol>
 							</div>
+						</button>
+						<button on:click={clearSelected} class="hover:opacity-75">
+							<Icon icon="material-symbols:cancel" />
 						</button>
 					</div>
 				{/if}

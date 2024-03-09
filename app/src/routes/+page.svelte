@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { invoke } from '@tauri-apps/api/tauri';
 	import { attachConsole } from 'tauri-plugin-log-api';
+	import { message } from '@tauri-apps/api/dialog';
 
 	import Icon from '@iconify/svelte';
 	import InputSelector from './InputSelector.svelte';
@@ -19,17 +20,12 @@
 
 	async function convertAndSave() {
 		if (!inputPaths) {
-			alert('入力フォルダ/ファイルを選択してください');
-			return;
-		}
-
-		if (inputPaths.length === 0) {
-			alert('選択されたフォルダにGMLファイルがありません');
+			await message('入力フォルダ/ファイルを選択してください', { type: 'warning' });
 			return;
 		}
 
 		if (!outputPath) {
-			alert('出力先を選択してください');
+			await message('出力先を選択してください', { type: 'warning' });
 			return;
 		}
 
@@ -43,9 +39,9 @@
 				epsg,
 				rulesPath
 			});
-			alert(`変換が完了しました。\n'${outputPath}' に出力しました。`);
+			await message(`変換が完了しました。\n'${outputPath}' に出力しました。`, { type: 'info' });
 		} catch (error) {
-			alert(`エラーが発生しました。\n\n${error}`);
+			await message(`エラーが発生しました。\n\n${error}`, { type: 'error' });
 		}
 
 		isRunning = false;
