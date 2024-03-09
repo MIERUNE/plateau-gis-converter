@@ -54,7 +54,7 @@ pub(crate) fn citygml_type(
 
     quote! {
         #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize), serde(tag = "type"))]
-        #[derive(Default, Debug, ::nusamai_citygml::CityGmlElement)]
+        #[derive(Default, ::nusamai_citygml::CityGmlElement)]
         #input
     }
     .into()

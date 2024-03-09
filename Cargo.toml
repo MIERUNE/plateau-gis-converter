@@ -12,8 +12,12 @@ version = "0.0.0-alpha.0"
 authors = ["MIERUNE Inc. <info@mierune.co.jp>"]
 
 [profile.dev.package."*"]
-opt-level = 2
+opt-level = 3
+
+[profile.release]
+strip = "debuginfo"
 
 [profile.release-lto]
 inherits = "release"
-lto = "thin"
+codegen-units = 8
+lto = "fat"

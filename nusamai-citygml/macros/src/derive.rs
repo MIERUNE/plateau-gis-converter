@@ -376,10 +376,11 @@ fn generate_citygml_impl_for_struct(
 
     Ok(quote! {
         impl #impl_generics ::nusamai_citygml::CityGmlElement for #struct_ident #ty_generics #where_clause {
+            #[inline(never)]
             fn parse<R: std::io::BufRead>(&mut self, st: &mut ::nusamai_citygml::SubTreeReader<R>) -> Result<(), ::nusamai_citygml::ParseError> {
                 #attr_parsing
 
-                st.parse_children(|st| {
+                st.parse_children(move |st| {
                     let path = st.current_path();
                     let hash = (path.iter().skip(#HASH_CHAR_SKIP).take(#HASH_CHAR_TAKE).fold(5381u32, |a, c| a.wrapping_mul(33) ^ *c as u32) & #HASH_MASK) as u8;
                     match (hash, path) {
@@ -389,7 +390,8 @@ fn generate_citygml_impl_for_struct(
                 })
             }
 
-            fn into_object(self) -> Option<::nusamai_citygml::object::Value> {
+            #[inline(never)]
+    fn into_object(self) -> Option<::nusamai_citygml::object::Value> {
                 #into_object_impl
             }
 
@@ -506,6 +508,7 @@ fn generate_citygml_impl_for_enum(
 
     Ok(quote! {
         impl #impl_generics ::nusamai_citygml::CityGmlElement for #struct_name #ty_generics #where_clause {
+            #[inline(never)]
             fn parse<R: ::std::io::BufRead>(&mut self, st: &mut ::nusamai_citygml::SubTreeReader<R>) -> Result<(), ::nusamai_citygml::ParseError> {
                 st.parse_children(|st| {
                     let path = st.current_path();
@@ -517,7 +520,8 @@ fn generate_citygml_impl_for_enum(
                 })
             }
 
-            fn into_object(self) -> Option<::nusamai_citygml::object::Value> {
+            #[inline(never)]
+    fn into_object(self) -> Option<::nusamai_citygml::object::Value> {
                 match self {
                     #(#into_object_arms,)*
                     _ => None,

@@ -23,6 +23,7 @@ impl CityGmlElement for TextureAssociation {
         Ok(())
     }
 
+    #[inline(never)]
     fn into_object(self) -> Option<crate::object::Value> {
         None
     }
