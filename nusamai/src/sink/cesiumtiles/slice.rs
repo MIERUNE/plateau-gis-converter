@@ -202,7 +202,7 @@ pub fn slice_to_tiles<E>(
 
     // Send tiled features
     for ((z, x, y), mut sliced_feature) in sliced_tiles {
-        sliced_feature.materials = materials.clone();
+        sliced_feature.materials.clone_from(&materials);
         send_feature((z, x, y), sliced_feature)?;
     }
     Ok(())

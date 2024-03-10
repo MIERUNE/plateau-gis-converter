@@ -105,7 +105,7 @@ impl CityGmlElement for Code {
     fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
         let code_space = st.find_codespace_attr();
         let code = st.parse_text()?.to_string();
-        self.code = code.clone();
+        self.code.clone_from(&code);
 
         if let Some(code_space) = code_space {
             let base_url = st.context().source_url();

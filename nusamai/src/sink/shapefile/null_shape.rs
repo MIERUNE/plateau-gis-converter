@@ -25,7 +25,7 @@ pub fn write_shx(mut writer: impl Write, feature_count: usize) -> Result<()> {
         let offset = 50 + (i * 4 * 2); // offset of record (placed after header)
         let content_length = 2; // NullShape content length is 2 (in 16-bit words)
         writer.write_i32::<BigEndian>(offset as i32 / 2)?; // offset is in 16-bit words
-        writer.write_i32::<BigEndian>(content_length as i32)?; // length of content
+        writer.write_i32::<BigEndian>(content_length)?; // length of content
     }
 
     Ok(())
