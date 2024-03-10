@@ -95,6 +95,7 @@ impl DataSink for ShapefileSink {
                         };
                         let typename = object.typename.clone();
 
+                        // The ObjectStereotype's Feature and Object's id are stored in attributes
                         let (shape, attributes) = entity_to_shape(parcel.entity);
 
                         if sender.send((typename, shape, attributes)).is_err() {
@@ -211,11 +212,15 @@ impl DataSink for ShapefileSink {
 /// Each feature for MultiPolygon, MultiLineString, and MultiPoint will be created (if it exists)
 /// TODO: Implement MultiLineString and MultiPoint handling
 pub fn entity_to_shape(entity: Entity) -> (shapefile::Shape, Map) {
-    let Value::Object(obj) = entity.root else {
+    let Value::Object(mut obj) = entity.root else {
         return (shapefile::Shape::NullShape, Map::default());
     };
 
-    let ObjectStereotype::Feature { id: _, geometries } = &obj.stereotype else {
+    let ObjectStereotype::Feature {
+        id: obj_id,
+        geometries,
+    } = &obj.stereotype
+    else {
         return (shapefile::Shape::NullShape, obj.attributes);
     };
 
@@ -239,6 +244,10 @@ pub fn entity_to_shape(entity: Entity) -> (shapefile::Shape, Map) {
     if !mpoly.is_empty() {
         let shape =
             shapefile::Shape::PolygonZ(indexed_multipolygon_to_shape(&geom_store.vertices, &mpoly));
+
+        // add gml_id as attributes
+        obj.attributes
+            .insert("id".to_string(), Value::String(obj_id.clone()));
 
         return (shape, obj.attributes);
     }
