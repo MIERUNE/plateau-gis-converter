@@ -149,10 +149,17 @@ impl DataSink for ShapefileSink {
                                 shapefile::Shape::PolygonZ(polygon) => {
                                     writer.write_shape_and_record(&polygon, &record)
                                 }
-                                shapefile::Shape::NullShape => {
+                                shapefile::Shape::NullShape if !has_no_geometry => {
+                                    // FIXME: feature may have no geometry. e.g.
+                                    // - Building (no geometry)
+                                    //     - BuildingPart (has geometry)
+                                    //     - BuildingPart (has geometry)
+                                    log::warn!("Feature without geometry is not supported yet.");
+                                    Ok(())
+                                }
+                                shapefile::Shape::NullShape if has_no_geometry => {
                                     // Write dummy data once because shapefile-rs cannot write NullShape file
-                                    use shapefile::Point;
-                                    let point = Point::default();
+                                    let point = shapefile::Point::default();
                                     writer.write_shape_and_record(&point, &record)
                                 }
                                 _ => {

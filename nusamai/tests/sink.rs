@@ -64,9 +64,13 @@ pub(crate) fn simple_run_sink<S: DataSinkProvider>(sink_provider: S, output: Opt
         (transformer, schema)
     };
 
-    let (handle, _watcher, canceller) =
+    let (handle, watcher, canceller) =
         nusamai::pipeline::run(source, transformer, sink, schema.into());
     handle.join();
+
+    for msg in watcher {
+        println!("Feedback message from the pipeline {:?}", msg);
+    }
 
     // should not be canceled
     assert!(!canceller.is_canceled());
