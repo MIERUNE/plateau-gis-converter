@@ -14,9 +14,6 @@ authors = ["MIERUNE Inc. <info@mierune.co.jp>"]
 [profile.dev.package."*"]
 opt-level = 3
 
-[profile.release]
-strip = "debuginfo"
-
 [profile.release-lto]
 inherits = "release"
 codegen-units = 8
