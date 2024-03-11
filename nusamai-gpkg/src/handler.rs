@@ -190,10 +190,10 @@ impl<'c> GpkgTransaction<'c> {
         let mut query_string = format!("CREATE TABLE \"{}\" (", table_info.name);
         if table_info.has_geometry {
             query_string.push_str("fid INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL");
-            query_string.push_str(", id STRING NOT NULL");
+            query_string.push_str(", id TEXT NOT NULL");
             query_string.push_str(", geometry BLOB NOT NULL");
         } else {
-            query_string.push_str("fid INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL");
+            query_string.push_str("id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL");
         }
         table_info.columns.iter().for_each(|column| {
             query_string.push_str(&format!(", \"{}\" {}", column.name, column.data_type));
@@ -404,7 +404,7 @@ mod tests {
             columns,
             vec![
                 ("fid".into(), "INTEGER".into(), 1),
-                ("id".into(), "STRING".into(), 1),
+                ("id".into(), "TEXT".into(), 1),
                 ("geometry".into(), "BLOB".into(), 1),
                 ("attr1".into(), "TEXT".into(), 0),
                 ("attr2".into(), "INTEGER".into(), 0),
@@ -477,7 +477,7 @@ mod tests {
             columns,
             vec![
                 // No geometry column
-                ("fid".into(), "INTEGER".into(), 1),
+                ("id".into(), "INTEGER".into(), 1),
                 ("attr1".into(), "TEXT".into(), 0),
             ]
         );
@@ -612,7 +612,7 @@ mod tests {
 
         assert_eq!(rows.len(), 1);
         let row = rows.first().unwrap();
-        assert_eq!(row.get::<i64, &str>("fid"), 1);
+        assert_eq!(row.get::<i64, &str>("id"), 1);
         assert_eq!(row.get::<String, &str>("attr1"), "value1");
         assert_eq!(row.get::<i64, &str>("attr2"), 2);
         assert_eq!(row.get::<f64, &str>("attr3"), 3.33);
