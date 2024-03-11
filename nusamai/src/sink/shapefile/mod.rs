@@ -211,13 +211,16 @@ impl DataSink for ShapefileSink {
 /// Each feature for MultiPolygon, MultiLineString, and MultiPoint will be created (if it exists)
 /// TODO: Implement MultiLineString and MultiPoint handling
 pub fn entity_to_shape(entity: Entity) -> (shapefile::Shape, Map) {
-    let Value::Object(obj) = entity.root else {
+    let Value::Object(mut obj) = entity.root else {
         return (shapefile::Shape::NullShape, Map::default());
     };
 
-    let ObjectStereotype::Feature { id: _, geometries } = &obj.stereotype else {
+    let ObjectStereotype::Feature { id, geometries } = obj.stereotype else {
         return (shapefile::Shape::NullShape, obj.attributes);
     };
+
+    // Insert Feature id as a attribute
+    obj.attributes.insert("id".to_string(), Value::String(id));
 
     let geom_store = entity.geometry_store.read().unwrap();
 
@@ -293,7 +296,10 @@ mod tests {
         };
 
         let (shapes, attributes) = entity_to_shape(obj);
-        assert_eq!(attributes.len(), 0);
+        assert_eq!(
+            attributes.get("id").unwrap(),
+            &Value::String("dummy".into())
+        );
 
         if let shapefile::Shape::PolygonZ(polygon) = &shapes {
             assert_eq!(polygon.rings().len(), 1);
