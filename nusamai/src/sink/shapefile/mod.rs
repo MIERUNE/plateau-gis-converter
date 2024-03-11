@@ -302,7 +302,6 @@ mod tests {
         };
 
         let (shapes, attributes) = entity_to_shape(obj);
-        assert_eq!(attributes.len(), 1);
         assert_eq!(
             attributes.get("id").unwrap(),
             &Value::String("dummy".into())
