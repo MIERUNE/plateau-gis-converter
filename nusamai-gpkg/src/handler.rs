@@ -189,10 +189,11 @@ impl<'c> GpkgTransaction<'c> {
         // Create the table
         let mut query_string = format!("CREATE TABLE \"{}\" (", table_info.name);
         if table_info.has_geometry {
-            query_string.push_str("id STRING NOT NULL PRIMARY KEY");
+            query_string.push_str("fid INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL");
+            query_string.push_str(", id TEXT NOT NULL");
             query_string.push_str(", geometry BLOB NOT NULL");
         } else {
-            query_string.push_str("id INTEGER NOT NULL PRIMARY KEY");
+            query_string.push_str("id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL");
         }
         table_info.columns.iter().for_each(|column| {
             query_string.push_str(&format!(", \"{}\" {}", column.name, column.data_type));
@@ -402,7 +403,8 @@ mod tests {
         assert_eq!(
             columns,
             vec![
-                ("id".into(), "STRING".into(), 1),
+                ("fid".into(), "INTEGER".into(), 1),
+                ("id".into(), "TEXT".into(), 1),
                 ("geometry".into(), "BLOB".into(), 1),
                 ("attr1".into(), "TEXT".into(), 0),
                 ("attr2".into(), "INTEGER".into(), 0),
