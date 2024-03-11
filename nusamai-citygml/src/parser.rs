@@ -111,7 +111,6 @@ impl<'a> Default for ParseContext<'a> {
 }
 
 impl<'a> CityGmlReader<'a> {
-    #[inline]
     pub fn new(context: ParseContext<'a>) -> Self {
         Self {
             state: InternalState::new(context),
@@ -320,6 +319,7 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
     }
 
     /// Expect a geometric attribute of CityGML
+    #[inline(never)]
     pub fn parse_geometric_attr(
         &mut self,
         geomref: &mut GeometryRefs,
