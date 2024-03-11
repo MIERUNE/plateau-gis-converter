@@ -49,6 +49,36 @@ impl Transform for ProjectionTransform {
                 | EPSG_JGD2011_JPRECT_XI_JGD2011_HEIGHT
                 | EPSG_JGD2011_JPRECT_XII_JGD2011_HEIGHT
                 | EPSG_JGD2011_JPRECT_XIII_JGD2011_HEIGHT => {
+                    // To Japan Plane Rectangular CS + JGD2011 (vertical) height
+                    let proj = self.jpr_zone_proj.as_ref().unwrap();
+                    let mut geom_store = entity.geometry_store.write().unwrap();
+                    geom_store.vertices.iter_mut().for_each(|v| {
+                        let (lng, lat) = (v[1], v[0]);
+                        // Change x and y; keep the height
+                        // TODO: error handling
+                        (v[0], v[1], _) = proj.project_forward(lng, lat, 0.).unwrap();
+                    });
+                    geom_store.epsg = self.output_epsg;
+                }
+                EPSG_JGD2011_JPRECT_I
+                | EPSG_JGD2011_JPRECT_II
+                | EPSG_JGD2011_JPRECT_III
+                | EPSG_JGD2011_JPRECT_IV
+                | EPSG_JGD2011_JPRECT_V
+                | EPSG_JGD2011_JPRECT_VI
+                | EPSG_JGD2011_JPRECT_VII
+                | EPSG_JGD2011_JPRECT_VIII
+                | EPSG_JGD2011_JPRECT_IX
+                | EPSG_JGD2011_JPRECT_X
+                | EPSG_JGD2011_JPRECT_XI
+                | EPSG_JGD2011_JPRECT_XII
+                | EPSG_JGD2011_JPRECT_XIII
+                | EPSG_JGD2011_JPRECT_XIV
+                | EPSG_JGD2011_JPRECT_XV
+                | EPSG_JGD2011_JPRECT_XVI
+                | EPSG_JGD2011_JPRECT_XVII
+                | EPSG_JGD2011_JPRECT_XVIII
+                | EPSG_JGD2011_JPRECT_XIX => {
                     // To Japan Plane Rectangular CS
                     let proj = self.jpr_zone_proj.as_ref().unwrap();
                     let mut geom_store = entity.geometry_store.write().unwrap();
@@ -81,6 +111,28 @@ impl Transform for ProjectionTransform {
                 | EPSG_JGD2011_JPRECT_XI_JGD2011_HEIGHT
                 | EPSG_JGD2011_JPRECT_XII_JGD2011_HEIGHT
                 | EPSG_JGD2011_JPRECT_XIII_JGD2011_HEIGHT => {
+                    // TODO: implement
+                    unimplemented!("WGS84 to EPSG:{} not supported yet", self.output_epsg);
+                }
+                EPSG_JGD2011_JPRECT_I
+                | EPSG_JGD2011_JPRECT_II
+                | EPSG_JGD2011_JPRECT_III
+                | EPSG_JGD2011_JPRECT_IV
+                | EPSG_JGD2011_JPRECT_V
+                | EPSG_JGD2011_JPRECT_VI
+                | EPSG_JGD2011_JPRECT_VII
+                | EPSG_JGD2011_JPRECT_VIII
+                | EPSG_JGD2011_JPRECT_IX
+                | EPSG_JGD2011_JPRECT_X
+                | EPSG_JGD2011_JPRECT_XI
+                | EPSG_JGD2011_JPRECT_XII
+                | EPSG_JGD2011_JPRECT_XIII
+                | EPSG_JGD2011_JPRECT_XIV
+                | EPSG_JGD2011_JPRECT_XV
+                | EPSG_JGD2011_JPRECT_XVI
+                | EPSG_JGD2011_JPRECT_XVII
+                | EPSG_JGD2011_JPRECT_XVIII
+                | EPSG_JGD2011_JPRECT_XIX => {
                     // TODO: implement
                     unimplemented!("WGS84 to EPSG:{} not supported yet", self.output_epsg);
                 }
