@@ -12,6 +12,9 @@ use nusamai_gltf_json::{
     Image, Mesh, MeshPrimitive, Node, PrimitiveMode, Scene,
 };
 
+use crate::pipeline::feedback;
+use crate::pipeline::PipelineError;
+
 use super::material;
 use super::metadata::make_metadata;
 use super::Features;
@@ -19,6 +22,7 @@ use super::Primitives;
 
 #[allow(clippy::too_many_arguments)]
 pub fn write_gltf_glb<W: Write>(
+    feedback: &feedback::Feedback,
     writer: W,
     translation: [f64; 3],
     vertices: impl IntoIterator<Item = [u32; 6]>,
@@ -27,7 +31,7 @@ pub fn write_gltf_glb<W: Write>(
     schema: &Schema,
     typename: &str,
     num_features: &usize,
-) -> std::io::Result<()> {
+) -> Result<(), PipelineError> {
     // The buffer for the BIN part
     let mut bin_content: Vec<u8> = Vec::new();
     let mut gltf_buffer_views = vec![];
@@ -123,6 +127,8 @@ pub fn write_gltf_glb<W: Write>(
 
         let mut byte_offset = 0;
         for (mat_idx, (mat, primitive)) in primitives.iter().enumerate() {
+            feedback.ensure_not_canceled()?;
+
             let mut indices_count = 0;
             for idx in &primitive.indices {
                 bin_content.write_all(&idx.to_le_bytes())?;
@@ -197,8 +203,11 @@ pub fn write_gltf_glb<W: Write>(
 
     let gltf_images = image_set
         .into_iter()
-        .map(|img| img.to_gltf(&mut gltf_buffer_views, &mut bin_content))
-        .collect::<std::io::Result<Vec<Image>>>()?;
+        .map(|img| {
+            feedback.ensure_not_canceled()?;
+            Ok(img.to_gltf(&mut gltf_buffer_views, &mut bin_content)?)
+        })
+        .collect::<Result<Vec<Image>, PipelineError>>()?;
 
     let mut gltf_meshes = vec![];
     if !gltf_primitives.is_empty() {
@@ -229,6 +238,8 @@ pub fn write_gltf_glb<W: Write>(
         buffers
     };
 
+    feedback.ensure_not_canceled()?;
+
     // Build the JSON part of glTF
     let gltf = Gltf {
         scenes: vec![Scene {
@@ -255,13 +266,14 @@ pub fn write_gltf_glb<W: Write>(
         extensions_used: vec![
             "EXT_mesh_features".to_string(),
             "EXT_structural_metadata".to_string(),
+            "EXT_texture_webp".to_string(),
         ],
         ..Default::default()
     };
 
     // Write glb to the writer
     nusamai_gltf::glb::Glb {
-        json: serde_json::to_vec(&gltf)?.into(),
+        json: serde_json::to_vec(&gltf).unwrap().into(),
         bin: Some(bin_content.into()),
     }
     .to_writer_with_alignment(writer, 8)?;

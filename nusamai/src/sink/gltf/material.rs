@@ -7,6 +7,8 @@ use nusamai_gltf_json::BufferView;
 use serde::{Deserialize, Serialize};
 use url::Url;
 
+use nusamai_gltf_json::MimeType;
+
 #[derive(Debug, Serialize, Clone, PartialEq, Deserialize)]
 pub struct Material {
     pub base_color: [f32; 4],
@@ -84,7 +86,7 @@ impl Image {
     ) -> std::io::Result<nusamai_gltf_json::Image> {
         if let Ok(path) = self.uri.to_file_path() {
             // NOTE: temporary implementation
-            let content = load_image(&path)?;
+            let (content, mime_type) = load_image(&path)?;
 
             buffer_views.push(BufferView {
                 byte_offset: bin_content.len() as u32,
@@ -95,7 +97,7 @@ impl Image {
             bin_content.extend(content);
 
             Ok(nusamai_gltf_json::Image {
-                mime_type: Some(nusamai_gltf_json::MimeType::ImageJpeg),
+                mime_type: Some(mime_type),
                 buffer_view: Some(buffer_views.len() as u32 - 1),
                 ..Default::default()
             })
@@ -109,24 +111,30 @@ impl Image {
 }
 
 // NOTE: temporary implementation
-fn load_image(path: &Path) -> std::io::Result<Vec<u8>> {
-    log::info!("Decoding image: {:?}", path);
-
+fn load_image(path: &Path) -> std::io::Result<(Vec<u8>, MimeType)> {
     if let Some(ext) = path.extension() {
         match ext.to_str() {
-            // use `image crate` for TIFF
-            Some("tif" | "tiff" | "png" | "jpg" | "jpeg") => {
+            Some("tif" | "tiff" | "png") => {
+                log::info!("Decoding image: {:?}", path);
                 let t = Instant::now();
                 let image = image::open(path)
                     .map_err(|err| std::io::Error::new(std::io::ErrorKind::InvalidData, err))?;
                 log::debug!("Image decoding took {:?}", t.elapsed());
 
-                let content: Vec<u8> = Vec::new();
-                let mut writer = std::io::Cursor::new(content);
+                let t = Instant::now();
+                let mut writer = std::io::Cursor::new(Vec::new());
+                // let encoder = image::codecs::webp::WebPEncoder::new_lossless(&mut writer);
+                let encoder = image::codecs::png::PngEncoder::new(&mut writer);
                 image
-                    .write_to(&mut writer, image::ImageOutputFormat::Jpeg(100))
+                    .write_with_encoder(encoder)
                     .map_err(|err| std::io::Error::new(std::io::ErrorKind::InvalidData, err))?;
-                Ok(writer.into_inner())
+                log::debug!("Image encoding took {:?}", t.elapsed());
+
+                Ok((writer.into_inner(), MimeType::ImagePng))
+            }
+            Some("jpg" | "jpeg") => {
+                log::info!("Embedding a jpeg as is: {:?}", path);
+                Ok((std::fs::read(path)?, MimeType::ImageJpeg))
             }
             _ => {
                 let err = format!("Unsupported image format: {:?}", path);
