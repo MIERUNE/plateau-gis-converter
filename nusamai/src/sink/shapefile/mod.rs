@@ -169,12 +169,12 @@ impl DataSink for ShapefileSink {
                                 }
                             }?;
                         }
-                    }
 
-                    // write .prj file
-                    let epsg = schema.epsg.unwrap();
-                    let prj_path = &shp_path.with_extension("prj");
-                    crs::write_prj(BufWriter::new(File::create(prj_path)?), &epsg)?;
+                        // write .prj file
+                        let epsg = schema.epsg.unwrap();
+                        let prj_path = &shp_path.with_extension("prj");
+                        crs::write_prj(BufWriter::new(File::create(prj_path)?), &epsg)?;
+                    }
 
                     // If this type has no geometry (i.e. Data or Object stereotype)
                     if has_no_geometry {
@@ -190,6 +190,7 @@ impl DataSink for ShapefileSink {
                             BufWriter::new(File::create(shx_path)?),
                             feature_count,
                         )?;
+                        let prj_path = &shp_path.with_extension("prj");
                         remove_file(prj_path)?;
                     }
                 }
