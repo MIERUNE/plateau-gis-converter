@@ -95,7 +95,6 @@ impl DataSink for ShapefileSink {
                         };
                         let typename = object.typename.clone();
 
-                        // The ObjectStereotype's Feature and Object's id are stored in attributes
                         let (shape, attributes) = entity_to_shape(parcel.entity);
 
                         if sender.send((typename, shape, attributes)).is_err() {
