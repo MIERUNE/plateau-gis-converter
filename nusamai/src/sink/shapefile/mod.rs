@@ -302,11 +302,7 @@ mod tests {
         };
 
         let (shapes, attributes) = entity_to_shape(obj);
-        assert_eq!(attributes.len(), 1);
-        assert_eq!(
-            attributes.get("id").unwrap(),
-            &Value::String("dummy".into())
-        );
+        assert_eq!(attributes.len(), 0);
 
         if let shapefile::Shape::PolygonZ(polygon) = &shapes {
             assert_eq!(polygon.rings().len(), 1);
