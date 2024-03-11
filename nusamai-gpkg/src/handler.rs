@@ -404,7 +404,7 @@ mod tests {
             columns,
             vec![
                 ("fid".into(), "INTEGER".into(), 1),
-                ("id".into(), "STRING".into(), 1),
+                ("id".into(), "TEXT".into(), 1),
                 ("geometry".into(), "BLOB".into(), 1),
                 ("attr1".into(), "TEXT".into(), 0),
                 ("attr2".into(), "INTEGER".into(), 0),
