@@ -10,8 +10,6 @@ pub enum MimeType {
     ImageJpeg,
     #[serde(rename = "image/png")]
     ImagePng,
-    #[serde(rename = "image/webp")]
-    ImageWebP,
 }
 
 /// Image data used to create a texture. Image MAY be referenced by an URI (or IRI) or a buffer view index.
