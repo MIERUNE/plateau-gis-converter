@@ -193,7 +193,7 @@ impl<'c> GpkgTransaction<'c> {
             query_string.push_str(", id TEXT NOT NULL");
             query_string.push_str(", geometry BLOB NOT NULL");
         } else {
-            query_string.push_str("fid INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL");
+            query_string.push_str("id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL");
         }
         table_info.columns.iter().for_each(|column| {
             query_string.push_str(&format!(", \"{}\" {}", column.name, column.data_type));
