@@ -7,19 +7,25 @@ const filetypeOptions: Record<string, { label: string; extensions: string[]; eps
 			extensions: ['gpkg'],
 			epsg: [
 				{ value: 4979, label: 'WGS84' },
-				{ value: 10162, label: 'JGD 2011 / 平面直角座標系 I' },
-				{ value: 10163, label: 'JGD 2011 / 平面直角座標系 II' },
-				{ value: 10164, label: 'JGD 2011 / 平面直角座標系 III' },
-				{ value: 10165, label: 'JGD 2011 / 平面直角座標系 IV' },
-				{ value: 10166, label: 'JGD 2011 / 平面直角座標系 V' },
-				{ value: 10167, label: 'JGD 2011 / 平面直角座標系 VI' },
-				{ value: 10168, label: 'JGD 2011 / 平面直角座標系 VII' },
-				{ value: 10169, label: 'JGD 2011 / 平面直角座標系 VIII' },
-				{ value: 10170, label: 'JGD 2011 / 平面直角座標系 IX' },
-				{ value: 10171, label: 'JGD 2011 / 平面直角座標系 X' },
-				{ value: 10172, label: 'JGD 2011 / 平面直角座標系 XI' },
-				{ value: 10173, label: 'JGD 2011 / 平面直角座標系 XII' },
-				{ value: 10174, label: 'JGD 2011 / 平面直角座標系 XIII' }
+				{ value: 6669, label: 'JGD 2011 / 平面直角座標系 I' },
+				{ value: 6670, label: 'JGD 2011 / 平面直角座標系 II' },
+				{ value: 6671, label: 'JGD 2011 / 平面直角座標系 III' },
+				{ value: 6672, label: 'JGD 2011 / 平面直角座標系 IV' },
+				{ value: 6673, label: 'JGD 2011 / 平面直角座標系 V' },
+				{ value: 6674, label: 'JGD 2011 / 平面直角座標系 VI' },
+				{ value: 6675, label: 'JGD 2011 / 平面直角座標系 VII' },
+				{ value: 6676, label: 'JGD 2011 / 平面直角座標系 VIII' },
+				{ value: 6677, label: 'JGD 2011 / 平面直角座標系 IX' },
+				{ value: 6678, label: 'JGD 2011 / 平面直角座標系 X' },
+				{ value: 6679, label: 'JGD 2011 / 平面直角座標系 XI' },
+				{ value: 6680, label: 'JGD 2011 / 平面直角座標系 XII' },
+				{ value: 6681, label: 'JGD 2011 / 平面直角座標系 XIII' },
+				{ value: 6682, label: 'JGD 2011 / 平面直角座標系 XIV' },
+				{ value: 6683, label: 'JGD 2011 / 平面直角座標系 XV' },
+				{ value: 6684, label: 'JGD 2011 / 平面直角座標系 XVI' },
+				{ value: 6685, label: 'JGD 2011 / 平面直角座標系 XVII' },
+				{ value: 6686, label: 'JGD 2011 / 平面直角座標系 XVIII' },
+				{ value: 6687, label: 'JGD 2011 / 平面直角座標系 XIX' }
 			]
 		},
 		geojson: {
@@ -65,8 +71,26 @@ const filetypeOptions: Record<string, { label: string; extensions: string[]; eps
 			label: 'Shapefile',
 			extensions: [''],
 			epsg: [
-				{ value: 4979, label: 'WGS84' }
-				// TODO: more epsg options
+				{ value: 4979, label: 'WGS84' },
+				{ value: 6669, label: 'JGD 2011 / 平面直角座標系 I' },
+				{ value: 6670, label: 'JGD 2011 / 平面直角座標系 II' },
+				{ value: 6671, label: 'JGD 2011 / 平面直角座標系 III' },
+				{ value: 6672, label: 'JGD 2011 / 平面直角座標系 IV' },
+				{ value: 6673, label: 'JGD 2011 / 平面直角座標系 V' },
+				{ value: 6674, label: 'JGD 2011 / 平面直角座標系 VI' },
+				{ value: 6675, label: 'JGD 2011 / 平面直角座標系 VII' },
+				{ value: 6676, label: 'JGD 2011 / 平面直角座標系 VIII' },
+				{ value: 6677, label: 'JGD 2011 / 平面直角座標系 IX' },
+				{ value: 6678, label: 'JGD 2011 / 平面直角座標系 X' },
+				{ value: 6679, label: 'JGD 2011 / 平面直角座標系 XI' },
+				{ value: 6680, label: 'JGD 2011 / 平面直角座標系 XII' },
+				{ value: 6681, label: 'JGD 2011 / 平面直角座標系 XIII' },
+				{ value: 6682, label: 'JGD 2011 / 平面直角座標系 XIV' },
+				{ value: 6683, label: 'JGD 2011 / 平面直角座標系 XV' },
+				{ value: 6684, label: 'JGD 2011 / 平面直角座標系 XVI' },
+				{ value: 6685, label: 'JGD 2011 / 平面直角座標系 XVII' },
+				{ value: 6686, label: 'JGD 2011 / 平面直角座標系 XVIII' },
+				{ value: 6687, label: 'JGD 2011 / 平面直角座標系 XIX' }
 			]
 		}
 	};
