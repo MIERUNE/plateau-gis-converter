@@ -353,6 +353,7 @@ impl DataSink for GltfSink {
             let num_features = &features.len();
 
             write_gltf_glb(
+                feedback,
                 writer,
                 translation,
                 vertices,

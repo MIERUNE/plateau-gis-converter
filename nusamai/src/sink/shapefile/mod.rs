@@ -216,13 +216,12 @@ pub fn entity_to_shape(entity: Entity) -> (shapefile::Shape, Map) {
         return (shapefile::Shape::NullShape, Map::default());
     };
 
-    let ObjectStereotype::Feature {
-        id: obj_id,
-        geometries,
-    } = &obj.stereotype
-    else {
+    let ObjectStereotype::Feature { id, geometries } = obj.stereotype else {
         return (shapefile::Shape::NullShape, obj.attributes);
     };
+
+    // Insert Feature id as a attribute
+    obj.attributes.insert("id".to_string(), Value::String(id));
 
     let geom_store = entity.geometry_store.read().unwrap();
 

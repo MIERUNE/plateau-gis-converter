@@ -405,6 +405,7 @@ fn tile_writing_stage(
 
             let mut file = std::fs::File::create(path_glb)?;
             write_gltf_glb(
+                feedback,
                 &mut BufWriter::new(&mut file),
                 translation,
                 vertices,

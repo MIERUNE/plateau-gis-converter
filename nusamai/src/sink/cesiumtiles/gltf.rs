@@ -1,5 +1,7 @@
 use std::io::Write;
 
+use crate::pipeline::{feedback, PipelineError};
+
 use super::{material, metadata::MetadataEncoder};
 use ahash::{HashMap, HashSet};
 use byteorder::{ByteOrder, LittleEndian};
@@ -15,13 +17,14 @@ pub struct PrimitiveInfo {
 pub type Primitives = HashMap<material::Material, PrimitiveInfo>;
 
 pub fn write_gltf_glb<W: Write>(
+    feedback: &feedback::Feedback,
     writer: W,
     translation: [f64; 3],
     vertices: impl IntoIterator<Item = [u32; 9]>,
     primitives: Primitives,
     num_features: usize,
     metadata_encoder: MetadataEncoder,
-) -> std::io::Result<()> {
+) -> Result<(), PipelineError> {
     use nusamai_gltf_json::*;
 
     // The buffer for the BIN part
@@ -202,8 +205,11 @@ pub fn write_gltf_glb<W: Write>(
 
     let gltf_images = image_set
         .into_iter()
-        .map(|img| img.to_gltf(&mut gltf_buffer_views, &mut bin_content))
-        .collect::<std::io::Result<Vec<Image>>>()?;
+        .map(|img| {
+            feedback.ensure_not_canceled()?;
+            Ok(img.to_gltf(&mut gltf_buffer_views, &mut bin_content)?)
+        })
+        .collect::<Result<Vec<Image>, PipelineError>>()?;
 
     let mut gltf_meshes = vec![];
     if !gltf_primitives.is_empty() {
@@ -223,6 +229,8 @@ pub fn write_gltf_glb<W: Write>(
         }
         buffers
     };
+
+    feedback.ensure_not_canceled()?;
 
     // Build the JSON part of glTF
     let gltf = Gltf {
@@ -256,7 +264,7 @@ pub fn write_gltf_glb<W: Write>(
 
     // Write glb to the writer
     nusamai_gltf::glb::Glb {
-        json: serde_json::to_vec(&gltf)?.into(),
+        json: serde_json::to_vec(&gltf).unwrap().into(),
         bin: Some(bin_content.into()),
     }
     .to_writer_with_alignment(writer, 8)?;
