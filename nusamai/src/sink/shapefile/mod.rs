@@ -243,10 +243,6 @@ pub fn entity_to_shape(entity: Entity) -> (shapefile::Shape, Map) {
         let shape =
             shapefile::Shape::PolygonZ(indexed_multipolygon_to_shape(&geom_store.vertices, &mpoly));
 
-        // add gml_id as attributes
-        obj.attributes
-            .insert("id".to_string(), Value::String(obj_id.clone()));
-
         return (shape, obj.attributes);
     }
 
