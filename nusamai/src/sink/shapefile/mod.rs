@@ -1,6 +1,7 @@
 //! Shapefile sink
 
 mod attributes;
+mod crs;
 mod null_shape;
 
 use std::fs::{remove_file, File};
@@ -23,6 +24,8 @@ use crate::sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo};
 use crate::transformer;
 
 use attributes::{attributes_to_record, fill_missing_fields, make_field_list, make_table_builder};
+
+use self::crs::ProjectionRepository;
 
 pub struct ShapefileSinkProvider {}
 
@@ -77,7 +80,7 @@ impl DataSink for ShapefileSink {
         }
     }
 
-    fn run(&mut self, upstream: Receiver, feedback: &Feedback, _schema: &Schema) -> Result<()> {
+    fn run(&mut self, upstream: Receiver, feedback: &Feedback, schema: &Schema) -> Result<()> {
         let (sender, receiver) = std::sync::mpsc::sync_channel(1000);
 
         let (ra, rb) = rayon::join(
@@ -170,14 +173,27 @@ impl DataSink for ShapefileSink {
                         }
                     }
 
+                    // If geometry exists, also write the projection information
+                    if !has_no_geometry {
+                        let repo = ProjectionRepository::new();
+
+                        // write .prj file
+                        let prj_path = &shp_path.with_extension("prj");
+                        crs::write_prj(
+                            BufWriter::new(File::create(prj_path)?),
+                            &repo,
+                            &schema.epsg.unwrap(),
+                        )?;
+                    }
+
                     // If this type has no geometry (i.e. Data or Object stereotype)
                     if has_no_geometry {
                         // Remove dummy .shp and .shx and write a NullShape file.
                         remove_file(&shp_path)?;
-                        let shx_path = shp_path.with_extension("shx");
-                        remove_file(&shx_path)?;
+                        let shx_path = &shp_path.with_extension("shx");
+                        remove_file(shx_path)?;
                         null_shape::write_shp(
-                            BufWriter::new(File::create(shp_path)?),
+                            BufWriter::new(File::create(&shp_path)?),
                             feature_count,
                         )?;
                         null_shape::write_shx(
