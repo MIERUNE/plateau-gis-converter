@@ -23,7 +23,7 @@ use crate::pipeline::{Feedback, PipelineError, Receiver, Result};
 use crate::sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo};
 use crate::transformer;
 
-use attributes::{attributes_to_record, fill_missing_fields, make_field_list, make_table_builder};
+use attributes::{attributes_to_record, make_table_builder};
 
 use self::crs::ProjectionRepository;
 
@@ -124,99 +124,123 @@ impl DataSink for ShapefileSink {
                     });
 
                 // Write a Shapefile file set for each typename
-                for (typename, features) in grouped_features {
-                    let table_info = make_field_list(&features);
-                    let table_builder = make_table_builder(&table_info);
+                grouped_features
+                    .into_iter()
+                    .par_bridge()
+                    .try_for_each(|(typename, features)| {
+                        feedback.ensure_not_canceled()?;
 
-                    // Create all the files needed for the shapefile to be complete (.shp, .shx, .dbf)
-                    std::fs::create_dir_all(&self.output_path)?;
-                    let shp_path = self
-                        .output_path
-                        .join(format!("{}.shp", typename.replace(':', "_")));
+                        let typedef = schema.types.get(&typename).ok_or_else(|| {
+                            PipelineError::Other(format!(
+                                "Type {} not found in the schema",
+                                typename
+                            ))
+                        })?;
 
-                    let feature_count = features.len();
-                    let has_no_geometry = features
-                        .iter()
-                        .all(|(shape, _)| matches!(shape, shapefile::Shape::NullShape));
+                        let (table_builder, fields_default) = make_table_builder(typedef);
 
-                    // NOTE: Need to be scoped to drop the writer before removing .shp/.shx
-                    {
-                        let mut writer = shapefile::Writer::from_path(&shp_path, table_builder)?;
+                        // Create all the files needed for the shapefile to be complete (.shp, .shx, .dbf)
+                        std::fs::create_dir_all(&self.output_path)?;
+                        let shp_path = self
+                            .output_path
+                            .join(format!("{}.shp", typename.replace(':', "_")));
 
-                        // Write each feature
-                        for (shape, mut attributes) in features {
-                            fill_missing_fields(&mut attributes, &table_info);
-                            let record = attributes_to_record(attributes);
+                        let feature_count = features.len();
+                        let has_no_geometry = features
+                            .iter()
+                            .all(|(shape, _)| matches!(shape, shapefile::Shape::NullShape));
 
-                            match shape {
-                                shapefile::Shape::PolygonZ(polygon) => {
-                                    writer.write_shape_and_record(&polygon, &record)
+                        // NOTE: Need to be scoped to drop the writer before removing .shp/.shx
+                        {
+                            let mut writer = shapefile::Writer::from_path(&shp_path, table_builder)
+                                .map_err(|err| match err {
+                                    shapefile::Error::IoError(io_err) => {
+                                        PipelineError::IoError(io_err)
+                                    }
+                                    _ => PipelineError::Other(err.to_string()),
+                                })?;
+
+                            // Write each feature
+                            for (shape, attributes) in features {
+                                let record = attributes_to_record(attributes, &fields_default);
+
+                                match shape {
+                                    shapefile::Shape::PolygonZ(polygon) => {
+                                        writer.write_shape_and_record(&polygon, &record).map_err(
+                                            |err| match err {
+                                                shapefile::Error::IoError(io_err) => {
+                                                    PipelineError::IoError(io_err)
+                                                }
+                                                _ => PipelineError::Other(err.to_string()),
+                                            },
+                                        )?;
+                                    }
+                                    shapefile::Shape::NullShape if !has_no_geometry => {
+                                        // FIXME: feature may have no geometry. e.g.
+                                        // - Building (no geometry)
+                                        //     - BuildingPart (has geometry)
+                                        //     - BuildingPart (has geometry)
+                                        log::warn!(
+                                            "Feature without geometry is not supported yet."
+                                        );
+                                    }
+                                    shapefile::Shape::NullShape if has_no_geometry => {
+                                        // Write dummy data once because shapefile-rs cannot write NullShape file
+                                        let point = shapefile::Point::default();
+                                        writer.write_shape_and_record(&point, &record).map_err(
+                                            |err| match err {
+                                                shapefile::Error::IoError(io_err) => {
+                                                    PipelineError::IoError(io_err)
+                                                }
+                                                _ => PipelineError::Other(err.to_string()),
+                                            },
+                                        )?;
+                                    }
+                                    _ => {
+                                        log::warn!("Unsupported shape type");
+                                    }
                                 }
-                                shapefile::Shape::NullShape if !has_no_geometry => {
-                                    // FIXME: feature may have no geometry. e.g.
-                                    // - Building (no geometry)
-                                    //     - BuildingPart (has geometry)
-                                    //     - BuildingPart (has geometry)
-                                    log::warn!("Feature without geometry is not supported yet.");
-                                    Ok(())
-                                }
-                                shapefile::Shape::NullShape if has_no_geometry => {
-                                    // Write dummy data once because shapefile-rs cannot write NullShape file
-                                    let point = shapefile::Point::default();
-                                    writer.write_shape_and_record(&point, &record)
-                                }
-                                _ => {
-                                    log::warn!("Unsupported shape type");
-                                    Ok(())
-                                }
-                            }?;
+                            }
                         }
-                    }
 
-                    // If geometry exists, also write the projection information
-                    if !has_no_geometry {
-                        let repo = ProjectionRepository::new();
+                        // If this type has no geometry (i.e. Data or Object stereotype)
+                        if has_no_geometry {
+                            // Remove dummy .shp and .shx and write a NullShape file.
+                            remove_file(&shp_path)?;
+                            let shx_path = shp_path.with_extension("shx");
+                            remove_file(&shx_path)?;
+                            null_shape::write_shp(
+                                BufWriter::new(File::create(shp_path)?),
+                                feature_count,
+                            )?;
+                            null_shape::write_shx(
+                                BufWriter::new(File::create(shx_path)?),
+                                feature_count,
+                            )?;
+                        } else {
+                            // write .prj file if this type has geometry
 
-                        // write .prj file
-                        let prj_path = &shp_path.with_extension("prj");
-                        crs::write_prj(
-                            BufWriter::new(File::create(prj_path)?),
-                            &repo,
-                            &schema.epsg.unwrap(),
-                        )?;
-                    }
+                            let repo = ProjectionRepository::new();
+                            let prj_path = &shp_path.with_extension("prj");
+                            crs::write_prj(
+                                BufWriter::new(File::create(prj_path)?),
+                                &repo,
+                                &schema.epsg.unwrap(),
+                            )?;
+                        }
 
-                    // If this type has no geometry (i.e. Data or Object stereotype)
-                    if has_no_geometry {
-                        // Remove dummy .shp and .shx and write a NullShape file.
-                        remove_file(&shp_path)?;
-                        let shx_path = &shp_path.with_extension("shx");
-                        remove_file(shx_path)?;
-                        null_shape::write_shp(
-                            BufWriter::new(File::create(&shp_path)?),
-                            feature_count,
-                        )?;
-                        null_shape::write_shx(
-                            BufWriter::new(File::create(shx_path)?),
-                            feature_count,
-                        )?;
-                    }
-                }
-
-                Ok::<(), shapefile::Error>(())
+                        Ok::<(), PipelineError>(())
+                    })
             },
         );
 
         match ra {
             Ok(_) | Err(PipelineError::Canceled) => {}
-            Err(error) => feedback.fatal_error(error),
+            Err(err) => feedback.fatal_error(err),
         }
         match rb {
             Ok(_) => {}
-            Err(shapefile::Error::IoError(error)) => {
-                feedback.fatal_error(PipelineError::IoError(error))
-            }
-            Err(error) => feedback.fatal_error(PipelineError::Other(error.to_string())),
+            Err(err) => feedback.fatal_error(err),
         }
 
         Ok(())
