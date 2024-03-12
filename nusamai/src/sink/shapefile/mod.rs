@@ -169,7 +169,10 @@ impl DataSink for ShapefileSink {
                                 }
                             }?;
                         }
+                    }
 
+                    // If geometry exists, also write the projection information
+                    if !has_no_geometry {
                         // write .prj file
                         let prj_path = &shp_path.with_extension("prj");
                         crs::write_prj(
@@ -192,8 +195,6 @@ impl DataSink for ShapefileSink {
                             BufWriter::new(File::create(shx_path)?),
                             feature_count,
                         )?;
-                        let prj_path = &shp_path.with_extension("prj");
-                        remove_file(prj_path)?;
                     }
                 }
 
