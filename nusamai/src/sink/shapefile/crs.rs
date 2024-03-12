@@ -16,7 +16,7 @@ const WKT1_ESRI: [(u16, &str); 74] = [
     // WGS84 Geographic 3D
     (
         4979,
-        r#"GEOGCS["WGS_1984_3D",DATUM["D_WGS_1984",SPHEROID["WGS_1984",6378137.0,298.257223563]],PRIMEM["Greenwich",0.0],UNIT["Degree",0.0174532925199433],VERTCS["WGS84_3D",VDATUM["WGS84_3D"],PARAMETER["Vertical_Shift",0.0],PARAMETER["Direction",1.0],UNIT["Meter",1.0]]"#,
+        r#"GEOGCS["WGS_1984_3D",DATUM["D_WGS_1984",SPHEROID["WGS_1984",6378137.0,298.257223563]],PRIMEM["Greenwich",0.0],UNIT["Degree",0.0174532925199433],LINUNIT["Meter",1.0]]"#,
     ),
     // WGS84 Geocentric(Geocentric CRS not supported in WKT1_ESRI)
     // (4978, r#""#);
@@ -30,7 +30,7 @@ const WKT1_ESRI: [(u16, &str); 74] = [
         6697,
         r#"GEOGCS["GCS_JGD_2011",DATUM["D_JGD_2011",SPHEROID["GRS_1980",6378137.0,298.257222101]],PRIMEM["Greenwich",0.0],UNIT["Degree",0.0174532925199433]],VERTCS["JGD2011_vertical_height",VDATUM["Japanese_Geodetic_Datum_2011_vertical"],PARAMETER["Vertical_Shift",0.0],PARAMETER["Direction",1.0],UNIT["Meter",1.0]]"#,
     ),
-    //< JGD2011 / Japan Plane Rectangular CS + JGD2011 (vertical) height
+    // JGD2011 / Japan Plane Rectangular CS + JGD2011 (vertical) height
     // Note: Only I - XIII are defined (XIV - XIX does not exist)
     // CompositeCRS system is supported by QGIS 3.36 or higher and Windows version only.
     // Therefore, a 2D CRS is used even in the case of a composite coordinate system.
