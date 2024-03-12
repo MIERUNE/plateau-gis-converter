@@ -159,7 +159,11 @@ impl DataSink for MvtSink {
             // Sort features by tile_id (using external sorter)
             {
                 s.spawn(move || {
-                    feature_sorting_stage(receiver_sliced, sender_sorted);
+                    if let Err(error) =
+                        feature_sorting_stage(feedback, receiver_sliced, sender_sorted)
+                    {
+                        feedback.fatal_error(error);
+                    }
                 });
             }
 
@@ -230,9 +234,10 @@ fn geometry_slicing_stage(
 }
 
 fn feature_sorting_stage(
+    feedback: &Feedback,
     receiver_sliced: mpsc::Receiver<SerializedSlicedFeature>,
     sender_sorted: mpsc::SyncSender<(u64, Vec<SerializedSlicedFeature>)>,
-) {
+) -> Result<()> {
     let sorter: ExternalSorter<
         SerializedSlicedFeature,
         std::io::Error,
@@ -254,11 +259,14 @@ fn feature_sorting_stage(
         .map(std::result::Result::unwrap)
         .group_by(|ser_feat| ser_feat.tile_id)
     {
+        feedback.ensure_not_canceled()?;
         let ser_feats: Vec<_> = ser_feats.collect();
         if sender_sorted.send((tile_id, ser_feats)).is_err() {
-            return;
+            return Err(PipelineError::Canceled);
         };
     }
+
+    Ok(())
 }
 
 #[derive(Default)]
@@ -285,10 +293,10 @@ fn tile_writing_stage(
             let (zoom, x, y) = tile_id_conv.id_to_zxy(tile_id);
 
             if serialized_feats.len() > 200_000 {
-                log::warn!(
+                feedback.warn(format!(
                     "Too many features in a tile ({} features)",
                     serialized_feats.len()
-                );
+                ));
             }
 
             let path = output_path.join(Path::new(&format!("{zoom}/{x}/{y}.pbf")));
@@ -297,6 +305,8 @@ fn tile_writing_stage(
             }
 
             for detail in (min_detail..=default_detail).rev() {
+                feedback.ensure_not_canceled()?;
+
                 // Make a MVT tile binary
                 let bytes = make_tile(detail, &serialized_feats)?;
 
@@ -310,16 +320,16 @@ fn tile_writing_stage(
                 if detail != min_detail && compressed_size > 500_000 {
                     // If the tile is too large, try a lower detail level
                     let extent = 1 << detail;
-                    log::info!("Tile size is too large: {zoom}/{x}/{y} (extent: {extent}), trying a lower detail level.");
+                    feedback.info(format!("Tile size is too large: {zoom}/{x}/{y} (extent: {extent}), trying a lower detail level."));
                     continue;
                 }
 
-                log::info!(
+                feedback.info(format!(
                     "Writing a tile: {} ({} bytes, {} compressed)",
                     &path.to_string_lossy(),
                     bytesize::to_string(bytes.len() as u64, true),
                     bytesize::to_string(compressed_size as u64, true),
-                );
+                ));
                 fs::write(&path, &bytes)?;
                 break;
             }

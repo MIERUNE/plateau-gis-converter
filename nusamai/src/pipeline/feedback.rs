@@ -35,6 +35,17 @@ pub enum SourceComponent {
     Pipeline,
 }
 
+impl std::fmt::Display for SourceComponent {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            SourceComponent::Source => write!(f, "source"),
+            SourceComponent::Transformer => write!(f, "transformer"),
+            SourceComponent::Sink => write!(f, "sink"),
+            SourceComponent::Pipeline => write!(f, "pipeline"),
+        }
+    }
+}
+
 impl Feedback {
     /// Checks if the pipeline is requested to be canceled
     #[inline]
@@ -98,7 +109,7 @@ impl Feedback {
 
     /// Send a warning log
     #[inline]
-    pub fn warning(&self, message: String) {
+    pub fn warn(&self, message: String) {
         self.send_message(message, log::Level::Warn)
     }
 
@@ -111,13 +122,20 @@ impl Feedback {
     /// Report a fatal error and cancel the pipeline
     #[inline]
     pub fn fatal_error(&self, error: PipelineError) {
-        self.cancel();
-        let _ = self.sender.send(Message {
-            message: "Fatal error".to_string(),
-            level: log::Level::Error,
-            source_component: self.source_component,
-            error: Some(error),
-        });
+        match error {
+            PipelineError::Canceled => {
+                // do nothing
+            }
+            _ => {
+                self.cancel();
+                let _ = self.sender.send(Message {
+                    message: "Fatal error".to_string(),
+                    level: log::Level::Error,
+                    source_component: self.source_component,
+                    error: Some(error),
+                });
+            }
+        }
     }
 }
 
