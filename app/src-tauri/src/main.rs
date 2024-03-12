@@ -10,6 +10,7 @@ use log::LevelFilter;
 use tauri_plugin_log::{LogTarget, RotationStrategy, TimezoneStrategy};
 use thiserror::Error;
 
+use nusamai::pipeline::feedback;
 use nusamai::pipeline::Canceller;
 use nusamai::sink::DataSinkProvider;
 use nusamai::sink::{
@@ -30,7 +31,12 @@ const LOG_LEVEL: LevelFilter = LevelFilter::Debug;
 #[cfg(not(debug_assertions))]
 const LOG_LEVEL: LevelFilter = LevelFilter::Info;
 
+struct ConversionTasksState {
+    canceller: Arc<Mutex<Canceller>>,
+}
+
 fn main() {
+    // System log plugin
     let tauri_loggger = tauri_plugin_log::Builder::default()
         .targets([LogTarget::Stdout, LogTarget::LogDir, LogTarget::Webview])
         .max_file_size(1_000_000) // in bytes
@@ -40,23 +46,58 @@ fn main() {
         .level_for("sqlx", LevelFilter::Info) // suppress sqlx logs, as it's too verbose in DEBUG level
         .build();
 
+    // Build and run the Tauri app
     tauri::Builder::default()
         .plugin(tauri_loggger)
-        .invoke_handler(tauri::generate_handler![run])
+        .manage(ConversionTasksState {
+            canceller: Arc::new(Mutex::new(Canceller::default())),
+        })
+        .invoke_handler(tauri::generate_handler![run_conversion, cancel_conversion])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
 
-#[derive(Error, Debug)]
+#[derive(Clone, serde::Serialize)]
+struct LogMessage {
+    message: String,
+    level: String,
+    error_message: Option<String>,
+    source: String,
+}
+
+impl From<&feedback::Message> for LogMessage {
+    fn from(msg: &feedback::Message) -> Self {
+        LogMessage {
+            message: msg.message.to_string(),
+            level: msg.level.to_string(),
+            error_message: msg.error.as_ref().map(|e| e.to_string()),
+            source: msg.source_component.to_string(),
+        }
+    }
+}
+
+// Everything returned from Tauri commands must implement serde::Serialize
+#[derive(Error, Debug, serde::Serialize)]
+#[serde(tag = "type", content = "message")]
 enum Error {
-    #[error(transparent)]
-    Io(#[from] std::io::Error),
+    #[error("I/O error: {0}")]
+    Io(String),
     #[error("Invalid path: {0}")]
     InvalidPath(String),
     #[error("Invalid setting: {0}")]
     InvalidSetting(String),
     #[error("Invalid mapping rules: {0}")]
     InvalidMappingRules(String),
+    #[error("Conversion failed: {0}")]
+    ConversionFailed(String),
+    #[error("Conversion canceled")]
+    Canceled,
+}
+
+impl From<std::io::Error> for Error {
+    fn from(err: std::io::Error) -> Self {
+        Error::Io(err.to_string())
+    }
 }
 
 fn select_sink_provider(filetype: &str) -> Option<Box<dyn DataSinkProvider>> {
@@ -77,24 +118,19 @@ fn select_sink_provider(filetype: &str) -> Option<Box<dyn DataSinkProvider>> {
     }
 }
 
-// Everything returned from Tauri commands must implement serde::Serialize
-impl serde::Serialize for Error {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: serde::ser::Serializer,
-    {
-        serializer.serialize_str(self.to_string().as_ref())
-    }
-}
-
-#[tauri::command]
-fn run(
+#[tauri::command(async)]
+fn run_conversion(
     input_paths: Vec<String>,
     output_path: String,
     filetype: String,
     epsg: u16,
     rules_path: String,
+    tasks_state: tauri::State<ConversionTasksState>,
+    window: tauri::Window,
 ) -> Result<(), Error> {
+    // Request cancellation of previous task if still running
+    tasks_state.canceller.lock().unwrap().cancel();
+
     // Check the existence of the input paths
     for path in input_paths.iter() {
         if !PathBuf::from_str(path).unwrap().exists() {
@@ -121,9 +157,6 @@ fn run(
     let sinkopt: Vec<(String, String)> = vec![("@output".into(), output_path)];
 
     log::info!("Running pipeline with input: {:?}", input_paths);
-
-    // TODO: set cancellation handler
-    let canceller = Arc::new(Mutex::new(Canceller::default()));
 
     let sink = {
         let sink_provider = select_sink_provider(&filetype).ok_or_else(|| {
@@ -203,22 +236,47 @@ fn run(
     // start the pipeline
     let (handle, watcher, inner_canceller) =
         nusamai::pipeline::run(source, transformer, sink, schema.into());
-    *canceller.lock().unwrap() = inner_canceller;
 
-    std::thread::scope(|scope| {
+    // Store the canceller to the application state
+    *tasks_state.canceller.lock().unwrap() = inner_canceller;
+
+    let first_error = std::thread::scope(|scope| {
         // log watcher
-        scope.spawn(move || {
-            for msg in watcher {
-                log::info!("Feedback message from the pipeline {:?}", msg);
-            }
-        });
-    });
+        scope
+            .spawn(move || {
+                for msg in watcher {
+                    window
+                        .emit("conversion-log", LogMessage::from(&msg))
+                        .unwrap();
+                    if let Some(err) = &msg.error {
+                        return Some(Error::ConversionFailed(err.to_string()));
+                    }
+                }
+                None
+            })
+            .join()
+    })
+    .unwrap();
 
-    // wait for the pipeline to finish
+    // Wait for the pipeline to finish
     handle.join();
-    if canceller.lock().unwrap().is_canceled() {
+
+    // Return error if an error occurred in the pipeline
+    if let Some(err) = first_error {
+        return Err(err);
+    }
+
+    // Return the 'Canceled' error if the pipeline is canceled
+    if tasks_state.canceller.lock().unwrap().is_canceled() {
         log::info!("Pipeline canceled");
+        return Err(Error::Canceled);
     };
 
     Ok(())
+}
+
+/// Request cancellation of the current conversion task
+#[tauri::command]
+fn cancel_conversion(tasks_state: tauri::State<ConversionTasksState>) {
+    tasks_state.canceller.lock().unwrap().cancel();
 }
