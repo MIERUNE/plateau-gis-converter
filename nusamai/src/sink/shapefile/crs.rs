@@ -130,5 +130,7 @@ pub fn write_prj(mut writer: impl Write, epsg: &u16) -> Result<(), std::io::Erro
         writer.write_all(wkt.as_bytes())?;
     }
 
+    writer.flush()?;
+
     Ok(())
 }
