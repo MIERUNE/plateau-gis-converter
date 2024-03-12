@@ -4,6 +4,7 @@ mod material;
 mod metadata;
 mod utils;
 
+use geojson::feature;
 use indexmap::IndexSet;
 use itertools::Itertools;
 use std::fs::File;
@@ -273,8 +274,13 @@ impl DataSink for GltfSink {
             let mut vertices: IndexSet<[u32; 9], RandomState> = IndexSet::default(); // [x, y, z, nx, ny, nz, u, v, feature_id]
             let mut primitives: Primitives = Default::default();
 
+            let mut metadata_encoder = metadata::MetadataEncoder::new(schema);
+
             // make vertices and indices
-            for (feature_id, feature) in features.iter_mut().enumerate() {
+            let mut feature_id = 0;
+            for feature in features.iter_mut() {
+                feedback.ensure_not_canceled()?;
+
                 feature.feature_id = Some(feature_id as u32);
                 feature
                     .polygons
@@ -293,6 +299,15 @@ impl DataSink for GltfSink {
                             1.0 - v,
                         ]
                     });
+
+                // Encode properties
+                if metadata_encoder
+                    .add_feature(&typename, &feature.attributes)
+                    .is_err()
+                {
+                    log::warn!("Failed to encode feature attributes");
+                    continue;
+                }
 
                 for (poly, orig_mat_id) in feature
                     .polygons
@@ -327,7 +342,7 @@ impl DataSink for GltfSink {
                                     (nz as f32).to_bits(),
                                     (u as f32).to_bits(),
                                     (v as f32).to_bits(),
-                                    (feature_id as f32).to_bits(),
+                                    (feature_id as f32).to_bits(), // UNSIGNED_INT can't be used for vertex attribute
                                 ];
                                 let (index, _) = vertices.insert_full(vbits);
                                 index as u32
@@ -335,6 +350,7 @@ impl DataSink for GltfSink {
                         }
                     }
                 }
+                feature_id += 1;
             }
 
             // make folders
@@ -353,8 +369,6 @@ impl DataSink for GltfSink {
             let mut file = File::create(&file_path)?;
             let writer = BufWriter::with_capacity(1024 * 1024, &mut file);
 
-            let num_features = &features.len();
-
             write_gltf_glb(
                 feedback,
                 writer,
@@ -364,7 +378,8 @@ impl DataSink for GltfSink {
                 features,
                 schema,
                 &typename,
-                num_features,
+                feature_id, // num of features
+                metadata_encoder,
             )?;
         }
 
