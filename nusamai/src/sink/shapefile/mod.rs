@@ -171,13 +171,6 @@ impl DataSink for ShapefileSink {
                                 }
                             }?;
                         }
-
-                        // write .prj file
-                        let prj_path = &shp_path.with_extension("prj");
-                        crs::write_prj(
-                            BufWriter::new(File::create(prj_path)?),
-                            &schema.epsg.unwrap(),
-                        )?;
                     }
 
                     // If geometry exists, also write the projection information
@@ -207,8 +200,6 @@ impl DataSink for ShapefileSink {
                             BufWriter::new(File::create(shx_path)?),
                             feature_count,
                         )?;
-                        let prj_path = &shp_path.with_extension("prj");
-                        remove_file(prj_path)?;
                     }
                 }
 
