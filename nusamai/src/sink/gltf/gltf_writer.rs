@@ -100,7 +100,7 @@ pub fn write_gltf_glb<W: Write>(
             // accessor (tex_coords)
             gltf_accessors.push(Accessor {
                 buffer_view: Some(gltf_buffer_views.len() as u32 - 1),
-                byte_offset: 4 * 3,
+                byte_offset: 4 * 6,
                 component_type: ComponentType::Float,
                 count: vertices_count,
                 type_: AccessorType::Vec2,
@@ -110,7 +110,7 @@ pub fn write_gltf_glb<W: Write>(
             // accessor (feature_id)
             gltf_accessors.push(Accessor {
                 buffer_view: Some(gltf_buffer_views.len() as u32 - 1),
-                byte_offset: 4 * 5,
+                byte_offset: 4 * 8,
                 component_type: ComponentType::Float,
                 count: vertices_count,
                 type_: AccessorType::Scalar,
@@ -144,12 +144,12 @@ pub fn write_gltf_glb<W: Write>(
                 ..Default::default()
             });
 
-            let mut attributes = vec![("POSITION".to_string(), 0)];
+            let mut attributes = vec![("POSITION".to_string(), 0), ("NORMAL".to_string(), 1)];
             // TODO: For no-texture data, it's better to exclude u, v from the vertex buffer
             if mat.base_texture.is_some() {
-                attributes.push(("TEXCOORD_0".to_string(), 1));
+                attributes.push(("TEXCOORD_0".to_string(), 2));
             }
-            attributes.push(("_FEATURE_ID_0".to_string(), 2));
+            attributes.push(("_FEATURE_ID_0".to_string(), 3));
 
             gltf_primitives.push(MeshPrimitive {
                 attributes: attributes.into_iter().collect(),
