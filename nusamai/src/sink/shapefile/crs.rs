@@ -320,7 +320,7 @@ const WKT1_ESRI: [(u16, &str); 74] = [
 ];
 
 impl ProjectionRepository {
-    fn new() -> ProjectionRepository {
+    pub fn new() -> ProjectionRepository {
         let mut wkt_map = HashMap::new();
         for &(code, wkt) in WKT1_ESRI.iter() {
             wkt_map.insert(code, wkt.to_string());
@@ -328,13 +328,16 @@ impl ProjectionRepository {
         ProjectionRepository { wkt_map }
     }
 
-    fn get_wkt(&self, epsg_code: &u16) -> Option<&str> {
+    pub fn get_wkt(&self, epsg_code: &u16) -> Option<&str> {
         self.wkt_map.get(epsg_code).map(|s| s.as_str())
     }
 }
 
-pub fn write_prj(mut writer: impl Write, epsg: &u16) -> Result<(), std::io::Error> {
-    let repo = ProjectionRepository::new();
+pub fn write_prj(
+    mut writer: impl Write,
+    repo: &ProjectionRepository,
+    epsg: &u16,
+) -> Result<(), std::io::Error> {
     let wkt = repo.get_wkt(epsg);
     if wkt.is_none() {
         return Err(std::io::Error::new(
