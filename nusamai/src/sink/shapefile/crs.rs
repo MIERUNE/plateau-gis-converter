@@ -344,10 +344,8 @@ pub fn write_prj(
             std::io::ErrorKind::InvalidInput,
             format!("Invalid EPSG code: {}", epsg),
         ));
-    }
-
-    if let Some(wkt) = wkt {
-        writer.write_all(wkt.as_bytes())?;
+    } else {
+        writer.write_all(wkt.unwrap().as_bytes())?;
     }
 
     writer.flush()?;
