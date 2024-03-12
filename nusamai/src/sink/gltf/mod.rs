@@ -2,7 +2,10 @@
 mod gltf_writer;
 mod material;
 mod metadata;
+mod utils;
 
+use indexmap::IndexSet;
+use itertools::Itertools;
 use std::fs::File;
 use std::io::BufWriter;
 use std::path::PathBuf;
@@ -10,9 +13,7 @@ use std::sync::Mutex;
 
 use ahash::{HashMap, HashSet, RandomState};
 use earcut_rs::{utils3d::project3d_to_2d, Earcut};
-use indexmap::IndexSet;
 
-use itertools::Itertools;
 use nusamai_citygml::{object::ObjectStereotype, schema::Schema, GeometryType, Value};
 use nusamai_geometry::MultiPolygon;
 use nusamai_geometry::Polygon;
@@ -27,13 +28,9 @@ use crate::parameters::*;
 use crate::pipeline::{Feedback, PipelineError, Receiver, Result};
 use crate::sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo};
 
-use gltf_writer::write_3dtiles;
-// use positions::Vertex;
-
-// use self::gltf_writer::build_base_gltf;
-use self::gltf_writer::write_gltf_glb;
-use self::material::Material;
-use self::material::Texture;
+use gltf_writer::{write_3dtiles, write_gltf_glb};
+use material::{Material, Texture};
+use utils::calculate_normal;
 
 pub struct GltfSinkProvider {}
 
@@ -314,6 +311,8 @@ impl DataSink for GltfSink {
                     if project3d_to_2d(poly.coords(), num_outer, 5, &mut buf2d) {
                         // earcut
                         earcutter.earcut(&buf2d, poly.hole_indices(), 2, &mut index_buf);
+
+                        if let Some((nx, ny, nz)) = calculate_normal(poly.exterior().coords(), 5) {}
 
                         // collect triangles
                         primitive.indices.extend(index_buf.iter().map(|idx| {
