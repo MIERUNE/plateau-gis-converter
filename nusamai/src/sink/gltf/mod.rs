@@ -2,7 +2,10 @@
 mod gltf_writer;
 mod material;
 mod metadata;
+mod utils;
 
+use indexmap::IndexSet;
+use itertools::Itertools;
 use std::fs::File;
 use std::io::BufWriter;
 use std::path::PathBuf;
@@ -10,9 +13,7 @@ use std::sync::Mutex;
 
 use ahash::{HashMap, HashSet, RandomState};
 use earcut_rs::{utils3d::project3d_to_2d, Earcut};
-use indexmap::IndexSet;
 
-use itertools::Itertools;
 use nusamai_citygml::{object::ObjectStereotype, schema::Schema, GeometryType, Value};
 use nusamai_geometry::MultiPolygon;
 use nusamai_geometry::Polygon;
@@ -27,13 +28,9 @@ use crate::parameters::*;
 use crate::pipeline::{Feedback, PipelineError, Receiver, Result};
 use crate::sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo};
 
-use gltf_writer::write_3dtiles;
-// use positions::Vertex;
-
-// use self::gltf_writer::build_base_gltf;
-use self::gltf_writer::write_gltf_glb;
-use self::material::Material;
-use self::material::Texture;
+use gltf_writer::{write_3dtiles, write_gltf_glb};
+use material::{Material, Texture};
+use utils::calculate_normal;
 
 pub struct GltfSinkProvider {}
 
@@ -273,7 +270,7 @@ impl DataSink for GltfSink {
             let mut buf2d: Vec<f64> = Vec::new(); // 2d-projected [x, y]
             let mut index_buf: Vec<u32> = Vec::new();
 
-            let mut vertices: IndexSet<[u32; 6], RandomState> = IndexSet::default(); // [x, y, z, u, v, feature_id]
+            let mut vertices: IndexSet<[u32; 9], RandomState> = IndexSet::default(); // [x, y, z, nx, ny, nz, u, v, feature_id]
             let mut primitives: Primitives = Default::default();
 
             // make vertices and indices
@@ -311,25 +308,31 @@ impl DataSink for GltfSink {
                     let primitive = primitives.entry(mat).or_default();
                     primitive.feature_ids.insert(feature_id as u32);
 
-                    if project3d_to_2d(poly.coords(), num_outer, 5, &mut buf2d) {
-                        // earcut
-                        earcutter.earcut(&buf2d, poly.hole_indices(), 2, &mut index_buf);
+                    if let Some((nx, ny, nz)) = calculate_normal(poly.exterior().coords(), 5) {
+                        if project3d_to_2d(poly.coords(), num_outer, 5, &mut buf2d) {
+                            // earcut
+                            earcutter.earcut(&buf2d, poly.hole_indices(), 2, &mut index_buf);
 
-                        // collect triangles
-                        primitive.indices.extend(index_buf.iter().map(|idx| {
-                            let pos = *idx as usize * 5;
-                            let [x, y, z, u, v] = poly.coords()[pos..pos + 5].try_into().unwrap();
-                            let vbits = [
-                                (x as f32).to_bits(),
-                                (y as f32).to_bits(),
-                                (z as f32).to_bits(),
-                                (u as f32).to_bits(),
-                                (v as f32).to_bits(),
-                                (feature_id as f32).to_bits(),
-                            ];
-                            let (index, _) = vertices.insert_full(vbits);
-                            index as u32
-                        }));
+                            // collect triangles
+                            primitive.indices.extend(index_buf.iter().map(|idx| {
+                                let pos = *idx as usize * 5;
+                                let [x, y, z, u, v] =
+                                    poly.coords()[pos..pos + 5].try_into().unwrap();
+                                let vbits = [
+                                    (x as f32).to_bits(),
+                                    (y as f32).to_bits(),
+                                    (z as f32).to_bits(),
+                                    (nx as f32).to_bits(),
+                                    (ny as f32).to_bits(),
+                                    (nz as f32).to_bits(),
+                                    (u as f32).to_bits(),
+                                    (v as f32).to_bits(),
+                                    (feature_id as f32).to_bits(),
+                                ];
+                                let (index, _) = vertices.insert_full(vbits);
+                                index as u32
+                            }));
+                        }
                     }
                 }
             }

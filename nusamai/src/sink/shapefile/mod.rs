@@ -25,6 +25,8 @@ use crate::transformer;
 
 use attributes::{attributes_to_record, fill_missing_fields, make_field_list, make_table_builder};
 
+use self::crs::ProjectionRepository;
+
 pub struct ShapefileSinkProvider {}
 
 impl DataSinkProvider for ShapefileSinkProvider {
@@ -174,6 +176,19 @@ impl DataSink for ShapefileSink {
                         let prj_path = &shp_path.with_extension("prj");
                         crs::write_prj(
                             BufWriter::new(File::create(prj_path)?),
+                            &schema.epsg.unwrap(),
+                        )?;
+                    }
+
+                    // If geometry exists, also write the projection information
+                    if !has_no_geometry {
+                        let repo = ProjectionRepository::new();
+
+                        // write .prj file
+                        let prj_path = &shp_path.with_extension("prj");
+                        crs::write_prj(
+                            BufWriter::new(File::create(prj_path)?),
+                            &repo,
                             &schema.epsg.unwrap(),
                         )?;
                     }
