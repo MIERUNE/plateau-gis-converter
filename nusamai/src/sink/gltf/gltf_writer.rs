@@ -25,7 +25,7 @@ pub fn write_gltf_glb<W: Write>(
     feedback: &feedback::Feedback,
     writer: W,
     translation: [f64; 3],
-    vertices: impl IntoIterator<Item = [u32; 6]>,
+    vertices: impl IntoIterator<Item = [u32; 9]>,
     primitives: Primitives,
     features: Features,
     schema: &Schema,
@@ -43,12 +43,12 @@ pub fn write_gltf_glb<W: Write>(
         let mut position_max = [f64::MIN; 3];
         let mut position_min = [f64::MAX; 3];
 
-        const VERTEX_BYTE_STRIDE: usize = 4 * 6; // 4-bytes (f32) x 6
+        const VERTEX_BYTE_STRIDE: usize = 4 * 9; // 4-bytes (f32) x 9
 
         let buffer_offset = bin_content.len();
         let mut buf = [0; VERTEX_BYTE_STRIDE];
         for v in vertices {
-            let [x, y, z, u, v, feature_id] = v;
+            let [x, y, z, nx, ny, nz, u, v, feature_id] = v;
             position_min = [
                 f64::min(position_min[0], f32::from_bits(x) as f64),
                 f64::min(position_min[1], f32::from_bits(y) as f64),
@@ -60,7 +60,7 @@ pub fn write_gltf_glb<W: Write>(
                 f64::max(position_max[2], f32::from_bits(z) as f64),
             ];
 
-            LittleEndian::write_u32_into(&[x, y, z, u, v, feature_id], &mut buf);
+            LittleEndian::write_u32_into(&[x, y, z, nx, ny, nz, u, v, feature_id], &mut buf);
             bin_content.write_all(&buf)?;
             vertices_count += 1;
         }
@@ -87,15 +87,15 @@ pub fn write_gltf_glb<W: Write>(
                 ..Default::default()
             });
 
-            // // accessor (normal)
-            // gltf_accessors.push(Accessor {
-            //     buffer_view: Some(gltf_buffer_views.len() as u32 - 1),
-            //     byte_offset: 4 * 3,
-            //     component_type: ComponentType::Float,
-            //     count: vertices_count,
-            //     type_: AccessorType::Vec3,
-            //     ..Default::default()
-            // });
+            // accessor (normal)
+            gltf_accessors.push(Accessor {
+                buffer_view: Some(gltf_buffer_views.len() as u32 - 1),
+                byte_offset: 4 * 3,
+                component_type: ComponentType::Float,
+                count: vertices_count,
+                type_: AccessorType::Vec3,
+                ..Default::default()
+            });
 
             // accessor (tex_coords)
             gltf_accessors.push(Accessor {

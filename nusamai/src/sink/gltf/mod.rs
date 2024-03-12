@@ -270,7 +270,7 @@ impl DataSink for GltfSink {
             let mut buf2d: Vec<f64> = Vec::new(); // 2d-projected [x, y]
             let mut index_buf: Vec<u32> = Vec::new();
 
-            let mut vertices: IndexSet<[u32; 6], RandomState> = IndexSet::default(); // [x, y, z, u, v, feature_id]
+            let mut vertices: IndexSet<[u32; 9], RandomState> = IndexSet::default(); // [x, y, z, nx, ny, nz, u, v, feature_id]
             let mut primitives: Primitives = Default::default();
 
             // make vertices and indices
@@ -308,27 +308,31 @@ impl DataSink for GltfSink {
                     let primitive = primitives.entry(mat).or_default();
                     primitive.feature_ids.insert(feature_id as u32);
 
-                    if project3d_to_2d(poly.coords(), num_outer, 5, &mut buf2d) {
-                        // earcut
-                        earcutter.earcut(&buf2d, poly.hole_indices(), 2, &mut index_buf);
+                    if let Some((nx, ny, nz)) = calculate_normal(poly.exterior().coords(), 5) {
+                        if project3d_to_2d(poly.coords(), num_outer, 5, &mut buf2d) {
+                            // earcut
+                            earcutter.earcut(&buf2d, poly.hole_indices(), 2, &mut index_buf);
 
-                        if let Some((nx, ny, nz)) = calculate_normal(poly.exterior().coords(), 5) {}
-
-                        // collect triangles
-                        primitive.indices.extend(index_buf.iter().map(|idx| {
-                            let pos = *idx as usize * 5;
-                            let [x, y, z, u, v] = poly.coords()[pos..pos + 5].try_into().unwrap();
-                            let vbits = [
-                                (x as f32).to_bits(),
-                                (y as f32).to_bits(),
-                                (z as f32).to_bits(),
-                                (u as f32).to_bits(),
-                                (v as f32).to_bits(),
-                                (feature_id as f32).to_bits(),
-                            ];
-                            let (index, _) = vertices.insert_full(vbits);
-                            index as u32
-                        }));
+                            // collect triangles
+                            primitive.indices.extend(index_buf.iter().map(|idx| {
+                                let pos = *idx as usize * 5;
+                                let [x, y, z, u, v] =
+                                    poly.coords()[pos..pos + 5].try_into().unwrap();
+                                let vbits = [
+                                    (x as f32).to_bits(),
+                                    (y as f32).to_bits(),
+                                    (z as f32).to_bits(),
+                                    (nx as f32).to_bits(),
+                                    (ny as f32).to_bits(),
+                                    (nz as f32).to_bits(),
+                                    (u as f32).to_bits(),
+                                    (v as f32).to_bits(),
+                                    (feature_id as f32).to_bits(),
+                                ];
+                                let (index, _) = vertices.insert_full(vbits);
+                                index as u32
+                            }));
+                        }
                     }
                 }
             }
