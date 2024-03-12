@@ -6,7 +6,7 @@ pub struct ProjectionRepository {
     wkt_map: HashMap<u16, String>,
 }
 
-// Define "WKT for CRS" with "WKT1::ESRI
+// Define WKT1_ESRI strings for various CRSs
 const WKT1_ESRI: [(u16, &str); 74] = [
     // WGS84 Geographic 2D
     (
