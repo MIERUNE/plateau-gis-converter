@@ -43,7 +43,7 @@ pub fn write_gltf_glb<W: Write>(
         let mut position_max = [f64::MIN; 3];
         let mut position_min = [f64::MAX; 3];
 
-        const VERTEX_BYTE_STRIDE: usize = 4 * 9; // 4-bytes (f32) x 9
+        const VERTEX_BYTE_STRIDE: usize = 4 * 9; // 4-bytes (u32) x 9
 
         let buffer_offset = bin_content.len();
         let mut buf = [0; VERTEX_BYTE_STRIDE];
