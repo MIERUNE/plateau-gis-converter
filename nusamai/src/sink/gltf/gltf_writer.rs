@@ -69,6 +69,7 @@ pub fn write_gltf_glb<W: Write>(
         if len_vertices > 0 {
             // make bufferView for positions, normals, tex_coords, feature_id
             gltf_buffer_views.push(BufferView {
+                name: Some("vertices".to_string()),
                 byte_offset: buffer_offset as u32,
                 byte_length: len_vertices as u32,
                 byte_stride: Some(VERTEX_BYTE_STRIDE as u8),
@@ -78,6 +79,7 @@ pub fn write_gltf_glb<W: Write>(
 
             // accessor (positions)
             gltf_accessors.push(Accessor {
+                name: Some("positions".to_string()),
                 buffer_view: Some(gltf_buffer_views.len() as u32 - 1),
                 component_type: ComponentType::Float,
                 count: vertices_count,
@@ -87,8 +89,9 @@ pub fn write_gltf_glb<W: Write>(
                 ..Default::default()
             });
 
-            // accessor (normal)
+            // accessor (normals)
             gltf_accessors.push(Accessor {
+                name: Some("normals".to_string()),
                 buffer_view: Some(gltf_buffer_views.len() as u32 - 1),
                 byte_offset: 4 * 3,
                 component_type: ComponentType::Float,
@@ -99,6 +102,7 @@ pub fn write_gltf_glb<W: Write>(
 
             // accessor (tex_coords)
             gltf_accessors.push(Accessor {
+                name: Some("texcoords".to_string()),
                 buffer_view: Some(gltf_buffer_views.len() as u32 - 1),
                 byte_offset: 4 * 6,
                 component_type: ComponentType::Float,
@@ -109,6 +113,7 @@ pub fn write_gltf_glb<W: Write>(
 
             // accessor (feature_id)
             gltf_accessors.push(Accessor {
+                name: Some("_feature_ids".to_string()),
                 buffer_view: Some(gltf_buffer_views.len() as u32 - 1),
                 byte_offset: 4 * 8,
                 component_type: ComponentType::Float,
@@ -136,6 +141,7 @@ pub fn write_gltf_glb<W: Write>(
             }
 
             gltf_accessors.push(Accessor {
+                name: Some("indices".to_string()),
                 buffer_view: Some(gltf_buffer_views.len() as u32),
                 byte_offset,
                 component_type: ComponentType::UnsignedInt,
@@ -179,6 +185,7 @@ pub fn write_gltf_glb<W: Write>(
         let indices_len = bin_content.len() - indices_offset;
         if indices_len > 0 {
             gltf_buffer_views.push(BufferView {
+                name: Some("indices".to_string()),
                 byte_offset: indices_offset as u32,
                 byte_length: indices_len as u32,
                 target: Some(BufferViewTarget::ElementArrayBuffer),
