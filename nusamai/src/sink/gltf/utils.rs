@@ -32,3 +32,9 @@ pub fn calculate_normal(vertices: &[f64], dim: usize) -> Option<(f64, f64, f64)>
         d => Some((sum.0 / d, sum.1 / d, sum.2 / d)),
     }
 }
+
+pub fn add_padding(buf: &mut Vec<u8>, align: usize) {
+    let len = buf.len();
+    let pad = (align - (len % align)) % align;
+    buf.resize(len + pad, 0);
+}
