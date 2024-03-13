@@ -1,408 +1,506 @@
-use byteorder::{LittleEndian, WriteBytesExt};
-use std::{collections::HashMap, io::Write};
+//! Encode feature attributes into EXT_structural_metadata format
 
-use nusamai_citygml::{
-    schema::{Schema as NusamaiSchema, TypeDef, TypeRef},
-    Measure, Value,
+use std::collections::HashMap;
+
+use indexmap::{IndexMap, IndexSet};
+use nusamai_citygml::schema::{Attribute, FeatureTypeDef, Schema, TypeDef};
+use nusamai_gltf_json::extensions::gltf::ext_structural_metadata::{
+    self, PropertyTable, PropertyTableProperty,
 };
 use nusamai_gltf_json::{
     extensions::gltf::ext_structural_metadata::{
-        Class, ClassProperty, ClassPropertyComponentType, ClassPropertyType, ExtStructuralMetadata,
-        PropertyTable, PropertyTableProperty, Schema,
+        ClassPropertyComponentType, ClassPropertyType, Enum, EnumValue, EnumValueType,
+        ExtStructuralMetadata,
     },
     BufferView,
 };
 
-use super::Features;
+use super::utils::add_padding;
 
-pub fn make_metadata(
-    num_features: usize,
-    typename: &str,
-    features: &Features,
-    buffer: &mut Vec<u8>,
-    buffer_views: &mut Vec<BufferView>,
-    schema: &NusamaiSchema,
-) -> Option<ExtStructuralMetadata> {
-    if num_features == 0 {
-        return None;
-    }
+const ENUM_NO_DATA: u32 = 0;
+const ENUM_NO_DATA_NAME: &str = "";
+const FLOAT_NO_DATA: f64 = f64::MAX;
+const INT64_NO_DATA: i64 = i64::MIN;
+const UINT64_NO_DATA: u64 = u64::MAX;
 
-    let type_def = schema.types.get::<String>(&typename.to_string()).unwrap();
-
-    // schema to gltf `Class`
-    let classes = schema_to_gltf_classes(typename, type_def);
-    // schema to gltf `Enums`
-    // let enums: HashMap<String, Enum> = Default::default();
-
-    let property_tables = {
-        let property_table = schema_to_gltf_property_table(
-            typename,
-            type_def,
-            buffer_views.len() as u32,
-            num_features,
-        );
-
-        // make buffer_view for each property
-        let mut properties = property_table.properties.iter().collect::<Vec<_>>();
-        properties.sort_by(|a, b| a.1.values.cmp(&b.1.values));
-
-        // we need to write buffers for each column in the same order as in the propertyTable generated from the schema
-        // and also need to start from the 0th record of the feature_id
-        // todo: whenever they are null, we need to modify them so that they are not written
-        for (property_name, _) in properties {
-            let mut buf: Vec<u8> = Vec::new();
-            let mut string_offset_buffer: Vec<u32> = Vec::new();
-            // todo: implement array offset buffer
-            // let mut array_offset_buffer: Vec<u32> = Vec::new();
-
-            for feature in features {
-                if let Value::Object(object) = &feature.attributes {
-                    let attribute_name_list: Vec<&String> =
-                        object.attributes.keys().collect::<Vec<_>>();
-                    let is_hit = attribute_name_list.contains(&property_name);
-
-                    let p = classes
-                        .get(typename)
-                        .unwrap()
-                        .properties
-                        .get(property_name)
-                        .unwrap();
-                    let property_type = &p.type_;
-                    let component_type = &p.component_type;
-
-                    // if the value does not exist, write a default value to the buffer
-                    if !is_hit {
-                        match property_type {
-                            ClassPropertyType::String => {
-                                string_offset_buffer.push(buf.len() as u32);
-                                buf.write_all(b"0").unwrap();
-                            }
-                            ClassPropertyType::Boolean => {
-                                buf.write_u8(0).unwrap();
-                            }
-                            _ => {}
-                        }
-
-                        // if component_type is Some, write a numeric value to the buffer
-                        if let Some(component_type) = component_type {
-                            match component_type {
-                                ClassPropertyComponentType::Int8 => {
-                                    buf.write_i8(0).unwrap();
-                                }
-                                ClassPropertyComponentType::Uint8 => {
-                                    buf.write_u8(0).unwrap();
-                                }
-                                ClassPropertyComponentType::Int16 => {
-                                    buf.write_i16::<LittleEndian>(0).unwrap();
-                                }
-                                ClassPropertyComponentType::Uint16 => {
-                                    buf.write_u16::<LittleEndian>(0).unwrap();
-                                }
-                                ClassPropertyComponentType::Int32 => {
-                                    buf.write_i32::<LittleEndian>(0).unwrap();
-                                }
-                                ClassPropertyComponentType::Uint32 => {
-                                    buf.write_u32::<LittleEndian>(0).unwrap();
-                                }
-                                ClassPropertyComponentType::Float32 => {
-                                    buf.write_f32::<LittleEndian>(0.0).unwrap();
-                                }
-                                ClassPropertyComponentType::Float64 => {
-                                    buf.write_f64::<LittleEndian>(0.0).unwrap();
-                                }
-                                ClassPropertyComponentType::Int64 => {
-                                    buf.write_i64::<LittleEndian>(0).unwrap();
-                                }
-                                ClassPropertyComponentType::Uint64 => {
-                                    buf.write_u64::<LittleEndian>(0).unwrap();
-                                }
-                            }
-                        };
-                        // next feature
-                        continue;
-                    }
-
-                    if let Some((_, value)) = object
-                        .attributes
-                        .iter()
-                        .find(|(name, _)| *name == property_name)
-                    {
-                        // If the value exists, write to buffer according to the rules
-                        value.write_to_buffer(&mut buf, &mut string_offset_buffer);
-                    }
-                }
-            }
-            // Offset also requires an index at the end of the string
-            if !string_offset_buffer.is_empty() {
-                string_offset_buffer.push(buf.len() as u32);
-            }
-
-            let byte_offset = buffer.len();
-            let byte_length = buf.len();
-
-            buffer.extend(buf.iter());
-
-            buffer_views.push(BufferView {
-                byte_offset: byte_offset as u32,
-                byte_length: byte_length as u32,
-                ..Default::default()
-            });
-
-            if !string_offset_buffer.is_empty() {
-                let byte_offset = buffer.len();
-                let byte_length = string_offset_buffer.len() as u32 * 4;
-
-                buffer.extend(string_offset_buffer.iter().flat_map(|x| x.to_le_bytes()));
-
-                buffer_views.push(BufferView {
-                    byte_offset: byte_offset as u32,
-                    byte_length,
-                    ..Default::default()
-                });
-            }
-        }
-
-        vec![property_table]
-    };
-
-    // Schema
-    let schema = Schema {
-        id: typename.to_string(),
-        classes,
-        // enums,
-        ..Default::default()
-    };
-
-    Some(ExtStructuralMetadata {
-        schema: Some(schema),
-        property_tables: Some(property_tables),
-        ..Default::default()
-    })
+pub struct MetadataEncoder<'a> {
+    /// The original city model schema
+    original_schema: &'a Schema,
+    /// typename -> Class
+    classes: IndexMap<String, Class>,
+    // Represents Code values as enum names?
+    enum_set: IndexSet<String>,
 }
 
-pub fn schema_to_gltf_classes(typename: &str, type_def: &TypeDef) -> HashMap<String, Class> {
-    let mut classes: HashMap<String, Class> = HashMap::new();
+impl<'a> MetadataEncoder<'a> {
+    pub fn new(original_schema: &'a Schema) -> Self {
+        // Use the first enum value as noData
+        let mut enum_set: IndexSet<String> = Default::default();
+        enum_set.insert(ENUM_NO_DATA_NAME.to_string());
 
-    match type_def {
-        TypeDef::Feature(f) => {
-            let mut class_properties: HashMap<String, ClassProperty> = HashMap::new();
+        Self {
+            original_schema,
+            classes: Default::default(),
+            enum_set,
+        }
+    }
 
-            for (name, attr) in &f.attributes {
-                let (class_property_type, class_property_component_type) =
-                    schema_to_gltf_property_type(&attr.type_ref);
+    // Add a feature and return the assigned feature ID.
+    pub fn add_feature(
+        &mut self,
+        typename: &str,
+        attributes: &nusamai_citygml::object::Value,
+    ) -> Result<usize, ()> {
+        let Some(TypeDef::Feature(feature_def)) = self.original_schema.types.get(typename) else {
+            return Err(());
+        };
 
-                // Create Schema.classes
-                let class_property = ClassProperty {
-                    description: Some(name.clone()),
-                    type_: class_property_type,
-                    component_type: class_property_component_type,
-                    ..Default::default()
-                };
-                class_properties.insert(name.clone(), class_property);
+        let typename = typename.replace(':', "_");
+
+        let class = self
+            .classes
+            .entry(typename)
+            .or_insert_with(|| Class::from(feature_def));
+
+        class.add_feature(attributes, &mut self.enum_set)
+    }
+
+    pub fn into_metadata(
+        self,
+        buffer: &mut Vec<u8>,
+        buffer_views: &mut Vec<BufferView>,
+    ) -> Option<ExtStructuralMetadata> {
+        let (schema, property_tables) = {
+            let enums = {
+                let mut enums: HashMap<String, Enum> = HashMap::new();
+                let mut values = vec![];
+
+                for (idx, name) in self.enum_set.into_iter().enumerate() {
+                    values.push(EnumValue {
+                        value: idx as i32,
+                        name,
+                        ..Default::default()
+                    });
+                }
+
+                enums.insert(
+                    "Enum01".to_string(),
+                    Enum {
+                        value_type: EnumValueType::Uint32,
+                        values,
+                        ..Default::default()
+                    },
+                );
+                enums
+            };
+
+            let (classes, property_tables) = {
+                let mut classes = HashMap::new();
+                let mut property_tables = Vec::new();
+                for (typename, cls) in self.classes {
+                    let (class, property_table) =
+                        cls.make_metadata(&typename, buffer, buffer_views);
+                    classes.insert(typename, class);
+                    property_tables.push(property_table);
+                }
+                (classes, property_tables)
+            };
+
+            let schema = ext_structural_metadata::Schema {
+                id: "Schema".to_string(),
+                classes,
+                enums,
+                ..Default::default()
+            };
+
+            (schema, property_tables)
+        };
+
+        Some(ExtStructuralMetadata {
+            schema: Some(schema),
+            property_tables: Some(property_tables),
+            ..Default::default()
+        })
+    }
+}
+
+#[derive(Default, Debug)]
+struct Class {
+    /// Counter for assigning feature IDs.
+    feature_count: usize,
+    /// properties
+    properties: IndexMap<String, Property>,
+}
+
+impl From<&FeatureTypeDef> for Class {
+    fn from(feature_def: &FeatureTypeDef) -> Self {
+        let mut properties = IndexMap::new();
+        // id
+        properties.insert("id".to_string(), Property::new(PropertyType::String, false));
+        // attributes
+        for (name, attr) in &feature_def.attributes {
+            properties.insert(name.to_string(), Property::from(attr));
+        }
+        Self {
+            feature_count: 0,
+            properties,
+        }
+    }
+}
+
+impl Class {
+    fn add_feature(
+        &mut self,
+        attributes: &nusamai_citygml::object::Value,
+        enum_set: &mut IndexSet<String>,
+    ) -> Result<usize, ()> {
+        use nusamai_citygml::object::Value;
+
+        if let Value::Object(obj) = attributes {
+            // Encode id
+            if let Some(id) = obj.stereotype.id() {
+                let value = Value::String(id.to_string());
+                if let Some(prop) = self.properties.get_mut("id") {
+                    encode_value(&value, prop, enum_set);
+                    prop.used = true;
+                }
             }
 
-            classes.insert(
-                typename.to_string(),
-                Class {
-                    name: Some(typename.to_string()),
-                    description: None,
-                    properties: class_properties.clone(),
+            // Encode attributes
+            for (attr_name, value) in &obj.attributes {
+                let Some(prop) = self.properties.get_mut(attr_name) else {
+                    continue;
+                };
+                encode_value(value, prop, enum_set);
+                prop.used = true;
+            }
+
+            // Fill in the default values for the properties that don't occur in the input
+            for (key, prop) in &mut self.properties {
+                if obj.attributes.contains_key(key) {
+                    // todo: なぜかcontains_keyが使えない
+                    continue;
+                }
+
+                if prop.is_array {
+                    match prop.type_ {
+                        PropertyType::String => {
+                            prop.array_offsets
+                                .push(prop.string_offsets.len() as u32 - 1);
+                        }
+                        // PropertyType::Boolean => todo!(), // TODO
+                        _ => {
+                            prop.array_offsets.push(prop.count);
+                        }
+                    }
+                } else {
+                    match prop.type_ {
+                        PropertyType::Int64 => {
+                            prop.value_buffer.extend(INT64_NO_DATA.to_le_bytes())
+                        }
+                        PropertyType::Uint64 => {
+                            prop.value_buffer.extend(UINT64_NO_DATA.to_le_bytes())
+                        }
+                        PropertyType::Float64 => {
+                            prop.value_buffer.extend(FLOAT_NO_DATA.to_le_bytes())
+                        }
+                        PropertyType::String => {
+                            prop.string_offsets.push(prop.value_buffer.len() as u32)
+                        }
+                        PropertyType::Enum => prop.value_buffer.extend(ENUM_NO_DATA.to_le_bytes()),
+                        // PropertyType::Boolean => todo!(),
+                    };
+                }
+            }
+
+            // Return the assigned feature ID
+            let feature_id = self.feature_count;
+            self.feature_count += 1;
+            Ok(feature_id)
+        } else {
+            Err(())
+        }
+    }
+
+    fn make_metadata(
+        self,
+        class_name: &str,
+        buffer: &mut Vec<u8>,
+        buffer_views: &mut Vec<BufferView>,
+    ) -> (
+        ext_structural_metadata::Class,
+        ext_structural_metadata::PropertyTable,
+    ) {
+        let mut class_properties = HashMap::new();
+        let mut pt_properties: HashMap<String, PropertyTableProperty> = Default::default();
+
+        for (name, prop) in self.properties {
+            // Skip unused properties
+            if !prop.used {
+                continue;
+            }
+
+            class_properties.insert(
+                name.to_string(),
+                ext_structural_metadata::ClassProperty {
+                    type_: match prop.type_ {
+                        PropertyType::Int64 => ClassPropertyType::Scalar,
+                        PropertyType::Uint64 => ClassPropertyType::Scalar,
+                        PropertyType::Float64 => ClassPropertyType::Scalar,
+                        PropertyType::String => ClassPropertyType::String,
+                        // PropertyType::Boolean => ClassPropertyType::Boolean,
+                        PropertyType::Enum => ClassPropertyType::Enum,
+                    },
+                    component_type: match prop.type_ {
+                        PropertyType::Int64 => Some(ClassPropertyComponentType::Int64),
+                        PropertyType::Uint64 => Some(ClassPropertyComponentType::Uint64),
+                        PropertyType::Float64 => Some(ClassPropertyComponentType::Float64),
+                        PropertyType::String => None,
+                        PropertyType::Enum => None,
+                        //PropertyType::Boolean => None,
+                    },
+                    enum_type: match prop.type_ {
+                        PropertyType::Enum => Some("Enum01".to_string()),
+                        _ => None,
+                    },
+                    array: prop.is_array,
+                    no_data: match (prop.type_, prop.is_array) {
+                        (_, true) => Some(serde_json::Value::Array(vec![])),
+                        (PropertyType::Enum, false) => {
+                            Some(serde_json::Value::String(ENUM_NO_DATA_NAME.to_string()))
+                        }
+                        (PropertyType::String, false) => {
+                            Some(serde_json::Value::String("".to_string()))
+                        }
+                        (PropertyType::Float64, false) => Some(serde_json::Value::Number(
+                            serde_json::Number::from_f64(FLOAT_NO_DATA).unwrap(),
+                        )),
+                        (PropertyType::Int64, false) => Some(serde_json::Value::Number(
+                            serde_json::Number::from(INT64_NO_DATA),
+                        )),
+                        (PropertyType::Uint64, false) => Some(serde_json::Value::Number(
+                            serde_json::Number::from(UINT64_NO_DATA),
+                        )),
+                    },
+                    ..Default::default()
+                },
+            );
+
+            // values
+            let start = buffer.len();
+            buffer.extend(prop.value_buffer);
+            buffer_views.push(BufferView {
+                name: Some(format!("{}_prop_values", name).to_string()),
+                byte_offset: start as u32,
+                byte_length: (buffer.len() - start) as u32,
+                ..Default::default()
+            });
+            let values_view_idx = buffer_views.len() as u32 - 1;
+            add_padding(buffer, 4);
+
+            // arrayOffsets
+            let array_offsets_idx = if prop.is_array {
+                let start = buffer.len();
+                for offset in prop.array_offsets {
+                    buffer.extend(offset.to_le_bytes());
+                }
+                buffer_views.push(BufferView {
+                    name: Some(format!("{}_prop_array_offsets", name).to_string()),
+                    byte_offset: start as u32,
+                    byte_length: (buffer.len() - start) as u32,
+                    ..Default::default()
+                });
+                Some(buffer_views.len() as u32 - 1)
+            } else {
+                None
+            };
+
+            // stringOffsets
+            let string_offsets_idx = if prop.type_ == PropertyType::String {
+                let start = buffer.len();
+                for offset in prop.string_offsets {
+                    buffer.extend(offset.to_le_bytes());
+                }
+                buffer_views.push(BufferView {
+                    name: Some(format!("{}_prop_string_offsets", name).to_string()),
+                    byte_offset: start as u32,
+                    byte_length: (buffer.len() - start) as u32,
+                    ..Default::default()
+                });
+                Some(buffer_views.len() as u32 - 1)
+            } else {
+                None
+            };
+
+            pt_properties.insert(
+                name,
+                PropertyTableProperty {
+                    values: values_view_idx,
+                    array_offsets: array_offsets_idx,
+                    string_offsets: string_offsets_idx,
                     ..Default::default()
                 },
             );
         }
-        TypeDef::Data(_) => {
-            // todo: implement
-        }
-        TypeDef::Property(_) => {
-            // todo: implement
-        }
-    }
 
-    classes
-}
+        let property_table = PropertyTable {
+            class: class_name.to_string(),
+            count: self.feature_count as u32,
+            properties: pt_properties,
+            ..Default::default()
+        };
 
-fn schema_to_gltf_property_type(
-    type_ref: &TypeRef,
-) -> (ClassPropertyType, Option<ClassPropertyComponentType>) {
-    match type_ref {
-        TypeRef::String => (ClassPropertyType::String, None),
-        TypeRef::Integer => (
-            ClassPropertyType::Scalar,
-            Some(ClassPropertyComponentType::Int64),
-        ),
-        TypeRef::Double => (
-            ClassPropertyType::Scalar,
-            Some(ClassPropertyComponentType::Float64),
-        ),
-        TypeRef::Boolean => (ClassPropertyType::Boolean, None),
-        TypeRef::Measure => (
-            ClassPropertyType::Scalar,
-            Some(ClassPropertyComponentType::Float64),
-        ),
-        TypeRef::Code => (ClassPropertyType::String, None),
-        TypeRef::NonNegativeInteger => (
-            ClassPropertyType::Scalar,
-            Some(ClassPropertyComponentType::Uint64),
-        ),
-        TypeRef::JsonString(_) => (ClassPropertyType::String, None),
-        TypeRef::Point => (
-            ClassPropertyType::Vec3,
-            Some(ClassPropertyComponentType::Float64),
-        ),
-        TypeRef::Named(_) => (ClassPropertyType::String, None),
-        TypeRef::URI => (ClassPropertyType::String, None),
-        TypeRef::Date => (ClassPropertyType::String, None),
-        TypeRef::DateTime => (ClassPropertyType::String, None),
-        TypeRef::Unknown => todo!(),
+        let class = ext_structural_metadata::Class {
+            properties: class_properties,
+            ..Default::default()
+        };
+
+        (class, property_table)
     }
 }
 
-pub fn schema_to_gltf_property_table(
-    typename: &str,
-    schema: &TypeDef,
-    buffer_view_length: u32,
-    num_features: usize,
-) -> PropertyTable {
-    // Create Schema.propertyTables
-    let mut property_table: PropertyTable = PropertyTable {
-        class: typename.to_string(),
-        properties: HashMap::new(),
-        count: num_features as u32,
-        ..Default::default()
-    };
+fn encode_value(
+    value: &nusamai_citygml::object::Value,
+    prop: &mut Property,
+    enum_set: &mut IndexSet<String>,
+) {
+    use nusamai_citygml::object::Value;
 
-    let mut buffer_view_length = buffer_view_length;
-    match schema {
-        TypeDef::Feature(f) => {
-            for (name, attr) in &f.attributes {
-                let (class_property_type, _) = schema_to_gltf_property_type(&attr.type_ref);
-                match class_property_type {
-                    ClassPropertyType::String => {
-                        property_table.properties.insert(
-                            name.clone(),
-                            PropertyTableProperty {
-                                values: buffer_view_length,
-                                string_offsets: Some(buffer_view_length + 1),
-                                ..Default::default()
-                            },
-                        );
-                        buffer_view_length += 2;
-                    }
-                    ClassPropertyType::Scalar => {
-                        property_table.properties.insert(
-                            name.clone(),
-                            PropertyTableProperty {
-                                values: buffer_view_length,
-                                ..Default::default()
-                            },
-                        );
-                        buffer_view_length += 1;
-                    }
-                    ClassPropertyType::Boolean => {
-                        property_table.properties.insert(
-                            name.clone(),
-                            PropertyTableProperty {
-                                values: buffer_view_length,
-                                ..Default::default()
-                            },
-                        );
-                        buffer_view_length += 1;
-                    }
-                    _ => unimplemented!(),
+    match value {
+        Value::String(s) => {
+            prop.value_buffer.extend_from_slice(s.as_bytes());
+            prop.string_offsets.push(prop.value_buffer.len() as u32);
+            prop.count += 1;
+        }
+        Value::Uri(u) => {
+            prop.value_buffer
+                .extend_from_slice(u.value().as_str().as_bytes());
+            prop.string_offsets.push(prop.value_buffer.len() as u32);
+            prop.count += 1;
+        }
+        Value::Date(d) => {
+            prop.value_buffer
+                .extend_from_slice(d.to_string().as_bytes());
+            prop.string_offsets.push(prop.value_buffer.len() as u32);
+            prop.count += 1;
+        }
+        Value::Code(c) => {
+            let idx = enum_set.get_index_of(c.value()).unwrap_or_else(|| {
+                let (idx, _) = enum_set.insert_full(c.value().to_string());
+                idx
+            });
+            prop.value_buffer.extend((idx as u32).to_le_bytes());
+            prop.count += 1;
+        }
+        Value::Integer(i) => {
+            let b: [u8; 8] = (*i).to_le_bytes(); // ensure: 8 bytes
+            prop.value_buffer.extend(b);
+            prop.count += 1;
+        }
+        Value::NonNegativeInteger(u) => {
+            let b: [u8; 8] = (*u as i64).to_le_bytes(); // ensure: 8 bytes
+            prop.value_buffer.extend(b);
+            prop.count += 1;
+        }
+        Value::Double(d) => {
+            prop.value_buffer.extend((*d).to_le_bytes());
+            prop.count += 1;
+        }
+        Value::Measure(m) => {
+            let b: [u8; 8] = m.value().to_le_bytes(); // ensure: 8 bytes
+            prop.value_buffer.extend(b);
+            prop.count += 1;
+        }
+        Value::Boolean(b) => {
+            let b: [u8; 8] = (*b as u64).to_le_bytes(); // ensure: 8 bytes
+            prop.value_buffer.extend(b);
+            prop.count += 1;
+        }
+        Value::Point(_) => todo!(), // TOOD
+        Value::Array(arr) => {
+            for v in arr {
+                encode_value(v, prop, enum_set);
+            }
+
+            match prop.type_ {
+                PropertyType::String => {
+                    prop.array_offsets
+                        .push(prop.string_offsets.len() as u32 - 1);
+                }
+                // PropertyType::Boolean => todo!(), // TODO
+                _ => {
+                    prop.array_offsets.push(prop.count);
                 }
             }
-        }
-        TypeDef::Data(_) => {
-            // todo: implement
-        }
-        TypeDef::Property(_) => {
-            // todo: implement
-        }
-    }
-
-    property_table
-}
-
-// value to bytes
-trait ToBytes {
-    fn write_to_bytes(&self, buffer: &mut Vec<u8>);
-}
-
-impl ToBytes for i64 {
-    fn write_to_bytes(&self, buffer: &mut Vec<u8>) {
-        buffer.write_i64::<LittleEndian>(*self).unwrap();
+        } // TODO
+        Value::Object(_) => unreachable!(),
     }
 }
 
-impl ToBytes for u64 {
-    fn write_to_bytes(&self, buffer: &mut Vec<u8>) {
-        buffer.write_u64::<LittleEndian>(*self).unwrap();
-    }
+#[derive(Debug)]
+struct Property {
+    type_: PropertyType,
+    value_buffer: Vec<u8>,
+    count: u32,
+    is_array: bool,
+    /// Whether the property is used at least once.
+    used: bool,
+    array_offsets: Vec<u32>,
+    string_offsets: Vec<u32>,
 }
 
-impl ToBytes for f64 {
-    fn write_to_bytes(&self, buffer: &mut Vec<u8>) {
-        buffer.write_f64::<LittleEndian>(*self).unwrap();
-    }
-}
-
-impl ToBytes for bool {
-    fn write_to_bytes(&self, buffer: &mut Vec<u8>) {
-        let value = if *self { 1 } else { 0 };
-        buffer.write_i32::<LittleEndian>(value).unwrap();
-    }
-}
-
-impl ToBytes for Measure {
-    fn write_to_bytes(&self, buffer: &mut Vec<u8>) {
-        let value = self.value();
-        buffer.write_f64::<LittleEndian>(value).unwrap();
-    }
-}
-
-impl ToBytes for Value {
-    fn write_to_bytes(&self, buffer: &mut Vec<u8>) {
-        match self {
-            Value::Integer(i) => i.write_to_bytes(buffer),
-            Value::NonNegativeInteger(u) => u.write_to_bytes(buffer),
-            Value::Double(d) => d.write_to_bytes(buffer),
-            Value::Boolean(b) => b.write_to_bytes(buffer), // FIXME: boolean value must be stored as bitstream.
-            Value::Measure(m) => m.write_to_bytes(buffer),
-            _ => {
-                // todo: implement
-            }
+impl Property {
+    pub fn new(type_: PropertyType, is_array: bool) -> Self {
+        let string_offsets = match type_ {
+            PropertyType::String => vec![0],
+            _ => vec![],
+        };
+        let array_offsets = match is_array {
+            true => vec![0],
+            false => vec![],
+        };
+        Property {
+            type_,
+            count: 0,
+            value_buffer: Default::default(),
+            is_array,
+            used: false,
+            string_offsets,
+            array_offsets,
         }
     }
 }
 
-trait ToBuffer {
-    fn write_to_buffer(&self, buffer: &mut Vec<u8>, string_offset_buffer: &mut Vec<u32>);
+impl From<&Attribute> for Property {
+    fn from(attr: &Attribute) -> Self {
+        use nusamai_citygml::schema::TypeRef;
+        let type_ = match attr.type_ref {
+            TypeRef::String => PropertyType::String,
+            TypeRef::Code => PropertyType::Enum,
+            TypeRef::Integer => PropertyType::Int64,
+            TypeRef::NonNegativeInteger => PropertyType::Uint64,
+            TypeRef::Double => PropertyType::Float64,
+            TypeRef::Boolean => PropertyType::Int64, // TODO: Boolean bitstream
+            TypeRef::JsonString(_) => PropertyType::String,
+            TypeRef::URI => PropertyType::String,
+            TypeRef::Date => PropertyType::String,
+            TypeRef::DateTime => PropertyType::String,
+            TypeRef::Measure => PropertyType::Float64,
+            TypeRef::Point => PropertyType::String, // TODO: VEC3<f64>
+            TypeRef::Named(_) => unreachable!(),
+            TypeRef::Unknown => unreachable!(),
+        };
+        let is_array = attr.max_occurs != Some(1);
+        Property::new(type_, is_array)
+    }
 }
 
-impl ToBuffer for Value {
-    fn write_to_buffer(&self, buffer: &mut Vec<u8>, string_offset_buffer: &mut Vec<u32>) {
-        match self {
-            Value::String(s) => {
-                string_offset_buffer.push(buffer.len() as u32);
-                buffer.write_all(s.as_bytes()).unwrap();
-            }
-            Value::Code(c) => {
-                let json = c.value();
-                string_offset_buffer.push(buffer.len() as u32);
-                buffer.write_all(json.as_bytes()).unwrap();
-            }
-            Value::Array(a) => {
-                let json = serde_json::to_string(a).unwrap();
-                string_offset_buffer.push(buffer.len() as u32);
-                buffer.write_all(json.as_bytes()).unwrap();
-            }
-            Value::Object(o) => {
-                let json = serde_json::to_string(o).unwrap();
-                string_offset_buffer.push(buffer.len() as u32);
-                buffer.write_all(json.as_bytes()).unwrap();
-            }
-            _ => self.write_to_bytes(buffer),
-        }
-    }
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum PropertyType {
+    Int64,
+    Uint64,
+    Float64,
+    String,
+    // Boolean,
+    Enum,
 }

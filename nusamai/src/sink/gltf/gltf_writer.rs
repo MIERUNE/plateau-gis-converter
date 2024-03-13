@@ -6,32 +6,25 @@ use std::path::Path;
 use byteorder::{ByteOrder, LittleEndian};
 
 use indexmap::IndexSet;
-use nusamai_citygml::schema::Schema;
-use nusamai_gltf_json::{
-    extensions, Accessor, AccessorType, Buffer, BufferView, BufferViewTarget, ComponentType, Gltf,
-    Image, Mesh, MeshPrimitive, Node, PrimitiveMode, Scene,
-};
+use nusamai_gltf_json::extensions::mesh::ext_mesh_features;
 
 use crate::pipeline::feedback;
 use crate::pipeline::PipelineError;
 
 use super::material;
-use super::metadata::make_metadata;
-use super::Features;
+use super::metadata::MetadataEncoder;
 use super::Primitives;
 
-#[allow(clippy::too_many_arguments)]
 pub fn write_gltf_glb<W: Write>(
     feedback: &feedback::Feedback,
     writer: W,
     translation: [f64; 3],
     vertices: impl IntoIterator<Item = [u32; 9]>,
     primitives: Primitives,
-    features: Features,
-    schema: &Schema,
-    typename: &str,
-    num_features: &usize,
+    metadata_encoder: MetadataEncoder,
 ) -> Result<(), PipelineError> {
+    use nusamai_gltf_json::*;
+
     // The buffer for the BIN part
     let mut bin_content: Vec<u8> = Vec::new();
     let mut gltf_buffer_views = vec![];
@@ -43,7 +36,7 @@ pub fn write_gltf_glb<W: Write>(
         let mut position_max = [f64::MIN; 3];
         let mut position_min = [f64::MAX; 3];
 
-        const VERTEX_BYTE_STRIDE: usize = 4 * 9; // 4-bytes (u32) x 9
+        const VERTEX_BYTE_STRIDE: usize = 4 * 9; // 4-bytes (f32) x 9
 
         let buffer_offset = bin_content.len();
         let mut buf = [0; VERTEX_BYTE_STRIDE];
@@ -67,8 +60,8 @@ pub fn write_gltf_glb<W: Write>(
 
         let len_vertices = bin_content.len() - buffer_offset;
         if len_vertices > 0 {
-            // make bufferView for positions, normals, tex_coords, feature_id
             gltf_buffer_views.push(BufferView {
+                name: Some("vertices".to_string()),
                 byte_offset: buffer_offset as u32,
                 byte_length: len_vertices as u32,
                 byte_stride: Some(VERTEX_BYTE_STRIDE as u8),
@@ -78,6 +71,7 @@ pub fn write_gltf_glb<W: Write>(
 
             // accessor (positions)
             gltf_accessors.push(Accessor {
+                name: Some("positions".to_string()),
                 buffer_view: Some(gltf_buffer_views.len() as u32 - 1),
                 component_type: ComponentType::Float,
                 count: vertices_count,
@@ -89,6 +83,7 @@ pub fn write_gltf_glb<W: Write>(
 
             // accessor (normal)
             gltf_accessors.push(Accessor {
+                name: Some("normals".to_string()),
                 buffer_view: Some(gltf_buffer_views.len() as u32 - 1),
                 byte_offset: 4 * 3,
                 component_type: ComponentType::Float,
@@ -97,8 +92,9 @@ pub fn write_gltf_glb<W: Write>(
                 ..Default::default()
             });
 
-            // accessor (tex_coords)
+            // accessor (texcoords)
             gltf_accessors.push(Accessor {
+                name: Some("texcoords".to_string()),
                 buffer_view: Some(gltf_buffer_views.len() as u32 - 1),
                 byte_offset: 4 * 6,
                 component_type: ComponentType::Float,
@@ -109,6 +105,7 @@ pub fn write_gltf_glb<W: Write>(
 
             // accessor (feature_id)
             gltf_accessors.push(Accessor {
+                name: Some("_feature_ids".to_string()),
                 buffer_view: Some(gltf_buffer_views.len() as u32 - 1),
                 byte_offset: 4 * 8,
                 component_type: ComponentType::Float,
@@ -121,14 +118,15 @@ pub fn write_gltf_glb<W: Write>(
 
     let mut gltf_primitives = vec![];
 
+    let structural_metadata =
+        metadata_encoder.into_metadata(&mut bin_content, &mut gltf_buffer_views);
+
     // indices
     {
         let indices_offset = bin_content.len();
 
         let mut byte_offset = 0;
         for (mat_idx, (mat, primitive)) in primitives.iter().enumerate() {
-            feedback.ensure_not_canceled()?;
-
             let mut indices_count = 0;
             for idx in &primitive.indices {
                 bin_content.write_all(&idx.to_le_bytes())?;
@@ -136,6 +134,7 @@ pub fn write_gltf_glb<W: Write>(
             }
 
             gltf_accessors.push(Accessor {
+                name: Some("indices".to_string()),
                 buffer_view: Some(gltf_buffer_views.len() as u32),
                 byte_offset,
                 component_type: ComponentType::UnsignedInt,
@@ -157,8 +156,8 @@ pub fn write_gltf_glb<W: Write>(
                 material: Some(mat_idx as u32), // TODO
                 mode: PrimitiveMode::Triangles,
                 extensions: extensions::mesh::MeshPrimitive {
-                    ext_mesh_features: extensions::mesh::ext_mesh_features::ExtMeshFeatures {
-                        feature_ids: vec![extensions::mesh::ext_mesh_features::FeatureId {
+                    ext_mesh_features: ext_mesh_features::ExtMeshFeatures {
+                        feature_ids: vec![ext_mesh_features::FeatureId {
                             feature_count: primitive.feature_ids.len() as u32,
                             attribute: Some(0),
                             property_table: Some(0),
@@ -179,6 +178,7 @@ pub fn write_gltf_glb<W: Write>(
         let indices_len = bin_content.len() - indices_offset;
         if indices_len > 0 {
             gltf_buffer_views.push(BufferView {
+                name: Some("indices".to_string()),
                 byte_offset: indices_offset as u32,
                 byte_length: indices_len as u32,
                 target: Some(BufferViewTarget::ElementArrayBuffer),
@@ -217,16 +217,6 @@ pub fn write_gltf_glb<W: Write>(
         });
     }
 
-    // metadata
-    let ext_structural_metadata = make_metadata(
-        *num_features,
-        typename,
-        &features,
-        &mut bin_content,
-        &mut gltf_buffer_views,
-        schema,
-    );
-
     let gltf_buffers = {
         let mut buffers = vec![];
         if !bin_content.is_empty() {
@@ -259,7 +249,7 @@ pub fn write_gltf_glb<W: Write>(
         buffer_views: gltf_buffer_views,
         buffers: gltf_buffers,
         extensions: nusamai_gltf_json::extensions::gltf::Gltf {
-            ext_structural_metadata,
+            ext_structural_metadata: structural_metadata,
             ..Default::default()
         }
         .into(),
