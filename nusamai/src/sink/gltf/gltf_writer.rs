@@ -6,7 +6,6 @@ use std::path::Path;
 use byteorder::{ByteOrder, LittleEndian};
 
 use indexmap::IndexSet;
-use nusamai_citygml::schema::Schema;
 use nusamai_gltf_json::extensions::mesh::ext_mesh_features;
 
 use crate::pipeline::feedback;
@@ -14,20 +13,14 @@ use crate::pipeline::PipelineError;
 
 use super::material;
 use super::metadata::MetadataEncoder;
-use super::Features;
 use super::Primitives;
 
-#[allow(clippy::too_many_arguments)]
 pub fn write_gltf_glb<W: Write>(
     feedback: &feedback::Feedback,
     writer: W,
     translation: [f64; 3],
     vertices: impl IntoIterator<Item = [u32; 9]>,
     primitives: Primitives,
-    features: Features,
-    schema: &Schema,
-    typename: &str,
-    num_features: usize,
     metadata_encoder: MetadataEncoder,
 ) -> Result<(), PipelineError> {
     use nusamai_gltf_json::*;

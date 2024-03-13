@@ -301,19 +301,13 @@ impl DataSink for GltfSink {
                     });
 
                 // Encode properties
-                // if metadata_encoder
-                //     .add_feature(&typename, &feature.attributes)
-                //     .is_err()
-                // {
-                //     log::warn!("Failed to encode feature attributes");
-                //     continue;
-                // }
-                let fid = metadata_encoder
+                if metadata_encoder
                     .add_feature(&typename, &feature.attributes)
-                    .unwrap();
-
-                assert_eq!(fid, feature_id);
-                println!("fid: {}, feature_id: {}", fid, feature_id);
+                    .is_err()
+                {
+                    log::warn!("Failed to encode feature attributes");
+                    continue;
+                }
 
                 for (poly, orig_mat_id) in feature
                     .polygons
@@ -381,10 +375,6 @@ impl DataSink for GltfSink {
                 translation,
                 vertices,
                 primitives,
-                features,
-                schema,
-                &typename,
-                feature_id, // num of features
                 metadata_encoder,
             )?;
         }
