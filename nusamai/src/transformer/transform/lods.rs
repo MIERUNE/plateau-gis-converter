@@ -1,5 +1,6 @@
 use std::ops::{BitAnd, BitAndAssign, BitOrAssign};
 
+use crate::pipeline::Feedback;
 use crate::transformer::Transform;
 
 use nusamai_citygml::object::{ObjectStereotype, Value};
@@ -26,7 +27,7 @@ impl FilterLodTransform {
 
 /// Transform to filter and split the LODs
 impl Transform for FilterLodTransform {
-    fn transform(&mut self, mut entity: Entity, out: &mut Vec<Entity>) {
+    fn transform(&mut self, _feedback: &Feedback, mut entity: Entity, out: &mut Vec<Entity>) {
         let lods = find_lods(&entity.root) & self.mask;
 
         let target_lod = match self.mode {

@@ -205,7 +205,7 @@ pub fn write_gltf_glb<W: Write>(
         .into_iter()
         .map(|img| {
             feedback.ensure_not_canceled()?;
-            Ok(img.to_gltf(&mut gltf_buffer_views, &mut bin_content)?)
+            Ok(img.to_gltf(feedback, &mut gltf_buffer_views, &mut bin_content)?)
         })
         .collect::<Result<Vec<Image>, PipelineError>>()?;
 

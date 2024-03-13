@@ -1,3 +1,4 @@
+use crate::pipeline::Feedback;
 use crate::transformer::Transform;
 
 use hashbrown::HashMap;
@@ -58,7 +59,7 @@ impl EditFieldNamesTransform {
 }
 
 impl Transform for EditFieldNamesTransform {
-    fn transform(&mut self, mut entity: Entity, out: &mut Vec<Entity>) {
+    fn transform(&mut self, _feedback: &Feedback, mut entity: Entity, out: &mut Vec<Entity>) {
         self.edit_tree(&mut entity.root);
         out.push(entity);
     }

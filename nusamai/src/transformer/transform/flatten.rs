@@ -1,5 +1,6 @@
 use std::sync::{Arc, RwLock};
 
+use crate::pipeline::Feedback;
 use crate::transformer::Transform;
 
 use nusamai_citygml::object::{Map, Object, ObjectStereotype, Value};
@@ -89,7 +90,7 @@ impl FlattenTreeTransform {
 }
 
 impl Transform for FlattenTreeTransform {
-    fn transform(&mut self, entity: Entity, out: &mut Vec<Entity>) {
+    fn transform(&mut self, _feedback: &Feedback, entity: Entity, out: &mut Vec<Entity>) {
         let geom_store = entity.geometry_store;
         let appearance_store = entity.appearance_store;
         self.flatten_entity(entity.root, &geom_store, &appearance_store, out, &None);

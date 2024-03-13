@@ -30,7 +30,7 @@ pub trait Transformer: Send {
 
 pub trait Transform: Send {
     /// Transform each entity
-    fn transform(&mut self, entity: Entity, out: &mut Vec<Entity>);
+    fn transform(&mut self, feedback: &Feedback, entity: Entity, out: &mut Vec<Entity>);
     /// Transform the schema
     fn transform_schema(&self, schema: &mut Schema);
 }

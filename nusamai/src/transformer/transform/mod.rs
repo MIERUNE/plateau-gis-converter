@@ -16,6 +16,8 @@ pub use jsonify::*;
 pub use lods::*;
 pub use projection::*;
 
+use crate::pipeline::Feedback;
+
 use super::Transform;
 use nusamai_citygml::schema::Schema;
 use nusamai_plateau::Entity;
@@ -29,7 +31,7 @@ pub struct SerialTransform {
 }
 
 impl Transform for SerialTransform {
-    fn transform(&mut self, entity: Entity, out: &mut Vec<Entity>) {
+    fn transform(&mut self, feedback: &Feedback, entity: Entity, out: &mut Vec<Entity>) {
         let entities = &mut self.buffer1;
         let temp_entities = &mut self.buffer2;
         entities.clear();
@@ -38,7 +40,7 @@ impl Transform for SerialTransform {
         entities.push(entity);
         for transform in self.transforms.iter_mut() {
             for entity in entities.drain(..) {
-                transform.transform(entity, temp_entities);
+                transform.transform(feedback, entity, temp_entities);
             }
             std::mem::swap(entities, temp_entities);
         }
@@ -63,7 +65,7 @@ impl SerialTransform {
 pub struct IdentityTransform {}
 
 impl Transform for IdentityTransform {
-    fn transform(&mut self, entity: Entity, out: &mut Vec<Entity>) {
+    fn transform(&mut self, _feedback: &Feedback, entity: Entity, out: &mut Vec<Entity>) {
         out.push(entity);
     }
 
@@ -76,18 +78,24 @@ impl Transform for IdentityTransform {
 mod tests {
     use std::sync::RwLock;
 
+    use feedback::watcher;
     use nusamai_citygml::object::{Object, Value};
     use nusamai_citygml::GeometryStore;
+
+    use crate::pipeline::feedback;
 
     use super::*;
     #[test]
     fn test_serial_transform() {
+        let (_watcher, feedback, _canceller) = watcher();
+
         let mut transform = SerialTransform::default();
         transform.push(Box::new(IdentityTransform {}));
         transform.push(Box::new(IdentityTransform {}));
         transform.push(Box::new(IdentityTransform {}));
         let mut entities = Vec::new();
         transform.transform(
+            &feedback,
             Entity {
                 root: Value::Object(Object {
                     typename: "test".into(),

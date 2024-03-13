@@ -1,3 +1,4 @@
+use crate::pipeline::Feedback;
 use crate::transformer::Transform;
 
 use hashbrown::HashSet;
@@ -23,7 +24,7 @@ impl GeometricMergedownTransform {
 }
 
 impl Transform for GeometricMergedownTransform {
-    fn transform(&mut self, mut entity: Entity, out: &mut Vec<Entity>) {
+    fn transform(&mut self, _feedback: &Feedback, mut entity: Entity, out: &mut Vec<Entity>) {
         if let Value::Object(obj) = &mut entity.root {
             self.collect_all_geoms(obj);
             if let ObjectStereotype::Feature { geometries, .. } = &mut obj.stereotype {

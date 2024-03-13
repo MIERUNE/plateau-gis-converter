@@ -1,5 +1,6 @@
 use std::sync::Arc;
 
+use crate::pipeline::Feedback;
 use crate::transformer::Transform;
 
 use nusamai_citygml::schema::Schema;
@@ -18,7 +19,7 @@ pub struct ProjectionTransform {
 }
 
 impl Transform for ProjectionTransform {
-    fn transform(&mut self, entity: Entity, out: &mut Vec<Entity>) {
+    fn transform(&mut self, _feedback: &Feedback, entity: Entity, out: &mut Vec<Entity>) {
         let input_epsg = {
             let geom_store = entity.geometry_store.read().unwrap();
             geom_store.epsg
