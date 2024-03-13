@@ -133,9 +133,9 @@ Serving HTTP on :: port 8000 (http://[::]:8000/) ...
  <head>
   <meta charset="UTF-8" />
   <title>Cesium</title>
-  <script src="https://cesium.com/downloads/cesiumjs/releases/1.114/Build/Cesium/Cesium.js"></script>
+  <script src="https://cesium.com/downloads/cesiumjs/releases/1.115/Build/Cesium/Cesium.js"></script>
   <link
-   href="https://cesium.com/downloads/cesiumjs/releases/1.114/Build/Cesium/Widgets/widgets.css"
+   href="https://cesium.com/downloads/cesiumjs/releases/1.115/Build/Cesium/Widgets/widgets.css"
    rel="stylesheet"
   />
   <style>

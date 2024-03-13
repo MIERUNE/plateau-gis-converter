@@ -459,6 +459,49 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
         Ok(())
     }
 
+    fn parse_multi_geometry(
+        &mut self,
+        geomrefs: &mut GeometryRefs,
+        lod: u8,
+    ) -> Result<(), ParseError> {
+        let mut inside_member = false;
+        loop {
+            match self.reader.read_event_into(&mut self.state.buf1) {
+                Ok(Event::Start(start)) => {
+                    let (nsres, localname) = self.reader.resolve_element(start.name());
+
+                    match (nsres, localname.as_ref()) {
+                        (Bound(GML31_NS), b"geometryMember") => {
+                            inside_member = true;
+                            self.parse_geometry_prop(geomrefs, lod)?;
+                        }
+                        _ => {
+                            return Err(ParseError::SchemaViolation(format!(
+                                "Unexpected geometry elements <{}>",
+                                String::from_utf8_lossy(start.name().as_ref())
+                            )))
+                        }
+                    };
+                }
+                Ok(Event::End(_)) => {
+                    if inside_member {
+                        inside_member = false;
+                    } else {
+                        break;
+                    }
+                }
+                Ok(Event::Text(_)) => {
+                    return Err(ParseError::SchemaViolation(
+                        "Unexpected text content".into(),
+                    ))
+                }
+                Ok(_) => (),
+                Err(e) => return Err(e.into()),
+            }
+        }
+        Ok(())
+    }
+
     fn parse_geometry_prop(
         &mut self,
         geomrefs: &mut GeometryRefs,
@@ -482,6 +525,10 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                     }
 
                     let geomtype = match (nsres, localname.as_ref()) {
+                        (Bound(GML31_NS), b"MultiGeometry") => {
+                            self.parse_multi_geometry(geomrefs, lod)?;
+                            return Ok(());
+                        }
                         (Bound(GML31_NS), b"Solid") => {
                             self.parse_solid()?;
                             GeometryType::Solid
@@ -924,7 +971,7 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                         }
                         _ => {
                             return Err(ParseError::SchemaViolation(format!(
-                                "Unexpected geometry elements <{}>",
+                                "TexCoordList is expected but found <{}>",
                                 String::from_utf8_lossy(start.name().as_ref())
                             )))
                         }

@@ -63,11 +63,13 @@
 		},
 		"windows": [
 			{
-				"title": "PLATEAU 都市デジタルツイン・GISコンバータ",
+				"title": "PLATEAU 都市デジタルツイン GISコンバータ",
 				"fullscreen": false,
 				"resizable": true,
 				"height": 800,
-				"width": 640
+				"width": 640,
+				"minHeight": 600,
+				"minWidth": 500
 			}
 		]
 	}
