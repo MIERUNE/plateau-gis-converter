@@ -147,7 +147,7 @@ fn toplevel_dispatcher<R: BufRead>(
     if parse_appearances {
         for entity in entities {
             if feedback.is_canceled() {
-                break;
+                return Err(ParseError::Canceled);
             }
 
             // merge global appearances into the entity's local appearance store

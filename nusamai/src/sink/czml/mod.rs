@@ -78,7 +78,7 @@ impl DataSink for CzmlSink {
                     .try_for_each_with(sender, |sender, parcel| {
                         feedback.ensure_not_canceled()?;
 
-                        let packets = entity_to_packet(parcel.entity, true);
+                        let packets = entity_to_packets(parcel.entity, true);
                         for packet in packets {
                             let bytes = serde_json::to_vec(&packet).unwrap();
                             if sender.send(bytes).is_err() {
@@ -105,6 +105,8 @@ impl DataSink for CzmlSink {
                 // Write each Packet
                 let mut iter = receiver.into_iter().peekable();
                 while let Some(bytes) = iter.next() {
+                    feedback.ensure_not_canceled()?;
+
                     writer.write_all(&bytes)?;
                     if iter.peek().is_some() {
                         writer.write_all(b",")?;
@@ -151,7 +153,7 @@ fn map_to_html_table(map: &serde_json::Map<String, serde_json::Value>) -> String
 }
 
 /// Create CZML Packet from a Entity
-pub fn entity_to_packet(entity: Entity, single_part: bool) -> Vec<Packet> {
+pub fn entity_to_packets(entity: Entity, single_part: bool) -> Vec<Packet> {
     let properties = extract_properties(&entity.root);
     let geom_store = entity.geometry_store.read().unwrap();
 
@@ -319,7 +321,7 @@ mod tests {
             appearance_store: Default::default(),
         };
 
-        let packets = entity_to_packet(entity, true);
+        let packets = entity_to_packets(entity, true);
         assert_eq!(packets.len(), 4);
 
         // test parent packet

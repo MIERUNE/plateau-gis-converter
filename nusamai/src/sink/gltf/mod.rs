@@ -129,7 +129,7 @@ impl DataSink for GltfSink {
             max_height: f64::MIN,
         });
 
-        let categorized_features: Mutex<CategorizedFeatures> = Default::default();
+        let grouped_features: Mutex<CategorizedFeatures> = Default::default();
 
         let mut glb_files: Vec<String> = Vec::new();
 
@@ -137,9 +137,7 @@ impl DataSink for GltfSink {
         // Features have polygons, attributes and materials
         // The coordinates of polygon store the actual coordinate values (WGS84) and UV coordinates, not the index.
         let _ = upstream.into_iter().par_bridge().try_for_each(|parcel| {
-            if feedback.is_canceled() {
-                return Err(PipelineError::Canceled);
-            }
+            feedback.ensure_not_canceled()?;
 
             let entity = parcel.entity;
 
@@ -240,14 +238,14 @@ impl DataSink for GltfSink {
             });
 
             feature.materials = materials;
-            categorized_features
+            grouped_features
                 .lock()
                 .unwrap()
                 .entry(obj.typename.to_string())
                 .or_default()
                 .push(feature);
 
-            Ok(())
+            Ok::<(), PipelineError>(())
         });
 
         // triangulation and make vertices and primitives
@@ -265,7 +263,9 @@ impl DataSink for GltfSink {
             [(tx as f32) as f64, (ty as f32) as f64, (tz as f32) as f64]
         };
 
-        for (typename, mut features) in categorized_features.lock().unwrap().drain() {
+        for (typename, mut features) in grouped_features.lock().unwrap().drain() {
+            feedback.ensure_not_canceled()?;
+
             // Triangulation
             let mut earcutter: Earcut<f64> = Earcut::new();
             let mut buf2d: Vec<f64> = Vec::new(); // 2d-projected [x, y]

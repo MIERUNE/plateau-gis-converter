@@ -168,7 +168,7 @@ impl DataSink for KmlSink {
                     // },
                 };
 
-                // let placemarks = receiver.into_iter();
+                // FIXME: streaming write
                 let placemarks = receiver.into_iter().collect::<Vec<_>>();
 
                 let kml_doc = Kml::Document {

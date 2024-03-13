@@ -240,6 +240,8 @@ impl GpkgSink {
         }
 
         for (table_name, bbox) in table_bboxes {
+            feedback.ensure_not_canceled()?;
+
             tx.update_bbox(&table_name, bbox.to_tuple())
                 .await
                 .map_err(|e| PipelineError::Other(e.to_string()))?;
