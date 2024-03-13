@@ -28,16 +28,20 @@ impl Default for JsonifyTransform {
 impl Transform for JsonifyTransform {
     fn transform(&mut self, mut entity: Entity, out: &mut Vec<Entity>) {
         if let Value::Object(obj) = &mut entity.root {
-            for value in obj.attributes.values_mut() {
+            let mut attrs = nusamai_citygml::object::Map::default();
+            for (key, value) in obj.attributes.drain(..) {
                 match value {
                     Value::Object(_) => {
-                        *value = Value::String(value.to_attribute_json().to_string())
+                        attrs.insert(key, Value::String(value.to_attribute_json().to_string()));
                     }
-                    Value::Array(arr) => {
+                    Value::Array(mut arr) => {
                         if self.jsonify_array {
-                            *value = Value::String(value.to_attribute_json().to_string())
+                            attrs.insert(
+                                key,
+                                Value::String(Value::Array(arr).to_attribute_json().to_string()),
+                            );
                         } else {
-                            for v in arr {
+                            for v in arr.iter_mut() {
                                 if let Value::Object(_) = v {
                                     *v = Value::String(v.to_attribute_json().to_string())
                                 }
@@ -47,6 +51,7 @@ impl Transform for JsonifyTransform {
                     _ => {}
                 }
             }
+            obj.attributes = attrs;
             out.push(entity)
         }
     }
