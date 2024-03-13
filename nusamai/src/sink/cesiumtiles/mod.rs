@@ -90,7 +90,7 @@ struct SerializedSlicedFeature {
 impl DataSink for CesiumTilesSink {
     fn make_requirements(&self) -> DataRequirements {
         DataRequirements {
-            use_appearance: true,
+            // use_appearance: true,
             resolve_appearance: true,
             key_value: crate::transformer::KeyValueSpec::JsonifyObjects,
             ..Default::default()
@@ -281,9 +281,10 @@ fn tile_writing_stage(
                 };
 
                 let geom_error = tiling::geometric_error(tile_zoom, tile_y);
-                log::info!(
+                feedback.info(
+                format!(
                     "tile: z={tile_zoom}, x={tile_x}, y={tile_y} (lng: [{min_lng} => {max_lng}], lat: [{min_lat} => {max_lat}) geometricError: {geom_error}"
-                );
+                ));
                 let content_path = {
                     let normalized_typename = typename.replace(':', "_");
                     format!("{tile_zoom}/{tile_x}/{tile_y}_{normalized_typename}.glb")
@@ -350,7 +351,7 @@ fn tile_writing_stage(
 
                 // Encode properties
                 if metadata_encoder.add_feature(&typename, &feature.attributes).is_err() {
-                    log::warn!("Failed to encode feature attributes");
+                    feedback.warn("Failed to encode feature attributes".to_string());
                     continue
                 }
 

@@ -1,7 +1,8 @@
 //! Apply appearance to geometries
 
-use crate::transformer::Transform;
+use crate::{pipeline::feedback, transformer::Transform};
 
+use feedback::Feedback;
 use nusamai_citygml::schema::Schema;
 use nusamai_geometry::MultiPolygon;
 use nusamai_plateau::Entity;
@@ -10,7 +11,7 @@ use nusamai_plateau::Entity;
 pub struct ApplyAppearanceTransform {}
 
 impl Transform for ApplyAppearanceTransform {
-    fn transform(&mut self, entity: Entity, out: &mut Vec<Entity>) {
+    fn transform(&mut self, feedback: &Feedback, entity: Entity, out: &mut Vec<Entity>) {
         {
             let app = entity.appearance_store.read().unwrap();
             let theme = {
@@ -73,11 +74,10 @@ impl Transform for ApplyAppearanceTransform {
                                 }
                                 Some((_, uv)) if uv.len() != ring.len() => {
                                     // invalid texture found
-                                    log::warn!(
+                                    feedback.warn(format!(
                                         "Length of UVs does not match length of ring: {:?} {:?}",
-                                        ring,
-                                        uv
-                                    );
+                                        ring, uv
+                                    ));
                                     add_dummy_texture();
                                 }
                                 _ => {

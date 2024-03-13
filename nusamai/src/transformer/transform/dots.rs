@@ -1,3 +1,4 @@
+use crate::pipeline::Feedback;
 use crate::transformer::Transform;
 
 use nusamai_citygml::object::{Map, Value};
@@ -11,7 +12,7 @@ pub struct DotNotationTransform {
 }
 
 impl Transform for DotNotationTransform {
-    fn transform(&mut self, mut entity: Entity, out: &mut Vec<Entity>) {
+    fn transform(&mut self, _feedback: &Feedback, mut entity: Entity, out: &mut Vec<Entity>) {
         if let Value::Object(mut obj) = entity.root {
             let mut new_attrs = Default::default();
             let path = &mut self.path_buf;

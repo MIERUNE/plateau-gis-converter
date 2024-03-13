@@ -305,7 +305,7 @@ impl DataSink for GltfSink {
                     .add_feature(&typename, &feature.attributes)
                     .is_err()
                 {
-                    log::warn!("Failed to encode feature attributes");
+                    feedback.warn("Failed to encode feature attributes".to_string());
                     continue;
                 }
 

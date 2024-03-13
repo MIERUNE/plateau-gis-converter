@@ -1,3 +1,4 @@
+use crate::pipeline::Feedback;
 use crate::transformer::Transform;
 
 use nusamai_citygml::object::Value;
@@ -26,7 +27,7 @@ impl Default for JsonifyTransform {
 }
 
 impl Transform for JsonifyTransform {
-    fn transform(&mut self, mut entity: Entity, out: &mut Vec<Entity>) {
+    fn transform(&mut self, _feedback: &Feedback, mut entity: Entity, out: &mut Vec<Entity>) {
         if let Value::Object(obj) = &mut entity.root {
             let mut attrs = nusamai_citygml::object::Map::default();
             for (key, value) in obj.attributes.drain(..) {

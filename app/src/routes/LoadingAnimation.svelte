@@ -75,7 +75,7 @@
 					{/if}
 
 					<span
-						class="inline-flex items-center rounded-md bg-gray-400/10 px-2 py-1 text-xs font-medium text-gray-400 ring-1 ring-inset ring-gray-400/20"
+						class="inline-flex items-center rounded-md bg-gray-400/10 px-1 py-0.5 text-xs font-medium text-gray-400 ring-1 ring-inset ring-gray-400/20"
 						>{data.source}</span
 					>
 

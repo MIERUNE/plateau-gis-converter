@@ -26,7 +26,7 @@ impl<T: TransformBuilder> Transformer for MultiThreadTransformer<T> {
                 feedback.ensure_not_canceled()?;
 
                 // Apply transform to entity
-                transform.transform(parcel.entity, buf);
+                transform.transform(feedback, parcel.entity, buf);
 
                 for entity in buf.drain(..) {
                     if downstream.send(Parcel { entity }).is_err() {

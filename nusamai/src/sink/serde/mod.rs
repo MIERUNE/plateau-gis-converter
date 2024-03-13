@@ -100,11 +100,10 @@ impl DataSink for SerdeSink {
                     self.features_written += 1;
                     self.bytes_written += 4 + compressed.len();
                 }
-                log::info!(
+                feedback.info(format!(
                     "Wrote {} features ({} bytes)",
-                    self.features_written,
-                    self.bytes_written
-                );
+                    self.features_written, self.bytes_written
+                ));
                 Ok(())
             },
         );
