@@ -32,24 +32,29 @@
 		isRunning = true;
 
 		try {
-			await invoke('run', {
+			await invoke('run_conversion', {
 				inputPaths,
 				outputPath,
 				filetype,
 				epsg,
 				rulesPath
 			});
+			isRunning = false;
 			await message(`変換が完了しました。\n'${outputPath}' に出力しました。`, { type: 'info' });
-		} catch (error) {
-			await message(`エラーが発生しました。\n\n${error}`, { type: 'error' });
+		} catch (error: any) {
+			if (error.type != 'Canceled') {
+				await message(`エラーが発生しました。\n\n${error.type}: ${error.message}`, {
+					title: '変換エラー',
+					type: 'error'
+				});
+			}
+			isRunning = false;
 		}
-
-		isRunning = false;
 	}
 </script>
 
 {#if isRunning}
-	<div class="grid place-items-center absolute w-screen h-screen z-20 bg-black/60">
+	<div class="absolute inset-0 bg-black/70 backdrop-blur-[2px] z-20">
 		<LoadingAnimation />
 	</div>
 {/if}
@@ -57,7 +62,7 @@
 <div class="grid place-items-center h-screen">
 	<div class="max-w-2xl flex flex-col gap-12">
 		<div class="flex items-center gap-1.5">
-			<h1 class="font-bold text-2xl">PLATEAU 都市デジタルツイン・GISコンバータ</h1>
+			<h1 class="font-bold text-2xl">PLATEAU 都市デジタルツイン GISコンバータ</h1>
 			<a href="/about" class="hover:text-accent1">
 				<Icon class="text-2xl mt-0.5" icon="mingcute:information-line" />
 			</a>

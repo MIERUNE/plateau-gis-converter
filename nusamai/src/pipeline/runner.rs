@@ -32,7 +32,7 @@ fn spawn_source_thread(
 ) -> (std::thread::JoinHandle<()>, Receiver) {
     let (sender, receiver) = sync_channel(SOURCE_OUTPUT_CHANNEL_BOUND);
     let handle = spawn_thread("pipeline-source".to_string(), move || {
-        log::info!("Source thread started.");
+        feedback.info("Source thread started.".into());
         let num_threads = std::thread::available_parallelism()
             .map(|v| v.get() * 3)
             .unwrap_or(1);
@@ -41,12 +41,13 @@ fn spawn_source_thread(
             .num_threads(num_threads)
             .build()
             .unwrap();
+        let feedback2 = feedback.component_span(super::SourceComponent::Source);
         pool.install(move || {
-            if let Err(error) = source.run(sender, &feedback) {
-                feedback.fatal_error(error);
+            if let Err(error) = source.run(sender, &feedback2) {
+                feedback2.fatal_error(error);
             }
         });
-        log::info!("Source thread finished.");
+        feedback.info("Source thread finished.".into());
     });
     (handle, receiver)
 }
@@ -59,17 +60,18 @@ fn spawn_transformer_thread(
     let (sender, receiver) = sync_channel(TRANSFORMER_OUTPUT_CHANNEL_BOUND);
 
     let handle = spawn_thread("pipeline-transformer".to_string(), move || {
-        log::info!("Transformer thread started.");
+        feedback.info("Transformer thread started.".into());
         let pool = ThreadPoolBuilder::new()
             .use_current_thread()
             .build()
             .unwrap();
+        let feedback2 = feedback.component_span(super::SourceComponent::Transformer);
         pool.install(move || {
-            if let Err(error) = transformer.run(upstream, sender, &feedback) {
-                feedback.fatal_error(error);
+            if let Err(error) = transformer.run(upstream, sender, &feedback2) {
+                feedback2.fatal_error(error);
             }
         });
-        log::info!("Transformer thread finished.");
+        feedback.info("Transformer thread finished.".into());
     });
     (handle, receiver)
 }
@@ -81,7 +83,7 @@ fn spawn_sink_thread(
     feedback: Feedback,
 ) -> std::thread::JoinHandle<()> {
     spawn_thread("pipeline-sink".to_string(), move || {
-        log::info!("Sink thread started.");
+        feedback.info("Sink thread started.".into());
         let num_threads = std::thread::available_parallelism()
             .map(|v| v.get() * 3)
             .unwrap_or(1);
@@ -90,12 +92,13 @@ fn spawn_sink_thread(
             .num_threads(num_threads)
             .build()
             .unwrap();
+        let feedback2 = feedback.component_span(super::SourceComponent::Sink);
         pool.install(move || {
-            if let Err(error) = sink.run(upstream, &feedback, &schema) {
-                feedback.fatal_error(error);
+            if let Err(error) = sink.run(upstream, &feedback2, &schema) {
+                feedback2.fatal_error(error);
             }
         });
-        log::info!("Sink thread finished.");
+        feedback.info("Sink thread finished.".into());
     })
 }
 
@@ -132,21 +135,10 @@ pub fn run(
     let (watcher, feedback, canceller) = watcher();
 
     // Start the pipeline
-    let (source_thread_handle, source_receiver) = spawn_source_thread(
-        source,
-        feedback.component_span(super::SourceComponent::Source),
-    );
-    let (transformer_thread_handle, transformer_receiver) = spawn_transformer_thread(
-        transformer,
-        source_receiver,
-        feedback.component_span(super::SourceComponent::Transformer),
-    );
-    let sink_thread_handle = spawn_sink_thread(
-        sink,
-        schema,
-        transformer_receiver,
-        feedback.component_span(super::SourceComponent::Sink),
-    );
+    let (source_thread_handle, source_receiver) = spawn_source_thread(source, feedback.clone());
+    let (transformer_thread_handle, transformer_receiver) =
+        spawn_transformer_thread(transformer, source_receiver, feedback.clone());
+    let sink_thread_handle = spawn_sink_thread(sink, schema, transformer_receiver, feedback);
 
     let handle = PipelineHandle {
         source_thread_handle,
