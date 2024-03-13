@@ -126,7 +126,6 @@ impl DataSink for ShapefileSink {
                 // Write a Shapefile file set for each typename
                 grouped_features
                     .into_iter()
-                    .par_bridge()
                     .try_for_each(|(typename, features)| {
                         feedback.ensure_not_canceled()?;
 
