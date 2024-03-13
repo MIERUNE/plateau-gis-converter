@@ -35,20 +35,21 @@ impl Transform for JsonifyTransform {
                         attrs.insert(key, Value::String(value.to_attribute_json().to_string()));
                     }
                     Value::Array(mut arr) => {
-                        if self.jsonify_array {
-                            attrs.insert(
-                                key,
-                                Value::String(Value::Array(arr).to_attribute_json().to_string()),
-                            );
-                        } else {
+                        if !self.jsonify_array {
                             for v in arr.iter_mut() {
                                 if let Value::Object(_) = v {
                                     *v = Value::String(v.to_attribute_json().to_string())
                                 }
                             }
-                        }
+                        };
+                        attrs.insert(
+                            key,
+                            Value::String(Value::Array(arr).to_attribute_json().to_string()),
+                        );
                     }
-                    _ => {}
+                    value => {
+                        attrs.insert(key, value);
+                    }
                 }
             }
             obj.attributes = attrs;
