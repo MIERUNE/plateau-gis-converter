@@ -178,6 +178,7 @@ impl Class {
             // Fill in the default values for the properties that don't occur in the input
             for (key, prop) in &mut self.properties {
                 if obj.attributes.contains_key(key) {
+                    // todo: なぜかcontains_keyが使えない
                     continue;
                 }
 
@@ -289,7 +290,7 @@ impl Class {
             let start = buffer.len();
             buffer.extend(prop.value_buffer);
             buffer_views.push(BufferView {
-                name: Some("prop_values".to_string()),
+                name: Some(format!("{}_prop_values", name).to_string()),
                 byte_offset: start as u32,
                 byte_length: (buffer.len() - start) as u32,
                 ..Default::default()
@@ -304,7 +305,7 @@ impl Class {
                     buffer.extend(offset.to_le_bytes());
                 }
                 buffer_views.push(BufferView {
-                    name: Some("prop_array_offsets".to_string()),
+                    name: Some(format!("{}_prop_array_offsets", name).to_string()),
                     byte_offset: start as u32,
                     byte_length: (buffer.len() - start) as u32,
                     ..Default::default()
@@ -321,7 +322,7 @@ impl Class {
                     buffer.extend(offset.to_le_bytes());
                 }
                 buffer_views.push(BufferView {
-                    name: Some("prop_string_offsets".to_string()),
+                    name: Some(format!("{}_prop_string_offsets", name).to_string()),
                     byte_offset: start as u32,
                     byte_length: (buffer.len() - start) as u32,
                     ..Default::default()

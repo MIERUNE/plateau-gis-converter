@@ -4,7 +4,6 @@ mod material;
 mod metadata;
 mod utils;
 
-use geojson::feature;
 use indexmap::IndexSet;
 use itertools::Itertools;
 use std::fs::File;
@@ -110,8 +109,9 @@ pub type Primitives = HashMap<material::Material, PrimitiveInfo>;
 impl DataSink for GltfSink {
     fn make_requirements(&self) -> DataRequirements {
         DataRequirements {
-            use_appearance: true,
+            // use_appearance: true,
             resolve_appearance: true,
+            key_value: crate::transformer::KeyValueSpec::JsonifyObjects,
             ..Default::default()
         }
     }
@@ -301,13 +301,19 @@ impl DataSink for GltfSink {
                     });
 
                 // Encode properties
-                if metadata_encoder
+                // if metadata_encoder
+                //     .add_feature(&typename, &feature.attributes)
+                //     .is_err()
+                // {
+                //     log::warn!("Failed to encode feature attributes");
+                //     continue;
+                // }
+                let fid = metadata_encoder
                     .add_feature(&typename, &feature.attributes)
-                    .is_err()
-                {
-                    log::warn!("Failed to encode feature attributes");
-                    continue;
-                }
+                    .unwrap();
+
+                assert_eq!(fid, feature_id);
+                println!("fid: {}, feature_id: {}", fid, feature_id);
 
                 for (poly, orig_mat_id) in feature
                     .polygons
