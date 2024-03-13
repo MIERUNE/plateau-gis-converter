@@ -109,7 +109,7 @@ pub type Primitives = HashMap<material::Material, PrimitiveInfo>;
 impl DataSink for GltfSink {
     fn make_requirements(&self) -> DataRequirements {
         DataRequirements {
-            // use_appearance: true,
+            use_appearance: true,
             resolve_appearance: true,
             key_value: crate::transformer::KeyValueSpec::JsonifyObjects,
             ..Default::default()
