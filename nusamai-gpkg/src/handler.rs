@@ -2,6 +2,7 @@ use crate::table::TableInfo;
 use indexmap::IndexMap;
 use sqlx::{sqlite::*, ConnectOptions};
 use sqlx::{Acquire, Pool, Row};
+use std::str::FromStr;
 use thiserror::Error;
 use url::Url;
 
@@ -18,7 +19,15 @@ pub enum GpkgError {
 impl GpkgHandler {
     /// Create and initialize new GeoPackage database at the specified URL
     pub async fn from_url(url: &Url) -> Result<Self, GpkgError> {
-        let conn_opts = SqliteConnectOptions::from_url(url)?
+        Self::initialize(SqliteConnectOptions::from_url(url)?).await
+    }
+
+    pub async fn from_str(str: &str) -> Result<Self, GpkgError> {
+        Self::initialize(SqliteConnectOptions::from_str(str)?).await
+    }
+
+    async fn initialize(conn_opts: SqliteConnectOptions) -> Result<Self, GpkgError> {
+        let conn_opts = conn_opts
             .create_if_missing(true)
             .synchronous(SqliteSynchronous::Normal)
             .journal_mode(SqliteJournalMode::Wal);
