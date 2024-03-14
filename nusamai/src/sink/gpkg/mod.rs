@@ -4,28 +4,28 @@ mod attributes;
 mod bbox;
 mod table;
 
-use std::collections::HashSet;
-use std::path::PathBuf;
-use url::Url;
+use std::{collections::HashSet, path::PathBuf};
 
-use indexmap::IndexMap;
-
-use rayon::prelude::*;
-
-use crate::get_parameter_value;
-use crate::parameters::*;
-use crate::pipeline::{Feedback, PipelineError, Receiver, Result};
-use crate::sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo};
-use crate::transformer;
 use attributes::prepare_object_attributes;
 use bbox::{get_indexed_multipolygon_bbox, Bbox};
+use indexmap::IndexMap;
+use nusamai_citygml::{
+    object::{ObjectStereotype, Value},
+    schema::Schema,
+    GeometryType,
+};
+use nusamai_gpkg::{geometry::write_indexed_multipolygon, GpkgHandler};
+use rayon::prelude::*;
 use table::schema_to_table_infos;
+use url::Url;
 
-use nusamai_citygml::object::{ObjectStereotype, Value};
-use nusamai_citygml::schema::Schema;
-use nusamai_citygml::GeometryType;
-use nusamai_gpkg::geometry::write_indexed_multipolygon;
-use nusamai_gpkg::GpkgHandler;
+use crate::{
+    get_parameter_value,
+    parameters::*,
+    pipeline::{Feedback, PipelineError, Receiver, Result},
+    sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo},
+    transformer,
+};
 
 pub struct GpkgSinkProvider {}
 

@@ -4,9 +4,11 @@
 
 use nusamai_citygml::schema::Schema;
 
-use crate::parameters::{FileSystemPathParameter, ParameterEntry, ParameterType, Parameters};
-use crate::pipeline::{Feedback, Receiver, Result};
-use crate::sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo};
+use crate::{
+    parameters::{FileSystemPathParameter, ParameterEntry, ParameterType, Parameters},
+    pipeline::{Feedback, Receiver, Result},
+    sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo},
+};
 
 pub struct NoopSinkProvider {}
 

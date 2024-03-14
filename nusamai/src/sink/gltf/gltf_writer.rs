@@ -1,19 +1,15 @@
-use std::fs::File;
-use std::io::BufWriter;
-use std::io::Write;
-use std::path::Path;
+use std::{
+    fs::File,
+    io::{BufWriter, Write},
+    path::Path,
+};
 
 use byteorder::{ByteOrder, LittleEndian};
-
 use indexmap::IndexSet;
 use nusamai_gltf_json::extensions::mesh::ext_mesh_features;
 
-use crate::pipeline::feedback;
-use crate::pipeline::PipelineError;
-
-use super::material;
-use super::metadata::MetadataEncoder;
-use super::Primitives;
+use super::{material, metadata::MetadataEncoder, Primitives};
+use crate::pipeline::{feedback, PipelineError};
 
 pub fn write_gltf_glb<W: Write>(
     feedback: &feedback::Feedback,

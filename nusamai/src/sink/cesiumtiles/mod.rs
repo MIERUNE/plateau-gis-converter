@@ -8,35 +8,36 @@ mod sort;
 mod tiling;
 mod utils;
 
-use std::cmp::Ordering;
-use std::fs;
-use std::io::BufWriter;
-use std::path::{Path, PathBuf};
-use std::sync::{mpsc, Arc, Mutex};
+use std::{
+    cmp::Ordering,
+    fs,
+    io::BufWriter,
+    path::{Path, PathBuf},
+    sync::{mpsc, Arc, Mutex},
+};
 
 use ahash::RandomState;
 use earcut_rs::{utils3d::project3d_to_2d, Earcut};
 use ext_sort::{buffer::mem::MemoryLimitedBufferBuilder, ExternalSorter, ExternalSorterBuilder};
+use gltf::write_gltf_glb;
 use indexmap::IndexSet;
 use itertools::Itertools;
+use nusamai_citygml::{object::Value, schema::Schema};
+use nusamai_mvt::tileid::TileIdMethod;
 use nusamai_projection::cartesian::geographic_to_geocentric;
 use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
-
-use nusamai_citygml::object::Value;
-use nusamai_citygml::schema::Schema;
-use nusamai_mvt::tileid::TileIdMethod;
-
-use crate::get_parameter_value;
-use crate::parameters::*;
-use crate::pipeline::{Feedback, PipelineError, Receiver, Result};
-use crate::sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo};
-use gltf::write_gltf_glb;
 use slice::{slice_to_tiles, SlicedFeature};
 use sort::BincodeExternalChunk;
 use tiling::{TileContent, TileTree};
 
 use self::utils::calculate_normal;
+use crate::{
+    get_parameter_value,
+    parameters::*,
+    pipeline::{Feedback, PipelineError, Receiver, Result},
+    sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo},
+};
 
 pub struct CesiumTilesSinkProvider {}
 

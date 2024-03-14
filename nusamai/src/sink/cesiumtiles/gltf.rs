@@ -1,12 +1,12 @@
 use std::io::Write;
 
-use crate::pipeline::{feedback, PipelineError};
-
-use super::{material, metadata::MetadataEncoder};
 use ahash::{HashMap, HashSet};
 use byteorder::{ByteOrder, LittleEndian};
 use indexmap::IndexSet;
 use nusamai_gltf_json::extensions::mesh::ext_mesh_features;
+
+use super::{material, metadata::MetadataEncoder};
+use crate::pipeline::{feedback, PipelineError};
 
 #[derive(Default)]
 pub struct PrimitiveInfo {

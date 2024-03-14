@@ -1,13 +1,10 @@
 use chrono::Datelike;
 use hashbrown::HashMap;
-use nusamai_citygml::schema::DataTypeDef;
-use nusamai_citygml::schema::FeatureTypeDef;
-use nusamai_citygml::schema::TypeDef;
+use nusamai_citygml::{
+    object::{Map, Value},
+    schema::{DataTypeDef, FeatureTypeDef, TypeDef, TypeRef},
+};
 use shapefile::dbase::{self, Date, FieldValue, Record};
-
-use nusamai_citygml::object::Map;
-use nusamai_citygml::object::Value;
-use nusamai_citygml::schema::TypeRef;
 
 pub fn make_table_builder(
     typedef: &TypeDef,

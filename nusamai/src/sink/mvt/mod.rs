@@ -4,36 +4,34 @@ mod slice;
 mod sort;
 mod tags;
 
-use std::fs;
-use std::path::{Path, PathBuf};
-use std::sync::mpsc;
+use std::{
+    fs,
+    io::prelude::*,
+    path::{Path, PathBuf},
+    sync::mpsc,
+};
 
 use ext_sort::{buffer::mem::MemoryLimitedBufferBuilder, ExternalSorter, ExternalSorterBuilder};
+use flate2::{write::ZlibEncoder, Compression};
 use hashbrown::HashMap;
 use itertools::Itertools;
-
-use flate2::write::ZlibEncoder;
-use flate2::Compression;
+use nusamai_citygml::{object, schema::Schema};
+use nusamai_geometry::MultiPolygon2;
+use nusamai_mvt::{geometry::GeometryEncoder, tag::TagsEncoder, tileid::TileIdMethod, vector_tile};
 use prost::Message;
 use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
-use std::io::prelude::*;
-
-use nusamai_citygml::object;
-use nusamai_citygml::schema::Schema;
-use nusamai_geometry::MultiPolygon2;
-use nusamai_mvt::geometry::GeometryEncoder;
-use nusamai_mvt::tag::TagsEncoder;
-use nusamai_mvt::{tileid::TileIdMethod, vector_tile};
-
-use crate::get_parameter_value;
-use crate::parameters::*;
-use crate::pipeline::{Feedback, PipelineError, Receiver, Result};
-use crate::sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo};
-use crate::transformer;
 use slice::slice_cityobj_geoms;
 use sort::BincodeExternalChunk;
 use tags::convert_properties;
+
+use crate::{
+    get_parameter_value,
+    parameters::*,
+    pipeline::{Feedback, PipelineError, Receiver, Result},
+    sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo},
+    transformer,
+};
 
 pub struct MvtSinkProvider {}
 

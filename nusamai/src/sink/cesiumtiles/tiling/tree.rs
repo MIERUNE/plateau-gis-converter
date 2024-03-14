@@ -1,8 +1,9 @@
 //! Tileset encoder
 
-use super::scheme::{calc_parent_zxy, geometric_error};
 use nusamai_3dtiles_json::tileset;
 use nusamai_mvt::TileZXY;
+
+use super::scheme::{calc_parent_zxy, geometric_error};
 
 #[derive(Debug)]
 pub struct TileContent {

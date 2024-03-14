@@ -1,7 +1,6 @@
 //! Polygon slicing algorithm based on [geojson-vt](https://github.com/mapbox/geojson-vt).
 
 use hashbrown::HashMap;
-
 use nusamai_citygml::{
     geometry::GeometryType,
     object::{ObjectStereotype, Value},

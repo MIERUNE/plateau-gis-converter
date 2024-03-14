@@ -58,8 +58,9 @@ pub fn get_indexed_multipolygon_bbox(vertices: &[[f64; 3]], mpoly: &MultiPolygon
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use nusamai_projection::crs::EPSG_JGD2011_GEOGRAPHIC_3D;
+
+    use super::*;
 
     #[test]
     fn test_update() {

@@ -1,9 +1,10 @@
-use crate::pipeline::Feedback;
-use crate::transformer::Transform;
-
-use nusamai_citygml::object::Value;
-use nusamai_citygml::schema::{DataTypeDef, FeatureTypeDef, Schema, TypeDef, TypeRef};
+use nusamai_citygml::{
+    object::Value,
+    schema::{DataTypeDef, FeatureTypeDef, Schema, TypeDef, TypeRef},
+};
 use nusamai_plateau::Entity;
+
+use crate::{pipeline::Feedback, transformer::Transform};
 
 /// Jsonify all objects and arrays in the entity.
 #[derive(Clone)]
@@ -29,33 +30,25 @@ impl Default for JsonifyTransform {
 impl Transform for JsonifyTransform {
     fn transform(&mut self, _feedback: &Feedback, mut entity: Entity, out: &mut Vec<Entity>) {
         if let Value::Object(obj) = &mut entity.root {
-            let mut attrs = nusamai_citygml::object::Map::default();
-            for (key, value) in obj.attributes.drain(..) {
+            for value in obj.attributes.values_mut() {
                 match value {
                     Value::Object(_) => {
-                        attrs.insert(key, Value::String(value.to_attribute_json().to_string()));
+                        *value = Value::String(value.to_attribute_json().to_string())
                     }
-                    Value::Array(mut arr) => {
+                    Value::Array(arr) => {
                         if self.jsonify_array {
-                            attrs.insert(
-                                key,
-                                Value::String(Value::Array(arr).to_attribute_json().to_string()),
-                            );
+                            *value = Value::String(value.to_attribute_json().to_string())
                         } else {
-                            for v in arr.iter_mut() {
+                            for v in arr {
                                 if let Value::Object(_) = v {
                                     *v = Value::String(v.to_attribute_json().to_string())
                                 }
                             }
-                            attrs.insert(key, Value::Array(arr));
                         }
                     }
-                    value => {
-                        attrs.insert(key, value);
-                    }
+                    _ => {}
                 }
             }
-            obj.attributes = attrs;
             out.push(entity)
         }
     }

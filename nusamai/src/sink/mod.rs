@@ -15,9 +15,11 @@ pub mod shapefile;
 use nusamai_citygml::schema::Schema;
 use nusamai_projection::crs;
 
-use crate::parameters::Parameters;
-use crate::pipeline::{Feedback, PipelineError, Receiver};
-use crate::transformer;
+use crate::{
+    parameters::Parameters,
+    pipeline::{Feedback, PipelineError, Receiver},
+    transformer,
+};
 
 pub struct SinkInfo {
     pub id_name: String,

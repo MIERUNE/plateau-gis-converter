@@ -1,15 +1,13 @@
-use std::sync::Once;
+use std::{path::PathBuf, str::FromStr, sync::Once};
 
-use nusamai::sink;
-use nusamai::sink::DataSinkProvider;
-use nusamai::source::citygml::CityGmlSourceProvider;
-use nusamai::source::DataSourceProvider;
-use nusamai::transformer::{MultiThreadTransformer, NusamaiTransformBuilder, TransformBuilder};
+use nusamai::{
+    sink,
+    sink::DataSinkProvider,
+    source::{citygml::CityGmlSourceProvider, DataSourceProvider},
+    transformer::{MultiThreadTransformer, NusamaiTransformBuilder, TransformBuilder},
+};
 use nusamai_citygml::CityGmlElement;
 use nusamai_plateau::models::TopLevelCityObject;
-
-use std::path::PathBuf;
-use std::str::FromStr;
 
 static INIT: Once = Once::new();
 
