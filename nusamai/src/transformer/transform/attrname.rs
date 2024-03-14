@@ -69,10 +69,9 @@ impl Transform for EditFieldNamesTransform {
         let drain_to_new_attrs = |attrs: &mut schema::Map| {
             let mut new_attrs = IndexMap::default();
             for (key, mut value) in attrs.drain(..) {
-                if let Some(new_name) = self.rename(&key) {
-                    value.original_name = Some(key.clone());
-                    new_attrs.insert(new_name.to_string(), value);
-                }
+                let new_name = self.rename(&key);
+                value.original_name = Some(key.clone());
+                new_attrs.insert(new_name.to_string(), value);
             }
             new_attrs
         };
@@ -92,27 +91,29 @@ impl Transform for EditFieldNamesTransform {
 }
 
 impl EditFieldNamesTransform {
-    fn rename<'a>(&'a self, name: &'a str) -> Option<&str> {
+    fn rename<'a>(&'a self, name: &'a str) -> &str {
         // Lookup and rename: exact match
         if let Some(new_key) = self.exact_rename_map.get(name) {
-            return Some(new_key.as_ref());
+            return new_key.as_ref();
         }
 
-        name.find(':').map(|pos| {
-            let key = &name[pos + 1..]; // remove the namespace prefix
+        name.find(':')
+            .map(|pos| {
+                let key = &name[pos + 1..]; // remove the namespace prefix
 
-            if let Some(new_key) = self.general_rename_map.get(key) {
-                return new_key.as_ref();
-            }
+                if let Some(new_key) = self.general_rename_map.get(key) {
+                    return new_key.as_ref();
+                }
 
-            // If the namespace is removed, it will conflict with the global "id" column (= "gml:id").
-            // Therefore, don't remove the namespace prefix
-            if key == "id" {
-                return name;
-            }
+                // If the namespace is removed, it will conflict with the global "id" column (= "gml:id").
+                // Therefore, don't remove the namespace prefix
+                if key == "id" {
+                    return name;
+                }
 
-            key
-        })
+                key
+            })
+            .unwrap_or(name)
     }
 
     fn edit_tree(&self, value: &mut Value) {
@@ -121,9 +122,8 @@ impl EditFieldNamesTransform {
                 let mut new_attrs = Map::default();
                 for (key, mut value) in obj.attributes.drain(..) {
                     self.edit_tree(&mut value);
-                    if let Some(new_name) = self.rename(&key) {
-                        new_attrs.insert(new_name.to_string(), value);
-                    }
+                    let new_name = self.rename(&key);
+                    new_attrs.insert(new_name.to_string(), value);
                 }
                 obj.attributes = new_attrs;
             }
@@ -152,15 +152,15 @@ mod tests {
         transform.extend_rename_map(map);
 
         // In any case, namespace suffix is removed
-        assert_eq!(transform.rename("namespace:foo"), Some("foo"));
+        assert_eq!(transform.rename("namespace:foo"), "foo");
 
         // Rule written with specific namespace takes precedence
-        assert_eq!(transform.rename("bldg:class"), Some("分類"));
-        assert_eq!(transform.rename("luse:class"), Some("土地利用区分"));
+        assert_eq!(transform.rename("bldg:class"), "分類");
+        assert_eq!(transform.rename("luse:class"), "土地利用区分");
 
         // When the input string has not namespace prefix
-        assert_eq!(transform.rename("foo"), None);
-        assert_eq!(transform.rename("wo_namespace"), Some("wo_namespace_new"));
+        assert_eq!(transform.rename("foo"), "foo");
+        assert_eq!(transform.rename("wo_namespace"), "wo_namespace_new");
     }
 
     #[test]
@@ -171,8 +171,8 @@ mod tests {
         map.insert("*use:class".to_string(), "土地利用区分".to_string());
         transform.extend_rename_map(map);
 
-        assert_eq!(transform.rename("luse:class"), Some("class")); // not renamed
-        assert_eq!(transform.rename("bldg:class"), Some("class"));
-        assert_eq!(transform.rename("*use:class"), Some("土地利用区分"));
+        assert_eq!(transform.rename("luse:class"), "class"); // not renamed
+        assert_eq!(transform.rename("bldg:class"), "class");
+        assert_eq!(transform.rename("*use:class"), "土地利用区分");
     }
 }

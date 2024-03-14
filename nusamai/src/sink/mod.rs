@@ -62,6 +62,7 @@ pub struct DataRequirements {
     pub mergedown: transformer::MergedownSpec,
     pub key_value: transformer::KeyValueSpec,
     pub lod_filter: transformer::LodFilterSpec,
+    pub geom_stats: transformer::GeometryStatsSpec,
 }
 
 impl Default for DataRequirements {
@@ -75,6 +76,7 @@ impl Default for DataRequirements {
             mergedown: transformer::MergedownSpec::RemoveDescendantFeatures,
             key_value: transformer::KeyValueSpec::JsonifyObjectsAndArrays,
             lod_filter: transformer::LodFilterSpec::default(),
+            geom_stats: transformer::GeometryStatsSpec::None,
         }
     }
 }

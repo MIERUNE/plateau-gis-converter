@@ -3,6 +3,7 @@ mod attrname;
 mod dots;
 pub mod flatten;
 mod geommerge;
+mod geomstats;
 mod jsonify;
 mod lods;
 mod projection;
@@ -12,6 +13,7 @@ pub use attrname::*;
 pub use dots::*;
 pub use flatten::*;
 pub use geommerge::*;
+pub use geomstats::*;
 pub use jsonify::*;
 pub use lods::*;
 use nusamai_citygml::schema::Schema;
@@ -78,7 +80,7 @@ mod tests {
     use std::sync::RwLock;
 
     use feedback::watcher;
-    use nusamai_citygml::{object::Object, GeometryStore};
+    use nusamai_citygml::{object::Object, GeometryStore, Value};
 
     use super::*;
     use crate::pipeline::feedback;

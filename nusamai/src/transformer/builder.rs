@@ -15,6 +15,7 @@ pub struct Request {
     pub mergedown: MergedownSpec,
     pub key_value: KeyValueSpec,
     pub lod_filter: LodFilterSpec,
+    pub geom_stats: GeometryStatsSpec,
 }
 
 impl Request {
@@ -34,6 +35,7 @@ impl From<DataRequirements> for Request {
             mergedown: req.mergedown,
             key_value: req.key_value,
             lod_filter: req.lod_filter,
+            geom_stats: req.geom_stats,
         }
     }
 }
@@ -83,6 +85,11 @@ pub enum KeyValueSpec {
     DotNotation,
 }
 
+pub enum GeometryStatsSpec {
+    None,
+    MinMaxHeights,
+}
+
 pub trait TransformBuilder: Send + Sync {
     fn build(&self) -> Box<dyn Transform>;
 
@@ -106,6 +113,13 @@ impl TransformBuilder for NusamaiTransformBuilder {
             self.jgd2wgs.clone(),
             self.request.output_epsg,
         )));
+
+        match self.request.geom_stats {
+            GeometryStatsSpec::None => {}
+            GeometryStatsSpec::MinMaxHeights => {
+                transforms.push(Box::<GeometryStatsTransform>::default());
+            }
+        }
 
         // Apply appearance to geometries
         if self.request.apply_appearance {

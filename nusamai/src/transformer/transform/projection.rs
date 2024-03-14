@@ -25,6 +25,14 @@ impl Transform for ProjectionTransform {
 
         match input_epsg {
             EPSG_JGD2011_GEOGRAPHIC_3D => match self.output_epsg {
+                EPSG_JGD2011_GEOGRAPHIC_3D => {
+                    let mut geom_store = entity.geometry_store.write().unwrap();
+                    geom_store.vertices.iter_mut().for_each(|v| {
+                        // Swap x and y (lat, lng -> lng, lat)
+                        (v[0], v[1], v[2]) = (v[1], v[0], v[2]);
+                    });
+                    geom_store.epsg = self.output_epsg;
+                }
                 EPSG_WGS84_GEOGRAPHIC_3D => {
                     let mut geom_store = entity.geometry_store.write().unwrap();
                     geom_store.vertices.iter_mut().for_each(|v| {
