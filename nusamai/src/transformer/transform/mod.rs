@@ -14,13 +14,12 @@ pub use flatten::*;
 pub use geommerge::*;
 pub use jsonify::*;
 pub use lods::*;
-pub use projection::*;
-
-use crate::pipeline::Feedback;
-
-use super::Transform;
 use nusamai_citygml::schema::Schema;
 use nusamai_plateau::Entity;
+pub use projection::*;
+
+use super::Transform;
+use crate::pipeline::Feedback;
 
 /// Perform transforms in sequence
 #[derive(Default)]
@@ -79,12 +78,10 @@ mod tests {
     use std::sync::RwLock;
 
     use feedback::watcher;
-    use nusamai_citygml::object::{Object, Value};
-    use nusamai_citygml::GeometryStore;
-
-    use crate::pipeline::feedback;
+    use nusamai_citygml::{object::Object, GeometryStore};
 
     use super::*;
+    use crate::pipeline::feedback;
     #[test]
     fn test_serial_transform() {
         let (_watcher, feedback, _canceller) = watcher();

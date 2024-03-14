@@ -1,11 +1,11 @@
 //! Apply appearance to geometries
 
-use crate::{pipeline::feedback, transformer::Transform};
-
 use feedback::Feedback;
 use nusamai_citygml::schema::Schema;
 use nusamai_geometry::MultiPolygon;
 use nusamai_plateau::Entity;
+
+use crate::{pipeline::feedback, transformer::Transform};
 
 #[derive(Default)]
 pub struct ApplyAppearanceTransform {}

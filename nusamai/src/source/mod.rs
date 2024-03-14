@@ -2,8 +2,10 @@
 
 pub mod citygml;
 
-use crate::parameters::Parameters;
-use crate::pipeline::{Feedback, Result, Sender};
+use crate::{
+    parameters::Parameters,
+    pipeline::{Feedback, Result, Sender},
+};
 
 pub struct SourceInfo {
     pub name: String,

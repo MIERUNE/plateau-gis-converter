@@ -3,11 +3,9 @@
 use std::{hash::Hash, path::Path, time::Instant};
 
 use indexmap::IndexSet;
-use nusamai_gltf_json::BufferView;
+use nusamai_gltf_json::{BufferView, MimeType};
 use serde::{Deserialize, Serialize};
 use url::Url;
-
-use nusamai_gltf_json::MimeType;
 
 use crate::pipeline::Feedback;
 

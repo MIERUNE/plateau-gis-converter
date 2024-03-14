@@ -1,9 +1,10 @@
-use crate::pipeline::Feedback;
-use crate::transformer::Transform;
-
-use nusamai_citygml::object::{Map, Value};
-use nusamai_citygml::schema::{Schema, TypeDef};
+use nusamai_citygml::{
+    object::{Map, Value},
+    schema::{Schema, TypeDef},
+};
 use nusamai_plateau::Entity;
+
+use crate::{pipeline::Feedback, transformer::Transform};
 
 /// Collect all attributes in dot notation
 #[derive(Default, Clone)]

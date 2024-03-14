@@ -1,14 +1,12 @@
 use std::sync::Arc;
 
-use crate::pipeline::Feedback;
-use crate::transformer::Transform;
-
 use nusamai_citygml::schema::Schema;
 use nusamai_plateau::Entity;
-use nusamai_projection::crs::*;
-use nusamai_projection::etmerc::ExtendedTransverseMercatorProjection;
-use nusamai_projection::jprect::JPRZone;
-use nusamai_projection::vshift::Jgd2011ToWgs84;
+use nusamai_projection::{
+    crs::*, etmerc::ExtendedTransverseMercatorProjection, jprect::JPRZone, vshift::Jgd2011ToWgs84,
+};
+
+use crate::{pipeline::Feedback, transformer::Transform};
 
 /// Coordinate transformation
 #[derive(Clone)]

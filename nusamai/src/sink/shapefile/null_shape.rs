@@ -1,5 +1,6 @@
-use byteorder::{BigEndian, LittleEndian, WriteBytesExt};
 use std::io::{Result, Write};
+
+use byteorder::{BigEndian, LittleEndian, WriteBytesExt};
 
 pub fn write_shp(mut writer: impl Write, feature_count: usize) -> Result<()> {
     write_header(&mut writer, feature_count)?;

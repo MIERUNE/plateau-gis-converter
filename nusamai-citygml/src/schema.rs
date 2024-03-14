@@ -8,9 +8,11 @@ use nusamai_projection::crs::EpsgCode;
 
 #[derive(Debug, Serialize, Deserialize, Default)]
 pub struct Schema {
-    pub types: IndexMap<String, TypeDef, ahash::RandomState>,
+    pub types: TypeMap,
     pub epsg: Option<EpsgCode>,
 }
+
+pub type TypeMap = IndexMap<String, TypeDef, ahash::RandomState>;
 
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
 #[serde(tag = "type")]

@@ -1,11 +1,12 @@
-use crate::pipeline::Feedback;
-use crate::transformer::Transform;
-
 use hashbrown::HashSet;
-use nusamai_citygml::object::{Object, ObjectStereotype, Value};
-use nusamai_citygml::schema::Schema;
-use nusamai_citygml::GeometryRef;
+use nusamai_citygml::{
+    object::{Object, ObjectStereotype, Value},
+    schema::Schema,
+    GeometryRef,
+};
 use nusamai_plateau::Entity;
+
+use crate::{pipeline::Feedback, transformer::Transform};
 
 #[derive(Default, Clone)]
 pub struct GeometricMergedownTransform {

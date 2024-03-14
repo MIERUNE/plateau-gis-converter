@@ -1,23 +1,25 @@
 //! Stanford PLY sink
 
-use std::io::Write;
-use std::path::PathBuf;
+use std::{io::Write, path::PathBuf};
 
 use ahash::RandomState;
 use byteorder::{ByteOrder, LittleEndian, WriteBytesExt};
 use earcut_rs::{utils3d::project3d_to_2d, Earcut};
 use indexmap::IndexSet;
-use nusamai_citygml::{schema::Schema, GeometryType};
-
+use nusamai_citygml::{
+    object::{ObjectStereotype, Value},
+    schema::Schema,
+    GeometryType,
+};
 use nusamai_projection::cartesian::geographic_to_geocentric;
 use rayon::prelude::*;
 
-use crate::get_parameter_value;
-use crate::parameters::*;
-use crate::pipeline::{Feedback, PipelineError, Receiver};
-use crate::sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo};
-
-use nusamai_citygml::object::{ObjectStereotype, Value};
+use crate::{
+    get_parameter_value,
+    parameters::*,
+    pipeline::{Feedback, PipelineError, Receiver},
+    sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo},
+};
 
 const PLY_HEADER_TEMPLATE: &str = r##"ply
 format binary_little_endian 1.0

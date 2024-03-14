@@ -1,9 +1,7 @@
-use super::builder::TransformBuilder;
-use crate::pipeline::{Feedback, Parcel, Receiver, Result, Sender};
-
 use rayon::prelude::*;
 
-use super::Transformer;
+use super::{builder::TransformBuilder, Transformer};
+use crate::pipeline::{Feedback, Parcel, Receiver, Result, Sender};
 
 // transforms: Vec<Box<dyn Transform>>,
 

@@ -2,17 +2,21 @@
 //!
 //! This is a demo sink that serializes the city objects with serde.
 
-use std::fs::File;
-use std::io::{BufWriter, Write};
-use std::path::PathBuf;
+use std::{
+    fs::File,
+    io::{BufWriter, Write},
+    path::PathBuf,
+};
 
 use nusamai_citygml::schema::Schema;
 use rayon::prelude::*;
 
-use crate::get_parameter_value;
-use crate::parameters::*;
-use crate::pipeline::{Feedback, PipelineError, Receiver, Result};
-use crate::sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo};
+use crate::{
+    get_parameter_value,
+    parameters::*,
+    pipeline::{Feedback, PipelineError, Receiver, Result},
+    sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo},
+};
 
 pub struct SerdeSinkProvider {}
 

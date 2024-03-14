@@ -1,21 +1,22 @@
 //! CityGML (.gml) Source Provider
 
-use std::fs;
-use std::io::BufRead;
-use std::path::{Path, PathBuf};
-use std::sync::RwLock;
+use std::{
+    fs,
+    io::BufRead,
+    path::{Path, PathBuf},
+    sync::RwLock,
+};
 
+use nusamai_citygml::{CityGmlElement, CityGmlReader, ParseError, SubTreeReader};
+use nusamai_plateau::{appearance::AppearanceStore, models, Entity};
 use rayon::prelude::*;
 use url::Url;
 
-use crate::parameters::Parameters;
-use crate::pipeline::{self, PipelineError};
-use crate::pipeline::{Feedback, Parcel, Sender};
-use crate::source::{DataSource, DataSourceProvider, SourceInfo};
-use nusamai_citygml::{CityGmlElement, CityGmlReader, ParseError, SubTreeReader};
-use nusamai_plateau::appearance::AppearanceStore;
-use nusamai_plateau::models;
-use nusamai_plateau::Entity;
+use crate::{
+    parameters::Parameters,
+    pipeline::{self, Feedback, Parcel, PipelineError, Sender},
+    source::{DataSource, DataSourceProvider, SourceInfo},
+};
 
 pub struct CityGmlSourceProvider {
     // FIXME: Use the configuration mechanism
@@ -172,9 +173,9 @@ fn toplevel_dispatcher<R: BufRead>(
 
 #[cfg(test)]
 mod tests {
-    use self::pipeline::feedback;
     use std::sync::mpsc::sync_channel;
 
+    use self::pipeline::feedback;
     use super::*;
 
     #[test]

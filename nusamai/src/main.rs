@@ -1,18 +1,19 @@
-use std::env;
-use std::io::Write;
-use std::sync::{Arc, Mutex, OnceLock};
+use std::{
+    env,
+    io::Write,
+    sync::{Arc, Mutex, OnceLock},
+};
 
 use clap::Parser;
-
-use nusamai::pipeline::Canceller;
-
-use nusamai::sink::{DataRequirements, DataSink, DataSinkProvider};
-use nusamai::source::citygml::CityGmlSourceProvider;
-use nusamai::source::{DataSource, DataSourceProvider};
-use nusamai::transformer::MultiThreadTransformer;
-use nusamai::transformer::{self, MappingRules};
-use nusamai::transformer::{NusamaiTransformBuilder, TransformBuilder};
-use nusamai::BUILTIN_SINKS;
+use nusamai::{
+    pipeline::Canceller,
+    sink::{DataRequirements, DataSink, DataSinkProvider},
+    source::{citygml::CityGmlSourceProvider, DataSource, DataSourceProvider},
+    transformer::{
+        self, MappingRules, MultiThreadTransformer, NusamaiTransformBuilder, TransformBuilder,
+    },
+    BUILTIN_SINKS,
+};
 use nusamai_citygml::CityGmlElement;
 use nusamai_plateau::models::TopLevelCityObject;
 
