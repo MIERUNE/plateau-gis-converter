@@ -1,6 +1,8 @@
 use std::{
     env,
     io::Write,
+    path::PathBuf,
+    process::ExitCode,
     sync::{Arc, Mutex, OnceLock},
 };
 
@@ -29,7 +31,7 @@ struct Args {
     sink: SinkChoice,
 
     /// Specify the output path
-    #[arg(long)]
+    #[arg(long, value_parser = parse_non_empty)]
     output: String,
 
     /// Specify the output EPSG code (default: WGS84 3D)
@@ -58,6 +60,14 @@ fn parse_key_val(s: &str) -> Result<(String, String), String> {
         .find('=')
         .ok_or_else(|| format!("invalid KEY=value: no `=` found in `{s}`"))?;
     Ok((s[..pos].into(), s[pos + 1..].into()))
+}
+
+fn parse_non_empty(s: &str) -> Result<String, String> {
+    if s.is_empty() {
+        Err("value must not be empty".into())
+    } else {
+        Ok(s.into())
+    }
 }
 
 #[derive(Clone)]
@@ -98,7 +108,7 @@ impl SinkChoice {
     }
 }
 
-fn main() {
+fn main() -> ExitCode {
     if env::var("RUST_LOG").is_err() {
         env::set_var("RUST_LOG", "info")
     }
@@ -126,12 +136,24 @@ fn main() {
         let mut sink_params = sink_provider.parameters();
         if let Err(err) = sink_params.update_values_with_str(&args.sinkopt) {
             log::error!("Error parsing sink options: {:?}", err);
-            return;
+            return ExitCode::FAILURE;
         };
         if let Err(err) = sink_params.validate() {
-            log::error!("Error validating source parameters: {:?}", err);
-            return;
+            log::error!("Error validating sink parameters: {:?}", err);
+            return ExitCode::FAILURE;
         }
+
+        // If the directory for the output path does not exist, create it
+        if let Some(output_parent_dir) = PathBuf::from(&args.output).parent() {
+            if !output_parent_dir.exists() {
+                if std::fs::create_dir_all(output_parent_dir).is_err() {
+                    log::error!("Failed to create output directory: {:?}", output_parent_dir);
+                    return ExitCode::FAILURE;
+                };
+                log::info!("Created output directory: {:?}", output_parent_dir);
+            }
+        }
+
         sink_provider.create(&sink_params)
     };
 
@@ -142,11 +164,11 @@ fn main() {
         Some(rules_path) => {
             let Ok(file_contents) = std::fs::read_to_string(rules_path) else {
                 log::error!("Error reading rules file: {}", rules_path);
-                return;
+                return ExitCode::FAILURE;
             };
             let Ok(mapping_rules) = serde_json::from_str::<MappingRules>(&file_contents) else {
                 log::error!("Error parsing rules file");
-                return;
+                return ExitCode::FAILURE;
             };
             Some(mapping_rules)
         }
@@ -158,9 +180,19 @@ fn main() {
         let mut filenames = vec![];
         for file_pattern in &args.file_patterns {
             let file_pattern = shellexpand::tilde(file_pattern);
+            let mut pattern_hits = 0;
             for entry in glob::glob(&file_pattern).unwrap() {
                 filenames.push(entry.unwrap());
+                pattern_hits += 1;
             }
+            if pattern_hits == 0 {
+                log::warn!("no files matched the path pattern: {}", file_pattern);
+            }
+        }
+
+        if filenames.is_empty() {
+            log::error!("No input CityGML files found");
+            return ExitCode::FAILURE;
         }
 
         let source_provider: Box<dyn DataSourceProvider> =
@@ -168,11 +200,11 @@ fn main() {
         let mut source_params = source_provider.parameters();
         if let Err(err) = source_params.update_values_with_str(&args.sourceopt) {
             log::error!("Error parsing source parameters: {:?}", err);
-            return;
+            return ExitCode::FAILURE;
         };
         if let Err(err) = source_params.validate() {
             log::error!("Error validating source parameters: {:?}", err);
-            return;
+            return ExitCode::FAILURE;
         }
 
         // create source
@@ -189,6 +221,8 @@ fn main() {
         sink,
         &mut canceller,
     );
+
+    ExitCode::SUCCESS
 }
 
 fn run(
