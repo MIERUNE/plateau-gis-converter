@@ -96,7 +96,7 @@ impl GpkgSink {
         } else {
             // delete the db file first if already exists
             if self.output_path.exists() {
-                std::fs::remove_file(&self.output_path).unwrap();
+                std::fs::remove_file(&self.output_path)?;
             };
 
             let conn_str = format!("file:{}", self.output_path.to_string_lossy());
