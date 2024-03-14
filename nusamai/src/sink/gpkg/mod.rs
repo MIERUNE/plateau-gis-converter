@@ -94,16 +94,15 @@ impl GpkgSink {
                 .await
                 .map_err(|e| PipelineError::Other(e.to_string()))?
         } else {
-            // delete the db file first is already exists
+            // delete the db file first if already exists
             if self.output_path.exists() {
-                std::fs::remove_file(&self.output_path).unwrap();
+                std::fs::remove_file(&self.output_path)?;
             };
 
-            GpkgHandler::from_url(
-                &Url::parse(&format!("sqlite://{}", self.output_path.to_str().unwrap())).unwrap(),
-            )
-            .await
-            .map_err(|e| PipelineError::Other(e.to_string()))?
+            let conn_str = format!("file:{}", self.output_path.to_string_lossy());
+            GpkgHandler::from_str(&conn_str)
+                .await
+                .map_err(|e| PipelineError::Other(e.to_string()))?
         };
 
         let table_infos = schema_to_table_infos(schema);
