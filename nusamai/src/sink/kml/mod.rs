@@ -1,23 +1,28 @@
-use std::collections::HashMap;
-use std::fs::File;
-use std::io::{BufWriter, Write};
-use std::path::PathBuf;
-
-use crate::get_parameter_value;
-use crate::parameters::*;
-use crate::pipeline::{Feedback, PipelineError, Receiver, Result};
-use crate::sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo};
-
-use nusamai_citygml::object::{ObjectStereotype, Value};
-use nusamai_citygml::schema::Schema;
-use nusamai_citygml::GeometryType;
-use nusamai_kml::conversion::indexed_multipolygon_to_kml;
-use nusamai_plateau::Entity;
-use rayon::prelude::*;
+use std::{
+    collections::HashMap,
+    fs::File,
+    io::{BufWriter, Write},
+    path::PathBuf,
+};
 
 use kml::{
     types::{Element, Geometry, Kml, MultiGeometry, Placemark, Polygon as KmlPolygon, SimpleData},
     KmlWriter,
+};
+use nusamai_citygml::{
+    object::{ObjectStereotype, Value},
+    schema::Schema,
+    GeometryType,
+};
+use nusamai_kml::conversion::indexed_multipolygon_to_kml;
+use nusamai_plateau::Entity;
+use rayon::prelude::*;
+
+use crate::{
+    get_parameter_value,
+    parameters::*,
+    pipeline::{Feedback, PipelineError, Receiver, Result},
+    sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo},
 };
 
 pub struct KmlSinkProvider {}

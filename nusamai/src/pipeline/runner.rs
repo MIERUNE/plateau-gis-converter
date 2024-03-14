@@ -1,5 +1,7 @@
-use std::sync::{mpsc::sync_channel, Arc};
-use std::thread;
+use std::{
+    sync::{mpsc::sync_channel, Arc},
+    thread,
+};
 
 use nusamai_citygml::schema::Schema;
 use rayon::ThreadPoolBuilder;
@@ -8,9 +10,7 @@ use super::{
     feedback::{watcher, Feedback, Watcher},
     Canceller,
 };
-use crate::sink::DataSink;
-use crate::source::DataSource;
-use crate::{pipeline::Receiver, transformer::Transformer};
+use crate::{pipeline::Receiver, sink::DataSink, source::DataSource, transformer::Transformer};
 
 const SOURCE_OUTPUT_CHANNEL_BOUND: usize = 10000;
 const TRANSFORMER_OUTPUT_CHANNEL_BOUND: usize = 10000;

@@ -2,8 +2,7 @@
 
 use std::collections::HashMap;
 
-use indexmap::map::Entry;
-use indexmap::IndexMap;
+use indexmap::{map::Entry, IndexMap};
 use serde::Serialize;
 use thiserror::Error;
 

@@ -1,6 +1,4 @@
-use std::fs;
-use std::io;
-use std::marker::PhantomData;
+use std::{fs, io, marker::PhantomData};
 
 use ext_sort::chunk::ExternalChunk;
 

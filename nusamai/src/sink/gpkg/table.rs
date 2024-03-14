@@ -134,8 +134,9 @@ fn attribute_to_column(attr_name: &str, attr: &Attribute) -> Option<ColumnInfo> 
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use nusamai_citygml::schema::{DataTypeDef, FeatureTypeDef, PropertyTypeDef};
+
+    use super::*;
 
     #[test]
     fn test_schema_to_table_infos() {

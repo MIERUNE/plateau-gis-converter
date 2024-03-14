@@ -4,33 +4,28 @@ mod material;
 mod metadata;
 mod utils;
 
-use indexmap::IndexSet;
-use itertools::Itertools;
-use std::fs::File;
-use std::io::BufWriter;
-use std::path::PathBuf;
-use std::sync::Mutex;
+use std::{fs::File, io::BufWriter, path::PathBuf, sync::Mutex};
 
 use ahash::{HashMap, HashSet, RandomState};
 use earcut_rs::{utils3d::project3d_to_2d, Earcut};
-
+use gltf_writer::{write_3dtiles, write_gltf_glb};
+use indexmap::IndexSet;
+use itertools::Itertools;
+use material::{Material, Texture};
 use nusamai_citygml::{object::ObjectStereotype, schema::Schema, GeometryType, Value};
-use nusamai_geometry::MultiPolygon;
-use nusamai_geometry::Polygon;
+use nusamai_geometry::{MultiPolygon, Polygon};
 use nusamai_plateau::appearance;
 use nusamai_projection::cartesian::geographic_to_geocentric;
 use rayon::iter::{ParallelBridge, ParallelIterator};
-use serde::Deserialize;
-use serde::Serialize;
-
-use crate::get_parameter_value;
-use crate::parameters::*;
-use crate::pipeline::{Feedback, PipelineError, Receiver, Result};
-use crate::sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo};
-
-use gltf_writer::{write_3dtiles, write_gltf_glb};
-use material::{Material, Texture};
+use serde::{Deserialize, Serialize};
 use utils::calculate_normal;
+
+use crate::{
+    get_parameter_value,
+    parameters::*,
+    pipeline::{Feedback, PipelineError, Receiver, Result},
+    sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo},
+};
 
 pub struct GltfSinkProvider {}
 

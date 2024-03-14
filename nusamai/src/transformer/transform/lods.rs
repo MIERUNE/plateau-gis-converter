@@ -1,11 +1,12 @@
 use std::ops::{BitAnd, BitAndAssign, BitOrAssign};
 
-use crate::pipeline::Feedback;
-use crate::transformer::Transform;
-
-use nusamai_citygml::object::{ObjectStereotype, Value};
-use nusamai_citygml::schema::Schema;
+use nusamai_citygml::{
+    object::{ObjectStereotype, Value},
+    schema::Schema,
+};
 use nusamai_plateau::Entity;
+
+use crate::{pipeline::Feedback, transformer::Transform};
 
 #[derive(Clone, Copy)]
 pub enum LodFilterMode {

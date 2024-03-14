@@ -1,12 +1,13 @@
-use crate::pipeline::Feedback;
-use crate::transformer::Transform;
-
 use hashbrown::HashMap;
-use indexmap::map::MutableKeys;
-use nusamai_citygml::object::Value;
-use nusamai_citygml::schema::Schema;
-use nusamai_citygml::schema::TypeDef;
+use indexmap::IndexMap;
+use nusamai_citygml::{
+    object::{Map, Value},
+    schema,
+    schema::{Schema, TypeDef},
+};
 use nusamai_plateau::Entity;
+
+use crate::{pipeline::Feedback, transformer::Transform};
 
 /// Transform to edit field names
 ///
@@ -65,19 +66,27 @@ impl Transform for EditFieldNamesTransform {
     }
 
     fn transform_schema(&self, schema: &mut Schema) {
+        let drain_to_new_attrs = |attrs: &mut schema::Map| {
+            let mut new_attrs = IndexMap::default();
+            for (key, mut value) in attrs.drain(..) {
+                if let Some(new_name) = self.rename(&key) {
+                    value.original_name = Some(key.clone());
+                    new_attrs.insert(new_name.to_string(), value);
+                }
+            }
+            new_attrs
+        };
+
         for ty in schema.types.values_mut() {
-            let atrs = match ty {
-                TypeDef::Data(data) => &mut data.attributes,
-                TypeDef::Feature(feat) => &mut feat.attributes,
+            match ty {
+                TypeDef::Data(data) => {
+                    data.attributes = drain_to_new_attrs(&mut data.attributes);
+                }
+                TypeDef::Feature(feat) => {
+                    feat.attributes = drain_to_new_attrs(&mut feat.attributes);
+                }
                 TypeDef::Property(_) => continue,
             };
-            atrs.retain2(|key, value| {
-                if let Some(new_name) = self.rename(key) {
-                    value.original_name = Some(key.clone());
-                    *key = new_name.to_string();
-                }
-                true
-            });
         }
     }
 }
@@ -109,13 +118,14 @@ impl EditFieldNamesTransform {
     fn edit_tree(&self, value: &mut Value) {
         match value {
             Value::Object(obj) => {
-                obj.attributes.retain2(|key, value| {
-                    self.edit_tree(value);
-                    if let Some(new_name) = self.rename(key) {
-                        *key = new_name.to_string();
+                let mut new_attrs = Map::default();
+                for (key, mut value) in obj.attributes.drain(..) {
+                    self.edit_tree(&mut value);
+                    if let Some(new_name) = self.rename(&key) {
+                        new_attrs.insert(new_name.to_string(), value);
                     }
-                    true
-                });
+                }
+                obj.attributes = new_attrs;
             }
             Value::Array(arr) => {
                 for v in arr.iter_mut() {

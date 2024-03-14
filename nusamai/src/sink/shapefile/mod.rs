@@ -4,28 +4,31 @@ mod attributes;
 mod crs;
 mod null_shape;
 
-use std::fs::{remove_file, File};
-use std::io::BufWriter;
-use std::path::PathBuf;
-
-use indexmap::IndexMap;
-use rayon::iter::{ParallelBridge, ParallelIterator};
-
-use nusamai_citygml::object::{Map, ObjectStereotype, Value};
-use nusamai_citygml::schema::Schema;
-use nusamai_citygml::GeometryType;
-use nusamai_plateau::Entity;
-use nusamai_shapefile::conversion::indexed_multipolygon_to_shape;
-
-use crate::get_parameter_value;
-use crate::parameters::*;
-use crate::pipeline::{Feedback, PipelineError, Receiver, Result};
-use crate::sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo};
-use crate::transformer;
+use std::{
+    fs::{remove_file, File},
+    io::BufWriter,
+    path::PathBuf,
+};
 
 use attributes::{attributes_to_record, make_table_builder};
+use indexmap::IndexMap;
+use nusamai_citygml::{
+    object::{Map, ObjectStereotype, Value},
+    schema::Schema,
+    GeometryType,
+};
+use nusamai_plateau::Entity;
+use nusamai_shapefile::conversion::indexed_multipolygon_to_shape;
+use rayon::iter::{ParallelBridge, ParallelIterator};
 
 use self::crs::ProjectionRepository;
+use crate::{
+    get_parameter_value,
+    parameters::*,
+    pipeline::{Feedback, PipelineError, Receiver, Result},
+    sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo},
+    transformer,
+};
 
 pub struct ShapefileSinkProvider {}
 
@@ -293,11 +296,12 @@ pub fn entity_to_shape(entity: Entity) -> (shapefile::Shape, Map) {
 mod tests {
     use std::sync::RwLock;
 
-    use super::*;
     use nusamai_citygml::{object::Object, GeometryRef};
     use nusamai_geometry::MultiPolygon;
     use nusamai_projection::crs::EPSG_JGD2011_GEOGRAPHIC_3D;
     use shapefile::NO_DATA;
+
+    use super::*;
 
     #[test]
     fn test_toplevel_cityobj_multipolygon() {

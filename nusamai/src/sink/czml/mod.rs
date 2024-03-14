@@ -1,24 +1,29 @@
 //! czml sink
 
-use std::fs::File;
-use std::io::{BufWriter, Write};
-use std::path::PathBuf;
+use std::{
+    fs::File,
+    io::{BufWriter, Write},
+    path::PathBuf,
+};
 
-use rayon::prelude::*;
-
-use nusamai_citygml::object::{ObjectStereotype, Value};
-use nusamai_citygml::schema::Schema;
-use nusamai_citygml::GeometryType;
-use nusamai_czml::conversion::indexed_multipolygon_to_czml_polygon;
+use nusamai_citygml::{
+    object::{ObjectStereotype, Value},
+    schema::Schema,
+    GeometryType,
+};
 use nusamai_czml::{
-    indexed_polygon_to_czml_polygon, CzmlBoolean, Packet, StringProperties, StringValueType,
+    conversion::indexed_multipolygon_to_czml_polygon, indexed_polygon_to_czml_polygon, CzmlBoolean,
+    Packet, StringProperties, StringValueType,
 };
 use nusamai_plateau::Entity;
+use rayon::prelude::*;
 
-use crate::get_parameter_value;
-use crate::parameters::*;
-use crate::pipeline::{Feedback, PipelineError, Receiver, Result};
-use crate::sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo};
+use crate::{
+    get_parameter_value,
+    parameters::*,
+    pipeline::{Feedback, PipelineError, Receiver, Result},
+    sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo},
+};
 
 pub struct CzmlSinkProvider {}
 
@@ -229,11 +234,12 @@ pub fn entity_to_packets(entity: Entity, single_part: bool) -> Vec<Packet> {
 mod tests {
     use std::sync::RwLock;
 
-    use super::*;
     use nusamai_citygml::{object::Object, GeometryRef};
     use nusamai_czml::{PositionListProperties, PositionListType};
     use nusamai_geometry::MultiPolygon;
     use nusamai_projection::crs::EPSG_JGD2011_GEOGRAPHIC_3D;
+
+    use super::*;
 
     #[test]
     fn test_entity_multipolygon() {
