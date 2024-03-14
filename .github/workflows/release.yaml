@@ -39,7 +39,7 @@ jobs:
       - name: Set optimization options
         run: |
           echo '[profile.release]' >> Cargo.toml
-          echo 'lto = "thin"' >> Cargo.toml
+          echo 'lto = "fat"' >> Cargo.toml
           echo 'panic = "abort"' >> Cargo.toml
 
       - name: Build the app
