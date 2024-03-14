@@ -213,6 +213,8 @@ fn geometry_slicing_stage(
             max_detail,
             buffer_pixels,
             |(z, x, y), mpoly| {
+                feedback.ensure_not_canceled()?;
+
                 let feature = SlicedFeature {
                     geometry: mpoly,
                     properties: parcel.entity.root.clone(),

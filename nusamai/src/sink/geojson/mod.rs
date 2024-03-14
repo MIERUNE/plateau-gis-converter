@@ -112,6 +112,8 @@ impl DataSink for GeoJsonSink {
                 std::fs::create_dir_all(&self.output_path)?;
                 let _ = categorized_features.iter().try_for_each(
                     |(typename, features)| -> Result<()> {
+                        feedback.ensure_not_canceled()?;
+
                         let mut file_path = self.output_path.clone();
                         let c_name = typename.split_once(':').map(|v| v.1).unwrap_or(typename);
                         file_path.push(&format!("{}.geojson", c_name));
@@ -125,6 +127,8 @@ impl DataSink for GeoJsonSink {
                         // Write each Feature
                         let mut iter = features.iter().peekable();
                         while let Some(feature) = iter.next() {
+                            feedback.ensure_not_canceled()?;
+
                             let bytes = serde_json::to_vec(&feature).unwrap();
                             writer.write_all(&bytes)?;
                             if iter.peek().is_some() {

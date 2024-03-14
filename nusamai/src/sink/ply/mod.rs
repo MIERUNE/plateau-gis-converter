@@ -172,7 +172,11 @@ impl DataSink for StanfordPlySink {
                 let mut mu_y = 0.;
                 let mut mu_z = 0.;
                 let mut all_vertices = Vec::new();
-                for triangles in receiver {
+                for (i, triangles) in receiver.into_iter().enumerate() {
+                    if i % 10000 == 0 {
+                        feedback.ensure_not_canceled()?;
+                    }
+
                     for [x, y, z] in triangles {
                         mu_x += x;
                         mu_y += y;
@@ -198,6 +202,8 @@ impl DataSink for StanfordPlySink {
                         index as u32
                     })
                     .collect();
+
+                feedback.ensure_not_canceled()?;
 
                 // write to file
                 println!("{:?} {:?}", vertices.len(), indices.len());

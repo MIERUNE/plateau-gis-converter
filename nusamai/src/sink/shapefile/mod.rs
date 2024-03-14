@@ -179,8 +179,9 @@ impl DataSink for ShapefileSink {
                                         // - Building (no geometry)
                                         //     - BuildingPart (has geometry)
                                         //     - BuildingPart (has geometry)
-                                        log::warn!(
+                                        feedback.warn(
                                             "Feature without geometry is not supported yet."
+                                                .to_string(),
                                         );
                                     }
                                     shapefile::Shape::NullShape if has_no_geometry => {
