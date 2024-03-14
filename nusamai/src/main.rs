@@ -296,7 +296,7 @@ mod tests {
 
         let mut cmd = Command::cargo_bin("nusamai").unwrap();
         let assert = cmd
-            .arg("../../nusamai-plateau/tests/data/sendai-shi/udx/urf/574026_urf_6668_huchi_op.gml")
+            .arg("../nusamai-plateau/tests/data/sendai-shi/udx/urf/574026_urf_6668_huchi_op.gml")
             .arg("--sink")
             .arg("noop")
             .arg("--output")

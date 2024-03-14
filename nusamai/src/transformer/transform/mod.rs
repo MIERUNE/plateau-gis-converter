@@ -78,7 +78,7 @@ mod tests {
     use std::sync::RwLock;
 
     use feedback::watcher;
-    use nusamai_citygml::{object::Object, GeometryStore};
+    use nusamai_citygml::{object::Object, GeometryStore, Value};
 
     use super::*;
     use crate::pipeline::feedback;
