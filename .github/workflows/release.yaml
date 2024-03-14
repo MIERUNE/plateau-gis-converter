@@ -41,7 +41,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          args: "--profile release-lto"
+          args: "-- --profile release-lto"  # args for tauri build
           tagName: ${{ github.event.release.tag_name }}
           releaseName: "PLATEAU GIS Converter v__VERSION__"
           releaseDraft: true
