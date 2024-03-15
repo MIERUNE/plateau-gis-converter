@@ -1,8 +1,8 @@
 use std::io::BufReader;
 use std::io::Read;
 
-use nusamai_3dtiles_json::subtree;
-use nusamai_3dtiles_json::tileset;
+use nusamai_3dtiles::subtree;
+use nusamai_3dtiles::tileset;
 
 #[test]
 fn load_tileset_json() {

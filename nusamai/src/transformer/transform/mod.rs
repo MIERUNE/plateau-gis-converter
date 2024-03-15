@@ -82,6 +82,7 @@ mod tests {
 
     use super::*;
     use crate::pipeline::feedback;
+
     #[test]
     fn test_serial_transform() {
         let (_watcher, feedback, _canceller) = watcher();
