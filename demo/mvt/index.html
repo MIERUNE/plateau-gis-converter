@@ -36,12 +36,18 @@
             "gsi-raster": {
               type: "raster",
               tiles: [
-                "https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png",
+                "https://cyberjapandata.gsi.go.jp/xyz/seamlessphoto/{z}/{x}/{y}.jpg",
               ],
               tileSize: 256,
               minzoom: 5,
               maxzoom: 18,
             },
+            // terrain: {
+            //   type: "raster-dem",
+            //   tiles: [
+            //     "https://...",
+            //   ],
+            // },
             plateau: {
               type: "vector",
               tiles: ["http://localhost:8000/mvt/{z}/{x}/{y}.pbf"],
@@ -61,18 +67,13 @@
               source: "plateau",
               "source-layer": "bldg:Building",
               paint: {
-                "fill-extrusion-color": "#dddddd",
-                "fill-extrusion-height": ["get", "measuredHeight"],
-              },
-            },
-            {
-              id: "tran:Road",
-              type: "fill-extrusion",
-              source: "plateau",
-              "source-layer": "tran:Road",
-              paint: {
-                "fill-extrusion-color": "#aa5555",
-                "fill-extrusion-height": 0.1,
+                "fill-extrusion-color": "#ffffdd",
+                "fill-extrusion-height": [
+                  "-",
+                  ["get", "maxHeight"],
+                  ["get", "minHeight"],
+                ],
+                // "fill-extrusion-base": ["get", "minHeight"],
               },
             },
             {
@@ -82,10 +83,58 @@
               "source-layer": "brid:Bridge",
               paint: {
                 "fill-extrusion-color": "#0077aa",
-                "fill-extrusion-height": 1,
+                "fill-extrusion-height": [
+                  "-",
+                  ["get", "maxHeight"],
+                  ["get", "minHeight"],
+                ],
+                // "fill-extrusion-base": ["get", "minHeight"],
+              },
+            },
+            {
+              id: "frn:CityFurniture",
+              type: "fill-extrusion",
+              source: "plateau",
+              "source-layer": "frn:CityFurniture",
+              paint: {
+                "fill-extrusion-color": "#ffffff",
+                "fill-extrusion-height": [
+                  "-",
+                  ["get", "maxHeight"],
+                  ["get", "minHeight"],
+                ],
+                // "fill-extrusion-base": ["get", "minHeight"],
+              },
+            },
+            {
+              id: "veg:SolitaryVegetationObject",
+              type: "fill-extrusion",
+              source: "plateau",
+              "source-layer": "veg:SolitaryVegetationObject",
+              paint: {
+                "fill-extrusion-color": "#88ff88",
+                "fill-extrusion-height": [
+                  "-",
+                  ["get", "maxHeight"],
+                  ["get", "minHeight"],
+                ],
+                // "fill-extrusion-base": ["get", "minHeight"],
+              },
+            },
+            {
+              id: "tran:Road",
+              type: "fill",
+              source: "plateau",
+              "source-layer": "tran:Road",
+              paint: {
+                "fill-color": "#aa4444",
               },
             },
           ],
+          // terrain: {
+          //   source: "terrain",
+          //   exaggeration: 1.5,
+          // },
         },
         center: [137.3543, 37.062],
         zoom: 6,

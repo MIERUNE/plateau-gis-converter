@@ -126,6 +126,7 @@ impl DataSink for MvtSink {
                 mode: transformer::LodFilterMode::Lowest,
                 ..Default::default()
             },
+            geom_stats: transformer::GeometryStatsSpec::MinMaxHeights,
             ..Default::default()
         }
     }
