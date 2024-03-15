@@ -1,4 +1,4 @@
-pub mod ext_structural_metadata;
+pub use cesiumtiles::models::gltf_extensions::gltf::ext_structural_metadata;
 
 use std::collections::HashMap;
 

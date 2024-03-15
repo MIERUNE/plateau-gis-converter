@@ -276,25 +276,25 @@ pub fn write_3dtiles(
     // write 3DTiles
     let tileset_path = output_path.join("tileset.json");
 
-    let contents: Vec<nusamai_3dtiles_json::tileset::Content> = filenames
+    let contents: Vec<cesiumtiles::tileset::Content> = filenames
         .iter()
         .map(|filename| {
             let uri = filename.to_string();
-            nusamai_3dtiles_json::tileset::Content {
+            cesiumtiles::tileset::Content {
                 uri,
                 ..Default::default()
             }
         })
         .collect();
 
-    let tileset = nusamai_3dtiles_json::tileset::Tileset {
+    let tileset = cesiumtiles::tileset::Tileset {
         geometric_error: 1e+100,
-        asset: nusamai_3dtiles_json::tileset::Asset {
+        asset: cesiumtiles::tileset::Asset {
             version: "1.1".to_string(),
             ..Default::default()
         },
-        root: nusamai_3dtiles_json::tileset::Tile {
-            bounding_volume: nusamai_3dtiles_json::tileset::BoundingVolume {
+        root: cesiumtiles::tileset::Tile {
+            bounding_volume: cesiumtiles::tileset::BoundingVolume {
                 region: Some(bounding_volume),
                 ..Default::default()
             },

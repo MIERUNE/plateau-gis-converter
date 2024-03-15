@@ -427,8 +427,8 @@ fn tile_writing_stage(
         tree.add_content(content);
     }
 
-    let tileset = nusamai_3dtiles_json::tileset::Tileset {
-        asset: nusamai_3dtiles_json::tileset::Asset {
+    let tileset = cesiumtiles::tileset::Tileset {
+        asset: cesiumtiles::tileset::Asset {
             version: "1.1".to_string(),
             ..Default::default()
         },
