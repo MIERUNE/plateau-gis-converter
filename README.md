@@ -23,9 +23,9 @@ PLATEAU GIS Converter は、[PLATEAU](https://www.mlit.go.jp/plateau/)プロジ�
 
 ## 2. 「GISコンバータ」について
 
-PLATEAUの標準仕様に準拠したCityGML2.0形式の3D都市モデルは、専門のGISツールやCUIツールを用いて他のGIS形式に変換して用いられることが一般的ですが、一般ユーザーが簡易に利用可能な汎用的ツールは存在しません。
-このため、流通や活用の範囲が専門家や技術者に限られていました。
-「GISコンバータ」を利用することで、3D都市モデルを用いた様々な分析・開発を行うことができます。
+PLATEAU の標準仕様に準拠した CityGML 2.0 形式の3D都市モデルは、専門のGISツールやCLIコマンドを用いて他のGIS形式に変換して用いられることが一般的ですが、一般ユーザーが簡易に利用できる汎用ツールは存在しません。そのため、流通や活用の範囲が専門家や技術者に限られていました。
+
+「GISコンバータ」を利用することで、3D都市モデルを一般的なGIS形式に変換して、様々な分析・開発を行うことができます。
 
 - GeoPackage 形式による QGIS 等での解析
 - Mapbox Vector Tiles (MVT) 形式による、大規模データのWeb等での高速描画
@@ -58,40 +58,35 @@ PLATEAUの標準仕様に準拠したCityGML2.0形式の3D都市モデルは、�
 
 利用技術は以下の通りです。
 
-### UI
+メインロジック：
+  - メインロジックはすべて、プログラミング言語 [Rust](https://www.rust-lang.org/) で実装しています。
 
-UIの構築には以下の技術を利用しています。
-
-- ネイティブアプリケーション構築フレームワーク: [Tauri](https://github.com/tauri-apps/tauri)
-- UI構築フレームワーク: [Svelte](https://svelte.dev/)
-
-### メインロジック
-
-メインロジックは全てRustで実装しています。
-
-- プログラミング言語: [Rust](https://www.rust-lang.org/)
+ユーザインタフェース：
+  - デスクトップアプリケーション構築フレームワーク: [Tauri](https://github.com/tauri-apps/tauri)
+  - Web UI構築フレームワーク: [Svelte](https://svelte.dev/)
 
 ## 6. 動作環境
 
-- 本ソフトウェアは以下の環境で動作することを想定しています。
+本ソフトウェアは以下の環境で動作することを想定しています：
+
 - OS:
-  - Windows（Intel）
-  - macOS（Apple Silicon）
+  - Windows (Intel)
+  - macOS (Apple Silicon, Intel)
 - CPU:
-  - 特に制限はありませんが、変換対象の範囲や出力形式によっては処理時間に大きな影響があります
+  - 特に制限はありません。変換対象の範囲や出力形式に応じて処理時間に大きな影響があります。
 - メモリ:
-  - 特に制限はありませんが、変換対象が広い場合、変換時には多くのメモリが必要になります
+  - 特に制限はありませんが、出力形式や変換対象の範囲によっては、変換時に多くのメモリを要します。
 - ネットワーク:
-  - インターネット接続は不要です
+  - インターネット接続は不要です。
 - ストレージ:
-  - インストールには30MB程度の空き容量が必要です
-  - 変換時には、変換元データとほぼ同等、もしくはそれ以上の空き容量が必要です
+  - インストールには30MB程度の空き容量が必要です。
+  - 変換時には、変換元データと同等ないしそれ以上の空き容量が必要です。
 
 ## 7. 本リポジトリのフォルダ構成
 
 - アプリケーション：
   - [`app`](./app/) &mdash; Tauri による GUI 実装
-  - [`nusamai`](./nusamai/) &mdash; バックエンドおよびコマンドライン版の実装
+  - [`nusamai`](./nusamai/) &mdash; アプリケーションバックエンドおよびコマンドライン版の実装
 - 基盤・ユーティリティ：
   - [`nusamai-geometry`](./nusamai-geometry/) &mdash; ジオメトリ型
   - [`nusamai-projection`](./nusamai-projection/) &mdash; 投影法変換
@@ -99,19 +94,18 @@ UIの構築には以下の技術を利用しています。
   - [`nusamai-citygml`](./nusamai-plateau/citygml/) &mdash; CityGML パーサ実装支援ライブラリ
     - [`macros`](./nusamai-plateau/citygml/macros/) &mdash; パーサ導出用の proc macros
   - [`nusamai-plateau`](./nusamai-plateau/) &mdash; PLATEAU 用の CityGML モデルおよびパーサ
-- 変換先形式のための支援ライブラリ（本プロジェクトのユースケースと癒着しないように構成する）
-  - [`nusamai-3dtiles`](./nusamai-3dtiles/) &mdash; 3D Tiles
+- 変換先形式のための支援ライブラリ（本プロジェクトのユースケースと癒着しないように構成）
   - [`nusamai-mvt`](./nusamai-mvt/) &mdash; Mapbox Vector Tiles (MVT)
   - [`nusamai-gpkg`](./nusamai-gpkg/) &mdash; GeoPackage
   - [`nusamai-gltf`](./nusamai-gltf/) &mdash; glTF
   - [`nusamai-geojson`](./nusamai-geojson/) &mdash; GeoJSON
   - [`nusamai-kml`](./nusamai-kml/) &mdash; KML
-  - [`nusamai-czml`](./nusamai-kml/) &mdash; CZML
+  - [`nusamai-czml`](./nusamai-czml/) &mdash; CZML
   - [`nusamai-shapefile`](./nusamai-shapefile/) &mdash; Shapefile
 
 ## 8. ライセンス
 
-- 本リポジトリはMITライセンスで提供されています。
+- 本ソフトウェアはMITライセンスで提供されています。
 - 本ソフトウェアの開発は[株式会社MIERUNE](https://www.mierune.co.jp/)が行っています。
 - ソースコードおよび関連ドキュメントの著作権は国土交通省に帰属します。
 
@@ -130,8 +124,9 @@ UIの構築には以下の技術を利用しています。
 
 ### 外部リポジトリ
 
-- [MIERUNE/earcut-rs](https://github.com/MIERUNE/earcut-rs) &mdash; ポリゴン三角形化アルゴリズム
+- [MIERUNE/earcut-rs](https://github.com/MIERUNE/earcut-rs) &mdash; ポリゴン三角形化アルゴリズムのRust実装
 - [MIERUNE/japan-geoid](https://github.com/MIERUNE/japan-geoid) &mdash; 日本のジオイドモデル (JGD2011 → WGS 84 の変換)
+- [MIERUNE/cesiumtiles-rs](https://github.com/MIERUNE/cesiumtiles-rs) &mdash; 3D Tiles (JSON models, etc.)
 
 ### その他参考リポジトリ
 
