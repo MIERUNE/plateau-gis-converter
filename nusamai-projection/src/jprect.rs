@@ -206,6 +206,29 @@ impl JPRZone {
         }
     }
 
+    /// Gets the EPSG code of the zone JGD2011 / Japan Plane Rectangular CS.
+    pub const fn epsg_2011(&self) -> EpsgCode {
+        self.zone_number() as EpsgCode + EPSG_JGD2011_JPRECT_I - 1
+    }
+
+    /// Gets the EPSG code of the zone JGD2011 / Japan Plane Rectangular CS + JGD2011 (vertical) height.
+    pub const fn epsg_2011_with_height(&self) -> Option<EpsgCode> {
+        let num = self.zone_number();
+        match num {
+            1..=13 => Some(num as EpsgCode + EPSG_JGD2011_JPRECT_I_JGD2011_HEIGHT - 1),
+            _ => None,
+        }
+    }
+
+    /// Gets the EPSG code of the zone for JGD2000 / Japan Plane Rectangular CS.
+    pub const fn epsg_2000(&self) -> EpsgCode {
+        self.zone_number() as EpsgCode + EPSG_JGD2000_JPRECT_I - 1
+    }
+
+    // pub const fn epsg_tokyo(&self) -> EpsgCode {
+    //     self.zone_number() as EpsgCode + EPSG_TOKYO_JPRECT_I - 1
+    // }
+
     pub const fn params(&self) -> JPRZoneParams {
         match self {
             JPRZone::Zone1 => JPRZoneParams {
@@ -369,5 +392,29 @@ mod tests {
 
         let zone = JPRZone::from_epsg(EPSG_JGD2011_GEOGRAPHIC_3D);
         assert_eq!(zone, None);
+    }
+
+    #[test]
+    fn get_epsg() {
+        // Zone 1
+        let zone1 = JPRZone::from_number(1).expect("zone should exist");
+        assert_eq!(zone1.epsg_2011(), 6669);
+        assert_eq!(zone1.epsg_2011_with_height(), Some(10162));
+        assert_eq!(zone1.epsg_2000(), 2443);
+
+        // Zone [2, 19]
+        for no in 2..=19 {
+            let zone = JPRZone::from_number(no).expect("zone should exist");
+            assert_eq!(zone.epsg_2011(), no as EpsgCode + EPSG_JGD2011_JPRECT_I - 1);
+            assert_eq!(zone.epsg_2000(), no as EpsgCode + EPSG_JGD2000_JPRECT_I - 1);
+            if no <= 13 {
+                assert_eq!(
+                    zone.epsg_2011_with_height(),
+                    Some(no as EpsgCode + EPSG_JGD2011_JPRECT_I_JGD2011_HEIGHT - 1)
+                );
+            } else {
+                assert_eq!(zone.epsg_2011_with_height(), None);
+            }
+        }
     }
 }
