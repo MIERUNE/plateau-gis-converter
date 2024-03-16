@@ -2,7 +2,7 @@
 //!
 //! Efficiency of the conversion is not considered.
 //!
-//! TODO: Implement these conversions as From/Into traits.
+//! TODO: Implement these conversions as the 'geo-interop' feature.
 
 use geo_types::{Coord, LineString, MultiPolygon, Polygon};
 use geojson::GeoJson;

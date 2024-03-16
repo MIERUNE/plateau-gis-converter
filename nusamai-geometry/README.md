@@ -2,7 +2,7 @@
 
 A compact, zero-copy geometry representation.
 
-You can avoid using "Vector of Vector of Vector" to represent MultiPolygon.
+This library avoid using jagged arrays (i.e. "Vector of Vector of ..."") to represent MultiPolygon/Polygon/etc.
 
 ## Visual examples of the data structure
 
@@ -32,4 +32,4 @@ You can avoid using "Vector of Vector of Vector" to represent MultiPolygon.
 
 ### Multiple polygons, multiple holes
 
-![Mutiple polygons, multiple holes](./docs/07_multipolygon_multiple_holes.png)
+![Multiple polygons, multiple holes](./docs/07_multipolygon_multiple_holes.png)
