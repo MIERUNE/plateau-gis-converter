@@ -124,7 +124,7 @@ fn slice_polygon(
         // todo?: check interior bbox to optimize
 
         for ring in poly.rings() {
-            if ring.coords().is_empty() {
+            if ring.raw_coords().is_empty() {
                 continue;
             }
 
@@ -197,7 +197,7 @@ fn slice_polygon(
             let tile_mpoly = out.entry(key).or_default();
 
             for (ri, ring) in y_sliced_poly.rings().enumerate() {
-                if ring.coords().is_empty() {
+                if ring.raw_coords().is_empty() {
                     continue;
                 }
 

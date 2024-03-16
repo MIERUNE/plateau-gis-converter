@@ -1,8 +1,8 @@
-//! geo_types <-> MultiPolygon の相互変換テスト
+//! Testing mutual conversion between geo_types and our MultiPolygon
 //!
-//! 処理の効率は考慮していない。
+//! Efficiency of the conversion is not considered.
 //!
-//! のちほど Geometry 自体にこれらの相互変換 (TryFrom, TryInto) を実装することも想定。  
+//! TODO: Implement these conversions as From/Into traits.
 
 use geo_types::{Coord, LineString, MultiPolygon, Polygon};
 use geojson::GeoJson;

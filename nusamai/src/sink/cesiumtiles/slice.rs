@@ -240,7 +240,7 @@ fn slice_polygon(
         // todo?: check interior bbox to optimize
 
         for (ri, (ring, uv_ring)) in poly.rings().zip_eq(poly_uv.rings()).enumerate() {
-            if ring.coords().is_empty() {
+            if ring.raw_coords().is_empty() {
                 continue;
             }
 
@@ -327,7 +327,7 @@ fn slice_polygon(
             poly_buf.clear();
 
             for ring in y_sliced_poly.rings() {
-                if ring.coords().is_empty() {
+                if ring.raw_coords().is_empty() {
                     continue;
                 }
 
