@@ -6,7 +6,7 @@ use super::CoordNum;
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Debug, Clone, Default, PartialEq)]
 pub struct MultiPoint<'a, const D: usize, T: CoordNum = f64> {
-    /// すべての Point の座標データを連結したもの
+    /// Coordinates of all points
     ///
     /// e.g. `[x0, y0, z0, x1, y1, z1, ...]`
     coords: Cow<'a, [T]>,
@@ -16,6 +16,7 @@ pub type MultiPoint2<'a, T = f64> = MultiPoint<'a, 2, T>;
 pub type MultiPoint3<'a, T = f64> = MultiPoint<'a, 3, T>;
 
 impl<'a, const D: usize, T: CoordNum> MultiPoint<'a, D, T> {
+    /// Creates an empty MultiPoint.
     pub fn new() -> Self {
         Default::default()
     }
@@ -27,10 +28,11 @@ impl<'a, const D: usize, T: CoordNum> MultiPoint<'a, D, T> {
         Self { coords }
     }
 
-    pub fn coords(&self) -> &[T] {
+    pub fn raw_coords(&self) -> &[T] {
         self.as_ref()
     }
 
+    /// Returns iterator over the all points.
     pub fn iter(&self) -> Iter<D, T> {
         Iter {
             slice: &self.coords,
@@ -39,6 +41,7 @@ impl<'a, const D: usize, T: CoordNum> MultiPoint<'a, D, T> {
         }
     }
 
+    /// Returns iterator over the points in the given range.
     pub fn iter_range(&self, range: Range<usize>) -> Iter<D, T> {
         Iter {
             slice: &self.coords,
@@ -47,22 +50,27 @@ impl<'a, const D: usize, T: CoordNum> MultiPoint<'a, D, T> {
         }
     }
 
-    pub fn get(&self, index: usize) -> &[T] {
-        &self.coords[index * D..(index + 1) * D]
+    /// Returns the point at the given index.
+    pub fn get(&self, index: usize) -> &[T; D] {
+        self.coords[index * D..(index + 1) * D].try_into().unwrap()
     }
 
+    /// Returns the number of points in the LineString.
     pub fn len(&self) -> usize {
         self.coords.len() / D
     }
 
+    /// Returns `true` if the MultiPoint is empty.
     pub fn is_empty(&self) -> bool {
         self.coords.is_empty()
     }
 
+    /// Appends a coordinate to the MultiPoint.
     pub fn push(&mut self, coord: &[T; D]) {
         self.coords.to_mut().extend(coord);
     }
 
+    /// Removes all points from the LineString.
     pub fn clear(&mut self) {
         self.coords.to_mut().clear();
     }
@@ -177,7 +185,7 @@ mod tests {
     fn test_mpoints_from_raw() {
         let mpoints = MultiPoint2::from_raw([1.2, 2.1, 3.4, 4.3][..].into());
         assert_eq!(mpoints.as_ref(), [1.2, 2.1, 3.4, 4.3]);
-        assert_eq!(mpoints.coords(), [1.2, 2.1, 3.4, 4.3]);
+        assert_eq!(mpoints.raw_coords(), [1.2, 2.1, 3.4, 4.3]);
     }
 
     #[test]
@@ -185,13 +193,13 @@ mod tests {
         {
             let mpoints = MultiPoint2::from_raw([0., 0., 5., 0., 5., 5., 0., 5.][..].into());
             let new_mpoints = mpoints.transform(|[x, y]| [x + 2., y + 1.]);
-            assert_eq!(new_mpoints.coords(), [2., 1., 7., 1., 7., 6., 2., 6.]);
+            assert_eq!(new_mpoints.raw_coords(), [2., 1., 7., 1., 7., 6., 2., 6.]);
         }
 
         {
             let mut mpoints = MultiPoint2::from_raw([0., 0., 5., 0., 5., 5., 0., 5.][..].into());
             mpoints.transform_inplace(|[x, y]| [x + 2., y + 1.]);
-            assert_eq!(mpoints.coords(), [2., 1., 7., 1., 7., 6., 2., 6.]);
+            assert_eq!(mpoints.raw_coords(), [2., 1., 7., 1., 7., 6., 2., 6.]);
         }
     }
 }

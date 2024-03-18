@@ -7,9 +7,10 @@ use super::CoordNum;
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Debug, Clone, Default, PartialEq)]
 pub struct Polygon<'a, const D: usize, T: CoordNum = f64> {
-    /// 座標データ
+    /// Coordinates
     coords: Cow<'a, [T]>,
-    /// 各 hole が何番目の頂点から始まるかの列
+
+    /// A sequence of indices from which each hole starts
     hole_indices: Cow<'a, [u32]>,
 }
 
@@ -17,6 +18,7 @@ pub type Polygon3<'a, T = f64> = Polygon<'a, 3, T>;
 pub type Polygon2<'a, T = f64> = Polygon<'a, 2, T>;
 
 impl<'a, const D: usize, T: CoordNum> Polygon<'a, D, T> {
+    /// Creates an empty Polygon.
     pub fn new() -> Self {
         Default::default()
     }
@@ -45,10 +47,11 @@ impl<'a, const D: usize, T: CoordNum> Polygon<'a, D, T> {
         }
     }
 
-    pub fn coords(&self) -> &[T] {
+    pub fn raw_coords(&self) -> &[T] {
         self.coords.as_ref()
     }
 
+    /// A sequence of indices from which each hole starts
     pub fn hole_indices(&self) -> &[u32] {
         self.hole_indices.as_ref()
     }
@@ -72,6 +75,7 @@ impl<'a, const D: usize, T: CoordNum> Polygon<'a, D, T> {
         Iter { poly: self, pos: 0 }
     }
 
+    /// Remove all rings from the polygon.
     pub fn clear(&mut self) {
         self.coords.to_mut().clear();
         self.hole_indices.to_mut().clear();
@@ -258,7 +262,7 @@ mod tests {
             poly.add_ring([[0., 0.], [5., 0.], [5., 5.], [0., 5.]]);
             let new_poly = poly.transform(|[x, y]| [x + 2., y + 1.]);
             assert_eq!(
-                new_poly.exterior().coords(),
+                new_poly.exterior().raw_coords(),
                 [2., 1., 7., 1., 7., 6., 2., 6.]
             );
         }
@@ -267,7 +271,10 @@ mod tests {
             let mut poly = Polygon2::new();
             poly.add_ring([[0., 0.], [5., 0.], [5., 5.], [0., 5.]]);
             poly.transform_inplace(|[x, y]| [x + 2., y + 1.]);
-            assert_eq!(poly.exterior().coords(), [2., 1., 7., 1., 7., 6., 2., 6.]);
+            assert_eq!(
+                poly.exterior().raw_coords(),
+                [2., 1., 7., 1., 7., 6., 2., 6.]
+            );
         }
     }
 

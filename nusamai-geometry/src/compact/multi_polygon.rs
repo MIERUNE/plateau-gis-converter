@@ -8,18 +8,20 @@ use super::CoordNum;
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Debug, Clone, Default, PartialEq)]
 pub struct MultiPolygon<'a, const D: usize, T: CoordNum = f64> {
-    /// すべての Polygon の座標データを連結したもの
+    /// All coordinates of all polygons
     ///
     /// e.g. `[x0, y0, z0, x1, y1, z1, ...]`
     all_coords: Cow<'a, [T]>,
 
-    /// all_coords における各ポリゴンの開始頂点番号 (1つ目のポリゴンは必ず0なので省略)
+    /// A sequence of indices of all_coords from which each polygon starts
+    /// (the first polygon always starts from 0 so it is omitted)
     coords_spans: Cow<'a, [u32]>,
 
-    /// 各ポリゴンでの各 hole の開始頂点インデクスの列を全ポリゴンについて連結したもの
+    /// All hole_indices (See `Polygon`) of all polygons
     all_hole_indices: Cow<'a, [u32]>,
 
-    /// all_hole_indices における各ポリゴンの開始位置 (1つ目のポリゴンは必ず0なので省略)
+    /// A sequence of indices of all_hole_indices from which each polygon starts
+    /// (the first polygon always starts from 0 so it is omitted)
     holes_spans: Cow<'a, [u32]>,
 }
 
@@ -27,6 +29,7 @@ pub type MultiPolygon2<'a, T = f64> = MultiPolygon<'a, 2, T>;
 pub type MultiPolygon3<'a, T = f64> = MultiPolygon<'a, 3, T>;
 
 impl<'a, const D: usize, T: CoordNum> MultiPolygon<'a, D, T> {
+    /// Creates an empty MultiPolygon.
     pub fn new() -> Self {
         Default::default()
     }
@@ -178,7 +181,7 @@ impl<'a, const D: usize, T: CoordNum> MultiPolygon<'a, D, T> {
         self.holes_spans.to_mut().clear();
     }
 
-    // Adds a polygon to the multipolygon.
+    /// Adds a polygon to the multipolygon.
     pub fn push(&mut self, poly: &Polygon<D, T>) {
         self.add_exterior(&poly.exterior());
         for hole in poly.interiors() {
@@ -478,14 +481,17 @@ mod tests {
             let mut mpoly = MultiPolygon2::new();
             mpoly.add_exterior([[0., 0.], [5., 0.], [5., 5.], [0., 5.]]);
             let new_mpoly = mpoly.transform(|[x, y]| [x + 2., y + 1.]);
-            assert_eq!(new_mpoly.get(0).coords(), [2., 1., 7., 1., 7., 6., 2., 6.]);
+            assert_eq!(
+                new_mpoly.get(0).raw_coords(),
+                [2., 1., 7., 1., 7., 6., 2., 6.]
+            );
         }
 
         {
             let mut mpoly = MultiPolygon2::new();
             mpoly.add_exterior([[0., 0.], [5., 0.], [5., 5.], [0., 5.]]);
             mpoly.transform_inplace(|[x, y]| [x + 2., y + 1.]);
-            assert_eq!(mpoly.get(0).coords(), [2., 1., 7., 1., 7., 6., 2., 6.]);
+            assert_eq!(mpoly.get(0).raw_coords(), [2., 1., 7., 1., 7., 6., 2., 6.]);
         }
     }
 

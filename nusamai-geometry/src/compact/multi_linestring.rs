@@ -8,14 +8,13 @@ use super::CoordNum;
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Debug, Clone, Default, PartialEq)]
 pub struct MultiLineString<'a, const D: usize, T: CoordNum = f64> {
-    /// すべての LineString の座標データを連結したもの
+    /// All coordinates of all LineStrings
     ///
     /// e.g. `[x0, y0, z0, x1, y1, z1, ...]`
     all_coords: Cow<'a, [T]>,
 
-    /// all_coords における各 LineString の開始頂点番号
-    ///
-    /// ただし1つ目の LineString の開始位置は必ず `0` なので省略する。
+    /// A sequence of indices of all_coords from which each linestring starts
+    /// (the first linestring always starts from 0 so it is omitted)
     ///
     /// e.g. `[5, 12, 23]`
     coords_spans: Cow<'a, [u32]>,
@@ -25,6 +24,7 @@ pub type MultiLineString2<'a, T = f64> = MultiLineString<'a, 2, T>;
 pub type MultiLineString3<'a, T = f64> = MultiLineString<'a, 3, T>;
 
 impl<'a, const D: usize, T: CoordNum> MultiLineString<'a, D, T> {
+    /// Creates an empty MultiLineString.
     pub fn new() -> Self {
         Default::default()
     }
@@ -53,6 +53,7 @@ impl<'a, const D: usize, T: CoordNum> MultiLineString<'a, D, T> {
         }
     }
 
+    /// Returns iterator over the linestrings.
     pub fn iter(&self) -> Iter<D, T> {
         Iter {
             ls: self,
@@ -61,6 +62,7 @@ impl<'a, const D: usize, T: CoordNum> MultiLineString<'a, D, T> {
         }
     }
 
+    /// Returns iterator over the linestrings in the given range.
     pub fn iter_range(&self, range: Range<usize>) -> Iter<D, T> {
         Iter {
             ls: self,
@@ -69,6 +71,7 @@ impl<'a, const D: usize, T: CoordNum> MultiLineString<'a, D, T> {
         }
     }
 
+    /// Returns the number of linestrings.
     pub fn len(&self) -> usize {
         if self.all_coords.is_empty() {
             0
@@ -77,15 +80,18 @@ impl<'a, const D: usize, T: CoordNum> MultiLineString<'a, D, T> {
         }
     }
 
+    /// Returns `true` if the MultiLineString is empty.
     pub fn is_empty(&self) -> bool {
         self.all_coords.is_empty()
     }
 
+    /// Removes all linestrings.
     pub fn clear(&mut self) {
         self.all_coords.to_mut().clear();
         self.coords_spans.to_mut().clear();
     }
 
+    /// Add a linestring to the MultiLineString.
     pub fn add_linestring<I: IntoIterator<Item = [T; D]>>(&mut self, iter: I) {
         if !self.all_coords.is_empty() {
             self.coords_spans
@@ -174,9 +180,9 @@ mod tests {
         assert_eq!(mline.iter().count(), 3);
         for (i, line) in mline.iter().enumerate() {
             match i {
-                0 => assert_eq!(line.coords(), &[0., 1., 2., 3., 4., 5.]),
-                1 => assert_eq!(line.coords(), &[6., 7., 8., 9.]),
-                2 => assert_eq!(line.coords(), &[10., 11., 12., 13.]),
+                0 => assert_eq!(line.raw_coords(), &[0., 1., 2., 3., 4., 5.]),
+                1 => assert_eq!(line.raw_coords(), &[6., 7., 8., 9.]),
+                2 => assert_eq!(line.raw_coords(), &[10., 11., 12., 13.]),
                 _ => unreachable!(),
             }
         }
@@ -194,7 +200,7 @@ mod tests {
         assert!(!mline.is_empty());
         for (i, _line) in mline.iter().enumerate() {
             match i {
-                0 => assert_eq!(_line.coords(), &[1., 2., 3., 4.]),
+                0 => assert_eq!(_line.raw_coords(), &[1., 2., 3., 4.]),
                 _ => unreachable!(),
             }
         }
@@ -227,18 +233,18 @@ mod tests {
 
         for (i, line) in mline.iter().enumerate() {
             match i {
-                0 => assert_eq!(line.coords(), &[0., 0., 1., 1., 2., 2.]),
-                1 => assert_eq!(line.coords(), &[3., 3., 4., 4., 5., 5.]),
-                2 => assert_eq!(line.coords(), &[6., 6., 7., 7., 8., 8., 9., 9.]),
-                3 => assert_eq!(line.coords(), &[1., 1., 2., 2., 3., 3., 4., 4.]),
+                0 => assert_eq!(line.raw_coords(), &[0., 0., 1., 1., 2., 2.]),
+                1 => assert_eq!(line.raw_coords(), &[3., 3., 4., 4., 5., 5.]),
+                2 => assert_eq!(line.raw_coords(), &[6., 6., 7., 7., 8., 8., 9., 9.]),
+                3 => assert_eq!(line.raw_coords(), &[1., 1., 2., 2., 3., 3., 4., 4.]),
                 _ => unreachable!(),
             }
         }
 
         for (i, line) in mline.iter_range(1..3).enumerate() {
             match i {
-                0 => assert_eq!(line.coords(), &[3., 3., 4., 4., 5., 5.]),
-                1 => assert_eq!(line.coords(), &[6., 6., 7., 7., 8., 8., 9., 9.]),
+                0 => assert_eq!(line.raw_coords(), &[3., 3., 4., 4., 5., 5.]),
+                1 => assert_eq!(line.raw_coords(), &[6., 6., 7., 7., 8., 8., 9., 9.]),
                 _ => unreachable!(),
             }
         }
@@ -251,7 +257,7 @@ mod tests {
             mlines.add_linestring([[0., 0.], [5., 0.], [5., 5.], [0., 5.]]);
             let new_mlines = mlines.transform(|[x, y]| [x + 2., y + 1.]);
             assert_eq!(
-                new_mlines.iter().next().unwrap().coords(),
+                new_mlines.iter().next().unwrap().raw_coords(),
                 [2., 1., 7., 1., 7., 6., 2., 6.]
             );
         }
@@ -261,7 +267,7 @@ mod tests {
             mlines.add_linestring([[0., 0.], [5., 0.], [5., 5.], [0., 5.]]);
             mlines.transform_inplace(|[x, y]| [x + 2., y + 1.]);
             assert_eq!(
-                mlines.iter().next().unwrap().coords(),
+                mlines.iter().next().unwrap().raw_coords(),
                 [2., 1., 7., 1., 7., 6., 2., 6.]
             );
         }

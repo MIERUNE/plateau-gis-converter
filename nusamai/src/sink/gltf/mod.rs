@@ -202,9 +202,9 @@ impl DataSink for GltfSink {
 
                             let mut ling_buf: Vec<[f64; 5]> = Vec::new();
                             for (xyz, uv) in poly
-                                .coords()
+                                .raw_coords()
                                 .chunks_exact(3)
-                                .zip(poly_uv.coords().chunks_exact(2))
+                                .zip(poly_uv.raw_coords().chunks_exact(2))
                             {
                                 ling_buf.push([xyz[0], xyz[1], xyz[2], uv[0], uv[1]]);
                                 let mut bounds = bounding_volume.lock().unwrap();
@@ -311,15 +311,15 @@ impl DataSink for GltfSink {
                 {
                     let num_outer = match poly.hole_indices().first() {
                         Some(&v) => v as usize,
-                        None => poly.coords().len() / 5,
+                        None => poly.raw_coords().len() / 5,
                     };
 
                     let mat = feature.materials[*orig_mat_id as usize].clone();
                     let primitive = primitives.entry(mat).or_default();
                     primitive.feature_ids.insert(feature_id as u32);
 
-                    if let Some((nx, ny, nz)) = calculate_normal(poly.exterior().coords(), 5) {
-                        if project3d_to_2d(poly.coords(), num_outer, 5, &mut buf2d) {
+                    if let Some((nx, ny, nz)) = calculate_normal(poly.exterior().raw_coords(), 5) {
+                        if project3d_to_2d(poly.raw_coords(), num_outer, 5, &mut buf2d) {
                             // earcut
                             earcutter.earcut(&buf2d, poly.hole_indices(), 2, &mut index_buf);
 
@@ -327,7 +327,7 @@ impl DataSink for GltfSink {
                             primitive.indices.extend(index_buf.iter().map(|idx| {
                                 let pos = *idx as usize * 5;
                                 let [x, y, z, u, v] =
-                                    poly.coords()[pos..pos + 5].try_into().unwrap();
+                                    poly.raw_coords()[pos..pos + 5].try_into().unwrap();
                                 let vbits = [
                                     (x as f32).to_bits(),
                                     (y as f32).to_bits(),

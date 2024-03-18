@@ -16,7 +16,6 @@ pub struct FlattenTreeTransform {
 }
 
 /// Flattening option for the "feature" stereotype
-// TODO: Use this to implement flattening process
 #[derive(Debug, Copy, Clone)]
 pub enum FeatureFlatteningOption {
     /// No feature flattening
@@ -28,7 +27,6 @@ pub enum FeatureFlatteningOption {
 }
 
 /// Flattening option for the "data" stereotype
-// TODO: Use this to implement flattening process
 #[derive(Debug, Copy, Clone)]
 pub enum DataFlatteningOption {
     /// No data flattening
@@ -40,7 +38,6 @@ pub enum DataFlatteningOption {
 }
 
 /// Flattening option for the "object" stereotype
-// TODO: Use this to implement flattening process
 #[derive(Debug, Copy, Clone)]
 pub enum ObjectFlatteningOption {
     /// No object flattening

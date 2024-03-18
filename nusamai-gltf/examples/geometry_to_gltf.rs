@@ -239,11 +239,11 @@ fn tessellate(
         for poly in mpoly {
             let num_outer = match poly.hole_indices().first() {
                 Some(&v) => v as usize,
-                None => poly.coords().len() / 3,
+                None => poly.raw_coords().len() / 3,
             };
 
             buf3d.clear();
-            buf3d.extend(poly.coords().chunks_exact(3).flat_map(|v| {
+            buf3d.extend(poly.raw_coords().chunks_exact(3).flat_map(|v| {
                 let (lat, lng) = (v[0], v[1]);
                 [
                     (lng - mu_lng) * (10000000. * lat.to_radians().cos() / 90.),
@@ -458,7 +458,7 @@ fn calc_center(all_mpolys: &Vec<nusamai_geometry::MultiPolygon<3>>) -> (f64, f64
             let (mut feat_mu_lng, mut feat_mu_lat) = (0.0, 0.0);
             let mut num_verts = 0;
             for poly in mpoly {
-                for v in poly.coords().chunks_exact(3) {
+                for v in poly.raw_coords().chunks_exact(3) {
                     num_verts += 1;
                     feat_mu_lng += v[0];
                     feat_mu_lat += v[1];
