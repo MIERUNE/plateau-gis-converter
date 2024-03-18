@@ -10,6 +10,13 @@
 	$: epsgOptions = filetypeOptions[filetype]?.epsg || [];
 	$: disableEpsgOptions = epsgOptions.length < 2;
 
+	$: {
+		// Reset the target CRS if the selected filetype does not support the current CRS
+		if (!filetypeOptions[filetype]?.epsg.some((item) => item.value === epsg)) {
+			epsg = filetypeOptions[filetype]?.epsg[0].value || 4979;
+		}
+	}
+
 	async function openRulesPathDialog() {
 		const res = await dialog.open({
 			filters: [
