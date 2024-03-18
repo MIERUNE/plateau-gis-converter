@@ -2,7 +2,7 @@
 
 A compact, zero-copy geometry representation.
 
-This library avoid using jagged arrays (i.e. "Vector of Vector of ..."") to represent MultiPolygon/Polygon/etc.
+This library avoids using jagged arrays (i.e. Vector of Vector of ...) to represent MultiPolygon/Polygon/etc.
 
 ## Visual examples of the data structure
 

@@ -2,7 +2,7 @@
 
 [![Test Tauri App](https://github.com/MIERUNE/PLATEAU-GIS-Converter/actions/workflows/test_app.yml/badge.svg)](https://github.com/MIERUNE/nusamai/actions/workflows/test_app.yml)
 [![Test Libraries](https://github.com/MIERUNE/PLATEAU-GIS-Converter/actions/workflows/test_libs.yml/badge.svg)](https://github.com/MIERUNE/nusamai/actions/workflows/test_libs.yml)
-[![rodecov](https://codecov.io/gh/MIERUNE/PLATEAU-GIS-Converter/graph/badge.svg?token=oa62wDWoqu)](https://codecov.io/gh/MIERUNE/PLATEAU-GIS-Converter)
+[![Codecov](https://codecov.io/gh/MIERUNE/PLATEAU-GIS-Converter/graph/badge.svg?token=oa62wDWoqu)](https://codecov.io/gh/MIERUNE/PLATEAU-GIS-Converter)
 <!--
 [![Docs](https://github.com/MIERUNE/PLATEAU-GIS-Converter/actions/workflows/doc.yml/badge.svg)](https://mierune.github.io/nusamai/app/)
 -->
