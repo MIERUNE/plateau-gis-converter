@@ -2,7 +2,7 @@
 
 mod gltf;
 mod material;
-mod metadata;
+pub(crate) mod metadata;
 mod slice;
 mod sort;
 mod tiling;

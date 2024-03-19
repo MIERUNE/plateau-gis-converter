@@ -1,11 +1,11 @@
 //! gltf sink poc
 mod gltf_writer;
 mod material;
-mod metadata;
 mod utils;
 
 use std::{fs::File, io::BufWriter, path::PathBuf, sync::Mutex};
 
+use crate::sink::cesiumtiles::metadata;
 use ahash::{HashMap, HashSet, RandomState};
 use earcut_rs::{utils3d::project3d_to_2d, Earcut};
 use gltf_writer::{write_3dtiles, write_gltf_glb};
