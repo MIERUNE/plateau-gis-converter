@@ -174,7 +174,9 @@ impl Class {
 
             // Fill in the default values for the properties that don't occur in the input
             for (key, prop) in &mut self.properties {
-                if obj.attributes.contains_key(key) || obj.stereotype.id().is_some() {
+                if obj.attributes.contains_key(key)
+                    || (key == "id" && obj.stereotype.id().is_some())
+                {
                     continue;
                 }
 
