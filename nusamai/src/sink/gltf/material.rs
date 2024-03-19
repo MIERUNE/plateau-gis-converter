@@ -114,7 +114,7 @@ impl Image {
 // NOTE: temporary implementation
 fn load_image(feedback: &Feedback, path: &Path) -> std::io::Result<(Vec<u8>, MimeType)> {
     if let Some(ext) = path.extension() {
-        match ext.to_str() {
+        match ext.to_ascii_lowercase().to_str() {
             Some("tif" | "tiff" | "png") => {
                 feedback.info(format!("Decoding image: {:?}", path));
                 let t = Instant::now();

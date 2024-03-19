@@ -13,7 +13,7 @@ use indexmap::IndexSet;
 use itertools::Itertools;
 use material::{Material, Texture};
 use nusamai_citygml::{object::ObjectStereotype, schema::Schema, GeometryType, Value};
-use nusamai_geometry::{MultiPolygon, Polygon};
+use nusamai_geometry::MultiPolygon;
 use nusamai_plateau::appearance;
 use nusamai_projection::cartesian::geographic_to_geocentric;
 use rayon::iter::{ParallelBridge, ParallelIterator};
@@ -200,27 +200,33 @@ impl DataSink for GltfSink {
                             };
                             let (mat_idx, _) = materials.insert_full(mat);
 
-                            let mut ling_buf: Vec<[f64; 5]> = Vec::new();
-                            for (xyz, uv) in poly
-                                .raw_coords()
-                                .chunks_exact(3)
-                                .zip(poly_uv.raw_coords().chunks_exact(2))
-                            {
-                                ling_buf.push([xyz[0], xyz[1], xyz[2], uv[0], uv[1]]);
-                                let mut bounds = bounding_volume.lock().unwrap();
-                                bounds.min_lng = bounds.min_lng.min(xyz[0]);
-                                bounds.max_lng = bounds.max_lng.max(xyz[0]);
-                                bounds.min_lat = bounds.min_lat.min(xyz[1]);
-                                bounds.max_lat = bounds.max_lat.max(xyz[1]);
-                                bounds.min_height = bounds.min_height.min(xyz[2]);
-                                bounds.max_height = bounds.max_height.max(xyz[2]);
-                            }
+                            let mut ring_buffer: Vec<[f64; 5]> = Vec::new();
 
-                            let mut poly_buf: Polygon<5> = Polygon::new();
-                            poly_buf.add_ring(ling_buf);
+                            poly.rings().zip_eq(poly_uv.rings()).enumerate().for_each(
+                                |(ri, (ring, uv_ring))| {
+                                    ring.iter_closed().zip_eq(uv_ring.iter_closed()).for_each(
+                                        |(c, uv)| {
+                                            let [x, y, z] = c;
+                                            ring_buffer.push([x, y, z, uv[0], uv[1]]);
 
-                            feature.polygons.push(&poly_buf);
-                            feature.polygon_material_ids.push(mat_idx as u32);
+                                            // FIXME: remove mutex
+                                            let mut bounds = bounding_volume.lock().unwrap();
+                                            bounds.min_lng = bounds.min_lng.min(x);
+                                            bounds.max_lng = bounds.max_lng.max(x);
+                                            bounds.min_lat = bounds.min_lat.min(y);
+                                            bounds.max_lat = bounds.max_lat.max(y);
+                                            bounds.min_height = bounds.min_height.min(z);
+                                            bounds.max_height = bounds.max_height.max(z);
+                                        },
+                                    );
+                                    if ri == 0 {
+                                        feature.polygons.add_exterior(ring_buffer.drain(..));
+                                        feature.polygon_material_ids.push(mat_idx as u32);
+                                    } else {
+                                        feature.polygons.add_interior(ring_buffer.drain(..));
+                                    }
+                                },
+                            );
                         }
                     }
                     GeometryType::Curve => {
