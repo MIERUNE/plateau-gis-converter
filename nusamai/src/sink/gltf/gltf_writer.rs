@@ -8,8 +8,9 @@ use byteorder::{ByteOrder, LittleEndian};
 use indexmap::IndexSet;
 use nusamai_gltf_json::extensions::mesh::ext_mesh_features;
 
-use super::{material, metadata::MetadataEncoder, Primitives};
+use super::{material, Primitives};
 use crate::pipeline::{feedback, PipelineError};
+use crate::sink::cesiumtiles::metadata;
 
 pub fn write_gltf_glb<W: Write>(
     feedback: &feedback::Feedback,
@@ -17,7 +18,7 @@ pub fn write_gltf_glb<W: Write>(
     translation: [f64; 3],
     vertices: impl IntoIterator<Item = [u32; 9]>,
     primitives: Primitives,
-    metadata_encoder: MetadataEncoder,
+    metadata_encoder: metadata::MetadataEncoder,
 ) -> Result<(), PipelineError> {
     use nusamai_gltf_json::*;
 
