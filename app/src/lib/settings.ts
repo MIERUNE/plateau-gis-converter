@@ -50,7 +50,10 @@ const filetypeOptions: Record<string, { label: string; extensions: string[]; eps
 		cesiumtiles: {
 			label: '3D Tiles',
 			extensions: [''],
-			epsg: [{ value: 4979, label: 'WGS 84 (EPSG:4979)' }]
+			epsg: [
+				{ value: 4979, label: 'WGS 84 (EPSG:4979) (楕円体高)' },
+				{ value: 6697, label: '特殊: JGD2011 (EPSG:6697) (標高)' }
+			]
 		},
 		mvt: {
 			label: 'Vector Tiles (MVT)',
