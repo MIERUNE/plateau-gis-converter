@@ -10,8 +10,8 @@ serde = { version = "1.0.197", features = ["derive"] }
 nusamai-plateau = { path = "../nusamai-plateau" }
 nusamai-citygml = { path = "../nusamai-citygml" }
 quick-xml = "0.31.0"
-clap = { version = "4.5.2", features = ["derive", "string"] }
-thiserror = "1.0.57"
+clap = { version = "4.5.3", features = ["derive", "string"] }
+thiserror = "1.0.58"
 ctrlc = "3.4.4"
 bincode = { version = "2.0.0-rc.3", default-features = false, features = ["std", "serde"] }
 lz4_flex = "0.11.2"
@@ -46,7 +46,7 @@ glob = "0.3.1"
 shellexpand = "3.1.0"
 kml = "0.8.5"
 nusamai-kml = { path = "../nusamai-kml" }
-image = { version = "0.25.0-preview.0", default-features = false, features = ["rayon", "tiff", "jpeg", "webp", "png"] }
+image = { version = "0.25.0", default-features = false, features = ["rayon", "tiff", "jpeg", "webp", "png"] }
 flate2 = "1.0.28"
 chrono = "0.4.35"
 

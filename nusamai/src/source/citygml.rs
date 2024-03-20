@@ -7,7 +7,7 @@ use std::{
     sync::RwLock,
 };
 
-use nusamai_citygml::{CityGmlElement, CityGmlReader, ParseError, SubTreeReader};
+use nusamai_citygml::{CityGmlElement, CityGmlReader, Envelope, ParseError, SubTreeReader};
 use nusamai_plateau::{appearance::AppearanceStore, models, Entity};
 use rayon::prelude::*;
 use url::Url;
@@ -96,7 +96,12 @@ fn toplevel_dispatcher<R: BufRead>(
 
         match st.current_path() {
             b"gml:boundedBy" => {
-                st.skip_current_element()?;
+                // skip
+                Ok(())
+            }
+            b"gml:boundedBy/gml:Envelope" => {
+                let mut envelope = Envelope::default();
+                envelope.parse(st)?;
                 Ok(())
             }
             b"core:cityObjectMember" => {
