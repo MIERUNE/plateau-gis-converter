@@ -4,9 +4,6 @@ use kml::types::{
 use nusamai_geometry::{CoordNum, MultiPoint, MultiPolygon, Polygon};
 use std::{collections::HashMap, vec};
 
-const EXTRUDE: bool = false;
-const ALTITUDE_MODE: AltitudeMode = AltitudeMode::RelativeToGround;
-
 pub fn multipolygon_to_kml(mpoly: &MultiPolygon<3>) -> Vec<KmlPolygon> {
     multipolygon_to_kml_with_mapping(mpoly, |c| c)
 }
@@ -35,9 +32,9 @@ fn polygon_to_kml_polygon_with_mapping<const D: usize, T: CoordNum>(
     KmlPolygon {
         outer: polygon_to_kml_outer_boundary_with_mapping(poly, &mapping),
         inner: polygon_to_kml_inner_boundary_with_mapping(poly, &mapping),
-        extrude: EXTRUDE,
+        extrude: false,
         tessellate: false,
-        altitude_mode: ALTITUDE_MODE,
+        altitude_mode: AltitudeMode::Absolute, // from sea level
         attrs: HashMap::new(),
     }
 }
@@ -55,9 +52,9 @@ fn polygon_to_kml_outer_boundary_with_mapping<const D: usize, T: CoordNum>(
 
     LinearRing {
         coords: outer_coords,
-        extrude: EXTRUDE,
+        extrude: false,
         tessellate: false,
-        altitude_mode: ALTITUDE_MODE,
+        altitude_mode: AltitudeMode::Absolute,
         attrs: HashMap::new(),
     }
 }
@@ -75,9 +72,9 @@ fn polygon_to_kml_inner_boundary_with_mapping<const D: usize, T: CoordNum>(
         })
         .map(|coords| LinearRing {
             coords,
-            extrude: EXTRUDE,
+            extrude: false,
             tessellate: false,
-            altitude_mode: ALTITUDE_MODE,
+            altitude_mode: AltitudeMode::Absolute,
             attrs: HashMap::new(),
         })
         .collect()

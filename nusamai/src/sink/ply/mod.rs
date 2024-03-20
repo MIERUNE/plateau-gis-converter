@@ -132,11 +132,11 @@ impl DataSink for StanfordPlySink {
                                     });
                                     let num_outer = match poly.hole_indices().first() {
                                         Some(&v) => v as usize,
-                                        None => poly.coords().len() / 3,
+                                        None => poly.raw_coords().len() / 3,
                                     };
 
                                     buf3d.clear();
-                                    buf3d.extend(poly.coords());
+                                    buf3d.extend(poly.raw_coords());
 
                                     if project3d_to_2d(&buf3d, num_outer, 3, &mut buf2d) {
                                         // earcut

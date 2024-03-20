@@ -85,9 +85,9 @@ impl DataSink for KmlSink {
 
                         let polygons = entity_to_kml_polygons(&parcel.entity);
 
-                        let simple_data_items = property_to_schema_data_entries(
-                            &entity_to_properties(&parcel.entity).unwrap_or_default(),
-                        );
+                        let simple_data_items =
+                            property_to_schema_data_entries(&parcel.entity.root);
+
                         let schema_data = Element {
                             name: "SchemaData".to_string(),
                             attrs: {
@@ -106,6 +106,7 @@ impl DataSink for KmlSink {
                                 })
                                 .collect::<Vec<_>>(),
                         };
+
                         let extended_data_entry = Element {
                             name: "ExtendedData".to_string(),
                             attrs: HashMap::new(),
@@ -122,9 +123,7 @@ impl DataSink for KmlSink {
                         let placemark = Placemark {
                             geometry: Some(Geometry::MultiGeometry(multi_geom)),
                             children: vec![extended_data_entry],
-                            name: None,
-                            description: None,
-                            attrs: HashMap::new(),
+                            ..Default::default()
                         };
 
                         if sender.send(placemark).is_err() {
@@ -173,19 +172,6 @@ impl DataSink for KmlSink {
                     // },
                 };
 
-                // FIXME: streaming write
-                let placemarks = receiver.into_iter().collect::<Vec<_>>();
-
-                let kml_doc = Kml::Document {
-                    attrs: HashMap::new(),
-                    elements: {
-                        let mut elements = Vec::<Kml>::new();
-                        elements.push(Kml::Element(schema_element));
-                        elements.extend(placemarks.into_iter().map(Kml::Placemark));
-                        elements
-                    },
-                };
-
                 let mut file = File::create(&self.output_path)?;
                 let mut buf_writer = BufWriter::with_capacity(1024 * 1024, &mut file);
 
@@ -194,9 +180,27 @@ impl DataSink for KmlSink {
                     buf_writer,
                     r#"<kml xmlns="http://www.opengis.net/kml/2.2">"#
                 )?;
+                writeln!(buf_writer, r#"<Document>"#)?;
 
                 let mut kml_writer = KmlWriter::from_writer(&mut buf_writer);
-                let _ = kml_writer.write(&kml_doc);
+
+                kml_writer
+                    .write(&Kml::<f64>::Element(schema_element))
+                    .map_err(|err| match err {
+                        kml::Error::IoError(err) => PipelineError::IoError(err),
+                        err => PipelineError::Other(err.to_string()),
+                    })?;
+
+                for placemark in receiver {
+                    kml_writer
+                        .write(&Kml::<f64>::Placemark(placemark))
+                        .map_err(|err| match err {
+                            kml::Error::IoError(err) => PipelineError::IoError(err),
+                            err => PipelineError::Other(err.to_string()),
+                        })?;
+                }
+
+                writeln!(buf_writer, "</Document>")?;
                 writeln!(buf_writer, "</kml>")?;
 
                 Ok(())
@@ -216,35 +220,37 @@ impl DataSink for KmlSink {
     }
 }
 
-fn extract_properties(value: &nusamai_citygml::object::Value) -> Option<geojson::JsonObject> {
-    match &value {
-        obj @ nusamai_citygml::Value::Object(_) => match obj.to_attribute_json() {
-            serde_json::Value::Object(map) => Some(map),
-            _ => unreachable!(),
-        },
-        _ => panic!("Root value type must be Feature, but found {:?}", value),
-    }
-}
+pub fn property_to_schema_data_entries(root: &Value) -> Vec<SimpleData> {
+    let Value::Object(obj) = root else {
+        return vec![];
+    };
 
-pub fn entity_to_properties(entity: &Entity) -> Option<geojson::JsonObject> {
-    extract_properties(&entity.root)
-}
-
-pub fn property_to_schema_data_entries(properties: &geojson::JsonObject) -> Vec<SimpleData> {
-    let mut simple_data_entries = Vec::new();
-
-    for (key, value) in properties.iter() {
-        let simpledata = SimpleData {
+    let simple_data_entries: Vec<_> = obj
+        .attributes
+        .iter()
+        .map(|(key, value)| SimpleData {
             name: key.to_string(),
-            value: serde_json::to_string(value).unwrap(),
+            value: match value {
+                Value::String(s) => s.to_string(),
+                Value::Double(d) => d.to_string(),
+                Value::Measure(m) => m.value().to_string(),
+                Value::Boolean(b) => b.to_string(),
+                Value::Code(c) => c.value().to_string(),
+                Value::Integer(i) => i.to_string(),
+                Value::NonNegativeInteger(u) => u.to_string(),
+                Value::Uri(u) => u.value().to_string(),
+                Value::Date(d) => d.to_string(),
+                Value::Point(_) => "".to_string(),
+                Value::Array(_) => unreachable!(),
+                Value::Object(_) => unreachable!(),
+            },
             attrs: {
                 let mut attrs = HashMap::new();
                 attrs.insert("name".to_string(), key.to_string());
                 attrs
             },
-        };
-        simple_data_entries.push(simpledata);
-    }
+        })
+        .collect();
     simple_data_entries
 }
 
@@ -269,7 +275,6 @@ pub fn entity_to_kml_polygons(entity: &Entity) -> Vec<KmlPolygon> {
                 mpoly.push(&idx_poly);
             }
         }
-
         GeometryType::Curve => unimplemented!(),
         GeometryType::Point => unimplemented!(),
     });

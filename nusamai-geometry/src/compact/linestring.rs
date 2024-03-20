@@ -6,7 +6,7 @@ use super::CoordNum;
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Debug, Clone, Default, PartialEq)]
 pub struct LineString<'a, const D: usize, T: CoordNum = f64> {
-    /// 座標データ
+    /// Coordinates of all points
     ///
     /// e.g. `[x0, y0, z0, x1, y1, z1, ...]`
     coords: Cow<'a, [T]>,
@@ -16,6 +16,7 @@ pub type LineString2<'a, T = f64> = LineString<'a, 2, T>;
 pub type LineString3<'a, T = f64> = LineString<'a, 3, T>;
 
 impl<'a, const D: usize, T: CoordNum> LineString<'a, D, T> {
+    /// Creates an empty LineString.
     pub fn new() -> Self {
         Default::default()
     }
@@ -27,11 +28,11 @@ impl<'a, const D: usize, T: CoordNum> LineString<'a, D, T> {
         Self { coords }
     }
 
-    pub fn coords(&self) -> &[T] {
+    pub fn raw_coords(&self) -> &[T] {
         self.as_ref()
     }
 
-    /// この LineString の座標列のイテレータを得る
+    /// Returns iterator over the all points in the LineString.
     pub fn iter(&self) -> Iter<D, T> {
         Iter {
             slice: &self.coords,
@@ -40,7 +41,7 @@ impl<'a, const D: usize, T: CoordNum> LineString<'a, D, T> {
         }
     }
 
-    /// 始点と終点を閉じた座標列のイテレータを得る
+    /// Returns iterator over the all points with the start point repeated.
     pub fn iter_closed(&self) -> Iter<D, T> {
         Iter {
             slice: &self.coords,
@@ -49,18 +50,22 @@ impl<'a, const D: usize, T: CoordNum> LineString<'a, D, T> {
         }
     }
 
+    /// Returns the number of points in the LineString.
     pub fn len(&self) -> usize {
         self.coords.len() / D
     }
 
+    /// Returns `true` if the LineString is empty.
     pub fn is_empty(&self) -> bool {
         self.coords.is_empty()
     }
 
+    /// Appends a point to the LineString.
     pub fn push(&mut self, coord: &[T; D]) {
         self.coords.to_mut().extend(coord);
     }
 
+    /// Removes all points from the LineString.
     pub fn clear(&mut self) {
         self.coords.to_mut().clear();
     }
@@ -249,13 +254,13 @@ mod tests {
         {
             let line = LineString2::from_raw([0., 0., 5., 0., 5., 5., 0., 5.][..].into());
             let new_line = line.transform(|[x, y]| [x + 2., y + 1.]);
-            assert_eq!(new_line.coords(), [2., 1., 7., 1., 7., 6., 2., 6.]);
+            assert_eq!(new_line.raw_coords(), [2., 1., 7., 1., 7., 6., 2., 6.]);
         }
 
         {
             let mut line = LineString2::from_raw([0., 0., 5., 0., 5., 5., 0., 5.][..].into());
             line.transform_inplace(|[x, y]| [x + 2., y + 1.]);
-            assert_eq!(line.coords(), [2., 1., 7., 1., 7., 6., 2., 6.]);
+            assert_eq!(line.raw_coords(), [2., 1., 7., 1., 7., 6., 2., 6.]);
         }
     }
 
@@ -281,7 +286,7 @@ mod tests {
         );
         line.reverse_inplace();
         assert_eq!(
-            line.coords(),
+            line.raw_coords(),
             vec![0.0, 3.0, 1.0, 3.0, 3.0, 3.0, 3.0, 1.0, 3.0, 0.0, 0.0, 0.0]
         );
 
@@ -289,7 +294,7 @@ mod tests {
             LineString2::from_raw(vec![0.0, 0.0, 3.0, 0.0, 6.0, 0.0, 6.0, 3.0, 3.0, 3.0].into());
         line.reverse_inplace();
         assert_eq!(
-            line.coords(),
+            line.raw_coords(),
             vec![3.0, 3.0, 6.0, 3.0, 6.0, 0.0, 3.0, 0.0, 0.0, 0.0]
         );
     }
@@ -301,7 +306,7 @@ mod tests {
         );
         line.reverse_ring_inplace();
         assert_eq!(
-            line.coords(),
+            line.raw_coords(),
             vec![0.0, 0.0, 0.0, 3.0, 1.0, 3.0, 3.0, 3.0, 3.0, 1.0, 3.0, 0.0]
         );
 
@@ -309,7 +314,7 @@ mod tests {
             LineString2::from_raw(vec![0.0, 0.0, 3.0, 0.0, 6.0, 0.0, 6.0, 3.0, 3.0, 3.0].into());
         line.reverse_ring_inplace();
         assert_eq!(
-            line.coords(),
+            line.raw_coords(),
             vec![0.0, 0.0, 3.0, 3.0, 6.0, 3.0, 6.0, 0.0, 3.0, 0.0]
         );
     }

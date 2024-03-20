@@ -158,7 +158,10 @@ fn main() -> ExitCode {
     };
 
     let mut requirements = sink.make_requirements();
-    requirements.set_output_epsg(args.epsg);
+    requirements.set_output_epsg(match args.sink.0.as_ref() {
+        "kml" => 6697, // temporary hack for KML output
+        _ => args.epsg,
+    });
 
     let mapping_rules = match &args.rules {
         Some(rules_path) => {

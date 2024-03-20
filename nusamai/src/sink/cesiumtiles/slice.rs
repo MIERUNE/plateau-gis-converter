@@ -174,17 +174,21 @@ pub fn slice_to_tiles<E>(
                                         polygon_material_ids: Default::default(),
                                         materials: Default::default(), // set later
                                     });
-                            poly.rings()
-                                .zip_eq(poly_uv.rings())
-                                .for_each(|(ring, uv_ring)| {
+                            poly.rings().zip_eq(poly_uv.rings()).enumerate().for_each(
+                                |(ri, (ring, uv_ring))| {
                                     ring.iter_closed().zip_eq(uv_ring.iter_closed()).for_each(
                                         |(c, uv)| {
                                             ring_buffer.push([c[0], c[1], c[2], uv[0], uv[1]]);
                                         },
                                     );
-                                    sliced_feature.polygons.add_exterior(ring_buffer.drain(..));
-                                    sliced_feature.polygon_material_ids.push(mat_idx as u32);
-                                });
+                                    if ri == 0 {
+                                        sliced_feature.polygons.add_exterior(ring_buffer.drain(..));
+                                        sliced_feature.polygon_material_ids.push(mat_idx as u32);
+                                    } else {
+                                        sliced_feature.polygons.add_interior(ring_buffer.drain(..));
+                                    }
+                                },
+                            );
                         }
                     }
                 }
@@ -240,7 +244,7 @@ fn slice_polygon(
         // todo?: check interior bbox to optimize
 
         for (ri, (ring, uv_ring)) in poly.rings().zip_eq(poly_uv.rings()).enumerate() {
-            if ring.coords().is_empty() {
+            if ring.raw_coords().is_empty() {
                 continue;
             }
 
@@ -327,7 +331,7 @@ fn slice_polygon(
             poly_buf.clear();
 
             for ring in y_sliced_poly.rings() {
-                if ring.coords().is_empty() {
+                if ring.raw_coords().is_empty() {
                     continue;
                 }
 

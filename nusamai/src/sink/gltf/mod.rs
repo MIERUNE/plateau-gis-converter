@@ -1,11 +1,11 @@
 //! gltf sink poc
 mod gltf_writer;
 mod material;
-mod metadata;
 mod utils;
 
 use std::{fs::File, io::BufWriter, path::PathBuf, sync::Mutex};
 
+use crate::sink::cesiumtiles::metadata;
 use ahash::{HashMap, HashSet, RandomState};
 use earcut_rs::{utils3d::project3d_to_2d, Earcut};
 use gltf_writer::{write_3dtiles, write_gltf_glb};
@@ -13,7 +13,7 @@ use indexmap::IndexSet;
 use itertools::Itertools;
 use material::{Material, Texture};
 use nusamai_citygml::{object::ObjectStereotype, schema::Schema, GeometryType, Value};
-use nusamai_geometry::{MultiPolygon, Polygon};
+use nusamai_geometry::MultiPolygon;
 use nusamai_plateau::appearance;
 use nusamai_projection::cartesian::geographic_to_geocentric;
 use rayon::iter::{ParallelBridge, ParallelIterator};
@@ -200,27 +200,33 @@ impl DataSink for GltfSink {
                             };
                             let (mat_idx, _) = materials.insert_full(mat);
 
-                            let mut ling_buf: Vec<[f64; 5]> = Vec::new();
-                            for (xyz, uv) in poly
-                                .coords()
-                                .chunks_exact(3)
-                                .zip(poly_uv.coords().chunks_exact(2))
-                            {
-                                ling_buf.push([xyz[0], xyz[1], xyz[2], uv[0], uv[1]]);
-                                let mut bounds = bounding_volume.lock().unwrap();
-                                bounds.min_lng = bounds.min_lng.min(xyz[0]);
-                                bounds.max_lng = bounds.max_lng.max(xyz[0]);
-                                bounds.min_lat = bounds.min_lat.min(xyz[1]);
-                                bounds.max_lat = bounds.max_lat.max(xyz[1]);
-                                bounds.min_height = bounds.min_height.min(xyz[2]);
-                                bounds.max_height = bounds.max_height.max(xyz[2]);
-                            }
+                            let mut ring_buffer: Vec<[f64; 5]> = Vec::new();
 
-                            let mut poly_buf: Polygon<5> = Polygon::new();
-                            poly_buf.add_ring(ling_buf);
+                            poly.rings().zip_eq(poly_uv.rings()).enumerate().for_each(
+                                |(ri, (ring, uv_ring))| {
+                                    ring.iter_closed().zip_eq(uv_ring.iter_closed()).for_each(
+                                        |(c, uv)| {
+                                            let [x, y, z] = c;
+                                            ring_buffer.push([x, y, z, uv[0], uv[1]]);
 
-                            feature.polygons.push(&poly_buf);
-                            feature.polygon_material_ids.push(mat_idx as u32);
+                                            // FIXME: remove mutex
+                                            let mut bounds = bounding_volume.lock().unwrap();
+                                            bounds.min_lng = bounds.min_lng.min(x);
+                                            bounds.max_lng = bounds.max_lng.max(x);
+                                            bounds.min_lat = bounds.min_lat.min(y);
+                                            bounds.max_lat = bounds.max_lat.max(y);
+                                            bounds.min_height = bounds.min_height.min(z);
+                                            bounds.max_height = bounds.max_height.max(z);
+                                        },
+                                    );
+                                    if ri == 0 {
+                                        feature.polygons.add_exterior(ring_buffer.drain(..));
+                                        feature.polygon_material_ids.push(mat_idx as u32);
+                                    } else {
+                                        feature.polygons.add_interior(ring_buffer.drain(..));
+                                    }
+                                },
+                            );
                         }
                     }
                     GeometryType::Curve => {
@@ -311,15 +317,15 @@ impl DataSink for GltfSink {
                 {
                     let num_outer = match poly.hole_indices().first() {
                         Some(&v) => v as usize,
-                        None => poly.coords().len() / 5,
+                        None => poly.raw_coords().len() / 5,
                     };
 
                     let mat = feature.materials[*orig_mat_id as usize].clone();
                     let primitive = primitives.entry(mat).or_default();
                     primitive.feature_ids.insert(feature_id as u32);
 
-                    if let Some((nx, ny, nz)) = calculate_normal(poly.exterior().coords(), 5) {
-                        if project3d_to_2d(poly.coords(), num_outer, 5, &mut buf2d) {
+                    if let Some((nx, ny, nz)) = calculate_normal(poly.exterior().raw_coords(), 5) {
+                        if project3d_to_2d(poly.raw_coords(), num_outer, 5, &mut buf2d) {
                             // earcut
                             earcutter.earcut(&buf2d, poly.hole_indices(), 2, &mut index_buf);
 
@@ -327,7 +333,7 @@ impl DataSink for GltfSink {
                             primitive.indices.extend(index_buf.iter().map(|idx| {
                                 let pos = *idx as usize * 5;
                                 let [x, y, z, u, v] =
-                                    poly.coords()[pos..pos + 5].try_into().unwrap();
+                                    poly.raw_coords()[pos..pos + 5].try_into().unwrap();
                                 let vbits = [
                                     (x as f32).to_bits(),
                                     (y as f32).to_bits(),
