@@ -6,6 +6,7 @@ use crate::geometry::GeometryRefs;
 use crate::values::{Code, Date, Point, Uri};
 use crate::Measure;
 use serde::{Deserialize, Serialize};
+use serde_json::json;
 
 // TODO: Cow<'static, str> insted of String ??
 pub type Map = indexmap::IndexMap<String, Value, ahash::RandomState>;
@@ -94,15 +95,13 @@ impl Value {
             Boolean(b) => serde_json::Value::Bool(*b),
             Uri(u) => serde_json::Value::String(u.value().to_string()),
             Date(d) => serde_json::Value::String(d.to_string()), // ISO 8601
-            Point(_) => {
-                // TODO: Handle Point
-                todo!()
-                // json! {
-                //     {
-                //         "type": "Point",
-                //         "coordinates": [x, y, z]
-                //     }
-                // }
+            Point(p) => {
+                json! {
+                    {
+                        "type": "Point",
+                        "coordinates": p.coordinates()
+                    }
+                }
             }
             Array(arr) => {
                 serde_json::Value::Array(arr.iter().map(Value::to_attribute_json).collect())

@@ -438,6 +438,7 @@ fn tile_writing_stage(
     };
 
     let root_tileset_path = output_path.join(Path::new("tileset.json"));
+    fs::create_dir_all(root_tileset_path.parent().unwrap())?;
     fs::write(
         root_tileset_path,
         serde_json::to_string_pretty(&tileset).unwrap(),

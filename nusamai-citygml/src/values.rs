@@ -320,16 +320,25 @@ impl CityGmlElement for Date {
 
 #[derive(Debug, Clone, Default, Deserialize, Serialize, PartialEq)]
 pub struct Point {
-    // TODO
+    pub coords: [f64; 3],
 }
 
 pub type Vector = Point;
 
 impl CityGmlElement for Point {
     #[inline(never)]
-    fn parse<R: BufRead>(&mut self, _st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
-        // TODO
-        todo!();
+    fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
+        let s = st.parse_text()?;
+        for (i, s) in s.split_ascii_whitespace().enumerate() {
+            let Ok(v) = s.parse() else {
+                return Err(ParseError::InvalidValue(format!(
+                    "Point coordinate must be numeric value, but found: {}",
+                    s
+                )));
+            };
+            self.coords[i] = v;
+        }
+        Ok(())
     }
 
     #[inline(never)]
@@ -339,6 +348,12 @@ impl CityGmlElement for Point {
 
     fn collect_schema(_schema: &mut schema::Schema) -> schema::Attribute {
         schema::Attribute::new(schema::TypeRef::Point)
+    }
+}
+
+impl Point {
+    pub fn coordinates(&self) -> &[f64; 3] {
+        &self.coords
     }
 }
 
@@ -605,6 +620,45 @@ impl<T: CityGmlElement + Default> CityGmlElement for Box<T> {
 
     fn collect_schema(schema: &mut schema::Schema) -> schema::Attribute {
         T::collect_schema(schema)
+    }
+}
+
+#[derive(Default, Deserialize, Serialize)]
+pub struct Envelope {
+    lower_corner: Point,
+    upper_corner: Point,
+    // TODO: crs_uri: Option<String>,
+}
+
+impl CityGmlElement for Envelope {
+    #[inline(never)]
+    fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
+        // TODO: parse CRS URI
+
+        st.parse_children(|st| {
+            match st.current_path() {
+                b"gml:lowerCorner" => self.lower_corner.parse(st)?,
+                b"gml:upperCorner" => self.upper_corner.parse(st)?,
+                _ => {
+                    return Err(ParseError::SchemaViolation(format!(
+                        "Expected gml:lowerCorner or gml:upperCorner, but got {}",
+                        String::from_utf8_lossy(st.current_path()),
+                    )))
+                }
+            }
+            Ok(())
+        })?;
+        Ok(())
+    }
+
+    #[inline(never)]
+    fn into_object(self) -> Option<Value> {
+        // todo
+        None
+    }
+
+    fn collect_schema(_schema: &mut schema::Schema) -> schema::Attribute {
+        schema::Attribute::new(schema::TypeRef::String)
     }
 }
 

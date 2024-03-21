@@ -16,7 +16,7 @@ use nusamai_citygml::{object::ObjectStereotype, schema::Schema, GeometryType, Va
 use nusamai_geometry::MultiPolygon;
 use nusamai_plateau::appearance;
 use nusamai_projection::cartesian::geographic_to_geocentric;
-use rayon::iter::{ParallelBridge, ParallelIterator};
+use rayon::iter::{IntoParallelIterator, ParallelBridge, ParallelIterator};
 use serde::{Deserialize, Serialize};
 use utils::calculate_normal;
 
@@ -66,7 +66,6 @@ pub struct GltfSink {
     output_path: PathBuf,
 }
 
-#[derive(Serialize, Deserialize)]
 pub struct BoundingVolume {
     pub min_lng: f64,
     pub max_lng: f64,
@@ -74,6 +73,30 @@ pub struct BoundingVolume {
     pub max_lat: f64,
     pub min_height: f64,
     pub max_height: f64,
+}
+
+impl BoundingVolume {
+    fn update(&mut self, other: &Self) {
+        self.min_lng = self.min_lng.min(other.min_lng);
+        self.max_lng = self.max_lng.max(other.max_lng);
+        self.min_lat = self.min_lat.min(other.min_lat);
+        self.max_lat = self.max_lat.max(other.max_lat);
+        self.min_height = self.min_lng.min(other.min_lng);
+        self.max_height = self.max_lng.max(other.max_lng);
+    }
+}
+
+impl Default for BoundingVolume {
+    fn default() -> Self {
+        Self {
+            min_lng: f64::MAX,
+            max_lng: f64::MIN,
+            min_lat: f64::MAX,
+            max_lat: f64::MIN,
+            min_height: f64::MAX,
+            max_height: f64::MIN,
+        }
+    }
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -90,8 +113,13 @@ pub struct Feature {
     pub feature_id: Option<u32>,
 }
 
-pub type Features = Vec<Feature>;
-pub type CategorizedFeatures = HashMap<String, Features>;
+type ClassifiedFeatures = HashMap<String, ClassFeatures>;
+
+#[derive(Default)]
+struct ClassFeatures {
+    features: Vec<Feature>,
+    bounding_volume: BoundingVolume,
+}
 
 #[derive(Default)]
 pub struct PrimitiveInfo {
@@ -114,19 +142,7 @@ impl DataSink for GltfSink {
     fn run(&mut self, upstream: Receiver, feedback: &Feedback, schema: &Schema) -> Result<()> {
         let ellipsoid = nusamai_projection::ellipsoid::wgs84();
 
-        // This is the code to verify the operation with Cesium
-        let bounding_volume = Mutex::new(BoundingVolume {
-            min_lng: f64::MAX,
-            max_lng: f64::MIN,
-            min_lat: f64::MAX,
-            max_lat: f64::MIN,
-            min_height: f64::MAX,
-            max_height: f64::MIN,
-        });
-
-        let grouped_features: Mutex<CategorizedFeatures> = Default::default();
-
-        let mut glb_files: Vec<String> = Vec::new();
+        let classified_features: Mutex<ClassifiedFeatures> = Default::default();
 
         // Construct a Feature classified by typename from Entity
         // Features have polygons, attributes and materials
@@ -160,6 +176,8 @@ impl DataSink for GltfSink {
                 materials: Default::default(),
                 feature_id: None, // feature_id is set later
             };
+
+            let mut local_bvol = BoundingVolume::default();
 
             geometries.iter().for_each(|entry| {
                 match entry.ty {
@@ -206,17 +224,17 @@ impl DataSink for GltfSink {
                                 |(ri, (ring, uv_ring))| {
                                     ring.iter_closed().zip_eq(uv_ring.iter_closed()).for_each(
                                         |(c, uv)| {
-                                            let [x, y, z] = c;
-                                            ring_buffer.push([x, y, z, uv[0], uv[1]]);
+                                            let [lng, lat, height] = c;
+                                            ring_buffer.push([lng, lat, height, uv[0], uv[1]]);
 
-                                            // FIXME: remove mutex
-                                            let mut bounds = bounding_volume.lock().unwrap();
-                                            bounds.min_lng = bounds.min_lng.min(x);
-                                            bounds.max_lng = bounds.max_lng.max(x);
-                                            bounds.min_lat = bounds.min_lat.min(y);
-                                            bounds.max_lat = bounds.max_lat.max(y);
-                                            bounds.min_height = bounds.min_height.min(z);
-                                            bounds.max_height = bounds.max_height.max(z);
+                                            local_bvol.min_lng = local_bvol.min_lng.min(lng);
+                                            local_bvol.max_lng = local_bvol.max_lng.max(lng);
+                                            local_bvol.min_lat = local_bvol.min_lat.min(lat);
+                                            local_bvol.max_lat = local_bvol.max_lat.max(lat);
+                                            local_bvol.min_height =
+                                                local_bvol.min_height.min(height);
+                                            local_bvol.max_height =
+                                                local_bvol.max_height.max(height);
                                         },
                                     );
                                     if ri == 0 {
@@ -239,149 +257,172 @@ impl DataSink for GltfSink {
             });
 
             feature.materials = materials;
-            grouped_features
-                .lock()
-                .unwrap()
-                .entry(obj.typename.to_string())
-                .or_default()
-                .push(feature);
+
+            {
+                let mut locked_features = classified_features.lock().unwrap();
+                let feats = locked_features.entry(obj.typename.to_string()).or_default();
+                feats.features.push(feature);
+                feats.bounding_volume.update(&local_bvol);
+            }
 
             Ok::<(), PipelineError>(())
         });
 
-        // triangulation and make vertices and primitives
-        let translation = {
-            let bounds = bounding_volume.lock().unwrap();
-            let (tx, ty, tz) = geographic_to_geocentric(
-                &ellipsoid,
-                (bounds.min_lng + bounds.max_lng) / 2.0,
-                (bounds.min_lat + bounds.max_lat) / 2.0,
-                0.,
-            );
-            // z-up to y-up
-            let [tx, ty, tz] = [tx, tz, -ty];
-            // double-precision to single-precision
-            [(tx as f32) as f64, (ty as f32) as f64, (tz as f32) as f64]
-        };
+        // Bounding volume for the entire dataset
+        let global_bvol = Mutex::new(BoundingVolume::default());
+        let tileset_content_files = Mutex::new(Vec::new());
 
-        for (typename, mut features) in grouped_features.lock().unwrap().drain() {
-            feedback.ensure_not_canceled()?;
+        let classified_features = classified_features.into_inner().unwrap();
 
-            // Triangulation
-            let mut earcutter: Earcut<f64> = Earcut::new();
-            let mut buf2d: Vec<f64> = Vec::new(); // 2d-projected [x, y]
-            let mut index_buf: Vec<u32> = Vec::new();
-
-            let mut vertices: IndexSet<[u32; 9], RandomState> = IndexSet::default(); // [x, y, z, nx, ny, nz, u, v, feature_id]
-            let mut primitives: Primitives = Default::default();
-
-            let mut metadata_encoder = metadata::MetadataEncoder::new(schema);
-
-            // make vertices and indices
-            let mut feature_id = 0;
-            for feature in features.iter_mut() {
+        classified_features
+            .into_par_iter()
+            .try_for_each(|(typename, mut features)| {
                 feedback.ensure_not_canceled()?;
 
-                feature.feature_id = Some(feature_id as u32);
-                feature
-                    .polygons
-                    .transform_inplace(|&[lng, lat, height, u, v]| {
-                        // geographic to geocentric
-                        let (x, y, z) = geographic_to_geocentric(&ellipsoid, lng, lat, height);
+                global_bvol
+                    .lock()
+                    .unwrap()
+                    .update(&features.bounding_volume);
 
-                        // z-up to y-up
-                        // subtract the translation
-                        // flip the texture v-coordinate
-                        [
-                            x - translation[0],
-                            z - translation[1],
-                            -y - translation[2],
-                            u,
-                            1.0 - v,
-                        ]
-                    });
+                // Triangulation
+                let mut earcutter: Earcut<f64> = Earcut::new();
+                let mut buf2d: Vec<f64> = Vec::new(); // 2d-projected [x, y]
+                let mut index_buf: Vec<u32> = Vec::new();
 
-                // Encode properties
-                if metadata_encoder
-                    .add_feature(&typename, &feature.attributes)
-                    .is_err()
-                {
-                    feedback.warn("Failed to encode feature attributes".to_string());
-                    continue;
-                }
+                let mut vertices: IndexSet<[u32; 9], RandomState> = IndexSet::default(); // [x, y, z, nx, ny, nz, u, v, feature_id]
+                let mut primitives: Primitives = Default::default();
 
-                for (poly, orig_mat_id) in feature
-                    .polygons
-                    .iter()
-                    .zip_eq(feature.polygon_material_ids.iter())
-                {
-                    let num_outer = match poly.hole_indices().first() {
-                        Some(&v) => v as usize,
-                        None => poly.raw_coords().len() / 5,
-                    };
+                let mut metadata_encoder = metadata::MetadataEncoder::new(schema);
 
-                    let mat = feature.materials[*orig_mat_id as usize].clone();
-                    let primitive = primitives.entry(mat).or_default();
-                    primitive.feature_ids.insert(feature_id as u32);
+                // triangulation and make vertices and primitives
+                let translation = {
+                    let bounds = features.bounding_volume;
+                    let (tx, ty, tz) = geographic_to_geocentric(
+                        &ellipsoid,
+                        (bounds.min_lng + bounds.max_lng) / 2.0,
+                        (bounds.min_lat + bounds.max_lat) / 2.0,
+                        0.,
+                    );
+                    // z-up to y-up
+                    let [tx, ty, tz] = [tx, tz, -ty];
+                    // double-precision to single-precision
+                    [(tx as f32) as f64, (ty as f32) as f64, (tz as f32) as f64]
+                };
 
-                    if let Some((nx, ny, nz)) = calculate_normal(poly.exterior().raw_coords(), 5) {
-                        if project3d_to_2d(poly.raw_coords(), num_outer, 5, &mut buf2d) {
-                            // earcut
-                            earcutter.earcut(&buf2d, poly.hole_indices(), 2, &mut index_buf);
+                // make vertices and indices
+                let mut feature_id = 0;
+                for feature in features.features.iter_mut() {
+                    feedback.ensure_not_canceled()?;
 
-                            // collect triangles
-                            primitive.indices.extend(index_buf.iter().map(|idx| {
-                                let pos = *idx as usize * 5;
-                                let [x, y, z, u, v] =
-                                    poly.raw_coords()[pos..pos + 5].try_into().unwrap();
-                                let vbits = [
-                                    (x as f32).to_bits(),
-                                    (y as f32).to_bits(),
-                                    (z as f32).to_bits(),
-                                    (nx as f32).to_bits(),
-                                    (ny as f32).to_bits(),
-                                    (nz as f32).to_bits(),
-                                    (u as f32).to_bits(),
-                                    (v as f32).to_bits(),
-                                    (feature_id as f32).to_bits(), // UNSIGNED_INT can't be used for vertex attribute
-                                ];
-                                let (index, _) = vertices.insert_full(vbits);
-                                index as u32
-                            }));
+                    feature.feature_id = Some(feature_id as u32);
+                    feature
+                        .polygons
+                        .transform_inplace(|&[lng, lat, height, u, v]| {
+                            // geographic to geocentric
+                            let (x, y, z) = geographic_to_geocentric(&ellipsoid, lng, lat, height);
+
+                            // z-up to y-up
+                            // subtract the translation
+                            // flip the texture v-coordinate
+                            [
+                                x - translation[0],
+                                z - translation[1],
+                                -y - translation[2],
+                                u,
+                                1.0 - v,
+                            ]
+                        });
+
+                    // Encode properties
+                    if metadata_encoder
+                        .add_feature(&typename, &feature.attributes)
+                        .is_err()
+                    {
+                        feedback.warn("Failed to encode feature attributes".to_string());
+                        continue;
+                    }
+
+                    for (poly, orig_mat_id) in feature
+                        .polygons
+                        .iter()
+                        .zip_eq(feature.polygon_material_ids.iter())
+                    {
+                        let num_outer = match poly.hole_indices().first() {
+                            Some(&v) => v as usize,
+                            None => poly.raw_coords().len() / 5,
+                        };
+
+                        let mat = feature.materials[*orig_mat_id as usize].clone();
+                        let primitive = primitives.entry(mat).or_default();
+                        primitive.feature_ids.insert(feature_id as u32);
+
+                        if let Some((nx, ny, nz)) =
+                            calculate_normal(poly.exterior().raw_coords(), 5)
+                        {
+                            if project3d_to_2d(poly.raw_coords(), num_outer, 5, &mut buf2d) {
+                                // earcut
+                                earcutter.earcut(&buf2d, poly.hole_indices(), 2, &mut index_buf);
+
+                                // collect triangles
+                                primitive.indices.extend(index_buf.iter().map(|idx| {
+                                    let pos = *idx as usize * 5;
+                                    let [x, y, z, u, v] =
+                                        poly.raw_coords()[pos..pos + 5].try_into().unwrap();
+                                    let vbits = [
+                                        (x as f32).to_bits(),
+                                        (y as f32).to_bits(),
+                                        (z as f32).to_bits(),
+                                        (nx as f32).to_bits(),
+                                        (ny as f32).to_bits(),
+                                        (nz as f32).to_bits(),
+                                        (u as f32).to_bits(),
+                                        (v as f32).to_bits(),
+                                        (feature_id as f32).to_bits(), // UNSIGNED_INT can't be used for vertex attribute
+                                    ];
+                                    let (index, _) = vertices.insert_full(vbits);
+                                    index as u32
+                                }));
+                            }
                         }
                     }
+                    feature_id += 1;
                 }
-                feature_id += 1;
-            }
 
-            // make folders
-            std::fs::create_dir_all(&self.output_path)?;
+                // Ensure that the parent directory exists
+                std::fs::create_dir_all(&self.output_path)?;
 
-            // write glTFs
-            let c_name = typename
-                .split_once(':')
-                .map(|(_, s)| s)
-                .unwrap_or(&typename);
-            let file_path = self.output_path.join(&format!("{}.glb", c_name));
+                // Write glTF (.glb)
+                let file_path = {
+                    let filename = format!(
+                        "{}.glb",
+                        typename
+                            .split_once(':')
+                            .map(|(_, s)| s)
+                            .unwrap_or(&typename)
+                    );
+                    // Save the filename to the content list of the tileset.json (3D Tiles)
+                    tileset_content_files.lock().unwrap().push(filename.clone());
 
-            // save filename referenced from 3D Tiles
-            glb_files.push(format!("{}.glb", c_name));
+                    self.output_path.join(filename)
+                };
 
-            let mut file = File::create(&file_path)?;
-            let writer = BufWriter::with_capacity(1024 * 1024, &mut file);
+                let mut file = File::create(file_path)?;
+                let writer = BufWriter::with_capacity(1024 * 1024, &mut file);
 
-            write_gltf_glb(
-                feedback,
-                writer,
-                translation,
-                vertices,
-                primitives,
-                metadata_encoder,
-            )?;
-        }
+                write_gltf_glb(
+                    feedback,
+                    writer,
+                    translation,
+                    vertices,
+                    primitives,
+                    metadata_encoder,
+                )?;
+
+                Ok::<(), PipelineError>(())
+            })?;
 
         // write 3DTiles
-        let bounds = bounding_volume.lock().unwrap();
+        let bounds = global_bvol.lock().unwrap();
         let region: [f64; 6] = [
             bounds.min_lng.to_radians(),
             bounds.min_lat.to_radians(),
@@ -390,7 +431,11 @@ impl DataSink for GltfSink {
             bounds.min_height,
             bounds.max_height,
         ];
-        write_3dtiles(region, &self.output_path, &glb_files)?;
+        write_3dtiles(
+            region,
+            &self.output_path,
+            &tileset_content_files.lock().unwrap(),
+        )?;
 
         Ok(())
     }
