@@ -1,11 +1,8 @@
-use hashbrown::HashMap;
 use std::io::BufRead;
 
-use quick_xml::events::Event;
-use quick_xml::name::ResolveResult::Bound;
-
-use nusamai_citygml::namespace::GML31_NS;
-use nusamai_citygml::ParseError;
+use hashbrown::HashMap;
+use nusamai_citygml::{namespace::GML31_NS, ParseError};
+use quick_xml::{events::Event, name::ResolveResult::Bound};
 
 #[derive(Debug)]
 pub struct Definition {
@@ -158,8 +155,9 @@ pub fn parse_dictionary<R: BufRead>(
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use std::io::BufReader;
+
+    use super::*;
 
     #[test]
     fn parse_example() {

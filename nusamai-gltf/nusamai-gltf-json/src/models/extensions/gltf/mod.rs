@@ -1,7 +1,6 @@
-pub use cesiumtiles::models::gltf_extensions::gltf::ext_structural_metadata;
-
 use std::collections::HashMap;
 
+pub use cesiumtiles::models::gltf_extensions::gltf::ext_structural_metadata;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 

@@ -1,9 +1,8 @@
-use clap::Parser;
-
-use serde::{Deserialize, Serialize};
 use std::{io::BufRead, time::Instant};
 
+use clap::Parser;
 use nusamai_citygml::{object::Value, CityGmlElement, CityGmlReader, ParseError, SubTreeReader};
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Deserialize, Serialize)]
 struct TopLevelCityObject {

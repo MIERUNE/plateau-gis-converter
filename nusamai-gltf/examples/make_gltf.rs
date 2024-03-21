@@ -2,8 +2,10 @@
 ///
 /// % cargo run --example make_gltf --release
 use std::fs::File;
-use std::io::{self, BufWriter, Write as _};
-use std::vec;
+use std::{
+    io::{self, BufWriter, Write as _},
+    vec,
+};
 
 use nusamai_gltf_json::*;
 

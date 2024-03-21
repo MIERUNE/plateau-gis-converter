@@ -1,8 +1,6 @@
-use std::borrow::Cow;
-use std::ops::Range;
+use std::{borrow::Cow, ops::Range};
 
-use super::linestring::LineString;
-use super::CoordNum;
+use super::{linestring::LineString, CoordNum};
 
 /// Computer-friendly MultiString
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]

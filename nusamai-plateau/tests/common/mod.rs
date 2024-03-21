@@ -1,10 +1,8 @@
-use std::io::BufRead;
-use std::path::Path;
-use url::Url;
+use std::{io::BufRead, path::Path};
 
 use nusamai_citygml::{CityGmlElement, CityGmlReader, GeometryStore, ParseError, SubTreeReader};
-use nusamai_plateau::models::appearance::AppearanceProperty;
-use nusamai_plateau::models::TopLevelCityObject;
+use nusamai_plateau::models::{appearance::AppearanceProperty, TopLevelCityObject};
+use url::Url;
 
 pub struct CityObject {
     pub cityobj: TopLevelCityObject,

@@ -1,5 +1,6 @@
-use super::uro;
 use nusamai_citygml::{citygml_feature, CityGmlElement, Code, Length};
+
+use super::uro;
 
 #[citygml_feature(name = "veg:SolitaryVegetationObject")]
 pub struct SolitaryVegetationObject {

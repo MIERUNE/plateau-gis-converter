@@ -1,9 +1,10 @@
-use crate::extensions;
-use serde::{Deserialize, Serialize};
-use serde_repr::*;
 use std::collections::HashMap;
 
+use serde::{Deserialize, Serialize};
 use serde_json::Value;
+use serde_repr::*;
+
+use crate::extensions;
 
 #[derive(Serialize_repr, Deserialize_repr, Debug, PartialEq, Eq, Clone, Copy, Default)]
 #[repr(u8)]

@@ -1,7 +1,6 @@
-use nusamai_citygml::appearance::TextureAssociation;
 use nusamai_citygml::{
-    citygml_feature, citygml_property, CityGmlElement, Code, Color, ColorPlusOpacity, Double01,
-    LocalId, Point, Uri,
+    appearance::TextureAssociation, citygml_feature, citygml_property, CityGmlElement, Code, Color,
+    ColorPlusOpacity, Double01, LocalId, Point, Uri,
 };
 
 type TextureType = String; // TODO?

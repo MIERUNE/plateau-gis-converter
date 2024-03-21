@@ -9,8 +9,10 @@ use indexmap::IndexSet;
 use nusamai_gltf_json::extensions::mesh::ext_mesh_features;
 
 use super::{material, Primitives};
-use crate::pipeline::{feedback, PipelineError};
-use crate::sink::cesiumtiles::metadata;
+use crate::{
+    pipeline::{feedback, PipelineError},
+    sink::cesiumtiles::metadata,
+};
 
 pub fn write_gltf_glb<W: Write>(
     feedback: &feedback::Feedback,

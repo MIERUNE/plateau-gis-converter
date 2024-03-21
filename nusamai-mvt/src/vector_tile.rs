@@ -75,17 +75,7 @@ pub mod tile {
         pub extent: ::core::option::Option<u32>,
     }
     /// GeomType is described in section 4.3.4 of the specification
-    #[derive(
-        Clone,
-        Copy,
-        Debug,
-        PartialEq,
-        Eq,
-        Hash,
-        PartialOrd,
-        Ord,
-        ::prost::Enumeration
-    )]
+    #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, ::prost::Enumeration)]
     #[repr(i32)]
     pub enum GeomType {
         Unknown = 0,

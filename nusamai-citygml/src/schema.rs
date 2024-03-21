@@ -1,10 +1,8 @@
 //! Programmatically readable representation of the CityGML model.
 
 use indexmap::IndexMap;
-
-use serde::{Deserialize, Serialize};
-
 use nusamai_projection::crs::EpsgCode;
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize, Default)]
 pub struct Schema {

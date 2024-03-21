@@ -1,10 +1,11 @@
-use crate::table::TableInfo;
-use indexmap::IndexMap;
-use sqlx::{sqlite::*, ConnectOptions};
-use sqlx::{Acquire, Pool, Row};
 use std::str::FromStr;
+
+use indexmap::IndexMap;
+use sqlx::{sqlite::*, Acquire, ConnectOptions, Pool, Row};
 use thiserror::Error;
 use url::Url;
+
+use crate::table::TableInfo;
 
 pub struct GpkgHandler {
     pool: Pool<Sqlite>,

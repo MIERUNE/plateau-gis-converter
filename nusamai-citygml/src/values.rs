@@ -1,11 +1,14 @@
-use crate::object::{self, Value};
-use crate::parser::{ParseError, SubTreeReader};
-use crate::{schema, CityGmlAttribute};
-use crate::{CityGmlElement, ParseContext};
+use std::io::BufRead;
+
 pub use chrono::NaiveDate;
 use serde::{Deserialize, Serialize};
-use std::io::BufRead;
 use url::Url;
+
+use crate::{
+    object::{self, Value},
+    parser::{ParseError, SubTreeReader},
+    schema, CityGmlAttribute, CityGmlElement, ParseContext,
+};
 
 // type aliases
 pub type Date = chrono::NaiveDate;

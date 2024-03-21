@@ -1,11 +1,11 @@
-use crate::extensions;
+use serde::{Deserialize, Serialize};
+use serde_json::Value;
 
 use super::{
     Accessor, Animation, Asset, Buffer, BufferView, Camera, Image, Material, Mesh, Node, Sampler,
     Scene, Skin, Texture,
 };
-use serde::{Deserialize, Serialize};
-use serde_json::Value;
+use crate::extensions;
 
 /// The root object for a glTF asset.
 #[derive(Serialize, Deserialize, Debug, Default, PartialEq)]

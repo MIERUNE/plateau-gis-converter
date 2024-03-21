@@ -1,11 +1,13 @@
 //! Utilities for resolving appearance data (WIP)
 
-use crate::models::appearance::{self, ParameterizedTexture, SurfaceDataProperty, X3DMaterial};
+use std::hash::{Hash, Hasher};
+
 use hashbrown::HashMap;
 use nusamai_citygml::{appearance::TextureAssociation, Color, LocalId, SurfaceSpan};
 use nusamai_geometry::LineString2;
-use std::hash::{Hash, Hasher};
 use url::Url;
+
+use crate::models::appearance::{self, ParameterizedTexture, SurfaceDataProperty, X3DMaterial};
 
 #[derive(Debug, Default, serde::Serialize, serde::Deserialize)]
 pub struct Theme {

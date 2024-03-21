@@ -1,5 +1,4 @@
-use std::fs::File;
-use std::io::BufReader;
+use std::{fs::File, io::BufReader};
 
 use nusamai_gltf::glb::Glb;
 use nusamai_gltf_json::*;
