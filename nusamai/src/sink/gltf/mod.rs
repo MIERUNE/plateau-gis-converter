@@ -118,7 +118,7 @@ type ClassifiedFeatures = HashMap<String, ClassFeatures>;
 #[derive(Default)]
 struct ClassFeatures {
     features: Vec<Feature>,
-    bouding_volume: BoundingVolume,
+    bounding_volume: BoundingVolume,
 }
 
 #[derive(Default)]
@@ -262,7 +262,7 @@ impl DataSink for GltfSink {
                 let mut locked_features = classified_features.lock().unwrap();
                 let feats = locked_features.entry(obj.typename.to_string()).or_default();
                 feats.features.push(feature);
-                feats.bouding_volume.update(&local_bvol);
+                feats.bounding_volume.update(&local_bvol);
             }
 
             Ok::<(), PipelineError>(())
@@ -279,7 +279,10 @@ impl DataSink for GltfSink {
             .try_for_each(|(typename, mut features)| {
                 feedback.ensure_not_canceled()?;
 
-                global_bvol.lock().unwrap().update(&features.bouding_volume);
+                global_bvol
+                    .lock()
+                    .unwrap()
+                    .update(&features.bounding_volume);
 
                 // Triangulation
                 let mut earcutter: Earcut<f64> = Earcut::new();
@@ -293,7 +296,7 @@ impl DataSink for GltfSink {
 
                 // triangulation and make vertices and primitives
                 let translation = {
-                    let bounds = features.bouding_volume;
+                    let bounds = features.bounding_volume;
                     let (tx, ty, tz) = geographic_to_geocentric(
                         &ellipsoid,
                         (bounds.min_lng + bounds.max_lng) / 2.0,
