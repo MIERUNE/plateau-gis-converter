@@ -80,8 +80,8 @@ impl BoundingVolume {
         self.max_lng = self.max_lng.max(other.max_lng);
         self.min_lat = self.min_lat.min(other.min_lat);
         self.max_lat = self.max_lat.max(other.max_lat);
-        self.min_height = self.min_lng.min(other.min_lng);
-        self.max_height = self.max_lng.max(other.max_lng);
+        self.min_height = self.min_height.min(other.min_height);
+        self.max_height = self.max_height.max(other.max_height);
     }
 }
 
