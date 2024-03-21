@@ -2,8 +2,9 @@
 //!
 //! cf. https://www.geopackage.org/spec130/#gpb_format
 
-use nusamai_geometry::{CoordNum, MultiPolygon, Polygon};
 use std::io::Write;
+
+use nusamai_geometry::{CoordNum, MultiPolygon, Polygon};
 
 #[repr(u8)]
 pub enum WkbByteOrder {

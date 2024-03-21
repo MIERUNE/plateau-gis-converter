@@ -1,5 +1,6 @@
-use super::UserDefinedValue;
 use nusamai_citygml::{citygml_data, citygml_property, CityGmlElement, Code};
+
+use super::UserDefinedValue;
 
 #[citygml_property(name = "uro:IndoorAttributeProperty")]
 pub enum IndoorAttributeProperty {

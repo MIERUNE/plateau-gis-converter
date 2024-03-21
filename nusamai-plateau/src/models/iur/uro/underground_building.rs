@@ -1,8 +1,6 @@
 use nusamai_citygml::{citygml_feature, CityGmlElement, Code, GYear, Length, MeasureOrNullList};
 
-use crate::models::building as bldg;
-use crate::models::core;
-use crate::models::iur::uro;
+use crate::models::{building as bldg, core, iur::uro};
 
 #[citygml_feature(name = "uro:UndergroundBuilding")]
 pub struct UndergroundBuilding {

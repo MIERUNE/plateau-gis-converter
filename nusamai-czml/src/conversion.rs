@@ -87,9 +87,8 @@ pub fn indexed_multipolygon_to_czml_polygon(
 
 #[cfg(test)]
 mod tests {
-    use crate::Packet;
-
     use super::*;
+    use crate::Packet;
 
     #[test]
     fn test_polygon() {

@@ -17,10 +17,11 @@
 //!       - uro:TelecommunicationsCable
 //!     - uro:Duct
 
-use super::*;
 use nusamai_citygml::{
     citygml_data, citygml_feature, CityGmlElement, Code, GYear, Length, Measure, Point,
 };
+
+use super::*;
 
 #[citygml_feature(name = "uro:Appurtenance")]
 pub struct Appurtenance {

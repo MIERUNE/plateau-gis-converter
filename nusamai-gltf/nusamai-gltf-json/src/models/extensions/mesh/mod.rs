@@ -1,5 +1,7 @@
-pub use cesiumtiles::gltf_extensions::mesh::ext_structural_metadata;
-pub use cesiumtiles::models::gltf_extensions::mesh::ext_mesh_features;
+pub use cesiumtiles::{
+    gltf_extensions::mesh::ext_structural_metadata,
+    models::gltf_extensions::mesh::ext_mesh_features,
+};
 pub mod khr_materials_variants;
 
 use std::collections::HashMap;

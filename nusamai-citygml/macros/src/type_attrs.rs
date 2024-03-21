@@ -1,9 +1,11 @@
-use crate::Stereotype;
 use proc_macro2::TokenStream;
 use quote::quote;
-use syn::meta::ParseNestedMeta;
-use syn::{parse::Parser, parse_macro_input, Data, DeriveInput, Error, LitStr};
-use syn::{parse_quote, LitByteStr};
+use syn::{
+    meta::ParseNestedMeta, parse::Parser, parse_macro_input, parse_quote, Data, DeriveInput, Error,
+    LitByteStr, LitStr,
+};
+
+use crate::Stereotype;
 
 /// Arguments for `#[citygml_feature(...)]` and `#[citygml_data(...)]`
 #[derive(Default)]

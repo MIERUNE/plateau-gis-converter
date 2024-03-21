@@ -1,8 +1,9 @@
 //! uro:OtherConstruction (PLATEAU, CityGML 2.x)
 //! con:OtherConstruction (CityGML 3.x)
 
-use super::iur::uro;
 use nusamai_citygml::{citygml_feature, citygml_property, CityGmlElement, Code, Date};
+
+use super::iur::uro;
 
 type ConditionOfConstructionValue = String;
 

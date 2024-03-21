@@ -1,8 +1,9 @@
+use std::{collections::HashMap, vec};
+
 use kml::types::{
     AltitudeMode, Coord, Geometry, LinearRing, MultiGeometry, Point, Polygon as KmlPolygon,
 };
 use nusamai_geometry::{CoordNum, MultiPoint, MultiPolygon, Polygon};
-use std::{collections::HashMap, vec};
 
 pub fn multipolygon_to_kml(mpoly: &MultiPolygon<3>) -> Vec<KmlPolygon> {
     multipolygon_to_kml_with_mapping(mpoly, |c| c)
@@ -131,8 +132,9 @@ pub fn multipoint_to_kml(mpoint: &MultiPoint<3>) -> MultiGeometry {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use nusamai_geometry::Polygon3;
+
+    use super::*;
 
     #[test]
     fn test_multipoint_to_kml() {

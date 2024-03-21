@@ -2,11 +2,14 @@
 
 use std::borrow::Cow;
 
-use crate::geometry::GeometryRefs;
-use crate::values::{Code, Date, Point, Uri};
-use crate::Measure;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
+
+use crate::{
+    geometry::GeometryRefs,
+    values::{Code, Date, Point, Uri},
+    Measure,
+};
 
 // TODO: Cow<'static, str> insted of String ??
 pub type Map = indexmap::IndexMap<String, Value, ahash::RandomState>;
@@ -125,8 +128,9 @@ impl Value {
 #[cfg(test)]
 #[cfg(feature = "serde_json")]
 mod tests {
-    use super::*;
     use serde_json::json;
+
+    use super::*;
 
     #[test]
     fn to_attribute_json() {

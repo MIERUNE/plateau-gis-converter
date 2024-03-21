@@ -1,11 +1,8 @@
 pub mod common;
 
-use common::load_cityobjs;
-use common::load_cityobjs_from_zstd;
+use common::{load_cityobjs, load_cityobjs_from_zstd};
 use nusamai_citygml::{Code, Date, Measure};
-use nusamai_plateau::models::relief;
-use nusamai_plateau::models::uro;
-use nusamai_plateau::models::TopLevelCityObject;
+use nusamai_plateau::models::{relief, uro, TopLevelCityObject};
 
 // #[test]
 // fn load_area_example() {

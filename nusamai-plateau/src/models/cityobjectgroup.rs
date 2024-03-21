@@ -1,5 +1,6 @@
-use super::iur::uro;
 use nusamai_citygml::{citygml_feature, CityGmlElement, Code, GYear};
+
+use super::iur::uro;
 
 #[citygml_feature(name = "grp:CityObjectGroup")]
 pub struct CityObjectGroup {

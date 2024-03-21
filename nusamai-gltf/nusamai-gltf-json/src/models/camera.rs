@@ -1,6 +1,6 @@
-use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
+use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
 /// An orthographic camera containing properties to create an orthographic projection matrix.

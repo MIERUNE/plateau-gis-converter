@@ -1,6 +1,6 @@
-use super::core::Address;
-use super::iur::uro;
 use nusamai_citygml::{citygml_feature, citygml_property, CityGmlElement, Code, GYear};
+
+use super::{core::Address, iur::uro};
 
 #[citygml_feature(name = "brid:Bridge")]
 pub struct Bridge {

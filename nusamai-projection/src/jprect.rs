@@ -1,7 +1,6 @@
 //! Japan Plane Rectangular Coordinate Systems
 
-use crate::crs::*;
-use crate::{ellipsoid::grs80, etmerc::ExtendedTransverseMercatorProjection};
+use crate::{crs::*, ellipsoid::grs80, etmerc::ExtendedTransverseMercatorProjection};
 
 #[derive(Debug, PartialEq)]
 pub enum JPRZone {

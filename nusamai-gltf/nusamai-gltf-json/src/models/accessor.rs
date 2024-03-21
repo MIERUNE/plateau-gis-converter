@@ -1,9 +1,8 @@
-use serde::{Deserialize, Serialize};
-use serde_repr::*;
-
 use std::collections::HashMap;
 
+use serde::{Deserialize, Serialize};
 use serde_json::Value;
+use serde_repr::*;
 
 #[derive(Serialize_repr, Deserialize_repr, Debug, PartialEq, Eq, Clone, Copy, Default)]
 #[repr(u16)]

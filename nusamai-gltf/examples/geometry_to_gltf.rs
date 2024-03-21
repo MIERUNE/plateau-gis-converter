@@ -9,6 +9,15 @@
 //!
 //! このXMLのパース方法は本格的なパーザで使うことを意図していません。
 
+use std::{
+    clone::Clone,
+    collections::HashMap,
+    default::Default,
+    fs,
+    io::{BufWriter, Write},
+    usize,
+};
+
 use byteorder::{LittleEndian, WriteBytesExt};
 use clap::Parser;
 use earcut_rs::{utils3d::project3d_to_2d, Earcut};
@@ -20,8 +29,6 @@ use quick_xml::{
     name::{Namespace, ResolveResult::Bound},
     reader::NsReader,
 };
-use std::{clone::Clone, collections::HashMap, default::Default, fs, io::BufWriter};
-use std::{io::Write, usize};
 use thiserror::Error;
 
 const GML_NS: Namespace = Namespace(b"http://www.opengis.net/gml");

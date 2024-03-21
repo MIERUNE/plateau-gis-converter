@@ -1,7 +1,6 @@
 use std::sync::{Arc, RwLock};
 
-use nusamai_citygml::geometry::GeometryStore;
-use nusamai_citygml::object::Value;
+use nusamai_citygml::{geometry::GeometryStore, object::Value};
 
 use crate::appearance::AppearanceStore;
 
