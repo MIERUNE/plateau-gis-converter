@@ -246,11 +246,11 @@ fn tessellate(
         for poly in mpoly {
             let num_outer = match poly.hole_indices().first() {
                 Some(&v) => v as usize,
-                None => poly.raw_coords().len() / 3,
+                None => poly.raw_coords().len(),
             };
 
             buf3d.clear();
-            buf3d.extend(poly.raw_coords().chunks_exact(3).flat_map(|v| {
+            buf3d.extend(poly.raw_coords().iter().flat_map(|v| {
                 let (lat, lng) = (v[0], v[1]);
                 [
                     (lng - mu_lng) * (10000000. * lat.to_radians().cos() / 90.),
@@ -456,7 +456,7 @@ fn make_gltf_json(triangles: &Triangles) -> String {
     gltf.to_string().unwrap()
 }
 
-fn calc_center(all_mpolys: &Vec<nusamai_geometry::MultiPolygon<3>>) -> (f64, f64) {
+fn calc_center(all_mpolys: &Vec<nusamai_geometry::MultiPolygon3>) -> (f64, f64) {
     // 中心の経緯度を求める
     let (mu_lat, mu_lng) = {
         let (mut mu_lat, mut mu_lng) = (0.0, 0.0);
@@ -465,7 +465,7 @@ fn calc_center(all_mpolys: &Vec<nusamai_geometry::MultiPolygon<3>>) -> (f64, f64
             let (mut feat_mu_lng, mut feat_mu_lat) = (0.0, 0.0);
             let mut num_verts = 0;
             for poly in mpoly {
-                for v in poly.raw_coords().chunks_exact(3) {
+                for v in poly.raw_coords() {
                     num_verts += 1;
                     feat_mu_lng += v[0];
                     feat_mu_lat += v[1];

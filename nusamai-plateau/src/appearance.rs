@@ -93,6 +93,10 @@ impl AppearanceStore {
                             for (ring, coords) in
                                 tcl.rings.into_iter().zip(tcl.coords_list.into_iter())
                             {
+                                let coords = coords
+                                    .chunks_exact(2)
+                                    .map(|v| [v[0], v[1]])
+                                    .collect::<Vec<_>>();
                                 let ls = LineString2::from_raw(coords.into());
                                 theme.ring_id_to_texture.insert(ring, (tex_idx, ls));
                             }

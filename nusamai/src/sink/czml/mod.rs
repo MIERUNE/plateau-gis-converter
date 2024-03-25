@@ -174,7 +174,7 @@ pub fn entity_to_packets(entity: Entity, single_part: bool) -> Vec<Packet> {
         return Vec::default();
     };
 
-    let mut mpoly = nusamai_geometry::MultiPolygon::<1, u32>::new();
+    let mut mpoly = nusamai_geometry::MultiPolygon::<u32>::new();
 
     geometries.iter().for_each(|entry| match entry.ty {
         GeometryType::Solid | GeometryType::Surface | GeometryType::Triangle => {
@@ -276,16 +276,16 @@ mod tests {
             [4., 3., 333.],
         ];
 
-        let mut mpoly = MultiPolygon::<1, u32>::new();
+        let mut mpoly = MultiPolygon::<u32>::new();
         // 1st polygon
-        mpoly.add_exterior([[0], [1], [2], [3], [0]]);
-        mpoly.add_interior([[4], [5], [6], [7], [4]]);
-        mpoly.add_interior([[8], [9], [10], [11], [8]]);
+        mpoly.add_exterior([0, 1, 2, 3, 0]);
+        mpoly.add_interior([4, 5, 6, 7, 4]);
+        mpoly.add_interior([8, 9, 10, 11, 8]);
         // 2nd polygon
-        mpoly.add_exterior([[12], [13], [14], [15], [12]]);
-        mpoly.add_interior([[16], [17], [18], [19], [16]]);
+        mpoly.add_exterior([12, 13, 14, 15, 12]);
+        mpoly.add_interior([16, 17, 18, 19, 16]);
         // 3rd polygon
-        mpoly.add_exterior([[20], [21], [22], [23], [20]]);
+        mpoly.add_exterior([20, 21, 22, 23, 20]);
 
         let geometries = nusamai_citygml::GeometryStore {
             epsg: EPSG_JGD2011_GEOGRAPHIC_3D,

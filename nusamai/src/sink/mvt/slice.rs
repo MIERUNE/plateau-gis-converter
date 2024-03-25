@@ -46,7 +46,7 @@ pub fn slice_cityobj_geoms<E>(
                 .iter_range(entry.pos as usize..(entry.pos + entry.len) as usize)
             {
                 let poly = idx_poly.transform(|c| {
-                    let [lng, lat, _height] = geom_store.vertices[c[0] as usize];
+                    let [lng, lat, _height] = geom_store.vertices[*c as usize];
                     let (mx, my) = lnglat_to_web_mercator(lng, lat);
                     [mx, my]
                 });
@@ -257,8 +257,7 @@ fn slice_polygon(
                     }
                 }
 
-                let mut ring =
-                    LineString2::from_raw(norm_coords_buf.iter().flatten().copied().collect());
+                let mut ring = LineString2::from_raw(norm_coords_buf.clone().into());
                 ring.reverse_inplace();
 
                 match ri {

@@ -53,11 +53,11 @@ pub struct GeometryStore {
     pub vertices: Vec<[f64; 3]>,
 
     /// All polygons, referenced by `GeometryRefs`
-    pub multipolygon: MultiPolygon<'static, 1, u32>,
+    pub multipolygon: MultiPolygon<'static, u32>,
     /// All line-strings, referenced by `GeometryRefs`
-    pub multilinestring: MultiLineString<'static, 1, u32>,
+    pub multilinestring: MultiLineString<'static, u32>,
     /// All points, referenced by `GeometryRefs`
-    pub multipoint: MultiPoint<'static, 1, u32>,
+    pub multipoint: MultiPoint<'static, u32>,
 
     /// Ring ids of the all polygons
     pub ring_ids: Vec<Option<LocalId>>,
@@ -69,7 +69,7 @@ pub struct GeometryStore {
     /// Assigned textures for each polygon. Empty if appearance resolution is not enabled.
     pub polygon_textures: Vec<Option<u32>>,
     /// Assigned texture UVs for each polygon. Empty if appearance resolution is not enabled.
-    pub polygon_uvs: MultiPolygon<'static, 2>,
+    pub polygon_uvs: MultiPolygon<'static, [f64; 2]>,
 }
 
 #[derive(Debug)]
@@ -84,9 +84,9 @@ pub struct SurfaceSpan {
 #[derive(Default)]
 pub(crate) struct GeometryCollector {
     pub vertices: indexmap::IndexSet<[u64; 3], ahash::RandomState>,
-    pub multipolygon: MultiPolygon<'static, 1, u32>,
-    pub multilinestring: MultiLineString<'static, 1, u32>,
-    pub multipoint: MultiPoint<'static, 1, u32>,
+    pub multipolygon: MultiPolygon<'static, u32>,
+    pub multilinestring: MultiLineString<'static, u32>,
+    pub multipoint: MultiPoint<'static, u32>,
 
     /// ring ids of the all polygons
     pub ring_ids: Vec<Option<LocalId>>,
@@ -105,7 +105,7 @@ impl GeometryCollector {
         self.multipolygon.add_exterior(iter.into_iter().map(|v| {
             let vbits = [v[0].to_bits(), v[1].to_bits(), v[2].to_bits()];
             let (index, _) = self.vertices.insert_full(vbits);
-            [index as u32]
+            index as u32
         }));
     }
 
@@ -118,7 +118,7 @@ impl GeometryCollector {
         self.multipolygon.add_interior(iter.into_iter().map(|v| {
             let vbits = [v[0].to_bits(), v[1].to_bits(), v[2].to_bits()];
             let (index, _) = self.vertices.insert_full(vbits);
-            [index as u32]
+            index as u32
         }));
     }
 

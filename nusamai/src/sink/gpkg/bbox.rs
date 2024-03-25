@@ -42,15 +42,13 @@ impl Bbox {
 }
 
 // Get Bounding box of a MultiPolygon
-pub fn get_indexed_multipolygon_bbox(vertices: &[[f64; 3]], mpoly: &MultiPolygon<1, u32>) -> Bbox {
+pub fn get_indexed_multipolygon_bbox(vertices: &[[f64; 3]], mpoly: &MultiPolygon<u32>) -> Bbox {
     let mut bbox: Bbox = Default::default();
 
     for poly in mpoly {
-        for linestring in &poly.exterior() {
-            for point_idx in linestring.iter() {
-                let [x, y, _z] = vertices[*point_idx as usize];
-                bbox.update(x, y);
-            }
+        for point_idx in &poly.exterior() {
+            let [x, y, _z] = vertices[point_idx as usize];
+            bbox.update(x, y);
         }
     }
     bbox
@@ -106,8 +104,8 @@ mod tests {
             [20., 200., 111.],
             [20., 100., 111.],
         ];
-        let mut mpoly = MultiPolygon::<1, u32>::new();
-        mpoly.add_exterior([[0], [1], [2], [3], [0]]);
+        let mut mpoly = MultiPolygon::<u32>::new();
+        mpoly.add_exterior([0, 1, 2, 3, 0]);
         let geometries = nusamai_citygml::GeometryStore {
             epsg: EPSG_JGD2011_GEOGRAPHIC_3D,
             vertices,

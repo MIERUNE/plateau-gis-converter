@@ -1,11 +1,11 @@
 use std::{borrow::Cow, ops::Range};
 
-use super::{linestring::LineString, CoordNum};
+use super::{linestring::LineString, Coord};
 
 /// Computer-friendly MultiString
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Debug, Clone, Default, PartialEq)]
-pub struct MultiLineString<'a, const D: usize, T: CoordNum = f64> {
+pub struct MultiLineString<'a, T: Coord> {
     /// All coordinates of all LineStrings
     ///
     /// e.g. `[x0, y0, z0, x1, y1, z1, ...]`
@@ -18,22 +18,22 @@ pub struct MultiLineString<'a, const D: usize, T: CoordNum = f64> {
     coords_spans: Cow<'a, [u32]>,
 }
 
-pub type MultiLineString2<'a, T = f64> = MultiLineString<'a, 2, T>;
-pub type MultiLineString3<'a, T = f64> = MultiLineString<'a, 3, T>;
+pub type MultiLineString2<'a, C = f64> = MultiLineString<'a, [C; 2]>;
+pub type MultiLineString3<'a, C = f64> = MultiLineString<'a, [C; 3]>;
 
-impl<'a, const D: usize, T: CoordNum> MultiLineString<'a, D, T> {
+impl<'a, T: Coord> MultiLineString<'a, T> {
     /// Creates an empty MultiLineString.
     pub fn new() -> Self {
-        Default::default()
+        Self {
+            all_coords: Cow::Borrowed(&[]),
+            coords_spans: Cow::Borrowed(&[]),
+        }
     }
 
     pub fn from_raw(all_coords: Cow<'a, [T]>, coords_spans: Cow<'a, [u32]>) -> Self {
-        if all_coords.len() % D != 0 {
-            panic!("all_coords.len() must be a multiple of D")
-        }
         // Check if all span values are within range and monotonically increasing
         if let Some(&last) = coords_spans.last() {
-            let len = (all_coords.len() / D) as u32;
+            let len = (all_coords.len()) as u32;
             if last >= len || coords_spans.windows(2).any(|a| a[0] >= a[1]) {
                 panic!("invalid coords_spans")
             }
@@ -52,7 +52,7 @@ impl<'a, const D: usize, T: CoordNum> MultiLineString<'a, D, T> {
     }
 
     /// Returns iterator over the linestrings.
-    pub fn iter(&self) -> Iter<D, T> {
+    pub fn iter(&self) -> Iter<T> {
         Iter {
             ls: self,
             pos: 0,
@@ -61,7 +61,7 @@ impl<'a, const D: usize, T: CoordNum> MultiLineString<'a, D, T> {
     }
 
     /// Returns iterator over the linestrings in the given range.
-    pub fn iter_range(&self, range: Range<usize>) -> Iter<D, T> {
+    pub fn iter_range(&self, range: Range<usize>) -> Iter<T> {
         Iter {
             ls: self,
             pos: range.start,
@@ -90,56 +90,48 @@ impl<'a, const D: usize, T: CoordNum> MultiLineString<'a, D, T> {
     }
 
     /// Add a linestring to the MultiLineString.
-    pub fn add_linestring<I: IntoIterator<Item = [T; D]>>(&mut self, iter: I) {
+    pub fn add_linestring<I: IntoIterator<Item = T>>(&mut self, iter: I) {
         if !self.all_coords.is_empty() {
             self.coords_spans
                 .to_mut()
-                .push((self.all_coords.len() / D) as u32);
+                .push((self.all_coords.len()) as u32);
         }
-        self.all_coords.to_mut().extend(iter.into_iter().flatten());
+        self.all_coords.to_mut().extend(iter);
     }
 
     /// Create a new MultiLineString by applying the given transformation to all coordinates.
-    pub fn transform<const D2: usize, T2: CoordNum>(
-        &self,
-        f: impl Fn(&[T; D]) -> [T2; D2],
-    ) -> MultiLineString<D2, T2> {
+    pub fn transform<T2: Coord>(&self, f: impl Fn(&T) -> T2) -> MultiLineString<T2> {
         MultiLineString {
-            all_coords: self
-                .all_coords
-                .chunks_exact(D)
-                .flat_map(|v| f(&v.try_into().unwrap()))
-                .collect(),
+            all_coords: self.all_coords.iter().map(f).collect(),
             coords_spans: self.coords_spans.clone(),
         }
     }
 
     /// Applies the given transformation to all coordinates in the MultiLineString.
-    pub fn transform_inplace(&mut self, mut f: impl FnMut(&[T; D]) -> [T; D]) {
-        self.all_coords.to_mut().chunks_exact_mut(D).for_each(|c| {
-            let transformed = f(&c.try_into().unwrap());
-            c.copy_from_slice(&transformed);
+    pub fn transform_inplace(&mut self, mut f: impl FnMut(&T) -> T) {
+        self.all_coords.to_mut().iter_mut().for_each(|c| {
+            *c = f(c);
         });
     }
 }
 
-impl<'a, const D: usize, T: CoordNum> IntoIterator for &'a MultiLineString<'_, D, T> {
-    type Item = LineString<'a, D, T>;
-    type IntoIter = Iter<'a, D, T>;
+impl<'a, T: Coord> IntoIterator for &'a MultiLineString<'_, T> {
+    type Item = LineString<'a, T>;
+    type IntoIter = Iter<'a, T>;
 
     fn into_iter(self) -> Self::IntoIter {
         self.iter()
     }
 }
 
-pub struct Iter<'a, const D: usize, T: CoordNum> {
-    ls: &'a MultiLineString<'a, D, T>,
+pub struct Iter<'a, T: Coord> {
+    ls: &'a MultiLineString<'a, T>,
     pos: usize,
     end: usize,
 }
 
-impl<'a, const D: usize, T: CoordNum> Iterator for Iter<'a, D, T> {
-    type Item = LineString<'a, D, T>;
+impl<'a, T: Coord> Iterator for Iter<'a, T> {
+    type Item = LineString<'a, T>;
 
     fn next(&mut self) -> Option<Self::Item> {
         if self.ls.is_empty() {
@@ -148,10 +140,10 @@ impl<'a, const D: usize, T: CoordNum> Iterator for Iter<'a, D, T> {
         if self.pos < self.end {
             let start = match self.pos {
                 0 => 0,
-                _ => self.ls.coords_spans[self.pos - 1] as usize * D,
+                _ => self.ls.coords_spans[self.pos - 1] as usize,
             };
             let end = if self.pos < self.ls.coords_spans.len() {
-                self.ls.coords_spans[self.pos] as usize * D
+                self.ls.coords_spans[self.pos] as usize
             } else {
                 self.ls.all_coords.len()
             };
@@ -171,16 +163,19 @@ mod tests {
     #[test]
     fn test_mline_basic() {
         let mut mline = MultiLineString2::from_raw(
-            (0..14).map(|v| v as f64).collect::<Vec<f64>>().into(),
+            (0..7)
+                .map(|v| [(v * 2) as f64, (v * 2 + 1) as f64])
+                .collect::<Vec<_>>()
+                .into(),
             vec![3, 5].into(),
         );
         assert_eq!(mline.len(), 3);
         assert_eq!(mline.iter().count(), 3);
         for (i, line) in mline.iter().enumerate() {
             match i {
-                0 => assert_eq!(line.raw_coords(), &[0., 1., 2., 3., 4., 5.]),
-                1 => assert_eq!(line.raw_coords(), &[6., 7., 8., 9.]),
-                2 => assert_eq!(line.raw_coords(), &[10., 11., 12., 13.]),
+                0 => assert_eq!(line.raw_coords(), &[[0., 1.], [2., 3.], [4., 5.]]),
+                1 => assert_eq!(line.raw_coords(), &[[6., 7.], [8., 9.]]),
+                2 => assert_eq!(line.raw_coords(), &[[10., 11.], [12., 13.]]),
                 _ => unreachable!(),
             }
         }
@@ -191,14 +186,14 @@ mod tests {
     #[test]
     fn test_mline_one_linestring() {
         let mline = MultiLineString2::from_raw_unchecked(
-            Cow::Borrowed(&[1., 2., 3., 4.]),
+            Cow::Borrowed(&[[1., 2.], [3., 4.]]),
             Cow::Borrowed(&[]),
         );
         assert_eq!(mline.len(), 1);
         assert!(!mline.is_empty());
         for (i, _line) in mline.iter().enumerate() {
             match i {
-                0 => assert_eq!(_line.raw_coords(), &[1., 2., 3., 4.]),
+                0 => assert_eq!(_line.raw_coords(), &[[1., 2.], [3., 4.]]),
                 _ => unreachable!(),
             }
         }
@@ -231,18 +226,18 @@ mod tests {
 
         for (i, line) in mline.iter().enumerate() {
             match i {
-                0 => assert_eq!(line.raw_coords(), &[0., 0., 1., 1., 2., 2.]),
-                1 => assert_eq!(line.raw_coords(), &[3., 3., 4., 4., 5., 5.]),
-                2 => assert_eq!(line.raw_coords(), &[6., 6., 7., 7., 8., 8., 9., 9.]),
-                3 => assert_eq!(line.raw_coords(), &[1., 1., 2., 2., 3., 3., 4., 4.]),
+                0 => assert_eq!(line.raw_coords(), &[[0., 0.], [1., 1.], [2., 2.]]),
+                1 => assert_eq!(line.raw_coords(), &[[3., 3.], [4., 4.], [5., 5.]]),
+                2 => assert_eq!(line.raw_coords(), &[[6., 6.], [7., 7.], [8., 8.], [9., 9.]]),
+                3 => assert_eq!(line.raw_coords(), &[[1., 1.], [2., 2.], [3., 3.], [4., 4.]]),
                 _ => unreachable!(),
             }
         }
 
         for (i, line) in mline.iter_range(1..3).enumerate() {
             match i {
-                0 => assert_eq!(line.raw_coords(), &[3., 3., 4., 4., 5., 5.]),
-                1 => assert_eq!(line.raw_coords(), &[6., 6., 7., 7., 8., 8., 9., 9.]),
+                0 => assert_eq!(line.raw_coords(), &[[3., 3.], [4., 4.], [5., 5.]]),
+                1 => assert_eq!(line.raw_coords(), &[[6., 6.], [7., 7.], [8., 8.], [9., 9.]]),
                 _ => unreachable!(),
             }
         }
@@ -251,12 +246,12 @@ mod tests {
     #[test]
     fn test_transform() {
         {
-            let mut mlines: MultiLineString<2> = MultiLineString2::new();
+            let mut mlines: MultiLineString2 = MultiLineString2::new();
             mlines.add_linestring([[0., 0.], [5., 0.], [5., 5.], [0., 5.]]);
             let new_mlines = mlines.transform(|[x, y]| [x + 2., y + 1.]);
             assert_eq!(
                 new_mlines.iter().next().unwrap().raw_coords(),
-                [2., 1., 7., 1., 7., 6., 2., 6.]
+                [[2., 1.], [7., 1.], [7., 6.], [2., 6.]]
             );
         }
 
@@ -266,7 +261,7 @@ mod tests {
             mlines.transform_inplace(|[x, y]| [x + 2., y + 1.]);
             assert_eq!(
                 mlines.iter().next().unwrap().raw_coords(),
-                [2., 1., 7., 1., 7., 6., 2., 6.]
+                [[2., 1.], [7., 1.], [7., 6.], [2., 6.]]
             );
         }
     }
@@ -274,7 +269,7 @@ mod tests {
     #[test]
     #[should_panic(expected = "invalid coords_spans")]
     fn test_mline_invalid_coords_spans_1() {
-        let all_coords: Vec<f64> = (0..=2).flat_map(|i| vec![i as f64, i as f64]).collect();
+        let all_coords: Vec<[f64; 2]> = (0..=2).map(|i| [i as f64, i as f64]).collect();
         let coords_spans: Vec<u32> = vec![99]; // out of `all_coords` range
         let _polygon: MultiLineString2<f64> =
             MultiLineString2::from_raw(all_coords.into(), coords_spans.into());
@@ -283,7 +278,7 @@ mod tests {
     #[test]
     #[should_panic(expected = "invalid coords_spans")]
     fn test_mline_invalid_coords_spans_2() {
-        let all_coords: Vec<f64> = vec![];
+        let all_coords: Vec<[f64; 2]> = vec![];
         let coords_spans: Vec<u32> = vec![0]; // out of `all_coords` range
         let _polygon: MultiLineString2<f64> =
             MultiLineString2::from_raw(all_coords.into(), coords_spans.into());

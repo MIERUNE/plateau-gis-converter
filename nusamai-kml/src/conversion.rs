@@ -1,24 +1,27 @@
 use std::{collections::HashMap, vec};
 
 use kml::types::{
-    AltitudeMode, Coord, Geometry, LinearRing, MultiGeometry, Point, Polygon as KmlPolygon,
+    AltitudeMode, Coord as KmlCoord, Geometry, LinearRing, MultiGeometry, Point,
+    Polygon as KmlPolygon,
 };
-use nusamai_geometry::{CoordNum, MultiPoint, MultiPolygon, Polygon};
+use nusamai_geometry::{
+    Coord, MultiPoint, MultiPoint3, MultiPolygon, MultiPolygon3, Polygon, Polygon3,
+};
 
-pub fn multipolygon_to_kml(mpoly: &MultiPolygon<3>) -> Vec<KmlPolygon> {
+pub fn multipolygon_to_kml(mpoly: &MultiPolygon3) -> Vec<KmlPolygon> {
     multipolygon_to_kml_with_mapping(mpoly, |c| c)
 }
 
 pub fn indexed_multipolygon_to_kml(
     vertices: &[[f64; 3]],
-    mpoly_idx: &MultiPolygon<1, u32>,
+    mpoly_idx: &MultiPolygon<u32>,
 ) -> Vec<KmlPolygon> {
-    multipolygon_to_kml_with_mapping(mpoly_idx, |idx| vertices[idx[0] as usize])
+    multipolygon_to_kml_with_mapping(mpoly_idx, |idx| vertices[idx as usize])
 }
 
-fn multipolygon_to_kml_with_mapping<const D: usize, T: CoordNum>(
-    mpoly: &MultiPolygon<D, T>,
-    mapping: impl Fn([T; D]) -> [f64; 3],
+fn multipolygon_to_kml_with_mapping<T: Coord>(
+    mpoly: &MultiPolygon<T>,
+    mapping: impl Fn(T) -> [f64; 3],
 ) -> Vec<KmlPolygon> {
     mpoly
         .iter()
@@ -26,9 +29,9 @@ fn multipolygon_to_kml_with_mapping<const D: usize, T: CoordNum>(
         .collect()
 }
 
-fn polygon_to_kml_polygon_with_mapping<const D: usize, T: CoordNum>(
-    poly: &Polygon<D, T>,
-    mapping: impl Fn([T; D]) -> [f64; 3],
+fn polygon_to_kml_polygon_with_mapping<T: Coord>(
+    poly: &Polygon<T>,
+    mapping: impl Fn(T) -> [f64; 3],
 ) -> KmlPolygon {
     KmlPolygon {
         outer: polygon_to_kml_outer_boundary_with_mapping(poly, &mapping),
@@ -40,15 +43,15 @@ fn polygon_to_kml_polygon_with_mapping<const D: usize, T: CoordNum>(
     }
 }
 
-fn polygon_to_kml_outer_boundary_with_mapping<const D: usize, T: CoordNum>(
-    poly: &Polygon<D, T>,
-    mapping: impl Fn([T; D]) -> [f64; 3],
+fn polygon_to_kml_outer_boundary_with_mapping<T: Coord>(
+    poly: &Polygon<T>,
+    mapping: impl Fn(T) -> [f64; 3],
 ) -> LinearRing {
-    let outer_coords: Vec<Coord> = poly
+    let outer_coords: Vec<KmlCoord> = poly
         .exterior()
         .iter_closed()
         .map(&mapping)
-        .map(|[x, y, z]| Coord { x, y, z: Some(z) })
+        .map(|[x, y, z]| KmlCoord { x, y, z: Some(z) })
         .collect();
 
     LinearRing {
@@ -60,15 +63,15 @@ fn polygon_to_kml_outer_boundary_with_mapping<const D: usize, T: CoordNum>(
     }
 }
 
-fn polygon_to_kml_inner_boundary_with_mapping<const D: usize, T: CoordNum>(
-    poly: &Polygon<D, T>,
-    mapping: impl Fn([T; D]) -> [f64; 3],
+fn polygon_to_kml_inner_boundary_with_mapping<T: Coord>(
+    poly: &Polygon<T>,
+    mapping: impl Fn(T) -> [f64; 3],
 ) -> Vec<LinearRing> {
     poly.interiors()
         .map(|ring| {
             ring.iter_closed()
                 .map(&mapping)
-                .map(|[x, y, z]| Coord { x, y, z: Some(z) })
+                .map(|[x, y, z]| KmlCoord { x, y, z: Some(z) })
                 .collect()
         })
         .map(|coords| LinearRing {
@@ -82,30 +85,27 @@ fn polygon_to_kml_inner_boundary_with_mapping<const D: usize, T: CoordNum>(
 }
 
 /// Create a kml::MultiGeometry with Polygon from `nusamai_geometry::MultiPoint` with a mapping function.
-pub fn polygon_to_kml_with_mapping<const D: usize, T: CoordNum>(
-    poly: &Polygon<D, T>,
-    mapping: impl Fn([T; D]) -> [f64; 3],
+pub fn polygon_to_kml_with_mapping<T: Coord>(
+    poly: &Polygon<T>,
+    mapping: impl Fn(T) -> [f64; 3],
 ) -> Vec<KmlPolygon> {
     vec![polygon_to_kml_polygon_with_mapping(poly, mapping)]
 }
 
 /// Create a kml::MultiGeometry from a nusamai_geometry::MultiPolygon
-pub fn polygon_to_kml(poly: &Polygon<3>) -> Vec<KmlPolygon> {
+pub fn polygon_to_kml(poly: &Polygon3) -> Vec<KmlPolygon> {
     polygon_to_kml_with_mapping(poly, |c| c)
 }
 
 /// Create a kml::MultiGeometry with Polygon vertices and indices.
-pub fn indexed_polygon_to_kml(
-    vertices: &[[f64; 3]],
-    poly_idx: &Polygon<1, u32>,
-) -> Vec<KmlPolygon> {
-    polygon_to_kml_with_mapping(poly_idx, |idx| vertices[idx[0] as usize])
+pub fn indexed_polygon_to_kml(vertices: &[[f64; 3]], poly_idx: &Polygon<u32>) -> Vec<KmlPolygon> {
+    polygon_to_kml_with_mapping(poly_idx, |idx| vertices[idx as usize])
 }
 
 /// Create a kml::MultiGeometry with Points from `nusamai_geometry::MultiPoint` with a mapping function.
-pub fn multipoint_to_kml_with_mapping<const D: usize, T: CoordNum>(
-    mpoint: &MultiPoint<D, T>,
-    mapping: impl Fn([T; D]) -> [f64; 3],
+pub fn multipoint_to_kml_with_mapping<T: Coord>(
+    mpoint: &MultiPoint<T>,
+    mapping: impl Fn(T) -> [f64; 3],
 ) -> MultiGeometry {
     MultiGeometry {
         geometries: mpoint
@@ -120,28 +120,26 @@ pub fn multipoint_to_kml_with_mapping<const D: usize, T: CoordNum>(
 /// Create a kml::MultiGeometry with Points vertices and indices.
 pub fn indexed_multipoint_to_kml(
     vertices: &[[f64; 3]],
-    mpoint_idx: &MultiPoint<1, u32>,
+    mpoint_idx: &MultiPoint<u32>,
 ) -> MultiGeometry {
-    multipoint_to_kml_with_mapping(mpoint_idx, |idx| vertices[idx[0] as usize])
+    multipoint_to_kml_with_mapping(mpoint_idx, |idx| vertices[idx as usize])
 }
 
 /// Create a kml::MultiGeometry from a nusamai_geometry::MultiPoint
-pub fn multipoint_to_kml(mpoint: &MultiPoint<3>) -> MultiGeometry {
+pub fn multipoint_to_kml(mpoint: &MultiPoint3) -> MultiGeometry {
     multipoint_to_kml_with_mapping(mpoint, |c| c)
 }
 
 #[cfg(test)]
 mod tests {
-    use nusamai_geometry::Polygon3;
-
     use super::*;
 
     #[test]
     fn test_multipoint_to_kml() {
-        let mut mpoint = MultiPoint::<3>::new();
-        mpoint.push(&[11., 12., 13.]);
-        mpoint.push(&[21., 22., 23.]);
-        mpoint.push(&[31., 32., 33.]);
+        let mut mpoint = MultiPoint3::new();
+        mpoint.push([11., 12., 13.]);
+        mpoint.push([21., 22., 23.]);
+        mpoint.push([31., 32., 33.]);
 
         let multi_geom = multipoint_to_kml(&mpoint);
 
@@ -160,10 +158,10 @@ mod tests {
     #[test]
     fn test_indexed_multipoint_to_kml() {
         let vertices = vec![[11., 12., 13.], [21., 22., 23.], [31., 32., 33.]];
-        let mut mpoint_idx = MultiPoint::<1, u32>::new();
-        mpoint_idx.push(&[0]);
-        mpoint_idx.push(&[1]);
-        mpoint_idx.push(&[2]);
+        let mut mpoint_idx = MultiPoint::<u32>::new();
+        mpoint_idx.push(0);
+        mpoint_idx.push(1);
+        mpoint_idx.push(2);
 
         let multi_geom = indexed_multipoint_to_kml(&vertices, &mpoint_idx);
 
@@ -200,7 +198,7 @@ mod tests {
         assert_eq!(polygons[0].outer.coords.len(), 5);
         assert_eq!(
             polygons[0].outer.coords[0],
-            Coord {
+            KmlCoord {
                 x: 10.,
                 y: 10.,
                 z: Some(0.)
@@ -208,7 +206,7 @@ mod tests {
         );
         assert_eq!(
             polygons[0].outer.coords[1],
-            Coord {
+            KmlCoord {
                 x: 10.,
                 y: 20.,
                 z: Some(0.)
@@ -216,7 +214,7 @@ mod tests {
         );
         assert_eq!(
             polygons[0].outer.coords[2],
-            Coord {
+            KmlCoord {
                 x: 20.,
                 y: 20.,
                 z: Some(0.)
@@ -224,7 +222,7 @@ mod tests {
         );
         assert_eq!(
             polygons[0].outer.coords[3],
-            Coord {
+            KmlCoord {
                 x: 20.,
                 y: 10.,
                 z: Some(0.)
@@ -232,7 +230,7 @@ mod tests {
         );
         assert_eq!(
             polygons[0].outer.coords[4],
-            Coord {
+            KmlCoord {
                 x: 10.,
                 y: 10.,
                 z: Some(0.)
@@ -242,7 +240,7 @@ mod tests {
         assert_eq!(polygons[0].inner[0].coords.len(), 5);
         assert_eq!(
             polygons[0].inner[0].coords[0],
-            Coord {
+            KmlCoord {
                 x: 15.,
                 y: 15.,
                 z: Some(0.)
@@ -250,7 +248,7 @@ mod tests {
         );
         assert_eq!(
             polygons[0].inner[0].coords[1],
-            Coord {
+            KmlCoord {
                 x: 18.,
                 y: 10.,
                 z: Some(0.)
@@ -258,7 +256,7 @@ mod tests {
         );
         assert_eq!(
             polygons[0].inner[0].coords[2],
-            Coord {
+            KmlCoord {
                 x: 18.,
                 y: 18.,
                 z: Some(0.)
@@ -266,7 +264,7 @@ mod tests {
         );
         assert_eq!(
             polygons[0].inner[0].coords[3],
-            Coord {
+            KmlCoord {
                 x: 15.,
                 y: 18.,
                 z: Some(0.)
@@ -274,7 +272,7 @@ mod tests {
         );
         assert_eq!(
             polygons[0].inner[0].coords[4],
-            Coord {
+            KmlCoord {
                 x: 15.,
                 y: 15.,
                 z: Some(0.)
@@ -302,10 +300,10 @@ mod tests {
             [3., 4., 111.],
         ];
 
-        let mut poly = Polygon::<1, u32>::new();
-        poly.add_ring([[0], [1], [2], [3], [0]]);
-        poly.add_ring([[4], [5], [6], [7], [4]]);
-        poly.add_ring([[8], [9], [10], [11], [8]]);
+        let mut poly = Polygon::<u32>::new();
+        poly.add_ring([0, 1, 2, 3, 0]);
+        poly.add_ring([4, 5, 6, 7, 4]);
+        poly.add_ring([8, 9, 10, 11, 8]);
 
         let polygons = indexed_polygon_to_kml(&vertices, &poly);
 
@@ -314,7 +312,7 @@ mod tests {
         assert_eq!(polygons[0].outer.coords.len(), 5);
         assert_eq!(
             polygons[0].outer.coords[0],
-            Coord {
+            KmlCoord {
                 x: 0.,
                 y: 0.,
                 z: Some(111.)
@@ -322,7 +320,7 @@ mod tests {
         );
         assert_eq!(
             polygons[0].outer.coords[1],
-            Coord {
+            KmlCoord {
                 x: 5.,
                 y: 0.,
                 z: Some(111.)
@@ -330,7 +328,7 @@ mod tests {
         );
         assert_eq!(
             polygons[0].outer.coords[2],
-            Coord {
+            KmlCoord {
                 x: 5.,
                 y: 5.,
                 z: Some(111.)
@@ -338,7 +336,7 @@ mod tests {
         );
         assert_eq!(
             polygons[0].outer.coords[3],
-            Coord {
+            KmlCoord {
                 x: 0.,
                 y: 5.,
                 z: Some(111.)
@@ -346,7 +344,7 @@ mod tests {
         );
         assert_eq!(
             polygons[0].outer.coords[4],
-            Coord {
+            KmlCoord {
                 x: 0.,
                 y: 0.,
                 z: Some(111.)
@@ -356,7 +354,7 @@ mod tests {
         assert_eq!(polygons[0].inner[0].coords.len(), 5);
         assert_eq!(
             polygons[0].inner[0].coords[0],
-            Coord {
+            KmlCoord {
                 x: 1.,
                 y: 1.,
                 z: Some(111.)
@@ -364,7 +362,7 @@ mod tests {
         );
         assert_eq!(
             polygons[0].inner[0].coords[1],
-            Coord {
+            KmlCoord {
                 x: 2.,
                 y: 1.,
                 z: Some(111.)
@@ -372,7 +370,7 @@ mod tests {
         );
         assert_eq!(
             polygons[0].inner[0].coords[2],
-            Coord {
+            KmlCoord {
                 x: 2.,
                 y: 2.,
                 z: Some(111.)
@@ -380,7 +378,7 @@ mod tests {
         );
         assert_eq!(
             polygons[0].inner[0].coords[3],
-            Coord {
+            KmlCoord {
                 x: 1.,
                 y: 2.,
                 z: Some(111.)
@@ -388,7 +386,7 @@ mod tests {
         );
         assert_eq!(
             polygons[0].inner[0].coords[4],
-            Coord {
+            KmlCoord {
                 x: 1.,
                 y: 1.,
                 z: Some(111.)

@@ -122,8 +122,7 @@ impl DataSink for StanfordPlySink {
                                     entry.pos as usize..(entry.pos + entry.len) as usize,
                                 ) {
                                     let poly = idx_poly.transform(|idx| {
-                                        let [lng, lat, height] =
-                                            geom_store.vertices[idx[0] as usize];
+                                        let [lng, lat, height] = geom_store.vertices[*idx as usize];
                                         // Convert to geocentric (x, y, z) coordinate.
                                         // (Earcut do not work in geographic space)
                                         let (x, y, z) =
@@ -132,11 +131,11 @@ impl DataSink for StanfordPlySink {
                                     });
                                     let num_outer = match poly.hole_indices().first() {
                                         Some(&v) => v as usize,
-                                        None => poly.raw_coords().len() / 3,
+                                        None => poly.raw_coords().len(),
                                     };
 
                                     buf3d.clear();
-                                    buf3d.extend(poly.raw_coords());
+                                    buf3d.extend(poly.raw_coords().iter().flatten());
 
                                     if project3d_to_2d(&buf3d, num_outer, 3, &mut buf2d) {
                                         // earcut

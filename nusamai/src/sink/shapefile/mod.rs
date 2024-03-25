@@ -267,7 +267,7 @@ pub fn entity_to_shape(entity: Entity) -> (shapefile::Shape, Map) {
 
     let geom_store = entity.geometry_store.read().unwrap();
 
-    let mut mpoly = nusamai_geometry::MultiPolygon::<1, u32>::new();
+    let mut mpoly = nusamai_geometry::MultiPolygon::<u32>::new();
 
     geometries.iter().for_each(|entry| match entry.ty {
         GeometryType::Solid | GeometryType::Surface | GeometryType::Triangle => {
@@ -311,8 +311,8 @@ mod tests {
             [5., 5., 111.],
             [0., 5., 111.],
         ];
-        let mut mpoly = MultiPolygon::<1, u32>::new();
-        mpoly.add_exterior([[0], [1], [2], [3], [0]]);
+        let mut mpoly = MultiPolygon::<u32>::new();
+        mpoly.add_exterior([0, 1, 2, 3, 0]);
         let geometries = nusamai_citygml::GeometryStore {
             epsg: EPSG_JGD2011_GEOGRAPHIC_3D,
             vertices,
