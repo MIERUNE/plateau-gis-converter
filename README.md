@@ -36,7 +36,7 @@ PLATEAU の標準仕様に準拠した CityGML 2.0 形式の3D都市モデルは
 ## 3. 利用手順
 
 - ソフトウェアの最新版は、GitHub リポジトリの [Releaseページ](https://github.com/MIERUNE/PLATEAU-GIS-Converter/releases) からダウンロードしてください。
-- 詳しい利用方法については、こちらの[マニュアル](https://MIERUNE.github.io/PLATEAU-GIS-Converter/index.html)をご覧ください。
+- 詳しい利用方法については、こちらの[マニュアル](https://mierune.github.io/plateau-gis-converter/index.html)をご覧ください。
 
 ## 4. システム概要
 
@@ -59,11 +59,13 @@ PLATEAU の標準仕様に準拠した CityGML 2.0 形式の3D都市モデルは
 利用技術は以下の通りです。
 
 内部ロジック：
+
 - ファイル変換のロジックはすべて、プログラミング言語 [Rust](https://www.rust-lang.org/) で実装しています。
 
 ユーザインタフェース (UI)：
-  - デスクトップアプリケーション構築フレームワーク: [Tauri](https://github.com/tauri-apps/tauri)
-  - Web UI構築フレームワーク: [Svelte](https://svelte.dev/)
+
+- デスクトップアプリケーション構築フレームワーク: [Tauri](https://github.com/tauri-apps/tauri)
+- Web UI構築フレームワーク: [Svelte](https://svelte.dev/)
 
 ## 6. 動作環境
 
