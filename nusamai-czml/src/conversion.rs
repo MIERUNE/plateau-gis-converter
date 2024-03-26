@@ -7,20 +7,20 @@ use crate::{
 
 pub fn indexed_polygon_to_czml_polygon(
     vertices: &[[f64; 3]],
-    poly_idx: &Polygon<1, u32>,
+    poly_idx: &Polygon<u32>,
 ) -> CzmlPolygon {
     let mut czml_polygon = CzmlPolygon::default();
 
     let mut exteriors = Vec::new();
     for idx in poly_idx.exterior().iter() {
-        exteriors.push(vertices[idx[0] as usize]);
+        exteriors.push(vertices[idx as usize]);
     }
 
     let mut interiors = Vec::new();
     for interior in poly_idx.interiors() {
         let mut interior_vec = Vec::new();
         for idx in interior.iter() {
-            interior_vec.push(vertices[idx[0] as usize]);
+            interior_vec.push(vertices[idx as usize]);
         }
         interiors.push(interior_vec);
     }
@@ -45,14 +45,14 @@ pub fn indexed_polygon_to_czml_polygon(
 
 pub fn indexed_multipolygon_to_czml_polygon(
     vertices: &[[f64; 3]],
-    mpoly: &MultiPolygon<1, u32>,
+    mpoly: &MultiPolygon<u32>,
 ) -> CzmlPolygon {
     let mut czml_polygon = CzmlPolygon::default();
 
     let mut exteriors = Vec::new();
     for poly in mpoly.iter() {
         for idx in poly.exterior().iter() {
-            exteriors.push(vertices[idx[0] as usize]);
+            exteriors.push(vertices[idx as usize]);
         }
     }
 
@@ -61,7 +61,7 @@ pub fn indexed_multipolygon_to_czml_polygon(
         for interior in poly.interiors() {
             let mut interior_vec = Vec::new();
             for idx in interior.iter() {
-                interior_vec.push(vertices[idx[0] as usize]);
+                interior_vec.push(vertices[idx as usize]);
             }
             interiors.push(interior_vec);
         }
@@ -110,11 +110,11 @@ mod tests {
             [3., 4., 111.],
         ];
 
-        let mut poly_idx = Polygon::<1, u32>::new();
+        let mut poly_idx = Polygon::<u32>::new();
         // Adding one ring completes the outline and all remaining rings are treated as holes
-        poly_idx.add_ring([[0], [1], [2], [3], [0]]);
-        poly_idx.add_ring([[4], [5], [6], [7], [4]]);
-        poly_idx.add_ring([[8], [9], [10], [11], [8]]);
+        poly_idx.add_ring([0, 1, 2, 3, 0]);
+        poly_idx.add_ring([4, 5, 6, 7, 4]);
+        poly_idx.add_ring([8, 9, 10, 11, 8]);
 
         let czml_polygon = indexed_polygon_to_czml_polygon(&vertices, &poly_idx);
 
@@ -168,16 +168,16 @@ mod tests {
             [4., 3., 333.],
         ];
 
-        let mut mpoly = MultiPolygon::<1, u32>::new();
+        let mut mpoly = MultiPolygon::<u32>::new();
         // 1st polygon
-        mpoly.add_exterior([[0], [1], [2], [3], [0]]);
-        mpoly.add_interior([[4], [5], [6], [7], [4]]);
-        mpoly.add_interior([[8], [9], [10], [11], [8]]);
+        mpoly.add_exterior([0, 1, 2, 3, 0]);
+        mpoly.add_interior([4, 5, 6, 7, 4]);
+        mpoly.add_interior([8, 9, 10, 11, 8]);
         // 2nd polygon
-        mpoly.add_exterior([[12], [13], [14], [15], [12]]);
-        mpoly.add_interior([[16], [17], [18], [19], [16]]);
+        mpoly.add_exterior([12, 13, 14, 15, 12]);
+        mpoly.add_interior([16, 17, 18, 19, 16]);
         // 3rd polygon
-        mpoly.add_exterior([[20], [21], [22], [23], [20]]);
+        mpoly.add_exterior([20, 21, 22, 23, 20]);
 
         let czml_polygon = indexed_multipolygon_to_czml_polygon(&vertices, &mpoly);
 

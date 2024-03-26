@@ -18,7 +18,7 @@ use crate::sink::cesiumtiles::{material::Texture, tiling::zxy_from_lng_lat};
 #[derive(Serialize, Deserialize)]
 pub struct SlicedFeature {
     // polygons [x, y, z, u, v]
-    pub polygons: MultiPolygon<'static, 5>,
+    pub polygons: MultiPolygon<'static, [f64; 5]>,
     // material ids for each polygon
     pub polygon_material_ids: Vec<u32>,
     // materials
@@ -112,7 +112,7 @@ pub fn slice_to_tiles<E>(
                             .iter(),
                     )
                 {
-                    let poly = idx_poly.transform(|c| geom_store.vertices[c[0] as usize]);
+                    let poly = idx_poly.transform(|c| geom_store.vertices[*c as usize]);
                     let orig_mat = poly_mat
                         .and_then(|idx| appearance_store.materials.get(idx as usize))
                         .unwrap_or(&default_material)
@@ -217,7 +217,7 @@ fn slice_polygon(
     zoom: u8,
     poly: &Polygon3,
     poly_uv: &Polygon2,
-    mut send_polygon: impl FnMut(TileZXY, &Polygon<'static, 5>),
+    mut send_polygon: impl FnMut(TileZXY, &Polygon<'static, [f64; 5]>),
 ) {
     if poly.exterior().is_empty() {
         return;
@@ -305,7 +305,7 @@ fn slice_polygon(
     }
 
     // Slice along X-axis
-    let mut poly_buf: Polygon<5> = Polygon::new();
+    let mut poly_buf: Polygon<[f64; 5]> = Polygon::new();
     for (yi, y_sliced_poly) in y_range.zip_eq(y_sliced_polys.iter()) {
         let x_iter = {
             let (min_x, max_x) = y_sliced_poly

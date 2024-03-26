@@ -4,7 +4,7 @@
 
 use std::io::Write;
 
-use nusamai_geometry::{CoordNum, MultiPolygon, Polygon};
+use nusamai_geometry::{Coord, MultiPolygon, Polygon};
 
 #[repr(u8)]
 pub enum WkbByteOrder {
@@ -56,10 +56,10 @@ fn write_geometry_header<W: Write>(writer: &mut W, srs_id: i32) -> std::io::Resu
     Ok(())
 }
 
-fn write_polygon_body<W: Write, const D: usize, T: CoordNum>(
+fn write_polygon_body<W: Write, T: Coord>(
     writer: &mut W,
-    poly: &Polygon<D, T>,
-    mapping: impl Fn([T; D]) -> [f64; 3],
+    poly: &Polygon<T>,
+    mapping: impl Fn(T) -> [f64; 3],
 ) -> std::io::Result<()> {
     // Byte order: Little endian (1)
     writer.write_all(&[WkbByteOrder::LittleEndian as u8])?;
@@ -87,18 +87,18 @@ fn write_polygon_body<W: Write, const D: usize, T: CoordNum>(
 pub fn write_indexed_multipolygon<W: Write>(
     writer: &mut W,
     vertices: &[[f64; 3]],
-    mpoly: &MultiPolygon<1, u32>,
+    mpoly: &MultiPolygon<u32>,
     srs_id: i32,
 ) -> std::io::Result<()> {
     write_geometry_header(writer, srs_id)?;
-    write_multipolygon_body(writer, mpoly, |idx| vertices[idx[0] as usize])?;
+    write_multipolygon_body(writer, mpoly, |idx| vertices[idx as usize])?;
     Ok(())
 }
 
-fn write_multipolygon_body<W: Write, const D: usize, T: CoordNum>(
+fn write_multipolygon_body<W: Write, T: Coord>(
     writer: &mut W,
-    mpoly: &MultiPolygon<D, T>,
-    mapping: impl Fn([T; D]) -> [f64; 3],
+    mpoly: &MultiPolygon<T>,
+    mapping: impl Fn(T) -> [f64; 3],
 ) -> std::io::Result<()> {
     // Byte order: Little endian (1)
     writer.write_all(&[WkbByteOrder::LittleEndian as u8])?;
@@ -135,10 +135,10 @@ mod tests {
             [1., 2., 111.],
         ];
 
-        let mut mpoly = MultiPolygon::<1, u32>::new();
+        let mut mpoly = MultiPolygon::<u32>::new();
         // 1st polygon
-        mpoly.add_exterior([[0], [1], [2], [3], [0]]);
-        mpoly.add_interior([[4], [5], [6], [7], [4]]);
+        mpoly.add_exterior([0, 1, 2, 3, 0]);
+        mpoly.add_interior([4, 5, 6, 7, 4]);
 
         let mut bytes = Vec::new();
         write_indexed_multipolygon(&mut bytes, &vertices, &mpoly, 1234).unwrap();

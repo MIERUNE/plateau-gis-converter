@@ -16,7 +16,7 @@ use flate2::{write::ZlibEncoder, Compression};
 use hashbrown::HashMap;
 use itertools::Itertools;
 use nusamai_citygml::{object, schema::Schema};
-use nusamai_geometry::MultiPolygon2;
+use nusamai_geometry::{MultiPolygon, MultiPolygon2};
 use nusamai_mvt::{geometry::GeometryEncoder, tag::TagsEncoder, tileid::TileIdMethod, vector_tile};
 use prost::Message;
 use rayon::prelude::*;
@@ -358,7 +358,7 @@ fn make_tile(default_detail: i32, serialized_feats: &[SerializedSlicedFeature]) 
         })?;
 
         let mpoly = feature.geometry;
-        let mut int_mpoly = MultiPolygon2::<i16>::new();
+        let mut int_mpoly = MultiPolygon::<[i16; 2]>::new();
 
         for poly in &mpoly {
             for (ri, ring) in poly.rings().enumerate() {

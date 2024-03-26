@@ -223,7 +223,7 @@ pub fn entity_to_geojson_features(entity: &Entity) -> Vec<geojson::Feature> {
                 .multipoint
                 .iter_range(entry.pos as usize..(entry.pos + entry.len) as usize)
             {
-                let value = indexed_point_to_value(&geom_store.vertices, idx_point[0]);
+                let value = indexed_point_to_value(&geom_store.vertices, idx_point);
                 let geojson::Value::Point(point) = value else {
                     unreachable!()
                 };
@@ -286,8 +286,8 @@ mod tests {
             [5., 5., 111.],
             [0., 5., 111.],
         ];
-        let mut mpoly = MultiPolygon::<1, u32>::new();
-        mpoly.add_exterior([[0], [1], [2], [3], [0]]);
+        let mut mpoly = MultiPolygon::<u32>::new();
+        mpoly.add_exterior([0, 1, 2, 3, 0]);
         let geometries = nusamai_citygml::GeometryStore {
             epsg: EPSG_JGD2011_GEOGRAPHIC_3D,
             vertices,

@@ -1,10 +1,10 @@
 //! gltf sink poc
 mod gltf_writer;
 mod material;
-mod utils;
 
 use std::{fs::File, io::BufWriter, path::PathBuf, sync::Mutex};
 
+use crate::sink::cesiumtiles::utils::calculate_normal;
 use ahash::{HashMap, HashSet, RandomState};
 use earcut_rs::{utils3d::project3d_to_2d, Earcut};
 use gltf_writer::{write_3dtiles, write_gltf_glb};
@@ -17,7 +17,6 @@ use nusamai_plateau::appearance;
 use nusamai_projection::cartesian::geographic_to_geocentric;
 use rayon::iter::{IntoParallelIterator, ParallelBridge, ParallelIterator};
 use serde::{Deserialize, Serialize};
-use utils::calculate_normal;
 
 use crate::{
     get_parameter_value,
@@ -101,7 +100,7 @@ impl Default for BoundingVolume {
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Feature {
     // polygons [x, y, z, u, v]
-    pub polygons: MultiPolygon<'static, 5>,
+    pub polygons: MultiPolygon<'static, [f64; 5]>,
     // material ids for each polygon
     pub polygon_material_ids: Vec<u32>,
     // materials
@@ -201,7 +200,7 @@ impl DataSink for GltfSink {
                                 )
                         {
                             // convert to idx_poly to polygon
-                            let poly = idx_poly.transform(|c| geom_store.vertices[c[0] as usize]);
+                            let poly = idx_poly.transform(|c| geom_store.vertices[*c as usize]);
                             let orig_mat = poly_mat
                                 .and_then(|idx| appearance_store.materials.get(idx as usize))
                                 .unwrap_or(&default_material)
@@ -285,8 +284,9 @@ impl DataSink for GltfSink {
 
                 // Triangulation
                 let mut earcutter: Earcut<f64> = Earcut::new();
-                let mut buf2d: Vec<f64> = Vec::new(); // 2d-projected [x, y]
-                let mut index_buf: Vec<u32> = Vec::new();
+                let mut buf3d: Vec<[f64; 3]> = Vec::new();
+                let mut buf2d: Vec<[f64; 2]> = Vec::new(); // 2d-projected [x, y]
+                let mut index_buf: Vec<[u32; 3]> = Vec::new();
 
                 let mut vertices: IndexSet<[u32; 9], RandomState> = IndexSet::default(); // [x, y, z, nx, ny, nz, u, v, feature_id]
                 let mut primitives: Primitives = Default::default();
@@ -348,7 +348,7 @@ impl DataSink for GltfSink {
                     {
                         let num_outer = match poly.hole_indices().first() {
                             Some(&v) => v as usize,
-                            None => poly.raw_coords().len() / 5,
+                            None => poly.raw_coords().len(),
                         };
 
                         let mat = feature.materials[*orig_mat_id as usize].clone();
@@ -356,31 +356,36 @@ impl DataSink for GltfSink {
                         primitive.feature_ids.insert(feature_id as u32);
 
                         if let Some((nx, ny, nz)) =
-                            calculate_normal(poly.exterior().raw_coords(), 5)
+                            calculate_normal(poly.exterior().iter().map(|v| [v[0], v[1], v[2]]))
                         {
-                            if project3d_to_2d(poly.raw_coords(), num_outer, 5, &mut buf2d) {
+                            buf3d.clear();
+                            buf3d.extend(poly.raw_coords().iter().map(|c| [c[0], c[1], c[2]]));
+
+                            if project3d_to_2d(&buf3d, num_outer, &mut buf2d) {
                                 // earcut
-                                earcutter.earcut(&buf2d, poly.hole_indices(), 2, &mut index_buf);
+                                earcutter.earcut(&buf2d, poly.hole_indices(), &mut index_buf);
 
                                 // collect triangles
-                                primitive.indices.extend(index_buf.iter().map(|idx| {
-                                    let pos = *idx as usize * 5;
-                                    let [x, y, z, u, v] =
-                                        poly.raw_coords()[pos..pos + 5].try_into().unwrap();
-                                    let vbits = [
-                                        (x as f32).to_bits(),
-                                        (y as f32).to_bits(),
-                                        (z as f32).to_bits(),
-                                        (nx as f32).to_bits(),
-                                        (ny as f32).to_bits(),
-                                        (nz as f32).to_bits(),
-                                        (u as f32).to_bits(),
-                                        (v as f32).to_bits(),
-                                        (feature_id as f32).to_bits(), // UNSIGNED_INT can't be used for vertex attribute
-                                    ];
-                                    let (index, _) = vertices.insert_full(vbits);
-                                    index as u32
-                                }));
+                                primitive
+                                    .indices
+                                    .extend(index_buf.iter().flat_map(|indices| {
+                                        indices.map(|idx| {
+                                            let [x, y, z, u, v] = poly.raw_coords()[idx as usize];
+                                            let vbits = [
+                                                (x as f32).to_bits(),
+                                                (y as f32).to_bits(),
+                                                (z as f32).to_bits(),
+                                                (nx as f32).to_bits(),
+                                                (ny as f32).to_bits(),
+                                                (nz as f32).to_bits(),
+                                                (u as f32).to_bits(),
+                                                (v as f32).to_bits(),
+                                                (feature_id as f32).to_bits(), // UNSIGNED_INT can't be used for vertex attribute
+                                            ];
+                                            let (index, _) = vertices.insert_full(vbits);
+                                            index as u32
+                                        })
+                                    }));
                             }
                         }
                     }

@@ -1,11 +1,11 @@
 use std::{borrow::Cow, ops::Range};
 
-use super::{polygon::Polygon, CoordNum};
+use super::{polygon::Polygon, Coord};
 
 /// Computer-friendly MultiPolygon
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Debug, Clone, Default, PartialEq)]
-pub struct MultiPolygon<'a, const D: usize, T: CoordNum = f64> {
+pub struct MultiPolygon<'a, T: Coord> {
     /// All coordinates of all polygons
     ///
     /// e.g. `[x0, y0, z0, x1, y1, z1, ...]`
@@ -23,13 +23,18 @@ pub struct MultiPolygon<'a, const D: usize, T: CoordNum = f64> {
     holes_spans: Cow<'a, [u32]>,
 }
 
-pub type MultiPolygon2<'a, T = f64> = MultiPolygon<'a, 2, T>;
-pub type MultiPolygon3<'a, T = f64> = MultiPolygon<'a, 3, T>;
+pub type MultiPolygon2<'a, C = f64> = MultiPolygon<'a, [C; 2]>;
+pub type MultiPolygon3<'a, C = f64> = MultiPolygon<'a, [C; 3]>;
 
-impl<'a, const D: usize, T: CoordNum> MultiPolygon<'a, D, T> {
+impl<'a, T: Coord> MultiPolygon<'a, T> {
     /// Creates an empty MultiPolygon.
     pub fn new() -> Self {
-        Default::default()
+        Self {
+            all_coords: Cow::Borrowed(&[]),
+            coords_spans: Cow::Borrowed(&[]),
+            all_hole_indices: Cow::Borrowed(&[]),
+            holes_spans: Cow::Borrowed(&[]),
+        }
     }
 
     /// Create a new polygon from the given raw data, checking for validity.
@@ -39,9 +44,6 @@ impl<'a, const D: usize, T: CoordNum> MultiPolygon<'a, D, T> {
         all_hole_indices: Cow<'a, [u32]>,
         holes_spans: Cow<'a, [u32]>,
     ) -> Self {
-        if all_coords.len() % D != 0 {
-            panic!("all_coords.len() must be a multiple of D")
-        }
         if coords_spans.len() != holes_spans.len() {
             panic!("coords_spans and holes_spans must have the same length");
         }
@@ -53,7 +55,7 @@ impl<'a, const D: usize, T: CoordNum> MultiPolygon<'a, D, T> {
             .iter()
             .zip(holes_spans.iter())
             .chain(Some((
-                &((all_coords.len() / D) as u32),
+                &((all_coords.len()) as u32),
                 &((all_hole_indices.len()) as u32),
             )))
             .for_each(|(&cs_end, &hs_end)| {
@@ -64,10 +66,10 @@ impl<'a, const D: usize, T: CoordNum> MultiPolygon<'a, D, T> {
                     panic!("invalid holes_spans");
                 }
                 // check polygon
-                let coords = &all_coords[cs_start as usize * D..cs_end as usize * D];
+                let coords = &all_coords[cs_start as usize..cs_end as usize];
                 let hole_indices = &all_hole_indices[hs_start as usize..hs_end as usize];
                 if let Some(&last) = hole_indices.last() {
-                    let len = (coords.len() / D) as u32;
+                    let len = (coords.len()) as u32;
                     if last >= len || hole_indices.windows(2).any(|a| a[0] >= a[1]) {
                         panic!("invalid hole_indices")
                     }
@@ -115,7 +117,7 @@ impl<'a, const D: usize, T: CoordNum> MultiPolygon<'a, D, T> {
     }
 
     /// Returns an iterator over the polygons
-    pub fn iter(&self) -> Iter<D, T> {
+    pub fn iter(&self) -> Iter<T> {
         Iter {
             mpoly: self,
             pos: 0,
@@ -124,7 +126,7 @@ impl<'a, const D: usize, T: CoordNum> MultiPolygon<'a, D, T> {
     }
 
     /// Returns an iterator over the polygons in the given range.
-    pub fn iter_range(&self, range: Range<usize>) -> Iter<D, T> {
+    pub fn iter_range(&self, range: Range<usize>) -> Iter<T> {
         Iter {
             mpoly: self,
             pos: range.start,
@@ -133,7 +135,7 @@ impl<'a, const D: usize, T: CoordNum> MultiPolygon<'a, D, T> {
     }
 
     /// Returns the polygon at the given index.
-    pub fn get(&'a self, index: usize) -> Polygon<'a, D, T> {
+    pub fn get(&'a self, index: usize) -> Polygon<'a, T> {
         let len = self.len();
         let (c_start, c_end, h_start, h_end) = match index {
             index if index >= len => {
@@ -146,21 +148,21 @@ impl<'a, const D: usize, T: CoordNum> MultiPolygon<'a, D, T> {
                 0,
                 self.coords_spans
                     .first()
-                    .map_or(self.all_coords.len(), |&i| i as usize * D),
+                    .map_or(self.all_coords.len(), |&i| i as usize),
                 0,
                 self.holes_spans
                     .first()
                     .map_or(self.all_hole_indices.len(), |&i| i as usize),
             ),
             index if index == len - 1 => (
-                self.coords_spans[index - 1] as usize * D,
+                self.coords_spans[index - 1] as usize,
                 self.all_coords.len(),
                 self.holes_spans[index - 1] as usize,
                 self.all_hole_indices.len(),
             ),
             _ => (
-                self.coords_spans[index - 1] as usize * D,
-                self.coords_spans[index] as usize * D,
+                self.coords_spans[index - 1] as usize,
+                self.coords_spans[index] as usize,
                 self.holes_spans[index - 1] as usize,
                 self.holes_spans[index] as usize,
             ),
@@ -180,7 +182,7 @@ impl<'a, const D: usize, T: CoordNum> MultiPolygon<'a, D, T> {
     }
 
     /// Adds a polygon to the multipolygon.
-    pub fn push(&mut self, poly: &Polygon<D, T>) {
+    pub fn push(&mut self, poly: &Polygon<T>) {
         self.add_exterior(&poly.exterior());
         for hole in poly.interiors() {
             self.add_interior(&hole);
@@ -188,53 +190,46 @@ impl<'a, const D: usize, T: CoordNum> MultiPolygon<'a, D, T> {
     }
 
     /// Adds a polygon with the given exterior ring.
-    pub fn add_exterior<I: IntoIterator<Item = [T; D]>>(&mut self, iter: I) {
+    pub fn add_exterior<I: IntoIterator<Item = T>>(&mut self, iter: I) {
         if !self.all_coords.is_empty() {
             self.coords_spans
                 .to_mut()
-                .push((self.all_coords.len() / D) as u32);
+                .push((self.all_coords.len()) as u32);
             self.holes_spans
                 .to_mut()
                 .push(self.all_hole_indices.len() as u32);
         }
 
         let head = self.all_coords.len();
-        self.all_coords.to_mut().extend(iter.into_iter().flatten());
+        self.all_coords.to_mut().extend(iter);
 
         // remove closing point if exists
         let tail = self.all_coords.len();
-        if tail > head + 2 * D && self.all_coords[head..head + D] == self.all_coords[tail - D..] {
-            self.all_coords.to_mut().truncate(tail - D);
+        if tail > head + 2 && self.all_coords[head..head + 1] == self.all_coords[tail - 1..] {
+            self.all_coords.to_mut().truncate(tail - 1);
         }
     }
 
     /// Adds an interior ring to the last polygon.
-    pub fn add_interior<I: IntoIterator<Item = [T; D]>>(&mut self, iter: I) {
+    pub fn add_interior<I: IntoIterator<Item = T>>(&mut self, iter: I) {
         self.all_hole_indices
             .to_mut()
-            .push((self.all_coords.len() / D) as u32 - *self.coords_spans.last().unwrap_or(&0));
+            .push((self.all_coords.len()) as u32 - *self.coords_spans.last().unwrap_or(&0));
 
         let head = self.all_coords.len();
-        self.all_coords.to_mut().extend(iter.into_iter().flatten());
+        self.all_coords.to_mut().extend(iter);
 
         // remove closing point if exists
         let tail = self.all_coords.len();
-        if tail > head + 2 * D && self.all_coords[head..head + D] == self.all_coords[tail - D..] {
-            self.all_coords.to_mut().truncate(tail - D);
+        if tail > head + 2 && self.all_coords[head..head + 1] == self.all_coords[tail - 1..] {
+            self.all_coords.to_mut().truncate(tail - 1);
         }
     }
 
     /// Create a new MultiPolygon by applying the given transformation to all coordinates.
-    pub fn transform<const D2: usize, T2: CoordNum>(
-        &self,
-        f: impl Fn(&[T; D]) -> [T2; D2],
-    ) -> MultiPolygon<D2, T2> {
+    pub fn transform<T2: Coord>(&self, f: impl Fn(&T) -> T2) -> MultiPolygon<T2> {
         MultiPolygon {
-            all_coords: self
-                .all_coords
-                .chunks_exact(D)
-                .flat_map(|v| f(&v.try_into().unwrap()))
-                .collect(),
+            all_coords: self.all_coords.iter().map(f).collect(),
             coords_spans: self.coords_spans.clone(),
             all_hole_indices: self.all_hole_indices.clone(),
             holes_spans: self.holes_spans.clone(),
@@ -242,31 +237,30 @@ impl<'a, const D: usize, T: CoordNum> MultiPolygon<'a, D, T> {
     }
 
     /// Applies the given transformation to all coordinates in the MultiPolygon.
-    pub fn transform_inplace(&mut self, mut f: impl FnMut(&[T; D]) -> [T; D]) {
-        self.all_coords.to_mut().chunks_exact_mut(D).for_each(|c| {
-            let transformed = f(&c.try_into().unwrap());
-            c.copy_from_slice(&transformed);
+    pub fn transform_inplace(&mut self, mut f: impl FnMut(&T) -> T) {
+        self.all_coords.to_mut().iter_mut().for_each(|c| {
+            *c = f(c);
         });
     }
 }
 
-impl<'a, const D: usize, T: CoordNum> IntoIterator for &'a MultiPolygon<'_, D, T> {
-    type Item = Polygon<'a, D, T>;
-    type IntoIter = Iter<'a, D, T>;
+impl<'a, T: Coord> IntoIterator for &'a MultiPolygon<'_, T> {
+    type Item = Polygon<'a, T>;
+    type IntoIter = Iter<'a, T>;
 
     fn into_iter(self) -> Self::IntoIter {
         self.iter()
     }
 }
 
-pub struct Iter<'a, const D: usize, T: CoordNum> {
-    mpoly: &'a MultiPolygon<'a, D, T>,
+pub struct Iter<'a, T: Coord> {
+    mpoly: &'a MultiPolygon<'a, T>,
     pos: usize,
     end: usize,
 }
 
-impl<'a, const D: usize, T: CoordNum> Iterator for Iter<'a, D, T> {
-    type Item = Polygon<'a, D, T>;
+impl<'a, T: Coord> Iterator for Iter<'a, T> {
+    type Item = Polygon<'a, T>;
 
     fn next(&mut self) -> Option<Self::Item> {
         if self.pos < self.end {
@@ -446,10 +440,34 @@ mod tests {
         // checked
         let _mpoly = MultiPolygon2::from_raw(
             [
-                0.0, 0.0, 5.0, 0.0, 5.0, 5.0, 0.0, 5.0, 1.0, 1.0, 2.0, 1.0, 2.0, 2.0, 1.0, 2.0,
-                3.0, 3.0, 4.0, 3.0, 4.0, 4.0, 3.0, 4.0, 4.0, 0.0, 7.0, 0.0, 7.0, 3.0, 4.0, 3.0,
-                5.0, 1.0, 6.0, 1.0, 6.0, 2.0, 5.0, 2.0, 4.0, 0.0, 7.0, 0.0, 7.0, 3.0, 4.0, 3.0,
-                5.0, 1.0, 6.0, 1.0, 6.0, 2.0, 5.0, 2.0,
+                [0.0, 0.0],
+                [5.0, 0.0],
+                [5.0, 5.0],
+                [0.0, 5.0],
+                [1.0, 1.0],
+                [2.0, 1.0],
+                [2.0, 2.0],
+                [1.0, 2.0],
+                [3.0, 3.0],
+                [4.0, 3.0],
+                [4.0, 4.0],
+                [3.0, 4.0],
+                [4.0, 0.0],
+                [7.0, 0.0],
+                [7.0, 3.0],
+                [4.0, 3.0],
+                [5.0, 1.0],
+                [6.0, 1.0],
+                [6.0, 2.0],
+                [5.0, 2.0],
+                [4.0, 0.0],
+                [7.0, 0.0],
+                [7.0, 3.0],
+                [4.0, 3.0],
+                [5.0, 1.0],
+                [6.0, 1.0],
+                [6.0, 2.0],
+                [5.0, 2.0],
             ][..]
                 .into(),
             [12, 20][..].into(),
@@ -460,10 +478,34 @@ mod tests {
         // unchecked
         let _mpoly = MultiPolygon2::from_raw_unchecked(
             [
-                0.0, 0.0, 5.0, 0.0, 5.0, 5.0, 0.0, 5.0, 1.0, 1.0, 2.0, 1.0, 2.0, 2.0, 1.0, 2.0,
-                3.0, 3.0, 4.0, 3.0, 4.0, 4.0, 3.0, 4.0, 4.0, 0.0, 7.0, 0.0, 7.0, 3.0, 4.0, 3.0,
-                5.0, 1.0, 6.0, 1.0, 6.0, 2.0, 5.0, 2.0, 4.0, 0.0, 7.0, 0.0, 7.0, 3.0, 4.0, 3.0,
-                5.0, 1.0, 6.0, 1.0, 6.0, 2.0, 5.0, 2.0,
+                [0.0, 0.0],
+                [5.0, 0.0],
+                [5.0, 5.0],
+                [0.0, 5.0],
+                [1.0, 1.0],
+                [2.0, 1.0],
+                [2.0, 2.0],
+                [1.0, 2.0],
+                [3.0, 3.0],
+                [4.0, 3.0],
+                [4.0, 4.0],
+                [3.0, 4.0],
+                [4.0, 0.0],
+                [7.0, 0.0],
+                [7.0, 3.0],
+                [4.0, 3.0],
+                [5.0, 1.0],
+                [6.0, 1.0],
+                [6.0, 2.0],
+                [5.0, 2.0],
+                [4.0, 0.0],
+                [7.0, 0.0],
+                [7.0, 3.0],
+                [4.0, 3.0],
+                [5.0, 1.0],
+                [6.0, 1.0],
+                [6.0, 2.0],
+                [5.0, 2.0],
             ][..]
                 .into(),
             [12, 20][..].into(),
@@ -480,7 +522,7 @@ mod tests {
             let new_mpoly = mpoly.transform(|[x, y]| [x + 2., y + 1.]);
             assert_eq!(
                 new_mpoly.get(0).raw_coords(),
-                [2., 1., 7., 1., 7., 6., 2., 6.]
+                [[2., 1.], [7., 1.], [7., 6.], [2., 6.]]
             );
         }
 
@@ -488,7 +530,10 @@ mod tests {
             let mut mpoly = MultiPolygon2::new();
             mpoly.add_exterior([[0., 0.], [5., 0.], [5., 5.], [0., 5.]]);
             mpoly.transform_inplace(|[x, y]| [x + 2., y + 1.]);
-            assert_eq!(mpoly.get(0).raw_coords(), [2., 1., 7., 1., 7., 6., 2., 6.]);
+            assert_eq!(
+                mpoly.get(0).raw_coords(),
+                [[2., 1.], [7., 1.], [7., 6.], [2., 6.]]
+            );
         }
     }
 
@@ -496,7 +541,7 @@ mod tests {
     #[should_panic]
     fn test_from_raw_invalid_1() {
         let _mpoly = MultiPolygon2::from_raw(
-            [0.0, 0.0, 5.0, 0.0, 5.0, 5.0, 0.0, 1.0][..].into(),
+            [[0.0, 0.0], [5.0, 0.0], [5.0, 5.0], [0.0, 1.0]][..].into(),
             [2][..].into(),
             [1, 99][..].into(), // invalid
             [1][..].into(),
@@ -507,7 +552,7 @@ mod tests {
     #[should_panic]
     fn test_from_raw_invalid_2() {
         let _mpoly = MultiPolygon2::from_raw(
-            [0.0, 0.0, 5.0, 0.0, 5.0, 5.0, 0.0, 1.0][..].into(),
+            [[0.0, 0.0], [5.0, 0.0], [5.0, 5.0], [0.0, 1.0]][..].into(),
             [99][..].into(), // invalid
             [1, 1][..].into(),
             [1][..].into(),
@@ -518,7 +563,7 @@ mod tests {
     #[should_panic]
     fn test_from_raw_invalid_3() {
         let _mpoly = MultiPolygon2::from_raw(
-            [0.0, 0.0, 5.0, 0.0, 5.0, 5.0, 0.0, 1.0][..].into(),
+            [[0.0, 0.0], [5.0, 0.0], [5.0, 5.0], [0.0, 1.0]][..].into(),
             [2][..].into(),
             [1, 1][..].into(),
             [99][..].into(), // invalid
@@ -530,7 +575,7 @@ mod tests {
     fn test_from_raw_invalid_4() {
         // checked
         let _mpoly = MultiPolygon2::from_raw(
-            [0.0, 0.0, 5.0, 0.0, 5.0, 5.0, 0.0, 1.0][..].into(),
+            [[0.0, 0.0], [5.0, 0.0], [5.0, 5.0], [0.0, 1.0]][..].into(),
             [1, 2][..].into(),
             [][..].into(),
             [0][..].into(), // coords_spans.len() != holes_spans.len()
@@ -542,7 +587,7 @@ mod tests {
     fn test_from_raw_invalid_5() {
         // checked
         let _mpoly = MultiPolygon2::from_raw(
-            [0.0, 0.0, 5.0, 0.0, 5.0, 5.0, 0.0, 1.0][..].into(),
+            [[0.0, 0.0], [5.0, 0.0], [5.0, 5.0], [0.0, 1.0]][..].into(),
             [2, 1][..].into(), // not increasing
             [][..].into(),
             [0, 0][..].into(),
@@ -554,7 +599,7 @@ mod tests {
     fn test_from_raw_invalid_6() {
         // checked
         let _mpoly = MultiPolygon2::from_raw(
-            [0., 0., 1., 1., 2., 2., 3., 3., 4., 4., 5., 5.][..].into(),
+            [[0., 0.], [1., 1.], [2., 2.], [3., 3.], [4., 4.], [5., 5.]][..].into(),
             [2, 4][..].into(),
             [1, 1][..].into(),
             [1, 0][..].into(), // not increasing

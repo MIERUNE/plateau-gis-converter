@@ -1,11 +1,13 @@
 use std::borrow::Cow;
 
-use super::{linestring::LineString, CoordNum};
+use crate::Coord2d;
+
+use super::{linestring::LineString, Coord};
 
 /// Computer-friendly Polygon
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[derive(Debug, Clone, Default, PartialEq)]
-pub struct Polygon<'a, const D: usize, T: CoordNum = f64> {
+pub struct Polygon<'a, T: Coord> {
     /// Coordinates
     coords: Cow<'a, [T]>,
 
@@ -13,22 +15,22 @@ pub struct Polygon<'a, const D: usize, T: CoordNum = f64> {
     hole_indices: Cow<'a, [u32]>,
 }
 
-pub type Polygon3<'a, T = f64> = Polygon<'a, 3, T>;
-pub type Polygon2<'a, T = f64> = Polygon<'a, 2, T>;
+pub type Polygon3<'a, C = f64> = Polygon<'a, [C; 3]>;
+pub type Polygon2<'a, C = f64> = Polygon<'a, [C; 2]>;
 
-impl<'a, const D: usize, T: CoordNum> Polygon<'a, D, T> {
+impl<'a, T: Coord> Polygon<'a, T> {
     /// Creates an empty Polygon.
     pub fn new() -> Self {
-        Default::default()
+        Self {
+            coords: Cow::Borrowed(&[]),
+            hole_indices: Cow::Borrowed(&[]),
+        }
     }
 
     pub fn from_raw(coords: Cow<'a, [T]>, hole_indices: Cow<'a, [u32]>) -> Self {
-        if coords.len() % D != 0 {
-            panic!("coords.len() must be a multiple of D")
-        }
         // Check if all span values are within range and monotonically increasing
         if let Some(&last) = hole_indices.last() {
-            let len = (coords.len() / D) as u32;
+            let len = (coords.len()) as u32;
             if last >= len || hole_indices.windows(2).any(|a| a[0] >= a[1]) {
                 panic!("invalid hole_indices")
             }
@@ -56,21 +58,21 @@ impl<'a, const D: usize, T: CoordNum> Polygon<'a, D, T> {
     }
 
     /// Returns the exterior ring of the polygon.
-    pub fn exterior(&self) -> LineString<D, T> {
+    pub fn exterior(&self) -> LineString<T> {
         LineString::from_raw(if self.hole_indices.is_empty() {
             self.coords[..].into()
         } else {
-            self.coords[..self.hole_indices[0] as usize * D].into()
+            self.coords[..self.hole_indices[0] as usize].into()
         })
     }
 
     /// Returns an iterator over the interior rings of the polygon.
-    pub fn interiors(&self) -> Iter<D, T> {
+    pub fn interiors(&self) -> Iter<T> {
         Iter { poly: self, pos: 1 }
     }
 
     /// Returns an iterator over the exterior and interior rings of the polygon.
-    pub fn rings(&self) -> Iter<D, T> {
+    pub fn rings(&self) -> Iter<T> {
         Iter { poly: self, pos: 0 }
     }
 
@@ -81,48 +83,38 @@ impl<'a, const D: usize, T: CoordNum> Polygon<'a, D, T> {
     }
 
     /// Adds an exterior or interior ring to the polygon.
-    pub fn add_ring<I: IntoIterator<Item = [T; D]>>(&mut self, iter: I) {
+    pub fn add_ring<I: IntoIterator<Item = T>>(&mut self, iter: I) {
         if !self.coords.is_empty() {
-            self.hole_indices
-                .to_mut()
-                .push((self.coords.len() / D) as u32);
+            self.hole_indices.to_mut().push((self.coords.len()) as u32);
         }
         let head = self.coords.len();
-        self.coords.to_mut().extend(iter.into_iter().flatten());
+        self.coords.to_mut().extend(iter);
 
         // remove closing point if exists
         let tail = self.coords.len();
-        if tail > head + 2 * D && self.coords[head..head + D] == self.coords[tail - D..] {
-            self.coords.to_mut().truncate(tail - D);
+        if tail > head + 2 && self.coords[head..head + 1] == self.coords[tail - 1..] {
+            self.coords.to_mut().truncate(tail - 1);
         }
     }
 
     /// Create a new Polygon by applying the given transformation to all coordinates.
-    pub fn transform<const D2: usize, T2: CoordNum>(
-        &self,
-        f: impl Fn(&[T; D]) -> [T2; D2],
-    ) -> Polygon<D2, T2> {
+    pub fn transform<T2: Coord>(&self, f: impl Fn(&T) -> T2) -> Polygon<T2> {
         Polygon {
-            coords: self
-                .coords
-                .chunks_exact(D)
-                .flat_map(|v| f(&v.try_into().unwrap()))
-                .collect(),
+            coords: self.coords.iter().map(f).collect(),
             hole_indices: self.hole_indices.clone(),
         }
     }
 
     /// Applies the given transformation to all coordinates in the Polygon.
-    pub fn transform_inplace(&mut self, mut f: impl FnMut(&[T; D]) -> [T; D]) {
-        self.coords.to_mut().chunks_exact_mut(D).for_each(|c| {
-            let transformed = f(&c.try_into().unwrap());
-            c.copy_from_slice(&transformed);
+    pub fn transform_inplace(&mut self, mut f: impl FnMut(&T) -> T) {
+        self.coords.to_mut().iter_mut().for_each(|c| {
+            *c = f(c);
         });
     }
 }
 
 // 2-dimensional only
-impl<'a, T: CoordNum> Polygon<'a, 2, T> {
+impl<'a, T: Coord2d> Polygon<'a, T> {
     pub fn area(&self) -> f64 {
         let mut area = 0.0;
         area += self.exterior().ring_area();
@@ -133,26 +125,26 @@ impl<'a, T: CoordNum> Polygon<'a, 2, T> {
     }
 }
 
-pub struct Iter<'a, const D: usize, T: CoordNum> {
-    poly: &'a Polygon<'a, D, T>,
+pub struct Iter<'a, T: Coord> {
+    poly: &'a Polygon<'a, T>,
     pos: usize,
 }
 
-impl<'a, const D: usize, T: CoordNum> Iterator for Iter<'a, D, T> {
-    type Item = LineString<'a, D, T>;
+impl<'a, T: Coord> Iterator for Iter<'a, T> {
+    type Item = LineString<'a, T>;
 
     fn next(&mut self) -> Option<Self::Item> {
         if self.pos < self.poly.hole_indices.len() + 1 {
             let start = if self.pos == 0 {
                 0
             } else {
-                self.poly.hole_indices[self.pos - 1] as usize * D
+                self.poly.hole_indices[self.pos - 1] as usize
             };
 
             let end = if self.pos == self.poly.hole_indices.len() {
                 self.poly.coords.len()
             } else {
-                self.poly.hole_indices[self.pos] as usize * D
+                self.poly.hole_indices[self.pos] as usize
             };
 
             let line = LineString::from_raw(self.poly.coords[start..end].into());
@@ -177,7 +169,7 @@ mod tests {
 
     #[test]
     fn test_polygon_no_interior() {
-        let coords: Vec<f64> = (0..=10).flat_map(|i| vec![i as f64, i as f64]).collect();
+        let coords: Vec<_> = (0..=10).map(|i| [i as f64, i as f64]).collect();
         let hole_indices: Vec<u32> = vec![];
         let polygon: Polygon2<f64> =
             Polygon2::from_raw_unchecked(coords.into(), hole_indices.into());
@@ -188,7 +180,7 @@ mod tests {
 
     #[test]
     fn test_polygon_one_interior() {
-        let coords: Vec<f64> = (0..=10).flat_map(|i| vec![i as f64, i as f64]).collect();
+        let coords: Vec<_> = (0..=10).map(|i| [i as f64, i as f64]).collect();
         let hole_indices: Vec<u32> = vec![4];
         let polygon: Polygon2<f64> =
             Polygon2::from_raw_unchecked(coords.into(), hole_indices.into());
@@ -205,7 +197,7 @@ mod tests {
 
     #[test]
     fn test_polygon_multiple_interiors() {
-        let coords: Vec<f64> = (0..=10).flat_map(|i| vec![i as f64, i as f64]).collect();
+        let coords: Vec<_> = (0..=10).map(|i| [i as f64, i as f64]).collect();
         let hole_indices: Vec<u32> = vec![4, 7];
         let polygon: Polygon2<f64> =
             Polygon2::from_raw_unchecked(coords.into(), hole_indices.into());
@@ -223,7 +215,7 @@ mod tests {
 
     #[test]
     fn test_polygon_clear() {
-        let coords: Vec<f64> = (0..=10).flat_map(|i| vec![i as f64, i as f64]).collect();
+        let coords: Vec<_> = (0..=10).map(|i| [i as f64, i as f64]).collect();
         let hole_indices: Vec<u32> = vec![4, 7];
         let mut polygon: Polygon2<f64> =
             Polygon2::from_raw_unchecked(coords.into(), hole_indices.into());
@@ -257,12 +249,12 @@ mod tests {
     #[test]
     fn test_transform() {
         {
-            let mut poly: Polygon<2> = Polygon2::new();
+            let mut poly: Polygon2 = Polygon2::new();
             poly.add_ring([[0., 0.], [5., 0.], [5., 5.], [0., 5.]]);
             let new_poly = poly.transform(|[x, y]| [x + 2., y + 1.]);
             assert_eq!(
                 new_poly.exterior().raw_coords(),
-                [2., 1., 7., 1., 7., 6., 2., 6.]
+                [[2., 1.], [7., 1.], [7., 6.], [2., 6.]]
             );
         }
 
@@ -272,7 +264,7 @@ mod tests {
             poly.transform_inplace(|[x, y]| [x + 2., y + 1.]);
             assert_eq!(
                 poly.exterior().raw_coords(),
-                [2., 1., 7., 1., 7., 6., 2., 6.]
+                [[2., 1.], [7., 1.], [7., 6.], [2., 6.]]
             );
         }
     }
@@ -280,7 +272,7 @@ mod tests {
     /// Currently, it does not check whether the exterior is valid (have at least three vertices) or not
     #[test]
     fn test_polygon_invalid_exterior() {
-        let coords: Vec<f64> = (0..1).flat_map(|i| vec![i as f64, i as f64]).collect();
+        let coords: Vec<_> = (0..1).map(|i| [i as f64, i as f64]).collect();
         let hole_indices: Vec<u32> = vec![];
         let polygon: Polygon2<f64> = Polygon2::from_raw(coords.into(), hole_indices.into());
 
@@ -292,7 +284,7 @@ mod tests {
     /// (It could be a "Steiner point", as we see in earcut)
     #[test]
     fn test_polygon_invalid_interior() {
-        let all_coords: Vec<f64> = (0..=10).flat_map(|i| vec![i as f64, i as f64]).collect();
+        let all_coords: Vec<_> = (0..=10).map(|i| [i as f64, i as f64]).collect();
         let hole_indices: Vec<u32> = vec![10]; // only one vertex
         let polygon: Polygon2<f64> = Polygon2::from_raw(all_coords.into(), hole_indices.into());
 
@@ -309,7 +301,7 @@ mod tests {
     #[test]
     #[should_panic]
     fn test_polygon_invalid_hole_indices_1() {
-        let coords: Vec<f64> = (0..=2).flat_map(|i| vec![i as f64, i as f64]).collect();
+        let coords: Vec<_> = (0..=2).map(|i| [i as f64, i as f64]).collect();
         let hole_indices: Vec<u32> = vec![3]; // out of `all_coords` range
         let _polygon: Polygon2<f64> = Polygon2::from_raw(coords.into(), hole_indices.into());
     }
@@ -317,7 +309,7 @@ mod tests {
     #[test]
     #[should_panic]
     fn test_polygon_invalid_hole_indices_2() {
-        let coords: Vec<f64> = (0..15).flat_map(|i| vec![i as f64, i as f64]).collect();
+        let coords: Vec<_> = (0..15).map(|i| [i as f64, i as f64]).collect();
         let hole_indices: Vec<u32> = vec![6, 3]; // not monotonically increasing
         let _polygon: Polygon2<f64> = Polygon2::from_raw(coords.into(), hole_indices.into());
     }
