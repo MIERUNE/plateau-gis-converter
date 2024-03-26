@@ -109,9 +109,9 @@ impl DataSink for StanfordPlySink {
                         };
 
                         let mut earcutter = Earcut::new();
-                        let mut buf3d: Vec<f64> = Vec::new();
-                        let mut buf2d: Vec<f64> = Vec::new();
-                        let mut triangles_buf: Vec<u32> = Vec::new();
+                        let mut buf3d: Vec<[f64; 3]> = Vec::new();
+                        let mut buf2d: Vec<[f64; 2]> = Vec::new();
+                        let mut triangles_buf: Vec<[u32; 3]> = Vec::new();
                         let mut triangles = Vec::new();
 
                         geometries.iter().for_each(|entry| match entry.ty {
@@ -135,21 +135,20 @@ impl DataSink for StanfordPlySink {
                                     };
 
                                     buf3d.clear();
-                                    buf3d.extend(poly.raw_coords().iter().flatten());
+                                    buf3d.extend(poly.raw_coords().iter());
 
-                                    if project3d_to_2d(&buf3d, num_outer, 3, &mut buf2d) {
+                                    if project3d_to_2d(&buf3d, num_outer, &mut buf2d) {
                                         // earcut
                                         earcutter.earcut(
                                             &buf2d,
                                             poly.hole_indices(),
-                                            2,
                                             &mut triangles_buf,
                                         );
-                                        triangles.extend(triangles_buf.iter().map(|idx| {
+                                        triangles.extend(triangles_buf.iter().flat_map(|idx| {
                                             [
-                                                buf3d[*idx as usize * 3],
-                                                buf3d[*idx as usize * 3 + 1],
-                                                buf3d[*idx as usize * 3 + 2],
+                                                buf3d[idx[0] as usize],
+                                                buf3d[idx[1] as usize],
+                                                buf3d[idx[2] as usize],
                                             ]
                                         }));
                                     }

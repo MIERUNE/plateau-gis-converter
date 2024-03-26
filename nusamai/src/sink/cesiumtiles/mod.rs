@@ -305,9 +305,9 @@ fn tile_writing_stage(
             };
 
             let mut earcutter = Earcut::new();
-            let mut buf3d: Vec<f64> = Vec::new();
-            let mut buf2d: Vec<f64> = Vec::new(); // 2d-projected [x, y]
-            let mut index_buf: Vec<u32> = Vec::new();
+            let mut buf3d: Vec<[f64; 3]> = Vec::new();
+            let mut buf2d: Vec<[f64; 2]> = Vec::new(); // 2d-projected [x, y]
+            let mut index_buf: Vec<[u32; 3]> = Vec::new();
 
             let mut vertices: IndexSet<[u32; 9], RandomState> = IndexSet::default(); // [x, y, z, u, v, feature_id]
             let mut primitives: gltf::Primitives = Default::default();
@@ -372,28 +372,30 @@ fn tile_writing_stage(
                         poly.exterior().iter().map(|v| [v[0], v[1], v[2]])
                     ) {
                         buf3d.clear();
-                        buf3d.extend(poly.raw_coords().iter().flat_map(|c| [c[0], c[1], c[2]]));
+                        buf3d.extend(poly.raw_coords().iter().map(|c| [c[0], c[1], c[2]]));
 
-                        if project3d_to_2d(&buf3d, num_outer_points, 3, &mut buf2d) {
+                        if project3d_to_2d(&buf3d, num_outer_points,  &mut buf2d) {
                             // earcut
-                            earcutter.earcut(&buf2d, poly.hole_indices(), 2, &mut index_buf);
+                            earcutter.earcut(&buf2d, poly.hole_indices(),  &mut index_buf);
 
                             // collect triangles
-                            primitive.indices.extend(index_buf.iter().map(|idx| {
-                                let [x, y, z, u, v] = poly.raw_coords()[*idx as usize];
-                                let vbits = [
-                                    (x as f32).to_bits(),
-                                    (y as f32).to_bits(),
-                                    (z as f32).to_bits(),
-                                    (nx as f32).to_bits(),
-                                    (ny as f32).to_bits(),
-                                    (nz as f32).to_bits(),
-                                    (u as f32).to_bits(),
-                                    (v as f32).to_bits(),
-                                    (feature_id as f32).to_bits(), // UNSIGNED_INT can't be used for vertex attribute
-                                ];
-                                let (index, _) = vertices.insert_full(vbits);
-                                index as u32
+                            primitive.indices.extend(index_buf.iter().flat_map(|indices| {
+                                indices.map(|idx| {
+                                    let [x, y, z, u, v] = poly.raw_coords()[idx as usize];
+                                    let vbits = [
+                                        (x as f32).to_bits(),
+                                        (y as f32).to_bits(),
+                                        (z as f32).to_bits(),
+                                        (nx as f32).to_bits(),
+                                        (ny as f32).to_bits(),
+                                        (nz as f32).to_bits(),
+                                        (u as f32).to_bits(),
+                                        (v as f32).to_bits(),
+                                        (feature_id as f32).to_bits(), // UNSIGNED_INT can't be used for vertex attribute
+                                    ];
+                                    let (index, _) = vertices.insert_full(vbits);
+                                    index as u32
+                                })
                             }));
                         }
                     }

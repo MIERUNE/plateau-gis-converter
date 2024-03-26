@@ -11,10 +11,10 @@ clap = { version = "4.5.4", features = ["derive"] }
 nusamai-geometry = { path = "../nusamai-geometry" }
 quick-xml = "0.31.0"
 thiserror = "1.0.58"
-earcut-rs = { git = "https://github.com/MIERUNE/earcut-rs.git", commit = "0303da0970c9190b352c6008635b152e928a3dd6" }
+earcut-rs = { git = "https://github.com/MIERUNE/earcut-rs.git", tag = "v0.2.0" }
 indexmap = "2.2.6"
 byteorder = "1.5.0"
-serde_json = "1.0.114"
+serde_json = "1.0.115"
 
 [dev-dependencies]
 glob = "0.3.1"
