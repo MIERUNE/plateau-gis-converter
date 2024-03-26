@@ -10,7 +10,7 @@ serde = ["dep:serde", "serde_json", "nusamai-geometry/serde"]
 [dependencies]
 ahash = "0.8.11"
 chrono = { version = "0.4.35", features = ["serde"], default-features = false }
-indexmap = { version = "2.2.5", features = ["serde"] }
+indexmap = { version = "2.2.6", features = ["serde"] }
 log = "0.4.21"
 macros = { path = "./macros" }
 nusamai-geometry = { path = "../nusamai-geometry", features = ["serde"]}
