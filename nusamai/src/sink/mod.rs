@@ -6,6 +6,7 @@ pub mod geojson;
 pub mod gltf;
 pub mod gpkg;
 pub mod kml;
+pub mod minecraft;
 pub mod mvt;
 pub mod noop;
 pub mod ply;

@@ -1,6 +1,7 @@
-//! gltf sink poc
+//! minecraft sink poc
 mod gltf_writer;
 mod material;
+mod voxel;
 
 use std::{fs::File, io::BufWriter, path::PathBuf, sync::Mutex};
 
