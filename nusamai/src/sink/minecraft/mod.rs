@@ -30,8 +30,8 @@ pub struct MinecraftSinkProvider {}
 impl DataSinkProvider for MinecraftSinkProvider {
     fn info(&self) -> SinkInfo {
         SinkInfo {
-            id_name: "geojson".to_string(),
-            name: "GeoJSON".to_string(),
+            id_name: "minecraft".to_string(),
+            name: "Minecraft".to_string(),
         }
     }
 
