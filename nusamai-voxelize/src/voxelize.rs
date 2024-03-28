@@ -1,4 +1,5 @@
 use byteorder::{LittleEndian, WriteBytesExt};
+use nusamai_geometry::MultiPolygon;
 use serde_json::json;
 use std::{collections::HashSet, fs::File, io::Write};
 
@@ -9,7 +10,7 @@ struct Voxel {
     z: i32,
 }
 
-fn voxelize_mesh(vertices: &[[f64; 3]], indices: &[i32], voxel_size: f64) -> HashSet<Voxel> {
+fn voxelize_mesh(vertices: &[[f64; 3]], indices: &[u32], voxel_size: f64) -> HashSet<Voxel> {
     // 占有されたボクセルを格納する
     // HashSetは重複を許さない
     let mut occupied_voxels = HashSet::new();
@@ -57,23 +58,79 @@ fn voxelize_mesh(vertices: &[[f64; 3]], indices: &[i32], voxel_size: f64) -> Has
     occupied_voxels
 }
 
+fn indexed_multipolygon_to_voxel(
+    vertices: &[[f64; 3]],
+    mpoly_idx: &MultiPolygon<u32>,
+    voxel_size: f64,
+) -> HashSet<Voxel> {
+    let mut occupied_voxels = HashSet::new();
+
+    for poly_idx in mpoly_idx.iter() {
+        let mut indices = Vec::new();
+        for ring_idx in poly_idx.rings() {
+            indices.extend(ring_idx.iter());
+        }
+
+        let poly_occupied_voxels = voxelize_mesh(vertices, &indices, voxel_size);
+        occupied_voxels.extend(poly_occupied_voxels);
+    }
+
+    occupied_voxels
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
-    use nusamai_geometry::{MultiPolygon3, Polygon3};
 
     #[test]
     fn test_voxelize() {
         let vertices: Vec<[f64; 3]> = vec![
-            [0.0, 0.0, 0.0],
-            [10.0, 0.0, 0.0],
-            [10.0, 10.0, 0.0],
-            [0.0, 10.0, 0.0],
+            // 1st polygon, exterior (vertex 0~3)
+            [0., 0., 11.],
+            [5., 0., 11.],
+            [5., 5., 11.],
+            [0., 5., 11.],
+            // 1st polygon, interior 1 (vertex 4~7)
+            [1., 1., 11.],
+            [2., 1., 11.],
+            [2., 2., 11.],
+            [1., 2., 11.],
+            // 1st polygon, interior 2 (vertex 8~11)
+            [3., 3., 11.],
+            [4., 3., 11.],
+            [4., 4., 11.],
+            [3., 4., 11.],
+            // 2nd polygon, exterior (vertex 12~15)
+            [4., 0., 22.],
+            [7., 0., 22.],
+            [7., 3., 22.],
+            [4., 3., 22.],
+            // 2nd polygon, interior (vertex 16~19)
+            [5., 1., 22.],
+            [6., 1., 22.],
+            [6., 2., 22.],
+            [5., 2., 22.],
+            // 3rd polygon, exterior (vertex 20~23)
+            [4., 0., 33.],
+            [7., 0., 33.],
+            [7., 3., 33.],
+            [4., 3., 33.],
         ];
-        let indices: Vec<i32> = vec![0, 1, 2, 3, 0];
+
+        let mut mpoly = MultiPolygon::<u32>::new();
+        // 1st polygon
+        mpoly.add_exterior([0, 1, 2, 3, 0]);
+        mpoly.add_interior([4, 5, 6, 7, 4]);
+        mpoly.add_interior([8, 9, 10, 11, 8]);
+        // 2nd polygon
+        mpoly.add_exterior([12, 13, 14, 15, 12]);
+        mpoly.add_interior([16, 17, 18, 19, 16]);
+        // 3rd polygon
+        mpoly.add_exterior([20, 21, 22, 23, 20]);
+
         let voxel_size = 1.0;
 
-        let occupied_voxels = voxelize_mesh(&vertices, &indices, voxel_size);
+        let occupied_voxels = indexed_multipolygon_to_voxel(&vertices, &mpoly, voxel_size);
         let points_count = occupied_voxels.len();
 
         // gltfの作成
