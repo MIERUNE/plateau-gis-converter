@@ -1,0 +1,9 @@
+[package]
+name = "nusamai-voxelize"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+nusamai-geometry = { path = "../nusamai-geometry" }
+byteorder = "1.5.0"
+serde_json = { version = "1.0.115"}
