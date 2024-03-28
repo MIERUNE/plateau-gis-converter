@@ -85,48 +85,90 @@ mod tests {
     #[test]
     fn test_voxelize() {
         let vertices: Vec<[f64; 3]> = vec![
-            // 1st polygon, exterior (vertex 0~3)
-            [0., 0., 11.],
-            [5., 0., 11.],
-            [5., 5., 11.],
-            [0., 5., 11.],
-            // 1st polygon, interior 1 (vertex 4~7)
-            [1., 1., 11.],
-            [2., 1., 11.],
-            [2., 2., 11.],
-            [1., 2., 11.],
-            // 1st polygon, interior 2 (vertex 8~11)
-            [3., 3., 11.],
-            [4., 3., 11.],
-            [4., 4., 11.],
-            [3., 4., 11.],
-            // 2nd polygon, exterior (vertex 12~15)
-            [4., 0., 22.],
-            [7., 0., 22.],
-            [7., 3., 22.],
-            [4., 3., 22.],
-            // 2nd polygon, interior (vertex 16~19)
-            [5., 1., 22.],
-            [6., 1., 22.],
-            [6., 2., 22.],
-            [5., 2., 22.],
-            // 3rd polygon, exterior (vertex 20~23)
-            [4., 0., 33.],
-            [7., 0., 33.],
-            [7., 3., 33.],
-            [4., 3., 33.],
+            // Large box Exterior
+            [0.0, 0.0, 0.0],
+            [10.0, 0.0, 0.0],
+            [10.0, 10.0, 0.0],
+            [0.0, 10.0, 0.0],
+            [0.0, 0.0, 10.0],
+            [10.0, 0.0, 10.0],
+            [10.0, 10.0, 10.0],
+            [0.0, 10.0, 10.0],
+            // Large box Interior
+            [1.0, 1.0, 1.0],
+            [9.0, 1.0, 1.0],
+            [9.0, 9.0, 1.0],
+            [1.0, 9.0, 1.0],
+            [1.0, 1.0, 9.0],
+            [9.0, 1.0, 9.0],
+            [9.0, 9.0, 9.0],
+            [1.0, 9.0, 9.0],
+            // Medium box Exterior
+            [15.0, 0.0, 0.0],
+            [20.0, 0.0, 0.0],
+            [20.0, 5.0, 0.0],
+            [15.0, 5.0, 0.0],
+            [15.0, 0.0, 5.0],
+            [20.0, 0.0, 5.0],
+            [20.0, 5.0, 5.0],
+            [15.0, 5.0, 5.0],
+            // Medium box Interior
+            [16.0, 1.0, 1.0],
+            [19.0, 1.0, 1.0],
+            [19.0, 4.0, 1.0],
+            [16.0, 4.0, 1.0],
+            [16.0, 1.0, 4.0],
+            [19.0, 1.0, 4.0],
+            [19.0, 4.0, 4.0],
+            [16.0, 4.0, 4.0],
+            // Small box Exterior
+            [25.0, 0.0, 0.0],
+            [28.0, 0.0, 0.0],
+            [28.0, 3.0, 0.0],
+            [25.0, 3.0, 0.0],
+            [25.0, 0.0, 3.0],
+            [28.0, 0.0, 3.0],
+            [28.0, 3.0, 3.0],
+            [25.0, 3.0, 3.0],
         ];
 
         let mut mpoly = MultiPolygon::<u32>::new();
-        // 1st polygon
+
+        // Large box
         mpoly.add_exterior([0, 1, 2, 3, 0]);
-        mpoly.add_interior([4, 5, 6, 7, 4]);
+        mpoly.add_exterior([4, 5, 6, 7, 4]);
+        mpoly.add_exterior([0, 1, 5, 4, 0]);
+        mpoly.add_exterior([1, 2, 6, 5, 1]);
+        mpoly.add_exterior([2, 3, 7, 6, 2]);
+        mpoly.add_exterior([3, 0, 4, 7, 3]);
         mpoly.add_interior([8, 9, 10, 11, 8]);
-        // 2nd polygon
-        mpoly.add_exterior([12, 13, 14, 15, 12]);
-        mpoly.add_interior([16, 17, 18, 19, 16]);
-        // 3rd polygon
+        mpoly.add_interior([12, 13, 14, 15, 12]);
+        mpoly.add_interior([8, 9, 13, 12, 8]);
+        mpoly.add_interior([9, 10, 14, 13, 9]);
+        mpoly.add_interior([10, 11, 15, 14, 10]);
+        mpoly.add_interior([11, 8, 12, 15, 11]);
+
+        // Medium box
+        mpoly.add_exterior([16, 17, 18, 19, 16]);
         mpoly.add_exterior([20, 21, 22, 23, 20]);
+        mpoly.add_exterior([16, 17, 21, 20, 16]);
+        mpoly.add_exterior([17, 18, 22, 21, 17]);
+        mpoly.add_exterior([18, 19, 23, 22, 18]);
+        mpoly.add_exterior([19, 16, 20, 23, 19]);
+        mpoly.add_interior([24, 25, 26, 27, 24]);
+        mpoly.add_interior([28, 29, 30, 31, 28]);
+        mpoly.add_interior([24, 25, 29, 28, 24]);
+        mpoly.add_interior([25, 26, 30, 29, 25]);
+        mpoly.add_interior([26, 27, 31, 30, 26]);
+        mpoly.add_interior([27, 24, 28, 31, 27]);
+
+        // Small box
+        mpoly.add_exterior([32, 33, 34, 35, 32]);
+        mpoly.add_exterior([36, 37, 38, 39, 36]);
+        mpoly.add_exterior([32, 33, 37, 36, 32]);
+        mpoly.add_exterior([33, 34, 38, 37, 33]);
+        mpoly.add_exterior([34, 35, 39, 38, 34]);
+        mpoly.add_exterior([35, 32, 36, 39, 35]);
 
         let voxel_size = 1.0;
 
