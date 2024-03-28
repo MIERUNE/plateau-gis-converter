@@ -3,15 +3,16 @@
 [![Test Tauri App](https://github.com/MIERUNE/PLATEAU-GIS-Converter/actions/workflows/test_app.yml/badge.svg)](https://github.com/MIERUNE/nusamai/actions/workflows/test_app.yml)
 [![Test Libraries](https://github.com/MIERUNE/PLATEAU-GIS-Converter/actions/workflows/test_libs.yml/badge.svg)](https://github.com/MIERUNE/nusamai/actions/workflows/test_libs.yml)
 [![Codecov](https://codecov.io/gh/MIERUNE/PLATEAU-GIS-Converter/graph/badge.svg?token=oa62wDWoqu)](https://codecov.io/gh/MIERUNE/PLATEAU-GIS-Converter)
+
 <!--
 [![Docs](https://github.com/MIERUNE/PLATEAU-GIS-Converter/actions/workflows/doc.yml/badge.svg)](https://mierune.github.io/nusamai/app/)
 -->
 
 ## 1. 概要
 
-本リポジトリでは、Project PLATEAUの令和5年度「都市デジタルツインの実現に向けた研究開発及び実証調査業務」（内閣府/研究開発とSociety5.0との橋渡しプログラム（BRIDGE））におけるCm23-09「GISコンバータ作成」において開発した「GISコンバータ (PLATEAU GIS Converter)」のソースコードを公開しています。
+本リポジトリでは、FY2023のProject PLATEAU「都市デジタルツインの実現に向けた研究開発及び実証調査業務」（内閣府/研究開発とSociety5.0との橋渡しプログラム（BRIDGE））において開発された「PLATEAU GIS Converter」のソースコードを公開しています。
 
-PLATEAU GIS Converter は、[PLATEAU](https://www.mlit.go.jp/plateau/)プロジェクトのCityGML形式の3D都市モデルを他の一般的なGISデータ形式に変換するソフトウェアです。
+PLATEAU GIS Converter は、[PLATEAU](https://www.mlit.go.jp/plateau/)が提供するCityGML形式の3D都市モデルを他の一般的なGISデータ形式に変換するソフトウェアです。
 
 [東京都23区の CityGML (v2)](https://www.geospatial.jp/ckan/dataset/plateau-tokyo23ku-2022/resource/55c72dd0-32eb-4107-9526-71fc0af8d50f3) を読み込んで、3D Tiles に変換した例：
 
@@ -21,17 +22,17 @@ PLATEAU GIS Converter は、[PLATEAU](https://www.mlit.go.jp/plateau/)プロジ�
 
 ![ソフトウェアのメイン画面](docs/resources/README_image-1.png)
 
-## 2. 「GISコンバータ」について
-
 PLATEAU の標準仕様に準拠した CityGML 2.0 形式の3D都市モデルは、専門のGISツールやCLIコマンドを用いて他のGIS形式に変換して用いられることが一般的ですが、一般ユーザーが簡易に利用できる汎用ツールは存在しません。そのため、流通や活用の範囲が専門家や技術者に限られていました。
 
-「GISコンバータ」を利用することで、3D都市モデルを一般的なGIS形式に変換して、様々な分析・開発を行うことができます：
+## 2. 「PLATEAU GIS Converter」について
+
+「PLATEAU GIS Converter」を利用することで、3D都市モデルを一般的なGIS形式に変換して、様々な分析・開発を行うことができます：
 
 - GeoPackage 形式による [QGIS](https://www.qgis.org/) 等での解析
 - Mapbox Vector Tiles (MVT) 形式による、大規模データのWeb等での高速描画
 - KML 形式による Google Earth での可視化
 - 3D Tiles 形式による [Cesium](https://cesium.com/) 等での可視化
-- など
+など
 
 ## 3. 利用手順
 
@@ -132,8 +133,8 @@ PLATEAU の標準仕様に準拠した CityGML 2.0 形式の3D都市モデルは
 ## Development (開発者向け情報)
 
 <!--
-- [MIERUNE/plateau-schema-experiment](https://github.com/MIERUNE/plateau-schema-experiment) &mdash; CityGML 2.0 と i-UR の XML Schema を解析する実験コード群。QGIS Pluginの属性列挙に使用。
-- [MIERUNE/3dtiles-research](https://github.com/MIERUNE/3dtiles-research) &mdash; 3D Tiles / glTF の実験コード群
+- [MIERUNE/plateau-schema-experiment](https://github.com/MIERUNE/plateau-schema-experiment) — CityGML 2.0 と i-UR の XML Schema を解析する実験コード群。QGIS Pluginの属性列挙に使用。
+- [MIERUNE/3dtiles-research](https://github.com/MIERUNE/3dtiles-research) — 3D Tiles / glTF の実験コード群
 -->
 
 ### Build &amp; Run
@@ -171,7 +172,7 @@ npx tauri build
 
 #### Coverage
 
-Codecov: <https://app.codecov.io/gh/MIERUNE/nusamai>
+Codecov: [https://app.codecov.io/gh/MIERUNE/nusamai](https://app.codecov.io/gh/MIERUNE/nusamai)
 
 ```bash
 cargo llvm-cov --workspace --exclude app --html --all-features
