@@ -10,69 +10,52 @@ struct Voxel {
     z: i32,
 }
 
-fn voxelize_mesh(vertices: &[[f64; 3]], indices: &[u32], voxel_size: f64) -> HashSet<Voxel> {
+fn draw_line(voxels: &mut HashSet<Voxel>, start: [f64; 3], end: [f64; 3], voxel_size: f64) {
+    // 方向ベクトルの算出
+    let lay = [end[0] - start[0], end[1] - start[1], end[2] - start[2]];
+    // 方向ベクトルの最大距離を取得
+    let max_dist = lay.iter().fold(0.0_f64, |acc, &val| acc.max(val.abs()));
+    // 距離をボクセルサイズで割り、切り上げることでステップ数を算出
+    // エッジを何ステップに分割するかを計算
+    let steps = (max_dist / voxel_size).ceil() as i32;
+    // XYZ方向へ1ステップで進む距離を算出
+    let step_size = [
+        lay[0] / steps as f64,
+        lay[1] / steps as f64,
+        lay[2] / steps as f64,
+    ];
+
+    let mut current = start;
+    // ステップの数だけ繰り返し、各ステップで通過するボクセルを計算
+    for _ in 0..=steps {
+        // ボクセルの座標計算
+        // 現在の座標をボクセルのサイズで割り、切り捨てることでボクセルの格子座標（整数値）を算出
+        let voxel = Voxel {
+            x: (current[0] / voxel_size).floor() as i32,
+            y: (current[1] / voxel_size).floor() as i32,
+            z: (current[2] / voxel_size).floor() as i32,
+        };
+        voxels.insert(voxel);
+        // 現在の座標を更新
+        current[0] += step_size[0];
+        current[1] += step_size[1];
+        current[2] += step_size[2];
+    }
+}
+
+fn triangle_to_voxel(triangles: &[[f64; 3]], voxel_size: f64) -> HashSet<Voxel> {
     // 占有されたボクセルを格納する
     // HashSetは重複を許さない
     let mut occupied_voxels = HashSet::new();
 
-    // indicesの要素を2つずつ取り出すのがwindows(2)メソッド
-    for window in indices.windows(2) {
-        // 隣り合った2つの頂点を取り出し、これを線分（エッジ）の始点と終点とする
-        let start = vertices[window[0] as usize];
-        let end = vertices[window[1] as usize];
-        let mut current = start;
-
-        // 方向ベクトルの算出
-        let direction = [end[0] - start[0], end[1] - start[1], end[2] - start[2]];
-        // 方向ベクトルの最大距離を取得
-        let max_dist = direction
-            .iter()
-            .fold(0.0_f64, |acc, &val| acc.max(val.abs()));
-        // 距離をボクセルサイズで割り、切り上げることでステップ数を算出
-        // エッジを何ステップに分割するかを計算
-        let steps = (max_dist / voxel_size).ceil() as i32;
-        // XYZ方向へ1ステップで進む距離を算出
-        let step_size = [
-            direction[0] / steps as f64,
-            direction[1] / steps as f64,
-            direction[2] / steps as f64,
-        ];
-
-        // ステップの数だけ繰り返し、各ステップで通過するボクセルを計算
-        for _ in 0..=steps {
-            // ボクセルの座標計算
-            // 現在の座標をボクセルのサイズで割り、切り捨てることでボクセルの格子座標（整数値）を算出
-            let voxel = Voxel {
-                x: (current[0] / voxel_size).floor() as i32,
-                y: (current[1] / voxel_size).floor() as i32,
-                z: (current[2] / voxel_size).floor() as i32,
-            };
-            occupied_voxels.insert(voxel);
-            // 現在の座標を更新
-            current[0] += step_size[0];
-            current[1] += step_size[1];
-            current[2] += step_size[2];
+    for tri in triangles.windows(3) {
+        // indicesの要素を2つずつ取り出すのがwindows(2)メソッド
+        for window in tri.windows(2) {
+            // 隣り合った2つの頂点を取り出し、これを線分（エッジ）の始点と終点とする
+            let start = window[0];
+            let end = window[1];
+            draw_line(&mut occupied_voxels, start, end, voxel_size);
         }
-    }
-
-    occupied_voxels
-}
-
-fn indexed_multipolygon_to_voxel(
-    vertices: &[[f64; 3]],
-    mpoly_idx: &MultiPolygon<u32>,
-    voxel_size: f64,
-) -> HashSet<Voxel> {
-    let mut occupied_voxels = HashSet::new();
-
-    for poly_idx in mpoly_idx.iter() {
-        let mut indices = Vec::new();
-        for ring_idx in poly_idx.rings() {
-            indices.extend(ring_idx.iter());
-        }
-
-        let poly_occupied_voxels = voxelize_mesh(vertices, &indices, voxel_size);
-        occupied_voxels.extend(poly_occupied_voxels);
     }
 
     occupied_voxels
@@ -80,6 +63,8 @@ fn indexed_multipolygon_to_voxel(
 
 #[cfg(test)]
 mod tests {
+    use earcut_rs::{utils3d::project3d_to_2d, Earcut};
+
     use super::*;
 
     #[test]
@@ -170,9 +155,44 @@ mod tests {
         mpoly.add_exterior([34, 35, 39, 38, 34]);
         mpoly.add_exterior([35, 32, 36, 39, 35]);
 
+        // triangulation
+        let mut earcutter = Earcut::new();
+        let mut buf3d: Vec<[f64; 3]> = Vec::new();
+        let mut buf2d: Vec<[f64; 2]> = Vec::new();
+        let mut triangles_buf: Vec<[u32; 3]> = Vec::new();
+        let mut triangles: Vec<[f64; 3]> = Vec::new();
+
+        // ポリゴンを取り出す
+        for idx_poly in mpoly.iter() {
+            // インデックスを座標に変換
+            let poly = idx_poly.transform(|idx| vertices[*idx as usize]);
+            // holeがあるか確認
+            let num_outer = match poly.hole_indices().first() {
+                Some(&v) => v as usize,
+                None => poly.raw_coords().len(),
+            };
+
+            // 3次元での座標を格納
+            buf3d.clear();
+            buf3d.extend(poly.raw_coords().iter());
+
+            // 3次元座標を2次元座標に変換
+            if project3d_to_2d(&buf3d, num_outer, &mut buf2d) {
+                // earcut
+                earcutter.earcut(&buf2d, poly.hole_indices(), &mut triangles_buf);
+                triangles.extend(triangles_buf.iter().flat_map(|idx| {
+                    [
+                        buf3d[idx[0] as usize],
+                        buf3d[idx[1] as usize],
+                        buf3d[idx[2] as usize],
+                    ]
+                }));
+            }
+        }
+
         let voxel_size = 1.0;
 
-        let occupied_voxels = indexed_multipolygon_to_voxel(&vertices, &mpoly, voxel_size);
+        let occupied_voxels = triangle_to_voxel(&triangles, voxel_size);
         let points_count = occupied_voxels.len();
 
         // gltfの作成
