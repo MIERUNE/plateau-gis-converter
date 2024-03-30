@@ -4,7 +4,7 @@
 
 <div class="grid place-items-center h-screen">
 	<div class="max-w-md flex flex-col gap-6">
-		<h1 class="font-semibold text-lg">PLATEAU 都市デジタルツイン・GISコンバータ</h1>
+		<h1 class="font-semibold text-lg">PLATEAU GIS Converter</h1>
 
 		<p>
 			国土交通省によるPLATEAUデータを、各種ファイル形式へ変換するためのツールです。
@@ -36,14 +36,18 @@
 
 		<p>
 			ソフトウェアの最新版は
-			<a href="https://github.com/MIERUNE/PLATEAU-GIS-Converter/releases" target="_blank" rel="noopener noreferrer"
-				>Releaseページ</a
+			<a
+				href="https://github.com/MIERUNE/PLATEAU-GIS-Converter/releases"
+				target="_blank"
+				rel="noopener noreferrer">Releaseページ</a
 			>
 			からダウンロードしてください。
 			<br />
 			詳しい利用方法については、こちらの
-			<a href="https://mierune.github.io/PLATEAU-GIS-Converter/index.html" target="_blank" rel="noopener noreferrer"
-				>マニュアル</a
+			<a
+				href="https://mierune.github.io/PLATEAU-GIS-Converter/index.html"
+				target="_blank"
+				rel="noopener noreferrer">マニュアル</a
 			>をご覧ください。
 		</p>
 
