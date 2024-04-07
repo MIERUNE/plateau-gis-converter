@@ -6,7 +6,7 @@ use std::{fs::File, io::BufWriter, path::PathBuf, sync::Mutex};
 
 use crate::sink::cesiumtiles::utils::calculate_normal;
 use ahash::{HashMap, HashSet, RandomState};
-use earcut_rs::{utils3d::project3d_to_2d, Earcut};
+use earcut::{utils3d::project3d_to_2d, Earcut};
 use gltf_writer::{write_3dtiles, write_gltf_glb};
 use indexmap::IndexSet;
 use itertools::Itertools;

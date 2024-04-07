@@ -17,7 +17,7 @@ use std::{
 };
 
 use ahash::RandomState;
-use earcut_rs::{utils3d::project3d_to_2d, Earcut};
+use earcut::{utils3d::project3d_to_2d, Earcut};
 use ext_sort::{buffer::mem::MemoryLimitedBufferBuilder, ExternalSorter, ExternalSorterBuilder};
 use gltf::write_gltf_glb;
 use indexmap::IndexSet;
