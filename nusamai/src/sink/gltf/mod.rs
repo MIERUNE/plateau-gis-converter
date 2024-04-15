@@ -364,7 +364,7 @@ impl DataSink for GltfSink {
                             if project3d_to_2d(&buf3d, num_outer, &mut buf2d) {
                                 // earcut
                                 earcutter.earcut(
-                                    buf2d.iter().flatten().copied(),
+                                    buf2d.iter().copied(),
                                     poly.hole_indices(),
                                     &mut index_buf,
                                 );
