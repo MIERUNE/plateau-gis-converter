@@ -140,7 +140,7 @@ impl DataSink for StanfordPlySink {
                                     if project3d_to_2d(&buf3d, num_outer, &mut buf2d) {
                                         // earcut
                                         earcutter.earcut(
-                                            buf2d.iter().flatten().cloned(),
+                                            buf2d.iter().cloned(),
                                             poly.hole_indices(),
                                             &mut index_buf,
                                         );

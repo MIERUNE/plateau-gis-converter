@@ -376,7 +376,7 @@ fn tile_writing_stage(
 
                         if project3d_to_2d(&buf3d, num_outer_points,  &mut buf2d) {
                             // earcut
-                            earcutter.earcut(buf2d.iter().flatten().cloned(), poly.hole_indices(),  &mut index_buf);
+                            earcutter.earcut(buf2d.iter().cloned(), poly.hole_indices(),  &mut index_buf);
 
                             // collect triangles
                             primitive.indices.extend(index_buf.iter().map(|&idx| {
