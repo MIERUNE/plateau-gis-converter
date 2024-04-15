@@ -43,6 +43,17 @@ impl Transform for ProjectionTransform {
                     });
                     geom_store.epsg = self.output_epsg;
                 }
+                EPSG_WEB_MERCATOR => {
+                    let mut geom_store = entity.geometry_store.write().unwrap();
+                    geom_store.vertices.iter_mut().for_each(|v| {
+                        // Swap x and y (lat, lng -> lng, lat)
+                        let (lng, lat) = (v[1], v[0]);
+                        // LngLat to Web Mercator
+                        (v[0], v[1]) =
+                            nusamai_mvt::webmercator::lnglat_to_web_mercator_meters(lng, lat)
+                    });
+                    geom_store.epsg = self.output_epsg;
+                }
                 EPSG_JGD2011_JPRECT_I_JGD2011_HEIGHT
                 | EPSG_JGD2011_JPRECT_II_JGD2011_HEIGHT
                 | EPSG_JGD2011_JPRECT_III_JGD2011_HEIGHT

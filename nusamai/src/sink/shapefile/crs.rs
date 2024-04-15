@@ -7,7 +7,7 @@ pub struct ProjectionRepository {
 }
 
 // Define WKT1_ESRI strings for various CRSs
-const WKT1_ESRI: [(u16, &str); 74] = [
+const WKT1_ESRI: [(u16, &str); 75] = [
     // WGS84 Geographic 2D
     (
         4326,
@@ -18,8 +18,13 @@ const WKT1_ESRI: [(u16, &str); 74] = [
         4979,
         r#"GEOGCS["WGS_1984_3D",DATUM["D_WGS_1984",SPHEROID["WGS_1984",6378137.0,298.257223563]],PRIMEM["Greenwich",0.0],UNIT["Degree",0.0174532925199433],LINUNIT["Meter",1.0]]"#,
     ),
-    // WGS84 Geocentric(Geocentric CRS not supported in WKT1_ESRI)
+    // WGS84 Geocentric (Geocentric CRS is not supported in WKT1_ESRI)
     // (4978, r#""#);
+    // Web Mercator (WGS84 / Pseudo-Mercator)
+    (
+        3857,
+        r#"PROJCS["WGS_1984_Web_Mercator_Auxiliary_Sphere",GEOGCS["GCS_WGS_1984",DATUM["D_WGS_1984",SPHEROID["WGS_1984",6378137.0,298.257223563]],PRIMEM["Greenwich",0.0],UNIT["Degree",0.0174532925199433]],PROJECTION["Mercator_Auxiliary_Sphere"],PARAMETER["False_Easting",0.0],PARAMETER["False_Northing",0.0],PARAMETER["Central_Meridian",0.0],PARAMETER["Standard_Parallel_1",0.0],PARAMETER["Auxiliary_Sphere_Type",0.0],UNIT["Meter",1.0]]"#,
+    ),
     // JGD2011 Geographic 2D
     (
         6668,
