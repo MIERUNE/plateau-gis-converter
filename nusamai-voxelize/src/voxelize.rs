@@ -2,7 +2,11 @@ use byteorder::{LittleEndian, WriteBytesExt};
 use nalgebra::{distance, Point3, Vector3};
 use nusamai_geometry::MultiPolygon;
 use serde_json::json;
-use std::{collections::HashSet, fs::File, io::Write};
+use std::{
+    collections::{HashMap, HashSet},
+    fs::File,
+    io::Write,
+};
 
 #[derive(Eq, PartialEq, Hash, Debug)]
 struct Voxel {
@@ -74,7 +78,7 @@ fn triangle_to_voxel(triangles: &[[f64; 3]], voxel_size: f64) -> HashSet<Voxel> 
     occupied_voxels
 }
 
-fn fill_triangle(voxels: &HashSet<Voxel>, voxel_size: f64, triangle: &[[f64; 3]]) {
+fn fill_triangle(voxels: &mut HashSet<Voxel>, voxel_size: f64, triangle: &[[f64; 3]]) {
     if triangle.len() != 3 {
         panic!("The number of vertices is not 3")
     }
@@ -87,6 +91,26 @@ fn fill_triangle(voxels: &HashSet<Voxel>, voxel_size: f64, triangle: &[[f64; 3]]
     // 3辺の長さを算出し、三角形が小さい（すべての辺がvoxel_size未満）場合は、面を走査せずvoxelを一つだけ塗りつぶす
     if is_small_triangle(&p1, &p2, &p3, voxel_size) {
         println!("Triangles too small!");
+
+        let p1_floor = p1.map(|x| x.floor());
+        let p2_floor = p2.map(|y| y.floor());
+        let p3_floor = p3.map(|z| z.floor());
+
+        voxels.insert(Voxel {
+            x: p1_floor.x as i32,
+            y: p1_floor.y as i32,
+            z: p1_floor.z as i32,
+        });
+        voxels.insert(Voxel {
+            x: p2_floor.x as i32,
+            y: p2_floor.y as i32,
+            z: p2_floor.z as i32,
+        });
+        voxels.insert(Voxel {
+            x: p3_floor.x as i32,
+            y: p3_floor.y as i32,
+            z: p3_floor.z as i32,
+        });
     }
 }
 
