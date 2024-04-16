@@ -63,7 +63,7 @@
 		},
 		"windows": [
 			{
-				"title": "PLATEAU 都市デジタルツイン GISコンバータ",
+				"title": "PLATEAU GIS Converter",
 				"fullscreen": false,
 				"resizable": true,
 				"height": 800,

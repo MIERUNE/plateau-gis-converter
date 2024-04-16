@@ -4,7 +4,7 @@ use std::{io::Write, path::PathBuf};
 
 use ahash::RandomState;
 use byteorder::{ByteOrder, LittleEndian, WriteBytesExt};
-use earcut_rs::{utils3d::project3d_to_2d, Earcut};
+use earcut::{utils3d::project3d_to_2d, Earcut};
 use indexmap::IndexSet;
 use nusamai_citygml::{
     object::{ObjectStereotype, Value},
@@ -111,7 +111,7 @@ impl DataSink for StanfordPlySink {
                         let mut earcutter = Earcut::new();
                         let mut buf3d: Vec<[f64; 3]> = Vec::new();
                         let mut buf2d: Vec<[f64; 2]> = Vec::new();
-                        let mut triangles_buf: Vec<[u32; 3]> = Vec::new();
+                        let mut index_buf: Vec<u32> = Vec::new();
                         let mut triangles = Vec::new();
 
                         geometries.iter().for_each(|entry| match entry.ty {
@@ -140,17 +140,13 @@ impl DataSink for StanfordPlySink {
                                     if project3d_to_2d(&buf3d, num_outer, &mut buf2d) {
                                         // earcut
                                         earcutter.earcut(
-                                            &buf2d,
+                                            buf2d.iter().cloned(),
                                             poly.hole_indices(),
-                                            &mut triangles_buf,
+                                            &mut index_buf,
                                         );
-                                        triangles.extend(triangles_buf.iter().flat_map(|idx| {
-                                            [
-                                                buf3d[idx[0] as usize],
-                                                buf3d[idx[1] as usize],
-                                                buf3d[idx[2] as usize],
-                                            ]
-                                        }));
+                                        triangles.extend(
+                                            index_buf.iter().map(|&idx| buf3d[idx as usize]),
+                                        );
                                     }
                                 }
                             }

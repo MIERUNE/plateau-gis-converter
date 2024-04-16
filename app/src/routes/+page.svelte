@@ -59,10 +59,10 @@
 	</div>
 {/if}
 
-<div class="grid place-items-center h-screen">
+<div class="py-5 grid place-items-center h-screen">
 	<div class="max-w-2xl flex flex-col gap-12">
 		<div class="flex items-center gap-1.5">
-			<h1 class="font-bold text-2xl">PLATEAU 都市デジタルツイン GISコンバータ</h1>
+			<h1 class="font-bold text-2xl">PLATEAU GIS Converter</h1>
 			<a href="/about" class="hover:text-accent1">
 				<Icon class="text-2xl mt-0.5" icon="mingcute:information-line" />
 			</a>
