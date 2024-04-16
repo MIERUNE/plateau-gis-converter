@@ -24,7 +24,7 @@ use indexmap::IndexSet;
 use itertools::Itertools;
 use nusamai_citygml::{object::Value, schema::Schema};
 use nusamai_mvt::tileid::TileIdMethod;
-use nusamai_projection::cartesian::geographic_to_geocentric;
+use nusamai_projection::cartesian::geographic_to_geodetic;
 use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
 use slice::{slice_to_tiles, SlicedFeature};
@@ -274,7 +274,7 @@ fn tile_writing_stage(
 
                 // Use the tile center as the translation of the glTF mesh
                 let translation = {
-                    let (tx, ty, tz) = geographic_to_geocentric(&ellipsoid, (min_lng + max_lng) / 2.0, (min_lat + max_lat) / 2.0, 0.);
+                    let (tx, ty, tz) = geographic_to_geodetic(&ellipsoid, (min_lng + max_lng) / 2.0, (min_lat + max_lat) / 2.0, 0.);
                     // z-up to y-up
                     let [tx, ty, tz] = [tx, tz, -ty];
                     // double-precision to single-precision
@@ -344,7 +344,7 @@ fn tile_writing_stage(
                             // - z-up to y-up
                             // - subtract the translation
                             // - flip the texture v-coordinate
-                            let (x, y, z) = geographic_to_geocentric(&ellipsoid, lng, lat, height);
+                            let (x, y, z) = geographic_to_geodetic(&ellipsoid, lng, lat, height);
                             [x - translation[0], z - translation[1], -y - translation[2], u, 1.0 - v]
                         });
 
