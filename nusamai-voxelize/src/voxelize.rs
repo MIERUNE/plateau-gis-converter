@@ -11,18 +11,21 @@ struct Voxel {
 }
 
 fn draw_line(voxels: &mut HashSet<Voxel>, start: [f64; 3], end: [f64; 3], voxel_size: f64) {
-    // 方向ベクトルの算出
-    let lay = [end[0] - start[0], end[1] - start[1], end[2] - start[2]];
-    // 方向ベクトルの最大距離を取得
-    let max_dist = lay.iter().fold(0.0_f64, |acc, &val| acc.max(val.abs()));
+    // 始点と終点が既知なので方向ベクトルが算出できる
+    let direction = [end[0] - start[0], end[1] - start[1], end[2] - start[2]];
+    // 方向ベクトルのXYZ方向の最大移動距離を取得
+    // 移動距離なので、絶対値
+    let max_dist = direction
+        .iter()
+        .fold(0.0_f64, |acc, &val| acc.max(val.abs()));
     // 距離をボクセルサイズで割り、切り上げることでステップ数を算出
     // エッジを何ステップに分割するかを計算
     let steps = (max_dist / voxel_size).ceil() as i32;
     // XYZ方向へ1ステップで進む距離を算出
     let step_size = [
-        lay[0] / steps as f64,
-        lay[1] / steps as f64,
-        lay[2] / steps as f64,
+        direction[0] / steps as f64,
+        direction[1] / steps as f64,
+        direction[2] / steps as f64,
     ];
 
     let mut current = start;
@@ -48,22 +51,32 @@ fn triangle_to_voxel(triangles: &[[f64; 3]], voxel_size: f64) -> HashSet<Voxel> 
     // HashSetは重複を許さない
     let mut occupied_voxels = HashSet::new();
 
+    // todo: 以下の実装だとエッジしか操作できないので、三角形を走査して行くように実装を変更する必要がある
     for tri in triangles.windows(3) {
         // indicesの要素を2つずつ取り出すのがwindows(2)メソッド
         for window in tri.windows(2) {
             // 隣り合った2つの頂点を取り出し、これを線分（エッジ）の始点と終点とする
             let start = window[0];
             let end = window[1];
+            // すべてのエッジを走査して、occupied_voxelsに格納していく)
             draw_line(&mut occupied_voxels, start, end, voxel_size);
         }
     }
 
+    // todo: 三角形を走査していく関数を実装
+    // todo: 色は後で考える
+    fill_triangle(&mut occupied_voxels, voxel_size, triangles);
+
     occupied_voxels
+}
+
+fn fill_triangle(voxels: &HashSet<Voxel>, voxel_size: f64, triangles: &[[f64; 3]]) {
+    // 三角形が小さい（すべての辺が1未満）場合は、面を走査せずvoxelを一つだけ塗りつぶす
 }
 
 #[cfg(test)]
 mod tests {
-    use earcut_rs::{utils3d::project3d_to_2d, Earcut};
+    use earcut::{utils3d::project3d_to_2d, Earcut};
 
     use super::*;
 
@@ -159,7 +172,8 @@ mod tests {
         let mut earcutter = Earcut::new();
         let mut buf3d: Vec<[f64; 3]> = Vec::new();
         let mut buf2d: Vec<[f64; 2]> = Vec::new();
-        let mut triangles_buf: Vec<[u32; 3]> = Vec::new();
+        let mut index_buf: Vec<u32> = Vec::new();
+
         let mut triangles: Vec<[f64; 3]> = Vec::new();
 
         // ポリゴンを取り出す
@@ -179,14 +193,8 @@ mod tests {
             // 3次元座標を2次元座標に変換
             if project3d_to_2d(&buf3d, num_outer, &mut buf2d) {
                 // earcut
-                earcutter.earcut(&buf2d, poly.hole_indices(), &mut triangles_buf);
-                triangles.extend(triangles_buf.iter().flat_map(|idx| {
-                    [
-                        buf3d[idx[0] as usize],
-                        buf3d[idx[1] as usize],
-                        buf3d[idx[2] as usize],
-                    ]
-                }));
+                earcutter.earcut(buf2d.iter().cloned(), poly.hole_indices(), &mut index_buf);
+                triangles.extend(index_buf.iter().map(|&idx| buf3d[idx as usize]));
             }
         }
 
@@ -195,7 +203,8 @@ mod tests {
         let occupied_voxels = triangle_to_voxel(&triangles, voxel_size);
         let points_count = occupied_voxels.len();
 
-        // gltfの作成
+        // -------------------gltfの作成-------------------
+
         // voxelは整数値だが、accessorsのcomponentTypeは5126（浮動小数点数）であり、primitivesの制約でINTEGER型は使用できない
         let mut min_point = [f32::MAX; 3];
         let mut max_point = [f32::MIN; 3];
