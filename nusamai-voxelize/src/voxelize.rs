@@ -1,4 +1,5 @@
 use byteorder::{LittleEndian, WriteBytesExt};
+use nalgebra::{distance, Point3, Vector3};
 use nusamai_geometry::MultiPolygon;
 use serde_json::json;
 use std::{collections::HashSet, fs::File, io::Write};
@@ -52,26 +53,49 @@ fn triangle_to_voxel(triangles: &[[f64; 3]], voxel_size: f64) -> HashSet<Voxel> 
     let mut occupied_voxels = HashSet::new();
 
     // todo: 以下の実装だとエッジしか操作できないので、三角形を走査して行くように実装を変更する必要がある
-    for tri in triangles.windows(3) {
-        // indicesの要素を2つずつ取り出すのがwindows(2)メソッド
-        for window in tri.windows(2) {
-            // 隣り合った2つの頂点を取り出し、これを線分（エッジ）の始点と終点とする
-            let start = window[0];
-            let end = window[1];
-            // すべてのエッジを走査して、occupied_voxelsに格納していく)
-            draw_line(&mut occupied_voxels, start, end, voxel_size);
-        }
-    }
+    // for tri in triangles.windows(3) {
+    //     // indicesの要素を2つずつ取り出すのがwindows(2)メソッド
+    //     for window in tri.windows(2) {
+    //         // 隣り合った2つの頂点を取り出し、これを線分（エッジ）の始点と終点とする
+    //         let start = window[0];
+    //         let end = window[1];
+    //         // すべてのエッジを走査して、occupied_voxelsに格納していく)
+    //         draw_line(&mut occupied_voxels, start, end, voxel_size);
+    //     }
+    // }
 
     // todo: 三角形を走査していく関数を実装
     // todo: 色は後で考える
-    fill_triangle(&mut occupied_voxels, voxel_size, triangles);
+    // indicesの要素を3つずつ取り出して三角形を構築
+    for t in triangles.windows(3) {
+        fill_triangle(&occupied_voxels, voxel_size, t);
+    }
 
     occupied_voxels
 }
 
-fn fill_triangle(voxels: &HashSet<Voxel>, voxel_size: f64, triangles: &[[f64; 3]]) {
-    // 三角形が小さい（すべての辺が1未満）場合は、面を走査せずvoxelを一つだけ塗りつぶす
+fn fill_triangle(voxels: &HashSet<Voxel>, voxel_size: f64, triangle: &[[f64; 3]]) {
+    if triangle.len() != 3 {
+        panic!("The number of vertices is not 3")
+    }
+
+    let p1 = Point3::from(triangle[0]);
+    let p2 = Point3::from(triangle[1]);
+    let p3 = Point3::from(triangle[2]);
+    println!("p1={:?}, p2={:?}, p3={:?}", p1, p2, p3);
+
+    // 3辺の長さを算出し、三角形が小さい（すべての辺がvoxel_size未満）場合は、面を走査せずvoxelを一つだけ塗りつぶす
+    if is_small_triangle(&p1, &p2, &p3, voxel_size) {
+        println!("Triangles too small!");
+    }
+}
+
+fn is_small_triangle(p1: &Point3<f64>, p2: &Point3<f64>, p3: &Point3<f64>, size: f64) -> bool {
+    let d12 = distance(p1, p2);
+    let d23 = distance(p2, p3);
+    let d31 = distance(p3, p1);
+
+    d12 <= size && d23 <= size && d31 <= size
 }
 
 #[cfg(test)]
