@@ -1,6 +1,6 @@
 //! Conversion between geodetic and geocentric (cartesian) coordinate systems.
 
-use std::f64::consts::FRAC_2_PI;
+use std::f64::consts::{FRAC_2_PI, FRAC_PI_6};
 
 use crate::ellipsoid::Ellipsoid;
 
@@ -23,8 +23,61 @@ pub fn geodetic_to_geocentric(
     (x, y, z)
 }
 
+pub fn geocentric_to_geodetic_vermeille(
+    ellips: &Ellipsoid,
+    x: f64,
+    y: f64,
+    z: f64,
+) -> (f64, f64, f64) {
+    let a = ellips.a();
+    let e_sq = ellips.e_sq();
+    let e_quad = e_sq * e_sq;
+
+    let p = (x * x + y * y) / (a * a);
+    let q = (1. - e_sq) * z * z / (a * a);
+    let r = (p + q - e_quad) / 6.;
+
+    let res = 8. * r.powi(3) + e_quad * p * q;
+    let res2 = e_quad * p * q;
+
+    let (phi, h) = if res > 0. || q != 0. {
+        // Outside the evolute i.e. when 8r 3 + e4 pq > 0,
+        // compute u, v, w, k, D, h, φ from Eqs. (25), (33), (36),
+        // (39), (42), (44) and (46)
+        let u = if res > 0. {
+            let l = (res.sqrt() + res2.sqrt()).cbrt();
+            (3. * r * r) / (2. * l * l) + 0.5 * (l + r / l) * (l + r / l)
+        } else {
+            let t = 2. / 3. * (res2.sqrt()).atan2((-res).sqrt() + (-8. * r * r * r).sqrt());
+            -4. * r * (t).sin() * (FRAC_PI_6 + t).cos()
+        };
+        let v = (u * u + e_quad * q).sqrt();
+        let w = e_sq * (u + v - q) / (2. * v);
+        let k = (u + v) / ((w * w + u + v).sqrt() + w);
+        let d = k * (x * x + y * y).sqrt() / (k + e_sq);
+        let h = (k + e_sq - 1.) / k * (d * d + z * z).sqrt();
+        let phi = 2. * z.atan2(d + (d * d + z * z).sqrt());
+        (phi, h)
+    } else {
+        let h = -a * ((1. - e_sq) * (e_sq - p) / e_sq).sqrt();
+        let phi = 2.
+            * ((e_quad - p).sqrt()).atan2(
+                (e_quad - p).sqrt() / ((e_sq * (e_sq - p)).sqrt() + ((1. - e_sq) * p).sqrt()),
+            );
+        if z > 0. {
+            (phi, h)
+        } else {
+            (-phi, h)
+        }
+    };
+
+    let lam = f64::atan2(y, x);
+
+    (lam.to_degrees(), phi.to_degrees(), h)
+}
+
 /// Convert from geocentric to geodetic coordinate system.
-pub fn geocentric_to_geodetic(ellips: &Ellipsoid, x: f64, y: f64, z: f64) -> (f64, f64, f64) {
+pub fn geocentric_to_geodetic_proj(ellips: &Ellipsoid, x: f64, y: f64, z: f64) -> (f64, f64, f64) {
     // Ported from PROJ
 
     let (lam, p_div_a, z_div_a) = {
@@ -40,11 +93,11 @@ pub fn geocentric_to_geodetic(ellips: &Ellipsoid, x: f64, y: f64, z: f64) -> (f6
         (lam, p_div_a, z_div_a)
     };
 
-    let b_div_a = 1. - ellips.f();
     // Non-optimized version:
     // theta = atan2(z * ellips.a(), p * ellips.b());
     // c = cos(theta);
     // s = sin(theta);
+    let b_div_a = 1. - ellips.f();
     let (c, s) = {
         let p_div_a_b_div_a = p_div_a * b_div_a;
         let norm = (z_div_a * z_div_a + p_div_a_b_div_a * p_div_a_b_div_a).sqrt();
@@ -69,7 +122,6 @@ pub fn geocentric_to_geodetic(ellips: &Ellipsoid, x: f64, y: f64, z: f64) -> (f6
     } else {
         (1., 0.)
     };
-
     let phi = if x_phi <= 0. {
         // this happen on non-sphere ellipsoid when x,y,z is very close to 0
         // there is no single solution to the cart->geodetic conversion in
@@ -85,6 +137,20 @@ pub fn geocentric_to_geodetic(ellips: &Ellipsoid, x: f64, y: f64, z: f64) -> (f6
     } else {
         f64::atan2(y_phi, x_phi)
     };
+
+    fn geocentric_radius(a: f64, b_div_a: f64, cosphi: f64, sinphi: f64) -> f64 {
+        // Non-optimized version:
+        // const double b = a * b_div_a;
+        // return hypot(a * a * cosphi, b * b * sinphi) /
+        //        hypot(a * cosphi, b * sinphi);
+        let cosphi_sq = cosphi * cosphi;
+        let sinphi_sq = sinphi * sinphi;
+        let b_div_a_sq = b_div_a * b_div_a;
+        let b_div_a_sq_mul_sinphi_sq = b_div_a_sq * sinphi_sq;
+        a * ((cosphi_sq + b_div_a_sq * b_div_a_sq_mul_sinphi_sq)
+            / (cosphi_sq + b_div_a_sq_mul_sinphi_sq))
+            .sqrt()
+    }
 
     let height = if cosphi < 1e-6 {
         // poleward of 89.99994 deg, we avoid division by zero
@@ -103,32 +169,42 @@ pub fn geocentric_to_geodetic(ellips: &Ellipsoid, x: f64, y: f64, z: f64) -> (f6
     (lam.to_degrees(), phi.to_degrees(), height)
 }
 
-fn geocentric_radius(a: f64, b_div_a: f64, cosphi: f64, sinphi: f64) -> f64 {
-    // Non-optimized version:
-    // const double b = a * b_div_a;
-    // return hypot(a * a * cosphi, b * b * sinphi) /
-    //        hypot(a * cosphi, b * sinphi);
-    let cosphi_sq = cosphi * cosphi;
-    let sinphi_sq = sinphi * sinphi;
-    let b_div_a_sq = b_div_a * b_div_a;
-    let b_div_a_sq_mul_sinphi_sq = b_div_a_sq * sinphi_sq;
-    a * ((cosphi_sq + b_div_a_sq * b_div_a_sq_mul_sinphi_sq)
-        / (cosphi_sq + b_div_a_sq_mul_sinphi_sq))
-        .sqrt()
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
-    fn roundtrip() {
+    fn roundtrip_vermeille() {
         let wgs84 = crate::ellipsoid::wgs84();
 
         {
             let (lng, lat, height) = (140., 37., 50.);
             let (x, y, z) = geodetic_to_geocentric(&wgs84, lng, lat, height);
-            let (lng2, lat2, height2) = geocentric_to_geodetic(&wgs84, x, y, z);
+            let (lng2, lat2, height2) = geocentric_to_geodetic_vermeille(&wgs84, x, y, z);
+            println!("{} {} {}", lng2, lat2, height2);
+            assert!(lng - lng2 < 1e-9);
+            assert!(lat - lat2 < 1e-9);
+            assert!(height - height2 < 1e-9);
+        }
+
+        {
+            let (lng, lat, height) = (134., 89.99999, 100.);
+            let (x, y, z) = geodetic_to_geocentric(&wgs84, lng, lat, height);
+            let (lng2, lat2, height2) = geocentric_to_geodetic_vermeille(&wgs84, x, y, z);
+            assert!(lng - lng2 < 1e-9);
+            assert!(lat - lat2 < 1e-9);
+            assert!(height - height2 < 1e-9);
+        }
+    }
+
+    #[test]
+    fn roundtrip_proj() {
+        let wgs84 = crate::ellipsoid::wgs84();
+
+        {
+            let (lng, lat, height) = (140., 37., 50.);
+            let (x, y, z) = geodetic_to_geocentric(&wgs84, lng, lat, height);
+            let (lng2, lat2, height2) = geocentric_to_geodetic_proj(&wgs84, x, y, z);
             assert!(lng - lng2 < 1e-10);
             assert!(lat - lat2 < 1e-10);
             assert!(height - height2 < 1e-10);
@@ -137,7 +213,7 @@ mod tests {
         {
             let (lng, lat, height) = (134., 89.99999, 100.);
             let (x, y, z) = geodetic_to_geocentric(&wgs84, lng, lat, height);
-            let (lng2, lat2, height2) = geocentric_to_geodetic(&wgs84, x, y, z);
+            let (lng2, lat2, height2) = geocentric_to_geodetic_proj(&wgs84, x, y, z);
             assert!(lng - lng2 < 1e-7);
             assert!(lat - lat2 < 1e-7);
             assert!(height - height2 < 1e-7);
