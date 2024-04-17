@@ -1,6 +1,5 @@
 [workspace]
 members = [
-    "app/src-tauri",
     "nusamai-*",
     "nusamai-*/nusamai-*-json",
     "nusamai",
