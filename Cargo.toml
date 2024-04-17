@@ -1,19 +1,29 @@
 [workspace]
 members = [
-    "nusamai-*",
-    "nusamai-*/nusamai-*-json",
-    "nusamai",
+  "nusamai-*",
+  "nusamai-*/nusamai-*-json",
 ]
 resolver = "2"
 
 [workspace.package]
-version = "0.0.0-alpha.0"
 authors = ["MIERUNE Inc. <info@mierune.co.jp>"]
+license = "MIT"
+edition = "2021"
+version = "0.1.0"
+repository = "https://github.com/reearth/plateau-gis-converter"
+rust-version = "1.77" # Remember to update clippy.toml as well
 
-[profile.dev.package."*"]
-opt-level = 3
+[profile.dev]
+opt-level = 0
+
+[profile.debug-fast]
+debug = true
+incremental = false
+inherits = "release"
+panic = "unwind"
+strip = "none"
 
 [profile.release-lto]
-inherits = "release"
 codegen-units = 8
+inherits = "release"
 lto = "fat"

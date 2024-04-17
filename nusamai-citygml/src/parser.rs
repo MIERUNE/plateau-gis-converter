@@ -378,7 +378,7 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                     let geomtype = match (nsres, localname.as_ref()) {
                         (Bound(GML31_NS), b"MultiSurface") => {
                             self.parse_multi_surface()?;
-                            GeometryType::Surface
+                            GeometryType::MultiSurface
                         }
                         _ => {
                             return Err(ParseError::SchemaViolation(format!(
@@ -538,23 +538,32 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                         }
                         (Bound(GML31_NS), b"MultiSurface") => {
                             self.parse_multi_surface()?;
-                            GeometryType::Surface
+                            GeometryType::MultiSurface
                         }
                         (Bound(GML31_NS), b"CompositeSurface") => {
                             self.parse_composite_surface()?;
-                            GeometryType::Surface
+                            GeometryType::MultiSurface
                         }
                         (Bound(GML31_NS), b"OrientableSurface") => todo!(),
                         (Bound(GML31_NS), b"Polygon") => {
                             self.parse_polygon()?;
                             GeometryType::Surface
                         }
-                        (Bound(GML31_NS), b"TriangulatedSurface") => todo!(),
-                        (Bound(GML31_NS), b"Tin") => todo!(),
-                        (
-                            Bound(GML31_NS),
-                            b"Point" | b"CompositeCurve" | b"MultiCurve" | b"LineString",
-                        ) => {
+                        (Bound(GML31_NS), b"Point") => {
+                            self.reader
+                                .read_to_end_into(start.name(), &mut self.state.buf2)?;
+
+                            GeometryType::Point
+                        }
+                        (Bound(GML31_NS), b"TriangulatedSurface") => {
+                            self.parse_triangulated_surface()?;
+                            GeometryType::Surface
+                        }
+                        (Bound(GML31_NS), b"Tin") => {
+                            self.parse_triangulated_surface()?;
+                            GeometryType::Tin
+                        }
+                        (Bound(GML31_NS), b"CompositeCurve" | b"MultiCurve" | b"LineString") => {
                             // FIXME, TODO
                             log::warn!(
                                 "Point|CompositeCurve|MultiCurve|LineString is not supported yet."
@@ -900,7 +909,6 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                             "Unexpected text content".into(),
                         ));
                     }
-
                     // parse coordinate sequence
                     self.state.fp_buf.clear();
                     for s in text.unescape().unwrap().split_ascii_whitespace() {

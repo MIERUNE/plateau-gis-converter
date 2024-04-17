@@ -1,7 +1,12 @@
 [package]
 name = "nusamai-citygml"
+
+authors.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
 version.workspace = true
-edition = "2021"
 
 [features]
 default = ["serde"]

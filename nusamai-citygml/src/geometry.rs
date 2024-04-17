@@ -21,13 +21,18 @@ pub enum GeometryType {
     /// Polygons (solids)
     Solid,
     /// Polygons (surfaces)
+    MultiSurface,
     Surface,
     /// Polygons (triangles)
     Triangle,
     /// Line-strings
+    MultiCurve,
     Curve,
     /// Points
+    MultiPoint,
     Point,
+    /// Tin
+    Tin,
 }
 
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
