@@ -83,6 +83,7 @@ fn fill_triangle(voxels: &mut HashSet<Voxel>, voxel_size: f64, triangle: &[[f64;
         panic!("The number of vertices is not 3")
     }
 
+    // 全ての三角形は反時計回りを表面とする
     let p1 = Point3::from(triangle[0]);
     let p2 = Point3::from(triangle[1]);
     let p3 = Point3::from(triangle[2]);
@@ -113,10 +114,33 @@ fn fill_triangle(voxels: &mut HashSet<Voxel>, voxel_size: f64, triangle: &[[f64;
         });
     }
 
+    // p1からp2に伸びるベクトルと、p1からp3に伸びるベクトルを考える
     let v1 = p2 - p1;
     let v2 = p3 - p1;
-    let normal = v1.cross(&v2);
-    println!("normal: {}", normal);
+
+    // 法線ベクトルを計算
+    let mut norm = v1.cross(&v2);
+    let d = norm.norm();
+
+    if d.is_nan() || d == 0.0 {
+        return;
+    }
+
+    // 正規化し、法線ベクトルを単位ベクトルに変換
+    norm /= d;
+
+    // 最大長の軸を求める
+    // norm_axis=0 (x) --> yz-plane
+    // norm_axis=1 (y) --> zx-plane
+    // norm_axis=2 (z) --> xy-plane
+    let norm_axis = norm
+        .abs()
+        .iter()
+        .enumerate()
+        .max_by(|(_, a), (_, b)| a.partial_cmp(b).unwrap())
+        .map(|(i, _)| i)
+        .unwrap();
+    println!("norm_axis: {}", norm_axis);
 }
 
 fn is_small_triangle(p1: &Point3<f64>, p2: &Point3<f64>, p3: &Point3<f64>, size: f64) -> bool {
