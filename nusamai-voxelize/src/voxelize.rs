@@ -72,7 +72,7 @@ fn triangle_to_voxel(triangles: &[[f64; 3]], voxel_size: f64) -> HashSet<Voxel> 
     // todo: 色は後で考える
     // indicesの要素を3つずつ取り出して三角形を構築
     for t in triangles.windows(3) {
-        fill_triangle(&occupied_voxels, voxel_size, t);
+        fill_triangle(&mut occupied_voxels, voxel_size, t);
     }
 
     occupied_voxels
@@ -112,6 +112,11 @@ fn fill_triangle(voxels: &mut HashSet<Voxel>, voxel_size: f64, triangle: &[[f64;
             z: p3_floor.z as i32,
         });
     }
+
+    let v1 = p2 - p1;
+    let v2 = p3 - p1;
+    let normal = v1.cross(&v2);
+    println!("normal: {}", normal);
 }
 
 fn is_small_triangle(p1: &Point3<f64>, p2: &Point3<f64>, p3: &Point3<f64>, size: f64) -> bool {
