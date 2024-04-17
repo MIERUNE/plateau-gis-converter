@@ -56,18 +56,6 @@ fn triangle_to_voxel(triangles: &[[f64; 3]], voxel_size: f64) -> HashSet<Voxel> 
     // HashSetは重複を許さない
     let mut occupied_voxels = HashSet::new();
 
-    // todo: 以下の実装だとエッジしか操作できないので、三角形を走査して行くように実装を変更する必要がある
-    // for tri in triangles.windows(3) {
-    //     // indicesの要素を2つずつ取り出すのがwindows(2)メソッド
-    //     for window in tri.windows(2) {
-    //         // 隣り合った2つの頂点を取り出し、これを線分（エッジ）の始点と終点とする
-    //         let start = window[0];
-    //         let end = window[1];
-    //         // すべてのエッジを走査して、occupied_voxelsに格納していく)
-    //         draw_line(&mut occupied_voxels, start, end, voxel_size);
-    //     }
-    // }
-
     // todo: 三角形を走査していく関数を実装
     // todo: 色は後で考える
     // indicesの要素を3つずつ取り出して三角形を構築
@@ -88,6 +76,17 @@ fn fill_triangle(voxels: &mut HashSet<Voxel>, voxel_size: f64, triangle: &[[f64;
     let p2 = Point3::from(triangle[1]);
     let p3 = Point3::from(triangle[2]);
     println!("p1={:?}, p2={:?}, p3={:?}", p1, p2, p3);
+
+    // bounding boxを算出
+    let mut min_point = p1.clone();
+    let mut max_point = p1.clone();
+    for p in &[p2, p3] {
+        for i in 0..3 {
+            min_point[i] = min_point[i].min(p[i]);
+            max_point[i] = max_point[i].max(p[i]);
+        }
+    }
+    let box_size = max_point - min_point;
 
     // 3辺の長さを算出し、三角形が小さい（すべての辺がvoxel_size未満）場合は、面を走査せずvoxelを一つだけ塗りつぶす
     if is_small_triangle(&p1, &p2, &p3, voxel_size) {
@@ -120,6 +119,7 @@ fn fill_triangle(voxels: &mut HashSet<Voxel>, voxel_size: f64, triangle: &[[f64;
 
     // 法線ベクトルを計算
     let mut norm = v1.cross(&v2);
+    // 外積の計算結果はベクトルなので、その大きさ（ノルム）を求める
     let d = norm.norm();
 
     if d.is_nan() || d == 0.0 {
@@ -140,7 +140,117 @@ fn fill_triangle(voxels: &mut HashSet<Voxel>, voxel_size: f64, triangle: &[[f64;
         .max_by(|(_, a), (_, b)| a.partial_cmp(b).unwrap())
         .map(|(i, _)| i)
         .unwrap();
-    println!("norm_axis: {}", norm_axis);
+
+    let sweep_axis = match norm_axis {
+        0 => {
+            if box_size[1] >= box_size[2] {
+                1
+            } else {
+                2
+            }
+        }
+        1 => {
+            if box_size[2] >= box_size[0] {
+                2
+            } else {
+                0
+            }
+        }
+        _ => {
+            if box_size[0] >= box_size[1] {
+                0
+            } else {
+                1
+            }
+        }
+    };
+
+    // norm_axis=0 (x) --> yz-plane
+    // norm_axis=1 (y) --> zx-plane
+    // norm_axis=2 (z) --> xy-plane
+    let sweep_axis = match norm_axis {
+        0 => {
+            if box_size[1] >= box_size[2] {
+                1
+            } else {
+                2
+            }
+        }
+        1 => {
+            if box_size[2] >= box_size[0] {
+                2
+            } else {
+                0
+            }
+        }
+        _ => {
+            if box_size[0] >= box_size[1] {
+                0
+            } else {
+                1
+            }
+        }
+    };
+
+    match sweep_axis {
+        0 => {
+            let mut tri = triangle.to_vec();
+            tri.sort_by(|a, b| a[0].partial_cmp(&b[0]).unwrap());
+            assert!(tri[1][0] >= tri[0][0]);
+
+            let (mut start, mut end, mut vend) = if (tri[1][0] - tri[0][0]).abs() > 0.0
+                && (tri[1][0] - tri[0][0].floor() > 1.0)
+            {
+                let d1 = (Vector3::from(tri[1]) - Vector3::from(tri[0])) / (tri[1][0] - tri[0][0]);
+                (
+                    Vector3::from(tri[0]) + d1 * (1.0 - tri[0][0] + tri[0][0].floor()),
+                    Vector3::from(tri[0])
+                        + (Vector3::from(tri[2]) - Vector3::from(tri[0])) / (tri[2][0] - tri[0][0])
+                            * (1.0 - tri[0][0] + tri[0][0].floor()),
+                    tri[1][0],
+                )
+            } else {
+                let d1 = (Vector3::from(tri[2]) - Vector3::from(tri[1])) / (tri[2][0] - tri[1][0]);
+                (
+                    Vector3::from(tri[1]) + d1 * (1.0 - tri[1][0] + tri[1][0].floor()),
+                    Vector3::from(tri[0])
+                        + (Vector3::from(tri[2]) - Vector3::from(tri[0])) / (tri[2][0] - tri[0][0])
+                            * (1.0 - tri[0][0] + tri[0][0].floor()),
+                    tri[1][0],
+                )
+            };
+
+            if start.norm() > 1000.0 || end.norm() > 1000.0 {
+                println!("d warn");
+                return;
+            }
+
+            while end[0] < tri[2][0] {
+                println!("{:?}, {:?}", start, end);
+                // todo
+                draw_line(voxels, start.into(), end.into(), voxel_size);
+
+                let d1 = (Vector3::from(tri[1]) - Vector3::from(tri[0])) / (tri[1][0] - tri[0][0]);
+                let d2 = (Vector3::from(tri[2]) - Vector3::from(tri[0])) / (tri[2][0] - tri[0][0]);
+                start += d1;
+                end += d2;
+                if start[0] >= vend {
+                    vend = start[0] - tri[1][0];
+                    start -= d1 * vend;
+                    if (tri[2][0] - tri[1][0]).abs() < f64::EPSILON {
+                        break;
+                    }
+                    start += (Vector3::from(tri[2]) - Vector3::from(tri[1]))
+                        / (tri[2][0] - tri[1][0])
+                        * vend;
+                    vend = tri[2][0];
+                }
+            }
+        }
+        1 => {}
+        2 => {}
+        _ => {}
+    }
 }
 
 fn is_small_triangle(p1: &Point3<f64>, p2: &Point3<f64>, p3: &Point3<f64>, size: f64) -> bool {
