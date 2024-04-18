@@ -36,6 +36,12 @@ fn draw_line(voxels: &mut HashSet<Voxel>, start: [f64; 3], end: [f64; 3], voxel_
             y: (current[1] / voxel_size).floor() as i32,
             z: (current[2] / voxel_size).floor() as i32,
         };
+        println!(
+            "fill {:?}/{:?}/{:?}",
+            (current[0] / voxel_size).floor() as i32,
+            (current[1] / voxel_size).floor() as i32,
+            (current[2] / voxel_size).floor() as i32,
+        );
         voxels.insert(voxel);
         // 現在の座標を更新
         current[0] += step_size[0];
@@ -50,7 +56,7 @@ pub fn triangle_to_voxel(triangles: &[[f64; 3]], voxel_size: f64) -> HashSet<Vox
     let mut occupied_voxels = HashSet::new();
 
     // indicesの要素を3つずつ取り出して三角形を構築
-    for t in triangles.windows(3) {
+    for t in triangles.chunks(3) {
         fill_triangle(&mut occupied_voxels, voxel_size, t);
     }
 
@@ -388,6 +394,7 @@ pub fn fill_triangle(voxels: &mut HashSet<Voxel>, voxel_size: f64, triangle: &[[
             }
         }
     }
+    println!();
 }
 
 pub fn is_small_triangle(p1: &Point3<f64>, p2: &Point3<f64>, p3: &Point3<f64>, size: f64) -> bool {

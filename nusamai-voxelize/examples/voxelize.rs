@@ -34,9 +34,9 @@ fn main() {
     // 1st polygon
     mpoly.add_exterior([0, 1, 2, 3, 0]);
     mpoly.add_interior([8, 9, 10, 11, 8]);
-    // // 2nd polygon
-    // mpoly.add_exterior([4, 5, 6, 7, 4]);
-    // mpoly.add_interior([12, 13, 14, 15, 12]);
+    // 2nd polygon
+    mpoly.add_exterior([4, 5, 6, 7, 4]);
+    mpoly.add_interior([12, 13, 14, 15, 12]);
     // // 3rd polygon
     // mpoly.add_exterior([0, 1, 5, 4, 0]);
     // // 4th polygon
