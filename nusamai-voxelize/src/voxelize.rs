@@ -204,15 +204,13 @@ pub fn fill_triangle(voxels: &mut HashSet<Voxel>, voxel_size: f64, triangle: &[[
                     - Vector3::from(sorted_triangle[0]))
                     / (sorted_triangle[1][0] - sorted_triangle[0][0]);
                 start_point = Vector3::from(sorted_triangle[0])
-                    + edge_direction_1
-                        * (voxel_size - sorted_triangle[0][0] + sorted_triangle[0][0].floor());
+                    * (voxel_size - sorted_triangle[0][0] + sorted_triangle[0][0].floor());
             } else {
                 edge_direction_1 = (Vector3::from(sorted_triangle[2])
                     - Vector3::from(sorted_triangle[1]))
                     / (sorted_triangle[2][0] - sorted_triangle[1][0]);
                 start_point = Vector3::from(sorted_triangle[1])
-                    + edge_direction_1
-                        * (voxel_size - sorted_triangle[1][0] + sorted_triangle[1][0].floor());
+                    * (voxel_size - sorted_triangle[1][0] + sorted_triangle[1][0].floor());
             };
 
             // 終点を移動させるためのベクトル
@@ -222,8 +220,7 @@ pub fn fill_triangle(voxels: &mut HashSet<Voxel>, voxel_size: f64, triangle: &[[
                 / (sorted_triangle[2][0] - sorted_triangle[0][0]);
 
             end_point = Vector3::from(sorted_triangle[0])
-                + edge_direction_2
-                    * (voxel_size - sorted_triangle[0][0] + sorted_triangle[0][0].floor());
+                * (voxel_size - sorted_triangle[0][0] + sorted_triangle[0][0].floor());
             end_vertex_x = sorted_triangle[1][0];
 
             println!("edge_direction_1: {:?}", edge_direction_1);
@@ -236,7 +233,7 @@ pub fn fill_triangle(voxels: &mut HashSet<Voxel>, voxel_size: f64, triangle: &[[
                 return;
             }
 
-            while end_point[0] < sorted_triangle[2][0] {
+            while end_point[0] <= sorted_triangle[2][0] {
                 println!("axis 0 start: {:?}, end: {:?}", start_point, end_point);
                 draw_line(voxels, start_point, end_point, voxel_size);
 
@@ -279,15 +276,13 @@ pub fn fill_triangle(voxels: &mut HashSet<Voxel>, voxel_size: f64, triangle: &[[
                     - Vector3::from(sorted_triangle[0]))
                     / (sorted_triangle[1][1] - sorted_triangle[0][1]);
                 start_point = Vector3::from(sorted_triangle[0])
-                    + edge_direction_1
-                        * (voxel_size - sorted_triangle[0][1] + sorted_triangle[0][1].floor());
+                    * (voxel_size - sorted_triangle[0][1] + sorted_triangle[0][1].floor());
             } else {
                 edge_direction_1 = (Vector3::from(sorted_triangle[2])
                     - Vector3::from(sorted_triangle[1]))
                     / (sorted_triangle[2][1] - sorted_triangle[1][1]);
                 start_point = Vector3::from(sorted_triangle[1])
-                    + edge_direction_1
-                        * (voxel_size - sorted_triangle[1][1] + sorted_triangle[1][1].floor());
+                    * (voxel_size - sorted_triangle[1][1] + sorted_triangle[1][1].floor());
             };
 
             let edge_direction_2 = (Vector3::from(sorted_triangle[2])
@@ -295,8 +290,7 @@ pub fn fill_triangle(voxels: &mut HashSet<Voxel>, voxel_size: f64, triangle: &[[
                 / (sorted_triangle[2][1] - sorted_triangle[0][1]);
 
             end_point = Vector3::from(sorted_triangle[0])
-                + edge_direction_2
-                    * (voxel_size - sorted_triangle[0][1] + sorted_triangle[0][1].floor());
+                * (voxel_size - sorted_triangle[0][1] + sorted_triangle[0][1].floor());
             end_vertex_y = sorted_triangle[1][1];
 
             println!("edge_direction_1: {:?}", edge_direction_1);
@@ -309,7 +303,7 @@ pub fn fill_triangle(voxels: &mut HashSet<Voxel>, voxel_size: f64, triangle: &[[
                 return;
             }
 
-            while end_point[1] < sorted_triangle[2][1] {
+            while end_point[1] <= sorted_triangle[2][1] {
                 println!("axis 1 start: {:?}, end: {:?}", start_point, end_point);
                 draw_line(voxels, start_point, end_point, voxel_size);
 
@@ -352,15 +346,13 @@ pub fn fill_triangle(voxels: &mut HashSet<Voxel>, voxel_size: f64, triangle: &[[
                     - Vector3::from(sorted_triangle[0]))
                     / (sorted_triangle[1][2] - sorted_triangle[0][2]);
                 start_point = Vector3::from(sorted_triangle[0])
-                    + edge_direction_1
-                        * (voxel_size - sorted_triangle[0][2] + sorted_triangle[0][2].floor());
+                    * (voxel_size - sorted_triangle[0][2] + sorted_triangle[0][2].floor());
             } else {
                 edge_direction_1 = (Vector3::from(sorted_triangle[2])
                     - Vector3::from(sorted_triangle[1]))
                     / (sorted_triangle[2][2] - sorted_triangle[1][2]);
                 start_point = Vector3::from(sorted_triangle[1])
-                    + edge_direction_1
-                        * (voxel_size - sorted_triangle[1][2] + sorted_triangle[1][2].floor());
+                    * (voxel_size - sorted_triangle[1][2] + sorted_triangle[1][2].floor());
             };
 
             let edge_direction_2 = (Vector3::from(sorted_triangle[2])
@@ -368,8 +360,7 @@ pub fn fill_triangle(voxels: &mut HashSet<Voxel>, voxel_size: f64, triangle: &[[
                 / (sorted_triangle[2][2] - sorted_triangle[0][2]);
 
             end_point = Vector3::from(sorted_triangle[0])
-                + edge_direction_2
-                    * (voxel_size - sorted_triangle[0][2] + sorted_triangle[0][2].floor());
+                * (voxel_size - sorted_triangle[0][2] + sorted_triangle[0][2].floor());
             end_vertex_z = sorted_triangle[1][2];
 
             println!("edge_direction_1: {:?}", edge_direction_1);
@@ -382,7 +373,7 @@ pub fn fill_triangle(voxels: &mut HashSet<Voxel>, voxel_size: f64, triangle: &[[
                 return;
             }
 
-            while end_point[2] < sorted_triangle[2][2] {
+            while end_point[2] <= sorted_triangle[2][2] {
                 println!("axis 2 start: {:?}, end: {:?}", start_point, end_point);
                 draw_line(voxels, start_point, end_point, voxel_size);
 
