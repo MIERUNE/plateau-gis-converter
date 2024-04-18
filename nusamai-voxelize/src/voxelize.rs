@@ -87,9 +87,9 @@ pub fn fill_triangle(voxels: &mut HashSet<Voxel>, voxel_size: f64, triangle: &[[
     if is_small_triangle(&p1, &p2, &p3, voxel_size) {
         println!("Triangles too small!");
 
-        let p1_floor = p1.map(|x| x.floor());
-        let p2_floor = p2.map(|y| y.floor());
-        let p3_floor = p3.map(|z| z.floor());
+        let p1_floor = p1.map(|x| (x + 0.5).floor());
+        let p2_floor = p2.map(|y| (y + 0.5).floor());
+        let p3_floor = p3.map(|z| (z + 0.5).floor());
 
         voxels.insert(Voxel {
             x: p1_floor.x as i32,
