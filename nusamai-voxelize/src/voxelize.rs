@@ -131,9 +131,9 @@ pub fn fill_triangle(voxels: &mut HashSet<Voxel>, voxel_size: f64, triangle: &[[
     let box_size = max_point - min_point;
     println!("box_size: {:?}", box_size);
 
-    // norm_axis=0 (x) --> yz-plane
-    // norm_axis=1 (y) --> zx-plane
-    // norm_axis=3 (z) --> xy-plane
+    // norm_axisが0(x)の場合はyz平面
+    // norm_axisが1(y)の場合はzx平面
+    // norm_axisが2(z)の場合はxy平面
 
     // 一番長い辺を見つける
     let sweep_axis = match norm_axis {
@@ -161,6 +161,8 @@ pub fn fill_triangle(voxels: &mut HashSet<Voxel>, voxel_size: f64, triangle: &[[
     };
 
     match sweep_axis {
+        // x軸に沿って仮想的なグリッドを引き、対象の三角形とエッジとの交点を見つける
+        // xが小さい交点から大きい交点に向かって塗っていく
         0 => {
             let mut sorted_triangle = triangle.to_vec();
             // 3点のx座標を比較していき、もっともx座標が小さいものが最初に、大きいものが最後になるようにソート
@@ -172,7 +174,8 @@ pub fn fill_triangle(voxels: &mut HashSet<Voxel>, voxel_size: f64, triangle: &[[
                 sorted_triangle[0], sorted_triangle[1], sorted_triangle[2]
             );
 
-            // d1・d2はここで求めておく必要がありそう
+            // 始点の移動に利用するためのベクトル
+            // x軸方向にvoxel_size分だけ移動し、y方向にもvoxel_size分移動する
             let edge_direction_1;
 
             // 走査軸が0（X軸）でX座標を基準にソートされていることがわかっているのでその前提で処理を進めることができる
@@ -213,6 +216,8 @@ pub fn fill_triangle(voxels: &mut HashSet<Voxel>, voxel_size: f64, triangle: &[[
                 )
             };
 
+            // 終点を移動させるためのベクトル
+            // x軸方向にvoxel_size分だけ移動し、y方向にもvoxel_size分移動する
             let edge_direction_2 = (Vector3::from(sorted_triangle[2])
                 - Vector3::from(sorted_triangle[0]))
                 / (sorted_triangle[2][0] - sorted_triangle[0][0]);
@@ -249,104 +254,164 @@ pub fn fill_triangle(voxels: &mut HashSet<Voxel>, voxel_size: f64, triangle: &[[
             }
         }
         1 => {
-            let mut tri = triangle.to_vec();
-            tri.sort_by(|a, b| a[1].partial_cmp(&b[1]).unwrap());
-            assert!(tri[1][1] >= tri[0][1]);
+            let mut sorted_triangle = triangle.to_vec();
+            sorted_triangle.sort_by(|a, b| a[1].partial_cmp(&b[1]).unwrap());
+            assert!(sorted_triangle[1][1] >= sorted_triangle[0][1]);
+            println!(
+                "p0: {:?}, p1: {:?}, p2: {:?}",
+                sorted_triangle[0], sorted_triangle[1], sorted_triangle[2]
+            );
 
-            let (mut start, mut end, mut vend) = if (tri[1][1] - tri[0][1]).abs() > 0.0
-                && (tri[1][1] - tri[0][1].floor() > 1.0)
+            let edge_direction_1;
+
+            let (mut start_point, mut end_point, mut end_vertex_y) = if (sorted_triangle[1][1]
+                - sorted_triangle[0][1])
+                .abs()
+                > 0.0
+                && (sorted_triangle[1][1] - sorted_triangle[0][1].floor() > voxel_size)
             {
-                let d1 = (Vector3::from(tri[1]) - Vector3::from(tri[0])) / (tri[1][1] - tri[0][1]);
+                edge_direction_1 = (Vector3::from(sorted_triangle[1])
+                    - Vector3::from(sorted_triangle[0]))
+                    / (sorted_triangle[1][1] - sorted_triangle[0][1]);
                 (
-                    Vector3::from(tri[0]) + d1 * (1.0 - tri[0][1] + tri[0][1].floor()),
-                    Vector3::from(tri[0])
-                        + (Vector3::from(tri[2]) - Vector3::from(tri[0])) / (tri[2][1] - tri[0][1])
-                            * (1.0 - tri[0][1] + tri[0][1].floor()),
-                    tri[1][1],
+                    Vector3::from(sorted_triangle[0])
+                        + edge_direction_1
+                            * (voxel_size - sorted_triangle[0][1] + sorted_triangle[0][1].floor()),
+                    Vector3::from(sorted_triangle[0])
+                        + (Vector3::from(sorted_triangle[2]) - Vector3::from(sorted_triangle[0]))
+                            / (sorted_triangle[2][1] - sorted_triangle[0][1])
+                            * (voxel_size - sorted_triangle[0][1] + sorted_triangle[0][1].floor()),
+                    sorted_triangle[1][1],
                 )
             } else {
-                let d1 = (Vector3::from(tri[2]) - Vector3::from(tri[1])) / (tri[2][1] - tri[1][1]);
+                edge_direction_1 = (Vector3::from(sorted_triangle[2])
+                    - Vector3::from(sorted_triangle[1]))
+                    / (sorted_triangle[2][1] - sorted_triangle[1][1]);
                 (
-                    Vector3::from(tri[1]) + d1 * (1.0 - tri[1][1] + tri[1][1].floor()),
-                    Vector3::from(tri[0])
-                        + (Vector3::from(tri[2]) - Vector3::from(tri[0])) / (tri[2][1] - tri[0][1])
-                            * (1.0 - tri[0][1] + tri[0][1].floor()),
-                    tri[1][1],
+                    Vector3::from(sorted_triangle[1])
+                        + edge_direction_1
+                            * (voxel_size - sorted_triangle[1][1] + sorted_triangle[1][1].floor()),
+                    Vector3::from(sorted_triangle[0])
+                        + (Vector3::from(sorted_triangle[2]) - Vector3::from(sorted_triangle[0]))
+                            / (sorted_triangle[2][1] - sorted_triangle[0][1])
+                            * (voxel_size - sorted_triangle[0][1] + sorted_triangle[0][1].floor()),
+                    sorted_triangle[1][1],
                 )
             };
 
-            if start.norm() > 1000.0 || end.norm() > 1000.0 {
+            let edge_direction_2 = (Vector3::from(sorted_triangle[2])
+                - Vector3::from(sorted_triangle[0]))
+                / (sorted_triangle[2][1] - sorted_triangle[0][1]);
+
+            println!("edge_direction_1: {:?}", edge_direction_1);
+            println!("edge_direction_2: {:?}", edge_direction_2);
+
+            println!("start_point: {:?}, end_point: {:?}", start_point, end_point);
+
+            if start_point.norm() > 1000.0 || end_point.norm() > 1000.0 {
                 println!("Direction vector magnitude is too large");
                 return;
             }
 
-            while end[1] < tri[2][1] {
-                draw_line(voxels, start.into(), end.into(), voxel_size);
+            while end_point[1] < sorted_triangle[2][1] {
+                println!("axis 1 start: {:?}, end: {:?}", start_point, end_point);
+                draw_line(voxels, start_point.into(), end_point.into(), voxel_size);
 
-                let d1 = (Vector3::from(tri[1]) - Vector3::from(tri[0])) / (tri[1][1] - tri[0][1]);
-                let d2 = (Vector3::from(tri[2]) - Vector3::from(tri[0])) / (tri[2][1] - tri[0][1]);
-                start += d1;
-                end += d2;
-                if start[1] >= vend {
-                    vend = start[1] - tri[1][1];
-                    start -= d1 * vend;
-                    if (tri[2][1] - tri[1][1]).abs() < f64::EPSILON {
+                start_point += edge_direction_1;
+                end_point += edge_direction_2;
+
+                if start_point[1] >= end_vertex_y {
+                    end_vertex_y = start_point[1] - sorted_triangle[1][1];
+                    start_point -= edge_direction_1 * end_vertex_y;
+                    if (sorted_triangle[2][1] - sorted_triangle[1][1]).abs() < f64::EPSILON {
                         break;
                     }
-                    start += (Vector3::from(tri[2]) - Vector3::from(tri[1]))
-                        / (tri[2][1] - tri[1][1])
-                        * vend;
-                    vend = tri[2][1];
+                    start_point += (Vector3::from(sorted_triangle[2])
+                        - Vector3::from(sorted_triangle[1]))
+                        / (sorted_triangle[2][1] - sorted_triangle[1][1])
+                        * end_vertex_y;
+                    end_vertex_y = sorted_triangle[2][1];
                 }
             }
         }
         2 => {
-            let mut tri = triangle.to_vec();
-            tri.sort_by(|a, b| a[2].partial_cmp(&b[2]).unwrap());
-            assert!(tri[1][2] >= tri[0][2]);
+            let mut sorted_triangle = triangle.to_vec();
+            sorted_triangle.sort_by(|a, b| a[2].partial_cmp(&b[2]).unwrap());
+            assert!(sorted_triangle[1][2] >= sorted_triangle[0][2]);
+            println!(
+                "p0: {:?}, p1: {:?}, p2: {:?}",
+                sorted_triangle[0], sorted_triangle[1], sorted_triangle[2]
+            );
 
-            let (mut start, mut end, mut vend) = if (tri[1][2] - tri[0][2]).abs() > 1e-1 {
-                let d1 = (Vector3::from(tri[1]) - Vector3::from(tri[0])) / (tri[1][2] - tri[0][2]);
+            let edge_direction_1;
+
+            let (mut start_point, mut end_point, mut end_vertex_z) = if (sorted_triangle[1][2]
+                - sorted_triangle[0][2])
+                .abs()
+                > 0.0
+                && (sorted_triangle[1][2] - sorted_triangle[0][2].floor() > voxel_size)
+            {
+                edge_direction_1 = (Vector3::from(sorted_triangle[1])
+                    - Vector3::from(sorted_triangle[0]))
+                    / (sorted_triangle[1][2] - sorted_triangle[0][2]);
                 (
-                    Vector3::from(tri[0]) + d1 * (1.0 - tri[0][2] + tri[0][2].floor()),
-                    Vector3::from(tri[0])
-                        + (Vector3::from(tri[2]) - Vector3::from(tri[0])) / (tri[2][2] - tri[0][2])
-                            * (1.0 - tri[0][2] + tri[0][2].floor()),
-                    tri[1][2],
+                    Vector3::from(sorted_triangle[0])
+                        + edge_direction_1
+                            * (voxel_size - sorted_triangle[0][2] + sorted_triangle[0][2].floor()),
+                    Vector3::from(sorted_triangle[0])
+                        + (Vector3::from(sorted_triangle[2]) - Vector3::from(sorted_triangle[0]))
+                            / (sorted_triangle[2][2] - sorted_triangle[0][2])
+                            * (voxel_size - sorted_triangle[0][2] + sorted_triangle[0][2].floor()),
+                    sorted_triangle[1][2],
                 )
             } else {
-                let d1 = (Vector3::from(tri[2]) - Vector3::from(tri[1])) / (tri[2][2] - tri[1][2]);
+                edge_direction_1 = (Vector3::from(sorted_triangle[2])
+                    - Vector3::from(sorted_triangle[1]))
+                    / (sorted_triangle[2][2] - sorted_triangle[1][2]);
                 (
-                    Vector3::from(tri[1]) + d1 * (1.0 - tri[1][2] + tri[1][2].floor()),
-                    Vector3::from(tri[0])
-                        + (Vector3::from(tri[2]) - Vector3::from(tri[0])) / (tri[2][2] - tri[0][2])
-                            * (1.0 - tri[0][2] + tri[0][2].floor()),
-                    tri[1][2],
+                    Vector3::from(sorted_triangle[1])
+                        + edge_direction_1
+                            * (voxel_size - sorted_triangle[1][2] + sorted_triangle[1][2].floor()),
+                    Vector3::from(sorted_triangle[0])
+                        + (Vector3::from(sorted_triangle[2]) - Vector3::from(sorted_triangle[0]))
+                            / (sorted_triangle[2][2] - sorted_triangle[0][2])
+                            * (voxel_size - sorted_triangle[0][2] + sorted_triangle[0][2].floor()),
+                    sorted_triangle[1][2],
                 )
             };
 
-            if start.norm() > 1000.0 || end.norm() > 1000.0 {
+            let edge_direction_2 = (Vector3::from(sorted_triangle[2])
+                - Vector3::from(sorted_triangle[0]))
+                / (sorted_triangle[2][2] - sorted_triangle[0][2]);
+
+            println!("edge_direction_1: {:?}", edge_direction_1);
+            println!("edge_direction_2: {:?}", edge_direction_2);
+
+            println!("start_point: {:?}, end_point: {:?}", start_point, end_point);
+
+            if start_point.norm() > 1000.0 || end_point.norm() > 1000.0 {
                 println!("Direction vector magnitude is too large");
                 return;
             }
 
-            while end[2] < tri[2][2] {
-                draw_line(voxels, start.into(), end.into(), voxel_size);
+            while end_point[2] < sorted_triangle[2][2] {
+                println!("axis 2 start: {:?}, end: {:?}", start_point, end_point);
+                draw_line(voxels, start_point.into(), end_point.into(), voxel_size);
 
-                let d1 = (Vector3::from(tri[1]) - Vector3::from(tri[0])) / (tri[1][2] - tri[0][2]);
-                let d2 = (Vector3::from(tri[2]) - Vector3::from(tri[0])) / (tri[2][2] - tri[0][2]);
-                start += d1;
-                end += d2;
-                if start[2] >= vend {
-                    vend = start[2] - tri[1][2];
-                    start -= d1 * vend;
-                    if (tri[2][2] - tri[1][2]).abs() < f64::EPSILON {
+                start_point += edge_direction_1;
+                end_point += edge_direction_2;
+
+                if start_point[2] >= end_vertex_z {
+                    end_vertex_z = start_point[2] - sorted_triangle[1][2];
+                    start_point -= edge_direction_1 * end_vertex_z;
+                    if (sorted_triangle[2][2] - sorted_triangle[1][2]).abs() < f64::EPSILON {
                         break;
                     }
-                    start += (Vector3::from(tri[2]) - Vector3::from(tri[1]))
-                        / (tri[2][2] - tri[1][2])
-                        * vend;
-                    vend = tri[2][2];
+                    start_point += (Vector3::from(sorted_triangle[2])
+                        - Vector3::from(sorted_triangle[1]))
+                        / (sorted_triangle[2][2] - sorted_triangle[1][2])
+                        * end_vertex_z;
+                    end_vertex_z = sorted_triangle[2][2];
                 }
             }
         }
