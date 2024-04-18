@@ -1,4 +1,4 @@
-use nalgebra::{distance, Point3, Vector3};
+use nalgebra::{distance, ArrayStorage, Const, Matrix, Point3, Vector3};
 use std::collections::HashSet;
 
 #[derive(Eq, PartialEq, Hash, Debug)]
@@ -8,7 +8,12 @@ pub struct Voxel {
     pub z: i32,
 }
 
-fn draw_line(voxels: &mut HashSet<Voxel>, start: [f64; 3], end: [f64; 3], voxel_size: f64) {
+fn draw_line(
+    voxels: &mut HashSet<Voxel>,
+    start: Matrix<f64, Const<3>, Const<1>, ArrayStorage<f64, 3, 1>>,
+    end: Matrix<f64, Const<3>, Const<1>, ArrayStorage<f64, 3, 1>>,
+    voxel_size: f64,
+) {
     // 始点と終点が既知なので方向ベクトルが算出できる
     let direction = [end[0] - start[0], end[1] - start[1], end[2] - start[2]];
     // 方向ベクトルのXYZ方向の最大移動距離を取得
@@ -26,27 +31,27 @@ fn draw_line(voxels: &mut HashSet<Voxel>, start: [f64; 3], end: [f64; 3], voxel_
         direction[2] / steps as f64,
     ];
 
-    let mut current = start;
+    let mut current_voxel = start;
     // ステップの数だけ繰り返し、各ステップで通過するボクセルを計算
     for _ in 0..=steps {
         // ボクセルの座標計算
         // 現在の座標をボクセルのサイズで割り、切り捨てることでボクセルの格子座標（整数値）を算出
         let voxel = Voxel {
-            x: (current[0] / voxel_size).floor() as i32,
-            y: (current[1] / voxel_size).floor() as i32,
-            z: (current[2] / voxel_size).floor() as i32,
+            x: (current_voxel[0] / voxel_size).floor() as i32,
+            y: (current_voxel[1] / voxel_size).floor() as i32,
+            z: (current_voxel[2] / voxel_size).floor() as i32,
         };
         println!(
             "fill {:?}/{:?}/{:?}",
-            (current[0] / voxel_size).floor() as i32,
-            (current[1] / voxel_size).floor() as i32,
-            (current[2] / voxel_size).floor() as i32,
+            (current_voxel[0] / voxel_size).floor() as i32,
+            (current_voxel[1] / voxel_size).floor() as i32,
+            (current_voxel[2] / voxel_size).floor() as i32,
         );
         voxels.insert(voxel);
         // 現在の座標を更新
-        current[0] += step_size[0];
-        current[1] += step_size[1];
-        current[2] += step_size[2];
+        current_voxel[0] += step_size[0];
+        current_voxel[1] += step_size[1];
+        current_voxel[2] += step_size[2];
     }
 }
 
@@ -228,7 +233,7 @@ pub fn fill_triangle(voxels: &mut HashSet<Voxel>, voxel_size: f64, triangle: &[[
 
             while end_point[0] < sorted_triangle[2][0] {
                 println!("axis 0 start: {:?}, end: {:?}", start_point, end_point);
-                draw_line(voxels, start_point.into(), end_point.into(), voxel_size);
+                draw_line(voxels, start_point, end_point, voxel_size);
 
                 start_point += edge_direction_1;
                 end_point += edge_direction_2;
@@ -301,7 +306,7 @@ pub fn fill_triangle(voxels: &mut HashSet<Voxel>, voxel_size: f64, triangle: &[[
 
             while end_point[1] < sorted_triangle[2][1] {
                 println!("axis 1 start: {:?}, end: {:?}", start_point, end_point);
-                draw_line(voxels, start_point.into(), end_point.into(), voxel_size);
+                draw_line(voxels, start_point, end_point, voxel_size);
 
                 start_point += edge_direction_1;
                 end_point += edge_direction_2;
@@ -374,7 +379,7 @@ pub fn fill_triangle(voxels: &mut HashSet<Voxel>, voxel_size: f64, triangle: &[[
 
             while end_point[2] < sorted_triangle[2][2] {
                 println!("axis 2 start: {:?}, end: {:?}", start_point, end_point);
-                draw_line(voxels, start_point.into(), end_point.into(), voxel_size);
+                draw_line(voxels, start_point, end_point, voxel_size);
 
                 start_point += edge_direction_1;
                 end_point += edge_direction_2;

@@ -37,14 +37,14 @@ fn main() {
     // 2nd polygon
     mpoly.add_exterior([4, 5, 6, 7, 4]);
     mpoly.add_interior([12, 13, 14, 15, 12]);
-    // // 3rd polygon
-    // mpoly.add_exterior([0, 1, 5, 4, 0]);
-    // // 4th polygon
-    // mpoly.add_exterior([1, 2, 6, 5, 1]);
-    // // 6th polygon
-    // mpoly.add_exterior([2, 3, 7, 6, 2]);
-    // // 6th polygon
-    // mpoly.add_exterior([3, 0, 4, 7, 3]);
+    // 3rd polygon
+    mpoly.add_exterior([0, 1, 5, 4, 0]);
+    // 4th polygon
+    mpoly.add_exterior([1, 2, 6, 5, 1]);
+    // 6th polygon
+    mpoly.add_exterior([2, 3, 7, 6, 2]);
+    // 6th polygon
+    mpoly.add_exterior([3, 0, 4, 7, 3]);
 
     // triangulation
     let mut earcutter = Earcut::new();
