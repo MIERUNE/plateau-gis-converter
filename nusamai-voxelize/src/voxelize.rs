@@ -49,8 +49,6 @@ pub fn triangle_to_voxel(triangles: &[[f64; 3]], voxel_size: f64) -> HashSet<Vox
     // HashSetは重複を許さない
     let mut occupied_voxels = HashSet::new();
 
-    // todo: 三角形を走査していく関数を実装
-    // todo: 色は後で考える
     // indicesの要素を3つずつ取り出して三角形を構築
     for t in triangles.windows(3) {
         fill_triangle(&mut occupied_voxels, voxel_size, t);
@@ -99,19 +97,22 @@ pub fn fill_triangle(voxels: &mut HashSet<Voxel>, voxel_size: f64, triangle: &[[
     let v2 = p3 - p1;
 
     // 法線ベクトルを計算
-    let mut norm = v1.cross(&v2);
+    let mut normal = v1.cross(&v2);
     // 外積の計算結果はベクトルなので、その大きさ（ノルム）を求める
-    let d = norm.norm();
+    let normal_length = normal.norm();
 
-    if d.is_nan() || d == 0.0 {
+    if normal_length.is_nan() || normal_length == 0.0 {
         return;
     }
 
     // 正規化し、法線ベクトルを単位ベクトルに変換
-    norm /= d;
+    normal /= normal_length;
 
     // 最大長の軸を求める
-    let norm_axis = norm
+    // norm_axisが0(x)の場合はyz平面
+    // norm_axisが1(y)の場合はzx平面
+    // norm_axisが2(z)の場合はxy平面
+    let norm_axis = normal
         .abs()
         .iter()
         .enumerate()
@@ -130,10 +131,6 @@ pub fn fill_triangle(voxels: &mut HashSet<Voxel>, voxel_size: f64, triangle: &[[
     }
     let box_size = max_point - min_point;
     println!("box_size: {:?}", box_size);
-
-    // norm_axisが0(x)の場合はyz平面
-    // norm_axisが1(y)の場合はzx平面
-    // norm_axisが2(z)の場合はxy平面
 
     // 一番長い辺を見つける
     let sweep_axis = match norm_axis {
@@ -263,7 +260,6 @@ pub fn fill_triangle(voxels: &mut HashSet<Voxel>, voxel_size: f64, triangle: &[[
             );
 
             let edge_direction_1;
-
             let (mut start_point, mut end_point, mut end_vertex_y) = if (sorted_triangle[1][1]
                 - sorted_triangle[0][1])
                 .abs()

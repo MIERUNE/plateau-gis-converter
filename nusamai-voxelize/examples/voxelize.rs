@@ -18,38 +18,39 @@ fn main() {
         [10.0, 10.0, 10.0],
         [0.0, 10.0, 10.0],
         // interior
-        [1.0, 1.0, 1.0],
-        [5.0, 1.0, 1.0],
-        [5.0, 5.0, 1.0],
-        [1.0, 5.0, 1.0],
-        [1.0, 1.0, 5.0],
-        [5.0, 1.0, 5.0],
-        [5.0, 5.0, 5.0],
-        [1.0, 5.0, 5.0],
+        [3.0, 3.0, 0.0],
+        [7.0, 3.0, 0.0],
+        [7.0, 7.0, 0.0],
+        [3.0, 7.0, 0.0],
+        [3.0, 3.0, 10.0],
+        [7.0, 3.0, 10.0],
+        [7.0, 7.0, 10.0],
+        [3.0, 7.0, 10.0],
     ];
 
     let mut mpoly = MultiPolygon::<u32>::new();
 
-    // インデックス
+    // index
+    // 1st polygon
     mpoly.add_exterior([0, 1, 2, 3, 0]);
-    mpoly.add_exterior([4, 5, 6, 7, 4]);
-    mpoly.add_exterior([0, 1, 5, 4, 0]);
-    mpoly.add_exterior([1, 2, 6, 5, 1]);
-    mpoly.add_exterior([2, 3, 7, 6, 2]);
-    mpoly.add_exterior([3, 0, 4, 7, 3]);
-    mpoly.add_interior([8, 5, 10, 11, 8]);
-    mpoly.add_interior([12, 13, 14, 15, 12]);
-    mpoly.add_interior([8, 5, 13, 12, 8]);
-    mpoly.add_interior([5, 10, 14, 13, 5]);
-    mpoly.add_interior([10, 11, 15, 14, 10]);
-    mpoly.add_interior([11, 8, 12, 15, 11]);
+    mpoly.add_interior([8, 9, 10, 11, 8]);
+    // // 2nd polygon
+    // mpoly.add_exterior([4, 5, 6, 7, 4]);
+    // mpoly.add_interior([12, 13, 14, 15, 12]);
+    // // 3rd polygon
+    // mpoly.add_exterior([0, 1, 5, 4, 0]);
+    // // 4th polygon
+    // mpoly.add_exterior([1, 2, 6, 5, 1]);
+    // // 6th polygon
+    // mpoly.add_exterior([2, 3, 7, 6, 2]);
+    // // 6th polygon
+    // mpoly.add_exterior([3, 0, 4, 7, 3]);
 
     // triangulation
     let mut earcutter = Earcut::new();
     let mut buf3d: Vec<[f64; 3]> = Vec::new();
     let mut buf2d: Vec<[f64; 2]> = Vec::new();
     let mut index_buf: Vec<u32> = Vec::new();
-
     let mut triangles: Vec<[f64; 3]> = Vec::new();
 
     // ポリゴンを取り出す
@@ -163,6 +164,7 @@ fn main() {
     });
 
     // gltfファイルを出力
+    println!("write glTF");
     let mut gltf_file = File::create("data/output.gltf").unwrap();
     let _ = gltf_file.write_all(gltf_json.to_string().as_bytes());
 }
