@@ -14,6 +14,11 @@ fn draw_line(
     end: Matrix<f64, Const<3>, Const<1>, ArrayStorage<f64, 3, 1>>,
     voxel_size: f64,
 ) {
+    let start = start
+        + Matrix::<f64, Const<3>, Const<1>, ArrayStorage<f64, 3, 1>>::repeat(voxel_size * 0.5);
+    let end =
+        end + Matrix::<f64, Const<3>, Const<1>, ArrayStorage<f64, 3, 1>>::repeat(voxel_size * 0.5);
+
     // 始点と終点が既知なので方向ベクトルが算出できる
     let direction = [end[0] - start[0], end[1] - start[1], end[2] - start[2]];
     // 方向ベクトルのXYZ方向の最大移動距離を取得
