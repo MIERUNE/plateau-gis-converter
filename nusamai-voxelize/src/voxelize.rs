@@ -9,6 +9,17 @@ pub struct Voxel {
     pub color: [u8; 3],
 }
 
+pub trait MeshVoxelizer {
+    fn voxelize(triangles: &[[f64; 3]], voxel_size: f64) -> HashSet<Voxel>;
+}
+
+pub struct DdaVoxelizer {}
+impl MeshVoxelizer for DdaVoxelizer {
+    fn voxelize(triangles: &[[f64; 3]], voxel_size: f64) -> HashSet<Voxel> {
+        HashSet::new()
+    }
+}
+
 fn draw_line(
     voxels: &mut HashSet<Voxel>,
     start: Matrix<f64, Const<3>, Const<1>, ArrayStorage<f64, 3, 1>>,
@@ -409,4 +420,10 @@ pub fn is_small_triangle(p1: &Point3<f64>, p2: &Point3<f64>, p3: &Point3<f64>, s
     let d31 = distance(p3, p1);
 
     d12 <= size && d23 <= size && d31 <= size
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn test_voxelize() {}
 }
