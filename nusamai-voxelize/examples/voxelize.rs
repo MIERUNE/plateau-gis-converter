@@ -4,7 +4,7 @@ use nusamai_geometry::MultiPolygon;
 use serde_json::json;
 use std::{fs::File, io::Write};
 
-use nusamai_voxelize::voxelize::triangle_to_voxel;
+use nusamai_voxelize::voxelize::{DdaVoxelizer, MeshVoxelizer};
 
 fn main() {
     let vertices: Vec<[f64; 3]> = vec![
@@ -77,7 +77,8 @@ fn main() {
 
     let voxel_size = 1.0;
 
-    let occupied_voxels = triangle_to_voxel(&triangles, voxel_size);
+    let voxelizer = DdaVoxelizer {};
+    let occupied_voxels = voxelizer.voxelize(&triangles, voxel_size);
     let points_count = occupied_voxels.len();
 
     // -------------------gltfの作成-------------------

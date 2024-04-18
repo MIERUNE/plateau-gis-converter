@@ -10,13 +10,23 @@ pub struct Voxel {
 }
 
 pub trait MeshVoxelizer {
-    fn voxelize(triangles: &[[f64; 3]], voxel_size: f64) -> HashSet<Voxel>;
+    fn voxelize(&self, triangles: &[[f64; 3]], voxel_size: f64) -> HashSet<Voxel>;
 }
 
 pub struct DdaVoxelizer {}
+
 impl MeshVoxelizer for DdaVoxelizer {
-    fn voxelize(triangles: &[[f64; 3]], voxel_size: f64) -> HashSet<Voxel> {
-        HashSet::new()
+    fn voxelize(&self, triangles: &[[f64; 3]], voxel_size: f64) -> HashSet<Voxel> {
+        // 占有されたボクセルを格納する
+        // HashSetは重複を許さない
+        let mut occupied_voxels = HashSet::new();
+
+        // indicesの要素を3つずつ取り出して三角形を構築
+        for t in triangles.chunks(3) {
+            fill_triangle(&mut occupied_voxels, voxel_size, t);
+        }
+
+        occupied_voxels
     }
 }
 
@@ -73,20 +83,7 @@ fn draw_line(
     }
 }
 
-pub fn triangle_to_voxel(triangles: &[[f64; 3]], voxel_size: f64) -> HashSet<Voxel> {
-    // 占有されたボクセルを格納する
-    // HashSetは重複を許さない
-    let mut occupied_voxels = HashSet::new();
-
-    // indicesの要素を3つずつ取り出して三角形を構築
-    for t in triangles.chunks(3) {
-        fill_triangle(&mut occupied_voxels, voxel_size, t);
-    }
-
-    occupied_voxels
-}
-
-pub fn fill_triangle(voxels: &mut HashSet<Voxel>, voxel_size: f64, triangle: &[[f64; 3]]) {
+fn fill_triangle(voxels: &mut HashSet<Voxel>, voxel_size: f64, triangle: &[[f64; 3]]) {
     if triangle.len() != 3 {
         panic!("The number of vertices is not 3")
     }
@@ -414,7 +411,7 @@ pub fn fill_triangle(voxels: &mut HashSet<Voxel>, voxel_size: f64, triangle: &[[
     println!();
 }
 
-pub fn is_small_triangle(p1: &Point3<f64>, p2: &Point3<f64>, p3: &Point3<f64>, size: f64) -> bool {
+fn is_small_triangle(p1: &Point3<f64>, p2: &Point3<f64>, p3: &Point3<f64>, size: f64) -> bool {
     let d12 = distance(p1, p2);
     let d23 = distance(p2, p3);
     let d31 = distance(p3, p1);
