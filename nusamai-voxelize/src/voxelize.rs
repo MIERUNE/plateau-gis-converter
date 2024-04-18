@@ -6,6 +6,7 @@ pub struct Voxel {
     pub x: i32,
     pub y: i32,
     pub z: i32,
+    pub color: [u8; 3],
 }
 
 fn draw_line(
@@ -45,6 +46,7 @@ fn draw_line(
             x: (current_voxel[0] / voxel_size).floor() as i32,
             y: (current_voxel[1] / voxel_size).floor() as i32,
             z: (current_voxel[2] / voxel_size).floor() as i32,
+            color: [255, 255, 255],
         };
         println!(
             "fill {:?}/{:?}/{:?}",
@@ -95,16 +97,19 @@ pub fn fill_triangle(voxels: &mut HashSet<Voxel>, voxel_size: f64, triangle: &[[
             x: p1_floor.x as i32,
             y: p1_floor.y as i32,
             z: p1_floor.z as i32,
+            color: [255, 255, 255],
         });
         voxels.insert(Voxel {
             x: p2_floor.x as i32,
             y: p2_floor.y as i32,
             z: p2_floor.z as i32,
+            color: [255, 255, 255],
         });
         voxels.insert(Voxel {
             x: p3_floor.x as i32,
             y: p3_floor.y as i32,
             z: p3_floor.z as i32,
+            color: [255, 255, 255],
         });
     }
 
