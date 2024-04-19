@@ -70,10 +70,10 @@ fn draw_line(
             color: [255, 255, 255],
         };
         println!(
-            "fill {:?}/{:?}/{:?}",
+            "fill x: {}, y: {}, z: {}",
             (current_voxel[0] / voxel_size).floor() as i32,
             (current_voxel[1] / voxel_size).floor() as i32,
-            (current_voxel[2] / voxel_size).floor() as i32,
+            (current_voxel[2] / voxel_size).floor() as i32
         );
         voxels.insert(voxel);
         // 現在の座標を更新
@@ -159,7 +159,6 @@ fn fill_triangle(voxels: &mut HashSet<Voxel>, voxel_size: f64, triangle: &[[f64;
         }
     }
     let box_size = max_point - min_point;
-    println!("box_size: {:?}", box_size);
 
     // 一番長い辺を見つける
     let sweep_axis = match norm_axis {
@@ -196,10 +195,8 @@ fn fill_triangle(voxels: &mut HashSet<Voxel>, voxel_size: f64, triangle: &[[f64;
             let mut sorted_triangle = triangle.to_vec();
             sorted_triangle.sort_by(|a, b| a[0].partial_cmp(&b[0]).unwrap());
             assert!(sorted_triangle[1][0] >= sorted_triangle[0][0]);
-            println!(
-                "p0: {:?}, p1: {:?}, p2: {:?}",
-                sorted_triangle[0], sorted_triangle[1], sorted_triangle[2]
-            );
+
+            println!("sorted_triangle -------> {:?}", sorted_triangle);
 
             // 始点の移動に利用するためのベクトル
             // x軸方向にvoxel_size分だけ移動し、y方向にもvoxel_size分移動する
@@ -209,9 +206,9 @@ fn fill_triangle(voxels: &mut HashSet<Voxel>, voxel_size: f64, triangle: &[[f64;
             let mut end_vertex_x;
 
             // 走査軸が0（X軸）でX座標を基準にソートされていることがわかっているのでその前提で処理を進めることができる
-            // 絶対値の差が0より大きい、つまり最初と2番目の頂点のx座標が異なる場合で、尚且つ最初の頂点と2番目の頂点のx座標の差がvoxel_sizeより大きい場合にTrueになる
-            if (sorted_triangle[1][0] - sorted_triangle[0][0]).abs() > 0.0
-                && (sorted_triangle[1][0] - sorted_triangle[0][0].floor() > voxel_size)
+            // 絶対値の差が0より大きい（つまり最初と2番目の頂点のx座標が異なる）場合で、尚且つ最初の頂点と2番目の頂点のx座標の差がvoxel_sizeより大きい場合にTrueになる
+            if (sorted_triangle[1][0] - sorted_triangle[0][0]).abs() >= 0.0
+                && (sorted_triangle[1][0] - sorted_triangle[0][0].floor() >= voxel_size)
             {
                 edge_direction_1 = (Vector3::from(sorted_triangle[1])
                     - Vector3::from(sorted_triangle[0]))
@@ -236,28 +233,30 @@ fn fill_triangle(voxels: &mut HashSet<Voxel>, voxel_size: f64, triangle: &[[f64;
                 * (voxel_size - sorted_triangle[0][0] + sorted_triangle[0][0].floor());
             end_vertex_x = sorted_triangle[1][0];
 
-            println!("edge_direction_1: {:?}", edge_direction_1);
-            println!("edge_direction_2: {:?}", edge_direction_2);
-
-            println!("start_point: {:?}, end_point: {:?}", start_point, end_point);
-
             if start_point.norm() > 1000.0 || end_point.norm() > 1000.0 {
                 println!("Direction vector magnitude is too large");
                 return;
             }
 
             while end_point[0] <= sorted_triangle[2][0] {
-                println!("axis 0 start: {:?}, end: {:?}", start_point, end_point);
+                println!("start_point: {:?}", start_point);
+                println!("end_point: {:?}", end_point);
+                println!("edge_direction_1: {:?}", edge_direction_1);
+                println!("edge_direction_2: {:?}", edge_direction_2);
+
                 draw_line(voxels, start_point, end_point, voxel_size);
 
                 start_point += edge_direction_1;
                 end_point += edge_direction_2;
 
+                println!("next start_point: {:?}", start_point);
+                println!("next end_point: {:?}", end_point);
+
                 if start_point[0] >= end_vertex_x {
                     end_vertex_x = start_point[0] - sorted_triangle[1][0];
                     start_point -= edge_direction_1 * end_vertex_x;
-                    if (sorted_triangle[2][0] - sorted_triangle[1][0]).abs() < f64::EPSILON {
-                        break;
+                    if (sorted_triangle[2][0] - sorted_triangle[1][0]).abs() == 0.0 {
+                        continue;
                     }
                     edge_direction_1 = (Vector3::from(sorted_triangle[2])
                         - Vector3::from(sorted_triangle[1]))
@@ -272,18 +271,14 @@ fn fill_triangle(voxels: &mut HashSet<Voxel>, voxel_size: f64, triangle: &[[f64;
             let mut sorted_triangle = triangle.to_vec();
             sorted_triangle.sort_by(|a, b| a[1].partial_cmp(&b[1]).unwrap());
             assert!(sorted_triangle[1][1] >= sorted_triangle[0][1]);
-            println!(
-                "p0: {:?}, p1: {:?}, p2: {:?}",
-                sorted_triangle[0], sorted_triangle[1], sorted_triangle[2]
-            );
 
             let mut edge_direction_1;
             let mut start_point;
             let mut end_point;
             let mut end_vertex_y;
 
-            if (sorted_triangle[1][1] - sorted_triangle[0][1]).abs() > 0.0
-                && (sorted_triangle[1][1] - sorted_triangle[0][1].floor() > voxel_size)
+            if (sorted_triangle[1][1] - sorted_triangle[0][1]).abs() >= 0.0
+                && (sorted_triangle[1][1] - sorted_triangle[0][1].floor() >= voxel_size)
             {
                 edge_direction_1 = (Vector3::from(sorted_triangle[1])
                     - Vector3::from(sorted_triangle[0]))
@@ -306,18 +301,12 @@ fn fill_triangle(voxels: &mut HashSet<Voxel>, voxel_size: f64, triangle: &[[f64;
                 * (voxel_size - sorted_triangle[0][1] + sorted_triangle[0][1].floor());
             end_vertex_y = sorted_triangle[1][1];
 
-            println!("edge_direction_1: {:?}", edge_direction_1);
-            println!("edge_direction_2: {:?}", edge_direction_2);
-
-            println!("start_point: {:?}, end_point: {:?}", start_point, end_point);
-
             if start_point.norm() > 1000.0 || end_point.norm() > 1000.0 {
                 println!("Direction vector magnitude is too large");
                 return;
             }
 
             while end_point[1] <= sorted_triangle[2][1] {
-                println!("axis 1 start: {:?}, end: {:?}", start_point, end_point);
                 draw_line(voxels, start_point, end_point, voxel_size);
 
                 start_point += edge_direction_1;
@@ -326,8 +315,8 @@ fn fill_triangle(voxels: &mut HashSet<Voxel>, voxel_size: f64, triangle: &[[f64;
                 if start_point[1] >= end_vertex_y {
                     end_vertex_y = start_point[1] - sorted_triangle[1][1];
                     start_point -= edge_direction_1 * end_vertex_y;
-                    if (sorted_triangle[2][1] - sorted_triangle[1][1]).abs() < f64::EPSILON {
-                        break;
+                    if (sorted_triangle[2][1] - sorted_triangle[1][1]).abs() == 0.0 {
+                        continue;
                     }
                     edge_direction_1 = (Vector3::from(sorted_triangle[2])
                         - Vector3::from(sorted_triangle[1]))
@@ -342,18 +331,14 @@ fn fill_triangle(voxels: &mut HashSet<Voxel>, voxel_size: f64, triangle: &[[f64;
             let mut sorted_triangle = triangle.to_vec();
             sorted_triangle.sort_by(|a, b| a[2].partial_cmp(&b[2]).unwrap());
             assert!(sorted_triangle[1][2] >= sorted_triangle[0][2]);
-            println!(
-                "p0: {:?}, p1: {:?}, p2: {:?}",
-                sorted_triangle[0], sorted_triangle[1], sorted_triangle[2]
-            );
 
             let mut edge_direction_1;
             let mut start_point;
             let mut end_point;
             let mut end_vertex_z;
 
-            if (sorted_triangle[1][2] - sorted_triangle[0][2]).abs() > 0.0
-                && (sorted_triangle[1][2] - sorted_triangle[0][2].floor() > voxel_size)
+            if (sorted_triangle[1][2] - sorted_triangle[0][2]).abs() >= 0.0
+                && (sorted_triangle[1][2] - sorted_triangle[0][2].floor() >= voxel_size)
             {
                 edge_direction_1 = (Vector3::from(sorted_triangle[1])
                     - Vector3::from(sorted_triangle[0]))
@@ -376,18 +361,12 @@ fn fill_triangle(voxels: &mut HashSet<Voxel>, voxel_size: f64, triangle: &[[f64;
                 * (voxel_size - sorted_triangle[0][2] + sorted_triangle[0][2].floor());
             end_vertex_z = sorted_triangle[1][2];
 
-            println!("edge_direction_1: {:?}", edge_direction_1);
-            println!("edge_direction_2: {:?}", edge_direction_2);
-
-            println!("start_point: {:?}, end_point: {:?}", start_point, end_point);
-
             if start_point.norm() > 1000.0 || end_point.norm() > 1000.0 {
                 println!("Direction vector magnitude is too large");
                 return;
             }
 
             while end_point[2] <= sorted_triangle[2][2] {
-                println!("axis 2 start: {:?}, end: {:?}", start_point, end_point);
                 draw_line(voxels, start_point, end_point, voxel_size);
 
                 start_point += edge_direction_1;
@@ -396,8 +375,8 @@ fn fill_triangle(voxels: &mut HashSet<Voxel>, voxel_size: f64, triangle: &[[f64;
                 if start_point[2] >= end_vertex_z {
                     end_vertex_z = start_point[2] - sorted_triangle[1][2];
                     start_point -= edge_direction_1 * end_vertex_z;
-                    if (sorted_triangle[2][2] - sorted_triangle[1][2]).abs() < f64::EPSILON {
-                        break;
+                    if (sorted_triangle[2][2] - sorted_triangle[1][2]).abs() == 0.0 {
+                        continue;
                     }
                     edge_direction_1 = (Vector3::from(sorted_triangle[2])
                         - Vector3::from(sorted_triangle[1]))
@@ -408,7 +387,6 @@ fn fill_triangle(voxels: &mut HashSet<Voxel>, voxel_size: f64, triangle: &[[f64;
             }
         }
     }
-    println!();
 }
 
 fn is_small_triangle(p1: &Point3<f64>, p2: &Point3<f64>, p3: &Point3<f64>, size: f64) -> bool {
@@ -421,6 +399,196 @@ fn is_small_triangle(p1: &Point3<f64>, p2: &Point3<f64>, p3: &Point3<f64>, size:
 
 #[cfg(test)]
 mod tests {
+    use super::*;
+    use earcut::{utils3d::project3d_to_2d, Earcut};
+    use nusamai_geometry::MultiPolygon;
+
     #[test]
-    fn test_voxelize() {}
+    fn test_minimum_polygon() {
+        let vertices: Vec<[f64; 3]> = vec![
+            [0.0, 0.0, 0.0],
+            [0.1, 0.0, 0.0],
+            [0.1, 0.1, 0.0],
+            [0.0, 0.1, 0.0],
+        ];
+
+        let mut mpoly = MultiPolygon::<u32>::new();
+
+        mpoly.add_exterior([0, 1, 2, 3, 0]);
+
+        let mut earcutter = Earcut::new();
+        let mut buf3d: Vec<[f64; 3]> = Vec::new();
+        let mut buf2d: Vec<[f64; 2]> = Vec::new();
+        let mut index_buf: Vec<u32> = Vec::new();
+        let mut triangles: Vec<[f64; 3]> = Vec::new();
+
+        for idx_poly in mpoly.iter() {
+            let poly = idx_poly.transform(|idx| vertices[*idx as usize]);
+            let num_outer = match poly.hole_indices().first() {
+                Some(&v) => v as usize,
+                None => poly.raw_coords().len(),
+            };
+
+            buf3d.clear();
+            buf3d.extend(poly.raw_coords().iter());
+
+            if project3d_to_2d(&buf3d, num_outer, &mut buf2d) {
+                earcutter.earcut(buf2d.iter().cloned(), poly.hole_indices(), &mut index_buf);
+                triangles.extend(index_buf.iter().map(|&idx| buf3d[idx as usize]));
+            }
+        }
+
+        let voxel_size = 1.0;
+
+        let voxelizer = DdaVoxelizer {};
+        let occupied_voxels = voxelizer.voxelize(&triangles, voxel_size);
+
+        let mut test_voxels: HashSet<Voxel> = HashSet::new();
+        test_voxels.insert(Voxel {
+            x: 0,
+            y: 0,
+            z: 0,
+            color: [255, 255, 255],
+        });
+
+        assert_eq!(occupied_voxels, test_voxels);
+    }
+
+    #[test]
+    fn test_square_polygon() {
+        let vertices: Vec<[f64; 3]> = vec![
+            [0.0, 0.0, 0.0],
+            [1.0, 0.0, 0.0],
+            [1.0, 1.0, 0.0],
+            [0.0, 1.0, 0.0],
+        ];
+
+        let mut mpoly = MultiPolygon::<u32>::new();
+
+        mpoly.add_exterior([0, 1, 2, 3, 0]);
+
+        let mut earcutter = Earcut::new();
+        let mut buf3d: Vec<[f64; 3]> = Vec::new();
+        let mut buf2d: Vec<[f64; 2]> = Vec::new();
+        let mut index_buf: Vec<u32> = Vec::new();
+        let mut triangles: Vec<[f64; 3]> = Vec::new();
+
+        for idx_poly in mpoly.iter() {
+            let poly = idx_poly.transform(|idx| vertices[*idx as usize]);
+            let num_outer = match poly.hole_indices().first() {
+                Some(&v) => v as usize,
+                None => poly.raw_coords().len(),
+            };
+
+            buf3d.clear();
+            buf3d.extend(poly.raw_coords().iter());
+
+            if project3d_to_2d(&buf3d, num_outer, &mut buf2d) {
+                earcutter.earcut(buf2d.iter().cloned(), poly.hole_indices(), &mut index_buf);
+                triangles.extend(index_buf.iter().map(|&idx| buf3d[idx as usize]));
+            }
+        }
+
+        let voxel_size = 1.0;
+
+        let voxelizer = DdaVoxelizer {};
+        let occupied_voxels = voxelizer.voxelize(&triangles, voxel_size);
+
+        let mut test_voxels: HashSet<Voxel> = HashSet::new();
+        test_voxels.insert(Voxel {
+            x: 0,
+            y: 0,
+            z: 0,
+            color: [255, 255, 255],
+        });
+        test_voxels.insert(Voxel {
+            x: 1,
+            y: 0,
+            z: 0,
+            color: [255, 255, 255],
+        });
+        test_voxels.insert(Voxel {
+            x: 0,
+            y: 1,
+            z: 0,
+            color: [255, 255, 255],
+        });
+        test_voxels.insert(Voxel {
+            x: 1,
+            y: 1,
+            z: 0,
+            color: [255, 255, 255],
+        });
+
+        assert_eq!(occupied_voxels, test_voxels);
+    }
+
+    #[test]
+    fn test_hole_polygon() {
+        let vertices: Vec<[f64; 3]> = vec![
+            [0.0, 0.0, 0.0],
+            [1.0, 0.0, 0.0],
+            [1.0, 1.0, 0.0],
+            [0.0, 1.0, 0.0],
+        ];
+
+        let mut mpoly = MultiPolygon::<u32>::new();
+
+        mpoly.add_exterior([0, 1, 2, 3, 0]);
+
+        let mut earcutter = Earcut::new();
+        let mut buf3d: Vec<[f64; 3]> = Vec::new();
+        let mut buf2d: Vec<[f64; 2]> = Vec::new();
+        let mut index_buf: Vec<u32> = Vec::new();
+        let mut triangles: Vec<[f64; 3]> = Vec::new();
+
+        for idx_poly in mpoly.iter() {
+            let poly = idx_poly.transform(|idx| vertices[*idx as usize]);
+            let num_outer = match poly.hole_indices().first() {
+                Some(&v) => v as usize,
+                None => poly.raw_coords().len(),
+            };
+
+            buf3d.clear();
+            buf3d.extend(poly.raw_coords().iter());
+
+            if project3d_to_2d(&buf3d, num_outer, &mut buf2d) {
+                earcutter.earcut(buf2d.iter().cloned(), poly.hole_indices(), &mut index_buf);
+                triangles.extend(index_buf.iter().map(|&idx| buf3d[idx as usize]));
+            }
+        }
+
+        let voxel_size = 1.0;
+
+        let voxelizer = DdaVoxelizer {};
+        let occupied_voxels = voxelizer.voxelize(&triangles, voxel_size);
+
+        let mut test_voxels: HashSet<Voxel> = HashSet::new();
+        test_voxels.insert(Voxel {
+            x: 0,
+            y: 0,
+            z: 0,
+            color: [255, 255, 255],
+        });
+        test_voxels.insert(Voxel {
+            x: 1,
+            y: 0,
+            z: 0,
+            color: [255, 255, 255],
+        });
+        test_voxels.insert(Voxel {
+            x: 0,
+            y: 1,
+            z: 0,
+            color: [255, 255, 255],
+        });
+        test_voxels.insert(Voxel {
+            x: 1,
+            y: 1,
+            z: 0,
+            color: [255, 255, 255],
+        });
+
+        assert_eq!(occupied_voxels, test_voxels);
+    }
 }
