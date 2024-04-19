@@ -9,7 +9,7 @@ use url::Url;
 
 use crate::models::appearance::{self, ParameterizedTexture, SurfaceDataProperty, X3DMaterial};
 
-#[derive(Debug, Default, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Default, Clone, serde::Serialize, serde::Deserialize)]
 pub struct Theme {
     pub ring_id_to_texture: HashMap<LocalId, (u32, LineString2<'static>)>, // TODO: texture index is redundant
     pub surface_id_to_material: HashMap<LocalId, u32>,
@@ -52,7 +52,7 @@ impl Hash for Material {
         self.ambient_intensity.to_bits().hash(state);
     }
 }
-#[derive(Debug, Default, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Clone, Default, serde::Serialize, serde::Deserialize)]
 pub struct AppearanceStore {
     pub textures: Vec<Texture>,
     pub materials: Vec<Material>,
