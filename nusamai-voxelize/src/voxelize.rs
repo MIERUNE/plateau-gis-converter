@@ -69,12 +69,6 @@ fn draw_line(
             z: (current_voxel[2] / voxel_size).floor() as i32,
             color: [255, 255, 255],
         };
-        println!(
-            "fill x: {}, y: {}, z: {}",
-            (current_voxel[0] / voxel_size).floor() as i32,
-            (current_voxel[1] / voxel_size).floor() as i32,
-            (current_voxel[2] / voxel_size).floor() as i32
-        );
         voxels.insert(voxel);
         // 現在の座標を更新
         current_voxel[0] += step_size[0];
@@ -196,8 +190,6 @@ fn fill_triangle(voxels: &mut HashSet<Voxel>, voxel_size: f64, triangle: &[[f64;
             sorted_triangle.sort_by(|a, b| a[0].partial_cmp(&b[0]).unwrap());
             assert!(sorted_triangle[1][0] >= sorted_triangle[0][0]);
 
-            println!("sorted_triangle -------> {:?}", sorted_triangle);
-
             // 始点の移動に利用するためのベクトル
             // x軸方向にvoxel_size分だけ移動し、y方向にもvoxel_size分移動する
             let mut edge_direction_1;
@@ -239,18 +231,10 @@ fn fill_triangle(voxels: &mut HashSet<Voxel>, voxel_size: f64, triangle: &[[f64;
             }
 
             while end_point[0] <= sorted_triangle[2][0] {
-                println!("start_point: {:?}", start_point);
-                println!("end_point: {:?}", end_point);
-                println!("edge_direction_1: {:?}", edge_direction_1);
-                println!("edge_direction_2: {:?}", edge_direction_2);
-
                 draw_line(voxels, start_point, end_point, voxel_size);
 
                 start_point += edge_direction_1;
                 end_point += edge_direction_2;
-
-                println!("next start_point: {:?}", start_point);
-                println!("next end_point: {:?}", end_point);
 
                 if start_point[0] >= end_vertex_x {
                     end_vertex_x = start_point[0] - sorted_triangle[1][0];
@@ -525,16 +509,22 @@ mod tests {
 
     #[test]
     fn test_hole_polygon() {
+        // holeの大きさがvoxel_sizeと同じ場合、holeが埋まる
         let vertices: Vec<[f64; 3]> = vec![
             [0.0, 0.0, 0.0],
-            [1.0, 0.0, 0.0],
+            [3.0, 0.0, 0.0],
+            [3.0, 3.0, 0.0],
+            [0.0, 3.0, 0.0],
             [1.0, 1.0, 0.0],
-            [0.0, 1.0, 0.0],
+            [2.0, 1.0, 0.0],
+            [2.0, 2.0, 0.0],
+            [1.0, 2.0, 0.0],
         ];
 
         let mut mpoly = MultiPolygon::<u32>::new();
 
         mpoly.add_exterior([0, 1, 2, 3, 0]);
+        mpoly.add_interior([4, 5, 6, 7, 4]);
 
         let mut earcutter = Earcut::new();
         let mut buf3d: Vec<[f64; 3]> = Vec::new();
@@ -577,6 +567,18 @@ mod tests {
             color: [255, 255, 255],
         });
         test_voxels.insert(Voxel {
+            x: 2,
+            y: 0,
+            z: 0,
+            color: [255, 255, 255],
+        });
+        test_voxels.insert(Voxel {
+            x: 3,
+            y: 0,
+            z: 0,
+            color: [255, 255, 255],
+        });
+        test_voxels.insert(Voxel {
             x: 0,
             y: 1,
             z: 0,
@@ -588,7 +590,138 @@ mod tests {
             z: 0,
             color: [255, 255, 255],
         });
+        test_voxels.insert(Voxel {
+            x: 2,
+            y: 1,
+            z: 0,
+            color: [255, 255, 255],
+        });
+        test_voxels.insert(Voxel {
+            x: 3,
+            y: 1,
+            z: 0,
+            color: [255, 255, 255],
+        });
+        test_voxels.insert(Voxel {
+            x: 0,
+            y: 2,
+            z: 0,
+            color: [255, 255, 255],
+        });
+        test_voxels.insert(Voxel {
+            x: 1,
+            y: 2,
+            z: 0,
+            color: [255, 255, 255],
+        });
+        test_voxels.insert(Voxel {
+            x: 2,
+            y: 2,
+            z: 0,
+            color: [255, 255, 255],
+        });
+        test_voxels.insert(Voxel {
+            x: 3,
+            y: 2,
+            z: 0,
+            color: [255, 255, 255],
+        });
+        test_voxels.insert(Voxel {
+            x: 0,
+            y: 3,
+            z: 0,
+            color: [255, 255, 255],
+        });
+        test_voxels.insert(Voxel {
+            x: 1,
+            y: 3,
+            z: 0,
+            color: [255, 255, 255],
+        });
+        test_voxels.insert(Voxel {
+            x: 2,
+            y: 3,
+            z: 0,
+            color: [255, 255, 255],
+        });
+        test_voxels.insert(Voxel {
+            x: 3,
+            y: 3,
+            z: 0,
+            color: [255, 255, 255],
+        });
 
         assert_eq!(occupied_voxels, test_voxels);
+    }
+
+    #[test]
+    fn test_cube() {
+        let vertices: Vec<[f64; 3]> = vec![
+            // exterior
+            [0.0, 0.0, 0.0],
+            [10.0, 0.0, 0.0],
+            [10.0, 10.0, 0.0],
+            [0.0, 10.0, 0.0],
+            [0.0, 0.0, 10.0],
+            [10.0, 0.0, 10.0],
+            [10.0, 10.0, 10.0],
+            [0.0, 10.0, 10.0],
+            // interior
+            [3.0, 3.0, 0.0],
+            [7.0, 3.0, 0.0],
+            [7.0, 7.0, 0.0],
+            [3.0, 7.0, 0.0],
+            [3.0, 3.0, 10.0],
+            [7.0, 3.0, 10.0],
+            [7.0, 7.0, 10.0],
+            [3.0, 7.0, 10.0],
+        ];
+
+        let mut mpoly = MultiPolygon::<u32>::new();
+
+        // index
+        // 1st polygon
+        mpoly.add_exterior([0, 1, 2, 3, 0]);
+        mpoly.add_interior([8, 9, 10, 11, 8]);
+        // 2nd polygon
+        mpoly.add_exterior([4, 5, 6, 7, 4]);
+        mpoly.add_interior([12, 13, 14, 15, 12]);
+        // 3rd polygon
+        mpoly.add_exterior([0, 1, 5, 4, 0]);
+        // 4th polygon
+        mpoly.add_exterior([1, 2, 6, 5, 1]);
+        // 6th polygon
+        mpoly.add_exterior([2, 3, 7, 6, 2]);
+        // 6th polygon
+        mpoly.add_exterior([3, 0, 4, 7, 3]);
+
+        let mut earcutter = Earcut::new();
+        let mut buf3d: Vec<[f64; 3]> = Vec::new();
+        let mut buf2d: Vec<[f64; 2]> = Vec::new();
+        let mut index_buf: Vec<u32> = Vec::new();
+        let mut triangles: Vec<[f64; 3]> = Vec::new();
+
+        for idx_poly in mpoly.iter() {
+            let poly = idx_poly.transform(|idx| vertices[*idx as usize]);
+            let num_outer = match poly.hole_indices().first() {
+                Some(&v) => v as usize,
+                None => poly.raw_coords().len(),
+            };
+
+            buf3d.clear();
+            buf3d.extend(poly.raw_coords().iter());
+
+            if project3d_to_2d(&buf3d, num_outer, &mut buf2d) {
+                earcutter.earcut(buf2d.iter().cloned(), poly.hole_indices(), &mut index_buf);
+                triangles.extend(index_buf.iter().map(|&idx| buf3d[idx as usize]));
+            }
+        }
+
+        let voxel_size = 1.0;
+
+        let voxelizer = DdaVoxelizer {};
+        let occupied_voxels = voxelizer.voxelize(&triangles, voxel_size);
+
+        assert_eq!(occupied_voxels.len(), 584);
     }
 }
