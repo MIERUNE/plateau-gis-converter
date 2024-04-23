@@ -7,6 +7,7 @@ const filetypeOptions: Record<string, { label: string; extensions: string[]; eps
 			extensions: ['gpkg'],
 			epsg: [
 				{ value: 4979, label: 'WGS 84 (EPSG:4979)' },
+				{ value: 3857, label: 'Web Mercator (EPSG:3857)' },
 				{ value: 6669, label: 'JGD2011 / 平面直角座標系 I (EPSG:6669)' },
 				{ value: 6670, label: 'JGD2011 / 平面直角座標系 II (EPSG:6670)' },
 				{ value: 6671, label: 'JGD2011 / 平面直角座標系 III (EPSG:6671)' },
@@ -58,7 +59,7 @@ const filetypeOptions: Record<string, { label: string; extensions: string[]; eps
 		mvt: {
 			label: 'Vector Tiles (MVT)',
 			extensions: [''],
-			epsg: [{ value: 4979, label: 'WGS 84 (EPSG:4979)' }]
+			epsg: [{ value: 4979, label: 'WGS 84' }]
 		},
 
 		czml: {
@@ -88,6 +89,7 @@ const filetypeOptions: Record<string, { label: string; extensions: string[]; eps
 			extensions: [''],
 			epsg: [
 				{ value: 4979, label: 'WGS 84 (EPSG:4979)' },
+				{ value: 3857, label: 'Web Mercator (EPSG:3857)' },
 				{ value: 6669, label: 'JGD2011 / 平面直角座標系 I (EPSG:6669)' },
 				{ value: 6670, label: 'JGD2011 / 平面直角座標系 II (EPSG:6670)' },
 				{ value: 6671, label: 'JGD2011 / 平面直角座標系 III (EPSG:6671)' },
