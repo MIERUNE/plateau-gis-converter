@@ -14,7 +14,7 @@ use material::{Material, Texture};
 use nusamai_citygml::{object::ObjectStereotype, schema::Schema, GeometryType, Value};
 use nusamai_geometry::MultiPolygon;
 use nusamai_plateau::appearance;
-use nusamai_projection::cartesian::geographic_to_geodetic;
+use nusamai_projection::cartesian::geodetic_to_geocentric;
 use rayon::iter::{IntoParallelIterator, ParallelBridge, ParallelIterator};
 use serde::{Deserialize, Serialize};
 
@@ -296,7 +296,7 @@ impl DataSink for GltfSink {
                 // triangulation and make vertices and primitives
                 let translation = {
                     let bounds = features.bounding_volume;
-                    let (tx, ty, tz) = geographic_to_geodetic(
+                    let (tx, ty, tz) = geodetic_to_geocentric(
                         &ellipsoid,
                         (bounds.min_lng + bounds.max_lng) / 2.0,
                         (bounds.min_lat + bounds.max_lat) / 2.0,
@@ -318,7 +318,7 @@ impl DataSink for GltfSink {
                         .polygons
                         .transform_inplace(|&[lng, lat, height, u, v]| {
                             // geographic to geocentric
-                            let (x, y, z) = geographic_to_geodetic(&ellipsoid, lng, lat, height);
+                            let (x, y, z) = geodetic_to_geocentric(&ellipsoid, lng, lat, height);
 
                             // z-up to y-up
                             // subtract the translation
