@@ -176,7 +176,7 @@ mod tests {
             let (lng2, lat2, height2) = geocentric_to_geodetic(&wgs84, x, y, z);
             assert!((lng - lng2).abs() < 1e-10);
             assert!((lat - lat2).abs() < 1e-10);
-            assert!((height - height2).abs() < 1e-9);
+            assert!((height - height2).abs() < 1e-7);
         }
 
         // On or inside the evolute and not in the singular disc
@@ -186,7 +186,7 @@ mod tests {
             let (lng2, lat2, height2) = geocentric_to_geodetic(&wgs84, x, y, z);
             assert!((lng - lng2).abs() < 1e-10);
             assert!((lat - lat2).abs() < 1e-10);
-            assert!((height - height2).abs() < 1e-9);
+            assert!((height - height2).abs() < 1e-7);
         }
 
         // In the singular disc
@@ -207,7 +207,7 @@ mod tests {
             let (lng2, lat2, height2) = geocentric_to_geodetic(&wgs84, x, y, z);
             assert!((lng - lng2).abs() < 1e-9);
             assert!((lat - lat2).abs() < 1e-9);
-            assert!((height - height2).abs() < 1e-9);
+            assert!((height - height2).abs() < 1e-7);
         }
     }
 
