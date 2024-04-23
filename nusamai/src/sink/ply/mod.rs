@@ -11,7 +11,7 @@ use nusamai_citygml::{
     schema::Schema,
     GeometryType,
 };
-use nusamai_projection::cartesian::geographic_to_geocentric;
+use nusamai_projection::cartesian::geodetic_to_geocentric;
 use rayon::prelude::*;
 
 use crate::{
@@ -126,7 +126,7 @@ impl DataSink for StanfordPlySink {
                                         // Convert to geocentric (x, y, z) coordinate.
                                         // (Earcut do not work in geographic space)
                                         let (x, y, z) =
-                                            geographic_to_geocentric(&ellipsoid, lng, lat, height);
+                                            geodetic_to_geocentric(&ellipsoid, lng, lat, height);
                                         [x, y, z]
                                     });
                                     let num_outer = match poly.hole_indices().first() {
