@@ -3,6 +3,7 @@
 [![Test Tauri App](https://github.com/MIERUNE/plateau-gis-converter/actions/workflows/test_app.yml/badge.svg)](https://github.com/MIERUNE/nusamai/actions/workflows/test_app.yml)
 [![Test Libraries](https://github.com/MIERUNE/plateau-gis-converter/actions/workflows/test_libs.yml/badge.svg)](https://github.com/MIERUNE/nusamai/actions/workflows/test_libs.yml)
 [![Codecov](https://codecov.io/gh/MIERUNE/plateau-gis-converter/graph/badge.svg?token=oa62wDWoqu)](https://codecov.io/gh/MIERUNE/plateau-gis-converter)
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FMIERUNE%2Fplateau-gis-converter.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2FMIERUNE%2Fplateau-gis-converter?ref=badge_shield)
 
 <!--
 [![Docs](https://github.com/MIERUNE/plateau-gis-converter/actions/workflows/doc.yml/badge.svg)](https://mierune.github.io/nusamai/app/)
@@ -177,3 +178,7 @@ Codecov: [https://app.codecov.io/gh/MIERUNE/plateau-gis-converter](https://app.c
 ```bash
 cargo llvm-cov --workspace --exclude app --html --all-features
 ```
+
+
+## License
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FMIERUNE%2Fplateau-gis-converter.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2FMIERUNE%2Fplateau-gis-converter?ref=badge_large)
