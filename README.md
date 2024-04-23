@@ -178,7 +178,3 @@ Codecov: [https://app.codecov.io/gh/MIERUNE/plateau-gis-converter](https://app.c
 ```bash
 cargo llvm-cov --workspace --exclude app --html --all-features
 ```
-
-
-## License
-[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FMIERUNE%2Fplateau-gis-converter.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2FMIERUNE%2Fplateau-gis-converter?ref=badge_large)
