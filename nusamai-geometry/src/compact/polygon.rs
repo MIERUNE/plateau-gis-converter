@@ -1,4 +1,4 @@
-use std::borrow::Cow;
+use std::{borrow::Cow, hash::Hash};
 
 use crate::Coord2d;
 
@@ -6,7 +6,7 @@ use super::{linestring::LineString, Coord};
 
 /// Computer-friendly Polygon
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[derive(Debug, Clone, Default, PartialEq)]
+#[derive(Debug, Clone, Default)]
 pub struct Polygon<'a, T: Coord> {
     /// Coordinates
     coords: Cow<'a, [T]>,
@@ -17,6 +17,41 @@ pub struct Polygon<'a, T: Coord> {
 
 pub type Polygon3<'a, C = f64> = Polygon<'a, [C; 3]>;
 pub type Polygon2<'a, C = f64> = Polygon<'a, [C; 2]>;
+
+impl PartialEq for Polygon3<'_, f64> {
+    fn eq(&self, other: &Self) -> bool {
+        self.exterior() == other.exterior()
+            && self.interiors().zip(other.interiors()).all(|(a, b)| a == b)
+    }
+}
+
+impl PartialEq for Polygon2<'_, f64> {
+    fn eq(&self, other: &Self) -> bool {
+        self.exterior() == other.exterior()
+            && self.interiors().zip(other.interiors()).all(|(a, b)| a == b)
+    }
+}
+
+impl Hash for Polygon2<'_, f64> {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.exterior().hash(state);
+        for interior in self.interiors() {
+            interior.hash(state);
+        }
+    }
+}
+
+impl Hash for Polygon3<'_, f64> {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.exterior().hash(state);
+        for interior in self.interiors() {
+            interior.hash(state);
+        }
+    }
+}
+
+impl Eq for Polygon3<'_, f64> {}
+impl Eq for Polygon2<'_, f64> {}
 
 impl<'a, T: Coord> Polygon<'a, T> {
     /// Creates an empty Polygon.
@@ -98,7 +133,7 @@ impl<'a, T: Coord> Polygon<'a, T> {
     }
 
     /// Create a new Polygon by applying the given transformation to all coordinates.
-    pub fn transform<T2: Coord>(&self, f: impl Fn(&T) -> T2) -> Polygon<T2> {
+    pub fn transform<T2: Coord>(self, f: impl Fn(&T) -> T2) -> Polygon<'a, T2> {
         Polygon {
             coords: self.coords.iter().map(f).collect(),
             hole_indices: self.hole_indices.clone(),

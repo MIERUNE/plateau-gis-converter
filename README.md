@@ -27,7 +27,6 @@
 ## フォルダ構成
 
 - アプリケーション：
-  - [`nusamai`](./nusamai/) &mdash; アプリケーションバックエンドおよびコマンドライン版の実装
 - 基盤・ユーティリティ：
   - [`nusamai-geometry`](./nusamai-geometry/) &mdash; ジオメトリ型
   - [`nusamai-projection`](./nusamai-projection/) &mdash; 投影法変換

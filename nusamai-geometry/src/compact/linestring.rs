@@ -1,9 +1,9 @@
 use crate::{Coord, Coord2d};
-use std::borrow::Cow;
+use std::{borrow::Cow, hash::Hash};
 
 /// Computer-friendly LineString
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[derive(Debug, Clone, Default, PartialEq)]
+#[derive(Debug, Clone, Default)]
 pub struct LineString<'a, T: Coord> {
     /// Coordinates of all points
     ///
@@ -13,6 +13,34 @@ pub struct LineString<'a, T: Coord> {
 
 pub type LineString2<'a, C = f64> = LineString<'a, [C; 2]>;
 pub type LineString3<'a, C = f64> = LineString<'a, [C; 3]>;
+
+impl PartialEq for LineString2<'_, f64> {
+    fn eq(&self, other: &Self) -> bool {
+        self.coords == other.coords
+    }
+}
+
+impl PartialEq for LineString3<'_, f64> {
+    fn eq(&self, other: &Self) -> bool {
+        self.coords == other.coords
+    }
+}
+
+impl Hash for LineString2<'_, f64> {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.coords
+            .iter()
+            .for_each(|c| c.iter().for_each(|a| a.to_bits().hash(state)));
+    }
+}
+
+impl Hash for LineString3<'_, f64> {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.coords
+            .iter()
+            .for_each(|c| c.iter().for_each(|a| a.to_bits().hash(state)));
+    }
+}
 
 impl<'a, T: Coord> LineString<'a, T> {
     /// Creates an empty LineString.
