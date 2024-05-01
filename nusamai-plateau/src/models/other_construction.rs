@@ -52,7 +52,8 @@ pub struct OtherConstruction {
     pub cons_dm_attribute: Vec<uro::DmAttributeProperty>, // -> uro:DmAttribute
 
     #[citygml(path = b"uro:consDataQualityAttribute/uro:ConstructionDataQualityAttribute")]
-    pub cons_data_quality_attribute: Option<uro::ConstructionDataQualityAttribute>,
+    #[citygml(path = b"uro:consDataQualityAttribute/uro:DataQualityAttribute")]
+    pub cons_data_quality_attribute: Option<uro::DataQualityAttribute>,
 
     #[citygml(path = b"uro:boundedBy")]
     pub bounded_by: Vec<BoundarySurfaceProperty>, // -> uro:_BoundarySurface

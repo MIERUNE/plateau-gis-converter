@@ -34,13 +34,14 @@ pub struct Appurtenance {
     #[citygml(path = b"frn:usage")]
     pub usage: Vec<Code>,
 
+    #[citygml(path = b"uro:cityFurnitureDetailAttribute/uro:CityFurnitureDetailAttribute")]
+    pub city_furniture_detail_attribute: Vec<CityFurnitureDetailAttribute>,
+
     #[citygml(
         path = b"uro:cityFurnitureDataQualityAttribute/uro:CityFurnitureDataQualityAttribute"
     )]
-    pub city_furniture_data_quality_attribute: Option<CityFurnitureDataQualityAttribute>,
-
-    #[citygml(path = b"uro:cityFurnitureDetailAttribute/uro:CityFurnitureDetailAttribute")]
-    pub city_furniture_detail_attribute: Vec<CityFurnitureDetailAttribute>,
+    #[citygml(path = b"uro:frnDataQualityAttribute/uro:DataQualityAttribute")]
+    pub frn_data_quality_attribute: Option<DataQualityAttribute>,
 
     #[citygml(path = b"uro:frnDmAttribute")]
     pub frn_dm_attribute: Vec<DmAttributeProperty>, // -> uro:DmAttribute
@@ -53,6 +54,9 @@ pub struct Appurtenance {
 
     #[citygml(path = b"uro:frnFacilityTypeAttribute/uro:FacilityTypeAttribute")]
     pub frn_facility_type_attribute: Vec<FacilityTypeAttribute>,
+
+    #[citygml(path = b"uro:frnKeyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub frn_key_value_pair_attribute: Vec<KeyValuePairAttribute>,
 
     #[citygml(path = b"uro:occupierType")]
     pub occupier_type: Option<Code>,
@@ -99,13 +103,14 @@ pub struct Cable {
     #[citygml(path = b"frn:usage")]
     pub usage: Vec<Code>,
 
+    #[citygml(path = b"uro:cityFurnitureDetailAttribute/uro:CityFurnitureDetailAttribute")]
+    pub city_furniture_detail_attribute: Vec<CityFurnitureDetailAttribute>,
+
     #[citygml(
         path = b"uro:cityFurnitureDataQualityAttribute/uro:CityFurnitureDataQualityAttribute"
     )]
-    pub city_furniture_data_quality_attribute: Option<CityFurnitureDataQualityAttribute>,
-
-    #[citygml(path = b"uro:cityFurnitureDetailAttribute/uro:CityFurnitureDetailAttribute")]
-    pub city_furniture_detail_attribute: Vec<CityFurnitureDetailAttribute>,
+    #[citygml(path = b"uro:frnDataQualityAttribute/uro:DataQualityAttribute")]
+    pub frn_data_quality_attribute: Option<DataQualityAttribute>,
 
     #[citygml(path = b"uro:frnDmAttribute")]
     pub frn_dm_attribute: Vec<DmAttributeProperty>, // -> uro:DmAttribute
@@ -118,6 +123,9 @@ pub struct Cable {
 
     #[citygml(path = b"uro:frnFacilityTypeAttribute/uro:FacilityTypeAttribute")]
     pub frn_facility_type_attribute: Vec<FacilityTypeAttribute>,
+
+    #[citygml(path = b"uro:frnKeyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub frn_key_value_pair_attribute: Vec<KeyValuePairAttribute>,
 
     #[citygml(path = b"uro:occupierType")]
     pub occupier_type: Option<Code>,
@@ -194,13 +202,14 @@ pub struct Duct {
     #[citygml(path = b"frn:usage")]
     pub usage: Vec<Code>,
 
+    #[citygml(path = b"uro:cityFurnitureDetailAttribute/uro:CityFurnitureDetailAttribute")]
+    pub city_furniture_detail_attribute: Vec<CityFurnitureDetailAttribute>,
+
     #[citygml(
         path = b"uro:cityFurnitureDataQualityAttribute/uro:CityFurnitureDataQualityAttribute"
     )]
-    pub city_furniture_data_quality_attribute: Option<CityFurnitureDataQualityAttribute>,
-
-    #[citygml(path = b"uro:cityFurnitureDetailAttribute/uro:CityFurnitureDetailAttribute")]
-    pub city_furniture_detail_attribute: Vec<CityFurnitureDetailAttribute>,
+    #[citygml(path = b"uro:frnDataQualityAttribute/uro:DataQualityAttribute")]
+    pub frn_data_quality_attribute: Option<DataQualityAttribute>,
 
     #[citygml(path = b"uro:frnDmAttribute")]
     pub frn_dm_attribute: Vec<DmAttributeProperty>, // -> uro:DmAttribute
@@ -213,6 +222,9 @@ pub struct Duct {
 
     #[citygml(path = b"uro:frnFacilityTypeAttribute/uro:FacilityTypeAttribute")]
     pub frn_facility_type_attribute: Vec<FacilityTypeAttribute>,
+
+    #[citygml(path = b"uro:frnKeyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub frn_key_value_pair_attribute: Vec<KeyValuePairAttribute>,
 
     #[citygml(path = b"uro:occupierType")]
     pub occupier_type: Option<Code>,
@@ -283,13 +295,14 @@ pub struct ElectricityCable {
     #[citygml(path = b"frn:usage")]
     pub usage: Vec<Code>,
 
+    #[citygml(path = b"uro:cityFurnitureDetailAttribute/uro:CityFurnitureDetailAttribute")]
+    pub city_furniture_detail_attribute: Vec<CityFurnitureDetailAttribute>,
+
     #[citygml(
         path = b"uro:cityFurnitureDataQualityAttribute/uro:CityFurnitureDataQualityAttribute"
     )]
-    pub city_furniture_data_quality_attribute: Option<CityFurnitureDataQualityAttribute>,
-
-    #[citygml(path = b"uro:cityFurnitureDetailAttribute/uro:CityFurnitureDetailAttribute")]
-    pub city_furniture_detail_attribute: Vec<CityFurnitureDetailAttribute>,
+    #[citygml(path = b"uro:frnDataQualityAttribute/uro:DataQualityAttribute")]
+    pub frn_data_quality_attribute: Option<DataQualityAttribute>,
 
     #[citygml(path = b"uro:frnDmAttribute")]
     pub frn_dm_attribute: Vec<DmAttributeProperty>, // -> uro:DmAttribute
@@ -302,6 +315,9 @@ pub struct ElectricityCable {
 
     #[citygml(path = b"uro:frnFacilityTypeAttribute/uro:FacilityTypeAttribute")]
     pub frn_facility_type_attribute: Vec<FacilityTypeAttribute>,
+
+    #[citygml(path = b"uro:frnKeyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub frn_key_value_pair_attribute: Vec<KeyValuePairAttribute>,
 
     #[citygml(path = b"uro:occupierType")]
     pub occupier_type: Option<Code>,
@@ -378,13 +394,14 @@ pub struct Handhole {
     #[citygml(path = b"frn:usage")]
     pub usage: Vec<Code>,
 
+    #[citygml(path = b"uro:cityFurnitureDetailAttribute/uro:CityFurnitureDetailAttribute")]
+    pub city_furniture_detail_attribute: Vec<CityFurnitureDetailAttribute>,
+
     #[citygml(
         path = b"uro:cityFurnitureDataQualityAttribute/uro:CityFurnitureDataQualityAttribute"
     )]
-    pub city_furniture_data_quality_attribute: Option<CityFurnitureDataQualityAttribute>,
-
-    #[citygml(path = b"uro:cityFurnitureDetailAttribute/uro:CityFurnitureDetailAttribute")]
-    pub city_furniture_detail_attribute: Vec<CityFurnitureDetailAttribute>,
+    #[citygml(path = b"uro:frnDataQualityAttribute/uro:DataQualityAttribute")]
+    pub frn_data_quality_attribute: Option<DataQualityAttribute>,
 
     #[citygml(path = b"uro:frnDmAttribute")]
     pub frn_dm_attribute: Vec<DmAttributeProperty>, // -> uro:DmAttribute
@@ -397,6 +414,9 @@ pub struct Handhole {
 
     #[citygml(path = b"uro:frnFacilityTypeAttribute/uro:FacilityTypeAttribute")]
     pub frn_facility_type_attribute: Vec<FacilityTypeAttribute>,
+
+    #[citygml(path = b"uro:frnKeyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub frn_key_value_pair_attribute: Vec<KeyValuePairAttribute>,
 
     #[citygml(path = b"uro:occupierType")]
     pub occupier_type: Option<Code>,
@@ -422,17 +442,17 @@ pub struct Handhole {
     #[citygml(path = b"uro:containerType")]
     pub container_type: Option<Code>,
 
-    #[citygml(path = b"uro:innerDiamiterLong")]
-    pub inner_diamiter_long: Option<Length>,
+    #[citygml(path = b"uro:innerDiameterLong")]
+    pub inner_diameter_long: Option<Length>,
 
-    #[citygml(path = b"uro:outerDiamiterLong")]
-    pub outer_diamiter_long: Option<Length>,
+    #[citygml(path = b"uro:outerDiameterLong")]
+    pub outer_diameter_long: Option<Length>,
 
-    #[citygml(path = b"uro:innerDiamiterShort")]
-    pub inner_diamiter_short: Option<Length>,
+    #[citygml(path = b"uro:innerDiameterShort")]
+    pub inner_diameter_short: Option<Length>,
 
-    #[citygml(path = b"uro:outerDiamiterShort")]
-    pub outer_diamiter_short: Option<Length>,
+    #[citygml(path = b"uro:outerDiameterShort")]
+    pub outer_diameter_short: Option<Length>,
 
     #[citygml(path = b"uro:depth")]
     pub depth: Option<Length>,
@@ -455,13 +475,14 @@ pub struct Manhole {
     #[citygml(path = b"frn:usage")]
     pub usage: Vec<Code>,
 
+    #[citygml(path = b"uro:cityFurnitureDetailAttribute/uro:CityFurnitureDetailAttribute")]
+    pub city_furniture_detail_attribute: Vec<CityFurnitureDetailAttribute>,
+
     #[citygml(
         path = b"uro:cityFurnitureDataQualityAttribute/uro:CityFurnitureDataQualityAttribute"
     )]
-    pub city_furniture_data_quality_attribute: Option<CityFurnitureDataQualityAttribute>,
-
-    #[citygml(path = b"uro:cityFurnitureDetailAttribute/uro:CityFurnitureDetailAttribute")]
-    pub city_furniture_detail_attribute: Vec<CityFurnitureDetailAttribute>,
+    #[citygml(path = b"uro:frnDataQualityAttribute/uro:DataQualityAttribute")]
+    pub frn_data_quality_attribute: Option<DataQualityAttribute>,
 
     #[citygml(path = b"uro:frnDmAttribute")]
     pub frn_dm_attribute: Vec<DmAttributeProperty>, // -> uro:DmAttribute
@@ -474,6 +495,9 @@ pub struct Manhole {
 
     #[citygml(path = b"uro:frnFacilityTypeAttribute/uro:FacilityTypeAttribute")]
     pub frn_facility_type_attribute: Vec<FacilityTypeAttribute>,
+
+    #[citygml(path = b"uro:frnKeyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub frn_key_value_pair_attribute: Vec<KeyValuePairAttribute>,
 
     #[citygml(path = b"uro:occupierType")]
     pub occupier_type: Option<Code>,
@@ -499,17 +523,17 @@ pub struct Manhole {
     #[citygml(path = b"uro:containerType")]
     pub container_type: Option<Code>,
 
-    #[citygml(path = b"uro:innerDiamiterLong")]
-    pub inner_diamiter_long: Option<Length>,
+    #[citygml(path = b"uro:innerDiameterLong")]
+    pub inner_diameter_long: Option<Length>,
 
-    #[citygml(path = b"uro:outerDiamiterLong")]
-    pub outer_diamiter_long: Option<Length>,
+    #[citygml(path = b"uro:outerDiameterLong")]
+    pub outer_diameter_long: Option<Length>,
 
-    #[citygml(path = b"uro:innerDiamiterShort")]
-    pub inner_diamiter_short: Option<Length>,
+    #[citygml(path = b"uro:innerDiameterShort")]
+    pub inner_diameter_short: Option<Length>,
 
-    #[citygml(path = b"uro:outerDiamiterShort")]
-    pub outer_diamiter_short: Option<Length>,
+    #[citygml(path = b"uro:outerDiameterShort")]
+    pub outer_diameter_short: Option<Length>,
 
     #[citygml(path = b"uro:depth")]
     pub depth: Option<Length>,
@@ -519,6 +543,9 @@ pub struct Manhole {
 
     #[citygml(path = b"uro:rotationAngle")]
     pub rotation_angle: Option<f64>,
+
+    #[citygml(path = b"uro:elevation")]
+    pub elevation: Option<Length>,
 }
 
 #[citygml_feature(name = "uro:OilGasChemicalsPipe")]
@@ -532,13 +559,14 @@ pub struct OilGasChemicalsPipe {
     #[citygml(path = b"frn:usage")]
     pub usage: Vec<Code>,
 
+    #[citygml(path = b"uro:cityFurnitureDetailAttribute/uro:CityFurnitureDetailAttribute")]
+    pub city_furniture_detail_attribute: Vec<CityFurnitureDetailAttribute>,
+
     #[citygml(
         path = b"uro:cityFurnitureDataQualityAttribute/uro:CityFurnitureDataQualityAttribute"
     )]
-    pub city_furniture_data_quality_attribute: Option<CityFurnitureDataQualityAttribute>,
-
-    #[citygml(path = b"uro:cityFurnitureDetailAttribute/uro:CityFurnitureDetailAttribute")]
-    pub city_furniture_detail_attribute: Vec<CityFurnitureDetailAttribute>,
+    #[citygml(path = b"uro:frnDataQualityAttribute/uro:DataQualityAttribute")]
+    pub frn_data_quality_attribute: Option<DataQualityAttribute>,
 
     #[citygml(path = b"uro:frnDmAttribute")]
     pub frn_dm_attribute: Vec<DmAttributeProperty>, // -> uro:DmAttribute
@@ -551,6 +579,9 @@ pub struct OilGasChemicalsPipe {
 
     #[citygml(path = b"uro:frnFacilityTypeAttribute/uro:FacilityTypeAttribute")]
     pub frn_facility_type_attribute: Vec<FacilityTypeAttribute>,
+
+    #[citygml(path = b"uro:frnKeyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub frn_key_value_pair_attribute: Vec<KeyValuePairAttribute>,
 
     #[citygml(path = b"uro:occupierType")]
     pub occupier_type: Option<Code>,
@@ -606,11 +637,11 @@ pub struct OilGasChemicalsPipe {
     #[citygml(path = b"uro:lengthAttribute/uro:LengthAttribute")]
     pub length_attribute: Vec<LengthAttribute>,
 
-    #[citygml(path = b"uro:innerDiamiter")]
-    pub inner_diamiter: Option<Length>,
+    #[citygml(path = b"uro:innerDiameter")]
+    pub inner_diameter: Option<Length>,
 
-    #[citygml(path = b"uro:outerDiamiter")]
-    pub outer_diamiter: Option<Length>,
+    #[citygml(path = b"uro:outerDiameter")]
+    pub outer_diameter: Option<Length>,
 
     #[citygml(path = b"uro:sleeveType")]
     pub sleeve_type: Option<Code>,
@@ -627,13 +658,14 @@ pub struct Pipe {
     #[citygml(path = b"frn:usage")]
     pub usage: Vec<Code>,
 
+    #[citygml(path = b"uro:cityFurnitureDetailAttribute/uro:CityFurnitureDetailAttribute")]
+    pub city_furniture_detail_attribute: Vec<CityFurnitureDetailAttribute>,
+
     #[citygml(
         path = b"uro:cityFurnitureDataQualityAttribute/uro:CityFurnitureDataQualityAttribute"
     )]
-    pub city_furniture_data_quality_attribute: Option<CityFurnitureDataQualityAttribute>,
-
-    #[citygml(path = b"uro:cityFurnitureDetailAttribute/uro:CityFurnitureDetailAttribute")]
-    pub city_furniture_detail_attribute: Vec<CityFurnitureDetailAttribute>,
+    #[citygml(path = b"uro:frnDataQualityAttribute/uro:DataQualityAttribute")]
+    pub frn_data_quality_attribute: Option<DataQualityAttribute>,
 
     #[citygml(path = b"uro:frnDmAttribute")]
     pub frn_dm_attribute: Vec<DmAttributeProperty>, // -> uro:DmAttribute
@@ -646,6 +678,9 @@ pub struct Pipe {
 
     #[citygml(path = b"uro:frnFacilityTypeAttribute/uro:FacilityTypeAttribute")]
     pub frn_facility_type_attribute: Vec<FacilityTypeAttribute>,
+
+    #[citygml(path = b"uro:frnKeyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub frn_key_value_pair_attribute: Vec<KeyValuePairAttribute>,
 
     #[citygml(path = b"uro:occupierType")]
     pub occupier_type: Option<Code>,
@@ -701,11 +736,11 @@ pub struct Pipe {
     #[citygml(path = b"uro:lengthAttribute/uro:LengthAttribute")]
     pub length_attribute: Vec<LengthAttribute>,
 
-    #[citygml(path = b"uro:innerDiamiter")]
-    pub inner_diamiter: Option<Length>,
+    #[citygml(path = b"uro:innerDiameter")]
+    pub inner_diameter: Option<Length>,
 
-    #[citygml(path = b"uro:outerDiamiter")]
-    pub outer_diamiter: Option<Length>,
+    #[citygml(path = b"uro:outerDiameter")]
+    pub outer_diameter: Option<Length>,
 
     #[citygml(path = b"uro:sleeveType")]
     pub sleeve_type: Option<Code>,
@@ -722,13 +757,14 @@ pub struct SewerPipe {
     #[citygml(path = b"frn:usage")]
     pub usage: Vec<Code>,
 
+    #[citygml(path = b"uro:cityFurnitureDetailAttribute/uro:CityFurnitureDetailAttribute")]
+    pub city_furniture_detail_attribute: Vec<CityFurnitureDetailAttribute>,
+
     #[citygml(
         path = b"uro:cityFurnitureDataQualityAttribute/uro:CityFurnitureDataQualityAttribute"
     )]
-    pub city_furniture_data_quality_attribute: Option<CityFurnitureDataQualityAttribute>,
-
-    #[citygml(path = b"uro:cityFurnitureDetailAttribute/uro:CityFurnitureDetailAttribute")]
-    pub city_furniture_detail_attribute: Vec<CityFurnitureDetailAttribute>,
+    #[citygml(path = b"uro:frnDataQualityAttribute/uro:DataQualityAttribute")]
+    pub frn_data_quality_attribute: Option<DataQualityAttribute>,
 
     #[citygml(path = b"uro:frnDmAttribute")]
     pub frn_dm_attribute: Vec<DmAttributeProperty>, // -> uro:DmAttribute
@@ -741,6 +777,9 @@ pub struct SewerPipe {
 
     #[citygml(path = b"uro:frnFacilityTypeAttribute/uro:FacilityTypeAttribute")]
     pub frn_facility_type_attribute: Vec<FacilityTypeAttribute>,
+
+    #[citygml(path = b"uro:frnKeyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub frn_key_value_pair_attribute: Vec<KeyValuePairAttribute>,
 
     #[citygml(path = b"uro:occupierType")]
     pub occupier_type: Option<Code>,
@@ -796,17 +835,26 @@ pub struct SewerPipe {
     #[citygml(path = b"uro:lengthAttribute/uro:LengthAttribute")]
     pub length_attribute: Vec<LengthAttribute>,
 
-    #[citygml(path = b"uro:innerDiamiter")]
-    pub inner_diamiter: Option<Length>,
+    #[citygml(path = b"uro:innerDiameter")]
+    pub inner_diameter: Option<Length>,
 
-    #[citygml(path = b"uro:outerDiamiter")]
-    pub outer_diamiter: Option<Length>,
+    #[citygml(path = b"uro:outerDiameter")]
+    pub outer_diameter: Option<Length>,
 
     #[citygml(path = b"uro:sleeveType")]
     pub sleeve_type: Option<Code>,
 
     #[citygml(path = b"uro:slope")]
     pub slope: Option<Measure>,
+
+    #[citygml(path = b"uro:invertElevationUpstream")]
+    pub invert_elevation_upstream: Option<Length>,
+
+    #[citygml(path = b"uro:invertElevationDownstream")]
+    pub invert_elevation_downstream: Option<Length>,
+
+    #[citygml(path = b"uro:flowDirection")]
+    pub flow_direction: Option<bool>,
 }
 
 #[citygml_feature(name = "uro:TelecommunicationsCable")]
@@ -820,13 +868,14 @@ pub struct TelecommunicationsCable {
     #[citygml(path = b"frn:usage")]
     pub usage: Vec<Code>,
 
+    #[citygml(path = b"uro:cityFurnitureDetailAttribute/uro:CityFurnitureDetailAttribute")]
+    pub city_furniture_detail_attribute: Vec<CityFurnitureDetailAttribute>,
+
     #[citygml(
         path = b"uro:cityFurnitureDataQualityAttribute/uro:CityFurnitureDataQualityAttribute"
     )]
-    pub city_furniture_data_quality_attribute: Option<CityFurnitureDataQualityAttribute>,
-
-    #[citygml(path = b"uro:cityFurnitureDetailAttribute/uro:CityFurnitureDetailAttribute")]
-    pub city_furniture_detail_attribute: Vec<CityFurnitureDetailAttribute>,
+    #[citygml(path = b"uro:frnDataQualityAttribute/uro:DataQualityAttribute")]
+    pub frn_data_quality_attribute: Option<DataQualityAttribute>,
 
     #[citygml(path = b"uro:frnDmAttribute")]
     pub frn_dm_attribute: Vec<DmAttributeProperty>, // -> uro:DmAttribute
@@ -839,6 +888,9 @@ pub struct TelecommunicationsCable {
 
     #[citygml(path = b"uro:frnFacilityTypeAttribute/uro:FacilityTypeAttribute")]
     pub frn_facility_type_attribute: Vec<FacilityTypeAttribute>,
+
+    #[citygml(path = b"uro:frnKeyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub frn_key_value_pair_attribute: Vec<KeyValuePairAttribute>,
 
     #[citygml(path = b"uro:occupierType")]
     pub occupier_type: Option<Code>,
@@ -915,13 +967,14 @@ pub struct ThermalPipe {
     #[citygml(path = b"frn:usage")]
     pub usage: Vec<Code>,
 
+    #[citygml(path = b"uro:cityFurnitureDetailAttribute/uro:CityFurnitureDetailAttribute")]
+    pub city_furniture_detail_attribute: Vec<CityFurnitureDetailAttribute>,
+
     #[citygml(
         path = b"uro:cityFurnitureDataQualityAttribute/uro:CityFurnitureDataQualityAttribute"
     )]
-    pub city_furniture_data_quality_attribute: Option<CityFurnitureDataQualityAttribute>,
-
-    #[citygml(path = b"uro:cityFurnitureDetailAttribute/uro:CityFurnitureDetailAttribute")]
-    pub city_furniture_detail_attribute: Vec<CityFurnitureDetailAttribute>,
+    #[citygml(path = b"uro:frnDataQualityAttribute/uro:DataQualityAttribute")]
+    pub frn_data_quality_attribute: Option<DataQualityAttribute>,
 
     #[citygml(path = b"uro:frnDmAttribute")]
     pub frn_dm_attribute: Vec<DmAttributeProperty>, // -> uro:DmAttribute
@@ -934,6 +987,9 @@ pub struct ThermalPipe {
 
     #[citygml(path = b"uro:frnFacilityTypeAttribute/uro:FacilityTypeAttribute")]
     pub frn_facility_type_attribute: Vec<FacilityTypeAttribute>,
+
+    #[citygml(path = b"uro:frnKeyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub frn_key_value_pair_attribute: Vec<KeyValuePairAttribute>,
 
     #[citygml(path = b"uro:occupierType")]
     pub occupier_type: Option<Code>,
@@ -989,11 +1045,11 @@ pub struct ThermalPipe {
     #[citygml(path = b"uro:lengthAttribute/uro:LengthAttribute")]
     pub length_attribute: Vec<LengthAttribute>,
 
-    #[citygml(path = b"uro:innerDiamiter")]
-    pub inner_diamiter: Option<Length>,
+    #[citygml(path = b"uro:innerDiameter")]
+    pub inner_diameter: Option<Length>,
 
-    #[citygml(path = b"uro:outerDiamiter")]
-    pub outer_diamiter: Option<Length>,
+    #[citygml(path = b"uro:outerDiameter")]
+    pub outer_diameter: Option<Length>,
 
     #[citygml(path = b"uro:sleeveType")]
     pub sleeve_type: Option<Code>,
@@ -1010,13 +1066,14 @@ pub struct WaterPipe {
     #[citygml(path = b"frn:usage")]
     pub usage: Vec<Code>,
 
+    #[citygml(path = b"uro:cityFurnitureDetailAttribute/uro:CityFurnitureDetailAttribute")]
+    pub city_furniture_detail_attribute: Vec<CityFurnitureDetailAttribute>,
+
     #[citygml(
         path = b"uro:cityFurnitureDataQualityAttribute/uro:CityFurnitureDataQualityAttribute"
     )]
-    pub city_furniture_data_quality_attribute: Option<CityFurnitureDataQualityAttribute>,
-
-    #[citygml(path = b"uro:cityFurnitureDetailAttribute/uro:CityFurnitureDetailAttribute")]
-    pub city_furniture_detail_attribute: Vec<CityFurnitureDetailAttribute>,
+    #[citygml(path = b"uro:frnDataQualityAttribute/uro:DataQualityAttribute")]
+    pub frn_data_quality_attribute: Option<DataQualityAttribute>,
 
     #[citygml(path = b"uro:frnDmAttribute")]
     pub frn_dm_attribute: Vec<DmAttributeProperty>, // -> uro:DmAttribute
@@ -1029,6 +1086,9 @@ pub struct WaterPipe {
 
     #[citygml(path = b"uro:frnFacilityTypeAttribute/uro:FacilityTypeAttribute")]
     pub frn_facility_type_attribute: Vec<FacilityTypeAttribute>,
+
+    #[citygml(path = b"uro:frnKeyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub frn_key_value_pair_attribute: Vec<KeyValuePairAttribute>,
 
     #[citygml(path = b"uro:occupierType")]
     pub occupier_type: Option<Code>,
@@ -1084,11 +1144,11 @@ pub struct WaterPipe {
     #[citygml(path = b"uro:lengthAttribute/uro:LengthAttribute")]
     pub length_attribute: Vec<LengthAttribute>,
 
-    #[citygml(path = b"uro:innerDiamiter")]
-    pub inner_diamiter: Option<Length>,
+    #[citygml(path = b"uro:innerDiameter")]
+    pub inner_diameter: Option<Length>,
 
-    #[citygml(path = b"uro:outerDiamiter")]
-    pub outer_diamiter: Option<Length>,
+    #[citygml(path = b"uro:outerDiameter")]
+    pub outer_diameter: Option<Length>,
 
     #[citygml(path = b"uro:sleeveType")]
     pub sleeve_type: Option<Code>,

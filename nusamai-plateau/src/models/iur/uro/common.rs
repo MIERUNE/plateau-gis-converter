@@ -1,5 +1,98 @@
 use nusamai_citygml::{citygml_data, CityGmlElement, Code, Date, Length, Measure, Point, Uri};
 
+#[citygml_data(name = "uro:DataQualityAttribute")]
+pub struct DataQualityAttribute {
+    // PLATEAU 3.x compatibility
+    #[citygml(path = b"uro:srcScale")]
+    pub src_scale: Vec<Code>,
+
+    // PLATEAU 3.x compatibility
+    #[citygml(path = b"uro:geometrySrcDesc")]
+    pub geometry_src_desc: Vec<Code>,
+
+    // PLATEAU 3.x compatibility
+    #[citygml(path = b"uro:appearanceSrcDesc")]
+    pub appearance_src_desc: Vec<Code>,
+
+    #[citygml(path = b"uro:geometrySrcDesc0")]
+    pub geometry_src_desc0: Vec<Code>,
+
+    #[citygml(path = b"uro:geometrySrcDesc1")]
+    pub geometry_src_desc1: Vec<Code>,
+
+    #[citygml(path = b"uro:geometrySrcDesc2")]
+    pub geometry_src_desc2: Vec<Code>,
+
+    #[citygml(path = b"uro:geometrySrcDesc3")]
+    pub geometry_src_desc3: Vec<Code>,
+
+    #[citygml(path = b"uro:geometrySrcDesc4")]
+    pub geometry_src_desc4: Vec<Code>,
+
+    #[citygml(path = b"uro:thematicSrcDesc")]
+    pub thematic_src_desc: Vec<Code>,
+
+    #[citygml(path = b"uro:appearanceSrcDescLod0")]
+    pub appearance_src_desc_lod0: Vec<Code>,
+
+    #[citygml(path = b"uro:appearanceSrcDescLod1")]
+    pub appearance_src_desc_lod1: Vec<Code>,
+
+    #[citygml(path = b"uro:appearanceSrcDescLod2")]
+    pub appearance_src_desc_lod2: Vec<Code>,
+
+    #[citygml(path = b"uro:appearanceSrcDescLod3")]
+    pub appearance_src_desc_lod3: Vec<Code>,
+
+    #[citygml(path = b"uro:appearanceSrcDescLod4")]
+    pub appearance_src_desc_lod4: Vec<Code>,
+
+    #[citygml(path = b"uro:lodType")]
+    pub lod_type: Vec<Code>,
+
+    #[citygml(path = b"uro:lod1HeightType")]
+    pub lod1_height_type: Option<Code>,
+
+    #[citygml(path = b"uro:tranDataAcquisition")]
+    pub tran_data_acquisition: Option<String>,
+
+    #[citygml(path = b"uro:publicSurveyDataQualityAttribute/uro:PublicSurveyDataQualityAttribute")]
+    pub public_survey_data_quality_attribute: Option<PublicSurveyDataQualityAttribute>,
+}
+
+#[citygml_data(name = "uro:PublicSurveyDataQualityAttribute")]
+pub struct PublicSurveyDataQualityAttribute {
+    #[citygml(path = b"uro:srcScaleLod0")]
+    pub src_scale_lod0: Option<Code>,
+
+    #[citygml(path = b"uro:srcScaleLod1")]
+    pub src_scale_lod1: Option<Code>,
+
+    #[citygml(path = b"uro:srcScaleLod2")]
+    pub src_scale_lod2: Option<Code>,
+
+    #[citygml(path = b"uro:srcScaleLod3")]
+    pub src_scale_lod3: Option<Code>,
+
+    #[citygml(path = b"uro:srcScaleLod4")]
+    pub src_scale_lod4: Option<Code>,
+
+    #[citygml(path = b"uro:publicSurveySrcDescLod0")]
+    pub public_survey_src_desc_lod0: Vec<Code>,
+
+    #[citygml(path = b"uro:publicSurveySrcDescLod1")]
+    pub public_survey_src_desc_lod1: Vec<Code>,
+
+    #[citygml(path = b"uro:publicSurveySrcDescLod2")]
+    pub public_survey_src_desc_lod2: Vec<Code>,
+
+    #[citygml(path = b"uro:publicSurveySrcDescLod3")]
+    pub public_survey_src_desc_lod3: Vec<Code>,
+
+    #[citygml(path = b"uro:publicSurveySrcDescLod4")]
+    pub public_survey_src_desc_lod4: Vec<Code>,
+}
+
 #[citygml_data(name = "uro:UserDefinedValue")]
 pub struct UserDefinedValue {
     #[citygml(path = b"uro:stringValue")]

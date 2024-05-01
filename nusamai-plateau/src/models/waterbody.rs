@@ -17,10 +17,13 @@ pub struct WaterBody {
     pub bounded_by: Vec<WaterBoundarySurfaceProperty>, // -> wtr:_WaterBoundarySurface
 
     #[citygml(path = b"uro:floodingRiskAttribute")]
-    pub flooding_risk_attribute: Vec<uro::WaterBodyFloodingRiskAttributeProperty>, // -> uro:WaterBodyFloodingRiskAttribute
+    pub flooding_risk_attribute: Vec<uro::FloodingRiskAttributeProperty>, // -> uro:FloodingRiskAttribute
 
     #[citygml(path = b"uro:waterBodyDetailAttribute/uro:WaterBodyDetailAttribute")]
-    pub water_body_detail_attribute: Option<uro::WaterBodyDetailAttribute>,
+    pub water_body_detail_attribute: Vec<uro::WaterBodyDetailAttribute>,
+
+    #[citygml(path = b"uro:wtrDataQualityAttribute/uro:DataQualityAttribute")]
+    pub wtr_data_quality_attribute: Option<uro::DataQualityAttribute>,
 
     #[citygml(path = b"uro:wtrDmAttribute")]
     pub wtr_dm_attribute: Vec<uro::DmAttributeProperty>, // -> uro:DmAttribute
@@ -33,6 +36,9 @@ pub struct WaterBody {
 
     #[citygml(path = b"uro:wtrFacilityTypeAttribute/uro:FacilityTypeAttribute")]
     pub wtr_facility_type_attribute: Vec<uro::FacilityTypeAttribute>,
+
+    #[citygml(path = b"uro:wtrKeyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub wtr_key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
 }
 
 #[citygml_property(name = "wtr:_WaterBoundarySurfaceProperty")]

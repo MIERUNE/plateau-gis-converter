@@ -1,7 +1,7 @@
 pub mod appearance;
 pub mod bridge;
 pub mod building;
-pub mod cityfurniture;
+pub mod city_furniture;
 pub mod cityobjectgroup;
 pub mod core;
 pub mod generics;
@@ -16,7 +16,7 @@ pub mod waterbody;
 
 pub use bridge::Bridge;
 pub use building::Building;
-pub use cityfurniture::CityFurniture;
+pub use city_furniture::CityFurniture;
 pub use cityobjectgroup::CityObjectGroup;
 pub use generics::GenericCityObject;
 pub use iur::{urf, uro};

@@ -1,6 +1,4 @@
-use nusamai_citygml::{
-    citygml_data, citygml_property, CityGmlElement, Code, Date, GYear, Length, Measure,
-};
+use nusamai_citygml::{citygml_data, CityGmlElement, Code, Date, GYear, Length, Measure};
 
 #[citygml_data(name = "uro:BridgeStructureAttribute")]
 pub struct BridgeStructureAttribute {
@@ -90,98 +88,6 @@ pub struct ConstructionBaseAttribute {
 
     #[citygml(path = b"uro:purpose")]
     pub purpose: Option<Code>,
-}
-
-#[citygml_property(name = "uro:DisasterRiskAttributeProperty")]
-pub enum DisasterRiskAttributeProperty {
-    #[citygml(path = b"uro:HighTideRiskAttribute")]
-    HighTideRiskAttribute(HighTideRiskAttribute),
-    #[citygml(path = b"uro:InlandFloodingRiskAttribute")]
-    InlandFloodingRiskAttribute(InlandFloodingRiskAttribute),
-    #[citygml(path = b"uro:LandSlideRiskAttribute")]
-    LandSlideRiskAttribute(LandSlideRiskAttribute),
-    #[citygml(path = b"uro:RiverFloodingRiskAttribute")]
-    RiverFloodingRiskAttribute(RiverFloodingRiskAttribute),
-    #[citygml(path = b"uro:TsunamiRiskAttribute")]
-    TsunamiRiskAttribute(TsunamiRiskAttribute),
-}
-
-#[citygml_data(name = "uro:HighTideRiskAttribute")]
-pub struct HighTideRiskAttribute {
-    #[citygml(path = b"uro:description", required)]
-    pub description: Option<Code>,
-
-    #[citygml(path = b"uro:rank")]
-    pub rank: Option<Code>,
-
-    #[citygml(path = b"uro:rankOrg")]
-    pub rank_org: Option<Code>,
-
-    #[citygml(path = b"uro:depth")]
-    pub depth: Option<Length>,
-}
-
-#[citygml_data(name = "uro:InlandFloodingRiskAttribute")]
-pub struct InlandFloodingRiskAttribute {
-    #[citygml(path = b"uro:description", required)]
-    pub description: Option<Code>,
-
-    #[citygml(path = b"uro:rank")]
-    pub rank: Option<Code>,
-
-    #[citygml(path = b"uro:rankOrg")]
-    pub rank_org: Option<Code>,
-
-    #[citygml(path = b"uro:depth")]
-    pub depth: Option<Length>,
-}
-
-#[citygml_data(name = "uro:LandSlideRiskAttribute")]
-pub struct LandSlideRiskAttribute {
-    #[citygml(path = b"uro:description", required)]
-    pub description: Option<Code>,
-
-    #[citygml(path = b"uro:areaType", required)]
-    pub area_type: Option<Code>,
-}
-
-#[citygml_data(name = "uro:RiverFloodingRiskAttribute")]
-pub struct RiverFloodingRiskAttribute {
-    #[citygml(path = b"uro:description", required)]
-    pub description: Option<Code>,
-
-    #[citygml(path = b"uro:rank")]
-    pub rank: Option<Code>,
-
-    #[citygml(path = b"uro:rankOrg")]
-    pub rank_org: Option<Code>,
-
-    #[citygml(path = b"uro:depth")]
-    pub depth: Option<Length>,
-
-    #[citygml(path = b"uro:adminType", required)]
-    pub admin_type: Option<Code>,
-
-    #[citygml(path = b"uro:scale", required)]
-    pub scale: Option<Code>,
-
-    #[citygml(path = b"uro:duration")]
-    pub duration: Option<Measure>,
-}
-
-#[citygml_data(name = "uro:TsunamiRiskAttribute")]
-pub struct TsunamiRiskAttribute {
-    #[citygml(path = b"uro:description", required)]
-    pub description: Option<Code>,
-
-    #[citygml(path = b"uro:rank")]
-    pub rank: Option<Code>,
-
-    #[citygml(path = b"uro:rankOrg")]
-    pub rank_org: Option<Code>,
-
-    #[citygml(path = b"uro:depth")]
-    pub depth: Option<Length>,
 }
 
 #[citygml_data(name = "uro:ConstructionRiskAssessmentAttribute")]
