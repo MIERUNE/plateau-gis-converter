@@ -3,6 +3,8 @@ use nusamai_citygml::{
     Measure, Uri,
 };
 
+use crate::models::iur::uro;
+
 #[citygml_property(name = "urf:DistrictFacilityProperty")]
 pub enum DistrictFacilityProperty {
     #[citygml(path = b"urf:DistrictFacility")]
@@ -106,11 +108,20 @@ pub struct Zone {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 }
 
 #[citygml_feature(name = "urf:Agreement")]
@@ -184,11 +195,20 @@ pub struct Agreement {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 
     #[citygml(path = b"urf:applicableArea")]
     pub applicable_area: Option<Measure>,
@@ -268,11 +288,20 @@ pub struct AircraftNoiseControlZone {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 
     #[citygml(path = b"urf:areaInTotal")]
     pub area_in_total: Option<Measure>,
@@ -349,11 +378,20 @@ pub struct AreaClassification {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 
     #[citygml(path = b"urf:population")]
     pub population: Option<i64>,
@@ -430,11 +468,20 @@ pub struct CollectiveFacilitiesForReconstruction {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 
     #[citygml(path = b"urf:number")]
     pub number: Option<String>,
@@ -541,11 +588,20 @@ pub struct CollectiveFacilitiesForReconstructionAndRevitalization {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 
     #[citygml(path = b"urf:number")]
     pub number: Option<String>,
@@ -652,11 +708,20 @@ pub struct CollectiveFacilitiesForTsunamiDisasterPrevention {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 
     #[citygml(path = b"urf:number")]
     pub number: Option<String>,
@@ -763,11 +828,20 @@ pub struct CollectiveGovernmentAndPublicOfficeFacilities {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 
     #[citygml(path = b"urf:number")]
     pub number: Option<String>,
@@ -859,11 +933,20 @@ pub struct CollectiveHousingFacilities {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 
     #[citygml(path = b"urf:number")]
     pub number: Option<String>,
@@ -967,11 +1050,20 @@ pub struct CollectiveUrbanDisasterPreventionFacilities {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 
     #[citygml(path = b"urf:number")]
     pub number: Option<String>,
@@ -1069,11 +1161,20 @@ pub struct ConservationZoneForClustersOfTraditionalStructures {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 
     #[citygml(path = b"urf:areaInTotal")]
     pub area_in_total: Option<Measure>,
@@ -1150,11 +1251,20 @@ pub struct DisasterPreventionBlockImprovementProject {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 
     #[citygml(path = b"urf:scheduledExecutor")]
     pub scheduled_executor: Option<String>,
@@ -1240,11 +1350,20 @@ pub struct DisasterPreventionBlockImprovementZonePlan {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 
     #[citygml(path = b"urf:objectives")]
     pub objectives: Option<String>,
@@ -1339,11 +1458,20 @@ pub struct DistributionBusinessPark {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 
     #[citygml(path = b"urf:number")]
     pub number: Option<String>,
@@ -1447,11 +1575,20 @@ pub struct DistributionBusinessZone {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 
     #[citygml(path = b"urf:areaInTotal")]
     pub area_in_total: Option<Measure>,
@@ -1531,11 +1668,20 @@ pub struct District {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 
     #[citygml(path = b"urf:buildingRestrictions")]
     pub building_restrictions: Option<String>,
@@ -1669,11 +1815,20 @@ pub struct DistrictDevelopmentPlan {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 
     #[citygml(path = b"urf:districtFacilitiesAllocation")]
     pub district_facilities_allocation: Option<String>,
@@ -1768,11 +1923,20 @@ pub struct DistrictFacility {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 }
 
 #[citygml_feature(
@@ -1848,11 +2012,20 @@ pub struct DistrictImprovementPlanForDisasterPreventionBlockImprovementZonePlan 
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 
     #[citygml(path = b"urf:districtFacilitiesAllocation")]
     pub district_facilities_allocation: Option<String>,
@@ -1949,11 +2122,20 @@ pub struct DistrictImprovementPlanForHistoricSceneryMaintenanceAndImprovementDis
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 
     #[citygml(path = b"urf:districtFacilitiesAllocation")]
     pub district_facilities_allocation: Option<String>,
@@ -2048,11 +2230,20 @@ pub struct DistrictPlan {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 
     #[citygml(path = b"urf:objectives")]
     pub objectives: Option<String>,
@@ -2144,11 +2335,20 @@ pub struct DistrictsAndZones {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 
     #[citygml(path = b"urf:areaInTotal")]
     pub area_in_total: Option<Measure>,
@@ -2225,11 +2425,20 @@ pub struct EducationalAndCulturalFacility {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 
     #[citygml(path = b"urf:number")]
     pub number: Option<String>,
@@ -2309,11 +2518,20 @@ pub struct ExceptionalFloorAreaRateDistrict {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 
     #[citygml(path = b"urf:areaInTotal")]
     pub area_in_total: Option<Measure>,
@@ -2393,11 +2611,20 @@ pub struct FirePreventionDistrict {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 
     #[citygml(path = b"urf:areaInTotal")]
     pub area_in_total: Option<Measure>,
@@ -2474,11 +2701,20 @@ pub struct FireProtectionFacility {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 
     #[citygml(path = b"urf:number")]
     pub number: Option<String>,
@@ -2564,11 +2800,20 @@ pub struct FloodPreventionFacility {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 
     #[citygml(path = b"urf:number")]
     pub number: Option<String>,
@@ -2654,11 +2899,20 @@ pub struct GlobalHubCityDevelopmentProject {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 
     #[citygml(path = b"urf:implementationBody")]
     pub implementation_body: Option<String>,
@@ -2741,11 +2995,20 @@ pub struct GreenSpaceConservationDistrict {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 
     #[citygml(path = b"urf:areaInTotal")]
     pub area_in_total: Option<Measure>,
@@ -2822,11 +3085,20 @@ pub struct HeightControlDistrict {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 
     #[citygml(path = b"urf:areaInTotal")]
     pub area_in_total: Option<Measure>,
@@ -2909,11 +3181,20 @@ pub struct HighLevelUseDistrict {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 
     #[citygml(path = b"urf:areaInTotal")]
     pub area_in_total: Option<Measure>,
@@ -3005,11 +3286,20 @@ pub struct HighRiseResidentialAttractionDistrict {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 
     #[citygml(path = b"urf:areaInTotal")]
     pub area_in_total: Option<Measure>,
@@ -3095,11 +3385,20 @@ pub struct HistoricSceneryMaintenanceAndImprovementDistrictPlan {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 
     #[citygml(path = b"urf:objectives")]
     pub objectives: Option<String>,
@@ -3188,11 +3487,20 @@ pub struct HousingControlArea {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 
     #[citygml(path = b"urf:areaInTotal")]
     pub area_in_total: Option<Measure>,
@@ -3269,11 +3577,20 @@ pub struct IndustrialParkDevelopmentProject {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 
     #[citygml(path = b"urf:scheduledExecutor")]
     pub scheduled_executor: Option<String>,
@@ -3356,11 +3673,20 @@ pub struct LandReadjustmentProject {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 
     #[citygml(path = b"urf:scheduledExecutor")]
     pub scheduled_executor: Option<String>,
@@ -3443,11 +3769,20 @@ pub struct LandReadjustmentPromotionArea {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 
     #[citygml(path = b"urf:developmentPolicy")]
     pub development_policy: Option<String>,
@@ -3527,11 +3862,20 @@ pub struct LandReadjustmentPromotionAreasForCoreBusinessUrbanDevelopment {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 
     #[citygml(path = b"urf:developmentPolicy")]
     pub development_policy: Option<String>,
@@ -3611,11 +3955,20 @@ pub struct LandscapeZone {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 
     #[citygml(path = b"urf:areaInTotal")]
     pub area_in_total: Option<Measure>,
@@ -3707,11 +4060,20 @@ pub struct MarketsSlaughterhousesCrematoria {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 
     #[citygml(path = b"urf:number")]
     pub number: Option<String>,
@@ -3791,11 +4153,20 @@ pub struct MedicalFacility {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 
     #[citygml(path = b"urf:number")]
     pub number: Option<String>,
@@ -3875,11 +4246,20 @@ pub struct NewHousingAndUrbanDevelopmentProject {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 
     #[citygml(path = b"urf:scheduledExecutor")]
     pub scheduled_executor: Option<String>,
@@ -3965,11 +4345,20 @@ pub struct NewUrbanInfrastructureProject {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 
     #[citygml(path = b"urf:scheduledExecutor")]
     pub scheduled_executor: Option<String>,
@@ -4055,11 +4444,20 @@ pub struct OpenSpaceForPublicUse {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 
     #[citygml(path = b"urf:number")]
     pub number: Option<String>,
@@ -4142,11 +4540,20 @@ pub struct ParkingPlaceDevelopmentZone {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 
     #[citygml(path = b"urf:areaInTotal")]
     pub area_in_total: Option<Measure>,
@@ -4223,11 +4630,20 @@ pub struct PortZone {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 
     #[citygml(path = b"urf:areaInTotal")]
     pub area_in_total: Option<Measure>,
@@ -4307,11 +4723,20 @@ pub struct PrivateUrbanRenewalProjectPlan {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 
     #[citygml(path = b"urf:developer")]
     pub developer: Option<String>,
@@ -4391,11 +4816,20 @@ pub struct ProductiveGreenZone {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 
     #[citygml(path = b"urf:areaInTotal")]
     pub area_in_total: Option<Measure>,
@@ -4478,11 +4912,20 @@ pub struct ProjectPromotionArea {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 
     #[citygml(path = b"urf:developmentPolicy")]
     pub development_policy: Option<String>,
@@ -4562,11 +5005,20 @@ pub struct PromotionDistrict {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 }
 
 #[citygml_feature(name = "urf:QuasiUrbanPlanningArea")]
@@ -4640,11 +5092,20 @@ pub struct QuasiUrbanPlanningArea {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 
     #[citygml(path = b"urf:population")]
     pub population: Option<i64>,
@@ -4727,11 +5188,20 @@ pub struct Regulation {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 }
 
 #[citygml_feature(name = "urf:ResidenceAttractionArea")]
@@ -4805,11 +5275,20 @@ pub struct ResidenceAttractionArea {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 }
 
 #[citygml_feature(name = "urf:ResidentialBlockConstructionProject")]
@@ -4883,11 +5362,20 @@ pub struct ResidentialBlockConstructionProject {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 
     #[citygml(path = b"urf:scheduledExecutor")]
     pub scheduled_executor: Option<String>,
@@ -4976,11 +5464,20 @@ pub struct ResidentialBlockConstructionPromotionArea {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 
     #[citygml(path = b"urf:developmentPolicy")]
     pub development_policy: Option<String>,
@@ -5060,11 +5557,20 @@ pub struct ResidentialEnvironmentImprovementDistrict {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 
     #[citygml(path = b"urf:areaInTotal")]
     pub area_in_total: Option<Measure>,
@@ -5159,11 +5665,20 @@ pub struct RoadsideDistrictFacility {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 }
 
 #[citygml_feature(name = "urf:RoadsideDistrictImprovementPlan")]
@@ -5237,11 +5752,20 @@ pub struct RoadsideDistrictImprovementPlan {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 
     #[citygml(path = b"urf:districtFacilitiesAllocation")]
     pub district_facilities_allocation: Option<String>,
@@ -5339,11 +5863,20 @@ pub struct RoadsideDistrictPlan {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 
     #[citygml(path = b"urf:objectives")]
     pub objectives: Option<String>,
@@ -5435,11 +5968,20 @@ pub struct RuralDistrictFacility {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 }
 
 #[citygml_feature(name = "urf:RuralDistrictImprovementPlan")]
@@ -5513,11 +6055,20 @@ pub struct RuralDistrictImprovementPlan {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 
     #[citygml(path = b"urf:districtFacilitiesAllocation")]
     pub district_facilities_allocation: Option<String>,
@@ -5615,11 +6166,20 @@ pub struct RuralDistrictPlan {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 
     #[citygml(path = b"urf:objectives")]
     pub objectives: Option<String>,
@@ -5705,11 +6265,20 @@ pub struct SandControlFacility {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 
     #[citygml(path = b"urf:number")]
     pub number: Option<String>,
@@ -5795,11 +6364,20 @@ pub struct ScenicDistrict {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 
     #[citygml(path = b"urf:areaInTotal")]
     pub area_in_total: Option<Measure>,
@@ -5888,11 +6466,20 @@ pub struct ScheduledAreaForCollectiveGovernmentAndPublicOfficeFacilities {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 
     #[citygml(path = b"urf:scheduledExecutor", required)]
     pub scheduled_executor: Option<String>,
@@ -5969,11 +6556,20 @@ pub struct ScheduledAreaForCollectiveHousingFacilities {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 
     #[citygml(path = b"urf:scheduledExecutor", required)]
     pub scheduled_executor: Option<String>,
@@ -6050,11 +6646,20 @@ pub struct ScheduledAreaForDistributionBusinessPark {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 
     #[citygml(path = b"urf:scheduledExecutor", required)]
     pub scheduled_executor: Option<String>,
@@ -6131,11 +6736,20 @@ pub struct ScheduledAreaForIndustrialParkDevelopmentProjects {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 
     #[citygml(path = b"urf:scheduledExecutor", required)]
     pub scheduled_executor: Option<String>,
@@ -6212,11 +6826,20 @@ pub struct ScheduledAreaForNewHousingAndUrbanDevelopmentProjects {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 
     #[citygml(path = b"urf:scheduledExecutor", required)]
     pub scheduled_executor: Option<String>,
@@ -6293,11 +6916,20 @@ pub struct ScheduledAreaForNewUrbanInfrastructureProjects {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 
     #[citygml(path = b"urf:scheduledExecutor", required)]
     pub scheduled_executor: Option<String>,
@@ -6374,11 +7006,20 @@ pub struct ScheduledAreaForUrbanDevelopmentProject {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 
     #[citygml(path = b"urf:scheduledExecutor", required)]
     pub scheduled_executor: Option<String>,
@@ -6455,11 +7096,20 @@ pub struct SedimentDisasterProneArea {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 
     #[citygml(path = b"urf:disasterType", required)]
     pub disaster_type: Option<Code>,
@@ -6548,11 +7198,20 @@ pub struct SnowProtectionFacility {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 
     #[citygml(path = b"urf:number")]
     pub number: Option<String>,
@@ -6638,11 +7297,20 @@ pub struct SocialWelfareFacility {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 
     #[citygml(path = b"urf:number")]
     pub number: Option<String>,
@@ -6722,11 +7390,20 @@ pub struct SpecialGreenSpaceConservationDistrict {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 
     #[citygml(path = b"urf:areaInTotal")]
     pub area_in_total: Option<Measure>,
@@ -6806,11 +7483,20 @@ pub struct SpecialUrbanRenaissanceDistrict {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 
     #[citygml(path = b"urf:areaInTotal")]
     pub area_in_total: Option<Measure>,
@@ -6911,11 +7597,20 @@ pub struct SpecialUseAttractionDistrict {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 
     #[citygml(path = b"urf:areaInTotal")]
     pub area_in_total: Option<Measure>,
@@ -7010,11 +7705,20 @@ pub struct SpecialUseDistrict {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 
     #[citygml(path = b"urf:areaInTotal")]
     pub area_in_total: Option<Measure>,
@@ -7097,11 +7801,20 @@ pub struct SpecialUseRestrictionDistrict {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 
     #[citygml(path = b"urf:areaInTotal")]
     pub area_in_total: Option<Measure>,
@@ -7184,11 +7897,20 @@ pub struct SpecialZoneForPreservationOfHistoricalLandscape {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 
     #[citygml(path = b"urf:areaInTotal")]
     pub area_in_total: Option<Measure>,
@@ -7265,11 +7987,20 @@ pub struct SpecifiedBlock {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 
     #[citygml(path = b"urf:areaInTotal")]
     pub area_in_total: Option<Measure>,
@@ -7355,11 +8086,20 @@ pub struct SpecifiedBuildingZoneImprovementPlan {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 
     #[citygml(path = b"urf:districtFacilitiesAllocation")]
     pub district_facilities_allocation: Option<String>,
@@ -7454,11 +8194,20 @@ pub struct SpecifiedDisasterPreventionBlockImprovementZone {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 
     #[citygml(path = b"urf:areaInTotal")]
     pub area_in_total: Option<Measure>,
@@ -7547,11 +8296,20 @@ pub struct SpecifiedUrgentUrbanRenewalArea {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 
     #[citygml(path = b"urf:developmentPolicy")]
     pub development_policy: Option<String>,
@@ -7640,11 +8398,20 @@ pub struct SupplyFacility {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 
     #[citygml(path = b"urf:number")]
     pub number: Option<String>,
@@ -7727,11 +8494,20 @@ pub struct TelecommunicationFacility {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 
     #[citygml(path = b"urf:number")]
     pub number: Option<String>,
@@ -7817,11 +8593,20 @@ pub struct TideFacility {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 
     #[citygml(path = b"urf:number")]
     pub number: Option<String>,
@@ -7907,11 +8692,20 @@ pub struct TrafficFacility {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 
     #[citygml(path = b"urf:number")]
     pub number: Option<String>,
@@ -8020,11 +8814,20 @@ pub struct TreatmentFacility {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 
     #[citygml(path = b"urf:number")]
     pub number: Option<String>,
@@ -8107,11 +8910,20 @@ pub struct TreePlantingDistrict {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 
     #[citygml(path = b"urf:areaInTotal")]
     pub area_in_total: Option<Measure>,
@@ -8191,11 +9003,20 @@ pub struct UnclassifiedBlankArea {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 }
 
 #[citygml_feature(name = "urf:UnclassifiedUseDistrict")]
@@ -8269,11 +9090,20 @@ pub struct UnclassifiedUseDistrict {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 }
 
 #[citygml_feature(name = "urf:UnusedLandUsePromotionArea")]
@@ -8347,11 +9177,20 @@ pub struct UnusedLandUsePromotionArea {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 }
 
 #[citygml_feature(name = "urf:UrbanDevelopmentProject")]
@@ -8425,11 +9264,20 @@ pub struct UrbanDevelopmentProject {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 
     #[citygml(path = b"urf:scheduledExecutor")]
     pub scheduled_executor: Option<String>,
@@ -8506,11 +9354,20 @@ pub struct UrbanDisasterRecoveryPromotionArea {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 
     #[citygml(path = b"urf:expirationDate", required)]
     pub expiration_date: Option<Date>,
@@ -8593,11 +9450,20 @@ pub struct UrbanFacility {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 
     #[citygml(path = b"urf:number")]
     pub number: Option<String>,
@@ -8677,11 +9543,20 @@ pub struct UrbanFacilityStipulatedByCabinetOrder {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 
     #[citygml(path = b"urf:number")]
     pub number: Option<String>,
@@ -8767,11 +9642,20 @@ pub struct UrbanFunctionAttractionArea {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 }
 
 #[citygml_feature(name = "urf:UrbanPlanningArea")]
@@ -8845,11 +9729,20 @@ pub struct UrbanPlanningArea {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 
     #[citygml(path = b"urf:areaClassification", required)]
     pub area_classification: Option<Code>,
@@ -8947,11 +9840,20 @@ pub struct UrbanRedevelopmentProject {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 
     #[citygml(path = b"urf:scheduledExecutor")]
     pub scheduled_executor: Option<String>,
@@ -9046,11 +9948,20 @@ pub struct UrbanRedevelopmentPromotionArea {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 
     #[citygml(path = b"urf:developmentPolicy")]
     pub development_policy: Option<String>,
@@ -9136,11 +10047,20 @@ pub struct UrbanRenewalProject {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 
     #[citygml(path = b"urf:scheduledExecutor")]
     pub scheduled_executor: Option<String>,
@@ -9235,11 +10155,20 @@ pub struct UrgentUrbanRenewalArea {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 
     #[citygml(path = b"urf:developmentPolicy")]
     pub development_policy: Option<String>,
@@ -9325,11 +10254,20 @@ pub struct UseDistrict {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 
     #[citygml(path = b"urf:areaInTotal")]
     pub area_in_total: Option<Measure>,
@@ -9442,11 +10380,20 @@ pub struct Waterway {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 
     #[citygml(path = b"urf:number")]
     pub number: Option<String>,
@@ -9541,11 +10488,20 @@ pub struct WindProtectionFacility {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 
     #[citygml(path = b"urf:number")]
     pub number: Option<String>,
@@ -9631,11 +10587,20 @@ pub struct ZonalDisasterPreventionFacility {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 
     #[citygml(path = b"urf:facilityType", required)]
     pub facility_type: Option<Code>,
@@ -9712,11 +10677,20 @@ pub struct ZoneForPreservationOfHistoricalLandscape {
     #[citygml(path = b"urf:surveyYear")]
     pub survey_year: Option<GYear>,
 
+    #[citygml(path = b"urf:keyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
+
+    #[citygml(path = b"urf:dataQualityAttribute/uro:DataQualityAttribute")]
+    pub data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"urf:boundary/urf:Boundary")]
     pub boundary: Vec<Boundary>,
 
     #[citygml(path = b"urf:location")]
     pub location: Option<String>,
+
+    #[citygml(path = b"urf:urbanParkAttribute/urf:UrbanParkAttribute")]
+    pub urban_park_attribute: Option<UrbanParkAttribute>,
 
     #[citygml(path = b"urf:areaInTotal")]
     pub area_in_total: Option<Measure>,
@@ -9920,10 +10894,31 @@ pub struct ParkingPlaceAttribute {
     pub storeys_below_ground: Option<u64>,
 }
 
+#[citygml_data(name = "urf:UrbanParkAttribute")]
+pub struct UrbanParkAttribute {
+    #[citygml(path = b"urf:parkCode", required)]
+    pub park_code: Option<Code>,
+
+    #[citygml(path = b"urf:startFrom", required)]
+    pub start_from: Option<Date>,
+
+    #[citygml(path = b"urf:breakdownOfNominalArea/urf:BreakdownOfNominalArea")]
+    pub breakdown_of_nominal_area: Vec<BreakdownOfNominalArea>,
+}
+
 #[citygml_data(name = "urf:VehicleTerminalAttribute")]
 pub struct VehicleTerminalAttribute {
     #[citygml(path = b"urf:terminalType", required)]
     pub terminal_type: Option<Code>,
+}
+
+#[citygml_data(name = "urf:BreakdownOfNominalArea")]
+pub struct BreakdownOfNominalArea {
+    #[citygml(path = b"urf:breakdown", required)]
+    pub breakdown: Option<String>,
+
+    #[citygml(path = b"urf:areaInSquareMeter", required)]
+    pub area_in_square_meter: Option<Measure>,
 }
 
 #[citygml_data(name = "urf:Boundary")]
