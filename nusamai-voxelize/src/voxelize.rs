@@ -1,25 +1,24 @@
+use hashbrown::HashMap;
 use nalgebra::{distance, ArrayStorage, Const, Matrix, Point3, Vector3};
-use std::collections::HashSet;
 
 #[derive(Eq, PartialEq, Hash, Debug)]
 pub struct Voxel {
-    pub x: i32,
-    pub y: i32,
-    pub z: i32,
     pub color: [u8; 3],
 }
 
+pub type VoxelPosition = [i32; 3];
+
 pub trait MeshVoxelizer {
-    fn voxelize(&self, triangles: &[[f64; 3]], voxel_size: f64) -> HashSet<Voxel>;
+    fn voxelize(&self, triangles: &[[f64; 3]], voxel_size: f64) -> HashMap<VoxelPosition, Voxel>;
 }
 
 pub struct DdaVoxelizer {}
 
 impl MeshVoxelizer for DdaVoxelizer {
-    fn voxelize(&self, triangles: &[[f64; 3]], voxel_size: f64) -> HashSet<Voxel> {
+    fn voxelize(&self, triangles: &[[f64; 3]], voxel_size: f64) -> HashMap<VoxelPosition, Voxel> {
         // 占有されたボクセルを格納する
         // HashSetは重複を許さない
-        let mut occupied_voxels = HashSet::new();
+        let mut occupied_voxels: HashMap<VoxelPosition, Voxel> = HashMap::new();
 
         // indicesの要素を3つずつ取り出して三角形を構築
         for t in triangles.chunks(3) {
@@ -31,7 +30,7 @@ impl MeshVoxelizer for DdaVoxelizer {
 }
 
 fn draw_line(
-    voxels: &mut HashSet<Voxel>,
+    voxels: &mut HashMap<VoxelPosition, Voxel>,
     start: Matrix<f64, Const<3>, Const<1>, ArrayStorage<f64, 3, 1>>,
     end: Matrix<f64, Const<3>, Const<1>, ArrayStorage<f64, 3, 1>>,
     voxel_size: f64,
@@ -63,13 +62,15 @@ fn draw_line(
     for _ in 0..=steps {
         // ボクセルの座標計算
         // 現在の座標をボクセルのサイズで割り、切り捨てることでボクセルの格子座標（整数値）を算出
+        let position = [
+            (current_voxel[0] / voxel_size).floor() as i32,
+            (current_voxel[1] / voxel_size).floor() as i32,
+            (current_voxel[2] / voxel_size).floor() as i32,
+        ];
         let voxel = Voxel {
-            x: (current_voxel[0] / voxel_size).floor() as i32,
-            y: (current_voxel[1] / voxel_size).floor() as i32,
-            z: (current_voxel[2] / voxel_size).floor() as i32,
             color: [255, 255, 255],
         };
-        voxels.insert(voxel);
+        voxels.insert(position, voxel);
         // 現在の座標を更新
         current_voxel[0] += step_size[0];
         current_voxel[1] += step_size[1];
@@ -77,7 +78,11 @@ fn draw_line(
     }
 }
 
-fn fill_triangle(voxels: &mut HashSet<Voxel>, voxel_size: f64, triangle: &[[f64; 3]]) {
+fn fill_triangle(
+    voxels: &mut HashMap<VoxelPosition, Voxel>,
+    voxel_size: f64,
+    triangle: &[[f64; 3]],
+) {
     if triangle.len() != 3 {
         panic!("The number of vertices is not 3")
     }
@@ -95,24 +100,24 @@ fn fill_triangle(voxels: &mut HashSet<Voxel>, voxel_size: f64, triangle: &[[f64;
         let p2_floor = p2.map(|y| (y + 0.5).floor());
         let p3_floor = p3.map(|z| (z + 0.5).floor());
 
-        voxels.insert(Voxel {
-            x: p1_floor.x as i32,
-            y: p1_floor.y as i32,
-            z: p1_floor.z as i32,
-            color: [255, 255, 255],
-        });
-        voxels.insert(Voxel {
-            x: p2_floor.x as i32,
-            y: p2_floor.y as i32,
-            z: p2_floor.z as i32,
-            color: [255, 255, 255],
-        });
-        voxels.insert(Voxel {
-            x: p3_floor.x as i32,
-            y: p3_floor.y as i32,
-            z: p3_floor.z as i32,
-            color: [255, 255, 255],
-        });
+        voxels.insert(
+            [p1_floor.x as i32, p1_floor.y as i32, p1_floor.z as i32],
+            Voxel {
+                color: [255, 255, 255],
+            },
+        );
+        voxels.insert(
+            [p2_floor.x as i32, p2_floor.y as i32, p2_floor.z as i32],
+            Voxel {
+                color: [255, 255, 255],
+            },
+        );
+        voxels.insert(
+            [p3_floor.x as i32, p3_floor.y as i32, p3_floor.z as i32],
+            Voxel {
+                color: [255, 255, 255],
+            },
+        );
     }
 
     // p1からp2に伸びるベクトルと、p1からp3に伸びるベクトルを考える
@@ -427,13 +432,13 @@ mod tests {
         let voxelizer = DdaVoxelizer {};
         let occupied_voxels = voxelizer.voxelize(&triangles, voxel_size);
 
-        let mut test_voxels: HashSet<Voxel> = HashSet::new();
-        test_voxels.insert(Voxel {
-            x: 0,
-            y: 0,
-            z: 0,
-            color: [255, 255, 255],
-        });
+        let mut test_voxels: HashMap<VoxelPosition, Voxel> = HashMap::new();
+        test_voxels.insert(
+            [0, 0, 0],
+            Voxel {
+                color: [255, 255, 255],
+            },
+        );
 
         assert_eq!(occupied_voxels, test_voxels);
     }
@@ -478,31 +483,31 @@ mod tests {
         let voxelizer = DdaVoxelizer {};
         let occupied_voxels = voxelizer.voxelize(&triangles, voxel_size);
 
-        let mut test_voxels: HashSet<Voxel> = HashSet::new();
-        test_voxels.insert(Voxel {
-            x: 0,
-            y: 0,
-            z: 0,
-            color: [255, 255, 255],
-        });
-        test_voxels.insert(Voxel {
-            x: 1,
-            y: 0,
-            z: 0,
-            color: [255, 255, 255],
-        });
-        test_voxels.insert(Voxel {
-            x: 0,
-            y: 1,
-            z: 0,
-            color: [255, 255, 255],
-        });
-        test_voxels.insert(Voxel {
-            x: 1,
-            y: 1,
-            z: 0,
-            color: [255, 255, 255],
-        });
+        let mut test_voxels: HashMap<VoxelPosition, Voxel> = HashMap::new();
+        test_voxels.insert(
+            [0, 0, 0],
+            Voxel {
+                color: [255, 255, 255],
+            },
+        );
+        test_voxels.insert(
+            [1, 0, 0],
+            Voxel {
+                color: [255, 255, 255],
+            },
+        );
+        test_voxels.insert(
+            [0, 1, 0],
+            Voxel {
+                color: [255, 255, 255],
+            },
+        );
+        test_voxels.insert(
+            [1, 1, 0],
+            Voxel {
+                color: [255, 255, 255],
+            },
+        );
 
         assert_eq!(occupied_voxels, test_voxels);
     }
@@ -553,103 +558,103 @@ mod tests {
         let voxelizer = DdaVoxelizer {};
         let occupied_voxels = voxelizer.voxelize(&triangles, voxel_size);
 
-        let mut test_voxels: HashSet<Voxel> = HashSet::new();
-        test_voxels.insert(Voxel {
-            x: 0,
-            y: 0,
-            z: 0,
-            color: [255, 255, 255],
-        });
-        test_voxels.insert(Voxel {
-            x: 1,
-            y: 0,
-            z: 0,
-            color: [255, 255, 255],
-        });
-        test_voxels.insert(Voxel {
-            x: 2,
-            y: 0,
-            z: 0,
-            color: [255, 255, 255],
-        });
-        test_voxels.insert(Voxel {
-            x: 3,
-            y: 0,
-            z: 0,
-            color: [255, 255, 255],
-        });
-        test_voxels.insert(Voxel {
-            x: 0,
-            y: 1,
-            z: 0,
-            color: [255, 255, 255],
-        });
-        test_voxels.insert(Voxel {
-            x: 1,
-            y: 1,
-            z: 0,
-            color: [255, 255, 255],
-        });
-        test_voxels.insert(Voxel {
-            x: 2,
-            y: 1,
-            z: 0,
-            color: [255, 255, 255],
-        });
-        test_voxels.insert(Voxel {
-            x: 3,
-            y: 1,
-            z: 0,
-            color: [255, 255, 255],
-        });
-        test_voxels.insert(Voxel {
-            x: 0,
-            y: 2,
-            z: 0,
-            color: [255, 255, 255],
-        });
-        test_voxels.insert(Voxel {
-            x: 1,
-            y: 2,
-            z: 0,
-            color: [255, 255, 255],
-        });
-        test_voxels.insert(Voxel {
-            x: 2,
-            y: 2,
-            z: 0,
-            color: [255, 255, 255],
-        });
-        test_voxels.insert(Voxel {
-            x: 3,
-            y: 2,
-            z: 0,
-            color: [255, 255, 255],
-        });
-        test_voxels.insert(Voxel {
-            x: 0,
-            y: 3,
-            z: 0,
-            color: [255, 255, 255],
-        });
-        test_voxels.insert(Voxel {
-            x: 1,
-            y: 3,
-            z: 0,
-            color: [255, 255, 255],
-        });
-        test_voxels.insert(Voxel {
-            x: 2,
-            y: 3,
-            z: 0,
-            color: [255, 255, 255],
-        });
-        test_voxels.insert(Voxel {
-            x: 3,
-            y: 3,
-            z: 0,
-            color: [255, 255, 255],
-        });
+        let mut test_voxels: HashMap<VoxelPosition, Voxel> = HashMap::new();
+        test_voxels.insert(
+            [0, 0, 0],
+            Voxel {
+                color: [255, 255, 255],
+            },
+        );
+        test_voxels.insert(
+            [1, 0, 0],
+            Voxel {
+                color: [255, 255, 255],
+            },
+        );
+        test_voxels.insert(
+            [2, 0, 0],
+            Voxel {
+                color: [255, 255, 255],
+            },
+        );
+        test_voxels.insert(
+            [3, 0, 0],
+            Voxel {
+                color: [255, 255, 255],
+            },
+        );
+        test_voxels.insert(
+            [0, 1, 0],
+            Voxel {
+                color: [255, 255, 255],
+            },
+        );
+        test_voxels.insert(
+            [1, 1, 0],
+            Voxel {
+                color: [255, 255, 255],
+            },
+        );
+        test_voxels.insert(
+            [2, 1, 0],
+            Voxel {
+                color: [255, 255, 255],
+            },
+        );
+        test_voxels.insert(
+            [3, 1, 0],
+            Voxel {
+                color: [255, 255, 255],
+            },
+        );
+        test_voxels.insert(
+            [0, 2, 0],
+            Voxel {
+                color: [255, 255, 255],
+            },
+        );
+        test_voxels.insert(
+            [1, 2, 0],
+            Voxel {
+                color: [255, 255, 255],
+            },
+        );
+        test_voxels.insert(
+            [2, 2, 0],
+            Voxel {
+                color: [255, 255, 255],
+            },
+        );
+        test_voxels.insert(
+            [3, 2, 0],
+            Voxel {
+                color: [255, 255, 255],
+            },
+        );
+        test_voxels.insert(
+            [0, 3, 0],
+            Voxel {
+                color: [255, 255, 255],
+            },
+        );
+        test_voxels.insert(
+            [1, 3, 0],
+            Voxel {
+                color: [255, 255, 255],
+            },
+        );
+        test_voxels.insert(
+            [2, 3, 0],
+            Voxel {
+                color: [255, 255, 255],
+            },
+        );
+        test_voxels.insert(
+            [3, 3, 0],
+            Voxel {
+                color: [255, 255, 255],
+            },
+        );
 
         assert_eq!(occupied_voxels, test_voxels);
     }
