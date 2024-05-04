@@ -191,8 +191,16 @@ fn fill_triangle(
         0 => {
             // 3点のx座標を比較していき、もっともx座標が小さいものが最初に、大きいものが最後になるようにソート
             // つまり、頂点の順番が反時計回りになるようにソート
-            let mut sorted_triangle = triangle.to_vec();
-            sorted_triangle.sort_by(|a, b| a[0].partial_cmp(&b[0]).unwrap());
+            let mut sorted_triangle = [triangle[0], triangle[1], triangle[2]];
+            if sorted_triangle[0][0] > sorted_triangle[1][0] {
+                sorted_triangle.swap(0, 1);
+            }
+            if sorted_triangle[1][0] > sorted_triangle[2][0] {
+                sorted_triangle.swap(1, 2);
+            }
+            if sorted_triangle[0][0] > sorted_triangle[1][0] {
+                sorted_triangle.swap(0, 1);
+            }
             assert!(sorted_triangle[1][0] >= sorted_triangle[0][0]);
 
             // 始点の移動に利用するためのベクトル
@@ -257,8 +265,16 @@ fn fill_triangle(
         }
         // sweep y
         1 => {
-            let mut sorted_triangle = triangle.to_vec();
-            sorted_triangle.sort_by(|a, b| a[1].partial_cmp(&b[1]).unwrap());
+            let mut sorted_triangle = [triangle[0], triangle[1], triangle[2]];
+            if sorted_triangle[0][1] > sorted_triangle[1][1] {
+                sorted_triangle.swap(0, 1);
+            }
+            if sorted_triangle[1][1] > sorted_triangle[2][1] {
+                sorted_triangle.swap(1, 2);
+            }
+            if sorted_triangle[0][1] > sorted_triangle[1][1] {
+                sorted_triangle.swap(0, 1);
+            }
             assert!(sorted_triangle[1][1] >= sorted_triangle[0][1]);
 
             let mut edge_direction_1;
@@ -317,8 +333,16 @@ fn fill_triangle(
         }
         // sweep z
         _ => {
-            let mut sorted_triangle = triangle.to_vec();
-            sorted_triangle.sort_by(|a, b| a[2].partial_cmp(&b[2]).unwrap());
+            let mut sorted_triangle = [triangle[0], triangle[1], triangle[2]];
+            if sorted_triangle[0][2] > sorted_triangle[1][2] {
+                sorted_triangle.swap(0, 1);
+            }
+            if sorted_triangle[1][2] > sorted_triangle[2][2] {
+                sorted_triangle.swap(1, 2);
+            }
+            if sorted_triangle[0][2] > sorted_triangle[1][2] {
+                sorted_triangle.swap(0, 1);
+            }
             assert!(sorted_triangle[1][2] >= sorted_triangle[0][2]);
 
             let mut edge_direction_1;
