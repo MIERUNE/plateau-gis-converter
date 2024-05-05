@@ -14,7 +14,7 @@ pub trait MeshVoxelizer {
 }
 
 pub struct DdaVoxelizer {
-    voxels: HashMap<VoxelPosition, Voxel>,
+    pub voxels: HashMap<VoxelPosition, Voxel>,
 }
 
 impl MeshVoxelizer for DdaVoxelizer {

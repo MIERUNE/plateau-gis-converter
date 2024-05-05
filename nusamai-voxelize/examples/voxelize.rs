@@ -1,5 +1,6 @@
 use byteorder::{LittleEndian, WriteBytesExt};
 use earcut::{utils3d::project3d_to_2d, Earcut};
+use hashbrown::HashMap;
 use nusamai_geometry::MultiPolygon;
 use serde_json::json;
 use std::{fs::File, io::Write};
@@ -77,8 +78,18 @@ fn main() {
 
     let voxel_size = 1.0;
 
-    let voxelizer = DdaVoxelizer {};
-    let occupied_voxels = voxelizer.voxelize(&triangles, voxel_size);
+    let mut voxelizer = DdaVoxelizer {
+        voxels: HashMap::new(),
+    };
+    let triangles: Vec<[f32; 3]> = triangles
+        .into_iter()
+        .map(|arr| [arr[0] as f32, arr[1] as f32, arr[2] as f32])
+        .collect();
+    for t in triangles.chunks(3) {
+        voxelizer.add_triangle(t, voxel_size);
+    }
+    let occupied_voxels = voxelizer.finalize();
+
     let points_count = occupied_voxels.len();
 
     // -------------------gltfの作成-------------------
@@ -88,11 +99,11 @@ fn main() {
     let mut max_point = [f32::MIN; 3];
 
     let mut bin_file = File::create("data/output.bin").unwrap();
-    for v in occupied_voxels.iter() {
+    for (position, _) in occupied_voxels.iter() {
         let [x, y, z] = [
-            (v.x as f32) * voxel_size as f32,
-            (v.y as f32) * voxel_size as f32,
-            (v.z as f32) * voxel_size as f32,
+            (position[0] as f32) * voxel_size,
+            (position[1] as f32) * voxel_size,
+            (position[2] as f32) * voxel_size,
         ];
         min_point = [
             f32::min(min_point[0], x),
