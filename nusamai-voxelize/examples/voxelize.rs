@@ -54,21 +54,16 @@ fn main() {
     let mut index_buf: Vec<u32> = Vec::new();
     let mut triangles: Vec<[f64; 3]> = Vec::new();
 
-    // ポリゴンを取り出す
     for idx_poly in mpoly.iter() {
-        // インデックスを座標に変換
         let poly = idx_poly.transform(|idx| vertices[*idx as usize]);
-        // holeがあるか確認
         let num_outer = match poly.hole_indices().first() {
             Some(&v) => v as usize,
             None => poly.raw_coords().len(),
         };
 
-        // 3次元での座標を格納
         buf3d.clear();
         buf3d.extend(poly.raw_coords().iter());
 
-        // 3次元座標を2次元座標に変換
         if project3d_to_2d(&buf3d, num_outer, &mut buf2d) {
             // earcut
             earcutter.earcut(buf2d.iter().cloned(), poly.hole_indices(), &mut index_buf);
@@ -94,7 +89,8 @@ fn main() {
 
     // -------------------gltfの作成-------------------
 
-    // voxelは整数値だが、accessorsのcomponentTypeは5126（浮動小数点数）であり、primitivesの制約でINTEGER型は使用できない
+    // voxel is an integer value, but componentType of accessors is 5126 (floating point number),
+    // and INTEGER type cannot be used due to primitives constraints
     let mut min_point = [f32::MAX; 3];
     let mut max_point = [f32::MIN; 3];
 
@@ -121,10 +117,10 @@ fn main() {
         bin_file.write_f32::<LittleEndian>(z).unwrap();
     }
 
-    // voxelの数 × 頂点の座標数（3） × 4バイト（f32）
+    // number of voxels x number of vertex coordinates (3) x 4 bytes (f32)
     let byte_length = points_count * 3 * 4;
 
-    // GLTFファイルの作成
+    // make glTF
     let gltf_json = json!( {
         "asset": {
             "version": "2.0",

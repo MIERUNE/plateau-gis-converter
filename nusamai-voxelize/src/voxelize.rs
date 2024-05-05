@@ -30,28 +30,18 @@ fn draw_line(voxels: &mut HashMap<VoxelPosition, Voxel>, start: Vec3, end: Vec3,
     let start = start + Vec3::splat(voxel_size * 0.5);
     let end = end + Vec3::splat(voxel_size * 0.5);
 
-    // 始点と終点が既知なので方向ベクトルが算出できる
     let direction = end - start;
-    // 方向ベクトルのXYZ方向の最大移動距離を取得
-    // 移動距離なので、絶対値
     let max_dist = direction.abs().max_element();
-    // 距離をボクセルサイズで割り、切り上げることでステップ数を算出
-    // エッジを何ステップに分割するかを計算
     let steps = (max_dist / voxel_size).ceil() as i32;
-    // XYZ方向へ1ステップで進む距離を算出
     let step_size = direction / steps as f32;
 
     let mut current_voxel = start;
-    // ステップの数だけ繰り返し、各ステップで通過するボクセルを計算
     for _ in 0..=steps {
-        // ボクセルの座標計算
-        // 現在の座標をボクセルのサイズで割り、切り捨てることでボクセルの格子座標（整数値）を算出
         let position = (current_voxel / voxel_size).floor().as_ivec3();
         let voxel = Voxel {
             color: [255, 255, 255],
         };
         voxels.insert(position.to_array(), voxel);
-        // 現在の座標を更新
         current_voxel += step_size;
     }
 }
@@ -65,12 +55,13 @@ fn fill_triangle(
         panic!("The number of vertices is not 3")
     }
 
-    // 全ての三角形は反時計回りを表面とする
     let p1 = Vec3::from(triangle[0]);
     let p2 = Vec3::from(triangle[1]);
     let p3 = Vec3::from(triangle[2]);
 
-    // 3辺の長さを算出し、三角形が小さい（すべての辺がvoxel_size未満）場合は、面を走査せずvoxelを一つだけ塗りつぶす
+    // Calculate the lengths of the 3 sides
+    // and if the triangle is small (all sides are less than voxel_size),
+    // do not scan the face and fill one voxel
     if is_small_triangle(&p1, &p2, &p3, voxel_size) {
         println!("Triangles too small!");
 
@@ -98,26 +89,22 @@ fn fill_triangle(
         );
     }
 
-    // p1からp2に伸びるベクトルと、p1からp3に伸びるベクトルを考える
     let v1 = p2 - p1;
     let v2 = p3 - p1;
 
-    // 法線ベクトルを計算
     let mut normal = v1.cross(v2);
-    // 外積の計算結果はベクトルなので、その大きさ（ノルム）を求める
     let normal_length = normal.length();
 
     if normal_length.is_nan() || normal_length == 0.0 {
         return;
     }
 
-    // 正規化し、法線ベクトルを単位ベクトルに変換
     normal /= normal_length;
 
-    // 最大長の軸を求める
-    // norm_axisが0(x)の場合はyz平面
-    // norm_axisが1(y)の場合はzx平面
-    // norm_axisが2(z)の場合はxy平面
+    // Find the axis of maximum length
+    // yz plane if norm_axis is 0(x)
+    // zx plane if norm_axis is 1(y)
+    // xy plane if norm_axis is 2(z)
     let norm_axis = normal
         .abs()
         .to_array()
@@ -127,7 +114,6 @@ fn fill_triangle(
         .map(|(i, _)| i)
         .unwrap();
 
-    // 三角形のbounding boxを算出
     let mut min_point = p1;
     let mut max_point = p1;
     for p in &[p2, p3] {
@@ -136,7 +122,6 @@ fn fill_triangle(
     }
     let box_size = max_point - min_point;
 
-    // 一番長い辺を見つける
     let sweep_axis = match norm_axis {
         0 => {
             if box_size[1] >= box_size[2] {
@@ -161,13 +146,11 @@ fn fill_triangle(
         }
     };
 
+    // Draw a virtual grid along the x-axis and find the intersection of the target triangle and the edge
+    // Paint from the intersection with smaller x to the intersection with larger x
     match sweep_axis {
-        // x軸に沿って仮想的なグリッドを引き、対象の三角形とエッジとの交点を見つける
-        // xが小さい交点から大きい交点に向かって塗っていく
         // sweep x
         0 => {
-            // 3点のx座標を比較していき、もっともx座標が小さいものが最初に、大きいものが最後になるようにソート
-            // つまり、頂点の順番が反時計回りになるようにソート
             let mut sorted_triangle = [triangle[0], triangle[1], triangle[2]];
             if sorted_triangle[0][0] > sorted_triangle[1][0] {
                 sorted_triangle.swap(0, 1);
@@ -183,15 +166,11 @@ fn fill_triangle(
             let sorted_triangle: [[f32; 3]; 3] =
                 sorted_triangle.map(|inner| inner.map(|x| x as f32));
 
-            // 始点の移動に利用するためのベクトル
-            // x軸方向にvoxel_size分だけ移動し、y方向にもvoxel_size分移動する
             let mut edge_direction_1;
             let mut start_point;
             let mut end_point;
             let mut end_vertex_x;
 
-            // 走査軸が0（X軸）でX座標を基準にソートされていることがわかっているのでその前提で処理を進めることができる
-            // 絶対値の差が0より大きい（つまり最初と2番目の頂点のx座標が異なる）場合で、尚且つ最初の頂点と2番目の頂点のx座標の差がvoxel_sizeより大きい場合にTrueになる
             if (sorted_triangle[1][0] - sorted_triangle[0][0]).abs() >= 0.0
                 && (sorted_triangle[1][0] - sorted_triangle[0][0].floor() >= voxel_size)
             {
@@ -208,8 +187,6 @@ fn fill_triangle(
                     * (voxel_size - sorted_triangle[1][0] + sorted_triangle[1][0].floor());
             };
 
-            // 終点を移動させるためのベクトル
-            // x軸方向にvoxel_size分だけ移動し、y方向にもvoxel_size分移動する
             let edge_direction_2 = (Vec3::from(sorted_triangle[2])
                 - Vec3::from(sorted_triangle[0]))
                 / (sorted_triangle[2][0] - sorted_triangle[0][0]);
@@ -542,7 +519,6 @@ mod tests {
 
     #[test]
     fn test_hole_polygon() {
-        // holeの大きさがvoxel_sizeと同じ場合、holeが埋まる
         let vertices: Vec<[f64; 3]> = vec![
             [0.0, 0.0, 0.0],
             [3.0, 0.0, 0.0],
