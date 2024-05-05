@@ -9,23 +9,20 @@ pub struct Voxel {
 pub type VoxelPosition = [i32; 3];
 
 pub trait MeshVoxelizer {
-    fn voxelize(&self, triangles: &[[f32; 3]], voxel_size: f32) -> HashMap<VoxelPosition, Voxel>;
+    fn add_triangle(&mut self, triangle: &[[f32; 3]], voxel_size: f32);
+    fn finalize(self) -> HashMap<VoxelPosition, Voxel>;
 }
 
-pub struct DdaVoxelizer {}
+pub struct DdaVoxelizer {
+    voxels: HashMap<VoxelPosition, Voxel>,
+}
 
 impl MeshVoxelizer for DdaVoxelizer {
-    fn voxelize(&self, triangles: &[[f32; 3]], voxel_size: f32) -> HashMap<VoxelPosition, Voxel> {
-        // 占有されたボクセルを格納する
-        // HashSetは重複を許さない
-        let mut occupied_voxels: HashMap<VoxelPosition, Voxel> = HashMap::new();
-
-        // indicesの要素を3つずつ取り出して三角形を構築
-        for t in triangles.chunks(3) {
-            fill_triangle(&mut occupied_voxels, voxel_size, t);
-        }
-
-        occupied_voxels
+    fn add_triangle(&mut self, triangle: &[[f32; 3]], voxel_size: f32) {
+        fill_triangle(&mut self.voxels, voxel_size, triangle);
+    }
+    fn finalize(self) -> HashMap<VoxelPosition, Voxel> {
+        self.voxels
     }
 }
 
@@ -442,12 +439,17 @@ mod tests {
 
         let voxel_size = 1.0 as f32;
 
-        let voxelizer = DdaVoxelizer {};
+        let mut voxelizer = DdaVoxelizer {
+            voxels: HashMap::new(),
+        };
         let triangles: Vec<[f32; 3]> = triangles
             .into_iter()
             .map(|arr| [arr[0] as f32, arr[1] as f32, arr[2] as f32])
             .collect();
-        let occupied_voxels = voxelizer.voxelize(&triangles, voxel_size);
+        for t in triangles.chunks(3) {
+            voxelizer.add_triangle(t, voxel_size);
+        }
+        let occupied_voxels = voxelizer.finalize();
 
         let mut test_voxels: HashMap<VoxelPosition, Voxel> = HashMap::new();
         test_voxels.insert(
@@ -497,12 +499,17 @@ mod tests {
 
         let voxel_size = 1.0;
 
-        let voxelizer = DdaVoxelizer {};
+        let mut voxelizer = DdaVoxelizer {
+            voxels: HashMap::new(),
+        };
         let triangles: Vec<[f32; 3]> = triangles
             .into_iter()
             .map(|arr| [arr[0] as f32, arr[1] as f32, arr[2] as f32])
             .collect();
-        let occupied_voxels = voxelizer.voxelize(&triangles, voxel_size);
+        for t in triangles.chunks(3) {
+            voxelizer.add_triangle(t, voxel_size);
+        }
+        let occupied_voxels = voxelizer.finalize();
 
         let mut test_voxels: HashMap<VoxelPosition, Voxel> = HashMap::new();
         test_voxels.insert(
@@ -576,12 +583,17 @@ mod tests {
 
         let voxel_size = 1.0;
 
-        let voxelizer = DdaVoxelizer {};
+        let mut voxelizer = DdaVoxelizer {
+            voxels: HashMap::new(),
+        };
         let triangles: Vec<[f32; 3]> = triangles
             .into_iter()
             .map(|arr| [arr[0] as f32, arr[1] as f32, arr[2] as f32])
             .collect();
-        let occupied_voxels = voxelizer.voxelize(&triangles, voxel_size);
+        for t in triangles.chunks(3) {
+            voxelizer.add_triangle(t, voxel_size);
+        }
+        let occupied_voxels = voxelizer.finalize();
 
         let mut test_voxels: HashMap<VoxelPosition, Voxel> = HashMap::new();
         test_voxels.insert(
@@ -749,12 +761,17 @@ mod tests {
 
         let voxel_size = 1.0;
 
-        let voxelizer = DdaVoxelizer {};
+        let mut voxelizer = DdaVoxelizer {
+            voxels: HashMap::new(),
+        };
         let triangles: Vec<[f32; 3]> = triangles
             .into_iter()
             .map(|arr| [arr[0] as f32, arr[1] as f32, arr[2] as f32])
             .collect();
-        let occupied_voxels = voxelizer.voxelize(&triangles, voxel_size);
+        for t in triangles.chunks(3) {
+            voxelizer.add_triangle(t, voxel_size);
+        }
+        let occupied_voxels = voxelizer.finalize();
 
         assert_eq!(occupied_voxels.len(), 584);
     }
