@@ -163,8 +163,7 @@ fn fill_triangle(
             }
             assert!(sorted_triangle[1][0] >= sorted_triangle[0][0]);
 
-            let sorted_triangle: [[f32; 3]; 3] =
-                sorted_triangle.map(|inner| inner.map(|x| x as f32));
+            let sorted_triangle: [[f32; 3]; 3] = sorted_triangle.map(|inner| inner.map(|x| x));
 
             let mut edge_direction_1;
             let mut start_point;
@@ -234,8 +233,7 @@ fn fill_triangle(
             }
             assert!(sorted_triangle[1][1] >= sorted_triangle[0][1]);
 
-            let sorted_triangle: [[f32; 3]; 3] =
-                sorted_triangle.map(|inner| inner.map(|x| x as f32));
+            let sorted_triangle: [[f32; 3]; 3] = sorted_triangle.map(|inner| inner.map(|x| x));
 
             let mut edge_direction_1;
             let mut start_point;
@@ -305,8 +303,7 @@ fn fill_triangle(
             }
             assert!(sorted_triangle[1][2] >= sorted_triangle[0][2]);
 
-            let sorted_triangle: [[f32; 3]; 3] =
-                sorted_triangle.map(|inner| inner.map(|x| x as f32));
+            let sorted_triangle: [[f32; 3]; 3] = sorted_triangle.map(|inner| inner.map(|x| x));
 
             let mut edge_direction_1;
             let mut start_point;
