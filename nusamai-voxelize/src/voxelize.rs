@@ -411,7 +411,7 @@ mod tests {
             }
         }
 
-        let voxel_size = 1.0 as f32;
+        let voxel_size = 1.0_f32;
 
         let mut voxelizer = DdaVoxelizer {
             voxels: HashMap::new(),
