@@ -13,13 +13,14 @@ pub struct CityFurniture {
     #[citygml(path = b"frn:usage")]
     pub usage: Vec<Code>,
 
+    #[citygml(path = b"uro:cityFurnitureDetailAttribute/uro:CityFurnitureDetailAttribute")]
+    pub city_furniture_detail_attribute: Vec<uro::CityFurnitureDetailAttribute>,
+
     #[citygml(
         path = b"uro:cityFurnitureDataQualityAttribute/uro:CityFurnitureDataQualityAttribute"
     )]
-    pub city_furniture_data_quality_attribute: Option<uro::CityFurnitureDataQualityAttribute>,
-
-    #[citygml(path = b"uro:cityFurnitureDetailAttribute/uro:CityFurnitureDetailAttribute")]
-    pub city_furniture_detail_attribute: Vec<uro::CityFurnitureDetailAttribute>,
+    #[citygml(path = b"uro:frnDataQualityAttribute/uro:DataQualityAttribute")]
+    pub frn_data_quality_attribute: Option<uro::DataQualityAttribute>,
 
     #[citygml(path = b"uro:frnDmAttribute")]
     pub frn_dm_attribute: Vec<uro::DmAttributeProperty>, // -> uro:DmAttribute
@@ -32,4 +33,7 @@ pub struct CityFurniture {
 
     #[citygml(path = b"uro:frnFacilityTypeAttribute/uro:FacilityTypeAttribute")]
     pub frn_facility_type_attribute: Vec<uro::FacilityTypeAttribute>,
+
+    #[citygml(path = b"uro:frnKeyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub frn_key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
 }

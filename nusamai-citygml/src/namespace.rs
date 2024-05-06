@@ -56,6 +56,9 @@ pub fn wellknown_prefix_from_nsres<'a>(ns: &ResolveResult<'a>) -> &'a [u8] {
                 } else if let Some(https_www) = http.strip_prefix(b"s://www.") {
                     if let Some(iur) = https_www.strip_prefix(b"geospatial.jp/iur/ur") {
                         match iur {
+                            // PLATEAU 4.x
+                            b"o/3.1" => b"uro:",
+                            b"f/3.1" => b"urf:",
                             // PLATEAU 3.x
                             b"o/3.0" => b"uro:",
                             b"f/3.0" => b"urf:",
@@ -113,8 +116,10 @@ mod tests {
             xmlns:gen2ns="http://www.opengis.net/citygml/generics/2.0"
             xmlns:dem2ns="http://www.opengis.net/citygml/relief/2.0"
             xmlns:luse2ns="http://www.opengis.net/citygml/landuse/2.0"
-            xmlns:uro3ns="https://www.geospatial.jp/iur/uro/3.0"
-            xmlns:urf3ns="https://www.geospatial.jp/iur/urf/3.0"
+            xmlns:uro31ns="https://www.geospatial.jp/iur/uro/3.1"
+            xmlns:urf31ns="https://www.geospatial.jp/iur/urf/3.1"
+            xmlns:uro30ns="https://www.geospatial.jp/iur/uro/3.0"
+            xmlns:urf30ns="https://www.geospatial.jp/iur/urf/3.0"
             xmlns:uro2ns="https://www.geospatial.jp/iur/uro/2.0"
             xmlns:urf2ns="https://www.geospatial.jp/iur/urf/3.0"
             xmlns:uro15ns="https://www.chisou.go.jp/tiiki/toshisaisei/itoshisaisei/iur/uro/1.5"
@@ -141,8 +146,10 @@ mod tests {
             <gen2ns:gen />
             <dem2ns:dem />
             <luse2ns:luse />
-            <uro3ns:uro />
-            <urf3ns:urf />
+            <uro31ns:uro />
+            <urf31ns:urf />
+            <uro30ns:uro />
+            <urf30ns:urf />
             <uro2ns:uro />
             <urf2ns:urf />
             <uro15ns:uro />

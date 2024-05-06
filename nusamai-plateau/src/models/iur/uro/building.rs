@@ -137,27 +137,6 @@ pub struct BuildingDetailAttribute {
     pub survey_year: Option<GYear>,
 }
 
-#[citygml_data(name = "uro:BuildingDataQualityAttribute")]
-pub struct BuildingDataQualityAttribute {
-    #[citygml(path = b"uro:srcScale")]
-    pub src_scale: Vec<Code>,
-
-    #[citygml(path = b"uro:geometrySrcDesc")]
-    pub geometry_src_desc: Vec<Code>,
-
-    #[citygml(path = b"uro:thematicSrcDesc")]
-    pub thematic_src_desc: Vec<Code>,
-
-    #[citygml(path = b"uro:appearanceSrcDesc")]
-    pub appearance_src_desc: Vec<Code>,
-
-    #[citygml(path = b"uro:lod1HeightType", required)]
-    pub lod1_height_type: Option<Code>,
-
-    #[citygml(path = b"uro:lodType")]
-    pub lod_type: Vec<Code>,
-}
-
 #[citygml_property(name = "uro:BuildingDisasterRiskAttributeProperty")]
 pub enum BuildingDisasterRiskAttributeProperty {
     #[citygml(path = b"uro:BuildingHighTideRiskAttribute")]
@@ -328,20 +307,14 @@ pub struct LargeCustomerFacilityAttribute {
     pub survey_year: Option<GYear>,
 }
 
-#[citygml_data(name = "uro:RoomDataQualityAttribute")]
-pub struct RoomDataQualityAttribute {
-    #[citygml(path = b"uro:srcScale")]
-    pub src_scale: Vec<Code>,
+#[citygml_data(name = "uro:BuildingUsecaseAttribute")]
+pub struct BuildingUsecaseAttribute {
+    #[citygml(path = b"uro:isTemporal")]
+    pub is_temporal: Option<Code>,
 
-    #[citygml(path = b"uro:geometrySrcDesc")]
-    pub geometry_src_desc: Vec<Code>,
+    #[citygml(path = b"uro:floorHeight")]
+    pub floor_height: Option<Length>,
 
-    #[citygml(path = b"uro:thematicSrcDesc")]
-    pub thematic_src_desc: Vec<Code>,
-
-    #[citygml(path = b"uro:appearanceSrcDesc")]
-    pub appearance_src_desc: Vec<Code>,
-
-    #[citygml(path = b"uro:lodType")]
-    pub lod_type: Option<Code>,
+    #[citygml(path = b"uro:isGroundFloorOpen")]
+    pub is_ground_floor_open: Option<bool>,
 }

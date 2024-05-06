@@ -144,10 +144,7 @@ fn load_cityfurniture_example() {
 
     assert_eq!(frn.function, vec![Code::new("柱".into(), "4800".into())]);
     assert_eq!(
-        frn.city_furniture_data_quality_attribute
-            .as_ref()
-            .unwrap()
-            .src_scale,
+        frn.frn_data_quality_attribute.as_ref().unwrap().src_scale,
         vec![Code::new("地図情報レベル500".into(), "3".into(),)]
     );
 }
@@ -185,15 +182,11 @@ fn load_landuse_example() {
     };
 
     assert_eq!(
-        landuse
-            .land_use_detail_attribute
-            .as_ref()
-            .unwrap()
-            .prefecture,
+        landuse.land_use_detail_attribute[0].prefecture,
         Some(Code::new("静岡県".into(), "22".into()))
     );
     assert_eq!(
-        landuse.land_use_detail_attribute.as_ref().unwrap().city,
+        landuse.land_use_detail_attribute[0].city,
         Some(Code::new("静岡県沼津市".into(), "22203".into()))
     );
 }
@@ -330,10 +323,7 @@ fn load_road_example() {
         Some(Measure::new(22.0)),
     );
     assert_eq!(
-        road.traffic_volume_attribute
-            .as_ref()
-            .unwrap()
-            .weekday12hour_traffic_volume,
+        road.traffic_volume_attribute[0].weekday12hour_traffic_volume,
         Some(8170),
     );
 }
@@ -589,8 +579,7 @@ fn load_flood_example() {
         let TopLevelCityObject::WaterBody(waterbody) = &cityobjs.first().unwrap().cityobj else {
             panic!("expected SedimentDisasterProneArea");
         };
-        assert_eq!(waterbody.flooding_risk_attribute.len(), 1);
-        let uro::WaterBodyFloodingRiskAttributeProperty::WaterBodyRiverFloodingRiskAttribute(flood) =
+        let uro::FloodingRiskAttributeProperty::RiverFloodingRiskAttribute(flood) =
             waterbody.flooding_risk_attribute.first().unwrap()
         else {
             panic!("expected WaterBodyRiverFloodingRiskAttribute");
@@ -727,6 +716,7 @@ fn load_urf_boka_example() {
         Some(Code::new("変更".to_string(), "3".to_string()))
     );
 }
+
 #[test]
 fn load_urf_seisan_example() {
     let cityobjs = load_cityobjs("./tests/data/kawasaki-shi/udx/urf/533923_urf_6668_seisan_op.gml");

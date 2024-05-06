@@ -2,24 +2,6 @@ use nusamai_citygml::{
     citygml_data, citygml_property, CityGmlElement, Code, Date, GYear, Length, Measure, Point,
 };
 
-#[citygml_data(name = "uro:TransportationDataQualityAttribute")]
-pub struct TransportationDataQualityAttribute {
-    #[citygml(path = b"uro:srcScale")]
-    pub src_scale: Vec<Code>,
-
-    #[citygml(path = b"uro:geometrySrcDesc")]
-    pub geometry_src_desc: Vec<Code>,
-
-    #[citygml(path = b"uro:thematicSrcDesc")]
-    pub thematic_src_desc: Vec<Code>,
-
-    #[citygml(path = b"uro:appearanceSrcDesc")]
-    pub appearance_src_desc: Vec<Code>,
-
-    #[citygml(path = b"uro:lodType")]
-    pub lod_type: Option<Code>,
-}
-
 #[citygml_data(name = "uro:RoadStructureAttribute")]
 pub struct RoadStructureAttribute {
     #[citygml(path = b"uro:widthType")]
@@ -496,4 +478,13 @@ pub struct WaterwayDetailAttribute {
 
     #[citygml(path = b"uro:targetShipType")]
     pub target_ship_type: Vec<String>,
+}
+
+#[citygml_data(name = "uro:TrafficObjectUsecaseAttribute")]
+pub struct TrafficObjectUsecaseAttribute {
+    #[citygml(path = b"uro:minWidth")]
+    pub min_width: Option<Length>,
+
+    #[citygml(path = b"uro:maxWidth")]
+    pub max_width: Option<Length>,
 }

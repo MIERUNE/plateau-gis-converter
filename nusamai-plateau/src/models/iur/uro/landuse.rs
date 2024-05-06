@@ -62,15 +62,3 @@ pub struct LandUseDetailAttribute {
     #[citygml(path = b"uro:surveyYear")]
     pub survey_year: Option<GYear>,
 }
-
-#[citygml_data(name = "uro:LandUseDataQualityAttribute")]
-pub struct LandUseDataQualityAttribute {
-    #[citygml(path = b"uro:srcScale")]
-    pub src_scale: Vec<Code>,
-
-    #[citygml(path = b"uro:geometrySrcDesc")]
-    pub geometry_src_desc: Vec<Code>,
-
-    #[citygml(path = b"uro:thematicSrcDesc")]
-    pub thematic_src_desc: Vec<Code>,
-}
