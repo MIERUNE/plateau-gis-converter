@@ -20,6 +20,8 @@ pub enum FacilityAttributeProperty {
     MooringFacility(Box<MooringFacility>),
     #[citygml(path = b"uro:NavigationAssistanceFacility")]
     NavigationAssistanceFacility(Box<NavigationAssistanceFacility>),
+    #[citygml(path = b"uro:ParkFacilityLongevityPlanAttribute")]
+    ParkFacilityLongevityPlanAttribute(Box<ParkFacilityLongevityPlanAttribute>),
     #[citygml(path = b"uro:PortEnvironmentalImprovementFacility")]
     PortEnvironmentalImprovementFacility(Box<PortEnvironmentalImprovementFacility>),
     #[citygml(path = b"uro:PortManagementFacility")]
@@ -645,6 +647,71 @@ pub struct NavigationAssistanceFacility {
     pub note: Option<String>,
 }
 
+#[citygml_data(name = "uro:ParkFacilityLongevityPlanAttribute")]
+pub struct ParkFacilityLongevityPlanAttribute {
+    #[citygml(path = b"uro:facilityId")]
+    pub facility_id: Option<String>,
+
+    #[citygml(path = b"uro:parkCode", required)]
+    pub park_code: Option<Code>,
+
+    #[citygml(path = b"uro:parkName", required)]
+    pub park_name: Option<Code>,
+
+    #[citygml(path = b"uro:parkType", required)]
+    pub park_type: Option<Code>,
+
+    #[citygml(path = b"uro:facilityName")]
+    pub facility_name: Option<Code>,
+
+    #[citygml(path = b"uro:facilityNameOptional")]
+    pub facility_name_optional: Option<String>,
+
+    #[citygml(path = b"uro:specificFacilityName", required)]
+    pub specific_facility_name: Option<String>,
+
+    #[citygml(path = b"uro:numberOfFacilities/uro:NumberOfFacilities")]
+    pub number_of_facilities: Option<NumberOfFacilities>,
+
+    #[citygml(path = b"uro:size")]
+    pub size: Option<String>,
+
+    #[citygml(path = b"uro:mainMaterial")]
+    pub main_material: Option<Code>,
+
+    #[citygml(path = b"uro:mainMaterialOptional")]
+    pub main_material_optional: Option<String>,
+
+    #[citygml(path = b"uro:installationYear", required)]
+    pub installation_year: Option<GYear>,
+
+    #[citygml(path = b"uro:disposalLimitPeriod")]
+    pub disposal_limit_period: Option<i64>,
+
+    #[citygml(path = b"uro:expectedUsagePeriod")]
+    pub expected_usage_period: Option<i64>,
+
+    #[citygml(
+        path = b"uro:repairsBeforeParkHealthAssessment/uro:RepairsBeforeParkHealthAssessment"
+    )]
+    pub repairs_before_park_health_assessment: Option<RepairsBeforeParkHealthAssessment>,
+
+    #[citygml(path = b"uro:parkHealthAssessment/uro:ParkHealthAssessment")]
+    pub park_health_assessment: Vec<ParkHealthAssessment>,
+
+    #[citygml(path = b"uro:managementType")]
+    pub management_type: Option<Code>,
+
+    #[citygml(path = b"uro:expectedRenewalYearWithMeasures")]
+    pub expected_renewal_year_with_measures: Option<GYear>,
+
+    #[citygml(path = b"uro:longevityMeasures/uro:LongevityMeasures")]
+    pub longevity_measures: Vec<LongevityMeasures>,
+
+    #[citygml(path = b"uro:noteForLongevity")]
+    pub note_for_longevity: Option<String>,
+}
+
 #[citygml_data(name = "uro:PortEnvironmentalImprovementFacility")]
 pub struct PortEnvironmentalImprovementFacility {
     #[citygml(path = b"uro:facilityId")]
@@ -1201,4 +1268,58 @@ pub struct ShipServiceFacility {
 
     #[citygml(path = b"uro:note")]
     pub note: Option<String>,
+}
+
+#[citygml_data(name = "uro:NumberOfFacilities")]
+pub struct NumberOfFacilities {
+    #[citygml(path = b"uro:quantity", required)]
+    pub quantity: Option<i64>,
+
+    #[citygml(path = b"uro:quantityUnit", required)]
+    pub quantity_unit: Option<Code>,
+}
+
+#[citygml_data(name = "uro:LongevityMeasures")]
+pub struct LongevityMeasures {
+    #[citygml(path = b"uro:fiscalYearForCountermeasures", required)]
+    pub fiscal_year_for_countermeasures: Option<GYear>,
+
+    #[citygml(path = b"uro:countermeasuresCost/uro:CountermeasuresCost")]
+    pub countermeasures_cost: Option<CountermeasuresCost>,
+
+    #[citygml(path = b"uro:description")]
+    pub description: Option<String>,
+}
+
+#[citygml_data(name = "uro:RepairsBeforeParkHealthAssessment")]
+pub struct RepairsBeforeParkHealthAssessment {
+    #[citygml(path = b"uro:repair", required)]
+    pub repair: Option<Code>,
+
+    #[citygml(path = b"uro:repairFiscalYear")]
+    pub repair_fiscal_year: Option<GYear>,
+}
+
+#[citygml_data(name = "uro:ParkHealthAssessment")]
+pub struct ParkHealthAssessment {
+    #[citygml(path = b"uro:assessmentFiscalYear", required)]
+    pub assessment_fiscal_year: Option<GYear>,
+
+    #[citygml(path = b"uro:deteriorationStatus")]
+    pub deterioration_status: Option<String>,
+
+    #[citygml(path = b"uro:condition")]
+    pub condition: Option<Code>,
+
+    #[citygml(path = b"uro:urgency")]
+    pub urgency: Option<Code>,
+}
+
+#[citygml_data(name = "uro:CountermeasuresCost")]
+pub struct CountermeasuresCost {
+    #[citygml(path = b"uro:cost")]
+    pub cost: Option<i64>,
+
+    #[citygml(path = b"uro:costUnit", required)]
+    pub cost_unit: Option<String>,
 }

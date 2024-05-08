@@ -17,10 +17,11 @@ pub struct LandUse {
     pub ifc_land_use_attribute: Vec<uro::IfcAttributeProperty>, // -> uro:IfcAttribute
 
     #[citygml(path = b"uro:landUseDetailAttribute/uro:LandUseDetailAttribute")]
-    pub land_use_detail_attribute: Option<uro::LandUseDetailAttribute>,
+    pub land_use_detail_attribute: Vec<uro::LandUseDetailAttribute>,
 
     #[citygml(path = b"uro:luseDataQualityAttribute/uro:LandUseDataQualityAttribute")]
-    pub luse_data_quality_attribute: Option<uro::LandUseDataQualityAttribute>,
+    #[citygml(path = b"uro:luseDataQualityAttribute/uro:DataQualityAttribute")]
+    pub luse_data_quality_attribute: Option<uro::DataQualityAttribute>,
 
     #[citygml(path = b"uro:luseDmAttribute")]
     pub luse_dm_attribute: Vec<uro::DmAttributeProperty>, // -> uro:DmAttribute
@@ -33,4 +34,7 @@ pub struct LandUse {
 
     #[citygml(path = b"uro:luseFacilityTypeAttribute/uro:FacilityTypeAttribute")]
     pub luse_facility_type_attribute: Vec<uro::FacilityTypeAttribute>,
+
+    #[citygml(path = b"uro:luseKeyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub luse_key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
 }

@@ -1,32 +1,5 @@
 use nusamai_citygml::{citygml_data, citygml_property, CityGmlElement, Code, Length, Measure};
 
-#[citygml_data(name = "uro:ConstructionDataQualityAttribute")]
-pub struct ConstructionDataQualityAttribute {
-    #[citygml(path = b"uro:srcScale")]
-    pub src_scale: Vec<Code>,
-
-    #[citygml(path = b"uro:geometrySrcDesc")]
-    pub geometry_src_desc: Vec<Code>,
-
-    #[citygml(path = b"uro:thematicSrcDesc")]
-    pub thematic_src_desc: Vec<Code>,
-
-    #[citygml(path = b"uro:appearanceSrcDesc")]
-    pub appearance_src_desc: Vec<Code>,
-
-    #[citygml(path = b"uro:dataAcquisition")]
-    pub data_acquisition: Option<String>,
-
-    #[citygml(path = b"uro:photoScale")]
-    pub photo_scale: Option<i64>,
-
-    #[citygml(path = b"uro:lod1HeightType")]
-    pub lod1_height_type: Option<Code>,
-
-    #[citygml(path = b"uro:lodType")]
-    pub lod_type: Vec<Code>,
-}
-
 #[citygml_property(name = "uro:ConstructionStructureAttributeProperty")]
 pub enum ConstructionStructureAttributeProperty {
     #[citygml(path = b"uro:ConstructionStructureAttribute")]

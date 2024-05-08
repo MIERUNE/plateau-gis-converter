@@ -35,10 +35,11 @@ pub struct Tunnel {
     pub consists_of_tunnel_part: Vec<TunnelPart>,
 
     #[citygml(path = b"uro:tunBaseAttribute/uro:ConstructionBaseAttribute")]
-    pub tun_base_attribute: Option<uro::ConstructionBaseAttribute>,
+    pub tun_base_attribute: Vec<uro::ConstructionBaseAttribute>,
 
     #[citygml(path = b"uro:tunDataQualityAttribute/uro:ConstructionDataQualityAttribute")]
-    pub tun_data_quality_attribute: Option<uro::ConstructionDataQualityAttribute>,
+    #[citygml(path = b"uro:tunDataQualityAttribute/uro:DataQualityAttribute")]
+    pub tun_data_quality_attribute: Option<uro::DataQualityAttribute>,
 
     #[citygml(path = b"uro:tunDisasterRiskAttribute")]
     pub tun_disaster_risk_attribute: Vec<uro::DisasterRiskAttributeProperty>, // -> uro:DisasterRiskAttribute
@@ -56,13 +57,16 @@ pub struct Tunnel {
     pub tun_facility_type_attribute: Vec<uro::FacilityTypeAttribute>,
 
     #[citygml(path = b"uro:tunFunctionalAttribute/uro:TunnelFunctionalAttribute")]
-    pub tun_functional_attribute: Option<uro::TunnelFunctionalAttribute>,
+    pub tun_functional_attribute: Vec<uro::TunnelFunctionalAttribute>,
+
+    #[citygml(path = b"uro:tunKeyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub tun_key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
 
     #[citygml(path = b"uro:tunRiskAssessmentAttribute/uro:ConstructionRiskAssessmentAttribute")]
-    pub tun_risk_assessment_attribute: Option<uro::ConstructionRiskAssessmentAttribute>,
+    pub tun_risk_assessment_attribute: Vec<uro::ConstructionRiskAssessmentAttribute>,
 
     #[citygml(path = b"uro:tunStructureAttribute/uro:TunnelStructureAttribute")]
-    pub tun_structure_attribute: Option<uro::TunnelStructureAttribute>,
+    pub tun_structure_attribute: Vec<uro::TunnelStructureAttribute>,
 }
 
 #[citygml_feature(name = "tun:TunnelPart")]
@@ -98,10 +102,11 @@ pub struct TunnelPart {
     pub consists_of_tunnel_part: Vec<TunnelPart>,
 
     #[citygml(path = b"uro:tunBaseAttribute/uro:ConstructionBaseAttribute")]
-    pub tun_base_attribute: Option<uro::ConstructionBaseAttribute>,
+    pub tun_base_attribute: Vec<uro::ConstructionBaseAttribute>,
 
     #[citygml(path = b"uro:tunDataQualityAttribute/uro:ConstructionDataQualityAttribute")]
-    pub tun_data_quality_attribute: Option<uro::ConstructionDataQualityAttribute>,
+    #[citygml(path = b"uro:tunDataQualityAttribute/uro:DataQualityAttribute")]
+    pub tun_data_quality_attribute: Option<uro::DataQualityAttribute>,
 
     #[citygml(path = b"uro:tunDisasterRiskAttribute")]
     pub tun_disaster_risk_attribute: Vec<uro::DisasterRiskAttributeProperty>, // -> uro:DisasterRiskAttribute
@@ -119,13 +124,16 @@ pub struct TunnelPart {
     pub tun_facility_type_attribute: Vec<uro::FacilityTypeAttribute>,
 
     #[citygml(path = b"uro:tunFunctionalAttribute/uro:TunnelFunctionalAttribute")]
-    pub tun_functional_attribute: Option<uro::TunnelFunctionalAttribute>,
+    pub tun_functional_attribute: Vec<uro::TunnelFunctionalAttribute>,
+
+    #[citygml(path = b"uro:tunKeyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub tun_key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
 
     #[citygml(path = b"uro:tunRiskAssessmentAttribute/uro:ConstructionRiskAssessmentAttribute")]
-    pub tun_risk_assessment_attribute: Option<uro::ConstructionRiskAssessmentAttribute>,
+    pub tun_risk_assessment_attribute: Vec<uro::ConstructionRiskAssessmentAttribute>,
 
     #[citygml(path = b"uro:tunStructureAttribute/uro:TunnelStructureAttribute")]
-    pub tun_structure_attribute: Option<uro::TunnelStructureAttribute>,
+    pub tun_structure_attribute: Vec<uro::TunnelStructureAttribute>,
 }
 
 #[citygml_feature(name = "tun:HollowSpace")]

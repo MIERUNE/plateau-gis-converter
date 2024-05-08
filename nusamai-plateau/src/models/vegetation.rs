@@ -4,6 +4,10 @@ use super::uro;
 
 #[citygml_feature(name = "veg:SolitaryVegetationObject")]
 pub struct SolitaryVegetationObject {
+    #[citygml(path = b"uro:vegetationDataQualityAttribute/uro:VegetationDataQualityAttribute")]
+    #[citygml(path = b"uro:vegDataQualityAttribute/uro:DataQualityAttribute")]
+    pub veg_data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"uro:vegDmAttribute")]
     pub veg_dm_attribute: Vec<uro::DmAttributeProperty>, // -> uro:DmAttribute
 
@@ -16,8 +20,8 @@ pub struct SolitaryVegetationObject {
     #[citygml(path = b"uro:vegFacilityTypeAttribute/uro:FacilityTypeAttribute")]
     pub veg_facility_type_attribute: Vec<uro::FacilityTypeAttribute>,
 
-    #[citygml(path = b"uro:vegetationDataQualityAttribute/uro:VegetationDataQualityAttribute")]
-    pub vegetation_data_quality_attribute: Option<uro::VegetationDataQualityAttribute>,
+    #[citygml(path = b"uro:vegKeyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub veg_key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
 
     #[citygml(path = b"veg:class")]
     pub class: Option<Code>,
@@ -43,6 +47,10 @@ pub struct SolitaryVegetationObject {
 
 #[citygml_feature(name = "veg:PlantCover")]
 pub struct PlantCover {
+    #[citygml(path = b"uro:vegetationDataQualityAttribute/uro:VegetationDataQualityAttribute")]
+    #[citygml(path = b"uro:vegDataQualityAttribute/uro:DataQualityAttribute")]
+    pub veg_data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"uro:vegDmAttribute")]
     pub veg_dm_attribute: Vec<uro::DmAttributeProperty>, // -> uro:DmAttribute
 
@@ -55,8 +63,8 @@ pub struct PlantCover {
     #[citygml(path = b"uro:vegFacilityTypeAttribute/uro:FacilityTypeAttribute")]
     pub veg_facility_type_attribute: Vec<uro::FacilityTypeAttribute>,
 
-    #[citygml(path = b"uro:vegetationDataQualityAttribute/uro:VegetationDataQualityAttribute")]
-    pub vegetation_data_quality_attribute: Option<uro::VegetationDataQualityAttribute>,
+    #[citygml(path = b"uro:vegKeyValuePairAttribute/uro:KeyValuePairAttribute")]
+    pub veg_key_value_pair_attribute: Vec<uro::KeyValuePairAttribute>,
 
     #[citygml(path = b"veg:class")]
     pub class: Option<Code>,
