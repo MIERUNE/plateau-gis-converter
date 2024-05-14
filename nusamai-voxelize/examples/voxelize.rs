@@ -1,58 +1,50 @@
+use std::{
+    fs::File,
+    io::{BufWriter, Write},
+};
+
 use byteorder::{LittleEndian, WriteBytesExt};
 use earcut::{utils3d::project3d_to_2d, Earcut};
 use hashbrown::HashMap;
+use indexmap::IndexSet;
 use nusamai_geometry::MultiPolygon;
 use serde_json::json;
-use std::{fs::File, io::Write};
 
-use nusamai_voxelize::voxelize::{DdaVoxelizer, MeshVoxelizer};
+use nusamai_voxelize::{DdaVoxelizer, MeshVoxelizer};
 
 fn main() {
     let vertices: Vec<[f64; 3]> = vec![
         // exterior
-        [0.0, 0.0, 0.0],
-        [10.0, 0.0, 0.0],
-        [10.0, 10.0, 0.0],
-        [0.0, 10.0, 0.0],
-        [0.0, 0.0, 10.0],
-        [10.0, 0.0, 10.0],
-        [10.0, 10.0, 10.0],
-        [0.0, 10.0, 10.0],
-        // interior
-        [3.0, 3.0, 0.0],
-        [7.0, 3.0, 0.0],
-        [7.0, 7.0, 0.0],
-        [3.0, 7.0, 0.0],
-        [3.0, 3.0, 10.0],
-        [7.0, 3.0, 10.0],
-        [7.0, 7.0, 10.0],
-        [3.0, 7.0, 10.0],
+        [20.5, 0.5, -19.5],
+        [20.5, 0.5, 20.5],
+        [-19.5, 0.5, 20.5],
+        [-19.5, 0.5, -19.5],
+        [0.5, 40.5, 0.5],
+        [0.5, -39.5, 0.5],
     ];
 
     let mut mpoly = MultiPolygon::<u32>::new();
 
     // index
-    // 1st polygon
-    mpoly.add_exterior([0, 1, 2, 3, 0]);
-    mpoly.add_interior([8, 9, 10, 11, 8]);
-    // 2nd polygon
-    mpoly.add_exterior([4, 5, 6, 7, 4]);
-    mpoly.add_interior([12, 13, 14, 15, 12]);
-    // 3rd polygon
-    mpoly.add_exterior([0, 1, 5, 4, 0]);
-    // 4th polygon
-    mpoly.add_exterior([1, 2, 6, 5, 1]);
-    // 6th polygon
-    mpoly.add_exterior([2, 3, 7, 6, 2]);
-    // 6th polygon
-    mpoly.add_exterior([3, 0, 4, 7, 3]);
+    mpoly.add_exterior([0, 1, 2, 3]);
+    mpoly.add_exterior([0, 1, 4]);
+    mpoly.add_exterior([1, 2, 4]);
+    mpoly.add_exterior([2, 3, 4]);
+    mpoly.add_exterior([3, 0, 4]);
+    mpoly.add_exterior([0, 1, 5]);
+    mpoly.add_exterior([1, 2, 5]);
+    mpoly.add_exterior([2, 3, 5]);
+    mpoly.add_exterior([3, 0, 5]);
 
     // triangulation
     let mut earcutter = Earcut::new();
-    let mut buf3d: Vec<[f64; 3]> = Vec::new();
-    let mut buf2d: Vec<[f64; 2]> = Vec::new();
+    let mut buf3d: Vec<[f32; 3]> = Vec::new();
+    let mut buf2d: Vec<[f32; 2]> = Vec::new();
     let mut index_buf: Vec<u32> = Vec::new();
-    let mut triangles: Vec<[f64; 3]> = Vec::new();
+
+    let mut voxelizer = DdaVoxelizer {
+        voxels: HashMap::new(),
+    };
 
     for idx_poly in mpoly.iter() {
         let poly = idx_poly.transform(|idx| vertices[*idx as usize]);
@@ -61,64 +53,119 @@ fn main() {
             None => poly.raw_coords().len(),
         };
 
-        buf3d.clear();
-        buf3d.extend(poly.raw_coords().iter());
-
-        if project3d_to_2d(&buf3d, num_outer, &mut buf2d) {
-            // earcut
-            earcutter.earcut(buf2d.iter().cloned(), poly.hole_indices(), &mut index_buf);
-            triangles.extend(index_buf.iter().map(|&idx| buf3d[idx as usize]));
+        for axis in 0..=0 {
+            buf3d.clear();
+            buf3d.extend(poly.raw_coords().iter().map(|v| match axis {
+                0 => [v[0] as f32, v[1] as f32, v[2] as f32],
+                1 => [v[1] as f32, v[0] as f32, v[2] as f32],
+                2 => [v[0] as f32, v[2] as f32, v[1] as f32],
+                _ => unreachable!(),
+            }));
+            if project3d_to_2d(&buf3d, num_outer, &mut buf2d) {
+                // earcut
+                earcutter.earcut(buf2d.iter().cloned(), poly.hole_indices(), &mut index_buf);
+                for indx in index_buf.chunks_exact(3) {
+                    voxelizer.add_triangle(&[
+                        buf3d[indx[0] as usize],
+                        buf3d[indx[1] as usize],
+                        buf3d[indx[2] as usize],
+                    ]);
+                }
+            }
         }
     }
 
-    let voxel_size = 1.0;
-
-    let mut voxelizer = DdaVoxelizer {
-        voxels: HashMap::new(),
-    };
-    let triangles: Vec<[f32; 3]> = triangles
-        .into_iter()
-        .map(|arr| [arr[0] as f32, arr[1] as f32, arr[2] as f32])
-        .collect();
-    for t in triangles.chunks(3) {
-        voxelizer.add_triangle(t, voxel_size);
-    }
     let occupied_voxels = voxelizer.finalize();
-
-    let points_count = occupied_voxels.len();
 
     // -------------------gltfの作成-------------------
 
     // voxel is an integer value, but componentType of accessors is 5126 (floating point number),
     // and INTEGER type cannot be used due to primitives constraints
+
+    let mut positions = IndexSet::new();
+    let mut indices = Vec::new();
+
+    for (position, _) in occupied_voxels.iter() {
+        let [x, y, z] = [position[0] as f32, position[1] as f32, position[2] as f32];
+
+        // Make a voxel cube
+        let (idx0, _) = positions.insert_full([
+            (x + 1.0).to_bits(),
+            (y + 0.0).to_bits(),
+            (z + 1.0).to_bits(),
+        ]);
+        let (idx1, _) = positions.insert_full([
+            (x + 0.0).to_bits(),
+            (y + 0.0).to_bits(),
+            (z + 1.0).to_bits(),
+        ]);
+        let (idx2, _) = positions.insert_full([
+            (x + 1.0).to_bits(),
+            (y + 0.0).to_bits(),
+            (z + 0.0).to_bits(),
+        ]);
+        let (idx3, _) = positions.insert_full([
+            (x + 0.0).to_bits(),
+            (y + 0.0).to_bits(),
+            (z + 0.0).to_bits(),
+        ]);
+        let (idx4, _) = positions.insert_full([
+            (x + 1.0).to_bits(),
+            (y + 1.0).to_bits(),
+            (z + 1.0).to_bits(),
+        ]);
+        let (idx5, _) = positions.insert_full([
+            (x + 0.0).to_bits(),
+            (y + 1.0).to_bits(),
+            (z + 1.0).to_bits(),
+        ]);
+        let (idx6, _) = positions.insert_full([
+            (x + 1.0).to_bits(),
+            (y + 1.0).to_bits(),
+            (z + 0.0).to_bits(),
+        ]);
+        let (idx7, _) = positions.insert_full([
+            (x + 0.0).to_bits(),
+            (y + 1.0).to_bits(),
+            (z + 0.0).to_bits(),
+        ]);
+        indices.extend(
+            [
+                idx0, idx1, idx2, idx2, idx1, idx3, idx6, idx5, idx4, idx5, idx6, idx7, idx2, idx3,
+                idx6, idx7, idx6, idx3, idx4, idx1, idx0, idx1, idx4, idx5, idx0, idx2, idx4, idx6,
+                idx4, idx2, idx5, idx3, idx1, idx3, idx5, idx7,
+            ]
+            .iter()
+            .map(|&idx| idx as u32),
+        );
+    }
+
     let mut min_point = [f32::MAX; 3];
     let mut max_point = [f32::MIN; 3];
+    {
+        let mut bin_file = BufWriter::new(File::create("output.bin").unwrap());
+        for pos in &positions {
+            min_point[0] = f32::min(min_point[0], f32::from_bits(pos[0]));
+            min_point[1] = f32::min(min_point[1], f32::from_bits(pos[1]));
+            min_point[2] = f32::min(min_point[2], f32::from_bits(pos[2]));
+            max_point[0] = f32::max(max_point[0], f32::from_bits(pos[0]));
+            max_point[1] = f32::max(max_point[1], f32::from_bits(pos[1]));
+            max_point[2] = f32::max(max_point[2], f32::from_bits(pos[2]));
 
-    let mut bin_file = File::create("data/output.bin").unwrap();
-    for (position, _) in occupied_voxels.iter() {
-        let [x, y, z] = [
-            (position[0] as f32) * voxel_size,
-            (position[1] as f32) * voxel_size,
-            (position[2] as f32) * voxel_size,
-        ];
-        min_point = [
-            f32::min(min_point[0], x),
-            f32::min(min_point[1], y),
-            f32::min(min_point[2], z),
-        ];
-        max_point = [
-            f32::max(max_point[0], x),
-            f32::max(max_point[1], y),
-            f32::max(max_point[2], z),
-        ];
+            bin_file.write_u32::<LittleEndian>(pos[0]).unwrap();
+            bin_file.write_u32::<LittleEndian>(pos[1]).unwrap();
+            bin_file.write_u32::<LittleEndian>(pos[2]).unwrap();
+        }
 
-        bin_file.write_f32::<LittleEndian>(x).unwrap();
-        bin_file.write_f32::<LittleEndian>(y).unwrap();
-        bin_file.write_f32::<LittleEndian>(z).unwrap();
+        for &idx in &indices {
+            bin_file.write_u32::<LittleEndian>(idx).unwrap();
+        }
     }
 
     // number of voxels x number of vertex coordinates (3) x 4 bytes (f32)
-    let byte_length = points_count * 3 * 4;
+    let positions_size = positions.len() * 12;
+    let indices_size = indices.len() * 4;
+    let total_size = positions_size + indices_size;
 
     // make glTF
     let gltf_json = json!( {
@@ -139,7 +186,8 @@ fn main() {
                 "primitives": [
                     {
                         "attributes": {"POSITION": 0},
-                        "mode": 0,
+                        "indices": 1,
+                        "mode": 4, // TRIANGLES
                     },
                 ],
             },
@@ -147,32 +195,45 @@ fn main() {
         "buffers": [
             {
                 "uri": "./output.bin",
-                "byteLength": byte_length,
+                "byteLength": total_size,
             },
         ],
         "bufferViews": [
             {
                 "buffer": 0,
                 "byteOffset": 0,
-                "byteLength": byte_length,
+                "byteLength": positions_size,
                 "target": 34962,
+            },
+            {
+                "buffer": 0,
+                "byteOffset": positions_size,
+                "byteLength": indices_size,
+                "target": 34963,
             },
         ],
         "accessors": [
             {
                 "bufferView": 0,
                 "byteOffset": 0,
-                "componentType": 5126,
-                "count": points_count,
+                "componentType": 5126, // FLOAT
+                "count": positions.len(),
                 "type": "VEC3",
                 "min": [min_point[0], min_point[1], min_point[2]],
                 "max": [max_point[0], max_point[1], max_point[2]],
+            },
+            {
+                "bufferView": 1,
+                "byteOffset": 0,
+                "componentType": 5125, // UNSIGNED_INT
+                "count": indices.len(),
+                "type": "SCALAR",
             },
         ],
     });
 
     // gltfファイルを出力
     println!("write glTF");
-    let mut gltf_file = File::create("data/output.gltf").unwrap();
+    let mut gltf_file = File::create("output.gltf").unwrap();
     let _ = gltf_file.write_all(gltf_json.to_string().as_bytes());
 }
