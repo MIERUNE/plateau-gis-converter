@@ -1,1 +1,3 @@
-pub mod voxelize;
+mod voxelize;
+
+pub use voxelize::*;
