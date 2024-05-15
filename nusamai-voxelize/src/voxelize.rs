@@ -78,6 +78,8 @@ fn fill_triangle(voxels: &mut HashMap<VoxelPosition, Voxel>, triangle: &[[f32; 3
                 color: [255, 255, 255],
             },
         );
+
+        return;
     }
 
     let mut normal = (p2 - p1).cross(p3 - p1);
