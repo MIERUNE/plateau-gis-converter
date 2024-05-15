@@ -27,9 +27,11 @@ impl MeshVoxelizer for DdaVoxelizer {
 }
 
 fn draw_line(voxels: &mut HashMap<VoxelPosition, Voxel>, start: Vec3, end: Vec3) {
+    let start = start + Vec3::splat(0.5);
+    let end = end + Vec3::splat(0.5);
     let direction = end - start;
     let max_dist = direction.abs().max_element();
-    let steps = (max_dist).ceil() as i32;
+    let steps = max_dist.ceil() as i32;
     let step_size = direction / steps as f32;
 
     let mut current_voxel = start;
@@ -145,56 +147,56 @@ fn fill_triangle(voxels: &mut HashMap<VoxelPosition, Voxel>, triangle: &[[f32; 3
             if ordered_verts[0][0] > ordered_verts[1][0] {
                 ordered_verts.swap(0, 1);
             }
-            assert!(ordered_verts[1][0] >= ordered_verts[0][0]);
+            debug_assert!(ordered_verts[1][0] >= ordered_verts[0][0]);
 
             let ordered_verts: [[f32; 3]; 3] = ordered_verts.map(|inner| inner.map(|x| x));
 
-            let mut edge_dir1;
-            let mut start_point;
-            let mut end_point;
-            let mut end_vertex_x;
+            let mut start_step;
+            let mut start_pos;
 
             if (ordered_verts[1][0] - ordered_verts[0][0]).abs() >= 0.0
                 && (ordered_verts[1][0] - ordered_verts[0][0].floor() >= 1.0)
             {
-                edge_dir1 = (Vec3::from(ordered_verts[1]) - Vec3::from(ordered_verts[0]))
+                start_step = (Vec3::from(ordered_verts[1]) - Vec3::from(ordered_verts[0]))
                     / (ordered_verts[1][0] - ordered_verts[0][0]);
-                start_point = Vec3::from(ordered_verts[0])
-                    + edge_dir1 * (1.0 - ordered_verts[0][0] + ordered_verts[0][0].floor());
+                start_pos = Vec3::from(ordered_verts[0])
+                    + start_step
+                        * ((1.0 - ordered_verts[0][0] + ordered_verts[0][0].floor()) % 1.0);
             } else {
-                edge_dir1 = (Vec3::from(ordered_verts[2]) - Vec3::from(ordered_verts[1]))
+                start_step = (Vec3::from(ordered_verts[2]) - Vec3::from(ordered_verts[1]))
                     / (ordered_verts[2][0] - ordered_verts[1][0]);
-                start_point = Vec3::from(ordered_verts[1])
-                    + edge_dir1 * (1.0 - ordered_verts[1][0] + ordered_verts[1][0].floor());
+                start_pos = Vec3::from(ordered_verts[1])
+                    + start_step
+                        * ((1.0 - ordered_verts[1][0] + ordered_verts[1][0].floor()) % 1.0);
             };
 
-            let edge_dir2 = (Vec3::from(ordered_verts[2]) - Vec3::from(ordered_verts[0]))
+            let end_step = (Vec3::from(ordered_verts[2]) - Vec3::from(ordered_verts[0]))
                 / (ordered_verts[2][0] - ordered_verts[0][0]);
-            end_point = Vec3::from(ordered_verts[0])
-                + edge_dir2 * (1.0 - ordered_verts[0][0] + ordered_verts[0][0].floor());
+            let mut end_pos = Vec3::from(ordered_verts[0])
+                + end_step * ((1.0 - ordered_verts[0][0] + ordered_verts[0][0].floor()) % 1.0);
 
-            end_vertex_x = ordered_verts[1][0];
+            let mut end_vertex_x = ordered_verts[1][0];
 
-            if start_point.length() > 1000.0 || end_point.length() > 1000.0 {
+            if start_step.length() > 1000.0 || end_step.length() > 1000.0 {
                 println!("Direction vector magnitude is too large");
                 return;
             }
 
-            while end_point[0] <= ordered_verts[2][0] {
-                draw_line(voxels, start_point, end_point);
+            while end_pos[0] <= ordered_verts[2][0] {
+                draw_line(voxels, start_pos, end_pos);
 
-                start_point += edge_dir1;
-                end_point += edge_dir2;
+                start_pos += start_step;
+                end_pos += end_step;
 
-                if start_point[0] >= end_vertex_x {
-                    end_vertex_x = start_point[0] - ordered_verts[1][0];
-                    start_point -= edge_dir1 * end_vertex_x;
+                if start_pos[0] >= end_vertex_x {
+                    end_vertex_x = start_pos[0] - ordered_verts[1][0];
+                    start_pos -= start_step * end_vertex_x;
                     if (ordered_verts[2][0] - ordered_verts[1][0]).abs() == 0.0 {
                         continue;
                     }
-                    edge_dir1 = (Vec3::from(ordered_verts[2]) - Vec3::from(ordered_verts[1]))
+                    start_step = (Vec3::from(ordered_verts[2]) - Vec3::from(ordered_verts[1]))
                         / (ordered_verts[2][0] - ordered_verts[1][0]);
-                    start_point += edge_dir1 * end_vertex_x;
+                    start_pos += start_step * end_vertex_x;
                     end_vertex_x = ordered_verts[2][0];
                 }
             }
@@ -211,56 +213,56 @@ fn fill_triangle(voxels: &mut HashMap<VoxelPosition, Voxel>, triangle: &[[f32; 3
             if ordered_verts[0][1] > ordered_verts[1][1] {
                 ordered_verts.swap(0, 1);
             }
-            assert!(ordered_verts[1][1] >= ordered_verts[0][1]);
+            debug_assert!(ordered_verts[1][1] >= ordered_verts[0][1]);
 
             let ordered_verts: [[f32; 3]; 3] = ordered_verts.map(|inner| inner.map(|x| x));
 
-            let mut edge_dir1;
-            let mut start_point;
-            let mut end_point;
-            let mut end_vertex_y;
+            let mut start_step;
+            let mut start_pos;
 
             if (ordered_verts[1][1] - ordered_verts[0][1]).abs() >= 0.0
                 && (ordered_verts[1][1] - ordered_verts[0][1].floor() >= 1.0)
             {
-                edge_dir1 = (Vec3::from(ordered_verts[1]) - Vec3::from(ordered_verts[0]))
+                start_step = (Vec3::from(ordered_verts[1]) - Vec3::from(ordered_verts[0]))
                     / (ordered_verts[1][1] - ordered_verts[0][1]);
-                start_point = Vec3::from(ordered_verts[0])
-                    + edge_dir1 * (1.0 - ordered_verts[0][1] + ordered_verts[0][1].floor());
+                start_pos = Vec3::from(ordered_verts[0])
+                    + start_step
+                        * ((1.0 - ordered_verts[0][1] + ordered_verts[0][1].floor()) % 1.0);
             } else {
-                edge_dir1 = (Vec3::from(ordered_verts[2]) - Vec3::from(ordered_verts[1]))
+                start_step = (Vec3::from(ordered_verts[2]) - Vec3::from(ordered_verts[1]))
                     / (ordered_verts[2][1] - ordered_verts[1][1]);
-                start_point = Vec3::from(ordered_verts[1])
-                    + edge_dir1 * (1.0 - ordered_verts[1][1] + ordered_verts[1][1].floor());
+                start_pos = Vec3::from(ordered_verts[1])
+                    + start_step
+                        * ((1.0 - ordered_verts[1][1] + ordered_verts[1][1].floor()) % 1.0);
             };
 
-            let edge_dir2 = (Vec3::from(ordered_verts[2]) - Vec3::from(ordered_verts[0]))
+            let end_step = (Vec3::from(ordered_verts[2]) - Vec3::from(ordered_verts[0]))
                 / (ordered_verts[2][1] - ordered_verts[0][1]);
-            end_point = Vec3::from(ordered_verts[0])
-                + edge_dir2 * (1.0 - ordered_verts[0][1] + ordered_verts[0][1].floor());
+            let mut end_pos = Vec3::from(ordered_verts[0])
+                + end_step * ((1.0 - ordered_verts[0][1] + ordered_verts[0][1].floor()) % 1.0);
 
-            end_vertex_y = ordered_verts[1][1];
+            let mut end_vertex_y = ordered_verts[1][1];
 
-            if start_point.length() > 1000.0 || end_point.length() > 1000.0 {
+            if start_step.length() > 1000.0 || end_step.length() > 1000.0 {
                 println!("Direction vector magnitude is too large");
                 return;
             }
 
-            while end_point[1] <= ordered_verts[2][1] {
-                draw_line(voxels, start_point, end_point);
+            while end_pos[1] <= ordered_verts[2][1] {
+                draw_line(voxels, start_pos, end_pos);
 
-                start_point += edge_dir1;
-                end_point += edge_dir2;
+                start_pos += start_step;
+                end_pos += end_step;
 
-                if start_point[1] >= end_vertex_y {
-                    end_vertex_y = start_point[1] - ordered_verts[1][1];
-                    start_point -= edge_dir1 * end_vertex_y;
+                if start_pos[1] >= end_vertex_y {
+                    end_vertex_y = start_pos[1] - ordered_verts[1][1];
+                    start_pos -= start_step * end_vertex_y;
                     if (ordered_verts[2][1] - ordered_verts[1][1]).abs() == 0.0 {
                         continue;
                     }
-                    edge_dir1 = (Vec3::from(ordered_verts[2]) - Vec3::from(ordered_verts[1]))
+                    start_step = (Vec3::from(ordered_verts[2]) - Vec3::from(ordered_verts[1]))
                         / (ordered_verts[2][1] - ordered_verts[1][1]);
-                    start_point += edge_dir1 * end_vertex_y;
+                    start_pos += start_step * end_vertex_y;
                     end_vertex_y = ordered_verts[2][1];
                 }
             }
@@ -277,56 +279,56 @@ fn fill_triangle(voxels: &mut HashMap<VoxelPosition, Voxel>, triangle: &[[f32; 3
             if ordered_verts[0][2] > ordered_verts[1][2] {
                 ordered_verts.swap(0, 1);
             }
-            assert!(ordered_verts[1][2] >= ordered_verts[0][2]);
+            debug_assert!(ordered_verts[1][2] >= ordered_verts[0][2]);
 
             let ordered_verts: [[f32; 3]; 3] = ordered_verts.map(|inner| inner.map(|x| x));
 
-            let mut edge_dir1;
-            let mut start_point;
-            let mut end_point;
-            let mut end_vertex_z;
+            let mut start_step;
+            let mut start_pos;
 
             if (ordered_verts[1][2] - ordered_verts[0][2]).abs() >= 0.0
                 && (ordered_verts[1][2] - ordered_verts[0][2].floor() >= 1.0)
             {
-                edge_dir1 = (Vec3::from(ordered_verts[1]) - Vec3::from(ordered_verts[0]))
+                start_step = (Vec3::from(ordered_verts[1]) - Vec3::from(ordered_verts[0]))
                     / (ordered_verts[1][2] - ordered_verts[0][2]);
-                start_point = Vec3::from(ordered_verts[0])
-                    + edge_dir1 * (1.0 - ordered_verts[0][2] + ordered_verts[0][2].floor());
+                start_pos = Vec3::from(ordered_verts[0])
+                    + start_step
+                        * ((1.0 - ordered_verts[0][2] + ordered_verts[0][2].floor()) % 1.0);
             } else {
-                edge_dir1 = (Vec3::from(ordered_verts[2]) - Vec3::from(ordered_verts[1]))
+                start_step = (Vec3::from(ordered_verts[2]) - Vec3::from(ordered_verts[1]))
                     / (ordered_verts[2][2] - ordered_verts[1][2]);
-                start_point = Vec3::from(ordered_verts[1])
-                    + edge_dir1 * (1.0 - ordered_verts[1][2] + ordered_verts[1][2].floor());
+                start_pos = Vec3::from(ordered_verts[1])
+                    + start_step
+                        * ((1.0 - ordered_verts[1][2] + ordered_verts[1][2].floor()) % 1.0);
             };
 
-            let edge_dir2 = (Vec3::from(ordered_verts[2]) - Vec3::from(ordered_verts[0]))
+            let end_step = (Vec3::from(ordered_verts[2]) - Vec3::from(ordered_verts[0]))
                 / (ordered_verts[2][2] - ordered_verts[0][2]);
-            end_point = Vec3::from(ordered_verts[0])
-                + edge_dir2 * (1.0 - ordered_verts[0][2] + ordered_verts[0][2].floor());
+            let mut end_pos = Vec3::from(ordered_verts[0])
+                + end_step * ((1.0 - ordered_verts[0][2] + ordered_verts[0][2].floor()) % 1.0);
 
-            end_vertex_z = ordered_verts[1][2];
+            let mut end_vertex_z = ordered_verts[1][2];
 
-            if start_point.length() > 1000.0 || end_point.length() > 1000.0 {
+            if start_step.length() > 1000.0 || end_step.length() > 1000.0 {
                 println!("Direction vector magnitude is too large");
                 return;
             }
 
-            while end_point[2] <= ordered_verts[2][2] {
-                draw_line(voxels, start_point, end_point);
+            while end_pos[2] <= ordered_verts[2][2] {
+                draw_line(voxels, start_pos, end_pos);
 
-                start_point += edge_dir1;
-                end_point += edge_dir2;
+                start_pos += start_step;
+                end_pos += end_step;
 
-                if start_point[2] >= end_vertex_z {
-                    end_vertex_z = start_point[2] - ordered_verts[1][2];
-                    start_point -= edge_dir1 * end_vertex_z;
+                if start_pos[2] >= end_vertex_z {
+                    end_vertex_z = start_pos[2] - ordered_verts[1][2];
+                    start_pos -= start_step * end_vertex_z;
                     if (ordered_verts[2][2] - ordered_verts[1][2]).abs() == 0.0 {
                         continue;
                     }
-                    edge_dir1 = (Vec3::from(ordered_verts[2]) - Vec3::from(ordered_verts[1]))
+                    start_step = (Vec3::from(ordered_verts[2]) - Vec3::from(ordered_verts[1]))
                         / (ordered_verts[2][2] - ordered_verts[1][2]);
-                    start_point += edge_dir1 * end_vertex_z;
+                    start_pos += start_step * end_vertex_z;
                     end_vertex_z = ordered_verts[2][2];
                 }
             }

@@ -15,12 +15,12 @@ use nusamai_voxelize::{DdaVoxelizer, MeshVoxelizer};
 fn main() {
     let vertices: Vec<[f64; 3]> = vec![
         // exterior
-        [20.5, 0.5, -19.5],
-        [20.5, 0.5, 20.5],
-        [-19.5, 0.5, 20.5],
-        [-19.5, 0.5, -19.5],
-        [0.5, 40.5, 0.5],
-        [0.5, -39.5, 0.5],
+        [21.5, 0.5, 0.5],
+        [0.5, 0.5, 21.5],
+        [-20.5, 0.5, 0.5],
+        [0.5, 0.5, -20.5],
+        [0.5, 45.5, 0.5],
+        [0.5, -44.5, 0.5],
     ];
 
     let mut mpoly = MultiPolygon::<u32>::new();
@@ -53,7 +53,7 @@ fn main() {
             None => poly.raw_coords().len(),
         };
 
-        for axis in 0..=0 {
+        for axis in 0..=2 {
             buf3d.clear();
             buf3d.extend(poly.raw_coords().iter().map(|v| match axis {
                 0 => [v[0] as f32, v[1] as f32, v[2] as f32],
@@ -90,44 +90,44 @@ fn main() {
 
         // Make a voxel cube
         let (idx0, _) = positions.insert_full([
-            (x + 1.0).to_bits(),
-            (y + 0.0).to_bits(),
-            (z + 1.0).to_bits(),
+            (x + 0.5).to_bits(),
+            (y - 0.5).to_bits(),
+            (z + 0.5).to_bits(),
         ]);
         let (idx1, _) = positions.insert_full([
-            (x + 0.0).to_bits(),
-            (y + 0.0).to_bits(),
-            (z + 1.0).to_bits(),
+            (x - 0.5).to_bits(),
+            (y - 0.5).to_bits(),
+            (z + 0.5).to_bits(),
         ]);
         let (idx2, _) = positions.insert_full([
-            (x + 1.0).to_bits(),
-            (y + 0.0).to_bits(),
-            (z + 0.0).to_bits(),
+            (x + 0.5).to_bits(),
+            (y - 0.5).to_bits(),
+            (z - 0.5).to_bits(),
         ]);
         let (idx3, _) = positions.insert_full([
-            (x + 0.0).to_bits(),
-            (y + 0.0).to_bits(),
-            (z + 0.0).to_bits(),
+            (x - 0.5).to_bits(),
+            (y - 0.5).to_bits(),
+            (z - 0.5).to_bits(),
         ]);
         let (idx4, _) = positions.insert_full([
-            (x + 1.0).to_bits(),
-            (y + 1.0).to_bits(),
-            (z + 1.0).to_bits(),
+            (x + 0.5).to_bits(),
+            (y + 0.5).to_bits(),
+            (z + 0.5).to_bits(),
         ]);
         let (idx5, _) = positions.insert_full([
-            (x + 0.0).to_bits(),
-            (y + 1.0).to_bits(),
-            (z + 1.0).to_bits(),
+            (x - 0.5).to_bits(),
+            (y + 0.5).to_bits(),
+            (z + 0.5).to_bits(),
         ]);
         let (idx6, _) = positions.insert_full([
-            (x + 1.0).to_bits(),
-            (y + 1.0).to_bits(),
-            (z + 0.0).to_bits(),
+            (x + 0.5).to_bits(),
+            (y + 0.5).to_bits(),
+            (z - 0.5).to_bits(),
         ]);
         let (idx7, _) = positions.insert_full([
-            (x + 0.0).to_bits(),
-            (y + 1.0).to_bits(),
-            (z + 0.0).to_bits(),
+            (x - 0.5).to_bits(),
+            (y + 0.5).to_bits(),
+            (z - 0.5).to_bits(),
         ]);
         indices.extend(
             [
