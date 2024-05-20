@@ -103,7 +103,7 @@ impl DataSink for MinecraftSink {
                     // ファイル出力に都合の良い形式に変換
                     voxels.push(feature);
                 });
-出力
+
                 // ファイル群を出力
                 std::fs::create_dir_all(&self.output_path)?;
                 let _ = voxels.iter().try_for_each(|features| -> Result<()> {
