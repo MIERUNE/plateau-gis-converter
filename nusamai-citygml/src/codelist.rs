@@ -2,7 +2,7 @@ use url::Url;
 
 use crate::parser::ParseError;
 
-pub trait CodeResolver {
+pub trait CodeResolver: Send + Sync {
     fn resolve(
         &self,
         base_url: &Url,
