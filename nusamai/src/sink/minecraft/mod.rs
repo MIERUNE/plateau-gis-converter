@@ -75,17 +75,17 @@ impl DataSink for MinecraftSink {
 
         let (ra, rb) = rayon::join(
             || {
-                // Convert CityObjects to GeoJSON objects
                 upstream
                     .into_iter()
                     .par_bridge()
                     .try_for_each_with(sender, |sender, parcel| {
                         feedback.ensure_not_canceled()?;
 
-                        let Value::Object(object) = &parcel.entity.root else {
-                            // Since root is always assumed to be an Object, skip if unexpected data comes in
-                            return Ok(());
-                        };
+                        // 地心座標系に変更
+                        // Y軸とZ軸を入れ替え
+                        // 地物のボクセライズ
+                        // カラーの割り当て
+                        // 地物ごとのvoxelを次のステージに送信
 
                         if sender.send(parcel.entity).is_err() {
                             return Err(PipelineError::Canceled);
@@ -95,14 +95,18 @@ impl DataSink for MinecraftSink {
                     })
             },
             || {
-                let mut entities = Vec::new();
+                let mut voxels = Vec::new();
 
                 receiver.into_iter().for_each(|feature| {
-                    entities.push(feature);
+                    // voxelを受け取る
+                    // どのリージョン・チャンク・セクション・座標なのかを特定する
+                    // ファイル出力に都合の良い形式に変換
+                    voxels.push(feature);
                 });
-
+出力
+                // ファイル群を出力
                 std::fs::create_dir_all(&self.output_path)?;
-                let _ = entities.iter().try_for_each(|features| -> Result<()> {
+                let _ = voxels.iter().try_for_each(|features| -> Result<()> {
                     feedback.ensure_not_canceled()?;
 
                     Ok(())
