@@ -66,11 +66,6 @@ pub struct MinecraftSink {
 impl DataSink for MinecraftSink {
     fn make_requirements(&self) -> DataRequirements {
         DataRequirements {
-            tree_flattening: transformer::TreeFlatteningSpec::Flatten {
-                feature: transformer::FeatureFlatteningOption::AllExceptThematicSurfaces,
-                data: transformer::DataFlatteningOption::None,
-                object: transformer::ObjectFlatteningOption::None,
-            },
             ..Default::default()
         }
     }
