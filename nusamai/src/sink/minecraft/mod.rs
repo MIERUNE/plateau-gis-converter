@@ -24,6 +24,9 @@ use crate::{
     transformer,
 };
 
+use earcut::{utils3d::project3d_to_2d, Earcut};
+use nusamai_voxelize::{DdaVoxelizer, MeshVoxelizer, Voxel, VoxelPosition};
+
 pub struct MinecraftSinkProvider {}
 
 impl DataSinkProvider for MinecraftSinkProvider {
@@ -87,7 +90,53 @@ impl DataSink for MinecraftSink {
                         // カラーの割り当て
                         // 地物ごとのvoxelを次のステージに送信
 
-                        if sender.send(parcel.entity).is_err() {
+                        let mut geom_store = parcel.entity.geometry_store.read().unwrap();
+
+                        let mut earcutter = Earcut::<f32>::new();
+                        let mut buf3d: Vec<[f32; 3]> = Vec::new();
+                        let mut buf2d: Vec<[f32; 2]> = Vec::new();
+                        let mut index_buf: Vec<u32> = Vec::new();
+                        let mut triangles = Vec::<f32>::new();
+
+                        let mut voxelizer = DdaVoxelizer {
+                            voxels: HashMap::new(),
+                        };
+
+                        let mut vertices = geom_store.vertices.clone();
+
+                        for (idx_poly) in geom_store.multipolygon.iter() {
+                            let poly = idx_poly.transform(|idx| vertices[*idx as usize]);
+                            let num_outer = match poly.hole_indices().first() {
+                                Some(&v) => v as usize,
+                                None => poly.raw_coords().len(),
+                            };
+
+                            buf3d.clear();
+                            buf3d.extend(
+                                poly.raw_coords()
+                                    .iter()
+                                    .map(|v| [v[0] as f32, v[1] as f32, v[2] as f32]),
+                            );
+
+                            if project3d_to_2d(&buf3d, num_outer, &mut buf2d) {
+                                earcutter.earcut(
+                                    buf2d.iter().cloned(),
+                                    poly.hole_indices(),
+                                    &mut index_buf,
+                                );
+                                for indx in index_buf.chunks_exact(3) {
+                                    voxelizer.add_triangle(&[
+                                        buf3d[indx[0] as usize],
+                                        buf3d[indx[1] as usize],
+                                        buf3d[indx[2] as usize],
+                                    ]);
+                                }
+                            }
+                        }
+
+                        let occupied_voxels = voxelizer.finalize();
+
+                        if sender.send(occupied_voxels).is_err() {
                             return Err(PipelineError::Canceled);
                         };
 
@@ -98,6 +147,7 @@ impl DataSink for MinecraftSink {
                 let mut voxels = Vec::new();
 
                 receiver.into_iter().for_each(|feature| {
+                    println!("{:#?}", feature);
                     // voxelを受け取る
                     // どのリージョン・チャンク・セクション・座標なのかを特定する
                     // ファイル出力に都合の良い形式に変換
