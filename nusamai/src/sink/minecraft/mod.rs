@@ -25,7 +25,15 @@ use crate::{
 };
 
 use earcut::{utils3d::project3d_to_2d, Earcut};
-use nusamai_voxelize::{DdaVoxelizer, MeshVoxelizer, Voxel, VoxelPosition};
+use nusamai_projection::cartesian::geodetic_to_geocentric;
+use nusamai_projection::etmerc::ExtendedTransverseMercatorProjection;
+
+use nusamai_voxelize::{DdaVoxelizer, MeshVoxelizer, Voxel};
+
+use fastanvil::Region;
+use fastnbt::{to_bytes, LongArray};
+use serde::{Deserialize, Serialize};
+use std::sync::{Arc, Mutex};
 
 pub struct MinecraftSinkProvider {}
 
@@ -66,6 +74,147 @@ pub struct MinecraftSink {
     output_path: PathBuf,
 }
 
+pub struct BoundingVolume {
+    pub min_lng: f64,
+    pub max_lng: f64,
+    pub min_lat: f64,
+    pub max_lat: f64,
+    pub min_height: f64,
+    pub max_height: f64,
+}
+
+impl BoundingVolume {
+    fn update(&mut self, other: &Self) {
+        self.min_lng = self.min_lng.min(other.min_lng);
+        self.max_lng = self.max_lng.max(other.max_lng);
+        self.min_lat = self.min_lat.min(other.min_lat);
+        self.max_lat = self.max_lat.max(other.max_lat);
+        self.min_height = self.min_height.min(other.min_height);
+        self.max_height = self.max_height.max(other.max_height);
+    }
+}
+
+impl Default for BoundingVolume {
+    fn default() -> Self {
+        Self {
+            min_lng: f64::MAX,
+            max_lng: f64::MIN,
+            min_lat: f64::MAX,
+            max_lat: f64::MIN,
+            min_height: f64::MAX,
+            max_height: f64::MIN,
+        }
+    }
+}
+
+mod block_colors;
+
+use block_colors::get_block_colors;
+
+type PositionXYZ = [u8; 3];
+type PositionXZ = [i32; 2];
+
+#[derive(Deserialize, Serialize, Debug)]
+struct BlockSchema {
+    position: PositionXYZ,
+    name: String,
+}
+#[derive(Deserialize, Serialize, Debug)]
+struct SectionSchema {
+    y: i32,
+    blocks: Vec<BlockSchema>,
+}
+#[derive(Deserialize, Serialize, Debug)]
+struct ChunkSchema {
+    position: PositionXZ,
+    sections: Vec<SectionSchema>,
+}
+
+#[derive(Deserialize, Serialize, Debug)]
+struct RegionSchema {
+    position: PositionXZ,
+    chunks: Vec<ChunkSchema>,
+}
+
+type WorldSchema = Vec<RegionSchema>;
+
+#[allow(non_snake_case)]
+#[derive(Serialize, Deserialize, Debug)]
+struct Chunk {
+    Status: String,
+    zPos: i32,                        // チャンクのZ座標(絶対値)
+    block_entities: Vec<BlockEntity>, // List of block entities
+    yPos: i32,                        // 一番低いセクションのY座標
+    Last_update: i64,                 // Last update time in ticks
+    structures: Structures, // Information about structures like fortresses, villages, etc.
+    InhabitedTime: i64,     // 時間
+    xPos: i32,              // チャンクのx座標(絶対値)
+    Heightmaps: Heightmaps, // Heightmap data
+    sections: Vec<Section>,
+    isLightOn: i32,               // Assuming 1b represents a boolean in your context
+    block_ticks: Vec<BlockTick>,  // Assuming BlockTick is defined elsewhere
+    PostProcessing: Vec<Vec<u8>>, // Nested arrays
+    DataVersion: u32,             // データバージョン
+    fluid_ticks: Vec<FluidTick>,  // Assuming FluidTick is defined elsewhere
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+struct BlockEntity {
+    // ブロックエンティティの構造をここに定義
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+struct BlockTick {
+    // Define attributes for block ticks
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+struct FluidTick {
+    // Define attributes for fluid ticks
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+#[allow(non_snake_case)]
+struct Structures {
+    References: HashMap<String, Vec<i32>>,
+    starts: HashMap<String, Vec<i32>>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+#[allow(non_snake_case)]
+struct Heightmaps {
+    OCEAN_FLOOR: Vec<i64>,
+    MOTION_BLOCKING_NO_LEAVES: Vec<i64>,
+    MOTION_BLOCKING: Vec<i64>,
+    WORLD_SURFACE: Vec<i64>,
+}
+#[allow(non_snake_case)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
+struct Section {
+    block_states: Blockstates,
+    biomes: Biomes,
+    Y: i8,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+struct Biomes {
+    palette: Vec<String>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+struct Blockstates {
+    palette: Vec<PaletteItem>,
+    data: Option<LongArray>,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+struct PaletteItem {
+    #[serde(rename = "Name")]
+    name: String,
+    #[serde(rename = "Properties")]
+    properties: Option<Value>,
+}
+
 impl DataSink for MinecraftSink {
     fn make_requirements(&self) -> DataRequirements {
         DataRequirements {
@@ -76,6 +225,11 @@ impl DataSink for MinecraftSink {
     fn run(&mut self, upstream: Receiver, feedback: &Feedback, _schema: &Schema) -> Result<()> {
         let (sender, receiver) = std::sync::mpsc::sync_channel(1000);
 
+        let mut world_data = WorldSchema::new();
+        let mut region_map: HashMap<PositionXZ, usize> = HashMap::new();
+        let mut chunk_map: HashMap<(PositionXZ, PositionXZ), usize> = HashMap::new();
+        let mut section_map: HashMap<(PositionXZ, PositionXZ, i32), usize> = HashMap::new();
+
         let (ra, rb) = rayon::join(
             || {
                 upstream
@@ -84,13 +238,12 @@ impl DataSink for MinecraftSink {
                     .try_for_each_with(sender, |sender, parcel| {
                         feedback.ensure_not_canceled()?;
 
-                        // 地心座標系に変更
-                        // Y軸とZ軸を入れ替え
-                        // 地物のボクセライズ
-                        // カラーの割り当て
-                        // 地物ごとのvoxelを次のステージに送信
+                        // 境界の計算
+                        let mut local_bvol = BoundingVolume::default();
 
-                        let mut geom_store = parcel.entity.geometry_store.read().unwrap();
+                        let entity = parcel.entity;
+
+                        let mut geom_store = entity.geometry_store.read().unwrap();
 
                         let mut earcutter = Earcut::<f32>::new();
                         let mut buf3d: Vec<[f32; 3]> = Vec::new();
@@ -102,7 +255,31 @@ impl DataSink for MinecraftSink {
                             voxels: HashMap::new(),
                         };
 
-                        let mut vertices = geom_store.vertices.clone();
+                        let ellipsoid = nusamai_projection::ellipsoid::wgs84();
+
+                        let projection = ExtendedTransverseMercatorProjection::new(
+                            141.3494741829318,
+                            42.948695778186746,
+                            1.0,
+                            &ellipsoid,
+                        );
+
+                        println!("Projection: {:?}", geom_store);
+                        let vertices: Vec<_> = geom_store
+                            .vertices
+                            .iter()
+                            .map(|v| match projection.project_forward(v[0], v[1], v[2]) {
+                                Ok((x, y, z)) => [x, z - 200 as f64, y * -1 as f64],
+                                Err(e) => {
+                                    println!("変換エラー: {:?}", e);
+                                    [0.0, 0.0, 0.0] // エラー時のデフォルト値
+                                }
+                            })
+                            .collect();
+
+                        // let mut vertices = geom_store.vertices.clone();
+
+                        // local_bvolを更新
 
                         for (idx_poly) in geom_store.multipolygon.iter() {
                             let poly = idx_poly.transform(|idx| vertices[*idx as usize]);
@@ -144,20 +321,145 @@ impl DataSink for MinecraftSink {
                     })
             },
             || {
-                let mut voxels = Vec::new();
+                // RGBに基づいてブロックの色を設定
+                let mut block_colors = get_block_colors();
+
+                let mut voxels: Vec<Voxel> = Vec::new();
 
                 receiver.into_iter().for_each(|feature| {
-                    println!("{:#?}", feature);
-                    // voxelを受け取る
-                    // どのリージョン・チャンク・セクション・座標なのかを特定する
-                    // ファイル出力に都合の良い形式に変換
-                    voxels.push(feature);
+                    // キーを順に読み取って表示し、voxelsにコピーを追加
+                    feature.iter().for_each(|(key, voxel)| {
+                        // 最も近いブロックを見つける
+                        let mut min_distance = f64::MAX;
+                        let mut block_name = "minecraft:stone";
+
+                        for (name, color) in block_colors.iter() {
+                            let distance = (color.0 as f64 - voxel.color[0] as f64).powi(2)
+                                + (color.1 as f64 - voxel.color[1] as f64).powi(2)
+                                + (color.2 as f64 - voxel.color[2] as f64).powi(2);
+
+                            if distance < min_distance {
+                                min_distance = distance;
+                                block_name = name;
+                            }
+                        }
+
+                        // ピクセル座標から、中心のピクセル座標を減算
+                        let adjusted_x = key[0];
+                        let adjusted_y = key[1];
+                        let adjusted_z = key[2];
+
+                        // ピクセル座標からリージョン座標を計算
+                        let region_x = adjusted_x.div_euclid(512) as i32;
+                        let region_z = adjusted_z.div_euclid(512) as i32;
+
+                        // ピクセル座標座標からチャンク座標を計算
+                        let chunk_x = adjusted_x.div_euclid(16) as i32;
+                        let chunk_z = adjusted_z.div_euclid(16) as i32;
+
+                        // DEMの値からセクションのyレベルを計算
+                        let section_y = (adjusted_y + 64) / 16 - 4;
+
+                        // ブロックのスキーマを作成
+                        let block_data = BlockSchema {
+                            position: [
+                                adjusted_x.rem_euclid(16) as u8,
+                                adjusted_y.rem_euclid(16) as u8,
+                                adjusted_z.rem_euclid(16) as u8,
+                            ],
+                            name: block_name.to_string(),
+                        };
+
+                        // リージョン、チャンク、セクションのインデックスを取得
+                        let region_pos = [region_x, region_z];
+                        let chunk_pos = [chunk_x, chunk_z];
+
+                        let region_index = *region_map.entry(region_pos).or_insert_with(|| {
+                            world_data.push(RegionSchema {
+                                position: region_pos,
+                                chunks: Vec::new(),
+                            });
+                            world_data.len() - 1
+                        });
+
+                        let chunk_index =
+                            *chunk_map.entry((region_pos, chunk_pos)).or_insert_with(|| {
+                                world_data[region_index].chunks.push(ChunkSchema {
+                                    position: chunk_pos,
+                                    sections: Vec::new(),
+                                });
+                                world_data[region_index].chunks.len() - 1
+                            });
+
+                        let section_index = *section_map
+                            .entry((region_pos, chunk_pos, section_y))
+                            .or_insert_with(|| {
+                                world_data[region_index].chunks[chunk_index].sections.push(
+                                    SectionSchema {
+                                        y: section_y,
+                                        blocks: Vec::new(),
+                                    },
+                                );
+                                world_data[region_index].chunks[chunk_index].sections.len() - 1
+                            });
+
+                        world_data[region_index].chunks[chunk_index].sections[section_index]
+                            .blocks
+                            .push(block_data);
+                        // voxels.push(voxel.clone());
+                    });
                 });
 
                 // ファイル群を出力
                 std::fs::create_dir_all(&self.output_path)?;
-                let _ = voxels.iter().try_for_each(|features| -> Result<()> {
+                let _ = world_data.iter().try_for_each(|region| -> Result<()> {
                     feedback.ensure_not_canceled()?;
+
+                    let mut file_path = self.output_path.clone();
+                    let out_path = PathBuf::from(format!(
+                        "{}/r.{}.{}.mca",
+                        file_path.display(),
+                        region.position[0],
+                        region.position[1]
+                    ));
+
+                    let out_file = File::options()
+                        .read(true)
+                        .write(true)
+                        .truncate(true)
+                        .create(true)
+                        .open(&out_path)
+                        .unwrap();
+
+                    // let out_file = File::create(out_path)?;
+
+                    let new_region = Arc::new(Mutex::new(Region::new(out_file).unwrap()));
+
+                    (0..32).into_par_iter().for_each(|chunk_z| {
+                        (0..32).into_par_iter().for_each(|chunk_x| {
+                            // チャンクの絶対座標を計算
+                            let absolute_chunk_x = region.position[0] as i32 * 32 + chunk_x;
+                            let absolute_chunk_z = region.position[1] as i32 * 32 + chunk_z;
+
+                            let chunk_data = region
+                                .chunks
+                                .iter()
+                                .find(|c| c.position == [absolute_chunk_x, absolute_chunk_z]);
+
+                            let chunk = create_chunk_structure(
+                                absolute_chunk_x as i32,
+                                absolute_chunk_z as i32,
+                                chunk_data,
+                            );
+
+                            let ser = to_bytes(&chunk).unwrap(); // 適切なシリアライズ関数を想定
+
+                            let mut region = new_region.lock().unwrap();
+                            region
+                                .write_chunk(chunk_x as usize, chunk_z as usize, &ser)
+                                .unwrap();
+                        });
+                    });
 
                     Ok(())
                 });
@@ -176,6 +478,145 @@ impl DataSink for MinecraftSink {
         }
 
         Ok(())
+    }
+}
+
+// パレットのビット数とデータサイズを計算する関数
+fn calculate_bits_and_size(palette_len: usize) -> (usize, usize) {
+    let bits_per_block = match palette_len {
+        1..=16 => 4,
+        17..=32 => 5,
+        33..=64 => 6,
+        65..=128 => 7,
+        129..=256 => 8,
+        257..=512 => 9,
+        513..=1024 => 10,
+        1025..=2048 => 11,
+        _ => 12,
+    };
+    let data_size = (4096 * bits_per_block + 63) / 64;
+    (bits_per_block, data_size)
+}
+
+// セクションを作成する関数
+fn create_chunk_section(
+    blocks: &[BlockSchema],
+    palette: &mut Vec<PaletteItem>,
+    section_y: i32,
+) -> Section {
+    // パレットのサイズに基づいてビット数とデータサイズを計算
+    let (bits_per_block, data_size) = calculate_bits_and_size(palette.len());
+
+    // 4096要素の1次元配列を作成し、ブロックごとにpaletteのindexを埋め込む
+    let mut block_indices = vec![0; 4096];
+    for block in blocks {
+        let [x, y, z] = block.position;
+
+        // 1次元配列のインデックスを計算し、パレットのインデックスを格納
+        let index = (y as usize) * 256 + (z as usize) * 16 + (x as usize);
+        let palette_index = palette
+            .iter()
+            .position(|b| b.name == block.name)
+            .unwrap_or_else(|| {
+                palette.push(PaletteItem {
+                    name: block.name.clone(),
+                    properties: None,
+                });
+                palette.len() - 1
+            });
+        block_indices[index] = palette_index;
+    }
+
+    // BPEにより、entry（i64）に格納されるブロック数を算出する
+    let blocks_per_entry = 64 / bits_per_block;
+
+    // 1次元配列をブロック数で分割する
+    let block_entries: Vec<&[usize]> = block_indices.chunks(blocks_per_entry).collect();
+
+    // 分割後、ビッグエンディアンでi64に変換する
+    let mut data = Vec::with_capacity(data_size);
+    for entry in block_entries {
+        let mut value: i64 = 0;
+        for (i, &index) in entry.iter().enumerate() {
+            value |= (index as i64) << (i * bits_per_block);
+        }
+        data.push(value);
+    }
+
+    // パディングを追加（必要な場合のみ）
+    if data_size > data.len() {
+        let padding_size = data_size - data.len();
+        data.extend(std::iter::repeat(0).take(padding_size));
+    }
+
+    Section {
+        block_states: Blockstates {
+            palette: palette.clone(),
+            data: Some(LongArray::new(data)),
+        },
+        biomes: Biomes {
+            palette: vec!["minecraft:the_void".to_string()],
+        },
+        Y: section_y as i8,
+    }
+}
+
+// チャンクの構造を作成する関数
+fn create_chunk_structure(chunk_x: i32, chunk_z: i32, chunk_data: Option<&ChunkSchema>) -> Chunk {
+    let mut palette = vec![PaletteItem {
+        name: "minecraft:air".to_string(),
+        properties: None,
+    }];
+
+    let sections: Vec<Section> = if let Some(chunk_data) = chunk_data {
+        chunk_data
+            .sections
+            .iter()
+            .map(|section| {
+                let mut local_palette = palette.clone();
+
+                // ブロックをパレットに登録
+                for block in &section.blocks {
+                    if !local_palette.iter().any(|b| b.name == block.name) {
+                        local_palette.push(PaletteItem {
+                            name: block.name.clone(),
+                            properties: None,
+                        });
+                    }
+                }
+
+                create_chunk_section(&section.blocks, &mut local_palette, section.y)
+            })
+            .collect()
+    } else {
+        // chunk_dataがない場合は空のセクションを作成
+        Vec::new()
+    };
+
+    Chunk {
+        Status: "full".to_string(),
+        zPos: chunk_z,
+        block_entities: vec![],
+        yPos: -4,
+        Last_update: 0,
+        structures: Structures {
+            References: HashMap::new(),
+            starts: HashMap::new(),
+        },
+        InhabitedTime: 0,
+        xPos: chunk_x,
+        Heightmaps: Heightmaps {
+            OCEAN_FLOOR: vec![],
+            MOTION_BLOCKING_NO_LEAVES: vec![],
+            MOTION_BLOCKING: vec![],
+            WORLD_SURFACE: vec![],
+        },
+        sections,
+        isLightOn: 0,
+        block_ticks: vec![],
+        PostProcessing: vec![],
+        DataVersion: 3105, // Java Edition 1.19
+        fluid_ticks: vec![],
     }
 }
 
