@@ -15,12 +15,12 @@ fn main() {
 
     let mut packer = TexturePacker::new(config, placer, exporter);
 
-    let uv_coords = vec![(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)];
-    let image_path = Path::new("path/to/image.png");
+    let uv_coords = vec![(0.0, 0.0), (0.5, 0.0), (0.5, 0.5), (0.0, 0.5)];
+    let image_path = Path::new("nusamai-texture/examples/assets/1.png");
     let texture = Texture::new(&uv_coords, image_path);
 
     packer.add_texture("texture1".to_string(), texture);
 
-    let output_path = Path::new("output/atlas.webp");
+    let output_path = Path::new("nusamai-texture/examples/output/atlas.webp");
     packer.export(output_path);
 }

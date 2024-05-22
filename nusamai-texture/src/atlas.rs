@@ -1,4 +1,4 @@
-use image::{DynamicImage, GenericImageView, SubImage};
+use image::{DynamicImage, GenericImageView};
 use std::collections::HashMap;
 use std::path::Path;
 
@@ -10,6 +10,7 @@ pub struct Texture {
 
 impl Texture {
     pub fn new(uv_coords: &[(f32, f32)], image_path: &Path) -> Self {
+        println!("uv_coords: {:?}", uv_coords);
         let image = image::open(image_path).expect("Failed to open image file");
 
         let (min_x, min_y, max_x, max_y) = uv_coords.iter().fold(
@@ -20,17 +21,23 @@ impl Texture {
         );
 
         let (width, height) = image.dimensions();
+        println!(
+            "original image size -> width: {}, height: {}",
+            width, height
+        );
         let left = (min_x * width as f32) as u32;
         let top = (min_y * height as f32) as u32;
         let right = (max_x * width as f32) as u32;
         let bottom = (max_y * height as f32) as u32;
 
         let cropped_image = image.view(left, top, right - left, bottom - top).to_image();
+        let (width, height) = cropped_image.dimensions();
+        println!("cropped image size -> width: {}, height: {}", width, height);
 
         Texture {
             image: DynamicImage::ImageRgba8(cropped_image),
-            width: right - left,
-            height: bottom - top,
+            width,
+            height,
         }
     }
 }
