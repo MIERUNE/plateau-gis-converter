@@ -1,4 +1,4 @@
-use image::DynamicImage;
+use image::{DynamicImage, GenericImageView, SubImage};
 use std::collections::HashMap;
 use std::path::Path;
 
@@ -12,16 +12,25 @@ impl Texture {
     pub fn new(uv_coords: &[(f32, f32)], image_path: &Path) -> Self {
         let image = image::open(image_path).expect("Failed to open image file");
 
-        // todo: UV座標に基づいて画像を切り抜く処理を実装
+        let (min_x, min_y, max_x, max_y) = uv_coords.iter().fold(
+            (1.0_f32, 1.0_f32, 0.0_f32, 0.0_f32),
+            |(min_x, min_y, max_x, max_y), (x, y)| {
+                (min_x.min(*x), min_y.min(*y), max_x.max(*x), max_y.max(*y))
+            },
+        );
 
-        // 切り抜いた画像の幅と高さを取得
-        let width = image.width();
-        let height = image.height();
+        let (width, height) = image.dimensions();
+        let left = (min_x * width as f32) as u32;
+        let top = (min_y * height as f32) as u32;
+        let right = (max_x * width as f32) as u32;
+        let bottom = (max_y * height as f32) as u32;
+
+        let cropped_image = image.view(left, top, right - left, bottom - top).to_image();
 
         Texture {
-            image,
-            width,
-            height,
+            image: DynamicImage::ImageRgba8(cropped_image),
+            width: right - left,
+            height: bottom - top,
         }
     }
 }
