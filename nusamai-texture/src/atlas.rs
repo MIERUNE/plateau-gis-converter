@@ -1,23 +1,27 @@
+use image::DynamicImage;
 use std::collections::HashMap;
 use std::path::Path;
 
 pub struct Texture {
-    width: u32,
-    height: u32,
-    // 切り抜いた画像データを保持するフィールドを追加
+    pub image: DynamicImage,
+    pub width: u32,
+    pub height: u32,
 }
 
 impl Texture {
     pub fn new(uv_coords: &[(f32, f32)], image_path: &Path) -> Self {
+        // 画像ファイルを読み込む
+        let image = image::open(image_path).expect("Failed to open image file");
+
         // UV座標に基づいて画像を切り抜く処理を実装
         // 切り抜いた画像の幅と高さを取得
-        let width = 0; // 実際の幅を計算
-        let height = 0; // 実際の高さを計算
+        let width = image.width();
+        let height = image.height();
 
         Texture {
+            image,
             width,
             height,
-            // 切り抜いた画像データを保持するフィールドを初期化
         }
     }
 }
@@ -29,6 +33,8 @@ pub struct TexturePackerConfig {
     // その他の設定項目を追加
 }
 
+// アトラスに配置されたテクスチャの情報
+// xyは左上座標を表す
 pub struct TextureInfo {
     pub id: String,
     pub x: u32,
