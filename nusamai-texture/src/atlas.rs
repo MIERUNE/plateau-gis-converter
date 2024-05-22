@@ -8,7 +8,7 @@ pub struct Texture {
 }
 
 impl Texture {
-    pub fn new(uv_coords: &[(f32, f32)], image_path: &str) -> Self {
+    pub fn new(uv_coords: &[(f32, f32)], image_path: &Path) -> Self {
         // UV座標に基づいて画像を切り抜く処理を実装
         // 切り抜いた画像の幅と高さを取得
         let width = 0; // 実際の幅を計算
@@ -29,12 +29,20 @@ pub struct TexturePackerConfig {
     // その他の設定項目を追加
 }
 
+pub struct TextureInfo {
+    pub id: String,
+    pub x: u32,
+    pub y: u32,
+    pub width: u32,
+    pub height: u32,
+}
+
 pub trait TexturePlacer {
     fn place_textures(
         &self,
         textures: &HashMap<String, Texture>,
         config: &TexturePackerConfig,
-    ) -> HashMap<String, (u32, u32, u32, u32)>;
+    ) -> Vec<TextureInfo>;
 }
 
 pub struct SimpleTexturePlacer;
@@ -44,22 +52,22 @@ impl TexturePlacer for SimpleTexturePlacer {
         &self,
         textures: &HashMap<String, Texture>,
         config: &TexturePackerConfig,
-    ) -> HashMap<String, (u32, u32, u32, u32)> {
+    ) -> Vec<TextureInfo> {
         // シンプルなテクスチャ配置アルゴリズムを実装
-        // 返り値は、各テクスチャのID、アトラス上のX座標、Y座標、幅、高さのタプルを持つHashMap
-        HashMap::new()
+        // 返り値は、TextureInfo構造体のベクター
+        Vec::new()
     }
 }
 
 pub trait AtlasExporter {
-    fn export(&self, atlas_data: &HashMap<String, (u32, u32, u32, u32)>, output_path: &str);
+    fn export(&self, atlas_data: &[TextureInfo], output_path: &Path);
 }
 
-pub struct PngAtlasExporter;
+pub struct WebpAtlasExporter;
 
-impl AtlasExporter for PngAtlasExporter {
-    fn export(&self, atlas_data: &HashMap<String, (u32, u32, u32, u32)>, output_path: &str) {
-        // PNGフォーマットでアトラス画像を出力する処理を実装
+impl AtlasExporter for WebpAtlasExporter {
+    fn export(&self, atlas_data: &[TextureInfo], output_path: &Path) {
+        // WebPフォーマットでアトラス画像を出力する処理を実装
     }
 }
 
@@ -85,7 +93,7 @@ impl<P: TexturePlacer, E: AtlasExporter> TexturePacker<P, E> {
         self.textures.insert(id, texture);
     }
 
-    pub fn export(&self, output_path: &str) {
+    pub fn export(&self, output_path: &Path) {
         let atlas_data = self.placer.place_textures(&self.textures, &self.config);
         self.exporter.export(&atlas_data, output_path);
     }
