@@ -33,9 +33,9 @@ pub struct TexturePackerConfig {
     // その他の設定項目を追加
 }
 
-// アトラスに配置されたテクスチャの情報
-// xyは左上座標を表す
 pub struct TextureInfo {
+    // アトラスに配置されたテクスチャの情報
+    // xyは左上座標を表す
     pub id: String,
     pub x: u32,
     pub y: u32,
