@@ -8,7 +8,6 @@ fn main() {
         max_width: 1024,
         max_height: 1024,
         padding: 2,
-        // その他の設定項目を指定
     };
 
     let placer = SimpleTexturePlacer;
@@ -21,8 +20,6 @@ fn main() {
     let texture = Texture::new(&uv_coords, image_path);
 
     packer.add_texture("texture1".to_string(), texture);
-
-    // 他のテクスチャを追加
 
     let output_path = Path::new("output/atlas.webp");
     packer.export(output_path);
