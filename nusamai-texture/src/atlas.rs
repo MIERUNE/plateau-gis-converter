@@ -1,4 +1,4 @@
-use image::{DynamicImage, GenericImageView};
+use image::{DynamicImage, GenericImageView, ImageBuffer};
 use std::collections::HashMap;
 use std::path::Path;
 
@@ -51,8 +51,8 @@ pub struct TexturePackerConfig {
 }
 
 // アトラスに配置されたテクスチャの情報
+#[derive(Debug)]
 pub struct TextureInfo {
-    // uvは左上座標を表す
     pub id: String,
     pub u: u32,
     pub v: u32,
@@ -77,23 +77,89 @@ impl TexturePlacer for SimpleTexturePlacer {
         textures: &HashMap<String, Texture>,
         config: &TexturePackerConfig,
     ) -> Vec<TextureInfo> {
-        // todo: シンプルなテクスチャ配置アルゴリズムを実装
+        let mut result = Vec::new();
+        let mut current_x = 0;
+        let mut current_y = 0;
+        let mut max_height_in_row = 0;
 
-        // 返り値は、TextureInfo構造体のVec
-        Vec::new()
+        for (id, texture) in textures {
+            if current_x + texture.width > config.max_width {
+                current_x = 0;
+                current_y += max_height_in_row + config.padding;
+                max_height_in_row = 0;
+            }
+
+            if current_y + texture.height > config.max_height {
+                // テクスチャがアトラスに収まらない場合は、エラーを返すか、新しいアトラスを作成するなどの処理が必要
+                panic!("Texture does not fit in the atlas");
+            }
+
+            result.push(TextureInfo {
+                id: id.clone(),
+                u: current_x,
+                v: current_y,
+                width: texture.width,
+                height: texture.height,
+            });
+
+            current_x += texture.width + config.padding;
+            max_height_in_row = max_height_in_row.max(texture.height);
+        }
+
+        result
     }
 }
 
 // アトラスの書き出し
 pub trait AtlasExporter {
-    fn export(&self, atlas_data: &[TextureInfo], output_path: &Path);
+    fn export(
+        &self,
+        atlas_data: &[TextureInfo],
+        textures: &HashMap<String, Texture>,
+        output_path: &Path,
+    );
 }
 
 pub struct WebpAtlasExporter;
 
 impl AtlasExporter for WebpAtlasExporter {
-    fn export(&self, atlas_data: &[TextureInfo], output_path: &Path) {
-        // WebPフォーマットでアトラス画像を出力する処理を実装
+    fn export(
+        &self,
+        atlas_data: &[TextureInfo],
+        textures: &HashMap<String, Texture>,
+        output_path: &Path,
+    ) {
+        // アトラス画像のサイズを計算
+        let max_width = atlas_data
+            .iter()
+            .map(|info| info.u + info.width)
+            .max()
+            .unwrap_or(0);
+        let max_height = atlas_data
+            .iter()
+            .map(|info| info.v + info.height)
+            .max()
+            .unwrap_or(0);
+
+        // アトラス画像を作成
+        let mut atlas_image = ImageBuffer::new(max_width, max_height);
+
+        // テクスチャをアトラス画像に配置
+        for info in atlas_data {
+            let texture = textures.get(&info.id).unwrap();
+            let image = texture.image.as_rgba8().unwrap();
+
+            for (x, y, pixel) in image.enumerate_pixels() {
+                let atlas_x = info.u + x;
+                let atlas_y = info.v + y;
+                atlas_image.put_pixel(atlas_x, atlas_y, *pixel);
+            }
+        }
+
+        // アトラス画像をWebPフォーマットで出力
+        atlas_image
+            .save_with_format(output_path, image::ImageFormat::WebP)
+            .unwrap();
     }
 }
 
@@ -121,6 +187,8 @@ impl<P: TexturePlacer, E: AtlasExporter> TexturePacker<P, E> {
 
     pub fn export(&self, output_path: &Path) {
         let atlas_data = self.placer.place_textures(&self.textures, &self.config);
-        self.exporter.export(&atlas_data, output_path);
+        println!("atlas_data: {:?}", atlas_data);
+        self.exporter
+            .export(&atlas_data, &self.textures, output_path);
     }
 }

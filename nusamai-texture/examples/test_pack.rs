@@ -5,8 +5,8 @@ use std::path::Path;
 
 fn main() {
     let config = TexturePackerConfig {
-        max_width: 1024,
-        max_height: 1024,
+        max_width: 512,
+        max_height: 512,
         padding: 2,
     };
 
@@ -15,11 +15,14 @@ fn main() {
 
     let mut packer = TexturePacker::new(config, placer, exporter);
 
-    let uv_coords = vec![(0.0, 0.0), (0.5, 0.0), (0.5, 0.5), (0.0, 0.5)];
-    let image_path = Path::new("nusamai-texture/examples/assets/1.png");
-    let texture = Texture::new(&uv_coords, image_path);
+    for i in 1..11 {
+        let uv_coords = vec![(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)];
+        let path_string = format!("nusamai-texture/examples/assets/{}.png", i);
+        let image_path = Path::new(path_string.as_str());
+        let texture = Texture::new(&uv_coords, image_path);
 
-    packer.add_texture("texture1".to_string(), texture);
+        packer.add_texture(format!("texture{}", i).to_string(), texture);
+    }
 
     let output_path = Path::new("nusamai-texture/examples/output/atlas.webp");
     packer.export(output_path);
