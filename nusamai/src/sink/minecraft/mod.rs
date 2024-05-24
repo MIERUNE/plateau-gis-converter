@@ -194,17 +194,12 @@ impl DataSink for MinecraftSink {
 
         // 境界の計算
         let mut local_bvol = BoundingVolume::default();
-
-        // upstream のデータを一度収集する
         let parcels: Vec<crate::pipeline::Parcel> = upstream.into_iter().collect();
 
-        // 最初の処理
         parcels.iter().for_each(|parcel| {
             let entity = &parcel.entity;
 
-            // let typename = object.typename.clone();
             let geom_store = entity.geometry_store.read().unwrap();
-
             let mut parcel_bvol = BoundingVolume::default();
 
             // バウンディングボリュームの計算
@@ -255,7 +250,7 @@ impl DataSink for MinecraftSink {
                             .vertices
                             .iter()
                             .map(|v| match projection.project_forward(v[0], v[1], v[2]) {
-                                Ok((x, y, z)) => [x, z - min_height, y * -1 as f64],
+                                Ok((x, y, z)) => [x, z - min_height - 64 as f64, y * -1 as f64],
                                 Err(e) => {
                                     println!("変換エラー: {:?}", e);
                                     // エラーの場合は無効な座標を返す
@@ -304,11 +299,9 @@ impl DataSink for MinecraftSink {
                     })
             },
             || {
-                // RGBに基づいてブロックの色を設定
                 let block_colors = get_block_colors();
 
                 receiver.into_iter().for_each(|feature| {
-                    // キーを順に読み取って表示し、voxelsにコピーを追加
                     feature.iter().for_each(|(key, voxel)| {
                         // 最も近いブロックを見つける
                         let mut min_distance = f64::MAX;
@@ -390,12 +383,13 @@ impl DataSink for MinecraftSink {
                     });
                 });
 
-                // ファイル群を出力
-                std::fs::create_dir_all(&self.output_path)?;
+                let mut file_path = self.output_path.clone();
+                file_path.push("region");
+                std::fs::create_dir_all(&file_path)?;
+
                 let _ = world_data.iter().try_for_each(|region| -> Result<()> {
                     feedback.ensure_not_canceled()?;
 
-                    let file_path = self.output_path.clone();
                     let out_path = PathBuf::from(format!(
                         "{}/r.{}.{}.mca",
                         file_path.display(),
