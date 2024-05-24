@@ -71,6 +71,12 @@ impl Feedback {
         self.canceled.store(true, Ordering::Relaxed)
     }
 
+    /// Get the internal cancellation flag
+    #[inline]
+    pub fn get_cancellation_flag(&self) -> Arc<AtomicBool> {
+        self.canceled.clone()
+    }
+
     /// Create a new feedback span for the pipeline component
     #[inline]
     pub fn component_span(&self, source: SourceComponent) -> Self {

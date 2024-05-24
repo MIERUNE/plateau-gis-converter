@@ -4,12 +4,11 @@ mod gltf;
 mod material;
 pub(crate) mod metadata;
 mod slice;
-mod sort;
 mod tiling;
 pub(crate) mod utils;
 
 use std::{
-    cmp::Ordering,
+    convert::Infallible,
     fs,
     io::BufWriter,
     path::{Path, PathBuf},
@@ -17,8 +16,8 @@ use std::{
 };
 
 use ahash::RandomState;
+use bytemuck::Zeroable;
 use earcut::{utils3d::project3d_to_2d, Earcut};
-use ext_sort::{buffer::mem::MemoryLimitedBufferBuilder, ExternalSorter, ExternalSorterBuilder};
 use gltf::write_gltf_glb;
 use indexmap::IndexSet;
 use itertools::Itertools;
@@ -26,9 +25,7 @@ use nusamai_citygml::{object::Value, schema::Schema};
 use nusamai_mvt::tileid::TileIdMethod;
 use nusamai_projection::cartesian::geodetic_to_geocentric;
 use rayon::prelude::*;
-use serde::{Deserialize, Serialize};
 use slice::{slice_to_tiles, SlicedFeature};
-use sort::BincodeExternalChunk;
 use tiling::{TileContent, TileTree};
 
 use crate::{
@@ -78,14 +75,6 @@ impl DataSinkProvider for CesiumTilesSinkProvider {
 
 struct CesiumTilesSink {
     output_path: PathBuf,
-}
-
-#[derive(Serialize, Deserialize, deepsize::DeepSizeOf)]
-struct SerializedSlicedFeature {
-    tile_id: u64,
-    typename: String,
-    #[serde(with = "serde_bytes")]
-    body: Vec<u8>,
 }
 
 impl DataSink for CesiumTilesSink {
@@ -170,7 +159,7 @@ fn geometry_slicing_stage(
     feedback: &Feedback,
     upstream: mpsc::Receiver<crate::pipeline::Parcel>,
     tile_id_conv: TileIdMethod,
-    sender_sliced: mpsc::SyncSender<SerializedSlicedFeature>,
+    sender_sliced: mpsc::SyncSender<(u64, String, Vec<u8>)>,
     min_zoom: u8,
     max_zoom: u8,
 ) -> Result<()> {
@@ -186,11 +175,11 @@ fn geometry_slicing_stage(
 
             if let Value::Object(obj) = &parcel.entity.root {
                 let bytes = bincode::serde::encode_to_vec(&feature, bincode_config).unwrap();
-                let serialized_feature = SerializedSlicedFeature {
-                    tile_id: tile_id_conv.zxy_to_id(z, x, y),
-                    typename: obj.typename.to_string(),
-                    body: bytes,
-                };
+                let serialized_feature = (
+                    tile_id_conv.zxy_to_id(z, x, y),
+                    obj.typename.to_string(),
+                    bytes,
+                );
                 if sender_sliced.send(serialized_feature).is_err() {
                     return Err(PipelineError::Canceled);
                 };
@@ -203,45 +192,64 @@ fn geometry_slicing_stage(
     Ok(())
 }
 
+#[derive(
+    bytemuck::Pod, bytemuck::Zeroable, Copy, Clone, Ord, PartialOrd, PartialEq, Eq, std::fmt::Debug,
+)]
+#[repr(C)]
+struct SortKey {
+    tile_id: u64,
+    type_seq: u64,
+}
+
 fn feature_sorting_stage(
     feedback: &Feedback,
-    receiver_sliced: mpsc::Receiver<SerializedSlicedFeature>,
-    sender_sorted: mpsc::SyncSender<((u64, String), Vec<SerializedSlicedFeature>)>,
+    receiver_sliced: mpsc::Receiver<(u64, String, Vec<u8>)>,
+    sender_sorted: mpsc::SyncSender<(u64, String, Vec<Vec<u8>>)>,
 ) -> Result<()> {
-    let sorter: ExternalSorter<
-        SerializedSlicedFeature,
-        std::io::Error,
-        MemoryLimitedBufferBuilder,
-        BincodeExternalChunk<_>,
-        // TODO: Implement an external sorter by ourselves?
-    > = ExternalSorterBuilder::new()
-        .with_buffer(MemoryLimitedBufferBuilder::new(200 * 1024 * 1024)) // TODO
-        .with_threads_number(8) // TODO
-        .build()
-        .unwrap();
-    let sorted = sorter
-        .sort_by(receiver_sliced.into_iter().map(Ok), |a, b| {
-            // sort by tile_id and typename
-            match a.tile_id.cmp(&b.tile_id) {
-                Ordering::Equal => a.typename.cmp(&b.typename),
-                ord => ord,
+    let mut typename_to_seq: IndexSet<String, ahash::RandomState> = Default::default();
+
+    let config = kv_extsort::SortConfig::default().max_chunk_bytes(256 * 1024 * 1024);
+    let sorted_iter = kv_extsort::sort(
+        receiver_sliced
+            .into_iter()
+            .map(|(tile_id, typename, body)| {
+                let (idx, _) = typename_to_seq.insert_full(typename);
+                let type_seq = idx as u64;
+                std::result::Result::<_, Infallible>::Ok((SortKey { tile_id, type_seq }, body))
+            }),
+        config,
+    );
+
+    for ((_, key), grouped) in &sorted_iter.chunk_by(|feat| match feat {
+        Ok((key, _)) => (false, *key),
+        Err(_) => (true, SortKey::zeroed()),
+    }) {
+        let grouped = grouped
+            .into_iter()
+            .map_ok(|(_, serialized_feats)| serialized_feats)
+            .collect::<kv_extsort::Result<Vec<_>, _>>();
+        match grouped {
+            Ok(serialized_feats) => {
+                feedback.ensure_not_canceled()?;
+                let tile_id = key.tile_id;
+                let typename = typename_to_seq[key.type_seq as usize].clone();
+                if sender_sorted
+                    .send((tile_id, typename, serialized_feats))
+                    .is_err()
+                {
+                    return Err(PipelineError::Canceled);
+                }
             }
-        })
-        .unwrap();
-
-    for ((tile_id, typename), ser_feats) in &sorted
-        .map(std::result::Result::unwrap)
-        .group_by(|ser_feat| (ser_feat.tile_id, ser_feat.typename.clone()))
-    {
-        feedback.ensure_not_canceled()?;
-
-        let ser_feats: Vec<_> = ser_feats.collect();
-        if sender_sorted
-            .send(((tile_id, typename), ser_feats))
-            .is_err()
-        {
-            return Err(PipelineError::Canceled);
-        };
+            Err(kv_extsort::Error::Canceled) => {
+                return Err(PipelineError::Canceled);
+            }
+            Err(err) => {
+                return Err(PipelineError::Other(format!(
+                    "Failed to sort features: {:?}",
+                    err
+                )));
+            }
+        }
     }
 
     Ok(())
@@ -250,7 +258,7 @@ fn feature_sorting_stage(
 fn tile_writing_stage(
     output_path: &Path,
     feedback: &Feedback,
-    receiver_sorted: mpsc::Receiver<((u64, String), Vec<SerializedSlicedFeature>)>,
+    receiver_sorted: mpsc::Receiver<(u64, String, Vec<Vec<u8>>)>,
     tile_id_conv: TileIdMethod,
     schema: &Schema,
 ) -> Result<()> {
@@ -262,7 +270,7 @@ fn tile_writing_stage(
     receiver_sorted
         .into_iter()
         .par_bridge()
-        .try_for_each(|((tile_id, typename), serialized_feats)| {
+        .try_for_each(|(tile_id, typename, feats)| {
             feedback.ensure_not_canceled()?;
 
             // Tile information
@@ -316,11 +324,11 @@ fn tile_writing_stage(
 
             // For each feature
             let mut feature_id = 0;
-            for serialized_feat in serialized_feats.into_iter() {
+            for serialized_feat in feats.into_iter() {
                 feedback.ensure_not_canceled()?;
 
                 let feature = {
-                    let (mut feature, _): (SlicedFeature, _) = bincode::serde::decode_from_slice(&serialized_feat.body, bincode_config)
+                    let (mut feature, _): (SlicedFeature, _) = bincode::serde::decode_from_slice(&serialized_feat, bincode_config)
                         .map_err(|err| {
                             PipelineError::Other(format!(
                                 "Failed to deserialize a sliced feature: {:?}",
