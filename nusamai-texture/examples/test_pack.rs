@@ -1,5 +1,5 @@
 use nusamai_texture::{
-    SimpleTexturePlacer, Texture, TexturePacker, TexturePackerConfig, WebpAtlasExporter,
+    CroppedTexture, SimpleTexturePlacer, TexturePacker, TexturePackerConfig, WebpAtlasExporter,
 };
 use std::path::Path;
 
@@ -21,6 +21,7 @@ fn main() {
         let image_path = Path::new(path_string.as_str());
         let texture = Texture::new(&uv_coords, image_path);
 
+        // todo: テクスチャを追加した瞬間にUVが確定するはずなので、これを返したい
         packer.add_texture(format!("texture{}", i).to_string(), texture);
     }
 

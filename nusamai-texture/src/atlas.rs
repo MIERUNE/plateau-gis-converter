@@ -1,14 +1,24 @@
 use image::{DynamicImage, GenericImageView, ImageBuffer};
 use std::collections::HashMap;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
-pub struct Texture {
-    pub image: DynamicImage,
+pub struct TexturePackerConfig {
+    pub max_width: u32,
+    pub max_height: u32,
+    pub padding: u32,
+    // その他の設定項目を追加
+    // 回転の許可・複数ページの許可・解像度の調整・リサンプリング手法の指定など
+}
+
+pub struct CroppedTexture {
+    pub image_path: PathBuf,
+    pub u: u32,
+    pub v: u32,
     pub width: u32,
     pub height: u32,
 }
 
-impl Texture {
+impl CroppedTexture {
     pub fn new(uv_coords: &[(f32, f32)], image_path: &Path) -> Self {
         println!("uv_coords: {:?}", uv_coords);
         let image = image::open(image_path).expect("Failed to open image file");
@@ -30,24 +40,29 @@ impl Texture {
         let right = (max_x * width as f32) as u32;
         let bottom = (max_y * height as f32) as u32;
 
-        let cropped_image = image.view(left, top, right - left, bottom - top).to_image();
-        let (width, height) = cropped_image.dimensions();
-        println!("cropped image size -> width: {}, height: {}", width, height);
+        let cropped_width = right - left;
+        let cropped_height = bottom - top;
+        println!(
+            "cropped image size -> width: {}, height: {}",
+            cropped_width, cropped_height
+        );
 
-        Texture {
-            image: DynamicImage::ImageRgba8(cropped_image),
-            width,
-            height,
+        CroppedTexture {
+            image_path: image_path.to_path_buf(),
+            u: left,
+            v: top,
+            width: cropped_width,
+            height: cropped_height,
         }
     }
-}
 
-pub struct TexturePackerConfig {
-    pub max_width: u32,
-    pub max_height: u32,
-    pub padding: u32,
-    // その他の設定項目を追加
-    // 回転の許可・複数ページの許可・解像度の調整・リサンプリング手法の指定など
+    pub fn crop(&self) -> DynamicImage {
+        let image = image::open(&self.image_path).expect("Failed to open image file");
+        let cropped_image = image
+            .view(self.u, self.v, self.width, self.height)
+            .to_image();
+        DynamicImage::ImageRgba8(cropped_image)
+    }
 }
 
 // アトラスに配置されたテクスチャの情報
@@ -64,7 +79,7 @@ pub struct TextureInfo {
 pub trait TexturePlacer {
     fn place_textures(
         &self,
-        textures: &HashMap<String, Texture>,
+        textures: &HashMap<String, CroppedTexture>,
         config: &TexturePackerConfig,
     ) -> Vec<TextureInfo>;
 }
@@ -74,7 +89,7 @@ pub struct SimpleTexturePlacer;
 impl TexturePlacer for SimpleTexturePlacer {
     fn place_textures(
         &self,
-        textures: &HashMap<String, Texture>,
+        textures: &HashMap<String, CroppedTexture>,
         config: &TexturePackerConfig,
     ) -> Vec<TextureInfo> {
         let mut result = Vec::new();
@@ -115,7 +130,7 @@ pub trait AtlasExporter {
     fn export(
         &self,
         atlas_data: &[TextureInfo],
-        textures: &HashMap<String, Texture>,
+        textures: &HashMap<String, CroppedTexture>,
         output_path: &Path,
     );
 }
@@ -126,7 +141,7 @@ impl AtlasExporter for WebpAtlasExporter {
     fn export(
         &self,
         atlas_data: &[TextureInfo],
-        textures: &HashMap<String, Texture>,
+        textures: &HashMap<String, CroppedTexture>,
         output_path: &Path,
     ) {
         // アトラス画像のサイズを計算
@@ -164,7 +179,7 @@ impl AtlasExporter for WebpAtlasExporter {
 }
 
 pub struct TexturePacker<P: TexturePlacer, E: AtlasExporter> {
-    textures: HashMap<String, Texture>,
+    textures: HashMap<String, CroppedTexture>,
     config: TexturePackerConfig,
     placer: P,
     exporter: E,
@@ -180,12 +195,16 @@ impl<P: TexturePlacer, E: AtlasExporter> TexturePacker<P, E> {
         }
     }
 
-    pub fn add_texture(&mut self, id: String, texture: Texture) {
+    pub fn add_texture(&mut self, id: String, texture: CroppedTexture) {
         // 画像オブジェクトとIDをパッカーに追加
         self.textures.insert(id, texture);
+        // todo: この時に、placeもしてしまいたい
     }
 
     pub fn export(&self, output_path: &Path) {
+        // todo: texturesをまとめて貼り付けるのではなく、一つづつ処理したい
+        // todo: atlas_dataはTexturePackerで保持しておきたい
+        // todo: 複数ページの場合はVecのVecになる？
         let atlas_data = self.placer.place_textures(&self.textures, &self.config);
         println!("atlas_data: {:?}", atlas_data);
         self.exporter
