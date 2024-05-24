@@ -10,7 +10,7 @@ fn main() {
         padding: 2,
     };
 
-    let placer = SimpleTexturePlacer::new();
+    let placer = SimpleTexturePlacer::default();
     let exporter = WebpAtlasExporter;
 
     let mut packer = TexturePacker::new(config, placer, exporter);

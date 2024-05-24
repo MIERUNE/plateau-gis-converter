@@ -67,7 +67,7 @@ impl CroppedTexture {
 
 // アトラスに配置されたテクスチャの情報
 #[derive(Debug)]
-pub struct TextureInfo {
+pub struct PlacedTextureInfo {
     pub id: String,
     pub u: u32,
     pub v: u32,
@@ -82,23 +82,14 @@ pub trait TexturePlacer {
         id: &str,
         texture: &CroppedTexture,
         config: &TexturePackerConfig,
-    ) -> Option<TextureInfo>;
+    ) -> Option<PlacedTextureInfo>;
 }
 
+#[derive(Default)]
 pub struct SimpleTexturePlacer {
     current_x: u32,
     current_y: u32,
     max_height_in_row: u32,
-}
-
-impl SimpleTexturePlacer {
-    pub fn new() -> Self {
-        SimpleTexturePlacer {
-            current_x: 0,
-            current_y: 0,
-            max_height_in_row: 0,
-        }
-    }
 }
 
 impl TexturePlacer for SimpleTexturePlacer {
@@ -107,7 +98,7 @@ impl TexturePlacer for SimpleTexturePlacer {
         id: &str,
         texture: &CroppedTexture,
         config: &TexturePackerConfig,
-    ) -> Option<TextureInfo> {
+    ) -> Option<PlacedTextureInfo> {
         if self.current_x + texture.width > config.max_width {
             self.current_x = 0;
             self.current_y += self.max_height_in_row + config.padding;
@@ -119,7 +110,7 @@ impl TexturePlacer for SimpleTexturePlacer {
             return None;
         }
 
-        let texture_info = TextureInfo {
+        let texture_info = PlacedTextureInfo {
             id: id.to_string(),
             u: self.current_x,
             v: self.current_y,
@@ -138,7 +129,7 @@ impl TexturePlacer for SimpleTexturePlacer {
 pub trait AtlasExporter {
     fn export(
         &self,
-        atlas_data: &[TextureInfo],
+        atlas_data: &[PlacedTextureInfo],
         textures: &HashMap<String, CroppedTexture>,
         output_path: &Path,
     );
@@ -149,7 +140,7 @@ pub struct WebpAtlasExporter;
 impl AtlasExporter for WebpAtlasExporter {
     fn export(
         &self,
-        atlas_data: &[TextureInfo],
+        atlas_data: &[PlacedTextureInfo],
         textures: &HashMap<String, CroppedTexture>,
         output_path: &Path,
     ) {
@@ -190,7 +181,7 @@ impl AtlasExporter for WebpAtlasExporter {
 
 pub struct TexturePacker<P: TexturePlacer, E: AtlasExporter> {
     textures: HashMap<String, CroppedTexture>,
-    atlas_data: Vec<TextureInfo>,
+    atlas_data: Vec<PlacedTextureInfo>,
     config: TexturePackerConfig,
     placer: P,
     exporter: E,
