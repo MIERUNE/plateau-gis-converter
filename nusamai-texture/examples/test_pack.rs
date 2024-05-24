@@ -14,18 +14,19 @@ fn main() {
     let exporter = WebpAtlasExporter;
 
     let mut packer = TexturePacker::new(config, placer, exporter);
+    for i in 0..5 {
+        for j in 1..11 {
+            let uv_coords = vec![(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)];
+            let path_string = format!("nusamai-texture/examples/assets/{}.png", j);
+            let image_path = Path::new(path_string.as_str());
+            let texture = CroppedTexture::new(&uv_coords, image_path);
 
-    for i in 1..11 {
-        let uv_coords = vec![(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)];
-        let path_string = format!("nusamai-texture/examples/assets/{}.png", i);
-        let image_path = Path::new(path_string.as_str());
-        let texture = CroppedTexture::new(&uv_coords, image_path);
-
-        packer.add_texture(format!("texture{}", i).to_string(), texture);
-        let info = packer.atlas_data.last();
-        println!("placed information: {:?}", info);
+            packer.add_texture(format!("texture_{}_{}", i, j).to_string(), texture);
+            println!("added texture_{}_{}", i, j);
+            println!();
+        }
     }
 
-    let output_path = Path::new("nusamai-texture/examples/output/atlas.webp");
+    let output_path = Path::new("nusamai-texture/examples/output/");
     packer.export(output_path);
 }

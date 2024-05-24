@@ -1,4 +1,5 @@
 use image::{DynamicImage, GenericImageView, ImageBuffer};
+use std::cmp::max;
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
@@ -66,7 +67,7 @@ impl CroppedTexture {
 }
 
 // アトラスに配置されたテクスチャの情報
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct PlacedTextureInfo {
     pub id: String,
     pub u: u32,
@@ -82,7 +83,11 @@ pub trait TexturePlacer {
         id: &str,
         texture: &CroppedTexture,
         config: &TexturePackerConfig,
-    ) -> Option<PlacedTextureInfo>;
+    ) -> PlacedTextureInfo;
+
+    fn can_place(&self, texture: &CroppedTexture, config: &TexturePackerConfig) -> bool;
+
+    fn reset_param(&mut self);
 }
 
 #[derive(Default)]
@@ -98,16 +103,11 @@ impl TexturePlacer for SimpleTexturePlacer {
         id: &str,
         texture: &CroppedTexture,
         config: &TexturePackerConfig,
-    ) -> Option<PlacedTextureInfo> {
+    ) -> PlacedTextureInfo {
         if self.current_x + texture.width > config.max_width {
             self.current_x = 0;
             self.current_y += self.max_height_in_row + config.padding;
             self.max_height_in_row = 0;
-        }
-
-        if self.current_y + texture.height > config.max_height {
-            // テクスチャがアトラスに収まらない場合は、Noneを返す
-            return None;
         }
 
         let texture_info = PlacedTextureInfo {
@@ -121,7 +121,27 @@ impl TexturePlacer for SimpleTexturePlacer {
         self.current_x += texture.width + config.padding;
         self.max_height_in_row = self.max_height_in_row.max(texture.height);
 
-        Some(texture_info)
+        texture_info
+    }
+
+    fn can_place(&self, texture: &CroppedTexture, config: &TexturePackerConfig) -> bool {
+        let next_x = self.current_x + texture.width + config.padding;
+        let next_y = max(
+            self.current_y + texture.height + config.padding,
+            self.current_y + self.max_height_in_row + config.padding,
+        );
+
+        if next_x <= config.max_width && next_y <= config.max_height {
+            true
+        } else {
+            next_y + texture.height + config.padding <= config.max_height
+        }
+    }
+
+    fn reset_param(&mut self) {
+        self.current_x = 0;
+        self.current_y = 0;
+        self.max_height_in_row = 0;
     }
 }
 
@@ -181,7 +201,8 @@ impl AtlasExporter for WebpAtlasExporter {
 
 pub struct TexturePacker<P: TexturePlacer, E: AtlasExporter> {
     pub textures: HashMap<String, CroppedTexture>,
-    pub atlas_data: Vec<PlacedTextureInfo>,
+    pub atlas_data: Vec<Vec<PlacedTextureInfo>>,
+    pub texture_info_list: Vec<PlacedTextureInfo>,
     config: TexturePackerConfig,
     placer: P,
     exporter: E,
@@ -192,6 +213,7 @@ impl<P: TexturePlacer, E: AtlasExporter> TexturePacker<P, E> {
         TexturePacker {
             textures: HashMap::new(),
             atlas_data: Vec::new(),
+            texture_info_list: Vec::new(),
             config,
             placer,
             exporter,
@@ -199,17 +221,68 @@ impl<P: TexturePlacer, E: AtlasExporter> TexturePacker<P, E> {
     }
 
     pub fn add_texture(&mut self, id: String, texture: CroppedTexture) {
-        if let Some(texture_info) = self.placer.place_texture(&id, &texture, &self.config) {
+        println!(
+            "---------------target texture {:?}---------------",
+            texture.image_path
+        );
+        if self.placer.can_place(&texture, &self.config) {
+            let texture_info = self.placer.place_texture(&id, &texture, &self.config);
             self.textures.insert(id, texture);
-            self.atlas_data.push(texture_info);
+            self.texture_info_list.push(texture_info);
         } else {
-            // テクスチャがアトラスに収まらない場合は、新しいアトラスを作成するなどの処理が必要
-            panic!("Texture does not fit in the atlas");
+            self.atlas_data.push(self.texture_info_list.clone());
+            self.texture_info_list.clear();
+            println!(
+                "---------------reset placer! atlas data length is {}---------------",
+                self.atlas_data.len()
+            );
+
+            self.placer.reset_param();
+
+            let texture_info = self.placer.place_texture(&id, &texture, &self.config);
+            self.textures.insert(id, texture);
+            self.texture_info_list.push(texture_info);
         }
     }
 
-    pub fn export(&self, output_path: &Path) {
-        self.exporter
-            .export(&self.atlas_data, &self.textures, output_path);
+    pub fn export(&self, output_dir: &Path) {
+        for (i, atlas) in self.atlas_data.iter().enumerate() {
+            let output_path = output_dir.join(format!("atlas_{}.webp", i));
+            self.exporter.export(atlas, &self.textures, &output_path);
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_a() {
+        let config = TexturePackerConfig {
+            max_width: 512,
+            max_height: 512,
+            padding: 2,
+        };
+
+        let placer = SimpleTexturePlacer::default();
+        let exporter = WebpAtlasExporter;
+
+        let mut packer = TexturePacker::new(config, placer, exporter);
+        for i in 0..5 {
+            for j in 1..11 {
+                let uv_coords = vec![(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)];
+                let path_string = format!("examples/assets/{}.png", j);
+                let image_path = Path::new(path_string.as_str());
+                let texture = CroppedTexture::new(&uv_coords, image_path);
+
+                packer.add_texture(format!("texture_{}_{}", i, j).to_string(), texture);
+                println!("added texture_{}_{}", i, j);
+                println!();
+            }
+        }
+
+        let output_path = Path::new("examples/output/");
+        packer.export(output_path);
     }
 }
