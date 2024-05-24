@@ -142,53 +142,14 @@ type WorldSchema = Vec<RegionSchema>;
 #[allow(non_snake_case)]
 #[derive(Serialize, Deserialize, Debug)]
 struct Chunk {
-    Status: String,
-    zPos: i32,                        // チャンクのZ座標(絶対値)
-    block_entities: Vec<BlockEntity>, // List of block entities
-    yPos: i32,                        // 一番低いセクションのY座標
-    Last_update: i64,                 // Last update time in ticks
-    structures: Structures, // Information about structures like fortresses, villages, etc.
-    InhabitedTime: i64,     // 時間
-    xPos: i32,              // チャンクのx座標(絶対値)
-    Heightmaps: Heightmaps, // Heightmap data
-    sections: Vec<Section>,
-    isLightOn: i32,               // Assuming 1b represents a boolean in your context
-    block_ticks: Vec<BlockTick>,  // Assuming BlockTick is defined elsewhere
-    PostProcessing: Vec<Vec<u8>>, // Nested arrays
-    DataVersion: u32,             // データバージョン
-    fluid_ticks: Vec<FluidTick>,  // Assuming FluidTick is defined elsewhere
+    Status: String, // The status of the chunk, such as whether it is fully generated or being generated.
+    zPos: i32,      // The Z coordinate of the chunk (absolute value).
+    yPos: i32,      // The Y coordinate of the lowest section in the chunk.
+    xPos: i32,      // The X coordinate of the chunk (absolute value).
+    sections: Vec<Section>, // A vector containing the sections that make up the chunk.
+    DataVersion: u32, // The version of the data format used to store this chunk.
 }
 
-#[derive(Serialize, Deserialize, Debug)]
-struct BlockEntity {
-    // ブロックエンティティの構造をここに定義
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-struct BlockTick {
-    // Define attributes for block ticks
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-struct FluidTick {
-    // Define attributes for fluid ticks
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-#[allow(non_snake_case)]
-struct Structures {
-    References: HashMap<String, Vec<i32>>,
-    starts: HashMap<String, Vec<i32>>,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-#[allow(non_snake_case)]
-struct Heightmaps {
-    OCEAN_FLOOR: Vec<i64>,
-    MOTION_BLOCKING_NO_LEAVES: Vec<i64>,
-    MOTION_BLOCKING: Vec<i64>,
-    WORLD_SURFACE: Vec<i64>,
-}
 #[allow(non_snake_case)]
 #[derive(Serialize, Deserialize, Clone, Debug)]
 struct Section {
@@ -241,7 +202,7 @@ impl DataSink for MinecraftSink {
         parcels.iter().for_each(|parcel| {
             let entity = &parcel.entity;
 
-            let typename = object.typename.clone();
+            // let typename = object.typename.clone();
             let geom_store = entity.geometry_store.read().unwrap();
 
             let mut parcel_bvol = BoundingVolume::default();
@@ -613,27 +574,10 @@ fn create_chunk_structure(chunk_x: i32, chunk_z: i32, chunk_data: Option<&ChunkS
     Chunk {
         Status: "full".to_string(),
         zPos: chunk_z,
-        block_entities: vec![],
         yPos: -4,
-        Last_update: 0,
-        structures: Structures {
-            References: HashMap::new(),
-            starts: HashMap::new(),
-        },
-        InhabitedTime: 0,
         xPos: chunk_x,
-        Heightmaps: Heightmaps {
-            OCEAN_FLOOR: vec![],
-            MOTION_BLOCKING_NO_LEAVES: vec![],
-            MOTION_BLOCKING: vec![],
-            WORLD_SURFACE: vec![],
-        },
         sections,
-        isLightOn: 0,
-        block_ticks: vec![],
-        PostProcessing: vec![],
         DataVersion: 3105, // Java Edition 1.19
-        fluid_ticks: vec![],
     }
 }
 
