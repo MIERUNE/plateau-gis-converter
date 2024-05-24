@@ -180,8 +180,8 @@ impl AtlasExporter for WebpAtlasExporter {
 }
 
 pub struct TexturePacker<P: TexturePlacer, E: AtlasExporter> {
-    textures: HashMap<String, CroppedTexture>,
-    atlas_data: Vec<PlacedTextureInfo>,
+    pub textures: HashMap<String, CroppedTexture>,
+    pub atlas_data: Vec<PlacedTextureInfo>,
     config: TexturePackerConfig,
     placer: P,
     exporter: E,

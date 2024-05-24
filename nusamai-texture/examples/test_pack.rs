@@ -22,6 +22,8 @@ fn main() {
         let texture = CroppedTexture::new(&uv_coords, image_path);
 
         packer.add_texture(format!("texture{}", i).to_string(), texture);
+        let info = packer.atlas_data.last();
+        println!("placed information: {:?}", info);
     }
 
     let output_path = Path::new("nusamai-texture/examples/output/atlas.webp");
