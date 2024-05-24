@@ -245,6 +245,13 @@ impl<P: TexturePlacer, E: AtlasExporter> TexturePacker<P, E> {
         }
     }
 
+    pub fn finish(&mut self) {
+        if !self.texture_info_list.is_empty() {
+            self.atlas_data.push(self.texture_info_list.clone());
+            self.texture_info_list.clear();
+        }
+    }
+
     pub fn export(&self, output_dir: &Path) {
         for (i, atlas) in self.atlas_data.iter().enumerate() {
             let output_path = output_dir.join(format!("atlas_{}.webp", i));
@@ -281,6 +288,8 @@ mod tests {
                 println!();
             }
         }
+
+        packer.finish();
 
         let output_path = Path::new("examples/output/");
         packer.export(output_path);
