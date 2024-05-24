@@ -1,18 +1,9 @@
 //! Minecraft sink
 
-use std::{
-    fs::File,
-    io::{BufWriter, Write},
-    path::PathBuf,
-};
+use std::{fs::File, path::PathBuf};
 
 use hashbrown::HashMap;
-use nusamai_citygml::{
-    object::{ObjectStereotype, Value},
-    schema::Schema,
-    GeometryType,
-};
-use nusamai_plateau::Entity;
+use nusamai_citygml::{object::Value, schema::Schema, GeometryType};
 use rayon::prelude::*;
 
 use crate::{
@@ -20,7 +11,6 @@ use crate::{
     parameters::*,
     pipeline::{Feedback, PipelineError, Receiver, Result},
     sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo},
-    transformer,
 };
 
 use earcut::{utils3d::project3d_to_2d, Earcut};
@@ -195,7 +185,6 @@ impl DataSink for MinecraftSink {
         let mut chunk_map: HashMap<(PositionXZ, PositionXZ), usize> = HashMap::new();
         let mut section_map: HashMap<(PositionXZ, PositionXZ, i32), usize> = HashMap::new();
 
-        // 境界の計算
         let mut local_bvol = BoundingVolume::default();
         let parcels: Vec<crate::pipeline::Parcel> = upstream.into_iter().collect();
 
@@ -205,7 +194,7 @@ impl DataSink for MinecraftSink {
             let geom_store = entity.geometry_store.read().unwrap();
             let mut parcel_bvol = BoundingVolume::default();
 
-            // バウンディングボリュームの計算
+            // Calculation of bounding volume
             geom_store.vertices.iter().for_each(|v| {
                 parcel_bvol.min_lng = parcel_bvol.min_lng.min(v[0]);
                 parcel_bvol.max_lng = parcel_bvol.max_lng.max(v[0]);
@@ -255,7 +244,7 @@ impl DataSink for MinecraftSink {
                             voxels: HashMap::new(),
                         };
 
-                        // 中心点の計算
+                        // Calculation of centre coordinates
                         let center_lng = (local_bvol.min_lng + local_bvol.max_lng) / 2.0;
                         let center_lat = (local_bvol.min_lat + local_bvol.max_lat) / 2.0;
                         let min_height = local_bvol.min_height;
@@ -273,8 +262,7 @@ impl DataSink for MinecraftSink {
                             .map(|v| match projection.project_forward(v[0], v[1], v[2]) {
                                 Ok((x, y, z)) => [x, z - min_height - 64 as f64, y * -1 as f64],
                                 Err(e) => {
-                                    println!("変換エラー: {:?}", e);
-                                    // エラーの場合は無効な座標を返す
+                                    println!("conversion error: {:?}", e);
                                     [f64::NAN, f64::NAN, f64::NAN]
                                 }
                             })
@@ -327,7 +315,7 @@ impl DataSink for MinecraftSink {
 
                 receiver.into_iter().for_each(|feature| {
                     feature.iter().for_each(|(key, voxel)| {
-                        // 最も近いブロックを見つける
+                        // Find the block with the closest colour.
                         let mut min_distance = f64::MAX;
                         let mut block_name = "minecraft:stone";
 
@@ -342,23 +330,22 @@ impl DataSink for MinecraftSink {
                             }
                         }
 
-                        // ピクセル座標から、中心のピクセル座標を減算
                         let adjusted_x = key[0];
                         let adjusted_y = key[1];
                         let adjusted_z = key[2];
 
-                        // ピクセル座標からリージョン座標を計算
+                        // Calculate region coordinates from x,y coordinates
                         let region_x = adjusted_x.div_euclid(512);
                         let region_z = adjusted_z.div_euclid(512);
 
-                        // ピクセル座標座標からチャンク座標を計算
+                        // Calculate chunk coordinates from x,y coordinates
                         let chunk_x = adjusted_x.div_euclid(16);
                         let chunk_z = adjusted_z.div_euclid(16);
 
-                        // DEMの値からセクションのyレベルを計算
+                        // Calculate the y-level of the section from the y-coordinate.
                         let section_y = (adjusted_y + 64) / 16 - 4;
 
-                        // ブロックのスキーマを作成
+                        // Create BlockSchema.
                         let block_data = BlockSchema {
                             position: [
                                 adjusted_x.rem_euclid(16) as u8,
@@ -368,7 +355,6 @@ impl DataSink for MinecraftSink {
                             name: block_name.to_string(),
                         };
 
-                        // リージョン、チャンク、セクションのインデックスを取得
                         let region_pos = [region_x, region_z];
                         let chunk_pos = [chunk_x, chunk_z];
 
@@ -433,7 +419,7 @@ impl DataSink for MinecraftSink {
 
                     (0..32).into_par_iter().for_each(|chunk_z| {
                         (0..32).into_par_iter().for_each(|chunk_x| {
-                            // チャンクの絶対座標を計算
+                            // Calculate absolute coordinates of chunks
                             let absolute_chunk_x = region.position[0] * 32 + chunk_x;
                             let absolute_chunk_z = region.position[1] * 32 + chunk_z;
 
@@ -448,7 +434,7 @@ impl DataSink for MinecraftSink {
                                 chunk_data,
                             );
 
-                            let ser = to_bytes(&chunk).unwrap(); // 適切なシリアライズ関数を想定
+                            let ser = to_bytes(&chunk).unwrap();
 
                             let mut region = new_region.lock().unwrap();
                             region
@@ -477,7 +463,7 @@ impl DataSink for MinecraftSink {
     }
 }
 
-// パレットのビット数とデータサイズを計算する関数
+// Function to calculate the number of bits and data size of a palette.
 fn calculate_bits_and_size(palette_len: usize) -> (usize, usize) {
     let bits_per_block = match palette_len {
         1..=16 => 4,
@@ -494,21 +480,21 @@ fn calculate_bits_and_size(palette_len: usize) -> (usize, usize) {
     (bits_per_block, data_size)
 }
 
-// セクションを作成する関数
+// Functions to create sections
 fn create_chunk_section(
     blocks: &[BlockSchema],
     palette: &mut Vec<PaletteItem>,
     section_y: i32,
 ) -> Section {
-    // パレットのサイズに基づいてビット数とデータサイズを計算
+    // Calculate the number of bits and data size based on the size of the palette
     let (bits_per_block, data_size) = calculate_bits_and_size(palette.len());
 
-    // 4096要素の1次元配列を作成し、ブロックごとにpaletteのindexを埋め込む
+    // Create a 1D array of 4096 elements and embed the PALETTE index in each block.
     let mut block_indices = vec![0; 4096];
     for block in blocks {
         let [x, y, z] = block.position;
 
-        // 1次元配列のインデックスを計算し、パレットのインデックスを格納
+        // Calculate the index of the 1D array and store the index of the palette
         let index = (y as usize) * 256 + (z as usize) * 16 + (x as usize);
         let palette_index = palette
             .iter()
@@ -523,13 +509,13 @@ fn create_chunk_section(
         block_indices[index] = palette_index;
     }
 
-    // BPEにより、entry（i64）に格納されるブロック数を算出する
+    // Calculate the number of blocks stored in entry (i64) by BPE
     let blocks_per_entry = 64 / bits_per_block;
 
     // 1次元配列をブロック数で分割する
     let block_entries: Vec<&[usize]> = block_indices.chunks(blocks_per_entry).collect();
 
-    // 分割後、ビッグエンディアンでi64に変換する
+    // Divide 1D arrays by the number of blocks.
     let mut data = Vec::with_capacity(data_size);
     for entry in block_entries {
         let mut value: i64 = 0;
@@ -539,7 +525,7 @@ fn create_chunk_section(
         data.push(value);
     }
 
-    // パディングを追加（必要な場合のみ）
+    // Additional padding as required
     if data_size > data.len() {
         let padding_size = data_size - data.len();
         data.extend(std::iter::repeat(0).take(padding_size));
@@ -571,7 +557,7 @@ fn create_chunk_structure(chunk_x: i32, chunk_z: i32, chunk_data: Option<&ChunkS
             .map(|section| {
                 let mut local_palette = palette.clone();
 
-                // ブロックをパレットに登録
+                // Register the block in the palette.
                 for block in &section.blocks {
                     if !local_palette.iter().any(|b| b.name == block.name) {
                         local_palette.push(PaletteItem {
@@ -585,7 +571,7 @@ fn create_chunk_structure(chunk_x: i32, chunk_z: i32, chunk_data: Option<&ChunkS
             })
             .collect()
     } else {
-        // chunk_dataがない場合は空のセクションを作成
+        // Create an empty section if there is no chunk_data
         Vec::new()
     };
 
