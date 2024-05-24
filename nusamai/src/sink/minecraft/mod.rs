@@ -330,27 +330,28 @@ impl DataSink for MinecraftSink {
                             }
                         }
 
-                        let adjusted_x = key[0];
-                        let adjusted_y = key[1];
-                        let adjusted_z = key[2];
+                        let x = key[0];
+                        let y = key[1];
+                        let z = key[2];
 
                         // Calculate region coordinates from x,y coordinates
-                        let region_x = adjusted_x.div_euclid(512);
-                        let region_z = adjusted_z.div_euclid(512);
+                        let region_x = x.div_euclid(512);
+                        let region_z = z.div_euclid(512);
 
                         // Calculate chunk coordinates from x,y coordinates
-                        let chunk_x = adjusted_x.div_euclid(16);
-                        let chunk_z = adjusted_z.div_euclid(16);
+                        let chunk_x = x.div_euclid(16);
+                        let chunk_z = z.div_euclid(16);
 
                         // Calculate the y-level of the section from the y-coordinate.
-                        let section_y = (adjusted_y + 64) / 16 - 4;
+                        let section_y = (y + 64) / 16 - 4;
 
-                        // Create BlockSchema.
+                        // Create BlockSchema
+                        // Coordinates relative to the blocks within a section (0-15)
                         let block_data = BlockSchema {
                             position: [
-                                adjusted_x.rem_euclid(16) as u8,
-                                adjusted_y.rem_euclid(16) as u8,
-                                adjusted_z.rem_euclid(16) as u8,
+                                x.rem_euclid(16) as u8,
+                                y.rem_euclid(16) as u8,
+                                z.rem_euclid(16) as u8,
                             ],
                             name: block_name.to_string(),
                         };
@@ -464,22 +465,15 @@ impl DataSink for MinecraftSink {
 }
 
 // Function to calculate the number of bits and data size of a palette.
-fn calculate_bits_and_size(palette_len: usize) -> (usize, usize) {
+const fn calculate_bits_and_size(palette_len: usize) -> (u32, u32) {
     let bits_per_block = match palette_len {
-        1..=16 => 4,
-        17..=32 => 5,
-        33..=64 => 6,
-        65..=128 => 7,
-        129..=256 => 8,
-        257..=512 => 9,
-        513..=1024 => 10,
-        1025..=2048 => 11,
-        _ => 12,
+        0..=16 => 4,
+        17..=2048 => (palette_len - 1).ilog2() + 1,
+        2049.. => 12,
     };
     let data_size = (4096 * bits_per_block + 63) / 64;
     (bits_per_block, data_size)
 }
-
 // Functions to create sections
 fn create_chunk_section(
     blocks: &[BlockSchema],
@@ -512,22 +506,22 @@ fn create_chunk_section(
     // Calculate the number of blocks stored in entry (i64) by BPE
     let blocks_per_entry = 64 / bits_per_block;
 
-    // 1次元配列をブロック数で分割する
-    let block_entries: Vec<&[usize]> = block_indices.chunks(blocks_per_entry).collect();
+    // Divide 1D array by number of blocks
+    let block_entries: Vec<&[usize]> = block_indices.chunks(blocks_per_entry as usize).collect();
 
     // Divide 1D arrays by the number of blocks.
-    let mut data = Vec::with_capacity(data_size);
+    let mut data = Vec::with_capacity(data_size as usize);
     for entry in block_entries {
         let mut value: i64 = 0;
         for (i, &index) in entry.iter().enumerate() {
-            value |= (index as i64) << (i * bits_per_block);
+            value |= (index as i64) << (i * bits_per_block as usize);
         }
         data.push(value);
     }
 
     // Additional padding as required
-    if data_size > data.len() {
-        let padding_size = data_size - data.len();
+    if data_size as usize > data.len() {
+        let padding_size = data_size as usize - data.len();
         data.extend(std::iter::repeat(0).take(padding_size));
     }
 
@@ -578,7 +572,7 @@ fn create_chunk_structure(chunk_x: i32, chunk_z: i32, chunk_data: Option<&ChunkS
     Chunk {
         Status: "full".to_string(),
         zPos: chunk_z,
-        yPos: -4,
+        yPos: -4, // Lowest Y section position in the chunk (e.g., -4 in version 1.18 and later)
         xPos: chunk_x,
         sections,
         DataVersion: 3105, // Java Edition 1.19
@@ -588,4 +582,31 @@ fn create_chunk_structure(chunk_x: i32, chunk_z: i32, chunk_data: Option<&ChunkS
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_calculate_bits_and_size() {
+        let test_cases = vec![
+            (1, (4, 256)),
+            (16, (4, 256)),
+            (17, (5, 320)),
+            (32, (5, 320)),
+            (33, (6, 384)),
+            (64, (6, 384)),
+            (65, (7, 448)),
+            (128, (7, 448)),
+            (129, (8, 512)),
+            (256, (8, 512)),
+            (257, (9, 576)),
+            (512, (9, 576)),
+            (513, (10, 640)),
+            (1024, (10, 640)),
+            (1025, (11, 704)),
+            (2048, (11, 704)),
+            (2049, (12, 768)),
+        ];
+
+        for (palette_len, expected) in test_cases {
+            assert_eq!(calculate_bits_and_size(palette_len), expected);
+        }
+    }
 }
