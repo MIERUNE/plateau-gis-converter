@@ -10,7 +10,7 @@ fn main() {
         padding: 2,
     };
 
-    let placer = SimpleTexturePlacer;
+    let placer = SimpleTexturePlacer::new();
     let exporter = WebpAtlasExporter;
 
     let mut packer = TexturePacker::new(config, placer, exporter);
@@ -19,9 +19,8 @@ fn main() {
         let uv_coords = vec![(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)];
         let path_string = format!("nusamai-texture/examples/assets/{}.png", i);
         let image_path = Path::new(path_string.as_str());
-        let texture = Texture::new(&uv_coords, image_path);
+        let texture = CroppedTexture::new(&uv_coords, image_path);
 
-        // todo: テクスチャを追加した瞬間にUVが確定するはずなので、これを返したい
         packer.add_texture(format!("texture{}", i).to_string(), texture);
     }
 

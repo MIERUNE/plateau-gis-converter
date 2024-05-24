@@ -77,51 +77,60 @@ pub struct TextureInfo {
 
 // テクスチャの配置方法
 pub trait TexturePlacer {
-    fn place_textures(
-        &self,
-        textures: &HashMap<String, CroppedTexture>,
+    fn place_texture(
+        &mut self,
+        id: &str,
+        texture: &CroppedTexture,
         config: &TexturePackerConfig,
-    ) -> Vec<TextureInfo>;
+    ) -> Option<TextureInfo>;
 }
 
-pub struct SimpleTexturePlacer;
+pub struct SimpleTexturePlacer {
+    current_x: u32,
+    current_y: u32,
+    max_height_in_row: u32,
+}
+
+impl SimpleTexturePlacer {
+    pub fn new() -> Self {
+        SimpleTexturePlacer {
+            current_x: 0,
+            current_y: 0,
+            max_height_in_row: 0,
+        }
+    }
+}
 
 impl TexturePlacer for SimpleTexturePlacer {
-    fn place_textures(
-        &self,
-        textures: &HashMap<String, CroppedTexture>,
+    fn place_texture(
+        &mut self,
+        id: &str,
+        texture: &CroppedTexture,
         config: &TexturePackerConfig,
-    ) -> Vec<TextureInfo> {
-        let mut result = Vec::new();
-        let mut current_x = 0;
-        let mut current_y = 0;
-        let mut max_height_in_row = 0;
-
-        for (id, texture) in textures {
-            if current_x + texture.width > config.max_width {
-                current_x = 0;
-                current_y += max_height_in_row + config.padding;
-                max_height_in_row = 0;
-            }
-
-            if current_y + texture.height > config.max_height {
-                // テクスチャがアトラスに収まらない場合は、エラーを返すか、新しいアトラスを作成するなどの処理が必要
-                panic!("Texture does not fit in the atlas");
-            }
-
-            result.push(TextureInfo {
-                id: id.clone(),
-                u: current_x,
-                v: current_y,
-                width: texture.width,
-                height: texture.height,
-            });
-
-            current_x += texture.width + config.padding;
-            max_height_in_row = max_height_in_row.max(texture.height);
+    ) -> Option<TextureInfo> {
+        if self.current_x + texture.width > config.max_width {
+            self.current_x = 0;
+            self.current_y += self.max_height_in_row + config.padding;
+            self.max_height_in_row = 0;
         }
 
-        result
+        if self.current_y + texture.height > config.max_height {
+            // テクスチャがアトラスに収まらない場合は、Noneを返す
+            return None;
+        }
+
+        let texture_info = TextureInfo {
+            id: id.to_string(),
+            u: self.current_x,
+            v: self.current_y,
+            width: texture.width,
+            height: texture.height,
+        };
+
+        self.current_x += texture.width + config.padding;
+        self.max_height_in_row = self.max_height_in_row.max(texture.height);
+
+        Some(texture_info)
     }
 }
 
@@ -162,7 +171,8 @@ impl AtlasExporter for WebpAtlasExporter {
         // テクスチャをアトラス画像に配置
         for info in atlas_data {
             let texture = textures.get(&info.id).unwrap();
-            let image = texture.image.as_rgba8().unwrap();
+            let cropped = texture.crop();
+            let image = cropped.as_rgba8().unwrap();
 
             for (x, y, pixel) in image.enumerate_pixels() {
                 let atlas_x = info.u + x;
@@ -180,6 +190,7 @@ impl AtlasExporter for WebpAtlasExporter {
 
 pub struct TexturePacker<P: TexturePlacer, E: AtlasExporter> {
     textures: HashMap<String, CroppedTexture>,
+    atlas_data: Vec<TextureInfo>,
     config: TexturePackerConfig,
     placer: P,
     exporter: E,
@@ -189,6 +200,7 @@ impl<P: TexturePlacer, E: AtlasExporter> TexturePacker<P, E> {
     pub fn new(config: TexturePackerConfig, placer: P, exporter: E) -> Self {
         TexturePacker {
             textures: HashMap::new(),
+            atlas_data: Vec::new(),
             config,
             placer,
             exporter,
@@ -196,18 +208,17 @@ impl<P: TexturePlacer, E: AtlasExporter> TexturePacker<P, E> {
     }
 
     pub fn add_texture(&mut self, id: String, texture: CroppedTexture) {
-        // 画像オブジェクトとIDをパッカーに追加
-        self.textures.insert(id, texture);
-        // todo: この時に、placeもしてしまいたい
+        if let Some(texture_info) = self.placer.place_texture(&id, &texture, &self.config) {
+            self.textures.insert(id, texture);
+            self.atlas_data.push(texture_info);
+        } else {
+            // テクスチャがアトラスに収まらない場合は、新しいアトラスを作成するなどの処理が必要
+            panic!("Texture does not fit in the atlas");
+        }
     }
 
     pub fn export(&self, output_path: &Path) {
-        // todo: texturesをまとめて貼り付けるのではなく、一つづつ処理したい
-        // todo: atlas_dataはTexturePackerで保持しておきたい
-        // todo: 複数ページの場合はVecのVecになる？
-        let atlas_data = self.placer.place_textures(&self.textures, &self.config);
-        println!("atlas_data: {:?}", atlas_data);
         self.exporter
-            .export(&atlas_data, &self.textures, output_path);
+            .export(&self.atlas_data, &self.textures, output_path);
     }
 }
