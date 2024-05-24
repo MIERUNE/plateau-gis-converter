@@ -25,7 +25,6 @@ use crate::{
 };
 
 use earcut::{utils3d::project3d_to_2d, Earcut};
-use nusamai_projection::cartesian::geodetic_to_geocentric;
 use nusamai_projection::etmerc::ExtendedTransverseMercatorProjection;
 
 use nusamai_voxelize::{DdaVoxelizer, MeshVoxelizer, Voxel};
@@ -34,6 +33,8 @@ use fastanvil::Region;
 use fastnbt::{to_bytes, LongArray};
 use serde::{Deserialize, Serialize};
 use std::sync::{Arc, Mutex};
+
+use nusamai_citygml::object::{Map, Object};
 
 pub struct MinecraftSinkProvider {}
 
@@ -230,56 +231,77 @@ impl DataSink for MinecraftSink {
         let mut chunk_map: HashMap<(PositionXZ, PositionXZ), usize> = HashMap::new();
         let mut section_map: HashMap<(PositionXZ, PositionXZ, i32), usize> = HashMap::new();
 
+        // 境界の計算
+        let mut local_bvol = BoundingVolume::default();
+
+        // upstream のデータを一度収集する
+        let parcels: Vec<crate::pipeline::Parcel> = upstream.into_iter().collect();
+
+        // 最初の処理
+        parcels.iter().for_each(|parcel| {
+            let entity = &parcel.entity;
+
+            let typename = object.typename.clone();
+            let geom_store = entity.geometry_store.read().unwrap();
+
+            let mut parcel_bvol = BoundingVolume::default();
+
+            // バウンディングボリュームの計算
+            geom_store.vertices.iter().for_each(|v| {
+                parcel_bvol.min_lng = parcel_bvol.min_lng.min(v[0]);
+                parcel_bvol.max_lng = parcel_bvol.max_lng.max(v[0]);
+                parcel_bvol.min_lat = parcel_bvol.min_lat.min(v[1]);
+                parcel_bvol.max_lat = parcel_bvol.max_lat.max(v[1]);
+                parcel_bvol.min_height = parcel_bvol.min_height.min(v[2]);
+                parcel_bvol.max_height = parcel_bvol.max_height.max(v[2]);
+            });
+
+            local_bvol.update(&parcel_bvol);
+        });
         let (ra, rb) = rayon::join(
             || {
-                upstream
-                    .into_iter()
-                    .par_bridge()
+                parcels
+                    .into_par_iter()
                     .try_for_each_with(sender, |sender, parcel| {
                         feedback.ensure_not_canceled()?;
 
-                        // 境界の計算
-                        let mut local_bvol = BoundingVolume::default();
-
                         let entity = parcel.entity;
 
-                        let mut geom_store = entity.geometry_store.read().unwrap();
+                        let geom_store = entity.geometry_store.read().unwrap();
 
                         let mut earcutter = Earcut::<f32>::new();
                         let mut buf3d: Vec<[f32; 3]> = Vec::new();
                         let mut buf2d: Vec<[f32; 2]> = Vec::new();
                         let mut index_buf: Vec<u32> = Vec::new();
-                        let mut triangles = Vec::<f32>::new();
 
                         let mut voxelizer = DdaVoxelizer {
                             voxels: HashMap::new(),
                         };
 
-                        let ellipsoid = nusamai_projection::ellipsoid::wgs84();
+                        // 中心点の計算
+                        let center_lng = (local_bvol.min_lng + local_bvol.max_lng) / 2.0;
+                        let center_lat = (local_bvol.min_lat + local_bvol.max_lat) / 2.0;
+                        let min_height = local_bvol.min_height;
 
                         let projection = ExtendedTransverseMercatorProjection::new(
-                            141.3494741829318,
-                            42.948695778186746,
+                            center_lng,
+                            center_lat,
                             1.0,
-                            &ellipsoid,
+                            &nusamai_projection::ellipsoid::wgs84(),
                         );
 
-                        println!("Projection: {:?}", geom_store);
                         let vertices: Vec<_> = geom_store
                             .vertices
                             .iter()
                             .map(|v| match projection.project_forward(v[0], v[1], v[2]) {
-                                Ok((x, y, z)) => [x, z - 200 as f64, y * -1 as f64],
+                                Ok((x, y, z)) => [x, z - min_height, y * -1 as f64],
                                 Err(e) => {
                                     println!("変換エラー: {:?}", e);
-                                    [0.0, 0.0, 0.0] // エラー時のデフォルト値
+                                    // エラーの場合は無効な座標を返す
+                                    [f64::NAN, f64::NAN, f64::NAN]
                                 }
                             })
                             .collect();
-
-                        // let mut vertices = geom_store.vertices.clone();
-
-                        // local_bvolを更新
 
                         for (idx_poly) in geom_store.multipolygon.iter() {
                             let poly = idx_poly.transform(|idx| vertices[*idx as usize]);
@@ -322,9 +344,7 @@ impl DataSink for MinecraftSink {
             },
             || {
                 // RGBに基づいてブロックの色を設定
-                let mut block_colors = get_block_colors();
-
-                let mut voxels: Vec<Voxel> = Vec::new();
+                let block_colors = get_block_colors();
 
                 receiver.into_iter().for_each(|feature| {
                     // キーを順に読み取って表示し、voxelsにコピーを追加
@@ -350,12 +370,12 @@ impl DataSink for MinecraftSink {
                         let adjusted_z = key[2];
 
                         // ピクセル座標からリージョン座標を計算
-                        let region_x = adjusted_x.div_euclid(512) as i32;
-                        let region_z = adjusted_z.div_euclid(512) as i32;
+                        let region_x = adjusted_x.div_euclid(512);
+                        let region_z = adjusted_z.div_euclid(512);
 
                         // ピクセル座標座標からチャンク座標を計算
-                        let chunk_x = adjusted_x.div_euclid(16) as i32;
-                        let chunk_z = adjusted_z.div_euclid(16) as i32;
+                        let chunk_x = adjusted_x.div_euclid(16);
+                        let chunk_z = adjusted_z.div_euclid(16);
 
                         // DEMの値からセクションのyレベルを計算
                         let section_y = (adjusted_y + 64) / 16 - 4;
@@ -406,7 +426,6 @@ impl DataSink for MinecraftSink {
                         world_data[region_index].chunks[chunk_index].sections[section_index]
                             .blocks
                             .push(block_data);
-                        // voxels.push(voxel.clone());
                     });
                 });
 
@@ -415,7 +434,7 @@ impl DataSink for MinecraftSink {
                 let _ = world_data.iter().try_for_each(|region| -> Result<()> {
                     feedback.ensure_not_canceled()?;
 
-                    let mut file_path = self.output_path.clone();
+                    let file_path = self.output_path.clone();
                     let out_path = PathBuf::from(format!(
                         "{}/r.{}.{}.mca",
                         file_path.display(),
@@ -428,18 +447,16 @@ impl DataSink for MinecraftSink {
                         .write(true)
                         .truncate(true)
                         .create(true)
-                        .open(&out_path)
+                        .open(out_path)
                         .unwrap();
-
-                    // let out_file = File::create(out_path)?;
 
                     let new_region = Arc::new(Mutex::new(Region::new(out_file).unwrap()));
 
                     (0..32).into_par_iter().for_each(|chunk_z| {
                         (0..32).into_par_iter().for_each(|chunk_x| {
                             // チャンクの絶対座標を計算
-                            let absolute_chunk_x = region.position[0] as i32 * 32 + chunk_x;
-                            let absolute_chunk_z = region.position[1] as i32 * 32 + chunk_z;
+                            let absolute_chunk_x = region.position[0] * 32 + chunk_x;
+                            let absolute_chunk_z = region.position[1] * 32 + chunk_z;
 
                             let chunk_data = region
                                 .chunks
@@ -447,8 +464,8 @@ impl DataSink for MinecraftSink {
                                 .find(|c| c.position == [absolute_chunk_x, absolute_chunk_z]);
 
                             let chunk = create_chunk_structure(
-                                absolute_chunk_x as i32,
-                                absolute_chunk_z as i32,
+                                absolute_chunk_x,
+                                absolute_chunk_z,
                                 chunk_data,
                             );
 
