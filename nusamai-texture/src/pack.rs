@@ -15,8 +15,8 @@ pub struct TexturePackerConfig {
 
 pub struct TexturePacker<P: TexturePlacer, E: AtlasExporter> {
     pub textures: HashMap<String, CroppedTexture>,
-    pub atlas_data: Vec<Vec<PlacedTextureInfo>>,
-    pub texture_info_list: Vec<PlacedTextureInfo>,
+    pub atlas_list: Vec<Vec<PlacedTextureInfo>>,
+    pub atlas_layout: Vec<PlacedTextureInfo>,
     config: TexturePackerConfig,
     placer: P,
     exporter: E,
@@ -26,8 +26,8 @@ impl<P: TexturePlacer, E: AtlasExporter> TexturePacker<P, E> {
     pub fn new(config: TexturePackerConfig, placer: P, exporter: E) -> Self {
         TexturePacker {
             textures: HashMap::new(),
-            atlas_data: Vec::new(),
-            texture_info_list: Vec::new(),
+            atlas_list: Vec::new(),
+            atlas_layout: Vec::new(),
             config,
             placer,
             exporter,
@@ -38,28 +38,28 @@ impl<P: TexturePlacer, E: AtlasExporter> TexturePacker<P, E> {
         if self.placer.can_place(&texture, &self.config) {
             let texture_info = self.placer.place_texture(&id, &texture, &self.config);
             self.textures.insert(id, texture);
-            self.texture_info_list.push(texture_info);
+            self.atlas_layout.push(texture_info);
         } else {
-            self.atlas_data.push(self.texture_info_list.clone());
-            self.texture_info_list.clear();
+            self.atlas_list.push(self.atlas_layout.clone());
+            self.atlas_layout.clear();
 
             self.placer.reset_param();
 
             let texture_info = self.placer.place_texture(&id, &texture, &self.config);
             self.textures.insert(id, texture);
-            self.texture_info_list.push(texture_info);
+            self.atlas_layout.push(texture_info);
         }
     }
 
     pub fn finalize(&mut self) {
-        if !self.texture_info_list.is_empty() {
-            self.atlas_data.push(self.texture_info_list.clone());
-            self.texture_info_list.clear();
+        if !self.atlas_layout.is_empty() {
+            self.atlas_list.push(self.atlas_layout.clone());
+            self.atlas_layout.clear();
         }
     }
 
     pub fn export(&self, output_dir: &Path) {
-        for (i, atlas) in self.atlas_data.iter().enumerate() {
+        for (i, atlas) in self.atlas_list.iter().enumerate() {
             let output_path = output_dir.join(format!("atlas_{}.webp", i));
             self.exporter.export(atlas, &self.textures, &output_path);
         }
