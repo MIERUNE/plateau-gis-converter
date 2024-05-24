@@ -65,11 +65,14 @@ fn main() {
                 // earcut
                 earcutter.earcut(buf2d.iter().cloned(), poly.hole_indices(), &mut index_buf);
                 for indx in index_buf.chunks_exact(3) {
-                    voxelizer.add_triangle(&[
-                        buf3d[indx[0] as usize],
-                        buf3d[indx[1] as usize],
-                        buf3d[indx[2] as usize],
-                    ]);
+                    voxelizer.add_triangle(
+                        &[
+                            buf3d[indx[0] as usize],
+                            buf3d[indx[1] as usize],
+                            buf3d[indx[2] as usize],
+                        ],
+                        [255, 255, 255],
+                    );
                 }
             }
         }

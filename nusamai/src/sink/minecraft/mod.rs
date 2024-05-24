@@ -12,7 +12,6 @@ use nusamai_citygml::{
     schema::Schema,
     GeometryType,
 };
-
 use nusamai_plateau::Entity;
 use rayon::prelude::*;
 
@@ -111,6 +110,10 @@ impl Default for BoundingVolume {
 mod block_colors;
 
 use block_colors::get_block_colors;
+
+mod typename_colors;
+
+use typename_colors::get_typename_colors;
 
 type PositionXYZ = [u8; 3];
 type PositionXZ = [i32; 2];
@@ -223,6 +226,24 @@ impl DataSink for MinecraftSink {
 
                         let entity = parcel.entity;
 
+                        let mut rgb = [255, 255, 255];
+                        let typename_colors = get_typename_colors();
+
+                        match &entity.root {
+                            Value::Object(obj) => {
+                                let typename_full = &obj.typename;
+                                let typename = typename_full.split(':').next().unwrap_or("");
+
+                                match typename_colors.get(typename) {
+                                    Some(color) => {
+                                        rgb = *color;
+                                    }
+                                    _ => println!("Typename not found"),
+                                }
+                            }
+                            _ => println!("Typename not found"),
+                        }
+
                         let geom_store = entity.geometry_store.read().unwrap();
 
                         let mut earcutter = Earcut::<f32>::new();
@@ -280,11 +301,14 @@ impl DataSink for MinecraftSink {
                                     &mut index_buf,
                                 );
                                 for indx in index_buf.chunks_exact(3) {
-                                    voxelizer.add_triangle(&[
-                                        buf3d[indx[0] as usize],
-                                        buf3d[indx[1] as usize],
-                                        buf3d[indx[2] as usize],
-                                    ]);
+                                    voxelizer.add_triangle(
+                                        &[
+                                            buf3d[indx[0] as usize],
+                                            buf3d[indx[1] as usize],
+                                            buf3d[indx[2] as usize],
+                                        ],
+                                        rgb,
+                                    );
                                 }
                             }
                         }

@@ -9,7 +9,7 @@ pub struct Voxel {
 pub type VoxelPosition = [i32; 3];
 
 pub trait MeshVoxelizer {
-    fn add_triangle(&mut self, triangle: &[[f32; 3]; 3]);
+    fn add_triangle(&mut self, triangle: &[[f32; 3]; 3], color: [u8; 3]);
     fn finalize(self) -> HashMap<VoxelPosition, Voxel>;
 }
 
@@ -18,15 +18,14 @@ pub struct DdaVoxelizer {
 }
 
 impl MeshVoxelizer for DdaVoxelizer {
-    fn add_triangle(&mut self, triangle: &[[f32; 3]; 3]) {
-        fill_triangle(&mut self.voxels, triangle);
+    fn add_triangle(&mut self, triangle: &[[f32; 3]; 3], color: [u8; 3]) {
+        fill_triangle(&mut self.voxels, triangle, color);
     }
     fn finalize(self) -> HashMap<VoxelPosition, Voxel> {
         self.voxels
     }
 }
-
-fn draw_line(voxels: &mut HashMap<VoxelPosition, Voxel>, start: Vec3, end: Vec3) {
+fn draw_line(voxels: &mut HashMap<VoxelPosition, Voxel>, start: Vec3, end: Vec3, color: [u8; 3]) {
     let start = start + Vec3::splat(0.5);
     let end = end + Vec3::splat(0.5);
     let direction = end - start;
@@ -37,15 +36,17 @@ fn draw_line(voxels: &mut HashMap<VoxelPosition, Voxel>, start: Vec3, end: Vec3)
     let mut current_voxel = start;
     for _ in 0..=steps {
         let position = current_voxel.as_ivec3();
-        let voxel = Voxel {
-            color: [255, 255, 255],
-        };
+        let voxel = Voxel { color };
         voxels.insert(position.to_array(), voxel);
         current_voxel += step_size;
     }
 }
 
-fn fill_triangle(voxels: &mut HashMap<VoxelPosition, Voxel>, triangle: &[[f32; 3]; 3]) {
+fn fill_triangle(
+    voxels: &mut HashMap<VoxelPosition, Voxel>,
+    triangle: &[[f32; 3]; 3],
+    color: [u8; 3],
+) {
     let p1 = Vec3::from(triangle[0]);
     let p2 = Vec3::from(triangle[1]);
     let p3 = Vec3::from(triangle[2]);
@@ -62,21 +63,15 @@ fn fill_triangle(voxels: &mut HashMap<VoxelPosition, Voxel>, triangle: &[[f32; 3
 
         voxels.insert(
             [p1_floor.x as i32, p1_floor.y as i32, p1_floor.z as i32],
-            Voxel {
-                color: [255, 255, 255],
-            },
+            Voxel { color },
         );
         voxels.insert(
             [p2_floor.x as i32, p2_floor.y as i32, p2_floor.z as i32],
-            Voxel {
-                color: [255, 255, 255],
-            },
+            Voxel { color },
         );
         voxels.insert(
             [p3_floor.x as i32, p3_floor.y as i32, p3_floor.z as i32],
-            Voxel {
-                color: [255, 255, 255],
-            },
+            Voxel { color },
         );
 
         return;
@@ -185,7 +180,7 @@ fn fill_triangle(voxels: &mut HashMap<VoxelPosition, Voxel>, triangle: &[[f32; 3
             }
 
             while end_pos[0] <= ordered_verts[2][0] {
-                draw_line(voxels, start_pos, end_pos);
+                draw_line(voxels, start_pos, end_pos, color);
 
                 start_pos += start_step;
                 end_pos += end_step;
@@ -251,7 +246,7 @@ fn fill_triangle(voxels: &mut HashMap<VoxelPosition, Voxel>, triangle: &[[f32; 3
             }
 
             while end_pos[1] <= ordered_verts[2][1] {
-                draw_line(voxels, start_pos, end_pos);
+                draw_line(voxels, start_pos, end_pos, color);
 
                 start_pos += start_step;
                 end_pos += end_step;
@@ -317,7 +312,7 @@ fn fill_triangle(voxels: &mut HashMap<VoxelPosition, Voxel>, triangle: &[[f32; 3
             }
 
             while end_pos[2] <= ordered_verts[2][2] {
-                draw_line(voxels, start_pos, end_pos);
+                draw_line(voxels, start_pos, end_pos, color);
 
                 start_pos += start_step;
                 end_pos += end_step;
@@ -391,11 +386,14 @@ mod tests {
             if project3d_to_2d(&buf3d, num_outer, &mut buf2d) {
                 earcutter.earcut(buf2d.iter().cloned(), poly.hole_indices(), &mut index_buf);
                 for indx in index_buf.chunks_exact(3) {
-                    voxelizer.add_triangle(&[
-                        buf3d[indx[0] as usize],
-                        buf3d[indx[1] as usize],
-                        buf3d[indx[2] as usize],
-                    ]);
+                    voxelizer.add_triangle(
+                        &[
+                            buf3d[indx[0] as usize],
+                            buf3d[indx[1] as usize],
+                            buf3d[indx[2] as usize],
+                        ],
+                        [255, 255, 255],
+                    );
                 }
             }
         }
@@ -450,11 +448,14 @@ mod tests {
             if project3d_to_2d(&buf3d, num_outer, &mut buf2d) {
                 earcutter.earcut(buf2d.iter().cloned(), poly.hole_indices(), &mut index_buf);
                 for indx in index_buf.chunks_exact(3) {
-                    voxelizer.add_triangle(&[
-                        buf3d[indx[0] as usize],
-                        buf3d[indx[1] as usize],
-                        buf3d[indx[2] as usize],
-                    ]);
+                    voxelizer.add_triangle(
+                        &[
+                            buf3d[indx[0] as usize],
+                            buf3d[indx[1] as usize],
+                            buf3d[indx[2] as usize],
+                        ],
+                        [255, 255, 255],
+                    );
                 }
             }
         }
@@ -534,11 +535,14 @@ mod tests {
             if project3d_to_2d(&buf3d, num_outer, &mut buf2d) {
                 earcutter.earcut(buf2d.iter().cloned(), poly.hole_indices(), &mut index_buf);
                 for indx in index_buf.chunks_exact(3) {
-                    voxelizer.add_triangle(&[
-                        buf3d[indx[0] as usize],
-                        buf3d[indx[1] as usize],
-                        buf3d[indx[2] as usize],
-                    ]);
+                    voxelizer.add_triangle(
+                        &[
+                            buf3d[indx[0] as usize],
+                            buf3d[indx[1] as usize],
+                            buf3d[indx[2] as usize],
+                        ],
+                        [255, 255, 255],
+                    );
                 }
             }
         }
@@ -713,11 +717,14 @@ mod tests {
             if project3d_to_2d(&buf3d, num_outer, &mut buf2d) {
                 earcutter.earcut(buf2d.iter().cloned(), poly.hole_indices(), &mut index_buf);
                 for indx in index_buf.chunks_exact(3) {
-                    voxelizer.add_triangle(&[
-                        buf3d[indx[0] as usize],
-                        buf3d[indx[1] as usize],
-                        buf3d[indx[2] as usize],
-                    ]);
+                    voxelizer.add_triangle(
+                        &[
+                            buf3d[indx[0] as usize],
+                            buf3d[indx[1] as usize],
+                            buf3d[indx[2] as usize],
+                        ],
+                        [255, 255, 255],
+                    );
                 }
             }
         }
