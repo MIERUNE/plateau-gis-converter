@@ -1,7 +1,11 @@
-use nusamai_texture::{
-    CroppedTexture, SimpleTexturePlacer, TexturePacker, TexturePackerConfig, WebpAtlasExporter,
-};
 use std::path::Path;
+
+use nusamai_texture::{
+    export::WebpAtlasExporter,
+    pack::{TexturePacker, TexturePackerConfig},
+    place::SimpleTexturePlacer,
+    texture::CroppedTexture,
+};
 
 fn main() {
     let config = TexturePackerConfig {
@@ -22,10 +26,10 @@ fn main() {
             let texture = CroppedTexture::new(&uv_coords, image_path);
 
             packer.add_texture(format!("texture_{}_{}", i, j).to_string(), texture);
-            println!("added texture_{}_{}", i, j);
-            println!();
         }
     }
+
+    packer.finalize();
 
     let output_path = Path::new("nusamai-texture/examples/output/");
     packer.export(output_path);
