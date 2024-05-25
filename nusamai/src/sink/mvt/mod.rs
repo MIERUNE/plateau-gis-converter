@@ -226,7 +226,10 @@ fn feature_sorting_stage(
     receiver_sliced: mpsc::Receiver<(u64, Vec<u8>)>,
     sender_sorted: mpsc::SyncSender<(u64, Vec<Vec<u8>>)>,
 ) -> Result<()> {
-    let config = kv_extsort::SortConfig::default().max_chunk_bytes(256 * 1024 * 1024);
+    let config = kv_extsort::SortConfig::default()
+        .max_chunk_bytes(256 * 1024 * 1024)
+        .set_cancel_flag(feedback.get_cancellation_flag());
+
     let sorted_iter = kv_extsort::sort(
         receiver_sliced
             .into_iter()
@@ -344,7 +347,7 @@ fn make_tile(default_detail: i32, serialized_feats: &[Vec<u8>]) -> Result<Vec<u8
 
     for serialized_feat in serialized_feats {
         let (feature, _): (SlicedFeature, _) =
-            bincode::serde::decode_from_slice(&serialized_feat, bincode_config).map_err(|err| {
+            bincode::serde::decode_from_slice(serialized_feat, bincode_config).map_err(|err| {
                 PipelineError::Other(format!("Failed to deserialize a sliced feature: {:?}", err))
             })?;
 
