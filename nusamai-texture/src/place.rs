@@ -230,8 +230,8 @@ impl TexturePlacer for GuillotineTexturePlacer {
     }
 
     fn place_texture(&mut self, id: &str, texture: &CroppedTexture) -> PlacedTextureInfo {
-        let width = texture.width + self.config.padding * 2;
-        let height = texture.height + self.config.padding * 2;
+        let width = texture.width + self.config.padding;
+        let height = texture.height + self.config.padding;
 
         if let Some(rect) = self.find_best_rect(width, height) {
             let placed = PlacedTextureInfo {
@@ -254,8 +254,8 @@ impl TexturePlacer for GuillotineTexturePlacer {
     }
 
     fn can_place(&self, texture: &CroppedTexture) -> bool {
-        let width = texture.width + self.config.padding * 2;
-        let height = texture.height + self.config.padding * 2;
+        let width = texture.width + self.config.padding;
+        let height = texture.height + self.config.padding;
         self.free_rects
             .iter()
             .any(|r| r.width >= width && r.height >= height)

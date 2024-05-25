@@ -3,7 +3,7 @@ use std::path::Path;
 use nusamai_texture::{
     export::WebpAtlasExporter,
     pack::{TexturePacker, TexturePackerConfig},
-    place::{GuillotineTexturePlacer, SimpleTexturePlacer},
+    place::GuillotineTexturePlacer,
     texture::CroppedTexture,
 };
 
@@ -14,7 +14,6 @@ fn main() {
         padding: 0,
     };
 
-    // let placer = SimpleTexturePlacer::new(config);
     let placer = GuillotineTexturePlacer::new(config);
 
     let exporter = WebpAtlasExporter;
