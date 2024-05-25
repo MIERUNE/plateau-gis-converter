@@ -13,30 +13,38 @@ pub struct TexturePackerConfig {
     // Allow rotation, allow multiple pages, adjust resolution, specify resampling method, etc...
 }
 
+impl Default for TexturePackerConfig {
+    fn default() -> Self {
+        TexturePackerConfig {
+            max_width: 256,
+            max_height: 256,
+            padding: 1,
+        }
+    }
+}
+
 pub struct TexturePacker<P: TexturePlacer, E: AtlasExporter> {
     pub textures: HashMap<String, CroppedTexture>,
     pub atlas_list: Vec<Vec<PlacedTextureInfo>>,
     pub atlas_layout: Vec<PlacedTextureInfo>,
-    config: TexturePackerConfig,
     placer: P,
     exporter: E,
 }
 
 impl<P: TexturePlacer, E: AtlasExporter> TexturePacker<P, E> {
-    pub fn new(config: TexturePackerConfig, placer: P, exporter: E) -> Self {
+    pub fn new(placer: P, exporter: E) -> Self {
         TexturePacker {
             textures: HashMap::new(),
             atlas_list: Vec::new(),
             atlas_layout: Vec::new(),
-            config,
             placer,
             exporter,
         }
     }
 
     pub fn add_texture(&mut self, id: String, texture: CroppedTexture) {
-        if self.placer.can_place(&texture, &self.config) {
-            let texture_info = self.placer.place_texture(&id, &texture, &self.config);
+        if self.placer.can_place(&texture) {
+            let texture_info = self.placer.place_texture(&id, &texture);
             self.textures.insert(id, texture);
             self.atlas_layout.push(texture_info);
         } else {
@@ -45,7 +53,7 @@ impl<P: TexturePlacer, E: AtlasExporter> TexturePacker<P, E> {
 
             self.placer.reset_param();
 
-            let texture_info = self.placer.place_texture(&id, &texture, &self.config);
+            let texture_info = self.placer.place_texture(&id, &texture);
             self.textures.insert(id, texture);
             self.atlas_layout.push(texture_info);
         }
