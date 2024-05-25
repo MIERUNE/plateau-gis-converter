@@ -91,7 +91,7 @@ impl TexturePlacer for SimpleTexturePlacer {
     }
 }
 
-pub struct GuillotinePlacer {
+pub struct GuillotineTexturePlacer {
     config: TexturePackerConfig,
     free_rects: Vec<Rect>,
     used_rects: HashMap<String, PlacedTextureInfo>,
@@ -105,7 +105,7 @@ struct Rect {
     height: u32,
 }
 
-impl GuillotinePlacer {
+impl GuillotineTexturePlacer {
     pub fn new(config: TexturePackerConfig) -> Self {
         let initial_rect = Rect {
             x: 0,
@@ -113,7 +113,7 @@ impl GuillotinePlacer {
             width: config.max_width,
             height: config.max_height,
         };
-        GuillotinePlacer {
+        GuillotineTexturePlacer {
             config,
             free_rects: vec![initial_rect],
             used_rects: HashMap::new(),
@@ -224,7 +224,7 @@ impl GuillotinePlacer {
     }
 }
 
-impl TexturePlacer for GuillotinePlacer {
+impl TexturePlacer for GuillotineTexturePlacer {
     fn config(&self) -> &TexturePackerConfig {
         &self.config
     }
