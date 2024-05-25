@@ -11,7 +11,7 @@ fn main() {
     let config = TexturePackerConfig {
         max_width: 1024,
         max_height: 1024,
-        padding: 1,
+        padding: 0,
     };
 
     // let placer = SimpleTexturePlacer::new(config);
