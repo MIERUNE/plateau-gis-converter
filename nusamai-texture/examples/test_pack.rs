@@ -3,19 +3,19 @@ use std::{default, path::Path};
 use nusamai_texture::{
     export::WebpAtlasExporter,
     pack::{TexturePacker, TexturePackerConfig},
-    place::{GuillotineTexturePlacer, SimpleTexturePlacer},
+    place::{GuillotinePlacer, SimpleTexturePlacer},
     texture::CroppedTexture,
 };
 
 fn main() {
-    // let config = TexturePackerConfig {
-    //     max_width: 512,
-    //     max_height: 512,
-    //     padding: 2,
-    // };
+    let config = TexturePackerConfig {
+        max_width: 1024,
+        max_height: 1024,
+        padding: 1,
+    };
 
-    let placer = SimpleTexturePlacer::default();
-    // let placer = GuillotineTexturePlacer::default();
+    let placer = SimpleTexturePlacer::new(config);
+    // let placer = GuillotinePlacer::new(config);
 
     let exporter = WebpAtlasExporter;
 

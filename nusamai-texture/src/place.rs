@@ -1,4 +1,5 @@
 use std::cmp::max;
+use std::collections::HashMap;
 
 use crate::{pack::TexturePackerConfig, texture::CroppedTexture};
 
@@ -28,13 +29,8 @@ pub struct SimpleTexturePlacer {
     pub max_height_in_row: u32,
 }
 
-impl Default for SimpleTexturePlacer {
-    fn default() -> Self {
-        let config = TexturePackerConfig {
-            max_width: 512,
-            max_height: 512,
-            padding: 2,
-        };
+impl SimpleTexturePlacer {
+    pub fn new(config: TexturePackerConfig) -> Self {
         SimpleTexturePlacer {
             config,
             current_x: 0,
@@ -95,78 +91,120 @@ impl TexturePlacer for SimpleTexturePlacer {
     }
 }
 
-pub struct GuillotineTexturePlacer {
-    pub config: TexturePackerConfig,
-    pub free_rects: Vec<(u32, u32, u32, u32)>,
+pub struct GuillotinePlacer {
+    config: TexturePackerConfig,
+    free_rects: Vec<Rect>,
+    used_rects: HashMap<String, PlacedTextureInfo>,
 }
 
-impl Default for GuillotineTexturePlacer {
-    fn default() -> Self {
-        let config = TexturePackerConfig {
-            max_width: 512,
-            max_height: 512,
-            padding: 2,
+#[derive(Debug, Clone, Copy, PartialEq)]
+struct Rect {
+    x: u32,
+    y: u32,
+    width: u32,
+    height: u32,
+}
+
+impl GuillotinePlacer {
+    pub fn new(config: TexturePackerConfig) -> Self {
+        let initial_rect = Rect {
+            x: 0,
+            y: 0,
+            width: config.max_width,
+            height: config.max_height,
         };
-        GuillotineTexturePlacer {
+        GuillotinePlacer {
             config,
-            free_rects: vec![(0, 0, 512, 512)],
+            free_rects: vec![initial_rect],
+            used_rects: HashMap::new(),
         }
     }
-}
 
-impl TexturePlacer for GuillotineTexturePlacer {
-    fn config(&self) -> &TexturePackerConfig {
-        &self.config
-    }
-
-    fn place_texture(&mut self, id: &str, texture: &CroppedTexture) -> PlacedTextureInfo {
+    fn find_best_rect(&self, width: u32, height: u32) -> Option<Rect> {
         let mut best_rect = None;
         let mut best_area = std::u32::MAX;
 
-        for (i, &(x, y, w, h)) in self.free_rects.iter().enumerate() {
-            if w >= texture.width && h >= texture.height {
-                let area = w * h;
+        for rect in &self.free_rects {
+            if rect.width >= width && rect.height >= height {
+                let area = rect.width * rect.height;
                 if area < best_area {
-                    best_rect = Some((i, x, y));
+                    best_rect = Some(*rect);
                     best_area = area;
                 }
             }
         }
 
-        if let Some((index, x, y)) = best_rect {
-            let (_, _, w, h) = self.free_rects[index];
-            self.free_rects.remove(index);
+        best_rect
+    }
 
-            if w > texture.width {
-                self.free_rects
-                    .push((x + texture.width, y, w - texture.width, texture.height));
-            }
-            if h > texture.height {
-                self.free_rects
-                    .push((x, y + texture.height, texture.width, h - texture.height));
-            }
+    fn split_rect(&mut self, rect: Rect, placed: &PlacedTextureInfo) {
+        let right_rect = Rect {
+            x: rect.x + placed.width + self.config.padding,
+            y: rect.y,
+            width: rect.width - placed.width - self.config.padding,
+            height: placed.height,
+        };
 
-            PlacedTextureInfo {
+        let bottom_rect = Rect {
+            x: rect.x,
+            y: rect.y + placed.height + self.config.padding,
+            width: rect.width,
+            height: rect.height - placed.height - self.config.padding,
+        };
+
+        if right_rect.width > 0 && right_rect.height > 0 {
+            self.free_rects.push(right_rect);
+        }
+        if bottom_rect.width > 0 && bottom_rect.height > 0 {
+            self.free_rects.push(bottom_rect);
+        }
+    }
+}
+
+impl TexturePlacer for GuillotinePlacer {
+    fn config(&self) -> &TexturePackerConfig {
+        &self.config
+    }
+
+    fn place_texture(&mut self, id: &str, texture: &CroppedTexture) -> PlacedTextureInfo {
+        let width = texture.width + self.config.padding * 2;
+        let height = texture.height + self.config.padding * 2;
+
+        if let Some(rect) = self.find_best_rect(width, height) {
+            let placed = PlacedTextureInfo {
                 id: id.to_string(),
-                u: x,
-                v: y,
+                u: rect.x + self.config.padding,
+                v: rect.y + self.config.padding,
                 width: texture.width,
                 height: texture.height,
-            }
+            };
+
+            self.used_rects.insert(id.to_string(), placed.clone());
+            self.free_rects.retain(|r| r != &rect);
+            self.split_rect(rect, &placed);
+
+            placed
         } else {
-            panic!("Failed to place texture");
+            panic!("テクスチャを配置できませんでした: {}", id);
         }
     }
 
     fn can_place(&self, texture: &CroppedTexture) -> bool {
+        let width = texture.width + self.config.padding * 2;
+        let height = texture.height + self.config.padding * 2;
         self.free_rects
             .iter()
-            .any(|&(_, _, w, h)| w >= texture.width && h >= texture.height)
+            .any(|r| r.width >= width && r.height >= height)
     }
 
     fn reset_param(&mut self) {
-        self.free_rects.clear();
-        self.free_rects
-            .push((0, 0, self.config().max_width, self.config().max_height));
+        let initial_rect = Rect {
+            x: 0,
+            y: 0,
+            width: self.config.max_width,
+            height: self.config.max_height,
+        };
+        self.free_rects = vec![initial_rect];
+        self.used_rects.clear();
     }
 }
