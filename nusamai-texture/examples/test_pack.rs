@@ -1,4 +1,4 @@
-use std::{default, path::Path};
+use std::path::Path;
 
 use nusamai_texture::{
     export::WebpAtlasExporter,
@@ -14,13 +14,13 @@ fn main() {
         padding: 1,
     };
 
-    let placer = SimpleTexturePlacer::new(config);
-    // let placer = GuillotinePlacer::new(config);
+    // let placer = SimpleTexturePlacer::new(config);
+    let placer = GuillotinePlacer::new(config);
 
     let exporter = WebpAtlasExporter;
 
     let mut packer = TexturePacker::new(placer, exporter);
-    for i in 0..3 {
+    for i in 0..10 {
         for j in 1..11 {
             let uv_coords = vec![(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)];
             let path_string = format!("examples/assets/{}.png", j);
