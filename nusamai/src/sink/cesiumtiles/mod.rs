@@ -209,7 +209,7 @@ fn feature_sorting_stage(
     let mut typename_to_seq: IndexSet<String, ahash::RandomState> = Default::default();
 
     let config = kv_extsort::SortConfig::default()
-        .max_chunk_bytes(256 * 1024 * 1024)
+        .max_chunk_bytes(256 * 1024 * 1024) // TODO: Configurable
         .set_cancel_flag(feedback.get_cancellation_flag());
 
     let sorted_iter = kv_extsort::sort(
