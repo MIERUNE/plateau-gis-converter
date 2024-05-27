@@ -98,20 +98,36 @@ impl Default for BoundingVolume {
 }
 
 mod block_colors;
-
 use block_colors::get_block_colors;
-
 mod typename_colors;
-
 use typename_colors::get_typename_colors;
 
-type PositionXYZ = [u8; 3];
 type PositionXZ = [i32; 2];
+#[derive(Deserialize, Serialize, Debug)]
+struct PositionXYZ([u8; 3]);
+
+impl PositionXYZ {
+    // Check that the input is in the range 0~15
+    fn new(x: u8, y: u8, z: u8) -> Result<Self> {
+        if x > 15 || y > 15 || z > 15 {
+            Err(PipelineError::Canceled)
+        } else {
+            Ok(PositionXYZ([x, y, z]))
+        }
+    }
+}
 
 #[derive(Deserialize, Serialize, Debug)]
 struct BlockSchema {
     position: PositionXYZ,
     name: String,
+}
+
+impl BlockSchema {
+    fn new(x: u8, y: u8, z: u8, name: String) -> Result<Self> {
+        let position = PositionXYZ::new(x, y, z)?;
+        Ok(BlockSchema { position, name })
+    }
 }
 #[derive(Deserialize, Serialize, Debug)]
 struct SectionSchema {
@@ -167,12 +183,15 @@ struct PaletteItem {
     #[serde(rename = "Name")]
     name: String,
     #[serde(rename = "Properties")]
-    properties: Option<Value>,
+    properties: Option<serde_json::Value>,
 }
 
 impl DataSink for MinecraftSink {
     fn make_requirements(&self) -> DataRequirements {
         DataRequirements {
+            // use_appearance: true,
+            // resolve_appearance: true,
+            // key_value: crate::transformer::KeyValueSpec::JsonifyObjects,
             ..Default::default()
         }
     }
@@ -220,8 +239,9 @@ impl DataSink for MinecraftSink {
 
                         match &entity.root {
                             Value::Object(obj) => {
-                                let typename_full = &obj.typename;
-                                let typename = typename_full.split(':').next().unwrap_or("");
+                                let typename = &obj.typename.as_ref();
+
+                                println!("Typename: {}", typename);
 
                                 match typename_colors.get(typename) {
                                     Some(color) => {
@@ -315,15 +335,15 @@ impl DataSink for MinecraftSink {
 
                 receiver.into_iter().for_each(|feature| {
                     feature.iter().for_each(|(key, voxel)| {
-                        // Find the block with the closest colour.
+                        let mut block_name = "minecraft:white_wool";
+
+                        // Find the block with the closest colour to the voxel colour
                         let mut min_distance = f64::MAX;
-                        let mut block_name = "minecraft:stone";
-
-                        for (name, color) in block_colors.iter() {
-                            let distance = (color.0 as f64 - voxel.color[0] as f64).powi(2)
-                                + (color.1 as f64 - voxel.color[1] as f64).powi(2)
-                                + (color.2 as f64 - voxel.color[2] as f64).powi(2);
-
+                        for (name, color) in &block_colors {
+                            let distance = ((color[0] as f64 - voxel.color[0] as f64).powi(2)
+                                + (color[1] as f64 - voxel.color[1] as f64).powi(2)
+                                + (color[2] as f64 - voxel.color[2] as f64).powi(2))
+                            .sqrt();
                             if distance < min_distance {
                                 min_distance = distance;
                                 block_name = name;
@@ -347,14 +367,12 @@ impl DataSink for MinecraftSink {
 
                         // Create BlockSchema
                         // Coordinates relative to the blocks within a section (0-15)
-                        let block_data = BlockSchema {
-                            position: [
-                                x.rem_euclid(16) as u8,
-                                y.rem_euclid(16) as u8,
-                                z.rem_euclid(16) as u8,
-                            ],
-                            name: block_name.to_string(),
-                        };
+                        let block_data = BlockSchema::new(
+                            x.rem_euclid(16) as u8,
+                            y.rem_euclid(16) as u8,
+                            z.rem_euclid(16) as u8,
+                            block_name.to_string(),
+                        );
 
                         let region_pos = [region_x, region_z];
                         let chunk_pos = [chunk_x, chunk_z];
@@ -390,7 +408,7 @@ impl DataSink for MinecraftSink {
 
                         world_data[region_index].chunks[chunk_index].sections[section_index]
                             .blocks
-                            .push(block_data);
+                            .push(block_data.unwrap());
                     });
                 });
 
@@ -486,7 +504,7 @@ fn create_chunk_section(
     // Create a 1D array of 4096 elements and embed the PALETTE index in each block.
     let mut block_indices = vec![0; 4096];
     for block in blocks {
-        let [x, y, z] = block.position;
+        let PositionXYZ([x, y, z]) = block.position;
 
         // Calculate the index of the 1D array and store the index of the palette
         let index = (y as usize) * 256 + (z as usize) * 16 + (x as usize);
@@ -537,9 +555,9 @@ fn create_chunk_section(
     }
 }
 
-// チャンクの構造を作成する関数
+// Functions to create chunk structures
 fn create_chunk_structure(chunk_x: i32, chunk_z: i32, chunk_data: Option<&ChunkSchema>) -> Chunk {
-    let mut palette = vec![PaletteItem {
+    let palette = vec![PaletteItem {
         name: "minecraft:air".to_string(),
         properties: None,
     }];
@@ -556,7 +574,11 @@ fn create_chunk_structure(chunk_x: i32, chunk_z: i32, chunk_data: Option<&ChunkS
                     if !local_palette.iter().any(|b| b.name == block.name) {
                         local_palette.push(PaletteItem {
                             name: block.name.clone(),
-                            properties: None,
+                            properties: if block.name == "minecraft:oak_leaves" {
+                                Some(serde_json::json!({ "persistent": "true" }))
+                            } else {
+                                None
+                            },
                         });
                     }
                 }
