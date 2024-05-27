@@ -128,8 +128,6 @@ pub fn slice_to_tiles<E>(
                     };
                     let (mat_idx, _) = materials.insert_full(mat);
 
-                    // この辺りで、アトラスを作成していく必要がある？
-
                     // Slice polygon for each zoom level
                     for zoom in min_zoom..=max_zoom {
                         // Skip the feature if the size is small for geometricError.

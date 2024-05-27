@@ -38,7 +38,8 @@ impl AtlasExporter for WebpAtlasExporter {
 
         for info in atlas_data {
             let texture = textures.get(&info.id).unwrap();
-            let cropped = texture.crop();
+            let scale_factor = texture.width as f32 / info.width as f32;
+            let cropped = texture.crop(scale_factor);
             let image = cropped.as_rgba8().unwrap();
 
             for (x, y, pixel) in image.enumerate_pixels() {

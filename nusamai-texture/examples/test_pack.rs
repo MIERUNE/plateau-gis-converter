@@ -12,6 +12,7 @@ fn main() {
         max_width: 1024,
         max_height: 1024,
         padding: 0,
+        scale_factor: 0.5,
     };
 
     let placer = GuillotineTexturePlacer::new(config);
@@ -24,6 +25,12 @@ fn main() {
             let uv_coords = vec![(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)];
             let path_string = format!("examples/assets/{}.png", j);
             let image_path = Path::new(path_string.as_str());
+            // todo:
+            // scale_factorはCroppedTextureのイニシャライザではなく、configから受け取るようにする
+            // placeする際にはスケール後の画像サイズを利用するようにする
+            // スケールされたUV座標が返却されるようにする
+            // 与えられたuv_coordsを修正して格納できるようにする（org_uvsとdist_uvsとか？）
+            // exportするタイミングで、実際にスケーリングし、アトラスに書き込むようにする
             let texture = CroppedTexture::new(&uv_coords, image_path);
 
             packer.add_texture(format!("texture_{}_{}", i, j).to_string(), texture);

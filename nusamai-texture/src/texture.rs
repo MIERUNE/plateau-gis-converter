@@ -39,11 +39,20 @@ impl CroppedTexture {
         }
     }
 
-    pub fn crop(&self) -> DynamicImage {
+    pub fn crop(&self, scale_factor: f32) -> DynamicImage {
         let image = image::open(&self.image_path).expect("Failed to open image file");
         let cropped_image = image
             .view(self.u, self.v, self.width, self.height)
             .to_image();
-        DynamicImage::ImageRgba8(cropped_image)
+
+        let scaled_width = (self.width as f32 * scale_factor) as u32;
+        let scaled_height = (self.height as f32 * scale_factor) as u32;
+
+        DynamicImage::ImageRgba8(image::imageops::resize(
+            &cropped_image,
+            scaled_width,
+            scaled_height,
+            image::imageops::FilterType::Triangle,
+        ))
     }
 }

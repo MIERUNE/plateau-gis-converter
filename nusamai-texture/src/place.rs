@@ -20,6 +20,13 @@ pub trait TexturePlacer {
     fn can_place(&self, texture: &CroppedTexture) -> bool;
 
     fn reset_param(&mut self);
+
+    fn scale_dimensions(&self, width: u32, height: u32) -> (u32, u32) {
+        let scale_factor = self.config().scale_factor;
+        let scaled_width = (width as f32 * scale_factor) as u32;
+        let scaled_height = (height as f32 * scale_factor) as u32;
+        (scaled_width, scaled_height)
+    }
 }
 
 pub struct SimpleTexturePlacer {
@@ -46,6 +53,8 @@ impl TexturePlacer for SimpleTexturePlacer {
     }
 
     fn place_texture(&mut self, id: &str, texture: &CroppedTexture) -> PlacedTextureInfo {
+        let (scaled_width, scaled_height) = self.scale_dimensions(texture.width, texture.height);
+
         if self.current_x + texture.width > self.config().max_width {
             self.current_x = 0;
             self.current_y += self.max_height_in_row + self.config().padding;
@@ -56,8 +65,8 @@ impl TexturePlacer for SimpleTexturePlacer {
             id: id.to_string(),
             u: self.current_x,
             v: self.current_y,
-            width: texture.width,
-            height: texture.height,
+            width: scaled_width,
+            height: scaled_height,
         };
 
         self.current_x += texture.width + self.config().padding;
@@ -67,20 +76,22 @@ impl TexturePlacer for SimpleTexturePlacer {
     }
 
     fn can_place(&self, texture: &CroppedTexture) -> bool {
+        let (scaled_width, scaled_height) = self.scale_dimensions(texture.width, texture.height);
+
         let padding = self.config().padding;
         let max_width = self.config().max_width;
         let max_height = self.config().max_height;
 
-        let next_x = self.current_x + texture.width + padding;
+        let next_x = self.current_x + scaled_width + padding;
         let next_y = max(
-            self.current_y + texture.height + padding,
+            self.current_y + scaled_height + padding,
             self.current_y + self.max_height_in_row + padding,
         );
 
         if next_x <= max_width && next_y <= max_height {
             true
         } else {
-            next_y + texture.height + padding <= max_height
+            next_y + scaled_height + padding <= max_height
         }
     }
 
@@ -230,16 +241,18 @@ impl TexturePlacer for GuillotineTexturePlacer {
     }
 
     fn place_texture(&mut self, id: &str, texture: &CroppedTexture) -> PlacedTextureInfo {
-        let width = texture.width + self.config.padding;
-        let height = texture.height + self.config.padding;
+        let (scaled_width, scaled_height) = self.scale_dimensions(texture.width, texture.height);
+
+        let width = scaled_width + self.config.padding;
+        let height = scaled_height + self.config.padding;
 
         if let Some(rect) = self.find_best_rect(width, height) {
             let placed = PlacedTextureInfo {
                 id: id.to_string(),
                 u: rect.x + self.config.padding,
                 v: rect.y + self.config.padding,
-                width: texture.width,
-                height: texture.height,
+                width: scaled_width,
+                height: scaled_height,
             };
 
             self.used_rects.insert(id.to_string(), placed.clone());
@@ -254,8 +267,9 @@ impl TexturePlacer for GuillotineTexturePlacer {
     }
 
     fn can_place(&self, texture: &CroppedTexture) -> bool {
-        let width = texture.width + self.config.padding;
-        let height = texture.height + self.config.padding;
+        let (scaled_width, scaled_height) = self.scale_dimensions(texture.width, texture.height);
+        let width = scaled_width + self.config.padding;
+        let height = scaled_height + self.config.padding;
         self.free_rects
             .iter()
             .any(|r| r.width >= width && r.height >= height)
