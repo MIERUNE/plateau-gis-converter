@@ -30,8 +30,6 @@ nusamai-gpkg = { path = "../nusamai-gpkg" }
 tokio = { version = "1.36", features = ["full"] }
 byteorder = "1.5.0"
 hashbrown = { version = "0.14.3", features = ["serde"] }
-deepsize = "0.2.0"
-serde_bytes = "0.11.14"
 log = { version = "0.4.21" }
 pretty_env_logger = "0.5.0"
 itertools = "0.13"
