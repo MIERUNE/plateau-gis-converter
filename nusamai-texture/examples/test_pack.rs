@@ -8,12 +8,12 @@ use nusamai_texture::{
 };
 
 fn main() {
-    let scale_factor = 1.0;
+    let downsample_factor = 1.0;
     let config = TexturePlacerConfig {
         max_width: 1024,
         max_height: 1024,
         padding: 0,
-        scale_factor,
+        scale_factor: downsample_factor,
     };
 
     let placer = GuillotineTexturePlacer::new(config);
@@ -30,7 +30,7 @@ fn main() {
             // スケールされたUV座標が返却されるようにする
             // 与えられたuv_coordsを修正して格納できるようにする（org_uvsとdist_uvsとか？）
             // exportするタイミングで、実際にスケーリングし、アトラスに書き込むようにする
-            let texture = CroppedTexture::new(&uv_coords, image_path, scale_factor);
+            let texture = CroppedTexture::new(&uv_coords, image_path, downsample_factor);
 
             packer.add_texture(format!("texture_{}_{}", i, j).to_string(), texture);
         }
