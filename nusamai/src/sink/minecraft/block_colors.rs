@@ -23,7 +23,5 @@ pub fn get_block_colors() -> HashMap<&'static str, [u8; 3]> {
     block_colors.insert("minecraft:magenta_stained_glass", [178, 75, 215]); // urf:Zone
     block_colors.insert("minecraft:white_wool", [255, 255, 255]); // Undefined geographical type
 
-    block_colors.insert("minecraft:glass", [0, 0, 0]); // debug
-
     block_colors
 }

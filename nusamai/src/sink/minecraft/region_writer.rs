@@ -15,7 +15,10 @@ impl PositionXYZ {
     // Check that the input is in the range 0~15
     pub fn new(x: u8, y: u8, z: u8) -> Result<Self> {
         if x > 15 || y > 15 || z > 15 {
-            Err(PipelineError::Canceled)
+            Err(PipelineError::Other(format!(
+                "Invalid PositionXYZ values: x={}, y={}, z={}",
+                x, y, z
+            )))
         } else {
             Ok(PositionXYZ([x, y, z]))
         }
@@ -105,7 +108,7 @@ pub fn write_region(region: &RegionSchema, file_path: &Path) -> Result<()> {
         .truncate(true)
         .create(true)
         .open(out_path)
-        .unwrap();
+        .map_err(|err| PipelineError::IoError(err))?;
 
     let new_region = Arc::new(Mutex::new(Region::new(out_file).unwrap()));
 
@@ -144,6 +147,7 @@ fn calculate_bits_and_size(palette_len: usize) -> (u32, u32) {
     let data_size = (4096 * bits_per_block + 63) / 64;
     (bits_per_block, data_size)
 }
+
 // Functions to create sections
 fn create_chunk_section(
     blocks: &[BlockSchema],
@@ -226,6 +230,7 @@ fn create_chunk_structure(chunk_x: i32, chunk_z: i32, chunk_data: Option<&ChunkS
                     if !local_palette.iter().any(|b| b.name == block.name) {
                         local_palette.push(PaletteItem {
                             name: block.name.clone(),
+                            // Set the persistent property for oak leaves.
                             properties: if block.name == "minecraft:oak_leaves" {
                                 Some(serde_json::json!({ "persistent": "true" }))
                             } else {

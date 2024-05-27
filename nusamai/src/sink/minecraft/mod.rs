@@ -3,10 +3,10 @@ mod region_writer;
 use region_writer::{
     write_region, BlockSchema, ChunkSchema, PositionXZ, RegionSchema, SectionSchema, WorldSchema,
 };
-use std::{fs::File, path::PathBuf};
+use std::path::PathBuf;
 
 use hashbrown::HashMap;
-use nusamai_citygml::{object::Value, schema::Schema, GeometryType};
+use nusamai_citygml::{object::Value, schema::Schema};
 use rayon::prelude::*;
 
 use crate::{
@@ -14,15 +14,12 @@ use crate::{
     parameters::*,
     pipeline::{Feedback, PipelineError, Receiver, Result},
     sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo},
-    transformer,
 };
 
 use earcut::{utils3d::project3d_to_2d, Earcut};
 use nusamai_projection::etmerc::ExtendedTransverseMercatorProjection;
 
-use nusamai_voxelize::{DdaVoxelizer, MeshVoxelizer, Voxel};
-
-use nusamai_citygml::object::{Map, Object};
+use nusamai_voxelize::{DdaVoxelizer, MeshVoxelizer};
 
 pub struct MinecraftSinkProvider {}
 
@@ -104,12 +101,6 @@ use typename_colors::get_typename_colors;
 impl DataSink for MinecraftSink {
     fn make_requirements(&self) -> DataRequirements {
         DataRequirements {
-            // key_value: transformer::KeyValueSpec::DotNotation,
-            // lod_filter: transformer::LodFilterSpec {
-            //     mode: transformer::LodFilterMode::Lowest,
-            //     ..Default::default()
-            // },
-            // geom_stats: transformer::GeometryStatsSpec::MinMaxHeights,
             ..Default::default()
         }
     }

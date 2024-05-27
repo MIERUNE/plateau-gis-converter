@@ -23,8 +23,6 @@ pub fn get_typename_colors() -> HashMap<&'static str, [u8; 3]> {
     typename_colors.insert("urf:Zone", [178, 75, 215]); // minecraft:magenta_stained_glass
     typename_colors.insert("uro:UnderGroundBuilding", [255, 255, 255]); // minecraft:minecraft:white_wool
     typename_colors.insert("uro:OtherConstruction", [255, 255, 255]); // minecraft:minecraft:white_wool
-                                                                      // typename_colors.insert("gen", [0, 0, 15]);
-                                                                      // typename_colors.insert("uro", [0, 0, 16]);
 
     typename_colors
 }
