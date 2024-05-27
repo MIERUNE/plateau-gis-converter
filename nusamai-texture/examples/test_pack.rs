@@ -2,17 +2,18 @@ use std::path::Path;
 
 use nusamai_texture::{
     export::WebpAtlasExporter,
-    pack::{TexturePacker, TexturePackerConfig},
-    place::GuillotineTexturePlacer,
+    pack::TexturePacker,
+    place::{GuillotineTexturePlacer, TexturePlacerConfig},
     texture::CroppedTexture,
 };
 
 fn main() {
-    let config = TexturePackerConfig {
+    let scale_factor = 1.0;
+    let config = TexturePlacerConfig {
         max_width: 1024,
         max_height: 1024,
         padding: 0,
-        scale_factor: 0.5,
+        scale_factor,
     };
 
     let placer = GuillotineTexturePlacer::new(config);
@@ -26,12 +27,10 @@ fn main() {
             let path_string = format!("examples/assets/{}.png", j);
             let image_path = Path::new(path_string.as_str());
             // todo:
-            // scale_factorはCroppedTextureのイニシャライザではなく、configから受け取るようにする
-            // placeする際にはスケール後の画像サイズを利用するようにする
             // スケールされたUV座標が返却されるようにする
             // 与えられたuv_coordsを修正して格納できるようにする（org_uvsとdist_uvsとか？）
             // exportするタイミングで、実際にスケーリングし、アトラスに書き込むようにする
-            let texture = CroppedTexture::new(&uv_coords, image_path);
+            let texture = CroppedTexture::new(&uv_coords, image_path, scale_factor);
 
             packer.add_texture(format!("texture_{}_{}", i, j).to_string(), texture);
         }

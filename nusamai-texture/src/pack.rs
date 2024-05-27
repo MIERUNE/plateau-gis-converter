@@ -5,26 +5,6 @@ use crate::export::AtlasExporter;
 use crate::place::{PlacedTextureInfo, TexturePlacer};
 use crate::texture::CroppedTexture;
 
-pub struct TexturePackerConfig {
-    pub max_width: u32,
-    pub max_height: u32,
-    pub padding: u32,
-    pub scale_factor: f32,
-    // and more option
-    // Allow rotation, allow multiple pages, adjust resolution, specify resampling method, etc...
-}
-
-impl Default for TexturePackerConfig {
-    fn default() -> Self {
-        TexturePackerConfig {
-            max_width: 256,
-            max_height: 256,
-            padding: 0,
-            scale_factor: 1.0,
-        }
-    }
-}
-
 pub struct TexturePacker<P: TexturePlacer, E: AtlasExporter> {
     pub textures: HashMap<String, CroppedTexture>,
     pub atlas_list: Vec<Vec<PlacedTextureInfo>>,

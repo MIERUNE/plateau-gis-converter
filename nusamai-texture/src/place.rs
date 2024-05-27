@@ -1,7 +1,27 @@
 use std::cmp::max;
 use std::collections::HashMap;
 
-use crate::{pack::TexturePackerConfig, texture::CroppedTexture};
+use crate::texture::CroppedTexture;
+
+pub struct TexturePlacerConfig {
+    pub max_width: u32,
+    pub max_height: u32,
+    pub padding: u32,
+    pub scale_factor: f32,
+    // and more option
+    // Allow rotation, allow multiple pages, adjust resolution, specify resampling method, etc...
+}
+
+impl Default for TexturePlacerConfig {
+    fn default() -> Self {
+        TexturePlacerConfig {
+            max_width: 256,
+            max_height: 256,
+            padding: 0,
+            scale_factor: 1.0,
+        }
+    }
+}
 
 #[derive(Debug, Clone)]
 pub struct PlacedTextureInfo {
@@ -13,7 +33,7 @@ pub struct PlacedTextureInfo {
 }
 
 pub trait TexturePlacer {
-    fn config(&self) -> &TexturePackerConfig;
+    fn config(&self) -> &TexturePlacerConfig;
 
     fn place_texture(&mut self, id: &str, texture: &CroppedTexture) -> PlacedTextureInfo;
 
@@ -30,14 +50,14 @@ pub trait TexturePlacer {
 }
 
 pub struct SimpleTexturePlacer {
-    pub config: TexturePackerConfig,
+    pub config: TexturePlacerConfig,
     pub current_x: u32,
     pub current_y: u32,
     pub max_height_in_row: u32,
 }
 
 impl SimpleTexturePlacer {
-    pub fn new(config: TexturePackerConfig) -> Self {
+    pub fn new(config: TexturePlacerConfig) -> Self {
         SimpleTexturePlacer {
             config,
             current_x: 0,
@@ -48,7 +68,7 @@ impl SimpleTexturePlacer {
 }
 
 impl TexturePlacer for SimpleTexturePlacer {
-    fn config(&self) -> &TexturePackerConfig {
+    fn config(&self) -> &TexturePlacerConfig {
         &self.config
     }
 
@@ -103,7 +123,7 @@ impl TexturePlacer for SimpleTexturePlacer {
 }
 
 pub struct GuillotineTexturePlacer {
-    config: TexturePackerConfig,
+    config: TexturePlacerConfig,
     free_rects: Vec<Rect>,
     used_rects: HashMap<String, PlacedTextureInfo>,
 }
@@ -117,7 +137,7 @@ struct Rect {
 }
 
 impl GuillotineTexturePlacer {
-    pub fn new(config: TexturePackerConfig) -> Self {
+    pub fn new(config: TexturePlacerConfig) -> Self {
         let initial_rect = Rect {
             x: 0,
             y: 0,
@@ -236,7 +256,7 @@ impl GuillotineTexturePlacer {
 }
 
 impl TexturePlacer for GuillotineTexturePlacer {
-    fn config(&self) -> &TexturePackerConfig {
+    fn config(&self) -> &TexturePlacerConfig {
         &self.config
     }
 

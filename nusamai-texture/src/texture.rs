@@ -7,10 +7,11 @@ pub struct CroppedTexture {
     pub v: u32,
     pub width: u32,
     pub height: u32,
+    pub scale_factor: f32,
 }
 
 impl CroppedTexture {
-    pub fn new(uv_coords: &[(f32, f32)], image_path: &Path) -> Self {
+    pub fn new(uv_coords: &[(f32, f32)], image_path: &Path, scale_factor: f32) -> Self {
         let image = image::open(image_path).expect("Failed to open image file");
 
         let (min_x, min_y, max_x, max_y) = uv_coords.iter().fold(
@@ -36,17 +37,18 @@ impl CroppedTexture {
             v: top,
             width: cropped_width,
             height: cropped_height,
+            scale_factor,
         }
     }
 
-    pub fn crop(&self, scale_factor: f32) -> DynamicImage {
+    pub fn crop(&self) -> DynamicImage {
         let image = image::open(&self.image_path).expect("Failed to open image file");
         let cropped_image = image
             .view(self.u, self.v, self.width, self.height)
             .to_image();
 
-        let scaled_width = (self.width as f32 * scale_factor) as u32;
-        let scaled_height = (self.height as f32 * scale_factor) as u32;
+        let scaled_width = (self.width as f32 * self.scale_factor) as u32;
+        let scaled_height = (self.height as f32 * self.scale_factor) as u32;
 
         DynamicImage::ImageRgba8(image::imageops::resize(
             &cropped_image,
