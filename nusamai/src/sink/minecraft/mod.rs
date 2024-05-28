@@ -195,7 +195,7 @@ impl DataSink for MinecraftSink {
                             })
                             .collect();
 
-                        for (idx_poly) in geom_store.multipolygon.iter() {
+                        for idx_poly in geom_store.multipolygon.iter() {
                             let poly = idx_poly.transform(|idx| vertices[*idx as usize]);
                             let num_outer = match poly.hole_indices().first() {
                                 Some(&v) => v as usize,
