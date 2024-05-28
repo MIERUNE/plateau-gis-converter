@@ -24,7 +24,10 @@ pub fn make_table_builder(
     };
 
     for (field_name, attr) in attributes {
-        let name = field_name.as_str().try_into().unwrap(); // FIXME: handle errors
+        let Ok(name) = field_name.as_str().try_into() else {
+            log::error!("Field name '{}' cannot be used in Shapefile", field_name);
+            continue;
+        };
         let key = field_name.to_string();
 
         match attr.type_ref {
