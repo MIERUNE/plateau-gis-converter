@@ -2,7 +2,7 @@
 mod region_writer;
 use log::error;
 use region_writer::{
-    write_region, BlockSchema, ChunkSchema, PositionXZ, RegionSchema, SectionSchema, WorldSchema,
+    write_region, BlockSchema, ChunkSchema, Position2D, RegionSchema, SectionSchema, WorldSchema,
 };
 
 mod block_colors;
@@ -112,9 +112,9 @@ impl DataSink for MinecraftSink {
         let (sender, receiver) = std::sync::mpsc::sync_channel(1000);
 
         let mut world_data = WorldSchema::new();
-        let mut region_map: HashMap<PositionXZ, usize> = HashMap::new();
-        let mut chunk_map: HashMap<(PositionXZ, PositionXZ), usize> = HashMap::new();
-        let mut section_map: HashMap<(PositionXZ, PositionXZ, i32), usize> = HashMap::new();
+        let mut region_map: HashMap<Position2D, usize> = HashMap::new();
+        let mut chunk_map: HashMap<(Position2D, Position2D), usize> = HashMap::new();
+        let mut section_map: HashMap<(Position2D, Position2D, i32), usize> = HashMap::new();
 
         let block_colors = get_block_colors();
 

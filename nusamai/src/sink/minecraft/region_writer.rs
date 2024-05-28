@@ -7,33 +7,62 @@ use fastnbt::{to_bytes, LongArray};
 use rayon::prelude::*;
 use std::sync::{Arc, Mutex};
 
-pub type PositionXZ = [i32; 2];
+pub type Position2D = [i32; 2];
 #[derive(Deserialize, Serialize, Debug)]
-struct PositionXYZ([u8; 3]);
+struct BlockPosition([u8; 3]);
 
-impl PositionXYZ {
+pub struct BlockId {
+    name_space: String,
+    block_id: String,
+}
+
+impl BlockId {
+    pub fn get_id() -> Result<Self> {
+        Ok(BlockId {
+            name_space: "minecraft".to_string(),
+            block_id: "stone".to_string(),
+        })
+    }
+
+    pub fn new(name_space: String, block_id: String) -> Result<Self> {
+        Ok(BlockId {
+            name_space,
+            block_id,
+        })
+    }
+
+    // デフォルト値を返す
+    pub fn default() -> Self {
+        BlockId {
+            name_space: "minecraft".to_string(),
+            block_id: "stone".to_string(),
+        }
+    }
+}
+
+impl BlockPosition {
     // Check that the input is in the range 0~15
     pub fn new(x: u8, y: u8, z: u8) -> Result<Self> {
         if x > 15 || y > 15 || z > 15 {
             Err(PipelineError::Other(format!(
-                "Invalid PositionXYZ values: x={}, y={}, z={}. The position values must be within the range of 0 to 15.",
+                "Invalid BlockPosition values: x={}, y={}, z={}. The position values must be within the range of 0 to 15.",
                 x, y, z
             )))
         } else {
-            Ok(PositionXYZ([x, y, z]))
+            Ok(BlockPosition([x, y, z]))
         }
     }
 }
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct BlockSchema {
-    position: PositionXYZ,
+    position: BlockPosition,
     name: String,
 }
 
 impl BlockSchema {
     pub fn new(x: u8, y: u8, z: u8, name: String) -> Result<Self> {
-        let position = PositionXYZ::new(x, y, z)?;
+        let position = BlockPosition::new(x, y, z)?;
         Ok(BlockSchema { position, name })
     }
 }
@@ -44,13 +73,13 @@ pub struct SectionSchema {
 }
 #[derive(Deserialize, Serialize, Debug)]
 pub struct ChunkSchema {
-    pub position: PositionXZ,
+    pub position: Position2D,
     pub sections: Vec<SectionSchema>,
 }
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct RegionSchema {
-    pub position: PositionXZ,
+    pub position: Position2D,
     pub chunks: Vec<ChunkSchema>,
 }
 
@@ -59,12 +88,17 @@ pub type WorldSchema = Vec<RegionSchema>;
 #[allow(non_snake_case)]
 #[derive(Serialize, Deserialize, Debug)]
 struct Chunk {
-    Status: String, // The status of the chunk, such as whether it is fully generated or being generated.
-    zPos: i32,      // The Z coordinate of the chunk (absolute value).
-    yPos: i32,      // The Y coordinate of the lowest section in the chunk.
-    xPos: i32,      // The X coordinate of the chunk (absolute value).
+    #[serde(rename = "Status")]
+    status: String, // The status of the chunk, such as whether it is fully generated or being generated.
+    #[serde(rename = "zPos")]
+    z_pos: i32, // The Z coordinate of the chunk (absolute value).
+    #[serde(rename = "yPos")]
+    y_pos: i32, // The Y coordinate of the lowest section in the chunk.
+    #[serde(rename = "xPos")]
+    x_pos: i32, // The X coordinate of the chunk (absolute value).
     sections: Vec<Section>, // A vector containing the sections that make up the chunk.
-    DataVersion: u32, // The version of the data format used to store this chunk.
+    #[serde(rename = "DataVersion")]
+    data_version: u32, // The version of the data format used to store this chunk.
 }
 
 #[allow(non_snake_case)]
@@ -72,7 +106,8 @@ struct Chunk {
 struct Section {
     block_states: Blockstates,
     biomes: Biomes,
-    Y: i8,
+    #[serde(rename = "Y")]
+    y: i8,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -160,7 +195,7 @@ fn create_chunk_section(
     // Create a 1D array of 4096 elements and embed the PALETTE index in each block.
     let mut block_indices = vec![0; 4096];
     for block in blocks {
-        let PositionXYZ([x, y, z]) = block.position;
+        let BlockPosition([x, y, z]) = block.position;
 
         // Calculate the index of the 1D array and store the index of the palette
         let index = (y as usize) * 256 + (z as usize) * 16 + (x as usize);
@@ -207,7 +242,7 @@ fn create_chunk_section(
         biomes: Biomes {
             palette: vec!["minecraft:the_void".to_string()],
         },
-        Y: section_y as i8,
+        y: section_y as i8,
     }
 }
 
@@ -249,12 +284,12 @@ fn create_chunk_structure(chunk_x: i32, chunk_z: i32, chunk_data: Option<&ChunkS
     };
 
     Chunk {
-        Status: "full".to_string(),
-        zPos: chunk_z,
-        yPos: -4, // Lowest Y section position in the chunk (e.g., -4 in version 1.18 and later)
-        xPos: chunk_x,
+        status: "full".to_string(),
+        z_pos: chunk_z,
+        y_pos: -4, // Lowest Y section position in the chunk (e.g., -4 in version 1.18 and later)
+        x_pos: chunk_x,
         sections,
-        DataVersion: 3105, // Java Edition 1.19
+        data_version: 3105, // Java Edition 1.19
     }
 }
 
