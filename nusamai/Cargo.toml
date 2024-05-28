@@ -33,12 +33,9 @@ nusamai-gpkg = { path = "../nusamai-gpkg" }
 tokio = { version = "1.36", features = ["full"] }
 byteorder = "1.5.0"
 hashbrown = { version = "0.14.3", features = ["serde"] }
-ext-sort = { version = "0.1.4", features = ["memory-limit"] }
-deepsize = "0.2.0"
-serde_bytes = "0.11.14"
 log = { version = "0.4.21" }
 pretty_env_logger = "0.5.0"
-itertools = "0.12.1"
+itertools = "0.13"
 prost = "0.12.3"
 bytesize = "1.3.0"
 ahash = "0.8.11"
@@ -52,6 +49,8 @@ nusamai-kml = { path = "../nusamai-kml" }
 image = { version = "0.25.0", default-features = false, features = ["rayon", "tiff", "jpeg", "webp", "png"] }
 flate2 = "1.0.28"
 chrono = "0.4.35"
+kv-extsort = { git = "https://github.com/MIERUNE/kv-extsort-rs.git" }
+bytemuck = { version = "1.16.0", features = ["derive"] }
 
 [dev-dependencies]
 rand = "0.8.5"
