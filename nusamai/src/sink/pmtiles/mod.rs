@@ -36,8 +36,8 @@ pub struct PmtilesSinkProvider {}
 impl DataSinkProvider for PmtilesSinkProvider {
     fn info(&self) -> SinkInfo {
         SinkInfo {
-            id_name: "mvt".to_string(),
-            name: "Mapbox Vector Tiles (MVT)".to_string(),
+            id_name: "pmtiles".to_string(),
+            name: "PMTiles".to_string(),
         }
     }
 
@@ -57,7 +57,7 @@ impl DataSinkProvider for PmtilesSinkProvider {
         params.define(
             "min_z".into(),
             ParameterEntry {
-                description: "Minumum zoom level".into(),
+                description: "Minimum zoom level".into(),
                 required: true,
                 parameter: ParameterType::Integer(IntegerParameter {
                     value: Some(7),
@@ -88,17 +88,17 @@ impl DataSinkProvider for PmtilesSinkProvider {
 
         Box::<PmtilesSink>::new(PmtilesSink {
             output_path: output_path.as_ref().unwrap().into(),
-            mvt_options: MvtParams { min_z, max_z },
+            mvt_options: PmtilesParams { min_z, max_z },
         })
     }
 }
 
 struct PmtilesSink {
     output_path: PathBuf,
-    mvt_options: MvtParams,
+    mvt_options: PmtilesParams,
 }
 
-struct MvtParams {
+struct PmtilesParams {
     min_z: u8,
     max_z: u8,
 }
@@ -186,7 +186,7 @@ fn geometry_slicing_stage(
     upstream: mpsc::Receiver<crate::pipeline::Parcel>,
     tile_id_conv: TileIdMethod,
     sender_sliced: mpsc::SyncSender<(u64, Vec<u8>)>,
-    mvt_options: &MvtParams,
+    mvt_options: &PmtilesParams,
 ) -> Result<()> {
     let bincode_config = bincode::config::standard();
 
