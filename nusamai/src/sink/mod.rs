@@ -9,6 +9,7 @@ pub mod kml;
 pub mod mvt;
 pub mod noop;
 pub mod ply;
+pub mod pmtiles;
 pub mod serde;
 pub mod shapefile;
 
