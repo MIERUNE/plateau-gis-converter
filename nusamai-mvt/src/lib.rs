@@ -1,4 +1,5 @@
 pub mod geometry;
+pub mod pmtiles;
 pub mod tag;
 pub mod tileid;
 pub mod vector_tile;
