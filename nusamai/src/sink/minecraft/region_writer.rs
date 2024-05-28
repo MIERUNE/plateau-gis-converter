@@ -108,7 +108,7 @@ pub fn write_region(region: &RegionSchema, file_path: &Path) -> Result<()> {
         .truncate(true)
         .create(true)
         .open(out_path)
-        .map_err(|err| PipelineError::IoError(err))?;
+        .map_err(PipelineError::IoError)?;
 
     let new_region = Arc::new(Mutex::new(Region::new(out_file).unwrap()));
 
