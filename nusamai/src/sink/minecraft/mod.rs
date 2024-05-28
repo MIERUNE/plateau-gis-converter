@@ -1,5 +1,6 @@
 //! Minecraft sink
 mod region_writer;
+use log::error;
 use region_writer::{
     write_region, BlockSchema, ChunkSchema, PositionXZ, RegionSchema, SectionSchema, WorldSchema,
 };
@@ -9,7 +10,11 @@ use block_colors::{get_block_colors, get_typename_colors};
 use std::path::PathBuf;
 
 use hashbrown::HashMap;
-use nusamai_citygml::{object::Value, schema::Schema};
+use nusamai_citygml::{
+    object::{ObjectStereotype, Value},
+    schema::Schema,
+    GeometryType,
+};
 use rayon::prelude::*;
 
 use crate::{
@@ -114,6 +119,8 @@ impl DataSink for MinecraftSink {
         let block_colors = get_block_colors();
 
         let mut local_bvol = BoundingVolume::default();
+
+        // FIXME: Collecting all features in memory to calculate the bounding volume, which is not scalable.
         let parcels: Vec<crate::pipeline::Parcel> = upstream.into_iter().collect();
 
         parcels.iter().for_each(|parcel| {
@@ -134,6 +141,18 @@ impl DataSink for MinecraftSink {
 
             local_bvol.update(&parcel_bvol);
         });
+
+        // Calculation of centre coordinates
+        let center_lng = (local_bvol.min_lng + local_bvol.max_lng) / 2.0;
+        let center_lat = (local_bvol.min_lat + local_bvol.max_lat) / 2.0;
+
+        let projection = ExtendedTransverseMercatorProjection::new(
+            center_lng,
+            center_lat,
+            0.9999,
+            &nusamai_projection::ellipsoid::grs80(),
+        );
+
         let (ra, rb) = rayon::join(
             || {
                 parcels
@@ -146,19 +165,22 @@ impl DataSink for MinecraftSink {
                         let mut rgb = [255, 255, 255];
                         let typename_colors = get_typename_colors();
 
-                        match &entity.root {
-                            Value::Object(obj) => {
-                                let typename = &obj.typename.as_ref();
+                        let Value::Object(obj) = &entity.root else {
+                            error!("The root value is not an object");
+                            return Ok(());
+                        };
 
-                                match typename_colors.get(typename) {
-                                    Some(color) => {
-                                        rgb = *color;
-                                    }
-                                    _ => println!("No color found for typename '{}'", typename),
-                                }
+                        let typename = &obj.typename.as_ref();
+
+                        match typename_colors.get(typename) {
+                            Some(color) => {
+                                rgb = *color;
                             }
-                            _ => println!("The root value is not an object"),
+                            _ => println!("No color found for typename '{}'", typename),
                         }
+                        let ObjectStereotype::Feature { geometries, .. } = &obj.stereotype else {
+                            return Ok(());
+                        };
 
                         let geom_store = entity.geometry_store.read().unwrap();
 
@@ -170,17 +192,6 @@ impl DataSink for MinecraftSink {
                         let mut voxelizer = DdaVoxelizer {
                             voxels: HashMap::new(),
                         };
-
-                        // Calculation of centre coordinates
-                        let center_lng = (local_bvol.min_lng + local_bvol.max_lng) / 2.0;
-                        let center_lat = (local_bvol.min_lat + local_bvol.max_lat) / 2.0;
-
-                        let projection = ExtendedTransverseMercatorProjection::new(
-                            center_lng,
-                            center_lat,
-                            1.0,
-                            &nusamai_projection::ellipsoid::wgs84(),
-                        );
 
                         let vertices: Vec<_> = geom_store
                             .vertices
@@ -195,38 +206,52 @@ impl DataSink for MinecraftSink {
                             })
                             .collect();
 
-                        for idx_poly in geom_store.multipolygon.iter() {
-                            let poly = idx_poly.transform(|idx| vertices[*idx as usize]);
-                            let num_outer = match poly.hole_indices().first() {
-                                Some(&v) => v as usize,
-                                None => poly.raw_coords().len(),
-                            };
+                        geometries.iter().for_each(|entry| match entry.ty {
+                            GeometryType::Solid
+                            | GeometryType::Surface
+                            | GeometryType::Triangle => {
+                                for idx_poly in geom_store.multipolygon.iter_range(
+                                    entry.pos as usize..(entry.pos + entry.len) as usize,
+                                ) {
+                                    let poly = idx_poly.transform(|idx| vertices[*idx as usize]);
+                                    let num_outer = match poly.hole_indices().first() {
+                                        Some(&v) => v as usize,
+                                        None => poly.raw_coords().len(),
+                                    };
 
-                            buf3d.clear();
-                            buf3d.extend(
-                                poly.raw_coords()
-                                    .iter()
-                                    .map(|v| [v[0] as f32, v[1] as f32, v[2] as f32]),
-                            );
-
-                            if project3d_to_2d(&buf3d, num_outer, &mut buf2d) {
-                                earcutter.earcut(
-                                    buf2d.iter().cloned(),
-                                    poly.hole_indices(),
-                                    &mut index_buf,
-                                );
-                                for indx in index_buf.chunks_exact(3) {
-                                    voxelizer.add_triangle(
-                                        &[
-                                            buf3d[indx[0] as usize],
-                                            buf3d[indx[1] as usize],
-                                            buf3d[indx[2] as usize],
-                                        ],
-                                        rgb,
+                                    buf3d.clear();
+                                    buf3d.extend(
+                                        poly.raw_coords()
+                                            .iter()
+                                            .map(|v| [v[0] as f32, v[1] as f32, v[2] as f32]),
                                     );
+
+                                    if project3d_to_2d(&buf3d, num_outer, &mut buf2d) {
+                                        earcutter.earcut(
+                                            buf2d.iter().cloned(),
+                                            poly.hole_indices(),
+                                            &mut index_buf,
+                                        );
+                                        for indx in index_buf.chunks_exact(3) {
+                                            voxelizer.add_triangle(
+                                                &[
+                                                    buf3d[indx[0] as usize],
+                                                    buf3d[indx[1] as usize],
+                                                    buf3d[indx[2] as usize],
+                                                ],
+                                                rgb,
+                                            );
+                                        }
+                                    }
                                 }
                             }
-                        }
+                            GeometryType::Curve => {
+                                // TODO: implement
+                            }
+                            GeometryType::Point => {
+                                // TODO: implement
+                            }
+                        });
 
                         let occupied_voxels = voxelizer.finalize();
 
