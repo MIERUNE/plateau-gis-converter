@@ -3,6 +3,9 @@ mod region_writer;
 use region_writer::{
     write_region, BlockSchema, ChunkSchema, PositionXZ, RegionSchema, SectionSchema, WorldSchema,
 };
+
+mod block_colors;
+use block_colors::{get_block_colors, get_typename_colors};
 use std::path::PathBuf;
 
 use hashbrown::HashMap;
@@ -92,11 +95,6 @@ impl Default for BoundingVolume {
         }
     }
 }
-
-mod block_colors;
-use block_colors::get_block_colors;
-mod typename_colors;
-use typename_colors::get_typename_colors;
 
 impl DataSink for MinecraftSink {
     fn make_requirements(&self) -> DataRequirements {
