@@ -19,7 +19,7 @@ nusamai-geojson = { path = "../nusamai-geojson" }
 nusamai-gltf = { path = "../nusamai-gltf" }
 nusamai-gltf-json = { path = "../nusamai-gltf/nusamai-gltf-json" }
 cesiumtiles = { git = "https://github.com/MIERUNE/cesiumtiles-rs.git" }
-nusamai-geometry = { path = "../nusamai-geometry" }
+flatgeom= { version = "0.0", features = ["serde"] }
 nusamai-czml = { path = "../nusamai-czml" }
 nusamai-projection = { path = "../nusamai-projection" }
 nusamai-mvt = { path = "../nusamai-mvt" }
@@ -52,7 +52,6 @@ bytemuck = { version = "1.16.0", features = ["derive"] }
 [dev-dependencies]
 rand = "0.8.5"
 tokio = { version = "1.36", features = ["full"] }
-nusamai-geometry = { path = "../nusamai-geometry" }
 byteorder = "1.5.0"
 glob = "0.3.1"
 assert_cmd = "2.0.14"

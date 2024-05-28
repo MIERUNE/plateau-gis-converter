@@ -4,7 +4,7 @@ use std::hash::{Hash, Hasher};
 
 use hashbrown::HashMap;
 use nusamai_citygml::{appearance::TextureAssociation, Color, LocalId, SurfaceSpan};
-use nusamai_geometry::LineString2;
+use flatgeom::LineString2;
 use url::Url;
 
 use crate::models::appearance::{self, ParameterizedTexture, SurfaceDataProperty, X3DMaterial};

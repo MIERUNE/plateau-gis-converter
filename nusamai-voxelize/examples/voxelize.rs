@@ -5,9 +5,9 @@ use std::{
 
 use byteorder::{LittleEndian, WriteBytesExt};
 use earcut::{utils3d::project3d_to_2d, Earcut};
+use flatgeom::MultiPolygon;
 use hashbrown::HashMap;
 use indexmap::IndexSet;
-use nusamai_geometry::MultiPolygon;
 use serde_json::json;
 
 use nusamai_voxelize::{DdaVoxelizer, MeshVoxelizer};
