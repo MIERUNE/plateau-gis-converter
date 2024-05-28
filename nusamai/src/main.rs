@@ -283,7 +283,10 @@ fn run(
     });
 
     // wait for the pipeline to finish
-    handle.join();
+    if let Err(msg) = handle.join() {
+        log::error!("Pipeline thread panicked: {:?}", msg);
+    }
+
     if canceller.lock().unwrap().is_canceled() {
         log::info!("Pipeline canceled");
     }

@@ -847,5 +847,21 @@
   "zonalDisasterPreventionFacilities": "zoneDPFacl",
   "zonalDisasterPreventionFacilitiesAllocation": "zDiPrFcAlc",
   "zoneName": "zoneName",
-  "zoneNumber": "zone#"
+  "zoneNumber": "zone#",
+  "geometrySrcDesc0": "geomSrcD0",
+  "geometrySrcDesc1": "geomSrcD1",
+  "geometrySrcDesc2": "geomSrcD2",
+  "geometrySrcDesc3": "geomSrcD3",
+  "geometrySrcDesc4": "geomSrcD4",
+  "appearanceSrcDescLod0": "appSDLod0",
+  "appearanceSrcDescLod1": "appSDLod1",
+  "appearanceSrcDescLod2": "appSDLod2",
+  "appearanceSrcDescLod3": "appSDLod3",
+  "appearanceSrcDescLod4": "appSDLod4",
+  "tranDataAcquisition": "tranDtaAcq",
+  "publicSurveyDataQualityAttribute": "pubSvDQual",
+  "bldgUsecaseAttribute": "bldgUC",
+  "frnKeyValuePairAttribute": "frnKVPair",
+  "tranKeyValuePairAttribute": "tranKVPair",
+  "tranUsecaseAttribute": "tranUC"
 }
