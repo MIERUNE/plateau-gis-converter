@@ -11,32 +11,26 @@ pub type Position2D = [i32; 2];
 #[derive(Deserialize, Serialize, Debug)]
 struct BlockPosition([u8; 3]);
 
+#[derive(Deserialize, Serialize, Debug)]
 pub struct BlockId {
     name_space: String,
-    block_id: String,
+    block_name: String,
 }
 
 impl BlockId {
-    pub fn get_id() -> Result<Self> {
+    pub fn new(block_name: String) -> Result<Self> {
         Ok(BlockId {
             name_space: "minecraft".to_string(),
-            block_id: "stone".to_string(),
+            block_name,
         })
     }
 
-    pub fn new(name_space: String, block_id: String) -> Result<Self> {
-        Ok(BlockId {
-            name_space,
-            block_id,
-        })
+    pub fn get_block_id(&self) -> String {
+        format!("{}:{}", self.name_space, self.block_name)
     }
 
-    // デフォルト値を返す
-    pub fn default() -> Self {
-        BlockId {
-            name_space: "minecraft".to_string(),
-            block_id: "stone".to_string(),
-        }
+    pub fn get_block_name(&self) -> String {
+        self.block_name.clone()
     }
 }
 
@@ -57,13 +51,14 @@ impl BlockPosition {
 #[derive(Deserialize, Serialize, Debug)]
 pub struct BlockSchema {
     position: BlockPosition,
-    name: String,
+    block_id: BlockId,
 }
 
 impl BlockSchema {
-    pub fn new(x: u8, y: u8, z: u8, name: String) -> Result<Self> {
+    pub fn new(x: u8, y: u8, z: u8, block_name: String) -> Result<Self> {
         let position = BlockPosition::new(x, y, z)?;
-        Ok(BlockSchema { position, name })
+        let block_id = BlockId::new(block_name)?;
+        Ok(BlockSchema { position, block_id })
     }
 }
 #[derive(Deserialize, Serialize, Debug)]
@@ -99,6 +94,19 @@ struct Chunk {
     sections: Vec<Section>, // A vector containing the sections that make up the chunk.
     #[serde(rename = "DataVersion")]
     data_version: u32, // The version of the data format used to store this chunk.
+}
+
+impl Default for Chunk {
+    fn default() -> Self {
+        Self {
+            status: "full".to_string(),
+            z_pos: 0,
+            y_pos: -4, // Lowest Y section position in the chunk (e.g., -4 in version 1.18 and later)
+            x_pos: 0,
+            sections: Vec::new(),
+            data_version: 3105, // Java Edition 1.19
+        }
+    }
 }
 
 #[allow(non_snake_case)]
@@ -201,10 +209,10 @@ fn create_chunk_section(
         let index = (y as usize) * 256 + (z as usize) * 16 + (x as usize);
         let palette_index = palette
             .iter()
-            .position(|b| b.name == block.name)
+            .position(|b| b.name == block.block_id.get_block_id())
             .unwrap_or_else(|| {
                 palette.push(PaletteItem {
-                    name: block.name.clone(),
+                    name: block.block_id.get_block_id(),
                     properties: None,
                 });
                 palette.len() - 1
@@ -262,11 +270,14 @@ fn create_chunk_structure(chunk_x: i32, chunk_z: i32, chunk_data: Option<&ChunkS
 
                 // Register the block in the palette.
                 for block in &section.blocks {
-                    if !local_palette.iter().any(|b| b.name == block.name) {
+                    if !local_palette
+                        .iter()
+                        .any(|b| b.name == block.block_id.get_block_id())
+                    {
                         local_palette.push(PaletteItem {
-                            name: block.name.clone(),
+                            name: block.block_id.get_block_id(),
                             // Set the persistent property for oak leaves.
-                            properties: if block.name == "minecraft:oak_leaves" {
+                            properties: if block.block_id.get_block_name() == "oak_leaves" {
                                 Some(serde_json::json!({ "persistent": "true" }))
                             } else {
                                 None
@@ -284,12 +295,10 @@ fn create_chunk_structure(chunk_x: i32, chunk_z: i32, chunk_data: Option<&ChunkS
     };
 
     Chunk {
-        status: "full".to_string(),
         z_pos: chunk_z,
-        y_pos: -4, // Lowest Y section position in the chunk (e.g., -4 in version 1.18 and later)
         x_pos: chunk_x,
         sections,
-        data_version: 3105, // Java Edition 1.19
+        ..Default::default()
     }
 }
 

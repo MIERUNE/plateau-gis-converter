@@ -6,7 +6,7 @@ use region_writer::{
 };
 
 mod block_colors;
-use block_colors::{get_block_colors, get_typename_colors};
+use block_colors::get_typename_block;
 use std::path::PathBuf;
 
 use hashbrown::HashMap;
@@ -116,8 +116,6 @@ impl DataSink for MinecraftSink {
         let mut chunk_map: HashMap<(Position2D, Position2D), usize> = HashMap::new();
         let mut section_map: HashMap<(Position2D, Position2D, i32), usize> = HashMap::new();
 
-        let block_colors = get_block_colors();
-
         let mut local_bvol = BoundingVolume::default();
 
         // FIXME: Collecting all features in memory to calculate the bounding volume, which is not scalable.
@@ -162,27 +160,13 @@ impl DataSink for MinecraftSink {
 
                         let entity = parcel.entity;
 
-                        let mut rgb = [255, 255, 255];
-                        let typename_colors = get_typename_colors();
-
                         let Value::Object(obj) = &entity.root else {
                             error!("The root value is not an object");
                             return Ok(());
                         };
 
-                        let typename = &obj.typename.as_ref();
+                        let typename = &obj.typename.as_ref().to_string();
 
-                        match typename_colors.get(typename) {
-                            Some(color) => {
-                                rgb = *color;
-                            }
-                            _ => {
-                                feedback.info(format!(
-                                    "No color found for typename '{}'. Using white color.",
-                                    typename
-                                ));
-                            }
-                        }
                         let ObjectStereotype::Feature { geometries, .. } = &obj.stereotype else {
                             return Ok(());
                         };
@@ -206,6 +190,8 @@ impl DataSink for MinecraftSink {
                                 }
                             })
                             .collect();
+
+                        let mut typename_map: HashMap<String, DdaVoxelizer> = HashMap::new();
 
                         let mut voxelizer = DdaVoxelizer {
                             voxels: HashMap::new(),
@@ -255,9 +241,11 @@ impl DataSink for MinecraftSink {
                             }
                         });
 
-                        let occupied_voxels = voxelizer.finalize();
+                        typename_map.insert(typename.clone(), voxelizer);
 
-                        if sender.send(occupied_voxels).is_err() {
+                        // let occupied_voxels = typename_map.finalize();
+
+                        if sender.send(typename_map).is_err() {
                             return Err(PipelineError::Canceled);
                         };
 
@@ -266,79 +254,75 @@ impl DataSink for MinecraftSink {
             },
             || {
                 receiver.into_iter().for_each(|feature| {
-                    feature.iter().for_each(|(key, voxel)| {
-                        let mut block_name = "minecraft:white_wool";
+                    feature.iter().for_each(|(key, voxelizer)| {
+                        let typename_block = get_typename_block();
 
-                        // Find the block with the closest color to the voxel color
-                        let mut min_distance = f64::MAX;
-                        for (name, color) in &block_colors {
-                            let distance = ((color[0] as f64 - voxel.color[0] as f64).powi(2)
-                                + (color[1] as f64 - voxel.color[1] as f64).powi(2)
-                                + (color[2] as f64 - voxel.color[2] as f64).powi(2))
-                            .sqrt();
-                            if distance < min_distance {
-                                min_distance = distance;
-                                block_name = name;
-                            }
-                        }
+                        voxelizer.voxels.iter().for_each(|(pos, voxel)| {
+                            let block_name = match voxel.color {
+                                [255, 255, 255] => {
+                                    typename_block.get(key.as_str()).unwrap_or(&"white_wool")
+                                }
+                                _ => "white_wool",
+                            };
 
-                        let [x, y, z] = key;
+                            let [x, y, z] = pos;
 
-                        // Calculate region coordinates from x,y coordinates
-                        let region_x = x.div_euclid(512);
-                        let region_z = z.div_euclid(512);
+                            // Calculate region coordinates from x,y coordinates
+                            let region_x = x.div_euclid(512);
+                            let region_z = z.div_euclid(512);
 
-                        // Calculate chunk coordinates from x,y coordinates
-                        let chunk_x = x.div_euclid(16);
-                        let chunk_z = z.div_euclid(16);
+                            // Calculate chunk coordinates from x,y coordinates
+                            let chunk_x = x.div_euclid(16);
+                            let chunk_z = z.div_euclid(16);
 
-                        // Calculate the y-level of the section from the y-coordinate.
-                        let section_y = (y + 64) / 16 - 4;
+                            // Calculate the y-level of the section from the y-coordinate.
+                            let section_y = (y + 64) / 16 - 4;
 
-                        // Create BlockSchema
-                        // Coordinates relative to the blocks within a section (0-15)
-                        let block_data = BlockSchema::new(
-                            x.rem_euclid(16) as u8,
-                            y.rem_euclid(16) as u8,
-                            z.rem_euclid(16) as u8,
-                            block_name.to_string(),
-                        );
+                            // Create BlockSchema
+                            // Coordinates relative to the blocks within a section (0-15)
+                            let block_data = BlockSchema::new(
+                                x.rem_euclid(16) as u8,
+                                y.rem_euclid(16) as u8,
+                                z.rem_euclid(16) as u8,
+                                block_name.to_string(),
+                            );
 
-                        let region_pos = [region_x, region_z];
-                        let chunk_pos = [chunk_x, chunk_z];
+                            let region_pos = [region_x, region_z];
+                            let chunk_pos = [chunk_x, chunk_z];
 
-                        let region_index = *region_map.entry(region_pos).or_insert_with(|| {
-                            world_data.push(RegionSchema {
-                                position: region_pos,
-                                chunks: Vec::new(),
-                            });
-                            world_data.len() - 1
-                        });
-
-                        let chunk_index =
-                            *chunk_map.entry((region_pos, chunk_pos)).or_insert_with(|| {
-                                world_data[region_index].chunks.push(ChunkSchema {
-                                    position: chunk_pos,
-                                    sections: Vec::new(),
+                            let region_index = *region_map.entry(region_pos).or_insert_with(|| {
+                                world_data.push(RegionSchema {
+                                    position: region_pos,
+                                    chunks: Vec::new(),
                                 });
-                                world_data[region_index].chunks.len() - 1
+                                world_data.len() - 1
                             });
 
-                        let section_index = *section_map
-                            .entry((region_pos, chunk_pos, section_y))
-                            .or_insert_with(|| {
-                                world_data[region_index].chunks[chunk_index].sections.push(
-                                    SectionSchema {
-                                        y: section_y,
-                                        blocks: Vec::new(),
-                                    },
-                                );
-                                world_data[region_index].chunks[chunk_index].sections.len() - 1
-                            });
+                            let chunk_index =
+                                *chunk_map.entry((region_pos, chunk_pos)).or_insert_with(|| {
+                                    world_data[region_index].chunks.push(ChunkSchema {
+                                        position: chunk_pos,
+                                        sections: Vec::new(),
+                                    });
+                                    world_data[region_index].chunks.len() - 1
+                                });
 
-                        world_data[region_index].chunks[chunk_index].sections[section_index]
-                            .blocks
-                            .push(block_data.unwrap());
+                            let section_index = *section_map
+                                .entry((region_pos, chunk_pos, section_y))
+                                .or_insert_with(|| {
+                                    world_data[region_index].chunks[chunk_index].sections.push(
+                                        SectionSchema {
+                                            y: section_y,
+                                            blocks: Vec::new(),
+                                        },
+                                    );
+                                    world_data[region_index].chunks[chunk_index].sections.len() - 1
+                                });
+
+                            world_data[region_index].chunks[chunk_index].sections[section_index]
+                                .blocks
+                                .push(block_data.unwrap());
+                        });
                     });
                 });
 
