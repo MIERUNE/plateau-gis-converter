@@ -176,7 +176,12 @@ impl DataSink for MinecraftSink {
                             Some(color) => {
                                 rgb = *color;
                             }
-                            _ => println!("No color found for typename '{}'", typename),
+                            _ => {
+                                feedback.info(format!(
+                                    "No color found for typename '{}'. Using white color.",
+                                    typename
+                                ));
+                            }
                         }
                         let ObjectStereotype::Feature { geometries, .. } = &obj.stereotype else {
                             return Ok(());
@@ -188,10 +193,6 @@ impl DataSink for MinecraftSink {
                         let mut buf3d: Vec<[f32; 3]> = Vec::new();
                         let mut buf2d: Vec<[f32; 2]> = Vec::new();
                         let mut index_buf: Vec<u32> = Vec::new();
-
-                        let mut voxelizer = DdaVoxelizer {
-                            voxels: HashMap::new(),
-                        };
 
                         let vertices: Vec<_> = geom_store
                             .vertices
@@ -205,6 +206,10 @@ impl DataSink for MinecraftSink {
                                 }
                             })
                             .collect();
+
+                        let mut voxelizer = DdaVoxelizer {
+                            voxels: HashMap::new(),
+                        };
 
                         geometries.iter().for_each(|entry| match entry.ty {
                             GeometryType::Solid
@@ -264,7 +269,7 @@ impl DataSink for MinecraftSink {
                     feature.iter().for_each(|(key, voxel)| {
                         let mut block_name = "minecraft:white_wool";
 
-                        // Find the block with the closest colour to the voxel colour
+                        // Find the block with the closest color to the voxel color
                         let mut min_distance = f64::MAX;
                         for (name, color) in &block_colors {
                             let distance = ((color[0] as f64 - voxel.color[0] as f64).powi(2)
@@ -277,9 +282,7 @@ impl DataSink for MinecraftSink {
                             }
                         }
 
-                        let x = key[0];
-                        let y = key[1];
-                        let z = key[2];
+                        let [x, y, z] = key;
 
                         // Calculate region coordinates from x,y coordinates
                         let region_x = x.div_euclid(512);

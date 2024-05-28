@@ -16,7 +16,7 @@ impl PositionXYZ {
     pub fn new(x: u8, y: u8, z: u8) -> Result<Self> {
         if x > 15 || y > 15 || z > 15 {
             Err(PipelineError::Other(format!(
-                "Invalid PositionXYZ values: x={}, y={}, z={}",
+                "Invalid PositionXYZ values: x={}, y={}, z={}. The position values must be within the range of 0 to 15.",
                 x, y, z
             )))
         } else {
