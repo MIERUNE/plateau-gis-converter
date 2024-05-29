@@ -108,6 +108,21 @@ impl Default for Chunk {
     }
 }
 
+impl Chunk {
+    fn new(x: i32, z: i32, sections: Vec<Section>) -> Self {
+        Chunk {
+            x_pos: x,
+            z_pos: z,
+            sections,
+            ..Default::default()
+        }
+    }
+
+    fn add_section(&mut self, section: Section) {
+        self.sections.push(section);
+    }
+}
+
 #[derive(Serialize, Deserialize, Clone, Debug)]
 struct Section {
     block_states: Blockstates,
@@ -116,9 +131,25 @@ struct Section {
     y: i8,
 }
 
+impl Section {
+    fn new(block_states: Blockstates, biomes: Biomes, y: i8) -> Self {
+        Section {
+            block_states,
+            biomes,
+            y,
+        }
+    }
+}
+
 #[derive(Serialize, Deserialize, Clone, Debug)]
 struct Biomes {
     palette: Vec<String>,
+}
+
+impl Biomes {
+    fn new(palette: Vec<String>) -> Self {
+        Biomes { palette }
+    }
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -127,12 +158,28 @@ struct Blockstates {
     data: Option<LongArray>,
 }
 
+impl Blockstates {
+    fn new(palette: Vec<PaletteItem>, data: Option<LongArray>) -> Self {
+        Blockstates { palette, data }
+    }
+
+    fn add_palette_item(&mut self, item: PaletteItem) {
+        self.palette.push(item);
+    }
+}
+
 #[derive(Serialize, Deserialize, Debug, Clone)]
 struct PaletteItem {
     #[serde(rename = "Name")]
     name: String,
     #[serde(rename = "Properties")]
     properties: Option<serde_json::Value>,
+}
+
+impl PaletteItem {
+    fn new(name: String, properties: Option<serde_json::Value>) -> Self {
+        PaletteItem { name, properties }
+    }
 }
 
 pub fn write_region(region: &RegionSchema, file_path: &Path) -> Result<()> {
@@ -209,10 +256,7 @@ fn create_chunk_section(
             .iter()
             .position(|b| b.name == block.block_id.get_block_id())
             .unwrap_or_else(|| {
-                palette.push(PaletteItem {
-                    name: block.block_id.get_block_id(),
-                    properties: None,
-                });
+                palette.push(PaletteItem::new(block.block_id.get_block_id(), None));
                 palette.len() - 1
             });
         block_indices[index] = palette_index;
@@ -240,24 +284,16 @@ fn create_chunk_section(
         data.extend(std::iter::repeat(0).take(padding_size));
     }
 
-    Section {
-        block_states: Blockstates {
-            palette: palette.clone(),
-            data: Some(LongArray::new(data)),
-        },
-        biomes: Biomes {
-            palette: vec!["minecraft:the_void".to_string()],
-        },
-        y: section_y as i8,
-    }
+    Section::new(
+        Blockstates::new(palette.clone(), Some(LongArray::new(data))),
+        Biomes::new(vec!["minecraft:the_void".to_string()]),
+        section_y as i8,
+    )
 }
 
 // Functions to create chunk structures
 fn create_chunk_structure(chunk_x: i32, chunk_z: i32, chunk_data: Option<&ChunkSchema>) -> Chunk {
-    let palette = vec![PaletteItem {
-        name: "minecraft:air".to_string(),
-        properties: None,
-    }];
+    let palette = vec![PaletteItem::new("minecraft:air".to_string(), None)];
 
     let sections: Vec<Section> = if let Some(chunk_data) = chunk_data {
         chunk_data
@@ -272,15 +308,13 @@ fn create_chunk_structure(chunk_x: i32, chunk_z: i32, chunk_data: Option<&ChunkS
                         .iter()
                         .any(|b| b.name == block.block_id.get_block_id())
                     {
-                        local_palette.push(PaletteItem {
-                            name: block.block_id.get_block_id(),
-                            // Set the persistent property for oak leaves.
-                            properties: if block.block_id.get_block_name() == "oak_leaves" {
-                                Some(serde_json::json!({ "persistent": "true" }))
-                            } else {
-                                None
-                            },
-                        });
+                        let properties = if block.block_id.get_block_name() == "oak_leaves" {
+                            Some(serde_json::json!({ "persistent": "true" }))
+                        } else {
+                            None
+                        };
+                        local_palette
+                            .push(PaletteItem::new(block.block_id.get_block_id(), properties))
                     }
                 }
 
@@ -292,12 +326,7 @@ fn create_chunk_structure(chunk_x: i32, chunk_z: i32, chunk_data: Option<&ChunkS
         Vec::new()
     };
 
-    Chunk {
-        z_pos: chunk_z,
-        x_pos: chunk_x,
-        sections,
-        ..Default::default()
-    }
+    Chunk::new(chunk_x, chunk_z, sections)
 }
 
 #[cfg(test)]
