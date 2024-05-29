@@ -151,6 +151,8 @@ impl DataSink for MinecraftSink {
             &nusamai_projection::ellipsoid::grs80(),
         );
 
+        let typename_block = get_typename_block();
+
         let (ra, rb) = rayon::join(
             || {
                 parcels
@@ -243,8 +245,6 @@ impl DataSink for MinecraftSink {
 
                         typename_map.insert(typename.clone(), voxelizer);
 
-                        // let occupied_voxels = typename_map.finalize();
-
                         if sender.send(typename_map).is_err() {
                             return Err(PipelineError::Canceled);
                         };
@@ -254,16 +254,17 @@ impl DataSink for MinecraftSink {
             },
             || {
                 receiver.into_iter().for_each(|feature| {
-                    feature.iter().for_each(|(key, voxelizer)| {
-                        let typename_block = get_typename_block();
-
+                    feature.iter().for_each(|(typename, voxelizer)| {
                         voxelizer.voxels.iter().for_each(|(pos, voxel)| {
+                            // If the voxel color is white, the block id is determined by reference to the geographical type name.
                             let block_name = match voxel.color {
-                                [255, 255, 255] => {
-                                    typename_block.get(key.as_str()).unwrap_or(&"white_wool")
-                                }
+                                [255, 255, 255] => typename_block
+                                    .get(typename.as_str())
+                                    .unwrap_or(&"white_wool"),
                                 _ => "white_wool",
                             };
+
+                            // TODO:Process for determining blocks from voxel colors.
 
                             let [x, y, z] = pos;
 

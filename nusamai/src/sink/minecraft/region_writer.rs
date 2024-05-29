@@ -80,7 +80,6 @@ pub struct RegionSchema {
 
 pub type WorldSchema = Vec<RegionSchema>;
 
-#[allow(non_snake_case)]
 #[derive(Serialize, Deserialize, Debug)]
 struct Chunk {
     #[serde(rename = "Status")]
@@ -109,7 +108,6 @@ impl Default for Chunk {
     }
 }
 
-#[allow(non_snake_case)]
 #[derive(Serialize, Deserialize, Clone, Debug)]
 struct Section {
     block_states: Blockstates,
