@@ -8,6 +8,7 @@ use rayon::prelude::*;
 use std::sync::{Arc, Mutex};
 
 pub type Position2D = [i32; 2];
+
 #[derive(Deserialize, Serialize, Debug)]
 struct BlockPosition([u8; 3]);
 
@@ -25,10 +26,12 @@ impl BlockId {
         })
     }
 
+    #[inline]
     pub fn get_block_id(&self) -> String {
         format!("{}:{}", self.name_space, self.block_name)
     }
 
+    #[inline]
     pub fn get_block_name(&self) -> String {
         self.block_name.clone()
     }
