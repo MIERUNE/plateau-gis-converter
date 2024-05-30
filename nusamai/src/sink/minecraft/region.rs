@@ -173,7 +173,8 @@ impl PaletteItem {
         PaletteItem { name, properties }
     }
 }
-pub fn create_region(region_data: &RegionData, file_path: &Path) -> Result<()> {
+
+pub fn write_anvil(region_data: &RegionData, file_path: &Path) -> Result<()> {
     let out_path = PathBuf::from(format!(
         "{}/r.{}.{}.mca",
         file_path.display(),
@@ -189,8 +190,8 @@ pub fn create_region(region_data: &RegionData, file_path: &Path) -> Result<()> {
         .open(out_path)
         .map_err(PipelineError::IoError)?;
 
-    // Create a shared region object
-    let shared_region = Arc::new(Mutex::new(Region::new(out_file).unwrap()));
+    // Create a empty region object
+    let empty_region = Arc::new(Mutex::new(Region::new(out_file).unwrap()));
 
     (0..32).into_par_iter().for_each(|chunk_z| {
         (0..32).into_par_iter().for_each(|chunk_x| {
@@ -208,8 +209,8 @@ pub fn create_region(region_data: &RegionData, file_path: &Path) -> Result<()> {
 
             {
                 // Write the chunk data to the region file
-                let mut region_lock = shared_region.lock().unwrap();
-                region_lock
+                let mut region = empty_region.lock().unwrap();
+                region
                     .write_chunk(chunk_x as usize, chunk_z as usize, &serialized_chunk)
                     .unwrap();
             }
@@ -454,7 +455,7 @@ mod tests {
         let region_data = create_dummy_region_data();
 
         // Call the create_region function
-        let result = create_region(&region_data, file_path);
+        let result = write_anvil(&region_data, file_path);
         assert!(result.is_ok());
 
         // Check that the file was created

@@ -1,7 +1,7 @@
 //! Minecraft sink
 mod region;
 use log::error;
-use region::{create_region, BlockData, ChunkData, Position2D, RegionData, SectionData, WorldData};
+use region::{write_anvil, BlockData, ChunkData, Position2D, RegionData, SectionData, WorldData};
 
 mod block_colors;
 use block_colors::get_typename_block;
@@ -332,7 +332,7 @@ impl DataSink for MinecraftSink {
                 let _ = world_data.iter().try_for_each(|region| -> Result<()> {
                     feedback.ensure_not_canceled()?;
 
-                    create_region(region, &file_path)?;
+                    write_anvil(region, &file_path)?;
 
                     Ok(())
                 });
