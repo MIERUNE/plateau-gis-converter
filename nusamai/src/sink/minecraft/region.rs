@@ -117,10 +117,6 @@ impl Chunk {
             ..Default::default()
         }
     }
-
-    fn add_section(&mut self, section: Section) {
-        self.sections.push(section);
-    }
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -162,10 +158,6 @@ impl Blockstates {
     fn new(palette: Vec<PaletteItem>, data: Option<LongArray>) -> Self {
         Blockstates { palette, data }
     }
-
-    fn add_palette_item(&mut self, item: PaletteItem) {
-        self.palette.push(item);
-    }
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -181,7 +173,6 @@ impl PaletteItem {
         PaletteItem { name, properties }
     }
 }
-
 pub fn write_region(region: &RegionSchema, file_path: &Path) -> Result<()> {
     let out_path = PathBuf::from(format!(
         "{}/r.{}.{}.mca",
@@ -358,5 +349,31 @@ mod tests {
         for (palette_len, expected) in test_cases {
             assert_eq!(calculate_bits_and_size(palette_len), expected);
         }
+    }
+
+    #[test]
+    fn test_create_chunk_section() {
+        let mut blocks = Vec::new();
+
+        for x in 0..16 {
+            for y in 0..16 {
+                for z in 0..16 {
+                    blocks.push(BlockSchema::new(x, y, z, "minecraft:stone".to_string()).unwrap());
+                }
+            }
+        }
+
+        let mut palette = vec![PaletteItem::new("minecraft:air".to_string(), None)];
+
+        let section_y = 0;
+
+        let section = create_chunk_section(&blocks, &mut palette, section_y);
+
+        assert_eq!(section.y, section_y as i8);
+
+        assert_eq!(section.block_states.palette.len(), 2); // "minecraft:air"と"minecraft:stone"
+        assert!(section.block_states.data.is_some());
+        assert_eq!(section.biomes.palette.len(), 1);
+        assert_eq!(section.biomes.palette[0], "minecraft:the_void");
     }
 }

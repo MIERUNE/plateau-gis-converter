@@ -1,7 +1,7 @@
 //! Minecraft sink
-mod region_writer;
+mod region;
 use log::error;
-use region_writer::{
+use region::{
     write_region, BlockSchema, ChunkSchema, Position2D, RegionSchema, SectionSchema, WorldSchema,
 };
 
