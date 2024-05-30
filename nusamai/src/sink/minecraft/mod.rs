@@ -1,9 +1,7 @@
 //! Minecraft sink
 mod region;
 use log::error;
-use region::{
-    write_region, BlockSchema, ChunkSchema, Position2D, RegionSchema, SectionSchema, WorldSchema,
-};
+use region::{create_region, BlockData, ChunkData, Position2D, RegionData, SectionData, WorldData};
 
 mod block_colors;
 use block_colors::get_typename_block;
@@ -111,7 +109,7 @@ impl DataSink for MinecraftSink {
     fn run(&mut self, upstream: Receiver, feedback: &Feedback, _schema: &Schema) -> Result<()> {
         let (sender, receiver) = std::sync::mpsc::sync_channel(1000);
 
-        let mut world_data = WorldSchema::new();
+        let mut world_data = WorldData::new();
         let mut region_map: HashMap<Position2D, usize> = HashMap::new();
         let mut chunk_map: HashMap<(Position2D, Position2D), usize> = HashMap::new();
         let mut section_map: HashMap<(Position2D, Position2D, i32), usize> = HashMap::new();
@@ -279,9 +277,9 @@ impl DataSink for MinecraftSink {
                             // Calculate the y-level of the section from the y-coordinate.
                             let section_y = (y + 64) / 16 - 4;
 
-                            // Create BlockSchema
+                            // Create BlockData
                             // Coordinates relative to the blocks within a section (0-15)
-                            let block_data = BlockSchema::new(
+                            let block_data = BlockData::new(
                                 x.rem_euclid(16) as u8,
                                 y.rem_euclid(16) as u8,
                                 z.rem_euclid(16) as u8,
@@ -292,7 +290,7 @@ impl DataSink for MinecraftSink {
                             let chunk_pos = [chunk_x, chunk_z];
 
                             let region_index = *region_map.entry(region_pos).or_insert_with(|| {
-                                world_data.push(RegionSchema {
+                                world_data.push(RegionData {
                                     position: region_pos,
                                     chunks: Vec::new(),
                                 });
@@ -301,7 +299,7 @@ impl DataSink for MinecraftSink {
 
                             let chunk_index =
                                 *chunk_map.entry((region_pos, chunk_pos)).or_insert_with(|| {
-                                    world_data[region_index].chunks.push(ChunkSchema {
+                                    world_data[region_index].chunks.push(ChunkData {
                                         position: chunk_pos,
                                         sections: Vec::new(),
                                     });
@@ -312,7 +310,7 @@ impl DataSink for MinecraftSink {
                                 .entry((region_pos, chunk_pos, section_y))
                                 .or_insert_with(|| {
                                     world_data[region_index].chunks[chunk_index].sections.push(
-                                        SectionSchema {
+                                        SectionData {
                                             y: section_y,
                                             blocks: Vec::new(),
                                         },
@@ -334,7 +332,7 @@ impl DataSink for MinecraftSink {
                 let _ = world_data.iter().try_for_each(|region| -> Result<()> {
                     feedback.ensure_not_canceled()?;
 
-                    write_region(region, &file_path)?;
+                    create_region(region, &file_path)?;
 
                     Ok(())
                 });

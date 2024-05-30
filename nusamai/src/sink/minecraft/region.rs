@@ -49,36 +49,36 @@ impl BlockPosition {
 }
 
 #[derive(Deserialize, Serialize, Debug)]
-pub struct BlockSchema {
+pub struct BlockData {
     position: BlockPosition,
     block_id: BlockId,
 }
 
-impl BlockSchema {
+impl BlockData {
     pub fn new(x: u8, y: u8, z: u8, block_name: String) -> Result<Self> {
         let position = BlockPosition::new(x, y, z)?;
         let block_id = BlockId::new(block_name)?;
-        Ok(BlockSchema { position, block_id })
+        Ok(BlockData { position, block_id })
     }
 }
 #[derive(Deserialize, Serialize, Debug)]
-pub struct SectionSchema {
+pub struct SectionData {
     pub y: i32,
-    pub blocks: Vec<BlockSchema>,
+    pub blocks: Vec<BlockData>,
 }
 #[derive(Deserialize, Serialize, Debug)]
-pub struct ChunkSchema {
+pub struct ChunkData {
     pub position: Position2D,
-    pub sections: Vec<SectionSchema>,
+    pub sections: Vec<SectionData>,
 }
 
 #[derive(Deserialize, Serialize, Debug)]
-pub struct RegionSchema {
+pub struct RegionData {
     pub position: Position2D,
-    pub chunks: Vec<ChunkSchema>,
+    pub chunks: Vec<ChunkData>,
 }
 
-pub type WorldSchema = Vec<RegionSchema>;
+pub type WorldData = Vec<RegionData>;
 
 #[derive(Serialize, Deserialize, Debug)]
 struct Chunk {
@@ -173,12 +173,12 @@ impl PaletteItem {
         PaletteItem { name, properties }
     }
 }
-pub fn write_region(region: &RegionSchema, file_path: &Path) -> Result<()> {
+pub fn create_region(region_data: &RegionData, file_path: &Path) -> Result<()> {
     let out_path = PathBuf::from(format!(
         "{}/r.{}.{}.mca",
         file_path.display(),
-        region.position[0],
-        region.position[1]
+        region_data.position[0],
+        region_data.position[1]
     ));
 
     let out_file = File::options()
@@ -189,27 +189,30 @@ pub fn write_region(region: &RegionSchema, file_path: &Path) -> Result<()> {
         .open(out_path)
         .map_err(PipelineError::IoError)?;
 
-    let new_region = Arc::new(Mutex::new(Region::new(out_file).unwrap()));
+    // Create a shared region object
+    let shared_region = Arc::new(Mutex::new(Region::new(out_file).unwrap()));
 
     (0..32).into_par_iter().for_each(|chunk_z| {
         (0..32).into_par_iter().for_each(|chunk_x| {
-            // Calculate absolute coordinates of chunks
-            let absolute_chunk_x = region.position[0] * 32 + chunk_x;
-            let absolute_chunk_z = region.position[1] * 32 + chunk_z;
+            let absolute_chunk_x = region_data.position[0] * 32 + chunk_x;
+            let absolute_chunk_z = region_data.position[1] * 32 + chunk_z;
 
-            let chunk_data = region
+            let chunk_data = region_data
                 .chunks
                 .iter()
                 .find(|c| c.position == [absolute_chunk_x, absolute_chunk_z]);
 
             let chunk = create_chunk_structure(absolute_chunk_x, absolute_chunk_z, chunk_data);
 
-            let ser = to_bytes(&chunk).unwrap();
+            let serialized_chunk = to_bytes(&chunk).unwrap();
 
-            let mut region = new_region.lock().unwrap();
-            region
-                .write_chunk(chunk_x as usize, chunk_z as usize, &ser)
-                .unwrap();
+            {
+                // Write the chunk data to the region file
+                let mut region_lock = shared_region.lock().unwrap();
+                region_lock
+                    .write_chunk(chunk_x as usize, chunk_z as usize, &serialized_chunk)
+                    .unwrap();
+            }
         });
     });
 
@@ -229,7 +232,7 @@ fn calculate_bits_and_size(palette_len: usize) -> (u32, u32) {
 
 // Functions to create sections
 fn create_chunk_section(
-    blocks: &[BlockSchema],
+    blocks: &[BlockData],
     palette: &mut Vec<PaletteItem>,
     section_y: i32,
 ) -> Section {
@@ -283,7 +286,7 @@ fn create_chunk_section(
 }
 
 // Functions to create chunk structures
-fn create_chunk_structure(chunk_x: i32, chunk_z: i32, chunk_data: Option<&ChunkSchema>) -> Chunk {
+fn create_chunk_structure(chunk_x: i32, chunk_z: i32, chunk_data: Option<&ChunkData>) -> Chunk {
     let palette = vec![PaletteItem::new("minecraft:air".to_string(), None)];
 
     let sections: Vec<Section> = if let Some(chunk_data) = chunk_data {
@@ -352,13 +355,13 @@ mod tests {
     }
 
     #[test]
-    fn test_create_chunk_section() {
+    fn test_full_chunk_section() {
         let mut blocks = Vec::new();
 
         for x in 0..16 {
             for y in 0..16 {
                 for z in 0..16 {
-                    blocks.push(BlockSchema::new(x, y, z, "minecraft:stone".to_string()).unwrap());
+                    blocks.push(BlockData::new(x, y, z, "stone".to_string()).unwrap());
                 }
             }
         }
@@ -375,5 +378,40 @@ mod tests {
         assert!(section.block_states.data.is_some());
         assert_eq!(section.biomes.palette.len(), 1);
         assert_eq!(section.biomes.palette[0], "minecraft:the_void");
+    }
+
+    #[test]
+
+    fn test_palette_size_17() {
+        let blocks = vec![
+            BlockData::new(0, 0, 0, "white_wool".to_string()).unwrap(),
+            BlockData::new(1, 0, 0, "light_gray_wool".to_string()).unwrap(),
+            BlockData::new(2, 0, 0, "gray_wool".to_string()).unwrap(),
+            BlockData::new(3, 0, 0, "black_wool".to_string()).unwrap(),
+            BlockData::new(4, 0, 0, "brown_wool".to_string()).unwrap(),
+            BlockData::new(5, 0, 0, "red_wool".to_string()).unwrap(),
+            BlockData::new(6, 0, 0, "orange_wool".to_string()).unwrap(),
+            BlockData::new(7, 0, 0, "yellow_wool".to_string()).unwrap(),
+            BlockData::new(8, 0, 0, "lime_wool".to_string()).unwrap(),
+            BlockData::new(9, 0, 0, "green_wool".to_string()).unwrap(),
+            BlockData::new(10, 0, 0, "cyan_wool".to_string()).unwrap(),
+            BlockData::new(11, 0, 0, "light_blue_wool".to_string()).unwrap(),
+            BlockData::new(12, 0, 0, "blue_wool".to_string()).unwrap(),
+            BlockData::new(13, 0, 0, "purple_wool".to_string()).unwrap(),
+            BlockData::new(14, 0, 0, "magenta_wool".to_string()).unwrap(),
+            BlockData::new(15, 0, 0, "pink_wool".to_string()).unwrap(),
+        ];
+
+        let mut palette = vec![PaletteItem::new("minecraft:air".to_string(), None)];
+
+        let section_y = 0;
+        let section = create_chunk_section(&blocks, &mut palette, section_y);
+        assert_eq!(section.y, section_y as i8);
+        assert_eq!(section.block_states.palette.len(), 17); // 17 colors of wool
+        assert!(section.block_states.data.is_some());
+        assert_eq!(section.biomes.palette.len(), 1);
+        assert_eq!(section.biomes.palette[0], "minecraft:the_void");
+
+        // １７種類のブロックを配置
     }
 }
