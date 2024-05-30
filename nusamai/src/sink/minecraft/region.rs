@@ -325,7 +325,12 @@ fn create_chunk_structure(chunk_x: i32, chunk_z: i32, chunk_data: Option<&ChunkD
 
 #[cfg(test)]
 mod tests {
+
     use super::*;
+    use std::fs::File;
+    use std::io::Read;
+    use std::path::PathBuf;
+    use tempfile::tempdir;
 
     #[test]
     fn test_calculate_bits_and_size() {
@@ -411,5 +416,77 @@ mod tests {
         assert!(section.block_states.data.is_some());
         assert_eq!(section.biomes.palette.len(), 1);
         assert_eq!(section.biomes.palette[0], "minecraft:the_void");
+    }
+
+    #[test]
+    fn test_create_chunk_structure() {
+        let chunk_data = ChunkData {
+            position: [0, 0],
+            sections: vec![SectionData {
+                y: 0,
+                blocks: vec![BlockData::new(0, 0, 0, "stone".to_string()).unwrap()],
+            }],
+        };
+
+        let chunk = create_chunk_structure(0, 0, Some(&chunk_data));
+
+        assert_eq!(chunk.x_pos, 0);
+        assert_eq!(chunk.z_pos, 0);
+        assert_eq!(chunk.sections.len(), 1);
+    }
+
+    #[test]
+    fn test_empty_chunk_structure() {
+        let chunk = create_chunk_structure(0, 0, None);
+
+        assert_eq!(chunk.x_pos, 0);
+        assert_eq!(chunk.z_pos, 0);
+        assert_eq!(chunk.sections.len(), 0);
+    }
+
+    #[test]
+    fn test_create_region() {
+        // Create a temporary directory for the test
+        let dir = tempdir().unwrap();
+        let file_path = dir.path();
+
+        // Create dummy RegionData
+        let region_data = create_dummy_region_data();
+
+        // Call the create_region function
+        let result = create_region(&region_data, file_path);
+        assert!(result.is_ok());
+
+        // Check that the file was created
+        let out_path = PathBuf::from(format!(
+            "{}/r.{}.{}.mca",
+            file_path.display(),
+            region_data.position[0],
+            region_data.position[1]
+        ));
+        assert!(out_path.exists());
+
+        // Read the file to ensure it was written correctly
+        let mut file = File::open(out_path).unwrap();
+        let mut contents = Vec::new();
+        file.read_to_end(&mut contents).unwrap();
+        assert!(!contents.is_empty());
+
+        // Clean up the temporary directory
+        dir.close().unwrap();
+    }
+
+    fn create_dummy_region_data() -> RegionData {
+        // Create dummy chunks
+        let chunks = vec![ChunkData {
+            position: [0, 0],
+            sections: vec![],
+        }];
+
+        // Create dummy RegionData
+        RegionData {
+            position: [0, 0],
+            chunks,
+        }
     }
 }

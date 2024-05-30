@@ -51,6 +51,7 @@ flate2 = "1.0.28"
 chrono = "0.4.35"
 kv-extsort = { git = "https://github.com/MIERUNE/kv-extsort-rs.git" }
 bytemuck = { version = "1.16.0", features = ["derive"] }
+tempfile = "3.10.1"
 
 [dev-dependencies]
 rand = "0.8.5"
