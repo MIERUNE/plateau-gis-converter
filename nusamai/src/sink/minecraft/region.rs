@@ -121,14 +121,14 @@ impl Chunk {
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 struct Section {
-    block_states: Blockstates,
+    block_states: BlockStates,
     biomes: Biomes,
     #[serde(rename = "Y")]
     y: i8,
 }
 
 impl Section {
-    fn new(block_states: Blockstates, biomes: Biomes, y: i8) -> Self {
+    fn new(block_states: BlockStates, biomes: Biomes, y: i8) -> Self {
         Section {
             block_states,
             biomes,
@@ -149,14 +149,14 @@ impl Biomes {
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
-struct Blockstates {
+struct BlockStates {
     palette: Vec<PaletteItem>,
     data: Option<LongArray>,
 }
 
-impl Blockstates {
+impl BlockStates {
     fn new(palette: Vec<PaletteItem>, data: Option<LongArray>) -> Self {
-        Blockstates { palette, data }
+        BlockStates { palette, data }
     }
 }
 
@@ -279,7 +279,7 @@ fn create_chunk_section(
     }
 
     Section::new(
-        Blockstates::new(palette.clone(), Some(LongArray::new(data))),
+        BlockStates::new(palette.clone(), Some(LongArray::new(data))),
         Biomes::new(vec!["minecraft:the_void".to_string()]),
         section_y as i8,
     )
