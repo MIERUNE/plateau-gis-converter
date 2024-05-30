@@ -411,7 +411,5 @@ mod tests {
         assert!(section.block_states.data.is_some());
         assert_eq!(section.biomes.palette.len(), 1);
         assert_eq!(section.biomes.palette[0], "minecraft:the_void");
-
-        // １７種類のブロックを配置
     }
 }
