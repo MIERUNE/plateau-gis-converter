@@ -4,7 +4,7 @@ use nusamai_texture::{
     export::WebpAtlasExporter,
     pack::TexturePacker,
     place::{GuillotineTexturePlacer, TexturePlacerConfig},
-    texture::CroppedTexture,
+    texture::{CroppedTexture, DownsampleFactor},
 };
 
 #[derive(Debug, Clone)]
@@ -12,15 +12,15 @@ struct Polygon {
     id: String,
     uv_coords: Vec<(f32, f32)>,
     image_path: PathBuf,
+    downsample_factor: DownsampleFactor,
 }
 
 fn main() {
-    let downsample_factor = 0.5;
+    let downsample_factor = 1.0;
     let config = TexturePlacerConfig {
-        max_width: 4096,
-        max_height: 4096,
+        max_width: 1024,
+        max_height: 1024,
         padding: 0,
-        scale_factor: downsample_factor,
     };
 
     let placer = GuillotineTexturePlacer::new(config);
@@ -29,6 +29,7 @@ fn main() {
     // todo: マルチスレッドで実行されるので、スレッドセーフな構造体にする
     let mut packer = TexturePacker::new(placer, exporter);
 
+    // 3D Tiles Sink passes the texture path and UV coordinates for each polygon
     let mut polygons: Vec<Polygon> = Vec::new();
     for i in 0..10 {
         for j in 1..11 {
@@ -40,16 +41,21 @@ fn main() {
                 id: format!("texture_{}_{}", i, j),
                 uv_coords,
                 image_path,
+                downsample_factor: DownsampleFactor::new(&downsample_factor),
             });
         }
     }
 
     polygons.iter().for_each(|polygon| {
         // todo: スケールされたUV座標が返却されるようにする
-        let texture =
-            CroppedTexture::new(&polygon.uv_coords, &polygon.image_path, downsample_factor);
-        let uv: (u32, u32) = (texture.u, texture.v);
         // todo: ポリゴンとテクスチャの対照表のようなものを動的に生成し、実際のポリゴンの大きに応じて貼り付け時にスケーリングするようにした方が良い
+        // →ので、configではなくPolygonにdownsample_factorを持たせる
+        let texture = CroppedTexture::new(
+            &polygon.uv_coords,
+            &polygon.image_path,
+            &polygon.downsample_factor.value(),
+        );
+        let uv: (u32, u32) = (texture.u, texture.v);
         packer.add_texture(polygon.id.clone(), texture);
     });
 

@@ -1,12 +1,13 @@
 use image::{DynamicImage, GenericImageView};
 use std::path::{Path, PathBuf};
 
+#[derive(Debug, Clone)]
 pub struct DownsampleFactor(f32);
 
 impl DownsampleFactor {
-    pub fn new(factor: f32) -> Self {
-        if (0.0..=1.0).contains(&factor) {
-            DownsampleFactor(factor)
+    pub fn new(factor: &f32) -> Self {
+        if (0.0..=1.0).contains(factor) {
+            DownsampleFactor(factor.clone())
         } else {
             panic!("The argument must be entered between 0~1.")
         }
@@ -27,7 +28,7 @@ pub struct CroppedTexture {
 }
 
 impl CroppedTexture {
-    pub fn new(uv_coords: &[(f32, f32)], image_path: &Path, downsample_factor: f32) -> Self {
+    pub fn new(uv_coords: &[(f32, f32)], image_path: &Path, downsample_factor: &f32) -> Self {
         let downsample_factor = DownsampleFactor::new(downsample_factor);
 
         let image = image::open(image_path).expect("Failed to open image file");

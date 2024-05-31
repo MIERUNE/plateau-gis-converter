@@ -7,7 +7,6 @@ pub struct TexturePlacerConfig {
     pub max_width: u32,
     pub max_height: u32,
     pub padding: u32,
-    pub scale_factor: f32,
     // and more option
     // Allow rotation, allow multiple pages, adjust resolution, specify resampling method, etc...
 }
@@ -18,7 +17,6 @@ impl Default for TexturePlacerConfig {
             max_width: 256,
             max_height: 256,
             padding: 0,
-            scale_factor: 1.0,
         }
     }
 }
@@ -41,10 +39,9 @@ pub trait TexturePlacer {
 
     fn reset_param(&mut self);
 
-    fn scale_dimensions(&self, width: u32, height: u32) -> (u32, u32) {
-        let scale_factor = self.config().scale_factor;
-        let scaled_width = (width as f32 * scale_factor) as u32;
-        let scaled_height = (height as f32 * scale_factor) as u32;
+    fn scale_dimensions(&self, width: u32, height: u32, downsample_factor: f32) -> (u32, u32) {
+        let scaled_width = (width as f32 * downsample_factor) as u32;
+        let scaled_height = (height as f32 * downsample_factor) as u32;
         (scaled_width, scaled_height)
     }
 }
@@ -73,7 +70,11 @@ impl TexturePlacer for SimpleTexturePlacer {
     }
 
     fn place_texture(&mut self, id: &str, texture: &CroppedTexture) -> PlacedTextureInfo {
-        let (scaled_width, scaled_height) = self.scale_dimensions(texture.width, texture.height);
+        let (scaled_width, scaled_height) = self.scale_dimensions(
+            texture.width,
+            texture.height,
+            texture.downsample_factor.value(),
+        );
 
         if self.current_x + texture.width > self.config().max_width {
             self.current_x = 0;
@@ -96,7 +97,11 @@ impl TexturePlacer for SimpleTexturePlacer {
     }
 
     fn can_place(&self, texture: &CroppedTexture) -> bool {
-        let (scaled_width, scaled_height) = self.scale_dimensions(texture.width, texture.height);
+        let (scaled_width, scaled_height) = self.scale_dimensions(
+            texture.width,
+            texture.height,
+            texture.downsample_factor.value(),
+        );
 
         let padding = self.config().padding;
         let max_width = self.config().max_width;
@@ -261,7 +266,11 @@ impl TexturePlacer for GuillotineTexturePlacer {
     }
 
     fn place_texture(&mut self, id: &str, texture: &CroppedTexture) -> PlacedTextureInfo {
-        let (scaled_width, scaled_height) = self.scale_dimensions(texture.width, texture.height);
+        let (scaled_width, scaled_height) = self.scale_dimensions(
+            texture.width,
+            texture.height,
+            texture.downsample_factor.value(),
+        );
 
         let width = scaled_width + self.config.padding;
         let height = scaled_height + self.config.padding;
@@ -287,7 +296,11 @@ impl TexturePlacer for GuillotineTexturePlacer {
     }
 
     fn can_place(&self, texture: &CroppedTexture) -> bool {
-        let (scaled_width, scaled_height) = self.scale_dimensions(texture.width, texture.height);
+        let (scaled_width, scaled_height) = self.scale_dimensions(
+            texture.width,
+            texture.height,
+            texture.downsample_factor.value(),
+        );
         let width = scaled_width + self.config.padding;
         let height = scaled_height + self.config.padding;
         self.free_rects
