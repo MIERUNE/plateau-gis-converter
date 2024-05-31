@@ -25,7 +25,7 @@ use crate::{
 use earcut::{utils3d::project3d_to_2d, Earcut};
 use nusamai_projection::etmerc::ExtendedTransverseMercatorProjection;
 
-use nusamai_voxelize::{DdaVoxelizer, MeshVoxelizer};
+use dda_voxelize::{DdaVoxelizer, MeshVoxelizer};
 
 pub struct MinecraftSinkProvider {}
 
