@@ -23,7 +23,6 @@ flatgeom= { version = "0.0", features = ["serde"] }
 nusamai-czml = { path = "../nusamai-czml" }
 nusamai-projection = { path = "../nusamai-projection" }
 nusamai-mvt = { path = "../nusamai-mvt" }
-nusamai-voxelize = { path = "../nusamai-voxelize" }
 fastanvil = "0.31.0"
 fastnbt = "2.5.0"
 geojson = "0.24.1"
@@ -51,6 +50,7 @@ flate2 = "1.0.28"
 chrono = "0.4.35"
 kv-extsort = { git = "https://github.com/MIERUNE/kv-extsort-rs.git" }
 bytemuck = { version = "1.16.0", features = ["derive"] }
+dda-voxelize = "0.0.1"
 
 [dev-dependencies]
 rand = "0.8.5"
