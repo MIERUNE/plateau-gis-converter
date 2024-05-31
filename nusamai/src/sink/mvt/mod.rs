@@ -1,28 +1,26 @@
 //! Mapbox Vector Tiles (MVT) sink
 
 mod slice;
-mod sort;
 mod tags;
 
 use std::{
+    convert::Infallible,
     fs,
     io::prelude::*,
     path::{Path, PathBuf},
     sync::mpsc,
 };
 
-use ext_sort::{buffer::mem::MemoryLimitedBufferBuilder, ExternalSorter, ExternalSorterBuilder};
 use flate2::{write::ZlibEncoder, Compression};
 use hashbrown::HashMap;
 use itertools::Itertools;
 use nusamai_citygml::{object, schema::Schema};
-use nusamai_geometry::{MultiPolygon, MultiPolygon2};
+use flatgeom::{MultiPolygon, MultiPolygon2};
 use nusamai_mvt::{geometry::GeometryEncoder, tag::TagsEncoder, tileid::TileIdMethod, vector_tile};
 use prost::Message;
 use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
 use slice::slice_cityobj_geoms;
-use sort::BincodeExternalChunk;
 use tags::convert_properties;
 
 use crate::{
@@ -103,13 +101,6 @@ struct MvtSink {
 struct MvtParams {
     min_z: u8,
     max_z: u8,
-}
-
-#[derive(Serialize, Deserialize, deepsize::DeepSizeOf)]
-struct SerializedSlicedFeature {
-    tile_id: u64,
-    #[serde(with = "serde_bytes")]
-    body: Vec<u8>,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -194,7 +185,7 @@ fn geometry_slicing_stage(
     feedback: &Feedback,
     upstream: mpsc::Receiver<crate::pipeline::Parcel>,
     tile_id_conv: TileIdMethod,
-    sender_sliced: mpsc::SyncSender<SerializedSlicedFeature>,
+    sender_sliced: mpsc::SyncSender<(u64, Vec<u8>)>,
     mvt_options: &MvtParams,
 ) -> Result<()> {
     let bincode_config = bincode::config::standard();
@@ -219,12 +210,8 @@ fn geometry_slicing_stage(
                     properties: parcel.entity.root.clone(),
                 };
                 let bytes = bincode::serde::encode_to_vec(&feature, bincode_config).unwrap();
-                let sfeat = SerializedSlicedFeature {
-                    tile_id: tile_id_conv.zxy_to_id(z, x, y),
-                    body: bytes,
-                };
-
-                if sender_sliced.send(sfeat).is_err() {
+                let tile_id = tile_id_conv.zxy_to_id(z, x, y);
+                if sender_sliced.send((tile_id, bytes)).is_err() {
                     return Err(PipelineError::Canceled);
                 };
                 Ok(())
@@ -236,35 +223,45 @@ fn geometry_slicing_stage(
 
 fn feature_sorting_stage(
     feedback: &Feedback,
-    receiver_sliced: mpsc::Receiver<SerializedSlicedFeature>,
-    sender_sorted: mpsc::SyncSender<(u64, Vec<SerializedSlicedFeature>)>,
+    receiver_sliced: mpsc::Receiver<(u64, Vec<u8>)>,
+    sender_sorted: mpsc::SyncSender<(u64, Vec<Vec<u8>>)>,
 ) -> Result<()> {
-    let sorter: ExternalSorter<
-        SerializedSlicedFeature,
-        std::io::Error,
-        MemoryLimitedBufferBuilder,
-        BincodeExternalChunk<_>,
-        // TODO: Implement an external sorter by ourselves?
-    > = ExternalSorterBuilder::new()
-        .with_buffer(MemoryLimitedBufferBuilder::new(200 * 1024 * 1024)) // TODO
-        .with_threads_number(8) // TODO
-        .build()
-        .unwrap();
-    let sorted = sorter
-        .sort_by(receiver_sliced.into_iter().map(Ok), |a, b| {
-            a.tile_id.cmp(&b.tile_id)
-        })
-        .unwrap();
+    let config = kv_extsort::SortConfig::default()
+        .max_chunk_bytes(256 * 1024 * 1024) // TODO: Configurable
+        .set_cancel_flag(feedback.get_cancellation_flag());
 
-    for (tile_id, ser_feats) in &sorted
-        .map(std::result::Result::unwrap)
-        .group_by(|ser_feat| ser_feat.tile_id)
-    {
-        feedback.ensure_not_canceled()?;
-        let ser_feats: Vec<_> = ser_feats.collect();
-        if sender_sorted.send((tile_id, ser_feats)).is_err() {
-            return Err(PipelineError::Canceled);
-        };
+    let sorted_iter = kv_extsort::sort(
+        receiver_sliced
+            .into_iter()
+            .map(|(tile_id, body)| std::result::Result::<_, Infallible>::Ok((tile_id, body))),
+        config,
+    );
+
+    for ((_, tile_id), grouped) in &sorted_iter.chunk_by(|feat| match feat {
+        Ok((tile_id, _)) => (false, *tile_id),
+        Err(_) => (true, 0),
+    }) {
+        let grouped = grouped
+            .into_iter()
+            .map_ok(|(_, serialized_feats)| serialized_feats)
+            .collect::<kv_extsort::Result<Vec<_>, _>>();
+        match grouped {
+            Ok(serialized_feats) => {
+                feedback.ensure_not_canceled()?;
+                if sender_sorted.send((tile_id, serialized_feats)).is_err() {
+                    return Err(PipelineError::Canceled);
+                }
+            }
+            Err(kv_extsort::Error::Canceled) => {
+                return Err(PipelineError::Canceled);
+            }
+            Err(err) => {
+                return Err(PipelineError::Other(format!(
+                    "Failed to sort features: {:?}",
+                    err
+                )));
+            }
+        }
     }
 
     Ok(())
@@ -279,7 +276,7 @@ struct LayerData {
 fn tile_writing_stage(
     output_path: &Path,
     feedback: &Feedback,
-    receiver_sorted: mpsc::Receiver<(u64, Vec<SerializedSlicedFeature>)>,
+    receiver_sorted: mpsc::Receiver<(u64, Vec<Vec<u8>>)>,
     tile_id_conv: TileIdMethod,
 ) -> Result<()> {
     let default_detail = 12;
@@ -341,7 +338,7 @@ fn tile_writing_stage(
     Ok(())
 }
 
-fn make_tile(default_detail: i32, serialized_feats: &[SerializedSlicedFeature]) -> Result<Vec<u8>> {
+fn make_tile(default_detail: i32, serialized_feats: &[Vec<u8>]) -> Result<Vec<u8>> {
     let mut layers: HashMap<String, LayerData> = HashMap::new();
     let mut int_ring_buf = Vec::new();
     let mut int_ring_buf2 = Vec::new();
@@ -349,13 +346,10 @@ fn make_tile(default_detail: i32, serialized_feats: &[SerializedSlicedFeature]) 
     let bincode_config = bincode::config::standard();
 
     for serialized_feat in serialized_feats {
-        let (feature, _): (SlicedFeature, _) = bincode::serde::decode_from_slice(
-            &serialized_feat.body,
-            bincode_config,
-        )
-        .map_err(|err| {
-            PipelineError::Other(format!("Failed to deserialize a sliced feature: {:?}", err))
-        })?;
+        let (feature, _): (SlicedFeature, _) =
+            bincode::serde::decode_from_slice(serialized_feat, bincode_config).map_err(|err| {
+                PipelineError::Other(format!("Failed to deserialize a sliced feature: {:?}", err))
+            })?;
 
         let mpoly = feature.geometry;
         let mut int_mpoly = MultiPolygon::<[i16; 2]>::new();

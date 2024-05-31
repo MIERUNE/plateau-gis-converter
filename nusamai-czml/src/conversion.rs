@@ -1,4 +1,4 @@
-use nusamai_geometry::{MultiPolygon, Polygon};
+use flatgeom::{MultiPolygon, Polygon};
 
 use crate::{
     models::CzmlPolygon, PositionList, PositionListOfLists, PositionListOfListsProperties,

@@ -1,9 +1,9 @@
-use nusamai_geometry::{
+use flatgeom::{
     Coord, LineString, LineString3, MultiLineString, MultiLineString3, MultiPoint, MultiPoint3,
     MultiPolygon, Polygon,
 };
 
-/// Create a GeoJSON Polygon from `nusamai_geometry::MultiPolygon`.
+/// Create a GeoJSON Polygon from `flatgeom::MultiPolygon`.
 pub fn polygon_to_value<const D: usize>(poly: &Polygon<[f64; D]>) -> geojson::Value {
     polygon_to_value_with_mapping(poly, |c| c.to_vec())
 }
@@ -13,7 +13,7 @@ pub fn indexed_polygon_to_value(vertices: &[[f64; 3]], poly_idx: &Polygon<u32>) 
     polygon_to_value_with_mapping(poly_idx, |idx| vertices[idx as usize].to_vec())
 }
 
-/// Create a GeoJSON Polygon from `nusamai_geometry::Polygon` with a mapping function.
+/// Create a GeoJSON Polygon from `flatgeom::Polygon` with a mapping function.
 pub fn polygon_to_value_with_mapping<T: Coord>(
     poly: &Polygon<T>,
     mapping: impl Fn(T) -> Vec<f64>,
@@ -29,7 +29,7 @@ pub fn polygon_to_value_with_mapping<T: Coord>(
     geojson::Value::Polygon(coords)
 }
 
-/// Create a GeoJSON MultiPolygon from `nusamai_geometry::MultiPolygon`.
+/// Create a GeoJSON MultiPolygon from `flatgeom::MultiPolygon`.
 pub fn multipolygon_to_value<const D: usize>(mpoly: &MultiPolygon<[f64; D]>) -> geojson::Value {
     multipolygon_to_value_with_mapping(mpoly, |c| c.to_vec())
 }
@@ -42,7 +42,7 @@ pub fn indexed_multipolygon_to_value(
     multipolygon_to_value_with_mapping(mpoly_idx, |idx| vertices[idx as usize].to_vec())
 }
 
-/// Create a GeoJSON MultiPolygon from `nusamai_geometry::MultiPolygon` with a mapping function.
+/// Create a GeoJSON MultiPolygon from `flatgeom::MultiPolygon` with a mapping function.
 pub fn multipolygon_to_value_with_mapping<T: Coord>(
     mpoly: &MultiPolygon<T>,
     mapping: impl Fn(T) -> Vec<f64>,
@@ -62,7 +62,7 @@ pub fn multipolygon_to_value_with_mapping<T: Coord>(
     geojson::Value::MultiPolygon(coords)
 }
 
-/// Create a GeoJSON LineString from `nusamai_geometry::LineString`.
+/// Create a GeoJSON LineString from `flatgeom::LineString`.
 pub fn linestring_to_value(ls: &LineString3) -> geojson::Value {
     linestring_to_value_with_mapping(ls, |c| c.to_vec())
 }
@@ -75,7 +75,7 @@ pub fn indexed_linestring_to_value(
     linestring_to_value_with_mapping(ls_idx, |idx| vertices[idx as usize].to_vec())
 }
 
-/// Create a GeoJSON LineString from `nusamai_geometry::LineString` with a mapping function.
+/// Create a GeoJSON LineString from `flatgeom::LineString` with a mapping function.
 pub fn linestring_to_value_with_mapping<T: Coord>(
     ls: &LineString<T>,
     mapping: impl Fn(T) -> Vec<f64>,
@@ -84,7 +84,7 @@ pub fn linestring_to_value_with_mapping<T: Coord>(
     geojson::Value::LineString(coords)
 }
 
-/// Create a GeoJSON MultiLineString from `nusamai_geometry::MultiLineString`.
+/// Create a GeoJSON MultiLineString from `flatgeom::MultiLineString`.
 pub fn multilinestring_to_value(mls: &MultiLineString3) -> geojson::Value {
     multilinestring_to_value_with_mapping(mls, |c| c.to_vec())
 }
@@ -97,7 +97,7 @@ pub fn indexed_multilinestring_to_value(
     multilinestring_to_value_with_mapping(mls_idx, |idx| vertices[idx as usize].to_vec())
 }
 
-/// Create a GeoJSON MultiLineString from `nusamai_geometry::MultiLineString` with a mapping function.
+/// Create a GeoJSON MultiLineString from `flatgeom::MultiLineString` with a mapping function.
 pub fn multilinestring_to_value_with_mapping<T: Coord>(
     mls: &MultiLineString<T>,
     mapping: impl Fn(T) -> Vec<f64>,
@@ -114,7 +114,7 @@ pub fn multilinestring_to_value_with_mapping<T: Coord>(
     geojson::Value::MultiLineString(coords)
 }
 
-/// Create a GeoJSON Point from `nusamai_geometry::Point`.
+/// Create a GeoJSON Point from `flatgeom::Point`.
 pub fn point_to_value(point: &[f64; 3]) -> geojson::Value {
     point_to_value_with_mapping(*point, |c| c.to_vec())
 }
@@ -124,7 +124,7 @@ pub fn indexed_point_to_value(vertices: &[[f64; 3]], point_idx: u32) -> geojson:
     point_to_value_with_mapping(point_idx, |idx| vertices[idx as usize].to_vec())
 }
 
-/// Create a GeoJSON Point from `nusamai_geometry::Point` with a mapping function.
+/// Create a GeoJSON Point from `flatgeom::Point` with a mapping function.
 pub fn point_to_value_with_mapping<T: Coord>(
     point: T,
     mapping: impl Fn(T) -> Vec<f64>,
@@ -132,7 +132,7 @@ pub fn point_to_value_with_mapping<T: Coord>(
     geojson::Value::Point(mapping(point))
 }
 
-/// Create a GeoJSON MultiPoint from `nusamai_geometry::Point`.
+/// Create a GeoJSON MultiPoint from `flatgeom::Point`.
 pub fn multipoint_to_value(mpoint: &MultiPoint3) -> geojson::Value {
     multipoint_to_value_with_mapping(mpoint, |c| c.to_vec())
 }
@@ -145,7 +145,7 @@ pub fn indexed_multipoint_to_value(
     multipoint_to_value_with_mapping(mpoint_idx, |idx| vertices[idx as usize].to_vec())
 }
 
-/// Create a GeoJSON MultiPoint from `nusamai_geometry::MultiPoint` with a mapping function.
+/// Create a GeoJSON MultiPoint from `flatgeom::MultiPoint` with a mapping function.
 pub fn multipoint_to_value_with_mapping<T: Coord>(
     mpoint: &MultiPoint<T>,
     mapping: impl Fn(T) -> Vec<f64>,
@@ -159,7 +159,7 @@ pub fn multipoint_to_value_with_mapping<T: Coord>(
 
 #[cfg(test)]
 mod tests {
-    use nusamai_geometry::{MultiPolygon3, Polygon3};
+    use flatgeom::{MultiPolygon3, Polygon3};
 
     use super::*;
 

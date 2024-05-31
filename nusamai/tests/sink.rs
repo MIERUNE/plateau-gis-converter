@@ -64,7 +64,7 @@ pub(crate) fn simple_run_sink<S: DataSinkProvider>(sink_provider: S, output: Opt
 
     let (handle, watcher, canceller) =
         nusamai::pipeline::run(source, transformer, sink, schema.into());
-    handle.join();
+    handle.join().unwrap();
 
     for msg in watcher {
         println!("Feedback message from the pipeline {:?}", msg);

@@ -264,7 +264,7 @@ pub fn entity_to_kml_polygons(entity: &Entity) -> Vec<KmlPolygon> {
         return Vec::new();
     };
 
-    let mut mpoly = nusamai_geometry::MultiPolygon::<u32>::new();
+    let mut mpoly = flatgeom::MultiPolygon::<u32>::new();
 
     geometries.iter().for_each(|entry| match entry.ty {
         GeometryType::Solid | GeometryType::Surface | GeometryType::Triangle => {

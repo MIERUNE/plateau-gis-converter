@@ -162,5 +162,5 @@ fn test_run_pipeline() {
     });
 
     // wait for the pipeline to finish
-    handle.join();
+    handle.join().unwrap();
 }

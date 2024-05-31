@@ -350,7 +350,7 @@ fn is_small_triangle(p1: &Vec3, p2: &Vec3, p3: &Vec3) -> bool {
 mod tests {
     use super::*;
     use earcut::{utils3d::project3d_to_2d, Earcut};
-    use nusamai_geometry::MultiPolygon;
+    use flatgeom::MultiPolygon;
 
     #[test]
     fn test_minimum_polygon() {

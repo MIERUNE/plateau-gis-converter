@@ -260,7 +260,11 @@ fn run_conversion(
     .unwrap();
 
     // Wait for the pipeline to finish
-    handle.join();
+    if let Err(msg) = handle.join() {
+        return Err(Error::ConversionFailed(format!(
+            "Pipeline thread panicked: {msg}"
+        )));
+    }
 
     // Return error if an error occurred in the pipeline
     if let Some(err) = first_error {
