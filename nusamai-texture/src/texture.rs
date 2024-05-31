@@ -9,7 +9,7 @@ pub struct DownsampleFactor(f32);
 impl DownsampleFactor {
     pub fn new(factor: &f32) -> Self {
         if (0.0..=1.0).contains(factor) {
-            DownsampleFactor(factor.clone())
+            DownsampleFactor(*factor)
         } else {
             panic!("The argument must be entered between 0~1.")
         }
@@ -22,11 +22,11 @@ impl DownsampleFactor {
 
 pub struct CroppedTexture {
     pub image_path: PathBuf,
-    pub u: u32,
-    pub v: u32,
+    pub origin: (u32, u32),
     pub width: u32,
     pub height: u32,
     pub downsample_factor: DownsampleFactor,
+    pub atlas_uv_coords: Vec<(f32, f32)>,
 }
 
 impl CroppedTexture {
@@ -52,21 +52,25 @@ impl CroppedTexture {
         let cropped_width = right - left;
         let cropped_height = bottom - top;
 
+        let atlas_uv_coords: Vec<(f32, f32)> = uv_coords
+            .iter()
+            .map(|&(x, y)| (x - min_x, y - min_y))
+            .collect();
+
         CroppedTexture {
             image_path: image_path.to_path_buf(),
-            u: left,
-            v: top,
+            origin: (left, top),
             width: cropped_width,
             height: cropped_height,
             downsample_factor,
+            atlas_uv_coords,
         }
     }
 
     pub fn crop(&self, image_cache: &ImageCache) -> DynamicImage {
         let image = image_cache.get_image(&self.image_path);
-        let cropped_image = image
-            .view(self.u, self.v, self.width, self.height)
-            .to_image();
+        let (x, y) = self.origin;
+        let cropped_image = image.view(x, y, self.width, self.height).to_image();
 
         let scaled_width = (self.width as f32 * self.downsample_factor.value()) as u32;
         let scaled_height = (self.height as f32 * self.downsample_factor.value()) as u32;
