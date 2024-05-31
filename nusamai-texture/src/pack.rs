@@ -24,13 +24,15 @@ impl<P: TexturePlacer, E: AtlasExporter> TexturePacker<P, E> {
         }
     }
 
-    pub fn add_texture(&mut self, id: String, texture: CroppedTexture) {
+    pub fn add_texture(&mut self, id: String, texture: CroppedTexture) -> PlacedTextureInfo {
         if self.placer.can_place(&texture) {
             // todo:
-            //
+            // PlacedTextureInfoにはスケールされたUV座標の集合も含める
             let texture_info = self.placer.place_texture(&id, &texture);
             self.textures.insert(id, texture);
-            self.atlas_layout.push(texture_info);
+            self.atlas_layout.push(texture_info.clone());
+
+            texture_info
         } else {
             self.atlas_list.push(self.atlas_layout.clone());
             self.atlas_layout.clear();
@@ -39,7 +41,9 @@ impl<P: TexturePlacer, E: AtlasExporter> TexturePacker<P, E> {
 
             let texture_info = self.placer.place_texture(&id, &texture);
             self.textures.insert(id, texture);
-            self.atlas_layout.push(texture_info);
+            self.atlas_layout.push(texture_info.clone());
+
+            texture_info
         }
     }
 

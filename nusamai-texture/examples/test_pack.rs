@@ -61,7 +61,7 @@ fn main() {
             &polygon.image_path,
             &polygon.downsample_factor.value(),
         );
-        packer.add_texture(polygon.id.clone(), texture);
+        let _ = packer.add_texture(polygon.id.clone(), texture);
     });
 
     packer.finalize();
