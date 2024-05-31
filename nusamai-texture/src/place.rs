@@ -24,8 +24,7 @@ impl Default for TexturePlacerConfig {
 #[derive(Debug, Clone)]
 pub struct PlacedTextureInfo {
     pub id: String,
-    pub u: u32,
-    pub v: u32,
+    pub origin: (u32, u32),
     pub width: u32,
     pub height: u32,
 }
@@ -84,8 +83,7 @@ impl TexturePlacer for SimpleTexturePlacer {
 
         let texture_info = PlacedTextureInfo {
             id: id.to_string(),
-            u: self.current_x,
-            v: self.current_y,
+            origin: (self.current_x, self.current_y),
             width: scaled_width,
             height: scaled_height,
         };
@@ -278,8 +276,7 @@ impl TexturePlacer for GuillotineTexturePlacer {
         if let Some(rect) = self.find_best_rect(width, height) {
             let placed = PlacedTextureInfo {
                 id: id.to_string(),
-                u: rect.x + self.config.padding,
-                v: rect.y + self.config.padding,
+                origin: (rect.x + self.config.padding, rect.y + self.config.padding),
                 width: scaled_width,
                 height: scaled_height,
             };

@@ -26,6 +26,8 @@ impl<P: TexturePlacer, E: AtlasExporter> TexturePacker<P, E> {
 
     pub fn add_texture(&mut self, id: String, texture: CroppedTexture) {
         if self.placer.can_place(&texture) {
+            // todo:
+            //
             let texture_info = self.placer.place_texture(&id, &texture);
             self.textures.insert(id, texture);
             self.atlas_layout.push(texture_info);

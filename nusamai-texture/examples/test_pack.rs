@@ -33,7 +33,16 @@ fn main() {
     let downsample_factor = 1.0;
     for i in 0..10 {
         for j in 1..11 {
-            let uv_coords = vec![(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)];
+            let uv_coords = vec![
+                (0.2, 0.3),
+                (0.3, 0.2),
+                (0.6, 0.2),
+                (0.8, 0.3),
+                (0.8, 0.7),
+                (0.6, 0.8),
+                (0.3, 0.8),
+                (0.2, 0.7),
+            ];
             let path_string: String = format!("nusamai-texture/examples/assets/{}.png", j);
             let image_path = PathBuf::from(path_string.as_str());
             polygons.push(Polygon {
@@ -52,7 +61,6 @@ fn main() {
             &polygon.image_path,
             &polygon.downsample_factor.value(),
         );
-        let uv: (u32, u32) = (texture.u, texture.v);
         packer.add_texture(polygon.id.clone(), texture);
     });
 
