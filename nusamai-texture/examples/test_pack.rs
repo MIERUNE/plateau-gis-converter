@@ -16,7 +16,6 @@ struct Polygon {
 }
 
 fn main() {
-    let downsample_factor = 1.0;
     let config = TexturePlacerConfig {
         max_width: 1024,
         max_height: 1024,
@@ -31,6 +30,7 @@ fn main() {
 
     // 3D Tiles Sink passes the texture path and UV coordinates for each polygon
     let mut polygons: Vec<Polygon> = Vec::new();
+    let downsample_factor = 1.0;
     for i in 0..10 {
         for j in 1..11 {
             let uv_coords = vec![(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)];
@@ -48,8 +48,6 @@ fn main() {
 
     polygons.iter().for_each(|polygon| {
         // todo: スケールされたUV座標が返却されるようにする
-        // todo: ポリゴンとテクスチャの対照表のようなものを動的に生成し、実際のポリゴンの大きに応じて貼り付け時にスケーリングするようにした方が良い
-        // →ので、configではなくPolygonにdownsample_factorを持たせる
         let texture = CroppedTexture::new(
             &polygon.uv_coords,
             &polygon.image_path,
