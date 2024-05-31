@@ -1,6 +1,8 @@
 use image::{DynamicImage, GenericImageView};
 use std::path::{Path, PathBuf};
 
+use crate::cache::ImageCache;
+
 #[derive(Debug, Clone)]
 pub struct DownsampleFactor(f32);
 
@@ -60,8 +62,8 @@ impl CroppedTexture {
         }
     }
 
-    pub fn crop(&self) -> DynamicImage {
-        let image = image::open(&self.image_path).expect("Failed to open image file");
+    pub fn crop(&self, image_cache: &ImageCache) -> DynamicImage {
+        let image = image_cache.get_image(&self.image_path);
         let cropped_image = image
             .view(self.u, self.v, self.width, self.height)
             .to_image();

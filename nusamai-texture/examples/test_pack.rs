@@ -34,7 +34,6 @@ fn main() {
     for i in 0..10 {
         for j in 1..11 {
             let uv_coords = vec![(0.0, 0.0), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)];
-            // todo: Tiffなど画像のデコードが重たいので、メモリに読み込んだ画像はキャッシュから利用するようにする
             let path_string: String = format!("nusamai-texture/examples/assets/{}.png", j);
             let image_path = PathBuf::from(path_string.as_str());
             polygons.push(Polygon {

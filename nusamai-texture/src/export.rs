@@ -2,6 +2,7 @@ use image::ImageBuffer;
 use std::collections::HashMap;
 use std::path::Path;
 
+use crate::cache::ImageCache;
 use crate::place::PlacedTextureInfo;
 use crate::texture::CroppedTexture;
 
@@ -36,9 +37,11 @@ impl AtlasExporter for WebpAtlasExporter {
 
         let mut atlas_image = ImageBuffer::new(max_width, max_height);
 
+        let image_cache = ImageCache::new(100);
+
         for info in atlas_data {
             let texture = textures.get(&info.id).unwrap();
-            let cropped = texture.crop();
+            let cropped = texture.crop(&image_cache);
             let image = cropped.as_rgba8().unwrap();
 
             for (x, y, pixel) in image.enumerate_pixels() {
