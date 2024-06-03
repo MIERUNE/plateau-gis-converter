@@ -1,4 +1,4 @@
-use nusamai_geometry::MultiPolygon;
+use flatgeom::MultiPolygon;
 
 pub struct Bbox {
     min_x: f64,

@@ -4,7 +4,7 @@
 
 use std::io::Write;
 
-use nusamai_geometry::{Coord, MultiPolygon, Polygon};
+use flatgeom::{Coord, MultiPolygon, Polygon};
 
 #[repr(u8)]
 pub enum WkbByteOrder {

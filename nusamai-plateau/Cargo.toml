@@ -11,7 +11,7 @@ serde = ["dep:serde"]
 quick-xml = "0.31.0"
 serde = { version = "1.0.197", features = ["derive", "rc"], optional = true }
 nusamai-citygml = { path = "../nusamai-citygml", features = ["serde"]}
-nusamai-geometry = { path = "../nusamai-geometry" }
+flatgeom= "0.0"
 chrono = { version = "0.4.35", features = ["serde"], default-features = false }
 url = "2.5.0"
 stretto = "0.8.3"

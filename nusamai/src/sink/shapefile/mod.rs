@@ -267,7 +267,7 @@ pub fn entity_to_shape(entity: Entity) -> (shapefile::Shape, Map) {
 
     let geom_store = entity.geometry_store.read().unwrap();
 
-    let mut mpoly = nusamai_geometry::MultiPolygon::<u32>::new();
+    let mut mpoly = flatgeom::MultiPolygon::<u32>::new();
 
     geometries.iter().for_each(|entry| match entry.ty {
         GeometryType::Solid | GeometryType::Surface | GeometryType::Triangle => {
@@ -296,8 +296,8 @@ pub fn entity_to_shape(entity: Entity) -> (shapefile::Shape, Map) {
 mod tests {
     use std::sync::RwLock;
 
+    use flatgeom::MultiPolygon;
     use nusamai_citygml::{object::Object, GeometryRef};
-    use nusamai_geometry::MultiPolygon;
     use nusamai_projection::crs::EPSG_JGD2011_GEOGRAPHIC_3D;
     use shapefile::NO_DATA;
 

@@ -123,6 +123,11 @@ const filetypeOptions: Record<string, { label: string; extensions: string[]; eps
 				{ value: 10173, label: 'JGD2011 / 平面直角座標系 XII + 標高 (EPSG:10173)' },
 				{ value: 10174, label: 'JGD2011 / 平面直角座標系 XIII + 標高 (EPSG:10174)' }
 			]
+		},
+		minecraft: {
+			label: 'Minecraft',
+			extensions: [''],
+			epsg: [{ value: 4979, label: 'WGS 84 (EPSG:4979)' }]
 		}
 	};
 

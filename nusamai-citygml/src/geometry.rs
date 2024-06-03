@@ -1,4 +1,4 @@
-use nusamai_geometry::{MultiLineString, MultiPoint, MultiPolygon};
+use flatgeom::{MultiLineString, MultiPoint, MultiPolygon};
 use nusamai_projection::crs::*;
 
 use crate::LocalId;

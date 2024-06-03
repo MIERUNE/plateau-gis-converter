@@ -273,7 +273,7 @@ mod tests {
     use std::sync::RwLock;
 
     use nusamai_citygml::{object::Object, GeometryRef};
-    use nusamai_geometry::MultiPolygon;
+    use flatgeom::MultiPolygon;
     use nusamai_projection::crs::EPSG_JGD2011_GEOGRAPHIC_3D;
 
     use super::*;

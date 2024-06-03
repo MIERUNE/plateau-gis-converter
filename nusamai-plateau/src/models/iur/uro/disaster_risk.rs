@@ -2,16 +2,21 @@ use nusamai_citygml::{citygml_data, citygml_property, CityGmlElement, Code, Leng
 
 #[citygml_property(name = "uro:DisasterRiskAttributeProperty")]
 pub enum DisasterRiskAttributeProperty {
+    #[citygml(path = b"uro:BuildingHighTideRiskAttribute")] // for backward compatibility
     #[citygml(path = b"uro:HighTideRiskAttribute")]
     HighTideRiskAttribute(HighTideRiskAttribute),
+    #[citygml(path = b"uro:BuildingInlandFloodingRiskAttribute")] // for backward compatibility
     #[citygml(path = b"uro:InlandFloodingRiskAttribute")]
     InlandFloodingRiskAttribute(InlandFloodingRiskAttribute),
+    #[citygml(path = b"uro:BuildingLandSlideRiskAttribute")] // for backward compatibility
     #[citygml(path = b"uro:LandSlideRiskAttribute")]
     LandSlideRiskAttribute(LandSlideRiskAttribute),
     #[citygml(path = b"uro:ReservoirFloodingRiskAttribute")]
     ReservoirFloodingRiskAttribute(ReservoirFloodingRiskAttribute),
+    #[citygml(path = b"uro:BuildingRiverFloodingRiskAttribute")] // for backward compatibility
     #[citygml(path = b"uro:RiverFloodingRiskAttribute")]
     RiverFloodingRiskAttribute(RiverFloodingRiskAttribute),
+    #[citygml(path = b"uro:BuildingTsunamiRiskAttribute")] // for backward compatibility
     #[citygml(path = b"uro:TsunamiRiskAttribute")]
     TsunamiRiskAttribute(TsunamiRiskAttribute),
 }

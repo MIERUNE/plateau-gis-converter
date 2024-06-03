@@ -134,7 +134,7 @@ impl GpkgSink {
                                 id: obj_id,
                                 geometries,
                             } => {
-                                let mut mpoly = nusamai_geometry::MultiPolygon::new();
+                                let mut mpoly = flatgeom::MultiPolygon::new();
 
                                 geometries.iter().for_each(|entry| match entry.ty {
                                     GeometryType::Solid

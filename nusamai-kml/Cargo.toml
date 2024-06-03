@@ -7,4 +7,4 @@ edition = "2021"
 
 [dependencies]
 kml = "0.8.5"
-nusamai-geometry = { version = "0.1.0", path = "../nusamai-geometry" }
+flatgeom = "0.0"

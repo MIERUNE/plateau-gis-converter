@@ -5,7 +5,7 @@ edition = "2021"
 
 [features]
 default = ["serde"]
-serde = ["dep:serde", "serde_json", "nusamai-geometry/serde"]
+serde = ["dep:serde", "serde_json", "flatgeom/serde"]
 
 [dependencies]
 ahash = "0.8.11"
@@ -13,7 +13,7 @@ chrono = { version = "0.4.35", features = ["serde"], default-features = false }
 indexmap = { version = "2.2.6", features = ["serde"] }
 log = "0.4.21"
 macros = { path = "./macros" }
-nusamai-geometry = { path = "../nusamai-geometry", features = ["serde"]}
+flatgeom = "0.0"
 nusamai-projection = { path = "../nusamai-projection"}
 quick-xml = "0.31"
 serde = { version = "1.0", features = ["derive"], optional = true }

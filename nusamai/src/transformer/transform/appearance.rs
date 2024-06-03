@@ -2,7 +2,7 @@
 
 use feedback::Feedback;
 use nusamai_citygml::schema::Schema;
-use nusamai_geometry::MultiPolygon;
+use flatgeom::MultiPolygon;
 use nusamai_plateau::Entity;
 
 use crate::{pipeline::feedback, transformer::Transform};

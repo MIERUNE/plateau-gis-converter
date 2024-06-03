@@ -110,16 +110,29 @@ pub struct PipelineHandle {
 
 impl PipelineHandle {
     // Wait for the pipeline to terminate
-    pub fn join(self) {
-        if self.source_thread_handle.join().is_err() {
-            log::error!("Source thread panicked");
+    pub fn join(self) -> Result<(), String> {
+        fn report_error(stage: &str, err: Box<dyn std::any::Any + Send>) -> String {
+            let msg = if let Some(message) = err.downcast_ref::<&str>() {
+                format!("{stage} thread panicked with message: {}", message)
+            } else if let Some(string) = err.downcast_ref::<String>() {
+                format!("{stage} thread panicked with message: {}", string)
+            } else {
+                format!("{stage} thread panicked with an unknown type.")
+            };
+            log::error!("{}", msg);
+            msg.to_string()
         }
-        if self.transformer_thread_handle.join().is_err() {
-            log::error!("Transformer thread panicked");
+
+        if let Err(err) = self.source_thread_handle.join() {
+            return Err(report_error("Source", err));
         }
-        if self.sink_thread_handle.join().is_err() {
-            log::error!("Sink thread panicked");
+        if let Err(err) = self.transformer_thread_handle.join() {
+            return Err(report_error("Transformer", err));
         }
+        if let Err(err) = self.sink_thread_handle.join() {
+            return Err(report_error("Sink", err));
+        }
+        Ok(())
     }
 }
 

@@ -91,14 +91,12 @@ PLATEAU の標準仕様に準拠した CityGML 2.0 形式の3D都市モデルは
 - アプリケーション：
   - [`app`](./app/) &mdash; Tauri による GUI 実装
   - [`nusamai`](./nusamai/) &mdash; アプリケーションバックエンドおよびコマンドライン版の実装
-- 基盤・ユーティリティ：
-  - [`nusamai-geometry`](./nusamai-geometry/) &mdash; ジオメトリ型
-  - [`nusamai-projection`](./nusamai-projection/) &mdash; 投影法変換
 - データソース：
   - [`nusamai-citygml`](./nusamai-plateau/citygml/) &mdash; CityGML パーサ実装支援ライブラリ
     - [`macros`](./nusamai-plateau/citygml/macros/) &mdash; パーサ導出用の proc macros
   - [`nusamai-plateau`](./nusamai-plateau/) &mdash; PLATEAU 用の CityGML モデルおよびパーサ
-- 変換先形式のための支援ライブラリ（本プロジェクトのユースケースと癒着しないように構成）
+- 基盤・ユーティリティ（本プロジェクトのユースケースと癒着しないように構成）：
+  - [`nusamai-projection`](./nusamai-projection/) &mdash; 投影法変換
   - [`nusamai-mvt`](./nusamai-mvt/) &mdash; Mapbox Vector Tiles (MVT)
   - [`nusamai-gpkg`](./nusamai-gpkg/) &mdash; GeoPackage
   - [`nusamai-gltf`](./nusamai-gltf/) &mdash; glTF
@@ -109,9 +107,10 @@ PLATEAU の標準仕様に準拠した CityGML 2.0 形式の3D都市モデルは
 
 ### 7.1. 外部リポジトリ
 
-- [MIERUNE/cesiumtiles-rs](https://github.com/MIERUNE/cesiumtiles-rs) &mdash; 3D TilesのJSONモデルなど
+- [MIERUNE/flatgeom-rs](https://github.com/MIERUNE/flatgeom-rs) &mdash; シリアライズ/デシリアライズの効率を優先したジオメトリ型
 - [MIERUNE/earcut-rs](https://github.com/MIERUNE/earcut-rs) &mdash; ポリゴン三角形化アルゴリズムのRust移植
 - [MIERUNE/japan-geoid](https://github.com/MIERUNE/japan-geoid) &mdash; 日本のジオイドモデル (JGD2011 → WGS 84 の変換)
+- [MIERUNE/cesiumtiles-rs](https://github.com/MIERUNE/cesiumtiles-rs) &mdash; 3D TilesのJSONモデルなど
 
 ## 8. ライセンス
 

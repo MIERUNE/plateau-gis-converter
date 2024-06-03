@@ -1,10 +1,10 @@
-use nusamai_geometry::{
+use flatgeom::{
     Coord, MultiLineString, MultiLineString3, MultiPoint, MultiPoint3, MultiPolygon, MultiPolygon3,
     Polygon, Polygon3,
 };
 use shapefile::NO_DATA;
 
-/// Create a Shapefile Polygon from `nusamai_geometry::Polygon`.
+/// Create a Shapefile Polygon from `flatgeom::Polygon`.
 pub fn polygon_to_shape(poly: &Polygon3) -> shapefile::PolygonZ {
     polygon_to_shape_with_mapping(poly, |c| c)
 }
@@ -17,7 +17,7 @@ pub fn indexed_polygon_to_shape(
     polygon_to_shape_with_mapping(poly_idx, |idx| vertices[idx as usize])
 }
 
-/// Create a Shapefile Polygon from `nusamai_geometry::Polygon` with a mapping function.
+/// Create a Shapefile Polygon from `flatgeom::Polygon` with a mapping function.
 pub fn polygon_to_shape_with_mapping<T: Coord>(
     poly: &Polygon<T>,
     mapping: impl Fn(T) -> [f64; 3],
@@ -26,7 +26,7 @@ pub fn polygon_to_shape_with_mapping<T: Coord>(
     shapefile::PolygonZ::with_rings(all_rings)
 }
 
-/// Create a Shapefile Polygon from `nusamai_geometry::MultiPolygon`.
+/// Create a Shapefile Polygon from `flatgeom::MultiPolygon`.
 pub fn multipolygon_to_shape(mpoly: &MultiPolygon3) -> shapefile::PolygonZ {
     multipolygon_to_shape_with_mapping(mpoly, |c| c)
 }
@@ -39,7 +39,7 @@ pub fn indexed_multipolygon_to_shape(
     multipolygon_to_shape_with_mapping(mpoly_idx, |idx| vertices[idx as usize])
 }
 
-/// Create a Shapefile Polygon from `nusamai_geometry::MultiPolygon` with a mapping function.
+/// Create a Shapefile Polygon from `flatgeom::MultiPolygon` with a mapping function.
 pub fn multipolygon_to_shape_with_mapping<T: Coord>(
     mpoly: &MultiPolygon<T>,
     mapping: impl Fn(T) -> [f64; 3],
@@ -80,7 +80,7 @@ fn polygon_to_shape_rings_with_mapping<T: Coord>(
     all_rings
 }
 
-/// Create a Shapefile PolylineZ from `nusamai_geometry::MultiLineString`.
+/// Create a Shapefile PolylineZ from `flatgeom::MultiLineString`.
 pub fn multilinestring_to_shape(mls: &MultiLineString3) -> shapefile::PolylineZ {
     multilinestring_to_shape_with_mapping(mls, |c| c)
 }
@@ -93,7 +93,7 @@ pub fn indexed_multilinestring_to_shape(
     multilinestring_to_shape_with_mapping(mls_idx, |idx| vertices[idx as usize])
 }
 
-/// Create a Shapefile PolylineZ from `nusamai_geometry::MultiLineString` with a mapping function.
+/// Create a Shapefile PolylineZ from `flatgeom::MultiLineString` with a mapping function.
 pub fn multilinestring_to_shape_with_mapping<T: Coord>(
     mls: &MultiLineString<T>,
     mapping: impl Fn(T) -> [f64; 3],
@@ -111,7 +111,7 @@ pub fn multilinestring_to_shape_with_mapping<T: Coord>(
     shapefile::PolylineZ::with_parts(parts)
 }
 
-/// Create a Shapefile MultiPointZ from `nusamai_geometry::MultiPoint`.
+/// Create a Shapefile MultiPointZ from `flatgeom::MultiPoint`.
 pub fn multipoint_to_shape(mpoint: &MultiPoint3) -> shapefile::MultipointZ {
     multipoint_to_shape_with_mapping(mpoint, |c| c)
 }
@@ -124,7 +124,7 @@ pub fn indexed_multipoint_to_shape(
     multipoint_to_shape_with_mapping(mpoint_idx, |idx| vertices[idx as usize])
 }
 
-/// Create a Shapefile MultiPointZ from `nusamai_geometry::MultiPoint` with a mapping function.
+/// Create a Shapefile MultiPointZ from `flatgeom::MultiPoint` with a mapping function.
 pub fn multipoint_to_shape_with_mapping<T: Coord>(
     mpoint: &MultiPoint<T>,
     mapping: impl Fn(T) -> [f64; 3],
