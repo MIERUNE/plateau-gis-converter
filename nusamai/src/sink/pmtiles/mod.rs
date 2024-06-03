@@ -12,10 +12,10 @@ use std::{
 };
 
 use flate2::{write::ZlibEncoder, Compression};
+use flatgeom::{MultiPolygon, MultiPolygon2};
 use hashbrown::HashMap;
 use itertools::Itertools;
 use nusamai_citygml::{object, schema::Schema};
-use nusamai_geometry::{MultiPolygon, MultiPolygon2};
 use nusamai_mvt::{geometry::GeometryEncoder, tag::TagsEncoder, tileid::TileIdMethod, vector_tile};
 use prost::Message;
 use rayon::prelude::*;
