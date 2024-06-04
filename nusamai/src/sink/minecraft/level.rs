@@ -9,43 +9,35 @@ pub struct Level {
 }
 
 #[derive(Serialize, Deserialize)]
+#[serde(rename_all = "PascalCase")]
 pub struct Data {
     #[serde(rename = "allowCommands")]
     pub allow_commands: i8,
 
-    #[serde(rename = "BorderCenterX")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub border_center_x: Option<f64>,
 
-    #[serde(rename = "BorderCenterZ")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub border_center_z: Option<f64>,
 
-    #[serde(rename = "BorderDamagePerBlock")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub border_damage_per_block: Option<f64>,
 
-    #[serde(rename = "BorderSize")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub border_size: Option<f64>,
 
-    #[serde(rename = "BorderSafeZone")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub border_safe_zone: Option<f64>,
 
-    #[serde(rename = "BorderSizeLerpTarget")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub border_size_lerp_target: Option<f64>,
 
-    #[serde(rename = "BorderSizeLerpTime")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub border_size_lerp_time: Option<i64>,
 
-    #[serde(rename = "BorderWarningBlocks")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub border_warning_blocks: Option<f64>,
 
-    #[serde(rename = "BorderWarningTime")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub border_warning_time: Option<f64>,
 
@@ -53,42 +45,32 @@ pub struct Data {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub clear_weather_time: Option<i32>,
 
-    #[serde(rename = "CustomBossEvents")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub custom_boss_events: Option<CustomBossEvents>,
 
-    #[serde(rename = "DataPacks")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub data_packs: Option<DataPacks>,
 
-    #[serde(rename = "DataVersion")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub data_version: Option<i32>,
 
-    #[serde(rename = "DayTime")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub day_time: Option<i64>,
 
-    #[serde(rename = "Difficulty")]
     pub difficulty: i8,
 
-    #[serde(rename = "DifficultyLocked")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub difficulty_locked: Option<i8>,
 
-    #[serde(rename = "DimensionData")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub dimension_data: Option<DimensionData>,
 
-    #[serde(rename = "GameRules")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub game_rules: Option<GameRules>,
 
-    #[serde(rename = "WorldGenSettings")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub world_gen_settings: Option<WorldGenSettings>,
 
-    #[serde(rename = "GameType")]
     pub game_type: i32,
 
     #[serde(rename = "generatorName")]
@@ -109,17 +91,13 @@ pub struct Data {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub initialized: Option<i8>,
 
-    #[serde(rename = "LastPlayed")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub last_played: Option<i64>,
 
-    #[serde(rename = "LevelName")]
     pub level_name: String,
 
-    #[serde(rename = "MapFeatures")]
     pub map_features: i8,
 
-    #[serde(rename = "Player")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub player: Option<Player>,
 
@@ -131,21 +109,16 @@ pub struct Data {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub rain_time: Option<i32>,
 
-    #[serde(rename = "RandomSeed")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub random_seed: Option<i64>,
 
-    #[serde(rename = "SizeOnDisk")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub size_on_disk: Option<i64>,
 
-    #[serde(rename = "SpawnX")]
     pub spawn_x: i32,
 
-    #[serde(rename = "SpawnY")]
     pub spawn_y: i32,
 
-    #[serde(rename = "SpawnZ")]
     pub spawn_z: i32,
 
     #[serde(rename = "thundering")]
@@ -156,7 +129,6 @@ pub struct Data {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub thunder_time: Option<i32>,
 
-    #[serde(rename = "Time")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub time: Option<i64>,
 
@@ -165,21 +137,17 @@ pub struct Data {
 
     #[serde(rename = "Version")]
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub version_id: Option<Version>,
+    pub version: Option<Version>,
 
-    #[serde(rename = "WanderingTraderId")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub wandering_trader_id: Option<IntArray>,
 
-    #[serde(rename = "WanderingTraderSpawnChance")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub wandering_trader_spawn_chance: Option<i32>,
 
-    #[serde(rename = "WanderingTraderSpawnDelay")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub wandering_trader_spawn_delay: Option<i32>,
 
-    #[serde(rename = "WasModded")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub was_modded: Option<i8>,
 }
@@ -228,7 +196,7 @@ impl Default for Data {
             thundering: None,
             thunder_time: None,
             time: None,
-            version_id: None,
+            version: None,
             wandering_trader_id: None,
             wandering_trader_spawn_chance: None,
             wandering_trader_spawn_delay: None,
