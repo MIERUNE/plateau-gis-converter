@@ -1,3 +1,4 @@
+use pmtiles2::util::tile_id;
 use pmtiles2::{Compression, PMTiles, TileType};
 use std::fs::File;
 use std::io::Result;
@@ -9,7 +10,7 @@ fn main() -> Result<()> {
     let file_path = "output.pmtiles";
 
     // 新しいPMTilesアーカイブを作成
-    let mut pm_tiles = PMTiles::new(TileType::Png, Compression::None);
+    let mut pm_tiles = PMTiles::new(TileType::Mvt, Compression::GZip);
 
     // タイルデータを追加
     let _ = pm_tiles.add_tile(0, vec![0, 1, 2]);
