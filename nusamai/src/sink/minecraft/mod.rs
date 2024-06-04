@@ -4,10 +4,11 @@ mod level;
 mod region;
 
 use log::error;
-use std::path::PathBuf;
+use std::{io::Write, path::PathBuf};
 
 use dda_voxelize::{DdaVoxelizer, MeshVoxelizer};
 use earcut::{utils3d::project3d_to_2d, Earcut};
+use flate2::{write::GzEncoder, Compression};
 use hashbrown::HashMap;
 use rayon::prelude::*;
 
@@ -26,6 +27,7 @@ use crate::{
 };
 
 use block_colors::get_typename_block;
+use level::{Data, Level};
 use region::{write_anvil, BlockData, ChunkData, Position2D, RegionData, SectionData, WorldData};
 
 pub struct MinecraftSinkProvider {}
@@ -337,6 +339,22 @@ impl DataSink for MinecraftSink {
 
                     Ok(())
                 });
+
+                // write level.dat
+                let dir_name = self.output_path.file_name().unwrap().to_str().unwrap();
+
+                // Set the entered directory name as the level name
+                let data = Data {
+                    level_name: dir_name.to_string(),
+                    ..Default::default()
+                };
+                let level_dat = fastnbt::to_value(Level { data }).unwrap();
+
+                let bytes = fastnbt::to_bytes(&level_dat).unwrap();
+
+                let level_dat_file = std::fs::File::create(self.output_path.join("level.dat"))?;
+                let mut encoder = GzEncoder::new(level_dat_file, Compression::fast());
+                encoder.write_all(&bytes).unwrap();
 
                 Ok(())
             },
