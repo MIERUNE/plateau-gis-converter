@@ -1,12 +1,8 @@
-use pmtiles2::util::tile_id;
 use pmtiles2::{Compression, PMTiles, TileType};
 use std::fs::File;
 use std::io::Result;
-// use tempfile::tempdir;
 
 fn main() -> Result<()> {
-    // let dir = tempdir().unwrap();
-    // let file_path = dir.path().join("output.pmtiles");
     let file_path = "output.pmtiles";
 
     // 新しいPMTilesアーカイブを作成
