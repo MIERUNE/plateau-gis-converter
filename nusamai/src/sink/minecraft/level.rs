@@ -1,153 +1,280 @@
-use fastnbt::Value;
+use fastnbt::{IntArray, Value};
 use hashbrown::HashMap;
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize)]
-struct Level {
+#[derive(Serialize, Deserialize, Default)]
+pub struct Level {
     #[serde(rename = "Data")]
-    data: Data,
+    pub data: Data,
 }
 
 #[derive(Serialize, Deserialize)]
-struct Data {
+pub struct Data {
     #[serde(rename = "allowCommands")]
-    allow_commands: bool,
+    pub allow_commands: i8,
+
     #[serde(rename = "BorderCenterX")]
-    border_center_x: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub border_center_x: Option<f64>,
+
     #[serde(rename = "BorderCenterZ")]
-    border_center_z: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub border_center_z: Option<f64>,
+
     #[serde(rename = "BorderDamagePerBlock")]
-    border_damage_per_block: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub border_damage_per_block: Option<f64>,
+
     #[serde(rename = "BorderSize")]
-    border_size: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub border_size: Option<f64>,
+
     #[serde(rename = "BorderSafeZone")]
-    border_safe_zone: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub border_safe_zone: Option<f64>,
+
     #[serde(rename = "BorderSizeLerpTarget")]
-    border_size_lerp_target: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub border_size_lerp_target: Option<f64>,
+
     #[serde(rename = "BorderSizeLerpTime")]
-    border_size_lerp_time: i64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub border_size_lerp_time: Option<i64>,
+
     #[serde(rename = "BorderWarningBlocks")]
-    border_warning_blocks: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub border_warning_blocks: Option<f64>,
+
     #[serde(rename = "BorderWarningTime")]
-    border_warning_time: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub border_warning_time: Option<f64>,
+
     #[serde(rename = "clearWeatherTime")]
-    clear_weather_time: i32,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub clear_weather_time: Option<i32>,
+
     #[serde(rename = "CustomBossEvents")]
-    custom_boss_events: CustomBossEvents,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub custom_boss_events: Option<CustomBossEvents>,
+
     #[serde(rename = "DataPacks")]
-    data_packs: DataPacks,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub data_packs: Option<DataPacks>,
+
     #[serde(rename = "DataVersion")]
-    data_version: i32,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub data_version: Option<i32>,
+
     #[serde(rename = "DayTime")]
-    day_time: i64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub day_time: Option<i64>,
+
     #[serde(rename = "Difficulty")]
-    difficulty: i8,
+    pub difficulty: i8,
+
     #[serde(rename = "DifficultyLocked")]
-    difficulty_locked: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub difficulty_locked: Option<i8>,
+
     #[serde(rename = "DimensionData")]
-    dimension_data: DimensionData,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub dimension_data: Option<DimensionData>,
+
     #[serde(rename = "GameRules")]
-    game_rules: GameRules,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub game_rules: Option<GameRules>,
+
     #[serde(rename = "WorldGenSettings")]
-    world_gen_settings: WorldGenSettings,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub world_gen_settings: Option<WorldGenSettings>,
+
     #[serde(rename = "GameType")]
-    game_type: i32,
+    pub game_type: i32,
+
     #[serde(rename = "generatorName")]
-    generator_name: String,
+    pub generator_name: String,
+
     #[serde(rename = "generatorOptions")]
-    generator_options: GeneratorOptions,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub generator_options: Option<String>,
+
     #[serde(rename = "generatorVersion")]
-    generator_version: i32,
+    pub generator_version: i32,
+
     #[serde(rename = "hardcore")]
-    hardcore: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub hardcore: Option<i8>,
+
     #[serde(rename = "initialized")]
-    initialized: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub initialized: Option<i8>,
+
     #[serde(rename = "LastPlayed")]
-    last_played: i64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub last_played: Option<i64>,
+
     #[serde(rename = "LevelName")]
-    level_name: String,
+    pub level_name: String,
+
     #[serde(rename = "MapFeatures")]
-    map_features: bool,
+    pub map_features: i8,
+
     #[serde(rename = "Player")]
-    player: Player,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub player: Option<Player>,
+
     #[serde(rename = "raining")]
-    raining: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub raining: Option<i8>,
+
     #[serde(rename = "rainTime")]
-    rain_time: i32,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub rain_time: Option<i32>,
+
     #[serde(rename = "RandomSeed")]
-    random_seed: i64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub random_seed: Option<i64>,
+
     #[serde(rename = "SizeOnDisk")]
-    size_on_disk: i64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub size_on_disk: Option<i64>,
+
     #[serde(rename = "SpawnX")]
-    spawn_x: i32,
+    pub spawn_x: i32,
+
     #[serde(rename = "SpawnY")]
-    spawn_y: i32,
+    pub spawn_y: i32,
+
     #[serde(rename = "SpawnZ")]
-    spawn_z: i32,
+    pub spawn_z: i32,
+
     #[serde(rename = "thundering")]
-    thundering: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub thundering: Option<i8>,
+
     #[serde(rename = "thunderTime")]
-    thunder_time: i32,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub thunder_time: Option<i32>,
+
     #[serde(rename = "Time")]
-    time: i64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub time: Option<i64>,
+
     #[serde(rename = "version")]
-    nbt_version: i32,
+    pub nbt_version: i32,
+
     #[serde(rename = "Version")]
-    version_id: Version,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub version_id: Option<Version>,
+
     #[serde(rename = "WanderingTraderId")]
-    wandering_trader_id: Vec<i32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub wandering_trader_id: Option<IntArray>,
+
     #[serde(rename = "WanderingTraderSpawnChance")]
-    wandering_trader_spawn_chance: i32,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub wandering_trader_spawn_chance: Option<i32>,
+
     #[serde(rename = "WanderingTraderSpawnDelay")]
-    wandering_trader_spawn_delay: i32,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub wandering_trader_spawn_delay: Option<i32>,
+
     #[serde(rename = "WasModded")]
-    was_modded: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub was_modded: Option<i8>,
+}
+
+impl Default for Data {
+    fn default() -> Self {
+        Data {
+            allow_commands: 1, // true
+            difficulty: 0,     // Peaceful
+            game_type: 1,      // Creative
+            generator_name: "flat".to_string(),
+            generator_version: 1,
+            level_name: String::new(),
+            map_features: 0, // No structures in place
+            spawn_x: 0,
+            spawn_y: 160, // Set higher than average building altitude
+            spawn_z: 0,
+            nbt_version: 19133,
+            border_center_x: None,
+            border_center_z: None,
+            border_damage_per_block: None,
+            border_size: None,
+            border_safe_zone: None,
+            border_size_lerp_target: None,
+            border_size_lerp_time: None,
+            border_warning_blocks: None,
+            border_warning_time: None,
+            clear_weather_time: None,
+            custom_boss_events: None,
+            data_packs: None,
+            data_version: None,
+            day_time: None,
+            difficulty_locked: None,
+            dimension_data: None,
+            game_rules: None,
+            world_gen_settings: None,
+            generator_options: None,
+            hardcore: None,
+            initialized: None,
+            last_played: None,
+            player: None,
+            raining: None,
+            rain_time: None,
+            random_seed: None,
+            size_on_disk: None,
+            thundering: None,
+            thunder_time: None,
+            time: None,
+            version_id: None,
+            wandering_trader_id: None,
+            wandering_trader_spawn_chance: None,
+            wandering_trader_spawn_delay: None,
+            was_modded: None,
+        }
+    }
 }
 
 #[derive(Serialize, Deserialize)]
-struct CustomBossEvents {
+pub struct CustomBossEvents {
     #[serde(flatten)]
-    other: HashMap<String, Value>,
+    pub other: HashMap<String, Value>,
 }
 
 #[derive(Serialize, Deserialize)]
-struct DataPacks {
+pub struct DataPacks {
     #[serde(flatten)]
-    other: HashMap<String, Value>,
+    pub other: HashMap<String, Value>,
 }
 
 #[derive(Serialize, Deserialize)]
-struct DimensionData {
+pub struct DimensionData {
     #[serde(flatten)]
-    other: HashMap<String, Value>,
+    pub other: HashMap<String, Value>,
 }
 
 #[derive(Serialize, Deserialize)]
-struct GameRules {
+pub struct GameRules {
     #[serde(flatten)]
-    other: HashMap<String, Value>,
+    pub other: HashMap<String, Value>,
 }
 
 #[derive(Serialize, Deserialize)]
-struct GeneratorOptions {
+pub struct Player {
     #[serde(flatten)]
-    other: HashMap<String, Value>,
+    pub other: HashMap<String, Value>,
 }
 
 #[derive(Serialize, Deserialize)]
-struct Player {
+pub struct WorldGenSettings {
     #[serde(flatten)]
-    other: HashMap<String, Value>,
+    pub other: HashMap<String, Value>,
 }
 
 #[derive(Serialize, Deserialize)]
-struct WorldGenSettings {
+pub struct Version {
     #[serde(flatten)]
-    other: HashMap<String, Value>,
-}
-
-#[derive(Serialize, Deserialize)]
-struct Version {
-    #[serde(flatten)]
-    other: HashMap<String, Value>,
+    pub other: HashMap<String, Value>,
 }
