@@ -1,13 +1,15 @@
 # PLATEAU GIS Converter
 
-[![Test Tauri App](https://github.com/MIERUNE/plateau-gis-converter/actions/workflows/test_app.yml/badge.svg)](https://github.com/MIERUNE/nusamai/actions/workflows/test_app.yml)
 [![Test Libraries](https://github.com/MIERUNE/plateau-gis-converter/actions/workflows/test_libs.yml/badge.svg)](https://github.com/MIERUNE/nusamai/actions/workflows/test_libs.yml)
+[![Test GUI App](https://github.com/MIERUNE/plateau-gis-converter/actions/workflows/test_app.yml/badge.svg)](https://github.com/MIERUNE/nusamai/actions/workflows/test_app.yml)
 [![Codecov](https://codecov.io/gh/MIERUNE/plateau-gis-converter/graph/badge.svg?token=oa62wDWoqu)](https://codecov.io/gh/MIERUNE/plateau-gis-converter)
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FMIERUNE%2Fplateau-gis-converter.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2FMIERUNE%2Fplateau-gis-converter?ref=badge_shield)
 
 <!--
 [![Docs](https://github.com/MIERUNE/plateau-gis-converter/actions/workflows/doc.yml/badge.svg)](https://mierune.github.io/nusamai/app/)
 -->
+
+A proof of concept GUI and CLI tool for converting PLATEAU's 3D city models (CityGML) of Japan into various geospatial formats, including 3D Tiles, MVT, and GeoPackage.
 
 ## 1. 概要
 
@@ -74,7 +76,7 @@ PLATEAU の標準仕様に準拠した CityGML 2.0 形式の3D都市モデルは
 本ソフトウェアは以下の環境で動作することを想定しています：
 
 - OS:
-  - Windows 10以上 (Intel)
+  - Windows 10 以上 (Intel)
   - macOS (Apple Silicon, Intel)
 - CPU:
   - 特に制限はありませんが、出力形式や変換するデータ量によっては、CPU性能が処理時間に大きく影響します。
@@ -107,9 +109,11 @@ PLATEAU の標準仕様に準拠した CityGML 2.0 形式の3D都市モデルは
 
 ### 7.1. 外部リポジトリ
 
-- [MIERUNE/flatgeom-rs](https://github.com/MIERUNE/flatgeom-rs) &mdash; シリアライズ/デシリアライズの効率を優先したジオメトリ型
 - [MIERUNE/earcut-rs](https://github.com/MIERUNE/earcut-rs) &mdash; ポリゴン三角形化アルゴリズムのRust移植
 - [MIERUNE/japan-geoid](https://github.com/MIERUNE/japan-geoid) &mdash; 日本のジオイドモデル (JGD2011 → WGS 84 の変換)
+- [MIERUNE/flatgeom-rs](https://github.com/MIERUNE/flatgeom-rs) &mdash; シリアライズ/デシリアライズの効率を優先したジオメトリ型
+- [MIERUNE/kv-extsort-rs](https://github.com/MIERUNE/kv-extsort-rs) &mdash; Key-value データの外部ソート
+- [MIERUNE/dda-vozelize-rs](https://github.com/MIERUNE/dda-voxelize-rs) &mdash; 3Dメッシュサーフェスの高速なボクセル化
 - [MIERUNE/cesiumtiles-rs](https://github.com/MIERUNE/cesiumtiles-rs) &mdash; 3D TilesのJSONモデルなど
 
 ## 8. ライセンス
@@ -145,7 +149,7 @@ PLATEAU の標準仕様に準拠した CityGML 2.0 形式の3D都市モデルは
 cd ./nusamai/
 # Debug (非常に低速)
 cargo run -- ~/path/to/PLATEAU/15100_niigata-shi_2022_citygml_1_op/udx/bldg/*.gml --sink geojson --output foobar.geojson
-# Release (最適化コンパイル、実用速度)
+# Release (最適化コンパイル)
 cargo run --release -- ~/path/to/PLATEAU/15100_niigata-shi_2022_citygml_1_op/udx/bldg/*.gml --sink geojson --output foobar.geojson
 # Release (LTO有効のプロダクションビルド、最高速)
 cargo run --profile release-lto -- ~/path/to/PLATEAU/15100_niigata-shi_2022_citygml_1_op/udx/bldg/*.gml --sink geojson --output foobar.geojson

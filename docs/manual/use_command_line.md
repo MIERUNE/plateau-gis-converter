@@ -57,5 +57,6 @@ cargo run --profile release-lto -- ~/path/to/PLATEAU/15100_niigata-shi_2022_city
   - `gltf` : glTF
   - `kml` : KML
   - `ply` : PLY
+  - `minecraft` : Minecraft Java World Data
   - `shapefile` : Shapefile
 - `--output` : 出力先を指定します。拡張子なども指定してください。
