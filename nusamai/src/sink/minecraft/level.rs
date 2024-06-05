@@ -123,6 +123,9 @@ pub struct Data {
 
     pub spawn_z: i32,
 
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub enabled_features: Option<Vec<String>>,
+
     #[serde(rename = "thundering")]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub thundering: Option<i8>,
@@ -156,14 +159,10 @@ pub struct Data {
 
 impl Default for Data {
     fn default() -> Self {
-        // let mut rng = rand::thread_rng();
-        // let seed: u64 = rng.gen();
-
         Data {
-            allow_commands: 1, // true
+            allow_commands: 1, // Allow execution of the command
             difficulty: 0,     // Peaceful
             game_type: 1,      // Creative
-            // generator_name: "flat".to_string(),
             generator_name: None,
             generator_version: None,
             level_name: String::new(),
@@ -172,26 +171,48 @@ impl Default for Data {
             spawn_y: 160, // Set higher than average building altitude
             spawn_z: 0,
             nbt_version: 19133,
+            enabled_features: None,
             world_gen_settings: WorldGenSettings {
-                bonus_chest: None,
-                seed: Some(1),
+                bonus_chest: Some(0),
+                seed: Some(0),
                 generate_features: 0,
                 dimensions: Dimensions {
-                    overworld_dimension_settings: DimensionSettings {
+                    overworld_dimension_settings: FlatDimensionSettings {
                         kind: "minecraft:overworld".to_string(),
-                        generator: Generator {
+                        generator: FlatGenerator {
                             kind: "minecraft:flat".to_string(),
-                            settings: GeneratorSettings {
-                                features: 0,
-                                lakes: None,
-                                layers: vec![],
-                                structure_overrides: vec![
-                                    "minecraft:strongholds".to_string(),
-                                    "minecraft:villages".to_string(),
-                                ],
-                                biome: "minecraft:plains".to_string(),
+                            settings: FlatGeneratorSettings {
+                                features: 1,
+                                lakes: Some(0),
+                                layers: vec![Layer {
+                                    block: "minecraft:air".to_string(),
+                                    height: 1,
+                                }],
+                                structure_overrides: vec![],
+                                biome: "minecraft:void".to_string(),
                             },
-                            biome_source: None,
+                        },
+                    },
+                    the_nether_dimension_settings: NoiseDimensionSettings {
+                        kind: "minecraft:the_nether".to_string(),
+                        generator: NoiseGenerator {
+                            kind: "minecraft:noise".to_string(),
+                            settings: "minecraft:nether".to_string(),
+                            biome_source: BiomeSource {
+                                kind: "minecraft:multi_noise".to_string(),
+                                preset: Some("minecraft:nether".to_string()),
+                            },
+                        },
+                    },
+                    the_end_dimension_settings: NoiseDimensionSettings {
+                        kind: "minecraft:the_end".to_string(),
+                        generator: NoiseGenerator {
+                            kind: "minecraft:noise".to_string(),
+                            settings: "minecraft:end".to_string(),
+                            biome_source: BiomeSource {
+                                kind: "minecraft:the_end".to_string(),
+                                preset: None,
+                            },
                         },
                     },
                 },
@@ -208,9 +229,10 @@ impl Default for Data {
             clear_weather_time: None,
             custom_boss_events: None,
             data_packs: Some(DataPacks {
-                disabled: vec!["bundle".to_string(), "update_1_20".to_string()],
-                enabled: vec!["vanilla".to_string()],
+                disabled: Some(vec!["bundle".to_string(), "update_1_20".to_string()]),
+                enabled: Some(vec!["vanilla".to_string()]),
             }),
+            // data_packs: None,
             data_version: Some(3337),
             // data_version: None,
             day_time: None,
@@ -218,7 +240,7 @@ impl Default for Data {
             dimension_data: None,
             game_rules: None,
             generator_options: None,
-            hardcore: None,
+            hardcore: Some(0),
             initialized: None,
             last_played: None,
             player: None,
@@ -229,12 +251,7 @@ impl Default for Data {
             thundering: None,
             thunder_time: None,
             time: None,
-            version: Some(Version {
-                id: 3337,
-                name: "1.19.4".to_string(),
-                series: "main".to_string(),
-                snapshot: Some(1),
-            }),
+            version: None,
             wandering_trader_id: None,
             wandering_trader_spawn_chance: None,
             wandering_trader_spawn_delay: None,
@@ -252,8 +269,10 @@ pub struct CustomBossEvents {
 #[derive(Serialize, Deserialize)]
 #[serde(rename = "PascalCase")]
 pub struct DataPacks {
-    pub disabled: Vec<String>,
-    pub enabled: Vec<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub disabled: Option<Vec<String>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub enabled: Option<Vec<String>>,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -288,27 +307,29 @@ pub struct WorldGenSettings {
 pub struct Dimensions {
     // Future implementation of the Nether and the End.
     #[serde(rename = "minecraft:overworld")]
-    pub overworld_dimension_settings: DimensionSettings,
+    pub overworld_dimension_settings: FlatDimensionSettings,
+    #[serde(rename = "minecraft:the_nether")]
+    pub the_nether_dimension_settings: NoiseDimensionSettings,
+    #[serde(rename = "minecraft:the_end")]
+    pub the_end_dimension_settings: NoiseDimensionSettings,
 }
 
 #[derive(Deserialize, Serialize, Debug)]
-pub struct DimensionSettings {
+pub struct FlatDimensionSettings {
     #[serde(rename = "type")]
     pub kind: String,
-    pub generator: Generator,
+    pub generator: FlatGenerator,
 }
 
 #[derive(Deserialize, Serialize, Debug)]
-pub struct Generator {
+pub struct FlatGenerator {
     #[serde(rename = "type")]
     pub kind: String,
-    pub settings: GeneratorSettings,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub biome_source: Option<BiomeSource>,
+    pub settings: FlatGeneratorSettings,
 }
 
 #[derive(Deserialize, Serialize, Debug)]
-pub struct GeneratorSettings {
+pub struct FlatGeneratorSettings {
     pub features: i8,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub lakes: Option<i8>,
@@ -318,15 +339,32 @@ pub struct GeneratorSettings {
 }
 
 #[derive(Deserialize, Serialize, Debug)]
+pub struct NoiseDimensionSettings {
+    #[serde(rename = "type")]
+    pub kind: String,
+    pub generator: NoiseGenerator,
+}
+
+#[derive(Deserialize, Serialize, Debug)]
+pub struct NoiseGenerator {
+    #[serde(rename = "type")]
+    pub kind: String,
+    pub settings: String,
+    pub biome_source: BiomeSource,
+}
+
+#[derive(Deserialize, Serialize, Debug)]
 pub struct BiomeSource {
-    #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    #[serde(rename = "type")]
+    pub kind: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub preset: Option<String>,
 }
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct Layer {
     pub block: String,
-    pub height: i64,
+    pub height: i32,
 }
 
 #[derive(Serialize, Deserialize)]
