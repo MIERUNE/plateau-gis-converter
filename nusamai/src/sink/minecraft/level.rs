@@ -68,13 +68,13 @@ pub struct Data {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub game_rules: Option<GameRules>,
 
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub world_gen_settings: Option<WorldGenSettings>,
+    pub world_gen_settings: WorldGenSettings,
 
     pub game_type: i32,
 
     #[serde(rename = "generatorName")]
-    pub generator_name: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub generator_name: Option<String>,
 
     #[serde(rename = "generatorOptions")]
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -158,7 +158,8 @@ impl Default for Data {
             allow_commands: 1, // true
             difficulty: 0,     // Peaceful
             game_type: 1,      // Creative
-            generator_name: "flat".to_string(),
+            generator_name: None,
+            // generator_name: "flat".to_string(),
             generator_version: 1,
             level_name: String::new(),
             map_features: 0, // No structures in place
@@ -166,6 +167,30 @@ impl Default for Data {
             spawn_y: 160, // Set higher than average building altitude
             spawn_z: 0,
             nbt_version: 19133,
+            world_gen_settings: WorldGenSettings {
+                bonus_chest: None,
+                seed: None,
+                generate_features: 0,
+                dimensions: Dimensions {
+                    overworld_dimension_settings: DimensionSettings {
+                        kind: "minecraft:overworld".to_string(),
+                        generator: Generator {
+                            kind: "minecraft:flat".to_string(),
+                            settings: GeneratorSettings {
+                                features: 1,
+                                lakes: None,
+                                layers: vec![Layer {
+                                    block: "minecraft:air".to_string(),
+                                    height: 1,
+                                }],
+                                structure_overrides: vec![],
+                                biome: "minecraft:the_void".to_string(), // No biomes
+                            },
+                            biome_source: None,
+                        },
+                    },
+                },
+            },
             border_center_x: None,
             border_center_z: None,
             border_damage_per_block: None,
@@ -183,7 +208,6 @@ impl Default for Data {
             difficulty_locked: None,
             dimension_data: None,
             game_rules: None,
-            world_gen_settings: None,
             generator_options: None,
             hardcore: None,
             initialized: None,
@@ -235,10 +259,54 @@ pub struct Player {
     pub other: HashMap<String, Value>,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Deserialize, Serialize, Debug)]
 pub struct WorldGenSettings {
-    #[serde(flatten)]
+    pub bonus_chest: Option<i8>,
+    pub seed: Option<i64>,
+    pub generate_features: i8,
+    pub dimensions: Dimensions,
+}
+
+#[derive(Deserialize, Serialize, Debug)]
+pub struct Dimensions {
+    // Future implementation of the Nether and the End.
+    #[serde(rename = "minecraft:overworld")]
+    pub overworld_dimension_settings: DimensionSettings,
+}
+
+#[derive(Deserialize, Serialize, Debug)]
+pub struct DimensionSettings {
+    #[serde(rename = "type")]
+    pub kind: String,
+    pub generator: Generator,
+}
+
+#[derive(Deserialize, Serialize, Debug)]
+pub struct Generator {
+    #[serde(rename = "type")]
+    pub kind: String,
+    pub settings: GeneratorSettings,
+    pub biome_source: Option<BiomeSource>,
+}
+
+#[derive(Deserialize, Serialize, Debug)]
+pub struct GeneratorSettings {
+    pub features: i8,
+    pub lakes: Option<i8>,
+    pub layers: Vec<Layer>,
+    pub structure_overrides: Vec<String>,
+    pub biome: String,
+}
+
+#[derive(Deserialize, Serialize, Debug)]
+pub struct BiomeSource {
     pub other: HashMap<String, Value>,
+}
+
+#[derive(Deserialize, Serialize, Debug)]
+pub struct Layer {
+    pub block: String,
+    pub height: i64,
 }
 
 #[derive(Serialize, Deserialize)]
