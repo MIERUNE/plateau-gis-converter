@@ -26,7 +26,7 @@ use crate::{
     sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo},
 };
 
-use block_colors::get_typename_block;
+use block_colors::get_block_for_typename;
 use level::{Data, Level};
 use region::{write_anvil, BlockData, ChunkData, Position2D, RegionData, SectionData, WorldData};
 
@@ -152,7 +152,7 @@ impl DataSink for MinecraftSink {
             &nusamai_projection::ellipsoid::grs80(),
         );
 
-        let typename_block = get_typename_block();
+        let typename_block = get_block_for_typename();
 
         let (ra, rb) = rayon::join(
             || {
@@ -167,8 +167,6 @@ impl DataSink for MinecraftSink {
                             error!("The root value is not an object");
                             return Ok(());
                         };
-
-                        let typename = &obj.typename.as_ref().to_string();
 
                         let ObjectStereotype::Feature { geometries, .. } = &obj.stereotype else {
                             return Ok(());
@@ -186,7 +184,7 @@ impl DataSink for MinecraftSink {
                             .iter()
                             .map(|v| match projection.project_forward(v[0], v[1], v[2]) {
                                 // To match the Minecraft coordinate system, the y-coordinate is multiplied by -1 and replaced with z
-                                Ok((x, y, z)) => [x, z, y * -1.0],
+                                Ok((x, y, z)) => [x, z, -y],
                                 Err(e) => {
                                     println!("conversion error: {:?}", e);
                                     [f64::NAN, f64::NAN, f64::NAN]
@@ -244,7 +242,7 @@ impl DataSink for MinecraftSink {
                             }
                         });
 
-                        typename_map.insert(typename.clone(), voxelizer);
+                        typename_map.insert(obj.typename.to_string(), voxelizer);
 
                         if sender.send(typename_map).is_err() {
                             return Err(PipelineError::Canceled);
@@ -323,7 +321,7 @@ impl DataSink for MinecraftSink {
 
                             world_data[region_index].chunks[chunk_index].sections[section_index]
                                 .blocks
-                                .push(block_data.unwrap());
+                                .push(block_data);
                         });
                     });
                 });
@@ -332,29 +330,28 @@ impl DataSink for MinecraftSink {
                 file_path.push("region");
                 std::fs::create_dir_all(&file_path)?;
 
-                let _ = world_data.iter().try_for_each(|region| -> Result<()> {
+                world_data.iter().try_for_each(|region| -> Result<()> {
                     feedback.ensure_not_canceled()?;
 
                     write_anvil(region, &file_path)?;
 
                     Ok(())
-                });
+                })?;
 
                 // write level.dat
-                let dir_name = self.output_path.file_name().unwrap().to_str().unwrap();
+                let dir_name = self.output_path.file_name().unwrap().to_string_lossy();
 
                 // Set the entered directory name as the level name
                 let data = Data {
                     level_name: dir_name.to_string(),
                     ..Default::default()
                 };
-                let level_dat = fastnbt::to_value(Level { data }).unwrap();
-
-                let bytes = fastnbt::to_bytes(&level_dat).unwrap();
 
                 let level_dat_file = std::fs::File::create(self.output_path.join("level.dat"))?;
                 let mut encoder = GzEncoder::new(level_dat_file, Compression::fast());
-                encoder.write_all(&bytes).unwrap();
+
+                let bytes = fastnbt::to_bytes(&Level { data }).unwrap();
+                encoder.write_all(&bytes)?;
 
                 Ok(())
             },

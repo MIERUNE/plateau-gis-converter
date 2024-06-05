@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-pub fn get_typename_block() -> HashMap<&'static str, &'static str> {
+pub fn get_block_for_typename() -> HashMap<&'static str, &'static str> {
     let mut typename_blocks: HashMap<&'static str, &'static str> = HashMap::new();
 
     typename_blocks.insert("bldg:Building", "iron_block");
@@ -31,7 +31,7 @@ mod tests {
 
     #[test]
     fn test_get_typename_block() {
-        let typename_blocks = get_typename_block();
+        let typename_blocks = get_block_for_typename();
         assert_eq!(typename_blocks.get("bldg:Building"), Some(&"iron_block"));
         assert_eq!(typename_blocks.get("tran:Road"), Some(&"gray_wool"));
         assert_eq!(typename_blocks.get("tran:Railway"), Some(&"granite"));
