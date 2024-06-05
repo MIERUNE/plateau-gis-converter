@@ -12,7 +12,8 @@ pub struct Level {
 #[serde(rename_all = "PascalCase")]
 pub struct Data {
     #[serde(rename = "allowCommands")]
-    pub allow_commands: i8,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub allow_commands: Option<i8>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub border_center_x: Option<f64>,
@@ -57,7 +58,8 @@ pub struct Data {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub day_time: Option<i64>,
 
-    pub difficulty: i8,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub difficulty: Option<i8>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub difficulty_locked: Option<i8>,
@@ -70,7 +72,8 @@ pub struct Data {
 
     pub world_gen_settings: WorldGenSettings,
 
-    pub game_type: i32,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub game_type: Option<i32>,
 
     #[serde(rename = "generatorName")]
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -95,7 +98,8 @@ pub struct Data {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub last_played: Option<i64>,
 
-    pub level_name: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub level_name: Option<String>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub map_features: Option<i8>,
@@ -117,11 +121,14 @@ pub struct Data {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub size_on_disk: Option<i64>,
 
-    pub spawn_x: i32,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub spawn_x: Option<i32>,
 
-    pub spawn_y: i32,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub spawn_y: Option<i32>,
 
-    pub spawn_z: i32,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub spawn_z: Option<i32>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub enabled_features: Option<Vec<String>>,
@@ -160,22 +167,22 @@ pub struct Data {
 impl Default for Data {
     fn default() -> Self {
         Data {
-            allow_commands: 1, // Allow execution of the command
-            difficulty: 0,     // Peaceful
-            game_type: 1,      // Creative
+            allow_commands: Some(1), // Allow execution of the command
+            difficulty: Some(0),     // Peaceful
+            game_type: Some(1),      // Creative
             generator_name: None,
             generator_version: None,
-            level_name: String::new(),
+            level_name: Some(String::new()),
             map_features: None,
-            spawn_x: 0,
-            spawn_y: 160, // Set higher than average building altitude
-            spawn_z: 0,
+            spawn_x: Some(0),
+            spawn_y: Some(160), // Set higher than average building altitude
+            spawn_z: Some(0),
             nbt_version: 19133,
             enabled_features: None,
             world_gen_settings: WorldGenSettings {
                 bonus_chest: Some(0),
                 seed: Some(0),
-                generate_features: 0,
+                generate_features: Some(0),
                 dimensions: Dimensions {
                     overworld_dimension_settings: FlatDimensionSettings {
                         kind: "minecraft:overworld".to_string(),
@@ -232,9 +239,7 @@ impl Default for Data {
                 disabled: Some(vec!["bundle".to_string(), "update_1_20".to_string()]),
                 enabled: Some(vec!["vanilla".to_string()]),
             }),
-            // data_packs: None,
             data_version: Some(3337),
-            // data_version: None,
             day_time: None,
             difficulty_locked: None,
             dimension_data: None,
@@ -299,7 +304,8 @@ pub struct WorldGenSettings {
     pub bonus_chest: Option<i8>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub seed: Option<u64>,
-    pub generate_features: i8,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub generate_features: Option<i8>,
     pub dimensions: Dimensions,
 }
 

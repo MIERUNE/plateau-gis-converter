@@ -343,7 +343,7 @@ impl DataSink for MinecraftSink {
 
                 // Set the entered directory name as the level name
                 let data = Data {
-                    level_name: dir_name.to_string(),
+                    level_name: Some(dir_name.to_string()),
                     ..Default::default()
                 };
 
