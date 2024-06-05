@@ -196,7 +196,7 @@ impl Default for Data {
                                     height: 1,
                                 }],
                                 structure_overrides: vec![],
-                                biome: "minecraft:void".to_string(),
+                                biome: "minecraft:the_void".to_string(),
                             },
                         },
                     },
