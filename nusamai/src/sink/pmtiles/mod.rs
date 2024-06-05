@@ -5,10 +5,10 @@ mod tags;
 
 use std::{
     convert::Infallible,
-    fs,
+    fs::{self, File},
     io::prelude::*,
     path::{Path, PathBuf},
-    sync::mpsc,
+    sync::{mpsc, Mutex},
 };
 
 use flate2::{write::ZlibEncoder, Compression};
@@ -17,6 +17,7 @@ use hashbrown::HashMap;
 use itertools::Itertools;
 use nusamai_citygml::{object, schema::Schema};
 use nusamai_mvt::{geometry::GeometryEncoder, tag::TagsEncoder, tileid::TileIdMethod, vector_tile};
+use pmtiles2::{Compression as PmtilesCompression, PMTiles, TileType};
 use prost::Message;
 use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
@@ -282,6 +283,8 @@ fn tile_writing_stage(
     let default_detail = 12;
     let min_detail = 9;
 
+    let pm_tiles = Mutex::new(PMTiles::new(TileType::Mvt, PmtilesCompression::GZip));
+
     receiver_sorted
         .into_iter()
         .par_bridge()
@@ -297,10 +300,10 @@ fn tile_writing_stage(
                 ));
             }
 
-            let path = output_path.join(Path::new(&format!("{zoom}/{x}/{y}.pbf")));
-            if let Some(dir) = path.parent() {
-                fs::create_dir_all(dir)?;
-            }
+            // let path = output_path.join(Path::new(&format!("{zoom}/{x}/{y}.pbf")));
+            // if let Some(dir) = path.parent() {
+            //     fs::create_dir_all(dir)?;
+            // }
 
             for detail in (min_detail..=default_detail).rev() {
                 feedback.ensure_not_canceled()?;
@@ -322,18 +325,23 @@ fn tile_writing_stage(
                     continue;
                 }
 
-                feedback.info(format!(
-                    "Writing a tile: {} ({} bytes, {} compressed)",
-                    &path.to_string_lossy(),
-                    bytesize::to_string(bytes.len() as u64, true),
-                    bytesize::to_string(compressed_size as u64, true),
-                ));
-                fs::write(&path, &bytes)?;
+                // feedback.info(format!(
+                //     "Writing a tile: {} ({} bytes, {} compressed)",
+                //     &path.to_string_lossy(),
+                //     bytesize::to_string(bytes.len() as u64, true),
+                //     bytesize::to_string(compressed_size as u64, true),
+                // ));
+                // fs::write(&path, &bytes)?;
+                let _ = &pm_tiles.lock().unwrap().add_tile(tile_id, bytes);
                 break;
             }
 
             Ok::<(), PipelineError>(())
         })?;
+
+    let mut file = File::create(output_path)?;
+    let pm_tiles_inner = pm_tiles.into_inner().unwrap();
+    pm_tiles_inner.to_writer(&mut file)?;
 
     Ok(())
 }
