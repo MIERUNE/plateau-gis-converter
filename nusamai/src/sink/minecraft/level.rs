@@ -81,7 +81,8 @@ pub struct Data {
     pub generator_options: Option<String>,
 
     #[serde(rename = "generatorVersion")]
-    pub generator_version: i32,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub generator_version: Option<i32>,
 
     #[serde(rename = "hardcore")]
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -96,7 +97,8 @@ pub struct Data {
 
     pub level_name: String,
 
-    pub map_features: i8,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub map_features: Option<i8>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub player: Option<Player>,
@@ -154,22 +156,25 @@ pub struct Data {
 
 impl Default for Data {
     fn default() -> Self {
+        // let mut rng = rand::thread_rng();
+        // let seed: u64 = rng.gen();
+
         Data {
             allow_commands: 1, // true
             difficulty: 0,     // Peaceful
             game_type: 1,      // Creative
-            generator_name: None,
             // generator_name: "flat".to_string(),
-            generator_version: 1,
+            generator_name: None,
+            generator_version: None,
             level_name: String::new(),
-            map_features: 0, // No structures in place
+            map_features: None,
             spawn_x: 0,
             spawn_y: 160, // Set higher than average building altitude
             spawn_z: 0,
             nbt_version: 19133,
             world_gen_settings: WorldGenSettings {
                 bonus_chest: None,
-                seed: None,
+                seed: Some(1),
                 generate_features: 0,
                 dimensions: Dimensions {
                     overworld_dimension_settings: DimensionSettings {
@@ -177,14 +182,14 @@ impl Default for Data {
                         generator: Generator {
                             kind: "minecraft:flat".to_string(),
                             settings: GeneratorSettings {
-                                features: 1,
+                                features: 0,
                                 lakes: None,
-                                layers: vec![Layer {
-                                    block: "minecraft:air".to_string(),
-                                    height: 1,
-                                }],
-                                structure_overrides: vec![],
-                                biome: "minecraft:the_void".to_string(), // No biomes
+                                layers: vec![],
+                                structure_overrides: vec![
+                                    "minecraft:strongholds".to_string(),
+                                    "minecraft:villages".to_string(),
+                                ],
+                                biome: "minecraft:plains".to_string(),
                             },
                             biome_source: None,
                         },
@@ -202,8 +207,12 @@ impl Default for Data {
             border_warning_time: None,
             clear_weather_time: None,
             custom_boss_events: None,
-            data_packs: None,
-            data_version: None,
+            data_packs: Some(DataPacks {
+                disabled: vec!["bundle".to_string(), "update_1_20".to_string()],
+                enabled: vec!["vanilla".to_string()],
+            }),
+            data_version: Some(3337),
+            // data_version: None,
             day_time: None,
             difficulty_locked: None,
             dimension_data: None,
@@ -220,7 +229,12 @@ impl Default for Data {
             thundering: None,
             thunder_time: None,
             time: None,
-            version: None,
+            version: Some(Version {
+                id: 3337,
+                name: "1.19.4".to_string(),
+                series: "main".to_string(),
+                snapshot: Some(1),
+            }),
             wandering_trader_id: None,
             wandering_trader_spawn_chance: None,
             wandering_trader_spawn_delay: None,
@@ -236,9 +250,10 @@ pub struct CustomBossEvents {
 }
 
 #[derive(Serialize, Deserialize)]
+#[serde(rename = "PascalCase")]
 pub struct DataPacks {
-    #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub disabled: Vec<String>,
+    pub enabled: Vec<String>,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -261,8 +276,10 @@ pub struct Player {
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct WorldGenSettings {
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub bonus_chest: Option<i8>,
-    pub seed: Option<i64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub seed: Option<u64>,
     pub generate_features: i8,
     pub dimensions: Dimensions,
 }
@@ -286,12 +303,14 @@ pub struct Generator {
     #[serde(rename = "type")]
     pub kind: String,
     pub settings: GeneratorSettings,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub biome_source: Option<BiomeSource>,
 }
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct GeneratorSettings {
     pub features: i8,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub lakes: Option<i8>,
     pub layers: Vec<Layer>,
     pub structure_overrides: Vec<String>,
@@ -300,6 +319,7 @@ pub struct GeneratorSettings {
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct BiomeSource {
+    #[serde(flatten)]
     pub other: HashMap<String, Value>,
 }
 
@@ -310,7 +330,10 @@ pub struct Layer {
 }
 
 #[derive(Serialize, Deserialize)]
+#[serde(rename = "PascalCase")]
 pub struct Version {
-    #[serde(flatten)]
-    pub other: HashMap<String, Value>,
+    pub id: i32,
+    pub name: String,
+    pub series: String,
+    pub snapshot: Option<i8>,
 }
