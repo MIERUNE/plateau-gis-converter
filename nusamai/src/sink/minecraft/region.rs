@@ -198,6 +198,30 @@ pub fn write_anvil(region_data: &RegionData, file_path: &Path) -> Result<()> {
     // Create a empty region object
     let empty_region = Arc::new(Mutex::new(Region::new(out_file).unwrap()));
 
+    // (0..32).into_par_iter().for_each(|chunk_z| {
+    //     (0..32).into_par_iter().for_each(|chunk_x| {
+    //         let absolute_chunk_x = region_data.position[0] * 32 + chunk_x;
+    //         let absolute_chunk_z = region_data.position[1] * 32 + chunk_z;
+
+    //         let chunk_data = region_data
+    //             .chunks
+    //             .iter()
+    //             .find(|c| c.position == [absolute_chunk_x, absolute_chunk_z]);
+
+    //         let chunk = create_chunk_structure(absolute_chunk_x, absolute_chunk_z, chunk_data);
+
+    //         let serialized_chunk = to_bytes(&chunk).unwrap();
+
+    //         {
+    //             // Write the chunk data to the region file
+    //             let mut region = empty_region.lock().unwrap();
+    //             region
+    //                 .write_chunk(chunk_x as usize, chunk_z as usize, &serialized_chunk)
+    //                 .unwrap();
+    //         }
+    //     });
+    // });
+
     if let Err(e) = region_data.chunks.par_iter().try_for_each(|chunk_data| {
         let [absolute_chunk_x, absolute_chunk_z] = chunk_data.position;
         let chunk_x = absolute_chunk_x - region_data.position[0] * 32;
