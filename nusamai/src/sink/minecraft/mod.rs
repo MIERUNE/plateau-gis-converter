@@ -117,7 +117,7 @@ impl DataSink for MinecraftSink {
         let mut chunk_map: HashMap<(Position2D, Position2D), usize> = HashMap::new();
         let mut section_map: HashMap<(Position2D, Position2D, i32), usize> = HashMap::new();
 
-        let mut local_bvol = BoundingVolume::default();
+        let mut global_bvol = BoundingVolume::default();
 
         // FIXME: Collecting all features in memory to calculate the bounding volume, which is not scalable.
         let parcels: Vec<crate::pipeline::Parcel> = upstream.into_iter().collect();
@@ -126,24 +126,24 @@ impl DataSink for MinecraftSink {
             let entity = &parcel.entity;
 
             let geom_store = entity.geometry_store.read().unwrap();
-            let mut parcel_bvol = BoundingVolume::default();
+            let mut local_bvol = BoundingVolume::default();
 
             // Calculation of bounding volume
             geom_store.vertices.iter().for_each(|v| {
-                parcel_bvol.min_lng = parcel_bvol.min_lng.min(v[0]);
-                parcel_bvol.max_lng = parcel_bvol.max_lng.max(v[0]);
-                parcel_bvol.min_lat = parcel_bvol.min_lat.min(v[1]);
-                parcel_bvol.max_lat = parcel_bvol.max_lat.max(v[1]);
-                parcel_bvol.min_height = parcel_bvol.min_height.min(v[2]);
-                parcel_bvol.max_height = parcel_bvol.max_height.max(v[2]);
+                local_bvol.min_lng = local_bvol.min_lng.min(v[0]);
+                local_bvol.max_lng = local_bvol.max_lng.max(v[0]);
+                local_bvol.min_lat = local_bvol.min_lat.min(v[1]);
+                local_bvol.max_lat = local_bvol.max_lat.max(v[1]);
+                local_bvol.min_height = local_bvol.min_height.min(v[2]);
+                local_bvol.max_height = local_bvol.max_height.max(v[2]);
             });
 
-            local_bvol.update(&parcel_bvol);
+            global_bvol.update(&local_bvol);
         });
 
         // Calculation of centre coordinates
-        let center_lng = (local_bvol.min_lng + local_bvol.max_lng) / 2.0;
-        let center_lat = (local_bvol.min_lat + local_bvol.max_lat) / 2.0;
+        let center_lng = (global_bvol.min_lng + global_bvol.max_lng) / 2.0;
+        let center_lat = (global_bvol.min_lat + global_bvol.max_lat) / 2.0;
 
         let projection = ExtendedTransverseMercatorProjection::new(
             center_lng,
@@ -184,7 +184,11 @@ impl DataSink for MinecraftSink {
                             .iter()
                             .map(|v| match projection.project_forward(v[0], v[1], v[2]) {
                                 // To match the Minecraft coordinate system, the y-coordinate is multiplied by -1 and replaced with z
-                                Ok((x, y, z)) => [x, z, -y],
+                                Ok((x, y, mut z)) => {
+                                    // Set the minimum altitude to 0 by subtracting the minimum altitude of the bounding volume.
+                                    z -= global_bvol.min_height.min(v[2]);
+                                    [x, z, -y]
+                                }
                                 Err(e) => {
                                     println!("conversion error: {:?}", e);
                                     [f64::NAN, f64::NAN, f64::NAN]
