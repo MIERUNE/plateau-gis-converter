@@ -3,7 +3,7 @@ use nusamai_projection::crs::*;
 
 use crate::LocalId;
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum GeometryParseType {
     Geometry,
     Solid,
@@ -22,6 +22,8 @@ pub enum GeometryType {
     Solid,
     /// Polygons (surfaces)
     MultiSurface,
+    /// Composite surface
+    CompositeSurface,
     Surface,
     /// Polygons (triangles)
     Triangle,
@@ -38,11 +40,13 @@ pub enum GeometryType {
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
 pub struct GeometryRef {
+    pub id: Option<LocalId>,
     #[serde(rename = "type")]
     pub ty: GeometryType,
     pub lod: u8,
     pub pos: u32,
     pub len: u32,
+    pub solid_ids: Vec<LocalId>,
 }
 
 pub type GeometryRefs = Vec<GeometryRef>;
@@ -69,6 +73,9 @@ pub struct GeometryStore {
     /// List of surface ids and their spans in `multipolygon`
     pub surface_spans: Vec<SurfaceSpan>,
 
+    /// Lists of surface for composite surface
+    pub composite_surfaces: Vec<LocalId>,
+
     /// Assigned materials for each polygon. Empty if appearance resolution is not enabled.
     pub polygon_materials: Vec<Option<u32>>,
     /// Assigned textures for each polygon. Empty if appearance resolution is not enabled.
@@ -77,7 +84,7 @@ pub struct GeometryStore {
     pub polygon_uvs: MultiPolygon<'static, [f64; 2]>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 pub struct SurfaceSpan {
     pub id: LocalId,
@@ -98,6 +105,9 @@ pub(crate) struct GeometryCollector {
 
     /// surface polygon spans in `multipolygon`
     pub surface_spans: Vec<SurfaceSpan>,
+
+    /// Lists of surface for composite surface
+    pub composite_surfaces: Vec<LocalId>,
 }
 
 impl GeometryCollector {
@@ -145,6 +155,7 @@ impl GeometryCollector {
             multipoint: self.multipoint,
             ring_ids: self.ring_ids,
             surface_spans: self.surface_spans,
+            composite_surfaces: self.composite_surfaces,
             ..Default::default()
         }
     }

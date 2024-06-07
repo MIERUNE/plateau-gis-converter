@@ -130,7 +130,7 @@ impl AppearanceStore {
             for (theme_name, theme_src) in other.themes.iter_mut() {
                 let entries: Vec<_> = ring_ids
                     .iter()
-                    .filter_map(|v| *v)
+                    .filter_map(|v| v.clone())
                     .filter_map(|ring_id| {
                         if let Some((idx, ls)) = theme_src.ring_id_to_texture.remove(&ring_id) {
                             let (offset, inserted) = idx_map.insert_full(idx);
@@ -160,7 +160,7 @@ impl AppearanceStore {
             for (theme_name, theme_src) in other.themes.iter_mut() {
                 let entries: Vec<_> = surface_spans
                     .iter()
-                    .map(|span| span.id)
+                    .map(|span| span.id.clone())
                     .filter_map(|surface_id| {
                         if let Some(idx) = theme_src.surface_id_to_material.remove(&surface_id) {
                             let (offset, inserted) = idx_map.insert_full(idx);
@@ -208,13 +208,13 @@ mod tests {
             let theme = app_local.themes.entry("default".to_string()).or_default();
             theme
                 .ring_id_to_texture
-                .insert(LocalId::new(0), (0, LineString2::default()));
+                .insert(LocalId::new("aa"), (0, LineString2::default()));
             theme
                 .ring_id_to_texture
-                .insert(LocalId::new(1), (0, LineString2::default()));
-            theme.surface_id_to_material.insert(LocalId::new(0), 0);
-            theme.surface_id_to_material.insert(LocalId::new(1), 1);
-            theme.surface_id_to_material.insert(LocalId::new(2), 1);
+                .insert(LocalId::new("bb"), (0, LineString2::default()));
+            theme.surface_id_to_material.insert(LocalId::new("aa"), 0);
+            theme.surface_id_to_material.insert(LocalId::new("bb"), 1);
+            theme.surface_id_to_material.insert(LocalId::new("cc"), 1);
 
             assert_eq!(app_local.materials.len(), 2);
             assert_eq!(app_local.textures.len(), 3);
@@ -236,30 +236,30 @@ mod tests {
             let theme = app_global.themes.entry("default".to_string()).or_default();
             theme
                 .ring_id_to_texture
-                .insert(LocalId::new(3), (0, LineString2::default()));
+                .insert(LocalId::new("cc"), (0, LineString2::default()));
             theme
                 .ring_id_to_texture
-                .insert(LocalId::new(4), (1, LineString2::default()));
+                .insert(LocalId::new("dd"), (1, LineString2::default()));
             theme
                 .ring_id_to_texture
-                .insert(LocalId::new(5), (1, LineString2::default()));
-            theme.surface_id_to_material.insert(LocalId::new(3), 0);
-            theme.surface_id_to_material.insert(LocalId::new(4), 1);
-            theme.surface_id_to_material.insert(LocalId::new(5), 1);
+                .insert(LocalId::new("ee"), (1, LineString2::default()));
+            theme.surface_id_to_material.insert(LocalId::new("cc"), 0);
+            theme.surface_id_to_material.insert(LocalId::new("dd"), 1);
+            theme.surface_id_to_material.insert(LocalId::new("ee"), 1);
         }
 
         // merge global to local
         app_local.merge_global(
             &mut app_global,
-            [3, 4, 5, 99]
+            ["cc", "dd", "ee", "zz"]
                 .into_iter()
-                .map(|id| Some(LocalId(id)))
+                .map(|id| Some(LocalId::new(id)))
                 .collect::<Vec<_>>()
                 .as_slice(),
-            [3, 4, 5, 99]
+            ["cc", "dd", "ee", "zz"]
                 .into_iter()
                 .map(|id| SurfaceSpan {
-                    id: LocalId(id),
+                    id: LocalId::new(id),
                     start: 0,
                     end: 0,
                 })
@@ -273,12 +273,12 @@ mod tests {
 
         let theme = app_local.themes.entry("default".to_string()).or_default();
 
-        assert!(theme.ring_id_to_texture[&LocalId(3)].0 >= 3);
-        assert!(theme.ring_id_to_texture[&LocalId(4)].0 >= 3);
-        assert!(theme.ring_id_to_texture[&LocalId(5)].0 >= 3);
+        assert!(theme.ring_id_to_texture[&LocalId::new("cc")].0 >= 3);
+        assert!(theme.ring_id_to_texture[&LocalId::new("dd")].0 >= 3);
+        assert!(theme.ring_id_to_texture[&LocalId::new("ee")].0 >= 3);
 
-        assert!(theme.surface_id_to_material[&LocalId(3)] >= 2);
-        assert!(theme.surface_id_to_material[&LocalId(4)] >= 2);
-        assert!(theme.surface_id_to_material[&LocalId(5)] >= 2);
+        assert!(theme.surface_id_to_material[&LocalId::new("cc")] >= 2);
+        assert!(theme.surface_id_to_material[&LocalId::new("dd")] >= 2);
+        assert!(theme.surface_id_to_material[&LocalId::new("ee")] >= 2);
     }
 }

@@ -360,58 +360,48 @@ impl Point {
     }
 }
 
-#[derive(
-    Debug, Clone, Copy, serde::Serialize, serde::Deserialize, Default, PartialEq, Eq, Hash,
-)]
-pub struct LocalId(pub u32);
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, Default, PartialEq, Eq, Hash)]
+pub struct LocalId(pub String);
 
 impl LocalId {
-    pub fn new(idx: u32) -> Self {
-        Self(idx)
+    pub fn new<S: AsRef<str>>(s: S) -> Self {
+        Self(s.as_ref().to_string())
     }
-    pub fn value(&self) -> u32 {
-        self.0
+    pub fn value(&self) -> String {
+        self.0.clone()
+    }
+}
+
+impl From<String> for LocalId {
+    fn from(id: String) -> Self {
+        LocalId(id.trim_start_matches('#').to_string())
     }
 }
 
 impl CityGmlElement for LocalId {
     #[inline(never)]
     fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
-        let s = st.parse_text()?;
-        if let Some(id) = s.strip_prefix('#') {
-            let s = id.to_string();
-            *self = st.context_mut().id_to_integer_id(s);
-            Ok(())
-        } else {
-            Err(ParseError::InvalidValue(format!(
-                "Expected a reference starts with '#' but got {}",
-                s
-            )))
-        }
+        let s = { st.parse_text()? };
+        {
+            *self = LocalId::from(s.to_string());
+        };
+        Ok(())
     }
 
     #[inline(never)]
     fn into_object(self) -> Option<Value> {
-        Some(Value::NonNegativeInteger(self.0 as u64))
+        Some(Value::String(self.0))
     }
 
     fn collect_schema(_schema: &mut schema::Schema) -> schema::Attribute {
-        schema::Attribute::new(schema::TypeRef::NonNegativeInteger)
+        schema::Attribute::new(schema::TypeRef::String)
     }
 }
 
 impl CityGmlAttribute for LocalId {
-    fn parse_attribute_value(value: &str, st: &mut ParseContext) -> Result<Self, ParseError> {
+    fn parse_attribute_value(value: &str, _st: &mut ParseContext) -> Result<Self, ParseError> {
         let s = value;
-        if let Some(id) = s.strip_prefix('#') {
-            let s = id.to_string();
-            Ok(st.id_to_integer_id(s))
-        } else {
-            Err(ParseError::InvalidValue(format!(
-                "Expected a reference starts with '#' but got {}",
-                s
-            )))
-        }
+        Ok(Self::from(s.to_string()))
     }
 }
 

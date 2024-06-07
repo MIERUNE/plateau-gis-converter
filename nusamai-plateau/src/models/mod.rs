@@ -15,13 +15,14 @@ pub mod vegetation;
 pub mod waterbody;
 
 pub use bridge::Bridge;
+use building::BoundarySurfaceProperty;
 pub use building::Building;
 pub use city_furniture::CityFurniture;
 pub use cityobjectgroup::CityObjectGroup;
 pub use generics::GenericCityObject;
 pub use iur::{urf, uro};
 pub use landuse::LandUse;
-use nusamai_citygml::{citygml_property, CityGmlElement};
+use nusamai_citygml::{citygml_property, CityGmlElement, GeometryRefs};
 pub use other_construction::OtherConstruction;
 pub use relief::ReliefFeature;
 pub use transportation::{Railway, Road, Square, Track, Waterway};
@@ -843,6 +844,31 @@ impl TopLevelCityObject {
             TopLevelCityObject::ZonalDisasterPreventionFacility(v) => v.description.clone(),
             TopLevelCityObject::ZoneForPreservationOfHistoricalLandscape(v) => v.description.clone(),
             TopLevelCityObject::Unknown => todo!(),
+        }
+    }
+
+    pub fn bounded_by(&self) -> GeometryRefs {
+        match self {
+            TopLevelCityObject::Building(v) => {
+                let result = v
+                    .bounded_by
+                    .iter()
+                    .map(|bounded| match bounded {
+                        BoundarySurfaceProperty::RoofSurface(v) => v.geometries.clone(),
+                        BoundarySurfaceProperty::WallSurface(v) => v.geometries.clone(),
+                        BoundarySurfaceProperty::GroundSurface(v) => v.geometries.clone(),
+                        BoundarySurfaceProperty::ClosureSurface(v) => v.geometries.clone(),
+                        BoundarySurfaceProperty::FloorSurface(v) => v.geometries.clone(),
+                        BoundarySurfaceProperty::CeilingSurface(v) => v.geometries.clone(),
+                        BoundarySurfaceProperty::InteriorWallSurface(v) => v.geometries.clone(),
+                        BoundarySurfaceProperty::OuterCeilingSurface(v) => v.geometries.clone(),
+                        BoundarySurfaceProperty::OuterFloorSurface(v) => v.geometries.clone(),
+                        BoundarySurfaceProperty::Unknown => vec![],
+                    })
+                    .collect::<Vec<_>>();
+                result.into_iter().flatten().collect()
+            }
+            _ => vec![],
         }
     }
 }

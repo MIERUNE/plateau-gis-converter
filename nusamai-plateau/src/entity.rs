@@ -1,6 +1,6 @@
 use std::sync::{Arc, RwLock};
 
-use nusamai_citygml::{geometry::GeometryStore, object::Value};
+use nusamai_citygml::{geometry::GeometryStore, object::Value, GeometryRefs};
 
 use crate::appearance::AppearanceStore;
 
@@ -21,4 +21,6 @@ pub struct Entity {
     pub geometry_store: Arc<RwLock<GeometryStore>>,
     /// All appearances used in this city object
     pub appearance_store: Arc<RwLock<AppearanceStore>>,
+    /// Bounded by
+    pub bounded: GeometryRefs,
 }
