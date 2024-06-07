@@ -9,6 +9,7 @@ use std::{
 };
 
 use log::LevelFilter;
+use nusamai::parameters::Parameters;
 use nusamai::{
     pipeline::{feedback, Canceller},
     sink::{
@@ -53,7 +54,11 @@ fn main() {
         .manage(ConversionTasksState {
             canceller: Arc::new(Mutex::new(Canceller::default())),
         })
-        .invoke_handler(tauri::generate_handler![run_conversion, cancel_conversion])
+        .invoke_handler(tauri::generate_handler![
+            run_conversion,
+            cancel_conversion,
+            get_parameter
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
@@ -285,4 +290,19 @@ fn run_conversion(
 #[tauri::command]
 fn cancel_conversion(tasks_state: tauri::State<ConversionTasksState>) {
     tasks_state.canceller.lock().unwrap().cancel();
+}
+
+/// Get the configurable parameters of the sink
+#[tauri::command]
+fn get_parameter(filetype: String) -> Result<Parameters, Error> {
+    let sink_provider = select_sink_provider(&filetype).ok_or_else(|| {
+        let msg = format!("Invalid sink type: {}", filetype);
+        log::error!("{}", msg);
+        Error::InvalidSetting(msg)
+    })?;
+
+    let mut sink_params = sink_provider.parameters();
+
+    println!("{:?}", sink_params);
+    Ok(sink_params)
 }

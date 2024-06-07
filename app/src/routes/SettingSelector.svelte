@@ -2,10 +2,42 @@
 	import { dialog } from '@tauri-apps/api';
 	import Icon from '@iconify/svelte';
 	import { filetypeOptions } from '$lib/settings';
+    import { invoke } from '@tauri-apps/api/tauri';
+
+
+    type ParameterType = "Integer" | "String" | "Boolean" | "Float" | "List";
+
+    type ParameterOption = {
+        Integer?: {
+            value: number;
+            min: number;
+            max: number;
+        };
+        String?: {
+            value: string;
+        };
+        Boolean?: {
+            value: boolean;
+        };
+    }
+    type ParameterEntry = {
+        [key in ParameterType]: {
+            description: string;
+            required: string;
+            parameter: ParameterOption;
+        }
+    }
+
+    type Parameters = {
+        items: ParameterEntry;
+    }
 
 	export let filetype: string;
 	export let epsg: number = 4979;
 	export let rulesPath: string;
+    let debug: any;
+    let OptionParameter: string[] = [];
+    let ParametersItems: ParameterEntry = {};
 
 	$: epsgOptions = filetypeOptions[filetype]?.epsg || [];
 	$: disableEpsgOptions = epsgOptions.length < 2;
@@ -16,6 +48,22 @@
 			epsg = filetypeOptions[filetype]?.epsg[0].value || 4979;
 		}
 	}
+
+    async function setOptionParameter(filetype: string) {
+        const parameters = await invoke('get_parameter', { filetype }) as Parameters;
+        const keys = Object.keys(parameters.items).filter(item => item !== '@output');
+
+        if (keys.length === 0) {
+            OptionParameter = [];
+            return;
+        }
+
+        OptionParameter = keys;
+        ParametersItems = parameters.items
+        debug = parameters.items[keys[1] as keyof typeof parameters.items]
+    }
+
+    $:setOptionParameter(filetype);
 
 	async function openRulesPathDialog() {
 		const res = await dialog.open({
@@ -34,7 +82,9 @@
 		rulesPath = '';
 	}
 </script>
-
+<!-- {#if debug}
+    <p>{JSON.stringify(debug)}</p>
+{/if} -->
 <div>
 	<div class="flex items-center gap-1.5">
 		<Icon class="text-xl" icon="material-symbols:settings" />
@@ -51,6 +101,20 @@
 				{/each}
 			</select>
 		</div>
+
+        {#if OptionParameter.length > 0}
+        <div class="flex flex-col gap-1.5">
+			<label for="epsg-select" class="font-bold">出力オプション</label>
+            <div>
+			{#each  OptionParameter as key}
+            <div class="flex gap-2 w-80">
+                <label for={key} class="w-3/4">{ParametersItems[key].description}</label>
+                <input type="number" id={key}  bind:value={ParametersItems[key].parameter.Integer.value} class="w-1/4"/>
+            </div>
+            {/each}
+            </div>
+		</div>
+        {/if}
 
 		<div class="flex flex-col gap-1.5">
 			<label for="epsg-select" class="font-bold">座標参照系</label>
