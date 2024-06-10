@@ -2,6 +2,7 @@
 	import { invoke } from '@tauri-apps/api/tauri';
 	import { attachConsole } from 'tauri-plugin-log-api';
 	import { message } from '@tauri-apps/api/dialog';
+    import type { Parameters } from '$lib/parameters';
 
 	import Icon from '@iconify/svelte';
 	import InputSelector from './InputSelector.svelte';
@@ -10,6 +11,8 @@
 	import LoadingAnimation from './LoadingAnimation.svelte';
 
 	attachConsole(); // For Tauri log in the webview console
+
+    let parametersItems = {} as Parameters['items'];
 
 	let inputPaths: string[] = [];
 	let filetype: string;
@@ -70,7 +73,7 @@
 
 		<InputSelector bind:inputPaths />
 
-		<SettingSelector bind:filetype bind:epsg bind:rulesPath />
+		<SettingSelector bind:filetype bind:epsg bind:rulesPath bind:parametersItems />
 
 		<OutputSelector {filetype} bind:outputPath />
 

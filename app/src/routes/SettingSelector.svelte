@@ -3,41 +3,15 @@
 	import Icon from '@iconify/svelte';
 	import { filetypeOptions } from '$lib/settings';
     import { invoke } from '@tauri-apps/api/tauri';
-
-
-    type ParameterType = "Integer" | "String" | "Boolean" | "Float" | "List";
-
-    type ParameterOption = {
-        Integer?: {
-            value: number;
-            min: number;
-            max: number;
-        };
-        String?: {
-            value: string;
-        };
-        Boolean?: {
-            value: boolean;
-        };
-    }
-    type ParameterEntry = {
-        [key in ParameterType]: {
-            description: string;
-            required: string;
-            parameter: ParameterOption;
-        }
-    }
-
-    type Parameters = {
-        items: ParameterEntry;
-    }
+    import type { Parameters, ParameterType } from '$lib/parameters';
 
 	export let filetype: string;
 	export let epsg: number = 4979;
 	export let rulesPath: string;
+    export let parametersItems: Parameters['items'];
+
     let debug: any;
-    let OptionParameter: string[] = [];
-    let ParametersItems: ParameterEntry = {};
+    let optionParameter: string[] = [];
 
 	$: epsgOptions = filetypeOptions[filetype]?.epsg || [];
 	$: disableEpsgOptions = epsgOptions.length < 2;
@@ -54,12 +28,12 @@
         const keys = Object.keys(parameters.items).filter(item => item !== '@output');
 
         if (keys.length === 0) {
-            OptionParameter = [];
+            optionParameter = [];
             return;
         }
 
-        OptionParameter = keys;
-        ParametersItems = parameters.items
+        optionParameter = keys;
+        parametersItems = parameters.items
         debug = parameters.items[keys[1] as keyof typeof parameters.items]
     }
 
@@ -81,10 +55,32 @@
 	function clearRulesPath() {
 		rulesPath = '';
 	}
+
+     // 型ガード関数
+    function isIntegerParameter(parameter: any): parameter is { Integer: { value: number; min: number; max: number; } } {
+        return (parameter as { Integer?: unknown }).Integer !== undefined;
+    }
+
+    function isStringParameter(parameter: any): parameter is { String: { value: string; } } {
+        return (parameter as { String?: unknown }).String !== undefined;
+    }
+
+    function isBooleanParameter(parameter: any): parameter is { Boolean: { value: boolean; } } {
+        return (parameter as { Boolean?: unknown }).Boolean !== undefined;
+    }
+
+    // ParameterTypeの型を取得
+    function getParameterType(key: string): ParameterType {
+        const parameter = parametersItems[key].parameter;
+        if (isIntegerParameter(parameter)) return "Integer";
+        if (isStringParameter(parameter)) return "String";
+        if (isBooleanParameter(parameter)) return "Boolean";
+        throw new Error("Unknown parameter type");
+    }
 </script>
-<!-- {#if debug}
+{#if debug}
     <p>{JSON.stringify(debug)}</p>
-{/if} -->
+{/if}
 <div>
 	<div class="flex items-center gap-1.5">
 		<Icon class="text-xl" icon="material-symbols:settings" />
@@ -102,16 +98,32 @@
 			</select>
 		</div>
 
-        {#if OptionParameter.length > 0}
+        {#if optionParameter.length > 0}
         <div class="flex flex-col gap-1.5">
 			<label for="epsg-select" class="font-bold">出力オプション</label>
             <div>
-			{#each  OptionParameter as key}
-            <div class="flex gap-2 w-80">
-                <label for={key} class="w-3/4">{ParametersItems[key].description}</label>
-                <input type="number" id={key}  bind:value={ParametersItems[key].parameter.Integer.value} class="w-1/4"/>
-            </div>
+		{#each optionParameter as key}
+                <!-- Integerの場合 -->
+                {#if getParameterType(key) === 'Integer'}
+                <div class="flex gap-2 w-80">
+                    <label for={key} class="w-3/4">{parametersItems[key].description}</label>
+                    <input type="number" id={key} min={parametersItems[key].parameter.Integer.min} max={parametersItems[key].parameter.Integer.max} bind:value={parametersItems[key].parameter.Integer.value} class="w-1/4"/>
+                </div>
+                {:else if getParameterType(key) === 'String'}
+                <!-- Stringの場合 -->
+                <div class="flex gap-2 w-80">
+                    <label for={key} class="w-3/4">{parametersItems[key].description}</label>
+                    <input type="text" id={key} bind:value={parametersItems[key].parameter.String.value} class="w-1/4"/>
+                </div>
+                {:else if getParameterType(key) === 'Boolean'}
+                <!-- Booleanの場合 -->
+                <div class="flex gap-2 w-80">
+                    <label for={key} class="w-3/4">{parametersItems[key].description}</label>
+                    <input type="checkbox" id={key} bind:checked={parametersItems[key].parameter.Boolean.value} class="w-1/4"/>
+                </div>
+                {/if}
             {/each}
+
             </div>
 		</div>
         {/if}
