@@ -182,13 +182,13 @@ impl DataSink for MinecraftSink {
 
             let geom_store = entity.geometry_store.read().unwrap();
 
-            let mut earcutter = Earcut::<f32>::new();
-            let mut buf3d: Vec<[f32; 3]> = Vec::new();
-            let mut buf2d: Vec<[f32; 2]> = Vec::new();
-            let mut index_buf: Vec<u32> = Vec::new();
-
-            geometries.iter().for_each(|entry| match entry.ty {
+            geometries.par_iter().for_each(|entry| match entry.ty {
                 GeometryType::Solid | GeometryType::Surface | GeometryType::Triangle => {
+                    let mut earcutter = Earcut::<f32>::new();
+                    let mut buf3d: Vec<[f32; 3]> = Vec::new();
+                    let mut buf2d: Vec<[f32; 2]> = Vec::new();
+                    let mut index_buf: Vec<u32> = Vec::new();
+
                     for idx_poly in geom_store
                         .multipolygon
                         .iter_range(entry.pos as usize..(entry.pos + entry.len) as usize)
