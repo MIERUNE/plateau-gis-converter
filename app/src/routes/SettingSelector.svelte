@@ -8,7 +8,7 @@
 	export let filetype: string;
 	export let epsg: number = 4979;
 	export let rulesPath: string;
-    export let parametersItems: Parameters['items'];
+    export let paramsOption: Parameters;
 
     let debug: any;
     let optionParameter: string[] = [];
@@ -25,16 +25,19 @@
 
     async function setOptionParameter(filetype: string) {
         const parameters = await invoke('get_parameter', { filetype }) as Parameters;
+        // '@output'を除外
+        // delete parameters.items["@output"];
+        
         const keys = Object.keys(parameters.items).filter(item => item !== '@output');
 
-        if (keys.length === 0) {
-            optionParameter = [];
-            return;
-        }
+        // if (keys.length === 0) {
+        //     optionParameter = [];
+        //     return;
+        // }
 
         optionParameter = keys;
-        parametersItems = parameters.items
-        debug = parameters.items[keys[1] as keyof typeof parameters.items]
+        paramsOption = parameters
+        debug = parameters
     }
 
     $:setOptionParameter(filetype);
@@ -71,16 +74,21 @@
 
     // ParameterTypeの型を取得
     function getParameterType(key: string): ParameterType {
-        const parameter = parametersItems[key].parameter;
+        const parameter = paramsOption.items[key].parameter;
         if (isIntegerParameter(parameter)) return "Integer";
         if (isStringParameter(parameter)) return "String";
         if (isBooleanParameter(parameter)) return "Boolean";
         throw new Error("Unknown parameter type");
     }
+
+    // async function test() {
+    //     await invoke ('set_parameter', {paramsOption});
+    // }
 </script>
 {#if debug}
     <p>{JSON.stringify(debug)}</p>
 {/if}
+<!-- <button on:click={test}>test</button> -->
 <div>
 	<div class="flex items-center gap-1.5">
 		<Icon class="text-xl" icon="material-symbols:settings" />
@@ -106,20 +114,20 @@
                 <!-- Integerの場合 -->
                 {#if getParameterType(key) === 'Integer'}
                 <div class="flex gap-2 w-80">
-                    <label for={key} class="w-3/4">{parametersItems[key].description}</label>
-                    <input type="number" id={key} min={parametersItems[key].parameter.Integer.min} max={parametersItems[key].parameter.Integer.max} bind:value={parametersItems[key].parameter.Integer.value} class="w-1/4"/>
+                    <label for={key} class="w-3/4">{paramsOption.items[key].description}</label>
+                    <input type="number" id={key} min={paramsOption.items[key].parameter.Integer.min} max={paramsOption.items[key].parameter.Integer.max} bind:value={paramsOption.items[key].parameter.Integer.value} class="w-1/4"/>
                 </div>
                 {:else if getParameterType(key) === 'String'}
                 <!-- Stringの場合 -->
                 <div class="flex gap-2 w-80">
-                    <label for={key} class="w-3/4">{parametersItems[key].description}</label>
-                    <input type="text" id={key} bind:value={parametersItems[key].parameter.String.value} class="w-1/4"/>
+                    <label for={key} class="w-3/4">{paramsOption.items[key].description}</label>
+                    <input type="text" id={key} bind:value={paramsOption.items[key].parameter.String.value} class="w-1/4"/>
                 </div>
                 {:else if getParameterType(key) === 'Boolean'}
                 <!-- Booleanの場合 -->
                 <div class="flex gap-2 w-80">
-                    <label for={key} class="w-3/4">{parametersItems[key].description}</label>
-                    <input type="checkbox" id={key} bind:checked={parametersItems[key].parameter.Boolean.value} class="w-1/4"/>
+                    <label for={key} class="w-3/4">{paramsOption.items[key].description}</label>
+                    <input type="checkbox" id={key} bind:checked={paramsOption.items[key].parameter.Boolean.value} class="w-1/4"/>
                 </div>
                 {/if}
             {/each}

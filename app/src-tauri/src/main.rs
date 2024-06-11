@@ -132,11 +132,15 @@ fn run_conversion(
     filetype: String,
     epsg: u16,
     rules_path: String,
+    params_option: Parameters,
     tasks_state: tauri::State<ConversionTasksState>,
     window: tauri::Window,
 ) -> Result<(), Error> {
     // Request cancellation of previous task if still running
     tasks_state.canceller.lock().unwrap().cancel();
+
+    println!("====set_parameter====");
+    println!("{:?}", params_option);
 
     // Check the existence of the input paths
     for path in input_paths.iter() {
@@ -172,7 +176,7 @@ fn run_conversion(
             Error::InvalidSetting(msg)
         })?;
 
-        let mut sink_params = sink_provider.parameters();
+        let mut sink_params = params_option;
         if let Err(err) = sink_params.update_values_with_str(&sinkopt) {
             let msg = format!("Error parsing sink options: {:?}", err);
             log::error!("{}", msg);
@@ -301,8 +305,7 @@ fn get_parameter(filetype: String) -> Result<Parameters, Error> {
         Error::InvalidSetting(msg)
     })?;
 
-    let mut sink_params = sink_provider.parameters();
+    let sink_params = sink_provider.parameters();
 
-    println!("{:?}", sink_params);
     Ok(sink_params)
 }

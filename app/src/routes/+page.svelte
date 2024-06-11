@@ -12,7 +12,9 @@
 
 	attachConsole(); // For Tauri log in the webview console
 
-    let parametersItems = {} as Parameters['items'];
+    let paramsOption = {} as Parameters;
+
+  
 
 	let inputPaths: string[] = [];
 	let filetype: string;
@@ -40,7 +42,8 @@
 				outputPath,
 				filetype,
 				epsg,
-				rulesPath
+				rulesPath,
+                paramsOption
 			});
 			isRunning = false;
 			await message(`変換が完了しました。\n'${outputPath}' に出力しました。`, { type: 'info' });
@@ -73,7 +76,7 @@
 
 		<InputSelector bind:inputPaths />
 
-		<SettingSelector bind:filetype bind:epsg bind:rulesPath bind:parametersItems />
+		<SettingSelector bind:filetype bind:epsg bind:rulesPath bind:paramsOption />
 
 		<OutputSelector {filetype} bind:outputPath />
 
