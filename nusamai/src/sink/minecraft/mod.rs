@@ -162,6 +162,8 @@ impl DataSink for MinecraftSink {
 
         let voxelizer = Mutex::new(DdaVoxelizer::<Voxel>::new());
 
+        // TODO: Scalable par-region processing with external sorting (map-reduce).
+
         parcels.into_par_iter().try_for_each(|parcel| {
             feedback.ensure_not_canceled()?;
 
