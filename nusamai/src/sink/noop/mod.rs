@@ -38,6 +38,7 @@ impl DataSinkProvider for NoopSinkProvider {
                     value: None,
                     must_exist: false,
                 }),
+                gui_label: None,
             },
         );
         // REMOVE: deprecated

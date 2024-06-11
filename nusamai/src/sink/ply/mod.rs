@@ -55,6 +55,7 @@ impl DataSinkProvider for StanfordPlySinkProvider {
                     value: None,
                     must_exist: false,
                 }),
+                gui_label: None,
             },
         );
         params

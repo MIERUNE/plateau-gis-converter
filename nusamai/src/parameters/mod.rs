@@ -108,6 +108,7 @@ pub struct ParameterEntry {
     pub description: String,
     pub required: bool,
     pub parameter: ParameterType,
+    pub gui_label: Option<String>,
 }
 
 impl ParameterEntry {

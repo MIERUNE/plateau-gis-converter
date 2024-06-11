@@ -117,7 +117,7 @@
 					{#each optionParameter as key}
 						{#if isIntegerParameter(paramsOption.items[key].parameter)}
 							<div class="flex gap-2 w-80">
-								<label for={key} class="w-3/4">{paramsOption.items[key].description}</label>
+								<label for={key} class="w-3/4">{paramsOption.items[key].gui_label}</label>
 								<input
 									type="number"
 									id={key}
@@ -130,7 +130,7 @@
 							</div>
 						{:else if isStringParameter(paramsOption.items[key].parameter)}
 							<div class="flex gap-2 w-80">
-								<label for={key} class="w-3/4">{paramsOption.items[key].description}</label>
+								<label for={key} class="w-3/4">{paramsOption.items[key].gui_label}</label>
 								<input
 									type="text"
 									id={key}
@@ -140,7 +140,7 @@
 							</div>
 						{:else if isBooleanParameter(paramsOption.items[key].parameter)}
 							<div class="flex gap-2 w-80">
-								<label for={key} class="w-3/4">{paramsOption.items[key].description}</label>
+								<label for={key} class="w-3/4">{paramsOption.items[key].gui_label}</label>
 								<input
 									type="checkbox"
 									id={key}

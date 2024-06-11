@@ -12,10 +12,10 @@ use std::{
 };
 
 use flate2::{write::ZlibEncoder, Compression};
+use flatgeom::{MultiPolygon, MultiPolygon2};
 use hashbrown::HashMap;
 use itertools::Itertools;
 use nusamai_citygml::{object, schema::Schema};
-use flatgeom::{MultiPolygon, MultiPolygon2};
 use nusamai_mvt::{geometry::GeometryEncoder, tag::TagsEncoder, tileid::TileIdMethod, vector_tile};
 use prost::Message;
 use rayon::prelude::*;
@@ -52,6 +52,7 @@ impl DataSinkProvider for MvtSinkProvider {
                     value: None,
                     must_exist: false,
                 }),
+                gui_label: None,
             },
         );
         params.define(
@@ -64,6 +65,7 @@ impl DataSinkProvider for MvtSinkProvider {
                     min: Some(0),
                     max: Some(20),
                 }),
+                gui_label: Some("最小ズームレベル".into()),
             },
         );
         params.define(
@@ -76,6 +78,7 @@ impl DataSinkProvider for MvtSinkProvider {
                     min: Some(0),
                     max: Some(20),
                 }),
+                gui_label: Some("最大ズームレベル".into()),
             },
         );
         params

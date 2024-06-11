@@ -5,3 +5,16 @@
 body {
 	@apply text-base;
 }
+
+body::-webkit-scrollbar {
+	width: 9px;
+	height: 9px;
+}
+
+body::-webkit-scrollbar-track {
+	background-color: #d9d9d9;
+}
+
+body::-webkit-scrollbar-thumb {
+	background-color: rgb(0 190 190);
+}

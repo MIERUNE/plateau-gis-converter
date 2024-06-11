@@ -57,6 +57,7 @@ impl DataSinkProvider for CesiumTilesSinkProvider {
                     value: None,
                     must_exist: false,
                 }),
+                gui_label: None,
             },
         );
         // TODO: min Zoom

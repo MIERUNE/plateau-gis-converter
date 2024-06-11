@@ -24,6 +24,7 @@ type Parameter = IntegerParameter & StringParameter & BooleanParameter;
 interface ParamsOptionItem {
 	parameter: Parameter;
 	description: string;
+	gui_label?: string;
 }
 
 export interface ParamsOption {

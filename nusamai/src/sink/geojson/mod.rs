@@ -47,6 +47,7 @@ impl DataSinkProvider for GeoJsonSinkProvider {
                     value: None,
                     must_exist: false,
                 }),
+                gui_label: None,
             },
         );
         params
@@ -272,8 +273,8 @@ pub fn entity_to_geojson_features(entity: &Entity) -> Vec<geojson::Feature> {
 mod tests {
     use std::sync::RwLock;
 
-    use nusamai_citygml::{object::Object, GeometryRef};
     use flatgeom::MultiPolygon;
+    use nusamai_citygml::{object::Object, GeometryRef};
     use nusamai_projection::crs::EPSG_JGD2011_GEOGRAPHIC_3D;
 
     use super::*;
