@@ -1,19 +1,33 @@
-export type ParameterType = 'Integer' | 'String' | 'Boolean';
+interface IntegerParameter {
+	Integer: {
+		value: number;
+		min?: number;
+		max?: number;
+	};
+}
 
-export type ParameterOption<T extends ParameterType> = T extends 'Integer'
-	? { Integer: { value: number; min: number; max: number } }
-	: T extends 'String'
-		? { String: { value: string } }
-		: T extends 'Boolean'
-			? { Boolean: { value: boolean } }
-			: never;
+interface StringParameter {
+	String: {
+		value: string;
+	};
+}
 
-export type ParameterEntry<T extends ParameterType> = {
+interface BooleanParameter {
+	Boolean: {
+		value: boolean;
+	};
+}
+
+// TODO - In practice, use as IntegerParameter | StringParameter | BooleanParameter
+type Parameter = IntegerParameter & StringParameter & BooleanParameter;
+
+interface ParamsOptionItem {
+	parameter: Parameter;
 	description: string;
-	required: string;
-	parameter: ParameterOption<T>;
-};
+}
 
-export type Parameters = {
-	items: { [key: string]: ParameterEntry<ParameterType> };
-};
+export interface ParamsOption {
+	items: {
+		[key: string]: ParamsOptionItem;
+	};
+}

@@ -2,7 +2,7 @@
 	import { invoke } from '@tauri-apps/api/tauri';
 	import { attachConsole } from 'tauri-plugin-log-api';
 	import { message } from '@tauri-apps/api/dialog';
-    import type { Parameters } from '$lib/parameters';
+	import type { ParamsOption } from '$lib/parameters';
 
 	import Icon from '@iconify/svelte';
 	import InputSelector from './InputSelector.svelte';
@@ -12,15 +12,12 @@
 
 	attachConsole(); // For Tauri log in the webview console
 
-    let paramsOption = {} as Parameters;
-
-  
-
 	let inputPaths: string[] = [];
 	let filetype: string;
 	let epsg: number;
 	let rulesPath = '';
 	let outputPath = '';
+	let paramsOption = {} as ParamsOption;
 	let isRunning = false;
 
 	async function convertAndSave() {
@@ -43,7 +40,7 @@
 				filetype,
 				epsg,
 				rulesPath,
-                paramsOption
+				paramsOption
 			});
 			isRunning = false;
 			await message(`変換が完了しました。\n'${outputPath}' に出力しました。`, { type: 'info' });
