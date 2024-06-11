@@ -10,7 +10,7 @@
 	export let rulesPath: string;
 	export let paramsOption: ParamsOption;
 
-	let debug: any; // NOTE debug
+	// let debug: any; // NOTE debug
 	let optionParameter: string[] = [];
 
 	$: epsgOptions = filetypeOptions[filetype]?.epsg || [];
@@ -30,7 +30,7 @@
 		// Exclude '@output'
 		optionParameter = Object.keys(parameters.items).filter((item) => item !== '@output');
 		paramsOption = parameters;
-		debug = parameters;
+		// debug = parameters; // NOTE debug
 	}
 
 	$: setOptionParameter(filetype);
@@ -87,10 +87,11 @@
 		}
 	}
 </script>
-
+<!--- // NOTE debug -->
+<!-- 
 {#if debug}
 	<p>{JSON.stringify(debug)}</p>
-{/if}
+{/if} -->
 
 <div>
 	<div class="flex items-center gap-1.5">
