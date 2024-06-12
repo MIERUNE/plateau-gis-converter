@@ -65,7 +65,7 @@
 		return (parameter as { Boolean?: unknown }).Boolean !== undefined;
 	}
 
-    // Validate the input value
+	// Validate the input value
 	function validateInput(event: any) {
 		const input = event.target.value;
 		const validInput = input.replace(/[^0-9]/g, '');
@@ -87,6 +87,7 @@
 		}
 	}
 </script>
+
 <!--- // NOTE debug -->
 <!-- 
 {#if debug}
@@ -113,7 +114,7 @@
 		{#if optionParameter.length > 0}
 			<div class="flex flex-col gap-1.5">
 				<label for="epsg-select" class="font-bold">出力オプション</label>
-				<div>
+				<div class="flex flex-col gap-2">
 					{#each optionParameter as key}
 						{#if isIntegerParameter(paramsOption.items[key].parameter)}
 							<div class="flex gap-2 w-80">
@@ -122,10 +123,11 @@
 									type="number"
 									id={key}
 									on:input={validateInput}
-									min={paramsOption.items[key].parameter.Integer.min ?? undefined}
-									max={paramsOption.items[key].parameter.Integer.max ?? undefined}
 									bind:value={paramsOption.items[key].parameter.Integer.value}
-									class="w-1/4"
+									class="w-1/4 border-2 border-gray-300 px-2 rounded-md focus:outline-none {!paramsOption
+										.items[key].parameter.Integer.value
+										? 'border-red-400 focus:red-400'
+										: ''}"
 								/>
 							</div>
 						{:else if isStringParameter(paramsOption.items[key].parameter)}
