@@ -1,11 +1,12 @@
-use crate::pipeline::{PipelineError, Result};
-use serde::{Deserialize, Serialize};
-use std::{fs::File, path::Path, path::PathBuf};
+use std::sync::{Arc, Mutex};
+use std::{fs::File, path::Path};
 
-use fastanvil::Region;
+use fastanvil::{Error, Region};
 use fastnbt::{to_bytes, LongArray};
 use rayon::prelude::*;
-use std::sync::{Arc, Mutex};
+use serde::{Deserialize, Serialize};
+
+use crate::pipeline::{PipelineError, Result};
 
 pub type Position2D = [i32; 2];
 
@@ -19,11 +20,11 @@ pub struct BlockId {
 }
 
 impl BlockId {
-    pub fn new(block_name: String) -> Result<Self> {
-        Ok(BlockId {
+    pub fn new(block_name: String) -> Self {
+        BlockId {
             name_space: "minecraft".to_string(),
             block_name,
-        })
+        }
     }
 
     #[inline]
@@ -39,15 +40,13 @@ impl BlockId {
 
 impl BlockPosition {
     // Check that the input is in the range 0~15
-    pub fn new(x: u8, y: u8, z: u8) -> Result<Self> {
+    pub fn new(x: u8, y: u8, z: u8) -> Self {
         if x > 15 || y > 15 || z > 15 {
-            Err(PipelineError::Other(format!(
-                "Invalid BlockPosition values: x={}, y={}, z={}. The position values must be within the range of 0 to 15.",
-                x, y, z
-            )))
-        } else {
-            Ok(BlockPosition([x, y, z]))
+            panic!(
+                "Invalid BlockPosition values: x={x}, y={y}, z={z}. The position values must be within the range of 0 to 15."
+            );
         }
+        BlockPosition([x, y, z])
     }
 }
 
@@ -58,10 +57,10 @@ pub struct BlockData {
 }
 
 impl BlockData {
-    pub fn new(x: u8, y: u8, z: u8, block_name: String) -> Result<Self> {
-        let position = BlockPosition::new(x, y, z)?;
-        let block_id = BlockId::new(block_name)?;
-        Ok(BlockData { position, block_id })
+    pub fn new(x: u8, y: u8, z: u8, block_name: String) -> Self {
+        let position = BlockPosition::new(x, y, z);
+        let block_id = BlockId::new(block_name);
+        BlockData { position, block_id }
     }
 }
 #[derive(Deserialize, Serialize, Debug)]
@@ -85,17 +84,23 @@ pub type WorldData = Vec<RegionData>;
 
 #[derive(Serialize, Deserialize, Debug)]
 struct Chunk {
+    /// The status of the chunk, such as whether it is fully generated or being generated.
     #[serde(rename = "Status")]
-    status: String, // The status of the chunk, such as whether it is fully generated or being generated.
+    status: String,
+    /// The Z coordinate of the chunk (absolute value).
     #[serde(rename = "zPos")]
-    z_pos: i32, // The Z coordinate of the chunk (absolute value).
+    z_pos: i32,
+    /// The Y coordinate of the lowest section in the chunk.
     #[serde(rename = "yPos")]
-    y_pos: i32, // The Y coordinate of the lowest section in the chunk.
+    y_pos: i32,
+    /// The X coordinate of the chunk (absolute value).
     #[serde(rename = "xPos")]
-    x_pos: i32, // The X coordinate of the chunk (absolute value).
-    sections: Vec<Section>, // A vector containing the sections that make up the chunk.
+    x_pos: i32,
+    /// A vector containing the sections that make up the chunk.
+    sections: Vec<Section>,
+    /// The version of the data format used to store this chunk.
     #[serde(rename = "DataVersion")]
-    data_version: u32, // The version of the data format used to store this chunk.
+    data_version: u32,
 }
 
 impl Default for Chunk {
@@ -178,13 +183,10 @@ impl PaletteItem {
 }
 
 pub fn write_anvil(region_data: &RegionData, file_path: &Path) -> Result<()> {
-    let out_path = PathBuf::from(format!(
-        "{}/r.{}.{}.mca",
-        file_path.display(),
-        region_data.position[0],
-        region_data.position[1]
+    let out_path = file_path.join(format!(
+        "r.{}.{}.mca",
+        region_data.position[0], region_data.position[1]
     ));
-
     let out_file = File::options()
         .read(true)
         .write(true)
@@ -196,34 +198,54 @@ pub fn write_anvil(region_data: &RegionData, file_path: &Path) -> Result<()> {
     // Create a empty region object
     let empty_region = Arc::new(Mutex::new(Region::new(out_file).unwrap()));
 
-    (0..32).into_par_iter().for_each(|chunk_z| {
-        (0..32).into_par_iter().for_each(|chunk_x| {
-            let absolute_chunk_x = region_data.position[0] * 32 + chunk_x;
-            let absolute_chunk_z = region_data.position[1] * 32 + chunk_z;
+    // (0..32).into_par_iter().for_each(|chunk_z| {
+    //     (0..32).into_par_iter().for_each(|chunk_x| {
+    //         let absolute_chunk_x = region_data.position[0] * 32 + chunk_x;
+    //         let absolute_chunk_z = region_data.position[1] * 32 + chunk_z;
 
-            let chunk_data = region_data
-                .chunks
-                .iter()
-                .find(|c| c.position == [absolute_chunk_x, absolute_chunk_z]);
+    //         let chunk_data = region_data
+    //             .chunks
+    //             .iter()
+    //             .find(|c| c.position == [absolute_chunk_x, absolute_chunk_z]);
 
-            let chunk = create_chunk_structure(absolute_chunk_x, absolute_chunk_z, chunk_data);
+    //         let chunk = create_chunk_structure(absolute_chunk_x, absolute_chunk_z, chunk_data);
 
-            let serialized_chunk = to_bytes(&chunk).unwrap();
+    //         let serialized_chunk = to_bytes(&chunk).unwrap();
 
-            {
-                // Write the chunk data to the region file
-                let mut region = empty_region.lock().unwrap();
-                region
-                    .write_chunk(chunk_x as usize, chunk_z as usize, &serialized_chunk)
-                    .unwrap();
-            }
-        });
-    });
+    //         {
+    //             // Write the chunk data to the region file
+    //             let mut region = empty_region.lock().unwrap();
+    //             region
+    //                 .write_chunk(chunk_x as usize, chunk_z as usize, &serialized_chunk)
+    //                 .unwrap();
+    //         }
+    //     });
+    // });
+
+    if let Err(e) = region_data.chunks.par_iter().try_for_each(|chunk_data| {
+        let [absolute_chunk_x, absolute_chunk_z] = chunk_data.position;
+        let chunk_x = absolute_chunk_x - region_data.position[0] * 32;
+        let chunk_z = absolute_chunk_z - region_data.position[1] * 32;
+
+        let chunk = create_chunk_structure(absolute_chunk_x, absolute_chunk_z, Some(chunk_data));
+        let serialized_chunk = to_bytes(&chunk).unwrap();
+
+        {
+            // Write the chunk data to the region file
+            let mut region = empty_region.lock().unwrap();
+            region.write_chunk(chunk_x as usize, chunk_z as usize, &serialized_chunk)
+        }
+    }) {
+        return match e {
+            Error::IO(e) => Err(e.into()),
+            e => Err(PipelineError::Other(e.to_string())),
+        };
+    };
 
     Ok(())
 }
 
-// Function to calculate the number of bits and data size of a palette.
+/// Calculate the number of bits and data size of a palette.
 fn calculate_bits_and_size(palette_len: usize) -> (u32, u32) {
     let bits_per_block = match palette_len {
         0..=16 => 4,
@@ -234,7 +256,7 @@ fn calculate_bits_and_size(palette_len: usize) -> (u32, u32) {
     (bits_per_block, data_size)
 }
 
-// Functions to create sections
+/// Create sections
 fn create_chunk_section(
     blocks: &[BlockData],
     palette: &mut Vec<PaletteItem>,
@@ -289,7 +311,7 @@ fn create_chunk_section(
     )
 }
 
-// Functions to create chunk structures
+/// Create chunk structures
 fn create_chunk_structure(chunk_x: i32, chunk_z: i32, chunk_data: Option<&ChunkData>) -> Chunk {
     let palette = vec![PaletteItem::new("minecraft:air".to_string(), None)];
 
@@ -370,7 +392,7 @@ mod tests {
         for x in 0..16 {
             for y in 0..16 {
                 for z in 0..16 {
-                    blocks.push(BlockData::new(x, y, z, "stone".to_string()).unwrap());
+                    blocks.push(BlockData::new(x, y, z, "stone".to_string()));
                 }
             }
         }
@@ -393,22 +415,22 @@ mod tests {
 
     fn test_palette_size_17() {
         let blocks = vec![
-            BlockData::new(0, 0, 0, "white_wool".to_string()).unwrap(),
-            BlockData::new(1, 0, 0, "light_gray_wool".to_string()).unwrap(),
-            BlockData::new(2, 0, 0, "gray_wool".to_string()).unwrap(),
-            BlockData::new(3, 0, 0, "black_wool".to_string()).unwrap(),
-            BlockData::new(4, 0, 0, "brown_wool".to_string()).unwrap(),
-            BlockData::new(5, 0, 0, "red_wool".to_string()).unwrap(),
-            BlockData::new(6, 0, 0, "orange_wool".to_string()).unwrap(),
-            BlockData::new(7, 0, 0, "yellow_wool".to_string()).unwrap(),
-            BlockData::new(8, 0, 0, "lime_wool".to_string()).unwrap(),
-            BlockData::new(9, 0, 0, "green_wool".to_string()).unwrap(),
-            BlockData::new(10, 0, 0, "cyan_wool".to_string()).unwrap(),
-            BlockData::new(11, 0, 0, "light_blue_wool".to_string()).unwrap(),
-            BlockData::new(12, 0, 0, "blue_wool".to_string()).unwrap(),
-            BlockData::new(13, 0, 0, "purple_wool".to_string()).unwrap(),
-            BlockData::new(14, 0, 0, "magenta_wool".to_string()).unwrap(),
-            BlockData::new(15, 0, 0, "pink_wool".to_string()).unwrap(),
+            BlockData::new(0, 0, 0, "white_wool".to_string()),
+            BlockData::new(1, 0, 0, "light_gray_wool".to_string()),
+            BlockData::new(2, 0, 0, "gray_wool".to_string()),
+            BlockData::new(3, 0, 0, "black_wool".to_string()),
+            BlockData::new(4, 0, 0, "brown_wool".to_string()),
+            BlockData::new(5, 0, 0, "red_wool".to_string()),
+            BlockData::new(6, 0, 0, "orange_wool".to_string()),
+            BlockData::new(7, 0, 0, "yellow_wool".to_string()),
+            BlockData::new(8, 0, 0, "lime_wool".to_string()),
+            BlockData::new(9, 0, 0, "green_wool".to_string()),
+            BlockData::new(10, 0, 0, "cyan_wool".to_string()),
+            BlockData::new(11, 0, 0, "light_blue_wool".to_string()),
+            BlockData::new(12, 0, 0, "blue_wool".to_string()),
+            BlockData::new(13, 0, 0, "purple_wool".to_string()),
+            BlockData::new(14, 0, 0, "magenta_wool".to_string()),
+            BlockData::new(15, 0, 0, "pink_wool".to_string()),
         ];
 
         let mut palette = vec![PaletteItem::new("minecraft:air".to_string(), None)];
@@ -428,7 +450,7 @@ mod tests {
             position: [0, 0],
             sections: vec![SectionData {
                 y: 0,
-                blocks: vec![BlockData::new(0, 0, 0, "stone".to_string()).unwrap()],
+                blocks: vec![BlockData::new(0, 0, 0, "stone".to_string())],
             }],
         };
 
