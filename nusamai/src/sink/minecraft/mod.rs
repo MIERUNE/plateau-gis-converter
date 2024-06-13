@@ -4,9 +4,9 @@ mod level;
 mod region;
 
 use log::error;
-use std::{io::Write, path::PathBuf};
+use std::{io::Write, path::PathBuf, sync::Mutex};
 
-use dda_voxelize::{DdaVoxelizer, MeshVoxelizer};
+use dda_voxelize::DdaVoxelizer;
 use earcut::{utils3d::project3d_to_2d, Earcut};
 use flate2::{write::GzEncoder, Compression};
 use hashbrown::HashMap;
@@ -22,11 +22,12 @@ use nusamai_projection::etmerc::ExtendedTransverseMercatorProjection;
 use crate::{
     get_parameter_value,
     parameters::*,
-    pipeline::{Feedback, PipelineError, Receiver, Result},
+    pipeline::{Feedback, Receiver, Result},
     sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo},
+    transformer::{self, TreeFlatteningSpec},
 };
 
-use block_colors::get_block_for_typename;
+use block_colors::{DefaultBlockResolver, Voxel};
 use level::{Data, Level};
 use region::{write_anvil, BlockData, ChunkData, Position2D, RegionData, SectionData, WorldData};
 
@@ -105,13 +106,16 @@ impl Default for BoundingVolume {
 impl DataSink for MinecraftSink {
     fn make_requirements(&self) -> DataRequirements {
         DataRequirements {
+            tree_flattening: TreeFlatteningSpec::Flatten {
+                feature: transformer::FeatureFlatteningOption::All,
+                data: transformer::DataFlatteningOption::None,
+                object: transformer::ObjectFlatteningOption::None,
+            },
             ..Default::default()
         }
     }
 
     fn run(&mut self, upstream: Receiver, feedback: &Feedback, _schema: &Schema) -> Result<()> {
-        let (sender, receiver) = std::sync::mpsc::sync_channel(1000);
-
         let mut world_data = WorldData::new();
         let mut region_map: HashMap<Position2D, usize> = HashMap::new();
         let mut chunk_map: HashMap<(Position2D, Position2D), usize> = HashMap::new();
@@ -141,6 +145,8 @@ impl DataSink for MinecraftSink {
             global_bvol.update(&local_bvol);
         });
 
+        log::info!("start voxelizing...");
+
         // Calculation of centre coordinates
         let center_lng = (global_bvol.min_lng + global_bvol.max_lng) / 2.0;
         let center_lat = (global_bvol.min_lat + global_bvol.max_lat) / 2.0;
@@ -152,223 +158,196 @@ impl DataSink for MinecraftSink {
             &nusamai_projection::ellipsoid::grs80(),
         );
 
-        let typename_block = get_block_for_typename();
+        let typename_block = DefaultBlockResolver::new();
 
-        let (ra, rb) = rayon::join(
-            || {
-                parcels
-                    .into_par_iter()
-                    .try_for_each_with(sender, |sender, parcel| {
-                        feedback.ensure_not_canceled()?;
+        let voxelizer = Mutex::new(DdaVoxelizer::<Voxel>::new());
 
-                        let entity = parcel.entity;
+        // TODO: Scalable par-region processing with external sorting (map-reduce).
 
-                        let Value::Object(obj) = &entity.root else {
-                            error!("The root value is not an object");
-                            return Ok(());
+        parcels.into_par_iter().try_for_each(|parcel| {
+            feedback.ensure_not_canceled()?;
+
+            let entity = parcel.entity;
+
+            let Value::Object(obj) = &entity.root else {
+                error!("The root value is not an object");
+                return Result::<()>::Ok(());
+            };
+
+            let Some(voxel) = typename_block.resolve(&obj.typename) else {
+                return Ok(());
+            };
+
+            let ObjectStereotype::Feature { geometries, .. } = &obj.stereotype else {
+                return Ok(());
+            };
+
+            let geom_store = entity.geometry_store.read().unwrap();
+
+            geometries.par_iter().for_each(|entry| match entry.ty {
+                GeometryType::Solid | GeometryType::Surface | GeometryType::Triangle => {
+                    let mut earcutter = Earcut::<f32>::new();
+                    let mut buf3d: Vec<[f32; 3]> = Vec::new();
+                    let mut buf2d: Vec<[f32; 2]> = Vec::new();
+                    let mut index_buf: Vec<u32> = Vec::new();
+
+                    for idx_poly in geom_store
+                        .multipolygon
+                        .iter_range(entry.pos as usize..(entry.pos + entry.len) as usize)
+                    {
+                        let poly = idx_poly.transform(|idx| geom_store.vertices[*idx as usize]);
+                        let num_outer = match poly.hole_indices().first() {
+                            Some(&v) => v as usize,
+                            None => poly.raw_coords().len(),
                         };
 
-                        let ObjectStereotype::Feature { geometries, .. } = &obj.stereotype else {
-                            return Ok(());
-                        };
-
-                        let geom_store = entity.geometry_store.read().unwrap();
-
-                        let mut earcutter = Earcut::<f32>::new();
-                        let mut buf3d: Vec<[f32; 3]> = Vec::new();
-                        let mut buf2d: Vec<[f32; 2]> = Vec::new();
-                        let mut index_buf: Vec<u32> = Vec::new();
-
-                        let vertices: Vec<_> = geom_store
-                            .vertices
-                            .iter()
-                            .map(|v| match projection.project_forward(v[0], v[1], v[2]) {
+                        buf3d.clear();
+                        buf3d.extend(poly.raw_coords().iter().map(|v| {
+                            match projection.project_forward(v[0], v[1], v[2]) {
                                 // To match the Minecraft coordinate system, the y-coordinate is multiplied by -1 and replaced with z
                                 Ok((x, y, mut z)) => {
                                     // Set the minimum altitude to 0 by subtracting the minimum altitude of the bounding volume.
                                     z -= global_bvol.min_height.min(v[2]);
-                                    [x, z, -y]
+                                    [x as f32, z as f32, -y as f32]
                                 }
                                 Err(e) => {
                                     println!("conversion error: {:?}", e);
-                                    [f64::NAN, f64::NAN, f64::NAN]
-                                }
-                            })
-                            .collect();
-
-                        let mut typename_map: HashMap<String, DdaVoxelizer> = HashMap::new();
-
-                        let mut voxelizer = DdaVoxelizer {
-                            voxels: HashMap::new(),
-                        };
-
-                        geometries.iter().for_each(|entry| match entry.ty {
-                            GeometryType::Solid
-                            | GeometryType::Surface
-                            | GeometryType::Triangle => {
-                                for idx_poly in geom_store.multipolygon.iter_range(
-                                    entry.pos as usize..(entry.pos + entry.len) as usize,
-                                ) {
-                                    let poly = idx_poly.transform(|idx| vertices[*idx as usize]);
-                                    let num_outer = match poly.hole_indices().first() {
-                                        Some(&v) => v as usize,
-                                        None => poly.raw_coords().len(),
-                                    };
-
-                                    buf3d.clear();
-                                    buf3d.extend(
-                                        poly.raw_coords()
-                                            .iter()
-                                            .map(|v| [v[0] as f32, v[1] as f32, v[2] as f32]),
-                                    );
-
-                                    if project3d_to_2d(&buf3d, num_outer, &mut buf2d) {
-                                        earcutter.earcut(
-                                            buf2d.iter().cloned(),
-                                            poly.hole_indices(),
-                                            &mut index_buf,
-                                        );
-                                        for indx in index_buf.chunks_exact(3) {
-                                            voxelizer.add_triangle(&[
-                                                buf3d[indx[0] as usize],
-                                                buf3d[indx[1] as usize],
-                                                buf3d[indx[2] as usize],
-                                            ]);
-                                        }
-                                    }
+                                    [f32::NAN, f32::NAN, f32::NAN]
                                 }
                             }
-                            GeometryType::Curve => {
-                                // TODO: implement
-                            }
-                            GeometryType::Point => {
-                                // TODO: implement
-                            }
-                        });
+                        }));
 
-                        typename_map.insert(obj.typename.to_string(), voxelizer);
-
-                        if sender.send(typename_map).is_err() {
-                            return Err(PipelineError::Canceled);
-                        };
-
-                        Ok(())
-                    })
-            },
-            || {
-                receiver.into_iter().for_each(|feature| {
-                    feature.iter().for_each(|(typename, voxelizer)| {
-                        voxelizer.voxels.iter().for_each(|(pos, voxel)| {
-                            // If the voxel color is white, the block id is determined by reference to the geographical type name.
-                            let block_name = match voxel.color {
-                                [255, 255, 255] => typename_block
-                                    .get(typename.as_str())
-                                    .unwrap_or(&"white_wool"),
-                                _ => "white_wool",
-                            };
-
-                            // TODO:Process for determining blocks from voxel colors.
-
-                            let [x, y, z] = pos;
-
-                            // Calculate region coordinates from x,y coordinates
-                            let region_x = x.div_euclid(512);
-                            let region_z = z.div_euclid(512);
-
-                            // Calculate chunk coordinates from x,y coordinates
-                            let chunk_x = x.div_euclid(16);
-                            let chunk_z = z.div_euclid(16);
-
-                            // Calculate the y-level of the section from the y-coordinate.
-                            let section_y = (y + 64) / 16 - 4;
-
-                            // Create BlockData
-                            // Coordinates relative to the blocks within a section (0-15)
-                            let block_data = BlockData::new(
-                                x.rem_euclid(16) as u8,
-                                y.rem_euclid(16) as u8,
-                                z.rem_euclid(16) as u8,
-                                block_name.to_string(),
+                        if project3d_to_2d(&buf3d, num_outer, &mut buf2d) {
+                            earcutter.earcut(
+                                buf2d.iter().cloned(),
+                                poly.hole_indices(),
+                                &mut index_buf,
                             );
-
-                            let region_pos = [region_x, region_z];
-                            let chunk_pos = [chunk_x, chunk_z];
-
-                            let region_index = *region_map.entry(region_pos).or_insert_with(|| {
-                                world_data.push(RegionData {
-                                    position: region_pos,
-                                    chunks: Vec::new(),
-                                });
-                                world_data.len() - 1
-                            });
-
-                            let chunk_index =
-                                *chunk_map.entry((region_pos, chunk_pos)).or_insert_with(|| {
-                                    world_data[region_index].chunks.push(ChunkData {
-                                        position: chunk_pos,
-                                        sections: Vec::new(),
-                                    });
-                                    world_data[region_index].chunks.len() - 1
-                                });
-
-                            let section_index = *section_map
-                                .entry((region_pos, chunk_pos, section_y))
-                                .or_insert_with(|| {
-                                    world_data[region_index].chunks[chunk_index].sections.push(
-                                        SectionData {
-                                            y: section_y,
-                                            blocks: Vec::new(),
+                            {
+                                let mut voxelizer = voxelizer.lock().unwrap();
+                                for indx in index_buf.chunks_exact(3) {
+                                    voxelizer.add_triangle(
+                                        &[
+                                            buf3d[indx[0] as usize],
+                                            buf3d[indx[1] as usize],
+                                            buf3d[indx[2] as usize],
+                                        ],
+                                        &|previous_value, _, _| match previous_value {
+                                            None => voxel.clone(),
+                                            Some(prev) => {
+                                                if voxel.priority > prev.priority {
+                                                    voxel.clone()
+                                                } else {
+                                                    prev.clone()
+                                                }
+                                            }
                                         },
                                     );
-                                    world_data[region_index].chunks[chunk_index].sections.len() - 1
-                                });
+                                }
+                            }
+                        }
+                    }
+                }
+                GeometryType::Curve => {
+                    // TODO: implement
+                }
+                GeometryType::Point => {
+                    // TODO: implement
+                }
+            });
 
-                            world_data[region_index].chunks[chunk_index].sections[section_index]
-                                .blocks
-                                .push(block_data);
+            Ok(())
+        })?;
+
+        let voxels = voxelizer.into_inner().unwrap().finalize();
+
+        voxels.iter().for_each(|(pos, voxel)| {
+            // TODO:Process for determining blocks from voxel colors.
+
+            let [x, y, z] = pos;
+
+            // Calculate region coordinates from x,y coordinates
+            let region_x = x.div_euclid(512);
+            let region_z = z.div_euclid(512);
+
+            // Calculate chunk coordinates from x,y coordinates
+            let chunk_x = x.div_euclid(16);
+            let chunk_z = z.div_euclid(16);
+
+            // Calculate the y-level of the section from the y-coordinate.
+            let section_y = (y + 64) / 16 - 4;
+
+            // Create BlockData
+            // Coordinates relative to the blocks within a section (0-15)
+            let block_data = BlockData::new(
+                x.rem_euclid(16) as u8,
+                y.rem_euclid(16) as u8,
+                z.rem_euclid(16) as u8,
+                voxel.block_name.to_string(),
+            );
+
+            let region_pos = [region_x, region_z];
+            let chunk_pos = [chunk_x, chunk_z];
+
+            let region_index = *region_map.entry(region_pos).or_insert_with(|| {
+                world_data.push(RegionData {
+                    position: region_pos,
+                    chunks: Vec::new(),
+                });
+                world_data.len() - 1
+            });
+
+            let chunk_index = *chunk_map.entry((region_pos, chunk_pos)).or_insert_with(|| {
+                world_data[region_index].chunks.push(ChunkData {
+                    position: chunk_pos,
+                    sections: Vec::new(),
+                });
+                world_data[region_index].chunks.len() - 1
+            });
+
+            let section_index = *section_map
+                .entry((region_pos, chunk_pos, section_y))
+                .or_insert_with(|| {
+                    world_data[region_index].chunks[chunk_index]
+                        .sections
+                        .push(SectionData {
+                            y: section_y,
+                            blocks: Vec::new(),
                         });
-                    });
+                    world_data[region_index].chunks[chunk_index].sections.len() - 1
                 });
 
-                let mut file_path = self.output_path.clone();
-                file_path.push("region");
-                std::fs::create_dir_all(&file_path)?;
+            world_data[region_index].chunks[chunk_index].sections[section_index]
+                .blocks
+                .push(block_data);
+        });
 
-                world_data.iter().try_for_each(|region| -> Result<()> {
-                    feedback.ensure_not_canceled()?;
+        let mut file_path = self.output_path.clone();
+        file_path.push("region");
+        std::fs::create_dir_all(&file_path)?;
 
-                    write_anvil(region, &file_path)?;
+        world_data.iter().try_for_each(|region| -> Result<()> {
+            feedback.ensure_not_canceled()?;
 
-                    Ok(())
-                })?;
+            write_anvil(region, &file_path)?;
 
-                // write level.dat
-                let dir_name = self.output_path.file_name().unwrap().to_string_lossy();
+            Ok(())
+        })?;
 
-                // Set the entered directory name as the level name
-                let data = Data {
-                    level_name: Some(dir_name.to_string()),
-                    ..Default::default()
-                };
+        // write level.dat
+        let dir_name = self.output_path.file_name().unwrap().to_string_lossy();
 
-                let level_dat_file = std::fs::File::create(self.output_path.join("level.dat"))?;
-                let mut encoder = GzEncoder::new(level_dat_file, Compression::fast());
+        // Set the entered directory name as the level name
+        let data = Data {
+            level_name: Some(dir_name.to_string()),
+            ..Default::default()
+        };
 
-                let bytes = fastnbt::to_bytes(&Level { data }).unwrap();
-                encoder.write_all(&bytes)?;
+        let level_dat_file = std::fs::File::create(self.output_path.join("level.dat"))?;
+        let mut encoder = GzEncoder::new(level_dat_file, Compression::fast());
 
-                Ok(())
-            },
-        );
-
-        match ra {
-            Ok(_) | Err(PipelineError::Canceled) => {}
-            Err(error) => feedback.fatal_error(error),
-        }
-        match rb {
-            Ok(_) | Err(PipelineError::Canceled) => {}
-            Err(error) => feedback.fatal_error(error),
-        }
+        let bytes = fastnbt::to_bytes(&Level { data }).unwrap();
+        encoder.write_all(&bytes)?;
 
         Ok(())
     }
