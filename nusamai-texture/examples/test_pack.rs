@@ -16,11 +16,7 @@ struct Polygon {
 }
 
 fn main() {
-    let config = TexturePlacerConfig {
-        max_width: 1024,
-        max_height: 1024,
-        padding: 0,
-    };
+    let config = TexturePlacerConfig::default();
 
     let placer = GuillotineTexturePlacer::new(config);
     let exporter = WebpAtlasExporter;
