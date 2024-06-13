@@ -33,6 +33,7 @@ fn main() {
     let downsample_factor = 1.0;
     for i in 0..10 {
         for j in 1..11 {
+            // Specify a polygon to crop around the center of the image
             let uv_coords = vec![
                 (0.2, 0.3),
                 (0.3, 0.2),
