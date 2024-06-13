@@ -24,9 +24,10 @@ impl Default for TexturePlacerConfig {
 #[derive(Debug, Clone)]
 pub struct PlacedTextureInfo {
     pub id: String,
-    pub coords: (u32, u32),
+    pub origin: (u32, u32),
     pub width: u32,
     pub height: u32,
+    pub placed_uv_coords: Vec<(f32, f32)>,
 }
 
 pub trait TexturePlacer {
@@ -81,11 +82,23 @@ impl TexturePlacer for SimpleTexturePlacer {
             self.max_height_in_row = 0;
         }
 
+        let placed_uv_coords = texture
+            .cropped_uv_coords
+            .iter()
+            .map(|(u, v)| {
+                (
+                    self.current_x as f32 / self.config().width as f32 + u * scaled_width as f32,
+                    self.current_y as f32 / self.config().height as f32 + v * scaled_height as f32,
+                )
+            })
+            .collect::<Vec<(f32, f32)>>();
+
         let texture_info = PlacedTextureInfo {
             id: id.to_string(),
-            coords: (self.current_x, self.current_y),
+            origin: (self.current_x, self.current_y),
             width: scaled_width,
             height: scaled_height,
+            placed_uv_coords,
         };
 
         self.current_x += texture.width + self.config().padding;
@@ -273,12 +286,24 @@ impl TexturePlacer for GuillotineTexturePlacer {
         let width = scaled_width + self.config.padding;
         let height = scaled_height + self.config.padding;
 
+        let placed_uv_coords = texture
+            .cropped_uv_coords
+            .iter()
+            .map(|(u, v)| {
+                (
+                    u * scaled_width as f32 / self.config.width as f32,
+                    v * scaled_height as f32 / self.config.height as f32,
+                )
+            })
+            .collect::<Vec<(f32, f32)>>();
+
         if let Some(rect) = self.find_best_rect(width, height) {
             let placed = PlacedTextureInfo {
                 id: id.to_string(),
-                coords: (rect.x + self.config.padding, rect.y + self.config.padding),
+                origin: (rect.x + self.config.padding, rect.y + self.config.padding),
                 width: scaled_width,
                 height: scaled_height,
+                placed_uv_coords,
             };
 
             self.used_rects.insert(id.to_string(), placed.clone());

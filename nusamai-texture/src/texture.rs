@@ -26,7 +26,7 @@ pub struct CroppedTexture {
     pub width: u32,
     pub height: u32,
     pub downsample_factor: DownsampleFactor,
-    pub original_uv_coords: Vec<(f32, f32)>,
+    pub cropped_uv_coords: Vec<(f32, f32)>,
 }
 
 impl CroppedTexture {
@@ -52,13 +52,18 @@ impl CroppedTexture {
         let cropped_width = right - left;
         let cropped_height = bottom - top;
 
+        let dest_uv_coords = uv_coords
+            .iter()
+            .map(|(u, v)| ((u - min_x) / (max_x - min_x), (v - min_y) / (max_y - min_y)))
+            .collect::<Vec<(f32, f32)>>();
+
         CroppedTexture {
             image_path: image_path.to_path_buf(),
             origin: (left, top),
             width: cropped_width,
             height: cropped_height,
             downsample_factor,
-            original_uv_coords: uv_coords.to_vec(),
+            cropped_uv_coords: dest_uv_coords.to_vec(),
         }
     }
 

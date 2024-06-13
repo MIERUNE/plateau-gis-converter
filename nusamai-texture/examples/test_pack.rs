@@ -11,19 +11,11 @@ use nusamai_texture::{
 struct Polygon {
     id: String,
     uv_coords: Vec<(f32, f32)>,
-    image_path: PathBuf,
+    texture_uri: PathBuf,
     downsample_factor: DownsampleFactor,
 }
 
 fn main() {
-    let config = TexturePlacerConfig::default();
-
-    let placer = GuillotineTexturePlacer::new(config);
-    let exporter = WebpAtlasExporter;
-
-    // todo: マルチスレッドで実行されるので、スレッドセーフな構造体にする
-    let mut packer = TexturePacker::new(placer, exporter);
-
     // 3D Tiles Sink passes the texture path and UV coordinates for each polygon
     let mut polygons: Vec<Polygon> = Vec::new();
     let downsample_factor = 1.0;
@@ -45,20 +37,26 @@ fn main() {
             polygons.push(Polygon {
                 id: format!("texture_{}_{}", i, j),
                 uv_coords,
-                image_path,
+                texture_uri: image_path,
                 downsample_factor: DownsampleFactor::new(&downsample_factor),
             });
         }
     }
 
+    let config = TexturePlacerConfig::default();
+    let placer = GuillotineTexturePlacer::new(config);
+    let exporter = WebpAtlasExporter;
+
+    let mut packer = TexturePacker::new(placer, exporter);
+
     polygons.iter().for_each(|polygon| {
-        // todo: スケールされたUV座標が返却されるようにする
         let texture = CroppedTexture::new(
             &polygon.uv_coords,
-            &polygon.image_path,
+            &polygon.texture_uri,
             &polygon.downsample_factor.value(),
         );
-        let _ = packer.add_texture(polygon.id.clone(), texture);
+        let info = packer.add_texture(polygon.id.clone(), texture);
+        println!("{:?}", info);
     });
 
     packer.finalize();
