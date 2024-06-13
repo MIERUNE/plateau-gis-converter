@@ -325,6 +325,8 @@ fn tile_writing_stage(
 
             let mut metadata_encoder = metadata::MetadataEncoder::new(schema);
 
+            // todo: initialize texture packer
+
             // For each feature
             let mut feature_id = 0;
             for serialized_feat in feats.into_iter() {
@@ -378,6 +380,8 @@ fn tile_writing_stage(
                     let mat = feature.materials[*orig_mat_id as usize].clone();
                     let primitive = primitives.entry(mat).or_default();
                     primitive.feature_ids.insert(feature_id as u32);
+
+                    // todo: add texture to texture packer
 
                     if let Some((nx, ny, nz)) = calculate_normal(
                         poly.exterior().iter().map(|v| [v[0], v[1], v[2]])
