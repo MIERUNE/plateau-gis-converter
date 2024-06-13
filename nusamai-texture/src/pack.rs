@@ -5,10 +5,12 @@ use crate::export::AtlasExporter;
 use crate::place::{PlacedTextureInfo, TexturePlacer};
 use crate::texture::CroppedTexture;
 
+pub type Atlas = Vec<PlacedTextureInfo>;
+
 pub struct TexturePacker<P: TexturePlacer, E: AtlasExporter> {
     pub textures: HashMap<String, CroppedTexture>,
-    pub atlas_list: Vec<Vec<PlacedTextureInfo>>,
-    pub atlas_layout: Vec<PlacedTextureInfo>,
+    pub atlas_layout: Atlas,
+    pub atlases: Vec<Atlas>,
     placer: P,
     exporter: E,
 }
@@ -17,8 +19,8 @@ impl<P: TexturePlacer, E: AtlasExporter> TexturePacker<P, E> {
     pub fn new(placer: P, exporter: E) -> Self {
         TexturePacker {
             textures: HashMap::new(),
-            atlas_list: Vec::new(),
             atlas_layout: Vec::new(),
+            atlases: Vec::new(),
             placer,
             exporter,
         }
@@ -35,7 +37,7 @@ impl<P: TexturePlacer, E: AtlasExporter> TexturePacker<P, E> {
 
             texture_info
         } else {
-            self.atlas_list.push(self.atlas_layout.clone());
+            self.atlases.push(self.atlas_layout.clone());
             self.atlas_layout.clear();
 
             self.placer.reset_param();
@@ -50,13 +52,13 @@ impl<P: TexturePlacer, E: AtlasExporter> TexturePacker<P, E> {
 
     pub fn finalize(&mut self) {
         if !self.atlas_layout.is_empty() {
-            self.atlas_list.push(self.atlas_layout.clone());
+            self.atlases.push(self.atlas_layout.clone());
             self.atlas_layout.clear();
         }
     }
 
     pub fn export(&self, output_dir: &Path) {
-        for (i, atlas) in self.atlas_list.iter().enumerate() {
+        for (i, atlas) in self.atlases.iter().enumerate() {
             let output_path = output_dir.join(format!("atlas_{}.webp", i));
             self.exporter.export(atlas, &self.textures, &output_path);
         }

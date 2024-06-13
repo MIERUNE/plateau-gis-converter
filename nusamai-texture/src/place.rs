@@ -4,8 +4,8 @@ use std::collections::HashMap;
 use crate::texture::CroppedTexture;
 
 pub struct TexturePlacerConfig {
-    pub max_width: u32,
-    pub max_height: u32,
+    pub width: u32,
+    pub height: u32,
     pub padding: u32,
     // and more option
     // Allow rotation, allow multiple pages, adjust resolution, specify resampling method, etc...
@@ -14,8 +14,8 @@ pub struct TexturePlacerConfig {
 impl Default for TexturePlacerConfig {
     fn default() -> Self {
         TexturePlacerConfig {
-            max_width: 256,
-            max_height: 256,
+            width: 1024,
+            height: 1024,
             padding: 0,
         }
     }
@@ -24,7 +24,7 @@ impl Default for TexturePlacerConfig {
 #[derive(Debug, Clone)]
 pub struct PlacedTextureInfo {
     pub id: String,
-    pub origin: (u32, u32),
+    pub coords: (u32, u32),
     pub width: u32,
     pub height: u32,
 }
@@ -75,7 +75,7 @@ impl TexturePlacer for SimpleTexturePlacer {
             texture.downsample_factor.value(),
         );
 
-        if self.current_x + texture.width > self.config().max_width {
+        if self.current_x + texture.width > self.config().width {
             self.current_x = 0;
             self.current_y += self.max_height_in_row + self.config().padding;
             self.max_height_in_row = 0;
@@ -83,7 +83,7 @@ impl TexturePlacer for SimpleTexturePlacer {
 
         let texture_info = PlacedTextureInfo {
             id: id.to_string(),
-            origin: (self.current_x, self.current_y),
+            coords: (self.current_x, self.current_y),
             width: scaled_width,
             height: scaled_height,
         };
@@ -102,8 +102,8 @@ impl TexturePlacer for SimpleTexturePlacer {
         );
 
         let padding = self.config().padding;
-        let max_width = self.config().max_width;
-        let max_height = self.config().max_height;
+        let max_width = self.config().width;
+        let max_height = self.config().height;
 
         let next_x = self.current_x + scaled_width + padding;
         let next_y = max(
@@ -144,8 +144,8 @@ impl GuillotineTexturePlacer {
         let initial_rect = Rect {
             x: 0,
             y: 0,
-            width: config.max_width,
-            height: config.max_height,
+            width: config.width,
+            height: config.height,
         };
         GuillotineTexturePlacer {
             config,
@@ -276,7 +276,7 @@ impl TexturePlacer for GuillotineTexturePlacer {
         if let Some(rect) = self.find_best_rect(width, height) {
             let placed = PlacedTextureInfo {
                 id: id.to_string(),
-                origin: (rect.x + self.config.padding, rect.y + self.config.padding),
+                coords: (rect.x + self.config.padding, rect.y + self.config.padding),
                 width: scaled_width,
                 height: scaled_height,
             };
@@ -309,8 +309,8 @@ impl TexturePlacer for GuillotineTexturePlacer {
         let initial_rect = Rect {
             x: 0,
             y: 0,
-            width: self.config.max_width,
-            height: self.config.max_height,
+            width: self.config.width,
+            height: self.config.height,
         };
         self.free_rects = vec![initial_rect];
         self.used_rects.clear();
