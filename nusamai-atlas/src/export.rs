@@ -14,6 +14,8 @@ pub trait AtlasExporter {
         textures: &HashMap<String, CroppedTexture>,
         output_path: &Path,
     );
+
+    fn get_extension(&self) -> &str;
 }
 
 pub struct WebpAtlasExporter {
@@ -29,6 +31,10 @@ impl Default for WebpAtlasExporter {
 }
 
 impl AtlasExporter for WebpAtlasExporter {
+    fn get_extension(&self) -> &str {
+        &self.ext
+    }
+
     fn export(
         &self,
         atlas_data: &[PlacedTextureInfo],
@@ -62,7 +68,7 @@ impl AtlasExporter for WebpAtlasExporter {
             }
         }
 
-        let output_path = output_path.with_extension(&self.ext);
+        let output_path = output_path.with_extension(self.get_extension());
         atlas_image
             .save_with_format(output_path, image::ImageFormat::WebP)
             .unwrap();
