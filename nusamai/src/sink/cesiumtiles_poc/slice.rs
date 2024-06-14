@@ -13,7 +13,7 @@ use nusamai_plateau::{appearance, Entity};
 use serde::{Deserialize, Serialize};
 
 use super::{material::Material, tiling};
-use crate::sink::cesiumtiles::{material::Texture, tiling::zxy_from_lng_lat};
+use crate::sink::cesiumtiles_poc::{material::Texture, tiling::zxy_from_lng_lat};
 
 #[derive(Serialize, Deserialize)]
 pub struct SlicedFeature {
