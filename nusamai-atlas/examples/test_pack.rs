@@ -43,12 +43,13 @@ fn main() {
         }
     }
 
+    // Create a texture atlas
     let config = TexturePlacerConfig::default();
     let placer = GuillotineTexturePlacer::new(config);
     let exporter = WebpAtlasExporter;
-
     let mut packer = TexturePacker::new(placer, exporter);
 
+    // Add textures to the atlas
     polygons.iter().for_each(|polygon| {
         let texture = CroppedTexture::new(
             &polygon.uv_coords,

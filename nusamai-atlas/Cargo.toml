@@ -1,12 +1,12 @@
 [package]
-name = "nusamai-texture"
+name = "nusamai-atlas"
 edition = "2021"
 
 [dependencies]
 image = "0.25.1"
 thiserror = "1.0.61"
 lru = "0.12.3"
-rayon = "1.10.0"
+hashbrown = "0.14.5"
 
 [dev-dependencies]
 tempfile = "3.10.1"

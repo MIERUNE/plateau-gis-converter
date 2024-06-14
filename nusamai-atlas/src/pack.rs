@@ -1,5 +1,6 @@
-use std::collections::HashMap;
 use std::path::Path;
+
+use hashbrown::HashMap;
 
 use crate::export::AtlasExporter;
 use crate::place::{PlacedTextureInfo, TexturePlacer};

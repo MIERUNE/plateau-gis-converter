@@ -11,7 +11,7 @@ impl DownsampleFactor {
         if (0.0..=1.0).contains(factor) {
             DownsampleFactor(*factor)
         } else {
-            panic!("The argument must be entered between 0~1.")
+            panic!("The argument must be entered between 0~1.") //FIXME: panic! is not recommended
         }
     }
 
