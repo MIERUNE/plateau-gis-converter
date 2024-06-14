@@ -26,6 +26,8 @@ pub struct CroppedTexture {
     pub width: u32,
     pub height: u32,
     pub downsample_factor: DownsampleFactor,
+    // PLATEAU textures contain multiple surface/building textures in a single image,
+    // so it is necessary to specify UV coordinates for each polygon and cut them out.
     pub cropped_uv_coords: Vec<(f32, f32)>,
 }
 

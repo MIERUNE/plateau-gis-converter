@@ -1,6 +1,6 @@
 use std::path::{Path, PathBuf};
 
-use nusamai_texture::{
+use nusamai_atlas::{
     export::WebpAtlasExporter,
     pack::TexturePacker,
     place::{GuillotineTexturePlacer, TexturePlacerConfig},
