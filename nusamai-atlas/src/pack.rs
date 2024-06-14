@@ -70,8 +70,7 @@ impl<P: TexturePlacer, E: AtlasExporter> TexturePacker<P, E> {
 
     pub fn export(&self, output_dir: &Path) {
         for (id, atlas) in self.atlases.iter() {
-            let output_path = output_dir.join(format!("atlas_{}.webp", id));
-
+            let output_path = output_dir.join(id);
             self.exporter.export(atlas, &self.textures, &output_path);
         }
     }

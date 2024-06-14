@@ -16,7 +16,17 @@ pub trait AtlasExporter {
     );
 }
 
-pub struct WebpAtlasExporter;
+pub struct WebpAtlasExporter {
+    pub ext: String,
+}
+
+impl Default for WebpAtlasExporter {
+    fn default() -> Self {
+        WebpAtlasExporter {
+            ext: "webp".to_string(),
+        }
+    }
+}
 
 impl AtlasExporter for WebpAtlasExporter {
     fn export(
@@ -52,6 +62,7 @@ impl AtlasExporter for WebpAtlasExporter {
             }
         }
 
+        let output_path = output_path.with_extension(&self.ext);
         atlas_image
             .save_with_format(output_path, image::ImageFormat::WebP)
             .unwrap();

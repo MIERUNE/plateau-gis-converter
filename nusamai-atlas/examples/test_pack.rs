@@ -46,7 +46,7 @@ fn main() {
     // Create a texture atlas
     let config = TexturePlacerConfig::default();
     let placer = GuillotineTexturePlacer::new(config);
-    let exporter = WebpAtlasExporter;
+    let exporter = WebpAtlasExporter::default();
     let mut packer = TexturePacker::new(placer, exporter);
 
     // Add textures to the atlas
@@ -63,6 +63,6 @@ fn main() {
     packer.finalize();
 
     // todo: 画像の余白が大きければ、出力サイズを小さくするような処理を入れる
-    let output_path = Path::new("nusamai-atlas/examples/output/");
-    packer.export(output_path);
+    let output_dir = Path::new("nusamai-atlas/examples/output/");
+    packer.export(output_dir);
 }
