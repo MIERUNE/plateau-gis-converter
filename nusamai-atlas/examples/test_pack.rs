@@ -62,7 +62,6 @@ fn main() {
 
     packer.finalize();
 
-    // todo: 画像の余白が大きければ、出力サイズを小さくするような処理を入れる
     let output_dir = Path::new("nusamai-atlas/examples/output/");
     packer.export(output_dir);
 }
