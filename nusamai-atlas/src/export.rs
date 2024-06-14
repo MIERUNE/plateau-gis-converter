@@ -1,6 +1,7 @@
-use image::ImageBuffer;
-use std::collections::HashMap;
 use std::path::Path;
+
+use hashbrown::HashMap;
+use image::ImageBuffer;
 
 use crate::cache::ImageCache;
 use crate::place::PlacedTextureInfo;

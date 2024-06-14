@@ -32,7 +32,7 @@ fn main() {
                 (0.3, 0.8),
                 (0.2, 0.7),
             ];
-            let path_string: String = format!("nusamai-texture/examples/assets/{}.png", j);
+            let path_string: String = format!("nusamai-atlas/examples/assets/{}.png", j);
             let image_path = PathBuf::from(path_string.as_str());
             polygons.push(Polygon {
                 id: format!("texture_{}_{}", i, j),
@@ -62,8 +62,7 @@ fn main() {
 
     packer.finalize();
 
-    // todo: 画像を複数枚吐き出すようにする
     // todo: 画像の余白が大きければ、出力サイズを小さくするような処理を入れる
-    let output_path = Path::new("nusamai-texture/examples/output/");
+    let output_path = Path::new("nusamai-atlas/examples/output/");
     packer.export(output_path);
 }

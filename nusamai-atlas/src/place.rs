@@ -24,16 +24,23 @@ impl Default for TexturePlacerConfig {
 #[derive(Debug, Clone)]
 pub struct PlacedTextureInfo {
     pub id: String,
+    pub atlas_id: String,
     pub origin: (u32, u32),
     pub width: u32,
     pub height: u32,
+    // UV coordinates on atlas
     pub placed_uv_coords: Vec<(f32, f32)>,
 }
 
 pub trait TexturePlacer {
     fn config(&self) -> &TexturePlacerConfig;
 
-    fn place_texture(&mut self, id: &str, texture: &CroppedTexture) -> PlacedTextureInfo;
+    fn place_texture(
+        &mut self,
+        id: &str,
+        texture: &CroppedTexture,
+        parent_atlas_id: &str,
+    ) -> PlacedTextureInfo;
 
     fn can_place(&self, texture: &CroppedTexture) -> bool;
 
@@ -69,7 +76,12 @@ impl TexturePlacer for SimpleTexturePlacer {
         &self.config
     }
 
-    fn place_texture(&mut self, id: &str, texture: &CroppedTexture) -> PlacedTextureInfo {
+    fn place_texture(
+        &mut self,
+        id: &str,
+        texture: &CroppedTexture,
+        parent_atlas_id: &str,
+    ) -> PlacedTextureInfo {
         let (scaled_width, scaled_height) = self.scale_dimensions(
             texture.width,
             texture.height,
@@ -95,6 +107,7 @@ impl TexturePlacer for SimpleTexturePlacer {
 
         let texture_info = PlacedTextureInfo {
             id: id.to_string(),
+            atlas_id: parent_atlas_id.to_string(),
             origin: (self.current_x, self.current_y),
             width: scaled_width,
             height: scaled_height,
@@ -276,7 +289,12 @@ impl TexturePlacer for GuillotineTexturePlacer {
         &self.config
     }
 
-    fn place_texture(&mut self, id: &str, texture: &CroppedTexture) -> PlacedTextureInfo {
+    fn place_texture(
+        &mut self,
+        id: &str,
+        texture: &CroppedTexture,
+        parent_atlas_id: &str,
+    ) -> PlacedTextureInfo {
         let (scaled_width, scaled_height) = self.scale_dimensions(
             texture.width,
             texture.height,
@@ -300,6 +318,7 @@ impl TexturePlacer for GuillotineTexturePlacer {
         if let Some(rect) = self.find_best_rect(width, height) {
             let placed = PlacedTextureInfo {
                 id: id.to_string(),
+                atlas_id: parent_atlas_id.to_string(),
                 origin: (rect.x + self.config.padding, rect.y + self.config.padding),
                 width: scaled_width,
                 height: scaled_height,
