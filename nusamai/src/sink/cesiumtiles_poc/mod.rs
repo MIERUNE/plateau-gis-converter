@@ -18,15 +18,19 @@ use std::{
 use ahash::RandomState;
 use bytemuck::Zeroable;
 use earcut::{utils3d::project3d_to_2d, Earcut};
-use gltf::write_gltf_glb;
 use indexmap::IndexSet;
 use itertools::Itertools;
+use rayon::prelude::*;
+
+use nusamai_atlas::{
+    export::WebpAtlasExporter,
+    pack::TexturePacker,
+    place::{GuillotineTexturePlacer, TexturePlacerConfig},
+    texture::{CroppedTexture, DownsampleFactor},
+};
 use nusamai_citygml::{object::Value, schema::Schema};
 use nusamai_mvt::tileid::TileIdMethod;
 use nusamai_projection::cartesian::geodetic_to_geocentric;
-use rayon::prelude::*;
-use slice::{slice_to_tiles, SlicedFeature};
-use tiling::{TileContent, TileTree};
 
 use crate::{
     get_parameter_value,
@@ -34,6 +38,9 @@ use crate::{
     pipeline::{Feedback, PipelineError, Receiver, Result},
     sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo},
 };
+use gltf::write_gltf_glb;
+use slice::{slice_to_tiles, SlicedFeature};
+use tiling::{TileContent, TileTree};
 use utils::calculate_normal;
 
 pub struct CesiumTilesPocSinkProvider {}
@@ -80,7 +87,7 @@ struct CesiumTilesPocSink {
 impl DataSink for CesiumTilesPocSink {
     fn make_requirements(&self) -> DataRequirements {
         DataRequirements {
-            // use_appearance: true,
+            use_appearance: true,
             resolve_appearance: true,
             key_value: crate::transformer::KeyValueSpec::JsonifyObjects,
             ..Default::default()
@@ -258,6 +265,14 @@ fn feature_sorting_stage(
     Ok(())
 }
 
+#[derive(Debug, Clone)]
+struct Polygon {
+    id: String,
+    uv_coords: Vec<(f32, f32)>,
+    texture_uri: PathBuf,
+    downsample_factor: DownsampleFactor,
+}
+
 fn tile_writing_stage(
     output_path: &Path,
     feedback: &Feedback,
@@ -326,6 +341,10 @@ fn tile_writing_stage(
             let mut metadata_encoder = metadata::MetadataEncoder::new(schema);
 
             // todo: initialize texture packer
+            let config = TexturePlacerConfig::default();
+            let placer = GuillotineTexturePlacer::new(config);
+            let exporter = WebpAtlasExporter::default();
+            let mut packer = TexturePacker::new(placer, exporter);
 
             // For each feature
             let mut feature_id = 0;
@@ -378,10 +397,22 @@ fn tile_writing_stage(
                     };
 
                     let mat = feature.materials[*orig_mat_id as usize].clone();
-                    let primitive = primitives.entry(mat).or_default();
+                    let primitive = primitives.entry(mat.clone()).or_default();
                     primitive.feature_ids.insert(feature_id as u32);
 
                     // todo: add texture to texture packer
+                    let Some(texture) = mat.base_texture else {
+                        continue
+                    };
+                    let texture_uri = texture.uri.to_file_path().unwrap();
+
+                    let polygon = Polygon {
+                        id: feature_id.to_string(),
+                        // todo: UV座標を抽出してきて格納する
+                        uv_coords:Vec::new(),
+                        texture_uri,
+                        downsample_factor: DownsampleFactor::new(&1.0),
+                    };
 
                     if let Some((nx, ny, nz)) = calculate_normal(
                         poly.exterior().iter().map(|v| [v[0], v[1], v[2]])
