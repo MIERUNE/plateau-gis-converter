@@ -1,4 +1,4 @@
-//! 3D Tiles sink
+//! 3D Tiles PoC sink
 
 mod gltf;
 mod material;
@@ -18,10 +18,9 @@ use std::{
 use ahash::RandomState;
 use bytemuck::Zeroable;
 use earcut::{utils3d::project3d_to_2d, Earcut};
+use gltf::write_gltf_glb;
 use indexmap::IndexSet;
 use itertools::Itertools;
-use rayon::prelude::*;
-
 use nusamai_atlas::{
     export::WebpAtlasExporter,
     pack::TexturePacker,
@@ -31,6 +30,10 @@ use nusamai_atlas::{
 use nusamai_citygml::{object::Value, schema::Schema};
 use nusamai_mvt::tileid::TileIdMethod;
 use nusamai_projection::cartesian::geodetic_to_geocentric;
+use rayon::prelude::*;
+use slice::{slice_to_tiles, SlicedFeature};
+use tiling::{TileContent, TileTree};
+use utils::calculate_normal;
 
 use crate::{
     get_parameter_value,
@@ -38,10 +41,6 @@ use crate::{
     pipeline::{Feedback, PipelineError, Receiver, Result},
     sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo},
 };
-use gltf::write_gltf_glb;
-use slice::{slice_to_tiles, SlicedFeature};
-use tiling::{TileContent, TileTree};
-use utils::calculate_normal;
 
 pub struct CesiumTilesPocSinkProvider {}
 
@@ -78,6 +77,14 @@ impl DataSinkProvider for CesiumTilesPocSinkProvider {
             output_path: output_path.as_ref().unwrap().into(),
         })
     }
+}
+
+#[derive(Debug, Clone)]
+struct Polygon {
+    id: String,
+    uv_coords: Vec<(f32, f32)>,
+    texture_uri: PathBuf,
+    downsample_factor: DownsampleFactor,
 }
 
 struct CesiumTilesPocSink {
@@ -265,14 +272,6 @@ fn feature_sorting_stage(
     Ok(())
 }
 
-#[derive(Debug, Clone)]
-struct Polygon {
-    id: String,
-    uv_coords: Vec<(f32, f32)>,
-    texture_uri: PathBuf,
-    downsample_factor: DownsampleFactor,
-}
-
 fn tile_writing_stage(
     output_path: &Path,
     feedback: &Feedback,
@@ -340,11 +339,14 @@ fn tile_writing_stage(
 
             let mut metadata_encoder = metadata::MetadataEncoder::new(schema);
 
-            // todo: initialize texture packer
+            // initialize texture packer
             let config = TexturePlacerConfig::default();
             let placer = GuillotineTexturePlacer::new(config);
             let exporter = WebpAtlasExporter::default();
             let mut packer = TexturePacker::new(placer, exporter);
+
+            // let mut polygons = Vec::new();
+            let mut poly_count = 0;
 
             // For each feature
             let mut feature_id = 0;
@@ -406,13 +408,14 @@ fn tile_writing_stage(
                     };
                     let texture_uri = texture.uri.to_file_path().unwrap();
 
-                    let polygon = Polygon {
-                        id: feature_id.to_string(),
-                        // todo: UV座標を抽出してきて格納する
+                    let mut polygon = Polygon {
+                        id: format!("{}_{}", feature_id.to_string(), poly_count.to_string()),
                         uv_coords:Vec::new(),
-                        texture_uri,
+                        texture_uri: texture_uri.clone(),
                         downsample_factor: DownsampleFactor::new(&1.0),
                     };
+
+                    let mut uv_coords = Vec::new();
 
                     if let Some((nx, ny, nz)) = calculate_normal(
                         poly.exterior().iter().map(|v| [v[0], v[1], v[2]])
@@ -427,6 +430,9 @@ fn tile_writing_stage(
                             // collect triangles
                             primitive.indices.extend(index_buf.iter().map(|&idx| {
                                 let [x, y, z, u, v] = poly.raw_coords()[idx as usize];
+
+                                uv_coords.push((u as f32, v as f32));
+
                                 let vbits = [
                                     (x as f32).to_bits(),
                                     (y as f32).to_bits(),
@@ -443,15 +449,30 @@ fn tile_writing_stage(
                             }));
                         }
                     }
-                }
+                    polygon.uv_coords = uv_coords;
+                    // polygons.push(polygon);
+                    poly_count += 1;
 
+                    let texture = CroppedTexture::new(
+                        &polygon.uv_coords,
+                        &polygon.texture_uri,
+                        &polygon.downsample_factor.value(),
+                    );
+                    // todo: verticesのUVを更新する必要がある
+                    let _ = packer.add_texture(polygon.id.clone(), texture);
+                }
                 feature_id += 1;
+                poly_count = 0;
             }
 
             // Write to file
             let path_glb = output_path.join(Path::new(&content.content_path));
             if let Some(dir) = path_glb.parent() {
                 fs::create_dir_all(dir)?;
+                // Write to atlas
+                // todo: 処理が遅すぎる
+                packer.finalize();
+                packer.export(dir);
             }
 
             contents.lock().unwrap().push(content);

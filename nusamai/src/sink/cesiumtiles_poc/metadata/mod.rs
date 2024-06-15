@@ -6,8 +6,15 @@ use indexmap::{IndexMap, IndexSet};
 use nusamai_citygml::schema::{Attribute, FeatureTypeDef, Schema, TypeDef};
 use nusamai_gltf_json::{
     extensions::gltf::ext_structural_metadata::{
-        self, ClassPropertyComponentType, ClassPropertyType, Enum, EnumValue, EnumValueType,
-        ExtStructuralMetadata, PropertyTable, PropertyTableProperty,
+        self,
+        ClassPropertyComponentType,
+        ClassPropertyType,
+        Enum,
+        EnumValue,
+        EnumValueType,
+        ExtStructuralMetadata,
+        PropertyTable,
+        PropertyTableProperty,
     },
     BufferView,
 };
