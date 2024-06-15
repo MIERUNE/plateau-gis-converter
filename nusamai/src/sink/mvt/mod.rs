@@ -12,10 +12,10 @@ use std::{
 };
 
 use flate2::{write::ZlibEncoder, Compression};
+use flatgeom::{MultiPolygon, MultiPolygon2};
 use hashbrown::HashMap;
 use itertools::Itertools;
 use nusamai_citygml::{object, schema::Schema};
-use flatgeom::{MultiPolygon, MultiPolygon2};
 use nusamai_mvt::{geometry::GeometryEncoder, tag::TagsEncoder, tileid::TileIdMethod, vector_tile};
 use prost::Message;
 use rayon::prelude::*;
@@ -318,7 +318,10 @@ fn tile_writing_stage(
                 if detail != min_detail && compressed_size > 500_000 {
                     // If the tile is too large, try a lower detail level
                     let extent = 1 << detail;
-                    feedback.info(format!("Tile size is too large: {zoom}/{x}/{y} (extent: {extent}), trying a lower detail level."));
+                    feedback.info(format!(
+                        "Tile size is too large: {zoom}/{x}/{y} (extent: {extent}), trying a \
+                         lower detail level."
+                    ));
                     continue;
                 }
 
