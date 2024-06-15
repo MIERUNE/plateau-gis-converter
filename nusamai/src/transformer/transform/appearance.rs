@@ -1,8 +1,8 @@
 //! Apply appearance to geometries
 
 use feedback::Feedback;
-use nusamai_citygml::schema::Schema;
 use flatgeom::MultiPolygon;
+use nusamai_citygml::schema::Schema;
 use nusamai_plateau::Entity;
 
 use crate::{pipeline::feedback, transformer::Transform};

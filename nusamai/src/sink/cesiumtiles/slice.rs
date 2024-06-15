@@ -1,5 +1,6 @@
 //! Polygon slicing algorithm based on [geojson-vt](https://github.com/mapbox/geojson-vt).
 
+use flatgeom::{MultiPolygon, Polygon, Polygon2, Polygon3};
 use hashbrown::HashMap;
 use indexmap::IndexSet;
 use itertools::Itertools;
@@ -7,7 +8,6 @@ use nusamai_citygml::{
     geometry::GeometryType,
     object::{ObjectStereotype, Value},
 };
-use flatgeom::{MultiPolygon, Polygon, Polygon2, Polygon3};
 use nusamai_mvt::TileZXY;
 use nusamai_plateau::{appearance, Entity};
 use serde::{Deserialize, Serialize};

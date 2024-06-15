@@ -43,7 +43,8 @@ impl BlockPosition {
     pub fn new(x: u8, y: u8, z: u8) -> Self {
         if x > 15 || y > 15 || z > 15 {
             panic!(
-                "Invalid BlockPosition values: x={x}, y={y}, z={z}. The position values must be within the range of 0 to 15."
+                "Invalid BlockPosition values: x={x}, y={y}, z={z}. The position values must be \
+                 within the range of 0 to 15."
             );
         }
         BlockPosition([x, y, z])
