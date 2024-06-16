@@ -234,9 +234,9 @@ pub fn entity_to_packets(entity: Entity, single_part: bool) -> Vec<Packet> {
 mod tests {
     use std::sync::RwLock;
 
+    use flatgeom::MultiPolygon;
     use nusamai_citygml::{object::Object, GeometryRef};
     use nusamai_czml::{PositionListProperties, PositionListType};
-    use flatgeom::MultiPolygon;
     use nusamai_projection::crs::EPSG_JGD2011_GEOGRAPHIC_3D;
 
     use super::*;

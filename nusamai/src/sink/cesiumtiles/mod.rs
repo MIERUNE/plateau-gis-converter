@@ -281,11 +281,20 @@ fn tile_writing_stage(
                 let zxy = tile_id_conv.id_to_zxy(tile_id);
                 let (tile_zoom, tile_x, tile_y) = zxy;
                 let (min_lat, max_lat) = tiling::y_slice_range(tile_zoom, tile_y);
-                let (min_lng, max_lng) = tiling::x_slice_range(tile_zoom, tile_x as i32, tiling::x_step(tile_zoom, tile_y));
+                let (min_lng, max_lng) = tiling::x_slice_range(
+                    tile_zoom,
+                    tile_x as i32,
+                    tiling::x_step(tile_zoom, tile_y),
+                );
 
                 // Use the tile center as the translation of the glTF mesh
                 let translation = {
-                    let (tx, ty, tz) = geodetic_to_geocentric(&ellipsoid, (min_lng + max_lng) / 2.0, (min_lat + max_lat) / 2.0, 0.);
+                    let (tx, ty, tz) = geodetic_to_geocentric(
+                        &ellipsoid,
+                        (min_lng + max_lng) / 2.0,
+                        (min_lat + max_lat) / 2.0,
+                        0.,
+                    );
                     // z-up to y-up
                     let [tx, ty, tz] = [tx, tz, -ty];
                     // double-precision to single-precision
@@ -293,9 +302,9 @@ fn tile_writing_stage(
                 };
 
                 let geom_error = tiling::geometric_error(tile_zoom, tile_y);
-                feedback.info(
-                format!(
-                    "tile: z={tile_zoom}, x={tile_x}, y={tile_y} (lng: [{min_lng} => {max_lng}], lat: [{min_lat} => {max_lat}) geometricError: {geom_error}"
+                feedback.info(format!(
+                    "tile: z={tile_zoom}, x={tile_x}, y={tile_y} (lng: [{min_lng} => {max_lng}], \
+                     lat: [{min_lat} => {max_lat}) geometricError: {geom_error}"
                 ));
                 let content_path = {
                     let normalized_typename = typename.replace(':', "_");
@@ -331,13 +340,14 @@ fn tile_writing_stage(
                 feedback.ensure_not_canceled()?;
 
                 let feature = {
-                    let (mut feature, _): (SlicedFeature, _) = bincode::serde::decode_from_slice(&serialized_feat, bincode_config)
-                        .map_err(|err| {
-                            PipelineError::Other(format!(
-                                "Failed to deserialize a sliced feature: {:?}",
-                                err
-                            ))
-                        })?;
+                    let (mut feature, _): (SlicedFeature, _) =
+                        bincode::serde::decode_from_slice(&serialized_feat, bincode_config)
+                            .map_err(|err| {
+                                PipelineError::Other(format!(
+                                    "Failed to deserialize a sliced feature: {:?}",
+                                    err
+                                ))
+                            })?;
 
                     feature
                         .polygons
@@ -356,20 +366,33 @@ fn tile_writing_stage(
                             // - subtract the translation
                             // - flip the texture v-coordinate
                             let (x, y, z) = geodetic_to_geocentric(&ellipsoid, lng, lat, height);
-                            [x - translation[0], z - translation[1], -y - translation[2], u, 1.0 - v]
+                            [
+                                x - translation[0],
+                                z - translation[1],
+                                -y - translation[2],
+                                u,
+                                1.0 - v,
+                            ]
                         });
 
                     feature
                 };
 
                 // Encode properties
-                if metadata_encoder.add_feature(&typename, &feature.attributes).is_err() {
+                if metadata_encoder
+                    .add_feature(&typename, &feature.attributes)
+                    .is_err()
+                {
                     feedback.warn("Failed to encode feature attributes".to_string());
-                    continue
+                    continue;
                 }
 
                 // Triangulation, etc.
-                for (poly, orig_mat_id) in feature.polygons.iter().zip_eq(feature.polygon_material_ids.iter()) {
+                for (poly, orig_mat_id) in feature
+                    .polygons
+                    .iter()
+                    .zip_eq(feature.polygon_material_ids.iter())
+                {
                     let num_outer_points = match poly.hole_indices().first() {
                         Some(&v) => v as usize,
                         None => poly.raw_coords().len(),
@@ -379,15 +402,19 @@ fn tile_writing_stage(
                     let primitive = primitives.entry(mat).or_default();
                     primitive.feature_ids.insert(feature_id as u32);
 
-                    if let Some((nx, ny, nz)) = calculate_normal(
-                        poly.exterior().iter().map(|v| [v[0], v[1], v[2]])
-                    ) {
+                    if let Some((nx, ny, nz)) =
+                        calculate_normal(poly.exterior().iter().map(|v| [v[0], v[1], v[2]]))
+                    {
                         buf3d.clear();
                         buf3d.extend(poly.raw_coords().iter().map(|c| [c[0], c[1], c[2]]));
 
-                        if project3d_to_2d(&buf3d, num_outer_points,  &mut buf2d) {
+                        if project3d_to_2d(&buf3d, num_outer_points, &mut buf2d) {
                             // earcut
-                            earcutter.earcut(buf2d.iter().cloned(), poly.hole_indices(),  &mut index_buf);
+                            earcutter.earcut(
+                                buf2d.iter().cloned(),
+                                poly.hole_indices(),
+                                &mut index_buf,
+                            );
 
                             // collect triangles
                             primitive.indices.extend(index_buf.iter().map(|&idx| {

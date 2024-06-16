@@ -1,11 +1,9 @@
 use std::{collections::HashMap, vec};
 
+use flatgeom::{Coord, MultiPoint, MultiPoint3, MultiPolygon, MultiPolygon3, Polygon, Polygon3};
 use kml::types::{
     AltitudeMode, Coord as KmlCoord, Geometry, LinearRing, MultiGeometry, Point,
     Polygon as KmlPolygon,
-};
-use flatgeom::{
-    Coord, MultiPoint, MultiPoint3, MultiPolygon, MultiPolygon3, Polygon, Polygon3,
 };
 
 pub fn multipolygon_to_kml(mpoly: &MultiPolygon3) -> Vec<KmlPolygon> {
