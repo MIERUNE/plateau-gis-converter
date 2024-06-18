@@ -50,11 +50,11 @@ fn main() {
     let mut packer = TexturePacker::new(placer, exporter);
 
     // Texture cache
-    let image_cache = TextureCache::new(8192);
+    let texture_cache = TextureCache::new(8192);
 
     // Add textures to the atlas
     polygons.iter().for_each(|polygon| {
-        let texture = image_cache.get_or_insert(
+        let texture = texture_cache.get_or_insert(
             &polygon.uv_coords,
             &polygon.texture_uri,
             &polygon.downsample_factor.value(),
@@ -66,5 +66,5 @@ fn main() {
     packer.finalize();
 
     let output_dir = Path::new("nusamai-atlas/examples/output/");
-    packer.export(output_dir);
+    packer.export(output_dir, &texture_cache);
 }
