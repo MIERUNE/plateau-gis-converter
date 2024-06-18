@@ -29,7 +29,7 @@ pub struct PlacedTextureInfo {
     pub width: u32,
     pub height: u32,
     // UV coordinates on atlas
-    pub placed_uv_coords: Vec<(f32, f32)>,
+    pub placed_uv_coords: Vec<(f64, f64)>,
 }
 
 pub trait TexturePlacer {
@@ -99,11 +99,11 @@ impl TexturePlacer for SimpleTexturePlacer {
             .iter()
             .map(|(u, v)| {
                 (
-                    self.current_x as f32 / self.config().width as f32 + u * scaled_width as f32,
-                    self.current_y as f32 / self.config().height as f32 + v * scaled_height as f32,
+                    self.current_x as f64 / self.config().width as f64 + u * scaled_width as f64,
+                    self.current_y as f64 / self.config().height as f64 + v * scaled_height as f64,
                 )
             })
-            .collect::<Vec<(f32, f32)>>();
+            .collect::<Vec<(f64, f64)>>();
 
         let texture_info = PlacedTextureInfo {
             id: id.to_string(),
@@ -309,11 +309,11 @@ impl TexturePlacer for GuillotineTexturePlacer {
             .iter()
             .map(|(u, v)| {
                 (
-                    u * scaled_width as f32 / self.config.width as f32,
-                    v * scaled_height as f32 / self.config.height as f32,
+                    u * scaled_width as f64 / self.config.width as f64,
+                    v * scaled_height as f64 / self.config.height as f64,
                 )
             })
-            .collect::<Vec<(f32, f32)>>();
+            .collect::<Vec<(f64, f64)>>();
 
         if let Some(rect) = self.find_best_rect(width, height) {
             let placed = PlacedTextureInfo {

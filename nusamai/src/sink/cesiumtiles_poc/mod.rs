@@ -8,6 +8,7 @@ mod tiling;
 pub(crate) mod utils;
 
 use std::{
+    collections::VecDeque,
     convert::Infallible,
     fs,
     io::BufWriter,
@@ -80,10 +81,10 @@ impl DataSinkProvider for CesiumTilesPocSinkProvider {
 }
 
 #[derive(Debug, Clone)]
-struct Polygon {
+struct SurfaceWithTexture {
     id: String,
-    uv_coords: Vec<(f32, f32)>,
-    texture_uri: PathBuf,
+    uv_coords: Vec<(f64, f64)>,
+    texture_path: PathBuf,
     downsample_factor: DownsampleFactor,
 }
 
@@ -413,7 +414,7 @@ fn tile_writing_stage(
 
                 let mut poly_count = 0;
                 // Triangulation, etc.
-                for (poly, orig_mat_id) in feature
+                for (mut poly, orig_mat_id) in feature
                     .polygons
                     .iter()
                     .zip_eq(feature.polygon_material_ids.iter())
@@ -431,15 +432,14 @@ fn tile_writing_stage(
                     let Some(texture) = mat.base_texture else {
                         continue;
                     };
-                    let texture_uri = texture.uri.to_file_path().unwrap();
+                    let texture_path = texture.uri.to_file_path().unwrap();
 
-                    let mut polygon = Polygon {
+                    let mut surface_with_texture = SurfaceWithTexture {
                         id: format!("{}_{}_{}", tile_id, feature_id, poly_count),
                         uv_coords: Vec::new(),
-                        texture_uri: texture_uri.clone(),
+                        texture_path,
                         downsample_factor: DownsampleFactor::new(&1.0),
                     };
-                    let mut uv_coords = Vec::new();
 
                     if let Some((nx, ny, nz)) =
                         calculate_normal(poly.exterior().iter().map(|v| [v[0], v[1], v[2]]))
@@ -455,12 +455,46 @@ fn tile_writing_stage(
                                 &mut index_buf,
                             );
 
+                            let original_uv_coords = poly
+                                .raw_coords()
+                                .iter()
+                                .map(|&[_, _, _, u, v]| (u, v))
+                                .collect::<Vec<_>>();
+                            println!("original_uv_coords: {:?}", original_uv_coords);
+
+                            surface_with_texture.uv_coords = (index_buf.iter().map(|&idx| {
+                                let [_, _, _, u, v] = poly.raw_coords()[idx as usize];
+                                println!("u: {}, v: {}", u, v);
+                                (u, v)
+                            }))
+                            .collect();
+
+                            let texture = texture_cache.get_or_insert(
+                                &surface_with_texture.uv_coords,
+                                &surface_with_texture.texture_path,
+                                &surface_with_texture.downsample_factor.value(),
+                            );
+
+                            // todo: verticesのUVを更新する必要がある
+                            let mut new_uv_coords = packer
+                                .add_texture(surface_with_texture.id.clone(), texture)
+                                .placed_uv_coords
+                                .iter()
+                                .map(|(u, v)| ({ *u }, { *v }))
+                                .collect::<VecDeque<(f64, f64)>>();
+                            println!("new_uv_coords: {:?}", new_uv_coords);
+
+                            // update uv_coords
+                            // todo: polyの頂点をnew_uv_coordsで順番に上書きする
+                            poly.transform_inplace(|&[x, y, z, _, _]| {
+                                let (u, v) = new_uv_coords.pop_front().unwrap();
+                                println!("u: {}, v: {}", u, v);
+                                [x, y, z, u, v]
+                            });
+
                             // collect triangles
                             primitive.indices.extend(index_buf.iter().map(|&idx| {
                                 let [x, y, z, u, v] = poly.raw_coords()[idx as usize];
-
-                                uv_coords.push((u as f32, v as f32));
-
                                 let vbits = [
                                     (x as f32).to_bits(),
                                     (y as f32).to_bits(),
@@ -477,17 +511,7 @@ fn tile_writing_stage(
                             }));
                         }
                     }
-                    {
-                        polygon.uv_coords = uv_coords;
-                        let texture = texture_cache.get_or_insert(
-                            &polygon.uv_coords,
-                            &polygon.texture_uri,
-                            &polygon.downsample_factor.value(),
-                        );
-                        // todo: verticesのUVを更新する必要がある
-                        let _ = packer.add_texture(polygon.id.clone(), texture);
-                        poly_count += 1;
-                    }
+                    poly_count += 1;
                 }
                 feature_id += 1;
             }

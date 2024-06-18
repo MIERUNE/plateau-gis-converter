@@ -10,7 +10,7 @@ use nusamai_atlas::{
 #[derive(Debug, Clone)]
 struct Polygon {
     id: String,
-    uv_coords: Vec<(f32, f32)>,
+    uv_coords: Vec<(f64, f64)>,
     texture_uri: PathBuf,
     downsample_factor: DownsampleFactor,
 }

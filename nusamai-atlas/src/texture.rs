@@ -33,7 +33,7 @@ impl TextureCache {
 
     pub fn get_or_insert(
         &self,
-        uv_coords: &[(f32, f32)],
+        uv_coords: &[(f64, f64)],
         image_path: &PathBuf,
         downsample_factor: &f32,
     ) -> CroppedTexture {
@@ -84,12 +84,12 @@ pub struct CroppedTexture {
     pub downsample_factor: DownsampleFactor,
     // PLATEAU textures contain multiple surface/building textures in a single image,
     // so it is necessary to specify UV coordinates for each polygon and cut them out.
-    pub cropped_uv_coords: Vec<(f32, f32)>,
+    pub cropped_uv_coords: Vec<(f64, f64)>,
 }
 
 impl CroppedTexture {
     pub fn new(
-        uv_coords: &[(f32, f32)],
+        uv_coords: &[(f64, f64)],
         image_path: &Path,
         image: &DynamicImage,
         downsample_factor: &f32,
@@ -97,7 +97,7 @@ impl CroppedTexture {
         let downsample_factor = DownsampleFactor::new(downsample_factor);
 
         let (min_x, min_y, max_x, max_y) = uv_coords.iter().fold(
-            (1.0_f32, 1.0_f32, 0.0_f32, 0.0_f32),
+            (1.0_f64, 1.0_f64, 0.0_f64, 0.0_f64),
             |(min_x, min_y, max_x, max_y), (x, y)| {
                 (min_x.min(*x), min_y.min(*y), max_x.max(*x), max_y.max(*y))
             },
@@ -105,10 +105,10 @@ impl CroppedTexture {
 
         let (width, height) = image.dimensions();
 
-        let left = (min_x * width as f32) as u32;
-        let top = (min_y * height as f32) as u32;
-        let right = (max_x * width as f32) as u32;
-        let bottom = (max_y * height as f32) as u32;
+        let left = (min_x * width as f64) as u32;
+        let top = (min_y * height as f64) as u32;
+        let right = (max_x * width as f64) as u32;
+        let bottom = (max_y * height as f64) as u32;
 
         let cropped_width = right - left;
         let cropped_height = bottom - top;
@@ -116,7 +116,7 @@ impl CroppedTexture {
         let dest_uv_coords = uv_coords
             .iter()
             .map(|(u, v)| ((u - min_x) / (max_x - min_x), (v - min_y) / (max_y - min_y)))
-            .collect::<Vec<(f32, f32)>>();
+            .collect::<Vec<(f64, f64)>>();
 
         CroppedTexture {
             image_path: image_path.to_path_buf(),
