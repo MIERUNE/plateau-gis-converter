@@ -4,7 +4,7 @@ use nusamai_atlas::{
     export::WebpAtlasExporter,
     pack::TexturePacker,
     place::{GuillotineTexturePlacer, TexturePlacerConfig},
-    texture::{CroppedTextureCache, DownsampleFactor},
+    texture::{DownsampleFactor, TextureCache},
 };
 
 #[derive(Debug, Clone)]
@@ -50,7 +50,7 @@ fn main() {
     let mut packer = TexturePacker::new(placer, exporter);
 
     // Texture cache
-    let image_cache = CroppedTextureCache::new(8192);
+    let image_cache = TextureCache::new(8192);
 
     // Add textures to the atlas
     polygons.iter().for_each(|polygon| {

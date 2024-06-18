@@ -25,7 +25,7 @@ use nusamai_atlas::{
     export::WebpAtlasExporter,
     pack::TexturePacker,
     place::{GuillotineTexturePlacer, TexturePlacerConfig},
-    texture::{CroppedTextureCache, DownsampleFactor},
+    texture::{DownsampleFactor, TextureCache},
 };
 use nusamai_citygml::{object::Value, schema::Schema};
 use nusamai_mvt::tileid::TileIdMethod;
@@ -356,7 +356,7 @@ fn tile_writing_stage(
             let mut packer = TexturePacker::new(placer, exporter);
 
             // Texture cache
-            let image_cache = CroppedTextureCache::new(16384);
+            let image_cache = TextureCache::new(16384);
 
             // For each feature
             let mut feature_id = 0;

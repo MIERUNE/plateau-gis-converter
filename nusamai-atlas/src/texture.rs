@@ -20,13 +20,13 @@ impl DownsampleFactor {
     }
 }
 
-pub struct CroppedTextureCache {
+pub struct TextureCache {
     cache: Cache<PathBuf, DynamicImage>,
 }
 
-impl CroppedTextureCache {
+impl TextureCache {
     pub fn new(capacity: usize) -> Self {
-        CroppedTextureCache {
+        TextureCache {
             cache: Cache::new(capacity, 10_000_000).unwrap(),
         }
     }
@@ -55,7 +55,7 @@ impl CroppedTextureCache {
     }
 }
 
-impl Drop for CroppedTextureCache {
+impl Drop for TextureCache {
     fn drop(&mut self) {
         self.cache.close().unwrap();
     }
