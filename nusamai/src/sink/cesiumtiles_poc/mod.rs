@@ -283,6 +283,9 @@ fn tile_writing_stage(
     let contents: Arc<Mutex<Vec<TileContent>>> = Default::default();
     let bincode_config = bincode::config::standard();
 
+    // Texture cache
+    let image_cache = TextureCache::new(16384);
+
     // Make a glTF (.glb) file for each tile
     receiver_sorted
         .into_iter()
@@ -354,9 +357,6 @@ fn tile_writing_stage(
             let placer = GuillotineTexturePlacer::new(config);
             let exporter = WebpAtlasExporter::default();
             let mut packer = TexturePacker::new(placer, exporter);
-
-            // Texture cache
-            let image_cache = TextureCache::new(16384);
 
             // For each feature
             let mut feature_id = 0;
@@ -479,14 +479,12 @@ fn tile_writing_stage(
                     }
                     {
                         polygon.uv_coords = uv_coords;
-                        // todo: cropするだけでものすごい時間がかかるので、改修が必須
                         let texture = image_cache.get_or_insert(
                             &polygon.uv_coords,
                             &polygon.texture_uri,
                             &polygon.downsample_factor.value(),
                         );
                         // todo: verticesのUVを更新する必要がある
-                        // todo: テクスチャ追加時にキャッシュを利用するように修正
                         let _ = packer.add_texture(polygon.id.clone(), texture);
                         poly_count += 1;
                     }
