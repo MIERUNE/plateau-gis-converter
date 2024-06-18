@@ -25,7 +25,7 @@ use nusamai_atlas::{
     export::WebpAtlasExporter,
     pack::TexturePacker,
     place::{GuillotineTexturePlacer, TexturePlacerConfig},
-    texture::{CroppedTexture, DownsampleFactor},
+    texture::{CroppedTextureCache, DownsampleFactor},
 };
 use nusamai_citygml::{object::Value, schema::Schema};
 use nusamai_mvt::tileid::TileIdMethod;
@@ -318,7 +318,7 @@ fn tile_writing_stage(
                 let geom_error = tiling::geometric_error(tile_zoom, tile_y);
                 feedback.info(format!(
                     "tile: z={tile_zoom}, x={tile_x}, y={tile_y} (lng: [{min_lng} => {max_lng}], \
-                     lat: [{min_lat} => {max_lat}) geometricError: {geom_error}"
+                    lat: [{min_lat} => {max_lat}) geometricError: {geom_error}"
                 ));
                 let content_path = {
                     let normalized_typename = typename.replace(':', "_");
@@ -343,7 +343,8 @@ fn tile_writing_stage(
             let mut buf2d: Vec<[f64; 2]> = Vec::new(); // 2d-projected [x, y]
             let mut index_buf: Vec<u32> = Vec::new();
 
-            let mut vertices: IndexSet<[u32; 9], RandomState> = IndexSet::default(); // [x, y, z, u, v, feature_id]
+            // [x, y, z, nx, ny, nz, u, v, feature_id]
+            let mut vertices: IndexSet<[u32; 9], RandomState> = IndexSet::default();
             let mut primitives: gltf::Primitives = Default::default();
 
             let mut metadata_encoder = metadata::MetadataEncoder::new(schema);
@@ -354,8 +355,8 @@ fn tile_writing_stage(
             let exporter = WebpAtlasExporter::default();
             let mut packer = TexturePacker::new(placer, exporter);
 
-            // let mut polygons = Vec::new();
-            let mut poly_count = 0;
+            // Texture cache
+            let image_cache = CroppedTextureCache::new(16384);
 
             // For each feature
             let mut feature_id = 0;
@@ -410,6 +411,7 @@ fn tile_writing_stage(
                     continue;
                 }
 
+                let mut poly_count = 0;
                 // Triangulation, etc.
                 for (poly, orig_mat_id) in feature
                     .polygons
@@ -425,19 +427,18 @@ fn tile_writing_stage(
                     let primitive = primitives.entry(mat.clone()).or_default();
                     primitive.feature_ids.insert(feature_id as u32);
 
-                    // todo: add texture to texture packer
+                    // add texture to texture packer
                     let Some(texture) = mat.base_texture else {
                         continue;
                     };
                     let texture_uri = texture.uri.to_file_path().unwrap();
 
                     let mut polygon = Polygon {
-                        id: format!("{}_{}", feature_id, poly_count.to_string()),
+                        id: format!("{}_{}_{}", tile_id, feature_id, poly_count),
                         uv_coords: Vec::new(),
                         texture_uri: texture_uri.clone(),
                         downsample_factor: DownsampleFactor::new(&1.0),
                     };
-
                     let mut uv_coords = Vec::new();
 
                     if let Some((nx, ny, nz)) =
@@ -476,29 +477,29 @@ fn tile_writing_stage(
                             }));
                         }
                     }
-                    polygon.uv_coords = uv_coords;
-                    // polygons.push(polygon);
-                    poly_count += 1;
-
-                    let texture = CroppedTexture::new(
-                        &polygon.uv_coords,
-                        &polygon.texture_uri,
-                        &polygon.downsample_factor.value(),
-                    );
-                    // todo: verticesのUVを更新する必要がある
-                    let _ = packer.add_texture(polygon.id.clone(), texture);
+                    {
+                        polygon.uv_coords = uv_coords;
+                        // todo: cropするだけでものすごい時間がかかるので、改修が必須
+                        let texture = image_cache.get_or_insert(
+                            &polygon.uv_coords,
+                            &polygon.texture_uri,
+                            &polygon.downsample_factor.value(),
+                        );
+                        // todo: verticesのUVを更新する必要がある
+                        // todo: テクスチャ追加時にキャッシュを利用するように修正
+                        let _ = packer.add_texture(polygon.id.clone(), texture);
+                        poly_count += 1;
+                    }
                 }
                 feature_id += 1;
-                poly_count = 0;
             }
+            packer.finalize();
 
             // Write to file
             let path_glb = output_path.join(Path::new(&content.content_path));
             if let Some(dir) = path_glb.parent() {
                 fs::create_dir_all(dir)?;
                 // Write to atlas
-                // todo: 処理が遅すぎる
-                packer.finalize();
                 packer.export(dir);
             }
 

@@ -1,7 +1,7 @@
-use image::{DynamicImage, GenericImageView};
 use std::path::{Path, PathBuf};
 
-use crate::cache::ImageCache;
+use image::{DynamicImage, GenericImageView};
+use stretto::Cache;
 
 #[derive(Debug, Clone)]
 pub struct DownsampleFactor(f32);
@@ -20,6 +20,47 @@ impl DownsampleFactor {
     }
 }
 
+pub struct CroppedTextureCache {
+    cache: Cache<PathBuf, DynamicImage>,
+}
+
+impl CroppedTextureCache {
+    pub fn new(capacity: usize) -> Self {
+        CroppedTextureCache {
+            cache: Cache::new(capacity, 10_000_000).unwrap(),
+        }
+    }
+
+    pub fn get_or_insert(
+        &self,
+        uv_coords: &[(f32, f32)],
+        image_path: &PathBuf,
+        downsample_factor: &f32,
+    ) -> CroppedTexture {
+        match self.cache.get(image_path) {
+            Some(image) => {
+                let image = image.value();
+                CroppedTexture::new(uv_coords, image_path, image, downsample_factor)
+            }
+            None => {
+                let image = image::open(image_path).expect("Failed to open image file");
+                let cost = image.width() * image.height() * image.color().bytes_per_pixel() as u32;
+                self.cache
+                    .insert(image_path.to_path_buf(), image.clone(), cost as i64);
+                self.cache.wait().unwrap();
+
+                CroppedTexture::new(uv_coords, image_path, &image, downsample_factor)
+            }
+        }
+    }
+}
+
+impl Drop for CroppedTextureCache {
+    fn drop(&mut self) {
+        self.cache.close().unwrap();
+    }
+}
+
 pub struct CroppedTexture {
     pub image_path: PathBuf,
     pub origin: (u32, u32),
@@ -32,10 +73,13 @@ pub struct CroppedTexture {
 }
 
 impl CroppedTexture {
-    pub fn new(uv_coords: &[(f32, f32)], image_path: &Path, downsample_factor: &f32) -> Self {
+    pub fn new(
+        uv_coords: &[(f32, f32)],
+        image_path: &Path,
+        image: &DynamicImage,
+        downsample_factor: &f32,
+    ) -> Self {
         let downsample_factor = DownsampleFactor::new(downsample_factor);
-
-        let image = image::open(image_path).expect("Failed to open image file");
 
         let (min_x, min_y, max_x, max_y) = uv_coords.iter().fold(
             (1.0_f32, 1.0_f32, 0.0_f32, 0.0_f32),
@@ -69,8 +113,7 @@ impl CroppedTexture {
         }
     }
 
-    pub fn crop(&self, image_cache: &ImageCache) -> DynamicImage {
-        let image = image_cache.get_image(&self.image_path);
+    pub fn crop(&self, image: &DynamicImage) -> DynamicImage {
         let (x, y) = self.origin;
         let cropped_image = image.view(x, y, self.width, self.height).to_image();
 
