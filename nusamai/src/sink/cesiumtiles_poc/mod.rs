@@ -23,7 +23,7 @@ use gltf::write_gltf_glb;
 use indexmap::IndexSet;
 use itertools::Itertools;
 use nusamai_atlas::{
-    export::WebpAtlasExporter,
+    export::{AtlasExporter as _, WebpAtlasExporter},
     pack::TexturePacker,
     place::{GuillotineTexturePlacer, TexturePlacerConfig},
     texture::{DownsampleFactor, TextureCache},
@@ -34,6 +34,7 @@ use nusamai_projection::cartesian::geodetic_to_geocentric;
 use rayon::prelude::*;
 use slice::{slice_to_tiles, SlicedFeature};
 use tiling::{TileContent, TileTree};
+use url::Url;
 
 use crate::{
     get_parameter_value,
@@ -357,6 +358,7 @@ fn tile_writing_stage(
             let config = TexturePlacerConfig::default();
             let placer = GuillotineTexturePlacer::new(config);
             let exporter = WebpAtlasExporter::default();
+            let ext = exporter.clone().get_extension().to_string();
             let mut packer = TexturePacker::new(placer, exporter);
 
             // For each feature
@@ -425,19 +427,15 @@ fn tile_writing_stage(
                     };
 
                     let mat = feature.materials[*orig_mat_id as usize].clone();
-                    let primitive = primitives.entry(mat.clone()).or_default();
-                    primitive.feature_ids.insert(feature_id as u32);
 
                     // add texture to texture packer
-                    let Some(texture) = mat.base_texture else {
+                    let Some(texture) = mat.clone().base_texture else {
                         continue;
                     };
-                    let texture_path = texture.uri.to_file_path().unwrap();
-
                     let mut surface_with_texture = SurfaceWithTexture {
                         id: format!("{}_{}_{}", tile_id, feature_id, poly_count),
                         uv_coords: Vec::new(),
-                        texture_path,
+                        texture_path: texture.uri.to_file_path().unwrap(),
                         downsample_factor: DownsampleFactor::new(&1.0),
                     };
 
@@ -455,16 +453,8 @@ fn tile_writing_stage(
                                 &mut index_buf,
                             );
 
-                            let original_uv_coords = poly
-                                .raw_coords()
-                                .iter()
-                                .map(|&[_, _, _, u, v]| (u, v))
-                                .collect::<Vec<_>>();
-                            println!("original_uv_coords: {:?}", original_uv_coords);
-
                             surface_with_texture.uv_coords = (index_buf.iter().map(|&idx| {
                                 let [_, _, _, u, v] = poly.raw_coords()[idx as usize];
-                                println!("u: {}, v: {}", u, v);
                                 (u, v)
                             }))
                             .collect();
@@ -475,22 +465,32 @@ fn tile_writing_stage(
                                 &surface_with_texture.downsample_factor.value(),
                             );
 
-                            // todo: verticesのUVを更新する必要がある
-                            let mut new_uv_coords = packer
-                                .add_texture(surface_with_texture.id.clone(), texture)
+                            let info = packer.add_texture(surface_with_texture.id.clone(), texture);
+                            let mut new_uv_coords = info
                                 .placed_uv_coords
                                 .iter()
                                 .map(|(u, v)| ({ *u }, { *v }))
                                 .collect::<VecDeque<(f64, f64)>>();
-                            println!("new_uv_coords: {:?}", new_uv_coords);
 
                             // update uv_coords
-                            // todo: polyの頂点をnew_uv_coordsで順番に上書きする
                             poly.transform_inplace(|&[x, y, z, _, _]| {
                                 let (u, v) = new_uv_coords.pop_front().unwrap();
-                                println!("u: {}, v: {}", u, v);
                                 [x, y, z, u, v]
                             });
+
+                            // update material
+                            // todo: アトラスは一時的に出力するが、最終的にはglb内部に取り込まれるため、temporaryなuriを使う
+                            let new_texture_uri = PathBuf::from(output_path)
+                                .join(Path::new(&info.atlas_id))
+                                .with_extension(ext.clone());
+                            let new_mat = material::Material {
+                                base_color: mat.base_color,
+                                base_texture: Some(material::Texture {
+                                    uri: Url::from_file_path(new_texture_uri).unwrap(),
+                                }),
+                            };
+                            let primitive = primitives.entry(new_mat).or_default();
+                            primitive.feature_ids.insert(feature_id as u32);
 
                             // collect triangles
                             primitive.indices.extend(index_buf.iter().map(|&idx| {

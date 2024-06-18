@@ -134,6 +134,10 @@ fn load_image(feedback: &Feedback, path: &Path) -> std::io::Result<(Vec<u8>, Mim
                 feedback.info(format!("Embedding a jpeg as is: {:?}", path));
                 Ok((std::fs::read(path)?, MimeType::ImageJpeg))
             }
+            Some("webp") => {
+                feedback.info(format!("Embedding a webp as is: {:?}", path));
+                Ok((std::fs::read(path)?, MimeType::ImageWebp))
+            }
             _ => {
                 let err = format!("Unsupported image format: {:?}", path);
                 log::error!("{}", err);

@@ -18,6 +18,7 @@ pub trait AtlasExporter {
     fn get_extension(&self) -> &str;
 }
 
+#[derive(Clone)]
 pub struct WebpAtlasExporter {
     pub ext: String,
 }
