@@ -4,7 +4,7 @@ use hashbrown::HashMap;
 
 use crate::export::AtlasExporter;
 use crate::place::{PlacedTextureInfo, TexturePlacer};
-use crate::texture::CroppedTexture;
+use crate::texture::{CroppedTexture, TextureCache};
 
 pub type Atlas = Vec<PlacedTextureInfo>;
 
@@ -68,10 +68,11 @@ impl<P: TexturePlacer, E: AtlasExporter> TexturePacker<P, E> {
         }
     }
 
-    pub fn export(&self, output_dir: &Path) {
+    pub fn export(&self, output_dir: &Path, texture_cache: &TextureCache) {
         for (id, atlas) in self.atlases.iter() {
             let output_path = output_dir.join(id);
-            self.exporter.export(atlas, &self.textures, &output_path);
+            self.exporter
+                .export(atlas, &self.textures, &output_path, texture_cache);
         }
     }
 }

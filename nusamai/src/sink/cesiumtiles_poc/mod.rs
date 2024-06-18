@@ -284,7 +284,7 @@ fn tile_writing_stage(
     let bincode_config = bincode::config::standard();
 
     // Texture cache
-    let image_cache = TextureCache::new(16384);
+    let texture_cache = TextureCache::new(16384);
 
     // Make a glTF (.glb) file for each tile
     receiver_sorted
@@ -479,7 +479,7 @@ fn tile_writing_stage(
                     }
                     {
                         polygon.uv_coords = uv_coords;
-                        let texture = image_cache.get_or_insert(
+                        let texture = texture_cache.get_or_insert(
                             &polygon.uv_coords,
                             &polygon.texture_uri,
                             &polygon.downsample_factor.value(),
@@ -498,7 +498,7 @@ fn tile_writing_stage(
             if let Some(dir) = path_glb.parent() {
                 fs::create_dir_all(dir)?;
                 // Write to atlas
-                packer.export(dir);
+                packer.export(dir, &texture_cache);
             }
 
             contents.lock().unwrap().push(content);

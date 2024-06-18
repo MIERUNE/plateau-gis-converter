@@ -3,9 +3,8 @@ use std::path::Path;
 use hashbrown::HashMap;
 use image::ImageBuffer;
 
-use crate::cache::ImageCache;
 use crate::place::PlacedTextureInfo;
-use crate::texture::CroppedTexture;
+use crate::texture::{CroppedTexture, TextureCache};
 
 pub trait AtlasExporter {
     fn export(
@@ -13,6 +12,7 @@ pub trait AtlasExporter {
         atlas_data: &[PlacedTextureInfo],
         textures: &HashMap<String, CroppedTexture>,
         output_path: &Path,
+        texture_cache: &TextureCache,
     );
 
     fn get_extension(&self) -> &str;
@@ -40,6 +40,7 @@ impl AtlasExporter for WebpAtlasExporter {
         atlas_data: &[PlacedTextureInfo],
         textures: &HashMap<String, CroppedTexture>,
         output_path: &Path,
+        texture_cache: &TextureCache,
     ) {
         let max_width = atlas_data
             .iter()
@@ -54,11 +55,9 @@ impl AtlasExporter for WebpAtlasExporter {
 
         let mut atlas_image = ImageBuffer::new(max_width, max_height);
 
-        let image_cache = ImageCache::new(100);
-
         for info in atlas_data {
             let texture = textures.get(&info.id).unwrap();
-            let cropped = texture.crop(&image_cache.get_image(&texture.image_path));
+            let cropped = texture.crop(&texture_cache.get_image(&texture.image_path));
             let image = cropped.as_rgba8().unwrap();
 
             for (x, y, pixel) in image.enumerate_pixels() {

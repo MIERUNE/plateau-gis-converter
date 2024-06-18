@@ -53,6 +53,21 @@ impl TextureCache {
             }
         }
     }
+
+    pub fn get_image(&self, path: &PathBuf) -> DynamicImage {
+        match self.cache.get(path) {
+            Some(image) => image.value().clone(),
+            None => {
+                let image = image::open(path).expect("Failed to open image file");
+                let cost = image.width() * image.height() * image.color().bytes_per_pixel() as u32;
+                self.cache
+                    .insert(path.to_path_buf(), image.clone(), cost as i64);
+                self.cache.wait().unwrap();
+
+                image
+            }
+        }
+    }
 }
 
 impl Drop for TextureCache {
