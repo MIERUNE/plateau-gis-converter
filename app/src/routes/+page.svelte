@@ -17,6 +17,7 @@
 	let rulesPath = '';
 	let outputPath = '';
 	let isRunning = false;
+	let transform: String;
 
 	async function convertAndSave() {
 		if (!inputPaths) {
@@ -37,7 +38,8 @@
 				outputPath,
 				filetype,
 				epsg,
-				rulesPath
+				rulesPath,
+				transform
 			});
 			isRunning = false;
 			await message(`変換が完了しました。\n'${outputPath}' に出力しました。`, { type: 'info' });
@@ -70,7 +72,7 @@
 
 		<InputSelector bind:inputPaths />
 
-		<SettingSelector bind:filetype bind:epsg bind:rulesPath />
+		<SettingSelector bind:filetype bind:epsg bind:rulesPath bind:transform />
 
 		<OutputSelector {filetype} bind:outputPath />
 

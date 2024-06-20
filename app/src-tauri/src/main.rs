@@ -21,6 +21,7 @@ use nusamai::{
     transformer::{
         self, MappingRules, MultiThreadTransformer, NusamaiTransformBuilder, TransformBuilder,
     },
+    transformoption::{TransformOptionDetail, TransformOptions},
 };
 use nusamai_plateau::models::TopLevelCityObject;
 use tauri_plugin_log::{LogTarget, RotationStrategy, TimezoneStrategy};
@@ -53,7 +54,11 @@ fn main() {
         .manage(ConversionTasksState {
             canceller: Arc::new(Mutex::new(Canceller::default())),
         })
-        .invoke_handler(tauri::generate_handler![run_conversion, cancel_conversion])
+        .invoke_handler(tauri::generate_handler![
+            run_conversion,
+            cancel_conversion,
+            get_transform
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
@@ -127,6 +132,7 @@ fn run_conversion(
     filetype: String,
     epsg: u16,
     rules_path: String,
+    transform: String,
     tasks_state: tauri::State<ConversionTasksState>,
     window: tauri::Window,
 ) -> Result<(), Error> {
@@ -181,7 +187,7 @@ fn run_conversion(
         sink_provider.create(&sink_params)
     };
 
-    let mut requirements = sink.make_requirements();
+    let mut requirements = sink.make_requirements("transform".to_string());
     requirements.set_output_epsg(epsg);
 
     let source = {
@@ -285,4 +291,17 @@ fn run_conversion(
 #[tauri::command]
 fn cancel_conversion(tasks_state: tauri::State<ConversionTasksState>) {
     tasks_state.canceller.lock().unwrap().cancel();
+}
+
+#[tauri::command]
+fn get_transform(filetype: String) -> Result<TransformOptions, Error> {
+    let sink_provider = select_sink_provider(&filetype).ok_or_else(|| {
+        let msg = format!("Invalid sink type: {}", filetype);
+        log::error!("{}", msg);
+        Error::InvalidSetting(msg)
+    })?;
+
+    let transform_options = sink_provider.transform_options();
+
+    Ok(transform_options)
 }

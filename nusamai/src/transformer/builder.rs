@@ -6,6 +6,8 @@ use nusamai_projection::{crs, vshift::Jgd2011ToWgs84};
 use super::{transform::*, Transform};
 use crate::{sink::DataRequirements, transformer};
 
+use serde::{Deserialize, Serialize};
+
 pub struct Request {
     pub output_epsg: crs::EpsgCode,
     pub shorten_names_for_shapefile: bool,
@@ -40,6 +42,7 @@ impl From<DataRequirements> for Request {
     }
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct LodFilterSpec {
     pub mask: LodMask,
     pub mode: LodFilterMode,
@@ -54,6 +57,7 @@ impl Default for LodFilterSpec {
     }
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum TreeFlatteningSpec {
     /// No flattening at all
     None,
@@ -65,6 +69,7 @@ pub enum TreeFlatteningSpec {
     },
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum MergedownSpec {
     /// No mergedown
     NoMergedown,
@@ -74,6 +79,7 @@ pub enum MergedownSpec {
     RemoveDescendantFeatures,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
 /// Specifies how to transform nested objects and arrays
 pub enum KeyValueSpec {
     None,
@@ -85,6 +91,7 @@ pub enum KeyValueSpec {
     DotNotation,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum GeometryStatsSpec {
     None,
     MinMaxHeights,

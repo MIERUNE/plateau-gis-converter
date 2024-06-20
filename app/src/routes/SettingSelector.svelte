@@ -2,10 +2,12 @@
 	import { dialog } from '@tauri-apps/api';
 	import Icon from '@iconify/svelte';
 	import { filetypeOptions } from '$lib/settings';
+	import { invoke } from '@tauri-apps/api/tauri';
 
 	export let filetype: string;
 	export let epsg: number = 4979;
 	export let rulesPath: string;
+	export let transform: String;
 
 	$: epsgOptions = filetypeOptions[filetype]?.epsg || [];
 	$: disableEpsgOptions = epsgOptions.length < 2;
@@ -33,9 +35,30 @@
 	function clearRulesPath() {
 		rulesPath = '';
 	}
+
+	let transformOptions: any;
+
+	async function getTransformoptions(filetype: string) {
+		const options = (await invoke('get_transform', { filetype })) as any;
+		const keys = Object.keys(options.items);
+
+		transformOptions = keys.map((key) => {
+			return {
+				value: key,
+				label: options.items[key].label
+			};
+		});
+		transform = transformOptions[0].value;
+	}
+
+	$: getTransformoptions(filetype);
 </script>
 
 <div>
+	<!-- NOTE Debug -->
+	<!-- {#if transformOptions}
+		<pre>{JSON.stringify(transformOptions, null, 2)}</pre>
+	{/if} -->
 	<div class="flex items-center gap-1.5">
 		<Icon class="text-xl" icon="material-symbols:settings" />
 		<h2 class="font-bold text-xl">設定</h2>
@@ -67,6 +90,23 @@
 				{/each}
 			</select>
 		</div>
+		{#if transformOptions}
+			<div class="flex flex-col gap-1.5">
+				<label for="transform-select" class="font-bold">トランスフォーマーの設定</label>
+				<select
+					bind:value={transform}
+					name="transform"
+					id="transform-select"
+					class="w-80"
+					class:opacity-50={transformOptions.length < 2}
+					disabled={transformOptions.length < 2}
+				>
+					{#each transformOptions as option}
+						<option value={option.value}>{option.label}</option>
+					{/each}
+				</select>
+			</div>
+		{/if}
 
 		<div class=" flex flex-col gap-1.5">
 			<label for="mapping-rule-select" class="font-bold">属性マッピングルール</label>

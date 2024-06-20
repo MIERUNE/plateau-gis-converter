@@ -1,3 +1,4 @@
+use serde::{Deserialize, Serialize};
 use std::sync::{Arc, RwLock};
 
 use nusamai_citygml::{
@@ -16,7 +17,7 @@ pub struct FlattenTreeTransform {
 }
 
 /// Flattening option for the "feature" stereotype
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Serialize, Deserialize, Clone)]
 pub enum FeatureFlatteningOption {
     /// No feature flattening
     None,
@@ -27,7 +28,7 @@ pub enum FeatureFlatteningOption {
 }
 
 /// Flattening option for the "data" stereotype
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Serialize, Deserialize, Clone)]
 pub enum DataFlatteningOption {
     /// No data flattening
     None,
@@ -38,7 +39,7 @@ pub enum DataFlatteningOption {
 }
 
 /// Flattening option for the "object" stereotype
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Serialize, Deserialize, Clone)]
 pub enum ObjectFlatteningOption {
     /// No object flattening
     None,

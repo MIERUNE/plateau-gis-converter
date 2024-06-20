@@ -25,6 +25,7 @@ use crate::{
     pipeline::{Feedback, Receiver, Result},
     sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo},
     transformer::{self, TreeFlatteningSpec},
+    transformoption::{TransformOptionDetail, TransformOptions},
 };
 
 use block_colors::{DefaultBlockResolver, Voxel};
@@ -57,17 +58,39 @@ impl DataSinkProvider for MinecraftSinkProvider {
         params
     }
 
+    fn transform_options(&self) -> TransformOptions {
+        let mut options = TransformOptions::new();
+
+        let default_transform = TransformOptionDetail {
+            label: "デフォルト".to_string(),
+            requirements: DataRequirements {
+                tree_flattening: TreeFlatteningSpec::Flatten {
+                    feature: transformer::FeatureFlatteningOption::All,
+                    data: transformer::DataFlatteningOption::None,
+                    object: transformer::ObjectFlatteningOption::None,
+                },
+                ..Default::default()
+            },
+        };
+        options.insert_option("default".to_string(), default_transform);
+
+        options
+    }
+
     fn create(&self, params: &Parameters) -> Box<dyn DataSink> {
         let output_path = get_parameter_value!(params, "@output", FileSystemPath);
+        let transform_options = self.transform_options();
 
         Box::<MinecraftSink>::new(MinecraftSink {
             output_path: output_path.as_ref().unwrap().into(),
+            transform_options,
         })
     }
 }
 
 pub struct MinecraftSink {
     output_path: PathBuf,
+    transform_options: TransformOptions,
 }
 
 pub struct BoundingVolume {
@@ -104,15 +127,11 @@ impl Default for BoundingVolume {
 }
 
 impl DataSink for MinecraftSink {
-    fn make_requirements(&self) -> DataRequirements {
-        DataRequirements {
-            tree_flattening: TreeFlatteningSpec::Flatten {
-                feature: transformer::FeatureFlatteningOption::All,
-                data: transformer::DataFlatteningOption::None,
-                object: transformer::ObjectFlatteningOption::None,
-            },
-            ..Default::default()
-        }
+    fn make_requirements(&self, key: String) -> DataRequirements {
+        self.transform_options
+            .get_requirements(&key)
+            .cloned()
+            .unwrap_or_default()
     }
 
     fn run(&mut self, upstream: Receiver, feedback: &Feedback, _schema: &Schema) -> Result<()> {

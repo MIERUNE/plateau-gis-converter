@@ -23,6 +23,7 @@ use crate::{
     parameters::*,
     pipeline::{Feedback, PipelineError, Receiver, Result},
     sink::{cesiumtiles::metadata, DataRequirements, DataSink, DataSinkProvider, SinkInfo},
+    transformoption::{TransformOptionDetail, TransformOptions},
 };
 
 pub struct GltfSinkProvider {}
@@ -51,17 +52,37 @@ impl DataSinkProvider for GltfSinkProvider {
         params
     }
 
+    fn transform_options(&self) -> TransformOptions {
+        let mut options = TransformOptions::new();
+
+        let default_transform = TransformOptionDetail {
+            label: "デフォルト".to_string(),
+            requirements: DataRequirements {
+                use_appearance: true,
+                resolve_appearance: true,
+                key_value: crate::transformer::KeyValueSpec::JsonifyObjects,
+                ..Default::default()
+            },
+        };
+        options.insert_option("default".to_string(), default_transform);
+
+        options
+    }
+
     fn create(&self, params: &Parameters) -> Box<dyn DataSink> {
         let output_path = get_parameter_value!(params, "@output", FileSystemPath);
+        let transform_options = self.transform_options();
 
         Box::<GltfSink>::new(GltfSink {
             output_path: output_path.as_ref().unwrap().into(),
+            transform_options,
         })
     }
 }
 
 pub struct GltfSink {
     output_path: PathBuf,
+    transform_options: TransformOptions,
 }
 
 pub struct BoundingVolume {
@@ -128,13 +149,11 @@ pub struct PrimitiveInfo {
 pub type Primitives = HashMap<material::Material, PrimitiveInfo>;
 
 impl DataSink for GltfSink {
-    fn make_requirements(&self) -> DataRequirements {
-        DataRequirements {
-            use_appearance: true,
-            resolve_appearance: true,
-            key_value: crate::transformer::KeyValueSpec::JsonifyObjects,
-            ..Default::default()
-        }
+    fn make_requirements(&self, key: String) -> DataRequirements {
+        self.transform_options
+            .get_requirements(&key)
+            .cloned()
+            .unwrap_or_default()
     }
 
     fn run(&mut self, upstream: Receiver, feedback: &Feedback, schema: &Schema) -> Result<()> {

@@ -16,7 +16,7 @@ pub type Sender = mpsc::SyncSender<Parcel>;
 pub type Receiver = mpsc::Receiver<Parcel>;
 
 /// Message passing through the main processing pipeline
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Parcel {
     // Entity (Feature, Data, etc.)
     pub entity: Entity,

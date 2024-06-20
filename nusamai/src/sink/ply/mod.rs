@@ -19,6 +19,7 @@ use crate::{
     parameters::*,
     pipeline::{Feedback, PipelineError, Receiver},
     sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo},
+    transformoption::{TransformOptionDetail, TransformOptions},
 };
 
 const PLY_HEADER_TEMPLATE: &str = r##"ply
@@ -60,24 +61,42 @@ impl DataSinkProvider for StanfordPlySinkProvider {
         params
     }
 
+    fn transform_options(&self) -> TransformOptions {
+        let mut options = TransformOptions::new();
+
+        let default_transform = TransformOptionDetail {
+            label: "デフォルト".to_string(),
+            requirements: DataRequirements {
+                ..Default::default()
+            },
+        };
+        options.insert_option("default".to_string(), default_transform);
+
+        options
+    }
+
     fn create(&self, params: &Parameters) -> Box<dyn DataSink> {
         let output_path = get_parameter_value!(params, "@output", FileSystemPath);
+        let transform_options = self.transform_options();
 
         Box::<StanfordPlySink>::new(StanfordPlySink {
             output_path: output_path.as_ref().unwrap().into(),
+            transform_options,
         })
     }
 }
 
 pub struct StanfordPlySink {
     output_path: PathBuf,
+    transform_options: TransformOptions,
 }
 
 impl DataSink for StanfordPlySink {
-    fn make_requirements(&self) -> DataRequirements {
-        DataRequirements {
-            ..Default::default()
-        }
+    fn make_requirements(&self, key: String) -> DataRequirements {
+        self.transform_options
+            .get_requirements(&key)
+            .cloned()
+            .unwrap_or_default()
     }
 
     fn run(

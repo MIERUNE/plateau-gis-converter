@@ -20,7 +20,11 @@ use crate::{
     parameters::Parameters,
     pipeline::{Feedback, PipelineError, Receiver},
     transformer,
+    transformoption::TransformOptions,
 };
+
+use ::serde::Deserialize;
+use ::serde::Serialize;
 
 pub struct SinkInfo {
     pub id_name: String,
@@ -33,6 +37,9 @@ pub trait DataSinkProvider: Sync {
 
     /// Gets the configurable parameters of the sink.
     fn parameters(&self) -> Parameters;
+
+    ///
+    fn transform_options(&self) -> TransformOptions;
 
     /// Creates a sink instance.
     fn create(&self, config: &Parameters) -> Box<dyn DataSink>;
@@ -47,10 +54,11 @@ pub trait DataSink: Send {
         schema: &Schema,
     ) -> Result<(), PipelineError>;
 
-    /// Make a transform requirements
-    fn make_requirements(&self) -> DataRequirements;
+    /// Make a transform requirements with options
+    fn make_requirements(&self, transform: String) -> DataRequirements;
 }
 
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct DataRequirements {
     pub output_epsg: crs::EpsgCode,
     /// Whether to shorten field names to 10 characters or less for Shapefiles.

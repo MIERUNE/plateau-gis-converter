@@ -44,7 +44,7 @@ pub type GeometryRefs = Vec<GeometryRef>;
 
 /// Geometries in a single city object and all its children.
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub struct GeometryStore {
     /// EPSG code of the Coordinate Reference System (CRS) for this geometry
     pub epsg: EpsgCode,
@@ -72,7 +72,7 @@ pub struct GeometryStore {
     pub polygon_uvs: MultiPolygon<'static, [f64; 2]>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 pub struct SurfaceSpan {
     pub id: LocalId,

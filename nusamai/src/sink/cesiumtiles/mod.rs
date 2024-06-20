@@ -33,6 +33,7 @@ use crate::{
     parameters::*,
     pipeline::{Feedback, PipelineError, Receiver, Result},
     sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo},
+    transformoption::{TransformOptionDetail, TransformOptions},
 };
 use utils::calculate_normal;
 
@@ -64,27 +65,58 @@ impl DataSinkProvider for CesiumTilesSinkProvider {
         params
     }
 
+    //各シンクのデフォルト値をここで書く二つ目は必要であれば書くキー名はなんでも良い複数なければ一つ目のものを返すようにすれば良い
+    fn transform_options(&self) -> TransformOptions {
+        let mut options = TransformOptions::new();
+
+        let default_transform = TransformOptionDetail {
+            label: "テクスチャ有り".to_string(),
+            requirements: DataRequirements {
+                resolve_appearance: true,
+                key_value: crate::transformer::KeyValueSpec::JsonifyObjects,
+                ..Default::default()
+            },
+        };
+        options.insert_option("resolve_appearance".to_string(), default_transform);
+
+        options.insert_option(
+            "lod_lowest".to_string(),
+            TransformOptionDetail {
+                label: "LODを最低にする".to_string(),
+                requirements: DataRequirements {
+                    resolve_appearance: true,
+                    key_value: crate::transformer::KeyValueSpec::JsonifyObjects,
+                    ..Default::default()
+                },
+            },
+        );
+
+        options
+    }
+
     fn create(&self, params: &Parameters) -> Box<dyn DataSink> {
         let output_path = get_parameter_value!(params, "@output", FileSystemPath);
 
+        let transform_options = self.transform_options();
+
         Box::<CesiumTilesSink>::new(CesiumTilesSink {
             output_path: output_path.as_ref().unwrap().into(),
+            transform_options,
         })
     }
 }
 
 struct CesiumTilesSink {
     output_path: PathBuf,
+    transform_options: TransformOptions,
 }
 
 impl DataSink for CesiumTilesSink {
-    fn make_requirements(&self) -> DataRequirements {
-        DataRequirements {
-            // use_appearance: true,
-            resolve_appearance: true,
-            key_value: crate::transformer::KeyValueSpec::JsonifyObjects,
-            ..Default::default()
-        }
+    fn make_requirements(&self, key: String) -> DataRequirements {
+        self.transform_options
+            .get_requirements(&key)
+            .cloned()
+            .unwrap_or_default()
     }
 
     fn run(&mut self, upstream: Receiver, feedback: &Feedback, schema: &Schema) -> Result<()> {

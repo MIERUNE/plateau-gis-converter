@@ -3,6 +3,7 @@ pub mod pipeline;
 pub mod sink;
 pub mod source;
 pub mod transformer;
+pub mod transformoption;
 
 pub static BUILTIN_SINKS: &[&dyn sink::DataSinkProvider] = &[
     &sink::cesiumtiles::CesiumTilesSinkProvider {},

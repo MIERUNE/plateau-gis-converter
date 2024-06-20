@@ -17,7 +17,7 @@ pub use transform::{
 
 use crate::pipeline::{Feedback, Parcel, Receiver, Result, Sender};
 
-#[derive(Error, Debug)]
+#[derive(Error, Debug, Clone)]
 pub enum TransformError {
     #[error("transform error")]
     SendError(#[from] std::sync::mpsc::SendError<Parcel>),

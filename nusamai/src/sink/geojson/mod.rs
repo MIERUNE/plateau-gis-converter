@@ -24,6 +24,7 @@ use crate::{
     pipeline::{Feedback, PipelineError, Receiver, Result},
     sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo},
     transformer,
+    transformoption::{TransformOptionDetail, TransformOptions},
 };
 
 pub struct GeoJsonSinkProvider {}
@@ -52,29 +53,47 @@ impl DataSinkProvider for GeoJsonSinkProvider {
         params
     }
 
+    fn transform_options(&self) -> TransformOptions {
+        let mut options = TransformOptions::new();
+
+        let default_transform = TransformOptionDetail {
+            label: "デフォルト".to_string(),
+            requirements: DataRequirements {
+                tree_flattening: transformer::TreeFlatteningSpec::Flatten {
+                    feature: transformer::FeatureFlatteningOption::AllExceptThematicSurfaces,
+                    data: transformer::DataFlatteningOption::None,
+                    object: transformer::ObjectFlatteningOption::None,
+                },
+                ..Default::default()
+            },
+        };
+        options.insert_option("default".to_string(), default_transform);
+
+        options
+    }
+
     fn create(&self, params: &Parameters) -> Box<dyn DataSink> {
         let output_path = get_parameter_value!(params, "@output", FileSystemPath);
+        let transform_options = self.transform_options();
 
         Box::<GeoJsonSink>::new(GeoJsonSink {
             output_path: output_path.as_ref().unwrap().into(),
+            transform_options,
         })
     }
 }
 
 pub struct GeoJsonSink {
     output_path: PathBuf,
+    transform_options: TransformOptions,
 }
 
 impl DataSink for GeoJsonSink {
-    fn make_requirements(&self) -> DataRequirements {
-        DataRequirements {
-            tree_flattening: transformer::TreeFlatteningSpec::Flatten {
-                feature: transformer::FeatureFlatteningOption::AllExceptThematicSurfaces,
-                data: transformer::DataFlatteningOption::None,
-                object: transformer::ObjectFlatteningOption::None,
-            },
-            ..Default::default()
-        }
+    fn make_requirements(&self, key: String) -> DataRequirements {
+        self.transform_options
+            .get_requirements(&key)
+            .cloned()
+            .unwrap_or_default()
     }
 
     fn run(&mut self, upstream: Receiver, feedback: &Feedback, _schema: &Schema) -> Result<()> {
@@ -272,8 +291,8 @@ pub fn entity_to_geojson_features(entity: &Entity) -> Vec<geojson::Feature> {
 mod tests {
     use std::sync::RwLock;
 
-    use nusamai_citygml::{object::Object, GeometryRef};
     use flatgeom::MultiPolygon;
+    use nusamai_citygml::{object::Object, GeometryRef};
     use nusamai_projection::crs::EPSG_JGD2011_GEOGRAPHIC_3D;
 
     use super::*;
