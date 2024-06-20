@@ -83,14 +83,6 @@ impl DataSinkProvider for CesiumTilesPocSinkProvider {
     }
 }
 
-#[derive(Debug, Clone)]
-struct SurfaceWithTexture {
-    id: String,
-    uv_coords: Vec<(f64, f64)>,
-    texture_path: PathBuf,
-    downsample_factor: DownsampleFactor,
-}
-
 struct CesiumTilesPocSink {
     output_path: PathBuf,
 }
@@ -435,12 +427,6 @@ fn tile_writing_stage(
                     let Some(texture) = mat.clone().base_texture else {
                         continue;
                     };
-                    let mut surface_with_texture = SurfaceWithTexture {
-                        id: format!("{}_{}_{}", tile_id, feature_id, poly_count),
-                        uv_coords: Vec::new(),
-                        texture_path: texture.uri.to_file_path().unwrap(),
-                        downsample_factor: DownsampleFactor::new(&1.0),
-                    };
 
                     if let Some((nx, ny, nz)) =
                         calculate_normal(poly.exterior().iter().map(|v| [v[0], v[1], v[2]]))
@@ -456,19 +442,22 @@ fn tile_writing_stage(
                                 &mut index_buf,
                             );
 
-                            surface_with_texture.uv_coords = (index_buf.iter().map(|&idx| {
-                                let [_, _, _, u, v] = poly.raw_coords()[idx as usize];
-                                (u, v)
-                            }))
-                            .collect();
+                            let uv_coords: Vec<(f64, f64)> = index_buf
+                                .iter()
+                                .map(|&idx| {
+                                    let [_, _, _, u, v] = poly.raw_coords()[idx as usize];
+                                    (u, v)
+                                })
+                                .collect();
 
                             let texture = texture_cache.get_or_insert(
-                                &surface_with_texture.uv_coords,
-                                &surface_with_texture.texture_path,
-                                &surface_with_texture.downsample_factor.value(),
+                                &uv_coords,
+                                &texture.uri.to_file_path().unwrap(),
+                                &DownsampleFactor::new(&1.0).value(),
                             );
 
-                            let info = packer.add_texture(surface_with_texture.id.clone(), texture);
+                            let texture_id = format!("{}_{}_{}", tile_id, feature_id, poly_count);
+                            let info = packer.add_texture(texture_id, texture);
                             let mut new_uv_coords = info
                                 .placed_uv_coords
                                 .iter()
