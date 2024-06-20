@@ -22,6 +22,12 @@ use earcut::{utils3d::project3d_to_2d, Earcut};
 use gltf::write_gltf_glb;
 use indexmap::IndexSet;
 use itertools::Itertools;
+use rayon::prelude::*;
+use slice::{slice_to_tiles, SlicedFeature};
+use tempfile::tempdir;
+use tiling::{TileContent, TileTree};
+use url::Url;
+
 use nusamai_atlas::{
     export::{AtlasExporter as _, WebpAtlasExporter},
     pack::TexturePacker,
@@ -31,10 +37,6 @@ use nusamai_atlas::{
 use nusamai_citygml::{object::Value, schema::Schema};
 use nusamai_mvt::tileid::TileIdMethod;
 use nusamai_projection::cartesian::geodetic_to_geocentric;
-use rayon::prelude::*;
-use slice::{slice_to_tiles, SlicedFeature};
-use tiling::{TileContent, TileTree};
-use url::Url;
 
 use crate::{
     get_parameter_value,
@@ -287,6 +289,7 @@ fn tile_writing_stage(
 
     // Texture cache
     let texture_cache = TextureCache::new(16384);
+    let atlas_dir = tempdir()?;
 
     // Make a glTF (.glb) file for each tile
     receiver_sorted
@@ -478,15 +481,17 @@ fn tile_writing_stage(
                                 [x, y, z, u, v]
                             });
 
-                            // update material
-                            // todo: アトラスは一時的に出力するが、最終的にはglb内部に取り込まれるため、temporaryなuriを使う
-                            let new_texture_uri = PathBuf::from(output_path)
-                                .join(Path::new(&info.atlas_id))
+                            let atlas_file_name = format!("{}/{}", tile_id, &info.atlas_id);
+                            let atlas_uri = atlas_dir
+                                .path()
+                                .join(atlas_file_name)
                                 .with_extension(ext.clone());
+
+                            // update material
                             let new_mat = material::Material {
                                 base_color: mat.base_color,
                                 base_texture: Some(material::Texture {
-                                    uri: Url::from_file_path(new_texture_uri).unwrap(),
+                                    uri: Url::from_file_path(atlas_uri).unwrap(),
                                 }),
                             };
                             let primitive = primitives.entry(new_mat).or_default();
@@ -517,13 +522,14 @@ fn tile_writing_stage(
             }
             packer.finalize();
 
+            // Write to atlas
+            let atlas_path = atlas_dir.path().join(tile_id.to_string());
+            fs::create_dir_all(&atlas_path)?;
+            packer.export(&atlas_path, &texture_cache);
+
             // Write to file
             let path_glb = output_path.join(Path::new(&content.content_path));
-            if let Some(dir) = path_glb.parent() {
-                fs::create_dir_all(dir)?;
-                // Write to atlas
-                packer.export(dir, &texture_cache);
-            }
+            fs::create_dir_all(path_glb.parent().unwrap())?;
 
             contents.lock().unwrap().push(content);
 
@@ -536,7 +542,8 @@ fn tile_writing_stage(
                 primitives,
                 feature_id, // number of features
                 metadata_encoder,
-            )?;
+            )
+            .unwrap_or_else(|_| panic!("Failed to write glTF {:?}", tile_id));
 
             Ok::<(), PipelineError>(())
         })?;

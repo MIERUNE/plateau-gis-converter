@@ -69,6 +69,7 @@ impl AtlasExporter for WebpAtlasExporter {
         }
 
         let output_path = output_path.with_extension(self.get_extension());
+
         atlas_image
             .save_with_format(output_path, image::ImageFormat::WebP)
             .unwrap();

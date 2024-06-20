@@ -52,6 +52,7 @@ kv-extsort = { git = "https://github.com/MIERUNE/kv-extsort-rs.git" }
 bytemuck = { version = "1.16.0", features = ["derive"] }
 dda-voxelize = "0.2.0-alpha.1"
 nusamai-atlas = { path = "../nusamai-atlas" }
+tempfile = "3.10.1"
 
 [dev-dependencies]
 rand = "0.8.5"
@@ -59,4 +60,3 @@ tokio = { version = "1.36", features = ["full"] }
 byteorder = "1.5.0"
 glob = "0.3.1"
 assert_cmd = "2.0.14"
-tempfile = "3.10.1"

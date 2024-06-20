@@ -72,7 +72,7 @@ impl<P: TexturePlacer, E: AtlasExporter> TexturePacker<P, E> {
         for (id, atlas) in self.atlases.iter() {
             let output_path = output_dir.join(id);
             self.exporter
-                .export(atlas, &self.textures, &output_path, texture_cache);
+                .export(atlas, &self.textures, &output_path, texture_cache)
         }
     }
 }
