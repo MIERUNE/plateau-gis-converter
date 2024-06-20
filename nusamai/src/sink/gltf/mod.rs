@@ -56,7 +56,7 @@ impl DataSinkProvider for GltfSinkProvider {
         let mut options = TransformOptions::new();
 
         let default_transform = TransformOptionDetail {
-            label: "デフォルト".to_string(),
+            label: "テクスチャあり".to_string(),
             requirements: DataRequirements {
                 use_appearance: true,
                 resolve_appearance: true,
@@ -65,6 +65,18 @@ impl DataSinkProvider for GltfSinkProvider {
             },
         };
         options.insert_option("default".to_string(), default_transform);
+
+        options.insert_option(
+            "none_appearance".to_string(),
+            TransformOptionDetail {
+                label: "テクスチャなし".to_string(),
+                requirements: DataRequirements {
+                    resolve_appearance: true,
+                    key_value: crate::transformer::KeyValueSpec::JsonifyObjects,
+                    ..Default::default()
+                },
+            },
+        );
 
         options
     }

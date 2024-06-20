@@ -38,7 +38,7 @@ pub trait DataSinkProvider: Sync {
     /// Gets the configurable parameters of the sink.
     fn parameters(&self) -> Parameters;
 
-    ///
+    /// Gets the transform options of the sink.
     fn transform_options(&self) -> TransformOptions;
 
     /// Creates a sink instance.

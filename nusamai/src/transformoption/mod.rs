@@ -2,13 +2,13 @@ use crate::sink::DataRequirements;
 use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct TransformOptionDetail {
     pub label: String,
     pub requirements: DataRequirements,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct TransformOptions {
     items: IndexMap<String, TransformOptionDetail>,
 }

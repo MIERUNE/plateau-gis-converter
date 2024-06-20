@@ -187,7 +187,7 @@ fn run_conversion(
         sink_provider.create(&sink_params)
     };
 
-    let mut requirements = sink.make_requirements("transform".to_string());
+    let mut requirements = sink.make_requirements(transform.to_string());
     requirements.set_output_epsg(epsg);
 
     let source = {
@@ -293,6 +293,7 @@ fn cancel_conversion(tasks_state: tauri::State<ConversionTasksState>) {
     tasks_state.canceller.lock().unwrap().cancel();
 }
 
+/// Get the transform options for a given sink type
 #[tauri::command]
 fn get_transform(filetype: String) -> Result<TransformOptions, Error> {
     let sink_provider = select_sink_provider(&filetype).ok_or_else(|| {

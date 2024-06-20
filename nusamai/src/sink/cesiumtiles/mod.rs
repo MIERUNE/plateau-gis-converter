@@ -33,6 +33,7 @@ use crate::{
     parameters::*,
     pipeline::{Feedback, PipelineError, Receiver, Result},
     sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo},
+    transformer,
     transformoption::{TransformOptionDetail, TransformOptions},
 };
 use utils::calculate_normal;
@@ -70,22 +71,39 @@ impl DataSinkProvider for CesiumTilesSinkProvider {
         let mut options = TransformOptions::new();
 
         let default_transform = TransformOptionDetail {
-            label: "テクスチャ有り".to_string(),
+            label: "テクスチャあり".to_string(),
             requirements: DataRequirements {
+                use_appearance: true,
                 resolve_appearance: true,
                 key_value: crate::transformer::KeyValueSpec::JsonifyObjects,
                 ..Default::default()
             },
         };
-        options.insert_option("resolve_appearance".to_string(), default_transform);
+        options.insert_option("default".to_string(), default_transform);
+
+        options.insert_option(
+            "none_appearance".to_string(),
+            TransformOptionDetail {
+                label: "テクスチャなし".to_string(),
+                requirements: DataRequirements {
+                    resolve_appearance: true,
+                    key_value: crate::transformer::KeyValueSpec::JsonifyObjects,
+                    ..Default::default()
+                },
+            },
+        );
 
         options.insert_option(
             "lod_lowest".to_string(),
             TransformOptionDetail {
-                label: "LODを最低にする".to_string(),
+                label: "最低レベルのLOD".to_string(),
                 requirements: DataRequirements {
                     resolve_appearance: true,
-                    key_value: crate::transformer::KeyValueSpec::JsonifyObjects,
+                    lod_filter: transformer::LodFilterSpec {
+                        mode: transformer::LodFilterMode::Lowest,
+                        ..Default::default()
+                    },
+                    key_value: crate::transformer::KeyValueSpec::None,
                     ..Default::default()
                 },
             },
