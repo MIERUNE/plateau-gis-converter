@@ -281,6 +281,7 @@ fn tile_writing_stage(
 
     // Texture cache
     let texture_cache = TextureCache::new(16384);
+    // Use a temporary directory for embedding in glb.
     let atlas_dir = tempdir()?;
 
     // Make a glTF (.glb) file for each tile
@@ -421,10 +422,10 @@ fn tile_writing_stage(
                         None => poly.raw_coords().len(),
                     };
 
-                    let mat = feature.materials[*orig_mat_id as usize].clone();
+                    let mat = &feature.materials[*orig_mat_id as usize];
 
                     // add texture to texture packer
-                    let Some(texture) = mat.clone().base_texture else {
+                    let Some(texture) = mat.base_texture.clone() else {
                         continue;
                     };
 
@@ -442,7 +443,7 @@ fn tile_writing_stage(
                                 &mut index_buf,
                             );
 
-                            let uv_coords: Vec<(f64, f64)> = index_buf
+                            let original_uv_coords: Vec<(f64, f64)> = index_buf
                                 .iter()
                                 .map(|&idx| {
                                     let [_, _, _, u, v] = poly.raw_coords()[idx as usize];
@@ -451,7 +452,7 @@ fn tile_writing_stage(
                                 .collect();
 
                             let texture = texture_cache.get_or_insert(
-                                &uv_coords,
+                                &original_uv_coords,
                                 &texture.uri.to_file_path().unwrap(),
                                 &DownsampleFactor::new(&1.0).value(),
                             );
