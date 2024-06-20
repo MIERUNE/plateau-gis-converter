@@ -425,7 +425,7 @@ fn tile_writing_stage(
                     let mat = &feature.materials[*orig_mat_id as usize];
 
                     // add texture to texture packer
-                    let Some(texture) = mat.base_texture.clone() else {
+                    let Some(base_texture) = mat.base_texture.clone() else {
                         continue;
                     };
 
@@ -453,10 +453,11 @@ fn tile_writing_stage(
 
                             let texture = texture_cache.get_or_insert(
                                 &original_uv_coords,
-                                &texture.uri.to_file_path().unwrap(),
+                                &base_texture.uri.to_file_path().unwrap(),
                                 &DownsampleFactor::new(&1.0).value(),
                             );
 
+                            // Unique id required for placement in atlas
                             let texture_id = format!("{}_{}_{}", tile_id, feature_id, poly_count);
                             let info = packer.add_texture(texture_id, texture);
                             let mut new_uv_coords = info
