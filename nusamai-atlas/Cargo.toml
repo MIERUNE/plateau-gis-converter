@@ -3,9 +3,8 @@ name = "nusamai-atlas"
 edition = "2021"
 
 [dependencies]
-image = "0.25.1"
+iimage = { version = "0.25.1", default-features = false, features = ["rayon", "tiff", "jpeg", "webp", "png"] }
 thiserror = "1.0.61"
-lru = "0.12.3"
 hashbrown = "0.14.5"
 stretto = "0.8.4"
 
