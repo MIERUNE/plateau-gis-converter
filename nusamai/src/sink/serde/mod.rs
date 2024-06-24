@@ -15,8 +15,8 @@ use crate::{
     get_parameter_value,
     parameters::*,
     pipeline::{Feedback, PipelineError, Receiver, Result},
-    sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo},
-    transformoption::{TransformOptionDetail, TransformOptions},
+    sink::{DataRequirements, DataSink, DataSinkProvider, SetOptionProperty, SinkInfo},
+    transformoption::TransformOptions,
 };
 
 pub struct SerdeSinkProvider {}
@@ -48,14 +48,6 @@ impl DataSinkProvider for SerdeSinkProvider {
     fn transform_options(&self) -> TransformOptions {
         let mut options = TransformOptions::new();
 
-        let default_transform = TransformOptionDetail {
-            label: "デフォルト".to_string(),
-            requirements: DataRequirements {
-                ..Default::default()
-            },
-        };
-        options.insert_option("default".to_string(), default_transform);
-
         options
     }
 
@@ -77,7 +69,7 @@ pub struct SerdeSink {
 }
 
 impl DataSink for SerdeSink {
-    fn make_requirements(&self, key: String) -> DataRequirements {
+    fn make_requirements(&self, properties: Vec<SetOptionProperty>) -> DataRequirements {
         DataRequirements {
             ..Default::default()
         }

@@ -27,9 +27,9 @@ use crate::{
     get_parameter_value,
     parameters::*,
     pipeline::{Feedback, PipelineError, Receiver, Result},
-    sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo},
+    sink::{DataRequirements, DataSink, DataSinkProvider, SetOptionProperty, SinkInfo},
     transformer,
-    transformoption::{TransformOptionDetail, TransformOptions},
+    transformoption::TransformOptions,
 };
 
 pub struct MvtSinkProvider {}
@@ -85,20 +85,6 @@ impl DataSinkProvider for MvtSinkProvider {
     fn transform_options(&self) -> TransformOptions {
         let mut options = TransformOptions::new();
 
-        let default_transform = TransformOptionDetail {
-            label: "デフォルト".to_string(),
-            requirements: DataRequirements {
-                key_value: transformer::KeyValueSpec::DotNotation,
-                lod_filter: transformer::LodFilterSpec {
-                    mode: transformer::LodFilterMode::Lowest,
-                    ..Default::default()
-                },
-                geom_stats: transformer::GeometryStatsSpec::MinMaxHeights,
-                ..Default::default()
-            },
-        };
-        options.insert_option("default".to_string(), default_transform);
-
         options
     }
 
@@ -134,11 +120,17 @@ struct SlicedFeature<'a> {
 }
 
 impl DataSink for MvtSink {
-    fn make_requirements(&self, key: String) -> DataRequirements {
-        self.transform_options
-            .get_requirements(&key)
-            .cloned()
-            .unwrap_or_default()
+    fn make_requirements(&self, key: Vec<SetOptionProperty>) -> DataRequirements {
+        let mut requirements: DataRequirements = DataRequirements {
+            key_value: transformer::KeyValueSpec::DotNotation,
+            lod_filter: transformer::LodFilterSpec {
+                mode: transformer::LodFilterMode::Lowest,
+                ..Default::default()
+            },
+            geom_stats: transformer::GeometryStatsSpec::MinMaxHeights,
+            ..Default::default()
+        };
+        requirements
     }
 
     fn run(&mut self, upstream: Receiver, feedback: &Feedback, _schema: &Schema) -> Result<()> {

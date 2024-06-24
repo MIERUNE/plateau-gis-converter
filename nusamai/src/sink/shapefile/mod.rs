@@ -26,9 +26,9 @@ use crate::{
     get_parameter_value,
     parameters::*,
     pipeline::{Feedback, PipelineError, Receiver, Result},
-    sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo},
+    sink::{DataRequirements, DataSink, DataSinkProvider, SetOptionProperty, SinkInfo},
     transformer,
-    transformoption::{TransformOptionDetail, TransformOptions},
+    transformoption::TransformOptions,
 };
 
 pub struct ShapefileSinkProvider {}
@@ -60,21 +60,6 @@ impl DataSinkProvider for ShapefileSinkProvider {
     fn transform_options(&self) -> TransformOptions {
         let mut options = TransformOptions::new();
 
-        let default_transform = TransformOptionDetail {
-            label: "デフォルト".to_string(),
-            requirements: DataRequirements {
-                shorten_names_for_shapefile: true,
-                tree_flattening: transformer::TreeFlatteningSpec::Flatten {
-                    feature: transformer::FeatureFlatteningOption::AllExceptThematicSurfaces,
-                    data: transformer::DataFlatteningOption::TopLevelOnly,
-                    object: transformer::ObjectFlatteningOption::None,
-                },
-
-                ..Default::default()
-            },
-        };
-        options.insert_option("default".to_string(), default_transform);
-
         options
     }
 
@@ -95,11 +80,18 @@ pub struct ShapefileSink {
 }
 
 impl DataSink for ShapefileSink {
-    fn make_requirements(&self, key: String) -> DataRequirements {
-        self.transform_options
-            .get_requirements(&key)
-            .cloned()
-            .unwrap_or_default()
+    fn make_requirements(&self, properties: Vec<SetOptionProperty>) -> DataRequirements {
+        let mut requirements = DataRequirements {
+            shorten_names_for_shapefile: true,
+            tree_flattening: transformer::TreeFlatteningSpec::Flatten {
+                feature: transformer::FeatureFlatteningOption::AllExceptThematicSurfaces,
+                data: transformer::DataFlatteningOption::TopLevelOnly,
+                object: transformer::ObjectFlatteningOption::None,
+            },
+
+            ..Default::default()
+        };
+        requirements
     }
 
     fn run(&mut self, upstream: Receiver, feedback: &Feedback, schema: &Schema) -> Result<()> {

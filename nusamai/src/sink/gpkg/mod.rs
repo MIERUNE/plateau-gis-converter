@@ -23,9 +23,9 @@ use crate::{
     get_parameter_value,
     parameters::*,
     pipeline::{Feedback, PipelineError, Receiver, Result},
-    sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo},
+    sink::{DataRequirements, DataSink, DataSinkProvider, SetOptionProperty, SinkInfo},
     transformer,
-    transformoption::{TransformOptionDetail, TransformOptions},
+    transformoption::TransformOptions,
 };
 
 pub struct GpkgSinkProvider {}
@@ -56,19 +56,6 @@ impl DataSinkProvider for GpkgSinkProvider {
 
     fn transform_options(&self) -> TransformOptions {
         let mut options = TransformOptions::new();
-
-        let default_transform = TransformOptionDetail {
-            label: "デフォルト".to_string(),
-            requirements: DataRequirements {
-                tree_flattening: transformer::TreeFlatteningSpec::Flatten {
-                    feature: transformer::FeatureFlatteningOption::AllExceptThematicSurfaces,
-                    data: transformer::DataFlatteningOption::TopLevelOnly,
-                    object: transformer::ObjectFlatteningOption::None,
-                },
-                ..Default::default()
-            },
-        };
-        options.insert_option("default".to_string(), default_transform);
 
         options
     }
@@ -283,11 +270,17 @@ impl GpkgSink {
 pub enum GpkgTransformOption {}
 
 impl DataSink for GpkgSink {
-    fn make_requirements(&self, key: String) -> DataRequirements {
-        self.transform_options
-            .get_requirements(&key)
-            .cloned()
-            .unwrap_or_default()
+    fn make_requirements(&self, properties: Vec<SetOptionProperty>) -> DataRequirements {
+        let mut requirements = DataRequirements {
+            tree_flattening: transformer::TreeFlatteningSpec::Flatten {
+                feature: transformer::FeatureFlatteningOption::AllExceptThematicSurfaces,
+                data: transformer::DataFlatteningOption::TopLevelOnly,
+                object: transformer::ObjectFlatteningOption::None,
+            },
+            ..Default::default()
+        };
+
+        requirements
     }
 
     fn run(&mut self, upstream: Receiver, feedback: &Feedback, schema: &Schema) -> Result<()> {

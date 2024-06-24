@@ -22,8 +22,8 @@ use crate::{
     get_parameter_value,
     parameters::*,
     pipeline::{Feedback, PipelineError, Receiver, Result},
-    sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo},
-    transformoption::{TransformOptionDetail, TransformOptions},
+    sink::{DataRequirements, DataSink, DataSinkProvider, SetOptionProperty, SinkInfo},
+    transformoption::TransformOptions,
 };
 
 pub struct KmlSinkProvider {}
@@ -55,14 +55,6 @@ impl DataSinkProvider for KmlSinkProvider {
     fn transform_options(&self) -> TransformOptions {
         let mut options = TransformOptions::new();
 
-        let default_transform = TransformOptionDetail {
-            label: "デフォルト".to_string(),
-            requirements: DataRequirements {
-                ..Default::default()
-            },
-        };
-        options.insert_option("default".to_string(), default_transform);
-
         options
     }
     fn create(&self, params: &Parameters) -> Box<dyn DataSink> {
@@ -82,11 +74,11 @@ pub struct KmlSink {
 }
 
 impl DataSink for KmlSink {
-    fn make_requirements(&self, key: String) -> DataRequirements {
-        self.transform_options
-            .get_requirements(&key)
-            .cloned()
-            .unwrap_or_default()
+    fn make_requirements(&self, properties: Vec<SetOptionProperty>) -> DataRequirements {
+        let mut requirements = DataRequirements {
+            ..Default::default()
+        };
+        requirements
     }
 
     fn run(&mut self, upstream: Receiver, feedback: &Feedback, _schema: &Schema) -> Result<()> {

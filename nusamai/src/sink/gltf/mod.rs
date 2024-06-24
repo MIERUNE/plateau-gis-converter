@@ -22,8 +22,11 @@ use crate::{
     get_parameter_value,
     parameters::*,
     pipeline::{Feedback, PipelineError, Receiver, Result},
-    sink::{cesiumtiles::metadata, DataRequirements, DataSink, DataSinkProvider, SinkInfo},
-    transformoption::{TransformOptionDetail, TransformOptions},
+    sink::{
+        cesiumtiles::metadata, DataRequirements, DataRequirementsField, DataSink, DataSinkProvider,
+        SetOptionProperty, SinkInfo,
+    },
+    transformoption::{Category, TransformOptions},
 };
 
 pub struct GltfSinkProvider {}
@@ -53,30 +56,18 @@ impl DataSinkProvider for GltfSinkProvider {
     }
 
     fn transform_options(&self) -> TransformOptions {
-        let mut options = TransformOptions::new();
+        let mut options: TransformOptions = TransformOptions::new();
 
-        let default_transform = TransformOptionDetail {
-            label: "テクスチャあり".to_string(),
-            requirements: DataRequirements {
-                use_appearance: true,
-                resolve_appearance: true,
-                key_value: crate::transformer::KeyValueSpec::JsonifyObjects,
-                ..Default::default()
-            },
+        let category = Category {
+            key: "use_texture".to_string(),
+            label: "テクスチャの使用".to_string(),
+            value: true,
+            requirements: vec![
+                DataRequirementsField::UseAppearance(true),
+                DataRequirementsField::ResolveAppearance(true),
+            ],
         };
-        options.insert_option("default".to_string(), default_transform);
-
-        options.insert_option(
-            "none_appearance".to_string(),
-            TransformOptionDetail {
-                label: "テクスチャなし".to_string(),
-                requirements: DataRequirements {
-                    resolve_appearance: true,
-                    key_value: crate::transformer::KeyValueSpec::JsonifyObjects,
-                    ..Default::default()
-                },
-            },
-        );
+        options.insert_option(category);
 
         options
     }
@@ -161,11 +152,28 @@ pub struct PrimitiveInfo {
 pub type Primitives = HashMap<material::Material, PrimitiveInfo>;
 
 impl DataSink for GltfSink {
-    fn make_requirements(&self, key: String) -> DataRequirements {
+    fn make_requirements(&self, properties: Vec<SetOptionProperty>) -> DataRequirements {
+        let mut requirements = DataRequirements {
+            key_value: crate::transformer::KeyValueSpec::JsonifyObjects,
+            ..Default::default()
+        };
+
         self.transform_options
-            .get_requirements(&key)
-            .cloned()
-            .unwrap_or_default()
+            .categories
+            .iter()
+            .for_each(|category| {
+                if let Some(property) = properties.iter().find(|p| p.key == category.key) {
+                    match &property.value {
+                        ture => {
+                            requirements.update_from_fields(category.requirements.clone());
+                        }
+                        false => {}
+                        _ => {}
+                    }
+                }
+            });
+
+        requirements
     }
 
     fn run(&mut self, upstream: Receiver, feedback: &Feedback, schema: &Schema) -> Result<()> {

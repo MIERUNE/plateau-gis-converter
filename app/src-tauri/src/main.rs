@@ -16,12 +16,13 @@ use nusamai::{
         gltf::GltfSinkProvider, gpkg::GpkgSinkProvider, kml::KmlSinkProvider,
         minecraft::MinecraftSinkProvider, mvt::MvtSinkProvider, ply::StanfordPlySinkProvider,
         serde::SerdeSinkProvider, shapefile::ShapefileSinkProvider, DataSinkProvider,
+        SetOptionProperty,
     },
     source::{citygml::CityGmlSourceProvider, DataSourceProvider},
     transformer::{
         self, MappingRules, MultiThreadTransformer, NusamaiTransformBuilder, TransformBuilder,
     },
-    transformoption::{TransformOptionDetail, TransformOptions},
+    transformoption::TransformOptions,
 };
 use nusamai_plateau::models::TopLevelCityObject;
 use tauri_plugin_log::{LogTarget, RotationStrategy, TimezoneStrategy};
@@ -132,7 +133,7 @@ fn run_conversion(
     filetype: String,
     epsg: u16,
     rules_path: String,
-    transform: String,
+    option_property: Vec<SetOptionProperty>,
     tasks_state: tauri::State<ConversionTasksState>,
     window: tauri::Window,
 ) -> Result<(), Error> {
@@ -187,7 +188,7 @@ fn run_conversion(
         sink_provider.create(&sink_params)
     };
 
-    let mut requirements = sink.make_requirements(transform.to_string());
+    let mut requirements = sink.make_requirements(option_property);
     requirements.set_output_epsg(epsg);
 
     let source = {

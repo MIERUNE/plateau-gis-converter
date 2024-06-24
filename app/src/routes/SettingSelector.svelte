@@ -7,7 +7,7 @@
 	export let filetype: string;
 	export let epsg: number = 4979;
 	export let rulesPath: string;
-	export let transform: String;
+	export let transformOptions: { key: string; label: string; value: boolean | String }[];
 
 	$: epsgOptions = filetypeOptions[filetype]?.epsg || [];
 	$: disableEpsgOptions = epsgOptions.length < 2;
@@ -36,29 +36,29 @@
 		rulesPath = '';
 	}
 
-	let transformOptions: any;
-
 	async function getTransformoptions(filetype: string) {
 		const options = (await invoke('get_transform', { filetype })) as any;
-		const keys = Object.keys(options.items);
 
-		transformOptions = keys.map((key) => {
-			return {
-				value: key,
-				label: options.items[key].label
-			};
-		});
-		transform = transformOptions[0].value;
+		transformOptions = options.categories.map(
+			(category: { key: string; label: string; value: boolean | String }) => {
+				return {
+					key: category.key,
+					label: category.label,
+					value: category.value ? true : false
+				};
+			}
+		);
 	}
 
 	$: getTransformoptions(filetype);
+	let bool = true;
 </script>
 
 <div>
 	<!-- NOTE Debug -->
-	<!-- {#if transformOptions}
+	{#if transformOptions}
 		<pre>{JSON.stringify(transformOptions, null, 2)}</pre>
-	{/if} -->
+	{/if}
 	<div class="flex items-center gap-1.5">
 		<Icon class="text-xl" icon="material-symbols:settings" />
 		<h2 class="font-bold text-xl">設定</h2>
@@ -92,19 +92,33 @@
 		</div>
 		{#if transformOptions}
 			<div class="flex flex-col gap-1.5">
-				<label for="transform-select" class="font-bold">トランスフォーマーの設定</label>
-				<select
-					bind:value={transform}
-					name="transform"
-					id="transform-select"
-					class="w-80"
-					class:opacity-50={transformOptions.length < 2}
-					disabled={transformOptions.length < 2}
-				>
-					{#each transformOptions as option}
-						<option value={option.value}>{option.label}</option>
-					{/each}
-				</select>
+				<label for="transform-select" class="font-bold">LODの設定</label>
+				{#each transformOptions as category}
+					<div class="inline-flex items-center gap-6">
+						<label
+							for={category.key}
+							class="mt-px mb-0 ml-3 font-light text-gray-700 cursor-pointer select-none text-sm"
+						>
+							{category.label}
+						</label>
+						<div class="relative inline-block w-16 h-8 rounded-full cursor-pointer">
+							<input
+								bind:checked={category.value}
+								id={category.key}
+								type="checkbox"
+								class="absolute w-16 h-8 transition-colors duration-300 rounded-full appearance-none cursor-pointer peer bg-gray-200 checked:bg-accent1 peer-checked:before:bg-accent1"
+							/>
+							<label
+								for={category.key}
+								class="before:content[''] absolute top-2/4 -left-1 h-9 w-9 -translate-y-2/4 cursor-pointer rounded-full border border-blue-gray-100 bg-white shadow-md transition-all duration-300 before:absolute before:top-2/4 before:left-2/4 before:block before:h-8 before:w-8 before:-translate-y-2/4 before:-translate-x-2/4 before:rounded-full before:bg-blue-gray-500 before:opacity-0 before:transition-opacity hover:before:opacity-10 peer-checked:translate-x-full peer-checked:before:bg-accent1"
+							>
+								<div
+									class="inline-block p-5 rounded-full top-2/4 left-2/4 -translate-x-2/4 -translate-y-2/4"
+								></div>
+							</label>
+						</div>
+					</div>
+				{/each}
 			</div>
 		{/if}
 

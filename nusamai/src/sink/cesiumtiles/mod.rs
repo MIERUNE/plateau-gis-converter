@@ -32,9 +32,9 @@ use crate::{
     get_parameter_value,
     parameters::*,
     pipeline::{Feedback, PipelineError, Receiver, Result},
-    sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo},
+    sink::{DataRequirements, DataSink, DataSinkProvider, SetOptionProperty, SinkInfo},
     transformer,
-    transformoption::{TransformOptionDetail, TransformOptions},
+    transformoption::TransformOptions,
 };
 use utils::calculate_normal;
 
@@ -70,45 +70,6 @@ impl DataSinkProvider for CesiumTilesSinkProvider {
     fn transform_options(&self) -> TransformOptions {
         let mut options = TransformOptions::new();
 
-        let default_transform = TransformOptionDetail {
-            label: "テクスチャあり".to_string(),
-            requirements: DataRequirements {
-                use_appearance: true,
-                resolve_appearance: true,
-                key_value: crate::transformer::KeyValueSpec::JsonifyObjects,
-                ..Default::default()
-            },
-        };
-        options.insert_option("default".to_string(), default_transform);
-
-        options.insert_option(
-            "none_appearance".to_string(),
-            TransformOptionDetail {
-                label: "テクスチャなし".to_string(),
-                requirements: DataRequirements {
-                    resolve_appearance: true,
-                    key_value: crate::transformer::KeyValueSpec::JsonifyObjects,
-                    ..Default::default()
-                },
-            },
-        );
-
-        options.insert_option(
-            "lod_lowest".to_string(),
-            TransformOptionDetail {
-                label: "最低レベルのLOD".to_string(),
-                requirements: DataRequirements {
-                    resolve_appearance: true,
-                    lod_filter: transformer::LodFilterSpec {
-                        mode: transformer::LodFilterMode::Lowest,
-                        ..Default::default()
-                    },
-                    key_value: crate::transformer::KeyValueSpec::None,
-                    ..Default::default()
-                },
-            },
-        );
-
         options
     }
 
@@ -130,11 +91,14 @@ struct CesiumTilesSink {
 }
 
 impl DataSink for CesiumTilesSink {
-    fn make_requirements(&self, key: String) -> DataRequirements {
-        self.transform_options
-            .get_requirements(&key)
-            .cloned()
-            .unwrap_or_default()
+    fn make_requirements(&self, properties: Vec<SetOptionProperty>) -> DataRequirements {
+        let mut requirements = DataRequirements {
+            use_appearance: true,
+            resolve_appearance: true,
+            key_value: crate::transformer::KeyValueSpec::JsonifyObjects,
+            ..Default::default()
+        };
+        requirements
     }
 
     fn run(&mut self, upstream: Receiver, feedback: &Feedback, schema: &Schema) -> Result<()> {

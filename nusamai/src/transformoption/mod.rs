@@ -1,30 +1,26 @@
-use crate::sink::DataRequirements;
+use crate::sink::{DataRequirements, DataRequirementsField};
 use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct TransformOptionDetail {
+pub struct Category {
+    pub key: String,
     pub label: String,
-    pub requirements: DataRequirements,
+    pub value: bool,
+    pub requirements: Vec<DataRequirementsField>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct TransformOptions {
-    items: IndexMap<String, TransformOptionDetail>,
+    pub categories: Vec<Category>,
 }
 
 impl TransformOptions {
     pub fn new() -> Self {
-        TransformOptions {
-            items: IndexMap::new(),
-        }
+        Self { categories: vec![] }
     }
 
-    pub fn insert_option(&mut self, key: String, detail: TransformOptionDetail) {
-        self.items.insert(key, detail);
-    }
-
-    pub fn get_requirements(&self, key: &str) -> Option<&DataRequirements> {
-        self.items.get(key).map(|detail| &detail.requirements)
+    pub fn insert_option(&mut self, category: Category) {
+        self.categories.push(category);
     }
 }

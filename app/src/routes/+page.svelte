@@ -17,7 +17,7 @@
 	let rulesPath = '';
 	let outputPath = '';
 	let isRunning = false;
-	let transform: String;
+	let transformOptions: { key: string; label: string; value: boolean }[];
 
 	async function convertAndSave() {
 		if (!inputPaths) {
@@ -32,6 +32,13 @@
 
 		isRunning = true;
 
+		const optionProperty = transformOptions.map((category) => {
+			return {
+				key: category.key,
+				value: category.value
+			};
+		});
+
 		try {
 			await invoke('run_conversion', {
 				inputPaths,
@@ -39,7 +46,7 @@
 				filetype,
 				epsg,
 				rulesPath,
-				transform
+				optionProperty
 			});
 			isRunning = false;
 			await message(`変換が完了しました。\n'${outputPath}' に出力しました。`, { type: 'info' });
@@ -72,7 +79,7 @@
 
 		<InputSelector bind:inputPaths />
 
-		<SettingSelector bind:filetype bind:epsg bind:rulesPath bind:transform />
+		<SettingSelector bind:filetype bind:epsg bind:rulesPath bind:transformOptions />
 
 		<OutputSelector {filetype} bind:outputPath />
 
