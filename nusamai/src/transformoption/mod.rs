@@ -1,5 +1,3 @@
-use crate::sink::{DataRequirements, DataRequirementsField};
-use indexmap::IndexMap;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -7,7 +5,7 @@ pub struct Category {
     pub key: String,
     pub label: String,
     pub value: bool,
-    pub requirements: Vec<DataRequirementsField>,
+    pub requirements: Vec<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]

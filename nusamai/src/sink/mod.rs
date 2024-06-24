@@ -74,19 +74,6 @@ pub struct DataRequirements {
     pub geom_stats: transformer::GeometryStatsSpec,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub enum DataRequirementsField {
-    OutputEpsg(crs::EpsgCode),
-    ShortenNamesForShapefile(bool),
-    TreeFlattening(transformer::TreeFlatteningSpec),
-    UseAppearance(bool),
-    ResolveAppearance(bool),
-    Mergedown(transformer::MergedownSpec),
-    KeyValue(transformer::KeyValueSpec),
-    LodFilter(transformer::LodFilterSpec),
-    GeomStats(transformer::GeometryStatsSpec),
-}
-
 impl Default for DataRequirements {
     fn default() -> Self {
         Self {
@@ -114,26 +101,11 @@ impl DataRequirements {
         self.output_epsg = epsg;
     }
 
-    pub fn update_from_fields(&mut self, fields: Vec<DataRequirementsField>) {
-        for field in fields {
-            match field {
-                DataRequirementsField::OutputEpsg(value) => self.output_epsg = value,
-                DataRequirementsField::ShortenNamesForShapefile(value) => {
-                    self.shorten_names_for_shapefile = value
-                }
-                DataRequirementsField::TreeFlattening(value) => self.tree_flattening = value,
-                DataRequirementsField::UseAppearance(value) => self.use_appearance = value,
-                DataRequirementsField::ResolveAppearance(value) => self.resolve_appearance = value,
-                DataRequirementsField::Mergedown(value) => self.mergedown = value,
-                DataRequirementsField::KeyValue(value) => self.key_value = value,
-                DataRequirementsField::LodFilter(value) => self.lod_filter = value,
-                DataRequirementsField::GeomStats(value) => self.geom_stats = value,
-            }
-        }
+    pub fn set_appearance(&mut self, use_appearance: bool) {
+        self.use_appearance = use_appearance;
     }
 
-    pub fn set_appearance(&mut self, use_appearance: bool, resolve_appearance: bool) {
-        self.use_appearance = use_appearance;
+    pub fn set_resolve_appearance(&mut self, resolve_appearance: bool) {
         self.resolve_appearance = resolve_appearance;
     }
 }

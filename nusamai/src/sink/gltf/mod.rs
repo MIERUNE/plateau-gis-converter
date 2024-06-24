@@ -23,8 +23,8 @@ use crate::{
     parameters::*,
     pipeline::{Feedback, PipelineError, Receiver, Result},
     sink::{
-        cesiumtiles::metadata, DataRequirements, DataRequirementsField, DataSink, DataSinkProvider,
-        SetOptionProperty, SinkInfo,
+        cesiumtiles::metadata, DataRequirements, DataSink, DataSinkProvider, SetOptionProperty,
+        SinkInfo,
     },
     transformoption::{Category, TransformOptions},
 };
@@ -62,10 +62,7 @@ impl DataSinkProvider for GltfSinkProvider {
             key: "use_texture".to_string(),
             label: "テクスチャの使用".to_string(),
             value: true,
-            requirements: vec![
-                DataRequirementsField::UseAppearance(true),
-                DataRequirementsField::ResolveAppearance(true),
-            ],
+            requirements: vec!["appearance".to_string()],
         };
         options.insert_option(category);
 
@@ -154,6 +151,8 @@ pub type Primitives = HashMap<material::Material, PrimitiveInfo>;
 impl DataSink for GltfSink {
     fn make_requirements(&self, properties: Vec<SetOptionProperty>) -> DataRequirements {
         let mut requirements = DataRequirements {
+            use_appearance: true,
+            resolve_appearance: true,
             key_value: crate::transformer::KeyValueSpec::JsonifyObjects,
             ..Default::default()
         };
@@ -162,14 +161,15 @@ impl DataSink for GltfSink {
             .categories
             .iter()
             .for_each(|category| {
-                if let Some(property) = properties.iter().find(|p| p.key == category.key) {
-                    match &property.value {
-                        ture => {
-                            requirements.update_from_fields(category.requirements.clone());
-                        }
-                        false => {}
-                        _ => {}
-                    }
+                if let Some(option) = properties.iter().find(|p| p.key == category.key) {
+                    category
+                        .requirements
+                        .iter()
+                        .for_each(|req| match req.as_str() {
+                            "appearance" => requirements.set_appearance(option.value),
+                            "resolve_appearance" => requirements.set_resolve_appearance(true),
+                            _ => {}
+                        });
                 }
             });
 

@@ -51,14 +51,9 @@
 	}
 
 	$: getTransformoptions(filetype);
-	let bool = true;
 </script>
 
 <div>
-	<!-- NOTE Debug -->
-	{#if transformOptions}
-		<pre>{JSON.stringify(transformOptions, null, 2)}</pre>
-	{/if}
 	<div class="flex items-center gap-1.5">
 		<Icon class="text-xl" icon="material-symbols:settings" />
 		<h2 class="font-bold text-xl">設定</h2>
