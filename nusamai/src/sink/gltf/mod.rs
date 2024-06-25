@@ -26,6 +26,7 @@ use crate::{
         cesiumtiles::metadata, DataRequirements, DataSink, DataSinkProvider, SetOptionProperty,
         SinkInfo,
     },
+    transformer,
     transformoption::{Category, TransformOptions},
 };
 
@@ -58,13 +59,19 @@ impl DataSinkProvider for GltfSinkProvider {
     fn transform_options(&self) -> TransformOptions {
         let mut options: TransformOptions = TransformOptions::new();
 
-        let category = Category {
+        options.insert_option(Category {
             key: "use_texture".to_string(),
             label: "テクスチャの使用".to_string(),
             value: true,
             requirements: vec!["appearance".to_string()],
-        };
-        options.insert_option(category);
+        });
+
+        options.insert_option(Category {
+            key: "lod_filter".to_string(),
+            label: "最高LODの使用".to_string(),
+            value: true,
+            requirements: vec!["lod_filter".to_string()],
+        });
 
         options
     }
@@ -151,9 +158,8 @@ pub type Primitives = HashMap<material::Material, PrimitiveInfo>;
 impl DataSink for GltfSink {
     fn make_requirements(&self, properties: Vec<SetOptionProperty>) -> DataRequirements {
         let mut requirements = DataRequirements {
-            use_appearance: true,
             resolve_appearance: true,
-            key_value: crate::transformer::KeyValueSpec::JsonifyObjects,
+            key_value: crate::transformer::KeyValueSpec::JsonifyObjectsAndArrays,
             ..Default::default()
         };
 
@@ -167,7 +173,20 @@ impl DataSink for GltfSink {
                         .iter()
                         .for_each(|req| match req.as_str() {
                             "appearance" => requirements.set_appearance(option.value),
-                            "resolve_appearance" => requirements.set_resolve_appearance(true),
+                            "lod_filter" => {
+                                let lod_filter_spec = if option.value {
+                                    transformer::LodFilterSpec {
+                                        mode: transformer::LodFilterMode::Highest,
+                                        ..Default::default()
+                                    }
+                                } else {
+                                    transformer::LodFilterSpec {
+                                        mode: transformer::LodFilterMode::Lowest,
+                                        ..Default::default()
+                                    }
+                                };
+                                requirements.set_lod_filter(lod_filter_spec);
+                            }
                             _ => {}
                         });
                 }

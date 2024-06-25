@@ -157,7 +157,7 @@ fn main() -> ExitCode {
         sink_provider.create(&sink_params)
     };
 
-    let mut requirements = sink.make_requirements("default".to_string());
+    let mut requirements = sink.make_requirements(vec![]);
     requirements.set_output_epsg(match args.sink.0.as_ref() {
         "kml" => 6697, // temporary hack for KML output
         _ => args.epsg,

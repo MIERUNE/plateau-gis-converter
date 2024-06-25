@@ -92,20 +92,20 @@
 					<div class="inline-flex items-center gap-6">
 						<label
 							for={category.key}
-							class="mt-px mb-0 ml-3 font-light text-gray-700 cursor-pointer select-none text-sm"
+							class="mt-px mb-0 ml-3 font-light text-gray-700 cursor-pointer select-none text-sm w-52"
 						>
 							{category.label}
 						</label>
-						<div class="relative inline-block w-16 h-8 rounded-full cursor-pointer">
+						<div class="relative inline-block w-10 h-6 rounded-full cursor-pointer">
 							<input
 								bind:checked={category.value}
 								id={category.key}
 								type="checkbox"
-								class="absolute w-16 h-8 transition-colors duration-300 rounded-full appearance-none cursor-pointer peer bg-gray-200 checked:bg-accent1 peer-checked:before:bg-accent1"
+								class="absolute w-10 h-6 transition-colors duration-300 rounded-full appearance-none cursor-pointer peer bg-gray-200 checked:bg-accent1 peer-checked:before:bg-accent1"
 							/>
 							<label
 								for={category.key}
-								class="before:content[''] absolute top-2/4 -left-1 h-9 w-9 -translate-y-2/4 cursor-pointer rounded-full border border-blue-gray-100 bg-white shadow-md transition-all duration-300 before:absolute before:top-2/4 before:left-2/4 before:block before:h-8 before:w-8 before:-translate-y-2/4 before:-translate-x-2/4 before:rounded-full before:bg-blue-gray-500 before:opacity-0 before:transition-opacity hover:before:opacity-10 peer-checked:translate-x-full peer-checked:before:bg-accent1"
+								class="before:content[''] absolute top-2/4 -left-1 h-6 w-6 -translate-y-2/4 cursor-pointer rounded-full border border-blue-gray-100 bg-white shadow-md transition-all duration-300 peer-checked:translate-x-full"
 							>
 								<div
 									class="inline-block p-5 rounded-full top-2/4 left-2/4 -translate-x-2/4 -translate-y-2/4"

@@ -108,4 +108,8 @@ impl DataRequirements {
     pub fn set_resolve_appearance(&mut self, resolve_appearance: bool) {
         self.resolve_appearance = resolve_appearance;
     }
+
+    pub fn set_lod_filter(&mut self, lod_filter: transformer::LodFilterSpec) {
+        self.lod_filter = lod_filter;
+    }
 }
