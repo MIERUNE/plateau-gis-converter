@@ -3,9 +3,10 @@ use std::sync::Once;
 use nusamai::{
     parameters::Parameters,
     pipeline::{self, Feedback, Parcel, Receiver, Result, Sender},
-    sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo},
+    sink::{DataRequirements, DataSink, DataSinkProvider, SetOptionProperty, SinkInfo},
     source::{DataSource, DataSourceProvider, SourceInfo},
     transformer::Transformer,
+    transformoption::TransformOptions,
 };
 use nusamai_citygml::schema::Schema;
 use nusamai_plateau::Entity;
@@ -93,6 +94,11 @@ impl DataSinkProvider for DummySinkProvider {
     fn parameters(&self) -> Parameters {
         Parameters::default()
     }
+
+    fn transform_options(&self) -> TransformOptions {
+        let mut options: TransformOptions = TransformOptions::new();
+        options
+    }
 }
 
 struct DummySink {}
@@ -111,7 +117,7 @@ impl DataSink for DummySink {
         Ok(())
     }
 
-    fn make_requirements(&self) -> DataRequirements {
+    fn make_requirements(&self, property: Vec<SetOptionProperty>) -> DataRequirements {
         DataRequirements {
             ..Default::default()
         }

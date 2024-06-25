@@ -58,7 +58,6 @@ pub trait DataSink: Send {
     fn make_requirements(&self, property: Vec<SetOptionProperty>) -> DataRequirements;
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct DataRequirements {
     pub output_epsg: crs::EpsgCode,
     /// Whether to shorten field names to 10 characters or less for Shapefiles.

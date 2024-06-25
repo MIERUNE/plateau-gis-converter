@@ -7,9 +7,8 @@ use nusamai_citygml::{
 use nusamai_plateau::Entity;
 
 use crate::{pipeline::Feedback, transformer::Transform};
-use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy)]
 pub enum LodFilterMode {
     Highest,
     Lowest,
@@ -93,7 +92,7 @@ fn find_lods(value: &Value) -> LodMask {
     mask
 }
 
-#[derive(Default, Clone, Copy, Debug, Serialize, Deserialize)]
+#[derive(Default, Clone, Copy)]
 pub struct LodMask(
     u8, // lods bit mask
 );
