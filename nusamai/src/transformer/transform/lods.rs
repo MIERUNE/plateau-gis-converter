@@ -8,7 +8,7 @@ use nusamai_plateau::Entity;
 
 use crate::{pipeline::Feedback, transformer::Transform};
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Clone, Copy)]
 pub enum LodFilterMode {
     Highest,
     Lowest,
