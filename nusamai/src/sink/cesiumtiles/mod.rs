@@ -66,7 +66,6 @@ impl DataSinkProvider for CesiumTilesSinkProvider {
         params
     }
 
-    //各シンクのデフォルト値をここで書く二つ目は必要であれば書くキー名はなんでも良い複数なければ一つ目のものを返すようにすれば良い
     fn transform_options(&self) -> TransformOptions {
         let mut options = TransformOptions::new();
 

@@ -53,7 +53,7 @@ pub(crate) fn simple_run_sink<S: DataSinkProvider>(sink_provider: S, output: Opt
     };
 
     let (transformer, schema) = {
-        let transform_req = sink.make_requirements("default".to_string());
+        let transform_req = sink.make_requirements(vec![]);
         let transform_builder = NusamaiTransformBuilder::new(transform_req.into());
         let mut schema = nusamai_citygml::schema::Schema::default();
         TopLevelCityObject::collect_schema(&mut schema);
