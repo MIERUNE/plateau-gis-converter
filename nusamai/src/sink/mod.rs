@@ -20,7 +20,7 @@ use crate::{
     parameters::Parameters,
     pipeline::{Feedback, PipelineError, Receiver},
     transformer,
-    transformoption::TransformOptions,
+    transformer::TransformerSettings,
 };
 
 use ::serde::Deserialize;
@@ -39,7 +39,7 @@ pub trait DataSinkProvider: Sync {
     fn parameters(&self) -> Parameters;
 
     /// Gets the transform options of the sink.
-    fn transform_options(&self) -> TransformOptions;
+    fn available_transformer(&self) -> TransformerSettings;
 
     /// Creates a sink instance.
     fn create(&self, config: &Parameters) -> Box<dyn DataSink>;
@@ -55,7 +55,7 @@ pub trait DataSink: Send {
     ) -> Result<(), PipelineError>;
 
     /// Make a transform requirements with options
-    fn make_requirements(&self, property: Vec<SetOptionProperty>) -> DataRequirements;
+    fn make_requirements(&mut self, property: Vec<SetOptionProperty>) -> DataRequirements;
 }
 
 pub struct DataRequirements {
@@ -92,7 +92,7 @@ impl Default for DataRequirements {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct SetOptionProperty {
     pub key: String,
-    pub value: bool,
+    pub use_setting: bool,
 }
 
 impl DataRequirements {

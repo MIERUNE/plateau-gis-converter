@@ -303,7 +303,7 @@ fn get_transform(filetype: String) -> Result<TransformOptions, Error> {
         Error::InvalidSetting(msg)
     })?;
 
-    let transform_options = sink_provider.transform_options();
+    let transform_options = sink_provider.available_transformer();
 
     Ok(transform_options)
 }

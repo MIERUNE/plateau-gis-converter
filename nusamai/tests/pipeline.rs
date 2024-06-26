@@ -95,7 +95,7 @@ impl DataSinkProvider for DummySinkProvider {
         Parameters::default()
     }
 
-    fn transform_options(&self) -> TransformOptions {
+    fn available_transformer(&self) -> TransformOptions {
         let mut options: TransformOptions = TransformOptions::new();
         options
     }

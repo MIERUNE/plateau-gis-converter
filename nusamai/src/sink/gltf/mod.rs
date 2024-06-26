@@ -27,7 +27,7 @@ use crate::{
         SinkInfo,
     },
     transformer,
-    transformoption::{Category, TransformOptions},
+    transformer::{TransformerDefinition, TransformerSettings},
 };
 
 pub struct GltfSinkProvider {}
@@ -56,40 +56,40 @@ impl DataSinkProvider for GltfSinkProvider {
         params
     }
 
-    fn transform_options(&self) -> TransformOptions {
-        let mut options: TransformOptions = TransformOptions::new();
+    fn available_transformer(&self) -> TransformerSettings {
+        let mut settings: TransformerSettings = TransformerSettings::new();
 
-        options.insert_option(Category {
+        settings.insert(TransformerDefinition {
             key: "use_texture".to_string(),
             label: "テクスチャの使用".to_string(),
-            value: true,
-            requirements: vec!["appearance".to_string()],
+            use_setting: false,
+            requirements: vec![transformer::Requirements::UseAppearance],
         });
 
-        options.insert_option(Category {
-            key: "lod_filter".to_string(),
+        settings.insert(TransformerDefinition {
+            key: "use_max_lod".to_string(),
             label: "最高LODの使用".to_string(),
-            value: true,
-            requirements: vec!["lod_filter".to_string()],
+            use_setting: true,
+            requirements: vec![transformer::Requirements::UseMaxLod],
         });
 
-        options
+        settings
     }
 
     fn create(&self, params: &Parameters) -> Box<dyn DataSink> {
         let output_path = get_parameter_value!(params, "@output", FileSystemPath);
-        let transform_options = self.transform_options();
+        let transform_settings = self.available_transformer();
 
         Box::<GltfSink>::new(GltfSink {
             output_path: output_path.as_ref().unwrap().into(),
-            transform_options,
+            transform_settings,
         })
     }
 }
 
 pub struct GltfSink {
     output_path: PathBuf,
-    transform_options: TransformOptions,
+    transform_settings: TransformerSettings,
 }
 
 pub struct BoundingVolume {
@@ -156,43 +156,15 @@ pub struct PrimitiveInfo {
 pub type Primitives = HashMap<material::Material, PrimitiveInfo>;
 
 impl DataSink for GltfSink {
-    fn make_requirements(&self, properties: Vec<SetOptionProperty>) -> DataRequirements {
-        let mut requirements = DataRequirements {
-            resolve_appearance: true,
-            key_value: crate::transformer::KeyValueSpec::JsonifyObjectsAndArrays,
-            ..Default::default()
-        };
+    fn make_requirements(&mut self, properties: Vec<SetOptionProperty>) -> DataRequirements {
+        for prop in properties {
+            &self
+                .transform_settings
+                .update_use_setting(&prop.key, prop.use_setting);
+        }
+        let data_requirements = self.transform_settings.build();
 
-        self.transform_options
-            .categories
-            .iter()
-            .for_each(|category| {
-                if let Some(option) = properties.iter().find(|p| p.key == category.key) {
-                    category
-                        .requirements
-                        .iter()
-                        .for_each(|req| match req.as_str() {
-                            "appearance" => requirements.set_appearance(option.value),
-                            "lod_filter" => {
-                                let lod_filter_spec = if option.value {
-                                    transformer::LodFilterSpec {
-                                        mode: transformer::LodFilterMode::Highest,
-                                        ..Default::default()
-                                    }
-                                } else {
-                                    transformer::LodFilterSpec {
-                                        mode: transformer::LodFilterMode::Lowest,
-                                        ..Default::default()
-                                    }
-                                };
-                                requirements.set_lod_filter(lod_filter_spec);
-                            }
-                            _ => {}
-                        });
-                }
-            });
-
-        requirements
+        data_requirements
     }
 
     fn run(&mut self, upstream: Receiver, feedback: &Feedback, schema: &Schema) -> Result<()> {
