@@ -16,7 +16,7 @@ use crate::{
     parameters::*,
     pipeline::{Feedback, PipelineError, Receiver, Result},
     sink::{DataRequirements, DataSink, DataSinkProvider, SetOptionProperty, SinkInfo},
-    transformoption::TransformOptions,
+    transformer::TransformerSettings,
 };
 
 pub struct SerdeSinkProvider {}
@@ -45,10 +45,10 @@ impl DataSinkProvider for SerdeSinkProvider {
         params
     }
 
-    fn transform_options(&self) -> TransformOptions {
-        let mut options = TransformOptions::new();
+    fn available_transformer(&self) -> TransformerSettings {
+        let settings: TransformerSettings = TransformerSettings::new();
 
-        options
+        settings
     }
 
     fn create(&self, params: &Parameters) -> Box<dyn DataSink> {
@@ -64,15 +64,23 @@ impl DataSinkProvider for SerdeSinkProvider {
 #[derive(Default)]
 pub struct SerdeSink {
     output_path: PathBuf,
+    transform_settings: TransformerSettings,
     features_written: usize,
     bytes_written: usize,
 }
 
 impl DataSink for SerdeSink {
-    fn make_requirements(&self, properties: Vec<SetOptionProperty>) -> DataRequirements {
-        DataRequirements {
-            ..Default::default()
+    fn make_requirements(&mut self, properties: Vec<SetOptionProperty>) -> DataRequirements {
+        let default_requirements = DataRequirements::default();
+
+        for prop in properties {
+            &self
+                .transform_settings
+                .update_use_setting(&prop.key, prop.use_setting);
         }
+        let data_requirements = self.transform_settings.build(default_requirements);
+
+        data_requirements
     }
 
     fn run(&mut self, upstream: Receiver, feedback: &Feedback, _schema: &Schema) -> Result<()> {

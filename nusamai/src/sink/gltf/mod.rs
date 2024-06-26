@@ -157,12 +157,18 @@ pub type Primitives = HashMap<material::Material, PrimitiveInfo>;
 
 impl DataSink for GltfSink {
     fn make_requirements(&mut self, properties: Vec<SetOptionProperty>) -> DataRequirements {
+        let default_requirements: DataRequirements = DataRequirements {
+            resolve_appearance: true,
+            key_value: crate::transformer::KeyValueSpec::JsonifyObjectsAndArrays,
+            ..Default::default()
+        };
+
         for prop in properties {
             &self
                 .transform_settings
                 .update_use_setting(&prop.key, prop.use_setting);
         }
-        let data_requirements = self.transform_settings.build();
+        let data_requirements = self.transform_settings.build(default_requirements);
 
         data_requirements
     }

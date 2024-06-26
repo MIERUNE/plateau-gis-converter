@@ -18,7 +18,7 @@ pub struct TransformerDefinition {
     pub requirements: Vec<Requirements>,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub struct TransformerSettings {
     pub definition: Vec<TransformerDefinition>,
 }
@@ -40,8 +40,8 @@ impl TransformerSettings {
         }
     }
 
-    pub fn build(&self) -> DataRequirements {
-        let mut data_requirements = DataRequirements::default();
+    pub fn build(&self, default_requirements: DataRequirements) -> DataRequirements {
+        let mut data_requirements = default_requirements;
         let settings = TransformerSettings::new();
 
         for def in &settings.definition {

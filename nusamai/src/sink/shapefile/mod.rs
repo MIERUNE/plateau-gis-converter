@@ -28,7 +28,7 @@ use crate::{
     pipeline::{Feedback, PipelineError, Receiver, Result},
     sink::{DataRequirements, DataSink, DataSinkProvider, SetOptionProperty, SinkInfo},
     transformer,
-    transformoption::TransformOptions,
+    transformer::TransformerSettings,
 };
 
 pub struct ShapefileSinkProvider {}
@@ -57,31 +57,31 @@ impl DataSinkProvider for ShapefileSinkProvider {
         params
     }
 
-    fn transform_options(&self) -> TransformOptions {
-        let mut options = TransformOptions::new();
+    fn available_transformer(&self) -> TransformerSettings {
+        let settings: TransformerSettings = TransformerSettings::new();
 
-        options
+        settings
     }
 
     fn create(&self, params: &Parameters) -> Box<dyn DataSink> {
         let output_path = get_parameter_value!(params, "@output", FileSystemPath);
-        let transform_options = self.transform_options();
+        let transform_settings = self.available_transformer();
 
         Box::<ShapefileSink>::new(ShapefileSink {
             output_path: output_path.as_ref().unwrap().into(),
-            transform_options,
+            transform_settings,
         })
     }
 }
 
 pub struct ShapefileSink {
     output_path: PathBuf,
-    transform_options: TransformOptions,
+    transform_settings: TransformerSettings,
 }
 
 impl DataSink for ShapefileSink {
-    fn make_requirements(&self, properties: Vec<SetOptionProperty>) -> DataRequirements {
-        let mut requirements = DataRequirements {
+    fn make_requirements(&mut self, properties: Vec<SetOptionProperty>) -> DataRequirements {
+        let default_requirements = DataRequirements {
             shorten_names_for_shapefile: true,
             tree_flattening: transformer::TreeFlatteningSpec::Flatten {
                 feature: transformer::FeatureFlatteningOption::AllExceptThematicSurfaces,
@@ -91,7 +91,15 @@ impl DataSink for ShapefileSink {
 
             ..Default::default()
         };
-        requirements
+
+        for prop in properties {
+            &self
+                .transform_settings
+                .update_use_setting(&prop.key, prop.use_setting);
+        }
+        let data_requirements = self.transform_settings.build(default_requirements);
+
+        data_requirements
     }
 
     fn run(&mut self, upstream: Receiver, feedback: &Feedback, schema: &Schema) -> Result<()> {

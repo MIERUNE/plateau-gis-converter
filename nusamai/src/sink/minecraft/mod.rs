@@ -24,8 +24,8 @@ use crate::{
     parameters::*,
     pipeline::{Feedback, Receiver, Result},
     sink::{DataRequirements, DataSink, DataSinkProvider, SetOptionProperty, SinkInfo},
-    transformer::{self, TreeFlatteningSpec},
-    transformoption::TransformOptions,
+    transformer,
+    transformer::{TransformerSettings, TreeFlatteningSpec},
 };
 
 use block_colors::{DefaultBlockResolver, Voxel};
@@ -58,26 +58,25 @@ impl DataSinkProvider for MinecraftSinkProvider {
         params
     }
 
-    fn transform_options(&self) -> TransformOptions {
-        let mut options = TransformOptions::new();
+    fn available_transformer(&self) -> TransformerSettings {
+        let settings: TransformerSettings = TransformerSettings::new();
 
-        options
+        settings
     }
-
     fn create(&self, params: &Parameters) -> Box<dyn DataSink> {
         let output_path = get_parameter_value!(params, "@output", FileSystemPath);
-        let transform_options = self.transform_options();
+        let transform_options = self.available_transformer();
 
         Box::<MinecraftSink>::new(MinecraftSink {
             output_path: output_path.as_ref().unwrap().into(),
-            transform_options,
+            transform_settings: transform_options,
         })
     }
 }
 
 pub struct MinecraftSink {
     output_path: PathBuf,
-    transform_options: TransformOptions,
+    transform_settings: TransformerSettings,
 }
 
 pub struct BoundingVolume {
@@ -114,17 +113,24 @@ impl Default for BoundingVolume {
 }
 
 impl DataSink for MinecraftSink {
-    fn make_requirements(&self, properties: Vec<SetOptionProperty>) -> DataRequirements {
-        let mut requirements = DataRequirements {
+    fn make_requirements(&mut self, properties: Vec<SetOptionProperty>) -> DataRequirements {
+        let default_requirements = DataRequirements {
             tree_flattening: TreeFlatteningSpec::Flatten {
-                feature: transformer::FeatureFlatteningOption::All,
                 data: transformer::DataFlatteningOption::None,
                 object: transformer::ObjectFlatteningOption::None,
+                feature: todo!(),
             },
             ..Default::default()
         };
 
-        requirements
+        for prop in properties {
+            &self
+                .transform_settings
+                .update_use_setting(&prop.key, prop.use_setting);
+        }
+        let data_requirements = self.transform_settings.build(default_requirements);
+
+        data_requirements
     }
 
     fn run(&mut self, upstream: Receiver, feedback: &Feedback, _schema: &Schema) -> Result<()> {

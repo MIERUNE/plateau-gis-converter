@@ -131,7 +131,7 @@ fn main() -> ExitCode {
         .expect("Error setting Ctrl-C handler");
     }
 
-    let sink = {
+    let mut sink = {
         let sink_provider = args.sink.create_sink();
         let mut sink_params = sink_provider.parameters();
         if let Err(err) = sink_params.update_values_with_str(&args.sinkopt) {

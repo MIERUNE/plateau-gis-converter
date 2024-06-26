@@ -29,7 +29,7 @@ use crate::{
     pipeline::{Feedback, PipelineError, Receiver, Result},
     sink::{DataRequirements, DataSink, DataSinkProvider, SetOptionProperty, SinkInfo},
     transformer,
-    transformoption::TransformOptions,
+    transformer::TransformerSettings,
 };
 
 pub struct MvtSinkProvider {}
@@ -82,21 +82,21 @@ impl DataSinkProvider for MvtSinkProvider {
         params
     }
 
-    fn transform_options(&self) -> TransformOptions {
-        let mut options = TransformOptions::new();
+    fn available_transformer(&self) -> TransformerSettings {
+        let settings: TransformerSettings = TransformerSettings::new();
 
-        options
+        settings
     }
 
     fn create(&self, params: &Parameters) -> Box<dyn DataSink> {
         let output_path = get_parameter_value!(params, "@output", FileSystemPath);
-        let transform_options = self.transform_options();
+        let transform_options = self.available_transformer();
         let min_z = get_parameter_value!(params, "min_z", Integer).unwrap() as u8;
         let max_z = get_parameter_value!(params, "max_z", Integer).unwrap() as u8;
 
         Box::<MvtSink>::new(MvtSink {
             output_path: output_path.as_ref().unwrap().into(),
-            transform_options,
+            transform_settings: transform_options,
             mvt_options: MvtParams { min_z, max_z },
         })
     }
@@ -104,7 +104,7 @@ impl DataSinkProvider for MvtSinkProvider {
 
 struct MvtSink {
     output_path: PathBuf,
-    transform_options: TransformOptions,
+    transform_settings: TransformerSettings,
     mvt_options: MvtParams,
 }
 
@@ -120,8 +120,8 @@ struct SlicedFeature<'a> {
 }
 
 impl DataSink for MvtSink {
-    fn make_requirements(&self, key: Vec<SetOptionProperty>) -> DataRequirements {
-        let mut requirements: DataRequirements = DataRequirements {
+    fn make_requirements(&mut self, properties: Vec<SetOptionProperty>) -> DataRequirements {
+        let default_requirements = DataRequirements {
             key_value: transformer::KeyValueSpec::DotNotation,
             lod_filter: transformer::LodFilterSpec {
                 mode: transformer::LodFilterMode::Lowest,
@@ -130,7 +130,15 @@ impl DataSink for MvtSink {
             geom_stats: transformer::GeometryStatsSpec::MinMaxHeights,
             ..Default::default()
         };
-        requirements
+
+        for prop in properties {
+            &self
+                .transform_settings
+                .update_use_setting(&prop.key, prop.use_setting);
+        }
+        let data_requirements = self.transform_settings.build(default_requirements);
+
+        data_requirements
     }
 
     fn run(&mut self, upstream: Receiver, feedback: &Feedback, _schema: &Schema) -> Result<()> {

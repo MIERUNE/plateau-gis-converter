@@ -21,8 +21,8 @@ use nusamai::{
     source::{citygml::CityGmlSourceProvider, DataSourceProvider},
     transformer::{
         self, MappingRules, MultiThreadTransformer, NusamaiTransformBuilder, TransformBuilder,
+        TransformerSettings,
     },
-    transformoption::TransformOptions,
 };
 use nusamai_plateau::models::TopLevelCityObject;
 use tauri_plugin_log::{LogTarget, RotationStrategy, TimezoneStrategy};
@@ -167,7 +167,7 @@ fn run_conversion(
 
     log::info!("Running pipeline with input: {:?}", input_paths);
 
-    let sink = {
+    let mut sink = {
         let sink_provider = select_sink_provider(&filetype).ok_or_else(|| {
             let msg = format!("Invalid sink type: {}", filetype);
             log::error!("{}", msg);
@@ -296,7 +296,7 @@ fn cancel_conversion(tasks_state: tauri::State<ConversionTasksState>) {
 
 /// Get the transform options for a given sink type
 #[tauri::command]
-fn get_transform(filetype: String) -> Result<TransformOptions, Error> {
+fn get_transform(filetype: String) -> Result<TransformerSettings, Error> {
     let sink_provider = select_sink_provider(&filetype).ok_or_else(|| {
         let msg = format!("Invalid sink type: {}", filetype);
         log::error!("{}", msg);
