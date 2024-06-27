@@ -1,10 +1,9 @@
 use std::{path::PathBuf, str::FromStr, sync::Once};
 
 use nusamai::{
-    sink,
-    sink::DataSinkProvider,
+    sink::{self, DataSinkProvider},
     source::{citygml::CityGmlSourceProvider, DataSourceProvider},
-    transformer::{MultiThreadTransformer, NusamaiTransformBuilder, TransformBuilder},
+    transformer::{self, MultiThreadTransformer, NusamaiTransformBuilder, TransformBuilder},
 };
 use nusamai_citygml::CityGmlElement;
 use nusamai_plateau::models::TopLevelCityObject;
@@ -40,7 +39,7 @@ pub(crate) fn simple_run_sink<S: DataSinkProvider>(sink_provider: S, output: Opt
 
     let source = source_provider.create(&source_provider.parameters());
 
-    let sink = {
+    let mut sink = {
         assert!(!sink_provider.info().name.is_empty());
         let mut sink_params = sink_provider.parameters();
         if let Some(output) = output {
@@ -52,8 +51,10 @@ pub(crate) fn simple_run_sink<S: DataSinkProvider>(sink_provider: S, output: Opt
         sink_provider.create(&sink_params)
     };
 
+    let options: Vec<transformer::TransformerOption> = vec![];
+
     let (transformer, schema) = {
-        let transform_req = sink.make_requirements(vec![]);
+        let transform_req = sink.make_requirements(options);
         let transform_builder = NusamaiTransformBuilder::new(transform_req.into());
         let mut schema = nusamai_citygml::schema::Schema::default();
         TopLevelCityObject::collect_schema(&mut schema);

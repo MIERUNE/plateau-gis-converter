@@ -23,7 +23,7 @@ use crate::{
     parameters::*,
     pipeline::{Feedback, PipelineError, Receiver, Result},
     sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo},
-    transformer::{TransformerRegistry, TransformerOption},
+    transformer::{TransformerOption, TransformerRegistry},
 };
 
 pub struct KmlSinkProvider {}

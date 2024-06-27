@@ -3,10 +3,9 @@ use std::sync::Once;
 use nusamai::{
     parameters::Parameters,
     pipeline::{self, Feedback, Parcel, Receiver, Result, Sender},
-    sink::{DataRequirements, DataSink, DataSinkProvider, SetOptionProperty, SinkInfo},
+    sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo},
     source::{DataSource, DataSourceProvider, SourceInfo},
-    transformer::Transformer,
-    transformoption::TransformOptions,
+    transformer::{Transformer, TransformerOption, TransformerRegistry},
 };
 use nusamai_citygml::schema::Schema;
 use nusamai_plateau::Entity;
@@ -95,8 +94,8 @@ impl DataSinkProvider for DummySinkProvider {
         Parameters::default()
     }
 
-    fn available_transformer(&self) -> TransformOptions {
-        let mut options: TransformOptions = TransformOptions::new();
+    fn available_transformer(&self) -> TransformerRegistry {
+        let options: TransformerRegistry = TransformerRegistry::new();
         options
     }
 }
@@ -117,7 +116,7 @@ impl DataSink for DummySink {
         Ok(())
     }
 
-    fn make_requirements(&self, property: Vec<SetOptionProperty>) -> DataRequirements {
+    fn make_requirements(&mut self, _: Vec<TransformerOption>) -> DataRequirements {
         DataRequirements {
             ..Default::default()
         }
