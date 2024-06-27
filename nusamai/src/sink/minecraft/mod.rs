@@ -25,7 +25,7 @@ use crate::{
     pipeline::{Feedback, Receiver, Result},
     sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo},
     transformer,
-    transformer::{TransformerSettings, TransformerSwitchOption},
+    transformer::{TransformerOption, TransformerRegistry},
 };
 
 use block_colors::{DefaultBlockResolver, Voxel};
@@ -58,8 +58,8 @@ impl DataSinkProvider for MinecraftSinkProvider {
         params
     }
 
-    fn available_transformer(&self) -> TransformerSettings {
-        let settings: TransformerSettings = TransformerSettings::new();
+    fn available_transformer(&self) -> TransformerRegistry {
+        let settings: TransformerRegistry = TransformerRegistry::new();
 
         settings
     }
@@ -76,7 +76,7 @@ impl DataSinkProvider for MinecraftSinkProvider {
 
 pub struct MinecraftSink {
     output_path: PathBuf,
-    transform_settings: TransformerSettings,
+    transform_settings: TransformerRegistry,
 }
 
 pub struct BoundingVolume {
@@ -113,7 +113,7 @@ impl Default for BoundingVolume {
 }
 
 impl DataSink for MinecraftSink {
-    fn make_requirements(&mut self, properties: Vec<TransformerSwitchOption>) -> DataRequirements {
+    fn make_requirements(&mut self, properties: Vec<TransformerOption>) -> DataRequirements {
         let default_requirements = DataRequirements {
             tree_flattening: transformer::TreeFlatteningSpec::Flatten {
                 feature: transformer::FeatureFlatteningOption::AllExceptThematicSurfaces,
@@ -126,7 +126,7 @@ impl DataSink for MinecraftSink {
         for prop in properties {
             let _ = &self
                 .transform_settings
-                .update_transformer(&prop.key, prop.enabled);
+                .update_transformer(&prop.key, prop.is_enabled);
         }
 
         self.transform_settings.build(default_requirements)

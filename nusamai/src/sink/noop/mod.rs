@@ -8,7 +8,7 @@ use crate::{
     parameters::{FileSystemPathParameter, ParameterEntry, ParameterType, Parameters},
     pipeline::{Feedback, Receiver, Result},
     sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo},
-    transformer::{TransformerSettings, TransformerSwitchOption},
+    transformer::{TransformerOption, TransformerRegistry},
 };
 
 pub struct NoopSinkProvider {}
@@ -53,8 +53,8 @@ impl DataSinkProvider for NoopSinkProvider {
         params
     }
 
-    fn available_transformer(&self) -> TransformerSettings {
-        let settings: TransformerSettings = TransformerSettings::new();
+    fn available_transformer(&self) -> TransformerRegistry {
+        let settings: TransformerRegistry = TransformerRegistry::new();
 
         settings
     }
@@ -66,7 +66,7 @@ pub struct NoopSink {
 }
 
 impl DataSink for NoopSink {
-    fn make_requirements(&mut self, _: Vec<TransformerSwitchOption>) -> DataRequirements {
+    fn make_requirements(&mut self, _: Vec<TransformerOption>) -> DataRequirements {
         DataRequirements {
             ..Default::default()
         }

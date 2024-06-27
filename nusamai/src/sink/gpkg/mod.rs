@@ -25,7 +25,7 @@ use crate::{
     pipeline::{Feedback, PipelineError, Receiver, Result},
     sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo},
     transformer,
-    transformer::{TransformerSettings, TransformerSwitchOption},
+    transformer::{TransformerRegistry, TransformerOption},
 };
 
 pub struct GpkgSinkProvider {}
@@ -54,8 +54,8 @@ impl DataSinkProvider for GpkgSinkProvider {
         params
     }
 
-    fn available_transformer(&self) -> TransformerSettings {
-        let settings: TransformerSettings = TransformerSettings::new();
+    fn available_transformer(&self) -> TransformerRegistry {
+        let settings: TransformerRegistry = TransformerRegistry::new();
 
         settings
     }
@@ -73,7 +73,7 @@ impl DataSinkProvider for GpkgSinkProvider {
 
 pub struct GpkgSink {
     output_path: PathBuf,
-    transform_settings: TransformerSettings,
+    transform_settings: TransformerRegistry,
 }
 
 // An ephimeral container to wrap and pass the data in the pipeline
@@ -270,7 +270,7 @@ impl GpkgSink {
 pub enum GpkgTransformOption {}
 
 impl DataSink for GpkgSink {
-    fn make_requirements(&mut self, properties: Vec<TransformerSwitchOption>) -> DataRequirements {
+    fn make_requirements(&mut self, properties: Vec<TransformerOption>) -> DataRequirements {
         let default_requirements = DataRequirements {
             tree_flattening: transformer::TreeFlatteningSpec::Flatten {
                 feature: transformer::FeatureFlatteningOption::AllExceptThematicSurfaces,
@@ -283,7 +283,7 @@ impl DataSink for GpkgSink {
         for prop in properties {
             let _ = &self
                 .transform_settings
-                .update_transformer(&prop.key, prop.enabled);
+                .update_transformer(&prop.key, prop.is_enabled);
         }
 
         self.transform_settings.build(default_requirements)

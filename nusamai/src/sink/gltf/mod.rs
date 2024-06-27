@@ -24,7 +24,7 @@ use crate::{
     pipeline::{Feedback, PipelineError, Receiver, Result},
     sink::{cesiumtiles::metadata, DataRequirements, DataSink, DataSinkProvider, SinkInfo},
     transformer,
-    transformer::{TransformerDefinition, TransformerSettings, TransformerSwitchOption},
+    transformer::{TransformerConfig, TransformerRegistry, TransformerOption},
 };
 
 pub struct GltfSinkProvider {}
@@ -53,21 +53,21 @@ impl DataSinkProvider for GltfSinkProvider {
         params
     }
 
-    fn available_transformer(&self) -> TransformerSettings {
-        let mut settings: TransformerSettings = TransformerSettings::new();
+    fn available_transformer(&self) -> TransformerRegistry {
+        let mut settings: TransformerRegistry = TransformerRegistry::new();
 
-        settings.insert(TransformerDefinition {
+        settings.insert(TransformerConfig {
             key: "use_texture".to_string(),
             label: "テクスチャの使用".to_string(),
-            enabled: false,
-            requirements: vec![transformer::Requirements::UseAppearance],
+            is_enabled: false,
+            requirements: vec![transformer::Requirement::UseAppearance],
         });
 
-        settings.insert(TransformerDefinition {
+        settings.insert(TransformerConfig {
             key: "use_max_lod".to_string(),
             label: "最高LODの使用".to_string(),
-            enabled: true,
-            requirements: vec![transformer::Requirements::UseMaxLod],
+            is_enabled: true,
+            requirements: vec![transformer::Requirement::UseMaxLod],
         });
 
         settings
@@ -86,7 +86,7 @@ impl DataSinkProvider for GltfSinkProvider {
 
 pub struct GltfSink {
     output_path: PathBuf,
-    transform_settings: TransformerSettings,
+    transform_settings: TransformerRegistry,
 }
 
 pub struct BoundingVolume {
@@ -153,7 +153,7 @@ pub struct PrimitiveInfo {
 pub type Primitives = HashMap<material::Material, PrimitiveInfo>;
 
 impl DataSink for GltfSink {
-    fn make_requirements(&mut self, properties: Vec<TransformerSwitchOption>) -> DataRequirements {
+    fn make_requirements(&mut self, properties: Vec<TransformerOption>) -> DataRequirements {
         let default_requirements: DataRequirements = DataRequirements {
             resolve_appearance: true,
             key_value: crate::transformer::KeyValueSpec::JsonifyObjectsAndArrays,
@@ -163,7 +163,7 @@ impl DataSink for GltfSink {
         for prop in properties {
             let _ = &self
                 .transform_settings
-                .update_transformer(&prop.key, prop.enabled);
+                .update_transformer(&prop.key, prop.is_enabled);
         }
 
         self.transform_settings.build(default_requirements)

@@ -20,7 +20,7 @@ use nusamai::{
     source::{citygml::CityGmlSourceProvider, DataSourceProvider},
     transformer::{
         self, MappingRules, MultiThreadTransformer, NusamaiTransformBuilder, TransformBuilder,
-        TransformerSettings, TransformerSwitchOption,
+        TransformerOption, TransformerRegistry,
     },
 };
 use nusamai_plateau::models::TopLevelCityObject;
@@ -133,7 +133,7 @@ fn run_conversion(
     filetype: String,
     epsg: u16,
     rules_path: String,
-    transformer_option: Vec<TransformerSwitchOption>,
+    transformer_options: Vec<TransformerOption>,
     tasks_state: tauri::State<ConversionTasksState>,
     window: tauri::Window,
 ) -> Result<(), Error> {
@@ -188,7 +188,7 @@ fn run_conversion(
         sink_provider.create(&sink_params)
     };
 
-    let mut requirements = sink.make_requirements(transformer_option);
+    let mut requirements = sink.make_requirements(transformer_options);
     requirements.set_output_epsg(epsg);
 
     let source = {
@@ -296,14 +296,14 @@ fn cancel_conversion(tasks_state: tauri::State<ConversionTasksState>) {
 
 /// Get the transform options for a given sink type
 #[tauri::command]
-fn get_transform(filetype: String) -> Result<TransformerSettings, Error> {
+fn get_transform(filetype: String) -> Result<TransformerRegistry, Error> {
     let sink_provider = select_sink_provider(&filetype).ok_or_else(|| {
         let msg = format!("Invalid sink type: {}", filetype);
         log::error!("{}", msg);
         Error::InvalidSetting(msg)
     })?;
 
-    let transformer_settings = sink_provider.available_transformer();
+    let transformer_registry = sink_provider.available_transformer();
 
-    Ok(transformer_settings)
+    Ok(transformer_registry)
 }

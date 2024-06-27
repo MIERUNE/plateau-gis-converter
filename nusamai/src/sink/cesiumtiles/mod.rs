@@ -34,7 +34,7 @@ use crate::{
     pipeline::{Feedback, PipelineError, Receiver, Result},
     sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo},
     transformer,
-    transformer::{TransformerDefinition, TransformerSettings, TransformerSwitchOption},
+    transformer::{TransformerConfig, TransformerOption, TransformerRegistry},
 };
 use utils::calculate_normal;
 
@@ -66,21 +66,21 @@ impl DataSinkProvider for CesiumTilesSinkProvider {
         params
     }
 
-    fn available_transformer(&self) -> TransformerSettings {
-        let mut settings: TransformerSettings = TransformerSettings::new();
+    fn available_transformer(&self) -> TransformerRegistry {
+        let mut settings: TransformerRegistry = TransformerRegistry::new();
 
-        settings.insert(TransformerDefinition {
+        settings.insert(TransformerConfig {
             key: "use_texture".to_string(),
             label: "テクスチャの使用".to_string(),
-            enabled: false,
-            requirements: vec![transformer::Requirements::UseAppearance],
+            is_enabled: false,
+            requirements: vec![transformer::Requirement::UseAppearance],
         });
 
-        settings.insert(TransformerDefinition {
+        settings.insert(TransformerConfig {
             key: "use_max_lod".to_string(),
             label: "最高LODの使用".to_string(),
-            enabled: true,
-            requirements: vec![transformer::Requirements::UseMaxLod],
+            is_enabled: true,
+            requirements: vec![transformer::Requirement::UseMaxLod],
         });
 
         settings
@@ -88,23 +88,22 @@ impl DataSinkProvider for CesiumTilesSinkProvider {
 
     fn create(&self, params: &Parameters) -> Box<dyn DataSink> {
         let output_path = get_parameter_value!(params, "@output", FileSystemPath);
-
-        let transform_settings = self.available_transformer();
+        let transformer_registry = self.available_transformer();
 
         Box::<CesiumTilesSink>::new(CesiumTilesSink {
             output_path: output_path.as_ref().unwrap().into(),
-            transform_settings,
+            transformer_registry,
         })
     }
 }
 
 struct CesiumTilesSink {
     output_path: PathBuf,
-    transform_settings: TransformerSettings,
+    transformer_registry: TransformerRegistry,
 }
 
 impl DataSink for CesiumTilesSink {
-    fn make_requirements(&mut self, properties: Vec<TransformerSwitchOption>) -> DataRequirements {
+    fn make_requirements(&mut self, properties: Vec<TransformerOption>) -> DataRequirements {
         let default_requirements = DataRequirements {
             use_appearance: true,
             resolve_appearance: true,
@@ -114,11 +113,11 @@ impl DataSink for CesiumTilesSink {
 
         for prop in properties {
             let _ = &self
-                .transform_settings
-                .update_transformer(&prop.key, prop.enabled);
+                .transformer_registry
+                .update_transformer(&prop.key, prop.is_enabled);
         }
 
-        self.transform_settings.build(default_requirements)
+        self.transformer_registry.build(default_requirements)
     }
 
     fn run(&mut self, upstream: Receiver, feedback: &Feedback, schema: &Schema) -> Result<()> {

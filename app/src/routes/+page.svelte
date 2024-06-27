@@ -17,7 +17,7 @@
 	let rulesPath = '';
 	let outputPath = '';
 	let isRunning = false;
-	let transformerSwitchOption: { key: string; label: string; enabled: boolean }[];
+	let transformerRegistry: { key: string; label: string; isEnabled: boolean }[];
 
 	async function convertAndSave() {
 		if (!inputPaths) {
@@ -32,10 +32,10 @@
 
 		isRunning = true;
 
-		const option = transformerSwitchOption.map((transformerDefinition) => {
+		const transformerOptions = transformerRegistry.map((transformerConfig) => {
 			return {
-				key: transformerDefinition.key,
-				enabled: transformerDefinition.enabled
+				key: transformerConfig.key,
+				isEnabled: transformerConfig.isEnabled
 			};
 		});
 
@@ -46,7 +46,7 @@
 				filetype,
 				epsg,
 				rulesPath,
-				transformerOption: option
+				transformerOptions
 			});
 			isRunning = false;
 			await message(`変換が完了しました。\n'${outputPath}' に出力しました。`, { type: 'info' });
@@ -79,7 +79,7 @@
 
 		<InputSelector bind:inputPaths />
 
-		<SettingSelector bind:filetype bind:epsg bind:rulesPath bind:transformerSwitchOption={transformerSwitchOption} />
+		<SettingSelector bind:filetype bind:epsg bind:rulesPath bind:transformerRegistry />
 
 		<OutputSelector {filetype} bind:outputPath />
 

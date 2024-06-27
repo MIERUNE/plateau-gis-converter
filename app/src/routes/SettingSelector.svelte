@@ -7,7 +7,7 @@
 	export let filetype: string;
 	export let epsg: number = 4979;
 	export let rulesPath: string;
-	export let transformerSettings: { key: string; label: string; enabled: boolean | String }[];
+	export let transformerRegistry: { key: string; label: string; isEnabled: boolean }[];
 
 	$: epsgOptions = filetypeOptions[filetype]?.epsg || [];
 	$: disableEpsgOptions = epsgOptions.length < 2;
@@ -36,21 +36,21 @@
 		rulesPath = '';
 	}
 
-	async function getTransformerSettings(filetype: string) {
-		const options = (await invoke('get_transform', { filetype })) as any;
+	async function getTransformerRegistry(filetype: string) {
+		const registry = (await invoke('get_transform', { filetype })) as any;
 
-		transformerSettings = options.definition.map(
-			(transformerDefinition: { key: string; label: string; enabled: boolean | String }) => {
+		transformerRegistry = registry.configs.map(
+			(transformerConfig: { key: string; label: string; isEnabled: boolean }) => {
 				return {
-					key: transformerDefinition.key,
-					label: transformerDefinition.label,
-					enabled: transformerDefinition.enabled ? true : false
+					key: transformerConfig.key,
+					label: transformerConfig.label,
+					isEnabled: transformerConfig.isEnabled
 				};
 			}
 		);
 	}
 
-	$: getTransformerSettings(filetype);
+	$: getTransformerRegistry(filetype);
 </script>
 
 <div>
@@ -85,26 +85,26 @@
 				{/each}
 			</select>
 		</div>
-		{#if transformerSettings}
+		{#if transformerRegistry}
 			<div class="flex flex-col gap-1.5">
 				<label for="transform-select" class="font-bold">LODの設定</label>
-				{#each transformerSettings as category}
+				{#each transformerRegistry as config}
 					<div class="inline-flex items-center gap-6">
 						<label
-							for={category.key}
+							for={config.key}
 							class="mt-px mb-0 ml-3 font-light text-gray-700 cursor-pointer select-none text-sm w-52"
 						>
-							{category.label}
+							{config.label}
 						</label>
 						<div class="relative inline-block w-10 h-6 rounded-full cursor-pointer">
 							<input
-								bind:checked={category.enabled}
-								id={category.key}
+								bind:checked={config.isEnabled}
+								id={config.key}
 								type="checkbox"
 								class="absolute w-10 h-6 transition-colors duration-300 rounded-full appearance-none cursor-pointer peer bg-gray-200 checked:bg-accent1 peer-checked:before:bg-accent1"
 							/>
 							<label
-								for={category.key}
+								for={config.key}
 								class="before:content[''] absolute top-2/4 -left-1 h-6 w-6 -translate-y-2/4 cursor-pointer rounded-full border border-blue-gray-100 bg-white shadow-md transition-all duration-300 peer-checked:translate-x-full"
 							>
 								<div
