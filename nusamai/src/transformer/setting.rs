@@ -45,9 +45,8 @@ impl TransformerRegistry {
 
     pub fn build(&self, default_requirements: DataRequirements) -> DataRequirements {
         let mut data_requirements = default_requirements;
-        let settings = TransformerRegistry::new();
 
-        for def in &settings.configs {
+        for def in &self.configs {
             for req in def.requirements.clone() {
                 match req {
                     Requirement::UseAppearance => data_requirements.set_appearance(true),

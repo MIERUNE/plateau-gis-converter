@@ -86,13 +86,6 @@ impl DataSinkProvider for CesiumTilesSinkProvider {
             requirements: vec![transformer::Requirement::UseAppearance],
         });
 
-        settings.insert(TransformerConfig {
-            key: "use_max_lod".to_string(),
-            label: "最高LODの使用".to_string(),
-            is_enabled: false,
-            requirements: vec![transformer::Requirement::UseMaxLod],
-        });
-
         settings
     }
 
