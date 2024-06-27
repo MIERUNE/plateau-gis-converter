@@ -16,12 +16,11 @@ use nusamai::{
         gltf::GltfSinkProvider, gpkg::GpkgSinkProvider, kml::KmlSinkProvider,
         minecraft::MinecraftSinkProvider, mvt::MvtSinkProvider, ply::StanfordPlySinkProvider,
         serde::SerdeSinkProvider, shapefile::ShapefileSinkProvider, DataSinkProvider,
-        SetOptionProperty,
     },
     source::{citygml::CityGmlSourceProvider, DataSourceProvider},
     transformer::{
-        self, MappingRules, MultiThreadTransformer, NusamaiTransformBuilder, TransformBuilder,
-        TransformerSettings,
+        self, MappingRules, MultiThreadTransformer, NusamaiTransformBuilder, SetOptionProperty,
+        TransformBuilder, TransformerSettings,
     },
 };
 use nusamai_plateau::models::TopLevelCityObject;
@@ -127,6 +126,7 @@ fn select_sink_provider(filetype: &str) -> Option<Box<dyn DataSinkProvider>> {
 }
 
 #[tauri::command(async)]
+#[allow(clippy::too_many_arguments)]
 fn run_conversion(
     input_paths: Vec<String>,
     output_path: String,

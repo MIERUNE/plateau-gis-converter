@@ -1,13 +1,13 @@
 <script lang="ts">
+	import { message } from '@tauri-apps/api/dialog';
 	import { invoke } from '@tauri-apps/api/tauri';
 	import { attachConsole } from 'tauri-plugin-log-api';
-	import { message } from '@tauri-apps/api/dialog';
 
 	import Icon from '@iconify/svelte';
 	import InputSelector from './InputSelector.svelte';
-	import SettingSelector from './SettingSelector.svelte';
-	import OutputSelector from './OutputSelector.svelte';
 	import LoadingAnimation from './LoadingAnimation.svelte';
+	import OutputSelector from './OutputSelector.svelte';
+	import SettingSelector from './SettingSelector.svelte';
 
 	attachConsole(); // For Tauri log in the webview console
 

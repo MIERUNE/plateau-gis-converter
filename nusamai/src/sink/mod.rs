@@ -19,12 +19,8 @@ use nusamai_projection::crs;
 use crate::{
     parameters::Parameters,
     pipeline::{Feedback, PipelineError, Receiver},
-    transformer,
-    transformer::TransformerSettings,
+    transformer::{self, SetOptionProperty, TransformerSettings},
 };
-
-use ::serde::Deserialize;
-use ::serde::Serialize;
 
 pub struct SinkInfo {
     pub id_name: String,
@@ -87,12 +83,6 @@ impl Default for DataRequirements {
             geom_stats: transformer::GeometryStatsSpec::None,
         }
     }
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct SetOptionProperty {
-    pub key: String,
-    pub use_setting: bool,
 }
 
 impl DataRequirements {

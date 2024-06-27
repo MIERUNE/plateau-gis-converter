@@ -7,8 +7,8 @@ use nusamai_citygml::schema::Schema;
 use crate::{
     parameters::{FileSystemPathParameter, ParameterEntry, ParameterType, Parameters},
     pipeline::{Feedback, Receiver, Result},
-    sink::{DataRequirements, DataSink, DataSinkProvider, SetOptionProperty, SinkInfo},
-    transformer::TransformerSettings,
+    sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo},
+    transformer::{SetOptionProperty, TransformerSettings},
 };
 
 pub struct NoopSinkProvider {}

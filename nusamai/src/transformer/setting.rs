@@ -14,7 +14,7 @@ pub enum Requirements {
 pub struct TransformerDefinition {
     pub key: String,
     pub label: String,
-    pub use_setting: bool,
+    pub enabled: bool,
     pub requirements: Vec<Requirements>,
 }
 
@@ -32,10 +32,11 @@ impl TransformerSettings {
         self.definition.push(def);
     }
 
-    pub fn update_use_setting(&mut self, key: &str, use_setting: bool) {
+    pub fn update_transformer(&mut self, key: &str, enabled: bool) {
         for def in &mut self.definition {
+            // Ignored if key does not exist
             if def.key == key {
-                def.use_setting = use_setting;
+                def.enabled = enabled;
             }
         }
     }
@@ -61,4 +62,10 @@ impl TransformerSettings {
 
         data_requirements
     }
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct SetOptionProperty {
+    pub key: String,
+    pub enabled: bool,
 }

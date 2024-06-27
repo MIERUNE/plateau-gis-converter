@@ -32,9 +32,9 @@ use crate::{
     get_parameter_value,
     parameters::*,
     pipeline::{Feedback, PipelineError, Receiver, Result},
-    sink::{DataRequirements, DataSink, DataSinkProvider, SetOptionProperty, SinkInfo},
+    sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo},
     transformer,
-    transformer::{TransformerDefinition, TransformerSettings},
+    transformer::{SetOptionProperty, TransformerDefinition, TransformerSettings},
 };
 use utils::calculate_normal;
 
@@ -72,14 +72,14 @@ impl DataSinkProvider for CesiumTilesSinkProvider {
         settings.insert(TransformerDefinition {
             key: "use_texture".to_string(),
             label: "テクスチャの使用".to_string(),
-            use_setting: false,
+            enabled: false,
             requirements: vec![transformer::Requirements::UseAppearance],
         });
 
         settings.insert(TransformerDefinition {
             key: "use_max_lod".to_string(),
             label: "最高LODの使用".to_string(),
-            use_setting: true,
+            enabled: true,
             requirements: vec![transformer::Requirements::UseMaxLod],
         });
 
@@ -115,7 +115,7 @@ impl DataSink for CesiumTilesSink {
         for prop in properties {
             &self
                 .transform_settings
-                .update_use_setting(&prop.key, prop.use_setting);
+                .update_transformer(&prop.key, prop.enabled);
         }
         let data_requirements = self.transform_settings.build(default_requirements);
 

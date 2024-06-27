@@ -23,9 +23,9 @@ use crate::{
     get_parameter_value,
     parameters::*,
     pipeline::{Feedback, PipelineError, Receiver, Result},
-    sink::{DataRequirements, DataSink, DataSinkProvider, SetOptionProperty, SinkInfo},
+    sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo},
     transformer,
-    transformer::TransformerSettings,
+    transformer::{SetOptionProperty, TransformerSettings},
 };
 
 pub struct GpkgSinkProvider {}
@@ -283,7 +283,7 @@ impl DataSink for GpkgSink {
         for prop in properties {
             &self
                 .transform_settings
-                .update_use_setting(&prop.key, prop.use_setting);
+                .update_transformer(&prop.key, prop.enabled);
         }
         let data_requirements = self.transform_settings.build(default_requirements);
 
