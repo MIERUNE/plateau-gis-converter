@@ -16,7 +16,7 @@ use crate::{
     parameters::*,
     pipeline::{Feedback, PipelineError, Receiver, Result},
     sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo},
-    transformer::{TransformerRegistry, TransformerOption},
+    transformer::{TransformerOption, TransformerRegistry},
 };
 
 pub struct SerdeSinkProvider {}
@@ -70,16 +70,10 @@ pub struct SerdeSink {
 }
 
 impl DataSink for SerdeSink {
-    fn make_requirements(&mut self, properties: Vec<TransformerOption>) -> DataRequirements {
-        let default_requirements = DataRequirements::default();
-
-        for prop in properties {
-            let _ = &self
-                .transform_settings
-                .update_transformer(&prop.key, prop.is_enabled);
+    fn make_requirements(&mut self, _: Vec<TransformerOption>) -> DataRequirements {
+        DataRequirements {
+            ..Default::default()
         }
-
-        self.transform_settings.build(default_requirements)
     }
 
     fn run(&mut self, upstream: Receiver, feedback: &Feedback, _schema: &Schema) -> Result<()> {
