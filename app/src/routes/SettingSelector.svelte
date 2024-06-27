@@ -36,6 +36,10 @@
 		rulesPath = '';
 	}
 
+	function isTransformerRegistry() {
+		return !transformerRegistry || transformerRegistry.length === 0;
+	}
+
 	async function getTransformerRegistry(filetype: string) {
 		const registry = (await invoke('get_transform', { filetype })) as any;
 
@@ -85,9 +89,9 @@
 				{/each}
 			</select>
 		</div>
-		{#if transformerRegistry}
+		{#if transformerRegistry && transformerRegistry.length > 0}
 			<div class="flex flex-col gap-1.5">
-				<label for="transform-select" class="font-bold">LODの設定</label>
+				<label for="transform-select" class="font-bold">出力の詳細設定</label>
 				{#each transformerRegistry as config}
 					<div class="inline-flex items-center gap-6">
 						<label
