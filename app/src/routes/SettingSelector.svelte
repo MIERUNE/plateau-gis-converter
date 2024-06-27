@@ -1,13 +1,13 @@
 <script lang="ts">
-	import { dialog } from '@tauri-apps/api';
-	import Icon from '@iconify/svelte';
 	import { filetypeOptions } from '$lib/settings';
+	import Icon from '@iconify/svelte';
+	import { dialog } from '@tauri-apps/api';
 	import { invoke } from '@tauri-apps/api/tauri';
 
 	export let filetype: string;
 	export let epsg: number = 4979;
 	export let rulesPath: string;
-	export let transformOptions: { key: string; label: string; value: boolean | String }[];
+	export let transformerSettings: { key: string; label: string; enabled: boolean | String }[];
 
 	$: epsgOptions = filetypeOptions[filetype]?.epsg || [];
 	$: disableEpsgOptions = epsgOptions.length < 2;
@@ -36,21 +36,21 @@
 		rulesPath = '';
 	}
 
-	async function getTransformoptions(filetype: string) {
+	async function getTransformerSettings(filetype: string) {
 		const options = (await invoke('get_transform', { filetype })) as any;
 
-		transformOptions = options.categories.map(
-			(category: { key: string; label: string; value: boolean | String }) => {
+		transformerSettings = options.definition.map(
+			(transformerDefinition: { key: string; label: string; enabled: boolean | String }) => {
 				return {
-					key: category.key,
-					label: category.label,
-					value: category.value ? true : false
+					key: transformerDefinition.key,
+					label: transformerDefinition.label,
+					enabled: transformerDefinition.enabled ? true : false
 				};
 			}
 		);
 	}
 
-	$: getTransformoptions(filetype);
+	$: getTransformerSettings(filetype);
 </script>
 
 <div>
@@ -85,10 +85,10 @@
 				{/each}
 			</select>
 		</div>
-		{#if transformOptions}
+		{#if transformerSettings}
 			<div class="flex flex-col gap-1.5">
 				<label for="transform-select" class="font-bold">LODの設定</label>
-				{#each transformOptions as category}
+				{#each transformerSettings as category}
 					<div class="inline-flex items-center gap-6">
 						<label
 							for={category.key}
@@ -98,7 +98,7 @@
 						</label>
 						<div class="relative inline-block w-10 h-6 rounded-full cursor-pointer">
 							<input
-								bind:checked={category.value}
+								bind:checked={category.enabled}
 								id={category.key}
 								type="checkbox"
 								class="absolute w-10 h-6 transition-colors duration-300 rounded-full appearance-none cursor-pointer peer bg-gray-200 checked:bg-accent1 peer-checked:before:bg-accent1"

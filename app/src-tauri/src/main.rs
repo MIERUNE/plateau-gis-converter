@@ -19,8 +19,8 @@ use nusamai::{
     },
     source::{citygml::CityGmlSourceProvider, DataSourceProvider},
     transformer::{
-        self, MappingRules, MultiThreadTransformer, NusamaiTransformBuilder, TransformerSwitchOption,
-        TransformBuilder, TransformerSettings,
+        self, MappingRules, MultiThreadTransformer, NusamaiTransformBuilder, TransformBuilder,
+        TransformerSettings, TransformerSwitchOption,
     },
 };
 use nusamai_plateau::models::TopLevelCityObject;
@@ -133,7 +133,7 @@ fn run_conversion(
     filetype: String,
     epsg: u16,
     rules_path: String,
-    option_property: Vec<TransformerSwitchOption>,
+    transformer_option: Vec<TransformerSwitchOption>,
     tasks_state: tauri::State<ConversionTasksState>,
     window: tauri::Window,
 ) -> Result<(), Error> {
@@ -188,7 +188,7 @@ fn run_conversion(
         sink_provider.create(&sink_params)
     };
 
-    let mut requirements = sink.make_requirements(option_property);
+    let mut requirements = sink.make_requirements(transformer_option);
     requirements.set_output_epsg(epsg);
 
     let source = {
@@ -303,7 +303,7 @@ fn get_transform(filetype: String) -> Result<TransformerSettings, Error> {
         Error::InvalidSetting(msg)
     })?;
 
-    let transform_options = sink_provider.available_transformer();
+    let transformer_settings = sink_provider.available_transformer();
 
-    Ok(transform_options)
+    Ok(transformer_settings)
 }
