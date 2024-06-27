@@ -64,7 +64,6 @@ impl DataSinkProvider for SerdeSinkProvider {
 #[derive(Default)]
 pub struct SerdeSink {
     output_path: PathBuf,
-    transform_settings: TransformerRegistry,
     features_written: usize,
     bytes_written: usize,
 }
