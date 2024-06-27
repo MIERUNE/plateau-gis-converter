@@ -7,6 +7,7 @@ pub enum Requirement {
     UseAppearance,
     NotUseAppearance,
     UseMaxLod,
+    UseMinLod,
     // ...
 }
 
@@ -50,10 +51,16 @@ impl TransformerRegistry {
             for req in def.requirements.clone() {
                 match req {
                     Requirement::UseAppearance => data_requirements.set_appearance(true),
-                    Requirement::NotUseAppearance => todo!(),
+                    Requirement::NotUseAppearance => data_requirements.set_appearance(false),
                     Requirement::UseMaxLod => {
                         data_requirements.set_lod_filter(transformer::LodFilterSpec {
                             mode: transformer::LodFilterMode::Highest,
+                            ..Default::default()
+                        })
+                    }
+                    Requirement::UseMinLod => {
+                        data_requirements.set_lod_filter(transformer::LodFilterSpec {
+                            mode: transformer::LodFilterMode::Lowest,
                             ..Default::default()
                         })
                     }
