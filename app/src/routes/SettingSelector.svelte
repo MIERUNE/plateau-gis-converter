@@ -36,10 +36,6 @@
 		rulesPath = '';
 	}
 
-	function isTransformerRegistry() {
-		return !transformerRegistry || transformerRegistry.length === 0;
-	}
-
 	async function getTransformerRegistry(filetype: string) {
 		const registry = (await invoke('get_transform', { filetype })) as any;
 
@@ -90,6 +86,7 @@
 			</select>
 		</div>
 		{#if transformerRegistry && transformerRegistry.length > 0}
+			{JSON.stringify(transformerRegistry)}
 			<div class="flex flex-col gap-1.5">
 				<label for="transform-select" class="font-bold">出力の詳細設定</label>
 				{#each transformerRegistry as config}
