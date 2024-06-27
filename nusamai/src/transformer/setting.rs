@@ -46,8 +46,11 @@ impl TransformerRegistry {
     pub fn build(&self, default_requirements: DataRequirements) -> DataRequirements {
         let mut data_requirements = default_requirements;
 
-        for def in &self.configs {
-            for req in def.requirements.clone() {
+        for config in &self.configs {
+            if !config.is_enabled {
+                continue;
+            }
+            for req in config.requirements.clone() {
                 match req {
                     Requirement::UseAppearance => data_requirements.set_appearance(true),
                     Requirement::NotUseAppearance => data_requirements.set_appearance(false),
