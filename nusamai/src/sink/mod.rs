@@ -19,7 +19,7 @@ use nusamai_projection::crs;
 use crate::{
     parameters::Parameters,
     pipeline::{Feedback, PipelineError, Receiver},
-    transformer::{self, SetOptionProperty, TransformerSettings},
+    transformer::{self, TransformerSettings, TransformerSwitchOption},
 };
 
 pub struct SinkInfo {
@@ -51,7 +51,7 @@ pub trait DataSink: Send {
     ) -> Result<(), PipelineError>;
 
     /// Make a transform requirements with options
-    fn make_requirements(&mut self, property: Vec<SetOptionProperty>) -> DataRequirements;
+    fn make_requirements(&mut self, property: Vec<TransformerSwitchOption>) -> DataRequirements;
 }
 
 pub struct DataRequirements {

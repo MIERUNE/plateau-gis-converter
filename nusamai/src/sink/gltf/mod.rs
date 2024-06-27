@@ -24,7 +24,7 @@ use crate::{
     pipeline::{Feedback, PipelineError, Receiver, Result},
     sink::{cesiumtiles::metadata, DataRequirements, DataSink, DataSinkProvider, SinkInfo},
     transformer,
-    transformer::{SetOptionProperty, TransformerDefinition, TransformerSettings},
+    transformer::{TransformerSwitchOption, TransformerDefinition, TransformerSettings},
 };
 
 pub struct GltfSinkProvider {}
@@ -153,7 +153,7 @@ pub struct PrimitiveInfo {
 pub type Primitives = HashMap<material::Material, PrimitiveInfo>;
 
 impl DataSink for GltfSink {
-    fn make_requirements(&mut self, properties: Vec<SetOptionProperty>) -> DataRequirements {
+    fn make_requirements(&mut self, properties: Vec<TransformerSwitchOption>) -> DataRequirements {
         let default_requirements: DataRequirements = DataRequirements {
             resolve_appearance: true,
             key_value: crate::transformer::KeyValueSpec::JsonifyObjectsAndArrays,

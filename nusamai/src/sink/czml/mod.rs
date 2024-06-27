@@ -23,7 +23,7 @@ use crate::{
     parameters::*,
     pipeline::{Feedback, PipelineError, Receiver, Result},
     sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo},
-    transformer::{SetOptionProperty, TransformerSettings},
+    transformer::{TransformerSwitchOption, TransformerSettings},
 };
 
 pub struct CzmlSinkProvider {}
@@ -75,7 +75,7 @@ pub struct CzmlSink {
 }
 
 impl DataSink for CzmlSink {
-    fn make_requirements(&mut self, properties: Vec<SetOptionProperty>) -> DataRequirements {
+    fn make_requirements(&mut self, properties: Vec<TransformerSwitchOption>) -> DataRequirements {
         let default_requirements = DataRequirements::default();
 
         for prop in properties {

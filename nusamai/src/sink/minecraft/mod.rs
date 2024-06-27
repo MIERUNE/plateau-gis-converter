@@ -25,7 +25,7 @@ use crate::{
     pipeline::{Feedback, Receiver, Result},
     sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo},
     transformer,
-    transformer::{SetOptionProperty, TransformerSettings},
+    transformer::{TransformerSettings, TransformerSwitchOption},
 };
 
 use block_colors::{DefaultBlockResolver, Voxel};
@@ -113,7 +113,7 @@ impl Default for BoundingVolume {
 }
 
 impl DataSink for MinecraftSink {
-    fn make_requirements(&mut self, properties: Vec<SetOptionProperty>) -> DataRequirements {
+    fn make_requirements(&mut self, properties: Vec<TransformerSwitchOption>) -> DataRequirements {
         let default_requirements = DataRequirements {
             tree_flattening: transformer::TreeFlatteningSpec::Flatten {
                 feature: transformer::FeatureFlatteningOption::AllExceptThematicSurfaces,

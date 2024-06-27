@@ -28,7 +28,7 @@ use crate::{
     pipeline::{Feedback, PipelineError, Receiver, Result},
     sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo},
     transformer,
-    transformer::{SetOptionProperty, TransformerSettings},
+    transformer::{TransformerSwitchOption, TransformerSettings},
 };
 
 pub struct ShapefileSinkProvider {}
@@ -80,7 +80,7 @@ pub struct ShapefileSink {
 }
 
 impl DataSink for ShapefileSink {
-    fn make_requirements(&mut self, properties: Vec<SetOptionProperty>) -> DataRequirements {
+    fn make_requirements(&mut self, properties: Vec<TransformerSwitchOption>) -> DataRequirements {
         let default_requirements = DataRequirements {
             shorten_names_for_shapefile: true,
             tree_flattening: transformer::TreeFlatteningSpec::Flatten {

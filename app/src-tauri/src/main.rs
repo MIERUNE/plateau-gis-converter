@@ -19,7 +19,7 @@ use nusamai::{
     },
     source::{citygml::CityGmlSourceProvider, DataSourceProvider},
     transformer::{
-        self, MappingRules, MultiThreadTransformer, NusamaiTransformBuilder, SetOptionProperty,
+        self, MappingRules, MultiThreadTransformer, NusamaiTransformBuilder, TransformerSwitchOption,
         TransformBuilder, TransformerSettings,
     },
 };
@@ -133,7 +133,7 @@ fn run_conversion(
     filetype: String,
     epsg: u16,
     rules_path: String,
-    option_property: Vec<SetOptionProperty>,
+    option_property: Vec<TransformerSwitchOption>,
     tasks_state: tauri::State<ConversionTasksState>,
     window: tauri::Window,
 ) -> Result<(), Error> {

@@ -29,7 +29,7 @@ use crate::{
     pipeline::{Feedback, PipelineError, Receiver, Result},
     sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo},
     transformer,
-    transformer::{SetOptionProperty, TransformerSettings},
+    transformer::{TransformerSwitchOption, TransformerSettings},
 };
 
 pub struct MvtSinkProvider {}
@@ -120,7 +120,7 @@ struct SlicedFeature<'a> {
 }
 
 impl DataSink for MvtSink {
-    fn make_requirements(&mut self, properties: Vec<SetOptionProperty>) -> DataRequirements {
+    fn make_requirements(&mut self, properties: Vec<TransformerSwitchOption>) -> DataRequirements {
         let default_requirements = DataRequirements {
             key_value: transformer::KeyValueSpec::DotNotation,
             lod_filter: transformer::LodFilterSpec {

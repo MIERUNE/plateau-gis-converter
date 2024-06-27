@@ -65,7 +65,7 @@ impl TransformerSettings {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct SetOptionProperty {
+pub struct TransformerSwitchOption {
     pub key: String,
     pub enabled: bool,
 }

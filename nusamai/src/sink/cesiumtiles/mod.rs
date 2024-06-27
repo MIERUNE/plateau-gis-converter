@@ -34,7 +34,7 @@ use crate::{
     pipeline::{Feedback, PipelineError, Receiver, Result},
     sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo},
     transformer,
-    transformer::{SetOptionProperty, TransformerDefinition, TransformerSettings},
+    transformer::{TransformerSwitchOption, TransformerDefinition, TransformerSettings},
 };
 use utils::calculate_normal;
 
@@ -104,7 +104,7 @@ struct CesiumTilesSink {
 }
 
 impl DataSink for CesiumTilesSink {
-    fn make_requirements(&mut self, properties: Vec<SetOptionProperty>) -> DataRequirements {
+    fn make_requirements(&mut self, properties: Vec<TransformerSwitchOption>) -> DataRequirements {
         let default_requirements = DataRequirements {
             use_appearance: true,
             resolve_appearance: true,
