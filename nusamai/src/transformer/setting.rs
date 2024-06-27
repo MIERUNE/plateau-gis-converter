@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::{sink::DataRequirements, transformer};
+use crate::{pipeline::PipelineError, sink::DataRequirements, transformer};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub enum Requirements {
@@ -32,13 +32,14 @@ impl TransformerSettings {
         self.definition.push(def);
     }
 
-    pub fn update_transformer(&mut self, key: &str, enabled: bool) {
+    pub fn update_transformer(&mut self, key: &str, enabled: bool) -> Result<(), PipelineError> {
         for def in &mut self.definition {
             // Ignored if key does not exist
             if def.key == key {
                 def.enabled = enabled;
             }
         }
+        Ok(())
     }
 
     pub fn build(&self, default_requirements: DataRequirements) -> DataRequirements {

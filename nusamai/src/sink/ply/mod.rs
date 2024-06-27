@@ -19,7 +19,7 @@ use crate::{
     parameters::*,
     pipeline::{Feedback, PipelineError, Receiver},
     sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo},
-    transformer::{TransformerSwitchOption, TransformerSettings},
+    transformer::{TransformerSettings, TransformerSwitchOption},
 };
 
 const PLY_HEADER_TEMPLATE: &str = r##"ply
@@ -88,13 +88,12 @@ impl DataSink for StanfordPlySink {
         let default_requirements = DataRequirements::default();
 
         for prop in properties {
-            &self
+            let _ = &self
                 .transform_settings
                 .update_transformer(&prop.key, prop.enabled);
         }
-        let data_requirements = self.transform_settings.build(default_requirements);
 
-        data_requirements
+        self.transform_settings.build(default_requirements)
     }
 
     fn run(

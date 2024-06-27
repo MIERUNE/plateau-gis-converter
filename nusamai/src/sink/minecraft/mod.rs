@@ -124,13 +124,12 @@ impl DataSink for MinecraftSink {
         };
 
         for prop in properties {
-            &self
+            let _ = &self
                 .transform_settings
                 .update_transformer(&prop.key, prop.enabled);
         }
-        let data_requirements = self.transform_settings.build(default_requirements);
 
-        data_requirements
+        self.transform_settings.build(default_requirements)
     }
 
     fn run(&mut self, upstream: Receiver, feedback: &Feedback, _schema: &Schema) -> Result<()> {
