@@ -32,11 +32,11 @@ impl TransformerRegistry {
         self.configs.push(def);
     }
 
-    pub fn update_transformer(&mut self, key: &str, enabled: bool) -> Result<(), PipelineError> {
+    pub fn update_transformer(&mut self, key: &str, is_enabled: bool) -> Result<(), PipelineError> {
         for def in &mut self.configs {
             // Ignored if key does not exist
             if def.key == key {
-                def.is_enabled = enabled;
+                def.is_enabled = is_enabled;
             }
         }
         Ok(())

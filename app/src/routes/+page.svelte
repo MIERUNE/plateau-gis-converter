@@ -17,7 +17,7 @@
 	let rulesPath = '';
 	let outputPath = '';
 	let isRunning = false;
-	let transformerRegistry: { key: string; label: string; isEnabled: boolean }[];
+	let transformerRegistry: { key: string; label: string; is_enabled: boolean }[];
 
 	async function convertAndSave() {
 		if (!inputPaths) {
@@ -35,7 +35,7 @@
 		const transformerOptions = transformerRegistry.map((transformerConfig) => {
 			return {
 				key: transformerConfig.key,
-				isEnabled: transformerConfig.isEnabled
+				is_enabled: transformerConfig.is_enabled
 			};
 		});
 

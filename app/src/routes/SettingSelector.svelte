@@ -7,7 +7,7 @@
 	export let filetype: string;
 	export let epsg: number = 4979;
 	export let rulesPath: string;
-	export let transformerRegistry: { key: string; label: string; isEnabled: boolean }[];
+	export let transformerRegistry: { key: string; label: string; is_enabled: boolean }[];
 
 	$: epsgOptions = filetypeOptions[filetype]?.epsg || [];
 	$: disableEpsgOptions = epsgOptions.length < 2;
@@ -40,11 +40,11 @@
 		const registry = (await invoke('get_transform', { filetype })) as any;
 
 		transformerRegistry = registry.configs.map(
-			(transformerConfig: { key: string; label: string; isEnabled: boolean }) => {
+			(transformerConfig: { key: string; label: string; is_enabled: boolean }) => {
 				return {
 					key: transformerConfig.key,
 					label: transformerConfig.label,
-					isEnabled: transformerConfig.isEnabled
+					is_enabled: transformerConfig.is_enabled
 				};
 			}
 		);
@@ -98,7 +98,7 @@
 						</label>
 						<div class="relative inline-block w-10 h-6 rounded-full cursor-pointer">
 							<input
-								bind:checked={config.isEnabled}
+								bind:checked={config.is_enabled}
 								id={config.key}
 								type="checkbox"
 								class="absolute w-10 h-6 transition-colors duration-300 rounded-full appearance-none cursor-pointer peer bg-gray-200 checked:bg-accent1 peer-checked:before:bg-accent1"
