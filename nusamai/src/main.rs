@@ -132,7 +132,7 @@ fn main() -> ExitCode {
     }
 
     let mut sink = {
-        let sink_provider = args.sink.create_sink();
+        let sink_provider: &dyn DataSinkProvider = args.sink.create_sink();
         let mut sink_params = sink_provider.parameters();
         if let Err(err) = sink_params.update_values_with_str(&args.sinkopt) {
             log::error!("Error parsing sink options: {:?}", err);
@@ -157,7 +157,17 @@ fn main() -> ExitCode {
         sink_provider.create(&sink_params)
     };
 
-    let mut requirements = sink.make_requirements(vec![]);
+    // Make TransformerOptions from parameters
+    let options: Vec<transformer::TransformerOption> = args
+        .sinkopt
+        .iter()
+        .map(|(_, value)| transformer::TransformerOption {
+            key: value.clone(),
+            is_enabled: true,
+        })
+        .collect();
+
+    let mut requirements = sink.make_requirements(options);
     requirements.set_output_epsg(match args.sink.0.as_ref() {
         "kml" => 6697, // temporary hack for KML output
         _ => args.epsg,

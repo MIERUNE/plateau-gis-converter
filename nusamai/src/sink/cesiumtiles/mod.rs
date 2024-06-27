@@ -63,6 +63,16 @@ impl DataSinkProvider for CesiumTilesSinkProvider {
         );
         // TODO: min Zoom
         // TODO: max Zoom
+
+        params.define(
+            "transform".into(),
+            ParameterEntry {
+                description: "transform option".into(),
+                required: false,
+                parameter: ParameterType::String(StringParameter { value: None }),
+            },
+        );
+
         params
     }
 
@@ -79,7 +89,7 @@ impl DataSinkProvider for CesiumTilesSinkProvider {
         settings.insert(TransformerConfig {
             key: "use_max_lod".to_string(),
             label: "最高LODの使用".to_string(),
-            is_enabled: true,
+            is_enabled: false,
             requirements: vec![transformer::Requirement::UseMaxLod],
         });
 
@@ -105,7 +115,6 @@ struct CesiumTilesSink {
 impl DataSink for CesiumTilesSink {
     fn make_requirements(&mut self, properties: Vec<TransformerOption>) -> DataRequirements {
         let default_requirements = DataRequirements {
-            use_appearance: true,
             resolve_appearance: true,
             key_value: crate::transformer::KeyValueSpec::JsonifyObjects,
             ..Default::default()
