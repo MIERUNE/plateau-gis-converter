@@ -1,18 +1,20 @@
 <script lang="ts">
 	import { filetypeOptions } from '$lib/settings';
 	import { invoke } from '@tauri-apps/api/tauri';
-	import type { ParamsOption, IntegerParameter } from '$lib/parameters';
-	import { isIntegerParameter, isStringParameter, isBooleanParameter } from '$lib/parameters';
+	import type { SinkParameters } from '$lib/sinkparams';
+	import {
+		isIntegerParameter,
+		isStringParameter,
+		isBooleanParameter,
+		createRangeArray
+	} from '$lib/sinkparams';
 	import Icon from '@iconify/svelte';
 	import { dialog } from '@tauri-apps/api';
 
 	export let filetype: string;
 	export let epsg: number = 4979;
 	export let rulesPath: string;
-	export let paramsOption: ParamsOption;
-	export let isValidationError: boolean;
-
-	let optionParameter: string[] = [];
+	export let sinkParameters: SinkParameters;
 	export let transformerRegistry: { key: string; label: string; is_enabled: boolean }[];
 
 	$: epsgOptions = filetypeOptions[filetype]?.epsg || [];
@@ -25,21 +27,9 @@
 		}
 	}
 
-	// Get the parameter options for the selected filetype
-	async function setOptionParameter(filetype: string) {
-		const parameters = (await invoke('get_parameter', { filetype })) as ParamsOption;
-
-		// Exclude '@output' and 'transform' from the parameter options
-		optionParameter = Object.keys(parameters.items).filter(
-			(item) => item !== '@output' && item !== 'transform'
-		);
-
-		// Set the parameter options
-		paramsOption = parameters;
-		isValidationError = false;
+	function clearRulesPath() {
+		rulesPath = '';
 	}
-
-	$: setOptionParameter(filetype);
 
 	async function openRulesPathDialog() {
 		const res = await dialog.open({
@@ -54,32 +44,6 @@
 		rulesPath = Array.isArray(res) ? res[0] : res;
 	}
 
-	function clearRulesPath() {
-		rulesPath = '';
-	}
-
-	// Validate the input value
-	function validateInput(event: any) {
-		if (isIntegerParameter(paramsOption.items[event.target.id].parameter)) {
-			const input = event.target.value;
-			const param = paramsOption.items[event.target.id].parameter as IntegerParameter;
-			if (input) {
-				if (param.Integer.max && param.Integer.min) {
-					isValidationError = input < param.Integer.min || input > param.Integer.max;
-				} else if (param.Integer.max) {
-					isValidationError = input > param.Integer.max;
-				} else if (param.Integer.min) {
-					isValidationError = input < param.Integer.min;
-				} else {
-					isValidationError = false;
-				}
-			} else {
-				isValidationError = true;
-			}
-		} else if (isStringParameter(paramsOption.items[event.target.id].parameter)) {
-			// TODO String validate
-		}
-	}
 	async function getTransformerRegistry(filetype: string) {
 		const registry = (await invoke('get_transform', { filetype })) as any;
 
@@ -95,6 +59,21 @@
 	}
 
 	$: getTransformerRegistry(filetype);
+
+	let sinkOptionKeys: string[] = [];
+
+	// Get the parameter options for the selected filetype
+	async function setSinkParameter(filetype: string) {
+		const parameters = (await invoke('get_parameter', { filetype })) as SinkParameters;
+
+		// Exclude '@output' and 'transform' from the parameter options list
+		sinkOptionKeys = Object.keys(parameters.items).filter(
+			(item) => item !== '@output' && item !== 'transform'
+		);
+		sinkParameters = parameters;
+	}
+
+	$: setSinkParameter(filetype);
 </script>
 
 <div>
@@ -130,7 +109,7 @@
 			</select>
 		</div>
 
-		{#if (transformerRegistry && transformerRegistry.length > 0) || optionParameter.length > 0}
+		{#if (transformerRegistry && transformerRegistry.length > 0) || sinkOptionKeys.length > 0}
 			<div class="flex flex-col gap-1.5">
 				<label for="transform-select" class="font-bold">出力の詳細設定</label>
 
@@ -161,45 +140,42 @@
 					{/each}
 				{/if}
 
-				<!-- Parameter options -->
-				{#if optionParameter.length > 0}
+				<!-- Sink options -->
+				{#if sinkOptionKeys.length > 0}
 					<div class="flex flex-col gap-2">
-						{#each optionParameter as key}
-							{#if isIntegerParameter(paramsOption.items[key].parameter)}
+						{#each sinkOptionKeys as key}
+							{#if isIntegerParameter(sinkParameters.items[key].parameter)}
 								<div class="flex gap-2 w-80">
-									<label for={key} class="w-3/4">{paramsOption.items[key].gui_label}</label>
-									<input
-										type="number"
-										max={paramsOption.items[key].parameter.Integer.max ?? undefined}
-										min={paramsOption.items[key].parameter.Integer.min ?? undefined}
+									<label for={key} class="w-3/4">{sinkParameters.items[key].gui_label}</label>
+									<select
+										bind:value={sinkParameters.items[key].parameter.Integer.value}
 										id={key}
-										on:input={validateInput}
-										bind:value={paramsOption.items[key].parameter.Integer.value}
-										class="w-1/4 border-2 border-gray-300 px-2 rounded-md focus:outline-none {!paramsOption
-											.items[key].parameter.Integer.value || isValidationError
-											? 'border-red-400 focus:red-400'
-											: ''}"
-									/>
+										class="w-1/4 border-2 border-gray-300 px-2 rounded-md"
+									>
+										{#each createRangeArray(sinkParameters.items[key].parameter.Integer.min, sinkParameters.items[key].parameter.Integer.max) as value}
+											<option {value} class="text-center">{value}</option>
+										{/each}
+									</select>
 								</div>
-							{:else if isStringParameter(paramsOption.items[key].parameter)}
+							{:else if isStringParameter(sinkParameters.items[key].parameter)}
 								<!-- TODO String input -->
 								<!-- <div class="flex gap-2 w-80">
-								<label for={key} class="w-3/4">{paramsOption.items[key].gui_label}</label>
+								<label for={key} class="w-3/4">{sinkParameters.items[key].gui_label}</label>
 								<input
 									type="text"
 									id={key}
-									bind:value={paramsOption.items[key].parameter.String.value}
+									bind:value={sinkParameters.items[key].parameter.String.value}
 									class="w-1/4"
 								/>
 							</div> -->
-							{:else if isBooleanParameter(paramsOption.items[key].parameter)}
+							{:else if isBooleanParameter(sinkParameters.items[key].parameter)}
 								<!-- TODO Boolean input -->
 								<!-- <div class="flex gap-2 w-80">
-								<label for={key} class="w-3/4">{paramsOption.items[key].gui_label}</label>
+								<label for={key} class="w-3/4">{sinkParameters.items[key].gui_label}</label>
 								<input
 									type="checkbox"
 									id={key}
-									bind:checked={paramsOption.items[key].parameter.Boolean.value}
+									bind:checked={sinkParameters.items[key].parameter.Boolean.value}
 									class="w-1/4"
 								/>
 							</div> -->

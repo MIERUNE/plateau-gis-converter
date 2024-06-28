@@ -2,7 +2,7 @@
 	import { message } from '@tauri-apps/api/dialog';
 	import { invoke } from '@tauri-apps/api/tauri';
 	import { attachConsole } from 'tauri-plugin-log-api';
-	import type { ParamsOption } from '$lib/parameters';
+	import type { SinkParameters } from '$lib/sinkparams';
 
 	import Icon from '@iconify/svelte';
 	import InputSelector from './InputSelector.svelte';
@@ -17,7 +17,7 @@
 	let epsg: number;
 	let rulesPath = '';
 	let outputPath = '';
-	let paramsOption = {} as ParamsOption;
+	let sinkParameters = {} as SinkParameters;
 	let isRunning = false;
 	let isValidationError = false;
 	let isConvertButtonDisabled = true;
@@ -43,7 +43,7 @@
 				epsg,
 				rulesPath,
 				transformerOptions,
-				paramsOption
+				sinkParameters
 			});
 			isRunning = false;
 			await message(`変換が完了しました。\n'${outputPath}' に出力しました。`, { type: 'info' });
@@ -80,8 +80,7 @@
 			bind:filetype
 			bind:epsg
 			bind:rulesPath
-			bind:paramsOption
-			bind:isValidationError
+			bind:sinkParameters
 			bind:transformerRegistry
 		/>
 

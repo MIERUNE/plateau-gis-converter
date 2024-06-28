@@ -26,7 +26,7 @@ interface ParamsOptionItem {
 	gui_label?: string;
 }
 
-export interface ParamsOption {
+export interface SinkParameters {
 	items: {
 		[key: string]: ParamsOptionItem;
 	};
@@ -47,4 +47,9 @@ export function isBooleanParameter(
 	parameter: Parameter
 ): parameter is { Boolean: { value: boolean } } {
 	return (parameter as { Boolean?: unknown }).Boolean !== undefined;
+}
+
+export function createRangeArray(min: number, max: number): number[] {
+	if (min > max) throw new Error('min should be less than or equal to max');
+	return Array.from({ length: max - min + 1 }, (_, i) => min + i);
 }
