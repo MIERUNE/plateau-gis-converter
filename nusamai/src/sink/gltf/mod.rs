@@ -24,7 +24,7 @@ use crate::{
     pipeline::{Feedback, PipelineError, Receiver, Result},
     sink::{cesiumtiles::metadata, DataRequirements, DataSink, DataSinkProvider, SinkInfo},
     transformer,
-    transformer::{TransformerConfig, TransformerRegistry, TransformerOption},
+    transformer::{TransformerConfig, TransformerOption, TransformerRegistry},
 };
 
 pub struct GltfSinkProvider {}
@@ -61,13 +61,6 @@ impl DataSinkProvider for GltfSinkProvider {
             label: "テクスチャの使用".to_string(),
             is_enabled: false,
             requirements: vec![transformer::Requirement::UseAppearance],
-        });
-
-        settings.insert(TransformerConfig {
-            key: "use_max_lod".to_string(),
-            label: "最高LODの使用".to_string(),
-            is_enabled: true,
-            requirements: vec![transformer::Requirement::UseMaxLod],
         });
 
         settings
