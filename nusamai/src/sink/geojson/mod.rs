@@ -24,6 +24,7 @@ use crate::{
     pipeline::{Feedback, PipelineError, Receiver, Result},
     sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo},
     transformer,
+    transformer::{TransformerRegistry, TransformerOption},
 };
 
 pub struct GeoJsonSinkProvider {}
@@ -53,29 +54,46 @@ impl DataSinkProvider for GeoJsonSinkProvider {
         params
     }
 
+    fn available_transformer(&self) -> TransformerRegistry {
+        let settings: TransformerRegistry = TransformerRegistry::new();
+
+        settings
+    }
+
     fn create(&self, params: &Parameters) -> Box<dyn DataSink> {
         let output_path = get_parameter_value!(params, "@output", FileSystemPath);
+        let transform_settings = self.available_transformer();
 
         Box::<GeoJsonSink>::new(GeoJsonSink {
             output_path: output_path.as_ref().unwrap().into(),
+            transform_settings,
         })
     }
 }
 
 pub struct GeoJsonSink {
     output_path: PathBuf,
+    transform_settings: TransformerRegistry,
 }
 
 impl DataSink for GeoJsonSink {
-    fn make_requirements(&self) -> DataRequirements {
-        DataRequirements {
+    fn make_requirements(&mut self, properties: Vec<TransformerOption>) -> DataRequirements {
+        let default_requirements = DataRequirements {
             tree_flattening: transformer::TreeFlatteningSpec::Flatten {
                 feature: transformer::FeatureFlatteningOption::AllExceptThematicSurfaces,
                 data: transformer::DataFlatteningOption::None,
                 object: transformer::ObjectFlatteningOption::None,
             },
             ..Default::default()
+        };
+
+        for prop in properties {
+            let _ = &self
+                .transform_settings
+                .update_transformer(&prop.key, prop.is_enabled);
         }
+
+        self.transform_settings.build(default_requirements)
     }
 
     fn run(&mut self, upstream: Receiver, feedback: &Feedback, _schema: &Schema) -> Result<()> {

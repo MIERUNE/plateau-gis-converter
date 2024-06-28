@@ -1,14 +1,14 @@
 <script lang="ts">
+	import { message } from '@tauri-apps/api/dialog';
 	import { invoke } from '@tauri-apps/api/tauri';
 	import { attachConsole } from 'tauri-plugin-log-api';
-	import { message } from '@tauri-apps/api/dialog';
 	import type { ParamsOption } from '$lib/parameters';
 
 	import Icon from '@iconify/svelte';
 	import InputSelector from './InputSelector.svelte';
-	import SettingSelector from './SettingSelector.svelte';
-	import OutputSelector from './OutputSelector.svelte';
 	import LoadingAnimation from './LoadingAnimation.svelte';
+	import OutputSelector from './OutputSelector.svelte';
+	import SettingSelector from './SettingSelector.svelte';
 
 	attachConsole(); // For Tauri log in the webview console
 
@@ -23,9 +23,17 @@
 	let isConvertButtonDisabled = true;
 
 	$: isConvertButtonDisabled = !inputPaths.length || !outputPath || isRunning || isValidationError;
+	let transformerRegistry: { key: string; label: string; is_enabled: boolean }[];
 
 	async function convertAndSave() {
 		isRunning = true;
+
+		const transformerOptions = transformerRegistry.map((transformerConfig) => {
+			return {
+				key: transformerConfig.key,
+				is_enabled: transformerConfig.is_enabled
+			};
+		});
 
 		try {
 			await invoke('run_conversion', {
@@ -34,6 +42,7 @@
 				filetype,
 				epsg,
 				rulesPath,
+				transformerOptions,
 				paramsOption
 			});
 			isRunning = false;
@@ -57,7 +66,7 @@
 {/if}
 
 <div class="py-5 grid place-items-center h-screen">
-	<div class="max-w-2xl flex flex-col gap-12 pb-4">
+	<div class="max-w-2xl flex flex-col gap-12 pb-8">
 		<div class="flex items-center gap-1.5">
 			<h1 class="font-bold text-2xl">PLATEAU GIS Converter</h1>
 			<a href="/about" class="hover:text-accent1">
@@ -73,6 +82,7 @@
 			bind:rulesPath
 			bind:paramsOption
 			bind:isValidationError
+			bind:transformerRegistry
 		/>
 
 		<OutputSelector {filetype} bind:outputPath />

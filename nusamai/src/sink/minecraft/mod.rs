@@ -24,7 +24,8 @@ use crate::{
     parameters::*,
     pipeline::{Feedback, Receiver, Result},
     sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo},
-    transformer::{self, TreeFlatteningSpec},
+    transformer,
+    transformer::{TransformerOption, TransformerRegistry},
 };
 
 use block_colors::{DefaultBlockResolver, Voxel};
@@ -58,17 +59,25 @@ impl DataSinkProvider for MinecraftSinkProvider {
         params
     }
 
+    fn available_transformer(&self) -> TransformerRegistry {
+        let settings: TransformerRegistry = TransformerRegistry::new();
+
+        settings
+    }
     fn create(&self, params: &Parameters) -> Box<dyn DataSink> {
         let output_path = get_parameter_value!(params, "@output", FileSystemPath);
+        let transform_options = self.available_transformer();
 
         Box::<MinecraftSink>::new(MinecraftSink {
             output_path: output_path.as_ref().unwrap().into(),
+            transform_settings: transform_options,
         })
     }
 }
 
 pub struct MinecraftSink {
     output_path: PathBuf,
+    transform_settings: TransformerRegistry,
 }
 
 pub struct BoundingVolume {
@@ -105,15 +114,23 @@ impl Default for BoundingVolume {
 }
 
 impl DataSink for MinecraftSink {
-    fn make_requirements(&self) -> DataRequirements {
-        DataRequirements {
-            tree_flattening: TreeFlatteningSpec::Flatten {
-                feature: transformer::FeatureFlatteningOption::All,
+    fn make_requirements(&mut self, properties: Vec<TransformerOption>) -> DataRequirements {
+        let default_requirements = DataRequirements {
+            tree_flattening: transformer::TreeFlatteningSpec::Flatten {
+                feature: transformer::FeatureFlatteningOption::AllExceptThematicSurfaces,
                 data: transformer::DataFlatteningOption::None,
                 object: transformer::ObjectFlatteningOption::None,
             },
             ..Default::default()
+        };
+
+        for prop in properties {
+            let _ = &self
+                .transform_settings
+                .update_transformer(&prop.key, prop.is_enabled);
         }
+
+        self.transform_settings.build(default_requirements)
     }
 
     fn run(&mut self, upstream: Receiver, feedback: &Feedback, _schema: &Schema) -> Result<()> {

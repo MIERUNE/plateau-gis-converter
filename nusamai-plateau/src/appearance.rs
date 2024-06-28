@@ -2,9 +2,9 @@
 
 use std::hash::{Hash, Hasher};
 
+use flatgeom::LineString2;
 use hashbrown::HashMap;
 use nusamai_citygml::{appearance::TextureAssociation, Color, LocalId, SurfaceSpan};
-use flatgeom::LineString2;
 use url::Url;
 
 use crate::models::appearance::{self, ParameterizedTexture, SurfaceDataProperty, X3DMaterial};

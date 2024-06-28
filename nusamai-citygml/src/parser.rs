@@ -253,7 +253,10 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
 
     pub fn skip_current_element(&mut self) -> Result<(), ParseError> {
         let Some(start) = &self.state.current_start else {
-            panic!("skip_current_element() must be called immediately after encountering a new starting tag.");
+            panic!(
+                "skip_current_element() must be called immediately after encountering a new \
+                 starting tag."
+            );
         };
         self.reader
             .read_to_end_into(start.name(), &mut self.state.buf1)?;

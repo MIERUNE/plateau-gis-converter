@@ -19,6 +19,7 @@ use crate::{
     parameters::*,
     pipeline::{Feedback, PipelineError, Receiver},
     sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo},
+    transformer::{TransformerRegistry, TransformerOption},
 };
 
 const PLY_HEADER_TEMPLATE: &str = r##"ply
@@ -61,24 +62,39 @@ impl DataSinkProvider for StanfordPlySinkProvider {
         params
     }
 
+    fn available_transformer(&self) -> TransformerRegistry {
+        let settings: TransformerRegistry = TransformerRegistry::new();
+
+        settings
+    }
+
     fn create(&self, params: &Parameters) -> Box<dyn DataSink> {
         let output_path = get_parameter_value!(params, "@output", FileSystemPath);
+        let transform_settings = self.available_transformer();
 
         Box::<StanfordPlySink>::new(StanfordPlySink {
             output_path: output_path.as_ref().unwrap().into(),
+            transform_settings,
         })
     }
 }
 
 pub struct StanfordPlySink {
     output_path: PathBuf,
+    transform_settings: TransformerRegistry,
 }
 
 impl DataSink for StanfordPlySink {
-    fn make_requirements(&self) -> DataRequirements {
-        DataRequirements {
-            ..Default::default()
+    fn make_requirements(&mut self, properties: Vec<TransformerOption>) -> DataRequirements {
+        let default_requirements = DataRequirements::default();
+
+        for prop in properties {
+            let _ = &self
+                .transform_settings
+                .update_transformer(&prop.key, prop.is_enabled);
         }
+
+        self.transform_settings.build(default_requirements)
     }
 
     fn run(

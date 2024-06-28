@@ -174,6 +174,13 @@ npx tauri build
 
 ### Test
 
+- Test & Lint
+
+```bash
+cargo clippy --all-targets --all-features
+cargo test --workspace --exclude app --all-features
+```
+
 #### Coverage
 
 Codecov: [https://app.codecov.io/gh/MIERUNE/plateau-gis-converter](https://app.codecov.io/gh/MIERUNE/plateau-gis-converter)

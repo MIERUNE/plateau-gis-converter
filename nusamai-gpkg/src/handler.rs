@@ -142,9 +142,12 @@ impl GpkgHandler {
     pub async fn gpkg_geometry_columns(
         &self,
     ) -> Result<Vec<(String, String, String, i32, i8, i8)>, GpkgError> {
-        let result = sqlx::query("SELECT table_name, column_name, geometry_type_name, srs_id, z, m FROM gpkg_geometry_columns;")
-            .fetch_all(&self.pool)
-            .await?;
+        let result = sqlx::query(
+            "SELECT table_name, column_name, geometry_type_name, srs_id, z, m FROM \
+             gpkg_geometry_columns;",
+        )
+        .fetch_all(&self.pool)
+        .await?;
 
         let rows = result
             .iter()
@@ -213,7 +216,8 @@ impl<'c> GpkgTransaction<'c> {
 
         // Add the table to `gpkg_contents`
         sqlx::query(
-            "INSERT INTO gpkg_contents (table_name, data_type, identifier, srs_id) VALUES (?, ?, ?, ?);",
+            "INSERT INTO gpkg_contents (table_name, data_type, identifier, srs_id) VALUES (?, ?, \
+             ?, ?);",
         )
         .bind(table_info.name.as_str())
         .bind(if table_info.has_geometry {
@@ -229,13 +233,17 @@ impl<'c> GpkgTransaction<'c> {
         // Add the table to `gpkg_geometry_columns`
         if table_info.has_geometry {
             sqlx::query(
-                "INSERT INTO gpkg_geometry_columns (table_name, column_name, geometry_type_name, srs_id, z, m) VALUES (?, ?, ?, ?, ?, ?);"
-            ).bind(table_info.name.as_str())
+                "INSERT INTO gpkg_geometry_columns (table_name, column_name, geometry_type_name, \
+                 srs_id, z, m) VALUES (?, ?, ?, ?, ?, ?);",
+            )
+            .bind(table_info.name.as_str())
             .bind("geometry")
             .bind("MULTIPOLYGON") // Fixed for now - TODO: Change according to the data
             .bind(srs_id)
             .bind(1)
-            .bind(0).execute(&mut *executor).await?;
+            .bind(0)
+            .execute(&mut *executor)
+            .await?;
         }
 
         // TODO: add MIME type to `gpkg_data_columns`
@@ -319,13 +327,15 @@ impl<'c> GpkgTransaction<'c> {
         (min_x, min_y, max_x, max_y): (f64, f64, f64, f64),
     ) -> Result<(), GpkgError> {
         let executor = self.tx.acquire().await.unwrap();
-        let query = sqlx::query("UPDATE gpkg_contents SET min_x = ?, min_y = ?, max_x = ?, max_y = ? WHERE table_name = ?;"
-)
-            .bind(min_x)
-            .bind(min_y)
-            .bind(max_x)
-            .bind(max_y)
-            .bind(table_name);
+        let query = sqlx::query(
+            "UPDATE gpkg_contents SET min_x = ?, min_y = ?, max_x = ?, max_y = ? WHERE table_name \
+             = ?;",
+        )
+        .bind(min_x)
+        .bind(min_y)
+        .bind(max_x)
+        .bind(max_y)
+        .bind(table_name);
         query.execute(&mut *executor).await?;
         Ok(())
     }

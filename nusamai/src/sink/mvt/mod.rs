@@ -29,6 +29,7 @@ use crate::{
     pipeline::{Feedback, PipelineError, Receiver, Result},
     sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo},
     transformer,
+    transformer::{TransformerOption, TransformerRegistry},
 };
 
 pub struct MvtSinkProvider {}
@@ -84,13 +85,21 @@ impl DataSinkProvider for MvtSinkProvider {
         params
     }
 
+    fn available_transformer(&self) -> TransformerRegistry {
+        let settings: TransformerRegistry = TransformerRegistry::new();
+
+        settings
+    }
+
     fn create(&self, params: &Parameters) -> Box<dyn DataSink> {
         let output_path = get_parameter_value!(params, "@output", FileSystemPath);
+        let transform_options = self.available_transformer();
         let min_z = get_parameter_value!(params, "min_z", Integer).unwrap() as u8;
         let max_z = get_parameter_value!(params, "max_z", Integer).unwrap() as u8;
 
         Box::<MvtSink>::new(MvtSink {
             output_path: output_path.as_ref().unwrap().into(),
+            transform_settings: transform_options,
             mvt_options: MvtParams { min_z, max_z },
         })
     }
@@ -98,6 +107,7 @@ impl DataSinkProvider for MvtSinkProvider {
 
 struct MvtSink {
     output_path: PathBuf,
+    transform_settings: TransformerRegistry,
     mvt_options: MvtParams,
 }
 
@@ -113,8 +123,8 @@ struct SlicedFeature<'a> {
 }
 
 impl DataSink for MvtSink {
-    fn make_requirements(&self) -> DataRequirements {
-        DataRequirements {
+    fn make_requirements(&mut self, properties: Vec<TransformerOption>) -> DataRequirements {
+        let default_requirements = DataRequirements {
             key_value: transformer::KeyValueSpec::DotNotation,
             lod_filter: transformer::LodFilterSpec {
                 mode: transformer::LodFilterMode::Lowest,
@@ -122,7 +132,15 @@ impl DataSink for MvtSink {
             },
             geom_stats: transformer::GeometryStatsSpec::MinMaxHeights,
             ..Default::default()
+        };
+
+        for prop in properties {
+            let _ = &self
+                .transform_settings
+                .update_transformer(&prop.key, prop.is_enabled);
         }
+
+        self.transform_settings.build(default_requirements)
     }
 
     fn run(&mut self, upstream: Receiver, feedback: &Feedback, _schema: &Schema) -> Result<()> {
@@ -321,7 +339,10 @@ fn tile_writing_stage(
                 if detail != min_detail && compressed_size > 500_000 {
                     // If the tile is too large, try a lower detail level
                     let extent = 1 << detail;
-                    feedback.info(format!("Tile size is too large: {zoom}/{x}/{y} (extent: {extent}), trying a lower detail level."));
+                    feedback.info(format!(
+                        "Tile size is too large: {zoom}/{x}/{y} (extent: {extent}), trying a \
+                         lower detail level."
+                    ));
                     continue;
                 }
 

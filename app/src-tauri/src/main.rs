@@ -21,6 +21,7 @@ use nusamai::{
     source::{citygml::CityGmlSourceProvider, DataSourceProvider},
     transformer::{
         self, MappingRules, MultiThreadTransformer, NusamaiTransformBuilder, TransformBuilder,
+        TransformerOption, TransformerRegistry,
     },
 };
 use nusamai_plateau::models::TopLevelCityObject;
@@ -57,7 +58,8 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             run_conversion,
             cancel_conversion,
-            get_parameter
+            get_parameter,
+            get_transform
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
@@ -126,12 +128,14 @@ fn select_sink_provider(filetype: &str) -> Option<Box<dyn DataSinkProvider>> {
 }
 
 #[tauri::command(async)]
+#[allow(clippy::too_many_arguments)]
 fn run_conversion(
     input_paths: Vec<String>,
     output_path: String,
     filetype: String,
     epsg: u16,
     rules_path: String,
+    transformer_options: Vec<TransformerOption>,
     params_option: Parameters,
     tasks_state: tauri::State<ConversionTasksState>,
     window: tauri::Window,
@@ -169,7 +173,7 @@ fn run_conversion(
 
     log::info!("Running pipeline with input: {:?}", input_paths);
 
-    let sink = {
+    let mut sink = {
         let sink_provider = select_sink_provider(&filetype).ok_or_else(|| {
             let msg = format!("Invalid sink type: {}", filetype);
             log::error!("{}", msg);
@@ -190,7 +194,7 @@ fn run_conversion(
         sink_provider.create(&sink_params)
     };
 
-    let mut requirements = sink.make_requirements();
+    let mut requirements = sink.make_requirements(transformer_options);
     requirements.set_output_epsg(epsg);
 
     let source = {
@@ -296,6 +300,20 @@ fn cancel_conversion(tasks_state: tauri::State<ConversionTasksState>) {
     tasks_state.canceller.lock().unwrap().cancel();
 }
 
+/// Get the transform options for a given sink type
+#[tauri::command]
+fn get_transform(filetype: String) -> Result<TransformerRegistry, Error> {
+    let sink_provider = select_sink_provider(&filetype).ok_or_else(|| {
+        let msg = format!("Invalid sink type: {}", filetype);
+        log::error!("{}", msg);
+        Error::InvalidSetting(msg)
+    })?;
+
+    let transformer_registry = sink_provider.available_transformer();
+
+    Ok(transformer_registry)
+}
+
 /// Get the configurable parameters of the sink
 #[tauri::command]
 fn get_parameter(filetype: String) -> Result<Parameters, Error> {
@@ -304,7 +322,6 @@ fn get_parameter(filetype: String) -> Result<Parameters, Error> {
         log::error!("{}", msg);
         Error::InvalidSetting(msg)
     })?;
-
     let sink_params = sink_provider.parameters();
 
     Ok(sink_params)
