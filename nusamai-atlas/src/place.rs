@@ -25,10 +25,10 @@ impl Default for TexturePlacerConfig {
 pub struct PlacedTextureInfo {
     pub id: String,
     pub atlas_id: String,
-    pub origin: (u32, u32),
+    pub origin: (u32, u32), // 左上が原点
     pub width: u32,
     pub height: u32,
-    // UV coordinates on atlas
+    // UV coordinates on atlas (左下が原点)
     pub placed_uv_coords: Vec<(f64, f64)>,
 }
 
@@ -304,18 +304,22 @@ impl TexturePlacer for GuillotineTexturePlacer {
         let width = scaled_width + self.config.padding;
         let height = scaled_height + self.config.padding;
 
-        let placed_uv_coords = texture
-            .cropped_uv_coords
-            .iter()
-            .map(|(u, v)| {
-                (
-                    u * scaled_width as f64 / self.config.width as f64,
-                    v * scaled_height as f64 / self.config.height as f64,
-                )
-            })
-            .collect::<Vec<(f64, f64)>>();
-
         if let Some(rect) = self.find_best_rect(width, height) {
+            let placed_uv_coords = texture
+                .cropped_uv_coords
+                .iter()
+                .map(|(u, v)| {
+                    (
+                        (rect.x as f64 + self.config.padding as f64 + u * scaled_width as f64)
+                            / self.config.width as f64,
+                        1.0 - ((rect.y as f64
+                            + self.config.padding as f64
+                            + v * scaled_height as f64)
+                            / self.config.height as f64),
+                    )
+                })
+                .collect::<Vec<(f64, f64)>>();
+
             let placed = PlacedTextureInfo {
                 id: id.to_string(),
                 atlas_id: parent_atlas_id.to_string(),

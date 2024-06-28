@@ -78,12 +78,12 @@ impl Drop for TextureCache {
 
 pub struct CroppedTexture {
     pub image_path: PathBuf,
+    // The origin of the cropped image in the original image (top-left corner).
     pub origin: (u32, u32),
     pub width: u32,
     pub height: u32,
     pub downsample_factor: DownsampleFactor,
-    // PLATEAU textures contain multiple surface/building textures in a single image,
-    // so it is necessary to specify UV coordinates for each polygon and cut them out.
+    // UV coordinates for the cropped texture (bottom-left origin).
     pub cropped_uv_coords: Vec<(f64, f64)>,
 }
 
@@ -106,16 +106,21 @@ impl CroppedTexture {
         let (width, height) = image.dimensions();
 
         let left = (min_x * width as f64) as u32;
-        let top = (min_y * height as f64) as u32;
+        let top = ((1.0 - max_y) * height as f64) as u32; // 修正: Y座標を反転
         let right = (max_x * width as f64) as u32;
-        let bottom = (max_y * height as f64) as u32;
+        let bottom = ((1.0 - min_y) * height as f64) as u32; // 修正: Y座標を反転
 
         let cropped_width = right - left;
         let cropped_height = bottom - top;
 
         let dest_uv_coords = uv_coords
             .iter()
-            .map(|(u, v)| ((u - min_x) / (max_x - min_x), (v - min_y) / (max_y - min_y)))
+            .map(|(u, v)| {
+                (
+                    (u - min_x) / (max_x - min_x),
+                    (v - min_y) / (max_y - min_y), // 修正: Y座標の変換を維持
+                )
+            })
             .collect::<Vec<(f64, f64)>>();
 
         CroppedTexture {
@@ -124,7 +129,7 @@ impl CroppedTexture {
             width: cropped_width,
             height: cropped_height,
             downsample_factor,
-            cropped_uv_coords: dest_uv_coords.to_vec(),
+            cropped_uv_coords: dest_uv_coords,
         }
     }
 
