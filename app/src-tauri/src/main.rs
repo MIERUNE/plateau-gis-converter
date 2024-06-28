@@ -143,9 +143,6 @@ fn run_conversion(
     // Request cancellation of previous task if still running
     tasks_state.canceller.lock().unwrap().cancel();
 
-    println!("====set_parameter====");
-    println!("{:?}", params_option);
-
     // Check the existence of the input paths
     for path in input_paths.iter() {
         if !PathBuf::from_str(path).unwrap().exists() {

@@ -112,55 +112,6 @@
 			</select>
 		</div>
 
-		{#if optionParameter.length > 0}
-			<div class="flex flex-col gap-1.5">
-				<label for="epsg-select" class="font-bold">出力オプション</label>
-				<div class="flex flex-col gap-2">
-					{#each optionParameter as key}
-						{#if isIntegerParameter(paramsOption.items[key].parameter)}
-							<div class="flex gap-2 w-80">
-								<label for={key} class="w-3/4">{paramsOption.items[key].gui_label}</label>
-								<input
-									type="number"
-									max={paramsOption.items[key].parameter.Integer.max ?? undefined}
-									min={paramsOption.items[key].parameter.Integer.min ?? undefined}
-									id={key}
-									on:input={validateInput}
-									bind:value={paramsOption.items[key].parameter.Integer.value}
-									class="w-1/4 border-2 border-gray-300 px-2 rounded-md focus:outline-none {!paramsOption
-										.items[key].parameter.Integer.value || isValidationError
-										? 'border-red-400 focus:red-400'
-										: ''}"
-								/>
-							</div>
-						{:else if isStringParameter(paramsOption.items[key].parameter)}
-							<!-- TODO String input -->
-							<!-- <div class="flex gap-2 w-80">
-								<label for={key} class="w-3/4">{paramsOption.items[key].gui_label}</label>
-								<input
-									type="text"
-									id={key}
-									bind:value={paramsOption.items[key].parameter.String.value}
-									class="w-1/4"
-								/>
-							</div> -->
-						{:else if isBooleanParameter(paramsOption.items[key].parameter)}
-							<!-- TODO Boolean input -->
-							<!-- <div class="flex gap-2 w-80">
-								<label for={key} class="w-3/4">{paramsOption.items[key].gui_label}</label>
-								<input
-									type="checkbox"
-									id={key}
-									bind:checked={paramsOption.items[key].parameter.Boolean.value}
-									class="w-1/4"
-								/>
-							</div> -->
-						{/if}
-					{/each}
-				</div>
-			</div>
-		{/if}
-
 		<div class="flex flex-col gap-1.5">
 			<label for="epsg-select" class="font-bold">座標参照系</label>
 			<select
@@ -176,35 +127,84 @@
 				{/each}
 			</select>
 		</div>
-		{#if transformerRegistry && transformerRegistry.length > 0}
+
+		{#if (transformerRegistry && transformerRegistry.length > 0) || optionParameter.length > 0}
 			<div class="flex flex-col gap-1.5">
 				<label for="transform-select" class="font-bold">出力の詳細設定</label>
-				{#each transformerRegistry as config}
-					<div class="inline-flex items-center gap-6">
-						<label
-							for={config.key}
-							class="mt-px mb-0 ml-3 font-light text-gray-700 cursor-pointer select-none text-sm w-52"
-						>
-							{config.label}
-						</label>
-						<div class="relative inline-block w-10 h-6 rounded-full cursor-pointer">
-							<input
-								bind:checked={config.is_enabled}
-								id={config.key}
-								type="checkbox"
-								class="absolute w-10 h-6 transition-colors duration-300 rounded-full appearance-none cursor-pointer peer bg-gray-200 checked:bg-accent1 peer-checked:before:bg-accent1"
-							/>
-							<label
-								for={config.key}
-								class="before:content[''] absolute top-2/4 -left-1 h-6 w-6 -translate-y-2/4 cursor-pointer rounded-full border border-blue-gray-100 bg-white shadow-md transition-all duration-300 peer-checked:translate-x-full"
-							>
-								<div
-									class="inline-block p-5 rounded-full top-2/4 left-2/4 -translate-x-2/4 -translate-y-2/4"
-								></div>
+
+				<!-- Transformer options -->
+				{#if transformerRegistry && transformerRegistry.length > 0}
+					{#each transformerRegistry as config}
+						<div class="flex gap-2 w-80">
+							<label for={config.key} class="w-3/4">
+								{config.label}
 							</label>
+							<div class="relative inline-block w-10 h-6 rounded-full cursor-pointer">
+								<input
+									bind:checked={config.is_enabled}
+									id={config.key}
+									type="checkbox"
+									class="absolute w-10 h-6 transition-colors duration-300 rounded-full appearance-none cursor-pointer peer bg-gray-200 checked:bg-accent1 peer-checked:before:bg-accent1"
+								/>
+								<label
+									for={config.key}
+									class="before:content[''] absolute top-2/4 -left-1 h-6 w-6 -translate-y-2/4 cursor-pointer rounded-full border border-blue-gray-100 bg-white shadow-md transition-all duration-300 peer-checked:translate-x-full"
+								>
+									<div
+										class="inline-block p-5 rounded-full top-2/4 left-2/4 -translate-x-2/4 -translate-y-2/4"
+									></div>
+								</label>
+							</div>
 						</div>
+					{/each}
+				{/if}
+
+				<!-- Parameter options -->
+				{#if optionParameter.length > 0}
+					<div class="flex flex-col gap-2">
+						{#each optionParameter as key}
+							{#if isIntegerParameter(paramsOption.items[key].parameter)}
+								<div class="flex gap-2 w-80">
+									<label for={key} class="w-3/4">{paramsOption.items[key].gui_label}</label>
+									<input
+										type="number"
+										max={paramsOption.items[key].parameter.Integer.max ?? undefined}
+										min={paramsOption.items[key].parameter.Integer.min ?? undefined}
+										id={key}
+										on:input={validateInput}
+										bind:value={paramsOption.items[key].parameter.Integer.value}
+										class="w-1/4 border-2 border-gray-300 px-2 rounded-md focus:outline-none {!paramsOption
+											.items[key].parameter.Integer.value || isValidationError
+											? 'border-red-400 focus:red-400'
+											: ''}"
+									/>
+								</div>
+							{:else if isStringParameter(paramsOption.items[key].parameter)}
+								<!-- TODO String input -->
+								<!-- <div class="flex gap-2 w-80">
+								<label for={key} class="w-3/4">{paramsOption.items[key].gui_label}</label>
+								<input
+									type="text"
+									id={key}
+									bind:value={paramsOption.items[key].parameter.String.value}
+									class="w-1/4"
+								/>
+							</div> -->
+							{:else if isBooleanParameter(paramsOption.items[key].parameter)}
+								<!-- TODO Boolean input -->
+								<!-- <div class="flex gap-2 w-80">
+								<label for={key} class="w-3/4">{paramsOption.items[key].gui_label}</label>
+								<input
+									type="checkbox"
+									id={key}
+									bind:checked={paramsOption.items[key].parameter.Boolean.value}
+									class="w-1/4"
+								/>
+							</div> -->
+							{/if}
+						{/each}
 					</div>
-				{/each}
+				{/if}
 			</div>
 		{/if}
 

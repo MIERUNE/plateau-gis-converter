@@ -71,6 +71,7 @@ impl DataSinkProvider for CesiumTilesSinkProvider {
                 description: "transform option".into(),
                 required: false,
                 parameter: ParameterType::String(StringParameter { value: None }),
+                gui_label: None,
             },
         );
 
