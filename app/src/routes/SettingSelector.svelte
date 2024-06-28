@@ -29,8 +29,10 @@
 	async function setOptionParameter(filetype: string) {
 		const parameters = (await invoke('get_parameter', { filetype })) as ParamsOption;
 
-		// Exclude '@output'
-		optionParameter = Object.keys(parameters.items).filter((item) => item !== '@output');
+		// Exclude '@output' and 'transform' from the parameter options
+		optionParameter = Object.keys(parameters.items).filter(
+			(item) => item !== '@output' && item !== 'transform'
+		);
 
 		// Set the parameter options
 		paramsOption = parameters;
