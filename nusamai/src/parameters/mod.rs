@@ -334,7 +334,7 @@ mod tests {
                 description: "test2".into(),
                 required: false,
                 parameter: ParameterType::String(StringParameter { value: None }),
-                label: None,
+                label: Some("test2".into()),
             },
         );
 
@@ -364,7 +364,7 @@ mod tests {
                 description: "test2".into(),
                 required: false,
                 parameter: ParameterType::Boolean(BooleanParameter { value: None }),
-                label: None,
+                label: Some("test2".into()),
             },
         );
 
@@ -411,7 +411,7 @@ mod tests {
                     min: Some(4),
                     max: Some(10),
                 }),
-                label: None,
+                label: Some("test2".into()),
             },
         );
 
