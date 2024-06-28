@@ -20,7 +20,7 @@ use nusamai_projection::crs;
 use crate::{
     parameters::Parameters,
     pipeline::{Feedback, PipelineError, Receiver},
-    transformer,
+    transformer::{self, TransformerOption, TransformerRegistry},
 };
 
 pub struct SinkInfo {
@@ -35,6 +35,9 @@ pub trait DataSinkProvider: Sync {
     /// Gets the configurable parameters of the sink.
     fn parameters(&self) -> Parameters;
 
+    /// Gets the transform options of the sink.
+    fn available_transformer(&self) -> TransformerRegistry;
+
     /// Creates a sink instance.
     fn create(&self, config: &Parameters) -> Box<dyn DataSink>;
 }
@@ -48,8 +51,8 @@ pub trait DataSink: Send {
         schema: &Schema,
     ) -> Result<(), PipelineError>;
 
-    /// Make a transform requirements
-    fn make_requirements(&self) -> DataRequirements;
+    /// Make a transform requirements with options
+    fn make_requirements(&mut self, property: Vec<TransformerOption>) -> DataRequirements;
 }
 
 pub struct DataRequirements {
@@ -86,5 +89,17 @@ impl Default for DataRequirements {
 impl DataRequirements {
     pub fn set_output_epsg(&mut self, epsg: crs::EpsgCode) {
         self.output_epsg = epsg;
+    }
+
+    pub fn set_appearance(&mut self, use_appearance: bool) {
+        self.use_appearance = use_appearance;
+    }
+
+    pub fn set_resolve_appearance(&mut self, resolve_appearance: bool) {
+        self.resolve_appearance = resolve_appearance;
+    }
+
+    pub fn set_lod_filter(&mut self, lod_filter: transformer::LodFilterSpec) {
+        self.lod_filter = lod_filter;
     }
 }
