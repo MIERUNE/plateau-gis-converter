@@ -28,6 +28,7 @@ use crate::{
     pipeline::{Feedback, PipelineError, Receiver, Result},
     sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo},
     transformer,
+    transformer::{TransformerRegistry, TransformerOption},
 };
 
 pub struct ShapefileSinkProvider {}
@@ -56,22 +57,31 @@ impl DataSinkProvider for ShapefileSinkProvider {
         params
     }
 
+    fn available_transformer(&self) -> TransformerRegistry {
+        let settings: TransformerRegistry = TransformerRegistry::new();
+
+        settings
+    }
+
     fn create(&self, params: &Parameters) -> Box<dyn DataSink> {
         let output_path = get_parameter_value!(params, "@output", FileSystemPath);
+        let transform_settings = self.available_transformer();
 
         Box::<ShapefileSink>::new(ShapefileSink {
             output_path: output_path.as_ref().unwrap().into(),
+            transform_settings,
         })
     }
 }
 
 pub struct ShapefileSink {
     output_path: PathBuf,
+    transform_settings: TransformerRegistry,
 }
 
 impl DataSink for ShapefileSink {
-    fn make_requirements(&self) -> DataRequirements {
-        DataRequirements {
+    fn make_requirements(&mut self, properties: Vec<TransformerOption>) -> DataRequirements {
+        let default_requirements = DataRequirements {
             shorten_names_for_shapefile: true,
             tree_flattening: transformer::TreeFlatteningSpec::Flatten {
                 feature: transformer::FeatureFlatteningOption::AllExceptThematicSurfaces,
@@ -80,7 +90,15 @@ impl DataSink for ShapefileSink {
             },
 
             ..Default::default()
+        };
+
+        for prop in properties {
+            let _ = &self
+                .transform_settings
+                .update_transformer(&prop.key, prop.is_enabled);
         }
+
+        self.transform_settings.build(default_requirements)
     }
 
     fn run(&mut self, upstream: Receiver, feedback: &Feedback, schema: &Schema) -> Result<()> {

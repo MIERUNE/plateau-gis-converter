@@ -23,6 +23,7 @@ use crate::{
     parameters::*,
     pipeline::{Feedback, PipelineError, Receiver, Result},
     sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo},
+    transformer::{TransformerOption, TransformerRegistry},
 };
 
 pub struct KmlSinkProvider {}
@@ -51,24 +52,39 @@ impl DataSinkProvider for KmlSinkProvider {
         params
     }
 
+    fn available_transformer(&self) -> TransformerRegistry {
+        let settings: TransformerRegistry = TransformerRegistry::new();
+
+        settings
+    }
+
     fn create(&self, params: &Parameters) -> Box<dyn DataSink> {
         let output_path = get_parameter_value!(params, "@output", FileSystemPath);
+        let transform_settings = self.available_transformer();
 
         Box::<KmlSink>::new(KmlSink {
             output_path: output_path.as_ref().unwrap().into(),
+            transform_settings,
         })
     }
 }
 
 pub struct KmlSink {
     output_path: PathBuf,
+    transform_settings: TransformerRegistry,
 }
 
 impl DataSink for KmlSink {
-    fn make_requirements(&self) -> DataRequirements {
-        DataRequirements {
-            ..Default::default()
+    fn make_requirements(&mut self, properties: Vec<TransformerOption>) -> DataRequirements {
+        let default_requirements = DataRequirements::default();
+
+        for prop in properties {
+            let _ = &self
+                .transform_settings
+                .update_transformer(&prop.key, prop.is_enabled);
         }
+
+        self.transform_settings.build(default_requirements)
     }
 
     fn run(&mut self, upstream: Receiver, feedback: &Feedback, _schema: &Schema) -> Result<()> {

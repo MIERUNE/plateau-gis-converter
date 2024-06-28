@@ -33,6 +33,8 @@ use crate::{
     parameters::*,
     pipeline::{Feedback, PipelineError, Receiver, Result},
     sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo},
+    transformer,
+    transformer::{TransformerConfig, TransformerOption, TransformerRegistry},
 };
 use utils::calculate_normal;
 
@@ -61,30 +63,63 @@ impl DataSinkProvider for CesiumTilesSinkProvider {
         );
         // TODO: min Zoom
         // TODO: max Zoom
+
+        params.define(
+            "transform".into(),
+            ParameterEntry {
+                description: "transform option".into(),
+                required: false,
+                parameter: ParameterType::String(StringParameter { value: None }),
+            },
+        );
+
         params
+    }
+
+    fn available_transformer(&self) -> TransformerRegistry {
+        let mut settings: TransformerRegistry = TransformerRegistry::new();
+
+        settings.insert(TransformerConfig {
+            key: "use_texture".to_string(),
+            label: "テクスチャの使用".to_string(),
+            is_enabled: false,
+            requirements: vec![transformer::Requirement::UseAppearance],
+        });
+
+        settings
     }
 
     fn create(&self, params: &Parameters) -> Box<dyn DataSink> {
         let output_path = get_parameter_value!(params, "@output", FileSystemPath);
+        let transformer_registry = self.available_transformer();
 
         Box::<CesiumTilesSink>::new(CesiumTilesSink {
             output_path: output_path.as_ref().unwrap().into(),
+            transformer_registry,
         })
     }
 }
 
 struct CesiumTilesSink {
     output_path: PathBuf,
+    transformer_registry: TransformerRegistry,
 }
 
 impl DataSink for CesiumTilesSink {
-    fn make_requirements(&self) -> DataRequirements {
-        DataRequirements {
-            // use_appearance: true,
+    fn make_requirements(&mut self, properties: Vec<TransformerOption>) -> DataRequirements {
+        let default_requirements = DataRequirements {
             resolve_appearance: true,
             key_value: crate::transformer::KeyValueSpec::JsonifyObjects,
             ..Default::default()
+        };
+
+        for prop in properties {
+            let _ = &self
+                .transformer_registry
+                .update_transformer(&prop.key, prop.is_enabled);
         }
+
+        self.transformer_registry.build(default_requirements)
     }
 
     fn run(&mut self, upstream: Receiver, feedback: &Feedback, schema: &Schema) -> Result<()> {
