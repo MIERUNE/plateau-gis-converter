@@ -3,14 +3,18 @@
 	import Icon from '@iconify/svelte';
 	import { filetypeOptions } from '$lib/settings';
 	import { invoke } from '@tauri-apps/api/tauri';
-	import type { ParamsOption } from '$lib/parameters';
+	import type { ParamsOption, IntegerParameter } from '$lib/parameters';
+	import { isIntegerParameter, isStringParameter, isBooleanParameter } from '$lib/parameters';
+
+	// TODO debug
+	import { info, warn, trace, error, attachConsole } from 'tauri-plugin-log-api';
 
 	export let filetype: string;
 	export let epsg: number = 4979;
 	export let rulesPath: string;
 	export let paramsOption: ParamsOption;
+	export let isValidationError: boolean;
 
-	// let debug: any; // NOTE debug
 	let optionParameter: string[] = [];
 
 	$: epsgOptions = filetypeOptions[filetype]?.epsg || [];
@@ -29,8 +33,10 @@
 
 		// Exclude '@output'
 		optionParameter = Object.keys(parameters.items).filter((item) => item !== '@output');
+
+		// Set the parameter options
 		paramsOption = parameters;
-		// debug = parameters; // NOTE debug
+		isValidationError = false;
 	}
 
 	$: setOptionParameter(filetype);
@@ -52,47 +58,30 @@
 		rulesPath = '';
 	}
 
-	// Check the parameter type
-	function isIntegerParameter(
-		parameter: any
-	): parameter is { Integer: { value: number; min: number; max: number } } {
-		return (parameter as { Integer?: unknown }).Integer !== undefined;
-	}
-	function isStringParameter(parameter: any): parameter is { String: { value: string } } {
-		return (parameter as { String?: unknown }).String !== undefined;
-	}
-	function isBooleanParameter(parameter: any): parameter is { Boolean: { value: boolean } } {
-		return (parameter as { Boolean?: unknown }).Boolean !== undefined;
-	}
-
 	// Validate the input value
 	function validateInput(event: any) {
-		const input = event.target.value;
-		const validInput = input.replace(/[^0-9]/g, '');
-		const param = paramsOption.items[event.target.id].parameter.Integer;
-
-		if (validInput === '') {
-			paramsOption.items[event.target.id].parameter.Integer.value = validInput;
-			return;
-		}
-
-		const numValue = Number(validInput);
-		if (
-			(param.min === undefined || numValue >= param.min) &&
-			(param.max === undefined || numValue <= param.max)
-		) {
-			paramsOption.items[event.target.id].parameter.Integer.value = validInput;
-		} else {
-			event.target.value = paramsOption.items[event.target.id].parameter.Integer.value;
+		if (isIntegerParameter(paramsOption.items[event.target.id].parameter)) {
+			warn(event.target.value);
+			const input = event.target.value;
+			const param = paramsOption.items[event.target.id].parameter as IntegerParameter;
+			if (input) {
+				if (param.Integer.max && param.Integer.min) {
+					isValidationError = input < param.Integer.min || input > param.Integer.max;
+				} else if (param.Integer.max) {
+					isValidationError = input > param.Integer.max;
+				} else if (param.Integer.min) {
+					isValidationError = input < param.Integer.min;
+				} else {
+					isValidationError = false;
+				}
+			} else {
+				isValidationError = true;
+			}
+		} else if (isStringParameter(paramsOption.items[event.target.id].parameter)) {
+			// TODO String validate
 		}
 	}
 </script>
-
-<!--- // NOTE debug -->
-<!-- 
-{#if debug}
-	<p>{JSON.stringify(debug)}</p>
-{/if} -->
 
 <div>
 	<div class="flex items-center gap-1.5">
@@ -121,17 +110,20 @@
 								<label for={key} class="w-3/4">{paramsOption.items[key].gui_label}</label>
 								<input
 									type="number"
+									max={paramsOption.items[key].parameter.Integer.max ?? undefined}
+									min={paramsOption.items[key].parameter.Integer.min ?? undefined}
 									id={key}
 									on:input={validateInput}
 									bind:value={paramsOption.items[key].parameter.Integer.value}
 									class="w-1/4 border-2 border-gray-300 px-2 rounded-md focus:outline-none {!paramsOption
-										.items[key].parameter.Integer.value
+										.items[key].parameter.Integer.value || isValidationError
 										? 'border-red-400 focus:red-400'
 										: ''}"
 								/>
 							</div>
 						{:else if isStringParameter(paramsOption.items[key].parameter)}
-							<div class="flex gap-2 w-80">
+							<!-- TODO String input -->
+							<!-- <div class="flex gap-2 w-80">
 								<label for={key} class="w-3/4">{paramsOption.items[key].gui_label}</label>
 								<input
 									type="text"
@@ -139,9 +131,10 @@
 									bind:value={paramsOption.items[key].parameter.String.value}
 									class="w-1/4"
 								/>
-							</div>
+							</div> -->
 						{:else if isBooleanParameter(paramsOption.items[key].parameter)}
-							<div class="flex gap-2 w-80">
+							<!-- TODO Boolean input -->
+							<!-- <div class="flex gap-2 w-80">
 								<label for={key} class="w-3/4">{paramsOption.items[key].gui_label}</label>
 								<input
 									type="checkbox"
@@ -149,7 +142,7 @@
 									bind:checked={paramsOption.items[key].parameter.Boolean.value}
 									class="w-1/4"
 								/>
-							</div>
+							</div> -->
 						{/if}
 					{/each}
 				</div>
@@ -188,7 +181,7 @@
 							</button>
 						</div>
 					{:else}
-						<p>設定ファイルが選択されていません</p>
+						<p>設定ファイルを選択してください（任意）</p>
 					{/if}
 				</div>
 			</div>

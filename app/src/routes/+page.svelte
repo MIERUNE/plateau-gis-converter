@@ -19,18 +19,12 @@
 	let outputPath = '';
 	let paramsOption = {} as ParamsOption;
 	let isRunning = false;
+	let isValidationError = false;
+	let isConvertButtonDisabled = true;
+
+	$: isConvertButtonDisabled = !inputPaths.length || !outputPath || isRunning || isValidationError;
 
 	async function convertAndSave() {
-		if (!inputPaths) {
-			await message('入力フォルダ/ファイルを選択してください', { type: 'warning' });
-			return;
-		}
-
-		if (!outputPath) {
-			await message('出力先を選択してください', { type: 'warning' });
-			return;
-		}
-
 		isRunning = true;
 
 		try {
@@ -57,7 +51,7 @@
 </script>
 
 {#if isRunning}
-	<div class="absolute inset-0 bg-black/70 backdrop-blur-[2px] z-20">
+	<div class="fixed inset-0 bg-black/70 backdrop-blur-[2px] z-20 h-screen">
 		<LoadingAnimation />
 	</div>
 {/if}
@@ -73,14 +67,23 @@
 
 		<InputSelector bind:inputPaths />
 
-		<SettingSelector bind:filetype bind:epsg bind:rulesPath bind:paramsOption />
+		<SettingSelector
+			bind:filetype
+			bind:epsg
+			bind:rulesPath
+			bind:paramsOption
+			bind:isValidationError
+		/>
 
 		<OutputSelector {filetype} bind:outputPath />
 
 		<div class="flex justify-end">
 			<button
 				on:click={convertAndSave}
-				class="bg-accent1 flex items-center font-bold py-1.5 pl-3 pr-5 rounded-full gap-1 shawdow-2xl hover:opacity-75"
+				disabled={isConvertButtonDisabled}
+				class="bg-accent1 flex items-center font-bold py-1.5 pl-3 pr-5 rounded-full gap-1 shawdow-2xl {isConvertButtonDisabled
+					? 'opacity-50'
+					: ''}"
 			>
 				<Icon class="text-lg" icon="ic:baseline-play-arrow" />
 				変換
