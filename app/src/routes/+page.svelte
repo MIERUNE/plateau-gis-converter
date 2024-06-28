@@ -19,10 +19,9 @@
 	let outputPath = '';
 	let sinkParameters = {} as SinkParameters;
 	let isRunning = false;
-	let isValidationError = false;
 	let isConvertButtonDisabled = true;
 
-	$: isConvertButtonDisabled = !inputPaths.length || !outputPath || isRunning || isValidationError;
+	$: isConvertButtonDisabled = !inputPaths.length || !outputPath || isRunning;
 	let transformerRegistry: { key: string; label: string; is_enabled: boolean }[];
 
 	async function convertAndSave() {

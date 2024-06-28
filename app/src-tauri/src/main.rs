@@ -136,7 +136,7 @@ fn run_conversion(
     epsg: u16,
     rules_path: String,
     transformer_options: Vec<TransformerOption>,
-    params_option: Parameters,
+    sink_parameters: Parameters,
     tasks_state: tauri::State<ConversionTasksState>,
     window: tauri::Window,
 ) -> Result<(), Error> {
@@ -177,7 +177,7 @@ fn run_conversion(
             Error::InvalidSetting(msg)
         })?;
 
-        let mut sink_params = params_option;
+        let mut sink_params = sink_parameters;
         if let Err(err) = sink_params.update_values_with_str(&sinkopt) {
             let msg = format!("Error parsing sink options: {:?}", err);
             log::error!("{}", msg);
