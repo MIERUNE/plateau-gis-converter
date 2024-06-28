@@ -108,7 +108,7 @@ pub struct ParameterEntry {
     pub description: String,
     pub required: bool,
     pub parameter: ParameterType,
-    pub gui_label: Option<String>,
+    pub label: Option<String>,
 }
 
 impl ParameterEntry {
@@ -325,6 +325,7 @@ mod tests {
                 description: "test".into(),
                 required: true,
                 parameter: ParameterType::String(StringParameter { value: None }),
+                label: None,
             },
         );
         params.define(
@@ -333,6 +334,7 @@ mod tests {
                 description: "test2".into(),
                 required: false,
                 parameter: ParameterType::String(StringParameter { value: None }),
+                label: None,
             },
         );
 
@@ -353,6 +355,7 @@ mod tests {
                 description: "test".into(),
                 required: true,
                 parameter: ParameterType::Boolean(BooleanParameter { value: None }),
+                label: None,
             },
         );
         params.define(
@@ -361,6 +364,7 @@ mod tests {
                 description: "test2".into(),
                 required: false,
                 parameter: ParameterType::Boolean(BooleanParameter { value: None }),
+                label: None,
             },
         );
 
@@ -394,6 +398,7 @@ mod tests {
                     min: Some(4),
                     max: Some(10),
                 }),
+                label: None,
             },
         );
         params.define(
@@ -406,6 +411,7 @@ mod tests {
                     min: Some(4),
                     max: Some(10),
                 }),
+                label: None,
             },
         );
 

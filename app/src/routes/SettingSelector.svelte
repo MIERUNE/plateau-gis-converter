@@ -146,7 +146,7 @@
 						{#each sinkOptionKeys as key}
 							{#if isIntegerParameter(sinkParameters.items[key].parameter)}
 								<div class="flex gap-2 w-80">
-									<label for={key} class="w-3/4">{sinkParameters.items[key].gui_label}</label>
+									<label for={key} class="w-3/4">{sinkParameters.items[key].label}</label>
 									<select
 										bind:value={sinkParameters.items[key].parameter.Integer.value}
 										id={key}
@@ -160,7 +160,7 @@
 							{:else if isStringParameter(sinkParameters.items[key].parameter)}
 								<!-- TODO String input -->
 								<!-- <div class="flex gap-2 w-80">
-								<label for={key} class="w-3/4">{sinkParameters.items[key].gui_label}</label>
+								<label for={key} class="w-3/4">{sinkParameters.items[key].label}</label>
 								<input
 									type="text"
 									id={key}
@@ -171,7 +171,7 @@
 							{:else if isBooleanParameter(sinkParameters.items[key].parameter)}
 								<!-- TODO Boolean input -->
 								<!-- <div class="flex gap-2 w-80">
-								<label for={key} class="w-3/4">{sinkParameters.items[key].gui_label}</label>
+								<label for={key} class="w-3/4">{sinkParameters.items[key].label}</label>
 								<input
 									type="checkbox"
 									id={key}

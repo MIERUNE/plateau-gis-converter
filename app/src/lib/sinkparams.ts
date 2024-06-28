@@ -23,7 +23,7 @@ type Parameter = IntegerParameter | StringParameter | BooleanParameter;
 interface ParamsOptionItem {
 	parameter: Parameter;
 	description: string;
-	gui_label?: string;
+	label?: string;
 }
 
 export interface SinkParameters {

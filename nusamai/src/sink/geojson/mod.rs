@@ -48,7 +48,7 @@ impl DataSinkProvider for GeoJsonSinkProvider {
                     value: None,
                     must_exist: false,
                 }),
-                gui_label: None,
+                label: None,
             },
         );
         params
