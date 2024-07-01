@@ -8,7 +8,6 @@ mod tiling;
 pub(crate) mod utils;
 
 use std::{
-    collections::VecDeque,
     convert::Infallible,
     fs,
     io::BufWriter,
@@ -385,7 +384,11 @@ fn tile_writing_stage(
             let mut metadata_encoder = metadata::MetadataEncoder::new(schema);
 
             // initialize texture packer
-            let config = TexturePlacerConfig::default();
+            let config = TexturePlacerConfig {
+                width: 4096,
+                height: 4096,
+                padding: 0,
+            };
             let placer = GuillotineTexturePlacer::new(config);
             let exporter = WebpAtlasExporter::default();
             let ext = exporter.clone().get_extension().to_string();
@@ -477,68 +480,77 @@ fn tile_writing_stage(
                                 &mut index_buf,
                             );
 
-                            let original_uv_coords: Vec<(f64, f64)> = index_buf
-                                .iter()
-                                .map(|&idx| {
-                                    let [_, _, _, u, v] = poly.raw_coords()[idx as usize];
-                                    (u, v)
-                                })
-                                .collect();
+                            // todo: この辺りなおす
+                            for (triangle_count, chunks) in index_buf.chunks(3).enumerate() {
+                                let org_uv_coords = chunks
+                                    .iter()
+                                    .map(|&idx| {
+                                        let [_, _, _, u, v] = poly.raw_coords()[idx as usize];
+                                        (u, v)
+                                    })
+                                    .collect::<Vec<(f64, f64)>>();
 
-                            let texture = texture_cache.get_or_insert(
-                                &original_uv_coords,
-                                &base_texture.uri.to_file_path().unwrap(),
-                                &DownsampleFactor::new(&1.0).value(),
-                            );
+                                let texture = texture_cache.get_or_insert(
+                                    &org_uv_coords,
+                                    &base_texture.uri.to_file_path().unwrap(),
+                                    &DownsampleFactor::new(&1.0).value(),
+                                );
 
-                            // Unique id required for placement in atlas
-                            let texture_id = format!("{}_{}_{}", tile_id, feature_id, poly_count);
-                            let info = packer.add_texture(texture_id, texture);
-                            let mut new_uv_coords = info
-                                .placed_uv_coords
-                                .iter()
-                                .map(|(u, v)| ({ *u }, { *v }))
-                                .collect::<VecDeque<(f64, f64)>>();
+                                // Unique id required for placement in atlas
+                                let texture_id = format!(
+                                    "{}_{}_{}_{}",
+                                    tile_id, feature_id, poly_count, triangle_count
+                                );
+                                let info = packer.add_texture(texture_id, texture);
+                                let new_uv_coords = info
+                                    .placed_uv_coords
+                                    .iter()
+                                    .map(|(u, v)| ({ *u }, { *v }))
+                                    .collect::<Vec<(f64, f64)>>();
 
-                            // update uv_coords
-                            poly.transform_inplace(|&[x, y, z, _, _]| {
-                                let (u, v) = new_uv_coords.pop_front().unwrap();
-                                [x, y, z, u, v]
-                            });
+                                for uv in new_uv_coords.iter() {
+                                    // update uv_coords
+                                    poly.transform_inplace(|&[x, y, z, _, _]| {
+                                        let (u, v) = *uv;
+                                        [x, y, z, u, v]
+                                    });
+                                }
 
-                            let atlas_file_name = format!("{}/{}", tile_id, &info.atlas_id);
-                            let atlas_uri = atlas_dir
-                                .path()
-                                .join(atlas_file_name)
-                                .with_extension(ext.clone());
+                                let atlas_file_name = format!("{}/{}", tile_id, &info.atlas_id);
+                                let atlas_uri = atlas_dir
+                                    .path()
+                                    .join(atlas_file_name)
+                                    .with_extension(ext.clone());
 
-                            // update material
-                            let new_mat = material::Material {
-                                base_color: mat.base_color,
-                                base_texture: Some(material::Texture {
-                                    uri: Url::from_file_path(atlas_uri).unwrap(),
-                                }),
-                            };
-                            let primitive = primitives.entry(new_mat).or_default();
-                            primitive.feature_ids.insert(feature_id as u32);
+                                // update material
+                                let new_mat = material::Material {
+                                    base_color: mat.base_color,
+                                    base_texture: Some(material::Texture {
+                                        uri: Url::from_file_path(atlas_uri).unwrap(),
+                                    }),
+                                };
 
-                            // collect triangles
-                            primitive.indices.extend(index_buf.iter().map(|&idx| {
-                                let [x, y, z, u, v] = poly.raw_coords()[idx as usize];
-                                let vbits = [
-                                    (x as f32).to_bits(),
-                                    (y as f32).to_bits(),
-                                    (z as f32).to_bits(),
-                                    (nx as f32).to_bits(),
-                                    (ny as f32).to_bits(),
-                                    (nz as f32).to_bits(),
-                                    (u as f32).to_bits(),
-                                    (v as f32).to_bits(),
-                                    (feature_id as f32).to_bits(), // UNSIGNED_INT can't be used for vertex attribute
-                                ];
-                                let (index, _) = vertices.insert_full(vbits);
-                                index as u32
-                            }));
+                                let primitive = primitives.entry(new_mat).or_default();
+                                primitive.feature_ids.insert(feature_id as u32);
+
+                                // collect triangles
+                                primitive.indices.extend(index_buf.iter().map(|&idx| {
+                                    let [x, y, z, u, v] = poly.raw_coords()[idx as usize];
+                                    let vbits = [
+                                        (x as f32).to_bits(),
+                                        (y as f32).to_bits(),
+                                        (z as f32).to_bits(),
+                                        (nx as f32).to_bits(),
+                                        (ny as f32).to_bits(),
+                                        (nz as f32).to_bits(),
+                                        (u as f32).to_bits(),
+                                        (v as f32).to_bits(),
+                                        (feature_id as f32).to_bits(), // UNSIGNED_INT can't be used for vertex attribute
+                                    ];
+                                    let (index, _) = vertices.insert_full(vbits);
+                                    index as u32
+                                }));
+                            }
                         }
                     }
                     poly_count += 1;

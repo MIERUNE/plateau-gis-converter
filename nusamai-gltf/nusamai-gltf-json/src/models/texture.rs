@@ -33,5 +33,5 @@ pub struct Texture {
 #[serde(rename_all = "camelCase")]
 pub struct TextureExtensions {
     #[serde(flatten)]
-    others: HashMap<String, Value>,
+    pub others: HashMap<String, Value>,
 }

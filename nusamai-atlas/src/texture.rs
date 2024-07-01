@@ -96,36 +96,43 @@ impl CroppedTexture {
     ) -> Self {
         let downsample_factor = DownsampleFactor::new(downsample_factor);
 
-        let (min_x, min_y, max_x, max_y) = uv_coords.iter().fold(
-            (1.0_f64, 1.0_f64, 0.0_f64, 0.0_f64),
+        let (width, height) = image.dimensions();
+
+        // UV座標をピクセル座標に変換 (UV座標は左下原点、ピクセル座標は左上原点)
+        let pixel_coords: Vec<(u32, u32)> = uv_coords
+            .iter()
+            .map(|(u, v)| {
+                (
+                    (u * width as f64) as u32,
+                    ((1.0 - v) * height as f64) as u32,
+                )
+            })
+            .collect();
+
+        // 三角形の境界ボックスを計算
+        let (min_x, min_y, max_x, max_y) = pixel_coords.iter().fold(
+            (u32::MAX, u32::MAX, 0, 0),
             |(min_x, min_y, max_x, max_y), (x, y)| {
                 (min_x.min(*x), min_y.min(*y), max_x.max(*x), max_y.max(*y))
             },
         );
 
-        let (width, height) = image.dimensions();
+        let cropped_width = max_x - min_x;
+        let cropped_height = max_y - min_y;
 
-        let left = (min_x * width as f64) as u32;
-        let top = ((1.0 - max_y) * height as f64) as u32; // 修正: Y座標を反転
-        let right = (max_x * width as f64) as u32;
-        let bottom = ((1.0 - min_y) * height as f64) as u32; // 修正: Y座標を反転
-
-        let cropped_width = right - left;
-        let cropped_height = bottom - top;
-
-        let dest_uv_coords = uv_coords
+        // 新しいUV座標を計算 (三角形の形状を維持)
+        let dest_uv_coords = pixel_coords
             .iter()
-            .map(|(u, v)| {
+            .map(|(x, y)| {
                 (
-                    (u - min_x) / (max_x - min_x),
-                    (v - min_y) / (max_y - min_y), // 修正: Y座標の変換を維持
+                    (*x - min_x) as f64 / cropped_width as f64,
+                    1.0 - (*y - min_y) as f64 / cropped_height as f64, // UV座標は左下原点
                 )
             })
             .collect::<Vec<(f64, f64)>>();
-
         CroppedTexture {
             image_path: image_path.to_path_buf(),
-            origin: (left, top),
+            origin: (min_x, min_y),
             width: cropped_width,
             height: cropped_height,
             downsample_factor,
