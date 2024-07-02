@@ -43,7 +43,7 @@
 				on:click={openOutputDialog}
 				class="bg-accent1 font-semibold rounded px-4 py-0.5 shadow hover:opacity-75">選択</button
 			>
-			<div class="text-sm" class:opacity-50={!outputPath}>
+			<div class="text-sm">
 				{#if outputPath}
 					<div class="flex justify-center items-center gap-1.5">
 						<p><code>{abbreviatePath(outputPath, 40)}</code></p>
@@ -52,7 +52,7 @@
 						</button>
 					</div>
 				{:else}
-					<p>出力先が選択されていません</p>
+					<p class="text-red-400">出力先が選択されていません</p>
 				{/if}
 			</div>
 		</div>

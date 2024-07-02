@@ -40,6 +40,7 @@ impl DataSinkProvider for SerdeSinkProvider {
                     value: None,
                     must_exist: false,
                 }),
+                label: None,
             },
         );
         params

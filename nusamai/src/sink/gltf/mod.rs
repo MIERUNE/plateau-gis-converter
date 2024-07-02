@@ -48,6 +48,7 @@ impl DataSinkProvider for GltfSinkProvider {
                     value: None,
                     must_exist: false,
                 }),
+                label: None,
             },
         );
         params

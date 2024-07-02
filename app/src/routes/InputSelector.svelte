@@ -90,7 +90,7 @@
 			<div class="text-sm">
 				{#if isFolderMode}
 					{#if inputFolders.length === 0}
-						<p class="opacity-50">フォルダが選択されていません</p>
+						<p class="text-red-400">フォルダが選択されていません</p>
 					{:else}
 						<div class="flex items-center gap-1">
 							<p>
@@ -112,7 +112,7 @@
 						</div>
 					{/if}
 				{:else if inputPaths.length === 0}
-					<p class="opacity-50">ファイルが選択されていません</p>
+					<p class="text-red-400">ファイルが選択されていません</p>
 				{:else}
 					<div class="flex items-center gap-1">
 						<p><b>{inputPaths.length}</b> ファイル</p>
