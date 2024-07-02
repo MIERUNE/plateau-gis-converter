@@ -17,4 +17,5 @@ pub static BUILTIN_SINKS: &[&dyn sink::DataSinkProvider] = &[
     &sink::shapefile::ShapefileSinkProvider {},
     &sink::noop::NoopSinkProvider {},
     &sink::minecraft::MinecraftSinkProvider {},
+    &sink::cesiumtiles_poc::CesiumTilesPocSinkProvider {},
 ];
