@@ -1,4 +1,3 @@
-use std::io::Write as _;
 use std::path::Path;
 
 use hashbrown::HashMap;

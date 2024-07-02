@@ -68,6 +68,7 @@ impl DataSinkProvider for CesiumTilesPocSinkProvider {
                     value: None,
                     must_exist: false,
                 }),
+                label: None,
             },
         );
         // TODO: min Zoom
@@ -79,6 +80,7 @@ impl DataSinkProvider for CesiumTilesPocSinkProvider {
                 description: "transform option".into(),
                 required: false,
                 parameter: ParameterType::String(StringParameter { value: None }),
+                label: None,
             },
         );
         params
