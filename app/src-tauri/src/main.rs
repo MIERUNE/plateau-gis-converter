@@ -9,6 +9,7 @@ use std::{
 };
 
 use log::LevelFilter;
+use nusamai::parameters::Parameters;
 use nusamai::{
     pipeline::{feedback, Canceller},
     sink::{
@@ -57,6 +58,7 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             run_conversion,
             cancel_conversion,
+            get_parameter,
             get_transform
         ])
         .run(tauri::generate_context!())
@@ -134,6 +136,7 @@ fn run_conversion(
     epsg: u16,
     rules_path: String,
     transformer_options: Vec<TransformerOption>,
+    sink_parameters: Parameters,
     tasks_state: tauri::State<ConversionTasksState>,
     window: tauri::Window,
 ) -> Result<(), Error> {
@@ -174,7 +177,7 @@ fn run_conversion(
             Error::InvalidSetting(msg)
         })?;
 
-        let mut sink_params = sink_provider.parameters();
+        let mut sink_params = sink_parameters;
         if let Err(err) = sink_params.update_values_with_str(&sinkopt) {
             let msg = format!("Error parsing sink options: {:?}", err);
             log::error!("{}", msg);
@@ -306,4 +309,17 @@ fn get_transform(filetype: String) -> Result<TransformerRegistry, Error> {
     let transformer_registry = sink_provider.available_transformer();
 
     Ok(transformer_registry)
+}
+
+/// Get the configurable parameters of the sink
+#[tauri::command]
+fn get_parameter(filetype: String) -> Result<Parameters, Error> {
+    let sink_provider = select_sink_provider(&filetype).ok_or_else(|| {
+        let msg = format!("Invalid sink type: {}", filetype);
+        log::error!("{}", msg);
+        Error::InvalidSetting(msg)
+    })?;
+    let sink_params = sink_provider.parameters();
+
+    Ok(sink_params)
 }

@@ -49,6 +49,7 @@ impl DataSinkProvider for GpkgSinkProvider {
                     value: None,
                     must_exist: false,
                 }),
+                label: None,
             },
         );
         params

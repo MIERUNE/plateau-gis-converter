@@ -53,6 +53,7 @@ impl DataSinkProvider for MinecraftSinkProvider {
                     value: None,
                     must_exist: false,
                 }),
+                label: None,
             },
         );
         params

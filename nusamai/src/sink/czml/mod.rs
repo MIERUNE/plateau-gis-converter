@@ -47,6 +47,7 @@ impl DataSinkProvider for CzmlSinkProvider {
                     value: None,
                     must_exist: false,
                 }),
+                label: None,
             },
         );
         params

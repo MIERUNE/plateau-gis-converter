@@ -3,7 +3,7 @@
 use std::collections::HashMap;
 
 use indexmap::{map::Entry, IndexMap};
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
 #[macro_export]
@@ -27,7 +27,7 @@ pub enum Error {
     UnknownParameter(String),
 }
 
-#[derive(Debug, Default, Serialize)]
+#[derive(Debug, Default, Serialize, Deserialize)]
 pub struct Parameters {
     items: IndexMap<String, ParameterEntry>,
 }
@@ -103,11 +103,12 @@ impl Parameters {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct ParameterEntry {
     pub description: String,
     pub required: bool,
     pub parameter: ParameterType,
+    pub label: Option<String>,
 }
 
 impl ParameterEntry {
@@ -141,7 +142,7 @@ impl ParameterEntry {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum ParameterType {
     FileSystemPath(FileSystemPathParameter),
     String(StringParameter),
@@ -150,7 +151,7 @@ pub enum ParameterType {
     // and so on ...
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct FileSystemPathParameter {
     pub value: Option<std::path::PathBuf>,
     pub must_exist: bool,
@@ -184,7 +185,7 @@ impl FileSystemPathParameter {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct StringParameter {
     pub value: Option<String>,
 }
@@ -217,7 +218,7 @@ impl StringParameter {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct BooleanParameter {
     pub value: Option<bool>,
 }
@@ -252,7 +253,7 @@ impl BooleanParameter {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct IntegerParameter {
     pub value: Option<i64>,
     pub min: Option<i64>,
@@ -324,6 +325,7 @@ mod tests {
                 description: "test".into(),
                 required: true,
                 parameter: ParameterType::String(StringParameter { value: None }),
+                label: None,
             },
         );
         params.define(
@@ -332,6 +334,7 @@ mod tests {
                 description: "test2".into(),
                 required: false,
                 parameter: ParameterType::String(StringParameter { value: None }),
+                label: Some("test2".into()),
             },
         );
 
@@ -352,6 +355,7 @@ mod tests {
                 description: "test".into(),
                 required: true,
                 parameter: ParameterType::Boolean(BooleanParameter { value: None }),
+                label: None,
             },
         );
         params.define(
@@ -360,6 +364,7 @@ mod tests {
                 description: "test2".into(),
                 required: false,
                 parameter: ParameterType::Boolean(BooleanParameter { value: None }),
+                label: Some("test2".into()),
             },
         );
 
@@ -393,6 +398,7 @@ mod tests {
                     min: Some(4),
                     max: Some(10),
                 }),
+                label: None,
             },
         );
         params.define(
@@ -405,6 +411,7 @@ mod tests {
                     min: Some(4),
                     max: Some(10),
                 }),
+                label: Some("test2".into()),
             },
         );
 

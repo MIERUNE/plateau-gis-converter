@@ -53,6 +53,7 @@ impl DataSinkProvider for MvtSinkProvider {
                     value: None,
                     must_exist: false,
                 }),
+                label: None,
             },
         );
         params.define(
@@ -65,6 +66,7 @@ impl DataSinkProvider for MvtSinkProvider {
                     min: Some(0),
                     max: Some(20),
                 }),
+                label: Some("最小ズームレベル".into()),
             },
         );
         params.define(
@@ -77,6 +79,7 @@ impl DataSinkProvider for MvtSinkProvider {
                     min: Some(0),
                     max: Some(20),
                 }),
+                label: Some("最大ズームレベル".into()),
             },
         );
         params

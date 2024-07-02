@@ -2,6 +2,7 @@
 	import { message } from '@tauri-apps/api/dialog';
 	import { invoke } from '@tauri-apps/api/tauri';
 	import { attachConsole } from 'tauri-plugin-log-api';
+	import type { SinkParameters } from '$lib/sinkparams';
 
 	import Icon from '@iconify/svelte';
 	import InputSelector from './InputSelector.svelte';
@@ -16,20 +17,14 @@
 	let epsg: number;
 	let rulesPath = '';
 	let outputPath = '';
+	let sinkParameters = {} as SinkParameters;
 	let isRunning = false;
+	let isConvertButtonDisabled = true;
+
+	$: isConvertButtonDisabled = !inputPaths.length || !outputPath || isRunning;
 	let transformerRegistry: { key: string; label: string; is_enabled: boolean }[];
 
 	async function convertAndSave() {
-		if (!inputPaths) {
-			await message('入力フォルダ/ファイルを選択してください', { type: 'warning' });
-			return;
-		}
-
-		if (!outputPath) {
-			await message('出力先を選択してください', { type: 'warning' });
-			return;
-		}
-
 		isRunning = true;
 
 		const transformerOptions = transformerRegistry.map((transformerConfig) => {
@@ -46,7 +41,8 @@
 				filetype,
 				epsg,
 				rulesPath,
-				transformerOptions
+				transformerOptions,
+				sinkParameters
 			});
 			isRunning = false;
 			await message(`変換が完了しました。\n'${outputPath}' に出力しました。`, { type: 'info' });
@@ -63,7 +59,7 @@
 </script>
 
 {#if isRunning}
-	<div class="absolute inset-0 bg-black/70 backdrop-blur-[2px] z-20">
+	<div class="fixed inset-0 bg-black/70 backdrop-blur-[2px] z-20 h-screen">
 		<LoadingAnimation />
 	</div>
 {/if}
@@ -79,14 +75,23 @@
 
 		<InputSelector bind:inputPaths />
 
-		<SettingSelector bind:filetype bind:epsg bind:rulesPath bind:transformerRegistry />
+		<SettingSelector
+			bind:filetype
+			bind:epsg
+			bind:rulesPath
+			bind:sinkParameters
+			bind:transformerRegistry
+		/>
 
 		<OutputSelector {filetype} bind:outputPath />
 
 		<div class="flex justify-end">
 			<button
 				on:click={convertAndSave}
-				class="bg-accent1 flex items-center font-bold py-1.5 pl-3 pr-5 rounded-full gap-1 shawdow-2xl hover:opacity-75"
+				disabled={isConvertButtonDisabled}
+				class="bg-accent1 flex items-center font-bold py-1.5 pl-3 pr-5 rounded-full gap-1 shawdow-2xl {isConvertButtonDisabled
+					? 'opacity-50'
+					: ''}"
 			>
 				<Icon class="text-lg" icon="ic:baseline-play-arrow" />
 				変換
