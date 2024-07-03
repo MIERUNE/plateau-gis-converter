@@ -68,16 +68,6 @@ impl Texture {
         });
         nusamai_gltf_json::Texture {
             source: Some(image_index as u32),
-            extensions: Some(nusamai_gltf_json::TextureExtensions {
-                others: {
-                    let mut map = std::collections::HashMap::new();
-                    map.insert(
-                        "EXT_texture_webp".to_string(),
-                        serde_json::json!({"source": 0}),
-                    );
-                    map
-                },
-            }),
             ..Default::default()
         }
     }
