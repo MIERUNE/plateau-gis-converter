@@ -12,5 +12,5 @@ version.workspace = true
 
 [dependencies]
 geojson = "0.24.1"
-nusamai-geometry = { path = "../nusamai-geometry" }
-serde_json = { version = "1.0.115", features = ["indexmap"] }
+nusamai-geometry = {path = "../nusamai-geometry"}
+serde_json = {workspace = true, features = ["indexmap"]}

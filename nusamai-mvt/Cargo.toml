@@ -10,8 +10,8 @@ version.workspace = true
 
 [dependencies]
 ahash = "0.8.11"
-indexmap = "2.2.6"
-prost = "0.12.3"
+indexmap.workspace = true
+prost = "0.12.6"
 
 [build-dependencies]
 prost-build = "0.12.3"

@@ -14,14 +14,14 @@ serde = ["dep:serde", "serde_json", "nusamai-geometry/serde"]
 
 [dependencies]
 ahash = "0.8.11"
-chrono = { version = "0.4.35", features = ["serde"], default-features = false }
-indexmap = { version = "2.2.6", features = ["serde"] }
-log = "0.4.21"
-macros = { path = "./macros" }
-nusamai-geometry = { path = "../nusamai-geometry", features = ["serde"]}
-nusamai-projection = { path = "../nusamai-projection"}
-quick-xml = "0.31"
-serde = { version = "1.0", features = ["derive"], optional = true }
-serde_json = { version = "1.0.115", features = ["indexmap"], optional = true }
-thiserror = "1.0"
-url = { version = "2.5.0", features = ["serde"] }
+chrono = {workspace = true, features = ["serde"]}
+indexmap = {workspace = true, features = ["serde"]}
+log.workspace = true
+macros = {path = "./macros"}
+nusamai-geometry = {path = "../nusamai-geometry", features = ["serde"]}
+nusamai-projection = {path = "../nusamai-projection"}
+quick-xml.workspace = true
+serde = {workspace = true, features = ["derive"], optional = true}
+serde_json = {workspace = true, features = ["indexmap"], optional = true}
+thiserror.workspace = true
+url = {workspace = true, features = ["serde"]}

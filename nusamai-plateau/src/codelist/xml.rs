@@ -83,10 +83,12 @@ fn parse_definition<R: BufRead>(
                 }
             }
             Ok(Event::Eof) => {
-                return Err(quick_xml::Error::UnexpectedEof("Unexpected EOF".into()).into())
+                return Err(ParseError::SchemaViolation(
+                    "Unexpected EOF while parsing a definition.".into(),
+                ));
             }
             Ok(_) => {}
-            Err(e) => return Err(e.into()),
+            Err(e) => return Err(ParseError::XmlError(e)),
         }
     }
 
@@ -105,8 +107,8 @@ pub fn parse_dictionary<R: BufRead>(
     src_reader: R,
 ) -> Result<HashMap<String, Definition>, ParseError> {
     let mut reader = quick_xml::NsReader::from_reader(src_reader);
-    reader.trim_text(true);
-    reader.expand_empty_elements(true);
+    reader.config_mut().trim_text(true);
+    reader.config_mut().expand_empty_elements = true;
     let mut depth = 0;
     let mut buf = Vec::new();
     let mut buf2 = Vec::new();

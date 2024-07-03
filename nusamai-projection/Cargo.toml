@@ -10,4 +10,4 @@ version.workspace = true
 
 [dependencies]
 japan-geoid = "0.4.0"
-thiserror = "1.0.58"
+thiserror.workspace = true

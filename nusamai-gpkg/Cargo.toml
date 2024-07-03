@@ -11,9 +11,9 @@ version.workspace = true
 [dependencies]
 sqlx = { version = "0.7.4", features = ["sqlite", "runtime-tokio"] }
 nusamai-geometry = { path = "../nusamai-geometry" }
-thiserror = "1.0.58"
-url = "2.5.0"
-indexmap = "2.2.6"
+thiserror.workspace = true
+url.workspace = true
+indexmap.workspace = true
 
 [dev-dependencies]
 tokio = { version = "1.36", features = ["full"] }

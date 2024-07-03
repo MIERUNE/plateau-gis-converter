@@ -7,11 +7,11 @@ resolver = "2"
 
 [workspace.package]
 authors = ["MIERUNE Inc. <info@mierune.co.jp>"]
-license = "MIT"
 edition = "2021"
-version = "0.1.0"
+license = "MIT"
 repository = "https://github.com/reearth/plateau-gis-converter"
 rust-version = "1.77" # Remember to update clippy.toml as well
+version = "0.1.0"
 
 [profile.dev]
 opt-level = 0
@@ -27,3 +27,13 @@ strip = "none"
 codegen-units = 8
 inherits = "release"
 lto = "fat"
+
+[workspace.dependencies]
+chrono = "0.4.38"
+indexmap = "2.2.6"
+log = "0.4.22"
+quick-xml = "0.35.0"
+serde = "1.0.203"
+serde_json = "1.0.120"
+thiserror = "1.0.61"
+url = "2.5.2"
