@@ -1,7 +1,7 @@
 use std::path::{Path, PathBuf};
 
 use nusamai_atlas::{
-    export::WebpAtlasExporter,
+    export::PngAtlasExporter,
     pack::TexturePacker,
     place::{GuillotineTexturePlacer, TexturePlacerConfig},
     texture::{DownsampleFactor, TextureCache},
@@ -46,7 +46,7 @@ fn main() {
     // initialize texture packer
     let config = TexturePlacerConfig::default();
     let placer = GuillotineTexturePlacer::new(config);
-    let exporter = WebpAtlasExporter::default();
+    let exporter = PngAtlasExporter::default();
     let mut packer = TexturePacker::new(placer, exporter);
 
     // Texture cache
