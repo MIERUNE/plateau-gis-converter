@@ -3,6 +3,7 @@ use std::collections::HashMap;
 
 use crate::texture::CroppedTexture;
 
+#[derive(Debug, Clone)]
 pub struct TexturePlacerConfig {
     pub width: u32,
     pub height: u32,

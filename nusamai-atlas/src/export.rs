@@ -13,6 +13,8 @@ pub trait AtlasExporter {
         textures: &HashMap<String, CroppedTexture>,
         output_path: &Path,
         texture_cache: &TextureCache,
+        width: u32,
+        height: u32,
     );
 
     fn get_extension(&self) -> &str;
@@ -47,8 +49,10 @@ impl AtlasExporter for WebpAtlasExporter {
         textures: &HashMap<String, CroppedTexture>,
         output_path: &Path,
         texture_cache: &TextureCache,
+        width: u32,
+        height: u32,
     ) {
-        let atlas_image = create_atlas_image(atlas_data, textures, texture_cache);
+        let atlas_image = create_atlas_image(atlas_data, textures, texture_cache, width, height);
         let output_path = output_path.with_extension(self.get_extension());
         atlas_image
             .save_with_format(output_path, self.get_image_format())
@@ -84,8 +88,10 @@ impl AtlasExporter for PngAtlasExporter {
         textures: &HashMap<String, CroppedTexture>,
         output_path: &Path,
         texture_cache: &TextureCache,
+        width: u32,
+        height: u32,
     ) {
-        let atlas_image = create_atlas_image(atlas_data, textures, texture_cache);
+        let atlas_image = create_atlas_image(atlas_data, textures, texture_cache, width, height);
         let output_path = output_path.with_extension(self.get_extension());
         atlas_image
             .save_with_format(output_path, self.get_image_format())
@@ -121,8 +127,10 @@ impl AtlasExporter for JpegAtlasExporter {
         textures: &HashMap<String, CroppedTexture>,
         output_path: &Path,
         texture_cache: &TextureCache,
+        width: u32,
+        height: u32,
     ) {
-        let atlas_image = create_atlas_image(atlas_data, textures, texture_cache);
+        let atlas_image = create_atlas_image(atlas_data, textures, texture_cache, width, height);
         let output_path = output_path.with_extension(self.get_extension());
         atlas_image
             .save_with_format(output_path, self.get_image_format())
@@ -134,19 +142,10 @@ fn create_atlas_image(
     atlas_data: &[PlacedTextureInfo],
     textures: &HashMap<String, CroppedTexture>,
     texture_cache: &TextureCache,
+    width: u32,
+    height: u32,
 ) -> ImageBuffer<image::Rgba<u8>, Vec<u8>> {
-    let max_width = atlas_data
-        .iter()
-        .map(|info| info.origin.0 + info.width)
-        .max()
-        .unwrap_or(0);
-    let max_height = atlas_data
-        .iter()
-        .map(|info| info.origin.1 + info.height)
-        .max()
-        .unwrap_or(0);
-
-    let mut atlas_image = ImageBuffer::new(max_width, max_height);
+    let mut atlas_image = ImageBuffer::new(width, height);
 
     for info in atlas_data {
         let texture = textures.get(&info.id).unwrap();

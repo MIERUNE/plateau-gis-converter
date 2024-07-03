@@ -45,7 +45,7 @@ fn main() {
 
     // initialize texture packer
     let config = TexturePlacerConfig::default();
-    let placer = GuillotineTexturePlacer::new(config);
+    let placer = GuillotineTexturePlacer::new(config.clone());
     let exporter = PngAtlasExporter::default();
     let mut packer = TexturePacker::new(placer, exporter);
 
@@ -66,5 +66,5 @@ fn main() {
     packer.finalize();
 
     let output_dir = Path::new("nusamai-atlas/examples/output/");
-    packer.export(output_dir, &texture_cache);
+    packer.export(output_dir, &texture_cache, config.width, config.height);
 }
