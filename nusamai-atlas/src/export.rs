@@ -56,21 +56,7 @@ impl AtlasExporter for WebpAtlasExporter {
 
         let mut atlas_image = ImageBuffer::new(max_width, max_height);
 
-        // let uv_coord_memo_path = output_path.with_extension("txt");
-        // let mut uv_coord_memo_file = std::fs::File::create(uv_coord_memo_path).unwrap();
-        // let mut contents = String::new();
-
         for info in atlas_data {
-            // let id = info.id.clone();
-            // let atlas_id = info.atlas_id.clone();
-            // let origin = info.origin;
-            // let placed_uv_coords = info.placed_uv_coords.clone();
-
-            // contents.push_str(&format!(
-            //     "id: {}, atlas_id: {}, origin: ({}, {}), uv: {:?}\n",
-            //     id, atlas_id, origin.0, origin.1, placed_uv_coords,
-            // ));
-
             let texture = textures.get(&info.id).unwrap();
             let cropped = texture.crop(&texture_cache.get_image(&texture.image_path));
             let image = cropped.as_rgba8().unwrap();
@@ -81,7 +67,6 @@ impl AtlasExporter for WebpAtlasExporter {
                 atlas_image.put_pixel(atlas_x, atlas_y, *pixel);
             }
         }
-        // uv_coord_memo_file.write_all(contents.as_bytes()).unwrap();
 
         let output_path = output_path.with_extension(self.get_extension());
 
