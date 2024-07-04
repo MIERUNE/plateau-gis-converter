@@ -48,8 +48,8 @@ pub trait TexturePlacer {
     fn reset_param(&mut self);
 
     fn scale_dimensions(&self, width: u32, height: u32, downsample_factor: f32) -> (u32, u32) {
-        let scaled_width = (width as f32 * downsample_factor) as u32;
-        let scaled_height = (height as f32 * downsample_factor) as u32;
+        let scaled_width = (width as f32 * downsample_factor).max(1.0) as u32;
+        let scaled_height = (height as f32 * downsample_factor).max(1.0) as u32;
         (scaled_width, scaled_height)
     }
 }
@@ -283,6 +283,12 @@ impl GuillotineTexturePlacer {
             i += 1;
         }
     }
+
+    fn uv_to_pixel(&self, uv: (f64, f64), width: u32, height: u32) -> (u32, u32) {
+        let x = (uv.0 * width as f64) as u32;
+        let y = ((1.0 - uv.1) * height as f64) as u32;
+        (x, y)
+    }
 }
 
 impl TexturePlacer for GuillotineTexturePlacer {
@@ -309,13 +315,12 @@ impl TexturePlacer for GuillotineTexturePlacer {
             let placed_uv_coords = texture
                 .cropped_uv_coords
                 .iter()
-                .map(|(u, v)| {
+                .map(|&(u, v)| {
+                    let (x, y) = self.uv_to_pixel((u, v), scaled_width, scaled_height);
                     (
-                        (rect.x as f64 + self.config.padding as f64 + u * scaled_width as f64)
+                        (rect.x as f64 + self.config.padding as f64 + x as f64)
                             / self.config.width as f64,
-                        1.0 - ((rect.y as f64
-                            + self.config.padding as f64
-                            + v * scaled_height as f64)
+                        1.0 - ((rect.y as f64 + self.config.padding as f64 + y as f64)
                             / self.config.height as f64),
                     )
                 })
