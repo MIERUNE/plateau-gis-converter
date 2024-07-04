@@ -183,7 +183,7 @@ impl GuillotineTexturePlacer {
 
     fn find_best_rect(&self, width: u32, height: u32) -> Option<Rect> {
         let mut best_rect = None;
-        let mut best_area = std::u32::MAX;
+        let mut best_area = u32::MAX;
 
         for rect in &self.free_rects {
             if rect.width >= width && rect.height >= height {
