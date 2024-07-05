@@ -155,12 +155,6 @@ fn create_atlas_image(
         for (x, y, pixel) in image.enumerate_pixels() {
             let atlas_x = info.origin.0 + x;
             let atlas_y = info.origin.1 + y;
-            // FIXME: 貼り付けに失敗しそうな場合はエラーを出力してスキップ
-            if atlas_x >= width || atlas_y >= height {
-                eprintln!("Failed to paste texture: {}", info.id);
-                eprintln!("Texture size: {}x{}", image.width(), image.height());
-                continue;
-            }
             atlas_image.put_pixel(atlas_x, atlas_y, *pixel);
         }
     }

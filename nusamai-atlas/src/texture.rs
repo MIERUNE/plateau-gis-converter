@@ -1,6 +1,6 @@
 use std::path::{Path, PathBuf};
 
-use image::{DynamicImage, GenericImageView};
+use image::{DynamicImage, GenericImageView, ImageBuffer, Rgba};
 use stretto::Cache;
 
 #[derive(Debug, Clone)]
@@ -98,7 +98,7 @@ impl CroppedTexture {
 
         let (width, height) = image.dimensions();
 
-        // UV座標をピクセル座標に変換 (UV座標は左下原点、ピクセル座標は左上原点)
+        // UV to pixel coordinates
         let pixel_coords: Vec<(u32, u32)> = uv_coords
             .iter()
             .map(|(u, v)| {
@@ -109,7 +109,7 @@ impl CroppedTexture {
             })
             .collect();
 
-        // 三角形の境界ボックスを計算
+        // calc bbox
         let (min_x, min_y, max_x, max_y) = pixel_coords.iter().fold(
             (u32::MAX, u32::MAX, 0, 0),
             |(min_x, min_y, max_x, max_y), (x, y)| {
@@ -120,16 +120,17 @@ impl CroppedTexture {
         let cropped_width = max_x - min_x;
         let cropped_height = max_y - min_y;
 
-        // 新しいUV座標を計算 (三角形の形状を維持)
+        // UV coordinates for the cropped image
         let dest_uv_coords = pixel_coords
             .iter()
             .map(|(x, y)| {
                 (
                     (*x - min_x) as f64 / cropped_width as f64,
-                    1.0 - (*y - min_y) as f64 / cropped_height as f64, // UV座標は左下原点
+                    1.0 - (*y - min_y) as f64 / cropped_height as f64,
                 )
             })
             .collect::<Vec<(f64, f64)>>();
+
         CroppedTexture {
             image_path: image_path.to_path_buf(),
             origin: (min_x, min_y),
@@ -144,14 +145,73 @@ impl CroppedTexture {
         let (x, y) = self.origin;
         let cropped_image = image.view(x, y, self.width, self.height).to_image();
 
-        let scaled_width = (self.width as f32 * self.downsample_factor.value()) as u32;
-        let scaled_height = (self.height as f32 * self.downsample_factor.value()) as u32;
+        // remove transparent area
+        let mut clipped = ImageBuffer::new(self.width, self.height);
+        for (px, py, pixel) in cropped_image.enumerate_pixels() {
+            let uv = (
+                px as f64 / self.width as f64,
+                1.0 - py as f64 / self.height as f64,
+            );
+            if self.is_point_inside_polygon(uv, &self.cropped_uv_coords) {
+                clipped.put_pixel(px, py, *pixel);
+            }
+        }
+
+        let (min_x, min_y, max_x, max_y) = find_non_transparent_bounds(&clipped);
+        let trimmed = ImageBuffer::from_fn(max_x - min_x + 1, max_y - min_y + 1, |x, y| {
+            *clipped.get_pixel(x + min_x, y + min_y)
+        });
+
+        // downsample
+        let scaled_width = (trimmed.width() as f32 * self.downsample_factor.value()) as u32;
+        let scaled_height = (trimmed.height() as f32 * self.downsample_factor.value()) as u32;
 
         DynamicImage::ImageRgba8(image::imageops::resize(
-            &cropped_image,
+            &trimmed,
             scaled_width,
             scaled_height,
             image::imageops::FilterType::Triangle,
         ))
     }
+}
+
+fn is_point_inside_polygon(test_point: (f64, f64), polygon: &[(f64, f64)]) -> bool {
+    let mut is_inside = false;
+    let mut previous_vertex_index = polygon.len() - 1;
+
+    for current_vertex_index in 0..polygon.len() {
+        let (current_x, current_y) = polygon[current_vertex_index];
+        let (previous_x, previous_y) = polygon[previous_vertex_index];
+
+        let is_y_between_vertices = (current_y > test_point.1) != (previous_y > test_point.1);
+        let does_ray_intersect = test_point.0
+            < (previous_x - current_x) * (test_point.1 - current_y) / (previous_y - current_y)
+                + current_x;
+
+        if is_y_between_vertices && does_ray_intersect {
+            is_inside = !is_inside;
+        }
+
+        previous_vertex_index = current_vertex_index;
+    }
+
+    is_inside
+}
+
+fn find_non_transparent_bounds(image: &ImageBuffer<Rgba<u8>, Vec<u8>>) -> (u32, u32, u32, u32) {
+    let mut min_x = image.width();
+    let mut min_y = image.height();
+    let mut max_x = 0;
+    let mut max_y = 0;
+
+    for (x, y, pixel) in image.enumerate_pixels() {
+        if pixel[3] > 0 {
+            min_x = min_x.min(x);
+            min_y = min_y.min(y);
+            max_x = max_x.max(x);
+            max_y = max_y.max(y);
+        }
+    }
+
+    (min_x, min_y, max_x, max_y)
 }
