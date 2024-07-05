@@ -66,5 +66,5 @@ fn main() {
     packer.finalize();
 
     let output_dir = Path::new("nusamai-atlas/examples/output/");
-    packer.export(output_dir, &texture_cache, config.width, config.height);
+    packer.export(output_dir, &texture_cache, config.width(), config.height());
 }

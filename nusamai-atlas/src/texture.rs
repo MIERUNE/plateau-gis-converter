@@ -152,7 +152,7 @@ impl CroppedTexture {
                 px as f64 / self.width as f64,
                 1.0 - py as f64 / self.height as f64,
             );
-            if self.is_point_inside_polygon(uv, &self.cropped_uv_coords) {
+            if is_point_inside_polygon(uv, &self.cropped_uv_coords) {
                 clipped.put_pixel(px, py, *pixel);
             }
         }
