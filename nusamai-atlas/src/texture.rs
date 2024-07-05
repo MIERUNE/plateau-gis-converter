@@ -1,6 +1,6 @@
 use std::path::{Path, PathBuf};
 
-use image::{DynamicImage, GenericImageView, ImageBuffer, Rgba};
+use image::{DynamicImage, GenericImageView};
 use stretto::Cache;
 
 #[derive(Debug, Clone)]
@@ -95,9 +95,10 @@ impl CroppedTexture {
         downsample_factor: &f32,
     ) -> Self {
         let downsample_factor = DownsampleFactor::new(downsample_factor);
+
         let (width, height) = image.dimensions();
 
-        // UV座標をピクセル座標に変換
+        // UV座標をピクセル座標に変換 (UV座標は左下原点、ピクセル座標は左上原点)
         let pixel_coords: Vec<(u32, u32)> = uv_coords
             .iter()
             .map(|(u, v)| {
@@ -108,7 +109,7 @@ impl CroppedTexture {
             })
             .collect();
 
-        // 多角形の境界ボックスを計算
+        // 三角形の境界ボックスを計算
         let (min_x, min_y, max_x, max_y) = pixel_coords.iter().fold(
             (u32::MAX, u32::MAX, 0, 0),
             |(min_x, min_y, max_x, max_y), (x, y)| {
@@ -119,85 +120,24 @@ impl CroppedTexture {
         let cropped_width = max_x - min_x;
         let cropped_height = max_y - min_y;
 
-        // 多角形で切り抜き、透明な部分を除去
-        let mut clipped = ImageBuffer::new(cropped_width, cropped_height);
-        for (px, py, pixel) in image
-            .view(min_x, min_y, cropped_width, cropped_height)
-            .pixels()
-        {
-            let uv = (
-                (px as f64 + min_x as f64) / width as f64,
-                1.0 - (py as f64 + min_y as f64) / height as f64,
-            );
-            if Self::point_in_polygon(uv, uv_coords) {
-                clipped.put_pixel(px, py, pixel);
-            }
-        }
-
-        // 透明な部分を除去
-        let (trim_min_x, trim_min_y, trim_max_x, trim_max_y) =
-            Self::find_non_transparent_bounds(&clipped);
-        let trimmed_width = trim_max_x - trim_min_x + 1;
-        let trimmed_height = trim_max_y - trim_min_y + 1;
-
-        // 新しいUV座標を計算
-        let dest_uv_coords = uv_coords
+        // 新しいUV座標を計算 (三角形の形状を維持)
+        let dest_uv_coords = pixel_coords
             .iter()
-            .map(|(u, v)| {
-                let x = (u * width as f64) as u32 - min_x;
-                let y = ((1.0 - v) * height as f64) as u32 - min_y;
+            .map(|(x, y)| {
                 (
-                    (x as f64 - trim_min_x as f64) / trimmed_width as f64,
-                    1.0 - (y as f64 - trim_min_y as f64) / trimmed_height as f64,
+                    (*x - min_x) as f64 / cropped_width as f64,
+                    1.0 - (*y - min_y) as f64 / cropped_height as f64, // UV座標は左下原点
                 )
             })
             .collect::<Vec<(f64, f64)>>();
-
         CroppedTexture {
             image_path: image_path.to_path_buf(),
-            origin: (min_x + trim_min_x, min_y + trim_min_y),
-            width: trimmed_width,
-            height: trimmed_height,
+            origin: (min_x, min_y),
+            width: cropped_width,
+            height: cropped_height,
             downsample_factor,
             cropped_uv_coords: dest_uv_coords,
         }
-    }
-
-    // point_in_polygonメソッドとfind_non_transparent_boundsメソッドを追加
-    fn point_in_polygon(point: (f64, f64), polygon: &[(f64, f64)]) -> bool {
-        let mut inside = false;
-        let mut j = polygon.len() - 1;
-        for i in 0..polygon.len() {
-            let (xi, yi) = polygon[i];
-            let (xj, yj) = polygon[j];
-
-            if ((yi > point.1) != (yj > point.1))
-                && (point.0 < (xj - xi) * (point.1 - yi) / (yj - yi) + xi)
-            {
-                inside = !inside;
-            }
-
-            j = i;
-        }
-        inside
-    }
-
-    fn find_non_transparent_bounds(image: &ImageBuffer<Rgba<u8>, Vec<u8>>) -> (u32, u32, u32, u32) {
-        let mut min_x = image.width();
-        let mut min_y = image.height();
-        let mut max_x = 0;
-        let mut max_y = 0;
-
-        for (x, y, pixel) in image.enumerate_pixels() {
-            if pixel[3] > 0 {
-                min_x = min_x.min(x);
-                min_y = min_y.min(y);
-                max_x = max_x.max(x);
-                max_y = max_y.max(y);
-            }
-        }
-
-        (min_x, min_y, max_x, max_y)
     }
 
     pub fn crop(&self, image: &DynamicImage) -> DynamicImage {

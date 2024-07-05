@@ -19,6 +19,7 @@ use ahash::RandomState;
 use bytemuck::Zeroable;
 use earcut::{utils3d::project3d_to_2d, Earcut};
 use gltf::write_gltf_glb;
+use hashbrown::HashMap;
 use indexmap::IndexSet;
 use itertools::Itertools;
 use rayon::prelude::*;
@@ -28,10 +29,10 @@ use tiling::{TileContent, TileTree};
 use url::Url;
 
 use nusamai_atlas::{
-    export::{AtlasExporter as _, WebpAtlasExporter},
+    export::{AtlasExporter as _, PngAtlasExporter},
     pack::TexturePacker,
     place::{GuillotineTexturePlacer, TexturePlacerConfig},
-    texture::{DownsampleFactor, TextureCache},
+    texture::{self, DownsampleFactor, TextureCache},
 };
 use nusamai_citygml::{object::Value, schema::Schema};
 use nusamai_mvt::tileid::TileIdMethod;
@@ -315,7 +316,7 @@ fn tile_writing_stage(
     let bincode_config = bincode::config::standard();
 
     // Texture cache
-    let texture_cache = TextureCache::new(16384);
+    let texture_cache = TextureCache::new(1_000_000_000);
     // Use a temporary directory for embedding in glb.
     let atlas_dir = tempdir()?;
 
@@ -391,10 +392,14 @@ fn tile_writing_stage(
                 height: 4096,
                 padding: 0,
             };
-            let placer = GuillotineTexturePlacer::new(config);
-            let exporter = WebpAtlasExporter::default();
+            let placer = GuillotineTexturePlacer::new(config.clone());
+            let exporter = PngAtlasExporter::default();
             let ext = exporter.clone().get_extension().to_string();
             let mut packer = TexturePacker::new(placer, exporter);
+
+            type Vertex = Vec<(f64, f64, f64, f64, f64, f64, f64, f64)>;
+            type BaseColor = [f32; 4];
+            let mut atlas_files: HashMap<String, (Vertex, BaseColor)> = HashMap::new();
 
             // For each feature
             let mut feature_id = 0;
@@ -449,24 +454,87 @@ fn tile_writing_stage(
                     continue;
                 }
 
-                let mut poly_count = 0;
                 // Triangulation, etc.
-                for (mut poly, orig_mat_id) in feature
+                for (poly_count, (mut poly, orig_mat_id)) in feature
                     .polygons
                     .iter()
                     .zip_eq(feature.polygon_material_ids.iter())
+                    .enumerate()
                 {
+                    let mat = &feature.materials[*orig_mat_id as usize];
+                    let t = mat.base_texture.clone();
+                    match t {
+                        Some(base_texture) => {
+                            // textured
+                            let original_vertices = poly
+                                .raw_coords()
+                                .iter()
+                                .map(|[x, y, z, u, v]| (*x, *y, *z, *u, *v))
+                                .collect::<Vec<(f64, f64, f64, f64, f64)>>();
+
+                            let texture = texture_cache.get_or_insert(
+                                &original_vertices
+                                    .iter()
+                                    .map(|(_, _, _, u, v)| (*u, *v))
+                                    .collect::<Vec<_>>(),
+                                &base_texture.uri.to_file_path().unwrap(),
+                                &DownsampleFactor::new(&1.0).value(),
+                            );
+
+                            // Unique id required for placement in atlas
+                            let texture_id = format!("{}_{}_{}", tile_id, feature_id, poly_count);
+                            let info = packer.add_texture(texture_id, texture);
+
+                            let atlas_placed_uv_coords = info
+                                .placed_uv_coords
+                                .iter()
+                                .map(|(u, v)| ({ *u }, { *v }))
+                                .collect::<Vec<(f64, f64)>>();
+                            let updated_vertices = original_vertices
+                                .iter()
+                                .zip(atlas_placed_uv_coords.iter())
+                                .map(|((x, y, z, _, _), (u, v))| (*x, *y, *z, *u, *v))
+                                .collect::<Vec<(f64, f64, f64, f64, f64)>>();
+
+                            // update_verticesを利用して、polyのtransform_inplaceメソッドで頂点を更新する
+                            poly.transform_inplace(|&[x, y, z, _, _]| {
+                                let (u, v) = updated_vertices
+                                    .iter()
+                                    .find(|(x_, y_, z_, _, _)| {
+                                        (*x_ - x).abs() < 1e-6
+                                            && (*y_ - y).abs() < 1e-6
+                                            && (*z_ - z).abs() < 1e-6
+                                    })
+                                    .map(|(_, _, _, u, v)| (*u, *v))
+                                    .unwrap();
+                                [x, y, z, u, v]
+                            });
+
+                            let atlas_file_name = format!("{}/{}", tile_id, &info.atlas_id);
+
+                            let atlas_uri = atlas_dir
+                                .path()
+                                .join(atlas_file_name)
+                                .with_extension(ext.clone());
+
+                            // update material
+                            let mat = material::Material {
+                                base_color: mat.base_color,
+                                base_texture: Some(material::Texture {
+                                    uri: Url::from_file_path(atlas_uri).unwrap(),
+                                }),
+                            };
+                        }
+                        None => {}
+                    }
+
                     let num_outer_points = match poly.hole_indices().first() {
                         Some(&v) => v as usize,
                         None => poly.raw_coords().len(),
                     };
 
-                    let mat = &feature.materials[*orig_mat_id as usize];
-
-                    // add texture to texture packer
-                    let Some(base_texture) = mat.base_texture.clone() else {
-                        continue;
-                    };
+                    let primitive = primitives.entry(mat.clone()).or_default();
+                    primitive.feature_ids.insert(feature_id as u32);
 
                     if let Some((nx, ny, nz)) =
                         calculate_normal(poly.exterior().iter().map(|v| [v[0], v[1], v[2]]))
@@ -482,89 +550,232 @@ fn tile_writing_stage(
                                 &mut index_buf,
                             );
 
-                            // todo: この辺りなおす
-                            for (triangle_count, chunks) in index_buf.chunks(3).enumerate() {
-                                let org_uv_coords = chunks
-                                    .iter()
-                                    .map(|&idx| {
-                                        let [_, _, _, u, v] = poly.raw_coords()[idx as usize];
-                                        (u, v)
-                                    })
-                                    .collect::<Vec<(f64, f64)>>();
-
-                                let texture = texture_cache.get_or_insert(
-                                    &org_uv_coords,
-                                    &base_texture.uri.to_file_path().unwrap(),
-                                    &DownsampleFactor::new(&1.0).value(),
-                                );
-
-                                // Unique id required for placement in atlas
-                                let texture_id = format!(
-                                    "{}_{}_{}_{}",
-                                    tile_id, feature_id, poly_count, triangle_count
-                                );
-                                let info = packer.add_texture(texture_id, texture);
-                                let new_uv_coords = info
-                                    .placed_uv_coords
-                                    .iter()
-                                    .map(|(u, v)| ({ *u }, { *v }))
-                                    .collect::<Vec<(f64, f64)>>();
-
-                                for uv in new_uv_coords.iter() {
-                                    // update uv_coords
-                                    poly.transform_inplace(|&[x, y, z, _, _]| {
-                                        let (u, v) = *uv;
-                                        [x, y, z, u, v]
-                                    });
-                                }
-
-                                let atlas_file_name = format!("{}/{}", tile_id, &info.atlas_id);
-                                let atlas_uri = atlas_dir
-                                    .path()
-                                    .join(atlas_file_name)
-                                    .with_extension(ext.clone());
-
-                                // update material
-                                let new_mat = material::Material {
-                                    base_color: mat.base_color,
-                                    base_texture: Some(material::Texture {
-                                        uri: Url::from_file_path(atlas_uri).unwrap(),
-                                    }),
-                                };
-
-                                let primitive = primitives.entry(new_mat).or_default();
-                                primitive.feature_ids.insert(feature_id as u32);
-
-                                // collect triangles
-                                primitive.indices.extend(index_buf.iter().map(|&idx| {
-                                    let [x, y, z, u, v] = poly.raw_coords()[idx as usize];
-                                    let vbits = [
-                                        (x as f32).to_bits(),
-                                        (y as f32).to_bits(),
-                                        (z as f32).to_bits(),
-                                        (nx as f32).to_bits(),
-                                        (ny as f32).to_bits(),
-                                        (nz as f32).to_bits(),
-                                        (u as f32).to_bits(),
-                                        (v as f32).to_bits(),
-                                        (feature_id as f32).to_bits(), // UNSIGNED_INT can't be used for vertex attribute
-                                    ];
-                                    let (index, _) = vertices.insert_full(vbits);
-                                    index as u32
-                                }));
-                            }
+                            // collect triangles
+                            primitive.indices.extend(index_buf.iter().map(|&idx| {
+                                let [x, y, z, u, v] = poly.raw_coords()[idx as usize];
+                                let vbits = [
+                                    (x as f32).to_bits(),
+                                    (y as f32).to_bits(),
+                                    (z as f32).to_bits(),
+                                    (nx as f32).to_bits(),
+                                    (ny as f32).to_bits(),
+                                    (nz as f32).to_bits(),
+                                    (u as f32).to_bits(),
+                                    (v as f32).to_bits(),
+                                    (feature_id as f32).to_bits(), // UNSIGNED_INT can't be used for vertex attribute
+                                ];
+                                let (index, _) = vertices.insert_full(vbits);
+                                index as u32
+                            }));
                         }
                     }
-                    poly_count += 1;
+
+                    // // ----------------------------------------
+                    // let num_outer_points = match poly.hole_indices().first() {
+                    //     Some(&v) => v as usize,
+                    //     None => poly.raw_coords().len(),
+                    // };
+
+                    // let primitive = primitives.entry(mat.clone()).or_default();
+                    // primitive.feature_ids.insert(feature_id as u32);
+
+                    // if let Some((nx, ny, nz)) =
+                    //     calculate_normal(poly.exterior().iter().map(|v| [v[0], v[1], v[2]]))
+                    // {
+                    //     buf3d.clear();
+                    //     buf3d.extend(poly.raw_coords().iter().map(|c| [c[0], c[1], c[2]]));
+
+                    //     if project3d_to_2d(&buf3d, num_outer_points, &mut buf2d) {
+                    //         // earcut
+                    //         earcutter.earcut(
+                    //             buf2d.iter().cloned(),
+                    //             poly.hole_indices(),
+                    //             &mut index_buf,
+                    //         );
+
+                    //         // collect triangles
+                    //         primitive.indices.extend(index_buf.iter().map(|&idx| {
+                    //             let [x, y, z, u, v] = poly.raw_coords()[idx as usize];
+                    //             let vbits = [
+                    //                 (x as f32).to_bits(),
+                    //                 (y as f32).to_bits(),
+                    //                 (z as f32).to_bits(),
+                    //                 (nx as f32).to_bits(),
+                    //                 (ny as f32).to_bits(),
+                    //                 (nz as f32).to_bits(),
+                    //                 (u as f32).to_bits(),
+                    //                 (v as f32).to_bits(),
+                    //                 (feature_id as f32).to_bits(), // UNSIGNED_INT can't be used for vertex attribute
+                    //             ];
+                    //             let (index, _) = vertices.insert_full(vbits);
+                    //             index as u32
+                    //         }));
+                    //     }
+                    // }
+
+                    // // FIXME: material handling
+                    // // let mat = &feature.materials[*orig_mat_id as usize];
+                    // // not textured
+                    // let Some(base_texture) = mat.base_texture.clone() else {
+                    //     let primitive = primitives.entry(mat.clone()).or_default();
+                    //     primitive.feature_ids.insert(feature_id as u32);
+
+                    //     if let Some((nx, ny, nz)) =
+                    //         calculate_normal(poly.exterior().iter().map(|v| [v[0], v[1], v[2]]))
+                    //     {
+                    //         buf3d.clear();
+                    //         buf3d.extend(poly.raw_coords().iter().map(|c| [c[0], c[1], c[2]]));
+
+                    //         if project3d_to_2d(&buf3d, num_outer_points, &mut buf2d) {
+                    //             // earcut
+                    //             earcutter.earcut(
+                    //                 buf2d.iter().cloned(),
+                    //                 poly.hole_indices(),
+                    //                 &mut index_buf,
+                    //             );
+
+                    //             // collect triangles
+                    //             primitive.indices.extend(index_buf.iter().map(|&idx| {
+                    //                 let [x, y, z, u, v] = poly.raw_coords()[idx as usize];
+                    //                 let vbits = [
+                    //                     (x as f32).to_bits(),
+                    //                     (y as f32).to_bits(),
+                    //                     (z as f32).to_bits(),
+                    //                     (nx as f32).to_bits(),
+                    //                     (ny as f32).to_bits(),
+                    //                     (nz as f32).to_bits(),
+                    //                     (u as f32).to_bits(),
+                    //                     (v as f32).to_bits(),
+                    //                     (feature_id as f32).to_bits(), // UNSIGNED_INT can't be used for vertex attribute
+                    //                 ];
+                    //                 let (index, _) = vertices.insert_full(vbits);
+                    //                 index as u32
+                    //             }));
+                    //         }
+                    //     }
+                    //     continue;
+                    // };
+
+                    // // textured
+                    // if let Some((nx, ny, nz)) =
+                    //     calculate_normal(poly.exterior().iter().map(|v| [v[0], v[1], v[2]]))
+                    // {
+                    //     buf3d.clear();
+                    //     buf3d.extend(poly.raw_coords().iter().map(|c| [c[0], c[1], c[2]]));
+
+                    //     if project3d_to_2d(&buf3d, num_outer_points, &mut buf2d) {
+                    //         // earcut
+                    //         earcutter.earcut(
+                    //             buf2d.iter().cloned(),
+                    //             poly.hole_indices(),
+                    //             &mut index_buf,
+                    //         );
+
+                    //         // adding triangles to the atlas
+                    //         for (triangle_count, chunks_idx) in index_buf.chunks(3).enumerate() {
+                    //             let original_vertices = chunks_idx
+                    //                 .iter()
+                    //                 .map(|&idx| {
+                    //                     let [x, y, z, u, v] = poly.raw_coords()[idx as usize];
+                    //                     (x, y, z, u, v, nx, ny, nz)
+                    //                 })
+                    //                 .collect::<Vertex>();
+                    //             let original_uv_coords = original_vertices
+                    //                 .iter()
+                    //                 .map(|(_, _, _, u, v, _, _, _)| (*u, *v))
+                    //                 .collect::<Vec<(f64, f64)>>();
+
+                    //             let texture = texture_cache.get_or_insert(
+                    //                 &original_uv_coords,
+                    //                 &base_texture.uri.to_file_path().unwrap(),
+                    //                 &DownsampleFactor::new(&1.0).value(),
+                    //             );
+
+                    //             // Unique id required for placement in atlas
+                    //             let texture_id = format!(
+                    //                 "{}_{}_{}_{}",
+                    //                 tile_id, feature_id, poly_count, triangle_count
+                    //             );
+                    //             let info = packer.add_texture(texture_id, texture);
+
+                    //             let atlas_placed_uv_coords = info
+                    //                 .placed_uv_coords
+                    //                 .iter()
+                    //                 .map(|(u, v)| ({ *u }, { *v }))
+                    //                 .collect::<Vec<(f64, f64)>>();
+                    //             let updated_vertices = original_vertices
+                    //                 .iter()
+                    //                 .zip(atlas_placed_uv_coords.iter())
+                    //                 .map(|((x, y, z, _, _, nx, ny, nz), (u, v))| {
+                    //                     (*x, *y, *z, *u, *v, *nx, *ny, *nz)
+                    //                 })
+                    //                 .collect::<Vertex>();
+
+                    //             let atlas_file_name = format!("{}/{}", tile_id, &info.atlas_id);
+
+                    //             match atlas_files.get_mut(&atlas_file_name) {
+                    //                 Some((vertex, _)) => {
+                    //                     vertex.extend(updated_vertices);
+                    //                 }
+                    //                 None => {
+                    //                     atlas_files.insert(
+                    //                         atlas_file_name,
+                    //                         (updated_vertices, mat.base_color),
+                    //                     );
+                    //                 }
+                    //             }
+                    //         }
+                    //     }
+                    // }
                 }
-                feature_id += 1;
+
+                packer.finalize();
+
+                // for (atlas_file_name, (updated_vertices, base_color)) in atlas_files.iter() {
+                //     let atlas_uri = atlas_dir
+                //         .path()
+                //         .join(atlas_file_name)
+                //         .with_extension(ext.clone());
+
+                //     // update material
+                //     let new_mat = material::Material {
+                //         base_color: *base_color,
+                //         base_texture: Some(material::Texture {
+                //             uri: Url::from_file_path(atlas_uri).unwrap(),
+                //         }),
+                //     };
+
+                //     let primitive = primitives.entry(new_mat).or_default();
+                //     primitive.feature_ids.insert(feature_id as u32);
+
+                //     // collect triangles
+                //     primitive
+                //         .indices
+                //         .extend(updated_vertices.iter().map(|vertex| {
+                //             let (x, y, z, u, v, nx, ny, nz) = vertex;
+                //             let vbits = [
+                //                 (*x as f32).to_bits(),
+                //                 (*y as f32).to_bits(),
+                //                 (*z as f32).to_bits(),
+                //                 (*nx as f32).to_bits(),
+                //                 (*ny as f32).to_bits(),
+                //                 (*nz as f32).to_bits(),
+                //                 (*u as f32).to_bits(),
+                //                 (*v as f32).to_bits(),
+                //                 (feature_id as f32).to_bits(), // UNSIGNED_INT can't be used for vertex attribute
+                //             ];
+                //             let (index, _) = vertices.insert_full(vbits);
+
+                //             index as u32
+                //         }));
+                // }
             }
-            packer.finalize();
+            feature_id += 1;
 
             // Write to atlas
             let atlas_path = atlas_dir.path().join(tile_id.to_string());
             fs::create_dir_all(&atlas_path)?;
-            packer.export(&atlas_path, &texture_cache);
+            packer.export(&atlas_path, &texture_cache, config.width, config.height);
 
             // Write to file
             let path_glb = output_path.join(Path::new(&content.content_path));
