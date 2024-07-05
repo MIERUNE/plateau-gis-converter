@@ -26,10 +26,11 @@ impl Default for TexturePlacerConfig {
 pub struct PlacedTextureInfo {
     pub id: String,
     pub atlas_id: String,
-    pub origin: (u32, u32), // 左上が原点
+    // Pixel coordinates on atlas
+    pub origin: (u32, u32),
     pub width: u32,
     pub height: u32,
-    // UV coordinates on atlas (左下が原点)
+    // UV coordinates on atlas
     pub placed_uv_coords: Vec<(f64, f64)>,
 }
 
