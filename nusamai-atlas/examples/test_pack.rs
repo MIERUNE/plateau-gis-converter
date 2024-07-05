@@ -50,7 +50,7 @@ fn main() {
     let mut packer = TexturePacker::new(placer, exporter);
 
     // Texture cache
-    let texture_cache = TextureCache::new(8192);
+    let texture_cache = TextureCache::new(100_000_000);
 
     // Add textures to the atlas
     polygons.iter().for_each(|polygon| {
