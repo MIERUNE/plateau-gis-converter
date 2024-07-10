@@ -2,12 +2,13 @@
 mod gltf_writer;
 mod material;
 
-use std::{fs::File, io::BufWriter, path::PathBuf, sync::Mutex};
+use std::{f64::consts::FRAC_PI_2, fs::File, io::BufWriter, path::PathBuf, sync::Mutex};
 
 use crate::sink::cesiumtiles::utils::calculate_normal;
 use ahash::{HashMap, HashSet, RandomState};
 use earcut::{utils3d::project3d_to_2d, Earcut};
 use flatgeom::MultiPolygon;
+use glam::{DMat4, DVec3, DVec4};
 use gltf_writer::{write_3dtiles, write_gltf_glb};
 use indexmap::IndexSet;
 use itertools::Itertools;
@@ -292,21 +293,39 @@ impl DataSink for GltfSink {
             Ok::<(), PipelineError>(())
         });
 
+        let classified_features = classified_features.into_inner().unwrap();
+
         // Bounding volume for the entire dataset
-        let global_bvol = Mutex::new(BoundingVolume::default());
+        let global_bvol = {
+            let mut global_bvol = BoundingVolume::default();
+            for features in classified_features.values() {
+                global_bvol.update(&features.bounding_volume);
+            }
+            global_bvol
+        };
+
         let tileset_content_files = Mutex::new(Vec::new());
 
-        let classified_features = classified_features.into_inner().unwrap();
+        let transform_matrix = {
+            let bounds = &global_bvol;
+            let center_lng = (bounds.min_lng + bounds.max_lng) / 2.0;
+            let center_lat = (bounds.min_lat + bounds.max_lat) / 2.0;
+
+            let psi = ((1. - ellipsoid.e_sq()) * center_lat.to_radians().tan()).atan();
+
+            let (tx, ty, tz) = geodetic_to_geocentric(&ellipsoid, center_lng, center_lat, 0.);
+            let h = (tx * tx + ty * ty + tz * tz).sqrt();
+
+            DMat4::from_translation(DVec3::new(0., -h, 0.))
+                * DMat4::from_rotation_x(-(FRAC_PI_2 - psi))
+                * DMat4::from_rotation_y((-center_lng - 90.).to_radians())
+        };
+        let transform_matrix_inv = transform_matrix.inverse();
 
         classified_features
             .into_par_iter()
             .try_for_each(|(typename, mut features)| {
                 feedback.ensure_not_canceled()?;
-
-                global_bvol
-                    .lock()
-                    .unwrap()
-                    .update(&features.bounding_volume);
 
                 // Triangulation
                 let mut earcutter: Earcut<f64> = Earcut::new();
@@ -319,21 +338,6 @@ impl DataSink for GltfSink {
 
                 let mut metadata_encoder = metadata::MetadataEncoder::new(schema);
 
-                // triangulation and make vertices and primitives
-                let translation = {
-                    let bounds = features.bounding_volume;
-                    let (tx, ty, tz) = geodetic_to_geocentric(
-                        &ellipsoid,
-                        (bounds.min_lng + bounds.max_lng) / 2.0,
-                        (bounds.min_lat + bounds.max_lat) / 2.0,
-                        0.,
-                    );
-                    // z-up to y-up
-                    let [tx, ty, tz] = [tx, tz, -ty];
-                    // double-precision to single-precision
-                    [(tx as f32) as f64, (ty as f32) as f64, (tz as f32) as f64]
-                };
-
                 // make vertices and indices
                 let mut feature_id = 0;
                 for feature in features.features.iter_mut() {
@@ -345,17 +349,14 @@ impl DataSink for GltfSink {
                         .transform_inplace(|&[lng, lat, height, u, v]| {
                             // geographic to geocentric
                             let (x, y, z) = geodetic_to_geocentric(&ellipsoid, lng, lat, height);
-
                             // z-up to y-up
-                            // subtract the translation
+                            let v_xyz = DVec4::new(x, z, -y, 1.0);
+                            // local ENU coordinate
+                            let v_enu = transform_matrix * v_xyz;
+                            // println!("enu: {:?}", v_enu);
+
                             // flip the texture v-coordinate
-                            [
-                                x - translation[0],
-                                z - translation[1],
-                                -y - translation[2],
-                                u,
-                                1.0 - v,
-                            ]
+                            [v_enu[0], v_enu[1], v_enu[2], u, 1.0 - v]
                         });
 
                     // Encode properties
@@ -423,13 +424,7 @@ impl DataSink for GltfSink {
 
                 // Write glTF (.glb)
                 let file_path = {
-                    let filename = format!(
-                        "{}.glb",
-                        typename
-                            .split_once(':')
-                            .map(|(_, s)| s)
-                            .unwrap_or(&typename)
-                    );
+                    let filename = format!("{}.glb", typename.replace(':', "_"));
                     // Save the filename to the content list of the tileset.json (3D Tiles)
                     tileset_content_files.lock().unwrap().push(filename.clone());
 
@@ -442,7 +437,7 @@ impl DataSink for GltfSink {
                 write_gltf_glb(
                     feedback,
                     writer,
-                    translation,
+                    DMat4::IDENTITY.to_cols_array(), // no transformation
                     vertices,
                     primitives,
                     metadata_encoder,
@@ -452,7 +447,7 @@ impl DataSink for GltfSink {
             })?;
 
         // write 3DTiles
-        let bounds = global_bvol.lock().unwrap();
+        let bounds = &global_bvol;
         let region: [f64; 6] = [
             bounds.min_lng.to_radians(),
             bounds.min_lat.to_radians(),
@@ -463,6 +458,7 @@ impl DataSink for GltfSink {
         ];
         write_3dtiles(
             region,
+            transform_matrix_inv.to_cols_array(),
             &self.output_path,
             &tileset_content_files.lock().unwrap(),
         )?;

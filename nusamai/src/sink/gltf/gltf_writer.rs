@@ -17,7 +17,7 @@ use crate::{
 pub fn write_gltf_glb<W: Write>(
     feedback: &feedback::Feedback,
     writer: W,
-    translation: [f64; 3],
+    transform: [f64; 16],
     vertices: impl IntoIterator<Item = [u32; 9]>,
     primitives: Primitives,
     metadata_encoder: metadata::MetadataEncoder,
@@ -237,7 +237,7 @@ pub fn write_gltf_glb<W: Write>(
         }],
         nodes: vec![Node {
             mesh: (!primitives.is_empty()).then_some(0),
-            translation,
+            matrix: transform,
             ..Default::default()
         }],
         meshes: gltf_meshes,
@@ -273,6 +273,7 @@ pub fn write_gltf_glb<W: Write>(
 // This is the code to verify the operation with Cesium
 pub fn write_3dtiles(
     bounding_volume: [f64; 6],
+    transform: [f64; 16],
     output_path: &Path,
     filenames: &[String],
 ) -> std::io::Result<()> {
@@ -301,6 +302,7 @@ pub fn write_3dtiles(
                 region: Some(bounding_volume),
                 ..Default::default()
             },
+            transform,
             contents: Some(contents),
             ..Default::default()
         },
