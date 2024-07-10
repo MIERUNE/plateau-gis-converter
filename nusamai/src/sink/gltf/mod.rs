@@ -9,7 +9,7 @@ use ahash::{HashMap, HashSet, RandomState};
 use earcut::{utils3d::project3d_to_2d, Earcut};
 use flatgeom::MultiPolygon;
 use glam::{DMat4, DVec3, DVec4};
-use gltf_writer::{write_3dtiles, write_gltf_glb};
+use gltf_writer::write_gltf_glb;
 use indexmap::IndexSet;
 use itertools::Itertools;
 use material::{Material, Texture};
@@ -320,7 +320,7 @@ impl DataSink for GltfSink {
                 * DMat4::from_rotation_x(-(FRAC_PI_2 - psi))
                 * DMat4::from_rotation_y((-center_lng - 90.).to_radians())
         };
-        let transform_matrix_inv = transform_matrix.inverse();
+        let _ = transform_matrix.inverse();
 
         classified_features
             .into_par_iter()
@@ -438,23 +438,6 @@ impl DataSink for GltfSink {
 
                 Ok::<(), PipelineError>(())
             })?;
-
-        // write 3DTiles
-        let bounds = &global_bvol;
-        let region: [f64; 6] = [
-            bounds.min_lng.to_radians(),
-            bounds.min_lat.to_radians(),
-            bounds.max_lng.to_radians(),
-            bounds.max_lat.to_radians(),
-            bounds.min_height,
-            bounds.max_height,
-        ];
-        write_3dtiles(
-            region,
-            transform_matrix_inv.to_cols_array(),
-            &self.output_path,
-            &tileset_content_files.lock().unwrap(),
-        )?;
 
         Ok(())
     }

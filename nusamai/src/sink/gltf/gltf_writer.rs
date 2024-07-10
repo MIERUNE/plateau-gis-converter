@@ -1,8 +1,4 @@
-use std::{
-    fs::File,
-    io::{BufWriter, Write},
-    path::Path,
-};
+use std::io::Write;
 
 use byteorder::{ByteOrder, LittleEndian};
 use indexmap::IndexSet;
@@ -264,52 +260,6 @@ pub fn write_gltf_glb<W: Write>(
         bin: Some(bin_content.into()),
     }
     .to_writer_with_alignment(writer, 8)?;
-
-    Ok(())
-}
-
-// This is the code to verify the operation with Cesium
-pub fn write_3dtiles(
-    bounding_volume: [f64; 6],
-    transform: [f64; 16],
-    output_path: &Path,
-    filenames: &[String],
-) -> std::io::Result<()> {
-    // write 3DTiles
-    let tileset_path = output_path.join("tileset.json");
-
-    let contents: Vec<cesiumtiles::tileset::Content> = filenames
-        .iter()
-        .map(|filename| {
-            let uri = filename.to_string();
-            cesiumtiles::tileset::Content {
-                uri,
-                ..Default::default()
-            }
-        })
-        .collect();
-
-    let tileset = cesiumtiles::tileset::Tileset {
-        geometric_error: 1e+100,
-        asset: cesiumtiles::tileset::Asset {
-            version: "1.1".to_string(),
-            ..Default::default()
-        },
-        root: cesiumtiles::tileset::Tile {
-            bounding_volume: cesiumtiles::tileset::BoundingVolume {
-                region: Some(bounding_volume),
-                ..Default::default()
-            },
-            transform,
-            contents: Some(contents),
-            ..Default::default()
-        },
-        ..Default::default()
-    };
-
-    let mut tileset_file = File::create(tileset_path)?;
-    let tileset_writer = BufWriter::with_capacity(1024 * 1024, &mut tileset_file);
-    serde_json::to_writer_pretty(tileset_writer, &tileset)?;
 
     Ok(())
 }
