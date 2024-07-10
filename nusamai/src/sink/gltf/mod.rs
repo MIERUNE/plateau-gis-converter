@@ -434,14 +434,7 @@ impl DataSink for GltfSink {
                 let mut file = File::create(file_path)?;
                 let writer = BufWriter::with_capacity(1024 * 1024, &mut file);
 
-                write_gltf_glb(
-                    feedback,
-                    writer,
-                    DMat4::IDENTITY.to_cols_array(), // no transformation
-                    vertices,
-                    primitives,
-                    metadata_encoder,
-                )?;
+                write_gltf_glb(feedback, writer, vertices, primitives, metadata_encoder)?;
 
                 Ok::<(), PipelineError>(())
             })?;

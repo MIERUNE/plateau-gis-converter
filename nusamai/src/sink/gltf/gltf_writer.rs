@@ -17,7 +17,6 @@ use crate::{
 pub fn write_gltf_glb<W: Write>(
     feedback: &feedback::Feedback,
     writer: W,
-    transform: [f64; 16],
     vertices: impl IntoIterator<Item = [u32; 9]>,
     primitives: Primitives,
     metadata_encoder: metadata::MetadataEncoder,
@@ -237,7 +236,6 @@ pub fn write_gltf_glb<W: Write>(
         }],
         nodes: vec![Node {
             mesh: (!primitives.is_empty()).then_some(0),
-            matrix: transform,
             ..Default::default()
         }],
         meshes: gltf_meshes,
