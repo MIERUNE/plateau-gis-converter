@@ -29,9 +29,22 @@ pub struct Texture {
     pub extras: Option<Value>,
 }
 
+// #[derive(Serialize, Deserialize, Debug, Default, PartialEq)]
+// #[serde(rename_all = "camelCase")]
+// pub struct TextureExtensions {
+//     #[serde(flatten)]
+//     others: HashMap<String, Value>,
+// }
+
+#[derive(Serialize, Deserialize, Debug, Default, PartialEq)]
+pub struct EXTTextureWebP {
+    pub source: u32,
+}
+
 #[derive(Serialize, Deserialize, Debug, Default, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct TextureExtensions {
-    #[serde(flatten)]
-    others: HashMap<String, Value>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "EXT_texture_webp")]
+    pub ext_texture_webp: Option<EXTTextureWebP>,
 }

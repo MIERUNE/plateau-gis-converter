@@ -198,18 +198,34 @@ pub fn write_gltf_glb<W: Write>(
         .map(|material| material.to_gltf(&mut texture_set))
         .collect();
 
+    let num_images = texture_set.len(); // 現在の image_set の長さを取得
+
     let gltf_textures: Vec<_> = texture_set
         .into_iter()
-        .map(|t| t.to_gltf(&mut image_set))
+        .map(|t| t.to_gltf(&mut image_set, num_images))
         .collect();
 
-    let gltf_images = image_set
-        .into_iter()
-        .map(|img| {
-            feedback.ensure_not_canceled()?;
-            Ok(img.to_gltf(feedback, &mut gltf_buffer_views, &mut bin_content)?)
-        })
-        .collect::<Result<Vec<Image>, PipelineError>>()?;
+    // let gltf_images = image_set
+    //     .into_iter()
+    //     .map(|img| {
+    //         feedback.ensure_not_canceled()?;
+    //         Ok(img.to_gltf(feedback, &mut gltf_buffer_views, &mut bin_content)?)
+    //     })
+    //     .collect::<Result<Vec<Image>, PipelineError>>()?;
+
+    let (mut gltf_images, mut gltf_images2): (Vec<nusamai_gltf_json::Image>, Vec<nusamai_gltf_json::Image>) = image_set
+    .into_iter()
+    .map(|img| {
+        feedback.ensure_not_canceled().map_err(PipelineError::from)?;
+        let gltf_image = img.to_gltf(feedback, &mut gltf_buffer_views, &mut bin_content).map_err(PipelineError::from)?;
+        let gltf_image2 = img.to_gltf2(feedback, &mut gltf_buffer_views, &mut bin_content).map_err(PipelineError::from)?;
+        Ok((gltf_image, gltf_image2))
+    })
+    .collect::<Result<Vec<(nusamai_gltf_json::Image, nusamai_gltf_json::Image)>, PipelineError>>()?
+    .into_iter()
+    .unzip();
+
+    gltf_images.append(&mut gltf_images2);
 
     let mut gltf_meshes = vec![];
     if !gltf_primitives.is_empty() {
@@ -258,6 +274,7 @@ pub fn write_gltf_glb<W: Write>(
         extensions_used: vec![
             "EXT_mesh_features".to_string(),
             "EXT_structural_metadata".to_string(),
+            "EXT_texture_webp".to_string(),
         ],
         ..Default::default()
     };
