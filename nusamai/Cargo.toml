@@ -51,6 +51,7 @@ chrono = "0.4.35"
 kv-extsort = { git = "https://github.com/MIERUNE/kv-extsort-rs.git" }
 bytemuck = { version = "1.16.0", features = ["derive"] }
 dda-voxelize = "0.2.0-alpha.1"
+webp = "0.3.0"
 
 [dev-dependencies]
 rand = "0.8.5"

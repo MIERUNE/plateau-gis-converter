@@ -132,7 +132,7 @@ impl Image {
         if let Ok(path) = self.uri.to_file_path() {
             // NOTE: temporary implementation
 
-            let (content, mime_type) = created_webp(&path)?;
+            let (content, mime_type) = create_webp(&path)?;
 
             buffer_views.push(BufferView {
                 name: Some("image".to_string()),
@@ -201,24 +201,41 @@ fn to_f64x4(c: [f32; 4]) -> [f64; 4] {
     ]
 }
 
-pub fn created_webp(path: &Path) -> std::io::Result<(Vec<u8>, MimeType)> {
-    // Open the image
+// pub fn create_webp(path: &Path) -> std::io::Result<(Vec<u8>, MimeType)> {
+//     // Open the image
+//     let img = image::open(path)
+//         .map_err(|err| std::io::Error::new(std::io::ErrorKind::InvalidData, err))?;
+
+//     let mut buffer = Vec::new();
+//     let writer = BufWriter::new(&mut buffer);
+
+//     let encoder = WebPEncoder::new_lossless(writer);
+//     encoder
+//         .encode(
+//             &img.to_rgba8(),
+//             img.width(),
+//             img.height(),
+//             image::ExtendedColorType::Rgba8,
+//         )
+//         .map_err(|err| std::io::Error::new(std::io::ErrorKind::InvalidData, err))?;
+
+//     // Return the buffer contents and MIME type
+//     Ok((buffer, MimeType::ImageWebp))
+// }
+
+use webp::{Encoder, WebPMemory};
+
+pub fn create_webp(path: &Path) -> std::io::Result<(Vec<u8>, MimeType)> {
     let img = image::open(path)
         .map_err(|err| std::io::Error::new(std::io::ErrorKind::InvalidData, err))?;
 
-    let mut buffer = Vec::new();
-    let writer = BufWriter::new(&mut buffer);
+    let rgba = img.to_rgba8();
 
-    let encoder = WebPEncoder::new_lossless(writer);
-    encoder
-        .encode(
-            &img.to_rgba8(),
-            img.width(),
-            img.height(),
-            image::ExtendedColorType::Rgba8,
-        )
-        .map_err(|err| std::io::Error::new(std::io::ErrorKind::InvalidData, err))?;
+    let encoder = Encoder::from_rgba(&rgba, img.width(), img.height());
 
-    // Return the buffer contents and MIME type
+    let webp_memory: WebPMemory = encoder.encode(100.0);
+
+    let buffer = webp_memory.to_vec();
+
     Ok((buffer, MimeType::ImageWebp))
 }
