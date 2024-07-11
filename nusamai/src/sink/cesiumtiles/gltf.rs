@@ -198,34 +198,18 @@ pub fn write_gltf_glb<W: Write>(
         .map(|material| material.to_gltf(&mut texture_set))
         .collect();
 
-    let num_images = texture_set.len(); // 現在の image_set の長さを取得
-
     let gltf_textures: Vec<_> = texture_set
         .into_iter()
-        .map(|t| t.to_gltf(&mut image_set, num_images))
+        .map(|t| t.to_gltf(&mut image_set))
         .collect();
 
-    // let gltf_images = image_set
-    //     .into_iter()
-    //     .map(|img| {
-    //         feedback.ensure_not_canceled()?;
-    //         Ok(img.to_gltf(feedback, &mut gltf_buffer_views, &mut bin_content)?)
-    //     })
-    //     .collect::<Result<Vec<Image>, PipelineError>>()?;
-
-    let (mut gltf_images, mut gltf_images2): (Vec<nusamai_gltf_json::Image>, Vec<nusamai_gltf_json::Image>) = image_set
-    .into_iter()
-    .map(|img| {
-        feedback.ensure_not_canceled().map_err(PipelineError::from)?;
-        let gltf_image = img.to_gltf(feedback, &mut gltf_buffer_views, &mut bin_content).map_err(PipelineError::from)?;
-        let gltf_image2 = img.to_gltf2(feedback, &mut gltf_buffer_views, &mut bin_content).map_err(PipelineError::from)?;
-        Ok((gltf_image, gltf_image2))
-    })
-    .collect::<Result<Vec<(nusamai_gltf_json::Image, nusamai_gltf_json::Image)>, PipelineError>>()?
-    .into_iter()
-    .unzip();
-
-    gltf_images.append(&mut gltf_images2);
+    let gltf_images = image_set
+        .into_iter()
+        .map(|img| {
+            feedback.ensure_not_canceled()?;
+            Ok(img.to_gltf(feedback, &mut gltf_buffer_views, &mut bin_content)?)
+        })
+        .collect::<Result<Vec<Image>, PipelineError>>()?;
 
     let mut gltf_meshes = vec![];
     if !gltf_primitives.is_empty() {
@@ -245,6 +229,17 @@ pub fn write_gltf_glb<W: Write>(
         }
         buffers
     };
+
+    // Create the extensions_used vector
+    let mut extensions_used = vec![
+        "EXT_mesh_features".to_string(),
+        "EXT_structural_metadata".to_string(),
+    ];
+
+    // Add "EXT_texture_webp" extension if WebP textures are present
+    if has_webp_texture(&gltf_textures) {
+        extensions_used.push("EXT_texture_webp".to_string());
+    }
 
     feedback.ensure_not_canceled()?;
 
@@ -271,11 +266,7 @@ pub fn write_gltf_glb<W: Write>(
             ..Default::default()
         }
         .into(),
-        extensions_used: vec![
-            "EXT_mesh_features".to_string(),
-            "EXT_structural_metadata".to_string(),
-            "EXT_texture_webp".to_string(),
-        ],
+        extensions_used,
         ..Default::default()
     };
 
@@ -287,4 +278,15 @@ pub fn write_gltf_glb<W: Write>(
     .to_writer_with_alignment(writer, 8)?;
 
     Ok(())
+}
+
+// Function to check if any texture uses WebP
+fn has_webp_texture(textures: &[nusamai_gltf_json::Texture]) -> bool {
+    textures.iter().any(|texture| {
+        texture
+            .extensions
+            .as_ref()
+            .and_then(|ext| ext.ext_texture_webp.as_ref())
+            .is_some()
+    })
 }

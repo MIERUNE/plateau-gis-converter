@@ -7,9 +7,6 @@ use nusamai_gltf_json::{BufferView, MimeType};
 use serde::{Deserialize, Serialize};
 use url::Url;
 
-use image::codecs::webp::WebPEncoder;
-use std::io::BufWriter;
-
 use crate::pipeline::Feedback;
 
 #[derive(Debug, Serialize, Clone, PartialEq, Deserialize)]
@@ -65,20 +62,34 @@ impl Texture {
     pub fn to_gltf(
         &self,
         images: &mut IndexSet<Image, ahash::RandomState>,
-        num_images: usize,
     ) -> nusamai_gltf_json::Texture {
         let (image_index, _) = images.insert_full(Image {
             uri: self.uri.clone(),
         });
 
-        nusamai_gltf_json::Texture {
-            extensions: Some(nusamai_gltf_json::TextureExtensions {
-                ext_texture_webp: Some(nusamai_gltf_json::EXTTextureWebP {
-                    source: num_images as u32 + image_index as u32,
+        // Get the file extension
+        let extension = self
+            .uri
+            .path()
+            .rsplit('.')
+            .next()
+            .map(|ext| ext.to_lowercase());
+
+        if extension == Some("webp".to_string()) {
+            nusamai_gltf_json::Texture {
+                extensions: Some(nusamai_gltf_json::TextureExtensions {
+                    ext_texture_webp: Some(nusamai_gltf_json::EXTTextureWebP {
+                        source: image_index as u32,
+                    }),
                 }),
-            }),
-            source: Some(image_index as u32),
-            ..Default::default()
+                source: Some(image_index as u32),
+                ..Default::default()
+            }
+        } else {
+            nusamai_gltf_json::Texture {
+                source: Some(image_index as u32),
+                ..Default::default()
+            }
         }
     }
 }
@@ -89,7 +100,6 @@ pub struct Image {
 }
 
 impl Image {
-    // NOTE jpeg
     pub fn to_gltf(
         &self,
         feedback: &Feedback,
@@ -99,40 +109,6 @@ impl Image {
         if let Ok(path) = self.uri.to_file_path() {
             // NOTE: temporary implementation
             let (content, mime_type) = load_image(feedback, &path)?;
-
-            buffer_views.push(BufferView {
-                name: Some("image".to_string()),
-                byte_offset: bin_content.len() as u32,
-                byte_length: content.len() as u32,
-                ..Default::default()
-            });
-
-            bin_content.extend(content);
-
-            Ok(nusamai_gltf_json::Image {
-                mime_type: Some(mime_type),
-                buffer_view: Some(buffer_views.len() as u32 - 1),
-                ..Default::default()
-            })
-        } else {
-            Ok(nusamai_gltf_json::Image {
-                uri: Some(self.uri.to_string()),
-                ..Default::default()
-            })
-        }
-    }
-
-    // NOTE WebP
-    pub fn to_gltf2(
-        &self,
-        feedback: &Feedback,
-        buffer_views: &mut Vec<BufferView>,
-        bin_content: &mut Vec<u8>,
-    ) -> std::io::Result<nusamai_gltf_json::Image> {
-        if let Ok(path) = self.uri.to_file_path() {
-            // NOTE: temporary implementation
-
-            let (content, mime_type) = create_webp(&path)?;
 
             buffer_views.push(BufferView {
                 name: Some("image".to_string()),
@@ -179,6 +155,10 @@ fn load_image(feedback: &Feedback, path: &Path) -> std::io::Result<(Vec<u8>, Mim
                 feedback.info(format!("Embedding a jpeg as is: {:?}", path));
                 Ok((std::fs::read(path)?, MimeType::ImageJpeg))
             }
+            Some("webp") => {
+                feedback.info(format!("Embedding a webp as is: {:?}", path));
+                Ok((std::fs::read(path)?, MimeType::ImageWebp))
+            }
             _ => {
                 let err = format!("Unsupported image format: {:?}", path);
                 log::error!("{}", err);
@@ -199,43 +179,4 @@ fn to_f64x4(c: [f32; 4]) -> [f64; 4] {
         f64::from(c[2]),
         f64::from(c[3]),
     ]
-}
-
-// pub fn create_webp(path: &Path) -> std::io::Result<(Vec<u8>, MimeType)> {
-//     // Open the image
-//     let img = image::open(path)
-//         .map_err(|err| std::io::Error::new(std::io::ErrorKind::InvalidData, err))?;
-
-//     let mut buffer = Vec::new();
-//     let writer = BufWriter::new(&mut buffer);
-
-//     let encoder = WebPEncoder::new_lossless(writer);
-//     encoder
-//         .encode(
-//             &img.to_rgba8(),
-//             img.width(),
-//             img.height(),
-//             image::ExtendedColorType::Rgba8,
-//         )
-//         .map_err(|err| std::io::Error::new(std::io::ErrorKind::InvalidData, err))?;
-
-//     // Return the buffer contents and MIME type
-//     Ok((buffer, MimeType::ImageWebp))
-// }
-
-use webp::{Encoder, WebPMemory};
-
-pub fn create_webp(path: &Path) -> std::io::Result<(Vec<u8>, MimeType)> {
-    let img = image::open(path)
-        .map_err(|err| std::io::Error::new(std::io::ErrorKind::InvalidData, err))?;
-
-    let rgba = img.to_rgba8();
-
-    let encoder = Encoder::from_rgba(&rgba, img.width(), img.height());
-
-    let webp_memory: WebPMemory = encoder.encode(100.0);
-
-    let buffer = webp_memory.to_vec();
-
-    Ok((buffer, MimeType::ImageWebp))
 }
