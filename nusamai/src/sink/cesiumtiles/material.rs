@@ -1,6 +1,6 @@
 //! Material mangement
 
-use std::{hash::Hash, path::Path, time::Instant};
+use std::{collections::HashMap, hash::Hash, path::Path, time::Instant};
 
 use indexmap::IndexSet;
 use nusamai_gltf_json::{BufferView, MimeType};
@@ -77,10 +77,13 @@ impl Texture {
 
         if extension == Some("webp".to_string()) {
             nusamai_gltf_json::Texture {
-                extensions: Some(nusamai_gltf_json::TextureExtensions {
-                    ext_texture_webp: Some(nusamai_gltf_json::EXTTextureWebP {
-                        source: image_index as u32,
-                    }),
+                extensions: Some(nusamai_gltf_json::extensions::texture::TextureExtensions {
+                    ext_texture_webp: Some(
+                        nusamai_gltf_json::extensions::texture::EXTTextureWebP {
+                            source: image_index as u32,
+                        },
+                    ),
+                    others: HashMap::new(),
                 }),
                 source: Some(image_index as u32),
                 ..Default::default()

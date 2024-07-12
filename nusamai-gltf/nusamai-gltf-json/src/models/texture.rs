@@ -1,3 +1,4 @@
+use crate::extensions;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
@@ -20,21 +21,9 @@ pub struct Texture {
 
     /// JSON object with extension-specific objects.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub extensions: Option<TextureExtensions>,
+    pub extensions: Option<extensions::texture::TextureExtensions>,
 
     /// Application-specific data.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub extras: Option<Value>,
-}
-
-#[derive(Serialize, Deserialize, Debug, Default, PartialEq)]
-pub struct EXTTextureWebP {
-    pub source: u32,
-}
-
-#[derive(Serialize, Deserialize, Debug, Default, PartialEq)]
-#[serde(rename_all = "camelCase")]
-pub struct TextureExtensions {
-    #[serde(rename = "EXT_texture_webp")]
-    pub ext_texture_webp: Option<EXTTextureWebP>,
 }
