@@ -68,11 +68,9 @@ impl Texture {
         });
 
         // Get the file extension
-        let extension = self
-            .uri
-            .path()
-            .rsplit('.')
-            .next()
+        let extension = Path::new(self.uri.path())
+            .extension()
+            .and_then(|ext| ext.to_str())
             .map(|ext| ext.to_lowercase());
 
         if extension == Some("webp".to_string()) {
@@ -83,7 +81,7 @@ impl Texture {
                             source: image_index as u32,
                         },
                     ),
-                    others: HashMap::new(),
+                    ..Default::default()
                 }),
                 source: Some(image_index as u32),
                 ..Default::default()
