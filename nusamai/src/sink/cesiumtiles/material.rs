@@ -77,7 +77,7 @@ impl Texture {
             nusamai_gltf_json::Texture {
                 extensions: Some(nusamai_gltf_json::extensions::texture::TextureExtensions {
                     ext_texture_webp: Some(
-                        nusamai_gltf_json::extensions::texture::EXTTextureWebP {
+                        nusamai_gltf_json::extensions::texture::ExtTextureWebp {
                             source: image_index as u32,
                         },
                     ),
