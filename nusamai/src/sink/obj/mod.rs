@@ -1,18 +1,20 @@
 //! Minecraft sink
 
-use log::error;
-use std::{io::Write, path::PathBuf, sync::Mutex};
+use std::{fs::File, io::Write, path::PathBuf, sync::Mutex};
 
 use nusamai_citygml::schema::Schema;
 
 use crate::{
     get_parameter_value,
     parameters::*,
-    pipeline::{Feedback, Receiver, Result},
+    pipeline::{Feedback, PipelineError, Receiver, Result},
     sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo},
     transformer,
     transformer::{TransformerOption, TransformerRegistry},
 };
+
+use hashbrown::HashMap;
+use rayon::prelude::*;
 
 pub struct ObjSinkProvider {}
 
@@ -83,6 +85,39 @@ impl DataSink for ObjSink {
     }
 
     fn run(&mut self, upstream: Receiver, feedback: &Feedback, _schema: &Schema) -> Result<()> {
+        let (sender, receiver) = std::sync::mpsc::sync_channel(1000);
+
+        let (ra, rb) = rayon::join(
+            || {
+                upstream
+                    .into_iter()
+                    .par_bridge()
+                    .try_for_each_with(sender, |sender, parcel| {
+                        feedback.ensure_not_canceled()?;
+
+                        Ok(())
+                    })
+            },
+            || {
+                receiver.into_iter().for_each(|parcel| {
+                    feedback.ensure_not_canceled().unwrap();
+                });
+
+                std::fs::create_dir_all(&self.output_path)?;
+
+                Ok(())
+            },
+        );
+
+        match ra {
+            Ok(_) | Err(PipelineError::Canceled) => {}
+            Err(error) => feedback.fatal_error(error),
+        }
+        match rb {
+            Ok(_) | Err(PipelineError::Canceled) => {}
+            Err(error) => feedback.fatal_error(error),
+        }
+
         Ok(())
     }
 }
