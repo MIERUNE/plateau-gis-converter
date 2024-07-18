@@ -221,7 +221,7 @@ impl DataSink for ObjSink {
                     let vx = f64::from_bits(*vx);
                     let vy = f64::from_bits(*vy);
                     let vz = f64::from_bits(*vz);
-                    writeln!(writer, "v {} {} {}", vx + mu_x, vy + mu_y, vz + mu_z)?;
+                    writeln!(writer, "v {} {} {}", vx, vy, vz)?;
                 }
 
                 // Writing of surface data (index starts at 1, so +1 is used)
