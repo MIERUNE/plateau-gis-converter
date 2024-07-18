@@ -2,7 +2,14 @@
 
 use std::{fs::File, io::Write, path::PathBuf, sync::Mutex};
 
-use nusamai_citygml::schema::Schema;
+use ahash::RandomState;
+use earcut::{utils3d::project3d_to_2d, Earcut};
+use indexmap::IndexSet;
+use nusamai_citygml::{
+    object::{ObjectStereotype, Value},
+    schema::Schema,
+    GeometryType,
+};
 
 use crate::{
     get_parameter_value,
@@ -13,7 +20,7 @@ use crate::{
     transformer::{TransformerOption, TransformerRegistry},
 };
 
-use hashbrown::HashMap;
+use nusamai_projection::cartesian::geodetic_to_geocentric;
 use rayon::prelude::*;
 
 pub struct ObjSinkProvider {}
@@ -89,22 +96,142 @@ impl DataSink for ObjSink {
 
         let (ra, rb) = rayon::join(
             || {
+                let ellipsoid = nusamai_projection::ellipsoid::wgs84();
+
                 upstream
                     .into_iter()
                     .par_bridge()
                     .try_for_each_with(sender, |sender, parcel| {
                         feedback.ensure_not_canceled()?;
 
+                        let entity = parcel.entity;
+                        let geom_store = entity.geometry_store.read().unwrap();
+
+                        let Value::Object(obj) = &entity.root else {
+                            return Ok(());
+                        };
+                        let ObjectStereotype::Feature { geometries, .. } = &obj.stereotype else {
+                            return Ok(());
+                        };
+
+                        let mut earcutter = Earcut::new();
+                        let mut buf3d: Vec<[f64; 3]> = Vec::new();
+                        let mut buf2d: Vec<[f64; 2]> = Vec::new();
+                        let mut index_buf: Vec<u32> = Vec::new();
+                        let mut triangles = Vec::new();
+
+                        geometries.iter().for_each(|entry| match entry.ty {
+                            GeometryType::Solid
+                            | GeometryType::Surface
+                            | GeometryType::Triangle => {
+                                for idx_poly in geom_store.multipolygon.iter_range(
+                                    entry.pos as usize..(entry.pos + entry.len) as usize,
+                                ) {
+                                    let poly = idx_poly.transform(|idx| {
+                                        let [lng, lat, height] = geom_store.vertices[*idx as usize];
+                                        // Convert to geocentric (x, y, z) coordinate.
+                                        // (Earcut do not work in geographic space)
+                                        let (x, y, z) =
+                                            geodetic_to_geocentric(&ellipsoid, lng, lat, height);
+                                        [x, y, z]
+                                    });
+                                    let num_outer = match poly.hole_indices().first() {
+                                        Some(&v) => v as usize,
+                                        None => poly.raw_coords().len(),
+                                    };
+
+                                    buf3d.clear();
+                                    buf3d.extend(poly.raw_coords().iter());
+
+                                    if project3d_to_2d(&buf3d, num_outer, &mut buf2d) {
+                                        // earcut
+                                        earcutter.earcut(
+                                            buf2d.iter().cloned(),
+                                            poly.hole_indices(),
+                                            &mut index_buf,
+                                        );
+                                        triangles.extend(
+                                            index_buf.iter().map(|&idx| buf3d[idx as usize]),
+                                        );
+                                    }
+                                }
+                            }
+                            GeometryType::Curve | GeometryType::Point => {
+                                // not supported in PLY sink
+                            }
+                        });
+
+                        if sender.send(triangles).is_err() {
+                            return Err(PipelineError::Canceled);
+                        };
+
                         Ok(())
                     })
             },
             || {
-                receiver.into_iter().for_each(|parcel| {
-                    feedback.ensure_not_canceled().unwrap();
-                });
+                // calculate the centroid
+                let mut mu_x = 0.;
+                let mut mu_y = 0.;
+                let mut mu_z = 0.;
+                let mut all_vertices = Vec::new();
+                for (i, triangles) in receiver.into_iter().enumerate() {
+                    if i % 10000 == 0 {
+                        feedback.ensure_not_canceled()?;
+                    }
 
-                std::fs::create_dir_all(&self.output_path)?;
+                    for [x, y, z] in triangles {
+                        mu_x += x;
+                        mu_y += y;
+                        mu_z += z;
+                        all_vertices.push([x, y, z]);
+                    }
+                }
+                mu_x /= all_vertices.len() as f64;
+                mu_y /= all_vertices.len() as f64;
+                mu_z /= all_vertices.len() as f64;
 
+                // make vertices and indices
+                let mut vertices: IndexSet<[u64; 3], RandomState> = IndexSet::default();
+                let indices: Vec<_> = all_vertices
+                    .iter()
+                    .map(|[x, y, z]| {
+                        let vbits = [
+                            (x - mu_x).to_bits(),
+                            (y - mu_y).to_bits(),
+                            (z - mu_z).to_bits(),
+                        ];
+                        let (index, _) = vertices.insert_full(vbits);
+                        index as u32
+                    })
+                    .collect();
+
+                feedback.ensure_not_canceled()?;
+
+                // write to file
+                println!("{:?} {:?}", vertices.len(), indices.len());
+                // let mut file = std::fs::File::create(&self.output_path.clone())?;
+
+                let mut file = File::create("output.obj")?;
+
+                let mut writer = std::io::BufWriter::new(file);
+
+                // Writing vertex data
+                for vertex in &vertices {
+                    let [vx, vy, vz] = vertex;
+                    let vx = f64::from_bits(*vx);
+                    let vy = f64::from_bits(*vy);
+                    let vz = f64::from_bits(*vz);
+                    writeln!(writer, "v {} {} {}", vx + mu_x, vy + mu_y, vz + mu_z)?;
+                }
+
+                // Writing of surface data (index starts at 1, so +1 is used)
+                for face in indices.chunks(3) {
+                    if let [i1, i2, i3] = face {
+                        writeln!(writer, "f {} {} {}", i1 + 1, i2 + 1, i3 + 1)?;
+                    }
+                }
+
+                writer.flush()?;
                 Ok(())
             },
         );
