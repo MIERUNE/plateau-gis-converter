@@ -1,6 +1,6 @@
 //! Material mangement
 
-use std::{collections::HashMap, hash::Hash, path::Path, time::Instant};
+use std::{hash::Hash, path::Path, time::Instant};
 
 use indexmap::IndexSet;
 use nusamai_gltf_json::{BufferView, MimeType};
