@@ -230,6 +230,28 @@ pub fn write_gltf_glb<W: Write>(
         buffers
     };
 
+    let has_webp = gltf_textures.iter().any(|texture| {
+        texture
+            .extensions
+            .as_ref()
+            .and_then(|ext| ext.ext_texture_webp.as_ref())
+            .map_or(false, |_| true)
+    });
+
+    let extensions_used = {
+        let mut extensions_used = vec![
+            "EXT_mesh_features".to_string(),
+            "EXT_structural_metadata".to_string(),
+        ];
+
+        // Add "EXT_texture_webp" extension if WebP textures are present
+        if has_webp {
+            extensions_used.push("EXT_texture_webp".to_string());
+        }
+
+        extensions_used
+    };
+
     feedback.ensure_not_canceled()?;
 
     // Build the JSON part of glTF
@@ -255,10 +277,7 @@ pub fn write_gltf_glb<W: Write>(
             ..Default::default()
         }
         .into(),
-        extensions_used: vec![
-            "EXT_mesh_features".to_string(),
-            "EXT_structural_metadata".to_string(),
-        ],
+        extensions_used,
         ..Default::default()
     };
 

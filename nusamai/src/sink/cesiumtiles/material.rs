@@ -66,9 +66,31 @@ impl Texture {
         let (image_index, _) = images.insert_full(Image {
             uri: self.uri.clone(),
         });
-        nusamai_gltf_json::Texture {
-            source: Some(image_index as u32),
-            ..Default::default()
+
+        // Get the file extension
+        let extension = Path::new(self.uri.path())
+            .extension()
+            .and_then(|ext| ext.to_str())
+            .map(|ext| ext.to_lowercase());
+
+        if extension == Some("webp".to_string()) {
+            nusamai_gltf_json::Texture {
+                extensions: Some(nusamai_gltf_json::extensions::texture::TextureExtensions {
+                    ext_texture_webp: Some(
+                        nusamai_gltf_json::extensions::texture::ExtTextureWebp {
+                            source: image_index as u32,
+                        },
+                    ),
+                    ..Default::default()
+                }),
+                source: Some(image_index as u32),
+                ..Default::default()
+            }
+        } else {
+            nusamai_gltf_json::Texture {
+                source: Some(image_index as u32),
+                ..Default::default()
+            }
         }
     }
 }
@@ -133,6 +155,10 @@ fn load_image(feedback: &Feedback, path: &Path) -> std::io::Result<(Vec<u8>, Mim
             Some("jpg" | "jpeg") => {
                 feedback.info(format!("Embedding a jpeg as is: {:?}", path));
                 Ok((std::fs::read(path)?, MimeType::ImageJpeg))
+            }
+            Some("webp") => {
+                feedback.info(format!("Embedding a webp as is: {:?}", path));
+                Ok((std::fs::read(path)?, MimeType::ImageWebp))
             }
             _ => {
                 let err = format!("Unsupported image format: {:?}", path);
