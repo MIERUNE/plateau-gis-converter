@@ -10,3 +10,7 @@ stretto = "0.8.4"
 
 [dev-dependencies]
 tempfile = "3.10.1"
+
+[[bin]]
+name = "nusamai-atlas"
+path = "examples/test_pack_dice.rs"
