@@ -3,6 +3,8 @@ use std::{
     path::{Path, PathBuf},
 };
 
+use image::{GenericImageView, Rgba};
+
 use nusamai_atlas::{
     export::PngAtlasExporter,
     pack::TexturePacker,
@@ -178,7 +180,7 @@ fn main() {
 
     for (idx, (material, uv_coords)) in faces.iter().enumerate() {
         let texture_file = material_to_texture.get(material).unwrap();
-        let path_string = format!("nusamai-atlas/examples/assets/dice/{}", texture_file);
+        let path_string = format!("./examples/assets/dice/{}", texture_file);
         let image_path = PathBuf::from(path_string);
         polygons.push(Polygon {
             id: format!("texture_{}_{}", material, idx),
@@ -210,6 +212,15 @@ fn main() {
 
     packer.finalize();
 
-    let output_dir = Path::new("nusamai-atlas/examples/output/");
+    let output_dir = Path::new("./examples/output/");
+    let atlas_path = output_dir.join("0.png");
     packer.export(output_dir, &texture_cache, config.width(), config.height());
+
+    let img = image::open(&atlas_path).expect("Failed to open atlas image");
+    let unused_pixels = img
+        .pixels()
+        .filter(|&(_, _, pixel)| matches!(pixel, Rgba([0, 0, 0, 0])))
+        .count();
+
+    println!("Unused pixels: {}", unused_pixels);
 }
