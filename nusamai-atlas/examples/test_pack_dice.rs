@@ -1,6 +1,7 @@
 use std::{
     collections::HashMap,
     path::{Path, PathBuf},
+    time::Instant,
 };
 
 use image::{open, GenericImageView, Rgba};
@@ -191,6 +192,25 @@ fn main() {
         });
     }
 
+    let matches = Command::new("Image Processor")
+        .about("Processes images to find unused pixels")
+        .arg(
+            Arg::new("INPUT")
+                .help("Outputs unused pixels")
+                .short('u')
+                .long("unused_pixels")
+                .value_name("FILE")
+                .action(ArgAction::Set),
+        )
+        .arg(
+            Arg::new("TIME")
+                .help("Measure execution time")
+                .short('t')
+                .long("time")
+                .action(ArgAction::SetTrue),
+        )
+        .get_matches();
+
     // initialize texture packer
     let config = TexturePlacerConfig::new(500, 500, 1);
     let placer = GuillotineTexturePlacer::new(config.clone());
@@ -199,6 +219,9 @@ fn main() {
 
     // Texture cache
     let texture_cache = TextureCache::new(100_000_000);
+
+    // Measure execution time start for adding textures to the atlas
+    let start_time = Instant::now();
 
     // Add textures to the atlas,
     polygons.iter().for_each(|polygon| {
@@ -211,20 +234,14 @@ fn main() {
         println!("{:?}", info);
     });
 
-    let output_dir = Path::new("./examples/output/");
-    packer.export(output_dir, &texture_cache, config.width(), config.height());
+    let measure_time = matches.get_flag("TIME");
 
-    let matches = Command::new("Image Processor")
-        .about("Processes images to find unused pixels")
-        .arg(
-            Arg::new("INPUT")
-                .help("Outputs unused pixels")
-                .short('u')
-                .long("unused_pixels")
-                .value_name("FILE")
-                .action(ArgAction::Set),
-        )
-        .get_matches();
+    if measure_time {
+        let elapsed_time = start_time.elapsed();
+        println!("Execution time: {:.2?}", elapsed_time);
+    }
+
+    let output_unused_pixels = matches.contains_id("INPUT");
 
     let input = match matches.get_one::<String>("INPUT") {
         Some(input_value) => input_value,
@@ -232,7 +249,9 @@ fn main() {
             std::process::exit(0);
         }
     };
-    let output_unused_pixels = matches.contains_id("INPUT");
+
+    let output_dir = Path::new("./examples/output/");
+    packer.export(output_dir, &texture_cache, config.width(), config.height());
 
     let img = open(input).expect("Failed to open image");
 
