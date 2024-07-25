@@ -1,20 +1,20 @@
 //! obj sink
-
 use std::{f64::consts::FRAC_PI_2, io::Write, path::PathBuf, sync::Mutex};
 
 use ahash::{HashMap, RandomState};
 use earcut::{utils3d::project3d_to_2d, Earcut};
 use flatgeom::MultiPolygon;
+use glam::{DMat4, DVec3, DVec4};
 use indexmap::IndexSet;
+use itertools::Itertools;
 use nusamai_citygml::{
     object::{ObjectStereotype, Value},
     schema::Schema,
     GeometryType,
 };
-
+use nusamai_projection::cartesian::geodetic_to_geocentric;
+use rayon::iter::{IntoParallelIterator, ParallelBridge, ParallelIterator};
 use serde::{Deserialize, Serialize};
-
-use glam::{DMat4, DVec3, DVec4};
 
 use crate::{
     get_parameter_value,
@@ -23,10 +23,6 @@ use crate::{
     sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo},
     transformer::{TransformerOption, TransformerRegistry},
 };
-
-use itertools::Itertools;
-use nusamai_projection::cartesian::geodetic_to_geocentric;
-use rayon::iter::{IntoParallelIterator, ParallelBridge, ParallelIterator};
 
 pub struct ObjSinkProvider {}
 
@@ -76,7 +72,6 @@ pub struct ObjSink {
     transform_settings: TransformerRegistry,
 }
 
-#[derive(Debug)]
 pub struct BoundingVolume {
     pub min_lng: f64,
     pub max_lng: f64,
@@ -114,8 +109,6 @@ impl Default for BoundingVolume {
 pub struct Feature {
     // polygons [x, y, z, u, v]
     pub polygons: MultiPolygon<'static, [f64; 5]>,
-    // feature_id
-    pub feature_id: Option<u32>,
 }
 
 type ClassifiedFeatures = HashMap<String, ClassFeatures>;
@@ -143,7 +136,7 @@ impl DataSink for ObjSink {
         self.transform_settings.build(default_requirements)
     }
 
-    fn run(&mut self, upstream: Receiver, feedback: &Feedback, schema: &Schema) -> Result<()> {
+    fn run(&mut self, upstream: Receiver, feedback: &Feedback, _schema: &Schema) -> Result<()> {
         let ellipsoid = nusamai_projection::ellipsoid::wgs84();
 
         let classified_features: Mutex<ClassifiedFeatures> = Default::default();
@@ -170,7 +163,6 @@ impl DataSink for ObjSink {
 
             let mut feature = Feature {
                 polygons: MultiPolygon::new(),
-                feature_id: None,
             };
 
             let mut local_bvol = BoundingVolume::default();
@@ -316,8 +308,6 @@ impl DataSink for ObjSink {
                         index as u32
                     })
                     .collect();
-
-                println!("{:?} {:?}", vertices.len(), indices.len());
 
                 feedback.ensure_not_canceled()?;
 
