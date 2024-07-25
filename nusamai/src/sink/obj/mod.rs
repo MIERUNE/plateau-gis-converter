@@ -1,8 +1,8 @@
 //! obj sink
 
-use std::{f64::consts::FRAC_PI_2, fs::File, io::Write, path::PathBuf, sync::Mutex};
+use std::{f64::consts::FRAC_PI_2, io::Write, path::PathBuf, sync::Mutex};
 
-use ahash::{HashMap, HashSet, RandomState};
+use ahash::{HashMap, RandomState};
 use earcut::{utils3d::project3d_to_2d, Earcut};
 use flatgeom::MultiPolygon;
 use indexmap::IndexSet;
@@ -21,7 +21,6 @@ use crate::{
     parameters::*,
     pipeline::{Feedback, PipelineError, Receiver, Result},
     sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo},
-    transformer,
     transformer::{TransformerOption, TransformerRegistry},
 };
 
@@ -127,20 +126,11 @@ struct ClassFeatures {
     bounding_volume: BoundingVolume,
 }
 
-struct GeometryData {
-    triangles: Vec<[f64; 3]>,
-    bounding_volume: BoundingVolume,
-}
-
 impl DataSink for ObjSink {
     fn make_requirements(&mut self, properties: Vec<TransformerOption>) -> DataRequirements {
-        let default_requirements = DataRequirements {
-            tree_flattening: transformer::TreeFlatteningSpec::Flatten {
-                feature: transformer::FeatureFlatteningOption::AllExceptThematicSurfaces,
-                data: transformer::DataFlatteningOption::None,
-                object: transformer::ObjectFlatteningOption::None,
-            },
+        let default_requirements: DataRequirements = DataRequirements {
             resolve_appearance: true,
+            key_value: crate::transformer::KeyValueSpec::JsonifyObjectsAndArrays,
             ..Default::default()
         };
 
@@ -159,7 +149,6 @@ impl DataSink for ObjSink {
         let classified_features: Mutex<ClassifiedFeatures> = Default::default();
 
         // Construct a Feature classified by typename from Entity
-        // Features have polygons, attributes and materials
         // The coordinates of polygon store the actual coordinate values (WGS84) and UV coordinates, not the index.
         let _ = upstream.into_iter().par_bridge().try_for_each(|parcel| {
             feedback.ensure_not_canceled()?;
@@ -179,8 +168,6 @@ impl DataSink for ObjSink {
                 return Ok(());
             }
 
-            let appearance_store = entity.appearance_store.read().unwrap();
-
             let mut feature = Feature {
                 polygons: MultiPolygon::new(),
                 feature_id: None,
@@ -192,31 +179,22 @@ impl DataSink for ObjSink {
                 match entry.ty {
                     GeometryType::Solid | GeometryType::Surface | GeometryType::Triangle => {
                         // extract the polygon and UV
-                        for (((idx_poly, poly_uv), poly_mat), poly_tex) in
+                        for (idx_poly, poly_uv) in
                             geom_store
                                 .multipolygon
                                 .iter_range(entry.pos as usize..(entry.pos + entry.len) as usize)
                                 .zip_eq(geom_store.polygon_uvs.iter_range(
                                     entry.pos as usize..(entry.pos + entry.len) as usize,
                                 ))
-                                .zip_eq(
-                                    geom_store.polygon_materials
-                                        [entry.pos as usize..(entry.pos + entry.len) as usize]
-                                        .iter(),
-                                )
-                                .zip_eq(
-                                    geom_store.polygon_textures
-                                        [entry.pos as usize..(entry.pos + entry.len) as usize]
-                                        .iter(),
-                                )
                         {
                             // convert to idx_poly to polygon
                             let poly = idx_poly.transform(|c| geom_store.vertices[*c as usize]);
 
                             let mut ring_buffer: Vec<[f64; 5]> = Vec::new();
 
-                            poly.rings().zip_eq(poly_uv.rings()).enumerate().for_each(
-                                |(ri, (ring, uv_ring))| {
+                            poly.rings()
+                                .zip_eq(poly_uv.rings())
+                                .for_each(|(ring, uv_ring)| {
                                     ring.iter_closed().zip_eq(uv_ring.iter_closed()).for_each(
                                         |(c, uv)| {
                                             let [lng, lat, height] = c;
@@ -232,13 +210,9 @@ impl DataSink for ObjSink {
                                                 local_bvol.max_height.max(height);
                                         },
                                     );
-                                    if ri == 0 {
-                                        feature.polygons.add_exterior(ring_buffer.drain(..));
-                                    } else {
-                                        feature.polygons.add_interior(ring_buffer.drain(..));
-                                    }
-                                },
-                            );
+
+                                    feature.polygons.add_exterior(ring_buffer.drain(..));
+                                });
                         }
                     }
                     GeometryType::Curve => {
@@ -270,10 +244,6 @@ impl DataSink for ObjSink {
             }
             global_bvol
         };
-
-        // print!("{:?}", global_bvol);
-
-        // let tileset_content_files = Mutex::new(Vec::new());
 
         let transform_matrix = {
             let bounds = &global_bvol;
@@ -322,7 +292,7 @@ impl DataSink for ObjSink {
                         };
 
                         buf3d.clear();
-                        buf3d.extend(poly.raw_coords().iter().map(|&[x, y, z, _, _]| [x, y, z]));
+                        buf3d.extend(poly.raw_coords().iter().map(|c| [c[0], c[1], c[2]]));
 
                         if project3d_to_2d(&buf3d, num_outer, &mut buf2d) {
                             // earcut
@@ -351,12 +321,12 @@ impl DataSink for ObjSink {
 
                 feedback.ensure_not_canceled()?;
 
-                // write to file
-                println!("{:?} {:?}", vertices.len(), indices.len());
-                // let mut file = std::fs::File::create(&self.output_path.clone())?;
-
-                let mut file = File::create("output.obj")?;
-
+                // Write to file
+                let file_path = {
+                    let filename = format!("{}.obj", typename.replace(':', "_"));
+                    self.output_path.join(filename)
+                };
+                let file = std::fs::File::create(file_path)?;
                 let mut writer = std::io::BufWriter::new(file);
 
                 // Writing vertex data
