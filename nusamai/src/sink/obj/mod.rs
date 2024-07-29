@@ -21,7 +21,8 @@ use crate::{
     parameters::*,
     pipeline::{Feedback, PipelineError, Receiver, Result},
     sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo},
-    transformer::{TransformerOption, TransformerRegistry},
+    transformer,
+    transformer::{TransformerConfig, TransformerOption, TransformerRegistry},
 };
 
 pub struct ObjSinkProvider {}
@@ -48,14 +49,33 @@ impl DataSinkProvider for ObjSinkProvider {
                 label: None,
             },
         );
+
+        params.define(
+            "transform".into(),
+            ParameterEntry {
+                description: "transform option".into(),
+                required: false,
+                parameter: ParameterType::String(StringParameter { value: None }),
+                label: None,
+            },
+        );
+
         params
     }
 
     fn available_transformer(&self) -> TransformerRegistry {
-        let settings: TransformerRegistry = TransformerRegistry::new();
+        let mut settings: TransformerRegistry = TransformerRegistry::new();
+
+        settings.insert(TransformerConfig {
+            key: "use_texture".to_string(),
+            label: "テクスチャの使用".to_string(),
+            is_enabled: false,
+            requirements: vec![transformer::Requirement::UseAppearance],
+        });
 
         settings
     }
+
     fn create(&self, params: &Parameters) -> Box<dyn DataSink> {
         let output_path = get_parameter_value!(params, "@output", FileSystemPath);
         let transform_options = self.available_transformer();
@@ -109,6 +129,14 @@ impl Default for BoundingVolume {
 pub struct Feature {
     // polygons [x, y, z, u, v]
     pub polygons: MultiPolygon<'static, [f64; 5]>,
+    // material ids for each polygon
+    // pub polygon_material_ids: Vec<u32>,
+    // // materials
+    // pub materials: IndexSet<Material>,
+    // // attribute values
+    // pub attributes: nusamai_citygml::object::Value,
+    // // feature_id
+    // pub feature_id: Option<u32>,
 }
 
 type ClassifiedFeatures = HashMap<String, ClassFeatures>;
@@ -163,6 +191,10 @@ impl DataSink for ObjSink {
 
             let mut feature = Feature {
                 polygons: MultiPolygon::new(),
+                // polygon_material_ids: Vec::new(),
+                // materials: IndexSet::default(),
+                // attributes: entity.attributes.clone(),
+                // feature_id: parcel.feature_id,
             };
 
             let mut local_bvol = BoundingVolume::default();
@@ -312,12 +344,16 @@ impl DataSink for ObjSink {
                 feedback.ensure_not_canceled()?;
 
                 // Write to file
-                let file_path = {
-                    let filename = format!("{}.obj", typename.replace(':', "_"));
-                    self.output_path.join(filename)
-                };
-                let file = std::fs::File::create(file_path)?;
-                let mut writer = std::io::BufWriter::new(file);
+                let mut file_path = self.output_path.clone();
+                file_path.push(format!("{}_OBJ", typename.replace(':', "_")));
+                std::fs::create_dir_all(&file_path)?;
+
+                let dir_name = file_path.to_str().unwrap();
+                let mut writer = std::fs::File::create(format!(
+                    "{}/{}.obj",
+                    dir_name,
+                    typename.replace(':', "_")
+                ))?;
 
                 // Writing vertex data
                 for vertex in &vertices {
@@ -334,6 +370,30 @@ impl DataSink for ObjSink {
                         writeln!(writer, "f {} {} {}", i1 + 1, i2 + 1, i3 + 1)?;
                     }
                 }
+
+                // Writeing UV data
+                for feature in features.features.iter() {
+                    for poly in feature.polygons.iter() {
+                        for [_, _, _, u, v] in poly.raw_coords() {
+                            writeln!(writer, "vt {} {}", u, v)?;
+                        }
+                    }
+                }
+
+                // Material
+                writeln!(writer, "mtllib {}.mtl", typename.replace(':', "_"))?;
+                writeln!(writer, "usemtl Material")?;
+
+                // mtlの書き出し
+                let mut writer = std::fs::File::create(format!(
+                    "{}/{}.mtl",
+                    dir_name,
+                    typename.replace(':', "_")
+                ))?;
+
+                // jpgの指定
+                writeln!(writer, "newmtl Material")?;
+                writeln!(writer, "map_Kd {}.jpg", typename.replace(':', "_"))?;
 
                 writer.flush()?;
 
