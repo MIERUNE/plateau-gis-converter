@@ -389,8 +389,6 @@ impl DataSink for GltfSink {
                             None => poly.raw_coords().len(),
                         };
 
-                        println!("{:#?}", feature.materials);
-
                         let mat = feature.materials[*orig_mat_id as usize].clone();
                         let primitive = primitives.entry(mat).or_default();
                         primitive.feature_ids.insert(feature_id as u32);
