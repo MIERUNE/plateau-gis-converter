@@ -157,11 +157,11 @@ pub struct PrimitiveInfo {
 
 pub type Primitives = HashMap<material::Material, PrimitiveInfo>;
 
-// 頂点とテクスチャ座標を組み合わせた構造体を定義
-#[derive(Hash, Eq, PartialEq, Clone, Copy)]
+// 頂点とテクスチャ座標を一緒に保持する構造体
+#[derive(Clone, Copy)]
 struct VertexData {
-    position: [u64; 3],
-    tex_coord: [u64; 2],
+    position: [f64; 3],
+    tex_coord: [f64; 2],
 }
 
 impl DataSink for ObjSink {
@@ -349,17 +349,15 @@ impl DataSink for ObjSink {
                 let mut buf3d: Vec<[f64; 3]> = Vec::new();
                 let mut buf2d: Vec<[f64; 2]> = Vec::new();
                 let mut index_buf: Vec<u32> = Vec::new();
-                let mut triangles = Vec::new();
 
-                let mut primitives: Primitives = Default::default();
+                // フィーチャーごとの三角形を保持するための構造
+                let mut triangles: Vec<[f64; 3]> = Vec::new();
+                let mut feature_triangles: Vec<Vec<[f64; 3]>> = Vec::new();
 
-                let mut metadata_encoder = metadata::MetadataEncoder::new(schema);
+                let mut feature_vertex_data: Vec<Vec<VertexData>> = Vec::new();
 
-                let mut feature_id = 0;
                 for feature in features.features.iter_mut() {
                     feedback.ensure_not_canceled()?;
-
-                    feature.feature_id = Some(feature_id as u32);
 
                     feature
                         .polygons
@@ -369,6 +367,8 @@ impl DataSink for ObjSink {
                             let v_enu = transform_matrix * v_xyz;
                             [v_enu[0], v_enu[1], v_enu[2], u, 1.0 - v]
                         });
+
+                    let mut feature_data = Vec::new();
 
                     for (poly, orig_mat_id) in feature
                         .polygons
@@ -380,36 +380,31 @@ impl DataSink for ObjSink {
                             None => poly.raw_coords().len(),
                         };
 
-                        let mat = feature.materials[*orig_mat_id as usize].clone();
-                        println!("{:#?}", mat.base_texture);
-                        let primitive = primitives.entry(mat).or_default();
-                        primitive.feature_ids.insert(feature_id as u32);
+                        let vertex_data: Vec<VertexData> = poly
+                            .raw_coords()
+                            .iter()
+                            .map(|&[x, y, z, u, v]| VertexData {
+                                position: [x, y, z],
+                                tex_coord: [u, v],
+                            })
+                            .collect();
 
                         buf3d.clear();
-                        buf3d.extend(poly.raw_coords().iter().map(|c| [c[0], c[1], c[2]]));
+                        buf3d.extend(vertex_data.iter().map(|v| v.position));
 
                         if project3d_to_2d(&buf3d, num_outer, &mut buf2d) {
-                            // earcut
                             earcutter.earcut(
                                 buf2d.iter().cloned(),
                                 poly.hole_indices(),
                                 &mut index_buf,
                             );
-                            triangles.extend(index_buf.iter().map(|&idx| buf3d[idx as usize]));
+                            feature_data
+                                .extend(index_buf.iter().map(|&idx| vertex_data[idx as usize]));
                         }
                     }
-                }
 
-                // make vertices and indices
-                let mut vertices: IndexSet<[u64; 3], RandomState> = IndexSet::default();
-                let indices: Vec<_> = triangles
-                    .iter()
-                    .map(|[x, y, z]| {
-                        let vbits = [(x).to_bits(), (y).to_bits(), (z).to_bits()];
-                        let (index, _) = vertices.insert_full(vbits);
-                        index as u32
-                    })
-                    .collect();
+                    feature_vertex_data.push(feature_data);
+                }
 
                 feedback.ensure_not_canceled()?;
 
@@ -422,49 +417,50 @@ impl DataSink for ObjSink {
                 std::fs::create_dir_all(&file_path)?;
 
                 let dir_name = file_path.to_str().unwrap();
-                let mut writer = std::fs::File::create(format!(
+                let mut obj_writer = std::fs::File::create(format!(
                     "{}/{}.obj",
                     dir_name,
                     typename.replace(':', "_")
                 ))?;
 
                 // Write MTL file
-                let mut writer2 = std::fs::File::create(format!(
+                let mut mtl_writer = std::fs::File::create(format!(
                     "{}/{}.mtl",
                     dir_name,
                     typename.replace(':', "_")
                 ))?;
 
-                //////
-
                 // Material
-                writeln!(writer, "mtllib {}.mtl", typename.replace(':', "_"))?;
+                writeln!(obj_writer, "mtllib {}.mtl", typename.replace(':', "_"))?;
 
                 let mut global_vertex_offset = 0;
                 let mut global_texture_offset = 0;
 
-                for (feature_index, feature) in features.features.iter().enumerate() {
-                    writeln!(writer, "o Feature_{}", feature_index)?;
+                // OBJファイル書き込み部分
+                for (feature_index, feature_data) in feature_vertex_data.iter().enumerate() {
+                    writeln!(obj_writer, "o Feature_{}", feature_index)?;
 
-                    // Collect all coordinates for this feature
-                    let all_coords: Vec<[f64; 5]> = feature
-                        .polygons
-                        .iter()
-                        .flat_map(|poly| poly.raw_coords().to_vec())
-                        .collect();
-
-                    // Writing vertex - v
-                    for [x, y, z, _, _] in &all_coords {
-                        writeln!(writer, "v {} {} {}", x, y, z)?;
+                    // 頂点とテクスチャ座標の書き込み
+                    for vertex in feature_data {
+                        writeln!(
+                            obj_writer,
+                            "v {} {} {}",
+                            vertex.position[0], vertex.position[1], vertex.position[2]
+                        )?;
                     }
 
-                    // Writing texture coordinates - vt
-                    for [_, _, _, u, v] in &all_coords {
-                        writeln!(writer, "vt {} {}", u, 1.0 - v)?;
+                    // 頂点とテクスチャ座標の書き込み
+                    for vertex in feature_data {
+                        writeln!(
+                            obj_writer,
+                            "vt {} {}",
+                            vertex.tex_coord[0],
+                            1.0 - vertex.tex_coord[1]
+                        )?;
                     }
 
                     // Writing materials - usemtl
-                    let mat = feature.materials.iter().next().unwrap();
+                    let mat = &features.features[feature_index].materials[0];
                     if let Some(Texture { uri }) = &mat.base_texture {
                         print!("{:#?}", uri.to_file_path());
                         if let Ok(path) = uri.to_file_path() {
@@ -482,35 +478,32 @@ impl DataSink for ObjSink {
                             std::fs::write(&image_path, &content)?;
 
                             // MTLファイルに画像ファイル名を書き込む
-                            writeln!(writer2, "newmtl Material_{}", feature_index)?;
-                            writeln!(writer2, "map_Kd .\\textures\\{}", image_file_name)?;
-                            writeln!(writer, "usemtl Material_{}", feature_index)?;
+                            writeln!(mtl_writer, "newmtl Material_{}", feature_index)?;
+                            writeln!(mtl_writer, "map_Kd .\\textures\\{}", image_file_name)?;
+                            writeln!(obj_writer, "usemtl Material_{}", feature_index)?;
                         }
                     }
 
-                    // Writing faces - f
-                    let mut face_index = 0;
-                    for poly in &feature.polygons {
-                        let num_vertices = poly.raw_coords().len();
-                        for i in 2..num_vertices {
-                            let v1 = global_vertex_offset + face_index + 1;
-                            let v2 = global_vertex_offset + face_index + i;
-                            let v3 = global_vertex_offset + face_index + i + 1;
-                            let vt1 = global_texture_offset + face_index + 1;
-                            let vt2 = global_texture_offset + face_index + i;
-                            let vt3 = global_texture_offset + face_index + i + 1;
-                            writeln!(writer, "f {}/{} {}/{} {}/{}", v1, vt1, v2, vt2, v3, vt3)?;
-                        }
-                        face_index += num_vertices;
+                    // 面の書き込み
+                    for i in 0..feature_data.len() / 3 {
+                        writeln!(
+                            obj_writer,
+                            "f {}/{} {}/{} {}/{}",
+                            global_vertex_offset + i * 3 + 1,
+                            global_texture_offset + i * 3 + 1,
+                            global_vertex_offset + i * 3 + 2,
+                            global_texture_offset + i * 3 + 2,
+                            global_vertex_offset + i * 3 + 3,
+                            global_texture_offset + i * 3 + 3
+                        )?;
                     }
 
-                    global_vertex_offset += all_coords.len();
-                    global_texture_offset += all_coords.len();
+                    global_vertex_offset += feature_data.len();
+                    global_texture_offset += feature_data.len();
                 }
 
-                ///////////////////////////////////
-
-                writer.flush()?;
+                obj_writer.flush()?;
+                mtl_writer.flush()?;
 
                 Ok::<(), PipelineError>(())
             })?;
