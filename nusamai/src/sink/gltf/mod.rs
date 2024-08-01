@@ -52,6 +52,17 @@ impl DataSinkProvider for GltfSinkProvider {
                 label: None,
             },
         );
+
+        params.define(
+            "transform".into(),
+            ParameterEntry {
+                description: "transform option".into(),
+                required: false,
+                parameter: ParameterType::String(StringParameter { value: None }),
+                label: None,
+            },
+        );
+
         params
     }
 
@@ -377,6 +388,8 @@ impl DataSink for GltfSink {
                             Some(&v) => v as usize,
                             None => poly.raw_coords().len(),
                         };
+
+                        println!("{:#?}", feature.materials);
 
                         let mat = feature.materials[*orig_mat_id as usize].clone();
                         let primitive = primitives.entry(mat).or_default();
