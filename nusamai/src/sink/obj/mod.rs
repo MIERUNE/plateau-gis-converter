@@ -1,17 +1,20 @@
 //! obj sink
 use std::{f64::consts::FRAC_PI_2, io::Write, path::PathBuf, sync::Mutex};
+mod material;
 
-use ahash::{HashMap, RandomState};
+use ahash::{HashMap, HashSet, RandomState};
 use earcut::{utils3d::project3d_to_2d, Earcut};
-use flatgeom::MultiPolygon;
+use flatgeom::{MultiPolygon, Polygon};
 use glam::{DMat4, DVec3, DVec4};
 use indexmap::IndexSet;
 use itertools::Itertools;
+use material::{load_image, Material, Texture};
 use nusamai_citygml::{
     object::{ObjectStereotype, Value},
     schema::Schema,
     GeometryType,
 };
+use nusamai_plateau::appearance;
 use nusamai_projection::cartesian::geodetic_to_geocentric;
 use rayon::iter::{IntoParallelIterator, ParallelBridge, ParallelIterator};
 use serde::{Deserialize, Serialize};
@@ -20,7 +23,7 @@ use crate::{
     get_parameter_value,
     parameters::*,
     pipeline::{Feedback, PipelineError, Receiver, Result},
-    sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo},
+    sink::{cesiumtiles::metadata, DataRequirements, DataSink, DataSinkProvider, SinkInfo},
     transformer,
     transformer::{TransformerConfig, TransformerOption, TransformerRegistry},
 };
@@ -130,13 +133,13 @@ pub struct Feature {
     // polygons [x, y, z, u, v]
     pub polygons: MultiPolygon<'static, [f64; 5]>,
     // material ids for each polygon
-    // pub polygon_material_ids: Vec<u32>,
-    // // materials
-    // pub materials: IndexSet<Material>,
-    // // attribute values
-    // pub attributes: nusamai_citygml::object::Value,
-    // // feature_id
-    // pub feature_id: Option<u32>,
+    pub polygon_material_ids: Vec<u32>,
+    // materials
+    pub materials: IndexSet<Material>,
+    // attribute values
+    pub attributes: nusamai_citygml::object::Value,
+    // feature_id
+    pub feature_id: Option<u32>,
 }
 
 type ClassifiedFeatures = HashMap<String, ClassFeatures>;
@@ -145,6 +148,20 @@ type ClassifiedFeatures = HashMap<String, ClassFeatures>;
 struct ClassFeatures {
     features: Vec<Feature>,
     bounding_volume: BoundingVolume,
+}
+#[derive(Default)]
+pub struct PrimitiveInfo {
+    pub indices: Vec<u32>,
+    pub feature_ids: HashSet<u32>,
+}
+
+pub type Primitives = HashMap<material::Material, PrimitiveInfo>;
+
+// 頂点とテクスチャ座標を組み合わせた構造体を定義
+#[derive(Hash, Eq, PartialEq, Clone, Copy)]
+struct VertexData {
+    position: [u64; 3],
+    tex_coord: [u64; 2],
 }
 
 impl DataSink for ObjSink {
@@ -164,12 +181,13 @@ impl DataSink for ObjSink {
         self.transform_settings.build(default_requirements)
     }
 
-    fn run(&mut self, upstream: Receiver, feedback: &Feedback, _schema: &Schema) -> Result<()> {
+    fn run(&mut self, upstream: Receiver, feedback: &Feedback, schema: &Schema) -> Result<()> {
         let ellipsoid = nusamai_projection::ellipsoid::wgs84();
 
         let classified_features: Mutex<ClassifiedFeatures> = Default::default();
 
         // Construct a Feature classified by typename from Entity
+        // Features have polygons, attributes and materials
         // The coordinates of polygon store the actual coordinate values (WGS84) and UV coordinates, not the index.
         let _ = upstream.into_iter().par_bridge().try_for_each(|parcel| {
             feedback.ensure_not_canceled()?;
@@ -188,13 +206,17 @@ impl DataSink for ObjSink {
             if geom_store.multipolygon.is_empty() {
                 return Ok(());
             }
+            let appearance_store = entity.appearance_store.read().unwrap();
+
+            let mut materials: IndexSet<Material> = IndexSet::new();
+            let default_material = appearance::Material::default();
 
             let mut feature = Feature {
                 polygons: MultiPolygon::new(),
-                // polygon_material_ids: Vec::new(),
-                // materials: IndexSet::default(),
-                // attributes: entity.attributes.clone(),
-                // feature_id: parcel.feature_id,
+                attributes: entity.root.clone(),
+                polygon_material_ids: Default::default(),
+                materials: Default::default(),
+                feature_id: None, // feature_id is set later
             };
 
             let mut local_bvol = BoundingVolume::default();
@@ -202,23 +224,48 @@ impl DataSink for ObjSink {
             geometries.iter().for_each(|entry| {
                 match entry.ty {
                     GeometryType::Solid | GeometryType::Surface | GeometryType::Triangle => {
-                        // extract the polygon and UV
-                        for (idx_poly, poly_uv) in
+                        // extract the polygon, material, and texture
+                        for (((idx_poly, poly_uv), poly_mat), poly_tex) in
                             geom_store
                                 .multipolygon
                                 .iter_range(entry.pos as usize..(entry.pos + entry.len) as usize)
                                 .zip_eq(geom_store.polygon_uvs.iter_range(
                                     entry.pos as usize..(entry.pos + entry.len) as usize,
                                 ))
+                                .zip_eq(
+                                    geom_store.polygon_materials
+                                        [entry.pos as usize..(entry.pos + entry.len) as usize]
+                                        .iter(),
+                                )
+                                .zip_eq(
+                                    geom_store.polygon_textures
+                                        [entry.pos as usize..(entry.pos + entry.len) as usize]
+                                        .iter(),
+                                )
                         {
                             // convert to idx_poly to polygon
                             let poly = idx_poly.transform(|c| geom_store.vertices[*c as usize]);
+                            let orig_mat = poly_mat
+                                .and_then(|idx| appearance_store.materials.get(idx as usize))
+                                .unwrap_or(&default_material)
+                                .clone();
+                            let orig_tex = poly_tex
+                                .and_then(|idx| appearance_store.textures.get(idx as usize));
+
+                            // let poly_uv = poly_uv.raw_coords();
+                            let mat = Material {
+                                base_color: orig_mat.diffuse_color.into(),
+                                base_texture: orig_tex.map(|tex| Texture {
+                                    uri: tex.image_url.clone(),
+                                }),
+                            };
+
+                            let (mat_idx, _) = materials.insert_full(mat);
 
                             let mut ring_buffer: Vec<[f64; 5]> = Vec::new();
 
-                            poly.rings()
-                                .zip_eq(poly_uv.rings())
-                                .for_each(|(ring, uv_ring)| {
+                            poly.rings().zip_eq(poly_uv.rings()).enumerate().for_each(
+                                |(ri, (ring, uv_ring))| {
                                     ring.iter_closed().zip_eq(uv_ring.iter_closed()).for_each(
                                         |(c, uv)| {
                                             let [lng, lat, height] = c;
@@ -234,9 +281,14 @@ impl DataSink for ObjSink {
                                                 local_bvol.max_height.max(height);
                                         },
                                     );
-
-                                    feature.polygons.add_exterior(ring_buffer.drain(..));
-                                });
+                                    if ri == 0 {
+                                        feature.polygons.add_exterior(ring_buffer.drain(..));
+                                        feature.polygon_material_ids.push(mat_idx as u32);
+                                    } else {
+                                        feature.polygons.add_interior(ring_buffer.drain(..));
+                                    }
+                                },
+                            );
                         }
                     }
                     GeometryType::Curve => {
@@ -247,6 +299,8 @@ impl DataSink for ObjSink {
                     }
                 }
             });
+
+            feature.materials = materials;
 
             {
                 let mut locked_features = classified_features.lock().unwrap();
@@ -297,8 +351,15 @@ impl DataSink for ObjSink {
                 let mut index_buf: Vec<u32> = Vec::new();
                 let mut triangles = Vec::new();
 
+                let mut primitives: Primitives = Default::default();
+
+                let mut metadata_encoder = metadata::MetadataEncoder::new(schema);
+
+                let mut feature_id = 0;
                 for feature in features.features.iter_mut() {
                     feedback.ensure_not_canceled()?;
+
+                    feature.feature_id = Some(feature_id as u32);
 
                     feature
                         .polygons
@@ -309,11 +370,20 @@ impl DataSink for ObjSink {
                             [v_enu[0], v_enu[1], v_enu[2], u, 1.0 - v]
                         });
 
-                    for poly in feature.polygons.iter() {
+                    for (poly, orig_mat_id) in feature
+                        .polygons
+                        .iter()
+                        .zip_eq(feature.polygon_material_ids.iter())
+                    {
                         let num_outer = match poly.hole_indices().first() {
                             Some(&v) => v as usize,
                             None => poly.raw_coords().len(),
                         };
+
+                        let mat = feature.materials[*orig_mat_id as usize].clone();
+                        println!("{:#?}", mat.base_texture);
+                        let primitive = primitives.entry(mat).or_default();
+                        primitive.feature_ids.insert(feature_id as u32);
 
                         buf3d.clear();
                         buf3d.extend(poly.raw_coords().iter().map(|c| [c[0], c[1], c[2]]));
@@ -343,9 +413,12 @@ impl DataSink for ObjSink {
 
                 feedback.ensure_not_canceled()?;
 
-                // Write to file
+                // Write OBJ file
                 let mut file_path = self.output_path.clone();
-                file_path.push(format!("{}_OBJ", typename.replace(':', "_")));
+
+                // file_path.push(format!("{}_OBJ", typename.replace(':', "_")));
+                file_path.push(format!("{}_OBJ", "")); // NOTE: debug
+
                 std::fs::create_dir_all(&file_path)?;
 
                 let dir_name = file_path.to_str().unwrap();
@@ -355,45 +428,87 @@ impl DataSink for ObjSink {
                     typename.replace(':', "_")
                 ))?;
 
-                // Writing vertex data
-                for vertex in &vertices {
-                    let [vx, vy, vz] = vertex;
-                    let vx = f64::from_bits(*vx);
-                    let vy = f64::from_bits(*vy);
-                    let vz = f64::from_bits(*vz);
-                    writeln!(writer, "v {} {} {}", vx, vy, vz)?;
-                }
-
-                // Writing of surface data (index starts at 1, so +1 is used)
-                for face in indices.chunks(3) {
-                    if let [i1, i2, i3] = face {
-                        writeln!(writer, "f {} {} {}", i1 + 1, i2 + 1, i3 + 1)?;
-                    }
-                }
-
-                // Writeing UV data
-                for feature in features.features.iter() {
-                    for poly in feature.polygons.iter() {
-                        for [_, _, _, u, v] in poly.raw_coords() {
-                            writeln!(writer, "vt {} {}", u, v)?;
-                        }
-                    }
-                }
-
-                // Material
-                writeln!(writer, "mtllib {}.mtl", typename.replace(':', "_"))?;
-                writeln!(writer, "usemtl Material")?;
-
-                // mtlの書き出し
-                let mut writer = std::fs::File::create(format!(
+                // Write MTL file
+                let mut writer2 = std::fs::File::create(format!(
                     "{}/{}.mtl",
                     dir_name,
                     typename.replace(':', "_")
                 ))?;
 
-                // jpgの指定
-                writeln!(writer, "newmtl Material")?;
-                writeln!(writer, "map_Kd {}.jpg", typename.replace(':', "_"))?;
+                //////
+
+                // Material
+                writeln!(writer, "mtllib {}.mtl", typename.replace(':', "_"))?;
+
+                let mut global_vertex_offset = 0;
+                let mut global_texture_offset = 0;
+
+                for (feature_index, feature) in features.features.iter().enumerate() {
+                    writeln!(writer, "o Feature_{}", feature_index)?;
+
+                    // Collect all coordinates for this feature
+                    let all_coords: Vec<[f64; 5]> = feature
+                        .polygons
+                        .iter()
+                        .flat_map(|poly| poly.raw_coords().to_vec())
+                        .collect();
+
+                    // Writing vertex - v
+                    for [x, y, z, _, _] in &all_coords {
+                        writeln!(writer, "v {} {} {}", x, y, z)?;
+                    }
+
+                    // Writing texture coordinates - vt
+                    for [_, _, _, u, v] in &all_coords {
+                        writeln!(writer, "vt {} {}", u, 1.0 - v)?;
+                    }
+
+                    // Writing materials - usemtl
+                    let mat = feature.materials.iter().next().unwrap();
+                    if let Some(Texture { uri }) = &mat.base_texture {
+                        print!("{:#?}", uri.to_file_path());
+                        if let Ok(path) = uri.to_file_path() {
+                            // NOTE: temporary implementation
+                            let (content, mime_type) = load_image(feedback, &path)?;
+
+                            let image_file_name = format!("Feature_{}.jpg", feature_index);
+                            let textures_dir = self
+                                .output_path
+                                .join(format!("{}_OBJ", ""))
+                                .join("textures");
+                            std::fs::create_dir_all(&textures_dir)?;
+
+                            let image_path = textures_dir.join(&image_file_name);
+                            std::fs::write(&image_path, &content)?;
+
+                            // MTLファイルに画像ファイル名を書き込む
+                            writeln!(writer2, "newmtl Material_{}", feature_index)?;
+                            writeln!(writer2, "map_Kd .\\textures\\{}", image_file_name)?;
+                            writeln!(writer, "usemtl Material_{}", feature_index)?;
+                        }
+                    }
+
+                    // Writing faces - f
+                    let mut face_index = 0;
+                    for poly in &feature.polygons {
+                        let num_vertices = poly.raw_coords().len();
+                        for i in 2..num_vertices {
+                            let v1 = global_vertex_offset + face_index + 1;
+                            let v2 = global_vertex_offset + face_index + i;
+                            let v3 = global_vertex_offset + face_index + i + 1;
+                            let vt1 = global_texture_offset + face_index + 1;
+                            let vt2 = global_texture_offset + face_index + i;
+                            let vt3 = global_texture_offset + face_index + i + 1;
+                            writeln!(writer, "f {}/{} {}/{} {}/{}", v1, vt1, v2, vt2, v3, vt3)?;
+                        }
+                        face_index += num_vertices;
+                    }
+
+                    global_vertex_offset += all_coords.len();
+                    global_texture_offset += all_coords.len();
+                }
+
+                ///////////////////////////////////
 
                 writer.flush()?;
 
