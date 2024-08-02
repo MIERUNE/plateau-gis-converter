@@ -159,9 +159,11 @@ pub type Primitives = HashMap<material::Material, PrimitiveInfo>;
 
 // 頂点とテクスチャ座標を一緒に保持する構造体
 #[derive(Clone, Copy)]
+// VertexDataの構造体を拡張
 struct VertexData {
     position: [f64; 3],
     tex_coord: [f64; 2],
+    material_id: usize,
 }
 
 impl DataSink for ObjSink {
@@ -354,10 +356,18 @@ impl DataSink for ObjSink {
                 let mut triangles: Vec<[f64; 3]> = Vec::new();
                 let mut feature_triangles: Vec<Vec<[f64; 3]>> = Vec::new();
 
-                let mut feature_vertex_data: Vec<Vec<VertexData>> = Vec::new();
+                let mut feature_id = 0;
+
+                let mut feature_vertex_data: Vec<(u32, Vec<VertexData>)> = Vec::new();
 
                 for feature in features.features.iter_mut() {
                     feedback.ensure_not_canceled()?;
+
+                    let feature_id = feature.feature_id.unwrap_or_else(|| {
+                        feature_id += 1;
+                        feature.feature_id = Some(feature_id);
+                        feature_id
+                    });
 
                     feature
                         .polygons
@@ -370,7 +380,7 @@ impl DataSink for ObjSink {
 
                     let mut feature_data = Vec::new();
 
-                    for (poly, orig_mat_id) in feature
+                    for (poly, &orig_mat_id) in feature
                         .polygons
                         .iter()
                         .zip_eq(feature.polygon_material_ids.iter())
@@ -386,6 +396,7 @@ impl DataSink for ObjSink {
                             .map(|&[x, y, z, u, v]| VertexData {
                                 position: [x, y, z],
                                 tex_coord: [u, v],
+                                material_id: orig_mat_id as usize,
                             })
                             .collect();
 
@@ -403,7 +414,7 @@ impl DataSink for ObjSink {
                         }
                     }
 
-                    feature_vertex_data.push(feature_data);
+                    feature_vertex_data.push((feature_id, feature_data));
                 }
 
                 feedback.ensure_not_canceled()?;
@@ -437,8 +448,8 @@ impl DataSink for ObjSink {
                 let mut global_texture_offset = 0;
 
                 // OBJファイル書き込み部分
-                for (feature_index, feature_data) in feature_vertex_data.iter().enumerate() {
-                    writeln!(obj_writer, "o Feature_{}", feature_index)?;
+                for (feature_id, feature_data) in &feature_vertex_data {
+                    writeln!(obj_writer, "o Feature_{}", feature_id)?;
 
                     // 頂点とテクスチャ座標の書き込み
                     for vertex in feature_data {
@@ -449,7 +460,6 @@ impl DataSink for ObjSink {
                         )?;
                     }
 
-                    // 頂点とテクスチャ座標の書き込み
                     for vertex in feature_data {
                         writeln!(
                             obj_writer,
@@ -459,43 +469,67 @@ impl DataSink for ObjSink {
                         )?;
                     }
 
-                    // Writing materials - usemtl
-                    let mat = &features.features[feature_index].materials[0];
-                    if let Some(Texture { uri }) = &mat.base_texture {
-                        print!("{:#?}", uri.to_file_path());
-                        if let Ok(path) = uri.to_file_path() {
-                            // NOTE: temporary implementation
-                            let (content, mime_type) = load_image(feedback, &path)?;
+                    // マテリアルごとに面を書き込む
+                    let mut current_material_id = None;
+                    for (i, vertex) in feature_data.iter().enumerate() {
+                        if current_material_id != Some(vertex.material_id) {
+                            current_material_id = Some(vertex.material_id);
+                            let feature = features
+                                .features
+                                .iter()
+                                .find(|f| f.feature_id == Some(*feature_id))
+                                .unwrap();
+                            let mat = &feature.materials[vertex.material_id];
+                            if let Some(Texture { uri }) = &mat.base_texture {
+                                if let Ok(path) = uri.to_file_path() {
+                                    // NOTE: temporary implementation
+                                    let (content, mime_type) = load_image(feedback, &path)?;
 
-                            let image_file_name = format!("Feature_{}.jpg", feature_index);
-                            let textures_dir = self
-                                .output_path
-                                .join(format!("{}_OBJ", ""))
-                                .join("textures");
-                            std::fs::create_dir_all(&textures_dir)?;
+                                    let image_file_name = format!(
+                                        "Feature_{}_Material_{}.jpg",
+                                        feature_id, vertex.material_id
+                                    );
+                                    let textures_dir = self
+                                        .output_path
+                                        .join(format!("{}_OBJ", ""))
+                                        .join("textures");
+                                    std::fs::create_dir_all(&textures_dir)?;
 
-                            let image_path = textures_dir.join(&image_file_name);
-                            std::fs::write(&image_path, &content)?;
+                                    let image_path = textures_dir.join(&image_file_name);
+                                    std::fs::write(&image_path, &content)?;
 
-                            // MTLファイルに画像ファイル名を書き込む
-                            writeln!(mtl_writer, "newmtl Material_{}", feature_index)?;
-                            writeln!(mtl_writer, "map_Kd .\\textures\\{}", image_file_name)?;
-                            writeln!(obj_writer, "usemtl Material_{}", feature_index)?;
+                                    // MTLファイルに画像ファイル名を書き込む
+                                    writeln!(
+                                        mtl_writer,
+                                        "newmtl Material_{}_{}",
+                                        feature_id, vertex.material_id
+                                    )?;
+                                    writeln!(
+                                        mtl_writer,
+                                        "map_Kd .\\textures\\{}",
+                                        image_file_name
+                                    )?;
+                                    writeln!(
+                                        obj_writer,
+                                        "usemtl Material_{}_{}",
+                                        feature_id, vertex.material_id
+                                    )?;
+                                }
+                            }
                         }
-                    }
 
-                    // 面の書き込み
-                    for i in 0..feature_data.len() / 3 {
-                        writeln!(
-                            obj_writer,
-                            "f {}/{} {}/{} {}/{}",
-                            global_vertex_offset + i * 3 + 1,
-                            global_texture_offset + i * 3 + 1,
-                            global_vertex_offset + i * 3 + 2,
-                            global_texture_offset + i * 3 + 2,
-                            global_vertex_offset + i * 3 + 3,
-                            global_texture_offset + i * 3 + 3
-                        )?;
+                        if i % 3 == 0 {
+                            writeln!(
+                                obj_writer,
+                                "f {}/{} {}/{} {}/{}",
+                                global_vertex_offset + i + 1,
+                                global_texture_offset + i + 1,
+                                global_vertex_offset + i + 2,
+                                global_texture_offset + i + 2,
+                                global_vertex_offset + i + 3,
+                                global_texture_offset + i + 3
+                            )?;
+                        }
                     }
 
                     global_vertex_offset += feature_data.len();
