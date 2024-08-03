@@ -1,5 +1,5 @@
 //! obj sink
-use std::{f64::consts::FRAC_PI_2, io::Write, path::PathBuf, sync::Mutex};
+use std::{any::Any, f64::consts::FRAC_PI_2, io::Write, path::PathBuf, sync::Mutex};
 mod material;
 
 use ahash::{HashMap, HashSet, RandomState};
@@ -140,6 +140,8 @@ pub struct Feature {
     pub attributes: nusamai_citygml::object::Value,
     // feature_id
     pub feature_id: Option<u32>,
+    // type_id
+    pub type_id: Option<String>,
 }
 
 type ClassifiedFeatures = HashMap<String, ClassFeatures>;
@@ -158,12 +160,14 @@ pub struct PrimitiveInfo {
 pub type Primitives = HashMap<material::Material, PrimitiveInfo>;
 
 // 頂点とテクスチャ座標を一緒に保持する構造体
-#[derive(Clone, Copy)]
+#[derive(Clone, Debug)]
 // VertexDataの構造体を拡張
 struct VertexData {
     position: [f64; 3],
     tex_coord: [f64; 2],
     material_id: usize,
+    type_id: Option<String>,
+    tex_count: usize,
 }
 
 impl DataSink for ObjSink {
@@ -219,6 +223,7 @@ impl DataSink for ObjSink {
                 polygon_material_ids: Default::default(),
                 materials: Default::default(),
                 feature_id: None, // feature_id is set later
+                type_id: obj.stereotype.id().map(|id| id.to_string()),
             };
 
             let mut local_bvol = BoundingVolume::default();
@@ -365,6 +370,8 @@ impl DataSink for ObjSink {
                         feature_id
                     });
 
+                    let type_id = feature.type_id.as_ref().unwrap_or(&typename);
+
                     feature
                         .polygons
                         .transform_inplace(|&[lng, lat, height, u, v]| {
@@ -375,6 +382,12 @@ impl DataSink for ObjSink {
                         });
 
                     let mut feature_data = Vec::new();
+
+                    let tex_count = &feature
+                        .materials
+                        .iter()
+                        .filter(|m| m.base_texture.is_some())
+                        .count();
 
                     for (poly, &orig_mat_id) in feature
                         .polygons
@@ -393,6 +406,8 @@ impl DataSink for ObjSink {
                                 position: [x, y, z],
                                 tex_coord: [u, v],
                                 material_id: orig_mat_id as usize,
+                                type_id: Some(type_id.clone()),
+                                tex_count: *tex_count,
                             })
                             .collect();
 
@@ -405,8 +420,11 @@ impl DataSink for ObjSink {
                                 poly.hole_indices(),
                                 &mut index_buf,
                             );
-                            feature_data
-                                .extend(index_buf.iter().map(|&idx| vertex_data[idx as usize]));
+                            feature_data.extend(
+                                index_buf
+                                    .iter()
+                                    .map(|&idx| vertex_data[idx as usize].clone()),
+                            );
                         }
                     }
 
@@ -445,7 +463,8 @@ impl DataSink for ObjSink {
 
                 // OBJファイル書き込み部分
                 for (feature_id, feature_data) in &feature_vertex_data {
-                    writeln!(obj_writer, "o Feature_{}", feature_id)?;
+                    let type_id = feature_data.first().unwrap().type_id.as_ref().unwrap();
+                    writeln!(obj_writer, "o {}", type_id)?;
 
                     // 頂点とテクスチャ座標の書き込み
                     for vertex in feature_data {
@@ -465,6 +484,8 @@ impl DataSink for ObjSink {
                         )?;
                     }
 
+                    // println!("{:#?}", feature_data);
+
                     // テクスチャとマテリアル情報のキャッシュ
                     let mut texture_cache: std::collections::HashMap<String, Vec<u8>> =
                         std::collections::HashMap::new();
@@ -473,7 +494,9 @@ impl DataSink for ObjSink {
 
                     // マテリアルごとに面を書き込む
                     let mut current_material_id = None;
+
                     for (i, vertex) in feature_data.iter().enumerate() {
+                        // println!("====================");
                         if current_material_id != Some(vertex.material_id) {
                             current_material_id = Some(vertex.material_id);
                             let feature = features
@@ -481,7 +504,21 @@ impl DataSink for ObjSink {
                                 .iter()
                                 .find(|f| f.feature_id == Some(*feature_id))
                                 .unwrap();
+
+                            // テクスチャの数を確認
+                            let tex_count = &feature
+                                .materials
+                                .iter()
+                                .filter(|m| m.base_texture.is_some())
+                                .count();
+
+                            if ("bldg_5cd571f8-9d3d-4450-af26-1c4eb070fffd" == type_id) {
+                                println!("{:#?}", feature.materials);
+                            }
+
                             let mat = &feature.materials[vertex.material_id];
+
+                            // println!("{:#?}", mat);
                             if let Some(Texture { uri }) = &mat.base_texture {
                                 if let Ok(path) = uri.to_file_path() {
                                     let image_file_name = format!(
@@ -523,18 +560,29 @@ impl DataSink for ObjSink {
                                         )?;
                                         material_written
                                             .insert((*feature_id, vertex.material_id), true);
+
+                                        if (tex_count == &1) {
+                                            writeln!(
+                                                obj_writer,
+                                                "usemtl Material_{}_{}",
+                                                feature_id, vertex.material_id
+                                            )?;
+                                        }
                                     }
 
-                                    writeln!(
-                                        obj_writer,
-                                        "usemtl Material_{}_{}",
-                                        feature_id, vertex.material_id
-                                    )?;
+                                    if tex_count > &1 {
+                                        writeln!(
+                                            obj_writer,
+                                            "usemtl Material_{}_{}",
+                                            feature_id, vertex.material_id
+                                        )?;
+                                    }
                                 }
                             }
                         }
 
                         if i % 3 == 0 {
+                            // テクスチャが存在する場合
                             writeln!(
                                 obj_writer,
                                 "f {}/{} {}/{} {}/{}",
