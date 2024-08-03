@@ -183,7 +183,7 @@ impl DataSink for ObjSink {
         self.transform_settings.build(default_requirements)
     }
 
-    fn run(&mut self, upstream: Receiver, feedback: &Feedback, schema: &Schema) -> Result<()> {
+    fn run(&mut self, upstream: Receiver, feedback: &Feedback, _schema: &Schema) -> Result<()> {
         let ellipsoid = nusamai_projection::ellipsoid::wgs84();
 
         let classified_features: Mutex<ClassifiedFeatures> = Default::default();
@@ -352,10 +352,6 @@ impl DataSink for ObjSink {
                 let mut buf2d: Vec<[f64; 2]> = Vec::new();
                 let mut index_buf: Vec<u32> = Vec::new();
 
-                // フィーチャーごとの三角形を保持するための構造
-                let mut triangles: Vec<[f64; 3]> = Vec::new();
-                let mut feature_triangles: Vec<Vec<[f64; 3]>> = Vec::new();
-
                 let mut feature_id = 0;
 
                 let mut feature_vertex_data: Vec<(u32, Vec<VertexData>)> = Vec::new();
@@ -469,6 +465,12 @@ impl DataSink for ObjSink {
                         )?;
                     }
 
+                    // テクスチャとマテリアル情報のキャッシュ
+                    let mut texture_cache: std::collections::HashMap<String, Vec<u8>> =
+                        std::collections::HashMap::new();
+                    let mut material_written: std::collections::HashMap<(u32, usize), bool> =
+                        std::collections::HashMap::new();
+
                     // マテリアルごとに面を書き込む
                     let mut current_material_id = None;
                     for (i, vertex) in feature_data.iter().enumerate() {
@@ -482,33 +484,47 @@ impl DataSink for ObjSink {
                             let mat = &feature.materials[vertex.material_id];
                             if let Some(Texture { uri }) = &mat.base_texture {
                                 if let Ok(path) = uri.to_file_path() {
-                                    // NOTE: temporary implementation
-                                    let (content, mime_type) = load_image(feedback, &path)?;
-
                                     let image_file_name = format!(
                                         "Feature_{}_Material_{}.jpg",
                                         feature_id, vertex.material_id
                                     );
-                                    let textures_dir = self
-                                        .output_path
-                                        .join(format!("{}_OBJ", ""))
-                                        .join("textures");
-                                    std::fs::create_dir_all(&textures_dir)?;
 
-                                    let image_path = textures_dir.join(&image_file_name);
-                                    std::fs::write(&image_path, &content)?;
+                                    // テクスチャがキャッシュにない場合のみ読み込む
+                                    if !texture_cache.contains_key(&image_file_name) {
+                                        let content = load_image(feedback, &path)?;
+                                        texture_cache.insert(image_file_name.clone(), content);
 
-                                    // MTLファイルに画像ファイル名を書き込む
-                                    writeln!(
-                                        mtl_writer,
-                                        "newmtl Material_{}_{}",
-                                        feature_id, vertex.material_id
-                                    )?;
-                                    writeln!(
-                                        mtl_writer,
-                                        "map_Kd .\\textures\\{}",
-                                        image_file_name
-                                    )?;
+                                        let textures_dir = self
+                                            .output_path
+                                            .join(format!("{}_OBJ", ""))
+                                            .join("textures");
+                                        std::fs::create_dir_all(&textures_dir)?;
+
+                                        let image_path = textures_dir.join(&image_file_name);
+                                        std::fs::write(
+                                            &image_path,
+                                            texture_cache.get(&image_file_name).unwrap(),
+                                        )?;
+                                    }
+
+                                    // マテリアル情報が未書き込みの場合のみMTLファイルに書き込む
+                                    if !material_written
+                                        .contains_key(&(*feature_id, vertex.material_id))
+                                    {
+                                        writeln!(
+                                            mtl_writer,
+                                            "newmtl Material_{}_{}",
+                                            feature_id, vertex.material_id
+                                        )?;
+                                        writeln!(
+                                            mtl_writer,
+                                            "map_Kd .\\textures\\{}",
+                                            image_file_name
+                                        )?;
+                                        material_written
+                                            .insert((*feature_id, vertex.material_id), true);
+                                    }
+
                                     writeln!(
                                         obj_writer,
                                         "usemtl Material_{}_{}",
