@@ -464,6 +464,8 @@ impl DataSink for ObjSink {
                 // OBJファイル書き込み部分
                 for (feature_id, feature_data) in &feature_vertex_data {
                     let type_id = feature_data.first().unwrap().type_id.as_ref().unwrap();
+                    println!("{:?}", type_id);
+                    // if ("bldg_1e215728-f3c1-468d-a3fe-165908a3b8fb" == type_id) {
                     writeln!(obj_writer, "o {}", type_id)?;
 
                     // 頂点とテクスチャ座標の書き込み
@@ -492,112 +494,92 @@ impl DataSink for ObjSink {
                     let mut material_written: std::collections::HashMap<(u32, usize), bool> =
                         std::collections::HashMap::new();
 
-                    // マテリアルごとに面を書き込む
-                    let mut current_material_id = None;
+                    // マテリアルIDごとにフェイスをグループ化
+                    let mut faces_by_material: std::collections::HashMap<
+                        usize,
+                        Vec<(usize, &VertexData)>,
+                    > = std::collections::HashMap::new();
 
                     for (i, vertex) in feature_data.iter().enumerate() {
-                        // println!("====================");
-                        if current_material_id != Some(vertex.material_id) {
-                            current_material_id = Some(vertex.material_id);
-                            let feature = features
-                                .features
-                                .iter()
-                                .find(|f| f.feature_id == Some(*feature_id))
-                                .unwrap();
+                        faces_by_material
+                            .entry(vertex.material_id)
+                            .or_insert_with(Vec::new)
+                            .push((i, vertex));
+                    }
 
-                            // テクスチャの数を確認
-                            let tex_count = &feature
-                                .materials
-                                .iter()
-                                .filter(|m| m.base_texture.is_some())
-                                .count();
+                    for (material_id, faces) in faces_by_material.iter() {
+                        let feature = features
+                            .features
+                            .iter()
+                            .find(|f| f.feature_id == Some(*feature_id))
+                            .unwrap();
+                        let mat = &feature.materials[*material_id];
 
-                            if ("bldg_5cd571f8-9d3d-4450-af26-1c4eb070fffd" == type_id) {
-                                println!("{:#?}", feature.materials);
-                            }
+                        if let Some(Texture { uri }) = &mat.base_texture {
+                            if let Ok(path) = uri.to_file_path() {
+                                let image_file_name =
+                                    format!("Feature_{}_Material_{}.jpg", feature_id, material_id);
 
-                            let mat = &feature.materials[vertex.material_id];
+                                // テクスチャがキャッシュにない場合のみ読み込む
+                                if !texture_cache.contains_key(&image_file_name) {
+                                    let content = load_image(feedback, &path)?;
+                                    texture_cache.insert(image_file_name.clone(), content);
 
-                            // println!("{:#?}", mat);
-                            if let Some(Texture { uri }) = &mat.base_texture {
-                                if let Ok(path) = uri.to_file_path() {
-                                    let image_file_name = format!(
-                                        "Feature_{}_Material_{}.jpg",
-                                        feature_id, vertex.material_id
-                                    );
+                                    let textures_dir = self
+                                        .output_path
+                                        .join(format!("{}_OBJ", ""))
+                                        .join("textures");
+                                    std::fs::create_dir_all(&textures_dir)?;
 
-                                    // テクスチャがキャッシュにない場合のみ読み込む
-                                    if !texture_cache.contains_key(&image_file_name) {
-                                        let content = load_image(feedback, &path)?;
-                                        texture_cache.insert(image_file_name.clone(), content);
-
-                                        let textures_dir = self
-                                            .output_path
-                                            .join(format!("{}_OBJ", ""))
-                                            .join("textures");
-                                        std::fs::create_dir_all(&textures_dir)?;
-
-                                        let image_path = textures_dir.join(&image_file_name);
-                                        std::fs::write(
-                                            &image_path,
-                                            texture_cache.get(&image_file_name).unwrap(),
-                                        )?;
-                                    }
-
-                                    // マテリアル情報が未書き込みの場合のみMTLファイルに書き込む
-                                    if !material_written
-                                        .contains_key(&(*feature_id, vertex.material_id))
-                                    {
-                                        writeln!(
-                                            mtl_writer,
-                                            "newmtl Material_{}_{}",
-                                            feature_id, vertex.material_id
-                                        )?;
-                                        writeln!(
-                                            mtl_writer,
-                                            "map_Kd .\\textures\\{}",
-                                            image_file_name
-                                        )?;
-                                        material_written
-                                            .insert((*feature_id, vertex.material_id), true);
-
-                                        if (tex_count == &1) {
-                                            writeln!(
-                                                obj_writer,
-                                                "usemtl Material_{}_{}",
-                                                feature_id, vertex.material_id
-                                            )?;
-                                        }
-                                    }
-
-                                    if tex_count > &1 {
-                                        writeln!(
-                                            obj_writer,
-                                            "usemtl Material_{}_{}",
-                                            feature_id, vertex.material_id
-                                        )?;
-                                    }
+                                    let image_path = textures_dir.join(&image_file_name);
+                                    std::fs::write(
+                                        &image_path,
+                                        texture_cache.get(&image_file_name).unwrap(),
+                                    )?;
                                 }
+
+                                // マテリアル情報が未書き込みの場合のみMTLファイルに書き込む
+                                if !material_written.contains_key(&(*feature_id, *material_id)) {
+                                    writeln!(
+                                        mtl_writer,
+                                        "newmtl Material_{}_{}",
+                                        feature_id, material_id
+                                    )?;
+                                    writeln!(
+                                        mtl_writer,
+                                        "map_Kd .\\textures\\{}",
+                                        image_file_name
+                                    )?;
+                                    material_written.insert((*feature_id, *material_id), true);
+                                }
+
+                                writeln!(
+                                    obj_writer,
+                                    "usemtl Material_{}_{}",
+                                    feature_id, material_id
+                                )?;
                             }
                         }
 
-                        if i % 3 == 0 {
-                            // テクスチャが存在する場合
-                            writeln!(
-                                obj_writer,
-                                "f {}/{} {}/{} {}/{}",
-                                global_vertex_offset + i + 1,
-                                global_texture_offset + i + 1,
-                                global_vertex_offset + i + 2,
-                                global_texture_offset + i + 2,
-                                global_vertex_offset + i + 3,
-                                global_texture_offset + i + 3
-                            )?;
+                        for (i, _) in faces {
+                            if i % 3 == 0 {
+                                writeln!(
+                                    obj_writer,
+                                    "f {}/{} {}/{} {}/{}",
+                                    global_vertex_offset + i + 1,
+                                    global_texture_offset + i + 1,
+                                    global_vertex_offset + i + 2,
+                                    global_texture_offset + i + 2,
+                                    global_vertex_offset + i + 3,
+                                    global_texture_offset + i + 3
+                                )?;
+                            }
                         }
                     }
 
                     global_vertex_offset += feature_data.len();
                     global_texture_offset += feature_data.len();
+                    // }
                 }
 
                 obj_writer.flush()?;
