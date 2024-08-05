@@ -78,41 +78,8 @@ pub struct Image {
     pub uri: Url,
 }
 
-impl Image {
-    pub fn to_gltf(
-        &self,
-        feedback: &Feedback,
-        buffer_views: &mut Vec<BufferView>,
-        bin_content: &mut Vec<u8>,
-    ) -> std::io::Result<nusamai_gltf_json::Image> {
-        if let Ok(path) = self.uri.to_file_path() {
-            // NOTE: temporary implementation
-            let (content, mime_type) = load_image(feedback, &path)?;
-
-            buffer_views.push(BufferView {
-                byte_offset: bin_content.len() as u32,
-                byte_length: content.len() as u32,
-                ..Default::default()
-            });
-
-            bin_content.extend(content);
-
-            Ok(nusamai_gltf_json::Image {
-                mime_type: Some(mime_type),
-                buffer_view: Some(buffer_views.len() as u32 - 1),
-                ..Default::default()
-            })
-        } else {
-            Ok(nusamai_gltf_json::Image {
-                uri: Some(self.uri.to_string()),
-                ..Default::default()
-            })
-        }
-    }
-}
-
 // NOTE: temporary implementation
-pub fn load_image(feedback: &Feedback, path: &Path) -> std::io::Result<(Vec<u8>, MimeType)> {
+pub fn load_image(feedback: &Feedback, path: &Path) -> std::io::Result<Vec<u8>> {
     if let Some(ext) = path.extension() {
         match ext.to_ascii_lowercase().to_str() {
             Some("tif" | "tiff" | "png") => {
@@ -131,11 +98,11 @@ pub fn load_image(feedback: &Feedback, path: &Path) -> std::io::Result<(Vec<u8>,
                     .map_err(|err| std::io::Error::new(std::io::ErrorKind::InvalidData, err))?;
                 log::debug!("Image encoding took {:?}", t.elapsed());
 
-                Ok((writer.into_inner(), MimeType::ImagePng))
+                Ok(writer.into_inner())
             }
             Some("jpg" | "jpeg") => {
                 feedback.info(format!("Embedding a jpeg as is: {:?}", path));
-                Ok((std::fs::read(path)?, MimeType::ImageJpeg))
+                Ok(std::fs::read(path)?)
             }
             _ => {
                 let err = format!("Unsupported image format: {:?}", path);

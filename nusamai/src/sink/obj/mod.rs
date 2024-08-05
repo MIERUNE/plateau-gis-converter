@@ -461,125 +461,175 @@ impl DataSink for ObjSink {
                 let mut global_vertex_offset = 0;
                 let mut global_texture_offset = 0;
 
+                // Default material flag
+                let mut default_material_written = false;
+
                 // OBJファイル書き込み部分
                 for (feature_id, feature_data) in &feature_vertex_data {
                     let type_id = feature_data.first().unwrap().type_id.as_ref().unwrap();
-                    println!("{:?}", type_id);
-                    // if ("bldg_1e215728-f3c1-468d-a3fe-165908a3b8fb" == type_id) {
-                    writeln!(obj_writer, "o {}", type_id)?;
+                    // if "bldg_d05b0b65-eabf-473b-ab1c-cd9245aa3437" == type_id {
+                    // if "bldg_51ed9798-bea2-4217-8389-e065e3586e61" == type_id {
+                    if true {
+                        writeln!(obj_writer, "o {}", type_id)?;
 
-                    // 頂点とテクスチャ座標の書き込み
-                    for vertex in feature_data {
-                        writeln!(
-                            obj_writer,
-                            "v {} {} {}",
-                            vertex.position[0], vertex.position[1], vertex.position[2]
-                        )?;
-                    }
+                        // 頂点とテクスチャ座標の書き込み
+                        for vertex in feature_data {
+                            writeln!(
+                                obj_writer,
+                                "v {} {} {}",
+                                vertex.position[0], vertex.position[1], vertex.position[2]
+                            )?;
+                        }
 
-                    for vertex in feature_data {
-                        writeln!(
-                            obj_writer,
-                            "vt {} {}",
-                            vertex.tex_coord[0],
-                            1.0 - vertex.tex_coord[1]
-                        )?;
-                    }
+                        for vertex in feature_data {
+                            writeln!(
+                                obj_writer,
+                                "vt {} {}",
+                                vertex.tex_coord[0],
+                                1.0 - vertex.tex_coord[1]
+                            )?;
+                        }
 
-                    // println!("{:#?}", feature_data);
+                        // UV座標が[0.0, 1.0]でない場合のみテクスチャ座標の書き込み
+                        let mut write_texture_indices = vec![true; feature_data.len()];
+                        for (i, vertex) in feature_data.iter().enumerate() {
+                            if vertex.tex_coord == [0.0, 1.0] {
+                                write_texture_indices[i] = false;
+                            } else {
+                                // writeln!(
+                                //     obj_writer,
+                                //     "vt {} {}",
+                                //     vertex.tex_coord[0],
+                                //     1.0 - vertex.tex_coord[1]
+                                // )?;
+                            }
+                        }
 
-                    // テクスチャとマテリアル情報のキャッシュ
-                    let mut texture_cache: std::collections::HashMap<String, Vec<u8>> =
-                        std::collections::HashMap::new();
-                    let mut material_written: std::collections::HashMap<(u32, usize), bool> =
-                        std::collections::HashMap::new();
+                        // テクスチャとマテリアル情報のキャッシュ
+                        let mut texture_cache: std::collections::HashMap<String, Vec<u8>> =
+                            std::collections::HashMap::new();
+                        let mut material_written: std::collections::HashMap<(u32, usize), bool> =
+                            std::collections::HashMap::new();
 
-                    // マテリアルIDごとにフェイスをグループ化
-                    let mut faces_by_material: std::collections::HashMap<
-                        usize,
-                        Vec<(usize, &VertexData)>,
-                    > = std::collections::HashMap::new();
+                        // マテリアルIDごとにフェイスをグループ化
+                        let mut faces_by_material: std::collections::HashMap<
+                            usize,
+                            Vec<(usize, &VertexData)>,
+                        > = std::collections::HashMap::new();
+                        for (i, vertex) in feature_data.iter().enumerate() {
+                            faces_by_material
+                                .entry(vertex.material_id)
+                                .or_insert_with(Vec::new)
+                                .push((i, vertex));
+                        }
 
-                    for (i, vertex) in feature_data.iter().enumerate() {
-                        faces_by_material
-                            .entry(vertex.material_id)
-                            .or_insert_with(Vec::new)
-                            .push((i, vertex));
-                    }
+                        for (material_id, faces) in faces_by_material.iter() {
+                            let feature = features
+                                .features
+                                .iter()
+                                .find(|f| f.feature_id == Some(*feature_id))
+                                .unwrap();
+                            let mat = &feature.materials[*material_id];
 
-                    for (material_id, faces) in faces_by_material.iter() {
-                        let feature = features
-                            .features
-                            .iter()
-                            .find(|f| f.feature_id == Some(*feature_id))
-                            .unwrap();
-                        let mat = &feature.materials[*material_id];
+                            if let Some(Texture { uri }) = &mat.base_texture {
+                                if let Ok(path) = uri.to_file_path() {
+                                    let image_file_name = format!(
+                                        "Feature_{}_Material_{}.jpg",
+                                        feature_id, material_id
+                                    );
 
-                        if let Some(Texture { uri }) = &mat.base_texture {
-                            if let Ok(path) = uri.to_file_path() {
-                                let image_file_name =
-                                    format!("Feature_{}_Material_{}.jpg", feature_id, material_id);
+                                    // テクスチャがキャッシュにない場合のみ読み込む
+                                    if !texture_cache.contains_key(&image_file_name) {
+                                        let content = load_image(feedback, &path)?;
+                                        texture_cache.insert(image_file_name.clone(), content);
 
-                                // テクスチャがキャッシュにない場合のみ読み込む
-                                if !texture_cache.contains_key(&image_file_name) {
-                                    let content = load_image(feedback, &path)?;
-                                    texture_cache.insert(image_file_name.clone(), content);
+                                        let textures_dir = self
+                                            .output_path
+                                            .join(format!("{}_OBJ", ""))
+                                            .join("textures");
+                                        std::fs::create_dir_all(&textures_dir)?;
 
-                                    let textures_dir = self
-                                        .output_path
-                                        .join(format!("{}_OBJ", ""))
-                                        .join("textures");
-                                    std::fs::create_dir_all(&textures_dir)?;
+                                        let image_path = textures_dir.join(&image_file_name);
+                                        std::fs::write(
+                                            &image_path,
+                                            texture_cache.get(&image_file_name).unwrap(),
+                                        )?;
+                                    }
 
-                                    let image_path = textures_dir.join(&image_file_name);
-                                    std::fs::write(
-                                        &image_path,
-                                        texture_cache.get(&image_file_name).unwrap(),
-                                    )?;
-                                }
+                                    // マテリアル情報が未書き込みの場合のみMTLファイルに書き込む
+                                    if !material_written.contains_key(&(*feature_id, *material_id))
+                                    {
+                                        writeln!(
+                                            mtl_writer,
+                                            "newmtl Material_{}_{}",
+                                            feature_id, material_id
+                                        )?;
+                                        writeln!(
+                                            mtl_writer,
+                                            "map_Kd .\\textures\\{}",
+                                            image_file_name
+                                        )?;
+                                        material_written.insert((*feature_id, *material_id), true);
+                                    }
 
-                                // マテリアル情報が未書き込みの場合のみMTLファイルに書き込む
-                                if !material_written.contains_key(&(*feature_id, *material_id)) {
                                     writeln!(
-                                        mtl_writer,
-                                        "newmtl Material_{}_{}",
+                                        obj_writer,
+                                        "usemtl Material_{}_{}",
                                         feature_id, material_id
                                     )?;
-                                    writeln!(
-                                        mtl_writer,
-                                        "map_Kd .\\textures\\{}",
-                                        image_file_name
-                                    )?;
-                                    material_written.insert((*feature_id, *material_id), true);
+                                }
+                            } else {
+                                // デフォルトマテリアルが未書き込みの場合のみMTLファイルに書き込む
+                                if !default_material_written {
+                                    writeln!(mtl_writer, "newmtl Default_Material")?;
+                                    writeln!(mtl_writer, "Ka 1.000 1.000 1.000")?;
+                                    writeln!(mtl_writer, "Kd 1.000 1.000 1.000")?;
+                                    writeln!(mtl_writer, "Ks 1.000 1.000 1.000")?;
+                                    default_material_written = true;
                                 }
 
-                                writeln!(
-                                    obj_writer,
-                                    "usemtl Material_{}_{}",
-                                    feature_id, material_id
-                                )?;
+                                writeln!(obj_writer, "usemtl Default_Material")?;
+                            }
+
+                            for (i, _) in faces {
+                                if i % 3 == 0 {
+                                    // 三角形の頂点のうち、テクスチャ座標を書き込んだかを確認
+                                    if write_texture_indices[*i]
+                                        && write_texture_indices[i + 1]
+                                        && write_texture_indices[i + 2]
+                                    {
+                                        writeln!(
+                                            obj_writer,
+                                            "f {}/{} {}/{} {}/{}",
+                                            global_vertex_offset + i + 1,
+                                            global_texture_offset + i + 1,
+                                            global_vertex_offset + i + 2,
+                                            global_texture_offset + i + 2,
+                                            global_vertex_offset + i + 3,
+                                            global_texture_offset + i + 3
+                                        )?;
+                                    } else {
+                                        println!("UV座標が[0.0, 1.0]の三角形があります");
+                                        writeln!(
+                                            obj_writer,
+                                            "f {} {} {}",
+                                            global_vertex_offset + i + 1,
+                                            global_vertex_offset + i + 2,
+                                            global_vertex_offset + i + 3
+                                        )?;
+                                    }
+                                }
                             }
                         }
 
-                        for (i, _) in faces {
-                            if i % 3 == 0 {
-                                writeln!(
-                                    obj_writer,
-                                    "f {}/{} {}/{} {}/{}",
-                                    global_vertex_offset + i + 1,
-                                    global_texture_offset + i + 1,
-                                    global_vertex_offset + i + 2,
-                                    global_texture_offset + i + 2,
-                                    global_vertex_offset + i + 3,
-                                    global_texture_offset + i + 3
-                                )?;
-                            }
-                        }
+                        writeln!(
+                            obj_writer,
+                            "# ======================================================",
+                        )?;
+
+                        global_vertex_offset += feature_data.len();
+                        global_texture_offset += feature_data.len();
                     }
-
-                    global_vertex_offset += feature_data.len();
-                    global_texture_offset += feature_data.len();
-                    // }
                 }
 
                 obj_writer.flush()?;
