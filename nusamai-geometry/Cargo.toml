@@ -9,7 +9,7 @@ rust-version.workspace = true
 version.workspace = true
 
 [dependencies]
-num-traits = "0.2.18"
+num-traits = "0.2.19"
 serde = {workspace = true, features = ["derive"], optional = true}
 
 [dev-dependencies]

@@ -6,7 +6,7 @@ members = [
 resolver = "2"
 
 [workspace.package]
-authors = ["MIERUNE Inc. <info@mierune.co.jp>"]
+authors = ["MIERUNE Inc. <info@mierune.co.jp>", "Re:Earth Flow Contributors"]
 edition = "2021"
 license = "MIT"
 repository = "https://github.com/reearth/plateau-gis-converter"
@@ -30,10 +30,10 @@ lto = "fat"
 
 [workspace.dependencies]
 chrono = "0.4.38"
-indexmap = "2.2.6"
+indexmap = "2.3.0"
 log = "0.4.22"
-quick-xml = "0.36.0"
+quick-xml = "0.36.1"
 serde = "1.0.204"
-serde_json = "1.0.120"
-thiserror = "1.0.62"
+serde_json = "1.0.122"
+thiserror = "1.0.63"
 url = "2.5.2"
