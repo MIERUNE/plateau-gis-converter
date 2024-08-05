@@ -447,29 +447,29 @@ impl DataSink for ObjSink {
                     dir_name,
                     typename.replace(':', "_")
                 ))?;
-                // Material
-                writeln!(obj_writer, "mtllib {}.mtl", typename.replace(':', "_"))?;
+
                 // Write MTL file
                 let mut mtl_writer = std::fs::File::create(format!(
                     "{}/{}.mtl",
                     dir_name,
                     typename.replace(':', "_")
                 ))?;
-                // デフォルトマテリアルを書き込む
-                writeln!(mtl_writer, "newmtl Default_Material")?;
-                writeln!(mtl_writer, "Ks 0.333333 0.333333 0.333333")?;
+
+                // Material
+                writeln!(obj_writer, "mtllib {}.mtl", typename.replace(':', "_"))?;
 
                 let mut global_vertex_offset = 0;
                 let mut global_texture_offset = 0;
 
+                // Default material flag
+                let mut default_material_written = false;
+
                 // OBJファイル書き込み部分
                 for (feature_id, feature_data) in &feature_vertex_data {
-                    // NOTE: debug
                     let type_id = feature_data.first().unwrap().type_id.as_ref().unwrap();
                     // if "bldg_d05b0b65-eabf-473b-ab1c-cd9245aa3437" == type_id {
                     // if "bldg_51ed9798-bea2-4217-8389-e065e3586e61" == type_id {
                     if true {
-                        // NOTE: debug
                         writeln!(obj_writer, "o {}", type_id)?;
 
                         // 頂点とテクスチャ座標の書き込み
@@ -533,8 +533,10 @@ impl DataSink for ObjSink {
 
                             if let Some(Texture { uri }) = &mat.base_texture {
                                 if let Ok(path) = uri.to_file_path() {
-                                    let image_file_name =
-                                        format!("Feature_{}_texture.jpg", feature_id);
+                                    let image_file_name = format!(
+                                        "Feature_{}_Material_{}.jpg",
+                                        feature_id, material_id
+                                    );
 
                                     // テクスチャがキャッシュにない場合のみ読み込む
                                     if !texture_cache.contains_key(&image_file_name) {
@@ -557,7 +559,11 @@ impl DataSink for ObjSink {
                                     // マテリアル情報が未書き込みの場合のみMTLファイルに書き込む
                                     if !material_written.contains_key(&(*feature_id, *material_id))
                                     {
-                                        writeln!(mtl_writer, "newmtl Material_{}", feature_id)?;
+                                        writeln!(
+                                            mtl_writer,
+                                            "newmtl Material_{}_{}",
+                                            feature_id, material_id
+                                        )?;
                                         writeln!(
                                             mtl_writer,
                                             "map_Kd .\\textures\\{}",
@@ -566,9 +572,22 @@ impl DataSink for ObjSink {
                                         material_written.insert((*feature_id, *material_id), true);
                                     }
 
-                                    writeln!(obj_writer, "usemtl Material_{}", feature_id)?;
+                                    writeln!(
+                                        obj_writer,
+                                        "usemtl Material_{}_{}",
+                                        feature_id, material_id
+                                    )?;
                                 }
                             } else {
+                                // デフォルトマテリアルが未書き込みの場合のみMTLファイルに書き込む
+                                if !default_material_written {
+                                    writeln!(mtl_writer, "newmtl Default_Material")?;
+                                    writeln!(mtl_writer, "Ka 1.000 1.000 1.000")?;
+                                    writeln!(mtl_writer, "Kd 1.000 1.000 1.000")?;
+                                    writeln!(mtl_writer, "Ks 1.000 1.000 1.000")?;
+                                    default_material_written = true;
+                                }
+
                                 writeln!(obj_writer, "usemtl Default_Material")?;
                             }
 
