@@ -490,21 +490,6 @@ impl DataSink for ObjSink {
                             )?;
                         }
 
-                        // UV座標が[0.0, 1.0]でない場合のみテクスチャ座標の書き込み
-                        let mut write_texture_indices = vec![true; feature_data.len()];
-                        for (i, vertex) in feature_data.iter().enumerate() {
-                            if vertex.tex_coord == [0.0, 1.0] {
-                                write_texture_indices[i] = false;
-                            } else {
-                                // writeln!(
-                                //     obj_writer,
-                                //     "vt {} {}",
-                                //     vertex.tex_coord[0],
-                                //     1.0 - vertex.tex_coord[1]
-                                // )?;
-                            }
-                        }
-
                         // テクスチャとマテリアル情報のキャッシュ
                         let mut texture_cache: std::collections::HashMap<String, Vec<u8>> =
                             std::collections::HashMap::new();
@@ -593,31 +578,16 @@ impl DataSink for ObjSink {
 
                             for (i, _) in faces {
                                 if i % 3 == 0 {
-                                    // 三角形の頂点のうち、テクスチャ座標を書き込んだかを確認
-                                    if write_texture_indices[*i]
-                                        && write_texture_indices[i + 1]
-                                        && write_texture_indices[i + 2]
-                                    {
-                                        writeln!(
-                                            obj_writer,
-                                            "f {}/{} {}/{} {}/{}",
-                                            global_vertex_offset + i + 1,
-                                            global_texture_offset + i + 1,
-                                            global_vertex_offset + i + 2,
-                                            global_texture_offset + i + 2,
-                                            global_vertex_offset + i + 3,
-                                            global_texture_offset + i + 3
-                                        )?;
-                                    } else {
-                                        println!("UV座標が[0.0, 1.0]の三角形があります");
-                                        writeln!(
-                                            obj_writer,
-                                            "f {} {} {}",
-                                            global_vertex_offset + i + 1,
-                                            global_vertex_offset + i + 2,
-                                            global_vertex_offset + i + 3
-                                        )?;
-                                    }
+                                    writeln!(
+                                        obj_writer,
+                                        "f {}/{} {}/{} {}/{}",
+                                        global_vertex_offset + i + 1,
+                                        global_texture_offset + i + 1,
+                                        global_vertex_offset + i + 2,
+                                        global_texture_offset + i + 2,
+                                        global_vertex_offset + i + 3,
+                                        global_texture_offset + i + 3
+                                    )?;
                                 }
                             }
                         }
