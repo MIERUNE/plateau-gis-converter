@@ -461,9 +461,6 @@ impl DataSink for ObjSink {
                 let mut global_vertex_offset = 0;
                 let mut global_texture_offset = 0;
 
-                // Default material flag
-                let mut default_material_written = false;
-
                 // OBJファイル書き込み部分
                 for (feature_id, feature_data) in &feature_vertex_data {
                     let type_id = feature_data.first().unwrap().type_id.as_ref().unwrap();
@@ -493,8 +490,8 @@ impl DataSink for ObjSink {
                         // テクスチャとマテリアル情報のキャッシュ
                         let mut texture_cache: std::collections::HashMap<String, Vec<u8>> =
                             std::collections::HashMap::new();
-                        let mut material_written: std::collections::HashMap<(u32, usize), bool> =
-                            std::collections::HashMap::new();
+                        let mut material_written: std::collections::HashSet<String> =
+                            std::collections::HashSet::new();
 
                         // マテリアルIDごとにフェイスをグループ化
                         let mut faces_by_material: std::collections::HashMap<
@@ -541,20 +538,16 @@ impl DataSink for ObjSink {
                                         )?;
                                     }
 
+                                    let mat_key = format!("{}_{}", feature_id, material_id);
                                     // マテリアル情報が未書き込みの場合のみMTLファイルに書き込む
-                                    if !material_written.contains_key(&(*feature_id, *material_id))
-                                    {
-                                        writeln!(
-                                            mtl_writer,
-                                            "newmtl Material_{}_{}",
-                                            feature_id, material_id
-                                        )?;
+                                    if !material_written.contains(&mat_key) {
+                                        writeln!(mtl_writer, "newmtl Material_{}", mat_key)?;
                                         writeln!(
                                             mtl_writer,
                                             "map_Kd .\\textures\\{}",
                                             image_file_name
                                         )?;
-                                        material_written.insert((*feature_id, *material_id), true);
+                                        material_written.insert(mat_key);
                                     }
 
                                     writeln!(
@@ -564,16 +557,17 @@ impl DataSink for ObjSink {
                                     )?;
                                 }
                             } else {
-                                // デフォルトマテリアルが未書き込みの場合のみMTLファイルに書き込む
-                                if !default_material_written {
-                                    writeln!(mtl_writer, "newmtl Default_Material")?;
-                                    writeln!(mtl_writer, "Ka 1.000 1.000 1.000")?;
-                                    writeln!(mtl_writer, "Kd 1.000 1.000 1.000")?;
-                                    writeln!(mtl_writer, "Ks 1.000 1.000 1.000")?;
-                                    default_material_written = true;
+                                let [r, g, b, _] = mat.base_color;
+
+                                let color_key = format!("{:.6}_{:.6}_{:.6}", r, g, b);
+
+                                if !material_written.contains(&color_key) {
+                                    writeln!(mtl_writer, "newmtl Material_{}_{}_{}", r, g, b)?;
+                                    writeln!(mtl_writer, "Ks {} {} {}", r, g, b)?;
+                                    material_written.insert(color_key);
                                 }
 
-                                writeln!(obj_writer, "usemtl Default_Material")?;
+                                writeln!(obj_writer, "usemtl Material_{}_{}_{}", r, g, b)?;
                             }
 
                             for (i, _) in faces {
