@@ -120,9 +120,8 @@ pub fn write_obj<W: Write>(
                     )?;
                 }
             }
-
-            global_vertex_offset += feature_data.len();
         }
+        global_vertex_offset += feature_data.len();
     }
 
     obj_writer.flush()?;
