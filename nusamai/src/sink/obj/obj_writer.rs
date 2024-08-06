@@ -95,7 +95,6 @@ pub fn write_obj<W: Write>(
                 let color_key = format!("{:.6}_{:.6}_{:.6}", r, g, b);
 
                 if !material_written.contains(&color_key) {
-                    println!("{} {} {}", r, g, b);
                     writeln!(mtl_writer, "newmtl Material_{}_{}_{}", r, g, b)?;
                     writeln!(mtl_writer, "Ka {} {} {}", r, g, b)?;
                     writeln!(mtl_writer, "Kd {} {} {}", r, g, b)?;
