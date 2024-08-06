@@ -2,11 +2,11 @@
 mod material;
 mod obj_writer;
 
-use std::{f64::consts::FRAC_PI_2, path::PathBuf, sync::Mutex};
+use std::{any::Any, f64::consts::FRAC_PI_2, io::Write, path::PathBuf, sync::Mutex};
 
-use ahash::HashMap;
+use ahash::{HashMap, HashSet, RandomState};
 use earcut::{utils3d::project3d_to_2d, Earcut};
-use flatgeom::MultiPolygon;
+use flatgeom::{MultiPolygon, Polygon};
 use glam::{DMat4, DVec3, DVec4};
 use indexmap::IndexSet;
 use itertools::Itertools;
@@ -139,8 +139,12 @@ pub struct Feature {
     pub polygon_material_ids: Vec<u32>,
     // materials
     pub materials: IndexSet<Material>,
+    // attribute values
+    pub attributes: nusamai_citygml::object::Value,
     // feature_id
     pub feature_id: Option<u32>,
+    // type_id
+    pub type_id: Option<String>,
 }
 
 type ClassifiedFeatures = HashMap<String, ClassFeatures>;
@@ -150,12 +154,23 @@ pub struct ClassFeatures {
     features: Vec<Feature>,
     bounding_volume: BoundingVolume,
 }
+#[derive(Default)]
+pub struct PrimitiveInfo {
+    pub indices: Vec<u32>,
+    pub feature_ids: HashSet<u32>,
+}
 
+pub type Primitives = HashMap<material::Material, PrimitiveInfo>;
+
+// 頂点とテクスチャ座標を一緒に保持する構造体
 #[derive(Clone, Debug)]
+// VertexDataの構造体を拡張
 pub struct VertexData {
     position: [f64; 3],
     tex_coord: [f64; 2],
     material_id: usize,
+    type_id: Option<String>,
+    tex_count: usize,
 }
 
 impl DataSink for ObjSink {
@@ -207,9 +222,11 @@ impl DataSink for ObjSink {
 
             let mut feature = Feature {
                 polygons: MultiPolygon::new(),
+                attributes: entity.root.clone(),
                 polygon_material_ids: Default::default(),
                 materials: Default::default(),
                 feature_id: None, // feature_id is set later
+                type_id: obj.stereotype.id().map(|id| id.to_string()),
             };
 
             let mut local_bvol = BoundingVolume::default();
@@ -356,6 +373,8 @@ impl DataSink for ObjSink {
                         feature_id
                     });
 
+                    let type_id = feature.type_id.as_ref().unwrap_or(&typename);
+
                     feature
                         .polygons
                         .transform_inplace(|&[lng, lat, height, u, v]| {
@@ -366,6 +385,12 @@ impl DataSink for ObjSink {
                         });
 
                     let mut feature_data = Vec::new();
+
+                    let tex_count = &feature
+                        .materials
+                        .iter()
+                        .filter(|m| m.base_texture.is_some())
+                        .count();
 
                     for (poly, &orig_mat_id) in feature
                         .polygons
@@ -384,6 +409,8 @@ impl DataSink for ObjSink {
                                 position: [x, y, z],
                                 tex_coord: [u, v],
                                 material_id: orig_mat_id as usize,
+                                type_id: Some(type_id.clone()),
+                                tex_count: *tex_count,
                             })
                             .collect();
 
@@ -406,6 +433,11 @@ impl DataSink for ObjSink {
 
                     feature_vertex_data.push((feature_id, feature_data));
                 }
+
+                //  featuresにmaterialが存在するか
+                // let has_material = features.features.iter().any(|f| !f.materials.is_empty());
+
+                // println!("has_material: {}", has_material);
 
                 feedback.ensure_not_canceled()?;
 
