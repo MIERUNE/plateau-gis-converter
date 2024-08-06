@@ -434,6 +434,11 @@ impl DataSink for ObjSink {
                     feature_vertex_data.push((feature_id, feature_data));
                 }
 
+                //  featuresにmaterialが存在するか
+                // let has_material = features.features.iter().any(|f| !f.materials.is_empty());
+
+                // println!("has_material: {}", has_material);
+
                 feedback.ensure_not_canceled()?;
 
                 // Write OBJ file
@@ -447,13 +452,9 @@ impl DataSink for ObjSink {
                 let dir_name = file_path.to_str().unwrap();
                 let obj_writer = std::fs::File::create(format!("{}/{}.obj", dir_name, file_name))?;
 
-                // Write MTL file
-                let mtl_writer = std::fs::File::create(format!("{}/{}.mtl", dir_name, file_name))?;
-
                 write_obj(
                     feedback,
                     obj_writer,
-                    mtl_writer,
                     features,
                     feature_vertex_data,
                     file_name,
