@@ -19,7 +19,6 @@ pub fn write_obj<W: Write>(
     writeln!(obj_writer, "mtllib {}.mtl", file_name)?;
 
     let mut global_vertex_offset = 0;
-    let mut global_texture_offset = 0;
 
     // テクスチャとマテリアル情報のキャッシュ
     let mut texture_cache: std::collections::HashMap<String, Vec<u8>> =
@@ -124,18 +123,17 @@ pub fn write_obj<W: Write>(
                             obj_writer,
                             "f {}/{} {}/{} {}/{}",
                             global_vertex_offset + i + 1,
-                            global_texture_offset + i + 1,
+                            global_vertex_offset + i + 1,
                             global_vertex_offset + i + 2,
-                            global_texture_offset + i + 2,
+                            global_vertex_offset + i + 2,
                             global_vertex_offset + i + 3,
-                            global_texture_offset + i + 3
+                            global_vertex_offset + i + 3
                         )?;
                     }
                 }
             }
 
             global_vertex_offset += feature_data.len();
-            global_texture_offset += feature_data.len();
         }
     }
 
