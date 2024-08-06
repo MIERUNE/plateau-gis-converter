@@ -11,10 +11,10 @@ pub fn write_obj<W: Write>(
     feature_vertex_data: Vec<(u32, Vec<VertexData>)>,
     file_name: String,
     file_path: std::path::PathBuf,
+    has_split: bool,
 ) -> Result<(), PipelineError> {
     let dir_name = file_path.to_str().unwrap();
     let mut mtl_writer = std::fs::File::create(format!("{}/{}.mtl", dir_name, file_name))?;
-    writeln!(obj_writer, "mtllib {}.mtl", file_name)?;
 
     let mut global_vertex_offset = 0;
 
@@ -23,6 +23,11 @@ pub fn write_obj<W: Write>(
     let mut material_written: std::collections::HashSet<String> = std::collections::HashSet::new();
 
     for (feature_id, feature_data) in &feature_vertex_data {
+        // Writing of object name
+        if (has_split) {
+            writeln!(obj_writer, "o Feature_{}", feature_id)?;
+        };
+
         // Writing of vertex coordinates
         for vertex in feature_data {
             writeln!(

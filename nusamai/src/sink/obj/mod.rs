@@ -66,6 +66,16 @@ impl DataSinkProvider for ObjSinkProvider {
             },
         );
 
+        params.define(
+            "split-obj".into(),
+            ParameterEntry {
+                description: "Splitting objects".into(),
+                required: true,
+                parameter: ParameterType::Boolean(BooleanParameter { value: Some(false) }),
+                label: Some("オブジェクトを分割する".into()),
+            },
+        );
+
         params
     }
 
@@ -85,10 +95,15 @@ impl DataSinkProvider for ObjSinkProvider {
     fn create(&self, params: &Parameters) -> Box<dyn DataSink> {
         let output_path = get_parameter_value!(params, "@output", FileSystemPath);
         let transform_options = self.available_transformer();
+        let has_split = get_parameter_value!(params, "split-obj", Boolean).unwrap() as bool;
+
+        println!("{:?}", has_split);
+        println!("{:?}", transform_options);
 
         Box::<ObjSink>::new(ObjSink {
             output_path: output_path.as_ref().unwrap().into(),
             transform_settings: transform_options,
+            obj_options: ObjParams { has_split },
         })
     }
 }
@@ -96,6 +111,11 @@ impl DataSinkProvider for ObjSinkProvider {
 pub struct ObjSink {
     output_path: PathBuf,
     transform_settings: TransformerRegistry,
+    obj_options: ObjParams,
+}
+
+struct ObjParams {
+    has_split: bool,
 }
 
 pub struct BoundingVolume {
@@ -427,6 +447,7 @@ impl DataSink for ObjSink {
                     feature_vertex_data,
                     file_name,
                     file_path,
+                    self.obj_options.has_split,
                 )?;
 
                 Ok::<(), PipelineError>(())
