@@ -128,6 +128,11 @@ const filetypeOptions: Record<string, { label: string; extensions: string[]; eps
 			label: 'Minecraft',
 			extensions: [''],
 			epsg: [{ value: 4979, label: 'WGS 84 (EPSG:4979)' }]
+		},
+		obj: {
+			label: 'Wavefront OBJ',
+			extensions: ['obj'],
+			epsg: [{ value: 4979, label: 'WGS 84 (EPSG:4979)' }]
 		}
 	};
 
