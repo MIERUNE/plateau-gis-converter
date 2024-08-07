@@ -23,8 +23,8 @@ pub fn write_obj<W: Write>(
     let mut material_written: std::collections::HashSet<String> = std::collections::HashSet::new();
 
     for (feature_id, feature_data) in &feature_vertex_data {
-        // Writing of object name
-        if (has_split) {
+        // Writing of object name (option)
+        if has_split {
             writeln!(obj_writer, "o Feature_{}", feature_id)?;
         };
 

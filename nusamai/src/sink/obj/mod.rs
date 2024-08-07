@@ -97,9 +97,6 @@ impl DataSinkProvider for ObjSinkProvider {
         let transform_options = self.available_transformer();
         let has_split = get_parameter_value!(params, "split-obj", Boolean).unwrap() as bool;
 
-        println!("{:?}", has_split);
-        println!("{:?}", transform_options);
-
         Box::<ObjSink>::new(ObjSink {
             output_path: output_path.as_ref().unwrap().into(),
             transform_settings: transform_options,
@@ -265,7 +262,6 @@ impl DataSink for ObjSink {
                             let orig_tex = poly_tex
                                 .and_then(|idx| appearance_store.textures.get(idx as usize));
 
-                            // let poly_uv = poly_uv.raw_coords();
                             let mat = Material {
                                 base_color: orig_mat.diffuse_color.into(),
                                 base_texture: orig_tex.map(|tex| Texture {
@@ -336,6 +332,7 @@ impl DataSink for ObjSink {
             global_bvol
         };
 
+        // Transformation matrix to convert geodetic coordinates to geocentric and offset to the center
         let transform_matrix = {
             let bounds = &global_bvol;
             let center_lng = (bounds.min_lng + bounds.max_lng) / 2.0;
@@ -431,8 +428,8 @@ impl DataSink for ObjSink {
 
                 // Write OBJ file
                 let mut file_path = self.output_path.clone();
+                let has_split = self.obj_options.has_split;
                 let file_name = format!("{}", typename.replace(':', "_"));
-
                 file_path.push(format!("{}_OBJ", file_name));
 
                 std::fs::create_dir_all(&file_path)?;
@@ -447,7 +444,7 @@ impl DataSink for ObjSink {
                     feature_vertex_data,
                     file_name,
                     file_path,
-                    self.obj_options.has_split,
+                    has_split,
                 )?;
 
                 Ok::<(), PipelineError>(())
