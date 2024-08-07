@@ -1,20 +1,17 @@
-//! gltf sink poc
-mod gltf_writer;
-mod material;
+//! obj sink
+use std::{f64::consts::FRAC_PI_2, io::Write, path::PathBuf, sync::Mutex};
 
-use std::{f64::consts::FRAC_PI_2, fs::File, io::BufWriter, path::PathBuf, sync::Mutex};
-
-use crate::sink::cesiumtiles::utils::calculate_normal;
-use ahash::{HashMap, HashSet, RandomState};
+use ahash::{HashMap, RandomState};
 use earcut::{utils3d::project3d_to_2d, Earcut};
 use flatgeom::MultiPolygon;
 use glam::{DMat4, DVec3, DVec4};
-use gltf_writer::write_gltf_glb;
 use indexmap::IndexSet;
 use itertools::Itertools;
-use material::{Material, Texture};
-use nusamai_citygml::{object::ObjectStereotype, schema::Schema, GeometryType, Value};
-use nusamai_plateau::appearance;
+use nusamai_citygml::{
+    object::{ObjectStereotype, Value},
+    schema::Schema,
+    GeometryType,
+};
 use nusamai_projection::cartesian::geodetic_to_geocentric;
 use rayon::iter::{IntoParallelIterator, ParallelBridge, ParallelIterator};
 use serde::{Deserialize, Serialize};
@@ -23,18 +20,17 @@ use crate::{
     get_parameter_value,
     parameters::*,
     pipeline::{Feedback, PipelineError, Receiver, Result},
-    sink::{cesiumtiles::metadata, DataRequirements, DataSink, DataSinkProvider, SinkInfo},
-    transformer,
-    transformer::{TransformerConfig, TransformerOption, TransformerRegistry},
+    sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo},
+    transformer::{TransformerOption, TransformerRegistry},
 };
 
-pub struct GltfSinkProvider {}
+pub struct ObjSinkProvider {}
 
-impl DataSinkProvider for GltfSinkProvider {
+impl DataSinkProvider for ObjSinkProvider {
     fn info(&self) -> SinkInfo {
         SinkInfo {
-            id_name: "gltf".to_string(),
-            name: "glTF".to_string(),
+            id_name: "obj".to_string(),
+            name: "OBJ".to_string(),
         }
     }
 
@@ -52,45 +48,26 @@ impl DataSinkProvider for GltfSinkProvider {
                 label: None,
             },
         );
-
-        params.define(
-            "transform".into(),
-            ParameterEntry {
-                description: "transform option".into(),
-                required: false,
-                parameter: ParameterType::String(StringParameter { value: None }),
-                label: None,
-            },
-        );
-
         params
     }
 
     fn available_transformer(&self) -> TransformerRegistry {
-        let mut settings: TransformerRegistry = TransformerRegistry::new();
-
-        settings.insert(TransformerConfig {
-            key: "use_texture".to_string(),
-            label: "テクスチャの使用".to_string(),
-            is_enabled: false,
-            requirements: vec![transformer::Requirement::UseAppearance],
-        });
+        let settings: TransformerRegistry = TransformerRegistry::new();
 
         settings
     }
-
     fn create(&self, params: &Parameters) -> Box<dyn DataSink> {
         let output_path = get_parameter_value!(params, "@output", FileSystemPath);
-        let transform_settings = self.available_transformer();
+        let transform_options = self.available_transformer();
 
-        Box::<GltfSink>::new(GltfSink {
+        Box::<ObjSink>::new(ObjSink {
             output_path: output_path.as_ref().unwrap().into(),
-            transform_settings,
+            transform_settings: transform_options,
         })
     }
 }
 
-pub struct GltfSink {
+pub struct ObjSink {
     output_path: PathBuf,
     transform_settings: TransformerRegistry,
 }
@@ -132,14 +109,6 @@ impl Default for BoundingVolume {
 pub struct Feature {
     // polygons [x, y, z, u, v]
     pub polygons: MultiPolygon<'static, [f64; 5]>,
-    // material ids for each polygon
-    pub polygon_material_ids: Vec<u32>,
-    // materials
-    pub materials: IndexSet<Material>,
-    // attribute values
-    pub attributes: nusamai_citygml::object::Value,
-    // feature_id
-    pub feature_id: Option<u32>,
 }
 
 type ClassifiedFeatures = HashMap<String, ClassFeatures>;
@@ -150,15 +119,7 @@ struct ClassFeatures {
     bounding_volume: BoundingVolume,
 }
 
-#[derive(Default)]
-pub struct PrimitiveInfo {
-    pub indices: Vec<u32>,
-    pub feature_ids: HashSet<u32>,
-}
-
-pub type Primitives = HashMap<material::Material, PrimitiveInfo>;
-
-impl DataSink for GltfSink {
+impl DataSink for ObjSink {
     fn make_requirements(&mut self, properties: Vec<TransformerOption>) -> DataRequirements {
         let default_requirements: DataRequirements = DataRequirements {
             resolve_appearance: true,
@@ -175,13 +136,12 @@ impl DataSink for GltfSink {
         self.transform_settings.build(default_requirements)
     }
 
-    fn run(&mut self, upstream: Receiver, feedback: &Feedback, schema: &Schema) -> Result<()> {
+    fn run(&mut self, upstream: Receiver, feedback: &Feedback, _schema: &Schema) -> Result<()> {
         let ellipsoid = nusamai_projection::ellipsoid::wgs84();
 
         let classified_features: Mutex<ClassifiedFeatures> = Default::default();
 
         // Construct a Feature classified by typename from Entity
-        // Features have polygons, attributes and materials
         // The coordinates of polygon store the actual coordinate values (WGS84) and UV coordinates, not the index.
         let _ = upstream.into_iter().par_bridge().try_for_each(|parcel| {
             feedback.ensure_not_canceled()?;
@@ -200,17 +160,9 @@ impl DataSink for GltfSink {
             if geom_store.multipolygon.is_empty() {
                 return Ok(());
             }
-            let appearance_store = entity.appearance_store.read().unwrap();
-
-            let mut materials: IndexSet<Material> = IndexSet::new();
-            let default_material = appearance::Material::default();
 
             let mut feature = Feature {
                 polygons: MultiPolygon::new(),
-                attributes: entity.root.clone(),
-                polygon_material_ids: Default::default(),
-                materials: Default::default(),
-                feature_id: None, // feature_id is set later
             };
 
             let mut local_bvol = BoundingVolume::default();
@@ -218,46 +170,23 @@ impl DataSink for GltfSink {
             geometries.iter().for_each(|entry| {
                 match entry.ty {
                     GeometryType::Solid | GeometryType::Surface | GeometryType::Triangle => {
-                        // extract the polygon, material, and texture
-                        for (((idx_poly, poly_uv), poly_mat), poly_tex) in
+                        // extract the polygon and UV
+                        for (idx_poly, poly_uv) in
                             geom_store
                                 .multipolygon
                                 .iter_range(entry.pos as usize..(entry.pos + entry.len) as usize)
                                 .zip_eq(geom_store.polygon_uvs.iter_range(
                                     entry.pos as usize..(entry.pos + entry.len) as usize,
                                 ))
-                                .zip_eq(
-                                    geom_store.polygon_materials
-                                        [entry.pos as usize..(entry.pos + entry.len) as usize]
-                                        .iter(),
-                                )
-                                .zip_eq(
-                                    geom_store.polygon_textures
-                                        [entry.pos as usize..(entry.pos + entry.len) as usize]
-                                        .iter(),
-                                )
                         {
                             // convert to idx_poly to polygon
                             let poly = idx_poly.transform(|c| geom_store.vertices[*c as usize]);
-                            let orig_mat = poly_mat
-                                .and_then(|idx| appearance_store.materials.get(idx as usize))
-                                .unwrap_or(&default_material)
-                                .clone();
-                            let orig_tex = poly_tex
-                                .and_then(|idx| appearance_store.textures.get(idx as usize));
-
-                            let mat = Material {
-                                base_color: orig_mat.diffuse_color.into(),
-                                base_texture: orig_tex.map(|tex| Texture {
-                                    uri: tex.image_url.clone(),
-                                }),
-                            };
-                            let (mat_idx, _) = materials.insert_full(mat);
 
                             let mut ring_buffer: Vec<[f64; 5]> = Vec::new();
 
-                            poly.rings().zip_eq(poly_uv.rings()).enumerate().for_each(
-                                |(ri, (ring, uv_ring))| {
+                            poly.rings()
+                                .zip_eq(poly_uv.rings())
+                                .for_each(|(ring, uv_ring)| {
                                     ring.iter_closed().zip_eq(uv_ring.iter_closed()).for_each(
                                         |(c, uv)| {
                                             let [lng, lat, height] = c;
@@ -273,14 +202,9 @@ impl DataSink for GltfSink {
                                                 local_bvol.max_height.max(height);
                                         },
                                     );
-                                    if ri == 0 {
-                                        feature.polygons.add_exterior(ring_buffer.drain(..));
-                                        feature.polygon_material_ids.push(mat_idx as u32);
-                                    } else {
-                                        feature.polygons.add_interior(ring_buffer.drain(..));
-                                    }
-                                },
-                            );
+
+                                    feature.polygons.add_exterior(ring_buffer.drain(..));
+                                });
                         }
                     }
                     GeometryType::Curve => {
@@ -291,8 +215,6 @@ impl DataSink for GltfSink {
                     }
                 }
             });
-
-            feature.materials = materials;
 
             {
                 let mut locked_features = classified_features.lock().unwrap();
@@ -314,8 +236,6 @@ impl DataSink for GltfSink {
             }
             global_bvol
         };
-
-        let tileset_content_files = Mutex::new(Vec::new());
 
         let transform_matrix = {
             let bounds = &global_bvol;
@@ -339,113 +259,83 @@ impl DataSink for GltfSink {
                 feedback.ensure_not_canceled()?;
 
                 // Triangulation
-                let mut earcutter: Earcut<f64> = Earcut::new();
+                let mut earcutter = Earcut::new();
                 let mut buf3d: Vec<[f64; 3]> = Vec::new();
-                let mut buf2d: Vec<[f64; 2]> = Vec::new(); // 2d-projected [x, y]
+                let mut buf2d: Vec<[f64; 2]> = Vec::new();
                 let mut index_buf: Vec<u32> = Vec::new();
+                let mut triangles = Vec::new();
 
-                let mut vertices: IndexSet<[u32; 9], RandomState> = IndexSet::default(); // [x, y, z, nx, ny, nz, u, v, feature_id]
-                let mut primitives: Primitives = Default::default();
-
-                let mut metadata_encoder = metadata::MetadataEncoder::new(schema);
-
-                // make vertices and indices
-                let mut feature_id = 0;
                 for feature in features.features.iter_mut() {
                     feedback.ensure_not_canceled()?;
 
-                    feature.feature_id = Some(feature_id as u32);
                     feature
                         .polygons
                         .transform_inplace(|&[lng, lat, height, u, v]| {
-                            // geographic to geocentric
                             let (x, y, z) = geodetic_to_geocentric(&ellipsoid, lng, lat, height);
-                            // z-up to y-up
                             let v_xyz = DVec4::new(x, z, -y, 1.0);
-                            // local ENU coordinate
                             let v_enu = transform_matrix * v_xyz;
-                            // println!("enu: {:?}", v_enu);
-
-                            // flip the texture v-coordinate
                             [v_enu[0], v_enu[1], v_enu[2], u, 1.0 - v]
                         });
 
-                    // Encode properties
-                    if metadata_encoder
-                        .add_feature(&typename, &feature.attributes)
-                        .is_err()
-                    {
-                        feedback.warn("Failed to encode feature attributes".to_string());
-                        continue;
-                    }
-
-                    for (poly, orig_mat_id) in feature
-                        .polygons
-                        .iter()
-                        .zip_eq(feature.polygon_material_ids.iter())
-                    {
+                    for poly in feature.polygons.iter() {
                         let num_outer = match poly.hole_indices().first() {
                             Some(&v) => v as usize,
                             None => poly.raw_coords().len(),
                         };
 
-                        let mat = feature.materials[*orig_mat_id as usize].clone();
-                        let primitive = primitives.entry(mat).or_default();
-                        primitive.feature_ids.insert(feature_id as u32);
+                        buf3d.clear();
+                        buf3d.extend(poly.raw_coords().iter().map(|c| [c[0], c[1], c[2]]));
 
-                        if let Some((nx, ny, nz)) =
-                            calculate_normal(poly.exterior().iter().map(|v| [v[0], v[1], v[2]]))
-                        {
-                            buf3d.clear();
-                            buf3d.extend(poly.raw_coords().iter().map(|c| [c[0], c[1], c[2]]));
-
-                            if project3d_to_2d(&buf3d, num_outer, &mut buf2d) {
-                                // earcut
-                                earcutter.earcut(
-                                    buf2d.iter().copied(),
-                                    poly.hole_indices(),
-                                    &mut index_buf,
-                                );
-
-                                // collect triangles
-                                primitive.indices.extend(index_buf.iter().map(|&idx| {
-                                    let [x, y, z, u, v] = poly.raw_coords()[idx as usize];
-                                    let vbits = [
-                                        (x as f32).to_bits(),
-                                        (y as f32).to_bits(),
-                                        (z as f32).to_bits(),
-                                        (nx as f32).to_bits(),
-                                        (ny as f32).to_bits(),
-                                        (nz as f32).to_bits(),
-                                        (u as f32).to_bits(),
-                                        (v as f32).to_bits(),
-                                        (feature_id as f32).to_bits(), // UNSIGNED_INT can't be used for vertex attribute
-                                    ];
-                                    let (index, _) = vertices.insert_full(vbits);
-                                    index as u32
-                                }));
-                            }
+                        if project3d_to_2d(&buf3d, num_outer, &mut buf2d) {
+                            // earcut
+                            earcutter.earcut(
+                                buf2d.iter().cloned(),
+                                poly.hole_indices(),
+                                &mut index_buf,
+                            );
+                            triangles.extend(index_buf.iter().map(|&idx| buf3d[idx as usize]));
                         }
                     }
-                    feature_id += 1;
                 }
 
-                // Ensure that the parent directory exists
-                std::fs::create_dir_all(&self.output_path)?;
+                // make vertices and indices
+                let mut vertices: IndexSet<[u64; 3], RandomState> = IndexSet::default();
+                let indices: Vec<_> = triangles
+                    .iter()
+                    .map(|[x, y, z]| {
+                        let vbits = [(x).to_bits(), (y).to_bits(), (z).to_bits()];
+                        let (index, _) = vertices.insert_full(vbits);
+                        index as u32
+                    })
+                    .collect();
 
-                // Write glTF (.glb)
+                feedback.ensure_not_canceled()?;
+
+                // Write to file
                 let file_path = {
-                    let filename = format!("{}.glb", typename.replace(':', "_"));
-                    // Save the filename to the content list of the tileset.json (3D Tiles)
-                    tileset_content_files.lock().unwrap().push(filename.clone());
-
+                    let filename = format!("{}.obj", typename.replace(':', "_"));
                     self.output_path.join(filename)
                 };
+                let file = std::fs::File::create(file_path)?;
+                let mut writer = std::io::BufWriter::new(file);
 
-                let mut file = File::create(file_path)?;
-                let writer = BufWriter::with_capacity(1024 * 1024, &mut file);
+                // Writing vertex data
+                for vertex in &vertices {
+                    let [vx, vy, vz] = vertex;
+                    let vx = f64::from_bits(*vx);
+                    let vy = f64::from_bits(*vy);
+                    let vz = f64::from_bits(*vz);
+                    writeln!(writer, "v {} {} {}", vx, vy, vz)?;
+                }
 
-                write_gltf_glb(feedback, writer, vertices, primitives, metadata_encoder)?;
+                // Writing of surface data (index starts at 1, so +1 is used)
+                for face in indices.chunks(3) {
+                    if let [i1, i2, i3] = face {
+                        writeln!(writer, "f {} {} {}", i1 + 1, i2 + 1, i3 + 1)?;
+                    }
+                }
+
+                writer.flush()?;
 
                 Ok::<(), PipelineError>(())
             })?;

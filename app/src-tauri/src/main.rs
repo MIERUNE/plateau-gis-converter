@@ -15,8 +15,9 @@ use nusamai::{
     sink::{
         cesiumtiles::CesiumTilesSinkProvider, czml::CzmlSinkProvider, geojson::GeoJsonSinkProvider,
         gltf::GltfSinkProvider, gpkg::GpkgSinkProvider, kml::KmlSinkProvider,
-        minecraft::MinecraftSinkProvider, mvt::MvtSinkProvider, ply::StanfordPlySinkProvider,
-        serde::SerdeSinkProvider, shapefile::ShapefileSinkProvider, DataSinkProvider,
+        minecraft::MinecraftSinkProvider, mvt::MvtSinkProvider, obj::ObjSinkProvider,
+        ply::StanfordPlySinkProvider, serde::SerdeSinkProvider, shapefile::ShapefileSinkProvider,
+        DataSinkProvider,
     },
     source::{citygml::CityGmlSourceProvider, DataSourceProvider},
     transformer::{
@@ -123,6 +124,7 @@ fn select_sink_provider(filetype: &str) -> Option<Box<dyn DataSinkProvider>> {
         "ply" => Some(Box::new(StanfordPlySinkProvider {})),
         "cesiumtiles" => Some(Box::new(CesiumTilesSinkProvider {})),
         "minecraft" => Some(Box::new(MinecraftSinkProvider {})),
+        "obj" => Some(Box::new(ObjSinkProvider {})),
         _ => None,
     }
 }

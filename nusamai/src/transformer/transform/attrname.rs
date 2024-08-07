@@ -20,7 +20,7 @@ use crate::{pipeline::Feedback, transformer::Transform};
 /// You may specify the rules in two ways:
 /// - Exact match: Rename if the key matches exactly (e.g., `{"ns:foo": "bar"}`)
 /// - General match: Rename for any namespace prefix (e.g., `{"*:foo": "bar"}`)
-/// Note that the exact match takes precedence over the general match.
+///   Note that the exact match takes precedence over the general match.
 #[derive(Default, Clone)]
 pub struct EditFieldNamesTransform {
     // Exact string match dictionary
