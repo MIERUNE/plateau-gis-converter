@@ -21,7 +21,6 @@ pub fn write_obj<W: Write>(
 
     let mut global_vertex_offset = 0;
 
-    let mut texture_cache: HashMap<String, Vec<u8>> = HashMap::new();
     let mut material_written: HashSet<String> = HashSet::new();
 
     for (feature_id, feature_data) in &feature_vertex_data {
@@ -72,22 +71,18 @@ pub fn write_obj<W: Write>(
                     let image_file_name =
                         format!("Feature_{}_Material_{}.jpg", feature_id, material_id);
 
-                    // Load only if the texture is not in the cache.
-                    if !texture_cache.contains_key(&image_file_name) {
+                    let mat_key = format!("{}_{}", feature_id, material_id);
+
+                    // Write to MTL file only if material information has not yet been written
+                    if !material_written.contains(&mat_key) {
                         let content = load_image(feedback, &path)?;
-                        texture_cache.insert(image_file_name.clone(), content);
 
                         let textures_dir = file_path.join("textures");
                         std::fs::create_dir_all(&textures_dir)?;
 
                         let image_path = textures_dir.join(&image_file_name);
-                        std::fs::write(&image_path, texture_cache.get(&image_file_name).unwrap())?;
-                    }
+                        std::fs::write(&image_path, content)?;
 
-                    // Write to MTL file only if material information has not yet been written
-                    let mat_key = format!("{}_{}", feature_id, material_id);
-
-                    if !material_written.contains(&mat_key) {
                         writeln!(mtl_writer, "newmtl Material_{}", mat_key)?;
                         writeln!(mtl_writer, "map_Kd .\\textures\\{}", image_file_name)?;
                         material_written.insert(mat_key);
