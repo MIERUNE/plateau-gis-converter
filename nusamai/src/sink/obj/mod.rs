@@ -95,7 +95,7 @@ impl DataSinkProvider for ObjSinkProvider {
     fn create(&self, params: &Parameters) -> Box<dyn DataSink> {
         let output_path = get_parameter_value!(params, "@output", FileSystemPath);
         let transform_options = self.available_transformer();
-        let has_split = get_parameter_value!(params, "split-obj", Boolean).unwrap() as bool;
+        let has_split = get_parameter_value!(params, "split-obj", Boolean).unwrap();
 
         Box::<ObjSink>::new(ObjSink {
             output_path: output_path.as_ref().unwrap().into(),
@@ -429,7 +429,7 @@ impl DataSink for ObjSink {
                 // Write OBJ file
                 let mut file_path = self.output_path.clone();
                 let has_split = self.obj_options.has_split;
-                let file_name = format!("{}", typename.replace(':', "_"));
+                let file_name = typename.replace(':', "_").to_string();
                 file_path.push(format!("{}_OBJ", file_name));
 
                 std::fs::create_dir_all(&file_path)?;

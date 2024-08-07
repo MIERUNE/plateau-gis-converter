@@ -53,7 +53,7 @@ pub fn write_obj<W: Write>(
         for (i, vertex) in feature_data.iter().enumerate() {
             faces_by_material
                 .entry(vertex.material_id)
-                .or_insert_with(Vec::new)
+                .or_default()
                 .push((i, vertex));
         }
 
