@@ -44,8 +44,7 @@ pub fn write_obj<W: Write>(
             writeln!(
                 obj_writer,
                 "vt {} {}",
-                vertex.tex_coord[0],
-                1.0 - vertex.tex_coord[1]
+                vertex.tex_coord[0], vertex.tex_coord[1]
             )?;
         }
 

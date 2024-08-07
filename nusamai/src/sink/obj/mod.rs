@@ -379,7 +379,7 @@ impl DataSink for ObjSink {
                             let (x, y, z) = geodetic_to_geocentric(&ellipsoid, lng, lat, height);
                             let v_xyz = DVec4::new(x, z, -y, 1.0);
                             let v_enu = transform_matrix * v_xyz;
-                            [v_enu[0], v_enu[1], v_enu[2], u, 1.0 - v]
+                            [v_enu[0], v_enu[1], v_enu[2], u, v]
                         });
 
                     let mut feature_data = Vec::new();
