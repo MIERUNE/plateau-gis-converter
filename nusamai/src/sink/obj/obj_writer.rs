@@ -1,4 +1,7 @@
+use std::collections::{HashMap, HashSet};
+use std::fs::File;
 use std::io::Write;
+use std::path::PathBuf;
 
 use super::{material, ClassFeatures, VertexData};
 use crate::pipeline::{feedback, PipelineError};
@@ -10,17 +13,16 @@ pub fn write_obj<W: Write>(
     features: ClassFeatures,
     feature_vertex_data: Vec<(u32, Vec<VertexData>)>,
     file_name: String,
-    file_path: std::path::PathBuf,
+    file_path: PathBuf,
     has_split: bool,
 ) -> Result<(), PipelineError> {
     let dir_name = file_path.to_str().unwrap();
-    let mut mtl_writer = std::fs::File::create(format!("{}/{}.mtl", dir_name, file_name))?;
+    let mut mtl_writer = File::create(format!("{}/{}.mtl", dir_name, file_name))?;
 
     let mut global_vertex_offset = 0;
 
-    let mut texture_cache: std::collections::HashMap<String, Vec<u8>> =
-        std::collections::HashMap::new();
-    let mut material_written: std::collections::HashSet<String> = std::collections::HashSet::new();
+    let mut texture_cache: HashMap<String, Vec<u8>> = HashMap::new();
+    let mut material_written: HashSet<String> = HashSet::new();
 
     for (feature_id, feature_data) in &feature_vertex_data {
         // Writing of object name (option)
@@ -48,8 +50,7 @@ pub fn write_obj<W: Write>(
         }
 
         // Grouping of surfaces by material_id
-        let mut faces_by_material: std::collections::HashMap<usize, Vec<(usize, &VertexData)>> =
-            std::collections::HashMap::new();
+        let mut faces_by_material: HashMap<usize, Vec<(usize, &VertexData)>> = HashMap::new();
         for (i, vertex) in feature_data.iter().enumerate() {
             faces_by_material
                 .entry(vertex.material_id)
