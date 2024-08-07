@@ -38,6 +38,7 @@ pub fn write_obj<W: Write>(
             )?;
         }
 
+        // TODO: In the future, modify this to skip writing texture coordinates (vt) when there's no texture information
         // Writing of UV coordinates
         for vertex in feature_data {
             writeln!(
@@ -104,6 +105,7 @@ pub fn write_obj<W: Write>(
                 writeln!(obj_writer, "usemtl Material_{}_{}_{}", r, g, b)?;
             }
 
+            // TODO: When there's no texture information, omit texture coordinate references in face definitions (f v1 v2 v3)
             // Write surface
             for (i, _) in faces {
                 if i % 3 == 0 {
