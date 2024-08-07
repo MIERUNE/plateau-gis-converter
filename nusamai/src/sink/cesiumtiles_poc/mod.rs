@@ -28,11 +28,11 @@ use tempfile::tempdir;
 use tiling::{TileContent, TileTree};
 use url::Url;
 
-use nusamai_atlas::{
+use atlas_packer::{
     export::{AtlasExporter as _, PngAtlasExporter},
     pack::TexturePacker,
     place::{GuillotineTexturePlacer, TexturePlacerConfig},
-    texture::{self, DownsampleFactor, TextureCache},
+    texture::{DownsampleFactor, TextureCache},
 };
 use nusamai_citygml::{object::Value, schema::Schema};
 use nusamai_mvt::tileid::TileIdMethod;
