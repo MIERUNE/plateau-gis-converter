@@ -3,14 +3,14 @@ use std::fs::File;
 use std::io::Write;
 use std::path::PathBuf;
 
-use super::{material, ClassFeatures, VertexData};
+use super::{material, Feature, VertexData};
 use crate::pipeline::{feedback, PipelineError};
 use material::{load_image, Texture};
 
 pub fn write_obj<W: Write>(
     feedback: &feedback::Feedback,
     mut obj_writer: W,
-    features: ClassFeatures,
+    features: Vec<Feature>,
     feature_vertex_data: Vec<(u32, Vec<VertexData>)>,
     file_name: String,
     file_path: PathBuf,
@@ -59,7 +59,6 @@ pub fn write_obj<W: Write>(
 
         for (material_id, faces) in faces_by_material.iter() {
             let feature = features
-                .features
                 .iter()
                 .find(|f| f.feature_id == Some(*feature_id))
                 .unwrap();

@@ -440,7 +440,7 @@ impl DataSink for ObjSink {
                 write_obj(
                     feedback,
                     obj_writer,
-                    features,
+                    features.features,
                     feature_vertex_data,
                     file_name,
                     file_path,
