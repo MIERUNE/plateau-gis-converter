@@ -14,7 +14,7 @@ pub fn write_obj<W: Write>(
     feature_vertex_data: Vec<(u32, Vec<VertexData>)>,
     file_name: String,
     file_path: PathBuf,
-    has_split: bool,
+    is_split: bool,
 ) -> Result<(), PipelineError> {
     let dir_name = file_path.to_str().unwrap();
     let mut mtl_writer = File::create(format!("{}/{}.mtl", dir_name, file_name))?;
@@ -25,7 +25,7 @@ pub fn write_obj<W: Write>(
 
     for (feature_id, feature_data) in &feature_vertex_data {
         // Writing of object name (option)
-        if has_split {
+        if is_split {
             writeln!(obj_writer, "o Feature_{}", feature_id)?;
         };
 

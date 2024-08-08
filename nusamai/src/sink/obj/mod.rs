@@ -67,7 +67,7 @@ impl DataSinkProvider for ObjSinkProvider {
         );
 
         params.define(
-            "split-obj".into(),
+            "split".into(),
             ParameterEntry {
                 description: "Splitting objects".into(),
                 required: true,
@@ -95,12 +95,12 @@ impl DataSinkProvider for ObjSinkProvider {
     fn create(&self, params: &Parameters) -> Box<dyn DataSink> {
         let output_path = get_parameter_value!(params, "@output", FileSystemPath);
         let transform_options = self.available_transformer();
-        let has_split = get_parameter_value!(params, "split-obj", Boolean).unwrap();
+        let is_split = get_parameter_value!(params, "split", Boolean).unwrap();
 
         Box::<ObjSink>::new(ObjSink {
             output_path: output_path.as_ref().unwrap().into(),
             transform_settings: transform_options,
-            obj_options: ObjParams { has_split },
+            obj_options: ObjParams { is_split },
         })
     }
 }
@@ -112,7 +112,7 @@ pub struct ObjSink {
 }
 
 struct ObjParams {
-    has_split: bool,
+    is_split: bool,
 }
 
 pub struct BoundingVolume {
@@ -428,9 +428,8 @@ impl DataSink for ObjSink {
 
                 // Write OBJ file
                 let mut file_path = self.output_path.clone();
-                let has_split = self.obj_options.has_split;
                 let file_name = typename.replace(':', "_").to_string();
-                file_path.push(format!("{}_OBJ", file_name));
+                file_path.push(&file_name);
 
                 std::fs::create_dir_all(&file_path)?;
 
@@ -444,7 +443,7 @@ impl DataSink for ObjSink {
                     feature_vertex_data,
                     file_name,
                     file_path,
-                    has_split,
+                    self.obj_options.is_split,
                 )?;
 
                 Ok::<(), PipelineError>(())
