@@ -169,16 +169,26 @@
 								/>
 							</div> -->
 							{:else if isBooleanParameter(sinkParameters.items[key].parameter)}
-								<!-- TODO Boolean input -->
-								<!-- <div class="flex gap-2 w-80">
-								<label for={key} class="w-3/4">{sinkParameters.items[key].label}</label>
-								<input
-									type="checkbox"
-									id={key}
-									bind:checked={sinkParameters.items[key].parameter.Boolean.value}
-									class="w-1/4"
-								/>
-							</div> -->
+								<div class="flex gap-2 w-80">
+									<label for={key} class="w-3/4">{sinkParameters.items[key].label}</label>
+
+									<div class="relative inline-block w-10 h-6 rounded-full cursor-pointer">
+										<input
+											bind:checked={sinkParameters.items[key].parameter.Boolean.value}
+											id={key}
+											type="checkbox"
+											class="absolute w-10 h-6 transition-colors duration-300 rounded-full appearance-none cursor-pointer peer bg-gray-200 checked:bg-accent1 peer-checked:before:bg-accent1"
+										/>
+										<label
+											for={key}
+											class="before:content[''] absolute top-2/4 -left-1 h-6 w-6 -translate-y-2/4 cursor-pointer rounded-full border border-blue-gray-100 bg-white shadow-md transition-all duration-300 peer-checked:translate-x-full"
+										>
+											<div
+												class="inline-block p-5 rounded-full top-2/4 left-2/4 -translate-x-2/4 -translate-y-2/4"
+											></div>
+										</label>
+									</div>
+								</div>
 							{/if}
 						{/each}
 					</div>
