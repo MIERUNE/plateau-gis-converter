@@ -131,7 +131,7 @@ const filetypeOptions: Record<string, { label: string; extensions: string[]; eps
 		},
 		obj: {
 			label: 'Wavefront OBJ',
-			extensions: ['obj'],
+			extensions: [''],
 			epsg: [{ value: 4979, label: 'WGS 84 (EPSG:4979)' }]
 		}
 	};
