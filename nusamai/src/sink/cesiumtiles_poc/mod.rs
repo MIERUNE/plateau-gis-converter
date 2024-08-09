@@ -399,7 +399,7 @@ fn tile_writing_stage(
 
             type Vertex = Vec<(f64, f64, f64, f64, f64, f64, f64, f64)>;
             type BaseColor = [f32; 4];
-            let mut atlas_files: HashMap<String, (Vertex, BaseColor)> = HashMap::new();
+            let _atlas_files: HashMap<String, (Vertex, BaseColor)> = HashMap::new();
 
             // For each feature
             let mut feature_id = 0;
@@ -463,69 +463,66 @@ fn tile_writing_stage(
                 {
                     let mat = &feature.materials[*orig_mat_id as usize];
                     let t = mat.base_texture.clone();
-                    match t {
-                        Some(base_texture) => {
-                            // textured
-                            let original_vertices = poly
-                                .raw_coords()
+                    if let Some(base_texture) = t {
+                        // textured
+                        let original_vertices = poly
+                            .raw_coords()
+                            .iter()
+                            .map(|[x, y, z, u, v]| (*x, *y, *z, *u, *v))
+                            .collect::<Vec<(f64, f64, f64, f64, f64)>>();
+
+                        let texture = texture_cache.get_or_insert(
+                            &original_vertices
                                 .iter()
-                                .map(|[x, y, z, u, v]| (*x, *y, *z, *u, *v))
-                                .collect::<Vec<(f64, f64, f64, f64, f64)>>();
+                                .map(|(_, _, _, u, v)| (*u, *v))
+                                .collect::<Vec<_>>(),
+                            &base_texture.uri.to_file_path().unwrap(),
+                            &DownsampleFactor::new(&1.0).value(),
+                        );
 
-                            let texture = texture_cache.get_or_insert(
-                                &original_vertices
-                                    .iter()
-                                    .map(|(_, _, _, u, v)| (*u, *v))
-                                    .collect::<Vec<_>>(),
-                                &base_texture.uri.to_file_path().unwrap(),
-                                &DownsampleFactor::new(&1.0).value(),
-                            );
+                        // Unique id required for placement in atlas
+                        let texture_id = format!("{}_{}_{}", tile_id, feature_id, poly_count);
+                        let info = packer.add_texture(texture_id, texture);
 
-                            // Unique id required for placement in atlas
-                            let texture_id = format!("{}_{}_{}", tile_id, feature_id, poly_count);
-                            let info = packer.add_texture(texture_id, texture);
+                        let atlas_placed_uv_coords = info
+                            .placed_uv_coords
+                            .iter()
+                            .map(|(u, v)| ({ *u }, { *v }))
+                            .collect::<Vec<(f64, f64)>>();
+                        let updated_vertices = original_vertices
+                            .iter()
+                            .zip(atlas_placed_uv_coords.iter())
+                            .map(|((x, y, z, _, _), (u, v))| (*x, *y, *z, *u, *v))
+                            .collect::<Vec<(f64, f64, f64, f64, f64)>>();
 
-                            let atlas_placed_uv_coords = info
-                                .placed_uv_coords
+                        // update_verticesを利用して、polyのtransform_inplaceメソッドで頂点を更新する
+                        poly.transform_inplace(|&[x, y, z, _, _]| {
+                            let (u, v) = updated_vertices
                                 .iter()
-                                .map(|(u, v)| ({ *u }, { *v }))
-                                .collect::<Vec<(f64, f64)>>();
-                            let updated_vertices = original_vertices
-                                .iter()
-                                .zip(atlas_placed_uv_coords.iter())
-                                .map(|((x, y, z, _, _), (u, v))| (*x, *y, *z, *u, *v))
-                                .collect::<Vec<(f64, f64, f64, f64, f64)>>();
+                                .find(|(x_, y_, z_, _, _)| {
+                                    (*x_ - x).abs() < 1e-6
+                                        && (*y_ - y).abs() < 1e-6
+                                        && (*z_ - z).abs() < 1e-6
+                                })
+                                .map(|(_, _, _, u, v)| (*u, *v))
+                                .unwrap();
+                            [x, y, z, u, v]
+                        });
 
-                            // update_verticesを利用して、polyのtransform_inplaceメソッドで頂点を更新する
-                            poly.transform_inplace(|&[x, y, z, _, _]| {
-                                let (u, v) = updated_vertices
-                                    .iter()
-                                    .find(|(x_, y_, z_, _, _)| {
-                                        (*x_ - x).abs() < 1e-6
-                                            && (*y_ - y).abs() < 1e-6
-                                            && (*z_ - z).abs() < 1e-6
-                                    })
-                                    .map(|(_, _, _, u, v)| (*u, *v))
-                                    .unwrap();
-                                [x, y, z, u, v]
-                            });
+                        let atlas_file_name = format!("{}/{}", tile_id, &info.atlas_id);
 
-                            let atlas_file_name = format!("{}/{}", tile_id, &info.atlas_id);
+                        let atlas_uri = atlas_dir
+                            .path()
+                            .join(atlas_file_name)
+                            .with_extension(ext.clone());
 
-                            let atlas_uri = atlas_dir
-                                .path()
-                                .join(atlas_file_name)
-                                .with_extension(ext.clone());
-
-                            // update material
-                            let mat = material::Material {
-                                base_color: mat.base_color,
-                                base_texture: Some(material::Texture {
-                                    uri: Url::from_file_path(atlas_uri).unwrap(),
-                                }),
-                            };
-                        }
-                        None => {}
+                        // update material
+                        let _mat = material::Material {
+                            base_color: mat.base_color,
+                            base_texture: Some(material::Texture {
+                                uri: Url::from_file_path(atlas_uri).unwrap(),
+                            }),
+                        };
                     }
 
                     let num_outer_points = match poly.hole_indices().first() {
