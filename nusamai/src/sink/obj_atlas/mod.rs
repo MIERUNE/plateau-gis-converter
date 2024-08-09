@@ -115,6 +115,7 @@ struct ObjParams {
     is_split: bool,
 }
 
+#[derive(Debug)]
 pub struct BoundingVolume {
     pub min_lng: f64,
     pub max_lng: f64,
@@ -162,7 +163,7 @@ pub struct Feature {
 
 type ClassifiedFeatures = HashMap<String, ClassFeatures>;
 
-#[derive(Default)]
+#[derive(Default, Debug)]
 pub struct ClassFeatures {
     features: Vec<Feature>,
     bounding_volume: BoundingVolume,
@@ -173,6 +174,28 @@ pub struct VertexData {
     position: [f64; 3],
     tex_coord: [f64; 2],
     material_id: usize,
+}
+
+pub struct ObjGeometry {
+    pub id: String,
+    pub vertices: Vec<[f64; 3]>,
+    pub uvs: Vec<[f64; 2]>,
+    pub indices: Vec<u32>,
+    pub primitives: Vec<ObjPrimitive>,
+}
+
+pub struct ObjPrimitive {
+    pub material_id: usize,
+    pub indices: Vec<u32>,
+}
+
+pub struct ObjMaterial {
+    pub base_color: [f32; 3],
+    pub texture_uri: Option<String>,
+}
+
+pub struct ObjMaterials {
+    pub materials: HashMap<String, ObjMaterial>,
 }
 
 impl DataSink for ObjAtlasSink {
