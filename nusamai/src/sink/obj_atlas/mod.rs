@@ -172,16 +172,16 @@ pub struct ClassFeatures {
 
 pub type FeatureId = String;
 pub type MaterialKey = String;
-pub type ObjInfo = HashMap<FeatureId, ObjMesh>;
-pub type ObjMaterials = HashMap<MaterialKey, ObjMaterial>;
+pub type ObjInfo = HashMap<FeatureId, FeatureMesh>;
+pub type ObjMaterials = HashMap<MaterialKey, FeatureMaterial>;
 
-pub struct ObjMesh {
+pub struct FeatureMesh {
     pub vertices: Vec<[f64; 3]>,
     pub uvs: Vec<[f64; 2]>,
     pub primitives: HashMap<MaterialKey, Vec<u32>>,
 }
 
-pub struct ObjMaterial {
+pub struct FeatureMaterial {
     pub base_color: [f32; 4],
     pub texture_uri: Option<Url>,
 }
@@ -362,6 +362,7 @@ impl DataSink for ObjAtlasSink {
         };
         let _ = transform_matrix.inverse();
 
+        // Create the information needed to output an OBJ file and write it to a file
         classified_features
             .into_par_iter()
             .try_for_each(|(typename, mut features)| {
@@ -373,13 +374,13 @@ impl DataSink for ObjAtlasSink {
                 let mut buf2d: Vec<[f64; 2]> = Vec::new();
                 let mut index_buf: Vec<u32> = Vec::new();
 
-                let mut meshes = ObjInfo::new();
-                let mut obj_materials = ObjMaterials::new();
+                let mut all_meshes = ObjInfo::new();
+                let mut all_materials = ObjMaterials::new();
 
                 for feature in features.features.iter_mut() {
                     feedback.ensure_not_canceled()?;
 
-                    let mut feature_mesh = ObjMesh {
+                    let mut feature_mesh = FeatureMesh {
                         vertices: Vec::new(),
                         uvs: Vec::new(),
                         primitives: HashMap::new(),
@@ -409,21 +410,16 @@ impl DataSink for ObjAtlasSink {
                         let poly_texture = poly_material.base_texture.as_ref();
                         let poly_material_key = format!("{}_{}", feature.feature_id, orig_mat_id);
 
-                        obj_materials.insert(
+                        all_materials.insert(
                             poly_material_key.clone(),
-                            ObjMaterial {
+                            FeatureMaterial {
                                 base_color: poly_color,
                                 texture_uri: poly_texture.map(|t| t.uri.clone()),
                             },
                         );
-                        let poly_vertices: Vec<[f64; 3]> = poly
-                            .raw_coords()
-                            .iter()
-                            .map(|&[x, y, z, _, _]| [x, y, z])
-                            .collect();
 
                         buf3d.clear();
-                        buf3d.extend(poly_vertices.iter().copied());
+                        buf3d.extend(poly.raw_coords().iter().map(|&[x, y, z, _, _]| [x, y, z]));
 
                         if project3d_to_2d(&buf3d, num_outer, &mut buf2d) {
                             earcutter.earcut(
@@ -443,8 +439,7 @@ impl DataSink for ObjAtlasSink {
                                 }));
                         }
                     }
-
-                    meshes.insert(feature.feature_id.clone(), feature_mesh);
+                    all_meshes.insert(feature.feature_id.clone(), feature_mesh);
                 }
 
                 feedback.ensure_not_canceled()?;
@@ -457,8 +452,8 @@ impl DataSink for ObjAtlasSink {
                 std::fs::create_dir_all(&folder_path)?;
 
                 write(
-                    meshes,
-                    obj_materials,
+                    all_meshes,
+                    all_materials,
                     folder_path,
                     self.obj_options.is_split,
                 )?;
