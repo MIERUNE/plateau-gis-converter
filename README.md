@@ -54,6 +54,9 @@ PLATEAU の標準仕様に準拠した CityGML 2.0 形式の3D都市モデルは
   - Shapefile
   - KML
   - CZML
+  - Minecraft
+  - glTF
+  - Wavefront OBJ
 - 複数の入力ファイルをもとにした変換
 - 属性名マッピングルールの取り込み
 - 指定された座標参照系に変換して出力（一部形式で対応）
@@ -115,6 +118,7 @@ PLATEAU の標準仕様に準拠した CityGML 2.0 形式の3D都市モデルは
 - [MIERUNE/kv-extsort-rs](https://github.com/MIERUNE/kv-extsort-rs) &mdash; Key-value データの外部ソート
 - [MIERUNE/dda-vozelize-rs](https://github.com/MIERUNE/dda-voxelize-rs) &mdash; 3Dメッシュサーフェスの高速なボクセル化
 - [MIERUNE/cesiumtiles-rs](https://github.com/MIERUNE/cesiumtiles-rs) &mdash; 3D TilesのJSONモデルなど
+- [MIERUNE/atlas-packer](https://github.com/MIERUNE/atlas-packer) &mdash; テクスチャアトラスの作成
 
 ## 8. ライセンス
 
