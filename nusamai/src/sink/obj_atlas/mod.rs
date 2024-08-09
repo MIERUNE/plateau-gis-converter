@@ -18,7 +18,7 @@ use nusamai_citygml::{
 };
 use nusamai_plateau::appearance;
 use nusamai_projection::cartesian::geodetic_to_geocentric;
-use obj_writer::{write_obj, write_obj_2};
+use obj_writer::write_obj;
 use rayon::iter::{IntoParallelIterator, ParallelBridge, ParallelIterator};
 use serde::{Deserialize, Serialize};
 use url::Url;
@@ -159,8 +159,7 @@ pub struct Feature {
     // materials
     pub materials: IndexSet<Material>,
     // feature_id
-    pub feature_id: Option<u32>,
-    pub gml_id: Option<String>,
+    pub feature_id: String,
 }
 
 type ClassifiedFeatures = HashMap<String, ClassFeatures>;
@@ -169,13 +168,6 @@ type ClassifiedFeatures = HashMap<String, ClassFeatures>;
 pub struct ClassFeatures {
     features: Vec<Feature>,
     bounding_volume: BoundingVolume,
-}
-
-#[derive(Clone, Debug)]
-pub struct VertexData {
-    position: [f64; 3],
-    tex_coord: [f64; 2],
-    material_id: usize,
 }
 
 pub type FeatureId = String;
@@ -238,7 +230,7 @@ impl DataSink for ObjAtlasSink {
             }
             let appearance_store = entity.appearance_store.read().unwrap();
 
-            let gml_id = obj.stereotype.id().map(|id| id.to_string());
+            let feature_id = obj.stereotype.id().map(|id| id.to_string()).unwrap();
 
             let mut materials: IndexSet<Material> = IndexSet::new();
             let default_material = appearance::Material::default();
@@ -247,8 +239,7 @@ impl DataSink for ObjAtlasSink {
                 polygons: MultiPolygon::new(),
                 polygon_material_ids: Default::default(),
                 materials: Default::default(),
-                feature_id: None, // feature_id is set later
-                gml_id,
+                feature_id,
             };
 
             let mut local_bvol = BoundingVolume::default();
@@ -379,15 +370,8 @@ impl DataSink for ObjAtlasSink {
                 // Triangulation
                 let mut earcutter = Earcut::new();
                 let mut buf3d: Vec<[f64; 3]> = Vec::new();
-                let mut buf3d_new: Vec<[f64; 3]> = Vec::new();
                 let mut buf2d: Vec<[f64; 2]> = Vec::new();
-                let mut buf2d_new: Vec<[f64; 2]> = Vec::new();
                 let mut index_buf: Vec<u32> = Vec::new();
-                let mut index_buf_new: Vec<u32> = Vec::new();
-
-                let mut feature_id = 0;
-
-                let mut feature_vertex_data: Vec<(u32, Vec<VertexData>)> = Vec::new();
 
                 let mut meshes = ObjInfo::new();
                 let mut obj_materials = ObjMaterials::new();
@@ -395,19 +379,11 @@ impl DataSink for ObjAtlasSink {
                 for feature in features.features.iter_mut() {
                     feedback.ensure_not_canceled()?;
 
-                    let gml_id = feature.gml_id.as_ref().unwrap();
-
                     let mut feature_mesh = ObjMesh {
                         vertices: Vec::new(),
                         uvs: Vec::new(),
                         primitives: HashMap::new(),
                     };
-
-                    let feature_id = feature.feature_id.unwrap_or_else(|| {
-                        feature_id += 1;
-                        feature.feature_id = Some(feature_id);
-                        feature_id
-                    });
 
                     feature
                         .polygons
@@ -417,8 +393,6 @@ impl DataSink for ObjAtlasSink {
                             let v_enu = transform_matrix * v_xyz;
                             [v_enu[0], v_enu[1], v_enu[2], u, v]
                         });
-
-                    let mut feature_data = Vec::new();
 
                     for (poly, &orig_mat_id) in feature
                         .polygons
@@ -430,18 +404,11 @@ impl DataSink for ObjAtlasSink {
                             None => poly.raw_coords().len(),
                         };
 
-                        // polygonからvertexとuvを取り出し、ObjMeshに追加していく
-                        // material_idからmaterialそのものを取り出しObjMaterialにする
-                        // Materialにidを振る
-                        // 三角分割し、indexを取り出し、ObjPrimitiveにする
-                        // ObjPrimitiveにmaterial_idを追加し、ObjMeshに追加していく
-                        // ObjMaterialsにMaterialを追加していく
                         let poly_material = &feature.materials[orig_mat_id as usize];
                         let poly_color = poly_material.base_color;
                         let poly_texture = poly_material.base_texture.as_ref();
-                        let poly_material_key = format!("{}_{}", gml_id, orig_mat_id);
-                        // 後ほど重複を除去する必要がある
-                        // もしくはMaterial自体をキーにする
+                        let poly_material_key = format!("{}_{}", feature.feature_id, orig_mat_id);
+
                         obj_materials.insert(
                             poly_material_key.clone(),
                             ObjMaterial {
@@ -449,31 +416,14 @@ impl DataSink for ObjAtlasSink {
                                 texture_uri: poly_texture.map(|t| t.uri.clone()),
                             },
                         );
-                        // メッシュを作成
                         let poly_vertices: Vec<[f64; 3]> = poly
                             .raw_coords()
                             .iter()
                             .map(|&[x, y, z, _, _]| [x, y, z])
                             .collect();
-                        // feature_mesh.vertices.extend(poly_vertices.clone());
-                        // feature_mesh
-                        //     .uvs
-                        //     .extend(poly.raw_coords().iter().map(|&[_, _, _, u, v]| [u, v]));
-
-                        let vertex_data: Vec<VertexData> = poly
-                            .raw_coords()
-                            .iter()
-                            .map(|&[x, y, z, u, v]| VertexData {
-                                position: [x, y, z],
-                                tex_coord: [u, v],
-                                material_id: orig_mat_id as usize,
-                            })
-                            .collect();
 
                         buf3d.clear();
-                        buf3d.extend(vertex_data.iter().map(|v| v.position));
-                        buf3d_new.clear();
-                        buf3d_new.extend(poly_vertices.iter().copied());
+                        buf3d.extend(poly_vertices.iter().copied());
 
                         if project3d_to_2d(&buf3d, num_outer, &mut buf2d) {
                             earcutter.earcut(
@@ -481,23 +431,11 @@ impl DataSink for ObjAtlasSink {
                                 poly.hole_indices(),
                                 &mut index_buf,
                             );
-                            feature_data.extend(
-                                index_buf
-                                    .iter()
-                                    .map(|&idx| vertex_data[idx as usize].clone()),
-                            );
-                        }
-                        if project3d_to_2d(&buf3d_new, num_outer, &mut buf2d_new) {
-                            earcutter.earcut(
-                                buf2d_new.iter().cloned(),
-                                poly.hole_indices(),
-                                &mut index_buf_new,
-                            );
                             feature_mesh
                                 .primitives
                                 .entry(poly_material_key.clone())
                                 .or_default()
-                                .extend(index_buf_new.iter().map(|&idx| {
+                                .extend(index_buf.iter().map(|&idx| {
                                     let [x, y, z, u, v] = poly.raw_coords()[idx as usize];
                                     feature_mesh.vertices.push([x, y, z]);
                                     feature_mesh.uvs.push([u, v]);
@@ -506,9 +444,7 @@ impl DataSink for ObjAtlasSink {
                         }
                     }
 
-                    meshes.insert(gml_id.clone(), feature_mesh);
-
-                    feature_vertex_data.push((feature_id, feature_data));
+                    meshes.insert(feature.feature_id.clone(), feature_mesh);
                 }
 
                 feedback.ensure_not_canceled()?;
@@ -520,20 +456,7 @@ impl DataSink for ObjAtlasSink {
 
                 std::fs::create_dir_all(&folder_path)?;
 
-                let dir_name = folder_path.to_str().unwrap();
-                let obj_writer = std::fs::File::create(format!("{}/{}.obj", dir_name, file_name))?;
-
                 write_obj(
-                    feedback,
-                    obj_writer,
-                    features.features,
-                    feature_vertex_data,
-                    file_name,
-                    folder_path.clone(),
-                    self.obj_options.is_split,
-                )?;
-
-                write_obj_2(
                     feedback,
                     meshes,
                     obj_materials,
