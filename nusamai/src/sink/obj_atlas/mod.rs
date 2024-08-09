@@ -18,7 +18,7 @@ use nusamai_citygml::{
 };
 use nusamai_plateau::appearance;
 use nusamai_projection::cartesian::geodetic_to_geocentric;
-use obj_writer::write_obj;
+use obj_writer::write;
 use rayon::iter::{IntoParallelIterator, ParallelBridge, ParallelIterator};
 use serde::{Deserialize, Serialize};
 use url::Url;
@@ -456,8 +456,7 @@ impl DataSink for ObjAtlasSink {
 
                 std::fs::create_dir_all(&folder_path)?;
 
-                write_obj(
-                    feedback,
+                write(
                     meshes,
                     obj_materials,
                     folder_path,
