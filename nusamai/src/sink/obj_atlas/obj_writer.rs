@@ -72,8 +72,10 @@ pub fn write_obj(
 
     let mut global_vertex_offset = 0;
     // Write meshes
-    for (gml_id, mesh) in meshes {
-        writeln!(obj_writer, "o {}", gml_id)?;
+    for (feature_id, mesh) in meshes {
+        if is_split {
+            writeln!(obj_writer, "o {}", feature_id)?;
+        }
 
         for vertex in &mesh.vertices {
             writeln!(obj_writer, "v {} {} {}", vertex[0], vertex[1], vertex[2])?;
