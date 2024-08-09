@@ -21,7 +21,7 @@ pub fn write_obj<W: Write>(
 
     let mut global_vertex_offset = 0;
 
-    let mut material_written: HashSet<String> = HashSet::new();
+    let mut material_holder: HashSet<String> = HashSet::new();
 
     for (feature_id, feature_data) in &feature_vertex_data {
         // Writing of object name (option)
@@ -73,7 +73,7 @@ pub fn write_obj<W: Write>(
                     let mat_key = format!("{}_{}", feature_id, material_id);
 
                     // Write to MTL file only if material information has not yet been written
-                    if !material_written.contains(&mat_key) {
+                    if !material_holder.contains(&mat_key) {
                         let content = load_image(feedback, &path)?;
 
                         let textures_dir = file_path.join("textures");
@@ -84,7 +84,7 @@ pub fn write_obj<W: Write>(
 
                         writeln!(mtl_writer, "newmtl Material_{}", mat_key)?;
                         writeln!(mtl_writer, "map_Kd .\\textures\\{}", image_file_name)?;
-                        material_written.insert(mat_key);
+                        material_holder.insert(mat_key);
                     }
 
                     writeln!(obj_writer, "usemtl Material_{}_{}", feature_id, material_id)?;
@@ -94,11 +94,11 @@ pub fn write_obj<W: Write>(
                 let [r, g, b, _] = mat.base_color;
                 let color_key = format!("{:.6}_{:.6}_{:.6}", r, g, b);
 
-                if !material_written.contains(&color_key) {
+                if !material_holder.contains(&color_key) {
                     writeln!(mtl_writer, "newmtl Material_{}_{}_{}", r, g, b)?;
                     writeln!(mtl_writer, "Ka {} {} {}", r, g, b)?;
                     writeln!(mtl_writer, "Kd {} {} {}", r, g, b)?;
-                    material_written.insert(color_key);
+                    material_holder.insert(color_key);
                 }
 
                 writeln!(obj_writer, "usemtl Material_{}_{}_{}", r, g, b)?;
