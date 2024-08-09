@@ -3,9 +3,82 @@ use std::fs::File;
 use std::io::Write;
 use std::path::PathBuf;
 
-use super::{material, Feature, VertexData};
+use super::{material, Feature, ObjInfo, ObjMaterials, ObjMesh, VertexData};
 use crate::pipeline::{feedback, PipelineError};
 use material::{load_image, Texture};
+
+pub fn write_obj_2(
+    feedback: &feedback::Feedback,
+    meshes: ObjInfo,
+    materials: ObjMaterials,
+    folder_path: PathBuf,
+    is_split: bool,
+) -> Result<(), PipelineError> {
+    let dir_name = folder_path.to_str().unwrap();
+    let mut obj_writer = File::create(format!(
+        "{}/{}.obj",
+        dir_name,
+        folder_path.file_stem().unwrap().to_str().unwrap()
+    ))?;
+    let mut mtl_writer = File::create(format!(
+        "{}/{}.mtl",
+        dir_name,
+        folder_path.file_stem().unwrap().to_str().unwrap()
+    ))?;
+
+    for (gml_id, mesh) in meshes {
+        writeln!(obj_writer, "o {}", gml_id)?;
+
+        for vertex in &mesh.vertices {
+            writeln!(obj_writer, "v {} {} {}", vertex[0], vertex[1], vertex[2])?;
+        }
+        for tex_coord in &mesh.uvs {
+            writeln!(obj_writer, "vt {} {}", tex_coord[0], tex_coord[1])?;
+        }
+        for (material_key, indices) in &mesh.primitives {
+            writeln!(obj_writer, "usemtl {}", material_key)?;
+            for index in indices.chunks(3) {
+                writeln!(
+                    obj_writer,
+                    "f {}/{} {}/{} {}/{}",
+                    index[0], index[0], index[1], index[1], index[2], index[2]
+                )?;
+            }
+        }
+    }
+
+    for (material_key, material) in materials {
+        writeln!(mtl_writer, "newmtl {}", material_key)?;
+        writeln!(
+            mtl_writer,
+            "Ka {} {} {}",
+            material.base_color[0], material.base_color[1], material.base_color[2]
+        )?;
+        writeln!(
+            mtl_writer,
+            "Kd {} {} {}",
+            material.base_color[0], material.base_color[1], material.base_color[2]
+        )?;
+        if let Some(uri) = &material.texture_uri {
+            if let Ok(path) = uri.to_file_path() {
+                let content = load_image(feedback, &path)?;
+
+                let textures_dir = folder_path.join("textures");
+                std::fs::create_dir_all(&textures_dir)?;
+
+                let image_file_name = format!("{}.jpg", material_key);
+                let image_path = textures_dir.join(&image_file_name);
+                std::fs::write(&image_path, content)?;
+
+                writeln!(mtl_writer, "map_Kd .\\textures\\{}", image_file_name)?;
+            }
+        }
+    }
+
+    obj_writer.flush()?;
+
+    Ok(())
+}
 
 pub fn write_obj<W: Write>(
     feedback: &feedback::Feedback,

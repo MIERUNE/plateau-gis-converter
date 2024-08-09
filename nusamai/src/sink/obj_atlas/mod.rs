@@ -18,7 +18,7 @@ use nusamai_citygml::{
 };
 use nusamai_plateau::appearance;
 use nusamai_projection::cartesian::geodetic_to_geocentric;
-use obj_writer::write_obj;
+use obj_writer::{write_obj, write_obj_2};
 use rayon::iter::{IntoParallelIterator, ParallelBridge, ParallelIterator};
 use serde::{Deserialize, Serialize};
 use url::Url;
@@ -178,8 +178,10 @@ pub struct VertexData {
     material_id: usize,
 }
 
-pub type ObjInfo = HashMap<String, ObjMesh>;
+pub type FeatureId = String;
 pub type MaterialKey = String;
+pub type ObjInfo = HashMap<FeatureId, ObjMesh>;
+pub type ObjMaterials = HashMap<MaterialKey, ObjMaterial>;
 
 pub struct ObjMesh {
     pub vertices: Vec<[f64; 3]>,
@@ -190,10 +192,6 @@ pub struct ObjMesh {
 pub struct ObjMaterial {
     pub base_color: [f32; 4],
     pub texture_uri: Option<Url>,
-}
-
-pub struct ObjMaterials {
-    pub materials: HashMap<String, ObjMaterial>,
 }
 
 impl DataSink for ObjAtlasSink {
@@ -391,15 +389,19 @@ impl DataSink for ObjAtlasSink {
 
                 let mut feature_vertex_data: Vec<(u32, Vec<VertexData>)> = Vec::new();
 
-                let mut feature_mesh = ObjMesh {
-                    vertices: Vec::new(),
-                    uvs: Vec::new(),
-                    primitives: HashMap::new(),
-                };
-                let mut feature_materials = HashMap::new();
+                let mut meshes = ObjInfo::new();
+                let mut obj_materials = ObjMaterials::new();
 
                 for feature in features.features.iter_mut() {
                     feedback.ensure_not_canceled()?;
+
+                    let gml_id = feature.gml_id.as_ref().unwrap();
+
+                    let mut feature_mesh = ObjMesh {
+                        vertices: Vec::new(),
+                        uvs: Vec::new(),
+                        primitives: HashMap::new(),
+                    };
 
                     let feature_id = feature.feature_id.unwrap_or_else(|| {
                         feature_id += 1;
@@ -434,14 +436,13 @@ impl DataSink for ObjAtlasSink {
                         // 三角分割し、indexを取り出し、ObjPrimitiveにする
                         // ObjPrimitiveにmaterial_idを追加し、ObjMeshに追加していく
                         // ObjMaterialsにMaterialを追加していく
-                        let gml_id = feature.gml_id.as_ref().unwrap();
                         let poly_material = &feature.materials[orig_mat_id as usize];
                         let poly_color = poly_material.base_color;
                         let poly_texture = poly_material.base_texture.as_ref();
                         let poly_material_key = format!("{}_{}", gml_id, orig_mat_id);
                         // 後ほど重複を除去する必要がある
                         // もしくはMaterial自体をキーにする
-                        feature_materials.insert(
+                        obj_materials.insert(
                             poly_material_key.clone(),
                             ObjMaterial {
                                 base_color: poly_color,
@@ -505,19 +506,21 @@ impl DataSink for ObjAtlasSink {
                         }
                     }
 
+                    meshes.insert(gml_id.clone(), feature_mesh);
+
                     feature_vertex_data.push((feature_id, feature_data));
                 }
 
                 feedback.ensure_not_canceled()?;
 
                 // Write OBJ file
-                let mut file_path = self.output_path.clone();
+                let mut folder_path = self.output_path.clone();
                 let file_name = typename.replace(':', "_").to_string();
-                file_path.push(&file_name);
+                folder_path.push(&file_name);
 
-                std::fs::create_dir_all(&file_path)?;
+                std::fs::create_dir_all(&folder_path)?;
 
-                let dir_name = file_path.to_str().unwrap();
+                let dir_name = folder_path.to_str().unwrap();
                 let obj_writer = std::fs::File::create(format!("{}/{}.obj", dir_name, file_name))?;
 
                 write_obj(
@@ -526,7 +529,15 @@ impl DataSink for ObjAtlasSink {
                     features.features,
                     feature_vertex_data,
                     file_name,
-                    file_path,
+                    folder_path.clone(),
+                    self.obj_options.is_split,
+                )?;
+
+                write_obj_2(
+                    feedback,
+                    meshes,
+                    obj_materials,
+                    folder_path,
                     self.obj_options.is_split,
                 )?;
 
