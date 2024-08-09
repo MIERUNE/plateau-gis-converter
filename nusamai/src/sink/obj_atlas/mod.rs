@@ -4,7 +4,7 @@ mod obj_writer;
 
 use std::{f64::consts::FRAC_PI_2, path::PathBuf, sync::Mutex};
 
-use ahash::HashMap;
+use ahash::{HashMap, HashMapExt};
 use earcut::{utils3d::project3d_to_2d, Earcut};
 use flatgeom::MultiPolygon;
 use glam::{DMat4, DVec3, DVec4};
@@ -21,6 +21,7 @@ use nusamai_projection::cartesian::geodetic_to_geocentric;
 use obj_writer::write_obj;
 use rayon::iter::{IntoParallelIterator, ParallelBridge, ParallelIterator};
 use serde::{Deserialize, Serialize};
+use url::Url;
 
 use crate::{
     get_parameter_value,
@@ -159,6 +160,7 @@ pub struct Feature {
     pub materials: IndexSet<Material>,
     // feature_id
     pub feature_id: Option<u32>,
+    pub gml_id: Option<String>,
 }
 
 type ClassifiedFeatures = HashMap<String, ClassFeatures>;
@@ -177,21 +179,17 @@ pub struct VertexData {
 }
 
 pub type ObjInfo = HashMap<String, ObjMesh>;
+pub type MaterialKey = String;
 
 pub struct ObjMesh {
     pub vertices: Vec<[f64; 3]>,
     pub uvs: Vec<[f64; 2]>,
-    pub primitives: Vec<ObjPrimitive>,
-}
-
-pub struct ObjPrimitive {
-    pub material_id: usize,
-    pub indices: Vec<u32>,
+    pub primitives: HashMap<MaterialKey, Vec<u32>>,
 }
 
 pub struct ObjMaterial {
-    pub base_color: [f32; 3],
-    pub texture_uri: Option<String>,
+    pub base_color: [f32; 4],
+    pub texture_uri: Option<Url>,
 }
 
 pub struct ObjMaterials {
@@ -242,6 +240,8 @@ impl DataSink for ObjAtlasSink {
             }
             let appearance_store = entity.appearance_store.read().unwrap();
 
+            let gml_id = obj.stereotype.id().map(|id| id.to_string());
+
             let mut materials: IndexSet<Material> = IndexSet::new();
             let default_material = appearance::Material::default();
 
@@ -250,6 +250,7 @@ impl DataSink for ObjAtlasSink {
                 polygon_material_ids: Default::default(),
                 materials: Default::default(),
                 feature_id: None, // feature_id is set later
+                gml_id,
             };
 
             let mut local_bvol = BoundingVolume::default();
@@ -380,12 +381,22 @@ impl DataSink for ObjAtlasSink {
                 // Triangulation
                 let mut earcutter = Earcut::new();
                 let mut buf3d: Vec<[f64; 3]> = Vec::new();
+                let mut buf3d_new: Vec<[f64; 3]> = Vec::new();
                 let mut buf2d: Vec<[f64; 2]> = Vec::new();
+                let mut buf2d_new: Vec<[f64; 2]> = Vec::new();
                 let mut index_buf: Vec<u32> = Vec::new();
+                let mut index_buf_new: Vec<u32> = Vec::new();
 
                 let mut feature_id = 0;
 
                 let mut feature_vertex_data: Vec<(u32, Vec<VertexData>)> = Vec::new();
+
+                let mut feature_mesh = ObjMesh {
+                    vertices: Vec::new(),
+                    uvs: Vec::new(),
+                    primitives: HashMap::new(),
+                };
+                let mut feature_materials = HashMap::new();
 
                 for feature in features.features.iter_mut() {
                     feedback.ensure_not_canceled()?;
@@ -417,6 +428,37 @@ impl DataSink for ObjAtlasSink {
                             None => poly.raw_coords().len(),
                         };
 
+                        // polygonからvertexとuvを取り出し、ObjMeshに追加していく
+                        // material_idからmaterialそのものを取り出しObjMaterialにする
+                        // Materialにidを振る
+                        // 三角分割し、indexを取り出し、ObjPrimitiveにする
+                        // ObjPrimitiveにmaterial_idを追加し、ObjMeshに追加していく
+                        // ObjMaterialsにMaterialを追加していく
+                        let gml_id = feature.gml_id.as_ref().unwrap();
+                        let poly_material = &feature.materials[orig_mat_id as usize];
+                        let poly_color = poly_material.base_color;
+                        let poly_texture = poly_material.base_texture.as_ref();
+                        let poly_material_key = format!("{}_{}", gml_id, orig_mat_id);
+                        // 後ほど重複を除去する必要がある
+                        // もしくはMaterial自体をキーにする
+                        feature_materials.insert(
+                            poly_material_key.clone(),
+                            ObjMaterial {
+                                base_color: poly_color,
+                                texture_uri: poly_texture.map(|t| t.uri.clone()),
+                            },
+                        );
+                        // メッシュを作成
+                        let poly_vertices: Vec<[f64; 3]> = poly
+                            .raw_coords()
+                            .iter()
+                            .map(|&[x, y, z, _, _]| [x, y, z])
+                            .collect();
+                        // feature_mesh.vertices.extend(poly_vertices.clone());
+                        // feature_mesh
+                        //     .uvs
+                        //     .extend(poly.raw_coords().iter().map(|&[_, _, _, u, v]| [u, v]));
+
                         let vertex_data: Vec<VertexData> = poly
                             .raw_coords()
                             .iter()
@@ -429,6 +471,8 @@ impl DataSink for ObjAtlasSink {
 
                         buf3d.clear();
                         buf3d.extend(vertex_data.iter().map(|v| v.position));
+                        buf3d_new.clear();
+                        buf3d_new.extend(poly_vertices.iter().copied());
 
                         if project3d_to_2d(&buf3d, num_outer, &mut buf2d) {
                             earcutter.earcut(
@@ -441,6 +485,23 @@ impl DataSink for ObjAtlasSink {
                                     .iter()
                                     .map(|&idx| vertex_data[idx as usize].clone()),
                             );
+                        }
+                        if project3d_to_2d(&buf3d_new, num_outer, &mut buf2d_new) {
+                            earcutter.earcut(
+                                buf2d_new.iter().cloned(),
+                                poly.hole_indices(),
+                                &mut index_buf_new,
+                            );
+                            feature_mesh
+                                .primitives
+                                .entry(poly_material_key.clone())
+                                .or_default()
+                                .extend(index_buf_new.iter().map(|&idx| {
+                                    let [x, y, z, u, v] = poly.raw_coords()[idx as usize];
+                                    feature_mesh.vertices.push([x, y, z]);
+                                    feature_mesh.uvs.push([u, v]);
+                                    (feature_mesh.vertices.len() - 1) as u32
+                                }));
                         }
                     }
 
