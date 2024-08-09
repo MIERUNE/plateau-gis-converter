@@ -176,11 +176,11 @@ pub struct VertexData {
     material_id: usize,
 }
 
-pub struct ObjGeometry {
-    pub id: String,
+pub type ObjInfo = HashMap<String, ObjMesh>;
+
+pub struct ObjMesh {
     pub vertices: Vec<[f64; 3]>,
     pub uvs: Vec<[f64; 2]>,
-    pub indices: Vec<u32>,
     pub primitives: Vec<ObjPrimitive>,
 }
 
