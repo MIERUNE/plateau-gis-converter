@@ -31,13 +31,13 @@ use crate::{
     transformer::{TransformerConfig, TransformerOption, TransformerRegistry},
 };
 
-pub struct ObjSinkProvider {}
+pub struct ObjAtlasSinkProvider {}
 
-impl DataSinkProvider for ObjSinkProvider {
+impl DataSinkProvider for ObjAtlasSinkProvider {
     fn info(&self) -> SinkInfo {
         SinkInfo {
-            id_name: "obj".to_string(),
-            name: "OBJ".to_string(),
+            id_name: "obj_atlas".to_string(),
+            name: "OBJ_ATLAS".to_string(),
         }
     }
 
@@ -97,7 +97,7 @@ impl DataSinkProvider for ObjSinkProvider {
         let transform_options = self.available_transformer();
         let is_split = get_parameter_value!(params, "split", Boolean).unwrap();
 
-        Box::<ObjSink>::new(ObjSink {
+        Box::<ObjAtlasSink>::new(ObjAtlasSink {
             output_path: output_path.as_ref().unwrap().into(),
             transform_settings: transform_options,
             obj_options: ObjParams { is_split },
@@ -105,7 +105,7 @@ impl DataSinkProvider for ObjSinkProvider {
     }
 }
 
-pub struct ObjSink {
+pub struct ObjAtlasSink {
     output_path: PathBuf,
     transform_settings: TransformerRegistry,
     obj_options: ObjParams,
@@ -175,7 +175,7 @@ pub struct VertexData {
     material_id: usize,
 }
 
-impl DataSink for ObjSink {
+impl DataSink for ObjAtlasSink {
     fn make_requirements(&mut self, properties: Vec<TransformerOption>) -> DataRequirements {
         let default_requirements: DataRequirements = DataRequirements {
             resolve_appearance: true,
@@ -198,7 +198,7 @@ impl DataSink for ObjSink {
         let classified_features: Mutex<ClassifiedFeatures> = Default::default();
 
         // Construct a Feature classified by typename from Entity
-        // Features have polygons, attributes and materials
+        // Feature has polygons, attributes, and materials.
         // The coordinates of polygon store the actual coordinate values (WGS84) and UV coordinates, not the index.
         let _ = upstream.into_iter().par_bridge().try_for_each(|parcel| {
             feedback.ensure_not_canceled()?;
