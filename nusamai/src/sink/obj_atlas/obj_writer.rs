@@ -72,6 +72,7 @@ pub fn write_obj_2(
         }
     }
 
+    let mut global_vertex_offset = 0;
     // Write meshes
     for (gml_id, mesh) in meshes {
         writeln!(obj_writer, "o {}", gml_id)?;
@@ -94,15 +95,16 @@ pub fn write_obj_2(
                 writeln!(
                     obj_writer,
                     "f {}/{} {}/{} {}/{}",
-                    index[0] + 1,
-                    index[0] + 1,
-                    index[1] + 1,
-                    index[1] + 1,
-                    index[2] + 1,
-                    index[2] + 1
+                    index[0] + 1 + global_vertex_offset,
+                    index[0] + 1 + global_vertex_offset,
+                    index[1] + 1 + global_vertex_offset,
+                    index[1] + 1 + global_vertex_offset,
+                    index[2] + 1 + global_vertex_offset,
+                    index[2] + 1 + global_vertex_offset
                 )?;
             }
         }
+        global_vertex_offset += mesh.vertices.len() as u32;
     }
 
     obj_writer.flush()?;
