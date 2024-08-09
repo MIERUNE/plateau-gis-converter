@@ -1,7 +1,7 @@
-use std::collections::HashMap;
 use std::fs::File;
 use std::io::Write;
 use std::path::PathBuf;
+use std::{collections::HashMap, path::Path};
 
 use super::{material, ObjInfo, ObjMaterials};
 use crate::pipeline::PipelineError;
@@ -31,7 +31,7 @@ fn write_obj(
     meshes: &ObjInfo,
     materials: &ObjMaterials,
     material_cache: &mut HashMap<String, String>,
-    folder_path: &PathBuf,
+    folder_path: &Path,
     is_split: bool,
 ) -> Result<(), PipelineError> {
     let dir_name = folder_path.to_str().unwrap();
@@ -86,7 +86,7 @@ fn write_obj(
 fn write_mtl(
     materials: &ObjMaterials,
     material_cache: &mut HashMap<String, String>,
-    folder_path: &PathBuf,
+    folder_path: &Path,
 ) -> Result<(), PipelineError> {
     let dir_name = folder_path.to_str().unwrap();
     let mut mtl_writer = File::create(format!(
