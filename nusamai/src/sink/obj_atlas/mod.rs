@@ -452,8 +452,10 @@ impl DataSink for ObjAtlasSink {
                             );
 
                             // Unique id required for placement in atlas
-                            let texture_id =
-                                format!("{}_{}_{}", typename, feature.feature_id, poly_count);
+                            let texture_id = format!(
+                                "{}_{}_{}",
+                                base_folder_name, feature.feature_id, poly_count
+                            );
                             let info = packer.add_texture(texture_id, texture);
 
                             let atlas_placed_uv_coords = info
@@ -467,7 +469,7 @@ impl DataSink for ObjAtlasSink {
                                 .map(|((x, y, z, _, _), (u, v))| (*x, *y, *z, *u, *v))
                                 .collect::<Vec<(f64, f64, f64, f64, f64)>>();
 
-                            // update_verticesを利用して、polyのtransform_inplaceメソッドで頂点を更新する
+                            // Apply the UV coordinates placed in the atlas to the original polygon
                             poly.transform_inplace(|&[x, y, z, _, _]| {
                                 let (u, v) = updated_vertices
                                     .iter()
