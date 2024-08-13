@@ -103,17 +103,8 @@ fn write_mtl(
         if let Some(uri) = &material.texture_uri {
             if let Ok(path) = uri.to_file_path() {
                 writeln!(mtl_writer, "newmtl {}", material_key)?;
-                let content = load_image(&path)?;
-
-                let textures_dir = folder_path.join("textures");
-                std::fs::create_dir_all(&textures_dir)?;
-
-                let image_file_name = format!("{}.jpg", material_key);
-                let image_path = textures_dir.join(&image_file_name);
-                std::fs::write(&image_path, content)?;
-
-                writeln!(mtl_writer, "map_Kd .\\textures\\{}", image_file_name)?;
-                material_cache.insert(material_key.to_string(), image_file_name);
+                writeln!(mtl_writer, "map_Kd .\\textures\\{}", path.to_str().unwrap())?;
+                material_cache.insert(material_key.to_string(), path.to_str().unwrap().to_string());
             }
         } else {
             let (r, g, b) = (

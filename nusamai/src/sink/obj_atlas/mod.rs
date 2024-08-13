@@ -5,12 +5,23 @@ mod obj_writer;
 use std::{f64::consts::FRAC_PI_2, path::PathBuf, sync::Mutex};
 
 use ahash::{HashMap, HashMapExt};
+use atlas_packer::{
+    export::{AtlasExporter as _, PngAtlasExporter},
+    pack::TexturePacker,
+    place::{GuillotineTexturePlacer, TexturePlacerConfig},
+    texture::{DownsampleFactor, TextureCache},
+};
 use earcut::{utils3d::project3d_to_2d, Earcut};
 use flatgeom::MultiPolygon;
 use glam::{DMat4, DVec3, DVec4};
 use indexmap::IndexSet;
 use itertools::Itertools;
 use material::{Material, Texture};
+use obj_writer::write;
+use rayon::iter::{IntoParallelIterator, ParallelBridge, ParallelIterator};
+use serde::{Deserialize, Serialize};
+use url::Url;
+
 use nusamai_citygml::{
     object::{ObjectStereotype, Value},
     schema::Schema,
@@ -18,10 +29,6 @@ use nusamai_citygml::{
 };
 use nusamai_plateau::appearance;
 use nusamai_projection::cartesian::geodetic_to_geocentric;
-use obj_writer::write;
-use rayon::iter::{IntoParallelIterator, ParallelBridge, ParallelIterator};
-use serde::{Deserialize, Serialize};
-use url::Url;
 
 use crate::{
     get_parameter_value,
@@ -368,6 +375,17 @@ impl DataSink for ObjAtlasSink {
             .try_for_each(|(typename, mut features)| {
                 feedback.ensure_not_canceled()?;
 
+                // Texture cache
+                let texture_cache = TextureCache::new(1_000_000_000);
+
+                // file output destination
+                let mut folder_path = self.output_path.clone();
+                let file_name = typename.replace(':', "_").to_string();
+                folder_path.push(&file_name);
+
+                let atlas_dir = folder_path.join("textures");
+                std::fs::create_dir_all(&atlas_dir)?;
+
                 // Triangulation
                 let mut earcutter = Earcut::new();
                 let mut buf3d: Vec<[f64; 3]> = Vec::new();
@@ -376,6 +394,17 @@ impl DataSink for ObjAtlasSink {
 
                 let mut all_meshes = ObjInfo::new();
                 let mut all_materials = ObjMaterials::new();
+
+                // initialize texture packer
+                let config = TexturePlacerConfig {
+                    width: 4096,
+                    height: 4096,
+                    padding: 0,
+                };
+                let placer = GuillotineTexturePlacer::new(config.clone());
+                let exporter = PngAtlasExporter::default();
+                let ext = exporter.clone().get_extension().to_string();
+                let mut packer = TexturePacker::new(placer, exporter);
 
                 for feature in features.features.iter_mut() {
                     feedback.ensure_not_canceled()?;
@@ -395,17 +424,83 @@ impl DataSink for ObjAtlasSink {
                             [v_enu[0], v_enu[1], v_enu[2], u, v]
                         });
 
-                    for (poly, &orig_mat_id) in feature
+                    for (poly_count, (mut poly, &orig_mat_id)) in feature
                         .polygons
                         .iter()
                         .zip_eq(feature.polygon_material_ids.iter())
+                        .enumerate()
                     {
+                        let mat = &feature.materials[orig_mat_id as usize];
+                        let t = mat.base_texture.clone();
+                        let mut new_mat = mat.clone();
+                        if let Some(base_texture) = t {
+                            // textured
+                            let original_vertices = poly
+                                .raw_coords()
+                                .iter()
+                                .map(|[x, y, z, u, v]| (*x, *y, *z, *u, *v))
+                                .collect::<Vec<(f64, f64, f64, f64, f64)>>();
+
+                            let texture = texture_cache.get_or_insert(
+                                &original_vertices
+                                    .iter()
+                                    .map(|(_, _, _, u, v)| (*u, *v))
+                                    .collect::<Vec<_>>(),
+                                &base_texture.uri.to_file_path().unwrap(),
+                                &DownsampleFactor::new(&1.0).value(),
+                            );
+
+                            // Unique id required for placement in atlas
+                            let texture_id =
+                                format!("{}_{}_{}", typename, feature.feature_id, poly_count);
+                            let info = packer.add_texture(texture_id, texture);
+
+                            let atlas_placed_uv_coords = info
+                                .placed_uv_coords
+                                .iter()
+                                .map(|(u, v)| ({ *u }, { *v }))
+                                .collect::<Vec<(f64, f64)>>();
+                            let updated_vertices = original_vertices
+                                .iter()
+                                .zip(atlas_placed_uv_coords.iter())
+                                .map(|((x, y, z, _, _), (u, v))| (*x, *y, *z, *u, *v))
+                                .collect::<Vec<(f64, f64, f64, f64, f64)>>();
+
+                            // update_verticesを利用して、polyのtransform_inplaceメソッドで頂点を更新する
+                            poly.transform_inplace(|&[x, y, z, _, _]| {
+                                let (u, v) = updated_vertices
+                                    .iter()
+                                    .find(|(x_, y_, z_, _, _)| {
+                                        (*x_ - x).abs() < 1e-6
+                                            && (*y_ - y).abs() < 1e-6
+                                            && (*z_ - z).abs() < 1e-6
+                                    })
+                                    .map(|(_, _, _, u, v)| (*u, *v))
+                                    .unwrap();
+                                [x, y, z, u, v]
+                            });
+
+                            let atlas_file_name =
+                                format!("{}_{}", typename.replace(":", "_"), &info.atlas_id);
+
+                            let atlas_uri =
+                                atlas_dir.join(atlas_file_name).with_extension(ext.clone());
+
+                            // update material
+                            new_mat = material::Material {
+                                base_color: mat.base_color,
+                                base_texture: Some(material::Texture {
+                                    uri: Url::from_file_path(atlas_uri).unwrap(),
+                                }),
+                            };
+                        }
+
                         let num_outer = match poly.hole_indices().first() {
                             Some(&v) => v as usize,
                             None => poly.raw_coords().len(),
                         };
 
-                        let poly_material = &feature.materials[orig_mat_id as usize];
+                        let poly_material = new_mat;
                         let poly_color = poly_material.base_color;
                         let poly_texture = poly_material.base_texture.as_ref();
                         let poly_material_key = format!("{}_{}", feature.feature_id, orig_mat_id);
@@ -442,15 +537,12 @@ impl DataSink for ObjAtlasSink {
                     all_meshes.insert(feature.feature_id.clone(), feature_mesh);
                 }
 
+                packer.finalize();
+                packer.export(&atlas_dir, &texture_cache, config.width, config.height);
+
                 feedback.ensure_not_canceled()?;
 
                 // Write OBJ file
-                let mut folder_path = self.output_path.clone();
-                let file_name = typename.replace(':', "_").to_string();
-                folder_path.push(&file_name);
-
-                std::fs::create_dir_all(&folder_path)?;
-
                 write(
                     all_meshes,
                     all_materials,
