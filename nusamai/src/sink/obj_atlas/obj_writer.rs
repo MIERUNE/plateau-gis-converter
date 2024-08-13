@@ -5,7 +5,6 @@ use std::{collections::HashMap, path::Path};
 
 use super::{material, ObjInfo, ObjMaterials};
 use crate::pipeline::PipelineError;
-use material::load_image;
 
 pub fn write(
     meshes: ObjInfo,
@@ -54,6 +53,7 @@ fn write_obj(
         for tex_coord in &mesh.uvs {
             writeln!(obj_writer, "vt {} {}", tex_coord[0], tex_coord[1])?;
         }
+
         for (material_key, indices) in &mesh.primitives {
             if material_cache.contains_key(material_key) {
                 writeln!(obj_writer, "usemtl {}", material_key)?;
@@ -102,8 +102,10 @@ fn write_mtl(
 
         if let Some(uri) = &material.texture_uri {
             if let Ok(path) = uri.to_file_path() {
+                // todo: 同一のテクスチャを利用しているときにはキーを発行しない
                 writeln!(mtl_writer, "newmtl {}", material_key)?;
-                writeln!(mtl_writer, "map_Kd .\\textures\\{}", path.to_str().unwrap())?;
+                let texture_name = path.file_name().unwrap().to_str().unwrap();
+                writeln!(mtl_writer, "map_Kd .\\textures\\{}", texture_name)?;
                 material_cache.insert(material_key.to_string(), path.to_str().unwrap().to_string());
             }
         } else {

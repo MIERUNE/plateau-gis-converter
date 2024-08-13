@@ -480,8 +480,7 @@ impl DataSink for ObjAtlasSink {
                                 [x, y, z, u, v]
                             });
 
-                            let atlas_file_name =
-                                format!("{}_{}", typename.replace(":", "_"), &info.atlas_id);
+                            let atlas_file_name = info.atlas_id.to_string();
 
                             let atlas_uri =
                                 atlas_dir.join(atlas_file_name).with_extension(ext.clone());
