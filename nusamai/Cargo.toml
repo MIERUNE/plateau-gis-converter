@@ -51,6 +51,8 @@ chrono = "0.4.35"
 kv-extsort = { git = "https://github.com/MIERUNE/kv-extsort-rs.git" }
 bytemuck = { version = "1.16.0", features = ["derive"] }
 dda-voxelize = "0.2.0-alpha.1"
+atlas-packer = { git = "https://github.com/MIERUNE/atlas-packer.git" }
+tempfile = "3.10.1"
 glam = "0.28.0"
 
 [dev-dependencies]
@@ -59,4 +61,3 @@ tokio = { version = "1.36", features = ["full"] }
 byteorder = "1.5.0"
 glob = "0.3.1"
 assert_cmd = "2.0.14"
-tempfile = "3.10.1"

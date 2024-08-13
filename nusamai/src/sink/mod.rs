@@ -1,15 +1,17 @@
 //! Output format drivers (sinks)
 
 pub mod cesiumtiles;
+pub mod cesiumtiles_poc;
 pub mod czml;
 pub mod geojson;
 pub mod gltf;
 pub mod gpkg;
 pub mod kml;
 pub mod minecraft;
-pub mod obj;
 pub mod mvt;
 pub mod noop;
+pub mod obj;
+pub mod obj_atlas;
 pub mod ply;
 pub mod serde;
 pub mod shapefile;
