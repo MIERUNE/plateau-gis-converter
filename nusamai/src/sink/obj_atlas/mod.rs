@@ -380,10 +380,11 @@ impl DataSink for ObjAtlasSink {
 
                 // file output destination
                 let mut folder_path = self.output_path.clone();
-                let file_name = typename.replace(':', "_").to_string();
-                folder_path.push(&file_name);
+                let base_folder_name = typename.replace(':', "_").to_string();
+                folder_path.push(&base_folder_name);
 
-                let atlas_dir = folder_path.join("textures");
+                let texture_folder_name = "textures";
+                let atlas_dir = folder_path.join(texture_folder_name);
                 std::fs::create_dir_all(&atlas_dir)?;
 
                 // Triangulation
@@ -502,7 +503,33 @@ impl DataSink for ObjAtlasSink {
                         let poly_material = new_mat;
                         let poly_color = poly_material.base_color;
                         let poly_texture = poly_material.base_texture.as_ref();
-                        let poly_material_key = format!("{}_{}", feature.feature_id, orig_mat_id);
+                        let texture_name = poly_texture.map_or_else(
+                            || "".to_string(),
+                            |t| {
+                                t.uri
+                                    .to_file_path()
+                                    .unwrap()
+                                    .file_stem()
+                                    .unwrap()
+                                    .to_str()
+                                    .unwrap()
+                                    .to_string()
+                            },
+                        );
+                        let poly_material_key = poly_material.base_texture.as_ref().map_or_else(
+                            || {
+                                format!(
+                                    "material_{}_{}_{}",
+                                    poly_color[0], poly_color[1], poly_color[2]
+                                )
+                            },
+                            |_| {
+                                format!(
+                                    "{}_{}_{}",
+                                    base_folder_name, texture_folder_name, texture_name
+                                )
+                            },
+                        );
 
                         all_materials.insert(
                             poly_material_key.clone(),

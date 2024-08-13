@@ -3,7 +3,7 @@ use std::io::Write;
 use std::path::PathBuf;
 use std::{collections::HashMap, path::Path};
 
-use super::{material, ObjInfo, ObjMaterials};
+use super::{ObjInfo, ObjMaterials};
 use crate::pipeline::PipelineError;
 
 pub fn write(
@@ -15,20 +15,13 @@ pub fn write(
     let mut material_cache: HashMap<String, String> = HashMap::new();
 
     write_mtl(&materials, &mut material_cache, &folder_path)?;
-    write_obj(
-        &meshes,
-        &materials,
-        &mut material_cache,
-        &folder_path,
-        is_split,
-    )?;
+    write_obj(&meshes, &mut material_cache, &folder_path, is_split)?;
 
     Ok(())
 }
 
 fn write_obj(
     meshes: &ObjInfo,
-    materials: &ObjMaterials,
     material_cache: &mut HashMap<String, String>,
     folder_path: &Path,
     is_split: bool,
@@ -58,9 +51,9 @@ fn write_obj(
             if material_cache.contains_key(material_key) {
                 writeln!(obj_writer, "usemtl {}", material_key)?;
             } else {
-                let m = materials.get(material_key).unwrap();
-                let (r, g, b) = (m.base_color[0], m.base_color[1], m.base_color[2]);
-                writeln!(obj_writer, "usemtl material_{}_{}_{}", r, g, b)?;
+                // todo: Add error handling
+                println!("Material not found: {}", material_key);
+                continue;
             }
             for index in indices.chunks(3) {
                 writeln!(
@@ -102,10 +95,11 @@ fn write_mtl(
 
         if let Some(uri) = &material.texture_uri {
             if let Ok(path) = uri.to_file_path() {
-                // todo: 同一のテクスチャを利用しているときにはキーを発行しない
                 writeln!(mtl_writer, "newmtl {}", material_key)?;
+
                 let texture_name = path.file_name().unwrap().to_str().unwrap();
                 writeln!(mtl_writer, "map_Kd .\\textures\\{}", texture_name)?;
+
                 material_cache.insert(material_key.to_string(), path.to_str().unwrap().to_string());
             }
         } else {
@@ -114,7 +108,7 @@ fn write_mtl(
                 material.base_color[1],
                 material.base_color[2],
             );
-            let color_key = format!("{:.6}_{:.6}_{:.6}", r, g, b);
+            let color_key = format!("{}_{}_{}", r, g, b);
             let material_key = format!("material_{}_{}_{}", r, g, b);
             if material_cache.contains_key(&material_key) {
                 continue;
