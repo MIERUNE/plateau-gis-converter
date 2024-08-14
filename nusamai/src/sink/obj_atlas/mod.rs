@@ -375,8 +375,6 @@ impl DataSink for ObjAtlasSink {
             .try_for_each(|(typename, mut features)| {
                 feedback.ensure_not_canceled()?;
 
-                let mut texture_count = 0;
-
                 // Texture cache
                 let texture_cache = TextureCache::new(100_000_000);
 
@@ -454,7 +452,6 @@ impl DataSink for ObjAtlasSink {
                                 &base_texture.uri.to_file_path().unwrap(),
                                 &DownsampleFactor::new(&1.0).value(),
                             );
-                            texture_count += 1;
 
                             // Unique id required for placement in atlas
                             let texture_id = format!(
@@ -569,11 +566,6 @@ impl DataSink for ObjAtlasSink {
                     }
                     all_meshes.insert(feature.feature_id.clone(), feature_mesh);
                 }
-
-                feedback.info(format!(
-                    "There are {} sheets of this texture.",
-                    texture_count
-                ));
 
                 packer.finalize();
 
