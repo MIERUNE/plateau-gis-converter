@@ -5,8 +5,9 @@ edition = "2021"
 [dependencies]
 image = { version = "0.25.1", default-features = false, features = ["rayon", "tiff", "jpeg", "webp", "png"] }
 thiserror = "1.0.61"
-hashbrown = "0.14.5"
+hashbrown = { version = "0.14.5", features = ["rayon"] }
 stretto = "0.8.4"
+rayon = "1.10.0"
 
 [dev-dependencies]
 tempfile = "3.10.1"

@@ -1,6 +1,7 @@
 use std::path::Path;
 
 use hashbrown::HashMap;
+use rayon::prelude::*;
 
 use crate::export::AtlasExporter;
 use crate::place::{PlacedTextureInfo, TexturePlacer};
@@ -69,7 +70,7 @@ impl<P: TexturePlacer, E: AtlasExporter> TexturePacker<P, E> {
     }
 
     pub fn export(&self, output_dir: &Path, texture_cache: &TextureCache, width: u32, height: u32) {
-        for (id, atlas) in self.atlases.iter() {
+        self.atlases.par_iter().for_each(|(id, atlas)| {
             let output_path = output_dir.join(id);
             self.exporter.export(
                 atlas,
@@ -78,7 +79,7 @@ impl<P: TexturePlacer, E: AtlasExporter> TexturePacker<P, E> {
                 texture_cache,
                 width,
                 height,
-            )
-        }
+            );
+        });
     }
 }

@@ -57,7 +57,7 @@ pub struct PlacedTextureInfo {
     pub placed_uv_coords: Vec<(f64, f64)>,
 }
 
-pub trait TexturePlacer {
+pub trait TexturePlacer: Send + Sync {
     fn config(&self) -> &TexturePlacerConfig;
 
     fn place_texture(

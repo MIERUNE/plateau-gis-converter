@@ -1,12 +1,14 @@
 use std::path::Path;
+use std::sync::Mutex;
 
 use hashbrown::HashMap;
-use image::{ImageBuffer, ImageFormat};
+use image::{ImageBuffer, ImageFormat, Rgba};
+use rayon::prelude::*;
 
 use crate::place::PlacedTextureInfo;
 use crate::texture::{CroppedTexture, TextureCache};
 
-pub trait AtlasExporter {
+pub trait AtlasExporter: Sync + Send {
     fn export(
         &self,
         atlas_data: &[PlacedTextureInfo],
@@ -144,20 +146,21 @@ fn create_atlas_image(
     texture_cache: &TextureCache,
     width: u32,
     height: u32,
-) -> ImageBuffer<image::Rgba<u8>, Vec<u8>> {
-    let mut atlas_image = ImageBuffer::new(width, height);
+) -> ImageBuffer<Rgba<u8>, Vec<u8>> {
+    let atlas_image = Mutex::new(ImageBuffer::new(width, height));
 
-    for info in atlas_data {
+    atlas_data.par_iter().for_each(|info| {
         let texture = textures.get(&info.id).unwrap();
         let cropped = texture.crop(&texture_cache.get_image(&texture.image_path));
         let image = cropped.as_rgba8().unwrap();
 
+        let mut atlas_image = atlas_image.lock().unwrap();
         for (x, y, pixel) in image.enumerate_pixels() {
             let atlas_x = info.origin.0 + x;
             let atlas_y = info.origin.1 + y;
             atlas_image.put_pixel(atlas_x, atlas_y, *pixel);
         }
-    }
+    });
 
-    atlas_image
+    atlas_image.into_inner().unwrap()
 }
