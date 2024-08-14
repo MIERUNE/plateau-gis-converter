@@ -388,11 +388,8 @@ impl DataSink for ObjAtlasSink {
                 std::fs::create_dir_all(&atlas_dir)?;
 
                 // Triangulation
-                let mut earcutter = Earcut::new();
-                let mut buf3d: Vec<[f64; 3]> = Vec::new();
-                let mut buf2d: Vec<[f64; 2]> = Vec::new();
-                let mut index_buf: Vec<u32> = Vec::new();
-
+                // todo: 並列化
+                // チャンネルで飛ばせそうな気もする
                 let mut all_meshes = ObjInfo::new();
                 let mut all_materials = ObjMaterials::new();
 
@@ -405,6 +402,7 @@ impl DataSink for ObjAtlasSink {
                 let placer = GuillotineTexturePlacer::new(config.clone());
                 let exporter = PngAtlasExporter::default();
                 let ext = exporter.clone().get_extension().to_string();
+                // 並列処理出来る機構を考える
                 let mut packer = TexturePacker::new(placer, exporter);
 
                 let start = Instant::now();
@@ -542,6 +540,11 @@ impl DataSink for ObjAtlasSink {
                                 texture_uri: poly_texture.map(|t| t.uri.clone()),
                             },
                         );
+
+                        let mut earcutter = Earcut::new();
+                        let mut buf3d: Vec<[f64; 3]> = Vec::new();
+                        let mut buf2d: Vec<[f64; 2]> = Vec::new();
+                        let mut index_buf: Vec<u32> = Vec::new();
 
                         buf3d.clear();
                         buf3d.extend(poly.raw_coords().iter().map(|&[x, y, z, _, _]| [x, y, z]));
