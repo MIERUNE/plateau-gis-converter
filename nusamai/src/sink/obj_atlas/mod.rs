@@ -2,7 +2,7 @@
 mod material;
 mod obj_writer;
 
-use std::{f64::consts::FRAC_PI_2, path::PathBuf, sync::Mutex};
+use std::{f64::consts::FRAC_PI_2, path::PathBuf, sync::Mutex, time::Instant};
 
 use ahash::{HashMap, HashMapExt};
 use atlas_packer::{
@@ -375,8 +375,10 @@ impl DataSink for ObjAtlasSink {
             .try_for_each(|(typename, mut features)| {
                 feedback.ensure_not_canceled()?;
 
+                let mut texture_count = 0;
+
                 // Texture cache
-                let texture_cache = TextureCache::new(1_000_000_000);
+                let texture_cache = TextureCache::new(100_000_000);
 
                 // file output destination
                 let mut folder_path = self.output_path.clone();
@@ -406,6 +408,8 @@ impl DataSink for ObjAtlasSink {
                 let exporter = PngAtlasExporter::default();
                 let ext = exporter.clone().get_extension().to_string();
                 let mut packer = TexturePacker::new(placer, exporter);
+
+                let start = Instant::now();
 
                 for feature in features.features.iter_mut() {
                     feedback.ensure_not_canceled()?;
@@ -450,6 +454,7 @@ impl DataSink for ObjAtlasSink {
                                 &base_texture.uri.to_file_path().unwrap(),
                                 &DownsampleFactor::new(&1.0).value(),
                             );
+                            texture_count += 1;
 
                             // Unique id required for placement in atlas
                             let texture_id = format!(
@@ -565,8 +570,22 @@ impl DataSink for ObjAtlasSink {
                     all_meshes.insert(feature.feature_id.clone(), feature_mesh);
                 }
 
+                feedback.info(format!(
+                    "There are {} sheets of this texture.",
+                    texture_count
+                ));
+
                 packer.finalize();
+
+                let duration = start.elapsed();
+                feedback.info(format!("atlas process {:?}", duration));
+
+                let start = Instant::now();
+
                 packer.export(&atlas_dir, &texture_cache, config.width, config.height);
+
+                let duration = start.elapsed();
+                feedback.info(format!("atlas export process {:?}", duration));
 
                 feedback.ensure_not_canceled()?;
 

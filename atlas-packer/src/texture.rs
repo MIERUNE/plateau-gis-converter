@@ -27,7 +27,7 @@ pub struct TextureCache {
 impl TextureCache {
     pub fn new(capacity: usize) -> Self {
         TextureCache {
-            cache: Cache::new(capacity, 10_000_000).unwrap(),
+            cache: Cache::new(capacity, 1_000_000_000).unwrap(),
         }
     }
 
