@@ -1,7 +1,7 @@
 use std::path::{Path, PathBuf};
 
 use atlas_packer::{
-    export::PngAtlasExporter,
+    export::JpegAtlasExporter,
     pack::TexturePacker,
     place::{GuillotineTexturePlacer, TexturePlacerConfig},
     texture::{DownsampleFactor, TextureCache},
@@ -46,7 +46,7 @@ fn main() {
     // initialize texture packer
     let config = TexturePlacerConfig::default();
     let placer = GuillotineTexturePlacer::new(config.clone());
-    let exporter = PngAtlasExporter::default();
+    let exporter = JpegAtlasExporter::default();
     let mut packer = TexturePacker::new(placer, exporter);
 
     // Texture cache

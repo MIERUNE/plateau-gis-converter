@@ -6,7 +6,7 @@ use std::{f64::consts::FRAC_PI_2, path::PathBuf, sync::Mutex, time::Instant};
 
 use ahash::{HashMap, HashMapExt};
 use atlas_packer::{
-    export::{AtlasExporter as _, PngAtlasExporter},
+    export::{AtlasExporter as _, JpegAtlasExporter},
     pack::TexturePacker,
     place::{GuillotineTexturePlacer, TexturePlacerConfig},
     texture::{DownsampleFactor, TextureCache},
@@ -398,7 +398,7 @@ impl DataSink for ObjAtlasSink {
                     padding: 0,
                 };
                 let placer = GuillotineTexturePlacer::new(config.clone());
-                let exporter = PngAtlasExporter::default();
+                let exporter = JpegAtlasExporter::default();
                 let ext = exporter.clone().get_extension().to_string();
                 // todo: 並列処理出来る機構を考える
                 let mut packer = TexturePacker::new(placer, exporter);
@@ -538,13 +538,6 @@ impl DataSink for ObjAtlasSink {
                                 texture_uri: poly_texture.map(|t| t.uri.clone()),
                             },
                         );
-                        // material_sender.send((
-                        //     poly_material_key.clone(),
-                        //     FeatureMaterial {
-                        //         base_color: poly_color,
-                        //         texture_uri: poly_texture.map(|t| t.uri.clone()),
-                        //     },
-                        // ));
 
                         let mut earcutter = Earcut::new();
                         let mut buf3d: Vec<[f64; 3]> = Vec::new();
@@ -573,7 +566,6 @@ impl DataSink for ObjAtlasSink {
                         }
                     }
                     all_meshes.insert(feature.feature_id.clone(), feature_mesh);
-                    // mesh_sender.send((feature.feature_id.clone(), feature_mesh));
                 }
 
                 packer.finalize();
