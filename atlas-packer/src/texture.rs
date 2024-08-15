@@ -1,6 +1,10 @@
-use std::path::{Path, PathBuf};
+use std::{
+    path::{Path, PathBuf},
+    sync::mpsc,
+};
 
 use image::{DynamicImage, GenericImageView, ImageBuffer};
+use rayon::prelude::*;
 use stretto::Cache;
 
 #[derive(Debug, Clone)]
@@ -145,19 +149,60 @@ impl CroppedTexture {
         let (x, y) = self.origin;
         let cropped_image = image.view(x, y, self.width, self.height).to_image();
 
-        // remove transparent area
+        let samples = 4;
+        let chunk_size = 25;
+
+        let (sender, receiver) = mpsc::channel();
+
+        // Collect pixels into a Vec and then process in parallel
+        let pixels: Vec<_> = cropped_image.enumerate_pixels().collect();
+
+        // Parallel processing using rayon
+        pixels
+            .par_chunks(chunk_size)
+            .for_each_with(sender, |s, chunk| {
+                let mut local_results = Vec::new();
+
+                for &(px, py, pixel) in chunk {
+                    let mut is_inside = false;
+
+                    for sx in 0..samples {
+                        if is_inside {
+                            break;
+                        }
+                        for sy in 0..samples {
+                            let x = (px as f64 + (sx as f64 + 0.5) / samples as f64)
+                                / self.width as f64;
+                            let y = 1.0
+                                - (py as f64 + (sy as f64 + 0.5) / samples as f64)
+                                    / self.height as f64;
+
+                            if is_point_inside_polygon((x, y), &self.cropped_uv_coords) {
+                                is_inside = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    if is_inside {
+                        local_results.push((px, py, *pixel));
+                    } else {
+                        local_results.push((px, py, *pixel));
+                    }
+                }
+
+                s.send(local_results).unwrap();
+            });
+
+        // Collect results in the main thread
         let mut clipped = ImageBuffer::new(self.width, self.height);
-        for (px, py, pixel) in cropped_image.enumerate_pixels() {
-            let uv = (
-                px as f64 / self.width as f64,
-                1.0 - py as f64 / self.height as f64,
-            );
-            if is_point_inside_polygon(uv, &self.cropped_uv_coords) {
-                clipped.put_pixel(px, py, *pixel);
+        for received in receiver {
+            for (px, py, pixel) in received {
+                clipped.put_pixel(px, py, pixel);
             }
         }
 
-        // downsample
+        // Downsample
         let scaled_width = (clipped.width() as f32 * self.downsample_factor.value()) as u32;
         let scaled_height = (clipped.height() as f32 * self.downsample_factor.value()) as u32;
 

@@ -392,6 +392,8 @@ impl DataSink for ObjAtlasSink {
                 // チャンネルで飛ばせそうな気もする
                 let mut all_meshes = ObjInfo::new();
                 let mut all_materials = ObjMaterials::new();
+                // let (mesh_sender, mesh_receiver) = channel();
+                // let (material_sender, material_receiver) = channel();
 
                 // initialize texture packer
                 let config = TexturePlacerConfig {
@@ -540,6 +542,13 @@ impl DataSink for ObjAtlasSink {
                                 texture_uri: poly_texture.map(|t| t.uri.clone()),
                             },
                         );
+                        // material_sender.send((
+                        //     poly_material_key.clone(),
+                        //     FeatureMaterial {
+                        //         base_color: poly_color,
+                        //         texture_uri: poly_texture.map(|t| t.uri.clone()),
+                        //     },
+                        // ));
 
                         let mut earcutter = Earcut::new();
                         let mut buf3d: Vec<[f64; 3]> = Vec::new();
@@ -568,6 +577,7 @@ impl DataSink for ObjAtlasSink {
                         }
                     }
                     all_meshes.insert(feature.feature_id.clone(), feature_mesh);
+                    // mesh_sender.send((feature.feature_id.clone(), feature_mesh));
                 }
 
                 packer.finalize();
