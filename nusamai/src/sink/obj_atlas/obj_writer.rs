@@ -3,7 +3,6 @@ use std::{
     fs::File,
     io::{BufWriter, Write as _},
     path::{Path, PathBuf},
-    sync::{mpsc, Arc, Mutex},
 };
 
 use rayon::prelude::*;
