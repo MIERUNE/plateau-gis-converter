@@ -1,7 +1,12 @@
-use std::fs::File;
-use std::io::Write;
-use std::path::PathBuf;
-use std::{collections::HashMap, path::Path};
+use std::{
+    collections::HashMap,
+    fs::File,
+    io::{BufWriter, Write as _},
+    path::{Path, PathBuf},
+    sync::{mpsc, Arc, Mutex},
+};
+
+use rayon::prelude::*;
 
 use super::{ObjInfo, ObjMaterials};
 use crate::pipeline::PipelineError;
@@ -27,48 +32,67 @@ fn write_obj(
     is_split: bool,
 ) -> Result<(), PipelineError> {
     let dir_name = folder_path.to_str().unwrap();
-    let mut obj_writer = File::create(format!(
-        "{}/{}.obj",
-        dir_name,
-        folder_path.file_stem().unwrap().to_str().unwrap()
-    ))?;
+    let file_name = folder_path.file_stem().unwrap().to_str().unwrap();
+    let obj_path = format!("{}/{}.obj", dir_name, file_name);
 
-    let mut global_vertex_offset = 0;
+    let mut all_vertices = Vec::new();
+    let mut all_uvs = Vec::new();
+    let mut mesh_data = Vec::new();
 
     for (feature_id, mesh) in meshes {
-        if is_split {
-            writeln!(obj_writer, "o {}", feature_id)?;
-        }
+        let vertex_offset = all_vertices.len();
+        let uv_offset = all_uvs.len();
 
-        for vertex in &mesh.vertices {
-            writeln!(obj_writer, "v {} {} {}", vertex[0], vertex[1], vertex[2])?;
-        }
-        for tex_coord in &mesh.uvs {
-            writeln!(obj_writer, "vt {} {}", tex_coord[0], tex_coord[1])?;
-        }
+        all_vertices.extend_from_slice(&mesh.vertices);
+        all_uvs.extend_from_slice(&mesh.uvs);
 
-        for (material_key, indices) in &mesh.primitives {
-            if material_cache.contains_key(material_key) {
-                writeln!(obj_writer, "usemtl {}", material_key)?;
-            } else {
-                // todo: Add error handling
-                println!("Material not found: {}", material_key);
-                continue;
+        mesh_data.push((feature_id, mesh, vertex_offset, uv_offset));
+    }
+
+    let mut obj_writer = BufWriter::new(File::create(&obj_path)?);
+    for vertex in &all_vertices {
+        writeln!(obj_writer, "v {} {} {}", vertex[0], vertex[1], vertex[2])?;
+    }
+    for uv in &all_uvs {
+        writeln!(obj_writer, "vt {} {}", uv[0], uv[1])?;
+    }
+
+    let face_data: Vec<String> = mesh_data
+        .par_iter()
+        .flat_map(|(feature_id, mesh, vertex_offset, uv_offset)| {
+            let mut local_obj = Vec::new();
+
+            if is_split {
+                local_obj.push(format!("o {}", feature_id));
             }
-            for index in indices.chunks(3) {
-                writeln!(
-                    obj_writer,
-                    "f {}/{} {}/{} {}/{}",
-                    index[0] + 1 + global_vertex_offset,
-                    index[0] + 1 + global_vertex_offset,
-                    index[1] + 1 + global_vertex_offset,
-                    index[1] + 1 + global_vertex_offset,
-                    index[2] + 1 + global_vertex_offset,
-                    index[2] + 1 + global_vertex_offset
-                )?;
+
+            for (material_key, indices) in &mesh.primitives {
+                if material_cache.contains_key(material_key) {
+                    local_obj.push(format!("usemtl {}", material_key));
+                } else {
+                    eprintln!("Material not found: {}", material_key);
+                    continue;
+                }
+
+                for index in indices.chunks(3) {
+                    local_obj.push(format!(
+                        "f {}/{} {}/{} {}/{}",
+                        index[0] + 1 + *vertex_offset as u32,
+                        index[0] + 1 + *uv_offset as u32,
+                        index[1] + 1 + *vertex_offset as u32,
+                        index[1] + 1 + *uv_offset as u32,
+                        index[2] + 1 + *vertex_offset as u32,
+                        index[2] + 1 + *uv_offset as u32
+                    ));
+                }
             }
-        }
-        global_vertex_offset += mesh.vertices.len() as u32;
+
+            local_obj
+        })
+        .collect();
+
+    for line in face_data {
+        writeln!(obj_writer, "{}", line)?;
     }
 
     obj_writer.flush()?;

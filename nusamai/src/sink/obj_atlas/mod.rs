@@ -429,7 +429,8 @@ impl DataSink for ObjAtlasSink {
                 }
 
                 let features = features.features.iter().collect::<Vec<_>>();
-                let chunk_num = features.len() / 8;
+                let num_threads = rayon::current_num_threads();
+                let chunk_num = (features.len() / num_threads).clamp(1, features.len());
 
                 // parallel processing
                 // generate texture atlas and update materials

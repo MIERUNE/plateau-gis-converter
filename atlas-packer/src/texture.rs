@@ -151,13 +151,14 @@ impl CroppedTexture {
         let (x, y) = self.origin;
         let cropped_image = image.view(x, y, self.width, self.height).to_image();
 
-        let samples = 1;
-        let chunk_size = 25;
-
-        let (sender, receiver) = mpsc::channel();
-
         // Collect pixels into a Vec and then process in parallel
         let pixels: Vec<_> = cropped_image.enumerate_pixels().collect();
+
+        let samples = 1;
+        let num_threads = rayon::current_num_threads();
+        let chunk_size = (pixels.len() / num_threads).clamp(1, pixels.len());
+
+        let (sender, receiver) = mpsc::channel();
 
         // If the center coordinates of the pixel are contained within a polygon composed of UV coordinates, the pixel is written
         pixels
