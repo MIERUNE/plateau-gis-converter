@@ -405,6 +405,23 @@ impl DataSink for ObjAtlasSink {
 
                 let start = Instant::now();
 
+                // Coordinate transformation
+                {
+                    for feature in features.features.iter_mut() {
+                        feedback.ensure_not_canceled()?;
+
+                        feature
+                            .polygons
+                            .transform_inplace(|&[lng, lat, height, u, v]| {
+                                let (x, y, z) =
+                                    geodetic_to_geocentric(&ellipsoid, lng, lat, height);
+                                let v_xyz = DVec4::new(x, z, -y, 1.0);
+                                let v_enu = transform_matrix * v_xyz;
+                                [v_enu[0], v_enu[1], v_enu[2], u, v]
+                            });
+                    }
+                }
+
                 for feature in features.features.iter_mut() {
                     feedback.ensure_not_canceled()?;
 
@@ -413,15 +430,6 @@ impl DataSink for ObjAtlasSink {
                         uvs: Vec::new(),
                         primitives: HashMap::new(),
                     };
-
-                    feature
-                        .polygons
-                        .transform_inplace(|&[lng, lat, height, u, v]| {
-                            let (x, y, z) = geodetic_to_geocentric(&ellipsoid, lng, lat, height);
-                            let v_xyz = DVec4::new(x, z, -y, 1.0);
-                            let v_enu = transform_matrix * v_xyz;
-                            [v_enu[0], v_enu[1], v_enu[2], u, v]
-                        });
 
                     for (poly_count, (mut poly, &orig_mat_id)) in feature
                         .polygons

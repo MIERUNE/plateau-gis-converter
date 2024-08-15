@@ -1,4 +1,8 @@
 use std::path::{Path, PathBuf};
+use std::sync::Mutex;
+use std::time::Instant;
+
+use rayon::prelude::*;
 
 use atlas_packer::{
     export::JpegAtlasExporter,
@@ -16,10 +20,12 @@ struct Polygon {
 }
 
 fn main() {
+    let all_process_start = Instant::now();
+
     // 3D Tiles Sink passes the texture path and UV coordinates for each polygon
     let mut polygons: Vec<Polygon> = Vec::new();
     let downsample_factor = 1.0;
-    for i in 0..10 {
+    for i in 0..200 {
         for j in 1..11 {
             // Specify a polygon to crop around the center of the image
             let uv_coords = vec![
@@ -44,27 +50,49 @@ fn main() {
     }
 
     // initialize texture packer
-    let config = TexturePlacerConfig::default();
+    let config = TexturePlacerConfig {
+        width: 4096,
+        height: 4096,
+        padding: 0,
+    };
     let placer = GuillotineTexturePlacer::new(config.clone());
     let exporter = JpegAtlasExporter::default();
-    let mut packer = TexturePacker::new(placer, exporter);
+    let packer = Mutex::new(TexturePacker::new(placer, exporter));
 
     // Texture cache
     let texture_cache = TextureCache::new(100_000_000);
 
+    let start = Instant::now();
+
     // Add textures to the atlas
-    polygons.iter().for_each(|polygon| {
+    polygons.par_iter().for_each(|polygon| {
         let texture = texture_cache.get_or_insert(
             &polygon.uv_coords,
             &polygon.texture_uri,
             &polygon.downsample_factor.value(),
         );
-        let info = packer.add_texture(polygon.id.clone(), texture);
-        println!("{:?}", info);
+        let _ = packer
+            .lock()
+            .unwrap()
+            .add_texture(polygon.id.clone(), texture);
+        // println!("{:?}", info);
     });
+
+    let duration = start.elapsed();
+    println!("atlas process {:?}", duration);
+
+    let mut packer = packer.into_inner().unwrap();
 
     packer.finalize();
 
+    let start = Instant::now();
+
     let output_dir = Path::new("examples/output/");
     packer.export(output_dir, &texture_cache, config.width(), config.height());
+
+    let duration = start.elapsed();
+    println!("atlas export process {:?}", duration);
+
+    let duration = all_process_start.elapsed();
+    println!("all process {:?}", duration);
 }
