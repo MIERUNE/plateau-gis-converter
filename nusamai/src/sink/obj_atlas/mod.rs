@@ -432,7 +432,6 @@ impl DataSink for ObjAtlasSink {
                 let num_threads = rayon::current_num_threads();
                 let chunk_num = (features.len() / num_threads).clamp(1, features.len());
 
-                // parallel processing
                 // generate texture atlas and update materials
                 let (mesh_sender, mesh_receiver) = mpsc::channel();
                 let (material_sender, material_receiver) = mpsc::channel();
@@ -550,13 +549,6 @@ impl DataSink for ObjAtlasSink {
                                         },
                                     );
 
-                                // all_materials.insert(
-                                //     poly_material_key.clone(),
-                                //     FeatureMaterial {
-                                //         base_color: poly_color,
-                                //         texture_uri: poly_texture.map(|t| t.uri.clone()),
-                                //     },
-                                // );
                                 material_sender
                                     .send((
                                         poly_material_key.clone(),
@@ -581,6 +573,7 @@ impl DataSink for ObjAtlasSink {
                                     poly.raw_coords().iter().map(|&[x, y, z, _, _]| [x, y, z]),
                                 );
 
+                                // triangulate
                                 if project3d_to_2d(&buf3d, num_outer, &mut buf2d) {
                                     earcutter.earcut(
                                         buf2d.iter().cloned(),
@@ -599,7 +592,7 @@ impl DataSink for ObjAtlasSink {
                                         }));
                                 }
                             }
-                            // all_meshes.insert(feature.feature_id.clone(), feature_mesh);
+
                             mesh_sender
                                 .send((feature.feature_id.clone(), feature_mesh))
                                 .unwrap();
