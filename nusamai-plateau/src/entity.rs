@@ -23,4 +23,6 @@ pub struct Entity {
     pub appearance_store: Arc<RwLock<AppearanceStore>>,
     /// Bounded by
     pub bounded: GeometryRefs,
+
+    pub geometry_refs: GeometryRefs,
 }

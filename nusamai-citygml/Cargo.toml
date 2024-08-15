@@ -10,18 +10,18 @@ version.workspace = true
 
 [features]
 default = ["serde"]
-serde = ["dep:serde", "serde_json", "nusamai-geometry/serde"]
+serde = ["dep:serde", "nusamai-geometry/serde", "serde_json"]
 
 [dependencies]
 ahash = "0.8.11"
-chrono = {workspace = true, features = ["serde"]}
-indexmap = {workspace = true, features = ["serde"]}
+chrono = { workspace = true, features = ["serde"] }
+indexmap = { workspace = true, features = ["serde"] }
 log.workspace = true
-macros = {path = "./macros"}
-nusamai-geometry = {path = "../nusamai-geometry", features = ["serde"]}
-nusamai-projection = {path = "../nusamai-projection"}
+macros = { path = "./macros" }
+nusamai-geometry = { path = "../nusamai-geometry", features = ["serde"] }
+nusamai-projection = { path = "../nusamai-projection" }
 quick-xml.workspace = true
-serde = {workspace = true, features = ["derive"], optional = true}
-serde_json = {workspace = true, features = ["indexmap"], optional = true}
+serde = { workspace = true, features = ["derive"], optional = true }
+serde_json = { workspace = true, features = ["indexmap"], optional = true }
 thiserror.workspace = true
-url = {workspace = true, features = ["serde"]}
+url = { workspace = true, features = ["serde"] }

@@ -12,11 +12,11 @@ version.workspace = true
 
 [dependencies]
 byteorder = "1.5.0"
-clap = {version = "4.5.4", features = ["derive"]}
+clap = { version = "4.5.4", features = ["derive"] }
 earcut = "0.4"
 indexmap.workspace = true
-nusamai-geometry = {path = "../nusamai-geometry"}
-nusamai-gltf-json = {"path" = "nusamai-gltf-json"}
+nusamai-geometry = { path = "../nusamai-geometry" }
+nusamai-gltf-json = { "path" = "nusamai-gltf-json" }
 quick-xml.workspace = true
 serde_json.workspace = true
 thiserror.workspace = true

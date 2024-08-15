@@ -13,21 +13,21 @@ default = ["serde"]
 serde = ["dep:serde"]
 
 [dependencies]
-chrono = {workspace = true, features = ["serde"]}
-hashbrown = {version = "0.14.5", features = ["serde"]}
+chrono = { workspace = true, features = ["serde"] }
+hashbrown = { version = "0.14.5", features = ["serde"] }
 indexmap.workspace = true
 log.workspace = true
-nusamai-citygml = {path = "../nusamai-citygml", features = ["serde"]}
-nusamai-geometry = {path = "../nusamai-geometry"}
+nusamai-citygml = { path = "../nusamai-citygml", features = ["serde"] }
+nusamai-geometry = { path = "../nusamai-geometry" }
 quick-xml.workspace = true
-serde = {workspace = true, features = ["derive", "rc"], optional = true}
+serde = { workspace = true, features = ["derive", "rc"], optional = true }
 serde_json.workspace = true
 stretto = "0.8.4"
 url.workspace = true
 
 [dev-dependencies]
-bincode = {version = "2.0.0-rc.3", default-features = false, features = ["std", "serde"]}
-clap = {version = "4.5.13", features = ["derive"]}
+bincode = { version = "2.0.0-rc.3", default-features = false, features = ["serde", "std"] }
+clap = { version = "4.5.13", features = ["derive"] }
 lz4_flex = "0.11.3"
-serde = {workspace = true, features = ["derive"]}
-zstd = {version = "0.13.2", features = ["zdict_builder"]}
+serde = { workspace = true, features = ["derive"] }
+zstd = { version = "0.13.2", features = ["zdict_builder"] }

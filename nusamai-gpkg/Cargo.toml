@@ -9,11 +9,11 @@ rust-version.workspace = true
 version.workspace = true
 
 [dependencies]
-sqlx = { version = "0.8.0", features = ["sqlite", "runtime-tokio"] }
+indexmap.workspace = true
 nusamai-geometry = { path = "../nusamai-geometry" }
+sqlx = { version = "0.8.0", features = ["runtime-tokio", "sqlite"] }
 thiserror.workspace = true
 url.workspace = true
-indexmap.workspace = true
 
 [dev-dependencies]
 tokio = { version = "1.36", features = ["full"] }

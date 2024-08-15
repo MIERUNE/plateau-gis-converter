@@ -35,6 +35,7 @@ pub enum ParseError {
 
 pub struct CityGmlReader<'a> {
     state: InternalState<'a>,
+    geomrefs: GeometryRefs,
 }
 
 struct InternalState<'a> {
@@ -108,6 +109,7 @@ impl<'a> CityGmlReader<'a> {
     pub fn new(context: ParseContext<'a>) -> Self {
         Self {
             state: InternalState::new(context),
+            geomrefs: Vec::new(),
         }
     }
 
@@ -119,6 +121,7 @@ impl<'a> CityGmlReader<'a> {
         reader.config_mut().expand_empty_elements = true;
 
         let state = &mut self.state;
+        let geomrefs = &mut self.geomrefs;
         loop {
             match reader.read_event_into(&mut state.buf1) {
                 Ok(Event::Start(start)) => {
@@ -132,6 +135,7 @@ impl<'a> CityGmlReader<'a> {
                         reader,
                         state,
                         path_start: 0,
+                        geomrefs,
                     });
                 }
                 Ok(Event::Eof) => {
@@ -150,9 +154,18 @@ pub struct SubTreeReader<'a, 'b, R> {
     reader: &'a mut quick_xml::NsReader<R>,
     state: &'a mut InternalState<'b>,
     path_start: usize,
+    geomrefs: &'a mut GeometryRefs,
 }
 
 impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
+    pub fn geometry_refs(&self) -> &GeometryRefs {
+        self.geomrefs
+    }
+
+    pub fn refresh_geomrefs(&mut self) {
+        self.geomrefs.clear();
+    }
+
     pub fn parse_children(
         &mut self,
         logic: impl FnMut(&mut SubTreeReader<R>) -> Result<(), ParseError>,
@@ -162,6 +175,7 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
             path_start: self.state.path_buf.len(),
             reader: self.reader,
             state: self.state,
+            geomrefs: self.geomrefs,
         }
         .parse_children_inner(logic)
     }
@@ -316,20 +330,19 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
     #[inline(never)]
     pub fn parse_geometric_attr(
         &mut self,
-        geomref: &mut GeometryRefs,
         lod: u8,
         geomtype: GeometryParseType,
     ) -> Result<(), ParseError> {
         use GeometryParseType::*;
 
         match geomtype {
-            Solid => self.parse_solid_prop(geomref, lod)?,
-            MultiSurface => self.parse_multi_surface_prop(geomref, lod)?,
-            Surface => self.parse_surface_prop(geomref, lod)?, // FIXME
-            Geometry => self.parse_geometry_prop(geomref, lod)?, // FIXME: not only surfaces
-            Triangulated => self.parse_triangulated_prop(geomref, lod)?, // FIXME
-            Point => todo!(),                                  // FIXME
-            MultiPoint => todo!(),                             // FIXME
+            Solid => self.parse_solid_prop(lod)?,
+            MultiSurface => self.parse_multi_surface_prop(lod)?,
+            Surface => self.parse_surface_prop(lod)?, // FIXME
+            Geometry => self.parse_geometry_prop(lod)?, // FIXME: not only surfaces
+            Triangulated => self.parse_triangulated_prop(lod)?,
+            Point => todo!(),      // FIXME
+            MultiPoint => todo!(), // FIXME
             MultiCurve => {
                 log::warn!("CompositeCurve is not supported yet.");
                 self.skip_current_element()?;
@@ -344,11 +357,7 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
         Ok(())
     }
 
-    fn parse_multi_surface_prop(
-        &mut self,
-        geomrefs: &mut GeometryRefs,
-        lod: u8,
-    ) -> Result<(), ParseError> {
+    fn parse_multi_surface_prop(&mut self, lod: u8) -> Result<(), ParseError> {
         let mut surface_id = None;
         loop {
             match self.reader.read_event_into(&mut self.state.buf1) {
@@ -383,7 +392,7 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                     };
 
                     let poly_end = self.state.geometry_collector.multipolygon.len();
-                    geomrefs.push(GeometryRef {
+                    self.geomrefs.push(GeometryRef {
                         ty: geomtype,
                         lod,
                         pos: poly_begin as u32,
@@ -417,15 +426,11 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
         Ok(())
     }
 
-    fn parse_surface_prop(
-        &mut self,
-        geomrefs: &mut GeometryRefs,
-        lod: u8,
-    ) -> Result<(), ParseError> {
+    fn parse_surface_prop(&mut self, lod: u8) -> Result<(), ParseError> {
         let poly_begin = self.state.geometry_collector.multipolygon.len();
         let (surface_id, _) = self.parse_surface()?;
         let poly_end = self.state.geometry_collector.multipolygon.len();
-        geomrefs.push(GeometryRef {
+        self.geomrefs.push(GeometryRef {
             ty: GeometryType::Surface,
             lod,
             pos: poly_begin as u32,
@@ -436,7 +441,7 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
         Ok(())
     }
 
-    fn parse_solid_prop(&mut self, geomrefs: &mut GeometryRefs, lod: u8) -> Result<(), ParseError> {
+    fn parse_solid_prop(&mut self, lod: u8) -> Result<(), ParseError> {
         let poly_begin = self.state.geometry_collector.multipolygon.len();
         let mut surface_id = None;
         let mut solid_ids = Vec::new();
@@ -447,7 +452,7 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
         }
 
         let poly_end = self.state.geometry_collector.multipolygon.len();
-        geomrefs.push(GeometryRef {
+        self.geomrefs.push(GeometryRef {
             ty: GeometryType::Solid,
             lod,
             pos: poly_begin as u32,
@@ -458,11 +463,7 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
         Ok(())
     }
 
-    fn parse_multi_geometry(
-        &mut self,
-        geomrefs: &mut GeometryRefs,
-        lod: u8,
-    ) -> Result<(), ParseError> {
+    fn parse_multi_geometry(&mut self, lod: u8) -> Result<(), ParseError> {
         let mut inside_member = false;
         loop {
             match self.reader.read_event_into(&mut self.state.buf1) {
@@ -472,7 +473,7 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                     match (nsres, localname.as_ref()) {
                         (Bound(GML31_NS), b"geometryMember") => {
                             inside_member = true;
-                            self.parse_geometry_prop(geomrefs, lod)?;
+                            self.parse_geometry_prop(lod)?;
                         }
                         _ => {
                             return Err(ParseError::SchemaViolation(format!(
@@ -501,11 +502,7 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
         Ok(())
     }
 
-    fn parse_geometry_prop(
-        &mut self,
-        geomrefs: &mut GeometryRefs,
-        lod: u8,
-    ) -> Result<(), ParseError> {
+    fn parse_geometry_prop(&mut self, lod: u8) -> Result<(), ParseError> {
         let mut surface_id = None;
         loop {
             match self.reader.read_event_into(&mut self.state.buf1) {
@@ -525,7 +522,7 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
 
                     let geomtype = match (nsres, localname.as_ref()) {
                         (Bound(GML31_NS), b"MultiGeometry") => {
-                            self.parse_multi_geometry(geomrefs, lod)?;
+                            self.parse_multi_geometry(lod)?;
                             return Ok(());
                         }
                         (Bound(GML31_NS), b"Solid") => {
@@ -581,7 +578,7 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                     };
 
                     let poly_end = self.state.geometry_collector.multipolygon.len();
-                    geomrefs.push(GeometryRef {
+                    self.geomrefs.push(GeometryRef {
                         ty: geomtype,
                         lod,
                         pos: poly_begin as u32,
@@ -615,11 +612,7 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
         Ok(())
     }
 
-    fn parse_triangulated_prop(
-        &mut self,
-        geomrefs: &mut GeometryRefs,
-        lod: u8,
-    ) -> Result<(), ParseError> {
+    fn parse_triangulated_prop(&mut self, lod: u8) -> Result<(), ParseError> {
         let poly_begin = self.state.geometry_collector.multipolygon.len();
 
         loop {
@@ -651,7 +644,7 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
         }
 
         let poly_end = self.state.geometry_collector.multipolygon.len();
-        geomrefs.push(GeometryRef {
+        self.geomrefs.push(GeometryRef {
             ty: GeometryType::Triangle,
             lod,
             pos: poly_begin as u32,
@@ -972,7 +965,7 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                             .add_interior_ring(iter, ring_id.take());
                     }
                 }
-                Ok(_) => (),
+                Ok(_) => {}
                 Err(e) => return Err(e.into()),
             }
         }

@@ -10,12 +10,12 @@ version.workspace = true
 
 [dependencies]
 num-traits = "0.2.19"
-serde = {workspace = true, features = ["derive"], optional = true}
+serde = { workspace = true, features = ["derive"], optional = true }
 
 [dev-dependencies]
 geo-types = "0.7.13"
 geojson = "0.24.1"
 indexmap.workspace = true
-serde = {workspace = true, features = ["derive"]}
+serde = { workspace = true, features = ["derive"] }
 serde_json.workspace = true
 thiserror.workspace = true
