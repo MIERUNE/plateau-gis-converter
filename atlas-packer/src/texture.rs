@@ -47,7 +47,9 @@ impl TextureCache {
                 CroppedTexture::new(uv_coords, image_path, image, downsample_factor)
             }
             None => {
-                let image = image::open(image_path).expect("Failed to open image file");
+                let image = image::open(image_path).unwrap_or_else(|_| {
+                    panic!("Failed to open image file {}", image_path.display())
+                });
                 let cost = image.width() * image.height() * image.color().bytes_per_pixel() as u32;
                 self.cache
                     .insert(image_path.to_path_buf(), image.clone(), cost as i64);
@@ -187,11 +189,12 @@ impl CroppedTexture {
                         }
                     }
 
-                    // if is_inside {
-                    //     local_results.push((px, py, *pixel));
-                    // }
-                    // FIXME: Do not crop temporarily because pixel boundary jaggies will occur.
-                    local_results.push((px, py, *pixel));
+                    if is_inside {
+                        local_results.push((px, py, *pixel));
+                    } else {
+                        // FIXME: Do not crop temporarily because pixel boundary jaggies will occur.
+                        local_results.push((px, py, *pixel));
+                    }
                 }
 
                 s.send(local_results).unwrap();

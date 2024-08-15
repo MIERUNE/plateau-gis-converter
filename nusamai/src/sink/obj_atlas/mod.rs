@@ -372,7 +372,7 @@ impl DataSink for ObjAtlasSink {
         // Create the information needed to output an OBJ file and write it to a file
         classified_features
             .into_par_iter()
-            .try_for_each(|(typename, mut features)| {
+            .try_for_each(|(typename, features)| {
                 feedback.ensure_not_canceled()?;
 
                 // Texture cache
@@ -405,175 +405,179 @@ impl DataSink for ObjAtlasSink {
 
                 let start = Instant::now();
 
+                let mut targets = Vec::new();
+
                 // Coordinate transformation
                 {
-                    for feature in features.features.iter_mut() {
+                    for feature in features.features.iter() {
                         feedback.ensure_not_canceled()?;
 
-                        feature
-                            .polygons
-                            .transform_inplace(|&[lng, lat, height, u, v]| {
-                                let (x, y, z) =
-                                    geodetic_to_geocentric(&ellipsoid, lng, lat, height);
-                                let v_xyz = DVec4::new(x, z, -y, 1.0);
-                                let v_enu = transform_matrix * v_xyz;
-                                [v_enu[0], v_enu[1], v_enu[2], u, v]
-                            });
+                        feature.polygons.transform(|&[lng, lat, height, u, v]| {
+                            let (x, y, z) = geodetic_to_geocentric(&ellipsoid, lng, lat, height);
+                            let v_xyz = DVec4::new(x, z, -y, 1.0);
+                            let v_enu = transform_matrix * v_xyz;
+                            [v_enu[0], v_enu[1], v_enu[2], u, v]
+                        });
+
+                        targets.push(feature);
                     }
                 }
 
-                for feature in features.features.iter_mut() {
-                    feedback.ensure_not_canceled()?;
+                // generate texture atlas and update materials
+                {
+                    for feature in targets.iter() {
+                        feedback.ensure_not_canceled()?;
 
-                    let mut feature_mesh = FeatureMesh {
-                        vertices: Vec::new(),
-                        uvs: Vec::new(),
-                        primitives: HashMap::new(),
-                    };
-
-                    for (poly_count, (mut poly, &orig_mat_id)) in feature
-                        .polygons
-                        .iter()
-                        .zip_eq(feature.polygon_material_ids.iter())
-                        .enumerate()
-                    {
-                        let mat = &feature.materials[orig_mat_id as usize];
-                        let t = mat.base_texture.clone();
-                        let mut new_mat = mat.clone();
-                        if let Some(base_texture) = t {
-                            // textured
-                            let original_vertices = poly
-                                .raw_coords()
-                                .iter()
-                                .map(|[x, y, z, u, v]| (*x, *y, *z, *u, *v))
-                                .collect::<Vec<(f64, f64, f64, f64, f64)>>();
-
-                            let texture = texture_cache.get_or_insert(
-                                &original_vertices
-                                    .iter()
-                                    .map(|(_, _, _, u, v)| (*u, *v))
-                                    .collect::<Vec<_>>(),
-                                &base_texture.uri.to_file_path().unwrap(),
-                                &DownsampleFactor::new(&1.0).value(),
-                            );
-
-                            // Unique id required for placement in atlas
-                            let texture_id = format!(
-                                "{}_{}_{}",
-                                base_folder_name, feature.feature_id, poly_count
-                            );
-                            let info = packer.add_texture(texture_id, texture);
-
-                            let atlas_placed_uv_coords = info
-                                .placed_uv_coords
-                                .iter()
-                                .map(|(u, v)| ({ *u }, { *v }))
-                                .collect::<Vec<(f64, f64)>>();
-                            let updated_vertices = original_vertices
-                                .iter()
-                                .zip(atlas_placed_uv_coords.iter())
-                                .map(|((x, y, z, _, _), (u, v))| (*x, *y, *z, *u, *v))
-                                .collect::<Vec<(f64, f64, f64, f64, f64)>>();
-
-                            // Apply the UV coordinates placed in the atlas to the original polygon
-                            poly.transform_inplace(|&[x, y, z, _, _]| {
-                                let (u, v) = updated_vertices
-                                    .iter()
-                                    .find(|(x_, y_, z_, _, _)| {
-                                        (*x_ - x).abs() < 1e-6
-                                            && (*y_ - y).abs() < 1e-6
-                                            && (*z_ - z).abs() < 1e-6
-                                    })
-                                    .map(|(_, _, _, u, v)| (*u, *v))
-                                    .unwrap();
-                                [x, y, z, u, v]
-                            });
-
-                            let atlas_file_name = info.atlas_id.to_string();
-
-                            let atlas_uri =
-                                atlas_dir.join(atlas_file_name).with_extension(ext.clone());
-
-                            // update material
-                            new_mat = material::Material {
-                                base_color: mat.base_color,
-                                base_texture: Some(material::Texture {
-                                    uri: Url::from_file_path(atlas_uri).unwrap(),
-                                }),
-                            };
-                        }
-
-                        let num_outer = match poly.hole_indices().first() {
-                            Some(&v) => v as usize,
-                            None => poly.raw_coords().len(),
+                        let mut feature_mesh = FeatureMesh {
+                            vertices: Vec::new(),
+                            uvs: Vec::new(),
+                            primitives: HashMap::new(),
                         };
 
-                        let poly_material = new_mat;
-                        let poly_color = poly_material.base_color;
-                        let poly_texture = poly_material.base_texture.as_ref();
-                        let texture_name = poly_texture.map_or_else(
-                            || "".to_string(),
-                            |t| {
-                                t.uri
-                                    .to_file_path()
-                                    .unwrap()
-                                    .file_stem()
-                                    .unwrap()
-                                    .to_str()
-                                    .unwrap()
-                                    .to_string()
-                            },
-                        );
-                        let poly_material_key = poly_material.base_texture.as_ref().map_or_else(
-                            || {
-                                format!(
-                                    "material_{}_{}_{}",
-                                    poly_color[0], poly_color[1], poly_color[2]
-                                )
-                            },
-                            |_| {
-                                format!(
+                        for (poly_count, (mut poly, &orig_mat_id)) in feature
+                            .polygons
+                            .iter()
+                            .zip_eq(feature.polygon_material_ids.iter())
+                            .enumerate()
+                        {
+                            let mut new_mat = feature.materials[orig_mat_id as usize].clone();
+                            let t = new_mat.base_texture.clone();
+                            if let Some(base_texture) = t {
+                                // textured
+                                let original_vertices = poly
+                                    .raw_coords()
+                                    .iter()
+                                    .map(|[x, y, z, u, v]| (*x, *y, *z, *u, *v))
+                                    .collect::<Vec<(f64, f64, f64, f64, f64)>>();
+
+                                let texture = texture_cache.get_or_insert(
+                                    &original_vertices
+                                        .iter()
+                                        .map(|(_, _, _, u, v)| (*u, *v))
+                                        .collect::<Vec<_>>(),
+                                    &base_texture.uri.to_file_path().unwrap(),
+                                    &DownsampleFactor::new(&1.0).value(),
+                                );
+
+                                // Unique id required for placement in atlas
+                                let texture_id = format!(
                                     "{}_{}_{}",
-                                    base_folder_name, texture_folder_name, texture_name
-                                )
-                            },
-                        );
+                                    base_folder_name, feature.feature_id, poly_count
+                                );
+                                let info = packer.add_texture(texture_id, texture);
 
-                        all_materials.insert(
-                            poly_material_key.clone(),
-                            FeatureMaterial {
-                                base_color: poly_color,
-                                texture_uri: poly_texture.map(|t| t.uri.clone()),
-                            },
-                        );
+                                let atlas_placed_uv_coords = info
+                                    .placed_uv_coords
+                                    .iter()
+                                    .map(|(u, v)| ({ *u }, { *v }))
+                                    .collect::<Vec<(f64, f64)>>();
+                                let updated_vertices = original_vertices
+                                    .iter()
+                                    .zip(atlas_placed_uv_coords.iter())
+                                    .map(|((x, y, z, _, _), (u, v))| (*x, *y, *z, *u, *v))
+                                    .collect::<Vec<(f64, f64, f64, f64, f64)>>();
 
-                        let mut earcutter = Earcut::new();
-                        let mut buf3d: Vec<[f64; 3]> = Vec::new();
-                        let mut buf2d: Vec<[f64; 2]> = Vec::new();
-                        let mut index_buf: Vec<u32> = Vec::new();
+                                // Apply the UV coordinates placed in the atlas to the original polygon
+                                poly.transform_inplace(|&[x, y, z, _, _]| {
+                                    let (u, v) = updated_vertices
+                                        .iter()
+                                        .find(|(x_, y_, z_, _, _)| {
+                                            (*x_ - x).abs() < 1e-6
+                                                && (*y_ - y).abs() < 1e-6
+                                                && (*z_ - z).abs() < 1e-6
+                                        })
+                                        .map(|(_, _, _, u, v)| (*u, *v))
+                                        .unwrap();
+                                    [x, y, z, u, v]
+                                });
 
-                        buf3d.clear();
-                        buf3d.extend(poly.raw_coords().iter().map(|&[x, y, z, _, _]| [x, y, z]));
+                                let atlas_file_name = info.atlas_id.to_string();
 
-                        if project3d_to_2d(&buf3d, num_outer, &mut buf2d) {
-                            earcutter.earcut(
-                                buf2d.iter().cloned(),
-                                poly.hole_indices(),
-                                &mut index_buf,
+                                let atlas_uri =
+                                    atlas_dir.join(atlas_file_name).with_extension(ext.clone());
+
+                                // update material
+                                new_mat = material::Material {
+                                    base_color: new_mat.base_color,
+                                    base_texture: Some(material::Texture {
+                                        uri: Url::from_file_path(atlas_uri).unwrap(),
+                                    }),
+                                };
+                            }
+
+                            let poly_material = new_mat;
+                            let poly_color = poly_material.base_color;
+                            let poly_texture = poly_material.base_texture.as_ref();
+                            let texture_name = poly_texture.map_or_else(
+                                || "".to_string(),
+                                |t| {
+                                    t.uri
+                                        .to_file_path()
+                                        .unwrap()
+                                        .file_stem()
+                                        .unwrap()
+                                        .to_str()
+                                        .unwrap()
+                                        .to_string()
+                                },
                             );
-                            feature_mesh
-                                .primitives
-                                .entry(poly_material_key.clone())
-                                .or_default()
-                                .extend(index_buf.iter().map(|&idx| {
-                                    let [x, y, z, u, v] = poly.raw_coords()[idx as usize];
-                                    feature_mesh.vertices.push([x, y, z]);
-                                    feature_mesh.uvs.push([u, v]);
-                                    (feature_mesh.vertices.len() - 1) as u32
-                                }));
+                            let poly_material_key =
+                                poly_material.base_texture.as_ref().map_or_else(
+                                    || {
+                                        format!(
+                                            "material_{}_{}_{}",
+                                            poly_color[0], poly_color[1], poly_color[2]
+                                        )
+                                    },
+                                    |_| {
+                                        format!(
+                                            "{}_{}_{}",
+                                            base_folder_name, texture_folder_name, texture_name
+                                        )
+                                    },
+                                );
+
+                            all_materials.insert(
+                                poly_material_key.clone(),
+                                FeatureMaterial {
+                                    base_color: poly_color,
+                                    texture_uri: poly_texture.map(|t| t.uri.clone()),
+                                },
+                            );
+
+                            let num_outer = match poly.hole_indices().first() {
+                                Some(&v) => v as usize,
+                                None => poly.raw_coords().len(),
+                            };
+                            let mut earcutter = Earcut::new();
+                            let mut buf3d: Vec<[f64; 3]> = Vec::new();
+                            let mut buf2d: Vec<[f64; 2]> = Vec::new();
+                            let mut index_buf: Vec<u32> = Vec::new();
+
+                            buf3d.clear();
+                            buf3d
+                                .extend(poly.raw_coords().iter().map(|&[x, y, z, _, _]| [x, y, z]));
+
+                            if project3d_to_2d(&buf3d, num_outer, &mut buf2d) {
+                                earcutter.earcut(
+                                    buf2d.iter().cloned(),
+                                    poly.hole_indices(),
+                                    &mut index_buf,
+                                );
+                                feature_mesh
+                                    .primitives
+                                    .entry(poly_material_key.clone())
+                                    .or_default()
+                                    .extend(index_buf.iter().map(|&idx| {
+                                        let [x, y, z, u, v] = poly.raw_coords()[idx as usize];
+                                        feature_mesh.vertices.push([x, y, z]);
+                                        feature_mesh.uvs.push([u, v]);
+                                        (feature_mesh.vertices.len() - 1) as u32
+                                    }));
+                            }
                         }
+                        all_meshes.insert(feature.feature_id.clone(), feature_mesh);
                     }
-                    all_meshes.insert(feature.feature_id.clone(), feature_mesh);
                 }
 
                 packer.finalize();
