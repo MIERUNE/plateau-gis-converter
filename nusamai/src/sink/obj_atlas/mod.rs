@@ -388,12 +388,8 @@ impl DataSink for ObjAtlasSink {
                 std::fs::create_dir_all(&atlas_dir)?;
 
                 // Triangulation
-                // todo: 並列化
-                // チャンネルで飛ばせそうな気もする
                 let mut all_meshes = ObjInfo::new();
                 let mut all_materials = ObjMaterials::new();
-                // let (mesh_sender, mesh_receiver) = channel();
-                // let (material_sender, material_receiver) = channel();
 
                 // initialize texture packer
                 let config = TexturePlacerConfig {
@@ -404,7 +400,7 @@ impl DataSink for ObjAtlasSink {
                 let placer = GuillotineTexturePlacer::new(config.clone());
                 let exporter = PngAtlasExporter::default();
                 let ext = exporter.clone().get_extension().to_string();
-                // 並列処理出来る機構を考える
+                // todo: 並列処理出来る機構を考える
                 let mut packer = TexturePacker::new(placer, exporter);
 
                 let start = Instant::now();

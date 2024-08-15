@@ -149,7 +149,7 @@ impl CroppedTexture {
         let (x, y) = self.origin;
         let cropped_image = image.view(x, y, self.width, self.height).to_image();
 
-        let samples = 4;
+        let samples = 1;
         let chunk_size = 25;
 
         let (sender, receiver) = mpsc::channel();
@@ -157,7 +157,7 @@ impl CroppedTexture {
         // Collect pixels into a Vec and then process in parallel
         let pixels: Vec<_> = cropped_image.enumerate_pixels().collect();
 
-        // Parallel processing using rayon
+        // If the center coordinates of the pixel are contained within a polygon composed of UV coordinates, the pixel is written
         pixels
             .par_chunks(chunk_size)
             .for_each_with(sender, |s, chunk| {
@@ -166,29 +166,32 @@ impl CroppedTexture {
                 for &(px, py, pixel) in chunk {
                     let mut is_inside = false;
 
-                    for sx in 0..samples {
-                        if is_inside {
-                            break;
-                        }
+                    'subpixels: for sx in 0..samples {
                         for sy in 0..samples {
                             let x = (px as f64 + (sx as f64 + 0.5) / samples as f64)
                                 / self.width as f64;
                             let y = 1.0
                                 - (py as f64 + (sy as f64 + 0.5) / samples as f64)
                                     / self.height as f64;
+                            // Adjust x and y to the center of the pixel
+                            let center_x = x + 0.5 / self.width as f64;
+                            let center_y = y - 0.5 / self.height as f64;
 
-                            if is_point_inside_polygon((x, y), &self.cropped_uv_coords) {
+                            if is_point_inside_polygon(
+                                (center_x, center_y),
+                                &self.cropped_uv_coords,
+                            ) {
                                 is_inside = true;
-                                break;
+                                break 'subpixels;
                             }
                         }
                     }
 
-                    if is_inside {
-                        local_results.push((px, py, *pixel));
-                    } else {
-                        local_results.push((px, py, *pixel));
-                    }
+                    // if is_inside {
+                    //     local_results.push((px, py, *pixel));
+                    // }
+                    // FIXME: Do not crop temporarily because pixel boundary jaggies will occur.
+                    local_results.push((px, py, *pixel));
                 }
 
                 s.send(local_results).unwrap();
