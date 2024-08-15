@@ -156,7 +156,7 @@ impl CroppedTexture {
 
         let samples = 1;
         let num_threads = rayon::current_num_threads();
-        let chunk_size = (pixels.len() / num_threads).clamp(1, pixels.len());
+        let chunk_size = (pixels.len() / num_threads).clamp(1, pixels.len() + 1);
 
         let (sender, receiver) = mpsc::channel();
 
