@@ -4,6 +4,7 @@ members = [
     "nusamai-*",
     "nusamai-*/nusamai-*-json",
     "nusamai",
+    "atlas-packer"
 ]
 resolver = "2"
 

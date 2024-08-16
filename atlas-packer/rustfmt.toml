@@ -1,0 +1,8 @@
+# Stable options
+use_field_init_shorthand = true
+
+# # Unstable options
+# unstable_features = true
+# group_imports = "StdExternalCrate"
+# imports_granularity = "Crate"
+# format_strings = true
