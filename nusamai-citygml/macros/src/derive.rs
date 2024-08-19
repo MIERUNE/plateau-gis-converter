@@ -131,10 +131,11 @@ fn generate_citygml_impl_for_struct(
                         c.extend(name);
                         let path = LitByteStr::new(&c, prefix.span());
                         let geomtype = format_ident!("{}", geomtype);
+                        let name = std::str::from_utf8(&c).unwrap();
                         let hash = hash(&c);
 
                         child_arms.push(quote! {
-                            (#hash, #path) => st.parse_geometric_attr(#lod, ::nusamai_citygml::geometry::GeometryParseType::#geomtype),
+                            (#hash, #path) => st.parse_geometric_attr(#lod, #name, ::nusamai_citygml::geometry::GeometryParseType::#geomtype),
                         });
                     };
 

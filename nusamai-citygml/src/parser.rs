@@ -1,10 +1,12 @@
 use std::{io::BufRead, mem, str};
 
+use once_cell::sync::Lazy;
 use quick_xml::{
     events::{BytesStart, Event},
     name::{Namespace, ResolveResult::Bound},
     NsReader,
 };
+use regex::Regex;
 use thiserror::Error;
 use url::Url;
 
@@ -18,6 +20,11 @@ use crate::{
     namespace::{wellknown_prefix_from_nsres, APP_2_NS, GML31_NS},
     CityGmlAttribute, LocalId, SurfaceSpan, XLINK_NS,
 };
+
+static PROPERTY_PATTERN: Lazy<Regex> =
+    Lazy::new(|| Regex::new(r"([a-zA-Z0-9:_]+)\[([^\]]+)\]").unwrap());
+static PROPERTY_KEY_VALUE_PATTERN: Lazy<Regex> =
+    Lazy::new(|| Regex::new(r"([a-zA-Z0-9:_]+)=([a-zA-Z0-9_\-]+)").unwrap());
 
 #[derive(Error, Debug)]
 pub enum ParseError {
@@ -41,8 +48,12 @@ pub struct CityGmlReader<'a> {
 struct InternalState<'a> {
     /// Buffer holding the current path
     path_buf: Vec<u8>,
+    /// Buffer holding the properties
+    property_buf: Vec<u8>,
     /// Stack of indices of slashes '/' in `path_buf`
     path_stack_indices: Vec<usize>,
+    /// Stack of indices of slashes '/' in `property_buf`
+    property_stack_indices: Vec<usize>,
     /// General purpose buffer 1
     buf1: Vec<u8>,
     /// General purpose buffer 2
@@ -63,7 +74,9 @@ impl<'a> InternalState<'a> {
     fn new(context: ParseContext<'a>) -> Self {
         Self {
             path_buf: Vec::new(),
+            property_buf: Vec::new(),
             path_stack_indices: Vec::new(),
+            property_stack_indices: Vec::new(),
             buf1: Vec::new(),
             buf2: Vec::new(),
             fp_buf: Vec::new(),
@@ -228,12 +241,34 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
         let Some(start) = &self.state.current_start else {
             panic!("parse_attributes() must be called immediately after encountering a start tag.");
         };
+        self.state
+            .property_stack_indices
+            .push(self.state.property_buf.len());
+
+        self.state.property_buf.push(b'/');
+        let (nsres, localname) = self.reader.resolve_element(start.name());
+        self.state
+            .property_buf
+            .extend(wellknown_prefix_from_nsres(&nsres));
+        self.state.property_buf.extend(localname.as_ref());
+        self.state.property_buf.push(b'[');
+
         self.state.buf1.clear();
         self.state.buf1.push(b'@');
-        for attr in start.attributes().flatten() {
+        for (index, attr) in start.attributes().flatten().enumerate() {
+            if index > 0 {
+                self.state.property_buf.push(b',');
+            }
             let (nsres, localname) = self.reader.resolve_attribute(attr.key);
             self.state.buf1.extend(wellknown_prefix_from_nsres(&nsres));
             self.state.buf1.extend(localname.as_ref());
+            self.state
+                .property_buf
+                .extend(wellknown_prefix_from_nsres(&nsres));
+            self.state.property_buf.extend(localname.as_ref());
+            self.state.property_buf.extend(b"=");
+            self.state.property_buf.extend(attr.value.as_ref());
+
             logic(
                 self.state.buf1.as_ref(), // attribute path "@nsprefix:name"
                 attr.value.as_ref(),      // attribute value
@@ -241,6 +276,7 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
             )?;
             self.state.buf1.truncate(1);
         }
+        self.state.property_buf.push(b']');
         Ok(())
     }
 
@@ -326,21 +362,50 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
         collector.into_geometries()
     }
 
+    pub fn extract_feature_id_and_type(&self) -> (Option<String>, Option<String>) {
+        if self.state.path_stack_indices.len() < 2 {
+            return (None, None);
+        }
+        let paths = String::from_utf8_lossy(self.state.path_buf.as_ref());
+        let start = self.state.path_stack_indices[self.state.path_stack_indices.len() - 2];
+        let end = self.state.path_stack_indices[self.state.path_stack_indices.len() - 1];
+        let before_tag = &paths[start + 1..end];
+        let properties = String::from_utf8_lossy(self.state.property_buf.as_ref());
+
+        for caps in PROPERTY_PATTERN.captures_iter(&properties) {
+            let tag = &caps[1];
+            if tag != before_tag {
+                continue;
+            }
+            let inner_content = &caps[2];
+            for kv_caps in PROPERTY_KEY_VALUE_PATTERN.captures_iter(inner_content) {
+                let key = &kv_caps[1];
+                if key != "gml:id" {
+                    continue;
+                }
+                let value = &kv_caps[2];
+                return (Some(value.to_string()), Some(tag.to_string()));
+            }
+        }
+        (None, None)
+    }
+
     /// Expect a geometric attribute of CityGML
     #[inline(never)]
     pub fn parse_geometric_attr(
         &mut self,
         lod: u8,
+        _feature_type: &str,
         geomtype: GeometryParseType,
     ) -> Result<(), ParseError> {
         use GeometryParseType::*;
-
+        let (feature_id, feature_type) = self.extract_feature_id_and_type();
         match geomtype {
-            Solid => self.parse_solid_prop(lod)?,
-            MultiSurface => self.parse_multi_surface_prop(lod)?,
-            Surface => self.parse_surface_prop(lod)?, // FIXME
-            Geometry => self.parse_geometry_prop(lod)?, // FIXME: not only surfaces
-            Triangulated => self.parse_triangulated_prop(lod)?,
+            Solid => self.parse_solid_prop(lod, feature_id, feature_type)?,
+            MultiSurface => self.parse_multi_surface_prop(lod, feature_id, feature_type)?,
+            Surface => self.parse_surface_prop(lod, feature_id, feature_type)?, // FIXME
+            Geometry => self.parse_geometry_prop(lod, feature_id, feature_type)?, // FIXME: not only surfaces
+            Triangulated => self.parse_triangulated_prop(lod, feature_id, feature_type)?,
             Point => todo!(),      // FIXME
             MultiPoint => todo!(), // FIXME
             MultiCurve => {
@@ -357,7 +422,12 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
         Ok(())
     }
 
-    fn parse_multi_surface_prop(&mut self, lod: u8) -> Result<(), ParseError> {
+    fn parse_multi_surface_prop(
+        &mut self,
+        lod: u8,
+        feature_id: Option<String>,
+        feature_type: Option<String>,
+    ) -> Result<(), ParseError> {
         let mut surface_id = None;
         loop {
             match self.reader.read_event_into(&mut self.state.buf1) {
@@ -399,6 +469,8 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                         len: (poly_end - poly_begin) as u32,
                         id: surface_id.clone(),
                         solid_ids: Vec::new(),
+                        feature_id: feature_id.clone(),
+                        feature_type: feature_type.clone(),
                     });
 
                     // record a partial surface span
@@ -426,7 +498,12 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
         Ok(())
     }
 
-    fn parse_surface_prop(&mut self, lod: u8) -> Result<(), ParseError> {
+    fn parse_surface_prop(
+        &mut self,
+        lod: u8,
+        feature_id: Option<String>,
+        feature_type: Option<String>,
+    ) -> Result<(), ParseError> {
         let poly_begin = self.state.geometry_collector.multipolygon.len();
         let (surface_id, _) = self.parse_surface()?;
         let poly_end = self.state.geometry_collector.multipolygon.len();
@@ -437,11 +514,18 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
             len: (poly_end - poly_begin) as u32,
             id: surface_id,
             solid_ids: Vec::new(),
+            feature_id,
+            feature_type,
         });
         Ok(())
     }
 
-    fn parse_solid_prop(&mut self, lod: u8) -> Result<(), ParseError> {
+    fn parse_solid_prop(
+        &mut self,
+        lod: u8,
+        feature_id: Option<String>,
+        feature_type: Option<String>,
+    ) -> Result<(), ParseError> {
         let poly_begin = self.state.geometry_collector.multipolygon.len();
         let mut surface_id = None;
         let mut solid_ids = Vec::new();
@@ -459,11 +543,18 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
             len: (poly_end - poly_begin) as u32,
             id: surface_id,
             solid_ids,
+            feature_id,
+            feature_type,
         });
         Ok(())
     }
 
-    fn parse_multi_geometry(&mut self, lod: u8) -> Result<(), ParseError> {
+    fn parse_multi_geometry(
+        &mut self,
+        lod: u8,
+        feature_id: Option<String>,
+        feature_type: Option<String>,
+    ) -> Result<(), ParseError> {
         let mut inside_member = false;
         loop {
             match self.reader.read_event_into(&mut self.state.buf1) {
@@ -473,7 +564,11 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                     match (nsres, localname.as_ref()) {
                         (Bound(GML31_NS), b"geometryMember") => {
                             inside_member = true;
-                            self.parse_geometry_prop(lod)?;
+                            self.parse_geometry_prop(
+                                lod,
+                                feature_id.clone(),
+                                feature_type.clone(),
+                            )?;
                         }
                         _ => {
                             return Err(ParseError::SchemaViolation(format!(
@@ -502,7 +597,12 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
         Ok(())
     }
 
-    fn parse_geometry_prop(&mut self, lod: u8) -> Result<(), ParseError> {
+    fn parse_geometry_prop(
+        &mut self,
+        lod: u8,
+        feature_id: Option<String>,
+        feature_type: Option<String>,
+    ) -> Result<(), ParseError> {
         let mut surface_id = None;
         loop {
             match self.reader.read_event_into(&mut self.state.buf1) {
@@ -522,7 +622,11 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
 
                     let geomtype = match (nsres, localname.as_ref()) {
                         (Bound(GML31_NS), b"MultiGeometry") => {
-                            self.parse_multi_geometry(lod)?;
+                            self.parse_multi_geometry(
+                                lod,
+                                feature_id.clone(),
+                                feature_type.clone(),
+                            )?;
                             return Ok(());
                         }
                         (Bound(GML31_NS), b"Solid") => {
@@ -585,6 +689,8 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                         len: (poly_end - poly_begin) as u32,
                         id: surface_id.clone(),
                         solid_ids: Vec::new(),
+                        feature_id: feature_id.clone(),
+                        feature_type: feature_type.clone(),
                     });
 
                     // record a partial surface span
@@ -612,7 +718,12 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
         Ok(())
     }
 
-    fn parse_triangulated_prop(&mut self, lod: u8) -> Result<(), ParseError> {
+    fn parse_triangulated_prop(
+        &mut self,
+        lod: u8,
+        feature_id: Option<String>,
+        feature_type: Option<String>,
+    ) -> Result<(), ParseError> {
         let poly_begin = self.state.geometry_collector.multipolygon.len();
 
         loop {
@@ -651,6 +762,8 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
             len: (poly_end - poly_begin) as u32,
             id: None,
             solid_ids: Vec::new(),
+            feature_id,
+            feature_type,
         });
         Ok(())
     }

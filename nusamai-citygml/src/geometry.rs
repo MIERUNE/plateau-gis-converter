@@ -47,6 +47,8 @@ pub struct GeometryRef {
     pub pos: u32,
     pub len: u32,
     pub solid_ids: Vec<LocalId>,
+    pub feature_id: Option<String>,
+    pub feature_type: Option<String>,
 }
 
 pub type GeometryRefs = Vec<GeometryRef>;

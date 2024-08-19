@@ -20,7 +20,9 @@ log.workspace = true
 macros = { path = "./macros" }
 nusamai-geometry = { path = "../nusamai-geometry", features = ["serde"] }
 nusamai-projection = { path = "../nusamai-projection" }
+once_cell.workspace = true
 quick-xml.workspace = true
+regex.workspace = true
 serde = { workspace = true, features = ["derive"], optional = true }
 serde_json = { workspace = true, features = ["indexmap"], optional = true }
 thiserror.workspace = true
