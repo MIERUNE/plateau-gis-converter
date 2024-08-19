@@ -42,33 +42,23 @@ impl TextureCache {
         image_path: &PathBuf,
         downsample_factor: &f32,
     ) -> CroppedTexture {
-        // FIXME: 実行速度計測のため、一度キャッシュを無視して画像を読み込む
-        let image = image::open(image_path)
-            .unwrap_or_else(|_| panic!("Failed to open image file {}", image_path.display()));
-        let cost = image.width() * image.height() * image.color().bytes_per_pixel() as u32;
-        self.cache
-            .insert(image_path.to_path_buf(), image.clone(), cost as i64);
-        self.cache.wait().unwrap();
+        match self.cache.get(image_path) {
+            Some(image) => {
+                let image = image.value();
+                CroppedTexture::new(uv_coords, image_path, image, downsample_factor)
+            }
+            None => {
+                let image = image::open(image_path).unwrap_or_else(|_| {
+                    panic!("Failed to open image file {}", image_path.display())
+                });
+                let cost = image.width() * image.height() * image.color().bytes_per_pixel() as u32;
+                self.cache
+                    .insert(image_path.to_path_buf(), image.clone(), cost as i64);
+                self.cache.wait().unwrap();
 
-        CroppedTexture::new(uv_coords, image_path, &image, downsample_factor)
-
-        // match self.cache.get(image_path) {
-        //     Some(image) => {
-        //         let image = image.value();
-        //         CroppedTexture::new(uv_coords, image_path, image, downsample_factor)
-        //     }
-        //     None => {
-        //         let image = image::open(image_path).unwrap_or_else(|_| {
-        //             panic!("Failed to open image file {}", image_path.display())
-        //         });
-        //         let cost = image.width() * image.height() * image.color().bytes_per_pixel() as u32;
-        //         self.cache
-        //             .insert(image_path.to_path_buf(), image.clone(), cost as i64);
-        //         self.cache.wait().unwrap();
-
-        //         CroppedTexture::new(uv_coords, image_path, &image, downsample_factor)
-        //     }
-        // }
+                CroppedTexture::new(uv_coords, image_path, &image, downsample_factor)
+            }
+        }
     }
 
     pub fn get_image(&self, path: &PathBuf) -> DynamicImage {

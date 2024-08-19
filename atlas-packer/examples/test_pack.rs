@@ -80,19 +80,22 @@ fn main() {
             &polygon.downsample_factor.value(),
         );
         let crop_duration = crop_start.elapsed();
-        println!("crop process {:?}", crop_duration);
+        println!("{}, crop process {:?}", polygon.id, crop_duration);
 
         let not_crop_start = Instant::now();
         // downsample_factorもいらない
         let texture_info = get_image_info(&polygon.texture_uri, &polygon.uv_coords);
         let not_crop_duration = not_crop_start.elapsed();
-        println!("not crop process {:?}", not_crop_duration);
+        println!("{}, not crop process {:?}", polygon.id, not_crop_duration);
 
+        let packing_start = Instant::now();
         let _ = packer
             .lock()
             .unwrap()
             .add_texture(polygon.id.clone(), texture);
         // println!("{:?}", info);
+        let packing_duration = packing_start.elapsed();
+        println!("{}, packing process {:?}", polygon.id, packing_duration);
     });
 
     let duration = start.elapsed();
