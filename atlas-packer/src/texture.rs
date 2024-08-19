@@ -28,7 +28,7 @@ impl DownsampleFactor {
 
 fn get_cache_size() -> Result<usize, String> {
     const MIN_CACHE_SIZE: usize = 100 * 1024 * 1024; // 100MB
-    const MAX_CACHE_SIZE: usize = 10 * 1024 * 1024 * 1024; // 10GB
+    const MAX_CACHE_SIZE: usize = 2 * 1024 * 1024 * 1024; // 2GB
 
     match mem_info() {
         Ok(mem) => {
@@ -51,11 +51,11 @@ impl TextureCache {
         let default_capacity = get_cache_size().unwrap();
         if capacity == 0 {
             TextureCache {
-                cache: Cache::new(default_capacity, 10_000_000_000).unwrap(),
+                cache: Cache::new(default_capacity, 2_000_000_000).unwrap(),
             }
         } else {
             TextureCache {
-                cache: Cache::new(capacity, 10_000_000_000).unwrap(),
+                cache: Cache::new(capacity, 2_000_000_000).unwrap(),
             }
         }
     }

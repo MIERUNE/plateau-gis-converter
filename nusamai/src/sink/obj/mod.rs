@@ -387,7 +387,7 @@ impl DataSink for ObjSink {
 
                 // Texture cache
                 // use default cache size
-                let texture_cache = TextureCache::new(0);
+                let texture_cache = TextureCache::new(1_000_000_000);
 
                 // file output destination
                 let mut folder_path = self.output_path.clone();
