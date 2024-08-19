@@ -4,7 +4,7 @@ use std::{
     sync::mpsc,
 };
 
-use image::{DynamicImage, GenericImageView, ImageBuffer};
+use image::{DynamicImage, GenericImageView, ImageBuffer, ImageReader};
 use rayon::prelude::*;
 use stretto::Cache;
 
@@ -42,23 +42,33 @@ impl TextureCache {
         image_path: &PathBuf,
         downsample_factor: &f32,
     ) -> CroppedTexture {
-        match self.cache.get(image_path) {
-            Some(image) => {
-                let image = image.value();
-                CroppedTexture::new(uv_coords, image_path, image, downsample_factor)
-            }
-            None => {
-                let image = image::open(image_path).unwrap_or_else(|_| {
-                    panic!("Failed to open image file {}", image_path.display())
-                });
-                let cost = image.width() * image.height() * image.color().bytes_per_pixel() as u32;
-                self.cache
-                    .insert(image_path.to_path_buf(), image.clone(), cost as i64);
-                self.cache.wait().unwrap();
+        // FIXME: 実行速度計測のため、一度キャッシュを無視して画像を読み込む
+        let image = image::open(image_path)
+            .unwrap_or_else(|_| panic!("Failed to open image file {}", image_path.display()));
+        let cost = image.width() * image.height() * image.color().bytes_per_pixel() as u32;
+        self.cache
+            .insert(image_path.to_path_buf(), image.clone(), cost as i64);
+        self.cache.wait().unwrap();
 
-                CroppedTexture::new(uv_coords, image_path, &image, downsample_factor)
-            }
-        }
+        CroppedTexture::new(uv_coords, image_path, &image, downsample_factor)
+
+        // match self.cache.get(image_path) {
+        //     Some(image) => {
+        //         let image = image.value();
+        //         CroppedTexture::new(uv_coords, image_path, image, downsample_factor)
+        //     }
+        //     None => {
+        //         let image = image::open(image_path).unwrap_or_else(|_| {
+        //             panic!("Failed to open image file {}", image_path.display())
+        //         });
+        //         let cost = image.width() * image.height() * image.color().bytes_per_pixel() as u32;
+        //         self.cache
+        //             .insert(image_path.to_path_buf(), image.clone(), cost as i64);
+        //         self.cache.wait().unwrap();
+
+        //         CroppedTexture::new(uv_coords, image_path, &image, downsample_factor)
+        //     }
+        // }
     }
 
     pub fn get_image(&self, path: &PathBuf) -> DynamicImage {
@@ -246,14 +256,22 @@ fn is_point_inside_polygon(test_point: (f64, f64), polygon: &[(f64, f64)]) -> bo
     is_inside
 }
 
-struct CroppedTextureInfo {
+// リファクタリング
+
+pub struct CroppedTextureInfo {
     pub image_path: PathBuf,
     pub origin: (u32, u32),
     pub width: u32,
     pub height: u32,
 }
 
-type PixelRectResult = Result<((u32, u32), u32, u32), Box<dyn Error>>;
+pub type PixelRectResult = Result<((u32, u32), u32, u32), Box<dyn Error>>;
+
+fn get_image_size<P: AsRef<Path>>(file_path: P) -> Result<(u32, u32), image::ImageError> {
+    let reader = ImageReader::open(file_path)?;
+    let dimensions = reader.into_dimensions()?;
+    Ok(dimensions)
+}
 
 fn uv_coords_to_pixel_rect(uv_coords: &[(f64, f64)], width: u32, height: u32) -> PixelRectResult {
     // UV to pixel coordinates with clamping
@@ -283,12 +301,11 @@ fn uv_coords_to_pixel_rect(uv_coords: &[(f64, f64)], width: u32, height: u32) ->
     return Ok((origin, cropped_width, cropped_height));
 }
 
-fn get_image_info(
+pub fn get_image_info(
     image_path: &PathBuf,
     uv_coords: &[(f64, f64)],
 ) -> Result<CroppedTextureInfo, Box<dyn Error>> {
-    let img = image::open(image_path)?;
-    let (width, height) = img.dimensions();
+    let (width, height) = get_image_size(image_path)?;
     let (origin, cropped_width, cropped_height) =
         uv_coords_to_pixel_rect(uv_coords, width, height)?;
     return Ok(CroppedTextureInfo {

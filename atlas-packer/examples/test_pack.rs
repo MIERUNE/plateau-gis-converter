@@ -2,6 +2,7 @@ use std::path::{Path, PathBuf};
 use std::sync::Mutex;
 use std::time::Instant;
 
+use atlas_packer::texture::get_image_info;
 use rayon::prelude::*;
 
 use atlas_packer::{
@@ -70,11 +71,23 @@ fn main() {
     // todo: get_or_insertを使わないように変更する
     // 画像のurlとUV座標を受けとり、画像のサイズと配置するピクセル座標を返す関数を実装
     polygons.par_iter().for_each(|polygon| {
+        let crop_start = Instant::now();
+        // 結局、テクスチャ自体は一度読み込む必要がありそう
+        // なので、キャッシュした方が良いかもしれない
         let texture = texture_cache.get_or_insert(
             &polygon.uv_coords,
             &polygon.texture_uri,
             &polygon.downsample_factor.value(),
         );
+        let crop_duration = crop_start.elapsed();
+        println!("crop process {:?}", crop_duration);
+
+        let not_crop_start = Instant::now();
+        // downsample_factorもいらない
+        let texture_info = get_image_info(&polygon.texture_uri, &polygon.uv_coords);
+        let not_crop_duration = not_crop_start.elapsed();
+        println!("not crop process {:?}", not_crop_duration);
+
         let _ = packer
             .lock()
             .unwrap()
