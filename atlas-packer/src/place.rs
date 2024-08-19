@@ -107,105 +107,97 @@ impl GuillotineTexturePlacer {
     }
 
     fn find_best_rect(&self, width: u32, height: u32) -> Option<Rect> {
-        let mut best_rect = None;
-        let mut best_area = u32::MAX;
-
-        for rect in &self.free_rects {
-            if rect.width >= width && rect.height >= height {
-                let area = rect.width * rect.height;
-                if area < best_area {
-                    best_rect = Some(*rect);
-                    best_area = area;
-                }
-            }
-        }
-
-        best_rect
+        self.free_rects
+            .iter()
+            .filter(|&rect| rect.width >= width && rect.height >= height)
+            .min_by_key(|&rect| rect.width * rect.height)
+            .cloned()
     }
 
     fn split_rect(&mut self, rect: Rect, placed: &PlacedTextureInfo) {
-        let shorter_axis_split = rect.width <= rect.height;
-
-        if shorter_axis_split {
-            let right_rect = Rect {
-                x: rect.x + placed.width + self.config.padding,
-                y: rect.y,
-                width: rect.width - placed.width - self.config.padding,
-                height: placed.height,
-            };
-
-            let bottom_rect = Rect {
-                x: rect.x,
-                y: rect.y + placed.height + self.config.padding,
-                width: rect.width,
-                height: rect.height - placed.height - self.config.padding,
-            };
-
-            if right_rect.width > 0 && right_rect.height > 0 {
-                self.free_rects.push(right_rect);
-            }
-            if bottom_rect.width > 0 && bottom_rect.height > 0 {
-                self.free_rects.push(bottom_rect);
-            }
+        let padding = self.config.padding;
+        let (right_rect, bottom_rect) = if rect.width <= rect.height {
+            (
+                Rect {
+                    x: rect.x + placed.width + padding,
+                    y: rect.y,
+                    width: rect.width - placed.width - padding,
+                    height: placed.height,
+                },
+                Rect {
+                    x: rect.x,
+                    y: rect.y + placed.height + padding,
+                    width: rect.width,
+                    height: rect.height - placed.height - padding,
+                },
+            )
         } else {
-            let right_rect = Rect {
-                x: rect.x + placed.width + self.config.padding,
-                y: rect.y,
-                width: rect.width - placed.width - self.config.padding,
-                height: rect.height,
-            };
+            (
+                Rect {
+                    x: rect.x + placed.width + padding,
+                    y: rect.y,
+                    width: rect.width - placed.width - padding,
+                    height: rect.height,
+                },
+                Rect {
+                    x: rect.x,
+                    y: rect.y + placed.height + padding,
+                    width: placed.width,
+                    height: rect.height - placed.height - padding,
+                },
+            )
+        };
 
-            let bottom_rect = Rect {
-                x: rect.x,
-                y: rect.y + placed.height + self.config.padding,
-                width: placed.width,
-                height: rect.height - placed.height - self.config.padding,
-            };
-
-            if right_rect.width > 0 && right_rect.height > 0 {
-                self.free_rects.push(right_rect);
-            }
-            if bottom_rect.width > 0 && bottom_rect.height > 0 {
-                self.free_rects.push(bottom_rect);
-            }
+        if right_rect.width > 0 && right_rect.height > 0 {
+            self.free_rects.push(right_rect);
+        }
+        if bottom_rect.width > 0 && bottom_rect.height > 0 {
+            self.free_rects.push(bottom_rect);
         }
     }
 
     fn merge_free_rects(&mut self) {
         let mut i = 0;
         while i < self.free_rects.len() {
+            let mut merged = false;
+            let rect1 = self.free_rects[i];
             let mut j = i + 1;
             while j < self.free_rects.len() {
-                let rect1 = self.free_rects[i];
                 let rect2 = self.free_rects[j];
-
-                if rect1.x == rect2.x
-                    && rect1.width == rect2.width
-                    && rect1.y + rect1.height == rect2.y
-                {
-                    self.free_rects[i] = Rect {
-                        x: rect1.x,
-                        y: rect1.y,
-                        width: rect1.width,
-                        height: rect1.height + rect2.height,
-                    };
-                    self.free_rects.remove(j);
-                } else if rect1.y == rect2.y
-                    && rect1.height == rect2.height
-                    && rect1.x + rect1.width == rect2.x
-                {
-                    self.free_rects[i] = Rect {
-                        x: rect1.x,
-                        y: rect1.y,
-                        width: rect1.width + rect2.width,
-                        height: rect1.height,
-                    };
-                    self.free_rects.remove(j);
-                } else {
-                    j += 1;
+                if let Some(merged_rect) = Self::try_merge_rects(rect1, rect2) {
+                    self.free_rects[i] = merged_rect;
+                    self.free_rects.swap_remove(j);
+                    merged = true;
+                    break;
                 }
+                j += 1;
             }
-            i += 1;
+            if !merged {
+                i += 1;
+            }
+        }
+    }
+
+    fn try_merge_rects(rect1: Rect, rect2: Rect) -> Option<Rect> {
+        if rect1.x == rect2.x && rect1.width == rect2.width && rect1.y + rect1.height == rect2.y {
+            Some(Rect {
+                x: rect1.x,
+                y: rect1.y,
+                width: rect1.width,
+                height: rect1.height + rect2.height,
+            })
+        } else if rect1.y == rect2.y
+            && rect1.height == rect2.height
+            && rect1.x + rect1.width == rect2.x
+        {
+            Some(Rect {
+                x: rect1.x,
+                y: rect1.y,
+                width: rect1.width + rect2.width,
+                height: rect1.height,
+            })
+        } else {
+            None
         }
     }
 
