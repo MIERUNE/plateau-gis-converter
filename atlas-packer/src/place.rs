@@ -1,4 +1,3 @@
-use std::cmp::max;
 use std::collections::HashMap;
 
 use crate::texture::CroppedTexture;
@@ -78,104 +77,6 @@ pub trait TexturePlacer: Send + Sync {
     }
 }
 
-pub struct SimpleTexturePlacer {
-    pub config: TexturePlacerConfig,
-    pub current_x: u32,
-    pub current_y: u32,
-    pub max_height_in_row: u32,
-}
-
-impl SimpleTexturePlacer {
-    pub fn new(config: TexturePlacerConfig) -> Self {
-        SimpleTexturePlacer {
-            config,
-            current_x: 0,
-            current_y: 0,
-            max_height_in_row: 0,
-        }
-    }
-}
-
-impl TexturePlacer for SimpleTexturePlacer {
-    fn config(&self) -> &TexturePlacerConfig {
-        &self.config
-    }
-
-    fn place_texture(
-        &mut self,
-        id: &str,
-        texture: &CroppedTexture,
-        parent_atlas_id: &str,
-    ) -> PlacedTextureInfo {
-        let (scaled_width, scaled_height) = self.scale_dimensions(
-            texture.width,
-            texture.height,
-            texture.downsample_factor.value(),
-        );
-
-        if self.current_x + texture.width > self.config().width {
-            self.current_x = 0;
-            self.current_y += self.max_height_in_row + self.config().padding;
-            self.max_height_in_row = 0;
-        }
-
-        let placed_uv_coords = texture
-            .cropped_uv_coords
-            .iter()
-            .map(|(u, v)| {
-                (
-                    self.current_x as f64 / self.config().width as f64 + u * scaled_width as f64,
-                    self.current_y as f64 / self.config().height as f64 + v * scaled_height as f64,
-                )
-            })
-            .collect::<Vec<(f64, f64)>>();
-
-        let texture_info = PlacedTextureInfo {
-            id: id.to_string(),
-            atlas_id: parent_atlas_id.to_string(),
-            origin: (self.current_x, self.current_y),
-            width: scaled_width,
-            height: scaled_height,
-            placed_uv_coords,
-        };
-
-        self.current_x += texture.width + self.config().padding;
-        self.max_height_in_row = self.max_height_in_row.max(texture.height);
-
-        texture_info
-    }
-
-    fn can_place(&self, texture: &CroppedTexture) -> bool {
-        let (scaled_width, scaled_height) = self.scale_dimensions(
-            texture.width,
-            texture.height,
-            texture.downsample_factor.value(),
-        );
-
-        let padding = self.config().padding;
-        let max_width = self.config().width;
-        let max_height = self.config().height;
-
-        let next_x = self.current_x + scaled_width + padding;
-        let next_y = max(
-            self.current_y + scaled_height + padding,
-            self.current_y + self.max_height_in_row + padding,
-        );
-
-        if next_x <= max_width && next_y <= max_height {
-            true
-        } else {
-            next_y + scaled_height + padding <= max_height
-        }
-    }
-
-    fn reset_param(&mut self) {
-        self.current_x = 0;
-        self.current_y = 0;
-        self.max_height_in_row = 0;
-    }
-}
-
 pub struct GuillotineTexturePlacer {
     config: TexturePlacerConfig,
     free_rects: Vec<Rect>,
@@ -206,105 +107,97 @@ impl GuillotineTexturePlacer {
     }
 
     fn find_best_rect(&self, width: u32, height: u32) -> Option<Rect> {
-        let mut best_rect = None;
-        let mut best_area = u32::MAX;
-
-        for rect in &self.free_rects {
-            if rect.width >= width && rect.height >= height {
-                let area = rect.width * rect.height;
-                if area < best_area {
-                    best_rect = Some(*rect);
-                    best_area = area;
-                }
-            }
-        }
-
-        best_rect
+        self.free_rects
+            .iter()
+            .filter(|&rect| rect.width >= width && rect.height >= height)
+            .min_by_key(|&rect| rect.width * rect.height)
+            .cloned()
     }
 
     fn split_rect(&mut self, rect: Rect, placed: &PlacedTextureInfo) {
-        let shorter_axis_split = rect.width <= rect.height;
-
-        if shorter_axis_split {
-            let right_rect = Rect {
-                x: rect.x + placed.width + self.config.padding,
-                y: rect.y,
-                width: rect.width - placed.width - self.config.padding,
-                height: placed.height,
-            };
-
-            let bottom_rect = Rect {
-                x: rect.x,
-                y: rect.y + placed.height + self.config.padding,
-                width: rect.width,
-                height: rect.height - placed.height - self.config.padding,
-            };
-
-            if right_rect.width > 0 && right_rect.height > 0 {
-                self.free_rects.push(right_rect);
-            }
-            if bottom_rect.width > 0 && bottom_rect.height > 0 {
-                self.free_rects.push(bottom_rect);
-            }
+        let padding = self.config.padding;
+        let (right_rect, bottom_rect) = if rect.width <= rect.height {
+            (
+                Rect {
+                    x: rect.x + placed.width + padding,
+                    y: rect.y,
+                    width: rect.width - placed.width - padding,
+                    height: placed.height,
+                },
+                Rect {
+                    x: rect.x,
+                    y: rect.y + placed.height + padding,
+                    width: rect.width,
+                    height: rect.height - placed.height - padding,
+                },
+            )
         } else {
-            let right_rect = Rect {
-                x: rect.x + placed.width + self.config.padding,
-                y: rect.y,
-                width: rect.width - placed.width - self.config.padding,
-                height: rect.height,
-            };
+            (
+                Rect {
+                    x: rect.x + placed.width + padding,
+                    y: rect.y,
+                    width: rect.width - placed.width - padding,
+                    height: rect.height,
+                },
+                Rect {
+                    x: rect.x,
+                    y: rect.y + placed.height + padding,
+                    width: placed.width,
+                    height: rect.height - placed.height - padding,
+                },
+            )
+        };
 
-            let bottom_rect = Rect {
-                x: rect.x,
-                y: rect.y + placed.height + self.config.padding,
-                width: placed.width,
-                height: rect.height - placed.height - self.config.padding,
-            };
-
-            if right_rect.width > 0 && right_rect.height > 0 {
-                self.free_rects.push(right_rect);
-            }
-            if bottom_rect.width > 0 && bottom_rect.height > 0 {
-                self.free_rects.push(bottom_rect);
-            }
+        if right_rect.width > 0 && right_rect.height > 0 {
+            self.free_rects.push(right_rect);
+        }
+        if bottom_rect.width > 0 && bottom_rect.height > 0 {
+            self.free_rects.push(bottom_rect);
         }
     }
 
     fn merge_free_rects(&mut self) {
         let mut i = 0;
         while i < self.free_rects.len() {
+            let mut merged = false;
+            let rect1 = self.free_rects[i];
             let mut j = i + 1;
             while j < self.free_rects.len() {
-                let rect1 = self.free_rects[i];
                 let rect2 = self.free_rects[j];
-
-                if rect1.x == rect2.x
-                    && rect1.width == rect2.width
-                    && rect1.y + rect1.height == rect2.y
-                {
-                    self.free_rects[i] = Rect {
-                        x: rect1.x,
-                        y: rect1.y,
-                        width: rect1.width,
-                        height: rect1.height + rect2.height,
-                    };
-                    self.free_rects.remove(j);
-                } else if rect1.y == rect2.y
-                    && rect1.height == rect2.height
-                    && rect1.x + rect1.width == rect2.x
-                {
-                    self.free_rects[i] = Rect {
-                        x: rect1.x,
-                        y: rect1.y,
-                        width: rect1.width + rect2.width,
-                        height: rect1.height,
-                    };
-                    self.free_rects.remove(j);
-                } else {
-                    j += 1;
+                if let Some(merged_rect) = Self::try_merge_rects(rect1, rect2) {
+                    self.free_rects[i] = merged_rect;
+                    self.free_rects.swap_remove(j);
+                    merged = true;
+                    break;
                 }
+                j += 1;
             }
-            i += 1;
+            if !merged {
+                i += 1;
+            }
+        }
+    }
+
+    fn try_merge_rects(rect1: Rect, rect2: Rect) -> Option<Rect> {
+        if rect1.x == rect2.x && rect1.width == rect2.width && rect1.y + rect1.height == rect2.y {
+            Some(Rect {
+                x: rect1.x,
+                y: rect1.y,
+                width: rect1.width,
+                height: rect1.height + rect2.height,
+            })
+        } else if rect1.y == rect2.y
+            && rect1.height == rect2.height
+            && rect1.x + rect1.width == rect2.x
+        {
+            Some(Rect {
+                x: rect1.x,
+                y: rect1.y,
+                width: rect1.width + rect2.width,
+                height: rect1.height,
+            })
+        } else {
+            None
         }
     }
 
@@ -366,6 +259,7 @@ impl TexturePlacer for GuillotineTexturePlacer {
 
             placed
         } else {
+            // todo: Consideration of processing when the texture is larger than the atlas size
             panic!("Texture could not be placed: {}", id);
         }
     }

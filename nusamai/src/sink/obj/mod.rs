@@ -386,7 +386,8 @@ impl DataSink for ObjSink {
                 feedback.ensure_not_canceled()?;
 
                 // Texture cache
-                let texture_cache = TextureCache::new(100_000_000);
+                // use default cache size
+                let texture_cache = TextureCache::new(1_000_000_000);
 
                 // file output destination
                 let mut folder_path = self.output_path.clone();
@@ -398,15 +399,15 @@ impl DataSink for ObjSink {
                 std::fs::create_dir_all(&atlas_dir)?;
 
                 // initialize texture packer
+                // In rare cases, large textures also exist, so the maximum texture size is set to 8096x8096.
                 let config = TexturePlacerConfig {
-                    width: 4096,
-                    height: 4096,
+                    width: 8096,
+                    height: 8096,
                     padding: 0,
                 };
                 let placer = GuillotineTexturePlacer::new(config.clone());
                 let exporter = JpegAtlasExporter::default();
                 let ext = exporter.clone().get_extension().to_string();
-                // todo: 並列処理出来る機構を考える
                 let packer = Mutex::new(TexturePacker::new(placer, exporter));
 
                 let atlas_packing_start = Instant::now();

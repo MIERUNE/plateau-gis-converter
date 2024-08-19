@@ -2,6 +2,7 @@ use std::path::{Path, PathBuf};
 use std::sync::Mutex;
 use std::time::Instant;
 
+use atlas_packer::texture::get_image_info;
 use rayon::prelude::*;
 
 use atlas_packer::{
@@ -38,7 +39,7 @@ fn main() {
                 (0.3, 0.8),
                 (0.2, 0.7),
             ];
-            let path_string: String = format!("examples/assets/{}.png", j);
+            let path_string: String = format!("atlas-packer/examples/assets/{}.png", j);
             let image_path = PathBuf::from(path_string.as_str());
             polygons.push(Polygon {
                 id: format!("texture_{}_{}", i, j),
@@ -60,22 +61,41 @@ fn main() {
     let packer = Mutex::new(TexturePacker::new(placer, exporter));
 
     // Texture cache
+    // todo: この段階でキャッシュする必要はないので、TextureCacheを使わないように変更する
+    // アトラスをエンコードするときにキャッシュすれば良い
     let texture_cache = TextureCache::new(100_000_000);
 
     let start = Instant::now();
 
     // Add textures to the atlas
+    // todo: get_or_insertを使わないように変更する
+    // 画像のurlとUV座標を受けとり、画像のサイズと配置するピクセル座標を返す関数を実装
     polygons.par_iter().for_each(|polygon| {
+        let crop_start = Instant::now();
+        // 結局、テクスチャ自体は一度読み込む必要がありそう
+        // なので、キャッシュした方が良いかもしれない
         let texture = texture_cache.get_or_insert(
             &polygon.uv_coords,
             &polygon.texture_uri,
             &polygon.downsample_factor.value(),
         );
+        let crop_duration = crop_start.elapsed();
+        println!("{}, crop process {:?}", polygon.id, crop_duration);
+
+        let not_crop_start = Instant::now();
+        // downsample_factorもいらない
+        let texture_info = get_image_info(&polygon.texture_uri, &polygon.uv_coords);
+        let not_crop_duration = not_crop_start.elapsed();
+        println!("{}, not crop process {:?}", polygon.id, not_crop_duration);
+
+        let packing_start = Instant::now();
         let _ = packer
             .lock()
             .unwrap()
             .add_texture(polygon.id.clone(), texture);
         // println!("{:?}", info);
+        let packing_duration = packing_start.elapsed();
+        println!("{}, packing process {:?}", polygon.id, packing_duration);
     });
 
     let duration = start.elapsed();
@@ -87,7 +107,7 @@ fn main() {
 
     let start = Instant::now();
 
-    let output_dir = Path::new("examples/output/");
+    let output_dir = Path::new("atlas-packer/examples/output/");
     packer.export(output_dir, &texture_cache, config.width(), config.height());
 
     let duration = start.elapsed();
