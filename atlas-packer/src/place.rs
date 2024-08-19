@@ -259,6 +259,7 @@ impl TexturePlacer for GuillotineTexturePlacer {
 
             placed
         } else {
+            // todo: Consideration of processing when the texture is larger than the atlas size
             panic!("Texture could not be placed: {}", id);
         }
     }

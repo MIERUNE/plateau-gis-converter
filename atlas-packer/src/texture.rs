@@ -7,6 +7,7 @@ use std::{
 use image::{DynamicImage, GenericImageView, ImageBuffer, ImageReader};
 use rayon::prelude::*;
 use stretto::Cache;
+use sys_info::mem_info;
 
 #[derive(Debug, Clone)]
 pub struct DownsampleFactor(f32);
@@ -25,14 +26,36 @@ impl DownsampleFactor {
     }
 }
 
+fn get_cache_size() -> Result<usize, String> {
+    const MIN_CACHE_SIZE: usize = 100 * 1024 * 1024; // 100MB
+    const MAX_CACHE_SIZE: usize = 10 * 1024 * 1024 * 1024; // 10GB
+
+    match mem_info() {
+        Ok(mem) => {
+            let total_memory = mem.total as usize * 1024;
+            let cache_size = (total_memory as f64 * 0.15) as usize;
+            Ok(cache_size.clamp(MIN_CACHE_SIZE, MAX_CACHE_SIZE))
+        }
+
+        Err(e) => Err(format!("Failed to retrieve memory information.: {}", e)),
+    }
+}
+
 pub struct TextureCache {
     cache: Cache<PathBuf, DynamicImage>,
 }
 
 impl TextureCache {
     pub fn new(capacity: usize) -> Self {
-        TextureCache {
-            cache: Cache::new(capacity, 1_000_000_000).unwrap(),
+        let default_capacity = get_cache_size().unwrap();
+        if capacity == 0 {
+            TextureCache {
+                cache: Cache::new(default_capacity, 10_000_000_000).unwrap(),
+            }
+        } else {
+            TextureCache {
+                cache: Cache::new(capacity, 10_000_000_000).unwrap(),
+            }
         }
     }
 
