@@ -43,12 +43,6 @@
   - [`nusamai-czml`](./nusamai-czml/) &mdash; CZML
   - [`nusamai-shapefile`](./nusamai-shapefile/) &mdash; Shapefile
 
-### 外部リポジトリ
-
-- [MIERUNE/cesiumtiles-rs](https://github.com/MIERUNE/cesiumtiles-rs) &mdash; 3D TilesのJSONモデルなど
-- [MIERUNE/earcut-rs](https://github.com/MIERUNE/earcut-rs) &mdash; ポリゴン三角形化アルゴリズムのRust移植
-- [MIERUNE/japan-geoid](https://github.com/MIERUNE/japan-geoid) &mdash; 日本のジオイドモデル (JGD2011 → WGS 84 の変換)
-
 ## ライセンス
 
 - 本ソフトウェアは、MITライセンスのもとで提供されるオープンソースソフトウエアです。

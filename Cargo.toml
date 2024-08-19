@@ -29,6 +29,7 @@ inherits = "release"
 lto = "fat"
 
 [workspace.dependencies]
+ahash = "0.8.11"
 chrono = "0.4.38"
 indexmap = "2.4.0"
 log = "0.4.22"
