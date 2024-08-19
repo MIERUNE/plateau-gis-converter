@@ -33,6 +33,7 @@ fn get_cache_size() -> Result<usize, String> {
     match mem_info() {
         Ok(mem) => {
             let total_memory = mem.total as usize * 1024;
+            // 15% of total memory
             let cache_size = (total_memory as f64 * 0.15) as usize;
             Ok(cache_size.clamp(MIN_CACHE_SIZE, MAX_CACHE_SIZE))
         }
