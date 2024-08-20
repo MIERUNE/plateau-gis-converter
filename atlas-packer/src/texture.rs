@@ -107,6 +107,37 @@ impl Drop for TextureCache {
     }
 }
 
+pub struct TextureSizeCache {
+    cache: Cache<PathBuf, (u32, u32)>,
+}
+
+impl TextureSizeCache {
+    pub fn new() -> Self {
+        TextureSizeCache {
+            cache: Cache::new(100_000_000, 100_000_000).unwrap(),
+        }
+    }
+
+    pub fn get_or_insert(&self, image_path: &PathBuf) -> (u32, u32) {
+        match self.cache.get(image_path) {
+            Some(size) => *size.value(),
+            None => {
+                let size = get_image_size(image_path).unwrap();
+                self.cache.insert(image_path.to_path_buf(), size, 1);
+                self.cache.wait().unwrap();
+
+                size
+            }
+        }
+    }
+}
+
+impl Drop for TextureSizeCache {
+    fn drop(&mut self) {
+        self.cache.close().unwrap();
+    }
+}
+
 pub struct CroppedTexture {
     pub image_path: PathBuf,
     // The origin of the cropped image in the original image (top-left corner).
@@ -269,8 +300,6 @@ fn is_point_inside_polygon(test_point: (f64, f64), polygon: &[(f64, f64)]) -> bo
 
     is_inside
 }
-
-// リファクタリング
 
 pub struct CroppedTextureInfo {
     pub image_path: PathBuf,

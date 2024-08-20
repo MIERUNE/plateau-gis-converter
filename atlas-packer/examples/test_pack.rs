@@ -2,7 +2,7 @@ use std::path::{Path, PathBuf};
 use std::sync::Mutex;
 use std::time::Instant;
 
-use atlas_packer::texture::get_image_info;
+use atlas_packer::texture::{get_image_info, TextureSizeCache};
 use rayon::prelude::*;
 
 use atlas_packer::{
@@ -26,7 +26,7 @@ fn main() {
     // 3D Tiles Sink passes the texture path and UV coordinates for each polygon
     let mut polygons: Vec<Polygon> = Vec::new();
     let downsample_factor = 1.0;
-    for i in 0..200 {
+    for i in 0..3 {
         for j in 1..11 {
             // Specify a polygon to crop around the center of the image
             let uv_coords = vec![
@@ -64,16 +64,15 @@ fn main() {
     // todo: この段階でキャッシュする必要はないので、TextureCacheを使わないように変更する
     // アトラスをエンコードするときにキャッシュすれば良い
     let texture_cache = TextureCache::new(100_000_000);
+    let texture_size_cache = TextureSizeCache::new();
 
     let start = Instant::now();
 
     // Add textures to the atlas
-    // todo: get_or_insertを使わないように変更する
-    // 画像のurlとUV座標を受けとり、画像のサイズと配置するピクセル座標を返す関数を実装
     polygons.par_iter().for_each(|polygon| {
         let crop_start = Instant::now();
-        // 結局、テクスチャ自体は一度読み込む必要がありそう
-        // なので、キャッシュした方が良いかもしれない
+        // ヘッダーだけ読み込もうとしても当然画像の読み込み自体は発生する（効率は100倍良い）
+        // が、のちの工程で画像の情報が必要なので、ヘッダーだけ読み込むのはさほど意味がない
         let texture = texture_cache.get_or_insert(
             &polygon.uv_coords,
             &polygon.texture_uri,
