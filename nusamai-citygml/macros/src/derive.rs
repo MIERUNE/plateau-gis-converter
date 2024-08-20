@@ -382,7 +382,7 @@ fn generate_citygml_impl_for_struct(
                 #attr_parsing
 
                 st.parse_children(move |st| {
-                    let path = st.current_path();
+                    let path: &[u8] = &st.current_path();
                     let hash = (path.iter().skip(#HASH_CHAR_SKIP).take(#HASH_CHAR_TAKE).fold(5381u32, |a, c| a.wrapping_mul(33) ^ *c as u32) & #HASH_MASK) as u8;
                     match (hash, path) {
                         #(#child_arms)*
@@ -512,7 +512,7 @@ fn generate_citygml_impl_for_enum(
             #[inline(never)]
             fn parse<R: ::std::io::BufRead>(&mut self, st: &mut ::nusamai_citygml::SubTreeReader<R>) -> Result<(), ::nusamai_citygml::ParseError> {
                 st.parse_children(|st| {
-                    let path = st.current_path();
+                    let path: &[u8] = &st.current_path();
                     let hash = (path.iter().skip(#HASH_CHAR_SKIP).take(#HASH_CHAR_TAKE).fold(5381u32, |a, c| a.wrapping_mul(33) ^ *c as u32) & #HASH_MASK) as u8;
                     match (hash, path) {
                         #(#child_arms)*

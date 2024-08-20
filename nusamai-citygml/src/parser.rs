@@ -48,12 +48,8 @@ pub struct CityGmlReader<'a> {
 struct InternalState<'a> {
     /// Buffer holding the current path
     path_buf: Vec<u8>,
-    /// Buffer holding the properties
-    property_buf: Vec<u8>,
     /// Stack of indices of slashes '/' in `path_buf`
     path_stack_indices: Vec<usize>,
-    /// Stack of indices of slashes '/' in `property_buf`
-    property_stack_indices: Vec<usize>,
     /// General purpose buffer 1
     buf1: Vec<u8>,
     /// General purpose buffer 2
@@ -74,9 +70,7 @@ impl<'a> InternalState<'a> {
     fn new(context: ParseContext<'a>) -> Self {
         Self {
             path_buf: Vec::new(),
-            property_buf: Vec::new(),
             path_stack_indices: Vec::new(),
-            property_stack_indices: Vec::new(),
             buf1: Vec::new(),
             buf2: Vec::new(),
             fp_buf: Vec::new(),
@@ -241,33 +235,21 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
         let Some(start) = &self.state.current_start else {
             panic!("parse_attributes() must be called immediately after encountering a start tag.");
         };
-        self.state
-            .property_stack_indices
-            .push(self.state.property_buf.len());
-
-        self.state.property_buf.push(b'/');
-        let (nsres, localname) = self.reader.resolve_element(start.name());
-        self.state
-            .property_buf
-            .extend(wellknown_prefix_from_nsres(&nsres));
-        self.state.property_buf.extend(localname.as_ref());
-        self.state.property_buf.push(b'[');
-
+        let mut property_buf = Vec::new();
+        property_buf.push(b'[');
         self.state.buf1.clear();
         self.state.buf1.push(b'@');
         for (index, attr) in start.attributes().flatten().enumerate() {
             if index > 0 {
-                self.state.property_buf.push(b',');
+                property_buf.push(b',');
             }
             let (nsres, localname) = self.reader.resolve_attribute(attr.key);
             self.state.buf1.extend(wellknown_prefix_from_nsres(&nsres));
             self.state.buf1.extend(localname.as_ref());
-            self.state
-                .property_buf
-                .extend(wellknown_prefix_from_nsres(&nsres));
-            self.state.property_buf.extend(localname.as_ref());
-            self.state.property_buf.extend(b"=");
-            self.state.property_buf.extend(attr.value.as_ref());
+            property_buf.extend(wellknown_prefix_from_nsres(&nsres));
+            property_buf.extend(localname.as_ref());
+            property_buf.extend(b"=");
+            property_buf.extend(attr.value.as_ref());
 
             logic(
                 self.state.buf1.as_ref(), // attribute path "@nsprefix:name"
@@ -276,7 +258,8 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
             )?;
             self.state.buf1.truncate(1);
         }
-        self.state.property_buf.push(b']');
+        property_buf.push(b']');
+        self.state.path_buf.extend(&property_buf);
         Ok(())
     }
 
@@ -306,11 +289,22 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
     }
 
     /// Gets the current sub-tree path to the current element.
-    pub fn current_path(&self) -> &[u8] {
+    pub fn current_path(&self) -> Vec<u8> {
         if self.path_start + 1 < self.state.path_buf.len() {
-            &self.state.path_buf[self.path_start + 1..]
+            let current_path = &self.state.path_buf[self.path_start + 1..];
+            let path = String::from_utf8_lossy(current_path);
+            if let Some(captures) = PROPERTY_PATTERN.captures(path.to_string().as_str()) {
+                if let Some(value) = captures.get(1).map(|m| m.as_str()) {
+                    let result = value.to_string();
+                    result.into_bytes()
+                } else {
+                    current_path.to_vec()
+                }
+            } else {
+                current_path.to_vec()
+            }
         } else {
-            b""
+            Vec::new()
         }
     }
 
@@ -370,13 +364,9 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
         let start = self.state.path_stack_indices[self.state.path_stack_indices.len() - 2];
         let end = self.state.path_stack_indices[self.state.path_stack_indices.len() - 1];
         let before_tag = &paths[start + 1..end];
-        let properties = String::from_utf8_lossy(self.state.property_buf.as_ref());
 
-        for caps in PROPERTY_PATTERN.captures_iter(&properties) {
+        for caps in PROPERTY_PATTERN.captures_iter(before_tag) {
             let tag = &caps[1];
-            if tag != before_tag {
-                continue;
-            }
             let inner_content = &caps[2];
             for kv_caps in PROPERTY_KEY_VALUE_PATTERN.captures_iter(inner_content) {
                 let key = &kv_caps[1];
@@ -414,11 +404,9 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                 return Ok(());
             } // FIXME
         }
-
         self.state
             .path_buf
             .truncate(self.state.path_stack_indices.pop().unwrap());
-
         Ok(())
     }
 

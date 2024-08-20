@@ -545,9 +545,10 @@ impl<T: CityGmlElement + Default> CityGmlElement for Option<T> {
     #[inline(never)]
     fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
         if self.is_some() {
+            let current_path: &[u8] = &st.current_path();
             return Err(ParseError::SchemaViolation(format!(
                 "{} must not occur two or more times.",
-                String::from_utf8_lossy(st.current_path()),
+                String::from_utf8_lossy(current_path),
             )));
         }
         let mut v: T = Default::default();
@@ -629,13 +630,14 @@ impl CityGmlElement for Envelope {
         // TODO: parse CRS URI
 
         st.parse_children(|st| {
-            match st.current_path() {
+            let current_path: &[u8] = &st.current_path();
+            match current_path {
                 b"gml:lowerCorner" => self.lower_corner.parse(st)?,
                 b"gml:upperCorner" => self.upper_corner.parse(st)?,
                 _ => {
                     return Err(ParseError::SchemaViolation(format!(
                         "Expected gml:lowerCorner or gml:upperCorner, but got {}",
-                        String::from_utf8_lossy(st.current_path()),
+                        String::from_utf8_lossy(current_path),
                     )))
                 }
             }
@@ -670,7 +672,8 @@ pub struct GenericAttribute {
 impl CityGmlElement for GenericAttribute {
     #[inline(never)]
     fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
-        match st.current_path() {
+        let current_path: &[u8] = &st.current_path();
+        match current_path {
             b"gen:stringAttribute" | b"gen:StringAttribute" => {
                 self.string_attrs.push(parse_value(st)?)
             }
@@ -690,7 +693,7 @@ impl CityGmlElement for GenericAttribute {
             _ => {
                 return Err(ParseError::SchemaViolation(format!(
                     "generic attributes are expected but found {}",
-                    String::from_utf8_lossy(st.current_path()),
+                    String::from_utf8_lossy(current_path),
                 )))
             }
         }
@@ -780,7 +783,8 @@ where
         Ok(())
     })?;
     st.parse_children(|st| {
-        match st.current_path() {
+        let current_path: &[u8] = &st.current_path();
+        match current_path {
             // CityGML 3.0
             b"gen:name" => {
                 name = Some(st.parse_text()?.to_string());
@@ -815,7 +819,8 @@ fn parse_generic_set<R: BufRead>(
         Ok(())
     })?;
     st.parse_children(|st| {
-        match st.current_path() {
+        let current_path: &[u8] = &st.current_path();
+        match current_path {
             b"gen:name" => {
                 name = Some(st.parse_text()?.to_string());
             }

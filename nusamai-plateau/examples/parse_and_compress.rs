@@ -17,41 +17,47 @@ fn example_toplevel_dispatcher<R: BufRead>(
 ) -> Result<(), ParseError> {
     let bincode_params = bincode::config::standard();
 
-    match st.parse_children(|st| match st.current_path() {
-        b"core:cityObjectMember" => {
-            let mut cityobj: nusamai_plateau::models::TopLevelCityObject = Default::default();
-            cityobj.parse(st)?;
-            let geometries = st.collect_geometries();
+    let parse_result = {
+        let path: &[u8] = &st.current_path();
+        match path {
+            b"core:cityObjectMember" => {
+                let mut cityobj: nusamai_plateau::models::TopLevelCityObject = Default::default();
+                cityobj.parse(st)?;
+                let geometries = st.collect_geometries();
 
-            if let Some(root) = cityobj.into_object() {
-                let obj = self::TopLevelCityObject { root, geometries };
+                if let Some(root) = cityobj.into_object() {
+                    let obj = self::TopLevelCityObject { root, geometries };
 
-                // print top-level city object
-                // println!(
-                //     "vertices={} polygons={}",
-                //     toplevel_cityobj.geometries.vertices.len(),
-                //     toplevel_cityobj.geometries.polygons.len()
-                // );
-                // println!("TLCO: {:#?}", toplevel_cityobj);
-                // println!("{}", serde_json::to_string(&toplevel_cityobj).unwrap());
+                    // print top-level city object
+                    // println!(
+                    //     "vertices={} polygons={}",
+                    //     toplevel_cityobj.geometries.vertices.len(),
+                    //     toplevel_cityobj.geometries.polygons.len()
+                    // );
+                    // println!("TLCO: {:#?}", toplevel_cityobj);
+                    // println!("{}", serde_json::to_string(&toplevel_cityobj).unwrap());
 
-                // serialize with bincode
-                let start = encoded_data.len();
-                bincode::serde::encode_into_std_write(obj, encoded_data, bincode_params).unwrap();
-                encoded_sizes.push(encoded_data.len() - start);
+                    // serialize with bincode
+                    let start = encoded_data.len();
+                    bincode::serde::encode_into_std_write(obj, encoded_data, bincode_params)
+                        .unwrap();
+                    encoded_sizes.push(encoded_data.len() - start);
+                }
+
+                Ok(())
             }
+            b"gml:boundedBy" | b"app:appearanceMember" => {
+                st.skip_current_element()?;
+                Ok(())
+            }
+            other => Err(ParseError::SchemaViolation(format!(
+                "Unrecognized element {}",
+                String::from_utf8_lossy(other)
+            ))),
+        }
+    };
 
-            Ok(())
-        }
-        b"gml:boundedBy" | b"app:appearanceMember" => {
-            st.skip_current_element()?;
-            Ok(())
-        }
-        other => Err(ParseError::SchemaViolation(format!(
-            "Unrecognized element {}",
-            String::from_utf8_lossy(other)
-        ))),
-    }) {
+    match parse_result {
         Ok(_) => Ok(()),
         Err(e) => {
             println!("Err: {:?}", e);
