@@ -463,15 +463,6 @@ impl DataSink for ObjSink {
                                         .map(|[x, y, z, u, v]| (*x, *y, *z, *u, *v))
                                         .collect::<Vec<(f64, f64, f64, f64, f64)>>();
 
-                                    // let texture = texture_cache.get_or_insert(
-                                    //     &original_vertices
-                                    //         .iter()
-                                    //         .map(|(_, _, _, u, v)| (*u, *v))
-                                    //         .collect::<Vec<_>>(),
-                                    //     &base_texture.uri.to_file_path().unwrap(),
-                                    //     &DownsampleFactor::new(&1.0).value(),
-                                    // );
-
                                     let texture_uri = base_texture.uri.to_file_path().unwrap();
                                     let uv_coords = original_vertices
                                         .iter()
