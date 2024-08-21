@@ -2,7 +2,7 @@ use std::path::{Path, PathBuf};
 use std::sync::Mutex;
 use std::time::Instant;
 
-use atlas_packer::texture::{get_image_info, TextureSizeCache};
+use atlas_packer::texture::{CroppedTexture, TextureSizeCache};
 use rayon::prelude::*;
 
 use atlas_packer::{
@@ -26,7 +26,7 @@ fn main() {
     // 3D Tiles Sink passes the texture path and UV coordinates for each polygon
     let mut polygons: Vec<Polygon> = Vec::new();
     let downsample_factor = 1.0;
-    for i in 0..3 {
+    for i in 0..200 {
         for j in 1..11 {
             // Specify a polygon to crop around the center of the image
             let uv_coords = vec![
@@ -60,45 +60,26 @@ fn main() {
     let exporter = JpegAtlasExporter::default();
     let packer = Mutex::new(TexturePacker::new(placer, exporter));
 
-    // Texture cache
-    // todo: この段階でキャッシュする必要はないので、TextureCacheを使わないように変更する
-    // アトラスをエンコードするときにキャッシュすれば良い
-    let texture_cache = TextureCache::new(100_000_000);
+    // cache image size
     let texture_size_cache = TextureSizeCache::new();
-
-    let start = Instant::now();
-
-    // Add textures to the atlas
+    // place textures on the atlas
     polygons.par_iter().for_each(|polygon| {
-        let crop_start = Instant::now();
-        // ヘッダーだけ読み込もうとしても当然画像の読み込み自体は発生する（効率は100倍良い）
-        // が、のちの工程で画像の情報が必要なので、ヘッダーだけ読み込むのはさほど意味がない
-        let texture = texture_cache.get_or_insert(
-            &polygon.uv_coords,
+        let place_start = Instant::now();
+        let texture_size = texture_size_cache.get_or_insert(&polygon.texture_uri);
+        let cropped_texture = CroppedTexture::new(
             &polygon.texture_uri,
-            &polygon.downsample_factor.value(),
+            texture_size,
+            &polygon.uv_coords,
+            polygon.downsample_factor.clone(),
         );
-        let crop_duration = crop_start.elapsed();
-        println!("{}, crop process {:?}", polygon.id, crop_duration);
 
-        let not_crop_start = Instant::now();
-        // downsample_factorもいらない
-        let texture_info = get_image_info(&polygon.texture_uri, &polygon.uv_coords);
-        let not_crop_duration = not_crop_start.elapsed();
-        println!("{}, not crop process {:?}", polygon.id, not_crop_duration);
-
-        let packing_start = Instant::now();
         let _ = packer
             .lock()
             .unwrap()
-            .add_texture(polygon.id.clone(), texture);
-        // println!("{:?}", info);
-        let packing_duration = packing_start.elapsed();
-        println!("{}, packing process {:?}", polygon.id, packing_duration);
+            .add_texture(polygon.id.clone(), cropped_texture);
+        let place_duration = place_start.elapsed();
+        println!("{}, texture place process {:?}", polygon.id, place_duration);
     });
-
-    let duration = start.elapsed();
-    println!("atlas process {:?}", duration);
 
     let mut packer = packer.into_inner().unwrap();
 
@@ -106,9 +87,10 @@ fn main() {
 
     let start = Instant::now();
 
+    // Caches the original textures for exporting to an atlas.
+    let texture_cache = TextureCache::new(100_000_000);
     let output_dir = Path::new("atlas-packer/examples/output/");
     packer.export(output_dir, &texture_cache, config.width(), config.height());
-
     let duration = start.elapsed();
     println!("atlas export process {:?}", duration);
 
