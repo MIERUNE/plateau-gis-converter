@@ -23,14 +23,17 @@ use crate::{
     get_parameter_value,
     parameters::*,
     pipeline::{Feedback, PipelineError, Receiver, Result},
-    sink::{cesiumtiles::metadata, DataRequirements, DataSink, DataSinkProvider, SinkInfo},
+    sink::{cesiumtiles::metadata, DataRequirements, DataSink, DataSinkProviderTest, SinkInfo},
     transformer,
-    transformer::{TransformerConfig, TransformerOption, TransformerRegistry},
+    transformer::{
+        LodSelection, Selection, TransformerConfig, TransformerConfig2, TransformerOption,
+        TransformerOption2, TransformerRegistry, TransformerRegistry2,
+    },
 };
 
 pub struct GltfSinkProvider {}
 
-impl DataSinkProvider for GltfSinkProvider {
+impl DataSinkProviderTest for GltfSinkProvider {
     fn info(&self) -> SinkInfo {
         SinkInfo {
             id_name: "gltf".to_string(),
@@ -79,9 +82,29 @@ impl DataSinkProvider for GltfSinkProvider {
         settings
     }
 
+    fn available_transformer2(&self) -> TransformerRegistry2 {
+        let mut settings: TransformerRegistry2 = TransformerRegistry2::new();
+
+        // settings.insert(TransformerConfig {
+        //     key: "use_texture".to_string(),
+        //     label: "テクスチャの使用".to_string(),
+        //     is_enabled: false,
+        //     requirements: vec![transformer::Requirement::UseAppearance],
+        // });
+
+        settings.insert(TransformerConfig2 {
+            key: "use_lod".to_string(),
+            label: "出力LODの選択".to_string(),
+            selection: Some(Selection::Lod(LodSelection::MaxLod)),
+            requirements: vec![transformer::Requirement2::UseLod(LodSelection::Lod2)],
+        });
+
+        settings
+    }
+
     fn create(&self, params: &Parameters) -> Box<dyn DataSink> {
         let output_path = get_parameter_value!(params, "@output", FileSystemPath);
-        let transform_settings = self.available_transformer();
+        let transform_settings = self.available_transformer2();
 
         Box::<GltfSink>::new(GltfSink {
             output_path: output_path.as_ref().unwrap().into(),
@@ -92,7 +115,7 @@ impl DataSinkProvider for GltfSinkProvider {
 
 pub struct GltfSink {
     output_path: PathBuf,
-    transform_settings: TransformerRegistry,
+    transform_settings: TransformerRegistry2,
 }
 
 pub struct BoundingVolume {
@@ -163,13 +186,18 @@ impl DataSink for GltfSink {
         let default_requirements: DataRequirements = DataRequirements {
             resolve_appearance: true,
             key_value: crate::transformer::KeyValueSpec::JsonifyObjectsAndArrays,
+            // NOTE: test
+            lod_filter: transformer::LodFilterSpec {
+                mask: transformer::LodMask::all(),
+                mode: transformer::LodFilterMode::Lod4,
+            },
             ..Default::default()
         };
 
         for prop in properties {
-            let _ = &self
-                .transform_settings
-                .update_transformer(&prop.key, prop.is_enabled);
+            let _ = &self.transform_settings;
+            println!("{:?}", prop);
+            // .update_transformer(&prop.key, prop.is_enabled);
         }
 
         self.transform_settings.build(default_requirements)

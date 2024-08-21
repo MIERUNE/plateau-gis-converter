@@ -14,7 +14,7 @@ pub use runner::*;
 pub use setting::*;
 use thiserror::Error;
 pub use transform::{
-    DataFlatteningOption, FeatureFlatteningOption, LodFilterMode, ObjectFlatteningOption,
+    DataFlatteningOption, FeatureFlatteningOption, LodFilterMode, LodMask, ObjectFlatteningOption,
 };
 
 use crate::pipeline::{Feedback, Parcel, Receiver, Result, Sender};

@@ -12,6 +12,11 @@ use crate::{pipeline::Feedback, transformer::Transform};
 pub enum LodFilterMode {
     Highest,
     Lowest,
+    Lod0,
+    Lod1,
+    Lod2,
+    Lod3,
+    Lod4,
 }
 
 #[derive()]
@@ -34,6 +39,11 @@ impl Transform for FilterLodTransform {
         let target_lod = match self.mode {
             LodFilterMode::Highest => lods.highest_lod(),
             LodFilterMode::Lowest => lods.lowest_lod(),
+            LodFilterMode::Lod0 => lods.has_lod(0).then_some(0),
+            LodFilterMode::Lod1 => lods.has_lod(1).then_some(1),
+            LodFilterMode::Lod2 => lods.has_lod(2).then_some(2),
+            LodFilterMode::Lod3 => lods.has_lod(3).then_some(3),
+            LodFilterMode::Lod4 => lods.has_lod(4).then_some(4),
         };
 
         if let Some(target_lod) = target_lod {
@@ -92,7 +102,7 @@ fn find_lods(value: &Value) -> LodMask {
     mask
 }
 
-#[derive(Default, Clone, Copy)]
+#[derive(Default, Clone, Copy, Debug)]
 pub struct LodMask(
     u8, // lods bit mask
 );
