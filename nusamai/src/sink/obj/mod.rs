@@ -387,7 +387,7 @@ impl DataSink for ObjSink {
 
                 // Texture cache
                 // use default cache size
-                let texture_cache = TextureCache::new(1_000_000_000);
+                let texture_cache = TextureCache::new(100_000_000);
                 let texture_size_cache = TextureSizeCache::new();
 
                 // file output destination

@@ -33,7 +33,7 @@ pub struct TextureSizeCache {
 impl TextureSizeCache {
     pub fn new() -> Self {
         TextureSizeCache {
-            cache: Cache::new(100_000_000, 100_000_000).unwrap(),
+            cache: Cache::new(1_000_000, 1_000_000).unwrap(),
         }
     }
 
@@ -42,7 +42,9 @@ impl TextureSizeCache {
             Some(size) => *size.value(),
             None => {
                 let size = get_image_size(image_path).unwrap();
-                self.cache.insert(image_path.to_path_buf(), size, 1);
+                // Since it only retains the size of the texture, set the cost to 1 for everything.
+                let cost = 1;
+                self.cache.insert(image_path.to_path_buf(), size, cost);
                 self.cache.wait().unwrap();
 
                 size
