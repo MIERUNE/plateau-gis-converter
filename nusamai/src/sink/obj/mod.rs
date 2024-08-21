@@ -14,7 +14,7 @@ use atlas_packer::{
     export::{AtlasExporter as _, JpegAtlasExporter},
     pack::TexturePacker,
     place::{GuillotineTexturePlacer, TexturePlacerConfig},
-    texture::{DownsampleFactor, TextureCache},
+    texture::{CroppedTexture, DownsampleFactor, TextureCache, TextureSizeCache},
 };
 use earcut::{utils3d::project3d_to_2d, Earcut};
 use flatgeom::MultiPolygon;
@@ -388,6 +388,7 @@ impl DataSink for ObjSink {
                 // Texture cache
                 // use default cache size
                 let texture_cache = TextureCache::new(1_000_000_000);
+                let texture_size_cache = TextureSizeCache::new();
 
                 // file output destination
                 let mut folder_path = self.output_path.clone();
@@ -462,13 +463,29 @@ impl DataSink for ObjSink {
                                         .map(|[x, y, z, u, v]| (*x, *y, *z, *u, *v))
                                         .collect::<Vec<(f64, f64, f64, f64, f64)>>();
 
-                                    let texture = texture_cache.get_or_insert(
-                                        &original_vertices
-                                            .iter()
-                                            .map(|(_, _, _, u, v)| (*u, *v))
-                                            .collect::<Vec<_>>(),
-                                        &base_texture.uri.to_file_path().unwrap(),
-                                        &DownsampleFactor::new(&1.0).value(),
+                                    // let texture = texture_cache.get_or_insert(
+                                    //     &original_vertices
+                                    //         .iter()
+                                    //         .map(|(_, _, _, u, v)| (*u, *v))
+                                    //         .collect::<Vec<_>>(),
+                                    //     &base_texture.uri.to_file_path().unwrap(),
+                                    //     &DownsampleFactor::new(&1.0).value(),
+                                    // );
+
+                                    let texture_uri = base_texture.uri.to_file_path().unwrap();
+                                    let uv_coords = original_vertices
+                                        .iter()
+                                        .map(|(_, _, _, u, v)| (*u, *v))
+                                        .collect::<Vec<(f64, f64)>>();
+                                    let downsample_factor = DownsampleFactor::new(&1.0);
+
+                                    let texture_size =
+                                        texture_size_cache.get_or_insert(&texture_uri);
+                                    let texture = CroppedTexture::new(
+                                        &texture_uri,
+                                        texture_size,
+                                        &uv_coords,
+                                        downsample_factor,
                                     );
 
                                     // Unique id required for placement in atlas
