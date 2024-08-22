@@ -332,11 +332,10 @@ fn tile_writing_stage(
         .par_bridge()
         .try_for_each(|(tile_id, typename, feats)| {
             feedback.ensure_not_canceled()?;
+            let (tile_zoom, tile_x, tile_y) = tile_id_conv.id_to_zxy(tile_id);
 
             // Tile information
             let (mut content, translation) = {
-                let zxy = tile_id_conv.id_to_zxy(tile_id);
-                let (tile_zoom, tile_x, tile_y) = zxy;
                 let (min_lat, max_lat) = tiling::y_slice_range(tile_zoom, tile_y);
                 let (min_lng, max_lng) = tiling::x_slice_range(
                     tile_zoom,
@@ -368,7 +367,7 @@ fn tile_writing_stage(
                     format!("{tile_zoom}/{tile_x}/{tile_y}_{normalized_typename}.glb")
                 };
                 let content = TileContent {
-                    zxy,
+                    zxy: (tile_zoom, tile_x, tile_y),
                     content_path,
                     min_lng: f64::MAX,
                     max_lng: f64::MIN,
@@ -511,7 +510,8 @@ fn tile_writing_stage(
 
                         let texture_uri = base_texture.uri.to_file_path().unwrap();
                         let texture_size = texture_size_cache.get_or_insert(&texture_uri);
-                        let downsample_factor = DownsampleFactor::new(&1.0);
+                        let factor = apply_downsample_factor(tile_zoom);
+                        let downsample_factor = DownsampleFactor::new(&factor);
                         let cropped_texture = CroppedTexture::new(
                             &texture_uri,
                             texture_size,
@@ -674,4 +674,13 @@ fn tile_writing_stage(
     )?;
 
     Ok(())
+}
+
+fn apply_downsample_factor(z: u8) -> f32 {
+    match z {
+        0..=14 => 0.0,
+        15..=16 => 0.25,
+        17 => 0.5,
+        _ => 1.0,
+    }
 }
