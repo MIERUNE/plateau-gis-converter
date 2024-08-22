@@ -1,11 +1,21 @@
+use rayon::vec;
 use serde::{Deserialize, Serialize};
 
 use crate::{pipeline::PipelineError, sink::DataRequirements, transformer};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
-pub enum Selection {
-    Bool(bool),        // オン・オフの設定
-    Lod(LodSelection), // LODの選択
+pub struct Selection {
+    pub label: String,
+    pub value: String,
+}
+
+impl Selection {
+    pub fn new(label: &str, value: &str) -> Self {
+        Self {
+            label: label.to_string(),
+            value: value.to_string(),
+        }
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -40,6 +50,15 @@ pub enum Requirement2 {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
+pub enum ParameterType {
+    String(String),
+    Boolean(bool),
+    Integer(i32),
+    Selection(Vec<Selection>),
+    // and so on ...
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct TransformerConfig {
     pub key: String,
     pub label: String,
@@ -52,7 +71,7 @@ pub struct TransformerConfig {
 pub struct TransformerConfig2 {
     pub key: String,
     pub label: String,
-    pub selection: Option<Selection>, // 汎用的な設定項目
+    pub parameter: ParameterType, // 汎用的な設定項目
     pub requirements: Vec<Requirement2>,
 }
 
@@ -62,6 +81,7 @@ pub struct TransformerRegistry {
 }
 
 // NOTE:test
+#[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub struct TransformerRegistry2 {
     pub configs: Vec<TransformerConfig2>,
 }
@@ -126,10 +146,8 @@ impl TransformerRegistry2 {
         self.configs.push(def);
     }
 
-    pub fn update_transformer(
-        &mut self,
-        selection: Option<Selection>,
-    ) -> Result<(), PipelineError> {
+    pub fn update_transformer(&mut self, parameter: ParameterType) -> Result<(), PipelineError> {
+        println!("{:?}", parameter);
         for def in &mut self.configs {
             // Ignored if key does not exist
             // if def.selection == selection {
@@ -143,44 +161,44 @@ impl TransformerRegistry2 {
     pub fn build(&self, default_requirements: DataRequirements) -> DataRequirements {
         let mut data_requirements = default_requirements;
 
-        for config in &self.configs {
-            if !config.selection.is_none() {
-                continue;
-            }
-            for req in config.requirements.clone() {
-                match req {
-                    Requirement2::UseAppearance => data_requirements.set_appearance(true),
-                    Requirement2::NotUseAppearance => data_requirements.set_appearance(false),
-                    Requirement2::UseMaxLod => {
-                        data_requirements.set_lod_filter(transformer::LodFilterSpec {
-                            mode: transformer::LodFilterMode::Highest,
-                            ..Default::default()
-                        })
-                    }
-                    Requirement2::UseMinLod => {
-                        data_requirements.set_lod_filter(transformer::LodFilterSpec {
-                            mode: transformer::LodFilterMode::Lowest,
-                            ..Default::default()
-                        })
-                    }
-                    Requirement2::UseLod(selection) => {
-                        let mode = match selection {
-                            LodSelection::MaxLod => transformer::LodFilterMode::Highest,
-                            LodSelection::MinLod => transformer::LodFilterMode::Lowest,
-                            LodSelection::Lod0 => transformer::LodFilterMode::Lod0,
-                            LodSelection::Lod1 => transformer::LodFilterMode::Lod1,
-                            LodSelection::Lod2 => transformer::LodFilterMode::Lod2,
-                            LodSelection::Lod3 => transformer::LodFilterMode::Lod3,
-                            LodSelection::Lod4 => transformer::LodFilterMode::Lod4,
-                        };
-                        data_requirements.set_lod_filter(transformer::LodFilterSpec {
-                            mode,
-                            ..Default::default()
-                        })
-                    }
-                }
-            }
-        }
+        // for config in &self.configs {
+        //     if !config.parameter.is_none() {
+        //         continue;
+        //     }
+        //     for req in config.requirements.clone() {
+        //         match req {
+        //             Requirement2::UseAppearance => data_requirements.set_appearance(true),
+        //             Requirement2::NotUseAppearance => data_requirements.set_appearance(false),
+        //             Requirement2::UseMaxLod => {
+        //                 data_requirements.set_lod_filter(transformer::LodFilterSpec {
+        //                     mode: transformer::LodFilterMode::Highest,
+        //                     ..Default::default()
+        //                 })
+        //             }
+        //             Requirement2::UseMinLod => {
+        //                 data_requirements.set_lod_filter(transformer::LodFilterSpec {
+        //                     mode: transformer::LodFilterMode::Lowest,
+        //                     ..Default::default()
+        //                 })
+        //             }
+        //             Requirement2::UseLod(selection) => {
+        //                 let mode = match selection {
+        //                     LodSelection::MaxLod => transformer::LodFilterMode::Highest,
+        //                     LodSelection::MinLod => transformer::LodFilterMode::Lowest,
+        //                     LodSelection::Lod0 => transformer::LodFilterMode::Lod0,
+        //                     LodSelection::Lod1 => transformer::LodFilterMode::Lod1,
+        //                     LodSelection::Lod2 => transformer::LodFilterMode::Lod2,
+        //                     LodSelection::Lod3 => transformer::LodFilterMode::Lod3,
+        //                     LodSelection::Lod4 => transformer::LodFilterMode::Lod4,
+        //                 };
+        //                 data_requirements.set_lod_filter(transformer::LodFilterSpec {
+        //                     mode,
+        //                     ..Default::default()
+        //                 })
+        //             }
+        //         }
+        //     }
+        // }
 
         data_requirements
     }
@@ -196,5 +214,5 @@ pub struct TransformerOption {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct TransformerOption2 {
     pub key: String,
-    pub is_enabled: bool,
+    pub value: String,
 }

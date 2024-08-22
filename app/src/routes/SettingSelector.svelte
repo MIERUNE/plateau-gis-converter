@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { info, warn, trace, error, debug, attachConsole } from 'tauri-plugin-log-api';
+	const dettach = attachConsole();
 	import { filetypeOptions } from '$lib/settings';
 	import { invoke } from '@tauri-apps/api/tauri';
 	import type { SinkParameters } from '$lib/sinkparams';
@@ -6,16 +8,23 @@
 		isIntegerParameter,
 		isStringParameter,
 		isBooleanParameter,
-		createRangeArray
+		createRangeArray,
+		isSelectionParameter
 	} from '$lib/sinkparams';
 	import Icon from '@iconify/svelte';
 	import { dialog } from '@tauri-apps/api';
+
+	type TransformerRegistry = {
+		key: string;
+		label: string;
+		parameter: any;
+	};
 
 	export let filetype: string;
 	export let epsg: number = 4979;
 	export let rulesPath: string;
 	export let sinkParameters: SinkParameters;
-	export let transformerRegistry: { key: string; label: string; is_enabled: boolean }[];
+	export let transformerRegistry: TransformerRegistry[];
 
 	$: epsgOptions = filetypeOptions[filetype]?.epsg || [];
 	$: disableEpsgOptions = epsgOptions.length < 2;
@@ -44,15 +53,19 @@
 		rulesPath = Array.isArray(res) ? res[0] : res;
 	}
 
+	let DEBUG: any;
+
 	async function getTransformerRegistry(filetype: string) {
 		const registry = (await invoke('get_transform', { filetype })) as any;
 
+		DEBUG = registry;
+		trace('this trace log from frontend');
 		transformerRegistry = registry.configs.map(
-			(transformerConfig: { key: string; label: string; is_enabled: boolean }) => {
+			(transformerConfig: { key: string; label: string; parameter: any }) => {
 				return {
 					key: transformerConfig.key,
 					label: transformerConfig.label,
-					is_enabled: transformerConfig.is_enabled
+					parameter: transformerConfig.parameter
 				};
 			}
 		);
@@ -74,8 +87,13 @@
 	}
 
 	$: setSinkParameter(filetype);
+
+	let selectedOptions = {};
 </script>
 
+{#if transformerRegistry}
+	<pre>{JSON.stringify(transformerRegistry, null, 2)}</pre>
+{/if}
 <div>
 	<div class="flex items-center gap-1.5">
 		<Icon class="text-xl" icon="material-symbols:settings" />
@@ -116,27 +134,38 @@
 				<!-- Transformer options -->
 				{#if transformerRegistry && transformerRegistry.length > 0}
 					{#each transformerRegistry as config}
-						<div class="flex gap-2 w-80">
-							<label for={config.key} class="w-3/4">
-								{config.label}
-							</label>
-							<div class="relative inline-block w-10 h-6 rounded-full cursor-pointer">
-								<input
-									bind:checked={config.is_enabled}
-									id={config.key}
-									type="checkbox"
-									class="absolute w-10 h-6 transition-colors duration-300 rounded-full appearance-none cursor-pointer peer bg-gray-200 checked:bg-accent1 peer-checked:before:bg-accent1"
-								/>
-								<label
-									for={config.key}
-									class="before:content[''] absolute top-2/4 -left-1 h-6 w-6 -translate-y-2/4 cursor-pointer rounded-full border border-blue-gray-100 bg-white shadow-md transition-all duration-300 peer-checked:translate-x-full"
-								>
-									<div
-										class="inline-block p-5 rounded-full top-2/4 left-2/4 -translate-x-2/4 -translate-y-2/4"
-									></div>
+						{#if isBooleanParameter(config.parameter)}
+							<div class="flex gap-2 w-80">
+								<label for={config.key} class="w-3/4">
+									{config.label}
 								</label>
+								<div class="relative inline-block w-10 h-6 rounded-full cursor-pointer">
+									<input
+										bind:checked={config.parameter.Boolean.value}
+										id={config.key}
+										type="checkbox"
+										class="absolute w-10 h-6 transition-colors duration-300 rounded-full appearance-none cursor-pointer peer bg-gray-200 checked:bg-accent1 peer-checked:before:bg-accent1"
+									/>
+									<label
+										for={config.key}
+										class="before:content[''] absolute top-2/4 -left-1 h-6 w-6 -translate-y-2/4 cursor-pointer rounded-full border border-blue-gray-100 bg-white shadow-md transition-all duration-300 peer-checked:translate-x-full"
+									>
+										<div
+											class="inline-block p-5 rounded-full top-2/4 left-2/4 -translate-x-2/4 -translate-y-2/4"
+										></div>
+									</label>
+								</div>
 							</div>
-						</div>
+						{:else if isSelectionParameter(config.parameter)}
+							<div class="flex gap-2 w-80">
+								<label for={config.key} class="w-2/4">{config.label}</label>
+								<select id={config.key} class="w-2/4 border-2 border-gray-300 px-2 rounded-md">
+									{#each config.parameter.Selection as option, index (index)}
+										<option value={option.value}>{option.label}</option>
+									{/each}
+								</select>
+							</div>
+						{/if}
 					{/each}
 				{/if}
 

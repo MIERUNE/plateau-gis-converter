@@ -23,7 +23,10 @@ use crate::{
     get_parameter_value,
     parameters::*,
     pipeline::{Feedback, PipelineError, Receiver, Result},
-    sink::{cesiumtiles::metadata, DataRequirements, DataSink, DataSinkProviderTest, SinkInfo},
+    sink::{
+        cesiumtiles::metadata, DataRequirements, DataSink, DataSinkProviderTest, DataSinkTest,
+        SinkInfo,
+    },
     transformer,
     transformer::{
         LodSelection, Selection, TransformerConfig, TransformerConfig2, TransformerOption,
@@ -69,42 +72,49 @@ impl DataSinkProviderTest for GltfSinkProvider {
         params
     }
 
-    fn available_transformer(&self) -> TransformerRegistry {
-        let mut settings: TransformerRegistry = TransformerRegistry::new();
+    // fn available_transformer(&self) -> TransformerRegistry {
+    //     let mut settings: TransformerRegistry = TransformerRegistry::new();
 
-        settings.insert(TransformerConfig {
-            key: "use_texture".to_string(),
-            label: "テクスチャの使用".to_string(),
-            is_enabled: false,
-            requirements: vec![transformer::Requirement::UseAppearance],
-        });
+    //     settings.insert(TransformerConfig {
+    //         key: "use_texture".to_string(),
+    //         label: "テクスチャの使用".to_string(),
+    //         is_enabled: false,
+    //         requirements: vec![transformer::Requirement::UseAppearance],
+    //     });
 
-        settings
-    }
+    //     settings
+    // }
 
-    fn available_transformer2(&self) -> TransformerRegistry2 {
+    fn available_transformer(&self) -> TransformerRegistry2 {
         let mut settings: TransformerRegistry2 = TransformerRegistry2::new();
 
-        // settings.insert(TransformerConfig {
-        //     key: "use_texture".to_string(),
-        //     label: "テクスチャの使用".to_string(),
-        //     is_enabled: false,
-        //     requirements: vec![transformer::Requirement::UseAppearance],
-        // });
+        settings.insert(TransformerConfig2 {
+            key: "use_texture".to_string(),
+            label: "テクスチャの使用".to_string(),
+            parameter: transformer::ParameterType::Boolean(false),
+            requirements: vec![transformer::Requirement2::UseAppearance],
+        });
 
         settings.insert(TransformerConfig2 {
             key: "use_lod".to_string(),
             label: "出力LODの選択".to_string(),
-            selection: Some(Selection::Lod(LodSelection::MaxLod)),
+            parameter: transformer::ParameterType::Selection(vec![
+                Selection::new("最大LOD", "MaxLOD"),
+                Selection::new("最小LOD", "MinLOD"),
+                Selection::new("LOD0", "LOD0"),
+                Selection::new("LOD1", "LOD1"),
+                Selection::new("LOD2", "LOD2"),
+                Selection::new("LOD3", "LOD3"),
+            ]),
             requirements: vec![transformer::Requirement2::UseLod(LodSelection::Lod2)],
         });
 
         settings
     }
 
-    fn create(&self, params: &Parameters) -> Box<dyn DataSink> {
+    fn create(&self, params: &Parameters) -> Box<dyn DataSinkTest> {
         let output_path = get_parameter_value!(params, "@output", FileSystemPath);
-        let transform_settings = self.available_transformer2();
+        let transform_settings = self.available_transformer();
 
         Box::<GltfSink>::new(GltfSink {
             output_path: output_path.as_ref().unwrap().into(),
@@ -181,24 +191,25 @@ pub struct PrimitiveInfo {
 
 pub type Primitives = HashMap<material::Material, PrimitiveInfo>;
 
-impl DataSink for GltfSink {
-    fn make_requirements(&mut self, properties: Vec<TransformerOption>) -> DataRequirements {
+impl DataSinkTest for GltfSink {
+    fn make_requirements(&mut self, properties: Vec<TransformerOption2>) -> DataRequirements {
         let default_requirements: DataRequirements = DataRequirements {
             resolve_appearance: true,
             key_value: crate::transformer::KeyValueSpec::JsonifyObjectsAndArrays,
             // NOTE: test
             lod_filter: transformer::LodFilterSpec {
                 mask: transformer::LodMask::all(),
-                ..Default::default() // mode: transformer::LodFilterMode::Lod4,
+                mode: transformer::LodFilterMode::Lod1,
             },
             ..Default::default()
         };
 
-        for prop in properties {
-            let _ = &self.transform_settings;
-            println!("{:?}", prop);
-            // .update_transformer(&prop.key, prop.is_enabled);
-        }
+        // for prop in properties {
+        //     let _ = &self
+        //         .transform_settings
+        //         .update_transformer(Some(prop.key.clone()), prop.);
+        //     // .update_transformer(&prop.key, prop.is_enabled);
+        // }
 
         self.transform_settings.build(default_requirements)
     }
@@ -215,7 +226,6 @@ impl DataSink for GltfSink {
             feedback.ensure_not_canceled()?;
 
             let entity = parcel.entity;
-            println!("runshink!!!!!!!!!!!!!!!!!!!");
 
             // entity must be a Feature
             let Value::Object(obj) = &entity.root else {

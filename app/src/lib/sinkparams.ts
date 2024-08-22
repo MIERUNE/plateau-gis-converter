@@ -18,7 +18,13 @@ export interface BooleanParameter {
 	};
 }
 
-type Parameter = IntegerParameter | StringParameter | BooleanParameter;
+export interface SelectionParameter {
+	Selection: {
+		value: { [key: string]: string }[];
+	};
+}
+
+type Parameter = IntegerParameter | StringParameter | BooleanParameter | SelectionParameter;
 
 interface ParamsOptionItem {
 	parameter: Parameter;
@@ -47,6 +53,12 @@ export function isBooleanParameter(
 	parameter: Parameter
 ): parameter is { Boolean: { value: boolean } } {
 	return (parameter as { Boolean?: unknown }).Boolean !== undefined;
+}
+
+export function isSelectionParameter(
+	parameter: Parameter
+): parameter is { Selection: { value: { [key: string]: string }[] } } {
+	return (parameter as { Selection?: unknown }).Selection !== undefined;
 }
 
 export function createRangeArray(min: number, max: number): number[] {
