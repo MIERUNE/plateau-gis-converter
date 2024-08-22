@@ -383,11 +383,6 @@ fn tile_writing_stage(
                 (content, translation)
             };
 
-            // let mut earcutter = Earcut::new();
-            // let mut buf3d: Vec<[f64; 3]> = Vec::new();
-            // let mut buf2d: Vec<[f64; 2]> = Vec::new(); // 2d-projected [x, y]
-            // let mut index_buf: Vec<u32> = Vec::new();
-
             let mut vertices: IndexSet<[u32; 9], RandomState> = IndexSet::default(); // [x, y, z, u, v, feature_id]
             let mut primitives: gltf::Primitives = Default::default();
 
@@ -435,14 +430,14 @@ fn tile_writing_stage(
                             // - geographic to geocentric
                             // - z-up to y-up
                             // - subtract the translation
-                            // - flip the texture v-coordinate
+                            // - The origin of atlas-packer is in the lower right.
                             let (x, y, z) = geodetic_to_geocentric(&ellipsoid, lng, lat, height);
                             [
                                 x - translation[0],
                                 z - translation[1],
                                 -y - translation[2],
                                 u,
-                                1.0 - v,
+                                v,
                             ]
                         });
 
@@ -466,10 +461,13 @@ fn tile_writing_stage(
                     .enumerate()
                 {
                     // todo: この辺りから処理
+                    // テクスチャをコピーする
                     let mut mat = feature.materials[*orig_mat_id as usize].clone();
                     let t = mat.base_texture.clone();
+                    // テクスチャが存在する場合
                     if let Some(base_texture) = t {
                         // texture packing
+                        // 元のポリゴンの頂点座標とUV座標を取得
                         let original_vertices = poly
                             .raw_coords()
                             .iter()
@@ -479,10 +477,10 @@ fn tile_writing_stage(
                             .iter()
                             .map(|(_, _, _, u, v)| (*u, *v))
                             .collect::<Vec<(f64, f64)>>();
-                        let downsample_factor = DownsampleFactor::new(&1.0);
 
                         let texture_uri = base_texture.uri.to_file_path().unwrap();
                         let texture_size = texture_size_cache.get_or_insert(&texture_uri);
+                        let downsample_factor = DownsampleFactor::new(&1.0);
                         let cropped_texture = CroppedTexture::new(
                             &texture_uri,
                             texture_size,
@@ -575,7 +573,8 @@ fn tile_writing_stage(
                                     (ny as f32).to_bits(),
                                     (nz as f32).to_bits(),
                                     (u as f32).to_bits(),
-                                    (v as f32).to_bits(),
+                                    // flip the texture v-coordinate
+                                    ((1.0 - v) as f32).to_bits(),
                                     (feature_id as f32).to_bits(), // UNSIGNED_INT can't be used for vertex attribute
                                 ];
                                 let (index, _) = vertices.insert_full(vbits);
