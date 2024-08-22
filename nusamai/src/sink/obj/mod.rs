@@ -6,7 +6,6 @@ use std::{
     f64::consts::FRAC_PI_2,
     path::PathBuf,
     sync::{mpsc, Mutex},
-    time::Instant,
 };
 
 use ahash::{HashMap, HashMapExt};
@@ -216,8 +215,6 @@ impl DataSink for ObjSink {
     }
 
     fn run(&mut self, upstream: Receiver, feedback: &Feedback, _schema: &Schema) -> Result<()> {
-        let preprocessing_start = Instant::now();
-
         let ellipsoid = nusamai_projection::ellipsoid::wgs84();
 
         let classified_features: Mutex<ClassifiedFeatures> = Default::default();
@@ -376,9 +373,6 @@ impl DataSink for ObjSink {
         };
         let _ = transform_matrix.inverse();
 
-        let duration = preprocessing_start.elapsed();
-        feedback.info(format!("preprocessing {:?}", duration));
-
         // Create the information needed to output an OBJ file and write it to a file
         classified_features
             .into_par_iter()
@@ -432,8 +426,6 @@ impl DataSink for ObjSink {
                 let texture_folder_name = "textures";
                 let atlas_dir = folder_path.join(texture_folder_name);
                 std::fs::create_dir_all(&atlas_dir)?;
-
-                let atlas_packing_start = Instant::now();
 
                 // Coordinate transformation
                 {
@@ -646,19 +638,9 @@ impl DataSink for ObjSink {
                     all_materials.insert(material_key, feature_material);
                 }
 
-                let duration = atlas_packing_start.elapsed();
-                feedback.info(format!("atlas packing process {:?}", duration));
-
-                let atlas_export_start = Instant::now();
-
                 packer.export(&atlas_dir, &texture_cache, config.width, config.height);
 
-                let duration = atlas_export_start.elapsed();
-                feedback.info(format!("atlas export process {:?}", duration));
-
                 feedback.ensure_not_canceled()?;
-
-                let obj_export_start = Instant::now();
 
                 // Write OBJ file
                 write(
@@ -667,9 +649,6 @@ impl DataSink for ObjSink {
                     folder_path,
                     self.obj_options.is_split,
                 )?;
-
-                let duration = obj_export_start.elapsed();
-                feedback.info(format!("obj export process {:?}", duration));
 
                 Ok::<(), PipelineError>(())
             })?;
