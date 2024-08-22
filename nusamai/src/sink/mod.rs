@@ -1,7 +1,6 @@
 //! Output format drivers (sinks)
 
 pub mod cesiumtiles;
-pub mod cesiumtiles_poc;
 pub mod czml;
 pub mod geojson;
 pub mod gltf;
