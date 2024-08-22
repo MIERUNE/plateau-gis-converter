@@ -320,10 +320,8 @@ fn tile_writing_stage(
     let texture_size_cache = TextureSizeCache::new();
 
     // Use a temporary directory for embedding in glb.
-    // let binding = tempdir().unwrap();
-    // let folder_path = binding.path();
-    let folder_path = output_path.to_path_buf();
-
+    let binding = tempdir().unwrap();
+    let folder_path = binding.path();
     let texture_folder_name = "textures";
     let atlas_dir = folder_path.join(texture_folder_name);
     std::fs::create_dir_all(&atlas_dir)?;
@@ -460,14 +458,10 @@ fn tile_writing_stage(
                     .zip_eq(feature.polygon_material_ids.iter())
                     .enumerate()
                 {
-                    // todo: この辺りから処理
-                    // テクスチャをコピーする
                     let mut mat = feature.materials[*orig_mat_id as usize].clone();
                     let t = mat.base_texture.clone();
-                    // テクスチャが存在する場合
                     if let Some(base_texture) = t {
                         // texture packing
-                        // 元のポリゴンの頂点座標とUV座標を取得
                         let original_vertices = poly
                             .raw_coords()
                             .iter()
