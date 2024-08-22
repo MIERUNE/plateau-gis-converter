@@ -17,7 +17,7 @@ use nusamai::{
         gltf::GltfSinkProvider, gpkg::GpkgSinkProvider, kml::KmlSinkProvider,
         minecraft::MinecraftSinkProvider, mvt::MvtSinkProvider, obj::ObjSinkProvider,
         ply::StanfordPlySinkProvider, serde::SerdeSinkProvider, shapefile::ShapefileSinkProvider,
-        DataSinkProvider,
+        DataSinkProvider, DataSinkProviderTest,
     },
     source::{citygml::CityGmlSourceProvider, DataSourceProvider},
     transformer::{
@@ -109,25 +109,34 @@ impl From<std::io::Error> for Error {
     }
 }
 
-fn select_sink_provider(filetype: &str) -> Option<Box<dyn DataSinkProvider>> {
+// NOTE: test
+fn select_sink_provider(filetype: &str) -> Option<Box<dyn DataSinkProviderTest>> {
     // TODO: share possible options with the frontend types (src/lib/settings.ts)
     match filetype {
-        "noop" => Some(Box::new(nusamai::sink::noop::NoopSinkProvider {})),
-        "serde" => Some(Box::new(SerdeSinkProvider {})),
-        "geojson" => Some(Box::new(GeoJsonSinkProvider {})),
-        "gpkg" => Some(Box::new(GpkgSinkProvider {})),
-        "mvt" => Some(Box::new(MvtSinkProvider {})),
-        "shapefile" => Some(Box::new(ShapefileSinkProvider {})),
-        "czml" => Some(Box::new(CzmlSinkProvider {})),
-        "kml" => Some(Box::new(KmlSinkProvider {})),
         "gltf" => Some(Box::new(GltfSinkProvider {})),
-        "ply" => Some(Box::new(StanfordPlySinkProvider {})),
-        "cesiumtiles" => Some(Box::new(CesiumTilesSinkProvider {})),
-        "minecraft" => Some(Box::new(MinecraftSinkProvider {})),
-        "obj" => Some(Box::new(ObjSinkProvider {})),
         _ => None,
     }
 }
+
+// fn select_sink_provider(filetype: &str) -> Option<Box<dyn DataSinkProvider>> {
+//     // TODO: share possible options with the frontend types (src/lib/settings.ts)
+//     match filetype {
+//         "noop" => Some(Box::new(nusamai::sink::noop::NoopSinkProvider {})),
+//         "serde" => Some(Box::new(SerdeSinkProvider {})),
+//         "geojson" => Some(Box::new(GeoJsonSinkProvider {})),
+//         "gpkg" => Some(Box::new(GpkgSinkProvider {})),
+//         "mvt" => Some(Box::new(MvtSinkProvider {})),
+//         "shapefile" => Some(Box::new(ShapefileSinkProvider {})),
+//         "czml" => Some(Box::new(CzmlSinkProvider {})),
+//         "kml" => Some(Box::new(KmlSinkProvider {})),
+//         "gltf" => Some(Box::new(GltfSinkProvider {})),
+//         "ply" => Some(Box::new(StanfordPlySinkProvider {})),
+//         "cesiumtiles" => Some(Box::new(CesiumTilesSinkProvider {})),
+//         "minecraft" => Some(Box::new(MinecraftSinkProvider {})),
+//         "obj" => Some(Box::new(ObjSinkProvider {})),
+//         _ => None,
+//     }
+// }
 
 #[tauri::command(async)]
 #[allow(clippy::too_many_arguments)]

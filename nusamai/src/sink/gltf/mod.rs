@@ -189,7 +189,7 @@ impl DataSink for GltfSink {
             // NOTE: test
             lod_filter: transformer::LodFilterSpec {
                 mask: transformer::LodMask::all(),
-                mode: transformer::LodFilterMode::Lod4,
+                ..Default::default() // mode: transformer::LodFilterMode::Lod4,
             },
             ..Default::default()
         };
@@ -215,6 +215,7 @@ impl DataSink for GltfSink {
             feedback.ensure_not_canceled()?;
 
             let entity = parcel.entity;
+            println!("runshink!!!!!!!!!!!!!!!!!!!");
 
             // entity must be a Feature
             let Value::Object(obj) = &entity.root else {

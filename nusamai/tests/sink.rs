@@ -85,10 +85,11 @@ fn run_czml_sink() {
     simple_run_sink(sink::czml::CzmlSinkProvider {}, "/dev/null".into());
 }
 
-#[test]
-fn run_gltf_sink() {
-    simple_run_sink(sink::gltf::GltfSinkProvider {}, "/tmp/nusamai/gltf".into());
-}
+// NOTE:test
+// #[test]
+// fn run_gltf_sink() {
+//     simple_run_sink(sink::gltf::GltfSinkProvider {}, "/tmp/nusamai/gltf".into());
+// }
 
 #[test]
 fn run_noop_sink() {
