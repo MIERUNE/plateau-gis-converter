@@ -423,7 +423,6 @@ fn tile_writing_stage(
             let max_height = max_height.next_power_of_two();
 
             // initialize texture packer
-            // In rare cases, large textures also exist, so the maximum texture size is set to 8096x8096.
             let config = TexturePlacerConfig {
                 width: max_width,
                 height: max_height,
