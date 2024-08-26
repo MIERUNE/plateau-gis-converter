@@ -3,14 +3,16 @@
 	import Icon from '@iconify/svelte';
 	import { abbreviatePath } from '$lib/utils';
 
-	let isFolderMode = true;
+	// let isFolderMode = true;
+	let isFolderMode = import.meta.env.VITE_TEST_INPUT_PATH ? false : true; // NOTE debug
 	let inputFolders: string[] = [];
 	export let inputPaths: string[] = [];
 
 	// Clear the inputs when the mode changes
 	$: if (isFolderMode || !isFolderMode) {
 		inputFolders = [];
-		inputPaths = [];
+		// inputPaths = [];
+		inputPaths = import.meta.env.VITE_TEST_INPUT_PATH ? [import.meta.env.VITE_TEST_INPUT_PATH] : []; // NOTE debug
 	}
 
 	async function openFolderDialog() {

@@ -4,16 +4,45 @@ use serde::{Deserialize, Serialize};
 use crate::{pipeline::PipelineError, sink::DataRequirements, transformer};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct Selection {
+pub struct SelectionOptions {
     pub label: String,
     pub value: String,
 }
 
-impl Selection {
+impl SelectionOptions {
     pub fn new(label: &str, value: &str) -> Self {
         Self {
             label: label.to_string(),
             value: value.to_string(),
+        }
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct Selection {
+    pub options: Vec<SelectionOptions>,
+    pub selected_value: String,
+}
+
+impl Selection {
+    pub fn new(options: Vec<SelectionOptions>, selected_value: &str) -> Self {
+        let valid_value = options.iter().any(|opt| opt.value == selected_value);
+        if !valid_value {
+            panic!("selectedValue must be one of the options");
+        }
+
+        Self {
+            options,
+            selected_value: selected_value.to_string(),
+        }
+    }
+
+    pub fn set_selected_value(&mut self, value: &str) {
+        let valid_value = self.options.iter().any(|opt| opt.value == value);
+        if valid_value {
+            self.selected_value = value.to_string();
+        } else {
+            panic!("Invalid value");
         }
     }
 }
@@ -54,7 +83,7 @@ pub enum ParameterType {
     String(String),
     Boolean(bool),
     Integer(i32),
-    Selection(Vec<Selection>),
+    Selection(Selection),
     // and so on ...
 }
 

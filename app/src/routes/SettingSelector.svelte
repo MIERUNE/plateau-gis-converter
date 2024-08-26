@@ -1,9 +1,19 @@
 <script lang="ts">
+	// NOTE debug
 	import { info, warn, trace, error, debug, attachConsole } from 'tauri-plugin-log-api';
 	const dettach = attachConsole();
+
 	import { filetypeOptions } from '$lib/settings';
 	import { invoke } from '@tauri-apps/api/tauri';
 	import type { SinkParameters } from '$lib/sinkparams';
+	import type { TransformerRegistry } from '$lib/transformer';
+	import {
+		isSelectionArray,
+		isBooleanConfig,
+		hasSelection,
+		isBoolean,
+		isSelectionConfig
+	} from '$lib/transformer';
 	import {
 		isIntegerParameter,
 		isStringParameter,
@@ -14,17 +24,11 @@
 	import Icon from '@iconify/svelte';
 	import { dialog } from '@tauri-apps/api';
 
-	type TransformerRegistry = {
-		key: string;
-		label: string;
-		parameter: any;
-	};
-
 	export let filetype: string;
 	export let epsg: number = 4979;
 	export let rulesPath: string;
 	export let sinkParameters: SinkParameters;
-	export let transformerRegistry: TransformerRegistry[];
+	export let transformerRegistry: TransformerRegistry;
 
 	$: epsgOptions = filetypeOptions[filetype]?.epsg || [];
 	$: disableEpsgOptions = epsgOptions.length < 2;
@@ -60,15 +64,7 @@
 
 		DEBUG = registry;
 		trace('this trace log from frontend');
-		transformerRegistry = registry.configs.map(
-			(transformerConfig: { key: string; label: string; parameter: any }) => {
-				return {
-					key: transformerConfig.key,
-					label: transformerConfig.label,
-					parameter: transformerConfig.parameter
-				};
-			}
-		);
+		transformerRegistry = registry;
 	}
 
 	$: getTransformerRegistry(filetype);
@@ -127,21 +123,21 @@
 			</select>
 		</div>
 
-		{#if (transformerRegistry && transformerRegistry.length > 0) || sinkOptionKeys.length > 0}
+		{#if (transformerRegistry && transformerRegistry.configs.length > 0) || sinkOptionKeys.length > 0}
 			<div class="flex flex-col gap-1.5">
 				<label for="transform-select" class="font-bold">出力の詳細設定</label>
 
 				<!-- Transformer options -->
-				{#if transformerRegistry && transformerRegistry.length > 0}
-					{#each transformerRegistry as config}
-						{#if isBooleanParameter(config.parameter)}
+				{#if transformerRegistry && transformerRegistry.configs.length > 0}
+					{#each transformerRegistry.configs as config}
+						{#if isBooleanConfig(config.parameter)}
 							<div class="flex gap-2 w-80">
 								<label for={config.key} class="w-3/4">
 									{config.label}
 								</label>
 								<div class="relative inline-block w-10 h-6 rounded-full cursor-pointer">
 									<input
-										bind:checked={config.parameter.Boolean.value}
+										bind:checked={config.parameter.Boolean}
 										id={config.key}
 										type="checkbox"
 										class="absolute w-10 h-6 transition-colors duration-300 rounded-full appearance-none cursor-pointer peer bg-gray-200 checked:bg-accent1 peer-checked:before:bg-accent1"
@@ -156,16 +152,21 @@
 									</label>
 								</div>
 							</div>
-						{:else if isSelectionParameter(config.parameter)}
+						{:else if true}
 							<div class="flex gap-2 w-80">
 								<label for={config.key} class="w-2/4">{config.label}</label>
-								<select id={config.key} class="w-2/4 border-2 border-gray-300 px-2 rounded-md">
-									{#each config.parameter.Selection as option, index (index)}
+								<select
+									id={config.key}
+									class="w-2/4 border-2 border-gray-300 px-2 rounded-md"
+									bind:value={config.parameter.Selection.selected_value}
+								>
+									{#each config.parameter.Selection.options as option, index (index)}
 										<option value={option.value}>{option.label}</option>
 									{/each}
 								</select>
 							</div>
 						{/if}
+						{hasSelection(config.parameter)}
 					{/each}
 				{/if}
 

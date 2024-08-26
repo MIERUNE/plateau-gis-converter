@@ -1,4 +1,8 @@
 <script lang="ts">
+	// NOTE debug
+	import { info, warn, trace, error, debug } from 'tauri-plugin-log-api';
+	const dettach = attachConsole();
+
 	import { message } from '@tauri-apps/api/dialog';
 	import { invoke } from '@tauri-apps/api/tauri';
 	import { attachConsole } from 'tauri-plugin-log-api';
@@ -11,6 +15,12 @@
 	import SettingSelector from './SettingSelector.svelte';
 
 	attachConsole(); // For Tauri log in the webview console
+
+	type TransformerOptions = {
+		key: string;
+		type: 'boolean' | 'string' | 'integer' | 'selection';
+		value: string;
+	};
 
 	let inputPaths: string[] = [];
 	let filetype: string;
@@ -27,14 +37,25 @@
 	async function convertAndSave() {
 		isRunning = true;
 
-		const transformerOptions = transformerRegistry.map((transformerConfig) => {
-			return {
-				key: transformerConfig.key,
-				is_enabled: transformerConfig.is_enabled
-			};
-		});
+		// const transformerOptions = transformerRegistry.map((transformerConfig) => {
+		// 	// return {
+		// 	// 	key: transformerConfig.key,
+		// 	// 	is_enabled: transformerConfig.is_enabled
+		// 	// };
+
+		// 	return {
+		// 		key: transformerConfig.key,
+		// 		type: 'selection',
+		// 		value:
+		// 	};
+		// });
 
 		try {
+			debug(JSON.stringify(transformerRegistry));
+			isRunning = false;
+
+			return; // NOTE debug
+
 			await invoke('run_conversion', {
 				inputPaths,
 				outputPath,
@@ -44,6 +65,7 @@
 				transformerOptions,
 				sinkParameters
 			});
+
 			isRunning = false;
 			await message(`変換が完了しました。\n'${outputPath}' に出力しました。`, { type: 'info' });
 		} catch (error: any) {

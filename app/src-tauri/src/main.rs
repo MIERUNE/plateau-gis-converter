@@ -151,6 +151,7 @@ fn run_conversion(
     tasks_state: tauri::State<ConversionTasksState>,
     window: tauri::Window,
 ) -> Result<(), Error> {
+    println!("input_paths: {:?}", input_paths);
     // Request cancellation of previous task if still running
     tasks_state.canceller.lock().unwrap().cancel();
 

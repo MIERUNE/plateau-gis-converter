@@ -29,8 +29,8 @@ use crate::{
     },
     transformer,
     transformer::{
-        LodSelection, Selection, TransformerConfig, TransformerConfig2, TransformerOption,
-        TransformerOption2, TransformerRegistry, TransformerRegistry2,
+        LodSelection, Selection, SelectionOptions, TransformerConfig, TransformerConfig2,
+        TransformerOption, TransformerOption2, TransformerRegistry, TransformerRegistry2,
     },
 };
 
@@ -98,14 +98,17 @@ impl DataSinkProviderTest for GltfSinkProvider {
         settings.insert(TransformerConfig2 {
             key: "use_lod".to_string(),
             label: "出力LODの選択".to_string(),
-            parameter: transformer::ParameterType::Selection(vec![
-                Selection::new("最大LOD", "MaxLOD"),
-                Selection::new("最小LOD", "MinLOD"),
-                Selection::new("LOD0", "LOD0"),
-                Selection::new("LOD1", "LOD1"),
-                Selection::new("LOD2", "LOD2"),
-                Selection::new("LOD3", "LOD3"),
-            ]),
+            parameter: transformer::ParameterType::Selection(Selection {
+                options: vec![
+                    SelectionOptions::new("最大LOD", "MaxLOD"),
+                    SelectionOptions::new("最小LOD", "MinLOD"),
+                    SelectionOptions::new("LOD0", "LOD0"),
+                    SelectionOptions::new("LOD1", "LOD1"),
+                    SelectionOptions::new("LOD2", "LOD2"),
+                    SelectionOptions::new("LOD3", "LOD3"),
+                ],
+                selected_value: "LOD1".to_string(),
+            }),
             requirements: vec![transformer::Requirement2::UseLod(LodSelection::Lod2)],
         });
 
