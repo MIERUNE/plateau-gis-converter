@@ -7,6 +7,7 @@
 	import { invoke } from '@tauri-apps/api/tauri';
 	import { attachConsole } from 'tauri-plugin-log-api';
 	import type { SinkParameters } from '$lib/sinkparams';
+	import type { TransformerRegistry } from '$lib/transformer';
 
 	import Icon from '@iconify/svelte';
 	import InputSelector from './InputSelector.svelte';
@@ -15,12 +16,6 @@
 	import SettingSelector from './SettingSelector.svelte';
 
 	attachConsole(); // For Tauri log in the webview console
-
-	type TransformerOptions = {
-		key: string;
-		type: 'boolean' | 'string' | 'integer' | 'selection';
-		value: string;
-	};
 
 	let inputPaths: string[] = [];
 	let filetype: string;
@@ -32,7 +27,7 @@
 	let isConvertButtonDisabled = true;
 
 	$: isConvertButtonDisabled = !inputPaths.length || !outputPath || isRunning;
-	let transformerRegistry: { key: string; label: string; is_enabled: boolean }[];
+	let transformerRegistry: TransformerRegistry;
 
 	async function convertAndSave() {
 		isRunning = true;
@@ -51,10 +46,11 @@
 		// });
 
 		try {
-			debug(JSON.stringify(transformerRegistry));
-			isRunning = false;
+			// debug(JSON.stringify(transformerRegistry));
+			// isRunning = false;
+			// return; // NOTE debug
 
-			return; // NOTE debug
+			// const transformerOptions = transformerRegistry;
 
 			await invoke('run_conversion', {
 				inputPaths,
@@ -62,7 +58,7 @@
 				filetype,
 				epsg,
 				rulesPath,
-				transformerOptions,
+				transformerRegistry,
 				sinkParameters
 			});
 
@@ -84,6 +80,10 @@
 	<div class="fixed inset-0 bg-black/70 backdrop-blur-[2px] z-20 h-screen">
 		<LoadingAnimation />
 	</div>
+{/if}
+
+{#if transformerRegistry}
+	<div>{JSON.stringify(transformerRegistry)}</div>
 {/if}
 
 <div class="py-5 grid place-items-center h-screen">

@@ -30,7 +30,7 @@ use crate::{
     transformer,
     transformer::{
         LodSelection, Selection, SelectionOptions, TransformerConfig, TransformerConfig2,
-        TransformerOption, TransformerOption2, TransformerRegistry, TransformerRegistry2,
+        TransformerOption, TransformerRegistry, TransformerRegistry2,
     },
 };
 
@@ -72,44 +72,31 @@ impl DataSinkProviderTest for GltfSinkProvider {
         params
     }
 
-    // fn available_transformer(&self) -> TransformerRegistry {
-    //     let mut settings: TransformerRegistry = TransformerRegistry::new();
-
-    //     settings.insert(TransformerConfig {
-    //         key: "use_texture".to_string(),
-    //         label: "テクスチャの使用".to_string(),
-    //         is_enabled: false,
-    //         requirements: vec![transformer::Requirement::UseAppearance],
-    //     });
-
-    //     settings
-    // }
-
     fn available_transformer(&self) -> TransformerRegistry2 {
         let mut settings: TransformerRegistry2 = TransformerRegistry2::new();
-
-        settings.insert(TransformerConfig2 {
-            key: "use_texture".to_string(),
-            label: "テクスチャの使用".to_string(),
-            parameter: transformer::ParameterType::Boolean(false),
-            requirements: vec![transformer::Requirement2::UseAppearance],
-        });
 
         settings.insert(TransformerConfig2 {
             key: "use_lod".to_string(),
             label: "出力LODの選択".to_string(),
             parameter: transformer::ParameterType::Selection(Selection {
                 options: vec![
-                    SelectionOptions::new("最大LOD", "MaxLOD"),
-                    SelectionOptions::new("最小LOD", "MinLOD"),
-                    SelectionOptions::new("LOD0", "LOD0"),
-                    SelectionOptions::new("LOD1", "LOD1"),
-                    SelectionOptions::new("LOD2", "LOD2"),
-                    SelectionOptions::new("LOD3", "LOD3"),
+                    SelectionOptions::new("最大LOD", "max_lod"),
+                    SelectionOptions::new("最小LOD", "min_lod"),
+                    SelectionOptions::new("LOD0", "lod0"),
+                    SelectionOptions::new("LOD1", "lod1"),
+                    SelectionOptions::new("LOD2", "lod2"),
+                    SelectionOptions::new("LOD3", "lod3"),
+                    SelectionOptions::new("LOD4", "lod4"),
                 ],
-                selected_value: "LOD1".to_string(),
+                selected_value: "max_lod".to_string(),
             }),
-            requirements: vec![transformer::Requirement2::UseLod(LodSelection::Lod2)],
+            requirements: vec![transformer::Requirement2::UseLod(LodSelection::MaxLod)],
+        });
+        settings.insert(TransformerConfig2 {
+            key: "use_texture".to_string(),
+            label: "テクスチャの使用".to_string(),
+            parameter: transformer::ParameterType::Boolean(false),
+            requirements: vec![transformer::Requirement2::UseAppearance],
         });
 
         settings
@@ -195,24 +182,16 @@ pub struct PrimitiveInfo {
 pub type Primitives = HashMap<material::Material, PrimitiveInfo>;
 
 impl DataSinkTest for GltfSink {
-    fn make_requirements(&mut self, properties: Vec<TransformerOption2>) -> DataRequirements {
+    fn make_requirements(&mut self, properties: TransformerRegistry2) -> DataRequirements {
         let default_requirements: DataRequirements = DataRequirements {
             resolve_appearance: true,
             key_value: crate::transformer::KeyValueSpec::JsonifyObjectsAndArrays,
-            // NOTE: test
-            lod_filter: transformer::LodFilterSpec {
-                mask: transformer::LodMask::all(),
-                mode: transformer::LodFilterMode::Lod1,
-            },
             ..Default::default()
         };
 
-        // for prop in properties {
-        //     let _ = &self
-        //         .transform_settings
-        //         .update_transformer(Some(prop.key.clone()), prop.);
-        //     // .update_transformer(&prop.key, prop.is_enabled);
-        // }
+        for config in properties.configs.iter() {
+            let _ = &self.transform_settings.update_transformer(config.clone());
+        }
 
         self.transform_settings.build(default_requirements)
     }

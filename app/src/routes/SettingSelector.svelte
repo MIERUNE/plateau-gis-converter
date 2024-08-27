@@ -7,19 +7,12 @@
 	import { invoke } from '@tauri-apps/api/tauri';
 	import type { SinkParameters } from '$lib/sinkparams';
 	import type { TransformerRegistry } from '$lib/transformer';
-	import {
-		isSelectionArray,
-		isBooleanConfig,
-		hasSelection,
-		isBoolean,
-		isSelectionConfig
-	} from '$lib/transformer';
+	import { isBooleanConfig, isSelectionConfig } from '$lib/transformer';
 	import {
 		isIntegerParameter,
 		isStringParameter,
 		isBooleanParameter,
-		createRangeArray,
-		isSelectionParameter
+		createRangeArray
 	} from '$lib/sinkparams';
 	import Icon from '@iconify/svelte';
 	import { dialog } from '@tauri-apps/api';
@@ -83,13 +76,8 @@
 	}
 
 	$: setSinkParameter(filetype);
-
-	let selectedOptions = {};
 </script>
 
-{#if transformerRegistry}
-	<pre>{JSON.stringify(transformerRegistry, null, 2)}</pre>
-{/if}
 <div>
 	<div class="flex items-center gap-1.5">
 		<Icon class="text-xl" icon="material-symbols:settings" />
@@ -152,7 +140,7 @@
 									</label>
 								</div>
 							</div>
-						{:else if true}
+						{:else if isSelectionConfig(config.parameter)}
 							<div class="flex gap-2 w-80">
 								<label for={config.key} class="w-2/4">{config.label}</label>
 								<select
@@ -166,7 +154,6 @@
 								</select>
 							</div>
 						{/if}
-						{hasSelection(config.parameter)}
 					{/each}
 				{/if}
 

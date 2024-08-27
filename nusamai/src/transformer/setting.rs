@@ -175,59 +175,99 @@ impl TransformerRegistry2 {
         self.configs.push(def);
     }
 
-    pub fn update_transformer(&mut self, parameter: ParameterType) -> Result<(), PipelineError> {
-        println!("{:?}", parameter);
-        for def in &mut self.configs {
-            // Ignored if key does not exist
-            // if def.selection == selection {
-            //     // def.is_enabled = is_enabled;
-            // }
-        }
-
-        Ok(())
+    pub fn update_transformer(&mut self, config: TransformerConfig2) {
+        self.configs = self
+            .configs
+            .iter()
+            .map(|c| {
+                if c.key == config.key {
+                    config.clone()
+                } else {
+                    c.clone()
+                }
+            })
+            .collect();
     }
 
     pub fn build(&self, default_requirements: DataRequirements) -> DataRequirements {
         let mut data_requirements = default_requirements;
 
-        // for config in &self.configs {
-        //     if !config.parameter.is_none() {
-        //         continue;
-        //     }
-        //     for req in config.requirements.clone() {
-        //         match req {
-        //             Requirement2::UseAppearance => data_requirements.set_appearance(true),
-        //             Requirement2::NotUseAppearance => data_requirements.set_appearance(false),
-        //             Requirement2::UseMaxLod => {
-        //                 data_requirements.set_lod_filter(transformer::LodFilterSpec {
-        //                     mode: transformer::LodFilterMode::Highest,
-        //                     ..Default::default()
-        //                 })
-        //             }
-        //             Requirement2::UseMinLod => {
-        //                 data_requirements.set_lod_filter(transformer::LodFilterSpec {
-        //                     mode: transformer::LodFilterMode::Lowest,
-        //                     ..Default::default()
-        //                 })
-        //             }
-        //             Requirement2::UseLod(selection) => {
-        //                 let mode = match selection {
-        //                     LodSelection::MaxLod => transformer::LodFilterMode::Highest,
-        //                     LodSelection::MinLod => transformer::LodFilterMode::Lowest,
-        //                     LodSelection::Lod0 => transformer::LodFilterMode::Lod0,
-        //                     LodSelection::Lod1 => transformer::LodFilterMode::Lod1,
-        //                     LodSelection::Lod2 => transformer::LodFilterMode::Lod2,
-        //                     LodSelection::Lod3 => transformer::LodFilterMode::Lod3,
-        //                     LodSelection::Lod4 => transformer::LodFilterMode::Lod4,
-        //                 };
-        //                 data_requirements.set_lod_filter(transformer::LodFilterSpec {
-        //                     mode,
-        //                     ..Default::default()
-        //                 })
-        //             }
-        //         }
-        //     }
-        // }
+        for config in &self.configs {
+            // NOTE:configのparameterによって処理を分岐
+            match &config.parameter {
+                ParameterType::String(value) => {
+                    // TODO: String型の場合の処理
+                }
+                ParameterType::Boolean(value) => {
+                    if *value && config.key == "use_texture" {
+                        for req in &config.requirements {
+                            match req {
+                                Requirement2::UseAppearance => {
+                                    data_requirements.set_appearance(true);
+                                }
+                                Requirement2::NotUseAppearance => {
+                                    data_requirements.set_appearance(false);
+                                }
+                                _ => {}
+                            }
+                        }
+                    }
+                }
+                ParameterType::Integer(value) => {
+                    // TODO: Integer型の場合の処理
+                }
+                ParameterType::Selection(value) => {
+                    if config.key == "use_lod" {
+                        println!("{}", value.selected_value);
+                        match value.selected_value.as_str() {
+                            "max_lod" => {
+                                data_requirements.set_lod_filter(transformer::LodFilterSpec {
+                                    mode: transformer::LodFilterMode::Highest,
+                                    ..Default::default()
+                                })
+                            }
+                            "min_lod" => {
+                                data_requirements.set_lod_filter(transformer::LodFilterSpec {
+                                    mode: transformer::LodFilterMode::Lowest,
+                                    ..Default::default()
+                                })
+                            }
+                            "lod0" => {
+                                data_requirements.set_lod_filter(transformer::LodFilterSpec {
+                                    mode: transformer::LodFilterMode::Lod0,
+                                    ..Default::default()
+                                })
+                            }
+                            "lod1" => {
+                                data_requirements.set_lod_filter(transformer::LodFilterSpec {
+                                    mode: transformer::LodFilterMode::Lod1,
+                                    ..Default::default()
+                                })
+                            }
+                            "lod2" => {
+                                data_requirements.set_lod_filter(transformer::LodFilterSpec {
+                                    mode: transformer::LodFilterMode::Lod2,
+                                    ..Default::default()
+                                })
+                            }
+                            "lod3" => {
+                                data_requirements.set_lod_filter(transformer::LodFilterSpec {
+                                    mode: transformer::LodFilterMode::Lod3,
+                                    ..Default::default()
+                                })
+                            }
+                            "lod4" => {
+                                data_requirements.set_lod_filter(transformer::LodFilterSpec {
+                                    mode: transformer::LodFilterMode::Lod4,
+                                    ..Default::default()
+                                })
+                            }
+                            _ => {}
+                        }
+                    }
+                }
+            }
+        }
 
         data_requirements
     }
@@ -237,11 +277,4 @@ impl TransformerRegistry2 {
 pub struct TransformerOption {
     pub key: String,
     pub is_enabled: bool,
-}
-
-// NOTE:test
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct TransformerOption2 {
-    pub key: String,
-    pub value: String,
 }

@@ -22,7 +22,7 @@ use nusamai::{
     source::{citygml::CityGmlSourceProvider, DataSourceProvider},
     transformer::{
         self, MappingRules, MultiThreadTransformer, NusamaiTransformBuilder, TransformBuilder,
-        TransformerOption, TransformerOption2, TransformerRegistry, TransformerRegistry2,
+        TransformerOption, TransformerRegistry, TransformerRegistry2,
     },
 };
 use nusamai_plateau::models::TopLevelCityObject;
@@ -146,12 +146,11 @@ fn run_conversion(
     filetype: String,
     epsg: u16,
     rules_path: String,
-    transformer_options: Vec<TransformerOption2>,
+    transformer_registry: TransformerRegistry2,
     sink_parameters: Parameters,
     tasks_state: tauri::State<ConversionTasksState>,
     window: tauri::Window,
 ) -> Result<(), Error> {
-    println!("input_paths: {:?}", input_paths);
     // Request cancellation of previous task if still running
     tasks_state.canceller.lock().unwrap().cancel();
 
@@ -203,7 +202,9 @@ fn run_conversion(
         sink_provider.create(&sink_params)
     };
 
-    let mut requirements = sink.make_requirements(transformer_options);
+    println!("{:#?}", transformer_registry);
+
+    let mut requirements = sink.make_requirements(transformer_registry);
     requirements.set_output_epsg(epsg);
 
     let source = {
@@ -319,8 +320,6 @@ fn get_transform(filetype: String) -> Result<TransformerRegistry2, Error> {
     })?;
 
     let transformer_registry = sink_provider.available_transformer();
-
-    println!("{:?}", transformer_registry);
 
     Ok(transformer_registry)
 }
