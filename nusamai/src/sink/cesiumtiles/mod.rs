@@ -46,7 +46,7 @@ use crate::{
 };
 use utils::calculate_normal;
 
-const MAX_PIXEL_PER_DISTANCE: f64 = 15.0;
+const MAX_PIXEL_PER_DISTANCE: f64 = 30.0;
 
 // WARN: This function has an equivalent in `atlas-packer/src/texture.rs`.
 fn uv_to_pixel_coords(uv_coords: &[(f64, f64)], width: u32, height: u32) -> Vec<(u32, u32)> {
