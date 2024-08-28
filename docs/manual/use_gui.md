@@ -104,12 +104,12 @@ Serving HTTP on :: port 8000 (http://[::]:8000/) ...
 
 ![alt text](../resources/useGui_image-14.png)
 
-- その他ファイル形式と同様に、設定を行います。
+その他ファイル形式と同様に、設定を行います。
 
-  - 3D Tilesでは、座標参照系を変換することができません。仕様上、EPSG:4978の座標系に変換されます。
-  - 3D Tilesは大量のファイルが出力されるため、出力先にはフォルダ名のみ指定します。
-  - **※3D Tilesでは、MVTよりもさらに大量のメモリ・CPUリソースを消費します。マシンによっては実行できませんので、ご注意ください。**
-    - 尚且つ、出力されるファイル群はサイズが非常に大きいため、東京23区全域などを変換する場合、ファイル数・総容量に注意してください。
+- 3D Tilesでは、座標参照系を変換することができません。仕様上、EPSG:4978の座標系に変換されます。
+- 3D Tilesは大量のファイルが出力されるため、出力先にはフォルダ名のみ指定します。
+- **※3D Tilesでは、MVTよりもさらに大量のメモリ・CPUリソースを消費します。マシンによっては実行できませんので、ご注意ください。**
+  - 尚且つ、出力されるファイル群はサイズが非常に大きいため、東京23区全域などを変換する場合、ファイル数・総容量に注意してください。
 - 例として、テクスチャ付きLOD2データの存在する `~/13104_shinjuku-ku_city_2023_citygml_1_op/udx/bldg/53394536_bldg_6697_op.gml`を選択します。
 
   - 「テクスチャの使用」を有効にすることで、テクスチャ付きで3D Tilesを出力することができます。
@@ -189,7 +189,7 @@ Serving HTTP on :: port 8000 (http://[::]:8000/) ...
     viewer.scene.screenSpaceCameraController.enableCollisionDetection = false;
     viewer.scene.globe.depthTestAgainstTerrain = true;
 
-    // Set your 3DTiles
+    // Set your 3D Tiles
     const tileset = await Cesium.Cesium3DTileset.fromUrl("tileset.json");
     viewer.scene.primitives.add(tileset);
     viewer.zoomTo(tileset);
@@ -211,8 +211,6 @@ Serving HTTP on :: port 8000 (http://[::]:8000/) ...
   - 3Dモデルの形状データを記録するファイル形式で、頂点座標や面の情報などをテキスト形式で記述する
   - マテリアル情報は別ファイル(.mtl)で定義し、テクスチャマッピングなども可能
 
-#### 変換方法
-
 - その他ファイル形式と同様に、設定を行います。
 
   - OBJでは、座標参照系を変換することができません。
@@ -222,7 +220,7 @@ Serving HTTP on :: port 8000 (http://[::]:8000/) ...
 
   - 「テクスチャの使用」を有効にすることで、テクスチャ付きでOBJを出力することができます。
   - 「オブジェクトを分割する」を有効にすることで、地物ごとにオブジェクトを分割することができます。
-- 作成したOBJはBlenderなどを利用して読み込みことが可能である。
+- 作成したOBJはBlenderなどを利用して読み込みことが可能である
 
 ![alt text](../resources/use_gui_image-7.png)
 
@@ -335,6 +333,7 @@ Serving HTTP on :: port 8000 (http://[::]:8000/) ...
     }
   }
   ```
+
 - `rules.json`例
 
   ```json
@@ -351,6 +350,7 @@ Serving HTTP on :: port 8000 (http://[::]:8000/) ...
     }
   }
   ```
+
 - `設定`の `属性マッピングルール`に `rules.json`を指定します。
 
 ![alt text](../resources/useGui_image-17.png)
