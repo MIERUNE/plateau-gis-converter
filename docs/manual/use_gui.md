@@ -19,19 +19,20 @@ Windowsで利用する場合も、同様のUI・手順で利用することが�
 ![alt text](../resources/useGui_image.png)
 
 - `選択`ボタンをクリックし、変換したいファイルを選択します。
-  - ダウンロード・解凍したデータから`~/sample_data/13100_tokyo23-ku_2022_citygml_1_2_op/udx/bldg`以下の.gmlファイルを選択します。
+  - ダウンロード・解凍したデータから `~/sample_data/13100_tokyo23-ku_2022_citygml_1_2_op/udx/bldg`以下の.gmlファイルを選択します。
   - 複数ファイル選択することも可能です。
 
 ![alt text](../resources/useGui_image-1.png)
 
-- `ファイル形式`を`GeoPackage`に選択します。
+- `ファイル形式`を `GeoPackage`に選択します。
 
 ![alt text](../resources/useGui_image-2.png)
 
 - 座標参照系を変換したい座標系に変えます。
-  - 座標参照系は、GeoPackageおよびShapefile選択時にのみ変更することができます。
 
+  - 座標参照系は、GeoPackageおよびShapefile選択時にのみ変更することができます。
 - 出力先を指定します。
+
   - 拡張子は自動で付与されるので、ファイル名のみを指定してください。
 
 ![alt text](../resources/useGui_image-3.png)
@@ -61,9 +62,9 @@ Windowsで利用する場合も、同様のUI・手順で利用することが�
 
 - GeoPackageと同様に設定を変更していきます。
   - MVTでは、座標参照系を変換することができません。仕様上、EPSG:3857の座標系に変換されます。
-  - MVTは大規模データの取り扱いに長けているため、ここでは`bldg`フォルダを選択し、全ての.gmlファイルを選択します。
+  - MVTは大規模データの取り扱いに長けているため、ここでは `bldg`フォルダを選択し、全ての.gmlファイルを選択します。
     - ※大量のメモリ・CPUリソースを消費します。マシンによっては実行できませんので、ご注意ください。
-  - 出力データ形式は`Vector Tiles`を選択します。
+  - 出力データ形式は `Vector Tiles`を選択します。
   - MVTは大量のファイルが出力されるため、出力先にはフォルダ名のみ指定します。
 
 ![alt text](../resources/useGui_image-9.png)
@@ -74,20 +75,20 @@ Windowsで利用する場合も、同様のUI・手順で利用することが�
 
 - MVTはWebGISでの利用を想定しているため、QGISで利用するためには、ローカルサーバーを立ち上げる必要があります。
   - 生成されたファイル群をどこかへホスティングしても良いです。
-- ターミナルなどを利用し、生成された`sample`（など、指定したフォルダ名）フォルダの中に移動します。
+- ターミナルなどを利用し、生成された `sample`（など、指定したフォルダ名）フォルダの中に移動します。
   - `cd ~/Downloads/sample_data/sample`など
-- Pythonの`http.server`を利用してローカルサーバーを立ち上げます。
+- Pythonの `http.server`を利用してローカルサーバーを立ち上げます。
 
 ```bash
 % python -m http.server
 Serving HTTP on :: port 8000 (http://[::]:8000/) ...
 ```
 
-- ブラウザで`http://localhost:8000`にアクセスすると、以下のように生成されたファイル一覧が表示されていれば成功です。
+- ブラウザで `http://localhost:8000`にアクセスすると、以下のように生成されたファイル一覧が表示されていれば成功です。
 
 ![alt text](../resources/useGui_image-11.png)
 
-- QGISのブラウザパネルから`Vector Tiles`->`新規一般接続`を選択し、`http://localhost:8000/{z}/{x}/{y}.pbf`を追加します。
+- QGISのブラウザパネルから `Vector Tiles`->`新規一般接続`を選択し、`http://localhost:8000/{z}/{x}/{y}.pbf`を追加します。
   - 名称は任意です。
 
 ![alt text](../resources/useGui_image-12.png)
@@ -96,33 +97,35 @@ Serving HTTP on :: port 8000 (http://[::]:8000/) ...
 
 ![alt text](../resources/useGui_image-13.png)
 
-### 3DTilesに変換する
+### 3D Tilesに変換する
 
-- [3DTiles](https://www.cesium.com/3d-tiles/)は、点群データや建築物などの大規模3Dデータをタイル形式に分割し、Web上で利用するためのファイル形式です。
+- [3D Tiles](https://www.cesium.com/3d-tiles/)は、点群データや建築物などの大規模3Dデータをタイル形式に分割し、Web上で利用するためのファイル形式です。
   - 3Dモデルデータ（glTF）をタイル形式で格納するため、高速にデータを読み込むことができます。
 
 ![alt text](../resources/useGui_image-14.png)
 
 - その他ファイル形式と同様に、設定を行います。
-  - 3DTilesでは、座標参照系を変換することができません。仕様上、EPSG:4978の座標系に変換されます。
-  - 3DTilesは大量のファイルが出力されるため、出力先にはフォルダ名のみ指定します。
-  - ※3DTilesでは、MVTよりもさらに大量のメモリ・CPUリソースを消費します。マシンによっては実行できませんので、ご注意ください。
-    - 尚且つ、出力されるファイル群は非常に大きいため、東京23区全域などを変換する場合、ファイル数・総容量に注意してください。
 
-- 例として、テクスチャ付きLOD2データの存在する`~/sample_data/13100_tokyo23-ku_2022_citygml_1_2_op/udx/bldg/53394601_bldg_6697_2_op.gml`を選択します。
-  - テクスチャは自動的に取り込まれるため、テクスチャファイルは選択する必要はありません。
+  - 3D Tilesでは、座標参照系を変換することができません。仕様上、EPSG:4978の座標系に変換されます。
+  - 3D Tilesは大量のファイルが出力されるため、出力先にはフォルダ名のみ指定します。
+  - **※3D Tilesでは、MVTよりもさらに大量のメモリ・CPUリソースを消費します。マシンによっては実行できませんので、ご注意ください。**
+    - 尚且つ、出力されるファイル群はサイズが非常に大きいため、東京23区全域などを変換する場合、ファイル数・総容量に注意してください。
+- 例として、テクスチャ付きLOD2データの存在する `~/13104_shinjuku-ku_city_2023_citygml_1_op/udx/bldg/53394536_bldg_6697_op.gml`を選択します。
 
-![alt text](../resources/useGui_image-15.png)
+  - 「テクスチャの使用」を有効にすることで、テクスチャ付きで3D Tilesを出力することができます。
 
-- MVTと同様、出力された`sample_3dtiles`（など、指定したフォルダ名）フォルダに移動し、Pythonの`http.server`を利用してローカルサーバーを立ち上げます。
+![alt text](../resources/use_gui_image-4.png)
+
+- MVTと同様、出力された `3dtiles_textured`（など、指定したフォルダ名）フォルダに移動し、Pythonの `http.server`を利用してローカルサーバーを立ち上げます。
 
 ```bash
-% cd ~/sample_data/sample_3dtiles
+% cd ~/sample_data/3dtiles_textured
 % python -m http.server
 Serving HTTP on :: port 8000 (http://[::]:8000/) ...
 ```
 
-- `sample_3dtiles`フォルダ内に以下のような`index.html`を追加します。
+- `3dtiles_textured`フォルダ内など、任意の箇所に以下のような `index.html`を追加します。
+  - `index.html`の `const tileset = await Cesium.Cesium3DTileset.fromUrl("tileset.json");`の箇所に `tileset.json`の適切なパスを設定することで3D Tilesが読み込まれます。
   - Cesiumの詳しい利用方法については[こちら](https://www.mlit.go.jp/plateau/learning/tpc06-1/)を参照してください。
 
 ```html
@@ -131,9 +134,9 @@ Serving HTTP on :: port 8000 (http://[::]:8000/) ...
  <head>
   <meta charset="UTF-8" />
   <title>Cesium</title>
-  <script src="https://cesium.com/downloads/cesiumjs/releases/1.115/Build/Cesium/Cesium.js"></script>
+  <script src="https://cesium.com/downloads/cesiumjs/releases/1.120/Build/Cesium/Cesium.js"></script>
   <link
-   href="https://cesium.com/downloads/cesiumjs/releases/1.115/Build/Cesium/Widgets/widgets.css"
+   href="https://cesium.com/downloads/cesiumjs/releases/1.120/Build/Cesium/Widgets/widgets.css"
    rel="stylesheet"
   />
   <style>
@@ -162,14 +165,15 @@ Serving HTTP on :: port 8000 (http://[::]:8000/) ...
  <body>
   <div id="cesiumContainer"></div>
   <script>
-   // Set your token
+   // Cesium ion token for the plateau-terrain-streaming
+   // https://github.com/Project-PLATEAU/plateau-streaming-tutorial/blob/main/terrain/plateau-terrain-streaming.md
    Cesium.Ion.defaultAccessToken =
-    "<Your Token>";
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJlNjk0MTM4NC1lMWI0LTQxNTgtYjcxZS01ZWJhMGJlMTE1MWQiLCJpZCI6MTQ5ODk3LCJpYXQiOjE3MTUxNTEyODZ9.2aUmEQ2-fDsjf-XeC6-hZpwkgwLse3yXoXF4xTOvPAY";
 
    async function setup() {
     const viewer = new Cesium.Viewer("cesiumContainer", {
      terrainProvider: await Cesium.CesiumTerrainProvider.fromIonAssetId(
-      770371,
+      2488101,
       { requestVertexNormals: true }
      ),
      shadows: true,
@@ -199,7 +203,28 @@ Serving HTTP on :: port 8000 (http://[::]:8000/) ...
 
 - `localhost:8000`にアクセスすると、以下のように3DTilesが表示されます。
 
-![alt text](../resources/useGui_image-16.png)
+![alt text](../resources/use_gui_image-5.png)
+
+### Wavefront OBJ形式に変換する
+
+- [OBJ](https://ja.wikipedia.org/wiki/Wavefront_.obj%E3%83%95%E3%82%A1%E3%82%A4%E3%83%AB)は、多くの3DCGソフトウェアで採用され、標準的なデータ交換形式の1つである
+  - 3Dモデルの形状データを記録するファイル形式で、頂点座標や面の情報などをテキスト形式で記述する
+  - マテリアル情報は別ファイル(.mtl)で定義し、テクスチャマッピングなども可能
+
+#### 変換方法
+
+- その他ファイル形式と同様に、設定を行います。
+
+  - OBJでは、座標参照系を変換することができません。
+  - OBJ形式はテキストデータのため、大規模な変換には向きません。
+    - 尚且つ、出力されるファイル群はサイズが非常に大きいため、東京23区全域などを変換する場合、ファイル数・総容量に注意してください。
+- 例として、テクスチャ付きLOD2データの存在する `~/13104_shinjuku-ku_city_2023_citygml_1_op/udx/bldg/53394536_bldg_6697_op.gml`を選択します。
+
+  - 「テクスチャの使用」を有効にすることで、テクスチャ付きでOBJを出力することができます。
+  - 「オブジェクトを分割する」を有効にすることで、地物ごとにオブジェクトを分割することができます。
+- 作成したOBJはBlenderなどを利用して読み込みことが可能である。
+
+![alt text](../resources/use_gui_image-7.png)
 
 ### Minecraft（Java版）形式に変換する
 
@@ -234,10 +259,10 @@ Serving HTTP on :: port 8000 (http://[::]:8000/) ...
 
 #### 変換方法
 
-- 他のファイル形式と同様に入力ファイルを設定し、ファイル形式を`Minecraft`に変更していきます。
+- 他のファイル形式と同様に入力ファイルを設定し、ファイル形式を `Minecraft`に変更していきます。
 - 出力にはフォルダ名を指定します。
   - 出力先に設定したフォルダ名が「ワールド名」になり、Minecraft上での識別子になります。
-  - 出力先にはMinecraftのワールド情報を保存する`saves`フォルダに指定することで、すぐにMinecraft上でプレイすることができます。
+  - 出力先にはMinecraftのワールド情報を保存する `saves`フォルダに指定することで、すぐにMinecraft上でプレイすることができます。
     - `saves`フォルダはOSによって場所が異なります。
       - Windows: `C:\Users\<USER_NAME>\AppData\Roaming\.minecraft\saves`
       - MacOS: `~/Library/Application Support/minecraft/saves`
@@ -256,61 +281,60 @@ Serving HTTP on :: port 8000 (http://[::]:8000/) ...
 ### 属性名を変換する
 
 - 属性名などに日本語名などを利用したい場合は、`rules.json`を利用して属性名を変換します。
-- 属性名変換用の`rules.json`の構文を以下に説明します。
+- 属性名変換用の `rules.json`の構文を以下に説明します。
 
   `rename`にnamespace、元の属性名、変換後の属性名を記述します。
 
-    ```json
-    {
-      "rename": {
-        "{namespace}:{元の属性名}": "{変更後の属性名}" ,
-        ...,
-      }
+  ```json
+  {
+    "rename": {
+      "{namespace}:{元の属性名}": "{変更後の属性名}" ,
+      ...,
     }
-    ```
-
-  例えば、`uro:buildingIDAttribute`を`建物ID`に変換したい場合は、以下のように記述します。
-
-    ```json
-    {
-      "rename": {
-        "uro:buildingIDAttribute": "建物ID",
-      }
-    }
-    ```
-
-  また、このようにnamespaceを`*`とすることによってrenameルールが全てのnamespaceに適用されます。
-
-    ```json
-    {
-      "rename": {
-        "*:{元の属性名}": "{変更後の属性名}" ,
-        ...,
-      }
-    }
-    ```
-
-    例：
-
-    ```json
-    {
-      "rename": {
-        "*:buildingIDAttribute": "建物ID",
-      }
-    }
+  }
   ```
 
-  `*`を利用し、異なるnamespaceの同名属性に対してrenameルールを指定する場合、より具体的なnamespace表記が優先されます。例えば、以下のように指定する場合、`luse:class`が`土地利用区分`に変換され、namespaceが`luse`以外の`class`属性が`分類`に変換されます。`*`の利用は`*:{元の属性名}`の形に限ります。
+  例えば、`uro:buildingIDAttribute`を `建物ID`に変換したい場合は、以下のように記述します。
 
-    ```json
-    {
-      "rename": {
-        "*:class": "分類",
-        "luse:class": "土地利用区分"
-      }
+  ```json
+  {
+    "rename": {
+      "uro:buildingIDAttribute": "建物ID",
     }
-    ```
+  }
+  ```
 
+  また、このようにnamespaceを `*`とすることによってrenameルールが全てのnamespaceに適用されます。
+
+  ```json
+  {
+    "rename": {
+      "*:{元の属性名}": "{変更後の属性名}" ,
+      ...,
+    }
+  }
+  ```
+
+  例：
+
+  ```json
+  {
+    "rename": {
+      "*:buildingIDAttribute": "建物ID",
+    }
+  }
+  ```
+
+  `*`を利用し、異なるnamespaceの同名属性に対してrenameルールを指定する場合、より具体的なnamespace表記が優先されます。例えば、以下のように指定する場合、`luse:class`が `土地利用区分`に変換され、namespaceが `luse`以外の `class`属性が `分類`に変換されます。`*`の利用は `*:{元の属性名}`の形に限ります。
+
+  ```json
+  {
+    "rename": {
+      "*:class": "分類",
+      "luse:class": "土地利用区分"
+    }
+  }
+  ```
 - `rules.json`例
 
   ```json
@@ -327,8 +351,7 @@ Serving HTTP on :: port 8000 (http://[::]:8000/) ...
     }
   }
   ```
-
-- `設定`の`属性マッピングルール`に`rules.json`を指定します。
+- `設定`の `属性マッピングルール`に `rules.json`を指定します。
 
 ![alt text](../resources/useGui_image-17.png)
 
