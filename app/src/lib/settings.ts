@@ -47,7 +47,6 @@ const filetypeOptions: Record<string, { label: string; extensions: string[]; eps
 			extensions: [],
 			epsg: [{ value: 4979, label: 'WGS 84 (EPSG:4979)' }]
 		},
-
 		cesiumtiles: {
 			label: '3D Tiles',
 			extensions: [''],
@@ -61,13 +60,11 @@ const filetypeOptions: Record<string, { label: string; extensions: string[]; eps
 			extensions: [''],
 			epsg: [{ value: 4979, label: 'WGS 84' }]
 		},
-
 		czml: {
 			label: 'CZML',
 			extensions: ['json'],
 			epsg: [{ value: 4979, label: 'WGS 84 (EPSG:4979)' }]
 		},
-
 		kml: {
 			label: 'KML',
 			extensions: ['kml'],
@@ -78,12 +75,6 @@ const filetypeOptions: Record<string, { label: string; extensions: string[]; eps
 			extensions: [''],
 			epsg: [{ value: 4979, label: 'WGS 84 (EPSG:4979)' }]
 		},
-		ply: {
-			label: 'PLY',
-			extensions: ['ply'],
-			epsg: [{ value: 4979, label: 'WGS 84 (EPSG:4979)' }]
-		},
-
 		shapefile: {
 			label: 'Shapefile',
 			extensions: [''],
