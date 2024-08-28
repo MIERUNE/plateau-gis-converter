@@ -46,6 +46,21 @@ use crate::{
 };
 use utils::calculate_normal;
 
+const MAX_PIXEL_PER_DISTANCE: f64 = 30.0;
+
+// WARN: This function has an equivalent in `atlas-packer/src/texture.rs`.
+fn uv_to_pixel_coords(uv_coords: &[(f64, f64)], width: u32, height: u32) -> Vec<(u32, u32)> {
+    uv_coords
+        .iter()
+        .map(|(u, v)| {
+            (
+                (u.clamp(0.0, 1.0) * width as f64).min(width as f64 - 1.0) as u32,
+                ((1.0 - v.clamp(0.0, 1.0)) * height as f64).min(height as f64 - 1.0) as u32,
+            )
+        })
+        .collect()
+}
+
 pub struct CesiumTilesSinkProvider {}
 
 impl DataSinkProvider for CesiumTilesSinkProvider {
@@ -502,6 +517,7 @@ fn tile_writing_stage(
                             .iter()
                             .map(|[x, y, z, u, v]| (*x, *y, *z, *u, *v))
                             .collect::<Vec<(f64, f64, f64, f64, f64)>>();
+
                         let uv_coords = original_vertices
                             .iter()
                             .map(|(_, _, _, u, v)| (*u, *v))
@@ -509,7 +525,46 @@ fn tile_writing_stage(
 
                         let texture_uri = base_texture.uri.to_file_path().unwrap();
                         let texture_size = texture_size_cache.get_or_insert(&texture_uri);
-                        let factor = apply_downsample_factor(tile_zoom);
+
+                        let pixel_coords =
+                            uv_to_pixel_coords(&uv_coords, texture_size.0, texture_size.1);
+
+                        let pixel_per_distance = (0..original_vertices.len())
+                            .map(|i| {
+                                let j = (i + 1) % original_vertices.len();
+                                let (euc0, txl0) = (
+                                    (
+                                        original_vertices[i].0,
+                                        original_vertices[i].1,
+                                        original_vertices[i].2,
+                                    ),
+                                    pixel_coords[i],
+                                );
+                                let (euc1, txl1) = (
+                                    (
+                                        original_vertices[j].0,
+                                        original_vertices[j].1,
+                                        original_vertices[j].2,
+                                    ),
+                                    pixel_coords[j],
+                                );
+                                let euc_dist = ((euc0.0 - euc1.0).powi(2)
+                                    + (euc0.1 - euc1.1).powi(2)
+                                    + (euc0.2 - euc1.2).powi(2))
+                                .sqrt();
+                                let txl_dist = ((txl0.0 as f64 - txl1.0 as f64).powi(2)
+                                    + (txl0.1 as f64 - txl1.1 as f64).powi(2))
+                                .sqrt();
+                                txl_dist / euc_dist
+                            })
+                            .min_by(|a, b| a.total_cmp(b))
+                            .unwrap_or(1.0);
+
+                        let max_pixel_per_distance = MAX_PIXEL_PER_DISTANCE;
+                        let downsample_scale =
+                            (1.0_f64).min(max_pixel_per_distance / pixel_per_distance);
+                        let factor = apply_downsample_factor(tile_zoom, downsample_scale as f32);
+
                         let downsample_factor = DownsampleFactor::new(&factor);
                         let cropped_texture = CroppedTexture::new(
                             &texture_uri,
@@ -675,11 +730,12 @@ fn tile_writing_stage(
     Ok(())
 }
 
-fn apply_downsample_factor(z: u8) -> f32 {
-    match z {
+fn apply_downsample_factor(z: u8, downsample_scale: f32) -> f32 {
+    let f = match z {
         0..=14 => 0.0,
         15..=16 => 0.25,
         17 => 0.5,
         _ => 1.0,
-    }
+    };
+    f * downsample_scale
 }
