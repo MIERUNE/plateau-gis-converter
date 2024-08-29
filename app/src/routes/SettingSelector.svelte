@@ -55,8 +55,6 @@
 	async function getTransformerRegistry(filetype: string) {
 		const registry = (await invoke('get_transform', { filetype })) as any;
 
-		DEBUG = registry;
-		trace('this trace log from frontend');
 		transformerRegistry = registry;
 	}
 

@@ -17,12 +17,12 @@ use nusamai::{
         gltf::GltfSinkProvider, gpkg::GpkgSinkProvider, kml::KmlSinkProvider,
         minecraft::MinecraftSinkProvider, mvt::MvtSinkProvider, obj::ObjSinkProvider,
         ply::StanfordPlySinkProvider, serde::SerdeSinkProvider, shapefile::ShapefileSinkProvider,
-        DataSinkProvider, DataSinkProviderTest,
+        DataSinkProvider,
     },
     source::{citygml::CityGmlSourceProvider, DataSourceProvider},
     transformer::{
         self, MappingRules, MultiThreadTransformer, NusamaiTransformBuilder, TransformBuilder,
-        TransformerOption, TransformerRegistry, TransformerRegistry2,
+        TransformerOption, TransformerRegistry,
     },
 };
 use nusamai_plateau::models::TopLevelCityObject;
@@ -109,34 +109,25 @@ impl From<std::io::Error> for Error {
     }
 }
 
-// NOTE: test
-fn select_sink_provider(filetype: &str) -> Option<Box<dyn DataSinkProviderTest>> {
+fn select_sink_provider(filetype: &str) -> Option<Box<dyn DataSinkProvider>> {
     // TODO: share possible options with the frontend types (src/lib/settings.ts)
     match filetype {
+        "noop" => Some(Box::new(nusamai::sink::noop::NoopSinkProvider {})),
+        "serde" => Some(Box::new(SerdeSinkProvider {})),
+        "geojson" => Some(Box::new(GeoJsonSinkProvider {})),
+        "gpkg" => Some(Box::new(GpkgSinkProvider {})),
+        "mvt" => Some(Box::new(MvtSinkProvider {})),
+        "shapefile" => Some(Box::new(ShapefileSinkProvider {})),
+        "czml" => Some(Box::new(CzmlSinkProvider {})),
+        "kml" => Some(Box::new(KmlSinkProvider {})),
         "gltf" => Some(Box::new(GltfSinkProvider {})),
+        "ply" => Some(Box::new(StanfordPlySinkProvider {})),
+        "cesiumtiles" => Some(Box::new(CesiumTilesSinkProvider {})),
+        "minecraft" => Some(Box::new(MinecraftSinkProvider {})),
+        "obj" => Some(Box::new(ObjSinkProvider {})),
         _ => None,
     }
 }
-
-// fn select_sink_provider(filetype: &str) -> Option<Box<dyn DataSinkProvider>> {
-//     // TODO: share possible options with the frontend types (src/lib/settings.ts)
-//     match filetype {
-//         "noop" => Some(Box::new(nusamai::sink::noop::NoopSinkProvider {})),
-//         "serde" => Some(Box::new(SerdeSinkProvider {})),
-//         "geojson" => Some(Box::new(GeoJsonSinkProvider {})),
-//         "gpkg" => Some(Box::new(GpkgSinkProvider {})),
-//         "mvt" => Some(Box::new(MvtSinkProvider {})),
-//         "shapefile" => Some(Box::new(ShapefileSinkProvider {})),
-//         "czml" => Some(Box::new(CzmlSinkProvider {})),
-//         "kml" => Some(Box::new(KmlSinkProvider {})),
-//         "gltf" => Some(Box::new(GltfSinkProvider {})),
-//         "ply" => Some(Box::new(StanfordPlySinkProvider {})),
-//         "cesiumtiles" => Some(Box::new(CesiumTilesSinkProvider {})),
-//         "minecraft" => Some(Box::new(MinecraftSinkProvider {})),
-//         "obj" => Some(Box::new(ObjSinkProvider {})),
-//         _ => None,
-//     }
-// }
 
 #[tauri::command(async)]
 #[allow(clippy::too_many_arguments)]
@@ -146,7 +137,7 @@ fn run_conversion(
     filetype: String,
     epsg: u16,
     rules_path: String,
-    transformer_registry: TransformerRegistry2,
+    transformer_registry: TransformerRegistry,
     sink_parameters: Parameters,
     tasks_state: tauri::State<ConversionTasksState>,
     window: tauri::Window,
@@ -312,7 +303,7 @@ fn cancel_conversion(tasks_state: tauri::State<ConversionTasksState>) {
 
 /// Get the transform options for a given sink type
 #[tauri::command]
-fn get_transform(filetype: String) -> Result<TransformerRegistry2, Error> {
+fn get_transform(filetype: String) -> Result<TransformerRegistry, Error> {
     let sink_provider = select_sink_provider(&filetype).ok_or_else(|| {
         let msg = format!("Invalid sink type: {}", filetype);
         log::error!("{}", msg);

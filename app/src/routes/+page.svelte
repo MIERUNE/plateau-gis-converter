@@ -1,8 +1,4 @@
 <script lang="ts">
-	// NOTE debug
-	import { info, warn, trace, error, debug } from 'tauri-plugin-log-api';
-	const dettach = attachConsole();
-
 	import { message } from '@tauri-apps/api/dialog';
 	import { invoke } from '@tauri-apps/api/tauri';
 	import { attachConsole } from 'tauri-plugin-log-api';
@@ -32,26 +28,7 @@
 	async function convertAndSave() {
 		isRunning = true;
 
-		// const transformerOptions = transformerRegistry.map((transformerConfig) => {
-		// 	// return {
-		// 	// 	key: transformerConfig.key,
-		// 	// 	is_enabled: transformerConfig.is_enabled
-		// 	// };
-
-		// 	return {
-		// 		key: transformerConfig.key,
-		// 		type: 'selection',
-		// 		value:
-		// 	};
-		// });
-
 		try {
-			// debug(JSON.stringify(transformerRegistry));
-			// isRunning = false;
-			// return; // NOTE debug
-
-			// const transformerOptions = transformerRegistry;
-
 			await invoke('run_conversion', {
 				inputPaths,
 				outputPath,
@@ -80,10 +57,6 @@
 	<div class="fixed inset-0 bg-black/70 backdrop-blur-[2px] z-20 h-screen">
 		<LoadingAnimation />
 	</div>
-{/if}
-
-{#if transformerRegistry}
-	<div>{JSON.stringify(transformerRegistry)}</div>
 {/if}
 
 <div class="py-5 grid place-items-center h-screen">

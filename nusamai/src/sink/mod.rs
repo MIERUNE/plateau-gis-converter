@@ -20,7 +20,7 @@ use nusamai_projection::crs;
 use crate::{
     parameters::Parameters,
     pipeline::{Feedback, PipelineError, Receiver},
-    transformer::{self, TransformerOption, TransformerRegistry, TransformerRegistry2},
+    transformer::{self, TransformerOption, TransformerRegistry},
 };
 
 pub struct SinkInfo {
@@ -42,21 +42,6 @@ pub trait DataSinkProvider: Sync {
     fn create(&self, config: &Parameters) -> Box<dyn DataSink>;
 }
 
-// NOTE: test
-pub trait DataSinkProviderTest: Sync {
-    /// Gets basic information about the sink.
-    fn info(&self) -> SinkInfo;
-
-    /// Gets the configurable parameters of the sink.
-    fn parameters(&self) -> Parameters;
-
-    /// Gets the transform options of the sink.
-    fn available_transformer(&self) -> TransformerRegistry2;
-
-    /// Creates a sink instance.
-    fn create(&self, config: &Parameters) -> Box<dyn DataSinkTest>;
-}
-
 pub trait DataSink: Send {
     /// Start the sink process
     fn run(
@@ -67,21 +52,7 @@ pub trait DataSink: Send {
     ) -> Result<(), PipelineError>;
 
     /// Make a transform requirements with options
-    fn make_requirements(&mut self, property: Vec<TransformerOption>) -> DataRequirements;
-}
-
-// NOTE:test
-pub trait DataSinkTest: Send {
-    /// Start the sink process
-    fn run(
-        &mut self,
-        upstream: Receiver,
-        feedback: &Feedback,
-        schema: &Schema,
-    ) -> Result<(), PipelineError>;
-
-    /// Make a transform requirements with options
-    fn make_requirements(&mut self, property: TransformerRegistry2) -> DataRequirements;
+    fn make_requirements(&mut self, property: TransformerRegistry) -> DataRequirements;
 }
 
 pub struct DataRequirements {

@@ -62,18 +62,6 @@ pub enum LodSelection {
 pub enum Requirement {
     UseAppearance,
     NotUseAppearance,
-    UseMaxLod,
-    UseMinLod,
-    // ...
-}
-
-// NOTE:test
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub enum Requirement2 {
-    UseAppearance,
-    NotUseAppearance,
-    UseMaxLod,
-    UseMinLod,
     UseLod(LodSelection),
     // ...
 }
@@ -91,28 +79,13 @@ pub enum ParameterType {
 pub struct TransformerConfig {
     pub key: String,
     pub label: String,
-    pub is_enabled: bool,
+    pub parameter: ParameterType,
     pub requirements: Vec<Requirement>,
-}
-
-// NOTE:test
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct TransformerConfig2 {
-    pub key: String,
-    pub label: String,
-    pub parameter: ParameterType, // 汎用的な設定項目
-    pub requirements: Vec<Requirement2>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub struct TransformerRegistry {
     pub configs: Vec<TransformerConfig>,
-}
-
-// NOTE:test
-#[derive(Debug, Serialize, Deserialize, Clone, Default)]
-pub struct TransformerRegistry2 {
-    pub configs: Vec<TransformerConfig2>,
 }
 
 impl TransformerRegistry {
@@ -124,58 +97,7 @@ impl TransformerRegistry {
         self.configs.push(def);
     }
 
-    pub fn update_transformer(&mut self, key: &str, is_enabled: bool) -> Result<(), PipelineError> {
-        for def in &mut self.configs {
-            // Ignored if key does not exist
-            if def.key == key {
-                def.is_enabled = is_enabled;
-            }
-        }
-        Ok(())
-    }
-
-    pub fn build(&self, default_requirements: DataRequirements) -> DataRequirements {
-        let mut data_requirements = default_requirements;
-
-        for config in &self.configs {
-            if !config.is_enabled {
-                continue;
-            }
-            for req in config.requirements.clone() {
-                match req {
-                    Requirement::UseAppearance => data_requirements.set_appearance(true),
-                    Requirement::NotUseAppearance => data_requirements.set_appearance(false),
-                    Requirement::UseMaxLod => {
-                        data_requirements.set_lod_filter(transformer::LodFilterSpec {
-                            mode: transformer::LodFilterMode::Highest,
-                            ..Default::default()
-                        })
-                    }
-                    Requirement::UseMinLod => {
-                        data_requirements.set_lod_filter(transformer::LodFilterSpec {
-                            mode: transformer::LodFilterMode::Lowest,
-                            ..Default::default()
-                        })
-                    }
-                }
-            }
-        }
-
-        data_requirements
-    }
-}
-
-// NOTE:test
-impl TransformerRegistry2 {
-    pub fn new() -> Self {
-        Self { configs: vec![] }
-    }
-
-    pub fn insert(&mut self, def: TransformerConfig2) {
-        self.configs.push(def);
-    }
-
-    pub fn update_transformer(&mut self, config: TransformerConfig2) {
+    pub fn update_transformer(&mut self, config: TransformerConfig) {
         self.configs = self
             .configs
             .iter()
@@ -195,17 +117,17 @@ impl TransformerRegistry2 {
         for config in &self.configs {
             // NOTE:configのparameterによって処理を分岐
             match &config.parameter {
-                ParameterType::String(value) => {
-                    // TODO: String型の場合の処理
+                ParameterType::String(_value) => {
+                    // TODO: Processing for String types.
                 }
                 ParameterType::Boolean(value) => {
                     if *value && config.key == "use_texture" {
                         for req in &config.requirements {
                             match req {
-                                Requirement2::UseAppearance => {
+                                Requirement::UseAppearance => {
                                     data_requirements.set_appearance(true);
                                 }
-                                Requirement2::NotUseAppearance => {
+                                Requirement::NotUseAppearance => {
                                     data_requirements.set_appearance(false);
                                 }
                                 _ => {}
@@ -213,8 +135,8 @@ impl TransformerRegistry2 {
                         }
                     }
                 }
-                ParameterType::Integer(value) => {
-                    // TODO: Integer型の場合の処理
+                ParameterType::Integer(_value) => {
+                    // TODO: Processing for Integer types.
                 }
                 ParameterType::Selection(value) => {
                     if config.key == "use_lod" {
@@ -271,10 +193,4 @@ impl TransformerRegistry2 {
 
         data_requirements
     }
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct TransformerOption {
-    pub key: String,
-    pub is_enabled: bool,
 }

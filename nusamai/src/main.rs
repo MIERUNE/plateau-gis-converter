@@ -9,7 +9,7 @@ use std::{
 use clap::Parser;
 use nusamai::{
     pipeline::Canceller,
-    sink::{DataRequirements, DataSink, DataSinkProvider, DataSinkProviderTest, DataSinkTest},
+    sink::{DataRequirements, DataSink, DataSinkProvider},
     source::{citygml::CityGmlSourceProvider, DataSource, DataSourceProvider},
     transformer::{
         self, LodSelection, MappingRules, MultiThreadTransformer, NusamaiTransformBuilder,
@@ -98,20 +98,8 @@ impl clap::ValueEnum for SinkChoice {
     }
 }
 
-// impl SinkChoice {
-//     fn create_sink(&self) -> &dyn DataSinkProvider {
-//         for &provider in nusamai::BUILTIN_SINKS {
-//             if self.0 == provider.info().id_name {
-//                 return provider;
-//             }
-//         }
-//         panic!("Unknown sink choice: {:?}", self.0);
-//     }
-// }
-
-// NOTE: test
 impl SinkChoice {
-    fn create_sink(&self) -> &dyn DataSinkProviderTest {
+    fn create_sink(&self) -> &dyn DataSinkProvider {
         for &provider in nusamai::BUILTIN_SINKS {
             if self.0 == provider.info().id_name {
                 return provider;
@@ -147,7 +135,7 @@ fn main() -> ExitCode {
     let mut sink = {
         // let sink_provider: &dyn DataSinkProvider = args.sink.create_sink();
         // NOTE; test
-        let sink_provider: &dyn DataSinkProviderTest = args.sink.create_sink();
+        let sink_provider: &dyn DataSinkProvider = args.sink.create_sink();
         let mut sink_params = sink_provider.parameters();
         if let Err(err) = sink_params.update_values_with_str(&args.sinkopt) {
             log::error!("Error parsing sink options: {:?}", err);

@@ -23,20 +23,16 @@ use crate::{
     get_parameter_value,
     parameters::*,
     pipeline::{Feedback, PipelineError, Receiver, Result},
-    sink::{
-        cesiumtiles::metadata, DataRequirements, DataSink, DataSinkProviderTest, DataSinkTest,
-        SinkInfo,
-    },
+    sink::{cesiumtiles::metadata, DataRequirements, DataSink, DataSinkProvider, SinkInfo},
     transformer,
     transformer::{
-        LodSelection, Selection, SelectionOptions, TransformerConfig, TransformerConfig2,
-        TransformerOption, TransformerRegistry, TransformerRegistry2,
+        LodSelection, Selection, SelectionOptions, TransformerConfig, TransformerRegistry,
     },
 };
 
 pub struct GltfSinkProvider {}
 
-impl DataSinkProviderTest for GltfSinkProvider {
+impl DataSinkProvider for GltfSinkProvider {
     fn info(&self) -> SinkInfo {
         SinkInfo {
             id_name: "gltf".to_string(),
@@ -72,10 +68,10 @@ impl DataSinkProviderTest for GltfSinkProvider {
         params
     }
 
-    fn available_transformer(&self) -> TransformerRegistry2 {
-        let mut settings: TransformerRegistry2 = TransformerRegistry2::new();
+    fn available_transformer(&self) -> TransformerRegistry {
+        let mut settings: TransformerRegistry = TransformerRegistry::new();
 
-        settings.insert(TransformerConfig2 {
+        settings.insert(TransformerConfig {
             key: "use_lod".to_string(),
             label: "出力LODの選択".to_string(),
             parameter: transformer::ParameterType::Selection(Selection {
@@ -90,19 +86,19 @@ impl DataSinkProviderTest for GltfSinkProvider {
                 ],
                 selected_value: "max_lod".to_string(),
             }),
-            requirements: vec![transformer::Requirement2::UseLod(LodSelection::MaxLod)],
+            requirements: vec![transformer::Requirement::UseLod(LodSelection::MaxLod)],
         });
-        settings.insert(TransformerConfig2 {
+        settings.insert(TransformerConfig {
             key: "use_texture".to_string(),
             label: "テクスチャの使用".to_string(),
             parameter: transformer::ParameterType::Boolean(false),
-            requirements: vec![transformer::Requirement2::UseAppearance],
+            requirements: vec![transformer::Requirement::UseAppearance],
         });
 
         settings
     }
 
-    fn create(&self, params: &Parameters) -> Box<dyn DataSinkTest> {
+    fn create(&self, params: &Parameters) -> Box<dyn DataSink> {
         let output_path = get_parameter_value!(params, "@output", FileSystemPath);
         let transform_settings = self.available_transformer();
 
@@ -115,7 +111,7 @@ impl DataSinkProviderTest for GltfSinkProvider {
 
 pub struct GltfSink {
     output_path: PathBuf,
-    transform_settings: TransformerRegistry2,
+    transform_settings: TransformerRegistry,
 }
 
 pub struct BoundingVolume {
@@ -181,8 +177,8 @@ pub struct PrimitiveInfo {
 
 pub type Primitives = HashMap<material::Material, PrimitiveInfo>;
 
-impl DataSinkTest for GltfSink {
-    fn make_requirements(&mut self, properties: TransformerRegistry2) -> DataRequirements {
+impl DataSink for GltfSink {
+    fn make_requirements(&mut self, properties: TransformerRegistry) -> DataRequirements {
         let default_requirements: DataRequirements = DataRequirements {
             resolve_appearance: true,
             key_value: crate::transformer::KeyValueSpec::JsonifyObjectsAndArrays,

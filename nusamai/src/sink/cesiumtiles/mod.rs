@@ -34,7 +34,9 @@ use crate::{
     pipeline::{Feedback, PipelineError, Receiver, Result},
     sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo},
     transformer,
-    transformer::{TransformerConfig, TransformerOption, TransformerRegistry},
+    transformer::{
+        LodSelection, Selection, SelectionOptions, TransformerConfig, TransformerRegistry,
+    },
 };
 use utils::calculate_normal;
 
@@ -82,9 +84,26 @@ impl DataSinkProvider for CesiumTilesSinkProvider {
         let mut settings: TransformerRegistry = TransformerRegistry::new();
 
         settings.insert(TransformerConfig {
+            key: "use_lod".to_string(),
+            label: "出力LODの選択".to_string(),
+            parameter: transformer::ParameterType::Selection(Selection {
+                options: vec![
+                    SelectionOptions::new("最大LOD", "max_lod"),
+                    SelectionOptions::new("最小LOD", "min_lod"),
+                    SelectionOptions::new("LOD0", "lod0"),
+                    SelectionOptions::new("LOD1", "lod1"),
+                    SelectionOptions::new("LOD2", "lod2"),
+                    SelectionOptions::new("LOD3", "lod3"),
+                    SelectionOptions::new("LOD4", "lod4"),
+                ],
+                selected_value: "max_lod".to_string(),
+            }),
+            requirements: vec![transformer::Requirement::UseLod(LodSelection::MaxLod)],
+        });
+        settings.insert(TransformerConfig {
             key: "use_texture".to_string(),
             label: "テクスチャの使用".to_string(),
-            is_enabled: false,
+            parameter: transformer::ParameterType::Boolean(false),
             requirements: vec![transformer::Requirement::UseAppearance],
         });
 
@@ -93,35 +112,33 @@ impl DataSinkProvider for CesiumTilesSinkProvider {
 
     fn create(&self, params: &Parameters) -> Box<dyn DataSink> {
         let output_path = get_parameter_value!(params, "@output", FileSystemPath);
-        let transformer_registry = self.available_transformer();
+        let transform_settings = self.available_transformer();
 
         Box::<CesiumTilesSink>::new(CesiumTilesSink {
             output_path: output_path.as_ref().unwrap().into(),
-            transformer_registry,
+            transform_settings,
         })
     }
 }
 
 struct CesiumTilesSink {
     output_path: PathBuf,
-    transformer_registry: TransformerRegistry,
+    transform_settings: TransformerRegistry,
 }
 
 impl DataSink for CesiumTilesSink {
-    fn make_requirements(&mut self, properties: Vec<TransformerOption>) -> DataRequirements {
+    fn make_requirements(&mut self, properties: TransformerRegistry) -> DataRequirements {
         let default_requirements = DataRequirements {
             resolve_appearance: true,
             key_value: crate::transformer::KeyValueSpec::JsonifyObjects,
             ..Default::default()
         };
 
-        for prop in properties {
-            let _ = &self
-                .transformer_registry
-                .update_transformer(&prop.key, prop.is_enabled);
+        for config in properties.configs.iter() {
+            let _ = &self.transform_settings.update_transformer(config.clone());
         }
 
-        self.transformer_registry.build(default_requirements)
+        self.transform_settings.build(default_requirements)
     }
 
     fn run(&mut self, upstream: Receiver, feedback: &Feedback, schema: &Schema) -> Result<()> {
