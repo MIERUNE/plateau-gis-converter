@@ -118,7 +118,6 @@ impl ParameterEntry {
             ParameterType::String(p) => p.validate(self.required),
             ParameterType::Boolean(p) => p.validate(self.required),
             ParameterType::Integer(p) => p.validate(self.required),
-            ParameterType::Float64(p) => p.validate(self.required),
         }
     }
 
@@ -129,7 +128,6 @@ impl ParameterEntry {
             ParameterType::String(p) => p.update_value_with_str(s),
             ParameterType::Boolean(p) => p.update_value_with_str(s),
             ParameterType::Integer(p) => p.update_value_with_str(s),
-            ParameterType::Float64(p) => p.update_value_with_str(s),
         }
     }
 
@@ -140,7 +138,6 @@ impl ParameterEntry {
             ParameterType::String(p) => p.update_value_with_json(v),
             ParameterType::Boolean(p) => p.update_value_with_json(v),
             ParameterType::Integer(p) => p.update_value_with_json(v),
-            ParameterType::Float64(p) => p.update_value_with_json(v),
         }
     }
 }
@@ -151,7 +148,6 @@ pub enum ParameterType {
     String(StringParameter),
     Boolean(BooleanParameter),
     Integer(IntegerParameter),
-    Float64(Float64Parameter),
     // and so on ...
 }
 
@@ -254,44 +250,6 @@ impl BooleanParameter {
         } else {
             Err(Error::InvalidValue("Value must be a boolean.".into()))
         }
-    }
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct Float64Parameter {
-    pub value: Option<f64>,
-}
-
-impl Float64Parameter {
-    pub fn validate(&self, required: bool) -> Result<(), Error> {
-        if required {
-            match &self.value {
-                Some(_) => Ok(()),
-                _ => Err(Error::RequiredValueNotProvided),
-            }
-        } else {
-            Ok(())
-        }
-    }
-
-    pub fn update_value_with_str(&mut self, s: &str) -> Result<(), Error> {
-        let Ok(v) = s.parse::<f64>() else {
-            return Err(Error::InvalidValue("Value must be a boolean.".into()));
-        };
-        self.value = Some(v);
-        Ok(())
-    }
-
-    pub fn update_value_with_json(&mut self, v: &serde_json::Value) -> Result<(), Error> {
-        if let serde_json::Value::Number(n) = v {
-            if let Some(v) = n.as_f64() {
-                self.value = Some(v);
-                return Ok(());
-            }
-        }
-        Err(Error::InvalidValue(
-            "Value must be a floating-point number.".into(),
-        ))
     }
 }
 
