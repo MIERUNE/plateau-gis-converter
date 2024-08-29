@@ -16,7 +16,6 @@
   - 3D Tiles
   - Mapbox Vector Tiles (MVT)
   - GeoPackage
-  - GeoJSON
   - Shapefile
   - KML
   - CZML
@@ -38,7 +37,6 @@
   - [`nusamai-mvt`](./nusamai-mvt/) &mdash; Mapbox Vector Tiles (MVT)
   - [`nusamai-gpkg`](./nusamai-gpkg/) &mdash; GeoPackage
   - [`nusamai-gltf`](./nusamai-gltf/) &mdash; glTF
-  - [`nusamai-geojson`](./nusamai-geojson/) &mdash; GeoJSON
   - [`nusamai-kml`](./nusamai-kml/) &mdash; KML
   - [`nusamai-czml`](./nusamai-czml/) &mdash; CZML
   - [`nusamai-shapefile`](./nusamai-shapefile/) &mdash; Shapefile

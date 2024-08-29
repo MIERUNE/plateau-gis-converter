@@ -7,10 +7,7 @@ on:
     tags:
       - "*"
   pull_request:
-    paths:
-      - "nusamai-*/**"
-      - ".github/**"
-      - "*"
+
 env:
   CARGO_INCREMENTAL: 0
   CARGO_NET_RETRY: 10
@@ -19,42 +16,28 @@ env:
   ACTION_LOG_DISABLE: true
 
 jobs:
-  check:
-    name: cargo check
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
-      - name: Check
-        run: cargo check --all
-
-  style:
-    name: cargo fmt
-    needs: check
+  ci:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
         with:
-          components: rustfmt
+          components: clippy, rustfmt
+      - name: install required tools
+        uses: taiki-e/install-action@v2
+        with:
+          tool: taplo-cli
+      - name: Cache cargo registry
+        uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: "ci"
+      - name: check
+        run: cargo check --all
       - name: rustfmt
         run: cargo fmt --all -- --check
-
-  warnings:
-    runs-on: ubuntu-latest
-    needs: check
-    steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
-        with:
-          components: clippy
-      - name: rustfmt
+      - name: clippy
         run: cargo clippy --all -- -D warnings
-
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
-      - name: Run tests
+      - name: taplo
+        run: taplo fmt --check
+      - name: run tests
         run: cargo test --workspace --all-targets --all-features
