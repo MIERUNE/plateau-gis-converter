@@ -1,4 +1,7 @@
 use nusamai_citygml::{citygml_feature, citygml_property, CityGmlElement, Code};
+use once_cell::sync::Lazy;
+
+use crate::BoundedBy;
 
 use super::iur::uro;
 
@@ -62,3 +65,26 @@ pub struct WaterSurface {
     #[citygml(path = b"wtr:waterLevel")]
     pub water_level: Option<Code>,
 }
+
+#[allow(clippy::type_complexity)]
+pub static WATER_BODY_SURFACE_MAPPINGS: Lazy<
+    Box<dyn Fn(&WaterBoundarySurfaceProperty) -> Option<BoundedBy> + Send + Sync>,
+> = Lazy::new(|| {
+    let result = |bounded: &WaterBoundarySurfaceProperty| match bounded {
+        WaterBoundarySurfaceProperty::WaterSurface(v) => Some(BoundedBy {
+            id: v.id.clone(),
+            geometry_refs: v.geometries.clone(),
+        }),
+        WaterBoundarySurfaceProperty::WaterClosureSurface(v) => Some(BoundedBy {
+            id: v.id.clone(),
+            geometry_refs: v.geometries.clone(),
+        }),
+        WaterBoundarySurfaceProperty::WaterGroundSurface(v) => Some(BoundedBy {
+            id: v.id.clone(),
+            geometry_refs: v.geometries.clone(),
+        }),
+        WaterBoundarySurfaceProperty::Unknown => None,
+    };
+    Box::new(result)
+        as Box<dyn Fn(&WaterBoundarySurfaceProperty) -> Option<BoundedBy> + Send + Sync>
+});

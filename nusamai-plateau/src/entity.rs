@@ -22,7 +22,13 @@ pub struct Entity {
     /// All appearances used in this city object
     pub appearance_store: Arc<RwLock<AppearanceStore>>,
     /// Bounded by
-    pub bounded: GeometryRefs,
+    pub bounded_by: Vec<BoundedBy>,
 
+    pub geometry_refs: GeometryRefs,
+}
+
+#[derive(Debug, serde::Deserialize, serde::Serialize)]
+pub struct BoundedBy {
+    pub id: String,
     pub geometry_refs: GeometryRefs,
 }

@@ -19,6 +19,7 @@ indexmap.workspace = true
 log.workspace = true
 nusamai-citygml = { path = "../nusamai-citygml", features = ["serde"] }
 nusamai-geometry = { path = "../nusamai-geometry" }
+once_cell.workspace = true
 quick-xml.workspace = true
 serde = { workspace = true, features = ["derive", "rc"], optional = true }
 serde_json.workspace = true

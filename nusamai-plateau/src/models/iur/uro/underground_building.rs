@@ -1,6 +1,10 @@
 use nusamai_citygml::{citygml_feature, CityGmlElement, Code, GYear, Length, MeasureOrNullList};
+use once_cell::sync::Lazy;
 
-use crate::models::{building as bldg, core, iur::uro};
+use crate::{
+    models::{building as bldg, core, iur::uro},
+    BoundedBy,
+};
 
 #[citygml_feature(name = "uro:UndergroundBuilding")]
 pub struct UndergroundBuilding {
@@ -99,3 +103,50 @@ pub struct UndergroundBuilding {
     #[citygml(path = b"uro:largeCustomerFacilityAttribute/uro:LargeCustomerFacilityAttribute")]
     pub large_customer_facility_attribute: Vec<uro::LargeCustomerFacilityAttribute>,
 }
+
+#[allow(clippy::type_complexity)]
+pub static UNDERGROUND_BUILDING_SURFACE_MAPPINGS: Lazy<
+    Box<dyn Fn(&bldg::BoundarySurfaceProperty) -> Option<BoundedBy> + Send + Sync>,
+> = Lazy::new(|| {
+    let result = |bounded: &bldg::BoundarySurfaceProperty| match bounded {
+        bldg::BoundarySurfaceProperty::RoofSurface(v) => Some(BoundedBy {
+            id: v.id.clone(),
+            geometry_refs: v.geometries.clone(),
+        }),
+        bldg::BoundarySurfaceProperty::WallSurface(v) => Some(BoundedBy {
+            id: v.id.clone(),
+            geometry_refs: v.geometries.clone(),
+        }),
+        bldg::BoundarySurfaceProperty::GroundSurface(v) => Some(BoundedBy {
+            id: v.id.clone(),
+            geometry_refs: v.geometries.clone(),
+        }),
+        bldg::BoundarySurfaceProperty::ClosureSurface(v) => Some(BoundedBy {
+            id: v.id.clone(),
+            geometry_refs: v.geometries.clone(),
+        }),
+        bldg::BoundarySurfaceProperty::FloorSurface(v) => Some(BoundedBy {
+            id: v.id.clone(),
+            geometry_refs: v.geometries.clone(),
+        }),
+        bldg::BoundarySurfaceProperty::CeilingSurface(v) => Some(BoundedBy {
+            id: v.id.clone(),
+            geometry_refs: v.geometries.clone(),
+        }),
+        bldg::BoundarySurfaceProperty::InteriorWallSurface(v) => Some(BoundedBy {
+            id: v.id.clone(),
+            geometry_refs: v.geometries.clone(),
+        }),
+        bldg::BoundarySurfaceProperty::OuterCeilingSurface(v) => Some(BoundedBy {
+            id: v.id.clone(),
+            geometry_refs: v.geometries.clone(),
+        }),
+        bldg::BoundarySurfaceProperty::OuterFloorSurface(v) => Some(BoundedBy {
+            id: v.id.clone(),
+            geometry_refs: v.geometries.clone(),
+        }),
+        bldg::BoundarySurfaceProperty::Unknown => None,
+    };
+    Box::new(result)
+        as Box<dyn Fn(&bldg::BoundarySurfaceProperty) -> Option<BoundedBy> + Send + Sync>
+});

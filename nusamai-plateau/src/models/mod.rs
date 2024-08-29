@@ -15,20 +15,28 @@ pub mod vegetation;
 pub mod waterbody;
 
 pub use bridge::Bridge;
-use building::BoundarySurfaceProperty;
+use bridge::BRIDGE_SURFACE_MAPPINGS;
 pub use building::Building;
+use building::BUILDING_SURFACE_MAPPINGS;
 pub use city_furniture::CityFurniture;
 pub use cityobjectgroup::CityObjectGroup;
 pub use generics::GenericCityObject;
 pub use iur::{urf, uro};
 pub use landuse::LandUse;
-use nusamai_citygml::{citygml_property, CityGmlElement, GeometryRefs};
+use nusamai_citygml::{citygml_property, CityGmlElement};
 pub use other_construction::OtherConstruction;
+use other_construction::OTHER_CONSTRUCTION_SURFACE_MAPPINGS;
 pub use relief::ReliefFeature;
 pub use transportation::{Railway, Road, Square, Track, Waterway};
 pub use tunnel::Tunnel;
+use tunnel::TUNNEL_SURFACE_MAPPINGS;
 pub use vegetation::{PlantCover, SolitaryVegetationObject};
 pub use waterbody::WaterBody;
+use waterbody::WATER_BODY_SURFACE_MAPPINGS;
+
+use crate::BoundedBy;
+
+use self::uro::UNDERGROUND_BUILDING_SURFACE_MAPPINGS;
 
 #[citygml_property(name = "_:TopLevelFeatureProperty")]
 pub enum TopLevelCityObject {
@@ -847,27 +855,39 @@ impl TopLevelCityObject {
         }
     }
 
-    pub fn bounded_by(&self) -> GeometryRefs {
+    #[allow(clippy::redundant_closure)]
+    pub fn bounded_by(&self) -> Vec<BoundedBy> {
         match self {
-            TopLevelCityObject::Building(v) => {
-                let result = v
-                    .bounded_by
-                    .iter()
-                    .map(|bounded| match bounded {
-                        BoundarySurfaceProperty::RoofSurface(v) => v.geometries.clone(),
-                        BoundarySurfaceProperty::WallSurface(v) => v.geometries.clone(),
-                        BoundarySurfaceProperty::GroundSurface(v) => v.geometries.clone(),
-                        BoundarySurfaceProperty::ClosureSurface(v) => v.geometries.clone(),
-                        BoundarySurfaceProperty::FloorSurface(v) => v.geometries.clone(),
-                        BoundarySurfaceProperty::CeilingSurface(v) => v.geometries.clone(),
-                        BoundarySurfaceProperty::InteriorWallSurface(v) => v.geometries.clone(),
-                        BoundarySurfaceProperty::OuterCeilingSurface(v) => v.geometries.clone(),
-                        BoundarySurfaceProperty::OuterFloorSurface(v) => v.geometries.clone(),
-                        BoundarySurfaceProperty::Unknown => vec![],
-                    })
-                    .collect::<Vec<_>>();
-                result.into_iter().flatten().collect()
-            }
+            TopLevelCityObject::Bridge(v) => v
+                .bounded_by
+                .iter()
+                .flat_map(|x| BRIDGE_SURFACE_MAPPINGS(x))
+                .collect::<Vec<_>>(),
+            TopLevelCityObject::Building(v) => v
+                .bounded_by
+                .iter()
+                .flat_map(|x| BUILDING_SURFACE_MAPPINGS(x))
+                .collect::<Vec<_>>(),
+            TopLevelCityObject::OtherConstruction(v) => v
+                .bounded_by
+                .iter()
+                .flat_map(|x| OTHER_CONSTRUCTION_SURFACE_MAPPINGS(x))
+                .collect::<Vec<_>>(),
+            TopLevelCityObject::Tunnel(v) => v
+                .bounded_by
+                .iter()
+                .flat_map(|x| TUNNEL_SURFACE_MAPPINGS(x))
+                .collect::<Vec<_>>(),
+            TopLevelCityObject::WaterBody(v) => v
+                .bounded_by
+                .iter()
+                .flat_map(|x| WATER_BODY_SURFACE_MAPPINGS(x))
+                .collect::<Vec<_>>(),
+            TopLevelCityObject::UndergroundBuilding(v) => v
+                .bounded_by
+                .iter()
+                .flat_map(|x| UNDERGROUND_BUILDING_SURFACE_MAPPINGS(x))
+                .collect::<Vec<_>>(),
             _ => vec![],
         }
     }

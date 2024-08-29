@@ -1,4 +1,7 @@
 use nusamai_citygml::{citygml_feature, citygml_property, CityGmlElement, Code, GYear};
+use once_cell::sync::Lazy;
+
+use crate::BoundedBy;
 
 use super::iur::uro;
 
@@ -289,3 +292,49 @@ pub struct TunnelFurniture {
     #[citygml(path = b"tun:usage")]
     pub usage: Vec<Code>,
 }
+
+#[allow(clippy::type_complexity)]
+pub static TUNNEL_SURFACE_MAPPINGS: Lazy<
+    Box<dyn Fn(&BoundarySurfaceProperty) -> Option<BoundedBy> + Send + Sync>,
+> = Lazy::new(|| {
+    let result = |bounded: &BoundarySurfaceProperty| match bounded {
+        BoundarySurfaceProperty::RoofSurface(v) => Some(BoundedBy {
+            id: v.id.clone(),
+            geometry_refs: v.geometries.clone(),
+        }),
+        BoundarySurfaceProperty::WallSurface(v) => Some(BoundedBy {
+            id: v.id.clone(),
+            geometry_refs: v.geometries.clone(),
+        }),
+        BoundarySurfaceProperty::GroundSurface(v) => Some(BoundedBy {
+            id: v.id.clone(),
+            geometry_refs: v.geometries.clone(),
+        }),
+        BoundarySurfaceProperty::ClosureSurface(v) => Some(BoundedBy {
+            id: v.id.clone(),
+            geometry_refs: v.geometries.clone(),
+        }),
+        BoundarySurfaceProperty::FloorSurface(v) => Some(BoundedBy {
+            id: v.id.clone(),
+            geometry_refs: v.geometries.clone(),
+        }),
+        BoundarySurfaceProperty::CeilingSurface(v) => Some(BoundedBy {
+            id: v.id.clone(),
+            geometry_refs: v.geometries.clone(),
+        }),
+        BoundarySurfaceProperty::InteriorWallSurface(v) => Some(BoundedBy {
+            id: v.id.clone(),
+            geometry_refs: v.geometries.clone(),
+        }),
+        BoundarySurfaceProperty::OuterCeilingSurface(v) => Some(BoundedBy {
+            id: v.id.clone(),
+            geometry_refs: v.geometries.clone(),
+        }),
+        BoundarySurfaceProperty::OuterFloorSurface(v) => Some(BoundedBy {
+            id: v.id.clone(),
+            geometry_refs: v.geometries.clone(),
+        }),
+        BoundarySurfaceProperty::Unknown => None,
+    };
+    Box::new(result) as Box<dyn Fn(&BoundarySurfaceProperty) -> Option<BoundedBy> + Send + Sync>
+});
