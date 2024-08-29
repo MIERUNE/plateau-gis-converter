@@ -46,8 +46,6 @@ use crate::{
 };
 use utils::calculate_normal;
 
-const MAX_PIXEL_PER_DISTANCE: f64 = 30.0;
-
 // WARN: This function has an equivalent in `atlas-packer/src/texture.rs`.
 fn uv_to_pixel_coords(uv_coords: &[(f64, f64)], width: u32, height: u32) -> Vec<(u32, u32)> {
     uv_coords
@@ -98,6 +96,16 @@ impl DataSinkProvider for CesiumTilesSinkProvider {
             },
         );
 
+        params.define(
+            "max-texture-pixels-per-meter".into(),
+            ParameterEntry {
+                description: "limiting texture resolution".into(),
+                required: false,
+                parameter: ParameterType::Float64(Float64Parameter { value: Some(30.0) }),
+                label: Some("距離(メートル)あたりのテクスチャの最大解像度".into()),
+            },
+        );
+
         params
     }
 
@@ -116,11 +124,14 @@ impl DataSinkProvider for CesiumTilesSinkProvider {
 
     fn create(&self, params: &Parameters) -> Box<dyn DataSink> {
         let output_path = get_parameter_value!(params, "@output", FileSystemPath);
+        let max_texture_pixels_per_meter =
+            *get_parameter_value!(params, "max-texture-pixels-per-meter", Float64);
         let transformer_registry = self.available_transformer();
 
         Box::<CesiumTilesSink>::new(CesiumTilesSink {
             output_path: output_path.as_ref().unwrap().into(),
             transformer_registry,
+            max_texture_pixels_per_meter,
         })
     }
 }
@@ -128,6 +139,7 @@ impl DataSinkProvider for CesiumTilesSinkProvider {
 struct CesiumTilesSink {
     output_path: PathBuf,
     transformer_registry: TransformerRegistry,
+    max_texture_pixels_per_meter: Option<f64>,
 }
 
 impl DataSink for CesiumTilesSink {
@@ -156,6 +168,8 @@ impl DataSink for CesiumTilesSink {
         // TODO: configurable
         let min_zoom = 12;
         let max_zoom = 18;
+
+        let max_texture_pixels_per_meter = self.max_texture_pixels_per_meter;
 
         // TODO: refactoring
 
@@ -203,6 +217,7 @@ impl DataSink for CesiumTilesSink {
                             receiver_sorted,
                             tile_id_conv,
                             schema,
+                            max_texture_pixels_per_meter,
                         ) {
                             feedback.fatal_error(error);
                         }
@@ -324,6 +339,7 @@ fn tile_writing_stage(
     receiver_sorted: mpsc::Receiver<(u64, String, Vec<Vec<u8>>)>,
     tile_id_conv: TileIdMethod,
     schema: &Schema,
+    max_texture_pixels_per_meter: Option<f64>,
 ) -> Result<()> {
     let ellipsoid = nusamai_projection::ellipsoid::wgs84();
     let contents: Arc<Mutex<Vec<TileContent>>> = Default::default();
@@ -560,9 +576,13 @@ fn tile_writing_stage(
                             .min_by(|a, b| a.total_cmp(b))
                             .unwrap_or(1.0);
 
-                        let max_pixel_per_distance = MAX_PIXEL_PER_DISTANCE;
-                        let downsample_scale =
-                            (1.0_f64).min(max_pixel_per_distance / pixel_per_distance);
+                        let downsample_scale = if let Some(max_texture_pixels_per_meter) =
+                            max_texture_pixels_per_meter
+                        {
+                            1.0_f64.min(max_texture_pixels_per_meter / pixel_per_distance)
+                        } else {
+                            1.0
+                        };
                         let factor = apply_downsample_factor(tile_zoom, downsample_scale as f32);
 
                         let downsample_factor = DownsampleFactor::new(&factor);
