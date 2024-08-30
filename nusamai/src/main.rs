@@ -12,8 +12,8 @@ use nusamai::{
     sink::{DataRequirements, DataSink, DataSinkProvider},
     source::{citygml::CityGmlSourceProvider, DataSource, DataSourceProvider},
     transformer::{
-        self, LodSelection, MappingRules, MultiThreadTransformer, NusamaiTransformBuilder,
-        ParameterType, TransformBuilder,
+        self, MappingRules, MultiThreadTransformer, NusamaiTransformBuilder, ParameterType,
+        TransformBuilder, TransformerRegistry,
     },
     BUILTIN_SINKS,
 };
@@ -50,6 +50,10 @@ struct Args {
     /// Add an option for the output format (key=value)
     #[arg(short = 'o', value_parser = parse_key_val)]
     sinkopt: Vec<(String, String)>,
+
+    /// Add an option for the output format (key=value)
+    #[arg(short = 't', value_parser = parse_key_val)]
+    transformopt: Vec<(String, String)>,
 
     /// Add an option for the input source (key=value)
     #[arg(short = 'i', value_parser = parse_key_val)]
@@ -132,9 +136,8 @@ fn main() -> ExitCode {
         .expect("Error setting Ctrl-C handler");
     }
 
+    let mut transformer_registry: TransformerRegistry = TransformerRegistry::new();
     let mut sink = {
-        // let sink_provider: &dyn DataSinkProvider = args.sink.create_sink();
-        // NOTE; test
         let sink_provider: &dyn DataSinkProvider = args.sink.create_sink();
         let mut sink_params = sink_provider.parameters();
         if let Err(err) = sink_params.update_values_with_str(&args.sinkopt) {
@@ -157,12 +160,48 @@ fn main() -> ExitCode {
             }
         }
 
+        transformer_registry = sink_provider.available_transformer();
+
         sink_provider.create(&sink_params)
     };
 
-    // Make TransformerOptions from parameters
+    let updated_transformer_registry = TransformerRegistry {
+        configs: transformer_registry
+            .configs
+            .into_iter()
+            .map(|mut config| {
+                // Check if the key from args.transformopt matches the current config's key
+                if let Some((_, value)) =
+                    args.transformopt.iter().find(|(key, _)| *key == config.key)
+                {
+                    match &mut config.parameter {
+                        // If the parameter is of type Selection, update the selected value
+                        ParameterType::Selection(selection) => {
+                            if selection.options.iter().any(|opt| opt.value == *value) {
+                                selection.selected_value = value.clone();
+                            } else {
+                                eprintln!("Invalid value '{}' for option '{}'", value, config.key);
+                            }
+                        }
+                        // If the parameter is of type Boolean, update the boolean value
+                        ParameterType::Boolean(bool_param) => match value.as_str() {
+                            "true" => *bool_param = true,
+                            "false" => *bool_param = false,
+                            _ => eprintln!(
+                                "Invalid boolean value '{}' for option '{}'",
+                                value, config.key
+                            ),
+                        },
+                        // Handle other parameter types if needed
+                        _ => eprintln!("Unsupported parameter type for key '{}'", config.key),
+                    }
+                }
+                config // Return the (potentially updated) config
+            })
+            .collect(), // Collect all configs into a new Vec
+    };
 
-    let mut requirements = sink.make_requirements(options);
+    let mut requirements = sink.make_requirements(updated_transformer_registry);
     requirements.set_output_epsg(match args.sink.0.as_ref() {
         "kml" => 6697, // temporary hack for KML output
         _ => args.epsg,
@@ -238,8 +277,7 @@ fn run(
     source: Box<dyn DataSource>,
     requirements: DataRequirements,
     mapping_rules: Option<MappingRules>,
-    // sink: Box<dyn DataSink>,
-    sink: Box<dyn DataSinkTest>, // NOTE:test
+    sink: Box<dyn DataSink>,
     canceller: &mut Arc<Mutex<Canceller>>,
 ) {
     let total_time = std::time::Instant::now();

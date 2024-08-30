@@ -63,7 +63,6 @@ pub enum Requirement {
     UseAppearance,
     NotUseAppearance,
     UseLod(LodSelection),
-    // ...
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -72,7 +71,6 @@ pub enum ParameterType {
     Boolean(bool),
     Integer(i32),
     Selection(Selection),
-    // and so on ...
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -115,7 +113,7 @@ impl TransformerRegistry {
         let mut data_requirements = default_requirements;
 
         for config in &self.configs {
-            // NOTE:configのparameterによって処理を分岐
+            // Branch the processing based on the parameter type of the config
             match &config.parameter {
                 ParameterType::String(_value) => {
                     // TODO: Processing for String types.
@@ -140,7 +138,6 @@ impl TransformerRegistry {
                 }
                 ParameterType::Selection(value) => {
                     if config.key == "use_lod" {
-                        println!("{}", value.selected_value);
                         match value.selected_value.as_str() {
                             "max_lod" => {
                                 data_requirements.set_lod_filter(transformer::LodFilterSpec {

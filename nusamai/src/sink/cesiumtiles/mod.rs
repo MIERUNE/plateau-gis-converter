@@ -90,16 +90,6 @@ impl DataSinkProvider for CesiumTilesSinkProvider {
         // TODO: min Zoom
         // TODO: max Zoom
 
-        params.define(
-            "transform".into(),
-            ParameterEntry {
-                description: "transform option".into(),
-                required: false,
-                parameter: ParameterType::String(StringParameter { value: None }),
-                label: None,
-            },
-        );
-
         params
     }
 

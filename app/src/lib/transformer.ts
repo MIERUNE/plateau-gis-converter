@@ -23,7 +23,6 @@ export interface BooleanConfig {
 	Boolean: boolean;
 }
 
-// TransformerRegistryの定義
 export type TransformerRegistry = {
 	configs: Array<TransformerConfig<boolean> | TransformerConfig<SelectionConfig<string>>>;
 };
@@ -33,6 +32,7 @@ export type TransformerOptions = {
 	parameter_type: 'Boolean' | 'Selection';
 	parameter_value: string;
 }[];
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // Type guard function to determine if the type is a BooleanConfig type.
 export function isBooleanConfig(param: any): param is BooleanConfig {

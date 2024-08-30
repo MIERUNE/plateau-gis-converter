@@ -191,8 +191,6 @@ fn run_conversion(
         sink_provider.create(&sink_params)
     };
 
-    println!("{:#?}", transformer_registry);
-
     let mut requirements = sink.make_requirements(transformer_registry);
     requirements.set_output_epsg(epsg);
 
