@@ -22,7 +22,7 @@ use nusamai::{
     source::{citygml::CityGmlSourceProvider, DataSourceProvider},
     transformer::{
         self, MappingRules, MultiThreadTransformer, NusamaiTransformBuilder, TransformBuilder,
-        TransformerOption, TransformerRegistry,
+        TransformerRegistry,
     },
 };
 use nusamai_plateau::models::TopLevelCityObject;

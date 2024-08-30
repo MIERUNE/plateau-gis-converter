@@ -19,5 +19,3 @@ pub static BUILTIN_SINKS: &[&dyn sink::DataSinkProvider] = &[
     &sink::minecraft::MinecraftSinkProvider {},
     &sink::obj::ObjSinkProvider {},
 ];
-
-pub static BUILTIN_SINKS: &[&dyn sink::DataSinkProvider] = &[&sink::gltf::GltfSinkProvider {}];

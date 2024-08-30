@@ -24,7 +24,9 @@ use crate::{
     pipeline::{Feedback, PipelineError, Receiver, Result},
     sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo},
     transformer,
-    transformer::{TransformerRegistry, TransformerOption},
+    transformer::{
+        LodSelection, Selection, SelectionOptions, TransformerConfig, TransformerRegistry,
+    },
 };
 
 pub struct GeoJsonSinkProvider {}
@@ -55,7 +57,25 @@ impl DataSinkProvider for GeoJsonSinkProvider {
     }
 
     fn available_transformer(&self) -> TransformerRegistry {
-        let settings: TransformerRegistry = TransformerRegistry::new();
+        let mut settings: TransformerRegistry = TransformerRegistry::new();
+
+        settings.insert(TransformerConfig {
+            key: "use_lod".to_string(),
+            label: "出力LODの選択".to_string(),
+            parameter: transformer::ParameterType::Selection(Selection {
+                options: vec![
+                    SelectionOptions::new("最大LOD", "max_lod"),
+                    SelectionOptions::new("最小LOD", "min_lod"),
+                    SelectionOptions::new("LOD0", "lod0"),
+                    SelectionOptions::new("LOD1", "lod1"),
+                    SelectionOptions::new("LOD2", "lod2"),
+                    SelectionOptions::new("LOD3", "lod3"),
+                    SelectionOptions::new("LOD4", "lod4"),
+                ],
+                selected_value: "max_lod".to_string(),
+            }),
+            requirements: vec![transformer::Requirement::UseLod(LodSelection::MaxLod)],
+        });
 
         settings
     }
@@ -77,7 +97,7 @@ pub struct GeoJsonSink {
 }
 
 impl DataSink for GeoJsonSink {
-    fn make_requirements(&mut self, properties: Vec<TransformerOption>) -> DataRequirements {
+    fn make_requirements(&mut self, properties: TransformerRegistry) -> DataRequirements {
         let default_requirements = DataRequirements {
             tree_flattening: transformer::TreeFlatteningSpec::Flatten {
                 feature: transformer::FeatureFlatteningOption::AllExceptThematicSurfaces,
@@ -87,10 +107,8 @@ impl DataSink for GeoJsonSink {
             ..Default::default()
         };
 
-        for prop in properties {
-            let _ = &self
-                .transform_settings
-                .update_transformer(&prop.key, prop.is_enabled);
+        for config in properties.configs.iter() {
+            let _ = &self.transform_settings.update_transformer(config.clone());
         }
 
         self.transform_settings.build(default_requirements)

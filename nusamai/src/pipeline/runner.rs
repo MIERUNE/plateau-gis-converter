@@ -10,10 +10,7 @@ use super::{
     feedback::{watcher, Feedback, Watcher},
     Canceller,
 };
-use crate::{
-    pipeline::Receiver, sink::DataSink, sink::DataSinkTest, source::DataSource,
-    transformer::Transformer,
-};
+use crate::{pipeline::Receiver, sink::DataSink, source::DataSource, transformer::Transformer};
 
 const SOURCE_OUTPUT_CHANNEL_BOUND: usize = 10000;
 const TRANSFORMER_OUTPUT_CHANNEL_BOUND: usize = 10000;
@@ -81,7 +78,7 @@ fn spawn_transformer_thread(
 
 fn spawn_sink_thread(
     // mut sink: Box<dyn DataSink>,
-    mut sink: Box<dyn DataSinkTest>, //NOTE: test
+    mut sink: Box<dyn DataSink>, //NOTE: test
     schema: Arc<Schema>,
     upstream: Receiver,
     feedback: Feedback,
@@ -147,7 +144,7 @@ pub fn run(
     source: Box<dyn DataSource>,
     transformer: Box<dyn Transformer>,
     // sink: Box<dyn DataSink>,
-    sink: Box<dyn DataSinkTest>, // NOTE: test
+    sink: Box<dyn DataSink>, // NOTE: test
     schema: Arc<Schema>,
 ) -> (PipelineHandle, Watcher, Canceller) {
     let (watcher, feedback, canceller) = watcher();

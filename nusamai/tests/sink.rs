@@ -3,7 +3,9 @@ use std::{path::PathBuf, str::FromStr, sync::Once};
 use nusamai::{
     sink::{self, DataSinkProvider},
     source::{citygml::CityGmlSourceProvider, DataSourceProvider},
-    transformer::{self, MultiThreadTransformer, NusamaiTransformBuilder, TransformBuilder},
+    transformer::{
+        MultiThreadTransformer, NusamaiTransformBuilder, TransformBuilder, TransformerRegistry,
+    },
 };
 use nusamai_citygml::CityGmlElement;
 use nusamai_plateau::models::TopLevelCityObject;
@@ -51,7 +53,7 @@ pub(crate) fn simple_run_sink<S: DataSinkProvider>(sink_provider: S, output: Opt
         sink_provider.create(&sink_params)
     };
 
-    let options: Vec<transformer::TransformerOption> = vec![];
+    let options: TransformerRegistry = TransformerRegistry::new();
 
     let (transformer, schema) = {
         let transform_req = sink.make_requirements(options);
@@ -85,11 +87,10 @@ fn run_czml_sink() {
     simple_run_sink(sink::czml::CzmlSinkProvider {}, "/dev/null".into());
 }
 
-// NOTE:test
-// #[test]
-// fn run_gltf_sink() {
-//     simple_run_sink(sink::gltf::GltfSinkProvider {}, "/tmp/nusamai/gltf".into());
-// }
+#[test]
+fn run_gltf_sink() {
+    simple_run_sink(sink::gltf::GltfSinkProvider {}, "/tmp/nusamai/gltf".into());
+}
 
 #[test]
 fn run_noop_sink() {

@@ -20,7 +20,7 @@ use nusamai_projection::crs;
 use crate::{
     parameters::Parameters,
     pipeline::{Feedback, PipelineError, Receiver},
-    transformer::{self, TransformerOption, TransformerRegistry},
+    transformer::{self, TransformerRegistry},
 };
 
 pub struct SinkInfo {

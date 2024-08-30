@@ -33,13 +33,13 @@ export type TransformerOptions = {
 	parameter_type: 'Boolean' | 'Selection';
 	parameter_value: string;
 }[];
-
-// BooleanConfig型かどうかを判定する型ガード関数
+/* eslint-disable @typescript-eslint/no-explicit-any */
+// Type guard function to determine if the type is a BooleanConfig type.
 export function isBooleanConfig(param: any): param is BooleanConfig {
 	return typeof param === 'object' && 'Boolean' in param && typeof param.Boolean === 'boolean';
 }
 
-// SelectionConfigのジェネリック型かどうかを判定する型ガード関数
+// Type guard function to determine if the type is a Selection type.
 export function isSelectionConfig<T extends string>(param: any): param is Selection<T> {
 	return (
 		typeof param === 'object' &&
@@ -50,3 +50,4 @@ export function isSelectionConfig<T extends string>(param: any): param is Select
 		typeof param.Selection.selected_value === 'string'
 	);
 }
+/* eslint-disable @typescript-eslint/no-explicit-any */
