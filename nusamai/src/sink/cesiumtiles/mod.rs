@@ -46,7 +46,7 @@ use crate::{
 };
 use utils::calculate_normal;
 
-const MAX_TEXTURE_PIXELS_PER_METER: f64 = 3.0;
+const MAX_TEXTURE_PIXELS_PER_METER: f64 = 30.0;
 
 // WARN: This function has an equivalent in `atlas-packer/src/texture.rs`.
 fn uv_to_pixel_coords(uv_coords: &[(f64, f64)], width: u32, height: u32) -> Vec<(u32, u32)> {
@@ -99,7 +99,7 @@ impl DataSinkProvider for CesiumTilesSinkProvider {
         );
 
         params.define(
-            "limit-texture-pixels-per-meter".into(),
+            "limit_texture_resolution".into(),
             ParameterEntry {
                 description: "limiting texture resolution".into(),
                 required: false,
@@ -126,14 +126,14 @@ impl DataSinkProvider for CesiumTilesSinkProvider {
 
     fn create(&self, params: &Parameters) -> Box<dyn DataSink> {
         let output_path = get_parameter_value!(params, "@output", FileSystemPath);
-        let limit_texture_pixels_per_meter =
-            *get_parameter_value!(params, "limit-texture-pixels-per-meter", Boolean);
+        let limit_texture_resolution =
+            *get_parameter_value!(params, "limit_texture_resolution", Boolean);
         let transformer_registry = self.available_transformer();
 
         Box::<CesiumTilesSink>::new(CesiumTilesSink {
             output_path: output_path.as_ref().unwrap().into(),
             transformer_registry,
-            limit_texture_pixels_per_meter,
+            limit_texture_resolution,
         })
     }
 }
@@ -141,7 +141,7 @@ impl DataSinkProvider for CesiumTilesSinkProvider {
 struct CesiumTilesSink {
     output_path: PathBuf,
     transformer_registry: TransformerRegistry,
-    limit_texture_pixels_per_meter: Option<bool>,
+    limit_texture_resolution: Option<bool>,
 }
 
 impl DataSink for CesiumTilesSink {
@@ -171,7 +171,7 @@ impl DataSink for CesiumTilesSink {
         let min_zoom = 12;
         let max_zoom = 18;
 
-        let limit_texture_pixels_per_meter = self.limit_texture_pixels_per_meter;
+        let limit_texture_resolution = self.limit_texture_resolution;
 
         // TODO: refactoring
 
@@ -219,7 +219,7 @@ impl DataSink for CesiumTilesSink {
                             receiver_sorted,
                             tile_id_conv,
                             schema,
-                            limit_texture_pixels_per_meter,
+                            limit_texture_resolution,
                         ) {
                             feedback.fatal_error(error);
                         }
@@ -341,7 +341,7 @@ fn tile_writing_stage(
     receiver_sorted: mpsc::Receiver<(u64, String, Vec<Vec<u8>>)>,
     tile_id_conv: TileIdMethod,
     schema: &Schema,
-    limit_texture_pixels_per_meter: Option<bool>,
+    limit_texture_resolution: Option<bool>,
 ) -> Result<()> {
     let ellipsoid = nusamai_projection::ellipsoid::wgs84();
     let contents: Arc<Mutex<Vec<TileContent>>> = Default::default();
@@ -578,7 +578,7 @@ fn tile_writing_stage(
                             .min_by(|a, b| a.total_cmp(b))
                             .unwrap_or(1.0);
 
-                        let downsample_scale = if limit_texture_pixels_per_meter.unwrap_or(false) {
+                        let downsample_scale = if limit_texture_resolution.unwrap_or(false) {
                             1.0_f64.min(MAX_TEXTURE_PIXELS_PER_METER / pixel_per_distance)
                         } else {
                             1.0
