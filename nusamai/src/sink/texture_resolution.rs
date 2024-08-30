@@ -1,3 +1,4 @@
+/// Limits the texture resolution based on the distance (meters) between the vertices of a polygon.
 const MAX_TEXTURE_PIXELS_PER_METER: f64 = 30.0;
 
 // WARN: This function has an equivalent in `atlas-packer/src/texture.rs`.
