@@ -6,7 +6,6 @@ use std::{
     f64::consts::FRAC_PI_2,
     path::PathBuf,
     sync::{mpsc, Mutex},
-    time::Instant,
 };
 
 use ahash::{HashMap, HashMapExt};
@@ -233,8 +232,6 @@ impl DataSink for ObjSink {
     }
 
     fn run(&mut self, upstream: Receiver, feedback: &Feedback, _schema: &Schema) -> Result<()> {
-        let preprocessing_start = Instant::now();
-
         let ellipsoid = nusamai_projection::ellipsoid::wgs84();
 
         let classified_features: Mutex<ClassifiedFeatures> = Default::default();
@@ -393,9 +390,6 @@ impl DataSink for ObjSink {
         };
         let _ = transform_matrix.inverse();
 
-        let duration = preprocessing_start.elapsed();
-        feedback.info(format!("preprocessing {:?}", duration));
-
         // Create the information needed to output an OBJ file and write it to a file
         classified_features
             .into_par_iter()
@@ -407,6 +401,40 @@ impl DataSink for ObjSink {
                 let texture_cache = TextureCache::new(100_000_000);
                 let texture_size_cache = TextureSizeCache::new();
 
+                // Check the size of all the textures and calculate the power of 2 of the largest size
+                let mut max_width = 0;
+                let mut max_height = 0;
+                for feature in features.features.iter() {
+                    for (_, orig_mat_id) in feature
+                        .polygons
+                        .iter()
+                        .zip_eq(feature.polygon_material_ids.iter())
+                    {
+                        let mat = feature.materials[*orig_mat_id as usize].clone();
+                        let t = mat.base_texture.clone();
+                        if let Some(base_texture) = t {
+                            let texture_uri = base_texture.uri.to_file_path().unwrap();
+                            let texture_size = texture_size_cache.get_or_insert(&texture_uri);
+                            max_width = max_width.max(texture_size.0);
+                            max_height = max_height.max(texture_size.1);
+                        }
+                    }
+                }
+                let max_width = max_width.next_power_of_two();
+                let max_height = max_height.next_power_of_two();
+
+                // initialize texture packer
+                let config = TexturePlacerConfig {
+                    width: max_width,
+                    height: max_height,
+                    padding: 0,
+                };
+
+                let placer = GuillotineTexturePlacer::new(config.clone());
+                let exporter = JpegAtlasExporter::default();
+                let ext = exporter.clone().get_extension().to_string();
+                let packer = Mutex::new(TexturePacker::new(placer, exporter));
+
                 // file output destination
                 let mut folder_path = self.output_path.clone();
                 let base_folder_name = typename.replace(':', "_").to_string();
@@ -415,20 +443,6 @@ impl DataSink for ObjSink {
                 let texture_folder_name = "textures";
                 let atlas_dir = folder_path.join(texture_folder_name);
                 std::fs::create_dir_all(&atlas_dir)?;
-
-                // initialize texture packer
-                // In rare cases, large textures also exist, so the maximum texture size is set to 8096x8096.
-                let config = TexturePlacerConfig {
-                    width: 8096,
-                    height: 8096,
-                    padding: 0,
-                };
-                let placer = GuillotineTexturePlacer::new(config.clone());
-                let exporter = JpegAtlasExporter::default();
-                let ext = exporter.clone().get_extension().to_string();
-                let packer = Mutex::new(TexturePacker::new(placer, exporter));
-
-                let atlas_packing_start = Instant::now();
 
                 // Coordinate transformation
                 {
@@ -641,19 +655,9 @@ impl DataSink for ObjSink {
                     all_materials.insert(material_key, feature_material);
                 }
 
-                let duration = atlas_packing_start.elapsed();
-                feedback.info(format!("atlas packing process {:?}", duration));
-
-                let atlas_export_start = Instant::now();
-
                 packer.export(&atlas_dir, &texture_cache, config.width, config.height);
 
-                let duration = atlas_export_start.elapsed();
-                feedback.info(format!("atlas export process {:?}", duration));
-
                 feedback.ensure_not_canceled()?;
-
-                let obj_export_start = Instant::now();
 
                 // Write OBJ file
                 write(
@@ -662,9 +666,6 @@ impl DataSink for ObjSink {
                     folder_path,
                     self.obj_options.is_split,
                 )?;
-
-                let duration = obj_export_start.elapsed();
-                feedback.info(format!("obj export process {:?}", duration));
 
                 Ok::<(), PipelineError>(())
             })?;
