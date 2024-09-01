@@ -13,6 +13,7 @@ pub mod obj;
 pub mod ply;
 pub mod serde;
 pub mod shapefile;
+mod texture_resolution;
 
 use nusamai_citygml::schema::Schema;
 use nusamai_projection::crs;
