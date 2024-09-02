@@ -48,20 +48,7 @@ use crate::{
 };
 use utils::calculate_normal;
 
-const MAX_PIXEL_PER_DISTANCE: f64 = 30.0;
-
-// WARN: This function has an equivalent in `atlas-packer/src/texture.rs`.
-fn uv_to_pixel_coords(uv_coords: &[(f64, f64)], width: u32, height: u32) -> Vec<(u32, u32)> {
-    uv_coords
-        .iter()
-        .map(|(u, v)| {
-            (
-                (u.clamp(0.0, 1.0) * width as f64).min(width as f64 - 1.0) as u32,
-                ((1.0 - v.clamp(0.0, 1.0)) * height as f64).min(height as f64 - 1.0) as u32,
-            )
-        })
-        .collect()
-}
+use super::texture_resolution::get_texture_downsample_scale_of_polygon;
 
 pub struct CesiumTilesSinkProvider {}
 
@@ -89,6 +76,16 @@ impl DataSinkProvider for CesiumTilesSinkProvider {
         );
         // TODO: min Zoom
         // TODO: max Zoom
+
+        params.define(
+            "limit_texture_resolution".into(),
+            ParameterEntry {
+                description: "limiting texture resolution".into(),
+                required: false,
+                parameter: ParameterType::Boolean(BooleanParameter { value: None }),
+                label: Some("距離(メートル)あたりのテクスチャの解像度を制限する".into()),
+            },
+        );
 
         params
     }
@@ -125,11 +122,14 @@ impl DataSinkProvider for CesiumTilesSinkProvider {
 
     fn create(&self, params: &Parameters) -> Box<dyn DataSink> {
         let output_path = get_parameter_value!(params, "@output", FileSystemPath);
+        let limit_texture_resolution =
+            *get_parameter_value!(params, "limit_texture_resolution", Boolean);
         let transform_settings = self.available_transformer();
 
         Box::<CesiumTilesSink>::new(CesiumTilesSink {
             output_path: output_path.as_ref().unwrap().into(),
             transform_settings,
+            limit_texture_resolution,
         })
     }
 }
@@ -137,6 +137,7 @@ impl DataSinkProvider for CesiumTilesSinkProvider {
 struct CesiumTilesSink {
     output_path: PathBuf,
     transform_settings: TransformerRegistry,
+    limit_texture_resolution: Option<bool>,
 }
 
 impl DataSink for CesiumTilesSink {
@@ -163,6 +164,8 @@ impl DataSink for CesiumTilesSink {
         // TODO: configurable
         let min_zoom = 12;
         let max_zoom = 18;
+
+        let limit_texture_resolution = self.limit_texture_resolution;
 
         // TODO: refactoring
 
@@ -210,6 +213,7 @@ impl DataSink for CesiumTilesSink {
                             receiver_sorted,
                             tile_id_conv,
                             schema,
+                            limit_texture_resolution,
                         ) {
                             feedback.fatal_error(error);
                         }
@@ -331,6 +335,7 @@ fn tile_writing_stage(
     receiver_sorted: mpsc::Receiver<(u64, String, Vec<Vec<u8>>)>,
     tile_id_conv: TileIdMethod,
     schema: &Schema,
+    limit_texture_resolution: Option<bool>,
 ) -> Result<()> {
     let ellipsoid = nusamai_projection::ellipsoid::wgs84();
     let contents: Arc<Mutex<Vec<TileContent>>> = Default::default();
@@ -533,43 +538,11 @@ fn tile_writing_stage(
                         let texture_uri = base_texture.uri.to_file_path().unwrap();
                         let texture_size = texture_size_cache.get_or_insert(&texture_uri);
 
-                        let pixel_coords =
-                            uv_to_pixel_coords(&uv_coords, texture_size.0, texture_size.1);
-
-                        let pixel_per_distance = (0..original_vertices.len())
-                            .map(|i| {
-                                let j = (i + 1) % original_vertices.len();
-                                let (euc0, txl0) = (
-                                    (
-                                        original_vertices[i].0,
-                                        original_vertices[i].1,
-                                        original_vertices[i].2,
-                                    ),
-                                    pixel_coords[i],
-                                );
-                                let (euc1, txl1) = (
-                                    (
-                                        original_vertices[j].0,
-                                        original_vertices[j].1,
-                                        original_vertices[j].2,
-                                    ),
-                                    pixel_coords[j],
-                                );
-                                let euc_dist = ((euc0.0 - euc1.0).powi(2)
-                                    + (euc0.1 - euc1.1).powi(2)
-                                    + (euc0.2 - euc1.2).powi(2))
-                                .sqrt();
-                                let txl_dist = ((txl0.0 as f64 - txl1.0 as f64).powi(2)
-                                    + (txl0.1 as f64 - txl1.1 as f64).powi(2))
-                                .sqrt();
-                                txl_dist / euc_dist
-                            })
-                            .min_by(|a, b| a.total_cmp(b))
-                            .unwrap_or(1.0);
-
-                        let max_pixel_per_distance = MAX_PIXEL_PER_DISTANCE;
-                        let downsample_scale =
-                            (1.0_f64).min(max_pixel_per_distance / pixel_per_distance);
+                        let downsample_scale = get_texture_downsample_scale_of_polygon(
+                            &original_vertices,
+                            texture_size,
+                            limit_texture_resolution,
+                        );
                         let factor = apply_downsample_factor(tile_zoom, downsample_scale as f32);
 
                         let downsample_factor = DownsampleFactor::new(&factor);

@@ -38,6 +38,8 @@ use crate::{
     },
 };
 
+use super::texture_resolution::get_texture_downsample_scale_of_polygon;
+
 pub struct GltfSinkProvider {}
 
 impl DataSinkProvider for GltfSinkProvider {
@@ -60,6 +62,16 @@ impl DataSinkProvider for GltfSinkProvider {
                     must_exist: false,
                 }),
                 label: None,
+            },
+        );
+
+        params.define(
+            "limit_texture_resolution".into(),
+            ParameterEntry {
+                description: "limiting texture resolution".into(),
+                required: false,
+                parameter: ParameterType::Boolean(BooleanParameter { value: None }),
+                label: Some("距離(メートル)あたりのテクスチャの解像度を制限する".into()),
             },
         );
 
@@ -98,11 +110,14 @@ impl DataSinkProvider for GltfSinkProvider {
 
     fn create(&self, params: &Parameters) -> Box<dyn DataSink> {
         let output_path = get_parameter_value!(params, "@output", FileSystemPath);
+        let limit_texture_resolution =
+            *get_parameter_value!(params, "limit_texture_resolution", Boolean);
         let transform_settings = self.available_transformer();
 
         Box::<GltfSink>::new(GltfSink {
             output_path: output_path.as_ref().unwrap().into(),
             transform_settings,
+            limit_texture_resolution,
         })
     }
 }
@@ -110,6 +125,7 @@ impl DataSinkProvider for GltfSinkProvider {
 pub struct GltfSink {
     output_path: PathBuf,
     transform_settings: TransformerRegistry,
+    limit_texture_resolution: Option<bool>,
 }
 
 pub struct BoundingVolume {
@@ -456,7 +472,14 @@ impl DataSink for GltfSink {
 
                             let texture_uri = base_texture.uri.to_file_path().unwrap();
                             let texture_size = texture_size_cache.get_or_insert(&texture_uri);
-                            let downsample_factor = DownsampleFactor::new(&1.0);
+
+                            let downsample_scale = get_texture_downsample_scale_of_polygon(
+                                &original_vertices,
+                                texture_size,
+                                self.limit_texture_resolution,
+                            ) as f32;
+
+                            let downsample_factor = DownsampleFactor::new(&downsample_scale);
                             let cropped_texture = CroppedTexture::new(
                                 &texture_uri,
                                 texture_size,

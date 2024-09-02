@@ -45,6 +45,8 @@ use crate::{
     },
 };
 
+use super::texture_resolution::get_texture_downsample_scale_of_polygon;
+
 pub struct ObjSinkProvider {}
 
 impl DataSinkProvider for ObjSinkProvider {
@@ -77,6 +79,16 @@ impl DataSinkProvider for ObjSinkProvider {
                 required: true,
                 parameter: ParameterType::Boolean(BooleanParameter { value: Some(false) }),
                 label: Some("オブジェクトを分割する".into()),
+            },
+        );
+
+        params.define(
+            "limit_texture_resolution".into(),
+            ParameterEntry {
+                description: "limiting texture resolution".into(),
+                required: false,
+                parameter: ParameterType::Boolean(BooleanParameter { value: None }),
+                label: Some("距離(メートル)あたりのテクスチャの解像度を制限する".into()),
             },
         );
 
@@ -115,6 +127,8 @@ impl DataSinkProvider for ObjSinkProvider {
 
     fn create(&self, params: &Parameters) -> Box<dyn DataSink> {
         let output_path = get_parameter_value!(params, "@output", FileSystemPath);
+        let limit_texture_resolution =
+            *get_parameter_value!(params, "limit_texture_resolution", Boolean);
         let transform_options = self.available_transformer();
         let is_split = get_parameter_value!(params, "split", Boolean).unwrap();
 
@@ -122,6 +136,7 @@ impl DataSinkProvider for ObjSinkProvider {
             output_path: output_path.as_ref().unwrap().into(),
             transform_settings: transform_options,
             obj_options: ObjParams { is_split },
+            limit_texture_resolution,
         })
     }
 }
@@ -130,6 +145,7 @@ pub struct ObjSink {
     output_path: PathBuf,
     transform_settings: TransformerRegistry,
     obj_options: ObjParams,
+    limit_texture_resolution: Option<bool>,
 }
 
 struct ObjParams {
@@ -489,10 +505,19 @@ impl DataSink for ObjSink {
                                         .iter()
                                         .map(|(_, _, _, u, v)| (*u, *v))
                                         .collect::<Vec<(f64, f64)>>();
-                                    let downsample_factor = DownsampleFactor::new(&1.0);
 
                                     let texture_size =
                                         texture_size_cache.get_or_insert(&texture_uri);
+                                    let downsample_scale = get_texture_downsample_scale_of_polygon(
+                                        &original_vertices,
+                                        texture_size,
+                                        self.limit_texture_resolution,
+                                    )
+                                        as f32;
+
+                                    let downsample_factor =
+                                        DownsampleFactor::new(&downsample_scale);
+
                                     let texture = CroppedTexture::new(
                                         &texture_uri,
                                         texture_size,
