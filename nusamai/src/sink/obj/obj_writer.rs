@@ -47,8 +47,10 @@ fn write_obj(
 
         mesh_data.push((feature_id, mesh, vertex_offset, uv_offset));
     }
-
     let mut obj_writer = BufWriter::new(File::create(&obj_path)?);
+
+    writeln!(obj_writer, "mtllib {}.mtl", file_name)?;
+
     for vertex in &all_vertices {
         writeln!(obj_writer, "v {} {} {}", vertex[0], vertex[1], vertex[2])?;
     }
@@ -62,7 +64,7 @@ fn write_obj(
             let mut local_obj = Vec::new();
 
             if is_split {
-                local_obj.push(format!("o {}", feature_id));
+                local_obj.push(format!("g {}", feature_id));
             }
 
             for (material_key, indices) in &mesh.primitives {
