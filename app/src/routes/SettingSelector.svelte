@@ -74,6 +74,10 @@
 	}
 
 	$: setSinkParameter(filetype);
+
+	// Select the file format specified for testing, if any
+	const testSink = import.meta.env.VITE_TEST_SINK;
+	if (testSink && filetypeOptions.hasOwnProperty(testSink)) filetype = testSink;
 </script>
 
 <div>
