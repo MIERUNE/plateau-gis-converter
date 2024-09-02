@@ -1,3 +1,5 @@
+use std::option;
+
 use serde::{Deserialize, Serialize};
 
 use crate::{sink::DataRequirements, transformer};
@@ -24,10 +26,15 @@ pub struct Selection {
 }
 
 impl Selection {
-    pub fn new(options: Vec<SelectionOptions>, selected_value: &str) -> Self {
+    pub fn new(options: Vec<(&str, &str)>, selected_value: &str) -> Self {
+        let options: Vec<SelectionOptions> = options
+            .into_iter()
+            .map(|(label, value)| SelectionOptions::new(label, value))
+            .collect();
+
         let valid_value = options.iter().any(|opt| opt.value == selected_value);
         if !valid_value {
-            panic!("selectedValue must be one of the options");
+            panic!("selected_value must be one of the options");
         }
 
         Self {
@@ -36,12 +43,27 @@ impl Selection {
         }
     }
 
-    pub fn set_selected_value(&mut self, value: &str) {
-        let valid_value = self.options.iter().any(|opt| opt.value == value);
-        if valid_value {
+    pub fn new_lod_selections(selected_value: &str) -> Self {
+        Self::new(
+            vec![
+                ("最大LOD", "max_lod"),
+                ("最小LOD", "min_lod"),
+                ("LOD0", "lod0"),
+                ("LOD1", "lod1"),
+                ("LOD2", "lod2"),
+                ("LOD3", "lod3"),
+                ("LOD4", "lod4"),
+            ],
+            selected_value,
+        )
+    }
+
+    pub fn set_selected_value(&mut self, value: &str) -> Result<(), String> {
+        if self.options.iter().any(|opt| opt.value == value) {
             self.selected_value = value.to_string();
+            Ok(())
         } else {
-            panic!("Invalid value");
+            Err("Invalid value".to_string())
         }
     }
 }

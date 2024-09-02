@@ -177,10 +177,8 @@ fn main() -> ExitCode {
                     match &mut config.parameter {
                         // If the parameter is of type Selection, update the selected value
                         ParameterType::Selection(selection) => {
-                            if selection.options.iter().any(|opt| opt.value == *value) {
-                                selection.selected_value = value.clone();
-                            } else {
-                                eprintln!("Invalid value '{}' for option '{}'", value, config.key);
+                            if let Err(err) = selection.set_selected_value(value) {
+                                eprintln!("{} for option '{}'", err, config.key);
                             }
                         }
                         // If the parameter is of type Boolean, update the boolean value

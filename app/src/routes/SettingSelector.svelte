@@ -1,8 +1,4 @@
 <script lang="ts">
-	// NOTE debug
-	import { info, warn, trace, error, debug, attachConsole } from 'tauri-plugin-log-api';
-	const dettach = attachConsole();
-
 	import { filetypeOptions } from '$lib/settings';
 	import { invoke } from '@tauri-apps/api/tauri';
 	import type { SinkParameters } from '$lib/sinkparams';
@@ -50,12 +46,11 @@
 		rulesPath = Array.isArray(res) ? res[0] : res;
 	}
 
-	let DEBUG: any;
-
 	async function getTransformerRegistry(filetype: string) {
 		const registry = (await invoke('get_transform', { filetype })) as any;
 
 		transformerRegistry = registry;
+		console.log(transformerRegistry);
 	}
 
 	$: getTransformerRegistry(filetype);

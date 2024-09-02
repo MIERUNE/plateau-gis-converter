@@ -62,18 +62,9 @@ impl DataSinkProvider for GeoJsonSinkProvider {
         settings.insert(TransformerConfig {
             key: "use_lod".to_string(),
             label: "出力LODの選択".to_string(),
-            parameter: transformer::ParameterType::Selection(Selection {
-                options: vec![
-                    SelectionOptions::new("最大LOD", "max_lod"),
-                    SelectionOptions::new("最小LOD", "min_lod"),
-                    SelectionOptions::new("LOD0", "lod0"),
-                    SelectionOptions::new("LOD1", "lod1"),
-                    SelectionOptions::new("LOD2", "lod2"),
-                    SelectionOptions::new("LOD3", "lod3"),
-                    SelectionOptions::new("LOD4", "lod4"),
-                ],
-                selected_value: "max_lod".to_string(),
-            }),
+            parameter: transformer::ParameterType::Selection(Selection::new_lod_selections(
+                "max_lod",
+            )),
             requirements: vec![transformer::Requirement::UseLod(LodSelection::MaxLod)],
         });
 
