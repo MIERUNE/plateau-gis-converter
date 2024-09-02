@@ -64,6 +64,7 @@ fn write_obj(
             let mut local_obj = Vec::new();
 
             if is_split {
+                local_obj.push(format!("o {}", feature_id));
                 local_obj.push(format!("g {}", feature_id));
             }
 
