@@ -1,7 +1,6 @@
-use rayon::vec;
 use serde::{Deserialize, Serialize};
 
-use crate::{pipeline::PipelineError, sink::DataRequirements, transformer};
+use crate::{sink::DataRequirements, transformer};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct SelectionOptions {
