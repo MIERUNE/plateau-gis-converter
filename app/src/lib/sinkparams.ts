@@ -39,25 +39,17 @@ export interface SinkParameters {
 }
 
 // Check the parameter type
-export function isIntegerParameter(
-	parameter: Parameter
-): parameter is { Integer: { value: number; min: number; max: number } } {
+export function isIntegerParameter(parameter: Parameter): parameter is IntegerParameter {
 	return (parameter as { Integer?: unknown }).Integer !== undefined;
 }
-export function isStringParameter(
-	parameter: Parameter
-): parameter is { String: { value: string } } {
+export function isStringParameter(parameter: Parameter): parameter is StringParameter {
 	return (parameter as { String?: unknown }).String !== undefined;
 }
-export function isBooleanParameter(
-	parameter: Parameter
-): parameter is { Boolean: { value: boolean } } {
+export function isBooleanParameter(parameter: Parameter): parameter is BooleanParameter {
 	return (parameter as { Boolean?: unknown }).Boolean !== undefined;
 }
 
-export function isSelectionParameter(
-	parameter: Parameter
-): parameter is { Selection: { value: { [key: string]: string }[] } } {
+export function isSelectionParameter(parameter: Parameter): parameter is SelectionParameter {
 	return (parameter as { Selection?: unknown }).Selection !== undefined;
 }
 

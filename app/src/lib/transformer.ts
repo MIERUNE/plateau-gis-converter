@@ -23,8 +23,10 @@ export interface BooleanConfig {
 	Boolean: boolean;
 }
 
+type TransformerParameterType = boolean | SelectionConfig<string>;
+
 export type TransformerRegistry = {
-	configs: Array<TransformerConfig<boolean> | TransformerConfig<SelectionConfig<string>>>;
+	configs: Array<TransformerConfig<TransformerParameterType>>;
 };
 
 export type TransformerOptions = {
@@ -33,13 +35,18 @@ export type TransformerOptions = {
 	parameter_value: string;
 }[];
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
 // Type guard function to determine if the type is a BooleanConfig type.
-export function isBooleanConfig(param: any): param is BooleanConfig {
-	return typeof param === 'object' && 'Boolean' in param && typeof param.Boolean === 'boolean';
+export function isBooleanConfig(param: unknown): param is BooleanConfig {
+	return (
+		typeof param === 'object' &&
+		param !== null &&
+		'Boolean' in param &&
+		typeof param.Boolean === 'boolean'
+	);
 }
 
 // Type guard function to determine if the type is a Selection type.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function isSelectionConfig<T extends string>(param: any): param is Selection<T> {
 	return (
 		typeof param === 'object' &&
@@ -50,4 +57,3 @@ export function isSelectionConfig<T extends string>(param: any): param is Select
 		typeof param.Selection.selected_value === 'string'
 	);
 }
-/* eslint-disable @typescript-eslint/no-explicit-any */

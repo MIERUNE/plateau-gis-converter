@@ -171,9 +171,11 @@
 										id={key}
 										class="w-1/4 border-2 border-gray-300 px-2 rounded-md"
 									>
-										{#each createRangeArray(sinkParameters.items[key].parameter.Integer.min, sinkParameters.items[key].parameter.Integer.max) as value}
-											<option {value} class="text-center">{value}</option>
-										{/each}
+										{#if sinkParameters.items[key].parameter.Integer.min !== undefined && sinkParameters.items[key].parameter.Integer.max !== undefined}
+											{#each createRangeArray(sinkParameters.items[key].parameter.Integer.min, sinkParameters.items[key].parameter.Integer.max) as value}
+												<option {value} class="text-center">{value}</option>
+											{/each}
+										{/if}
 									</select>
 								</div>
 							{:else if isStringParameter(sinkParameters.items[key].parameter)}
