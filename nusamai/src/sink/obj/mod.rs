@@ -102,7 +102,7 @@ impl DataSinkProvider for ObjSinkProvider {
             key: "use_lod".to_string(),
             label: "出力LODの選択".to_string(),
             parameter: transformer::ParameterType::Selection(Selection::new_lod_selections(
-                "max_lod",
+                "maxlod",
             )),
             requirements: vec![transformer::Requirement::UseLod(LodSelection::MaxLod)],
         });

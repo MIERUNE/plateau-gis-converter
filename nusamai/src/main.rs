@@ -165,6 +165,8 @@ fn main() -> ExitCode {
         sink_provider.create(&sink_params)
     };
 
+    let mut had_error = false;
+
     let updated_transformer_registry = TransformerRegistry {
         configs: transformer_registry
             .configs
@@ -177,27 +179,49 @@ fn main() -> ExitCode {
                     match &mut config.parameter {
                         // If the parameter is of type Selection, update the selected value
                         ParameterType::Selection(selection) => {
-                            if let Err(err) = selection.set_selected_value(value) {
-                                eprintln!("{} for option '{}'", err, config.key);
+                            if let Err(_err) = selection.set_selected_value(value) {
+                                let available_options: Vec<String> = selection.get_options()
+                                    .iter()
+                                    .map(|option| format!("'{}'", option.get_value()))
+                                    .collect();
+                                log::error!(
+                                    "Non-existent value '{}' specified for option '{}'. Available options are: {}",
+                                    value,
+                                    config.key,
+                                    available_options.join(", ")
+                                );
+                                had_error = true;
                             }
                         }
                         // If the parameter is of type Boolean, update the boolean value
                         ParameterType::Boolean(bool_param) => match value.as_str() {
                             "true" => *bool_param = true,
                             "false" => *bool_param = false,
-                            _ => eprintln!(
-                                "Invalid boolean value '{}' for option '{}'",
-                                value, config.key
-                            ),
+                            _ => {
+                                log::error!(
+                                    "Invalid boolean value '{}' for option '{}'. Only 'true' or 'false' are allowed.",
+                                    value,
+                                    config.key
+                                );
+                                had_error = true;
+                            }
                         },
                         // Handle other parameter types if needed
-                        _ => eprintln!("Unsupported parameter type for key '{}'", config.key),
+                        _ => {
+                            log::error!("Unsupported parameter type for key '{}'", config.key);
+
+                            had_error = true;
+                        }
                     }
                 }
-                config // Return the (potentially updated) config
+                config
             })
-            .collect(), // Collect all configs into a new Vec
+            .collect(),
     };
+
+    if had_error {
+        return ExitCode::FAILURE;
+    }
 
     let mut requirements = sink.make_requirements(updated_transformer_registry);
     requirements.set_output_epsg(match args.sink.0.as_ref() {

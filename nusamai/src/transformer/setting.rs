@@ -17,6 +17,14 @@ impl SelectionOptions {
             value: value.to_string(),
         }
     }
+
+    pub fn get_label(&self) -> String {
+        self.label.clone()
+    }
+
+    pub fn get_value(&self) -> String {
+        self.value.clone()
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -46,8 +54,8 @@ impl Selection {
     pub fn new_lod_selections(selected_value: &str) -> Self {
         Self::new(
             vec![
-                ("最大LOD", "max_lod"),
-                ("最小LOD", "min_lod"),
+                ("最大LOD", "maxlod"),
+                ("最小LOD", "minlod"),
                 ("LOD0", "lod0"),
                 ("LOD1", "lod1"),
                 ("LOD2", "lod2"),
@@ -65,6 +73,10 @@ impl Selection {
         } else {
             Err("Invalid value".to_string())
         }
+    }
+
+    pub fn get_options(&self) -> Vec<SelectionOptions> {
+        self.options.clone()
     }
 }
 
@@ -160,13 +172,13 @@ impl TransformerRegistry {
                 ParameterType::Selection(value) => {
                     if config.key == "use_lod" {
                         match value.selected_value.as_str() {
-                            "max_lod" => {
+                            "maxlod" => {
                                 data_requirements.set_lod_filter(transformer::LodFilterSpec {
                                     mode: transformer::LodFilterMode::Highest,
                                     ..Default::default()
                                 })
                             }
-                            "min_lod" => {
+                            "minlod" => {
                                 data_requirements.set_lod_filter(transformer::LodFilterSpec {
                                     mode: transformer::LodFilterMode::Lowest,
                                     ..Default::default()
