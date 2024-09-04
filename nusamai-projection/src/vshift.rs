@@ -1,5 +1,6 @@
 use japan_geoid::{gsi::MemoryGrid, Geoid};
 
+#[derive(Debug)]
 /// Convert from JGD 2011 Geograhpic 3D (EPSG:6697) to WGS84 Geograhpic 3D (EPSG:4979)
 pub struct Jgd2011ToWgs84 {
     geoid: MemoryGrid<'static>,
@@ -22,6 +23,12 @@ impl Jgd2011ToWgs84 {
 
 impl Default for Jgd2011ToWgs84 {
     fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl Clone for Jgd2011ToWgs84 {
+    fn clone(&self) -> Self {
         Self::new()
     }
 }
