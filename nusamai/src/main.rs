@@ -136,8 +136,7 @@ fn main() -> ExitCode {
         .expect("Error setting Ctrl-C handler");
     }
 
-    let mut transformer_registry: TransformerRegistry = TransformerRegistry::new();
-    let mut sink = {
+    let (mut sink, transformer_registry) = {
         let sink_provider: &dyn DataSinkProvider = args.sink.create_sink();
         let mut sink_params = sink_provider.parameters();
         if let Err(err) = sink_params.update_values_with_str(&args.sinkopt) {
@@ -160,9 +159,9 @@ fn main() -> ExitCode {
             }
         }
 
-        transformer_registry = sink_provider.available_transformer();
+        let transformer_registry = sink_provider.available_transformer();
 
-        sink_provider.create(&sink_params)
+        (sink_provider.create(&sink_params), transformer_registry)
     };
 
     let mut had_error = false;
