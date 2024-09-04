@@ -25,9 +25,7 @@ use crate::{
     pipeline::{Feedback, Receiver, Result},
     sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo},
     transformer,
-    transformer::{
-        LodSelection, Selection, SelectionOptions, TransformerConfig, TransformerRegistry,
-    },
+    transformer::{LodSelection, Selection, TransformerConfig, TransformerRegistry},
 };
 
 use block_colors::{DefaultBlockResolver, Voxel};
@@ -68,7 +66,7 @@ impl DataSinkProvider for MinecraftSinkProvider {
             key: "use_lod".to_string(),
             label: "出力LODの選択".to_string(),
             parameter: transformer::ParameterType::Selection(Selection::new_lod_selections(
-                "maxlod",
+                "max_lod",
             )),
             requirements: vec![transformer::Requirement::UseLod(LodSelection::MaxLod)],
         });

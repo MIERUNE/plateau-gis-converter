@@ -1,5 +1,3 @@
-use std::option;
-
 use serde::{Deserialize, Serialize};
 
 use crate::{sink::DataRequirements, transformer};
@@ -54,8 +52,8 @@ impl Selection {
     pub fn new_lod_selections(selected_value: &str) -> Self {
         Self::new(
             vec![
-                ("最大LOD", "maxlod"),
-                ("最小LOD", "minlod"),
+                ("最大LOD", "max_lod"),
+                ("最小LOD", "min_lod"),
                 ("LOD0", "lod0"),
                 ("LOD1", "lod1"),
                 ("LOD2", "lod2"),
@@ -172,13 +170,13 @@ impl TransformerRegistry {
                 ParameterType::Selection(value) => {
                     if config.key == "use_lod" {
                         match value.selected_value.as_str() {
-                            "maxlod" => {
+                            "max_lod" => {
                                 data_requirements.set_lod_filter(transformer::LodFilterSpec {
                                     mode: transformer::LodFilterMode::Highest,
                                     ..Default::default()
                                 })
                             }
-                            "minlod" => {
+                            "min_lod" => {
                                 data_requirements.set_lod_filter(transformer::LodFilterSpec {
                                     mode: transformer::LodFilterMode::Lowest,
                                     ..Default::default()

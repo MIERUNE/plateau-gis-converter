@@ -41,7 +41,7 @@ use crate::{
     sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo},
     transformer,
     transformer::{
-        LodSelection, Selection, SelectionOptions, TransformerConfig, TransformerRegistry,
+        LodSelection, Selection, TransformerConfig, TransformerRegistry,
     },
 };
 
@@ -102,7 +102,7 @@ impl DataSinkProvider for ObjSinkProvider {
             key: "use_lod".to_string(),
             label: "出力LODの選択".to_string(),
             parameter: transformer::ParameterType::Selection(Selection::new_lod_selections(
-                "maxlod",
+                "max_lod",
             )),
             requirements: vec![transformer::Requirement::UseLod(LodSelection::MaxLod)],
         });
