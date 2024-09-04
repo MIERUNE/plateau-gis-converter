@@ -3,15 +3,10 @@
 	import { invoke } from '@tauri-apps/api/tauri';
 	import type { SinkParameters } from '$lib/sinkparams';
 	import type { TransformerRegistry } from '$lib/transformer';
-	import { isBooleanConfig, isSelectionConfig } from '$lib/transformer';
-	import {
-		isIntegerParameter,
-		isStringParameter,
-		isBooleanParameter,
-		createRangeArray
-	} from '$lib/sinkparams';
 	import Icon from '@iconify/svelte';
 	import { dialog } from '@tauri-apps/api';
+	import SinkOptions from '$lib/components/SinkOptions.svelte';
+	import TransformerOptions from '$lib/components/TransformerOptions.svelte';
 
 	export let filetype: string;
 	export let epsg: number = 4979;
@@ -50,7 +45,6 @@
 		const registry = (await invoke('get_transform', { filetype })) as any;
 
 		transformerRegistry = registry;
-		console.log(transformerRegistry);
 	}
 
 	$: getTransformerRegistry(filetype);
@@ -71,8 +65,14 @@
 	$: setSinkParameter(filetype);
 
 	// Select the file format specified for testing, if any
-	const testSink = import.meta.env.VITE_TEST_SINK;
-	if (testSink && filetypeOptions.hasOwnProperty(testSink)) filetype = testSink;
+	const targetSink = import.meta.env.VITE_TEST_SINK;
+	if (targetSink) {
+		if (filetypeOptions.hasOwnProperty(targetSink)) {
+			filetype = targetSink;
+		} else {
+			console.warn(`The specified test sink "${targetSink}" is invalid. Using default value.`);
+		}
+	}
 </script>
 
 <div>
@@ -109,106 +109,12 @@
 		</div>
 
 		{#if (transformerRegistry && transformerRegistry.configs.length > 0) || sinkOptionKeys.length > 0}
-			<div class="flex flex-col gap-1.5">
-				<label for="transform-select" class="font-bold">出力の詳細設定</label>
-
-				<!-- Transformer options -->
-				{#if transformerRegistry && transformerRegistry.configs.length > 0}
-					{#each transformerRegistry.configs as config}
-						{#if isBooleanConfig(config.parameter)}
-							<div class="flex gap-2 w-80">
-								<label for={config.key} class="w-3/4">
-									{config.label}
-								</label>
-								<div class="relative inline-block w-10 h-6 rounded-full cursor-pointer">
-									<input
-										bind:checked={config.parameter.Boolean}
-										id={config.key}
-										type="checkbox"
-										class="absolute w-10 h-6 transition-colors duration-300 rounded-full appearance-none cursor-pointer peer bg-gray-200 checked:bg-accent1 peer-checked:before:bg-accent1"
-									/>
-									<label
-										for={config.key}
-										class="before:content[''] absolute top-2/4 -left-1 h-6 w-6 -translate-y-2/4 cursor-pointer rounded-full border border-blue-gray-100 bg-white shadow-md transition-all duration-300 peer-checked:translate-x-full"
-									>
-										<div
-											class="inline-block p-5 rounded-full top-2/4 left-2/4 -translate-x-2/4 -translate-y-2/4"
-										></div>
-									</label>
-								</div>
-							</div>
-						{:else if isSelectionConfig(config.parameter)}
-							<div class="flex gap-2 w-80">
-								<label for={config.key} class="w-2/4">{config.label}</label>
-								<select
-									id={config.key}
-									class="w-2/4 border-2 border-gray-300 px-2 rounded-md"
-									bind:value={config.parameter.Selection.selected_value}
-								>
-									{#each config.parameter.Selection.options as option, index (index)}
-										<option value={option.value}>{option.label}</option>
-									{/each}
-								</select>
-							</div>
-						{/if}
-					{/each}
-				{/if}
-
-				<!-- Sink options -->
-				{#if sinkOptionKeys.length > 0}
-					<div class="flex flex-col gap-2">
-						{#each sinkOptionKeys as key}
-							{#if isIntegerParameter(sinkParameters.items[key].parameter)}
-								<div class="flex gap-2 w-80">
-									<label for={key} class="w-3/4">{sinkParameters.items[key].label}</label>
-									<select
-										bind:value={sinkParameters.items[key].parameter.Integer.value}
-										id={key}
-										class="w-1/4 border-2 border-gray-300 px-2 rounded-md"
-									>
-										{#if sinkParameters.items[key].parameter.Integer.min !== undefined && sinkParameters.items[key].parameter.Integer.max !== undefined}
-											{#each createRangeArray(sinkParameters.items[key].parameter.Integer.min, sinkParameters.items[key].parameter.Integer.max) as value}
-												<option {value} class="text-center">{value}</option>
-											{/each}
-										{/if}
-									</select>
-								</div>
-							{:else if isStringParameter(sinkParameters.items[key].parameter)}
-								<!-- TODO String input -->
-								<!-- <div class="flex gap-2 w-80">
-								<label for={key} class="w-3/4">{sinkParameters.items[key].label}</label>
-								<input
-									type="text"
-									id={key}
-									bind:value={sinkParameters.items[key].parameter.String.value}
-									class="w-1/4"
-								/>
-							</div> -->
-							{:else if isBooleanParameter(sinkParameters.items[key].parameter)}
-								<div class="flex gap-2 w-80">
-									<label for={key} class="w-3/4">{sinkParameters.items[key].label}</label>
-
-									<div class="relative inline-block w-10 h-6 rounded-full cursor-pointer">
-										<input
-											bind:checked={sinkParameters.items[key].parameter.Boolean.value}
-											id={key}
-											type="checkbox"
-											class="absolute w-10 h-6 transition-colors duration-300 rounded-full appearance-none cursor-pointer peer bg-gray-200 checked:bg-accent1 peer-checked:before:bg-accent1"
-										/>
-										<label
-											for={key}
-											class="before:content[''] absolute top-2/4 -left-1 h-6 w-6 -translate-y-2/4 cursor-pointer rounded-full border border-blue-gray-100 bg-white shadow-md transition-all duration-300 peer-checked:translate-x-full"
-										>
-											<div
-												class="inline-block p-5 rounded-full top-2/4 left-2/4 -translate-x-2/4 -translate-y-2/4"
-											></div>
-										</label>
-									</div>
-								</div>
-							{/if}
-						{/each}
-					</div>
-				{/if}
+			<div class="flex flex-col">
+				<label for="transform-select" class="font-bold mb-1.5">出力の詳細設定</label>
+				<div class="flex flex-col gap-2">
+					<TransformerOptions bind:transformerRegistry />
+					<SinkOptions bind:sinkOptionKeys bind:sinkParameters />
+				</div>
 			</div>
 		{/if}
 
