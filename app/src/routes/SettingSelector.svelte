@@ -85,7 +85,12 @@
 	<div class="flex flex-col gap-5 mt-3 ml-2">
 		<div class="flex flex-col gap-1.5">
 			<label for="filetype-select" class="font-bold">ファイル形式</label>
-			<select bind:value={filetype} name="filetype" id="filetype-select" class="w-80">
+			<select
+				bind:value={filetype}
+				name="filetype"
+				id="filetype-select"
+				class="w-80 cursor-pointer"
+			>
 				{#each Object.entries(filetypeOptions) as [value, item]}
 					<option {value}>{item.label}</option>
 				{/each}
@@ -98,9 +103,10 @@
 				bind:value={epsg}
 				name="epsg"
 				id="epsg-select"
-				class="w-80"
+				class="w-80 cursor-pointer"
 				disabled={disableEpsgOptions}
 				class:opacity-50={disableEpsgOptions}
+				class:cursor-auto={disableEpsgOptions}
 			>
 				{#each epsgOptions as option}
 					<option value={option.value}>{option.label}</option>

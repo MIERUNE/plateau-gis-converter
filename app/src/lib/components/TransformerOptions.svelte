@@ -33,7 +33,7 @@
 				<label for={config.key} class="w-2/4 pointer-events-none">{config.label}</label>
 				<select
 					id={config.key}
-					class="w-2/4 border-2 border-gray-300 px-2 rounded-md"
+					class="w-2/4 border-2 border-gray-300 px-2 rounded-md cursor-pointer"
 					bind:value={config.parameter.Selection.selected_value}
 				>
 					{#each config.parameter.Selection.options as option, index (index)}

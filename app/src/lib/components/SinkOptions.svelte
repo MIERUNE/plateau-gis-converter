@@ -21,7 +21,7 @@
 					<select
 						bind:value={sinkParameters.items[key].parameter.Integer.value}
 						id={key}
-						class="w-1/4 border-2 border-gray-300 px-2 rounded-md"
+						class="w-1/4 border-2 border-gray-300 px-2 rounded-md cursor-pointer"
 					>
 						{#if sinkParameters.items[key].parameter.Integer.min !== undefined && sinkParameters.items[key].parameter.Integer.max !== undefined}
 							{#each createRangeArray(sinkParameters.items[key].parameter.Integer.min, sinkParameters.items[key].parameter.Integer.max) as value}
