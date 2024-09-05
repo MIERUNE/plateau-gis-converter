@@ -139,6 +139,13 @@ impl TransformerRegistry {
             .collect();
     }
 
+    pub fn initialize_valid_keys(&self) -> Vec<String> {
+        self.configs
+            .iter()
+            .map(|config| config.key.clone())
+            .collect()
+    }
+
     pub fn build(&self, default_requirements: DataRequirements) -> DataRequirements {
         let mut data_requirements = default_requirements;
 

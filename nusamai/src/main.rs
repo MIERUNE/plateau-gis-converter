@@ -165,6 +165,24 @@ fn main() -> ExitCode {
     };
 
     let mut had_error = false;
+    let valid_keys = transformer_registry.initialize_valid_keys();
+    // Check if the keys specified in args.transformopt are valid
+    args.transformopt.iter().for_each(|(key, _)| {
+        if !valid_keys.contains(key) {
+            let valid_keys_formatted = valid_keys
+                .iter()
+                .map(|k| format!("'{}'", k))
+                .collect::<Vec<_>>()
+                .join(", ");
+            log::error!(
+            "Invalid key '{}' specified for transformer option. Valid keys for {} format are: {}",
+            key,
+            args.sink.0,
+            valid_keys_formatted
+        );
+            had_error = true;
+        }
+    });
 
     let updated_transformer_registry = TransformerRegistry {
         configs: transformer_registry
