@@ -42,9 +42,7 @@ use crate::{
     pipeline::{Feedback, PipelineError, Receiver, Result},
     sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo},
     transformer,
-    transformer::{
-        LodSelection, Selection, TransformerConfig, TransformerRegistry,
-    },
+    transformer::{Selection, TransformerConfig, TransformerRegistry},
 };
 use utils::calculate_normal;
 
@@ -99,13 +97,11 @@ impl DataSinkProvider for CesiumTilesSinkProvider {
             parameter: transformer::ParameterType::Selection(Selection::new_lod_selections(
                 "max_lod",
             )),
-            requirements: vec![transformer::Requirement::UseLod(LodSelection::MaxLod)],
         });
         settings.insert(TransformerConfig {
             key: "use_texture".to_string(),
             label: "テクスチャの使用".to_string(),
             parameter: transformer::ParameterType::Boolean(false),
-            requirements: vec![transformer::Requirement::UseAppearance],
         });
 
         settings

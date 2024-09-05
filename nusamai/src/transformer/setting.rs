@@ -109,7 +109,6 @@ pub struct TransformerConfig {
     pub key: String,
     pub label: String,
     pub parameter: ParameterType,
-    pub requirements: Vec<Requirement>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
@@ -150,18 +149,8 @@ impl TransformerRegistry {
                     // TODO: Processing for String types.
                 }
                 ParameterType::Boolean(value) => {
-                    if *value && config.key == "use_texture" {
-                        for req in &config.requirements {
-                            match req {
-                                Requirement::UseAppearance => {
-                                    data_requirements.set_appearance(true);
-                                }
-                                Requirement::NotUseAppearance => {
-                                    data_requirements.set_appearance(false);
-                                }
-                                _ => {}
-                            }
-                        }
+                    if config.key == "use_texture" {
+                        data_requirements.set_appearance(*value);
                     }
                 }
                 ParameterType::Integer(_value) => {

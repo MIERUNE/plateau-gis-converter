@@ -33,9 +33,7 @@ use crate::{
     pipeline::{Feedback, PipelineError, Receiver, Result},
     sink::{cesiumtiles::metadata, DataRequirements, DataSink, DataSinkProvider, SinkInfo},
     transformer,
-    transformer::{
-        LodSelection, Selection, TransformerConfig, TransformerRegistry,
-    },
+    transformer::{Selection, TransformerConfig, TransformerRegistry},
 };
 
 use super::texture_resolution::get_texture_downsample_scale_of_polygon;
@@ -87,13 +85,11 @@ impl DataSinkProvider for GltfSinkProvider {
             parameter: transformer::ParameterType::Selection(Selection::new_lod_selections(
                 "max_lod",
             )),
-            requirements: vec![transformer::Requirement::UseLod(LodSelection::MaxLod)],
         });
         settings.insert(TransformerConfig {
             key: "use_texture".to_string(),
             label: "テクスチャの使用".to_string(),
             parameter: transformer::ParameterType::Boolean(false),
-            requirements: vec![transformer::Requirement::UseAppearance],
         });
 
         settings

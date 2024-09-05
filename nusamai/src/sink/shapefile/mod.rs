@@ -28,7 +28,7 @@ use crate::{
     pipeline::{Feedback, PipelineError, Receiver, Result},
     sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo},
     transformer,
-    transformer::{LodSelection, Selection, TransformerConfig, TransformerRegistry},
+    transformer::{Selection, TransformerConfig, TransformerRegistry},
 };
 
 pub struct ShapefileSinkProvider {}
@@ -67,7 +67,6 @@ impl DataSinkProvider for ShapefileSinkProvider {
             parameter: transformer::ParameterType::Selection(Selection::new_lod_selections(
                 "max_lod",
             )),
-            requirements: vec![transformer::Requirement::UseLod(LodSelection::MaxLod)],
         });
 
         settings

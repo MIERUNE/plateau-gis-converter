@@ -20,9 +20,7 @@ use crate::{
     pipeline::{Feedback, PipelineError, Receiver},
     sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo},
     transformer,
-    transformer::{
-        LodSelection, Selection, TransformerConfig, TransformerRegistry,
-    },
+    transformer::{Selection, TransformerConfig, TransformerRegistry},
 };
 
 const PLY_HEADER_TEMPLATE: &str = r##"ply
@@ -74,7 +72,6 @@ impl DataSinkProvider for StanfordPlySinkProvider {
             parameter: transformer::ParameterType::Selection(Selection::new_lod_selections(
                 "max_lod",
             )),
-            requirements: vec![transformer::Requirement::UseLod(LodSelection::MaxLod)],
         });
 
         settings

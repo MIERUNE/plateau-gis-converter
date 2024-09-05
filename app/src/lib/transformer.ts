@@ -16,7 +16,6 @@ export interface TransformerConfig<T> {
 	key: string;
 	label: string;
 	parameter: T;
-	requirements: string[];
 }
 
 export interface BooleanConfig {
