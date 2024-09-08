@@ -122,7 +122,7 @@ impl GeometryCollector {
         }));
     }
 
-    pub fn into_geometries(self) -> GeometryStore {
+    pub fn into_geometries(self, epsg_opt: Option<EpsgCode>) -> GeometryStore {
         let mut vertices = Vec::with_capacity(self.vertices.len());
         for vbits in &self.vertices {
             vertices.push([
@@ -132,8 +132,14 @@ impl GeometryCollector {
             ]);
         }
 
+        let epsg = if let Some(epsg) = epsg_opt {
+            epsg
+        } else {
+            EPSG_JGD2011_GEOGRAPHIC_3D
+        };
+
         GeometryStore {
-            epsg: EPSG_JGD2011_GEOGRAPHIC_3D,
+            epsg,
             vertices,
             multipolygon: self.multipolygon,
             multilinestring: self.multilinestring,

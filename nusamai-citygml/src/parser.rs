@@ -1,5 +1,6 @@
 use std::{io::BufRead, mem, str};
 
+use nusamai_projection::crs::EpsgCode;
 use quick_xml::{
     events::{BytesStart, Event},
     name::{Namespace, ResolveResult::Bound},
@@ -319,9 +320,9 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
         self.state.context.id_to_integer_id(id)
     }
 
-    pub fn collect_geometries(&mut self) -> GeometryStore {
+    pub fn collect_geometries(&mut self, epsg_opt: Option<EpsgCode>) -> GeometryStore {
         let collector = std::mem::take(&mut self.state.geometry_collector);
-        collector.into_geometries()
+        collector.into_geometries(epsg_opt)
     }
 
     /// Expect a geometric attribute of CityGML
