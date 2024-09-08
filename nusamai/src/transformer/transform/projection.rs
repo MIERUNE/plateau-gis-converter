@@ -1,6 +1,5 @@
 use std::sync::Arc;
 
-use log::info;
 use nusamai_citygml::schema::Schema;
 use nusamai_plateau::Entity;
 use nusamai_projection::{
@@ -24,11 +23,6 @@ impl Transform for ProjectionTransform {
             geom_store.epsg
         };
 
-        info!(
-            "Transforming entity with EPSG: {} into EPSG: {}",
-            input_epsg, self.output_epsg
-        );
-
         match input_epsg {
             EPSG_JGD2011_GEOGRAPHIC_3D => self.transform_from_jgd2011(&entity),
             EPSG_WGS84_GEOGRAPHIC_3D => self.transform_from_wgs84(&entity),
@@ -45,11 +39,18 @@ impl Transform for ProjectionTransform {
             | EPSG_JGD2011_JPRECT_XI_JGD2011_HEIGHT
             | EPSG_JGD2011_JPRECT_XII_JGD2011_HEIGHT
             | EPSG_JGD2011_JPRECT_XIII_JGD2011_HEIGHT => {
-                unimplemented!(
-                    "EPSG:{} to EPSG:{} not supported yet",
-                    input_epsg,
-                    self.output_epsg
-                );
+                let zone = JPRZone::from_epsg(input_epsg).unwrap();
+                let proj = zone.projection();
+                let mut geom_store = entity.geometry_store.write().unwrap();
+
+                // convert coordinates into EPSG 6697
+                geom_store.vertices.iter_mut().for_each(|v| {
+                    let (lng, lat, z) = proj.project_inverse(v[0], v[1], v[2]).unwrap();
+                    (v[0], v[1], v[2]) = (lng, lat, z);
+                });
+
+                geom_store.epsg = EPSG_JGD2011_GEOGRAPHIC_3D;
+                self.transform_from_jgd2011(&entity);
             }
             _ => {
                 panic!("Unsupported input CRS: {}", input_epsg);
