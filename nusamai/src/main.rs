@@ -13,7 +13,7 @@ use nusamai::{
     source::{citygml::CityGmlSourceProvider, DataSource, DataSourceProvider},
     transformer::{
         self, MappingRules, MultiThreadTransformer, NusamaiTransformBuilder, ParameterType,
-        TransformBuilder, TransformerRegistry,
+        TransformBuilder, TransformerConfig, TransformerRegistry,
     },
     BUILTIN_SINKS,
 };
@@ -138,38 +138,35 @@ fn main() -> ExitCode {
         .expect("Error setting Ctrl-C handler");
     }
 
-    let (mut sink, transformer_registry) = {
-        let sink_provider: &dyn DataSinkProvider = args.sink.create_sink();
-        let mut sink_params = sink_provider.parameters();
-        if let Err(err) = sink_params.update_values_with_str(&args.sinkopt) {
-            log::error!("Error parsing sink options: {:?}", err);
-            return ExitCode::FAILURE;
-        };
-        if let Err(err) = sink_params.validate() {
-            log::error!("Error validating sink parameters: {:?}", err);
-            return ExitCode::FAILURE;
-        }
-
-        // If the directory for the output path does not exist, create it
-        if let Some(output_parent_dir) = PathBuf::from(&args.output).parent() {
-            if !output_parent_dir.exists() {
-                if std::fs::create_dir_all(output_parent_dir).is_err() {
-                    log::error!("Failed to create output directory: {:?}", output_parent_dir);
-                    return ExitCode::FAILURE;
-                };
-                log::info!("Created output directory: {:?}", output_parent_dir);
-            }
-        }
-
-        let transformer_registry = sink_provider.available_transformer();
-
-        (sink_provider.create(&sink_params), transformer_registry)
+    let sink_provider: &dyn DataSinkProvider = args.sink.create_sink();
+    let mut sink_params = sink_provider.parameters();
+    if let Err(err) = sink_params.update_values_with_str(&args.sinkopt) {
+        log::error!("Error parsing sink options: {:?}", err);
+        return ExitCode::FAILURE;
     };
+    if let Err(err) = sink_params.validate() {
+        log::error!("Error validating sink parameters: {:?}", err);
+        return ExitCode::FAILURE;
+    }
 
-    let mut had_error = false;
+    // If the directory for the output path does not exist, create it
+    if let Some(output_parent_dir) = PathBuf::from(&args.output).parent() {
+        if !output_parent_dir.exists() {
+            if std::fs::create_dir_all(output_parent_dir).is_err() {
+                log::error!("Failed to create output directory: {:?}", output_parent_dir);
+                return ExitCode::FAILURE;
+            };
+            log::info!("Created output directory: {:?}", output_parent_dir);
+        }
+    }
+
+    let mut sink = sink_provider.create(&sink_params);
+    let transformer_registry = sink_provider.available_transformer();
+
     let valid_keys = transformer_registry.initialize_valid_keys();
+
     // Check if the keys specified in args.transformopt are valid
-    args.transformopt.iter().for_each(|(key, _)| {
+    for (key, _) in &args.transformopt {
         if !valid_keys.contains(key) {
             let valid_keys_formatted = valid_keys
                 .iter()
@@ -182,65 +179,60 @@ fn main() -> ExitCode {
             args.sink.0,
             valid_keys_formatted
         );
-            had_error = true;
+            return ExitCode::FAILURE;
         }
-    });
+    }
 
-    let updated_transformer_registry = TransformerRegistry {
-        configs: transformer_registry
-            .configs
-            .into_iter()
-            .map(|mut config| {
-                // Check if the key from args.transformopt matches the current config's key
-                if let Some((_, value)) =
-                    args.transformopt.iter().find(|(key, _)| *key == config.key)
-                {
-                    match &mut config.parameter {
-                        // If the parameter is of type Selection, update the selected value
-                        ParameterType::Selection(selection) => {
-                            if let Err(_err) = selection.set_selected_value(value) {
-                                let available_options: Vec<String> = selection.get_options()
-                                    .iter()
-                                    .map(|option| format!("'{}'", option.get_value()))
-                                    .collect();
-                                log::error!(
-                                    "Non-existent value '{}' specified for option '{}'. Available options are: {}",
-                                    value,
-                                    config.key,
-                                    available_options.join(", ")
-                                );
-                                had_error = true;
-                            }
-                        }
-                        // If the parameter is of type Boolean, update the boolean value
-                        ParameterType::Boolean(bool_param) => match value.as_str() {
-                            "true" => *bool_param = true,
-                            "false" => *bool_param = false,
-                            _ => {
-                                log::error!(
-                                    "Invalid boolean value '{}' for option '{}'. Only 'true' or 'false' are allowed.",
-                                    value,
-                                    config.key
-                                );
-                                had_error = true;
-                            }
-                        },
-                        // Handle other parameter types if needed
-                        _ => {
-                            log::error!("Unsupported parameter type for key '{}'", config.key);
-
-                            had_error = true;
-                        }
+    let update_result: Result<Vec<TransformerConfig>, String> = transformer_registry
+    .configs
+    .into_iter()
+    .map(|mut config| {
+        // Check if the key from args.transformopt matches the current config's key
+        if let Some((_, value)) = args.transformopt.iter().find(|(key, _)| *key == config.key) {
+            match &mut config.parameter {
+                // If the parameter is of type Selection, update the selected value
+                ParameterType::Selection(selection) => {
+                    if let Err(_) = selection.set_selected_value(value) {
+                        let available_options: Vec<String> = selection.get_options()
+                            .iter()
+                            .map(|option| format!("'{}'", option.get_value()))
+                            .collect();
+                        return Err(format!(
+                            "Non-existent value '{}' specified for option '{}'. Available options are: {}",
+                            value,
+                            config.key,
+                            available_options.join(", ")
+                        ));
                     }
                 }
-                config
-            })
-            .collect(),
-    };
+                // If the parameter is of type Boolean, update the boolean value
+                ParameterType::Boolean(bool_param) => match value.as_str() {
+                    "true" => *bool_param = true,
+                    "false" => *bool_param = false,
+                    _ => {
+                        return Err(format!(
+                            "Invalid boolean value '{}' for option '{}'. Only 'true' or 'false' are allowed.",
+                            value,
+                            config.key
+                        ));
+                    }
+                },
+                _ => {
+                    return Err(format!("Unsupported parameter type for key '{}'", config.key));
+                }
+            }
+        }
+        Ok(config)
+    })
+    .collect();
 
-    if had_error {
-        return ExitCode::FAILURE;
-    }
+    let updated_transformer_registry = match update_result {
+        Ok(configs) => TransformerRegistry { configs },
+        Err(error_message) => {
+            log::error!("{}", error_message);
+            return ExitCode::FAILURE;
+        }
+    };
 
     let mut requirements = sink.make_requirements(updated_transformer_registry);
     requirements.set_output_epsg(match args.sink.0.as_ref() {
