@@ -201,7 +201,7 @@ fn run_conversion(
                 .map(|s| PathBuf::from_str(s).unwrap())
                 .collect(),
         });
-        let mut source_params = source_provider.parameters();
+        let mut source_params = source_provider.sink_options();
         if let Err(err) = source_params.validate() {
             let msg = format!("Error validating source parameters: {:?}", err);
             log::error!("{}", msg);
@@ -306,7 +306,7 @@ fn get_transform(filetype: String) -> Result<TransformerRegistry, Error> {
         Error::InvalidSetting(msg)
     })?;
 
-    let transformer_registry = sink_provider.available_transformer();
+    let transformer_registry = sink_provider.transformer_options();
 
     Ok(transformer_registry)
 }
@@ -319,7 +319,7 @@ fn get_parameter(filetype: String) -> Result<Parameters, Error> {
         log::error!("{}", msg);
         Error::InvalidSetting(msg)
     })?;
-    let sink_params = sink_provider.parameters();
+    let sink_params = sink_provider.sink_options();
 
     Ok(sink_params)
 }

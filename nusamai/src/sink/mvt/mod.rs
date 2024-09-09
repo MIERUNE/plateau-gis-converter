@@ -42,7 +42,7 @@ impl DataSinkProvider for MvtSinkProvider {
         }
     }
 
-    fn parameters(&self) -> Parameters {
+    fn sink_options(&self) -> Parameters {
         let mut params = Parameters::new();
         params.define(
             "@output".into(),
@@ -85,7 +85,7 @@ impl DataSinkProvider for MvtSinkProvider {
         params
     }
 
-    fn available_transformer(&self) -> TransformerRegistry {
+    fn transformer_options(&self) -> TransformerRegistry {
         let mut settings: TransformerRegistry = TransformerRegistry::new();
 
         settings.insert(TransformerConfig {
@@ -101,7 +101,7 @@ impl DataSinkProvider for MvtSinkProvider {
 
     fn create(&self, params: &Parameters) -> Box<dyn DataSink> {
         let output_path = get_parameter_value!(params, "@output", FileSystemPath);
-        let transform_options = self.available_transformer();
+        let transform_options = self.transformer_options();
         let min_z = get_parameter_value!(params, "min_z", Integer).unwrap() as u8;
         let max_z = get_parameter_value!(params, "max_z", Integer).unwrap() as u8;
 

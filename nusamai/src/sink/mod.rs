@@ -34,10 +34,10 @@ pub trait DataSinkProvider: Sync {
     fn info(&self) -> SinkInfo;
 
     /// Gets the configurable parameters of the sink.
-    fn parameters(&self) -> Parameters;
+    fn sink_options(&self) -> Parameters;
 
     /// Gets the transform options of the sink.
-    fn available_transformer(&self) -> TransformerRegistry;
+    fn transformer_options(&self) -> TransformerRegistry;
 
     /// Creates a sink instance.
     fn create(&self, config: &Parameters) -> Box<dyn DataSink>;

@@ -29,7 +29,7 @@ impl DataSinkProvider for SerdeSinkProvider {
         }
     }
 
-    fn parameters(&self) -> Parameters {
+    fn sink_options(&self) -> Parameters {
         let mut params = Parameters::new();
         params.define(
             "@output".into(),
@@ -46,7 +46,7 @@ impl DataSinkProvider for SerdeSinkProvider {
         params
     }
 
-    fn available_transformer(&self) -> TransformerRegistry {
+    fn transformer_options(&self) -> TransformerRegistry {
         let settings: TransformerRegistry = TransformerRegistry::new();
 
         settings

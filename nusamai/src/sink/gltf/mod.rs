@@ -48,7 +48,7 @@ impl DataSinkProvider for GltfSinkProvider {
         }
     }
 
-    fn parameters(&self) -> Parameters {
+    fn sink_options(&self) -> Parameters {
         let mut params = Parameters::new();
         params.define(
             "@output".into(),
@@ -76,7 +76,7 @@ impl DataSinkProvider for GltfSinkProvider {
         params
     }
 
-    fn available_transformer(&self) -> TransformerRegistry {
+    fn transformer_options(&self) -> TransformerRegistry {
         let mut settings: TransformerRegistry = TransformerRegistry::new();
 
         settings.insert(TransformerConfig {
@@ -99,7 +99,7 @@ impl DataSinkProvider for GltfSinkProvider {
         let output_path = get_parameter_value!(params, "@output", FileSystemPath);
         let limit_texture_resolution =
             *get_parameter_value!(params, "limit_texture_resolution", Boolean);
-        let transform_settings = self.available_transformer();
+        let transform_settings = self.transformer_options();
 
         Box::<GltfSink>::new(GltfSink {
             output_path: output_path.as_ref().unwrap().into(),

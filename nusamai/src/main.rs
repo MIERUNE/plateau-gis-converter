@@ -139,7 +139,7 @@ fn main() -> ExitCode {
     }
 
     let sink_provider: &dyn DataSinkProvider = args.sink.create_sink();
-    let mut sink_params = sink_provider.parameters();
+    let mut sink_params = sink_provider.sink_options();
     if let Err(err) = sink_params.update_values_with_str(&args.sinkopt) {
         log::error!("Error parsing sink options: {:?}", err);
         return ExitCode::FAILURE;
@@ -161,7 +161,7 @@ fn main() -> ExitCode {
     }
 
     let mut sink = sink_provider.create(&sink_params);
-    let transformer_registry = sink_provider.available_transformer();
+    let transformer_registry = sink_provider.transformer_options();
 
     let valid_keys = transformer_registry.initialize_valid_keys();
 
@@ -277,7 +277,7 @@ fn main() -> ExitCode {
 
         let source_provider: Box<dyn DataSourceProvider> =
             Box::new(CityGmlSourceProvider { filenames });
-        let mut source_params = source_provider.parameters();
+        let mut source_params = source_provider.sink_options();
         if let Err(err) = source_params.update_values_with_str(&args.sourceopt) {
             log::error!("Error parsing source parameters: {:?}", err);
             return ExitCode::FAILURE;

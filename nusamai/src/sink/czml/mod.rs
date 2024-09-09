@@ -37,7 +37,7 @@ impl DataSinkProvider for CzmlSinkProvider {
         }
     }
 
-    fn parameters(&self) -> Parameters {
+    fn sink_options(&self) -> Parameters {
         let mut params = Parameters::new();
         params.define(
             "@output".into(),
@@ -54,7 +54,7 @@ impl DataSinkProvider for CzmlSinkProvider {
         params
     }
 
-    fn available_transformer(&self) -> TransformerRegistry {
+    fn transformer_options(&self) -> TransformerRegistry {
         let mut settings: TransformerRegistry = TransformerRegistry::new();
 
         settings.insert(TransformerConfig {
@@ -70,7 +70,7 @@ impl DataSinkProvider for CzmlSinkProvider {
 
     fn create(&self, params: &Parameters) -> Box<dyn DataSink> {
         let output_path = get_parameter_value!(params, "@output", FileSystemPath);
-        let transform_settings = self.available_transformer();
+        let transform_settings = self.transformer_options();
 
         Box::<CzmlSink>::new(CzmlSink {
             output_path: output_path.as_ref().unwrap().into(),
