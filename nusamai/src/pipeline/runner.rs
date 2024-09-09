@@ -61,17 +61,17 @@ fn spawn_transformer_thread(
     feedback: Feedback,
 ) -> (std::thread::JoinHandle<()>, Receiver) {
     let (sender, receiver) = sync_channel(TRANSFORMER_OUTPUT_CHANNEL_BOUND);
-    let receiver_feedback = feedback.component_span(super::SourceComponent::Transformer);
+    let main_thread_feedback = feedback.component_span(super::SourceComponent::Transformer);
     let handle = spawn_thread("pipeline-transformer".to_string(), move || {
         feedback.info("Transformer thread started.".into());
         let pool = ThreadPoolBuilder::new()
             .use_current_thread()
             .build()
             .unwrap();
-        let transformer_feedback = feedback.component_span(super::SourceComponent::Transformer);
+        let child_thread_feedback = feedback.component_span(super::SourceComponent::Transformer);
         pool.install(move || {
-            if let Err(error) = transformer.run(upstream, sender, &transformer_feedback) {
-                transformer_feedback.fatal_error(error);
+            if let Err(error) = transformer.run(upstream, sender, &child_thread_feedback) {
+                child_thread_feedback.fatal_error(error);
             }
         });
         feedback.info("Transformer thread finished.".into());
@@ -79,7 +79,7 @@ fn spawn_transformer_thread(
 
     // Report an error if the converted data is empty.
     if let Err(error) = receiver.recv() {
-        receiver_feedback.fatal_error(PipelineError::Other(format!(
+        main_thread_feedback.fatal_error(PipelineError::Other(format!(
             "Transformer thread failed to receive data due to: {}",
             error
         )));
@@ -89,8 +89,7 @@ fn spawn_transformer_thread(
 }
 
 fn spawn_sink_thread(
-    // mut sink: Box<dyn DataSink>,
-    mut sink: Box<dyn DataSink>, //NOTE: test
+    mut sink: Box<dyn DataSink>,
     schema: Arc<Schema>,
     upstream: Receiver,
     feedback: Feedback,

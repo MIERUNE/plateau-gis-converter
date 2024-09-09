@@ -47,11 +47,13 @@ struct Args {
     #[arg(long)]
     schema: Option<String>,
 
-    /// Add an option for the output format (key=value)
+    /// Add options for the output sink (key=value)
+    /// These options affect how the data is written to the output sink
     #[arg(short = 'o', value_parser = parse_key_val)]
     sinkopt: Vec<(String, String)>,
 
-    /// Add an option for the output format (key=value)
+    /// Add options for the transformer (key=value)
+    /// These control feature coordinates and attribute trees
     #[arg(short = 't', value_parser = parse_key_val)]
     transformopt: Vec<(String, String)>,
 
