@@ -23,11 +23,6 @@ impl Transform for ProjectionTransform {
             geom_store.epsg
         };
 
-        _feedback.info(format!(
-            "Transforming from EPSG {} into EPSG {}",
-            input_epsg, self.output_epsg
-        ));
-
         match input_epsg {
             EPSG_JGD2011_GEOGRAPHIC_3D => self.transform_from_jgd2011(&entity, None),
             EPSG_WGS84_GEOGRAPHIC_3D => self.transform_from_wgs84(&entity, None),
