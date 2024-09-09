@@ -23,9 +23,14 @@ impl Transform for ProjectionTransform {
             geom_store.epsg
         };
 
+        _feedback.info(format!(
+            "Transforming from EPSG {} into EPSG {}",
+            input_epsg, self.output_epsg
+        ));
+
         match input_epsg {
-            EPSG_JGD2011_GEOGRAPHIC_3D => self.transform_from_jgd2011(&entity),
-            EPSG_WGS84_GEOGRAPHIC_3D => self.transform_from_wgs84(&entity),
+            EPSG_JGD2011_GEOGRAPHIC_3D => self.transform_from_jgd2011(&entity, None),
+            EPSG_WGS84_GEOGRAPHIC_3D => self.transform_from_wgs84(&entity, None),
             EPSG_JGD2011_JPRECT_I_JGD2011_HEIGHT
             | EPSG_JGD2011_JPRECT_II_JGD2011_HEIGHT
             | EPSG_JGD2011_JPRECT_III_JGD2011_HEIGHT
@@ -39,18 +44,7 @@ impl Transform for ProjectionTransform {
             | EPSG_JGD2011_JPRECT_XI_JGD2011_HEIGHT
             | EPSG_JGD2011_JPRECT_XII_JGD2011_HEIGHT
             | EPSG_JGD2011_JPRECT_XIII_JGD2011_HEIGHT => {
-                let zone = JPRZone::from_epsg(input_epsg).unwrap();
-                let proj = zone.projection();
-                let mut geom_store = entity.geometry_store.write().unwrap();
-
-                // convert coordinates into EPSG 6697
-                geom_store.vertices.iter_mut().for_each(|v| {
-                    let (lng, lat, z) = proj.project_inverse(v[0], v[1], v[2]).unwrap();
-                    (v[0], v[1], v[2]) = (lng, lat, z);
-                });
-
-                geom_store.epsg = EPSG_JGD2011_GEOGRAPHIC_3D;
-                self.transform_from_jgd2011(&entity);
+                self.transform_from_jgd2011(&entity, Some(input_epsg));
             }
             _ => {
                 panic!("Unsupported input CRS: {}", input_epsg);
@@ -77,11 +71,20 @@ impl ProjectionTransform {
         }
     }
 
-    fn transform_from_jgd2011(&mut self, entity: &Entity) {
+    fn transform_from_jgd2011(&mut self, entity: &Entity, rectangular: Option<EpsgCode>) {
+        let pre_transform = |v: &mut [f64; 3]| {
+            if let Some(rectangular_input_epsg) = rectangular {
+                let zone = JPRZone::from_epsg(rectangular_input_epsg).unwrap();
+                let proj = zone.projection();
+                let (lng, lat, z) = proj.project_inverse(v[0], v[1], v[2]).unwrap();
+                (v[0], v[1], v[2]) = (lng, lat, z);
+            }
+        };
         match self.output_epsg {
             EPSG_JGD2011_GEOGRAPHIC_3D => {
                 let mut geom_store = entity.geometry_store.write().unwrap();
                 geom_store.vertices.iter_mut().for_each(|v| {
+                    pre_transform(v);
                     // Swap x and y (lat, lng -> lng, lat)
                     (v[0], v[1], v[2]) = (v[1], v[0], v[2]);
                 });
@@ -90,6 +93,7 @@ impl ProjectionTransform {
             EPSG_WGS84_GEOGRAPHIC_3D => {
                 let mut geom_store = entity.geometry_store.write().unwrap();
                 geom_store.vertices.iter_mut().for_each(|v| {
+                    pre_transform(v);
                     // Swap x and y (lat, lng -> lng, lat)
                     let (lng, lat, height) = (v[1], v[0], v[2]);
                     // JGD2011 to WGS 84 (elevation to ellipsoidal height)
@@ -100,6 +104,7 @@ impl ProjectionTransform {
             EPSG_WEB_MERCATOR => {
                 let mut geom_store = entity.geometry_store.write().unwrap();
                 geom_store.vertices.iter_mut().for_each(|v| {
+                    pre_transform(v);
                     // Swap x and y (lat, lng -> lng, lat)
                     let (lng, lat) = (v[1], v[0]);
                     // LngLat to Web Mercator
@@ -124,6 +129,7 @@ impl ProjectionTransform {
                 let proj = self.jpr_zone_proj.as_ref().unwrap();
                 let mut geom_store = entity.geometry_store.write().unwrap();
                 geom_store.vertices.iter_mut().for_each(|v| {
+                    pre_transform(v);
                     let (lng, lat) = (v[1], v[0]);
                     // Change x and y; keep the height
                     // TODO: error handling
@@ -154,6 +160,7 @@ impl ProjectionTransform {
                 let proj = self.jpr_zone_proj.as_ref().unwrap();
                 let mut geom_store = entity.geometry_store.write().unwrap();
                 geom_store.vertices.iter_mut().for_each(|v| {
+                    pre_transform(v);
                     let (lng, lat) = (v[1], v[0]);
                     // Change x and y; keep the height
                     // TODO: error handling
@@ -167,7 +174,7 @@ impl ProjectionTransform {
         };
     }
 
-    fn transform_from_wgs84(&mut self, _entity: &Entity) {
+    fn transform_from_wgs84(&mut self, _entity: &Entity, _rectangular: Option<EpsgCode>) {
         match self.output_epsg {
             EPSG_WGS84_GEOGRAPHIC_3D => {
                 // Do nothing
