@@ -49,21 +49,6 @@ impl Selection {
         }
     }
 
-    pub fn new_lod_selections(selected_value: &str) -> Self {
-        Self::new(
-            vec![
-                ("最大LOD", "max_lod"),
-                ("最小LOD", "min_lod"),
-                ("LOD0", "lod0"),
-                ("LOD1", "lod1"),
-                ("LOD2", "lod2"),
-                ("LOD3", "lod3"),
-                ("LOD4", "lod4"),
-            ],
-            selected_value,
-        )
-    }
-
     pub fn set_selected_value(&mut self, value: &str) -> Result<(), String> {
         if self.options.iter().any(|opt| opt.value == value) {
             self.selected_value = value.to_string();
@@ -79,21 +64,24 @@ impl Selection {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
-pub enum LodSelection {
-    MaxLod,
-    MinLod,
-    Lod0,
-    Lod1,
-    Lod2,
-    Lod3,
-    Lod4,
-}
+pub struct LodSelection;
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub enum Requirement {
-    UseAppearance,
-    NotUseAppearance,
-    UseLod(LodSelection),
+impl LodSelection {
+    pub fn get_lod_selection_options() -> Vec<(&'static str, &'static str)> {
+        vec![
+            ("最大LOD", "max_lod"),
+            ("最小LOD", "min_lod"),
+            ("LOD0", "lod0"),
+            ("LOD1", "lod1"),
+            ("LOD2", "lod2"),
+            ("LOD3", "lod3"),
+            ("LOD4", "lod4"),
+        ]
+    }
+
+    pub fn create_lod_selection(default_value: &str) -> Selection {
+        Selection::new(Self::get_lod_selection_options(), default_value)
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
