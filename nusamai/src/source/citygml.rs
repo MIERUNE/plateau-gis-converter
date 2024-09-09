@@ -236,6 +236,9 @@ mod tests {
 
     #[test]
     fn crs_from_filename() {
-        assert_eq!(query_crs_from_filename(&PathBuf::from("dummy_dummy_1234_dummy.gml")), Some(1234));
+        assert_eq!(
+            query_crs_from_filename(&PathBuf::from("dummy_dummy_1234_dummy.gml")),
+            Some(1234)
+        );
     }
 }
