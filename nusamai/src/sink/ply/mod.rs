@@ -16,12 +16,14 @@ use rayon::prelude::*;
 
 use crate::{
     get_parameter_value,
+    option::use_lod_config,
     parameters::*,
     pipeline::{Feedback, PipelineError, Receiver},
     sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo},
-    transformer,
-    transformer::{LodSelection, TransformerConfig, TransformerRegistry},
+    transformer::TransformerRegistry,
 };
+
+use super::option::output_parameter;
 
 const PLY_HEADER_TEMPLATE: &str = r##"ply
 format binary_little_endian 1.0
@@ -48,31 +50,14 @@ impl DataSinkProvider for StanfordPlySinkProvider {
 
     fn sink_options(&self) -> Parameters {
         let mut params = Parameters::new();
-        params.define(
-            "@output".into(),
-            ParameterEntry {
-                description: "Output file path".into(),
-                required: true,
-                parameter: ParameterType::FileSystemPath(FileSystemPathParameter {
-                    value: None,
-                    must_exist: false,
-                }),
-                label: None,
-            },
-        );
+        params.define(output_parameter());
+
         params
     }
 
     fn transformer_options(&self) -> TransformerRegistry {
         let mut settings: TransformerRegistry = TransformerRegistry::new();
-
-        settings.insert(TransformerConfig {
-            key: "use_lod".to_string(),
-            label: "出力LODの選択".to_string(),
-            parameter: transformer::ParameterType::Selection(LodSelection::create_lod_selection(
-                "max_lod",
-            )),
-        });
+        settings.insert(use_lod_config("max_lod"));
 
         settings
     }

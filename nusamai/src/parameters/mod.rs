@@ -40,14 +40,19 @@ impl Parameters {
     }
 }
 
+pub struct ParameterDefinition {
+    pub key: String,
+    pub entry: ParameterEntry,
+}
+
 impl Parameters {
-    pub fn define(&mut self, key: String, item: ParameterEntry) {
-        match self.items.entry(key) {
+    pub fn define(&mut self, definition: ParameterDefinition) {
+        match self.items.entry(definition.key) {
             Entry::Occupied(entry) => {
                 panic!("Configuration key={} already exists", entry.key())
             }
             Entry::Vacant(entry) => {
-                entry.insert(item);
+                entry.insert(definition.entry);
             }
         }
     }
@@ -319,24 +324,24 @@ mod tests {
     #[test]
     fn string() {
         let mut params = Parameters::new();
-        params.define(
-            "test".into(),
-            ParameterEntry {
+        params.define(ParameterDefinition {
+            key: "test".into(),
+            entry: ParameterEntry {
                 description: "test".into(),
                 required: true,
                 parameter: ParameterType::String(StringParameter { value: None }),
                 label: None,
             },
-        );
-        params.define(
-            "test2".into(),
-            ParameterEntry {
+        });
+        params.define(ParameterDefinition {
+            key: "test2".into(),
+            entry: ParameterEntry {
                 description: "test2".into(),
                 required: false,
                 parameter: ParameterType::String(StringParameter { value: None }),
                 label: Some("test2".into()),
             },
-        );
+        });
 
         let result = params.validate();
         assert!(result.is_err());
@@ -349,24 +354,24 @@ mod tests {
     #[test]
     fn boolean() {
         let mut params = Parameters::new();
-        params.define(
-            "test".into(),
-            ParameterEntry {
+        params.define(ParameterDefinition {
+            key: "test".into(),
+            entry: ParameterEntry {
                 description: "test".into(),
                 required: true,
                 parameter: ParameterType::Boolean(BooleanParameter { value: None }),
                 label: None,
             },
-        );
-        params.define(
-            "test2".into(),
-            ParameterEntry {
+        });
+        params.define(ParameterDefinition {
+            key: "test2".into(),
+            entry: ParameterEntry {
                 description: "test2".into(),
                 required: false,
                 parameter: ParameterType::Boolean(BooleanParameter { value: None }),
                 label: Some("test2".into()),
             },
-        );
+        });
 
         // validation should fail
         let result = params.validate();
@@ -388,9 +393,9 @@ mod tests {
     #[test]
     fn interger() {
         let mut params = Parameters::new();
-        params.define(
-            "test".into(),
-            ParameterEntry {
+        params.define(ParameterDefinition {
+            key: "test".into(),
+            entry: ParameterEntry {
                 description: "test".into(),
                 required: true,
                 parameter: ParameterType::Integer(IntegerParameter {
@@ -400,10 +405,10 @@ mod tests {
                 }),
                 label: None,
             },
-        );
-        params.define(
-            "test2".into(),
-            ParameterEntry {
+        });
+        params.define(ParameterDefinition {
+            key: "test2".into(),
+            entry: ParameterEntry {
                 description: "test2".into(),
                 required: false,
                 parameter: ParameterType::Integer(IntegerParameter {
@@ -413,7 +418,7 @@ mod tests {
                 }),
                 label: Some("test2".into()),
             },
-        );
+        });
 
         // validation should fail
         let result = params.validate();

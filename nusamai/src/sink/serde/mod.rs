@@ -19,6 +19,8 @@ use crate::{
     transformer::TransformerRegistry,
 };
 
+use super::option::output_parameter;
+
 pub struct SerdeSinkProvider {}
 
 impl DataSinkProvider for SerdeSinkProvider {
@@ -31,18 +33,8 @@ impl DataSinkProvider for SerdeSinkProvider {
 
     fn sink_options(&self) -> Parameters {
         let mut params = Parameters::new();
-        params.define(
-            "@output".into(),
-            ParameterEntry {
-                description: "Output file path".into(),
-                required: true,
-                parameter: ParameterType::FileSystemPath(FileSystemPathParameter {
-                    value: None,
-                    must_exist: false,
-                }),
-                label: None,
-            },
-        );
+        params.define(output_parameter());
+
         params
     }
 

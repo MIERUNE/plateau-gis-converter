@@ -29,15 +29,15 @@ use url::Url;
 
 use crate::{
     get_parameter_value,
+    option::{use_lod_config, use_texture_config},
     parameters::*,
     pipeline::{Feedback, PipelineError, Receiver, Result},
     sink::{cesiumtiles::metadata, DataRequirements, DataSink, DataSinkProvider, SinkInfo},
-    transformer,
-    transformer::{LodSelection, TransformerConfig, TransformerRegistry},
+    transformer::TransformerRegistry,
 };
 
+use super::option::{limit_texture_resolution_parameter, output_parameter};
 use super::texture_resolution::get_texture_downsample_scale_of_polygon;
-
 pub struct GltfSinkProvider {}
 
 impl DataSinkProvider for GltfSinkProvider {
@@ -50,47 +50,16 @@ impl DataSinkProvider for GltfSinkProvider {
 
     fn sink_options(&self) -> Parameters {
         let mut params = Parameters::new();
-        params.define(
-            "@output".into(),
-            ParameterEntry {
-                description: "Output file path".into(),
-                required: true,
-                parameter: ParameterType::FileSystemPath(FileSystemPathParameter {
-                    value: None,
-                    must_exist: false,
-                }),
-                label: None,
-            },
-        );
-
-        params.define(
-            "limit_texture_resolution".into(),
-            ParameterEntry {
-                description: "limiting texture resolution".into(),
-                required: false,
-                parameter: ParameterType::Boolean(BooleanParameter { value: None }),
-                label: Some("距離(メートル)あたりのテクスチャの解像度を制限する".into()),
-            },
-        );
+        params.define(output_parameter());
+        params.define(limit_texture_resolution_parameter(false));
 
         params
     }
 
     fn transformer_options(&self) -> TransformerRegistry {
         let mut settings: TransformerRegistry = TransformerRegistry::new();
-
-        settings.insert(TransformerConfig {
-            key: "use_lod".to_string(),
-            label: "出力LODの選択".to_string(),
-            parameter: transformer::ParameterType::Selection(LodSelection::create_lod_selection(
-                "max_lod",
-            )),
-        });
-        settings.insert(TransformerConfig {
-            key: "use_texture".to_string(),
-            label: "テクスチャの使用".to_string(),
-            parameter: transformer::ParameterType::Boolean(false),
-        });
+        settings.insert(use_lod_config("max_lod"));
+        settings.insert(use_texture_config(false));
 
         settings
     }

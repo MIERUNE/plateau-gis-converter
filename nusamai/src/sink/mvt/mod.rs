@@ -25,12 +25,15 @@ use tags::convert_properties;
 
 use crate::{
     get_parameter_value,
+    option::use_lod_config,
     parameters::*,
     pipeline::{Feedback, PipelineError, Receiver, Result},
     sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo},
     transformer,
-    transformer::{LodSelection, TransformerConfig, TransformerRegistry},
+    transformer::TransformerRegistry,
 };
+
+use super::option::output_parameter;
 
 pub struct MvtSinkProvider {}
 
@@ -44,21 +47,10 @@ impl DataSinkProvider for MvtSinkProvider {
 
     fn sink_options(&self) -> Parameters {
         let mut params = Parameters::new();
-        params.define(
-            "@output".into(),
-            ParameterEntry {
-                description: "Output file path".into(),
-                required: true,
-                parameter: ParameterType::FileSystemPath(FileSystemPathParameter {
-                    value: None,
-                    must_exist: false,
-                }),
-                label: None,
-            },
-        );
-        params.define(
-            "min_z".into(),
-            ParameterEntry {
+        params.define(output_parameter());
+        params.define(ParameterDefinition {
+            key: "min_z".into(),
+            entry: ParameterEntry {
                 description: "Minumum zoom level".into(),
                 required: true,
                 parameter: ParameterType::Integer(IntegerParameter {
@@ -68,10 +60,10 @@ impl DataSinkProvider for MvtSinkProvider {
                 }),
                 label: Some("最小ズームレベル".into()),
             },
-        );
-        params.define(
-            "max_z".into(),
-            ParameterEntry {
+        });
+        params.define(ParameterDefinition {
+            key: "max_z".into(),
+            entry: ParameterEntry {
                 description: "Maximum zoom level".into(),
                 required: true,
                 parameter: ParameterType::Integer(IntegerParameter {
@@ -81,20 +73,14 @@ impl DataSinkProvider for MvtSinkProvider {
                 }),
                 label: Some("最大ズームレベル".into()),
             },
-        );
+        });
+
         params
     }
 
     fn transformer_options(&self) -> TransformerRegistry {
         let mut settings: TransformerRegistry = TransformerRegistry::new();
-
-        settings.insert(TransformerConfig {
-            key: "use_lod".to_string(),
-            label: "出力LODの選択".to_string(),
-            parameter: transformer::ParameterType::Selection(LodSelection::create_lod_selection(
-                "max_lod",
-            )),
-        });
+        settings.insert(use_lod_config("max_lod"));
 
         settings
     }

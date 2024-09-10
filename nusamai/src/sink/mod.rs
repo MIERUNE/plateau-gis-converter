@@ -10,6 +10,7 @@ pub mod minecraft;
 pub mod mvt;
 pub mod noop;
 pub mod obj;
+pub mod option;
 pub mod ply;
 pub mod serde;
 pub mod shapefile;

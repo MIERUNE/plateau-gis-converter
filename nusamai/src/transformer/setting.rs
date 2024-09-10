@@ -68,15 +68,7 @@ pub struct LodSelection;
 
 impl LodSelection {
     pub fn get_lod_selection_options() -> Vec<(&'static str, &'static str)> {
-        vec![
-            ("最大LOD", "max_lod"),
-            ("最小LOD", "min_lod"),
-            ("LOD0", "lod0"),
-            ("LOD1", "lod1"),
-            ("LOD2", "lod2"),
-            ("LOD3", "lod3"),
-            ("LOD4", "lod4"),
-        ]
+        vec![("最大LOD", "max_lod"), ("最小LOD", "min_lod")]
     }
 
     pub fn create_lod_selection(default_value: &str) -> Selection {
@@ -163,36 +155,6 @@ impl TransformerRegistry {
                             "min_lod" => {
                                 data_requirements.set_lod_filter(transformer::LodFilterSpec {
                                     mode: transformer::LodFilterMode::Lowest,
-                                    ..Default::default()
-                                })
-                            }
-                            "lod0" => {
-                                data_requirements.set_lod_filter(transformer::LodFilterSpec {
-                                    mode: transformer::LodFilterMode::Lod0,
-                                    ..Default::default()
-                                })
-                            }
-                            "lod1" => {
-                                data_requirements.set_lod_filter(transformer::LodFilterSpec {
-                                    mode: transformer::LodFilterMode::Lod1,
-                                    ..Default::default()
-                                })
-                            }
-                            "lod2" => {
-                                data_requirements.set_lod_filter(transformer::LodFilterSpec {
-                                    mode: transformer::LodFilterMode::Lod2,
-                                    ..Default::default()
-                                })
-                            }
-                            "lod3" => {
-                                data_requirements.set_lod_filter(transformer::LodFilterSpec {
-                                    mode: transformer::LodFilterMode::Lod3,
-                                    ..Default::default()
-                                })
-                            }
-                            "lod4" => {
-                                data_requirements.set_lod_filter(transformer::LodFilterSpec {
-                                    mode: transformer::LodFilterMode::Lod4,
                                     ..Default::default()
                                 })
                             }
