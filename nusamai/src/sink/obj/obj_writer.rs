@@ -48,7 +48,7 @@ fn write_obj(
         mesh_data.push((feature_id, mesh, vertex_offset, uv_offset));
     }
 
-    let mut obj_writer = BufWriter::new(File::create(&obj_path)?);
+    let mut obj_writer = BufWriter::new(File::create(obj_path)?);
     for vertex in &all_vertices {
         writeln!(obj_writer, "v {} {} {}", vertex[0], vertex[1], vertex[2])?;
     }

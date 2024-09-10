@@ -192,7 +192,7 @@ fn main() -> ExitCode {
             match &mut config.parameter {
                 // If the parameter is of type Selection, update the selected value
                 ParameterType::Selection(selection) => {
-                    if let Err(_) = selection.set_selected_value(value) {
+                    if selection.set_selected_value(value).is_err() {
                         let available_options: Vec<String> = selection.get_options()
                             .iter()
                             .map(|option| format!("'{}'", option.get_value()))
