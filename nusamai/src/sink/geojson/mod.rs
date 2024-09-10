@@ -132,7 +132,7 @@ impl DataSink for GeoJsonSink {
 
                         let mut file_path = self.output_path.clone();
                         let c_name = typename.split_once(':').map(|v| v.1).unwrap_or(typename);
-                        file_path.push(&format!("{}.geojson", c_name));
+                        file_path.push(format!("{}.geojson", c_name));
 
                         let mut file = File::create(&file_path)?;
                         let mut writer = BufWriter::with_capacity(1024 * 1024, &mut file);
