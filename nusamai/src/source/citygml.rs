@@ -9,7 +9,6 @@ use std::{
 
 use nusamai_citygml::{CityGmlElement, CityGmlReader, Envelope, ParseError, SubTreeReader};
 use nusamai_plateau::{appearance::AppearanceStore, models, Entity};
-use nusamai_projection::crs::EpsgCode;
 use rayon::prelude::*;
 use url::Url;
 
@@ -69,13 +68,7 @@ impl DataSource for CityGmlSource {
             let mut citygml_reader = CityGmlReader::new(context);
 
             let mut st = citygml_reader.start_root(&mut xml_reader)?;
-            match toplevel_dispatcher(
-                &mut st,
-                &downstream,
-                feedback,
-                self.appearance_parsing,
-                filename,
-            ) {
+            match toplevel_dispatcher(&mut st, &downstream, feedback, self.appearance_parsing) {
                 Ok(_) => Ok::<(), PipelineError>(()),
                 Err(ParseError::Canceled) => Err(PipelineError::Canceled),
                 Err(e) => Err(e.into()),
@@ -86,23 +79,12 @@ impl DataSource for CityGmlSource {
     }
 }
 
-fn query_crs_from_filename(filename: &PathBuf) -> Option<EpsgCode> {
-    filename
-        .file_name()?
-        .to_str()?
-        .split('_')
-        .nth(2)?
-        .parse::<EpsgCode>()
-        .ok()
-}
-
 // TODO: Move this to nusamai-plateau ?
 fn toplevel_dispatcher<R: BufRead>(
     st: &mut SubTreeReader<R>,
     downstream: &Sender,
     feedback: &Feedback,
     parse_appearances: bool,
-    filename: &PathBuf,
 ) -> Result<(), ParseError> {
     let mut entities = Vec::new();
     let mut global_appearances = AppearanceStore::default();
@@ -125,7 +107,7 @@ fn toplevel_dispatcher<R: BufRead>(
             b"core:cityObjectMember" => {
                 let mut cityobj: models::TopLevelCityObject = Default::default();
                 cityobj.parse(st)?;
-                let geometry_store = st.collect_geometries(query_crs_from_filename(filename));
+                let geometry_store = st.collect_geometries();
 
                 if let Some(root) = cityobj.into_object() {
                     let entity = Entity {
@@ -232,13 +214,5 @@ mod tests {
                 assert_eq!(found_mat_or_tex, use_appearance);
             });
         }
-    }
-
-    #[test]
-    fn crs_from_filename() {
-        assert_eq!(
-            query_crs_from_filename(&PathBuf::from("dummy_dummy_1234_dummy.gml")),
-            Some(1234)
-        );
     }
 }

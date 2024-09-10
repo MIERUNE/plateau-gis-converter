@@ -320,9 +320,9 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
         self.state.context.id_to_integer_id(id)
     }
 
-    pub fn collect_geometries(&mut self, epsg_opt: Option<EpsgCode>) -> GeometryStore {
+    pub fn collect_geometries(&mut self) -> GeometryStore {
         let collector = std::mem::take(&mut self.state.geometry_collector);
-        collector.into_geometries(epsg_opt)
+        collector.into_geometries()
     }
 
     /// Expect a geometric attribute of CityGML
@@ -515,19 +515,29 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
         lod: u8,
     ) -> Result<(), ParseError> {
         let mut surface_id = None;
+        let mut epsg = None;
         loop {
             match self.reader.read_event_into(&mut self.state.buf1) {
                 Ok(Event::Start(start)) => {
                     let (nsres, localname) = self.reader.resolve_element(start.name());
                     let poly_begin = self.state.geometry_collector.multipolygon.len();
 
-                    // surface id
                     for attr in start.attributes().flatten() {
                         let (nsres, localname) = self.reader.resolve_attribute(attr.key);
+                        // surface id
                         if nsres == Bound(GML31_NS) && localname.as_ref() == b"id" {
                             let id = String::from_utf8_lossy(attr.value.as_ref()).to_string();
                             surface_id = Some(self.state.context.id_to_integer_id(id));
-                            break;
+                        }
+                        // epsg
+                        if localname.as_ref() == b"srsName" {
+                            let srsname = String::from_utf8_lossy(attr.value.as_ref()).to_string();
+                            let epsg_head = "http://www.opengis.net/def/crs/EPSG/0/";
+                            if srsname.starts_with(epsg_head) {
+                                if let Some(stripped) = srsname.strip_prefix(epsg_head) {
+                                    epsg = stripped.parse::<EpsgCode>().ok();
+                                }
+                            }
                         }
                     }
 
@@ -595,6 +605,10 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                                     start: poly_begin as u32,
                                     end: poly_end as u32,
                                 });
+                        }
+
+                        if let Some(epsg) = epsg {
+                            self.state.geometry_collector.epsg = Some(epsg);
                         }
                     }
                 }

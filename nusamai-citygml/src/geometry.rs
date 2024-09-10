@@ -84,6 +84,7 @@ pub struct SurfaceSpan {
 #[derive(Default)]
 pub(crate) struct GeometryCollector {
     pub vertices: indexmap::IndexSet<[u64; 3], ahash::RandomState>,
+    pub epsg: Option<EpsgCode>,
     pub multipolygon: MultiPolygon<'static, u32>,
     pub multilinestring: MultiLineString<'static, u32>,
     pub multipoint: MultiPoint<'static, u32>,
@@ -122,7 +123,7 @@ impl GeometryCollector {
         }));
     }
 
-    pub fn into_geometries(self, epsg_opt: Option<EpsgCode>) -> GeometryStore {
+    pub fn into_geometries(self) -> GeometryStore {
         let mut vertices = Vec::with_capacity(self.vertices.len());
         for vbits in &self.vertices {
             vertices.push([
@@ -132,7 +133,7 @@ impl GeometryCollector {
             ]);
         }
 
-        let epsg = if let Some(epsg) = epsg_opt {
+        let epsg = if let Some(epsg) = self.epsg {
             epsg
         } else {
             EPSG_JGD2011_GEOGRAPHIC_3D
