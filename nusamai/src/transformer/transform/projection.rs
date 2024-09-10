@@ -66,42 +66,50 @@ impl ProjectionTransform {
         }
     }
 
+    fn rectangular_to_lnglat(x: f64, y: f64, height: f64, input_epsg: EpsgCode) -> (f64, f64, f64) {
+        let zone = JPRZone::from_epsg(input_epsg).unwrap();
+        let proj = zone.projection();
+        let (lng, lat, height) = proj.project_inverse(x, y, height).unwrap();
+        (lng, lat, height)
+    }
+
     fn transform_from_jgd2011(&mut self, entity: &Entity, rectangular: Option<EpsgCode>) {
-        let pre_transform = |v: &mut [f64; 3]| {
-            if let Some(rectangular_input_epsg) = rectangular {
-                let zone = JPRZone::from_epsg(rectangular_input_epsg).unwrap();
-                let proj = zone.projection();
-                let (lng, lat, z) = proj.project_inverse(v[0], v[1], v[2]).unwrap();
-                (v[0], v[1], v[2]) = (lng, lat, z);
-            }
-        };
         match self.output_epsg {
             EPSG_JGD2011_GEOGRAPHIC_3D => {
                 let mut geom_store = entity.geometry_store.write().unwrap();
                 geom_store.vertices.iter_mut().for_each(|v| {
-                    pre_transform(v);
                     // Swap x and y (lat, lng -> lng, lat)
                     (v[0], v[1], v[2]) = (v[1], v[0], v[2]);
+                    if let Some(input_epsg) = rectangular {
+                        (v[0], v[1], v[2]) =
+                            Self::rectangular_to_lnglat(v[0], v[1], v[2], input_epsg);
+                    };
                 });
                 geom_store.epsg = self.output_epsg;
             }
             EPSG_WGS84_GEOGRAPHIC_3D => {
                 let mut geom_store = entity.geometry_store.write().unwrap();
                 geom_store.vertices.iter_mut().for_each(|v| {
-                    pre_transform(v);
                     // Swap x and y (lat, lng -> lng, lat)
-                    let (lng, lat, height) = (v[1], v[0], v[2]);
+                    (v[0], v[1], v[2]) = (v[1], v[0], v[2]);
+                    if let Some(input_epsg) = rectangular {
+                        (v[0], v[1], v[2]) =
+                            Self::rectangular_to_lnglat(v[0], v[1], v[2], input_epsg);
+                    };
                     // JGD2011 to WGS 84 (elevation to ellipsoidal height)
-                    (v[0], v[1], v[2]) = self.jgd2wgs.convert(lng, lat, height);
+                    (v[0], v[1], v[2]) = self.jgd2wgs.convert(v[0], v[1], v[2]);
                 });
                 geom_store.epsg = self.output_epsg;
             }
             EPSG_WEB_MERCATOR => {
                 let mut geom_store = entity.geometry_store.write().unwrap();
                 geom_store.vertices.iter_mut().for_each(|v| {
-                    pre_transform(v);
                     // Swap x and y (lat, lng -> lng, lat)
                     let (lng, lat) = (v[1], v[0]);
+                    if let Some(input_epsg) = rectangular {
+                        (v[0], v[1], v[2]) =
+                            Self::rectangular_to_lnglat(v[0], v[1], v[2], input_epsg);
+                    };
                     // LngLat to Web Mercator
                     (v[0], v[1]) = nusamai_mvt::webmercator::lnglat_to_web_mercator_meters(lng, lat)
                 });
@@ -124,8 +132,11 @@ impl ProjectionTransform {
                 let proj = self.jpr_zone_proj.as_ref().unwrap();
                 let mut geom_store = entity.geometry_store.write().unwrap();
                 geom_store.vertices.iter_mut().for_each(|v| {
-                    pre_transform(v);
                     let (lng, lat) = (v[1], v[0]);
+                    if let Some(input_epsg) = rectangular {
+                        (v[0], v[1], v[2]) =
+                            Self::rectangular_to_lnglat(v[0], v[1], v[2], input_epsg);
+                    };
                     // Change x and y; keep the height
                     // TODO: error handling
                     (v[0], v[1], _) = proj.project_forward(lng, lat, 0.).unwrap();
@@ -155,8 +166,11 @@ impl ProjectionTransform {
                 let proj = self.jpr_zone_proj.as_ref().unwrap();
                 let mut geom_store = entity.geometry_store.write().unwrap();
                 geom_store.vertices.iter_mut().for_each(|v| {
-                    pre_transform(v);
                     let (lng, lat) = (v[1], v[0]);
+                    if let Some(input_epsg) = rectangular {
+                        (v[0], v[1], v[2]) =
+                            Self::rectangular_to_lnglat(v[0], v[1], v[2], input_epsg);
+                    };
                     // Change x and y; keep the height
                     // TODO: error handling
                     (v[0], v[1], _) = proj.project_forward(lng, lat, 0.).unwrap();
