@@ -68,7 +68,11 @@ pub struct LodSelection;
 
 impl LodSelection {
     pub fn get_lod_selection_options() -> Vec<(&'static str, &'static str)> {
-        vec![("最大LOD", "max_lod"), ("最小LOD", "min_lod")]
+        vec![
+            ("最大LOD", "max_lod"),
+            ("最小LOD", "min_lod"),
+            ("テクスチャ付き最大LOD", "textured_max_lod"),
+        ]
     }
 
     pub fn create_lod_selection(default_value: &str) -> Selection {
@@ -136,9 +140,7 @@ impl TransformerRegistry {
                     // TODO: Processing for String types.
                 }
                 ParameterType::Boolean(value) => {
-                    if config.key == "use_texture" {
-                        data_requirements.set_appearance(*value);
-                    }
+                    // TODO: Processing for String types.
                 }
                 ParameterType::Integer(_value) => {
                     // TODO: Processing for Integer types.
@@ -157,6 +159,13 @@ impl TransformerRegistry {
                                     mode: transformer::LodFilterMode::Lowest,
                                     ..Default::default()
                                 })
+                            }
+                            "textured_max_lod" => {
+                                data_requirements.set_lod_filter(transformer::LodFilterSpec {
+                                    mode: transformer::LodFilterMode::TexturedMaxLod,
+                                    ..Default::default()
+                                });
+                                data_requirements.set_appearance(true);
                             }
                             _ => {}
                         }

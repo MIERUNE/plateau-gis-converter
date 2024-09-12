@@ -38,7 +38,7 @@ use url::Url;
 
 use crate::{
     get_parameter_value,
-    option::{use_lod_config, use_texture_config},
+    option::use_lod_config,
     parameters::*,
     pipeline::{Feedback, PipelineError, Receiver, Result},
     sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo},
@@ -70,7 +70,6 @@ impl DataSinkProvider for CesiumTilesSinkProvider {
     fn transformer_options(&self) -> TransformerRegistry {
         let mut settings: TransformerRegistry = TransformerRegistry::new();
         settings.insert(use_lod_config("max_lod"));
-        settings.insert(use_texture_config(false));
 
         settings
     }

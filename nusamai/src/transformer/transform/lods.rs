@@ -12,6 +12,7 @@ use crate::{pipeline::Feedback, transformer::Transform};
 pub enum LodFilterMode {
     Highest,
     Lowest,
+    TexturedMaxLod,
 }
 
 #[derive()]
@@ -29,10 +30,26 @@ impl FilterLodTransform {
 /// Transform to filter and split the LODs
 impl Transform for FilterLodTransform {
     fn transform(&mut self, _feedback: &Feedback, mut entity: Entity, out: &mut Vec<Entity>) {
+        // Check for texture existence only in the case of TexturedMaxLod
+        match self.mode {
+            LodFilterMode::TexturedMaxLod => {
+                let has_textures = {
+                    let appearance = entity.appearance_store.read().unwrap();
+                    !appearance.textures.is_empty()
+                };
+
+                // If no textures are found, skip further processing
+                if !has_textures {
+                    return;
+                }
+            }
+            _ => { /* No filtering is applied for other modes */ }
+        }
+
         let lods = find_lods(&entity.root) & self.mask;
 
         let target_lod = match self.mode {
-            LodFilterMode::Highest => lods.highest_lod(),
+            LodFilterMode::Highest | LodFilterMode::TexturedMaxLod => lods.highest_lod(),
             LodFilterMode::Lowest => lods.lowest_lod(),
         };
 
@@ -92,7 +109,7 @@ fn find_lods(value: &Value) -> LodMask {
     mask
 }
 
-#[derive(Default, Clone, Copy)]
+#[derive(Default, Clone, Copy, Debug)]
 pub struct LodMask(
     u8, // lods bit mask
 );
