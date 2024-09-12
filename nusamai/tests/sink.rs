@@ -3,7 +3,9 @@ use std::{path::PathBuf, str::FromStr, sync::Once};
 use nusamai::{
     sink::{self, DataSinkProvider},
     source::{citygml::CityGmlSourceProvider, DataSourceProvider},
-    transformer::{self, MultiThreadTransformer, NusamaiTransformBuilder, TransformBuilder},
+    transformer::{
+        MultiThreadTransformer, NusamaiTransformBuilder, TransformBuilder, TransformerRegistry,
+    },
 };
 use nusamai_citygml::CityGmlElement;
 use nusamai_plateau::models::TopLevelCityObject;
@@ -37,11 +39,11 @@ pub(crate) fn simple_run_sink<S: DataSinkProvider>(sink_provider: S, output: Opt
     });
     assert_eq!(source_provider.info().name, "CityGML");
 
-    let source = source_provider.create(&source_provider.parameters());
+    let source = source_provider.create(&source_provider.sink_options());
 
     let mut sink = {
         assert!(!sink_provider.info().name.is_empty());
-        let mut sink_params = sink_provider.parameters();
+        let mut sink_params = sink_provider.sink_options();
         if let Some(output) = output {
             sink_params
                 .update_values_with_str(std::iter::once(&("@output".into(), output.into())))
@@ -51,7 +53,7 @@ pub(crate) fn simple_run_sink<S: DataSinkProvider>(sink_provider: S, output: Opt
         sink_provider.create(&sink_params)
     };
 
-    let options: Vec<transformer::TransformerOption> = vec![];
+    let options: TransformerRegistry = TransformerRegistry::new();
 
     let (transformer, schema) = {
         let transform_req = sink.make_requirements(options);

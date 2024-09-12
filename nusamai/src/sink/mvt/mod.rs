@@ -25,12 +25,15 @@ use tags::convert_properties;
 
 use crate::{
     get_parameter_value,
+    option::use_lod_config,
     parameters::*,
     pipeline::{Feedback, PipelineError, Receiver, Result},
     sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo},
     transformer,
-    transformer::{TransformerOption, TransformerRegistry},
+    transformer::TransformerRegistry,
 };
+
+use super::option::output_parameter;
 
 pub struct MvtSinkProvider {}
 
@@ -42,23 +45,12 @@ impl DataSinkProvider for MvtSinkProvider {
         }
     }
 
-    fn parameters(&self) -> Parameters {
+    fn sink_options(&self) -> Parameters {
         let mut params = Parameters::new();
-        params.define(
-            "@output".into(),
-            ParameterEntry {
-                description: "Output file path".into(),
-                required: true,
-                parameter: ParameterType::FileSystemPath(FileSystemPathParameter {
-                    value: None,
-                    must_exist: false,
-                }),
-                label: None,
-            },
-        );
-        params.define(
-            "min_z".into(),
-            ParameterEntry {
+        params.define(output_parameter());
+        params.define(ParameterDefinition {
+            key: "min_z".into(),
+            entry: ParameterEntry {
                 description: "Minumum zoom level".into(),
                 required: true,
                 parameter: ParameterType::Integer(IntegerParameter {
@@ -68,10 +60,10 @@ impl DataSinkProvider for MvtSinkProvider {
                 }),
                 label: Some("最小ズームレベル".into()),
             },
-        );
-        params.define(
-            "max_z".into(),
-            ParameterEntry {
+        });
+        params.define(ParameterDefinition {
+            key: "max_z".into(),
+            entry: ParameterEntry {
                 description: "Maximum zoom level".into(),
                 required: true,
                 parameter: ParameterType::Integer(IntegerParameter {
@@ -81,19 +73,21 @@ impl DataSinkProvider for MvtSinkProvider {
                 }),
                 label: Some("最大ズームレベル".into()),
             },
-        );
+        });
+
         params
     }
 
-    fn available_transformer(&self) -> TransformerRegistry {
-        let settings: TransformerRegistry = TransformerRegistry::new();
+    fn transformer_options(&self) -> TransformerRegistry {
+        let mut settings: TransformerRegistry = TransformerRegistry::new();
+        settings.insert(use_lod_config("max_lod"));
 
         settings
     }
 
     fn create(&self, params: &Parameters) -> Box<dyn DataSink> {
         let output_path = get_parameter_value!(params, "@output", FileSystemPath);
-        let transform_options = self.available_transformer();
+        let transform_options = self.transformer_options();
         let min_z = get_parameter_value!(params, "min_z", Integer).unwrap() as u8;
         let max_z = get_parameter_value!(params, "max_z", Integer).unwrap() as u8;
 
@@ -123,7 +117,7 @@ struct SlicedFeature<'a> {
 }
 
 impl DataSink for MvtSink {
-    fn make_requirements(&mut self, properties: Vec<TransformerOption>) -> DataRequirements {
+    fn make_requirements(&mut self, properties: TransformerRegistry) -> DataRequirements {
         let default_requirements = DataRequirements {
             key_value: transformer::KeyValueSpec::DotNotation,
             lod_filter: transformer::LodFilterSpec {
@@ -134,10 +128,8 @@ impl DataSink for MvtSink {
             ..Default::default()
         };
 
-        for prop in properties {
-            let _ = &self
-                .transform_settings
-                .update_transformer(&prop.key, prop.is_enabled);
+        for config in properties.configs.iter() {
+            let _ = &self.transform_settings.update_transformer(config.clone());
         }
 
         self.transform_settings.build(default_requirements)

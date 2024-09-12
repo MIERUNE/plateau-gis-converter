@@ -5,10 +5,12 @@
 use nusamai_citygml::schema::Schema;
 
 use crate::{
-    parameters::{FileSystemPathParameter, ParameterEntry, ParameterType, Parameters},
+    parameters::{
+        FileSystemPathParameter, ParameterDefinition, ParameterEntry, ParameterType, Parameters,
+    },
     pipeline::{Feedback, Receiver, Result},
     sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo},
-    transformer::{TransformerOption, TransformerRegistry},
+    transformer::TransformerRegistry,
 };
 
 pub struct NoopSinkProvider {}
@@ -28,11 +30,11 @@ impl DataSinkProvider for NoopSinkProvider {
         }
     }
 
-    fn parameters(&self) -> Parameters {
+    fn sink_options(&self) -> Parameters {
         let mut params = Parameters::new();
-        params.define(
-            "@output".into(),
-            ParameterEntry {
+        params.define(ParameterDefinition {
+            key: "@output".into(),
+            entry: ParameterEntry {
                 description: "Output file path (dummy, no effect)".into(),
                 required: false,
                 parameter: ParameterType::FileSystemPath(FileSystemPathParameter {
@@ -41,20 +43,20 @@ impl DataSinkProvider for NoopSinkProvider {
                 }),
                 label: None,
             },
-        );
+        });
         // REMOVE: deprecated
-        // params.define(
-        //     "schema".into(),
-        //     ParameterEntry {
+        // params.define(ParameterDefinition {
+        //     key: "schema".into(),
+        //     entry: ParameterEntry {
         //         description: "Output schema file".into(),
         //         required: false,
         //         parameter: ParameterType::Boolean(BooleanParameter { value: None }),
         //     },
-        // );
+        // });
         params
     }
 
-    fn available_transformer(&self) -> TransformerRegistry {
+    fn transformer_options(&self) -> TransformerRegistry {
         let settings: TransformerRegistry = TransformerRegistry::new();
 
         settings
@@ -67,7 +69,7 @@ pub struct NoopSink {
 }
 
 impl DataSink for NoopSink {
-    fn make_requirements(&mut self, _: Vec<TransformerOption>) -> DataRequirements {
+    fn make_requirements(&mut self, _: TransformerRegistry) -> DataRequirements {
         DataRequirements {
             ..Default::default()
         }

@@ -10,7 +10,10 @@ use super::{
     feedback::{watcher, Feedback, Watcher},
     Canceller,
 };
-use crate::{pipeline::Receiver, sink::DataSink, source::DataSource, transformer::Transformer};
+use crate::{
+    pipeline::PipelineError, pipeline::Receiver, sink::DataSink, source::DataSource,
+    transformer::Transformer,
+};
 
 const SOURCE_OUTPUT_CHANNEL_BOUND: usize = 10000;
 const TRANSFORMER_OUTPUT_CHANNEL_BOUND: usize = 10000;
@@ -58,21 +61,30 @@ fn spawn_transformer_thread(
     feedback: Feedback,
 ) -> (std::thread::JoinHandle<()>, Receiver) {
     let (sender, receiver) = sync_channel(TRANSFORMER_OUTPUT_CHANNEL_BOUND);
-
+    let main_thread_feedback = feedback.component_span(super::SourceComponent::Transformer);
     let handle = spawn_thread("pipeline-transformer".to_string(), move || {
         feedback.info("Transformer thread started.".into());
         let pool = ThreadPoolBuilder::new()
             .use_current_thread()
             .build()
             .unwrap();
-        let feedback2 = feedback.component_span(super::SourceComponent::Transformer);
+        let child_thread_feedback = feedback.component_span(super::SourceComponent::Transformer);
         pool.install(move || {
-            if let Err(error) = transformer.run(upstream, sender, &feedback2) {
-                feedback2.fatal_error(error);
+            if let Err(error) = transformer.run(upstream, sender, &child_thread_feedback) {
+                child_thread_feedback.fatal_error(error);
             }
         });
         feedback.info("Transformer thread finished.".into());
     });
+
+    // Report an error if the converted data is empty.
+    if let Err(error) = receiver.recv() {
+        main_thread_feedback.fatal_error(PipelineError::Other(format!(
+            "Transformer thread failed to receive data due to: {}",
+            error
+        )));
+    }
+
     (handle, receiver)
 }
 

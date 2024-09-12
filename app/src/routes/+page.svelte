@@ -3,6 +3,7 @@
 	import { invoke } from '@tauri-apps/api/tauri';
 	import { attachConsole } from 'tauri-plugin-log-api';
 	import type { SinkParameters } from '$lib/sinkparams';
+	import type { TransformerRegistry } from '$lib/transformer';
 
 	import Icon from '@iconify/svelte';
 	import InputSelector from './InputSelector.svelte';
@@ -22,17 +23,10 @@
 	let isConvertButtonDisabled = true;
 
 	$: isConvertButtonDisabled = !inputPaths.length || !outputPath || isRunning;
-	let transformerRegistry: { key: string; label: string; is_enabled: boolean }[];
+	let transformerRegistry: TransformerRegistry;
 
 	async function convertAndSave() {
 		isRunning = true;
-
-		const transformerOptions = transformerRegistry.map((transformerConfig) => {
-			return {
-				key: transformerConfig.key,
-				is_enabled: transformerConfig.is_enabled
-			};
-		});
 
 		try {
 			await invoke('run_conversion', {
@@ -41,9 +35,10 @@
 				filetype,
 				epsg,
 				rulesPath,
-				transformerOptions,
+				transformerRegistry,
 				sinkParameters
 			});
+
 			isRunning = false;
 			await message(`変換が完了しました。\n'${outputPath}' に出力しました。`, { type: 'info' });
 		} catch (error: any) {

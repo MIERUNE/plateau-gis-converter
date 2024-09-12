@@ -21,7 +21,7 @@ use nusamai::{
     source::{citygml::CityGmlSourceProvider, DataSourceProvider},
     transformer::{
         self, MappingRules, MultiThreadTransformer, NusamaiTransformBuilder, TransformBuilder,
-        TransformerOption, TransformerRegistry,
+        TransformerRegistry,
     },
 };
 use nusamai_plateau::models::TopLevelCityObject;
@@ -135,7 +135,7 @@ fn run_conversion(
     filetype: String,
     epsg: u16,
     rules_path: String,
-    transformer_options: Vec<TransformerOption>,
+    transformer_registry: TransformerRegistry,
     sink_parameters: Parameters,
     tasks_state: tauri::State<ConversionTasksState>,
     window: tauri::Window,
@@ -191,7 +191,7 @@ fn run_conversion(
         sink_provider.create(&sink_params)
     };
 
-    let mut requirements = sink.make_requirements(transformer_options);
+    let mut requirements = sink.make_requirements(transformer_registry);
     requirements.set_output_epsg(epsg);
 
     let source = {
@@ -201,7 +201,7 @@ fn run_conversion(
                 .map(|s| PathBuf::from_str(s).unwrap())
                 .collect(),
         });
-        let mut source_params = source_provider.parameters();
+        let mut source_params = source_provider.sink_options();
         if let Err(err) = source_params.validate() {
             let msg = format!("Error validating source parameters: {:?}", err);
             log::error!("{}", msg);
@@ -306,7 +306,7 @@ fn get_transform(filetype: String) -> Result<TransformerRegistry, Error> {
         Error::InvalidSetting(msg)
     })?;
 
-    let transformer_registry = sink_provider.available_transformer();
+    let transformer_registry = sink_provider.transformer_options();
 
     Ok(transformer_registry)
 }
@@ -319,7 +319,7 @@ fn get_parameter(filetype: String) -> Result<Parameters, Error> {
         log::error!("{}", msg);
         Error::InvalidSetting(msg)
     })?;
-    let sink_params = sink_provider.parameters();
+    let sink_params = sink_provider.sink_options();
 
     Ok(sink_params)
 }

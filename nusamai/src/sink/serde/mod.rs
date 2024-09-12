@@ -16,8 +16,10 @@ use crate::{
     parameters::*,
     pipeline::{Feedback, PipelineError, Receiver, Result},
     sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo},
-    transformer::{TransformerOption, TransformerRegistry},
+    transformer::TransformerRegistry,
 };
+
+use super::option::output_parameter;
 
 pub struct SerdeSinkProvider {}
 
@@ -29,24 +31,14 @@ impl DataSinkProvider for SerdeSinkProvider {
         }
     }
 
-    fn parameters(&self) -> Parameters {
+    fn sink_options(&self) -> Parameters {
         let mut params = Parameters::new();
-        params.define(
-            "@output".into(),
-            ParameterEntry {
-                description: "Output file path".into(),
-                required: true,
-                parameter: ParameterType::FileSystemPath(FileSystemPathParameter {
-                    value: None,
-                    must_exist: false,
-                }),
-                label: None,
-            },
-        );
+        params.define(output_parameter());
+
         params
     }
 
-    fn available_transformer(&self) -> TransformerRegistry {
+    fn transformer_options(&self) -> TransformerRegistry {
         let settings: TransformerRegistry = TransformerRegistry::new();
 
         settings
@@ -70,7 +62,7 @@ pub struct SerdeSink {
 }
 
 impl DataSink for SerdeSink {
-    fn make_requirements(&mut self, _: Vec<TransformerOption>) -> DataRequirements {
+    fn make_requirements(&mut self, _: TransformerRegistry) -> DataRequirements {
         DataRequirements {
             ..Default::default()
         }

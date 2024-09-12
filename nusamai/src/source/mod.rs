@@ -20,7 +20,7 @@ pub trait DataSourceProvider {
     fn info(&self) -> SourceInfo;
 
     /// Gets the configurable parameters of the source.
-    fn parameters(&self) -> Parameters;
+    fn sink_options(&self) -> Parameters;
 }
 
 pub trait DataSource: Send {

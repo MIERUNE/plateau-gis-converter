@@ -37,7 +37,7 @@ impl DataSourceProvider for CityGmlSourceProvider {
         }
     }
 
-    fn parameters(&self) -> Parameters {
+    fn sink_options(&self) -> Parameters {
         Parameters::default()
     }
 }
