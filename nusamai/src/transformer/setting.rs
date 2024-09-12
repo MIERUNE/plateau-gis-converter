@@ -139,8 +139,8 @@ impl TransformerRegistry {
                 ParameterType::String(_value) => {
                     // TODO: Processing for String types.
                 }
-                ParameterType::Boolean(value) => {
-                    // TODO: Processing for String types.
+                ParameterType::Boolean(_value) => {
+                    // TODO: Processing for Boolean types.
                 }
                 ParameterType::Integer(_value) => {
                     // TODO: Processing for Integer types.
