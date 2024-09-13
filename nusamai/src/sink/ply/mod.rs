@@ -19,7 +19,7 @@ use crate::{
     parameters::*,
     pipeline::{Feedback, PipelineError, Receiver},
     sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo},
-    transformer::{TransformerRegistry, TransformerOption},
+    transformer::{TransformerOption, TransformerRegistry},
 };
 
 const PLY_HEADER_TEMPLATE: &str = r##"ply

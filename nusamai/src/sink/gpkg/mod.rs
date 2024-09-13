@@ -25,7 +25,7 @@ use crate::{
     pipeline::{Feedback, PipelineError, Receiver, Result},
     sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo},
     transformer,
-    transformer::{TransformerRegistry, TransformerOption},
+    transformer::{TransformerOption, TransformerRegistry},
 };
 
 pub struct GpkgSinkProvider {}
