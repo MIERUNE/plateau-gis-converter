@@ -88,6 +88,7 @@ fn toplevel_dispatcher<R: BufRead>(
 ) -> Result<(), ParseError> {
     let mut entities = Vec::new();
     let mut global_appearances = AppearanceStore::default();
+    let mut envelope = Envelope::default();
 
     st.parse_children(|st| {
         if feedback.is_canceled() {
@@ -100,14 +101,13 @@ fn toplevel_dispatcher<R: BufRead>(
                 Ok(())
             }
             b"gml:boundedBy/gml:Envelope" => {
-                let mut envelope = Envelope::default();
                 envelope.parse(st)?;
                 Ok(())
             }
             b"core:cityObjectMember" => {
                 let mut cityobj: models::TopLevelCityObject = Default::default();
                 cityobj.parse(st)?;
-                let geometry_store = st.collect_geometries();
+                let geometry_store = st.collect_geometries(envelope.crs_uri.clone());
 
                 if let Some(root) = cityobj.into_object() {
                     let entity = Entity {
