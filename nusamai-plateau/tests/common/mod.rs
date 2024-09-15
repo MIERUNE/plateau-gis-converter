@@ -18,7 +18,7 @@ fn toplevel_dispatcher<R: BufRead>(
         b"core:cityObjectMember" => {
             let mut cityobj: TopLevelCityObject = Default::default();
             cityobj.parse(st)?;
-            let geometries = st.collect_geometries();
+            let geometries = st.collect_geometries(None);
             cityobjs.push(CityObject {
                 cityobj,
                 geometries,

@@ -319,9 +319,9 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
         self.state.context.id_to_integer_id(id)
     }
 
-    pub fn collect_geometries(&mut self) -> GeometryStore {
+    pub fn collect_geometries(&mut self, envelope_crs_uri: Option<String>) -> GeometryStore {
         let collector = std::mem::take(&mut self.state.geometry_collector);
-        collector.into_geometries()
+        collector.into_geometries(envelope_crs_uri)
     }
 
     /// Expect a geometric attribute of CityGML
@@ -519,14 +519,18 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                 Ok(Event::Start(start)) => {
                     let (nsres, localname) = self.reader.resolve_element(start.name());
                     let poly_begin = self.state.geometry_collector.multipolygon.len();
+                    let mut geometry_crs_uri = None;
 
-                    // surface id
                     for attr in start.attributes().flatten() {
                         let (nsres, localname) = self.reader.resolve_attribute(attr.key);
+                        // surface id
                         if nsres == Bound(GML31_NS) && localname.as_ref() == b"id" {
                             let id = String::from_utf8_lossy(attr.value.as_ref()).to_string();
                             surface_id = Some(self.state.context.id_to_integer_id(id));
-                            break;
+                        }
+                        if localname.as_ref() == b"srsName" {
+                            geometry_crs_uri =
+                                Some(String::from_utf8_lossy(attr.value.as_ref()).to_string());
                         }
                     }
 
@@ -595,6 +599,8 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                                     end: poly_end as u32,
                                 });
                         }
+
+                        self.state.geometry_collector.geometry_crs_uri = geometry_crs_uri;
                     }
                 }
                 Ok(Event::End(_)) => break,
