@@ -24,12 +24,15 @@ use rayon::iter::{ParallelBridge, ParallelIterator};
 use self::crs::ProjectionRepository;
 use crate::{
     get_parameter_value,
+    option::use_lod_config,
     parameters::*,
     pipeline::{Feedback, PipelineError, Receiver, Result},
     sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo},
     transformer,
-    transformer::{TransformerOption, TransformerRegistry},
+    transformer::TransformerRegistry,
 };
+
+use super::option::output_parameter;
 
 pub struct ShapefileSinkProvider {}
 
@@ -41,32 +44,22 @@ impl DataSinkProvider for ShapefileSinkProvider {
         }
     }
 
-    fn parameters(&self) -> Parameters {
+    fn sink_options(&self) -> Parameters {
         let mut params = Parameters::new();
-        params.define(
-            "@output".into(),
-            ParameterEntry {
-                description: "Output file path".into(),
-                required: true,
-                parameter: ParameterType::FileSystemPath(FileSystemPathParameter {
-                    value: None,
-                    must_exist: false,
-                }),
-                label: None,
-            },
-        );
+        params.define(output_parameter());
         params
     }
 
-    fn available_transformer(&self) -> TransformerRegistry {
-        let settings: TransformerRegistry = TransformerRegistry::new();
+    fn transformer_options(&self) -> TransformerRegistry {
+        let mut settings: TransformerRegistry = TransformerRegistry::new();
+        settings.insert(use_lod_config("max_lod"));
 
         settings
     }
 
     fn create(&self, params: &Parameters) -> Box<dyn DataSink> {
         let output_path = get_parameter_value!(params, "@output", FileSystemPath);
-        let transform_settings = self.available_transformer();
+        let transform_settings = self.transformer_options();
 
         Box::<ShapefileSink>::new(ShapefileSink {
             output_path: output_path.as_ref().unwrap().into(),
@@ -81,7 +74,7 @@ pub struct ShapefileSink {
 }
 
 impl DataSink for ShapefileSink {
-    fn make_requirements(&mut self, properties: Vec<TransformerOption>) -> DataRequirements {
+    fn make_requirements(&mut self, properties: TransformerRegistry) -> DataRequirements {
         let default_requirements = DataRequirements {
             shorten_names_for_shapefile: true,
             tree_flattening: transformer::TreeFlatteningSpec::Flatten {
@@ -93,10 +86,8 @@ impl DataSink for ShapefileSink {
             ..Default::default()
         };
 
-        for prop in properties {
-            let _ = &self
-                .transform_settings
-                .update_transformer(&prop.key, prop.is_enabled);
+        for config in properties.configs.iter() {
+            let _ = &self.transform_settings.update_transformer(config.clone());
         }
 
         self.transform_settings.build(default_requirements)

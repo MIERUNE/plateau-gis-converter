@@ -20,12 +20,15 @@ use rayon::prelude::*;
 
 use crate::{
     get_parameter_value,
+    option::use_lod_config,
     parameters::*,
     pipeline::{Feedback, PipelineError, Receiver, Result},
     sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo},
     transformer,
-    transformer::{TransformerOption, TransformerRegistry},
+    transformer::TransformerRegistry,
 };
+
+use super::option::output_parameter;
 
 pub struct GeoJsonSinkProvider {}
 
@@ -37,32 +40,23 @@ impl DataSinkProvider for GeoJsonSinkProvider {
         }
     }
 
-    fn parameters(&self) -> Parameters {
+    fn sink_options(&self) -> Parameters {
         let mut params = Parameters::new();
-        params.define(
-            "@output".into(),
-            ParameterEntry {
-                description: "Output file path".into(),
-                required: true,
-                parameter: ParameterType::FileSystemPath(FileSystemPathParameter {
-                    value: None,
-                    must_exist: false,
-                }),
-                label: None,
-            },
-        );
+        params.define(output_parameter());
+
         params
     }
 
-    fn available_transformer(&self) -> TransformerRegistry {
-        let settings: TransformerRegistry = TransformerRegistry::new();
+    fn transformer_options(&self) -> TransformerRegistry {
+        let mut settings: TransformerRegistry = TransformerRegistry::new();
+        settings.insert(use_lod_config("max_lod"));
 
         settings
     }
 
     fn create(&self, params: &Parameters) -> Box<dyn DataSink> {
         let output_path = get_parameter_value!(params, "@output", FileSystemPath);
-        let transform_settings = self.available_transformer();
+        let transform_settings = self.transformer_options();
 
         Box::<GeoJsonSink>::new(GeoJsonSink {
             output_path: output_path.as_ref().unwrap().into(),
@@ -77,7 +71,7 @@ pub struct GeoJsonSink {
 }
 
 impl DataSink for GeoJsonSink {
-    fn make_requirements(&mut self, properties: Vec<TransformerOption>) -> DataRequirements {
+    fn make_requirements(&mut self, properties: TransformerRegistry) -> DataRequirements {
         let default_requirements = DataRequirements {
             tree_flattening: transformer::TreeFlatteningSpec::Flatten {
                 feature: transformer::FeatureFlatteningOption::AllExceptThematicSurfaces,
@@ -87,10 +81,8 @@ impl DataSink for GeoJsonSink {
             ..Default::default()
         };
 
-        for prop in properties {
-            let _ = &self
-                .transform_settings
-                .update_transformer(&prop.key, prop.is_enabled);
+        for config in properties.configs.iter() {
+            let _ = &self.transform_settings.update_transformer(config.clone());
         }
 
         self.transform_settings.build(default_requirements)
@@ -140,7 +132,7 @@ impl DataSink for GeoJsonSink {
 
                         let mut file_path = self.output_path.clone();
                         let c_name = typename.split_once(':').map(|v| v.1).unwrap_or(typename);
-                        file_path.push(&format!("{}.geojson", c_name));
+                        file_path.push(format!("{}.geojson", c_name));
 
                         let mut file = File::create(&file_path)?;
                         let mut writer = BufWriter::with_capacity(1024 * 1024, &mut file);

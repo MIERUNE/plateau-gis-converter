@@ -5,7 +5,7 @@ use nusamai::{
     pipeline::{self, Feedback, Parcel, Receiver, Result, Sender},
     sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo},
     source::{DataSource, DataSourceProvider, SourceInfo},
-    transformer::{Transformer, TransformerOption, TransformerRegistry},
+    transformer::{Transformer, TransformerRegistry},
 };
 use nusamai_citygml::schema::Schema;
 use nusamai_plateau::Entity;
@@ -27,7 +27,7 @@ impl DataSourceProvider for DummySourceProvider {
         }
     }
 
-    fn parameters(&self) -> Parameters {
+    fn sink_options(&self) -> Parameters {
         Parameters::default()
     }
 }
@@ -90,11 +90,11 @@ impl DataSinkProvider for DummySinkProvider {
         }
     }
 
-    fn parameters(&self) -> Parameters {
+    fn sink_options(&self) -> Parameters {
         Parameters::default()
     }
 
-    fn available_transformer(&self) -> TransformerRegistry {
+    fn transformer_options(&self) -> TransformerRegistry {
         let options: TransformerRegistry = TransformerRegistry::new();
         options
     }
@@ -116,7 +116,7 @@ impl DataSink for DummySink {
         Ok(())
     }
 
-    fn make_requirements(&mut self, _: Vec<TransformerOption>) -> DataRequirements {
+    fn make_requirements(&mut self, _: TransformerRegistry) -> DataRequirements {
         DataRequirements {
             ..Default::default()
         }
@@ -135,8 +135,8 @@ fn test_run_pipeline() {
     let source_provider: Box<dyn DataSourceProvider> = Box::new(DummySourceProvider {});
     let sink_provider: Box<dyn DataSinkProvider> = Box::new(DummySinkProvider {});
 
-    let source = source_provider.create(&source_provider.parameters());
-    let sink = sink_provider.create(&source_provider.parameters());
+    let source = source_provider.create(&source_provider.sink_options());
+    let sink = sink_provider.create(&source_provider.sink_options());
 
     let schema = nusamai_citygml::schema::Schema::default();
     let transformer = Box::<NoopTransformer>::default();

@@ -22,7 +22,7 @@
 	// When filetype changes, reset outputPath
 	$: {
 		filetype;
-		outputPath = '';
+		outputPath = import.meta.env.VITE_TEST_OUTPUT_PATH ?? '';
 	}
 
 	function clearSelected() {

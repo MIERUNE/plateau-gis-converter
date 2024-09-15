@@ -2,20 +2,17 @@
 	import { filetypeOptions } from '$lib/settings';
 	import { invoke } from '@tauri-apps/api/tauri';
 	import type { SinkParameters } from '$lib/sinkparams';
-	import {
-		isIntegerParameter,
-		isStringParameter,
-		isBooleanParameter,
-		createRangeArray
-	} from '$lib/sinkparams';
+	import type { TransformerRegistry } from '$lib/transformer';
 	import Icon from '@iconify/svelte';
 	import { dialog } from '@tauri-apps/api';
+	import SinkOptions from '$lib/components/SinkOptions.svelte';
+	import TransformerOptions from '$lib/components/TransformerOptions.svelte';
 
 	export let filetype: string;
 	export let epsg: number = 4979;
 	export let rulesPath: string;
 	export let sinkParameters: SinkParameters;
-	export let transformerRegistry: { key: string; label: string; is_enabled: boolean }[];
+	export let transformerRegistry: TransformerRegistry;
 
 	$: epsgOptions = filetypeOptions[filetype]?.epsg || [];
 	$: disableEpsgOptions = epsgOptions.length < 2;
@@ -47,15 +44,7 @@
 	async function getTransformerRegistry(filetype: string) {
 		const registry = (await invoke('get_transform', { filetype })) as any;
 
-		transformerRegistry = registry.configs.map(
-			(transformerConfig: { key: string; label: string; is_enabled: boolean }) => {
-				return {
-					key: transformerConfig.key,
-					label: transformerConfig.label,
-					is_enabled: transformerConfig.is_enabled
-				};
-			}
-		);
+		transformerRegistry = registry;
 	}
 
 	$: getTransformerRegistry(filetype);
@@ -74,6 +63,16 @@
 	}
 
 	$: setSinkParameter(filetype);
+
+	// Select the file format specified for testing, if any
+	const targetSink = import.meta.env.VITE_TEST_SINK;
+	if (targetSink) {
+		if (filetypeOptions.hasOwnProperty(targetSink)) {
+			filetype = targetSink;
+		} else {
+			console.warn(`The specified test sink "${targetSink}" is invalid. Using default value.`);
+		}
+	}
 </script>
 
 <div>
@@ -86,7 +85,12 @@
 	<div class="flex flex-col gap-5 mt-3 ml-2">
 		<div class="flex flex-col gap-1.5">
 			<label for="filetype-select" class="font-bold">ファイル形式</label>
-			<select bind:value={filetype} name="filetype" id="filetype-select" class="w-80">
+			<select
+				bind:value={filetype}
+				name="filetype"
+				id="filetype-select"
+				class="w-80 cursor-pointer"
+			>
 				{#each Object.entries(filetypeOptions) as [value, item]}
 					<option {value}>{item.label}</option>
 				{/each}
@@ -99,9 +103,10 @@
 				bind:value={epsg}
 				name="epsg"
 				id="epsg-select"
-				class="w-80"
+				class="w-80 cursor-pointer"
 				disabled={disableEpsgOptions}
 				class:opacity-50={disableEpsgOptions}
+				class:cursor-auto={disableEpsgOptions}
 			>
 				{#each epsgOptions as option}
 					<option value={option.value}>{option.label}</option>
@@ -109,90 +114,13 @@
 			</select>
 		</div>
 
-		{#if (transformerRegistry && transformerRegistry.length > 0) || sinkOptionKeys.length > 0}
-			<div class="flex flex-col gap-1.5">
-				<label for="transform-select" class="font-bold">出力の詳細設定</label>
-
-				<!-- Transformer options -->
-				{#if transformerRegistry && transformerRegistry.length > 0}
-					{#each transformerRegistry as config}
-						<div class="flex gap-2 w-80">
-							<label for={config.key} class="w-3/4">
-								{config.label}
-							</label>
-							<div class="relative inline-block w-10 h-6 rounded-full cursor-pointer">
-								<input
-									bind:checked={config.is_enabled}
-									id={config.key}
-									type="checkbox"
-									class="absolute w-10 h-6 transition-colors duration-300 rounded-full appearance-none cursor-pointer peer bg-gray-200 checked:bg-accent1 peer-checked:before:bg-accent1"
-								/>
-								<label
-									for={config.key}
-									class="before:content[''] absolute top-2/4 -left-1 h-6 w-6 -translate-y-2/4 cursor-pointer rounded-full border border-blue-gray-100 bg-white shadow-md transition-all duration-300 peer-checked:translate-x-full"
-								>
-									<div
-										class="inline-block p-5 rounded-full top-2/4 left-2/4 -translate-x-2/4 -translate-y-2/4"
-									></div>
-								</label>
-							</div>
-						</div>
-					{/each}
-				{/if}
-
-				<!-- Sink options -->
-				{#if sinkOptionKeys.length > 0}
-					<div class="flex flex-col gap-2">
-						{#each sinkOptionKeys as key}
-							{#if isIntegerParameter(sinkParameters.items[key].parameter)}
-								<div class="flex gap-2 w-80">
-									<label for={key} class="w-3/4">{sinkParameters.items[key].label}</label>
-									<select
-										bind:value={sinkParameters.items[key].parameter.Integer.value}
-										id={key}
-										class="w-1/4 border-2 border-gray-300 px-2 rounded-md"
-									>
-										{#each createRangeArray(sinkParameters.items[key].parameter.Integer.min, sinkParameters.items[key].parameter.Integer.max) as value}
-											<option {value} class="text-center">{value}</option>
-										{/each}
-									</select>
-								</div>
-							{:else if isStringParameter(sinkParameters.items[key].parameter)}
-								<!-- TODO String input -->
-								<!-- <div class="flex gap-2 w-80">
-								<label for={key} class="w-3/4">{sinkParameters.items[key].label}</label>
-								<input
-									type="text"
-									id={key}
-									bind:value={sinkParameters.items[key].parameter.String.value}
-									class="w-1/4"
-								/>
-							</div> -->
-							{:else if isBooleanParameter(sinkParameters.items[key].parameter)}
-								<div class="flex gap-2 w-80">
-									<label for={key} class="w-3/4">{sinkParameters.items[key].label}</label>
-
-									<div class="relative inline-block w-10 h-6 rounded-full cursor-pointer">
-										<input
-											bind:checked={sinkParameters.items[key].parameter.Boolean.value}
-											id={key}
-											type="checkbox"
-											class="absolute w-10 h-6 transition-colors duration-300 rounded-full appearance-none cursor-pointer peer bg-gray-200 checked:bg-accent1 peer-checked:before:bg-accent1"
-										/>
-										<label
-											for={key}
-											class="before:content[''] absolute top-2/4 -left-1 h-6 w-6 -translate-y-2/4 cursor-pointer rounded-full border border-blue-gray-100 bg-white shadow-md transition-all duration-300 peer-checked:translate-x-full"
-										>
-											<div
-												class="inline-block p-5 rounded-full top-2/4 left-2/4 -translate-x-2/4 -translate-y-2/4"
-											></div>
-										</label>
-									</div>
-								</div>
-							{/if}
-						{/each}
-					</div>
-				{/if}
+		{#if (transformerRegistry && transformerRegistry.configs.length > 0) || sinkOptionKeys.length > 0}
+			<div class="flex flex-col">
+				<label for="transform-select" class="font-bold mb-1.5">出力の詳細設定</label>
+				<div class="flex flex-col gap-2">
+					<TransformerOptions bind:transformerRegistry />
+					<SinkOptions bind:sinkOptionKeys bind:sinkParameters />
+				</div>
 			</div>
 		{/if}
 
