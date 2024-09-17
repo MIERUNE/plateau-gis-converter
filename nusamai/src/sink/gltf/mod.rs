@@ -59,10 +59,7 @@ impl DataSinkProvider for GltfSinkProvider {
     fn transformer_options(&self) -> TransformerRegistry {
         let mut settings: TransformerRegistry = TransformerRegistry::new();
         settings.insert(use_lod_config("max_lod"));
-
-        settings
     }
-
     fn create(&self, params: &Parameters) -> Box<dyn DataSink> {
         let output_path = get_parameter_value!(params, "@output", FileSystemPath);
         let limit_texture_resolution =

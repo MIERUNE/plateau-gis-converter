@@ -630,13 +630,18 @@ impl<T: CityGmlElement + Default> CityGmlElement for Box<T> {
 pub struct Envelope {
     lower_corner: Point,
     upper_corner: Point,
-    // TODO: crs_uri: Option<String>,
+    pub crs_uri: Option<String>,
 }
 
 impl CityGmlElement for Envelope {
     #[inline(never)]
     fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
-        // TODO: parse CRS URI
+        st.parse_attributes(|k, v, _| {
+            if k == b"@srsName" {
+                self.crs_uri = Some(String::from_utf8_lossy(v).into());
+            }
+            Ok(())
+        })?;
 
         st.parse_children(|st| {
             match st.current_path() {
