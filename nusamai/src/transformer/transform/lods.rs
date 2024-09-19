@@ -13,13 +13,6 @@ pub enum LodFilterMode {
     Highest,
     Lowest,
     TexturedMaxLod,
-
-    // NOTE: Debug
-    Lod1,
-    Lod2,
-    Lod3,
-    Lod4,
-    All,
 }
 
 #[derive()]
@@ -68,7 +61,6 @@ impl Transform for FilterLodTransform {
                             current_lods.0 &= !(1 << lod);
                         }
                     } else {
-                        println!("No valid LOD found");
                         break;
                     }
                 }
