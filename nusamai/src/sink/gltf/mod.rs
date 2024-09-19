@@ -8,7 +8,6 @@ use crate::sink::cesiumtiles::utils::calculate_normal;
 use ahash::{HashMap, HashSet, RandomState};
 use atlas_packer::{
     export::{AtlasExporter as _, JpegAtlasExporter},
-    pack::TexturePacker,
     place::{GuillotineTexturePlacer, PlacedTextureInfo, TexturePlacerConfig},
     texture::{CroppedTexture, DownsampleFactor, TextureCache, TextureSizeCache},
 };
@@ -163,6 +162,9 @@ impl DataSink for GltfSink {
     }
 
     fn run(&mut self, upstream: Receiver, feedback: &Feedback, schema: &Schema) -> Result<()> {
+        unimplemented!();
+        /*
+
         let ellipsoid = nusamai_projection::ellipsoid::wgs84();
 
         let classified_features: Mutex<ClassifiedFeatures> = Default::default();
@@ -370,7 +372,7 @@ impl DataSink for GltfSink {
                 let placer = GuillotineTexturePlacer::new(config.clone());
                 let exporter = JpegAtlasExporter::default();
                 let ext = exporter.clone().get_extension().to_string();
-                let packer = Mutex::new(TexturePacker::new(placer, exporter));
+                //let packer = Mutex::new(TexturePacker::new(placer, exporter));
 
                 let mut vertices: IndexSet<[u32; 9], RandomState> = IndexSet::default(); // [x, y, z, nx, ny, nz, u, v, feature_id]
                 let mut primitives: Primitives = Default::default();
@@ -446,6 +448,7 @@ impl DataSink for GltfSink {
                             // Unique id required for placement in atlas
                             let base_name = typename.replace(':', "_");
                             let texture_id = format!("{}_{}_{}", base_name, feature_id, poly_count);
+                            /*
                             let info: PlacedTextureInfo = packer
                                 .lock()
                                 .unwrap()
@@ -488,6 +491,7 @@ impl DataSink for GltfSink {
                                     uri: Url::from_file_path(atlas_uri).unwrap(),
                                 }),
                             };
+                            */
                         }
                         let primitive = primitives.entry(mat).or_default();
                         primitive.feature_ids.insert(feature_id as u32);
@@ -543,10 +547,10 @@ impl DataSink for GltfSink {
                 // Ensure that the parent directory exists
                 std::fs::create_dir_all(&self.output_path)?;
 
-                let mut packer = packer.into_inner().unwrap();
-                packer.finalize();
+                //let mut packer = packer.into_inner().unwrap();
+                //packer.finalize();
 
-                packer.export(&atlas_dir, &texture_cache, config.width, config.height);
+                //packer.export(&atlas_dir, &texture_cache, config.width, config.height);
 
                 // Write glTF (.glb)
                 let file_path = {
@@ -566,5 +570,6 @@ impl DataSink for GltfSink {
             })?;
 
         Ok(())
+        */
     }
 }

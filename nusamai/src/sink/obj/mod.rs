@@ -11,7 +11,6 @@ use std::{
 use ahash::{HashMap, HashMapExt};
 use atlas_packer::{
     export::{AtlasExporter as _, JpegAtlasExporter},
-    pack::TexturePacker,
     place::{GuillotineTexturePlacer, TexturePlacerConfig},
     texture::{CroppedTexture, DownsampleFactor, TextureCache, TextureSizeCache},
 };
@@ -194,6 +193,8 @@ impl DataSink for ObjSink {
     }
 
     fn run(&mut self, upstream: Receiver, feedback: &Feedback, _schema: &Schema) -> Result<()> {
+        unimplemented!();
+        /*
         let ellipsoid = nusamai_projection::ellipsoid::wgs84();
 
         let classified_features: Mutex<ClassifiedFeatures> = Default::default();
@@ -395,7 +396,7 @@ impl DataSink for ObjSink {
                 let placer = GuillotineTexturePlacer::new(config.clone());
                 let exporter = JpegAtlasExporter::default();
                 let ext = exporter.clone().get_extension().to_string();
-                let packer = Mutex::new(TexturePacker::new(placer, exporter));
+                //let packer = Mutex::new(TexturePacker::new(placer, exporter));
 
                 // file output destination
                 let mut folder_path = self.output_path.clone();
@@ -486,6 +487,7 @@ impl DataSink for ObjSink {
                                         "{}_{}_{}",
                                         base_folder_name, feature.feature_id, poly_count
                                     );
+                                    /*
                                     let info =
                                         packer.lock().unwrap().add_texture(texture_id, texture);
 
@@ -526,6 +528,7 @@ impl DataSink for ObjSink {
                                             uri: Url::from_file_path(atlas_uri).unwrap(),
                                         }),
                                     };
+                                    */
                                 }
 
                                 let poly_material = new_mat;
@@ -611,8 +614,8 @@ impl DataSink for ObjSink {
                     },
                 );
 
-                let mut packer = packer.into_inner().unwrap();
-                packer.finalize();
+                //let mut packer = packer.into_inner().unwrap();
+                //packer.finalize();
 
                 // receive mesh and material
                 let mut all_meshes = ObjInfo::new();
@@ -626,7 +629,7 @@ impl DataSink for ObjSink {
                     all_materials.insert(material_key, feature_material);
                 }
 
-                packer.export(&atlas_dir, &texture_cache, config.width, config.height);
+                //packer.export(&atlas_dir, &texture_cache, config.width, config.height);
 
                 feedback.ensure_not_canceled()?;
 
@@ -642,5 +645,6 @@ impl DataSink for ObjSink {
             })?;
 
         Ok(())
+        */
     }
 }
