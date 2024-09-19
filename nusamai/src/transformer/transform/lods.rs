@@ -40,54 +40,42 @@ impl Transform for FilterLodTransform {
         match self.mode {
             LodFilterMode::TexturedMaxLod => {
                 let original_lods = find_lods(&entity.root) & self.mask;
-
-                // Only for LOD 2 and above.
-                let mut current_lods = LodMask(original_lods.0 & 0b11111100); // 0b11111100 is the mask for LOD2-7
+                let mut current_lods = original_lods;
                 let mut highest_lod_entity = None;
 
-                if current_lods.0 == 0 {
-                    // If LOD 2 or higher does not exist, create entity with highest LOD
-                    if let Some(highest_lod) = original_lods.highest_lod() {
-                        let mut highest_entity = entity.clone();
-                        edit_tree(&mut highest_entity.root, highest_lod);
-                        out.push(highest_entity);
+                while current_lods.0 != 0 {
+                    let target_lod = current_lods.highest_lod();
+
+                    if let Some(lod) = target_lod {
+                        // Create a copy of the entity
+                        let mut entity_copy = entity.clone();
+                        edit_tree(&mut entity_copy.root, lod);
+
+                        let has_textures = {
+                            let appearance = entity_copy.appearance_store.read().unwrap();
+                            !appearance.textures.is_empty()
+                        };
+
+                        if has_textures {
+                            out.push(entity_copy);
+                            return;
+                        } else {
+                            // Save the highest LOD entity
+                            if highest_lod_entity.is_none() {
+                                highest_lod_entity = Some(entity_copy);
+                            }
+                            // Exclude the current LOD and try the next LOD
+                            current_lods.0 &= !(1 << lod);
+                        }
                     } else {
                         println!("No valid LOD found");
-                    }
-                    return;
-                }
-
-                while current_lods.0 != 0 {
-                    let target_lod = current_lods.highest_lod().unwrap();
-
-                    // Create a copy of the entity
-                    let mut entity_copy = entity.clone();
-                    edit_tree(&mut entity_copy.root, target_lod);
-
-                    let has_textures = {
-                        let appearance = entity_copy.appearance_store.read().unwrap();
-                        !appearance.textures.is_empty()
-                    };
-
-                    if has_textures {
-                        out.push(entity_copy);
-                        return;
-                    } else {
-                        // Save the highest LOD entity（テクスチャがなくても）
-                        if highest_lod_entity.is_none() {
-                            highest_lod_entity = Some(entity_copy);
-                        }
-                        // Exclude the current LOD and try the next LOD
-                        current_lods.0 &= !(1 << target_lod);
+                        break;
                     }
                 }
 
                 // If no texture is found, push entity with highest LOD
                 if let Some(highest_entity) = highest_lod_entity {
                     out.push(highest_entity);
-                } else {
-                    // TODO: This branch should not normally be reached, but leave it for safety reasons
-                    println!("No valid entity found at all");
                 }
             }
             LodFilterMode::Highest => {
