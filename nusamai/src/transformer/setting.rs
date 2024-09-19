@@ -162,7 +162,7 @@ impl TransformerRegistry {
                             }
                             "textured_max_lod" => {
                                 data_requirements.set_lod_filter(transformer::LodFilterSpec {
-                                    mode: transformer::LodFilterMode::TexturedMaxLod,
+                                    mode: transformer::LodFilterMode::TexturedHighest,
                                     ..Default::default()
                                 });
                                 data_requirements.set_appearance(true);

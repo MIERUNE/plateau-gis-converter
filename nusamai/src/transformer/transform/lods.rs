@@ -12,7 +12,7 @@ use crate::{pipeline::Feedback, transformer::Transform};
 pub enum LodFilterMode {
     Highest,
     Lowest,
-    TexturedMaxLod,
+    TexturedHighest,
 }
 
 #[derive()]
@@ -31,7 +31,7 @@ impl FilterLodTransform {
 impl Transform for FilterLodTransform {
     fn transform(&mut self, _feedback: &Feedback, mut entity: Entity, out: &mut Vec<Entity>) {
         match self.mode {
-            LodFilterMode::TexturedMaxLod => {
+            LodFilterMode::TexturedHighest => {
                 let original_lods = find_lods(&entity.root) & self.mask;
                 let mut current_lods = original_lods;
                 let mut highest_lod_entity = None;
