@@ -72,6 +72,12 @@ impl LodSelection {
             ("最大LOD", "max_lod"),
             ("最小LOD", "min_lod"),
             ("テクスチャ付き最大LOD", "textured_max_lod"),
+            // NOTE debug
+            ("Lod1", "lod1"),
+            ("Lod2", "lod2"),
+            ("Lod3", "lod3"),
+            ("Lod4", "lod4"),
+            ("全て", "all"),
         ]
     }
 
@@ -167,6 +173,42 @@ impl TransformerRegistry {
                                 });
                                 data_requirements.set_appearance(true);
                             }
+                            // NOTE debug
+                            "lod1" => {
+                                data_requirements.set_lod_filter(transformer::LodFilterSpec {
+                                    mode: transformer::LodFilterMode::Lod1,
+                                    ..Default::default()
+                                });
+                            }
+                            "lod2" => {
+                                data_requirements.set_lod_filter(transformer::LodFilterSpec {
+                                    mode: transformer::LodFilterMode::Lod2,
+                                    ..Default::default()
+                                });
+                                data_requirements.set_appearance(true);
+                            }
+                            "lod3" => {
+                                data_requirements.set_lod_filter(transformer::LodFilterSpec {
+                                    mode: transformer::LodFilterMode::Lod3,
+                                    ..Default::default()
+                                });
+                                data_requirements.set_appearance(true);
+                            }
+                            "lod4" => {
+                                data_requirements.set_lod_filter(transformer::LodFilterSpec {
+                                    mode: transformer::LodFilterMode::Lod4,
+                                    ..Default::default()
+                                });
+                                data_requirements.set_appearance(true);
+                            }
+                            "all" => {
+                                data_requirements.set_lod_filter(transformer::LodFilterSpec {
+                                    mode: transformer::LodFilterMode::All,
+                                    ..Default::default()
+                                });
+                                data_requirements.set_appearance(true);
+                            }
+
                             _ => {}
                         }
                     }
