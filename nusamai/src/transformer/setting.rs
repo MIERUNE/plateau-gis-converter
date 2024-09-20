@@ -72,6 +72,7 @@ impl LodSelection {
             ("最大LOD", "max_lod"),
             ("最小LOD", "min_lod"),
             ("テクスチャ付き最大LOD", "textured_max_lod"),
+            // ("すべてのLOD", "lod_all"),　// This option will be used in 3dtiles sink
         ]
     }
 
@@ -152,7 +153,7 @@ impl TransformerRegistry {
                                 data_requirements.set_lod_filter(transformer::LodFilterSpec {
                                     mode: transformer::LodFilterMode::Highest,
                                     ..Default::default()
-                                })
+                                });
                             }
                             "min_lod" => {
                                 data_requirements.set_lod_filter(transformer::LodFilterSpec {
@@ -163,6 +164,13 @@ impl TransformerRegistry {
                             "textured_max_lod" => {
                                 data_requirements.set_lod_filter(transformer::LodFilterSpec {
                                     mode: transformer::LodFilterMode::TexturedHighest,
+                                    ..Default::default()
+                                });
+                                data_requirements.set_appearance(true);
+                            }
+                            "all_lod" => {
+                                data_requirements.set_lod_filter(transformer::LodFilterSpec {
+                                    mode: transformer::LodFilterMode::All,
                                     ..Default::default()
                                 });
                                 data_requirements.set_appearance(true);

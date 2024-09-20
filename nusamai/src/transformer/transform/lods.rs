@@ -13,6 +13,7 @@ pub enum LodFilterMode {
     Highest,
     Lowest,
     TexturedHighest,
+    All,
 }
 
 #[derive()]
@@ -32,6 +33,7 @@ impl Transform for FilterLodTransform {
     fn transform(&mut self, _feedback: &Feedback, mut entity: Entity, out: &mut Vec<Entity>) {
         match self.mode {
             LodFilterMode::TexturedHighest => {
+                // TODO: Processing needs to be optimised
                 let original_lods = find_lods(&entity.root) & self.mask;
                 let mut current_lods = original_lods;
                 let mut highest_lod_entity = None;
@@ -87,6 +89,9 @@ impl Transform for FilterLodTransform {
                     edit_tree(&mut entity.root, target_lod);
                     out.push(entity);
                 }
+            }
+            LodFilterMode::All => {
+                out.push(entity);
             }
         }
     }
