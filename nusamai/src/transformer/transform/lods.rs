@@ -88,7 +88,6 @@ impl Transform for FilterLodTransform {
                     out.push(entity);
                 }
             }
-            _ => {}
         }
     }
 
