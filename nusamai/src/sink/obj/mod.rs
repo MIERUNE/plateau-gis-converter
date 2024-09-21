@@ -12,7 +12,6 @@ use ahash::{HashMap, HashMapExt};
 use atlas_packer::{
     export::{AtlasExporter as _, JpegAtlasExporter},
     place::{GuillotineTexturePlacer, TexturePlacerConfig},
-    texture::{CroppedTexture, DownsampleFactor, TextureCache, TextureSizeCache},
 };
 use earcut::{utils3d::project3d_to_2d, Earcut};
 use flatgeom::MultiPolygon;

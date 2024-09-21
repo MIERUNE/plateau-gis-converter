@@ -6,11 +6,7 @@ use std::{f64::consts::FRAC_PI_2, fs::File, io::BufWriter, path::PathBuf, sync::
 
 use crate::sink::cesiumtiles::utils::calculate_normal;
 use ahash::{HashMap, HashSet, RandomState};
-use atlas_packer::{
-    export::{AtlasExporter as _, JpegAtlasExporter},
-    place::{GuillotineTexturePlacer, PlacedTextureInfo, TexturePlacerConfig},
-    texture::{CroppedTexture, DownsampleFactor, TextureCache, TextureSizeCache},
-};
+use atlas_packer::export::{AtlasExporter as _, JpegAtlasExporter};
 use earcut::{utils3d::project3d_to_2d, Earcut};
 use flatgeom::MultiPolygon;
 use glam::{DMat4, DVec3, DVec4};

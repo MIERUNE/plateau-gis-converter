@@ -20,7 +20,10 @@ use atlas_packer::{
     export::{AtlasExporter as _, JpegAtlasExporter},
     pack::AtlasPacker,
     place::{GuillotineTexturePlacer, TexturePlacerConfig},
-    texture::{CroppedTexture, DownsampleFactor, TextureCache, TextureSizeCache},
+    texture::{
+        cache::{TextureCache, TextureSizeCache},
+        DownsampleFactor, PolygonMappedTexture,
+    },
 };
 use bytemuck::Zeroable;
 use earcut::{utils3d::project3d_to_2d, Earcut};
@@ -411,8 +414,6 @@ fn tile_writing_stage(
                 padding: 0,
             };
 
-            let exporter = JpegAtlasExporter::default();
-            let ext = exporter.clone().get_extension().to_string();
             let packer = Mutex::new(AtlasPacker::default());
 
             let features = {
@@ -519,7 +520,7 @@ fn tile_writing_stage(
                         let factor = apply_downsample_factor(tile_zoom, downsample_scale as f32);
 
                         let downsample_factor = DownsampleFactor::new(&factor);
-                        let cropped_texture = CroppedTexture::new(
+                        let cropped_texture = PolygonMappedTexture::new(
                             &texture_uri,
                             texture_size,
                             &uv_coords,
@@ -541,6 +542,9 @@ fn tile_writing_stage(
             let placer = GuillotineTexturePlacer::new(config.clone());
             let packer = packer.into_inner().unwrap();
             let packed = packer.pack(placer);
+
+            let exporter = JpegAtlasExporter::default();
+            let ext = exporter.clone().get_extension().to_string();
 
             for (feature_id, feature) in features.iter().enumerate() {
                 for (poly_count, (mut mat, mut poly)) in feature
@@ -656,7 +660,6 @@ fn tile_writing_stage(
             let (z, x, y) = tile_id_conv.id_to_zxy(tile_id);
             let atlas_path = atlas_dir.join(format!("{}/{}/{}", z, x, y));
             fs::create_dir_all(&atlas_path)?;
-
             packed.export(
                 exporter,
                 &atlas_path,
