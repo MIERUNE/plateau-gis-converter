@@ -76,8 +76,16 @@ impl LodSelection {
         ]
     }
 
-    pub fn create_lod_selection(default_value: &str) -> Selection {
+    pub fn lod_selection_with_texture(default_value: &str) -> Selection {
         Selection::new(Self::get_lod_selection_options(), default_value)
+    }
+
+    pub fn lod_selection_without_texture(default_value: &str) -> Selection {
+        let options = Self::get_lod_selection_options()
+            .into_iter()
+            .filter(|&(_, value)| value != "textured_max_lod")
+            .collect::<Vec<_>>();
+        Selection::new(options, default_value)
     }
 }
 
