@@ -176,14 +176,13 @@ impl TransformerRegistry {
                                 });
                                 data_requirements.set_appearance(true);
                             }
-                            // TODO: An option required for 3dtiles sink. Uncomment this when implementing.
-                            // "all_lod" => {
-                            //     data_requirements.set_lod_filter(transformer::LodFilterSpec {
-                            //         mode: transformer::LodFilterMode::All,
-                            //         ..Default::default()
-                            //     });
-                            //     data_requirements.set_appearance(true);
-                            // }
+                            "all_lod" => {
+                                data_requirements.set_lod_filter(transformer::LodFilterSpec {
+                                    mode: transformer::LodFilterMode::All,
+                                    ..Default::default()
+                                });
+                                data_requirements.set_appearance(true);
+                            }
                             _ => {}
                         }
                     }
