@@ -2,16 +2,12 @@
 mod material;
 mod obj_writer;
 
-use std::{
-    f64::consts::FRAC_PI_2,
-    path::PathBuf,
-    sync::{mpsc, Mutex},
-};
+use std::{f64::consts::FRAC_PI_2, path::PathBuf, sync::Mutex};
 
 use ahash::{HashMap, HashMapExt};
 use atlas_packer::{
     export::{AtlasExporter as _, JpegAtlasExporter},
-    pack::{Atlas, AtlasPacker},
+    pack::AtlasPacker,
     place::{GuillotineTexturePlacer, TexturePlacerConfig},
     texture::{
         cache::{TextureCache, TextureSizeCache},
