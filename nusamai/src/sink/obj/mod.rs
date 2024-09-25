@@ -427,7 +427,7 @@ impl DataSink for ObjSink {
                 let packer = Mutex::new(AtlasPacker::default());
 
                 // A unique ID used when planning the atlas layout
-                //  and when obtaining the UV coordinates after the layout has been completed.
+                //  and when obtaining the UV coordinates after the layout has been completed
                 let generate_texture_id =
                     |folder_name: &str, feature_id: usize, poly_count: usize| {
                         format!("{}_{}_{}", folder_name, feature_id, poly_count)
@@ -497,7 +497,7 @@ impl DataSink for ObjSink {
                 let mut all_materials = ObjMaterials::new();
 
                 // Obtain the UV coordinates placed in the atlas by specifying the ID
-                //  and apply them to the original polygon.
+                //  and apply them to the original polygon
                 for (feature_id, feature) in features.iter().enumerate() {
                     let mut feature_mesh = FeatureMesh {
                         vertices: Vec::new(),
