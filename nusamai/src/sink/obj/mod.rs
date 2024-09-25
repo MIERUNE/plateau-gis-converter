@@ -192,8 +192,6 @@ impl DataSink for ObjSink {
     }
 
     fn run(&mut self, upstream: Receiver, feedback: &Feedback, _schema: &Schema) -> Result<()> {
-        unimplemented!();
-        /*
         let ellipsoid = nusamai_projection::ellipsoid::wgs84();
 
         let classified_features: Mutex<ClassifiedFeatures> = Default::default();
@@ -644,6 +642,5 @@ impl DataSink for ObjSink {
             })?;
 
         Ok(())
-        */
     }
 }
