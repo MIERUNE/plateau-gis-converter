@@ -47,6 +47,7 @@ fn write_obj(
 
         mesh_data.push((feature_id, mesh, vertex_offset, uv_offset));
     }
+
     let mut obj_writer = BufWriter::new(File::create(obj_path)?);
 
     writeln!(obj_writer, "mtllib {}.mtl", file_name)?;

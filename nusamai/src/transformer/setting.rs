@@ -68,11 +68,25 @@ pub struct LodSelection;
 
 impl LodSelection {
     pub fn get_lod_selection_options() -> Vec<(&'static str, &'static str)> {
-        vec![("最大LOD", "max_lod"), ("最小LOD", "min_lod")]
+        vec![
+            ("最大LOD", "max_lod"),
+            ("最小LOD", "min_lod"),
+            ("テクスチャ付き最大LOD", "textured_max_lod"),
+            // This option will be used in 3dtiles sink
+            // ("すべてのLOD", "all_lod"),
+        ]
     }
 
-    pub fn create_lod_selection(default_value: &str) -> Selection {
+    pub fn lod_selection_with_texture(default_value: &str) -> Selection {
         Selection::new(Self::get_lod_selection_options(), default_value)
+    }
+
+    pub fn lod_selection_without_texture(default_value: &str) -> Selection {
+        let options = Self::get_lod_selection_options()
+            .into_iter()
+            .filter(|&(_, value)| value != "textured_max_lod")
+            .collect::<Vec<_>>();
+        Selection::new(options, default_value)
     }
 }
 
@@ -135,10 +149,8 @@ impl TransformerRegistry {
                 ParameterType::String(_value) => {
                     // TODO: Processing for String types.
                 }
-                ParameterType::Boolean(value) => {
-                    if config.key == "use_texture" {
-                        data_requirements.set_appearance(*value);
-                    }
+                ParameterType::Boolean(_value) => {
+                    // TODO: Processing for Boolean types.
                 }
                 ParameterType::Integer(_value) => {
                     // TODO: Processing for Integer types.
@@ -150,13 +162,27 @@ impl TransformerRegistry {
                                 data_requirements.set_lod_filter(transformer::LodFilterSpec {
                                     mode: transformer::LodFilterMode::Highest,
                                     ..Default::default()
-                                })
+                                });
                             }
                             "min_lod" => {
                                 data_requirements.set_lod_filter(transformer::LodFilterSpec {
                                     mode: transformer::LodFilterMode::Lowest,
                                     ..Default::default()
                                 })
+                            }
+                            "textured_max_lod" => {
+                                data_requirements.set_lod_filter(transformer::LodFilterSpec {
+                                    mode: transformer::LodFilterMode::TexturedHighest,
+                                    ..Default::default()
+                                });
+                                data_requirements.set_appearance(true);
+                            }
+                            "all_lod" => {
+                                data_requirements.set_lod_filter(transformer::LodFilterSpec {
+                                    mode: transformer::LodFilterMode::All,
+                                    ..Default::default()
+                                });
+                                data_requirements.set_appearance(true);
                             }
                             _ => {}
                         }

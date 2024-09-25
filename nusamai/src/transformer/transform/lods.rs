@@ -12,6 +12,8 @@ use crate::{pipeline::Feedback, transformer::Transform};
 pub enum LodFilterMode {
     Highest,
     Lowest,
+    TexturedHighest,
+    All,
 }
 
 #[derive()]
@@ -29,16 +31,68 @@ impl FilterLodTransform {
 /// Transform to filter and split the LODs
 impl Transform for FilterLodTransform {
     fn transform(&mut self, _feedback: &Feedback, mut entity: Entity, out: &mut Vec<Entity>) {
-        let lods = find_lods(&entity.root) & self.mask;
+        match self.mode {
+            LodFilterMode::TexturedHighest => {
+                // TODO: Processing needs to be optimised
+                let original_lods = find_lods(&entity.root) & self.mask;
+                let mut current_lods = original_lods;
+                let mut highest_lod_entity = None;
 
-        let target_lod = match self.mode {
-            LodFilterMode::Highest => lods.highest_lod(),
-            LodFilterMode::Lowest => lods.lowest_lod(),
-        };
+                while current_lods.0 != 0 {
+                    let target_lod = current_lods.highest_lod();
 
-        if let Some(target_lod) = target_lod {
-            edit_tree(&mut entity.root, target_lod);
-            out.push(entity);
+                    if let Some(lod) = target_lod {
+                        // Create a copy of the entity
+                        let mut entity_copy = entity.clone();
+                        edit_tree(&mut entity_copy.root, lod);
+
+                        let has_textures = {
+                            let appearance = entity_copy.appearance_store.read().unwrap();
+                            !appearance.textures.is_empty()
+                        };
+
+                        if has_textures {
+                            out.push(entity_copy);
+                            return;
+                        } else {
+                            // Save the highest LOD entity
+                            if highest_lod_entity.is_none() {
+                                highest_lod_entity = Some(entity_copy);
+                            }
+                            // Exclude the current LOD and try the next LOD
+                            current_lods.0 &= !(1 << lod);
+                        }
+                    } else {
+                        break;
+                    }
+                }
+
+                // If no texture is found, push entity with highest LOD
+                if let Some(highest_entity) = highest_lod_entity {
+                    out.push(highest_entity);
+                }
+            }
+            LodFilterMode::Highest => {
+                let lods = find_lods(&entity.root) & self.mask;
+                let target_lod = lods.highest_lod();
+
+                if let Some(target_lod) = target_lod {
+                    edit_tree(&mut entity.root, target_lod);
+                    out.push(entity);
+                }
+            }
+            LodFilterMode::Lowest => {
+                let lods = find_lods(&entity.root) & self.mask;
+                let target_lod = lods.lowest_lod();
+
+                if let Some(target_lod) = target_lod {
+                    edit_tree(&mut entity.root, target_lod);
+                    out.push(entity);
+                }
+            }
+            LodFilterMode::All => {
+                out.push(entity);
+            }
         }
     }
 
@@ -92,7 +146,7 @@ fn find_lods(value: &Value) -> LodMask {
     mask
 }
 
-#[derive(Default, Clone, Copy)]
+#[derive(Default, Clone, Copy, Debug)]
 pub struct LodMask(
     u8, // lods bit mask
 );

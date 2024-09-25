@@ -29,7 +29,7 @@ use url::Url;
 
 use crate::{
     get_parameter_value,
-    option::{use_lod_config, use_texture_config},
+    option::use_textured_lod_config,
     parameters::*,
     pipeline::{Feedback, PipelineError, Receiver, Result},
     sink::{cesiumtiles::metadata, DataRequirements, DataSink, DataSinkProvider, SinkInfo},
@@ -58,12 +58,10 @@ impl DataSinkProvider for GltfSinkProvider {
 
     fn transformer_options(&self) -> TransformerRegistry {
         let mut settings: TransformerRegistry = TransformerRegistry::new();
-        settings.insert(use_lod_config("max_lod"));
-        settings.insert(use_texture_config(false));
+        settings.insert(use_textured_lod_config("max_lod"));
 
         settings
     }
-
     fn create(&self, params: &Parameters) -> Box<dyn DataSink> {
         let output_path = get_parameter_value!(params, "@output", FileSystemPath);
         let limit_texture_resolution =
