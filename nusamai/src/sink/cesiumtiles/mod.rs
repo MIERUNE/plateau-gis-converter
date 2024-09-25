@@ -119,7 +119,7 @@ impl DataSink for CesiumTilesSink {
         let tile_id_conv = TileIdMethod::Hilbert;
 
         // TODO: configurable
-        let min_zoom = 12;
+        let min_zoom = 15;
         let max_zoom = 18;
 
         let limit_texture_resolution = self.limit_texture_resolution;
@@ -409,8 +409,8 @@ fn tile_writing_stage(
             // initialize texture packer
             // To reduce unnecessary draw calls, set the lower limit for max_width and max_height to 4096
             let config = TexturePlacerConfig {
-                width: max_width.max(4096),
-                height: max_height.max(4096),
+                width: max_width.max(2048),
+                height: max_height.max(2048),
                 padding: 0,
             };
 
