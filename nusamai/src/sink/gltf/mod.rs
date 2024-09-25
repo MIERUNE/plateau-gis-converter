@@ -6,7 +6,15 @@ use std::{f64::consts::FRAC_PI_2, fs::File, io::BufWriter, path::PathBuf, sync::
 
 use crate::sink::cesiumtiles::utils::calculate_normal;
 use ahash::{HashMap, HashSet, RandomState};
-use atlas_packer::export::{AtlasExporter as _, JpegAtlasExporter};
+use atlas_packer::{
+    export::{AtlasExporter as _, JpegAtlasExporter},
+    pack::AtlasPacker,
+    place::{GuillotineTexturePlacer, TexturePlacerConfig},
+    texture::{
+        cache::{TextureCache, TextureSizeCache},
+        DownsampleFactor, PolygonMappedTexture,
+    },
+};
 use earcut::{utils3d::project3d_to_2d, Earcut};
 use flatgeom::MultiPolygon;
 use glam::{DMat4, DVec3, DVec4};
@@ -158,9 +166,6 @@ impl DataSink for GltfSink {
     }
 
     fn run(&mut self, upstream: Receiver, feedback: &Feedback, schema: &Schema) -> Result<()> {
-        unimplemented!();
-        /*
-
         let ellipsoid = nusamai_projection::ellipsoid::wgs84();
 
         let classified_features: Mutex<ClassifiedFeatures> = Default::default();
@@ -318,19 +323,26 @@ impl DataSink for GltfSink {
         };
         let _ = transform_matrix.inverse();
 
-        // Texture cache
-        // use default cache size
-        let texture_cache = TextureCache::new(100_000_000);
-        let texture_size_cache = TextureSizeCache::new();
-
         classified_features
             .into_par_iter()
             .try_for_each(|(typename, mut features)| {
                 feedback.ensure_not_canceled()?;
 
+                // The decoded image file is cached
+                let texture_cache = TextureCache::new(100_000_000);
+                // The image size is cached to avoid unnecessary decoding
+                let texture_size_cache = TextureSizeCache::new();
+
+                let mut vertices: IndexSet<[u32; 9], RandomState> = IndexSet::default(); // [x, y, z, nx, ny, nz, u, v, feature_id]
+                let mut primitives: Primitives = Default::default();
+
+                let mut metadata_encoder = metadata::MetadataEncoder::new(schema);
+
                 // Use a temporary directory for embedding in glb.
                 let binding = tempdir().unwrap();
                 let folder_path = binding.path();
+                let base_name = typename.replace(':', "_");
+
                 let texture_folder_name = "textures";
                 let atlas_dir = folder_path.join(texture_folder_name);
                 std::fs::create_dir_all(&atlas_dir)?;
@@ -360,57 +372,71 @@ impl DataSink for GltfSink {
                 let max_height = max_height.next_power_of_two();
 
                 // initialize texture packer
+                // To reduce unnecessary draw calls, set the lower limit for max_width and max_height to 8192
                 let config = TexturePlacerConfig {
-                    width: max_width,
-                    height: max_height,
+                    width: max_width.max(8192),
+                    height: max_height.max(8192),
                     padding: 0,
                 };
-                let placer = GuillotineTexturePlacer::new(config.clone());
-                let exporter = JpegAtlasExporter::default();
-                let ext = exporter.clone().get_extension().to_string();
-                //let packer = Mutex::new(TexturePacker::new(placer, exporter));
 
-                let mut vertices: IndexSet<[u32; 9], RandomState> = IndexSet::default(); // [x, y, z, nx, ny, nz, u, v, feature_id]
-                let mut primitives: Primitives = Default::default();
+                let packer = Mutex::new(AtlasPacker::default());
 
-                let mut metadata_encoder = metadata::MetadataEncoder::new(schema);
+                // Transform features
+                let features = {
+                    let mut features = features.features;
+                    features.iter_mut().for_each(|feature| {
+                        feature
+                            .polygons
+                            .transform_inplace(|&[lng, lat, height, u, v]| {
+                                // geographic to geocentric
+                                let (x, y, z) =
+                                    geodetic_to_geocentric(&ellipsoid, lng, lat, height);
+                                // z-up to y-up
+                                let v_xyz = DVec4::new(x, z, -y, 1.0);
+                                // local ENU coordinate
+                                let v_enu = transform_matrix * v_xyz;
+                                // println!("enu: {:?}", v_enu);
 
-                // make vertices and indices
-                let mut feature_id = 0;
-                for feature in features.features.iter_mut() {
-                    feedback.ensure_not_canceled()?;
+                                [v_enu[0], v_enu[1], v_enu[2], u, v]
+                            });
+                    });
+                    features
+                };
 
-                    feature.feature_id = Some(feature_id as u32);
-                    feature
-                        .polygons
-                        .transform_inplace(|&[lng, lat, height, u, v]| {
-                            // geographic to geocentric
-                            let (x, y, z) = geodetic_to_geocentric(&ellipsoid, lng, lat, height);
-                            // z-up to y-up
-                            let v_xyz = DVec4::new(x, z, -y, 1.0);
-                            // local ENU coordinate
-                            let v_enu = transform_matrix * v_xyz;
-                            // println!("enu: {:?}", v_enu);
+                // Encode metadata
+                let features = features
+                    .iter()
+                    .filter_map(|feature| {
+                        if metadata_encoder
+                            .add_feature(&typename, &feature.attributes)
+                            .is_err()
+                        {
+                            feedback.warn("Failed to encode feature attributes".to_string());
+                            None
+                        } else {
+                            Some(feature)
+                        }
+                    })
+                    .collect::<Vec<_>>();
 
-                            [v_enu[0], v_enu[1], v_enu[2], u, v]
-                        });
+                // A unique ID used when planning the atlas layout
+                //  and when obtaining the UV coordinates after the layout has been completed
+                let generate_texture_id =
+                    |folder_name: &str, feature_id: usize, poly_count: usize| {
+                        format!("{}_{}_{}", folder_name, feature_id, poly_count)
+                    };
 
-                    // Encode properties
-                    if metadata_encoder
-                        .add_feature(&typename, &feature.attributes)
-                        .is_err()
-                    {
-                        feedback.warn("Failed to encode feature attributes".to_string());
-                        continue;
-                    }
-
-                    for (poly_count, (mut poly, orig_mat_id)) in feature
+                // Load all textures into the Packer
+                for (feature_id, feature) in features.iter().enumerate() {
+                    for (poly_count, (mat, poly)) in feature
                         .polygons
                         .iter()
                         .zip_eq(feature.polygon_material_ids.iter())
+                        .map(move |(poly, orig_mat_id)| {
+                            (feature.materials[*orig_mat_id as usize].clone(), poly)
+                        })
                         .enumerate()
                     {
-                        let mut mat = feature.materials[*orig_mat_id as usize].clone();
                         let t = mat.base_texture.clone();
                         if let Some(base_texture) = t {
                             // texture packing
@@ -419,6 +445,7 @@ impl DataSink for GltfSink {
                                 .iter()
                                 .map(|[x, y, z, u, v]| (*x, *y, *z, *u, *v))
                                 .collect::<Vec<(f64, f64, f64, f64, f64)>>();
+
                             let uv_coords = original_vertices
                                 .iter()
                                 .map(|(_, _, _, u, v)| (*u, *v))
@@ -426,7 +453,6 @@ impl DataSink for GltfSink {
 
                             let texture_uri = base_texture.uri.to_file_path().unwrap();
                             let texture_size = texture_size_cache.get_or_insert(&texture_uri);
-
                             let downsample_scale = get_texture_downsample_scale_of_polygon(
                                 &original_vertices,
                                 texture_size,
@@ -434,7 +460,8 @@ impl DataSink for GltfSink {
                             ) as f32;
 
                             let downsample_factor = DownsampleFactor::new(&downsample_scale);
-                            let cropped_texture = CroppedTexture::new(
+
+                            let texture = PolygonMappedTexture::new(
                                 &texture_uri,
                                 texture_size,
                                 &uv_coords,
@@ -442,14 +469,46 @@ impl DataSink for GltfSink {
                             );
 
                             // Unique id required for placement in atlas
-                            let base_name = typename.replace(':', "_");
-                            let texture_id = format!("{}_{}_{}", base_name, feature_id, poly_count);
-                            /*
-                            let info: PlacedTextureInfo = packer
-                                .lock()
-                                .unwrap()
-                                .add_texture(texture_id, cropped_texture);
 
+                            let texture_id =
+                                generate_texture_id(&base_name, feature_id, poly_count);
+
+                            packer.lock().unwrap().add_texture(texture_id, texture);
+                        }
+                    }
+                }
+
+                let placer = GuillotineTexturePlacer::new(config.clone());
+                let packer = packer.into_inner().unwrap();
+
+                // Packing the loaded textures into an atlas
+                let packed = packer.pack(placer);
+
+                let exporter = JpegAtlasExporter::default();
+                let ext = exporter.clone().get_extension().to_string();
+
+                // Obtain the UV coordinates placed in the atlas by specifying the ID
+                //  and apply them to the original polygon.
+                for (feature_id, feature) in features.iter().enumerate() {
+                    for (poly_count, (mut mat, mut poly)) in feature
+                        .polygons
+                        .iter()
+                        .zip_eq(feature.polygon_material_ids.iter())
+                        .map(move |(poly, orig_mat_id)| {
+                            (feature.materials[*orig_mat_id as usize].clone(), poly)
+                        })
+                        .enumerate()
+                    {
+                        let original_vertices = poly
+                            .raw_coords()
+                            .iter()
+                            .map(|[x, y, z, u, v]| (*x, *y, *z, *u, *v))
+                            .collect::<Vec<(f64, f64, f64, f64, f64)>>();
+
+                        let texture_id = generate_texture_id(&base_name, feature_id, poly_count);
+
+                        if let Some(info) = packed.get_texture_info(&texture_id) {
+                            // Place the texture in the atlas
                             let atlas_placed_uv_coords = info
                                 .placed_uv_coords
                                 .iter()
@@ -487,31 +546,30 @@ impl DataSink for GltfSink {
                                     uri: Url::from_file_path(atlas_uri).unwrap(),
                                 }),
                             };
-                            */
                         }
+
                         let primitive = primitives.entry(mat).or_default();
                         primitive.feature_ids.insert(feature_id as u32);
 
                         if let Some((nx, ny, nz)) =
                             calculate_normal(poly.exterior().iter().map(|v| [v[0], v[1], v[2]]))
                         {
-                            // Triangulation
-                            let num_outer = match poly.hole_indices().first() {
+                            let num_outer_points = match poly.hole_indices().first() {
                                 Some(&v) => v as usize,
                                 None => poly.raw_coords().len(),
                             };
-                            let mut earcutter: Earcut<f64> = Earcut::new();
+                            let mut earcutter = Earcut::new();
                             let mut buf3d: Vec<[f64; 3]> = Vec::new();
-                            let mut buf2d: Vec<[f64; 2]> = Vec::new(); // 2d-projected [x, y]
+                            let mut buf2d: Vec<[f64; 2]> = Vec::new();
                             let mut index_buf: Vec<u32> = Vec::new();
 
                             buf3d.clear();
                             buf3d.extend(poly.raw_coords().iter().map(|c| [c[0], c[1], c[2]]));
 
-                            if project3d_to_2d(&buf3d, num_outer, &mut buf2d) {
+                            if project3d_to_2d(&buf3d, num_outer_points, &mut buf2d) {
                                 // earcut
                                 earcutter.earcut(
-                                    buf2d.iter().copied(),
+                                    buf2d.iter().cloned(),
                                     poly.hole_indices(),
                                     &mut index_buf,
                                 );
@@ -528,7 +586,7 @@ impl DataSink for GltfSink {
                                         (nz as f32).to_bits(),
                                         (u as f32).to_bits(),
                                         // flip the texture v-coordinate
-                                        (1.0 - v as f32).to_bits(),
+                                        ((1.0 - v) as f32).to_bits(),
                                         (feature_id as f32).to_bits(), // UNSIGNED_INT can't be used for vertex attribute
                                     ];
                                     let (index, _) = vertices.insert_full(vbits);
@@ -537,16 +595,18 @@ impl DataSink for GltfSink {
                             }
                         }
                     }
-                    feature_id += 1;
                 }
 
                 // Ensure that the parent directory exists
                 std::fs::create_dir_all(&self.output_path)?;
 
-                //let mut packer = packer.into_inner().unwrap();
-                //packer.finalize();
-
-                //packer.export(&atlas_dir, &texture_cache, config.width, config.height);
+                packed.export(
+                    exporter,
+                    &atlas_dir,
+                    &texture_cache,
+                    config.width,
+                    config.height,
+                );
 
                 // Write glTF (.glb)
                 let file_path = {
@@ -566,6 +626,5 @@ impl DataSink for GltfSink {
             })?;
 
         Ok(())
-        */
     }
 }

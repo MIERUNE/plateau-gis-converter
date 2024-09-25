@@ -433,7 +433,7 @@ impl DataSink for ObjSink {
                         format!("{}_{}_{}", folder_name, feature_id, poly_count)
                     };
 
-                // Add texture to packer
+                // Load all textures into the Packer
                 for (feature_id, feature) in features.iter().enumerate() {
                     for (poly_count, (mat, poly)) in feature
                         .polygons
