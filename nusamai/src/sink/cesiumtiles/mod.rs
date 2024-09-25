@@ -408,10 +408,10 @@ fn tile_writing_stage(
             let max_height = max_height.next_power_of_two();
 
             // initialize texture packer
-            // To reduce unnecessary draw calls, set the lower limit for max_width and max_height to 8192
+            // To reduce unnecessary draw calls, set the lower limit for max_width and max_height to 4096
             let config = TexturePlacerConfig {
-                width: max_width.max(8192),
-                height: max_height.max(8192),
+                width: max_width.max(4096),
+                height: max_height.max(4096),
                 padding: 0,
             };
 
