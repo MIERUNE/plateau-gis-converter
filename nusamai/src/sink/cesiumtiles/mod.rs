@@ -416,6 +416,7 @@ fn tile_writing_stage(
 
             let packer = Mutex::new(AtlasPacker::default());
 
+            // transform features
             let features = {
                 let mut features = Vec::new();
                 for serialized_feat in feats.into_iter() {
@@ -465,6 +466,7 @@ fn tile_writing_stage(
                 features
             };
 
+            // metadata encoding
             let features = features
                 .iter()
                 .filter_map(|feature| {
@@ -484,7 +486,7 @@ fn tile_writing_stage(
                 format!("{}_{}_{}_{}_{}", z, x, y, feature_id, poly_count)
             };
 
-            // Triangulation, etc.
+            // Load all textures into the Packer
             for (feature_id, feature) in features.iter().enumerate() {
                 for (poly_count, (mat, poly)) in feature
                     .polygons
@@ -541,11 +543,15 @@ fn tile_writing_stage(
 
             let placer = GuillotineTexturePlacer::new(config.clone());
             let packer = packer.into_inner().unwrap();
+
+            // Packing the loaded textures into an atlas
             let packed = packer.pack(placer);
 
             let exporter = JpegAtlasExporter::default();
             let ext = exporter.clone().get_extension().to_string();
 
+            // Obtain the UV coordinates placed in the atlas by specifying the ID
+            //  and apply them to the original polygon.
             for (feature_id, feature) in features.iter().enumerate() {
                 for (poly_count, (mut mat, mut poly)) in feature
                     .polygons
