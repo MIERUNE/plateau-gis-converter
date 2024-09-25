@@ -361,9 +361,9 @@ impl DataSink for ObjSink {
             .try_for_each(|(typename, mut features)| {
                 feedback.ensure_not_canceled()?;
 
-                // Texture cache
-                // use default cache size
+                // The decoded image file is cached
                 let texture_cache = TextureCache::new(100_000_000);
+                // The image size is cached to avoid unnecessary decoding
                 let texture_size_cache = TextureSizeCache::new();
 
                 // Check the size of all the textures and calculate the power of 2 of the largest size
@@ -388,7 +388,7 @@ impl DataSink for ObjSink {
                 let max_width = max_width.next_power_of_two();
                 let max_height = max_height.next_power_of_two();
 
-                // file output destination
+                // File output destination
                 let mut folder_path = self.output_path.clone();
                 let base_folder_name = typename.replace(':', "_").to_string();
                 folder_path.push(&base_folder_name);
@@ -417,20 +417,23 @@ impl DataSink for ObjSink {
                 let features = features.features.iter().collect::<Vec<_>>();
 
                 // initialize texture packer
+                // To reduce unnecessary draw calls, set the lower limit for max_width and max_height to 8192
                 let config = TexturePlacerConfig {
-                    width: max_width,
-                    height: max_height,
+                    width: max_width.max(8192),
+                    height: max_height.max(8192),
                     padding: 0,
                 };
 
                 let packer = Mutex::new(AtlasPacker::default());
 
-                // Add texture to packer
+                // A unique ID used when planning the atlas layout
+                //  and when obtaining the UV coordinates after the layout has been completed.
                 let generate_texture_id =
                     |folder_name: &str, feature_id: usize, poly_count: usize| {
                         format!("{}_{}_{}", folder_name, feature_id, poly_count)
                     };
 
+                // Add texture to packer
                 for (feature_id, feature) in features.iter().enumerate() {
                     for (poly_count, (mat, poly)) in feature
                         .polygons
