@@ -18,9 +18,12 @@ use std::{
 use ahash::RandomState;
 use atlas_packer::{
     export::{AtlasExporter as _, JpegAtlasExporter},
-    pack::TexturePacker,
-    place::{GuillotineTexturePlacer, PlacedTextureInfo, TexturePlacerConfig},
-    texture::{CroppedTexture, DownsampleFactor, TextureCache, TextureSizeCache},
+    pack::AtlasPacker,
+    place::{GuillotineTexturePlacer, TexturePlacerConfig},
+    texture::{
+        cache::{TextureCache, TextureSizeCache},
+        DownsampleFactor, PolygonMappedTexture,
+    },
 };
 use bytemuck::Zeroable;
 use earcut::{utils3d::project3d_to_2d, Earcut};
@@ -404,77 +407,98 @@ fn tile_writing_stage(
             let max_height = max_height.next_power_of_two();
 
             // initialize texture packer
+            // To reduce unnecessary draw calls, set the lower limit for max_width and max_height to 4096
             let config = TexturePlacerConfig {
-                width: max_width,
-                height: max_height,
+                width: max_width.max(4096),
+                height: max_height.max(4096),
                 padding: 0,
             };
-            let placer = GuillotineTexturePlacer::new(config.clone());
-            let exporter = JpegAtlasExporter::default();
-            let ext = exporter.clone().get_extension().to_string();
-            let packer = Mutex::new(TexturePacker::new(placer, exporter));
 
-            // For each feature
-            let mut feature_id = 0;
-            for serialized_feat in feats.into_iter() {
-                feedback.ensure_not_canceled()?;
+            let packer = Mutex::new(AtlasPacker::default());
 
-                let feature = {
-                    let (mut feature, _): (SlicedFeature, _) =
-                        bincode::serde::decode_from_slice(&serialized_feat, bincode_config)
-                            .map_err(|err| {
-                                PipelineError::Other(format!(
-                                    "Failed to deserialize a sliced feature: {:?}",
-                                    err
-                                ))
-                            })?;
+            // transform features
+            let features = {
+                let mut features = Vec::new();
+                for serialized_feat in feats.into_iter() {
+                    feedback.ensure_not_canceled()?;
 
-                    feature
-                        .polygons
-                        .transform_inplace(|&[lng, lat, height, u, v]| {
-                            // Update tile boundary
-                            content.min_lng = content.min_lng.min(lng);
-                            content.max_lng = content.max_lng.max(lng);
-                            content.min_lat = content.min_lat.min(lat);
-                            content.max_lat = content.max_lat.max(lat);
-                            content.min_height = content.min_height.min(height);
-                            content.max_height = content.max_height.max(height);
+                    let feature = {
+                        let (mut feature, _): (SlicedFeature, _) =
+                            bincode::serde::decode_from_slice(&serialized_feat, bincode_config)
+                                .map_err(|err| {
+                                    PipelineError::Other(format!(
+                                        "Failed to deserialize a sliced feature: {:?}",
+                                        err
+                                    ))
+                                })?;
 
-                            // Coordinate transformation
-                            // - geographic to geocentric
-                            // - z-up to y-up
-                            // - subtract the translation
-                            // - The origin of atlas-packer is in the lower right.
-                            let (x, y, z) = geodetic_to_geocentric(&ellipsoid, lng, lat, height);
-                            [
-                                x - translation[0],
-                                z - translation[1],
-                                -y - translation[2],
-                                u,
-                                v,
-                            ]
-                        });
+                        feature
+                            .polygons
+                            .transform_inplace(|&[lng, lat, height, u, v]| {
+                                // Update tile boundary
+                                content.min_lng = content.min_lng.min(lng);
+                                content.max_lng = content.max_lng.max(lng);
+                                content.min_lat = content.min_lat.min(lat);
+                                content.max_lat = content.max_lat.max(lat);
+                                content.min_height = content.min_height.min(height);
+                                content.max_height = content.max_height.max(height);
 
-                    feature
-                };
+                                // Coordinate transformation
+                                // - geographic to geocentric
+                                // - z-up to y-up
+                                // - subtract the translation
+                                // - The origin of atlas-packer is in the lower right.
+                                let (x, y, z) =
+                                    geodetic_to_geocentric(&ellipsoid, lng, lat, height);
+                                [
+                                    x - translation[0],
+                                    z - translation[1],
+                                    -y - translation[2],
+                                    u,
+                                    v,
+                                ]
+                            });
 
-                // Encode properties
-                if metadata_encoder
-                    .add_feature(&typename, &feature.attributes)
-                    .is_err()
-                {
-                    feedback.warn("Failed to encode feature attributes".to_string());
-                    continue;
+                        feature
+                    };
+                    features.push(feature);
                 }
+                features
+            };
 
-                // Triangulation, etc.
-                for (poly_count, (mut poly, orig_mat_id)) in feature
+            // metadata encoding
+            let features = features
+                .iter()
+                .filter(|feature| {
+                    if metadata_encoder
+                        .add_feature(&typename, &feature.attributes)
+                        .is_err()
+                    {
+                        feedback.warn("Failed to encode feature attributes".to_string());
+                        false
+                    } else {
+                        true
+                    }
+                })
+                .collect::<Vec<_>>();
+
+            // A unique ID used when planning the atlas layout
+            //  and when obtaining the UV coordinates after the layout has been completed
+            let generate_texture_id = |z, x, y, feature_id, poly_count| {
+                format!("{}_{}_{}_{}_{}", z, x, y, feature_id, poly_count)
+            };
+
+            // Load all textures into the Packer
+            for (feature_id, feature) in features.iter().enumerate() {
+                for (poly_count, (mat, poly)) in feature
                     .polygons
                     .iter()
                     .zip_eq(feature.polygon_material_ids.iter())
+                    .map(move |(poly, orig_mat_id)| {
+                        (feature.materials[*orig_mat_id as usize].clone(), poly)
+                    })
                     .enumerate()
                 {
-                    let mut mat = feature.materials[*orig_mat_id as usize].clone();
                     let t = mat.base_texture.clone();
                     if let Some(base_texture) = t {
                         // texture packing
@@ -500,7 +524,7 @@ fn tile_writing_stage(
                         let factor = apply_downsample_factor(tile_zoom, downsample_scale as f32);
 
                         let downsample_factor = DownsampleFactor::new(&factor);
-                        let cropped_texture = CroppedTexture::new(
+                        let cropped_texture = PolygonMappedTexture::new(
                             &texture_uri,
                             texture_size,
                             &uv_coords,
@@ -509,12 +533,48 @@ fn tile_writing_stage(
 
                         // Unique id required for placement in atlas
                         let (z, x, y) = tile_id_conv.id_to_zxy(tile_id);
-                        let texture_id = format!("{}_{}_{}_{}_{}", z, x, y, feature_id, poly_count);
-                        let info: PlacedTextureInfo = packer
+                        let texture_id = generate_texture_id(z, x, y, feature_id, poly_count);
+
+                        packer
                             .lock()
                             .unwrap()
                             .add_texture(texture_id, cropped_texture);
+                    }
+                }
+            }
 
+            let placer = GuillotineTexturePlacer::new(config.clone());
+            let packer = packer.into_inner().unwrap();
+
+            // Packing the loaded textures into an atlas
+            let packed = packer.pack(placer);
+
+            let exporter = JpegAtlasExporter::default();
+            let ext = exporter.clone().get_extension().to_string();
+
+            // Obtain the UV coordinates placed in the atlas by specifying the ID
+            //  and apply them to the original polygon.
+            for (feature_id, feature) in features.iter().enumerate() {
+                for (poly_count, (mut mat, mut poly)) in feature
+                    .polygons
+                    .iter()
+                    .zip_eq(feature.polygon_material_ids.iter())
+                    .map(move |(poly, orig_mat_id)| {
+                        (feature.materials[*orig_mat_id as usize].clone(), poly)
+                    })
+                    .enumerate()
+                {
+                    let original_vertices = poly
+                        .raw_coords()
+                        .iter()
+                        .map(|[x, y, z, u, v]| (*x, *y, *z, *u, *v))
+                        .collect::<Vec<(f64, f64, f64, f64, f64)>>();
+
+                    let (z, x, y) = tile_id_conv.id_to_zxy(tile_id);
+                    let texture_id = generate_texture_id(z, x, y, feature_id, poly_count);
+
+                    if let Some(info) = packed.get_texture_info(&texture_id) {
+                        // Place the texture in the atlas
                         let atlas_placed_uv_coords = info
                             .placed_uv_coords
                             .iter()
@@ -602,17 +662,19 @@ fn tile_writing_stage(
                         }
                     }
                 }
-                feature_id += 1;
             }
-
-            let mut packer = packer.into_inner().unwrap();
-            packer.finalize();
 
             // Write to atlas
             let (z, x, y) = tile_id_conv.id_to_zxy(tile_id);
             let atlas_path = atlas_dir.join(format!("{}/{}/{}", z, x, y));
             fs::create_dir_all(&atlas_path)?;
-            packer.export(&atlas_path, &texture_cache, config.width, config.height);
+            packed.export(
+                exporter,
+                &atlas_path,
+                &texture_cache,
+                config.width,
+                config.height,
+            );
 
             // Write to file
             let path_glb = output_path.join(Path::new(&content.content_path));
@@ -629,7 +691,7 @@ fn tile_writing_stage(
                 translation,
                 vertices,
                 primitives,
-                feature_id, // number of features
+                features.len(),
                 metadata_encoder,
             )?;
 

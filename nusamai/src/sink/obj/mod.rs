@@ -2,18 +2,17 @@
 mod material;
 mod obj_writer;
 
-use std::{
-    f64::consts::FRAC_PI_2,
-    path::PathBuf,
-    sync::{mpsc, Mutex},
-};
+use std::{f64::consts::FRAC_PI_2, path::PathBuf, sync::Mutex};
 
 use ahash::{HashMap, HashMapExt};
 use atlas_packer::{
     export::{AtlasExporter as _, JpegAtlasExporter},
-    pack::TexturePacker,
+    pack::AtlasPacker,
     place::{GuillotineTexturePlacer, TexturePlacerConfig},
-    texture::{CroppedTexture, DownsampleFactor, TextureCache, TextureSizeCache},
+    texture::{
+        cache::{TextureCache, TextureSizeCache},
+        DownsampleFactor, PolygonMappedTexture,
+    },
 };
 use earcut::{utils3d::project3d_to_2d, Earcut};
 use flatgeom::MultiPolygon;
@@ -357,9 +356,9 @@ impl DataSink for ObjSink {
             .try_for_each(|(typename, mut features)| {
                 feedback.ensure_not_canceled()?;
 
-                // Texture cache
-                // use default cache size
+                // The decoded image file is cached
                 let texture_cache = TextureCache::new(100_000_000);
+                // The image size is cached to avoid unnecessary decoding
                 let texture_size_cache = TextureSizeCache::new();
 
                 // Check the size of all the textures and calculate the power of 2 of the largest size
@@ -384,19 +383,7 @@ impl DataSink for ObjSink {
                 let max_width = max_width.next_power_of_two();
                 let max_height = max_height.next_power_of_two();
 
-                // initialize texture packer
-                let config = TexturePlacerConfig {
-                    width: max_width,
-                    height: max_height,
-                    padding: 0,
-                };
-
-                let placer = GuillotineTexturePlacer::new(config.clone());
-                let exporter = JpegAtlasExporter::default();
-                let ext = exporter.clone().get_extension().to_string();
-                let packer = Mutex::new(TexturePacker::new(placer, exporter));
-
-                // file output destination
+                // File output destination
                 let mut folder_path = self.output_path.clone();
                 let base_folder_name = typename.replace(':', "_").to_string();
                 folder_path.push(&base_folder_name);
@@ -423,209 +410,235 @@ impl DataSink for ObjSink {
                 }
 
                 let features = features.features.iter().collect::<Vec<_>>();
-                let num_threads = rayon::current_num_threads();
-                let chunk_num = (features.len() / num_threads).clamp(1, features.len() + 1);
 
-                // generate texture atlas and update materials
-                let (mesh_sender, mesh_receiver) = mpsc::channel();
-                let (material_sender, material_receiver) = mpsc::channel();
-                features.par_chunks(chunk_num).for_each_with(
-                    (mesh_sender, material_sender),
-                    |(mesh_sender, material_sender), chunk| {
-                        for feature in chunk {
-                            let mut feature_mesh = FeatureMesh {
-                                vertices: Vec::new(),
-                                uvs: Vec::new(),
-                                primitives: HashMap::new(),
-                            };
+                // initialize texture packer
+                // To reduce unnecessary draw calls, set the lower limit for max_width and max_height to 8192
+                let config = TexturePlacerConfig {
+                    width: max_width.max(8192),
+                    height: max_height.max(8192),
+                    padding: 0,
+                };
 
-                            for (poly_count, (mut poly, &orig_mat_id)) in feature
-                                .polygons
+                let packer = Mutex::new(AtlasPacker::default());
+
+                // A unique ID used when planning the atlas layout
+                //  and when obtaining the UV coordinates after the layout has been completed
+                let generate_texture_id =
+                    |folder_name: &str, feature_id: usize, poly_count: usize| {
+                        format!("{}_{}_{}", folder_name, feature_id, poly_count)
+                    };
+
+                // Load all textures into the Packer
+                for (feature_id, feature) in features.iter().enumerate() {
+                    for (poly_count, (mat, poly)) in feature
+                        .polygons
+                        .iter()
+                        .zip_eq(feature.polygon_material_ids.iter())
+                        .map(move |(poly, orig_mat_id)| {
+                            (feature.materials[*orig_mat_id as usize].clone(), poly)
+                        })
+                        .enumerate()
+                    {
+                        let t = mat.base_texture.clone();
+                        if let Some(base_texture) = t {
+                            // texture packing
+                            let original_vertices = poly
+                                .raw_coords()
                                 .iter()
-                                .zip_eq(feature.polygon_material_ids.iter())
-                                .enumerate()
-                            {
-                                let mut new_mat = feature.materials[orig_mat_id as usize].clone();
-                                let t = new_mat.base_texture.clone();
-                                if let Some(base_texture) = t {
-                                    // textured
-                                    let original_vertices = poly
-                                        .raw_coords()
-                                        .iter()
-                                        .map(|[x, y, z, u, v]| (*x, *y, *z, *u, *v))
-                                        .collect::<Vec<(f64, f64, f64, f64, f64)>>();
+                                .map(|[x, y, z, u, v]| (*x, *y, *z, *u, *v))
+                                .collect::<Vec<(f64, f64, f64, f64, f64)>>();
 
-                                    let texture_uri = base_texture.uri.to_file_path().unwrap();
-                                    let uv_coords = original_vertices
-                                        .iter()
-                                        .map(|(_, _, _, u, v)| (*u, *v))
-                                        .collect::<Vec<(f64, f64)>>();
+                            let uv_coords = original_vertices
+                                .iter()
+                                .map(|(_, _, _, u, v)| (*u, *v))
+                                .collect::<Vec<(f64, f64)>>();
 
-                                    let texture_size =
-                                        texture_size_cache.get_or_insert(&texture_uri);
-                                    let downsample_scale = get_texture_downsample_scale_of_polygon(
-                                        &original_vertices,
-                                        texture_size,
-                                        self.limit_texture_resolution,
-                                    )
-                                        as f32;
+                            let texture_uri = base_texture.uri.to_file_path().unwrap();
+                            let texture_size = texture_size_cache.get_or_insert(&texture_uri);
+                            let downsample_scale = get_texture_downsample_scale_of_polygon(
+                                &original_vertices,
+                                texture_size,
+                                self.limit_texture_resolution,
+                            ) as f32;
 
-                                    let downsample_factor =
-                                        DownsampleFactor::new(&downsample_scale);
+                            let downsample_factor = DownsampleFactor::new(&downsample_scale);
 
-                                    let texture = CroppedTexture::new(
-                                        &texture_uri,
-                                        texture_size,
-                                        &uv_coords,
-                                        downsample_factor,
-                                    );
+                            let texture = PolygonMappedTexture::new(
+                                &texture_uri,
+                                texture_size,
+                                &uv_coords,
+                                downsample_factor,
+                            );
 
-                                    // Unique id required for placement in atlas
-                                    let texture_id = format!(
-                                        "{}_{}_{}",
-                                        base_folder_name, feature.feature_id, poly_count
-                                    );
-                                    let info =
-                                        packer.lock().unwrap().add_texture(texture_id, texture);
+                            // Unique id required for placement in atlas
+                            let texture_id =
+                                generate_texture_id(&base_folder_name, feature_id, poly_count);
 
-                                    let atlas_placed_uv_coords = info
-                                        .placed_uv_coords
-                                        .iter()
-                                        .map(|(u, v)| ({ *u }, { *v }))
-                                        .collect::<Vec<(f64, f64)>>();
-                                    let updated_vertices = original_vertices
-                                        .iter()
-                                        .zip(atlas_placed_uv_coords.iter())
-                                        .map(|((x, y, z, _, _), (u, v))| (*x, *y, *z, *u, *v))
-                                        .collect::<Vec<(f64, f64, f64, f64, f64)>>();
-
-                                    // Apply the UV coordinates placed in the atlas to the original polygon
-                                    poly.transform_inplace(|&[x, y, z, _, _]| {
-                                        let (u, v) = updated_vertices
-                                            .iter()
-                                            .find(|(x_, y_, z_, _, _)| {
-                                                (*x_ - x).abs() < 1e-6
-                                                    && (*y_ - y).abs() < 1e-6
-                                                    && (*z_ - z).abs() < 1e-6
-                                            })
-                                            .map(|(_, _, _, u, v)| (*u, *v))
-                                            .unwrap();
-                                        [x, y, z, u, v]
-                                    });
-
-                                    let atlas_file_name = info.atlas_id.to_string();
-
-                                    let atlas_uri =
-                                        atlas_dir.join(atlas_file_name).with_extension(ext.clone());
-
-                                    // update material
-                                    new_mat = material::Material {
-                                        base_color: new_mat.base_color,
-                                        base_texture: Some(material::Texture {
-                                            uri: Url::from_file_path(atlas_uri).unwrap(),
-                                        }),
-                                    };
-                                }
-
-                                let poly_material = new_mat;
-                                let poly_color = poly_material.base_color;
-                                let poly_texture = poly_material.base_texture.as_ref();
-                                let texture_name = poly_texture.map_or_else(
-                                    || "".to_string(),
-                                    |t| {
-                                        t.uri
-                                            .to_file_path()
-                                            .unwrap()
-                                            .file_stem()
-                                            .unwrap()
-                                            .to_str()
-                                            .unwrap()
-                                            .to_string()
-                                    },
-                                );
-                                let poly_material_key =
-                                    poly_material.base_texture.as_ref().map_or_else(
-                                        || {
-                                            format!(
-                                                "material_{}_{}_{}",
-                                                poly_color[0], poly_color[1], poly_color[2]
-                                            )
-                                        },
-                                        |_| {
-                                            format!(
-                                                "{}_{}_{}",
-                                                base_folder_name, texture_folder_name, texture_name
-                                            )
-                                        },
-                                    );
-
-                                material_sender
-                                    .send((
-                                        poly_material_key.clone(),
-                                        FeatureMaterial {
-                                            base_color: poly_color,
-                                            texture_uri: poly_texture.map(|t| t.uri.clone()),
-                                        },
-                                    ))
-                                    .unwrap();
-
-                                let num_outer = match poly.hole_indices().first() {
-                                    Some(&v) => v as usize,
-                                    None => poly.raw_coords().len(),
-                                };
-                                let mut earcutter = Earcut::new();
-                                let mut buf3d: Vec<[f64; 3]> = Vec::new();
-                                let mut buf2d: Vec<[f64; 2]> = Vec::new();
-                                let mut index_buf: Vec<u32> = Vec::new();
-
-                                buf3d.clear();
-                                buf3d.extend(
-                                    poly.raw_coords().iter().map(|&[x, y, z, _, _]| [x, y, z]),
-                                );
-
-                                // triangulate
-                                if project3d_to_2d(&buf3d, num_outer, &mut buf2d) {
-                                    earcutter.earcut(
-                                        buf2d.iter().cloned(),
-                                        poly.hole_indices(),
-                                        &mut index_buf,
-                                    );
-                                    feature_mesh
-                                        .primitives
-                                        .entry(poly_material_key.clone())
-                                        .or_default()
-                                        .extend(index_buf.iter().map(|&idx| {
-                                            let [x, y, z, u, v] = poly.raw_coords()[idx as usize];
-                                            feature_mesh.vertices.push([x, y, z]);
-                                            feature_mesh.uvs.push([u, v]);
-                                            (feature_mesh.vertices.len() - 1) as u32
-                                        }));
-                                }
-                            }
-
-                            mesh_sender
-                                .send((feature.feature_id.clone(), feature_mesh))
-                                .unwrap();
+                            packer.lock().unwrap().add_texture(texture_id, texture);
                         }
-                    },
-                );
+                    }
+                }
 
-                let mut packer = packer.into_inner().unwrap();
-                packer.finalize();
+                let placer = GuillotineTexturePlacer::new(config.clone());
+                let packer = packer.into_inner().unwrap();
 
-                // receive mesh and material
+                // Packing the loaded textures into an atlas
+                let packed = packer.pack(placer);
+
+                let exporter = JpegAtlasExporter::default();
+                let ext = exporter.clone().get_extension().to_string();
+
                 let mut all_meshes = ObjInfo::new();
                 let mut all_materials = ObjMaterials::new();
-                for d in mesh_receiver.iter() {
-                    let (feature_id, feature_mesh) = d;
-                    all_meshes.insert(feature_id, feature_mesh);
-                }
-                for d in material_receiver.iter() {
-                    let (material_key, feature_material) = d;
-                    all_materials.insert(material_key, feature_material);
+
+                // Obtain the UV coordinates placed in the atlas by specifying the ID
+                //  and apply them to the original polygon
+                for (feature_id, feature) in features.iter().enumerate() {
+                    let mut feature_mesh = FeatureMesh {
+                        vertices: Vec::new(),
+                        uvs: Vec::new(),
+                        primitives: HashMap::new(),
+                    };
+                    for (poly_count, (mut mat, mut poly)) in feature
+                        .polygons
+                        .iter()
+                        .zip_eq(feature.polygon_material_ids.iter())
+                        .map(move |(poly, orig_mat_id)| {
+                            (feature.materials[*orig_mat_id as usize].clone(), poly)
+                        })
+                        .enumerate()
+                    {
+                        let original_vertices = poly
+                            .raw_coords()
+                            .iter()
+                            .map(|[x, y, z, u, v]| (*x, *y, *z, *u, *v))
+                            .collect::<Vec<(f64, f64, f64, f64, f64)>>();
+
+                        let texture_id =
+                            generate_texture_id(&base_folder_name, feature_id, poly_count);
+
+                        if let Some(info) = packed.get_texture_info(&texture_id) {
+                            // Place the texture in the atlas
+                            let atlas_placed_uv_coords = info
+                                .placed_uv_coords
+                                .iter()
+                                .map(|(u, v)| ({ *u }, { *v }))
+                                .collect::<Vec<(f64, f64)>>();
+                            let updated_vertices = original_vertices
+                                .iter()
+                                .zip(atlas_placed_uv_coords.iter())
+                                .map(|((x, y, z, _, _), (u, v))| (*x, *y, *z, *u, *v))
+                                .collect::<Vec<(f64, f64, f64, f64, f64)>>();
+
+                            // Apply the UV coordinates placed in the atlas to the original polygon
+                            poly.transform_inplace(|&[x, y, z, _, _]| {
+                                let (u, v) = updated_vertices
+                                    .iter()
+                                    .find(|(x_, y_, z_, _, _)| {
+                                        (*x_ - x).abs() < 1e-6
+                                            && (*y_ - y).abs() < 1e-6
+                                            && (*z_ - z).abs() < 1e-6
+                                    })
+                                    .map(|(_, _, _, u, v)| (*u, *v))
+                                    .unwrap();
+                                [x, y, z, u, v]
+                            });
+
+                            let atlas_file_name = info.atlas_id.to_string();
+
+                            let atlas_uri =
+                                atlas_dir.join(atlas_file_name).with_extension(ext.clone());
+
+                            // update material
+                            mat = material::Material {
+                                base_color: mat.base_color,
+                                base_texture: Some(material::Texture {
+                                    uri: Url::from_file_path(atlas_uri).unwrap(),
+                                }),
+                            };
+                        }
+
+                        let poly_material = mat;
+                        let poly_color = poly_material.base_color;
+                        let poly_texture = poly_material.base_texture.as_ref();
+                        let texture_name = poly_texture.map_or_else(
+                            || "".to_string(),
+                            |t| {
+                                t.uri
+                                    .to_file_path()
+                                    .unwrap()
+                                    .file_stem()
+                                    .unwrap()
+                                    .to_str()
+                                    .unwrap()
+                                    .to_string()
+                            },
+                        );
+                        let poly_material_key = poly_material.base_texture.as_ref().map_or_else(
+                            || {
+                                format!(
+                                    "material_{}_{}_{}",
+                                    poly_color[0], poly_color[1], poly_color[2]
+                                )
+                            },
+                            |_| {
+                                format!(
+                                    "{}_{}_{}",
+                                    base_folder_name, texture_folder_name, texture_name
+                                )
+                            },
+                        );
+
+                        all_materials.insert(
+                            poly_material_key.clone(),
+                            FeatureMaterial {
+                                base_color: poly_color,
+                                texture_uri: poly_texture.map(|t| t.uri.clone()),
+                            },
+                        );
+
+                        let num_outer = match poly.hole_indices().first() {
+                            Some(&v) => v as usize,
+                            None => poly.raw_coords().len(),
+                        };
+                        let mut earcutter = Earcut::new();
+                        let mut buf3d: Vec<[f64; 3]> = Vec::new();
+                        let mut buf2d: Vec<[f64; 2]> = Vec::new();
+                        let mut index_buf: Vec<u32> = Vec::new();
+
+                        buf3d.clear();
+                        buf3d.extend(poly.raw_coords().iter().map(|&[x, y, z, _, _]| [x, y, z]));
+
+                        // triangulate
+                        if project3d_to_2d(&buf3d, num_outer, &mut buf2d) {
+                            earcutter.earcut(
+                                buf2d.iter().cloned(),
+                                poly.hole_indices(),
+                                &mut index_buf,
+                            );
+
+                            feature_mesh
+                                .primitives
+                                .entry(poly_material_key.clone())
+                                .or_default()
+                                .extend(index_buf.iter().map(|&idx| {
+                                    let [x, y, z, u, v] = poly.raw_coords()[idx as usize];
+                                    feature_mesh.vertices.push([x, y, z]);
+                                    feature_mesh.uvs.push([u, v]);
+                                    (feature_mesh.vertices.len() - 1) as u32
+                                }));
+                        }
+                    }
+                    all_meshes.insert(feature.feature_id.clone(), feature_mesh);
                 }
 
-                packer.export(&atlas_dir, &texture_cache, config.width, config.height);
+                packed.export(
+                    exporter,
+                    &atlas_dir,
+                    &texture_cache,
+                    config.width,
+                    config.height,
+                );
 
                 feedback.ensure_not_canceled()?;
 
