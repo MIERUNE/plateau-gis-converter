@@ -470,15 +470,15 @@ fn tile_writing_stage(
             // metadata encoding
             let features = features
                 .iter()
-                .filter_map(|feature| {
+                .filter(|feature| {
                     if metadata_encoder
                         .add_feature(&typename, &feature.attributes)
                         .is_err()
                     {
                         feedback.warn("Failed to encode feature attributes".to_string());
-                        None
+                        false
                     } else {
-                        Some(feature)
+                        true
                     }
                 })
                 .collect::<Vec<_>>();

@@ -325,7 +325,7 @@ impl DataSink for GltfSink {
 
         classified_features
             .into_par_iter()
-            .try_for_each(|(typename, mut features)| {
+            .try_for_each(|(typename, features)| {
                 feedback.ensure_not_canceled()?;
 
                 // The decoded image file is cached
@@ -406,15 +406,15 @@ impl DataSink for GltfSink {
                 // Encode metadata
                 let features = features
                     .iter()
-                    .filter_map(|feature| {
+                    .filter(|feature| {
                         if metadata_encoder
                             .add_feature(&typename, &feature.attributes)
                             .is_err()
                         {
                             feedback.warn("Failed to encode feature attributes".to_string());
-                            None
+                            false
                         } else {
-                            Some(feature)
+                            true
                         }
                     })
                     .collect::<Vec<_>>();
