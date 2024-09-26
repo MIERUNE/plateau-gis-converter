@@ -218,7 +218,7 @@ impl DataSink for ObjSink {
             }
             let appearance_store = entity.appearance_store.read().unwrap();
 
-            let feature_id = obj.stereotype.id().map(|id| id.to_string()).unwrap();
+            let feature_id: String = obj.stereotype.id().map(|id| id.to_string()).unwrap();
 
             let mut materials: IndexSet<Material> = IndexSet::new();
             let default_material = appearance::Material::default();
@@ -428,6 +428,8 @@ impl DataSink for ObjSink {
                         format!("{}_{}_{}", folder_name, feature_id, poly_count)
                     };
 
+                println!("Start packing textures");
+                let start = std::time::Instant::now();
                 // Load all textures into the Packer
                 for (feature_id, feature) in features.iter().enumerate() {
                     for (poly_count, (mat, poly)) in feature
@@ -471,19 +473,23 @@ impl DataSink for ObjSink {
                             );
 
                             // Unique id required for placement in atlas
-                            let texture_id =
+                            let polygon_id =
                                 generate_texture_id(&base_folder_name, feature_id, poly_count);
 
-                            packer.lock().unwrap().add_texture(texture_id, texture);
+                            packer.lock().unwrap().add_texture(polygon_id, texture);
                         }
                     }
                 }
+                println!("Texture packing time: {:?}", start.elapsed());
 
                 let placer = GuillotineTexturePlacer::new(config.clone());
                 let packer = packer.into_inner().unwrap();
 
                 // Packing the loaded textures into an atlas
+                println!("Start packing");
+                let start = std::time::Instant::now();
                 let packed = packer.pack(placer);
+                println!("Packing time: {:?}", start.elapsed());
 
                 let exporter = JpegAtlasExporter::default();
                 let ext = exporter.clone().get_extension().to_string();
