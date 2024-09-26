@@ -44,6 +44,7 @@ pub fn uv_to_pixel_coords(uv_coords: &[(f64, f64)], width: u32, height: u32) -> 
         .collect()
 }
 
+#[inline]
 pub fn calc_bbox(pixel_coords: &[(u32, u32)]) -> (u32, u32, u32, u32) {
     pixel_coords.iter().fold(
         (u32::MAX, u32::MAX, 0, 0),

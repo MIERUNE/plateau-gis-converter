@@ -43,14 +43,13 @@ impl AtlasPacker {
             let mut disjoint_set = DisjointSet::new(polygon_ids.len());
 
             for i in 0..polygon_ids.len() {
+                let texture_i = self.textures.get(&polygon_ids[i]).unwrap();
                 for j in (i + 1)..polygon_ids.len() {
-                    let texture_i = self.textures.get(&polygon_ids[i]).unwrap();
                     let texture_j = self.textures.get(&polygon_ids[j]).unwrap();
 
                     if texture_i.bbox_overlaps(texture_j) {
                         disjoint_set.unite(i, j);
                     }
-                    println!("{} / {}", i, polygon_ids.len());
                 }
             }
             disjoint_set.compress();

@@ -12,6 +12,7 @@ impl DisjointSet {
         }
     }
 
+    #[inline]
     pub fn root(&self, x: usize) -> usize {
         if self.parent[x] == x {
             x
@@ -20,6 +21,7 @@ impl DisjointSet {
         }
     }
 
+    #[inline]
     pub fn unite(&mut self, x: usize, y: usize) {
         let root_x = self.root(x);
         let root_y = self.root(y);
@@ -31,6 +33,7 @@ impl DisjointSet {
         self.root(x) == self.root(y)
     }
 
+    #[inline]
     pub fn compress(&mut self) {
         self.parent = self.parent.iter().map(|&x| self.root(x)).collect();
     }
