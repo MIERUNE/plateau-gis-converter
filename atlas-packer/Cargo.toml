@@ -1,0 +1,16 @@
+[package]
+name = "atlas-packer"
+edition = "2021"
+
+[dependencies]
+image = { version = "0.25.1", default-features = false, features = ["rayon", "tiff", "jpeg", "webp", "png"] }
+thiserror = "1.0.61"
+hashbrown = { version = "0.14.5", features = ["rayon"] }
+stretto = "0.8.4"
+rayon = "1.10.0"
+sys-info = "0.7.0"
+clap = {version = "4.5.9", features = ["derive"] }
+
+[dev-dependencies]
+rand = "0.8.5"
+tempfile = "3.10.1"
