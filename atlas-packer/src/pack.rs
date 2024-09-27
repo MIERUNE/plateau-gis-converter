@@ -2,6 +2,7 @@ use std::path::Path;
 
 use hashbrown::HashMap;
 use rayon::prelude::*;
+use rstar::{RTree, RTreeObject, AABB};
 
 use crate::disjoint_set::DisjointSet;
 use crate::export::AtlasExporter;
@@ -29,6 +30,22 @@ pub(super) struct Cluster {
     pub uv_polygons: Vec<(PolygonID, ChildUVPolygon)>,
 }
 
+struct Rectangle {
+    index: usize,
+    min_x: f32,
+    min_y: f32,
+    max_x: f32,
+    max_y: f32,
+}
+
+impl RTreeObject for Rectangle {
+    type Envelope = AABB<[f32; 2]>;
+
+    fn envelope(&self) -> Self::Envelope {
+        AABB::from_corners([self.min_x, self.min_y], [self.max_x, self.max_y])
+    }
+}
+
 impl AtlasPacker {
     pub fn add_texture(&mut self, polygon_id: PolygonID, texture: PolygonMappedTexture) {
         self.textures.insert(polygon_id, texture);
@@ -37,25 +54,43 @@ impl AtlasPacker {
     fn create_clusters(&self) -> HashMap<ClusterID, Cluster> {
         let polygon_ids: Vec<PolygonID> = self.textures.keys().cloned().collect();
 
-        let disjoint_set = {
-            println!("Creating disjoint set");
-            let start = std::time::Instant::now();
-            let mut disjoint_set = DisjointSet::new(polygon_ids.len());
+        let mut rtree = RTree::new();
+        let mut disjoint_set = DisjointSet::new(polygon_ids.len());
 
-            for i in 0..polygon_ids.len() {
-                let texture_i = self.textures.get(&polygon_ids[i]).unwrap();
-                for j in (i + 1)..polygon_ids.len() {
-                    let texture_j = self.textures.get(&polygon_ids[j]).unwrap();
+        for (i, polygon_id) in polygon_ids.iter().enumerate() {
+            let texture = self.textures.get(polygon_id).unwrap();
+            let (min_x, min_y, max_x, max_y) = texture.bbox();
+            let texture_with_index = Rectangle {
+                index: i,
+                min_x: min_x as f32,
+                min_y: min_y as f32,
+                max_x: max_x as f32,
+                max_y: max_y as f32,
+            };
+            rtree.insert(texture_with_index);
+        }
+        for (i, polygon_id) in polygon_ids.iter().enumerate() {
+            let texture = self.textures.get(polygon_id).unwrap();
+            let bbox = AABB::from_corners(
+                [texture.bbox().0 as f32, texture.bbox().1 as f32],
+                [texture.bbox().2 as f32, texture.bbox().3 as f32],
+            );
 
-                    if texture_i.bbox_overlaps(texture_j) {
-                        disjoint_set.unite(i, j);
-                    }
+            // Only items with the same texture and overlapping areas will be searched
+            let hit = rtree
+                .locate_in_envelope_intersecting(&bbox)
+                .filter(|target| {
+                    let target_texture = self.textures.get(&polygon_ids[target.index]).unwrap();
+                    texture.image_path == target_texture.image_path
+                });
+
+            for j in hit {
+                if i < j.index {
+                    disjoint_set.unite(i, j.index);
                 }
             }
-            disjoint_set.compress();
-            println!("Disjoint set created in {:?}", start.elapsed());
-            disjoint_set
-        };
+        }
+        disjoint_set.compress();
 
         let clustered_polygon_ids: HashMap<ClusterID, Vec<PolygonID>> = {
             let mut clustered_polygon_ids = HashMap::new();
