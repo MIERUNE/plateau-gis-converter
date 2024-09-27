@@ -119,7 +119,7 @@ impl DataSink for CesiumTilesSink {
         let tile_id_conv = TileIdMethod::Hilbert;
 
         // TODO: configurable
-        let min_zoom = 15;
+        let min_zoom = 14;
         let max_zoom = 18;
 
         let limit_texture_resolution = self.limit_texture_resolution;
@@ -300,7 +300,7 @@ fn tile_writing_stage(
 
     // Texture cache
     // use default cache size
-    let texture_cache = TextureCache::new(100_000_000);
+    let texture_cache = TextureCache::new(200_000_000);
     let texture_size_cache = TextureSizeCache::new();
 
     // Use a temporary directory for embedding in glb.
@@ -728,9 +728,10 @@ fn tile_writing_stage(
 
 fn apply_downsample_factor(z: u8, downsample_scale: f32) -> f32 {
     let f = match z {
-        0..=14 => 0.0,
-        15..=16 => 0.25,
-        17 => 0.5,
+        0..=14 => 0.01,
+        15 => 0.025,
+        16 => 0.1,
+        17 => 0.25,
         _ => 1.0,
     };
     f * downsample_scale
