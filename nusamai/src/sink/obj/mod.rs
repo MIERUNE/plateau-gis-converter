@@ -486,10 +486,7 @@ impl DataSink for ObjSink {
                 let packer = packer.into_inner().unwrap();
 
                 // Packing the loaded textures into an atlas
-                println!("Start packing");
-                let start = std::time::Instant::now();
                 let packed = packer.pack(placer);
-                println!("Packing time: {:?}", start.elapsed());
 
                 let exporter = JpegAtlasExporter::default();
                 let ext = exporter.clone().get_extension().to_string();
