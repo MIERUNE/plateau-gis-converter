@@ -5,7 +5,7 @@
 GitHubリポジトリの[リリースページ](https://github.com/MIERUNE/PLATEAU-GIS-Converter/releases)からダウンロードすることが可能です。
 
 windowsを利用している方は、`PLATEAU.GIS.Converter_<最新バージョン>_x64-setup.exe`をダウンロードしてください。
-MacOSを利用している方は、`PLATEAU.GIS.Converter_<最新バージョン>_universal.dmg`をダウンロードしてください。
+macOSを利用している方は、`PLATEAU.GIS.Converter_<最新バージョン>_universal.dmg`をダウンロードしてください。
 
 ![alt text](../resources/install_image-11.png)
 
@@ -23,13 +23,13 @@ MacOSを利用している方は、`PLATEAU.GIS.Converter_<最新バージョン
 
 ![alt text](../resources/install_image-3.png)
 
-## MacOSでのインストール
+## macOSでのインストール
 
 ダウンロードした`PLATEAU.GIS.Converter_<最新バージョン>_universal.dmg`を実行します。
 
 ![alt text](../resources/install_image-4.png)
 
-アプリケーションをアプリケーションフォルダに移動します。
+アプリケーションをアプリケーションフォルダーに移動します。
 
 ![alt text](../resources/install_image-5.png)
 
@@ -47,4 +47,4 @@ MacOSを利用している方は、`PLATEAU.GIS.Converter_<最新バージョン
 
 ![alt text](../resources/install_image-9.png)
 
-![alt text](../resources/install_image-10.png)
+![alt text](../resources/install_image.png)
