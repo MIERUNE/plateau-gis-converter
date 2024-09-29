@@ -702,7 +702,9 @@ fn tile_writing_stage(
 
     // Generate tileset.json
     let mut tree = TileTree::default();
-    for content in contents.lock().unwrap().drain(..) {}
+    for content in contents.lock().unwrap().drain(..) {
+        tree.add_content(content);
+    }
 
     let tileset = cesiumtiles::tileset::Tileset {
         asset: cesiumtiles::tileset::Asset {
