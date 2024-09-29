@@ -119,7 +119,7 @@ impl DataSink for CesiumTilesSink {
         let tile_id_conv = TileIdMethod::Hilbert;
 
         // TODO: configurable
-        let min_zoom = 14;
+        let min_zoom = 17;
         let max_zoom = 18;
 
         let limit_texture_resolution = self.limit_texture_resolution;
@@ -702,9 +702,7 @@ fn tile_writing_stage(
 
     // Generate tileset.json
     let mut tree = TileTree::default();
-    for content in contents.lock().unwrap().drain(..) {
-        tree.add_content(content);
-    }
+    for content in contents.lock().unwrap().drain(..) {}
 
     let tileset = cesiumtiles::tileset::Tileset {
         asset: cesiumtiles::tileset::Asset {
@@ -728,9 +726,9 @@ fn tile_writing_stage(
 
 fn apply_downsample_factor(z: u8, downsample_scale: f32) -> f32 {
     let f = match z {
-        0..=14 => 0.01,
-        15 => 0.025,
-        16 => 0.1,
+        0..=14 => 0.05,
+        15 => 0.1,
+        16 => 0.2,
         17 => 0.25,
         _ => 1.0,
     };
