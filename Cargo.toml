@@ -10,7 +10,7 @@ authors = ["MIERUNE Inc. <info@mierune.co.jp>", "Re:Earth Flow Contributors"]
 edition = "2021"
 license = "MIT"
 repository = "https://github.com/reearth/plateau-gis-converter"
-rust-version = "1.77" # Remember to update clippy.toml as well
+rust-version = "1.81"
 version = "0.1.0"
 
 [profile.dev]
@@ -31,12 +31,12 @@ lto = "fat"
 [workspace.dependencies]
 ahash = "0.8.11"
 chrono = "0.4.38"
-indexmap = "2.4.0"
+indexmap = "2.5.0"
 log = "0.4.22"
-once_cell = "1.19.0"
-quick-xml = "0.36.1"
-regex = "1.10.6"
-serde = "1.0.209"
-serde_json = "1.0.127"
-thiserror = "1.0.63"
+once_cell = "1.20.1"
+quick-xml = "0.36.2"
+regex = "1.11.0"
+serde = "1.0.210"
+serde_json = "1.0.128"
+thiserror = "1.0.64"
 url = "2.5.2"
