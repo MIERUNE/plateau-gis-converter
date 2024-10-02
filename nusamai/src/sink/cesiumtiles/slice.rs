@@ -139,7 +139,7 @@ pub fn slice_to_tiles<E>(
                                 tiling::scheme::geometric_error(zoom, y)
                             };
                             // let threshold = geom_error * 1.5; // TODO: adjustable
-                            let threshold = 0; // TODO: adjustable
+                            let threshold = 0.0; // TODO: adjustable
                             if approx_dx < threshold
                                 && approx_dy < threshold
                                 && approx_dh < threshold
