@@ -80,21 +80,31 @@ pub fn iter_x_slice(z: u8, y: u32, west: f64, east: f64) -> impl Iterator<Item =
         .map(move |x| (x, xs as u32))
 }
 
-pub fn geometric_error(z: u8, y: u32) -> f64 {
-    let (_, y_size) = size_for_z(z);
-    if y >= y_size {
-        panic!("y out of range");
-    }
-    if z < 2 {
+use std::f64::consts::PI;
+
+const EARTH_RADIUS: f64 = 6378137.0;
+const TILE_SIZE: u32 = 256;
+
+pub fn geometric_error(zoom: u8, y: u32) -> f64 {
+    if zoom < 2 {
         return 1e+100;
     }
-    use std::f64::consts::PI;
-    const Q: f64 = 525957.5361033019;
-    let zz = (1 << z) as f64;
-    let error1 = Q / (1 << (z - 2)) as f64;
-    let lat = (1.0 - (y as f64 + 0.5) * 4.0 / zz) * PI / 2.0;
-    let error2 = lat.cos() * x_step(z, y) as f64 * error1;
-    f64::max(error1, error2)
+
+    let lat_rad = y_to_lat_rad(y, zoom);
+    let meters_per_pixel = meters_per_pixel_at_latitude(zoom, lat_rad);
+    let tile_size_meters = meters_per_pixel * TILE_SIZE as f64;
+    tile_size_meters / 4.0
+}
+
+fn meters_per_pixel_at_latitude(zoom: u8, lat_rad: f64) -> f64 {
+    let zoom_factor = 2_f64.powi(zoom as i32);
+    let map_circumference = 2.0 * PI * EARTH_RADIUS * lat_rad.cos();
+    map_circumference / (TILE_SIZE as f64 * zoom_factor)
+}
+
+fn y_to_lat_rad(y: u32, zoom: u8) -> f64 {
+    let n = PI - (2.0 * PI * y as f64) / 2_f64.powi(zoom as i32);
+    (PI / 2.0 - 2.0 * (n / 2.0).tan().atan()).to_radians()
 }
 
 #[cfg(test)]
