@@ -90,9 +90,12 @@ pub fn geometric_error(zoom: u8, y: u32) -> f64 {
         return 1e+100;
     }
 
-    let lat_rad = y_to_lat_rad(y, zoom);
+    let lat = y_to_lat(y, zoom);
+    let lat_rad = lat.to_radians();
     let meters_per_pixel = meters_per_pixel_at_latitude(zoom, lat_rad);
+
     let tile_size_meters = meters_per_pixel * TILE_SIZE as f64;
+
     tile_size_meters / 4.0
 }
 
@@ -102,9 +105,10 @@ fn meters_per_pixel_at_latitude(zoom: u8, lat_rad: f64) -> f64 {
     map_circumference / (TILE_SIZE as f64 * zoom_factor)
 }
 
-fn y_to_lat_rad(y: u32, zoom: u8) -> f64 {
-    let n = PI - (2.0 * PI * y as f64) / 2_f64.powi(zoom as i32);
-    (PI / 2.0 - 2.0 * (n / 2.0).tan().atan()).to_radians()
+fn y_to_lat(y: u32, z: u8) -> f64 {
+    let n = PI - (2.0 * PI * y as f64) / 2_f64.powi(z as i32);
+    let lat_rad = PI / 2.0 - 2.0 * (n / 2.0).tan().atan();
+    lat_rad.to_degrees()
 }
 
 #[cfg(test)]
