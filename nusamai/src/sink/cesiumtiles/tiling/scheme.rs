@@ -86,7 +86,7 @@ const EARTH_RADIUS: f64 = 6378137.0;
 const TILE_SIZE: u32 = 256;
 
 pub fn geometric_error(zoom: u8, y: u32) -> f64 {
-    if zoom < 2 {
+    if zoom <= 2 {
         return 1e+100;
     }
 
