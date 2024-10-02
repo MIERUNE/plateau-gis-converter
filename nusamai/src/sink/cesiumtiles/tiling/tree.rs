@@ -137,10 +137,6 @@ impl Tile {
         };
 
         let (z, _, y) = self.zxy;
-        if z < 15 {
-            let e = geometric_error(z, y);
-            println!("z: {}, y: {}, e: {}", z, y, e);
-        }
         tileset::Tile {
             geometric_error: geometric_error(z, y),
             refine: Some(tileset::Refine::Replace),
