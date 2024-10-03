@@ -49,8 +49,11 @@ use crate::{
 };
 use utils::calculate_normal;
 
-use super::option::{limit_texture_resolution_parameter, output_parameter};
-use super::texture_resolution::get_texture_downsample_scale_of_polygon;
+use super::texture_resolution::{get_texture_downsample_scale_of_polygon, uv_to_pixel_coords};
+use super::{
+    option::{limit_texture_resolution_parameter, output_parameter},
+    texture_resolution::pixel_par_distance,
+};
 
 pub struct CesiumTilesSinkProvider {}
 
@@ -481,7 +484,18 @@ fn tile_writing_stage(
                             limit_texture_resolution,
                         );
                         let geom_error = tiling::geometric_error(tile_zoom, tile_y);
-                        let factor = apply_downsample_factor(geom_error, downsample_scale as f32);
+                        let pixel_per_distance = pixel_par_distance(
+                            &original_vertices
+                                .iter()
+                                .map(|(x, y, z, _, _)| (*x, *y, *z))
+                                .collect::<Vec<_>>(),
+                            &uv_to_pixel_coords(&uv_coords, texture_size.0, texture_size.1),
+                        );
+                        let factor = apply_downsample_factor(
+                            geom_error,
+                            pixel_per_distance,
+                            downsample_scale as f32,
+                        );
 
                         let downsample_factor = DownsampleFactor::new(&factor);
                         let cropped_texture = PolygonMappedTexture::new(
@@ -703,13 +717,20 @@ fn tile_writing_stage(
     Ok(())
 }
 
-fn apply_downsample_factor(geometric_error: f64, downsample_scale: f32) -> f32 {
-    let f = match geometric_error {
-        0.0..=16.0 => 1.0,
-        16.0..=32.0 => 0.25,
-        32.0..=64.0 => 0.1,
-        64.0..=128.0 => 0.05,
-        _ => 0.01,
+fn apply_downsample_factor(
+    geometric_error: f64,
+    pixel_per_distance: f64,
+    downsample_scale: f32,
+) -> f32 {
+    let f = if geometric_error == 0.0 {
+        1.0
+    } else {
+        let f = (pixel_per_distance / (geometric_error * 1.5)).clamp(0.0, 1.0);
+        if f.is_nan() {
+            1.0
+        } else {
+            f as f32
+        }
     };
-    f * downsample_scale
+    (f * downsample_scale).clamp(0.0, 1.0)
 }
