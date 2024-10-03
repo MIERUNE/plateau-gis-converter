@@ -369,51 +369,6 @@ fn tile_writing_stage(
 
             let mut metadata_encoder = metadata::MetadataEncoder::new(schema);
 
-            // Check the size of all the textures and calculate the power of 2 of the largest size
-            let mut max_width = 0;
-            let mut max_height = 0;
-            for serialized_feat in feats.iter() {
-                feedback.ensure_not_canceled()?;
-
-                let feature = {
-                    let (feature, _): (SlicedFeature, _) =
-                        bincode::serde::decode_from_slice(serialized_feat, bincode_config)
-                            .map_err(|err| {
-                                PipelineError::Other(format!(
-                                    "Failed to deserialize a sliced feature: {:?}",
-                                    err
-                                ))
-                            })?;
-
-                    feature
-                };
-
-                for (_, orig_mat_id) in feature
-                    .polygons
-                    .iter()
-                    .zip_eq(feature.polygon_material_ids.iter())
-                {
-                    let mat = feature.materials[*orig_mat_id as usize].clone();
-                    let t = mat.base_texture.clone();
-                    if let Some(base_texture) = t {
-                        let texture_uri = base_texture.uri.to_file_path().unwrap();
-                        let texture_size = texture_size_cache.get_or_insert(&texture_uri);
-                        max_width = max_width.max(texture_size.0);
-                        max_height = max_height.max(texture_size.1);
-                    }
-                }
-            }
-            let max_width = max_width.next_power_of_two();
-            let max_height = max_height.next_power_of_two();
-
-            // initialize texture packer
-            // To reduce unnecessary draw calls, set the lower limit for max_width and max_height to 4096
-            let config = TexturePlacerConfig {
-                width: max_width.max(1024),
-                height: max_height.max(1024),
-                padding: 0,
-            };
-
             let packer = Mutex::new(AtlasPacker::default());
 
             // transform features
@@ -488,6 +443,10 @@ fn tile_writing_stage(
                 format!("{}_{}_{}_{}_{}", z, x, y, feature_id, poly_count)
             };
 
+            // Check the size of all the textures and calculate the power of 2 of the largest size
+            let mut max_width = 0;
+            let mut max_height = 0;
+
             // Load all textures into the Packer
             for (feature_id, feature) in features.iter().enumerate() {
                 for (poly_count, (mat, poly)) in feature
@@ -531,6 +490,12 @@ fn tile_writing_stage(
                             downsample_factor,
                         );
 
+                        let scaled_width = (texture_size.0 as f32 * factor) as u32;
+                        let scaled_height = (texture_size.1 as f32 * factor) as u32;
+
+                        max_width = max_width.max(scaled_width);
+                        max_height = max_height.max(scaled_height);
+
                         // Unique id required for placement in atlas
                         let (z, x, y) = tile_id_conv.id_to_zxy(tile_id);
                         let texture_id = generate_texture_id(z, x, y, feature_id, poly_count);
@@ -542,6 +507,17 @@ fn tile_writing_stage(
                     }
                 }
             }
+
+            let max_width = max_width.next_power_of_two();
+            let max_height = max_height.next_power_of_two();
+
+            // initialize texture packer
+            // To reduce unnecessary draw calls, set the lower limit for max_width and max_height to 4096
+            let config = TexturePlacerConfig {
+                width: max_width.max(1024),
+                height: max_height.max(1024),
+                padding: 0,
+            };
 
             let placer = GuillotineTexturePlacer::new(config.clone());
             let packer = packer.into_inner().unwrap();
