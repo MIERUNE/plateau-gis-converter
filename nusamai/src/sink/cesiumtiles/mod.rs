@@ -119,7 +119,7 @@ impl DataSink for CesiumTilesSink {
         let tile_id_conv = TileIdMethod::Hilbert;
 
         // TODO: configurable
-        let min_zoom = 17;
+        let min_zoom = 15;
         let max_zoom = 18;
 
         let limit_texture_resolution = self.limit_texture_resolution;
@@ -341,10 +341,10 @@ fn tile_writing_stage(
                     [(tx as f32) as f64, (ty as f32) as f64, (tz as f32) as f64]
                 };
 
-                let geom_error = tiling::geometric_error(tile_zoom, tile_y);
+                let geom_error = tiling::geometric_error(tile_zoom);
                 feedback.info(format!(
                     "tile: z={tile_zoom}, x={tile_x}, y={tile_y} (lng: [{min_lng} => {max_lng}], \
-                     lat: [{min_lat} => {max_lat}) geometricError: {geom_error}"
+                     lat: [{min_lat} => {max_lat}] geometricError: {geom_error}"
                 ));
                 let content_path = {
                     let normalized_typename = typename.replace(':', "_");

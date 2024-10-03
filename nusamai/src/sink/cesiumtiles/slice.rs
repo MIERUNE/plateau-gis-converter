@@ -134,8 +134,9 @@ pub fn slice_to_tiles<E>(
                         // TODO: better method ? (bounding sphere, etc.)
                         if zoom < max_zoom {
                             let threshold = match zoom {
-                                15 => 300.0,
-                                16 => 100.0,
+                                14 => 100.0,
+                                15 => 100.0,
+                                16 => 50.0,
                                 17 => 10.0,
                                 18 => 0.0,
                                 _ => 1e+100,
