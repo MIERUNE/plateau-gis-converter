@@ -136,9 +136,9 @@ impl Tile {
             }
         };
 
-        let (z, _, _) = self.zxy;
+        let (z, _, y) = self.zxy;
         tileset::Tile {
-            geometric_error: geometric_error(z),
+            geometric_error: geometric_error(z, y),
             refine: Some(tileset::Refine::Replace),
             bounding_volume: tileset::BoundingVolume::new_region([
                 self.min_lng.to_radians(),

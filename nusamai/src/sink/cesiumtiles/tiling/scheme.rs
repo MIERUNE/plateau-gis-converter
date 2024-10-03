@@ -80,15 +80,21 @@ pub fn iter_x_slice(z: u8, y: u32, west: f64, east: f64) -> impl Iterator<Item =
         .map(move |x| (x, xs as u32))
 }
 
-pub fn geometric_error(zoom: u8) -> f64 {
-    match zoom {
-        14 => 250.0,
-        15 => 100.0,
-        16 => 50.0,
-        17 => 10.0,
-        18 => 5.0,
-        _ => 1e+100,
+pub fn geometric_error(z: u8, y: u32) -> f64 {
+    let (_, y_size) = size_for_z(z);
+    if y >= y_size {
+        panic!("y out of range");
     }
+    if z < 2 {
+        return 1e+100;
+    }
+    use std::f64::consts::PI;
+    const Q: f64 = 525957.5361033019;
+    let zz = (1 << z) as f64;
+    let error1 = Q / (1 << (z - 2)) as f64;
+    let lat = (1.0 - (y as f64 + 0.5) * 4.0 / zz) * PI / 2.0;
+    let error2 = lat.cos() * x_step(z, y) as f64 * error1;
+    f64::max(error1, error2)
 }
 
 #[cfg(test)]
@@ -206,26 +212,26 @@ mod tests {
         );
     }
 
-    // #[test]
-    // fn test_geometric_error() {
-    //     assert!((geometric_error(1, 1) - 1e+100).abs() < 1e-7);
-    //     assert!((geometric_error(2, 1) - 525957.5361033019).abs() < 1e-7);
-    //     for y in 0..4 {
-    //         assert!((geometric_error(3, y) - 262978.76805165096).abs() < 1e-7);
-    //     }
-    //     assert!((geometric_error(4, 0) - 131489.38402582548).abs() < 1e-7);
-    //     assert!((geometric_error(4, 1) - 146103.17544566366).abs() < 1e-7);
-    //     assert!((geometric_error(4, 2) - 131489.38402582548).abs() < 1e-7);
-    //     assert!((geometric_error(4, 3) - 131489.38402582548).abs() < 1e-7);
-    //     assert!((geometric_error(4, 6) - 146103.17544566366).abs() < 1e-7);
-    //     assert!((geometric_error(4, 7) - 131489.38402582548).abs() < 1e-7);
+    #[test]
+    fn test_geometric_error() {
+        assert!((geometric_error(1, 1) - 1e+100).abs() < 1e-7);
+        assert!((geometric_error(2, 1) - 525957.5361033019).abs() < 1e-7);
+        for y in 0..4 {
+            assert!((geometric_error(3, y) - 262978.76805165096).abs() < 1e-7);
+        }
+        assert!((geometric_error(4, 0) - 131489.38402582548).abs() < 1e-7);
+        assert!((geometric_error(4, 1) - 146103.17544566366).abs() < 1e-7);
+        assert!((geometric_error(4, 2) - 131489.38402582548).abs() < 1e-7);
+        assert!((geometric_error(4, 3) - 131489.38402582548).abs() < 1e-7);
+        assert!((geometric_error(4, 6) - 146103.17544566366).abs() < 1e-7);
+        assert!((geometric_error(4, 7) - 131489.38402582548).abs() < 1e-7);
 
-    //     assert!((geometric_error(5, 0) - 65744.69201291274).abs() < 1e-7);
-    //     assert!((geometric_error(5, 1) - 76338.70680864961).abs() < 1e-7);
-    //     assert!((geometric_error(5, 2) - 65744.69201291274).abs() < 1e-7);
-    //     assert!((geometric_error(5, 3) - 83415.98216479822).abs() < 1e-7);
-    //     assert!((geometric_error(5, 4) - 65744.69201291274).abs() < 1e-7);
-    // }
+        assert!((geometric_error(5, 0) - 65744.69201291274).abs() < 1e-7);
+        assert!((geometric_error(5, 1) - 76338.70680864961).abs() < 1e-7);
+        assert!((geometric_error(5, 2) - 65744.69201291274).abs() < 1e-7);
+        assert!((geometric_error(5, 3) - 83415.98216479822).abs() < 1e-7);
+        assert!((geometric_error(5, 4) - 65744.69201291274).abs() < 1e-7);
+    }
 
     #[test]
     fn test_slice_range() {

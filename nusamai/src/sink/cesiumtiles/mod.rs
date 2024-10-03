@@ -119,7 +119,7 @@ impl DataSink for CesiumTilesSink {
         let tile_id_conv = TileIdMethod::Hilbert;
 
         // TODO: configurable
-        let min_zoom = 15;
+        let min_zoom = 14;
         let max_zoom = 18;
 
         let limit_texture_resolution = self.limit_texture_resolution;
@@ -341,7 +341,7 @@ fn tile_writing_stage(
                     [(tx as f32) as f64, (ty as f32) as f64, (tz as f32) as f64]
                 };
 
-                let geom_error = tiling::geometric_error(tile_zoom);
+                let geom_error = tiling::geometric_error(tile_zoom, tile_y);
                 feedback.info(format!(
                     "tile: z={tile_zoom}, x={tile_x}, y={tile_y} (lng: [{min_lng} => {max_lng}], \
                      lat: [{min_lat} => {max_lat}] geometricError: {geom_error}"
@@ -480,7 +480,8 @@ fn tile_writing_stage(
                             texture_size,
                             limit_texture_resolution,
                         );
-                        let factor = apply_downsample_factor(tile_zoom, downsample_scale as f32);
+                        let geom_error = tiling::geometric_error(tile_zoom, tile_y);
+                        let factor = apply_downsample_factor(geom_error, downsample_scale as f32);
 
                         let downsample_factor = DownsampleFactor::new(&factor);
                         let cropped_texture = PolygonMappedTexture::new(
@@ -702,13 +703,13 @@ fn tile_writing_stage(
     Ok(())
 }
 
-fn apply_downsample_factor(z: u8, downsample_scale: f32) -> f32 {
-    let f = match z {
-        0..=14 => 0.05,
-        15 => 0.1,
-        16 => 0.2,
-        17 => 0.25,
-        _ => 1.0,
+fn apply_downsample_factor(geometric_error: f64, downsample_scale: f32) -> f32 {
+    let f = match geometric_error {
+        0.0..=16.0 => 1.0,
+        16.0..=32.0 => 0.25,
+        32.0..=64.0 => 0.1,
+        64.0..=128.0 => 0.05,
+        _ => 0.01,
     };
     f * downsample_scale
 }

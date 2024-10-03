@@ -133,14 +133,12 @@ pub fn slice_to_tiles<E>(
                         // Skip the feature if the size is small for geometricError.
                         // TODO: better method ? (bounding sphere, etc.)
                         if zoom < max_zoom {
-                            let threshold = match zoom {
-                                14 => 100.0,
-                                15 => 100.0,
-                                16 => 50.0,
-                                17 => 10.0,
-                                18 => 0.0,
-                                _ => 1e+100,
+                            let geom_error = {
+                                let (_, _, y) =
+                                    tiling::scheme::zxy_from_lng_lat(zoom, lng_center, lat_center);
+                                tiling::scheme::geometric_error(zoom, y)
                             };
+                            let threshold = geom_error * 0.8; // TODO: adjustable
                             if approx_dx < threshold
                                 && approx_dy < threshold
                                 && approx_dh < threshold
