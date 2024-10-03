@@ -721,6 +721,11 @@ fn apply_downsample_factor(
     pixel_per_distance: f64,
     downsample_scale: f32,
 ) -> f32 {
+    // 全ての引数は小数点以下を無視する
+    let geometric_error = geometric_error.floor();
+    let pixel_per_distance = pixel_per_distance.floor();
+    let downsample_scale = downsample_scale.floor();
+
     let f = if geometric_error == 0.0 {
         1.0
     } else {
@@ -731,5 +736,10 @@ fn apply_downsample_factor(
             f as f32
         }
     };
-    ((f * downsample_scale).clamp(0.0, 1.0) * 10.0).ceil() / 10.0_f32
+    let result = f * downsample_scale;
+    println!(
+        "geometric_error: {}, pixel_per_distance: {}, downsample_scale: {}, result: {}",
+        geometric_error, pixel_per_distance, downsample_scale, result
+    );
+    result.clamp(0.0, 1.0)
 }
