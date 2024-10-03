@@ -17,7 +17,7 @@ use std::{
 
 use ahash::RandomState;
 use atlas_packer::{
-    export::{AtlasExporter as _, JpegAtlasExporter},
+    export::{AtlasExporter as _, WebpAtlasExporter},
     pack::AtlasPacker,
     place::{GuillotineTexturePlacer, TexturePlacerConfig},
     texture::{
@@ -540,7 +540,7 @@ fn tile_writing_stage(
             // Packing the loaded textures into an atlas
             let packed = packer.pack(placer);
 
-            let exporter = JpegAtlasExporter::default();
+            let exporter = WebpAtlasExporter::default();
             let ext = exporter.clone().get_extension().to_string();
 
             // Obtain the UV coordinates placed in the atlas by specifying the ID
