@@ -80,35 +80,14 @@ pub fn iter_x_slice(z: u8, y: u32, west: f64, east: f64) -> impl Iterator<Item =
         .map(move |x| (x, xs as u32))
 }
 
-use std::f64::consts::PI;
-
-const EARTH_RADIUS: f64 = 6378137.0;
-const TILE_SIZE: u32 = 256;
-
-pub fn geometric_error(zoom: u8, y: u32) -> f64 {
-    if zoom <= 2 {
-        return 1e+100;
+pub fn geometric_error(zoom: u8) -> f64 {
+    match zoom {
+        15 => 500.0,
+        16 => 200.0,
+        17 => 150.0,
+        18 => 20.0,
+        _ => 1e+100,
     }
-
-    let lat = y_to_lat(y, zoom);
-    let lat_rad = lat.to_radians();
-    let meters_per_pixel = meters_per_pixel_at_latitude(zoom, lat_rad);
-
-    let tile_size_meters = meters_per_pixel * TILE_SIZE as f64;
-
-    tile_size_meters / 4.0
-}
-
-fn meters_per_pixel_at_latitude(zoom: u8, lat_rad: f64) -> f64 {
-    let zoom_factor = 2_f64.powi(zoom as i32);
-    let map_circumference = 2.0 * PI * EARTH_RADIUS * lat_rad.cos();
-    map_circumference / (TILE_SIZE as f64 * zoom_factor)
-}
-
-fn y_to_lat(y: u32, z: u8) -> f64 {
-    let n = PI - (2.0 * PI * y as f64) / 2_f64.powi(z as i32);
-    let lat_rad = PI / 2.0 - 2.0 * (n / 2.0).tan().atan();
-    lat_rad.to_degrees()
 }
 
 #[cfg(test)]
