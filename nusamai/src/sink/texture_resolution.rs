@@ -30,6 +30,7 @@ pub fn pixel_par_distance(vertices: &[(f64, f64, f64)], pixel_coords: &[(u32, u3
         })
         .min_by(|a, b| a.total_cmp(b))
         .unwrap_or(1.0)
+        .max(1.0)
 }
 
 pub fn get_texture_downsample_scale_of_polygon(
