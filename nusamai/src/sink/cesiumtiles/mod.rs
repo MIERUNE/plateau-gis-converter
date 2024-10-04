@@ -725,7 +725,7 @@ fn apply_downsample_factor(
     let f = if geometric_error == 0.0 {
         1.0
     } else {
-        let f = (pixel_per_distance / (geometric_error / 2.0)).clamp(0.0, 1.0);
+        let f = (pixel_per_distance / (geometric_error / 20.0)).clamp(0.0, 1.0);
         if f.is_nan() {
             1.0
         } else {
