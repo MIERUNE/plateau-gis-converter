@@ -47,6 +47,7 @@ pub fn pixel_par_distance(vertices: &[(f64, f64, f64)], pixel_coords: &[(u32, u3
     avg_scale
 }
 
+/// Obtain the downsample scale to limit the distance per pixel to a specific value or less.
 pub fn get_texture_downsample_scale_of_polygon(
     vertices: &[(f64, f64, f64, f64, f64)], // (x, y, z, u, v)
     texture_size: (u32, u32),
@@ -63,6 +64,8 @@ pub fn get_texture_downsample_scale_of_polygon(
     }
 }
 
+/// A downsample scale is applied, taking into account geometric error and distance per pixel.
+/// The downsample scale is a value between 0.0 and 1.0.
 pub fn apply_downsample_factor(
     geometric_error: f64,
     pixel_per_distance: f64,
@@ -71,9 +74,10 @@ pub fn apply_downsample_factor(
     let f = if geometric_error == 0.0 {
         1.0
     } else {
-        // The number 20.0 is adjustable.
+        // By applying a scale factor, the distance per pixel is increased, and the texture resolution is reduced.
+        // The number 25 is a magic number, and lowering it also lowers the resolution.
         let f = (pixel_per_distance * downsample_scale as f64)
-            / (geometric_error / 20.0).clamp(0.0, 1.0);
+            / (geometric_error / 25.0).clamp(0.0, 1.0);
         if f.is_nan() {
             1.0
         } else {

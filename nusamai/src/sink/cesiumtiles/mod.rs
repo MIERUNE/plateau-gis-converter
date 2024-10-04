@@ -123,7 +123,7 @@ impl DataSink for CesiumTilesSink {
 
         // TODO: configurable
         let min_zoom = 18;
-        let max_zoom = 18;
+        let max_zoom = 19;
 
         let limit_texture_resolution = self.limit_texture_resolution;
 
