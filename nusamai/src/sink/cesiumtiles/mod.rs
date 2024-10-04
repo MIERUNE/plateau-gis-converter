@@ -68,6 +68,32 @@ impl DataSinkProvider for CesiumTilesSinkProvider {
     fn sink_options(&self) -> Parameters {
         let mut params = Parameters::new();
         params.define(output_parameter());
+        params.define(ParameterDefinition {
+            key: "min_z".into(),
+            entry: ParameterEntry {
+                description: "Minumum zoom level".into(),
+                required: true,
+                parameter: ParameterType::Integer(IntegerParameter {
+                    value: Some(15),
+                    min: Some(0),
+                    max: Some(20),
+                }),
+                label: Some("最小ズームレベル".into()),
+            },
+        });
+        params.define(ParameterDefinition {
+            key: "max_z".into(),
+            entry: ParameterEntry {
+                description: "Maximum zoom level".into(),
+                required: true,
+                parameter: ParameterType::Integer(IntegerParameter {
+                    value: Some(18),
+                    min: Some(0),
+                    max: Some(20),
+                }),
+                label: Some("最大ズームレベル".into()),
+            },
+        });
         params.define(limit_texture_resolution_parameter(false));
 
         params
@@ -82,6 +108,8 @@ impl DataSinkProvider for CesiumTilesSinkProvider {
 
     fn create(&self, params: &Parameters) -> Box<dyn DataSink> {
         let output_path = get_parameter_value!(params, "@output", FileSystemPath);
+        let min_z = get_parameter_value!(params, "min_z", Integer).unwrap() as u8;
+        let max_z = get_parameter_value!(params, "max_z", Integer).unwrap() as u8;
         let limit_texture_resolution =
             *get_parameter_value!(params, "limit_texture_resolution", Boolean);
         let transform_settings = self.transformer_options();
@@ -90,6 +118,8 @@ impl DataSinkProvider for CesiumTilesSinkProvider {
             output_path: output_path.as_ref().unwrap().into(),
             transform_settings,
             limit_texture_resolution,
+            min_z,
+            max_z,
         })
     }
 }
@@ -98,6 +128,8 @@ struct CesiumTilesSink {
     output_path: PathBuf,
     transform_settings: TransformerRegistry,
     limit_texture_resolution: Option<bool>,
+    min_z: u8,
+    max_z: u8,
 }
 
 impl DataSink for CesiumTilesSink {
@@ -121,14 +153,12 @@ impl DataSink for CesiumTilesSink {
 
         let tile_id_conv = TileIdMethod::Hilbert;
 
-        // TODO: configurable
-        let min_zoom = 15;
-        let max_zoom = 18;
+        let min_zoom = self.min_z;
+        let max_zoom = self.max_z;
 
         let limit_texture_resolution = self.limit_texture_resolution;
 
         // TODO: refactoring
-
         std::thread::scope(|s| {
             // Slicing geometry along the tile boundaries
             {
