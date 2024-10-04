@@ -527,10 +527,10 @@ fn tile_writing_stage(
             let max_height = max_height.next_power_of_two();
 
             // initialize texture packer
-            // To reduce unnecessary draw calls, set the lower limit for max_width and max_height to 1024
+            // To reduce unnecessary draw calls, set the lower limit for max_width and max_height to 4096
             let config = TexturePlacerConfig {
-                width: max_width.max(1024),
-                height: max_height.max(1024),
+                width: max_width.max(4096),
+                height: max_height.max(4096),
                 padding: 0,
             };
 
@@ -725,6 +725,7 @@ fn apply_downsample_factor(
     let f = if geometric_error == 0.0 {
         1.0
     } else {
+        // The number 20.0 is adjustable.
         let f = (pixel_per_distance / (geometric_error / 20.0)).clamp(0.0, 1.0);
         if f.is_nan() {
             1.0
@@ -733,5 +734,5 @@ fn apply_downsample_factor(
         }
     };
 
-    (f * downsample_scale).clamp(0.0, 1.0)
+    (f / downsample_scale).clamp(0.0, 1.0)
 }
