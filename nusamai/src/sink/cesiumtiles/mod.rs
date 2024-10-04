@@ -478,14 +478,14 @@ fn tile_writing_stage(
                         let texture_uri = base_texture.uri.to_file_path().unwrap();
                         let texture_size = texture_size_cache.get_or_insert(&texture_uri);
 
-                        if limit_texture_resolution.unwrap_or(false) {
-                            let downsample_scale = get_texture_downsample_scale_of_polygon(
+                        let downsample_scale = if limit_texture_resolution.unwrap_or(false) {
+                            get_texture_downsample_scale_of_polygon(
                                 &original_vertices,
                                 texture_size,
-                            );
+                            ) as f32
                         } else {
-                            let downsample_scale = 1.0;
-                        }
+                            1.0
+                        };
 
                         let geom_error = tiling::geometric_error(tile_zoom, tile_y);
                         let pixel_per_distance = pixel_par_distance(
