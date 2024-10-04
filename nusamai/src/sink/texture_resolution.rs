@@ -75,9 +75,9 @@ pub fn apply_downsample_factor(
         1.0
     } else {
         // By applying a scale factor, the distance per pixel is increased, and the texture resolution is reduced.
-        // The number 25 is a magic number, and lowering it also lowers the resolution.
+        // The number 30 is a magic number, and lowering it also lowers the resolution.
         let f = (pixel_per_distance * downsample_scale as f64)
-            / (geometric_error / 25.0).clamp(0.0, 1.0);
+            / (geometric_error / 30.0).clamp(0.0, 1.0);
         if f.is_nan() {
             1.0
         } else {
