@@ -1,7 +1,7 @@
 /// Limits the texture resolution based on the distance (meters) between the vertices of a polygon.
 /// The pixel resolution should be limited to no more than 20cm (0.2m).
 /// Aerial photographs generally have a resolution of 10cm to 20cm.
-const MIN_METER_PER_PIXEL: f64 = 0.2;
+const MIN_METER_PER_PIXEL: f64 = 0.1;
 
 // WARN: This function has an equivalent in `atlas-packer/src/texture.rs`.
 pub fn uv_to_pixel_coords(uv_coords: &[(f64, f64)], width: u32, height: u32) -> Vec<(u32, u32)> {
@@ -52,15 +52,17 @@ pub fn get_texture_downsample_scale_of_polygon(
     texture_size: (u32, u32),
     limit_texture_resolution: Option<bool>,
 ) -> f64 {
+    if !limit_texture_resolution.unwrap_or(false) {
+        return 1.0;
+    }
+
     let uv_coords = vertices.iter().map(|v| (v.3, v.4)).collect::<Vec<_>>();
-
     let pixel_coords = uv_to_pixel_coords(&uv_coords, texture_size.0, texture_size.1);
-
     let vertices = vertices.iter().map(|v| (v.0, v.1, v.2)).collect::<Vec<_>>();
     let pixel_per_distance = pixel_par_distance(&vertices, &pixel_coords);
 
-    if limit_texture_resolution.unwrap_or(false) {
-        1.0_f64.min(pixel_per_distance / MIN_METER_PER_PIXEL)
+    if pixel_per_distance < MIN_METER_PER_PIXEL {
+        MIN_METER_PER_PIXEL / pixel_per_distance
     } else {
         1.0
     }

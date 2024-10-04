@@ -726,7 +726,8 @@ fn apply_downsample_factor(
         1.0
     } else {
         // The number 20.0 is adjustable.
-        let f = (pixel_per_distance / (geometric_error / 20.0)).clamp(0.0, 1.0);
+        let f = (pixel_per_distance * downsample_scale as f64)
+            / (geometric_error / 20.0).clamp(0.0, 1.0);
         if f.is_nan() {
             1.0
         } else {
@@ -734,5 +735,5 @@ fn apply_downsample_factor(
         }
     };
 
-    (f / downsample_scale).clamp(0.0, 1.0)
+    f.clamp(0.0, 1.0)
 }
