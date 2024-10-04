@@ -50,12 +50,7 @@ pub fn pixel_par_distance(vertices: &[(f64, f64, f64)], pixel_coords: &[(u32, u3
 pub fn get_texture_downsample_scale_of_polygon(
     vertices: &[(f64, f64, f64, f64, f64)], // (x, y, z, u, v)
     texture_size: (u32, u32),
-    limit_texture_resolution: Option<bool>,
 ) -> f64 {
-    if !limit_texture_resolution.unwrap_or(false) {
-        return 1.0;
-    }
-
     let uv_coords = vertices.iter().map(|v| (v.3, v.4)).collect::<Vec<_>>();
     let pixel_coords = uv_to_pixel_coords(&uv_coords, texture_size.0, texture_size.1);
     let vertices = vertices.iter().map(|v| (v.0, v.1, v.2)).collect::<Vec<_>>();
@@ -66,4 +61,25 @@ pub fn get_texture_downsample_scale_of_polygon(
     } else {
         1.0
     }
+}
+
+pub fn apply_downsample_factor(
+    geometric_error: f64,
+    pixel_per_distance: f64,
+    downsample_scale: f32,
+) -> f32 {
+    let f = if geometric_error == 0.0 {
+        1.0
+    } else {
+        // The number 20.0 is adjustable.
+        let f = (pixel_per_distance * downsample_scale as f64)
+            / (geometric_error / 20.0).clamp(0.0, 1.0);
+        if f.is_nan() {
+            1.0
+        } else {
+            f as f32
+        }
+    };
+
+    f.clamp(0.0, 1.0)
 }

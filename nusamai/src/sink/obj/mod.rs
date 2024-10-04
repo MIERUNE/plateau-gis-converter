@@ -455,11 +455,16 @@ impl DataSink for ObjSink {
 
                             let texture_uri = base_texture.uri.to_file_path().unwrap();
                             let texture_size = texture_size_cache.get_or_insert(&texture_uri);
-                            let downsample_scale = get_texture_downsample_scale_of_polygon(
-                                &original_vertices,
-                                texture_size,
-                                self.limit_texture_resolution,
-                            ) as f32;
+
+                            let downsample_scale = if self.limit_texture_resolution.unwrap_or(false)
+                            {
+                                get_texture_downsample_scale_of_polygon(
+                                    &original_vertices,
+                                    texture_size,
+                                ) as f32
+                            } else {
+                                1.0
+                            };
 
                             let downsample_factor = DownsampleFactor::new(&downsample_scale);
 

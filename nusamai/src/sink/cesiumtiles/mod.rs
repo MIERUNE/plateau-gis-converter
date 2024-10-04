@@ -52,7 +52,7 @@ use utils::calculate_normal;
 use super::texture_resolution::{get_texture_downsample_scale_of_polygon, uv_to_pixel_coords};
 use super::{
     option::{limit_texture_resolution_parameter, output_parameter},
-    texture_resolution::pixel_par_distance,
+    texture_resolution::{apply_downsample_factor, pixel_par_distance},
 };
 
 pub struct CesiumTilesSinkProvider {}
@@ -122,7 +122,6 @@ impl DataSink for CesiumTilesSink {
         let tile_id_conv = TileIdMethod::Hilbert;
 
         // TODO: configurable
-        // let min_zoom = 14;
         let min_zoom = 18;
         let max_zoom = 18;
 
@@ -479,11 +478,15 @@ fn tile_writing_stage(
                         let texture_uri = base_texture.uri.to_file_path().unwrap();
                         let texture_size = texture_size_cache.get_or_insert(&texture_uri);
 
-                        let downsample_scale = get_texture_downsample_scale_of_polygon(
-                            &original_vertices,
-                            texture_size,
-                            limit_texture_resolution,
-                        );
+                        if limit_texture_resolution.unwrap_or(false) {
+                            let downsample_scale = get_texture_downsample_scale_of_polygon(
+                                &original_vertices,
+                                texture_size,
+                            );
+                        } else {
+                            let downsample_scale = 1.0;
+                        }
+
                         let geom_error = tiling::geometric_error(tile_zoom, tile_y);
                         let pixel_per_distance = pixel_par_distance(
                             &original_vertices
@@ -715,25 +718,4 @@ fn tile_writing_stage(
     )?;
 
     Ok(())
-}
-
-fn apply_downsample_factor(
-    geometric_error: f64,
-    pixel_per_distance: f64,
-    downsample_scale: f32,
-) -> f32 {
-    let f = if geometric_error == 0.0 {
-        1.0
-    } else {
-        // The number 20.0 is adjustable.
-        let f = (pixel_per_distance * downsample_scale as f64)
-            / (geometric_error / 20.0).clamp(0.0, 1.0);
-        if f.is_nan() {
-            1.0
-        } else {
-            f as f32
-        }
-    };
-
-    f.clamp(0.0, 1.0)
 }
