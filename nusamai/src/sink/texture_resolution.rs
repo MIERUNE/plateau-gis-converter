@@ -75,15 +75,22 @@ pub fn apply_downsample_factor(
         1.0
     } else {
         // By applying a scale factor, the distance per pixel is increased, and the texture resolution is reduced.
-        // The number 30 is a magic number, and lowering it also lowers the resolution.
-        let f = (pixel_per_distance * downsample_scale as f64)
-            / (geometric_error / 30.0).clamp(0.0, 1.0);
+        // Textures generated from aerial photographs generally have a resolution of 10 to 20 cm.
+        // The number 0.025 is a magic number, and it is adjusted so that the resolution is about 20 cm when the geometric error is about 8.
+        // If this is lowered, the resolution will increase.
+        let log_scale = (1.0 + downsample_scale as f64).ln();
+        let f = (pixel_per_distance * log_scale) / (geometric_error * 0.0125).clamp(0.001, 1.0);
         if f.is_nan() {
             1.0
         } else {
             f as f32
         }
     };
+
+    println!(
+        "geometric_error: {}, pixel_per_distance: {}, downsample_scale: {}, f: {}",
+        geometric_error, pixel_per_distance, downsample_scale, f
+    );
 
     f.clamp(0.0, 1.0)
 }
