@@ -49,10 +49,10 @@ use crate::{
 };
 use utils::calculate_normal;
 
-use super::texture_resolution::{get_texture_downsample_scale_of_polygon, uv_to_pixel_coords};
+use super::texture_resolution::get_texture_downsample_scale_of_polygon;
 use super::{
     option::{limit_texture_resolution_parameter, output_parameter},
-    texture_resolution::{apply_downsample_factor, pixel_par_distance},
+    texture_resolution::apply_downsample_factor,
 };
 
 pub struct CesiumTilesSinkProvider {}
