@@ -519,18 +519,7 @@ fn tile_writing_stage(
                         };
 
                         let geom_error = tiling::geometric_error(tile_zoom, tile_y);
-                        let pixel_per_distance = pixel_par_distance(
-                            &original_vertices
-                                .iter()
-                                .map(|(x, y, z, _, _)| (*x, *y, *z))
-                                .collect::<Vec<_>>(),
-                            &uv_to_pixel_coords(&uv_coords, texture_size.0, texture_size.1),
-                        );
-                        let factor = apply_downsample_factor(
-                            geom_error,
-                            pixel_per_distance,
-                            downsample_scale as f32,
-                        );
+                        let factor = apply_downsample_factor(geom_error, downsample_scale as f32);
                         let downsample_factor = DownsampleFactor::new(&factor);
                         let cropped_texture = PolygonMappedTexture::new(
                             &texture_uri,

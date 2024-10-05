@@ -1,6 +1,7 @@
-/// Limits the texture resolution based on the distance (meters) between the vertices of a polygon.
-/// The pixel resolution should be limited to no more than 20cm (0.2m).
-/// Aerial photographs generally have a resolution of 10cm to 20cm.
+/// Limits the texture resolution based on the distance (in meters) between the vertices of the polygon.
+/// The resolution of aerial photographs is usually between 10cm and 20cm.
+/// The pixel resolution should be limited to around 10cm (0.1m),
+/// but this means that signs and other objects will not be visible, so adjustments are necessary.
 const MIN_METER_PER_PIXEL: f64 = 0.025;
 
 // WARN: This function has an equivalent in `atlas-packer/src/texture.rs`.
@@ -66,18 +67,13 @@ pub fn get_texture_downsample_scale_of_polygon(
 
 /// A downsample scale is applied, taking into account geometric error and distance per pixel.
 /// The downsample scale is a value between 0.0 and 1.0.
-pub fn apply_downsample_factor(
-    geometric_error: f64,
-    pixel_per_distance: f64,
-    downsample_scale: f32,
-) -> f32 {
+pub fn apply_downsample_factor(geometric_error: f64, downsample_scale: f32) -> f32 {
     let error_factor = if geometric_error == 0.0 {
         1.0
     } else {
-        // By applying a scale factor, the distance per pixel is increased, and the texture resolution is reduced.
-        // Textures generated from aerial photographs generally have a resolution of 10 to 20 cm.
-        // It is adjusted so that the resolution is about 20 cm when the geometric error is about 8.
-        // If this is lowered, the resolution will increase.
+        // Applying a scale factor increases the distance per pixel and decreases the texture resolution.
+        // The resolution of textures generated from aerial photographs is typically 10~20 cm.
+        // When the geometric error is 0, the scale approaches 1.
         let error_factor = 1.0 / (1.0 + (geometric_error / 20.0).powf(2.5));
         if error_factor.is_nan() {
             1.0
@@ -86,12 +82,5 @@ pub fn apply_downsample_factor(
         }
     };
 
-    let result = (error_factor * downsample_scale as f64).clamp(0.0, 1.0) as f32;
-
-    println!(
-        "geometric_error: {}, pixel_per_distance: {}, downsample_scale: {}, error_factor: {}, result: {}",
-        geometric_error, pixel_per_distance, downsample_scale, error_factor, result
-    );
-
-    result
+    (error_factor * downsample_scale as f64).clamp(0.0, 1.0) as f32
 }
