@@ -159,6 +159,7 @@ impl DataSink for CesiumTilesSink {
         let limit_texture_resolution = self.limit_texture_resolution;
 
         // TODO: refactoring
+
         std::thread::scope(|s| {
             // Slicing geometry along the tile boundaries
             {
@@ -560,10 +561,10 @@ fn tile_writing_stage(
             let max_height = max_height.next_power_of_two();
 
             // initialize texture packer
-            // To reduce unnecessary draw calls, set the lower limit for max_width and max_height to 2048
+            // To reduce unnecessary draw calls, set the lower limit for max_width and max_height to 1024
             let config = TexturePlacerConfig {
-                width: max_width.max(2048),
-                height: max_height.max(2048),
+                width: max_width.max(1024),
+                height: max_height.max(1024),
                 padding: 0,
             };
 
