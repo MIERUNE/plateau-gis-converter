@@ -124,8 +124,9 @@ impl<'a> CityGmlReader<'a> {
         &'a mut self,
         reader: &'b mut quick_xml::NsReader<R>,
     ) -> Result<SubTreeReader<R>, ParseError> {
-        reader.trim_text(true);
-        reader.expand_empty_elements(true);
+        let config = reader.config_mut();
+        config.trim_text(true);
+        config.expand_empty_elements = true;
 
         let state = &mut self.state;
         loop {
@@ -142,11 +143,6 @@ impl<'a> CityGmlReader<'a> {
                         state,
                         path_start: 0,
                     });
-                }
-                Ok(Event::Eof) => {
-                    return Err(ParseError::XmlError(quick_xml::Error::UnexpectedEof(
-                        "Unexpected EOF".into(),
-                    )))
                 }
                 Ok(_) => (),
                 Err(e) => return Err(e.into()),

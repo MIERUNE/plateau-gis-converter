@@ -5,7 +5,7 @@ edition = "2021"
 
 [dependencies]
 sqlx = { version = "0.8.0", features = ["sqlite", "runtime-tokio"] }
-flatgeom= "0.0"
+flatgeom = "0.0"
 thiserror = "1.0.58"
 url = "2.5.0"
 indexmap = "2.2.6"

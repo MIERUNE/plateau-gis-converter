@@ -162,8 +162,9 @@ mod tests {
         "#;
 
         let mut reader = NsReader::from_str(data);
-        reader.trim_text(true);
-        reader.expand_empty_elements(true);
+        let config = reader.config_mut();
+        config.trim_text(true);
+        config.expand_empty_elements = true;
         loop {
             match reader.read_resolved_event() {
                 Ok((ns, Event::Start(ref e))) => {
