@@ -5,7 +5,7 @@
 const MIN_METER_PER_PIXEL: f64 = 0.025;
 
 // WARN: This function has an equivalent in `atlas-packer/src/texture.rs`.
-pub fn uv_to_pixel_coords(uv_coords: &[(f64, f64)], width: u32, height: u32) -> Vec<(u32, u32)> {
+fn uv_to_pixel_coords(uv_coords: &[(f64, f64)], width: u32, height: u32) -> Vec<(u32, u32)> {
     uv_coords
         .iter()
         .map(|(u, v)| {
