@@ -105,6 +105,8 @@ pub struct TransformerConfig {
     pub parameter: ParameterType,
 }
 
+// FIXME: 設計を見直す
+// FIXME: 意味のある名前に変える
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub struct TransformerRegistry {
     pub configs: Vec<TransformerConfig>,

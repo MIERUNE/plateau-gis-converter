@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Icon from '@iconify/svelte';
-	import { invoke } from '@tauri-apps/api/tauri';
+	import { invoke } from '@tauri-apps/api/core';
 	import { listen } from '@tauri-apps/api/event';
 	import { onMount } from 'svelte';
 	import VirtualScroll from 'svelte-virtual-scroll-list';
@@ -100,7 +100,7 @@
 	</div>
 </div>
 
-<style>
+<style lang="postcss">
 	@keyframes scale {
 		0% {
 			transform: scale(1);

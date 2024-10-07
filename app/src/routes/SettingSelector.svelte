@@ -1,12 +1,13 @@
 <script lang="ts">
 	import { filetypeOptions } from '$lib/settings';
-	import { invoke } from '@tauri-apps/api/tauri';
+	import { invoke } from '@tauri-apps/api/core';
 	import type { SinkParameters } from '$lib/sinkparams';
 	import type { TransformerRegistry } from '$lib/transformer';
 	import Icon from '@iconify/svelte';
-	import { dialog } from '@tauri-apps/api';
+	import {  } from '@tauri-apps/api';
 	import SinkOptions from '$lib/components/SinkOptions.svelte';
 	import TransformerOptions from '$lib/components/TransformerOptions.svelte';
+import * as dialog from "@tauri-apps/plugin-dialog"
 
 	export let filetype: string;
 	export let epsg: number = 4979;

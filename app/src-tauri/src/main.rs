@@ -25,7 +25,8 @@ use nusamai::{
     },
 };
 use nusamai_plateau::models::TopLevelCityObject;
-use tauri_plugin_log::{LogTarget, RotationStrategy, TimezoneStrategy};
+use tauri::Emitter;
+use tauri_plugin_log::{RotationStrategy, TimezoneStrategy};
 use thiserror::Error;
 
 #[cfg(debug_assertions)]
@@ -41,7 +42,15 @@ struct ConversionTasksState {
 fn main() {
     // System log plugin
     let tauri_loggger = tauri_plugin_log::Builder::default()
-        .targets([LogTarget::Stdout, LogTarget::LogDir, LogTarget::Webview])
+        .target(tauri_plugin_log::Target::new(
+            tauri_plugin_log::TargetKind::Stdout,
+        ))
+        .target(tauri_plugin_log::Target::new(
+            tauri_plugin_log::TargetKind::LogDir { file_name: None },
+        ))
+        .target(tauri_plugin_log::Target::new(
+            tauri_plugin_log::TargetKind::Webview,
+        ))
         .max_file_size(1_000_000) // in bytes
         .rotation_strategy(RotationStrategy::KeepOne)
         .timezone_strategy(TimezoneStrategy::UseLocal)
@@ -51,6 +60,10 @@ fn main() {
 
     // Build and run the Tauri app
     tauri::Builder::default()
+        .plugin(tauri_plugin_log::Builder::new().build())
+        .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_shell::init())
+        .plugin(tauri_plugin_fs::init())
         .plugin(tauri_loggger)
         .manage(ConversionTasksState {
             canceller: Arc::new(Mutex::new(Canceller::default())),
@@ -138,8 +151,10 @@ fn run_conversion(
     transformer_registry: TransformerRegistry,
     sink_parameters: Parameters,
     tasks_state: tauri::State<ConversionTasksState>,
-    window: tauri::Window,
+    app: tauri::AppHandle,
 ) -> Result<(), Error> {
+    println!("Running conversion");
+
     // Request cancellation of previous task if still running
     tasks_state.canceller.lock().unwrap().cancel();
 
@@ -257,9 +272,7 @@ fn run_conversion(
         scope
             .spawn(move || {
                 for msg in watcher {
-                    window
-                        .emit("conversion-log", LogMessage::from(&msg))
-                        .unwrap();
+                    app.emit("conversion-log", LogMessage::from(&msg)).unwrap();
                     if let Some(err) = &msg.error {
                         return Some(Error::ConversionFailed(err.to_string()));
                     }

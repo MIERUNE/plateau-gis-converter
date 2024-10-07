@@ -59,7 +59,7 @@
 	</div>
 </div>
 
-<style>
+<style lang="postcss">
 	a {
 		@apply underline;
 	}
