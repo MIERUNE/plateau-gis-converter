@@ -1,8 +1,9 @@
 <script lang="ts">
-	import { dialog } from '@tauri-apps/api';
+	import {  } from '@tauri-apps/api';
 	import Icon from '@iconify/svelte';
 	import { abbreviatePath } from '$lib/utils';
 	import { filetypeOptions } from '$lib/settings';
+import * as dialog from "@tauri-apps/plugin-dialog"
 
 	export let filetype: string;
 	export let outputPath: string;

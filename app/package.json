@@ -17,7 +17,12 @@
 		"@iconify/svelte": "^3.1.6",
 		"@sveltejs/adapter-static": "^3.0.1",
 		"@sveltejs/kit": "^2.6.2",
-		"@tauri-apps/cli": "^1.5.9",
+		"@tauri-apps/api": "^2.0.0",
+		"@tauri-apps/cli": "^2.0.0",
+		"@tauri-apps/plugin-dialog": "^2.0.0",
+		"@tauri-apps/plugin-fs": "^2.0.0",
+		"@tauri-apps/plugin-log": "^2.0.0",
+		"@tauri-apps/plugin-shell": "^2.0.0",
 		"@typescript-eslint/eslint-plugin": "^6.21.0",
 		"@typescript-eslint/parser": "^6.21.0",
 		"autoprefixer": "^10.4.17",
@@ -36,9 +41,5 @@
 		"vite": "^5.4.8",
 		"vitest": "^2.1.2"
 	},
-	"type": "module",
-	"dependencies": {
-		"@tauri-apps/api": "^1.5.3",
-		"tauri-plugin-log-api": "github:tauri-apps/tauri-plugin-log#v1"
-	}
+	"type": "module"
 }
