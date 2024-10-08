@@ -17,7 +17,7 @@ use std::{
 
 use ahash::RandomState;
 use atlas_packer::{
-    export::{AtlasExporter as _, JpegAtlasExporter},
+    export::{AtlasExporter as _, WebpAtlasExporter},
     pack::AtlasPacker,
     place::{GuillotineTexturePlacer, TexturePlacerConfig},
     texture::{
@@ -49,8 +49,11 @@ use crate::{
 };
 use utils::calculate_normal;
 
-use super::option::{limit_texture_resolution_parameter, output_parameter};
 use super::texture_resolution::get_texture_downsample_scale_of_polygon;
+use super::{
+    option::{limit_texture_resolution_parameter, output_parameter},
+    texture_resolution::apply_downsample_factor,
+};
 
 pub struct CesiumTilesSinkProvider {}
 
@@ -65,6 +68,32 @@ impl DataSinkProvider for CesiumTilesSinkProvider {
     fn sink_options(&self) -> Parameters {
         let mut params = Parameters::new();
         params.define(output_parameter());
+        params.define(ParameterDefinition {
+            key: "min_z".into(),
+            entry: ParameterEntry {
+                description: "Minumum zoom level".into(),
+                required: true,
+                parameter: ParameterType::Integer(IntegerParameter {
+                    value: Some(15),
+                    min: Some(0),
+                    max: Some(20),
+                }),
+                label: Some("最小ズームレベル".into()),
+            },
+        });
+        params.define(ParameterDefinition {
+            key: "max_z".into(),
+            entry: ParameterEntry {
+                description: "Maximum zoom level".into(),
+                required: true,
+                parameter: ParameterType::Integer(IntegerParameter {
+                    value: Some(18),
+                    min: Some(0),
+                    max: Some(20),
+                }),
+                label: Some("最大ズームレベル".into()),
+            },
+        });
         params.define(limit_texture_resolution_parameter(false));
 
         params
@@ -79,6 +108,8 @@ impl DataSinkProvider for CesiumTilesSinkProvider {
 
     fn create(&self, params: &Parameters) -> Box<dyn DataSink> {
         let output_path = get_parameter_value!(params, "@output", FileSystemPath);
+        let min_z = get_parameter_value!(params, "min_z", Integer).unwrap() as u8;
+        let max_z = get_parameter_value!(params, "max_z", Integer).unwrap() as u8;
         let limit_texture_resolution =
             *get_parameter_value!(params, "limit_texture_resolution", Boolean);
         let transform_settings = self.transformer_options();
@@ -87,6 +118,8 @@ impl DataSinkProvider for CesiumTilesSinkProvider {
             output_path: output_path.as_ref().unwrap().into(),
             transform_settings,
             limit_texture_resolution,
+            min_z,
+            max_z,
         })
     }
 }
@@ -95,6 +128,8 @@ struct CesiumTilesSink {
     output_path: PathBuf,
     transform_settings: TransformerRegistry,
     limit_texture_resolution: Option<bool>,
+    min_z: u8,
+    max_z: u8,
 }
 
 impl DataSink for CesiumTilesSink {
@@ -118,9 +153,8 @@ impl DataSink for CesiumTilesSink {
 
         let tile_id_conv = TileIdMethod::Hilbert;
 
-        // TODO: configurable
-        let min_zoom = 15;
-        let max_zoom = 18;
+        let min_zoom = self.min_z;
+        let max_zoom = self.max_z;
 
         let limit_texture_resolution = self.limit_texture_resolution;
 
@@ -300,7 +334,7 @@ fn tile_writing_stage(
 
     // Texture cache
     // use default cache size
-    let texture_cache = TextureCache::new(100_000_000);
+    let texture_cache = TextureCache::new(200_000_000);
     let texture_size_cache = TextureSizeCache::new();
 
     // Use a temporary directory for embedding in glb.
@@ -344,7 +378,7 @@ fn tile_writing_stage(
                 let geom_error = tiling::geometric_error(tile_zoom, tile_y);
                 feedback.info(format!(
                     "tile: z={tile_zoom}, x={tile_x}, y={tile_y} (lng: [{min_lng} => {max_lng}], \
-                     lat: [{min_lat} => {max_lat}) geometricError: {geom_error}"
+                     lat: [{min_lat} => {max_lat}] geometricError: {geom_error}"
                 ));
                 let content_path = {
                     let normalized_typename = typename.replace(':', "_");
@@ -368,51 +402,6 @@ fn tile_writing_stage(
             let mut primitives: gltf::Primitives = Default::default();
 
             let mut metadata_encoder = metadata::MetadataEncoder::new(schema);
-
-            // Check the size of all the textures and calculate the power of 2 of the largest size
-            let mut max_width = 0;
-            let mut max_height = 0;
-            for serialized_feat in feats.iter() {
-                feedback.ensure_not_canceled()?;
-
-                let feature = {
-                    let (feature, _): (SlicedFeature, _) =
-                        bincode::serde::decode_from_slice(serialized_feat, bincode_config)
-                            .map_err(|err| {
-                                PipelineError::Other(format!(
-                                    "Failed to deserialize a sliced feature: {:?}",
-                                    err
-                                ))
-                            })?;
-
-                    feature
-                };
-
-                for (_, orig_mat_id) in feature
-                    .polygons
-                    .iter()
-                    .zip_eq(feature.polygon_material_ids.iter())
-                {
-                    let mat = feature.materials[*orig_mat_id as usize].clone();
-                    let t = mat.base_texture.clone();
-                    if let Some(base_texture) = t {
-                        let texture_uri = base_texture.uri.to_file_path().unwrap();
-                        let texture_size = texture_size_cache.get_or_insert(&texture_uri);
-                        max_width = max_width.max(texture_size.0);
-                        max_height = max_height.max(texture_size.1);
-                    }
-                }
-            }
-            let max_width = max_width.next_power_of_two();
-            let max_height = max_height.next_power_of_two();
-
-            // initialize texture packer
-            // To reduce unnecessary draw calls, set the lower limit for max_width and max_height to 4096
-            let config = TexturePlacerConfig {
-                width: max_width.max(2048),
-                height: max_height.max(2048),
-                padding: 0,
-            };
 
             let packer = Mutex::new(AtlasPacker::default());
 
@@ -488,6 +477,10 @@ fn tile_writing_stage(
                 format!("{}_{}_{}_{}_{}", z, x, y, feature_id, poly_count)
             };
 
+            // Check the size of all the textures and calculate the power of 2 of the largest size
+            let mut max_width = 0;
+            let mut max_height = 0;
+
             // Load all textures into the Packer
             for (feature_id, feature) in features.iter().enumerate() {
                 for (poly_count, (mat, poly)) in feature
@@ -516,13 +509,17 @@ fn tile_writing_stage(
                         let texture_uri = base_texture.uri.to_file_path().unwrap();
                         let texture_size = texture_size_cache.get_or_insert(&texture_uri);
 
-                        let downsample_scale = get_texture_downsample_scale_of_polygon(
-                            &original_vertices,
-                            texture_size,
-                            limit_texture_resolution,
-                        );
-                        let factor = apply_downsample_factor(tile_zoom, downsample_scale as f32);
+                        let downsample_scale = if limit_texture_resolution.unwrap_or(false) {
+                            get_texture_downsample_scale_of_polygon(
+                                &original_vertices,
+                                texture_size,
+                            ) as f32
+                        } else {
+                            1.0
+                        };
 
+                        let geom_error = tiling::geometric_error(tile_zoom, tile_y);
+                        let factor = apply_downsample_factor(geom_error, downsample_scale as f32);
                         let downsample_factor = DownsampleFactor::new(&factor);
                         let cropped_texture = PolygonMappedTexture::new(
                             &texture_uri,
@@ -530,6 +527,12 @@ fn tile_writing_stage(
                             &uv_coords,
                             downsample_factor,
                         );
+
+                        let scaled_width = (texture_size.0 as f32 * factor) as u32;
+                        let scaled_height = (texture_size.1 as f32 * factor) as u32;
+
+                        max_width = max_width.max(scaled_width);
+                        max_height = max_height.max(scaled_height);
 
                         // Unique id required for placement in atlas
                         let (z, x, y) = tile_id_conv.id_to_zxy(tile_id);
@@ -543,13 +546,24 @@ fn tile_writing_stage(
                 }
             }
 
+            let max_width = max_width.next_power_of_two();
+            let max_height = max_height.next_power_of_two();
+
+            // initialize texture packer
+            // To reduce unnecessary draw calls, set the lower limit for max_width and max_height to 1024
+            let config = TexturePlacerConfig {
+                width: max_width.max(1024),
+                height: max_height.max(1024),
+                padding: 0,
+            };
+
             let placer = GuillotineTexturePlacer::new(config.clone());
             let packer = packer.into_inner().unwrap();
 
             // Packing the loaded textures into an atlas
             let packed = packer.pack(placer);
 
-            let exporter = JpegAtlasExporter::default();
+            let exporter = WebpAtlasExporter::default();
             let ext = exporter.clone().get_extension().to_string();
 
             // Obtain the UV coordinates placed in the atlas by specifying the ID
@@ -724,14 +738,4 @@ fn tile_writing_stage(
     )?;
 
     Ok(())
-}
-
-fn apply_downsample_factor(z: u8, downsample_scale: f32) -> f32 {
-    let f = match z {
-        0..=14 => 0.0,
-        15..=16 => 0.25,
-        17 => 0.5,
-        _ => 1.0,
-    };
-    f * downsample_scale
 }
