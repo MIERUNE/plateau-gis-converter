@@ -388,7 +388,6 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
     #[inline(never)]
     pub fn parse_geometric_attr(
         &mut self,
-        geomref: &mut GeometryRefs,
         lod: u8,
         geomtype: GeometryParseType,
     ) -> Result<(), ParseError> {
@@ -396,15 +395,13 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
         let (feature_id, feature_type) = self.extract_feature_id_and_type();
 
         match geomtype {
-            Solid => self.parse_solid_prop(geomref, lod, feature_id, feature_type)?,
-            MultiSurface => {
-                self.parse_multi_surface_prop(geomref, lod, feature_id, feature_type)?
-            }
-            Surface => self.parse_surface_prop(geomref, lod, feature_id, feature_type)?, // FIXME
-            Geometry => self.parse_geometry_prop(geomref, lod, feature_id, feature_type)?, // FIXME: not only surfaces
-            Triangulated => self.parse_triangulated_prop(geomref, lod, feature_id, feature_type)?, // FIXME
-            Point => todo!(),      // FIXME
-            MultiPoint => todo!(), // FIXME
+            Solid => self.parse_solid_prop(lod, feature_id, feature_type)?,
+            MultiSurface => self.parse_multi_surface_prop(lod, feature_id, feature_type)?,
+            Surface => self.parse_surface_prop(lod, feature_id, feature_type)?, // FIXME
+            Geometry => self.parse_geometry_prop(lod, feature_id, feature_type)?, // FIXME: not only surfaces
+            Triangulated => self.parse_triangulated_prop(lod, feature_id, feature_type)?, // FIXME
+            Point => todo!(),                                                     // FIXME
+            MultiPoint => todo!(),                                                // FIXME
             MultiCurve => {
                 log::warn!("CompositeCurve is not supported yet.");
                 self.skip_current_element()?;
@@ -421,7 +418,6 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
 
     fn parse_multi_surface_prop(
         &mut self,
-        geomrefs: &mut GeometryRefs,
         lod: u8,
         feature_id: Option<String>,
         feature_type: Option<String>,
@@ -460,7 +456,7 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                     };
 
                     let poly_end = self.state.geometry_collector.multipolygon.len();
-                    geomrefs.push(GeometryRef {
+                    self.geomrefs.push(GeometryRef {
                         ty: geomtype,
                         lod,
                         pos: poly_begin as u32,
@@ -498,7 +494,6 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
 
     fn parse_surface_prop(
         &mut self,
-        geomrefs: &mut GeometryRefs,
         lod: u8,
         feature_id: Option<String>,
         feature_type: Option<String>,
@@ -507,7 +502,7 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
         let (surface_id, _) = self.parse_surface()?;
         let poly_end = self.state.geometry_collector.multipolygon.len();
         if poly_end - poly_begin > 0 {
-            geomrefs.push(GeometryRef {
+            self.geomrefs.push(GeometryRef {
                 ty: GeometryType::Surface,
                 lod,
                 pos: poly_begin as u32,
@@ -523,7 +518,6 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
 
     fn parse_solid_prop(
         &mut self,
-        geomrefs: &mut GeometryRefs,
         lod: u8,
         feature_id: Option<String>,
         feature_type: Option<String>,
@@ -539,7 +533,7 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
 
         let poly_end = self.state.geometry_collector.multipolygon.len();
         if poly_end - poly_begin > 0 {
-            geomrefs.push(GeometryRef {
+            self.geomrefs.push(GeometryRef {
                 ty: GeometryType::Solid,
                 lod,
                 pos: poly_begin as u32,
@@ -555,7 +549,6 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
 
     fn parse_multi_geometry(
         &mut self,
-        geomrefs: &mut GeometryRefs,
         lod: u8,
         feature_id: Option<String>,
         feature_type: Option<String>,
@@ -570,7 +563,6 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                         (Bound(GML31_NS), b"geometryMember") => {
                             inside_member = true;
                             self.parse_geometry_prop(
-                                geomrefs,
                                 lod,
                                 feature_id.clone(),
                                 feature_type.clone(),
@@ -605,7 +597,6 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
 
     fn parse_geometry_prop(
         &mut self,
-        geomrefs: &mut GeometryRefs,
         lod: u8,
         feature_id: Option<String>,
         feature_type: Option<String>,
@@ -634,7 +625,6 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                     let geomtype = match (nsres, localname.as_ref()) {
                         (Bound(GML31_NS), b"MultiGeometry") => {
                             self.parse_multi_geometry(
-                                geomrefs,
                                 lod,
                                 feature_id.clone(),
                                 feature_type.clone(),
@@ -695,7 +685,7 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
 
                     let poly_end = self.state.geometry_collector.multipolygon.len();
                     if poly_end - poly_begin > 0 {
-                        geomrefs.push(GeometryRef {
+                        self.geomrefs.push(GeometryRef {
                             ty: geomtype,
                             lod,
                             pos: poly_begin as u32,
@@ -736,7 +726,6 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
 
     fn parse_triangulated_prop(
         &mut self,
-        geomrefs: &mut GeometryRefs,
         lod: u8,
         feature_id: Option<String>,
         feature_type: Option<String>,
@@ -773,7 +762,7 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
 
         let poly_end = self.state.geometry_collector.multipolygon.len();
         if poly_end - poly_begin > 0 {
-            geomrefs.push(GeometryRef {
+            self.geomrefs.push(GeometryRef {
                 ty: GeometryType::Triangle,
                 lod,
                 pos: poly_begin as u32,
