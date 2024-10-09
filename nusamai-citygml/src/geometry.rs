@@ -1,9 +1,12 @@
-use nusamai_geometry::{MultiLineString, MultiPoint, MultiPolygon};
+use flatgeom::{MultiLineString, MultiPoint, MultiPolygon};
 use nusamai_projection::crs::*;
 
 use crate::LocalId;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+/// URI prefix for EPSG codes
+const CRS_URI_EPSG_PREFIX: &str = "http://www.opengis.net/def/crs/EPSG/0/";
+
+#[derive(Debug, Clone, Copy)]
 pub enum GeometryParseType {
     Geometry,
     Solid,
@@ -98,6 +101,7 @@ pub struct SurfaceSpan {
 #[derive(Default)]
 pub(crate) struct GeometryCollector {
     pub vertices: indexmap::IndexSet<[u64; 3], ahash::RandomState>,
+    pub geometry_crs_uri: Option<String>,
     pub multipolygon: MultiPolygon<'static, u32>,
     pub multilinestring: MultiLineString<'static, u32>,
     pub multipoint: MultiPoint<'static, u32>,
@@ -139,7 +143,7 @@ impl GeometryCollector {
         }));
     }
 
-    pub fn into_geometries(self) -> GeometryStore {
+    pub fn into_geometries(self, envelope_crs_uri: Option<String>) -> GeometryStore {
         let mut vertices = Vec::with_capacity(self.vertices.len());
         for vbits in &self.vertices {
             vertices.push([
@@ -149,8 +153,21 @@ impl GeometryCollector {
             ]);
         }
 
+        let crs_uri = envelope_crs_uri.unwrap_or(self.geometry_crs_uri.unwrap_or_default());
+
+        let epsg = if crs_uri.starts_with(CRS_URI_EPSG_PREFIX) {
+            if let Some(stripped) = crs_uri.strip_prefix(CRS_URI_EPSG_PREFIX) {
+                stripped.parse::<EpsgCode>().ok()
+            } else {
+                None
+            }
+        } else {
+            None
+        }
+        .unwrap_or(EPSG_JGD2011_GEOGRAPHIC_3D);
+
         GeometryStore {
-            epsg: EPSG_JGD2011_GEOGRAPHIC_3D,
+            epsg,
             vertices,
             multipolygon: self.multipolygon,
             multilinestring: self.multilinestring,

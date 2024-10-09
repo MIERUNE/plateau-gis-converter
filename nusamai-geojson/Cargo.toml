@@ -1,10 +1,11 @@
 [package]
 edition = "2021"
-name = "nusamai-kml"
+name = "nusamai-geojson"
 version = "0.1.0"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 flatgeom = "0.0.2"
-kml = "0.8.5"
+geojson = "0.24.1"
+serde_json = { version = "1.0.115", features = ["indexmap"] }

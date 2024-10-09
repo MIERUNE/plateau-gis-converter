@@ -1,19 +1,14 @@
 [package]
+edition = "2021"
 name = "nusamai-gpkg"
-
-authors.workspace = true
-edition.workspace = true
-license.workspace = true
-repository.workspace = true
-rust-version.workspace = true
-version.workspace = true
+version = "0.1.0"
 
 [dependencies]
-indexmap.workspace = true
-nusamai-geometry = { path = "../nusamai-geometry" }
-sqlx = { version = "0.8.1", features = ["runtime-tokio", "sqlite"] }
-thiserror.workspace = true
-url.workspace = true
+flatgeom = "0.0.2"
+indexmap = "2.2.6"
+sqlx = { version = "0.8.0", features = ["runtime-tokio", "sqlite"] }
+thiserror = "1.0.58"
+url = "2.5.0"
 
 [dev-dependencies]
 tokio = { version = "1.36", features = ["full"] }

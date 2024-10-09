@@ -19,7 +19,10 @@ fn main() -> io::Result<()> {
         byte_length,
         ..Default::default()
     };
-    buffer.uri = "data:application/octet-stream;base64,AAABAAIAAAAAAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAA=".to_string().into();
+    buffer.uri = "data:application/octet-stream;base64,AAABAAIAAAAAAAAAAAAAAAAAAAAAAIA/\
+                  AAAAAAAAAAAAAAAAAACAPwAAAAA="
+        .to_string()
+        .into();
 
     let buffer_view1 = BufferView {
         name: None,

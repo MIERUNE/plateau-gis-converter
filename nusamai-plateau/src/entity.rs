@@ -5,7 +5,7 @@ use nusamai_citygml::{geometry::GeometryStore, object::Value, GeometryRefs};
 use crate::appearance::AppearanceStore;
 
 /// City objects, features, objects or data
-#[derive(Debug, serde::Deserialize, serde::Serialize)]
+#[derive(Debug, serde::Deserialize, serde::Serialize, Clone)]
 pub struct Entity {
     /// GML id
     pub id: String,
@@ -26,8 +26,7 @@ pub struct Entity {
 
     pub geometry_refs: GeometryRefs,
 }
-
-#[derive(Debug, serde::Deserialize, serde::Serialize)]
+#[derive(Debug, serde::Deserialize, serde::Serialize, Clone)]
 pub struct BoundedBy {
     pub id: String,
     pub geometry_refs: GeometryRefs,

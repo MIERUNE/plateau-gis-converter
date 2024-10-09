@@ -14,33 +14,36 @@ fn toplevel_dispatcher<R: BufRead>(
 ) -> Result<Vec<CityObject>, ParseError> {
     let mut cityobjs = Vec::new();
 
-    match st.parse_children(|st| match st.current_path() {
-        b"core:cityObjectMember" => {
-            let mut cityobj: TopLevelCityObject = Default::default();
-            cityobj.parse(st)?;
-            let geometries = st.collect_geometries();
-            cityobjs.push(CityObject {
-                cityobj,
-                geometries,
-            });
-            Ok(())
+    match st.parse_children(|st| {
+        let current_path: &[u8] = &st.current_path();
+        match current_path {
+            b"core:cityObjectMember" => {
+                let mut cityobj: TopLevelCityObject = Default::default();
+                cityobj.parse(st)?;
+                let geometries = st.collect_geometries(None);
+                cityobjs.push(CityObject {
+                    cityobj,
+                    geometries,
+                });
+                Ok(())
+            }
+            b"gml:boundedBy" => {
+                st.skip_current_element()?;
+                Ok(())
+            }
+            b"app:appearanceMember" => {
+                let mut app: AppearanceProperty = Default::default();
+                app.parse(st)?;
+                let AppearanceProperty::Appearance(_app) = app else {
+                    unreachable!();
+                };
+                Ok(())
+            }
+            other => Err(ParseError::SchemaViolation(format!(
+                "Unrecognized element {}",
+                String::from_utf8_lossy(other)
+            ))),
         }
-        b"gml:boundedBy" => {
-            st.skip_current_element()?;
-            Ok(())
-        }
-        b"app:appearanceMember" => {
-            let mut app: AppearanceProperty = Default::default();
-            app.parse(st)?;
-            let AppearanceProperty::Appearance(_app) = app else {
-                unreachable!();
-            };
-            Ok(())
-        }
-        other => Err(ParseError::SchemaViolation(format!(
-            "Unrecognized element {}",
-            String::from_utf8_lossy(other)
-        ))),
     }) {
         Ok(_) => Ok(cityobjs),
         Err(e) => {

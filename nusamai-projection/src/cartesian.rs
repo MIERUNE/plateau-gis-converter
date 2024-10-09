@@ -68,6 +68,99 @@ pub fn geocentric_to_geodetic(ellips: &Ellipsoid, x: f64, y: f64, z: f64) -> (f6
     (lam.to_degrees(), phi.to_degrees(), h)
 }
 
+// /// Convert from geocentric to geodetic coordinate system.
+// pub fn geocentric_to_geodetic(ellips: &Ellipsoid, x: f64, y: f64, z: f64) -> (f64, f64, f64) {
+//     // Ported from OJ
+//
+//     let (lam, p_div_a, z_div_a) = {
+//         let ra = 1. / ellips.a();
+//         let x_div_a = x * ra;
+//         let y_div_a = y * ra;
+//         let z_div_a = z * ra;
+//         let lam = f64::atan2(y_div_a, x_div_a);
+//
+//         // Perpendicular distance from point to Z-axis (HM eq. 5-28)
+//         let p_div_a = (x_div_a * x_div_a + y_div_a * y_div_a).sqrt();
+//
+//         (lam, p_div_a, z_div_a)
+//     };
+//
+//     // Non-optimized version:
+//     // theta = atan2(z * ellips.a(), p * ellips.b());
+//     // c = cos(theta);
+//     // s = sin(theta);
+//     let b_div_a = 1. - ellips.f();
+//     let (c, s) = {
+//         let p_div_a_b_div_a = p_div_a * b_div_a;
+//         let norm = (z_div_a * z_div_a + p_div_a_b_div_a * p_div_a_b_div_a).sqrt();
+//         if norm != 0.0 {
+//             let inv_norm = 1.0 / norm;
+//             let c = p_div_a_b_div_a * inv_norm;
+//             let s = z_div_a * inv_norm;
+//             (c, s)
+//         } else {
+//             (1., 0.)
+//         }
+//     };
+//
+//     let e2s = ellips.e_sq() / (1.0 - ellips.e_sq());
+//     let y_phi = z_div_a + e2s * b_div_a * s * s * s;
+//     let x_phi = p_div_a - ellips.e_sq() * c * c * c;
+//     let norm_phi = (y_phi * y_phi + x_phi * x_phi).sqrt();
+//
+//     let (mut cosphi, mut sinphi) = if norm_phi != 0. {
+//         let inv_norm_phi = 1.0 / norm_phi;
+//         (x_phi * inv_norm_phi, y_phi * inv_norm_phi)
+//     } else {
+//         (1., 0.)
+//     };
+//     let phi = if x_phi <= 0. {
+//         // this happen on non-sphere ellipsoid when x,y,z is very close to 0
+//         // there is no single solution to the cart->geodetic conversion in
+//         // that case, clamp to -90/90 deg and avoid a discontinuous boundary
+//         // near the poles
+//         cosphi = 0.;
+//         sinphi = if z >= 0. { 1. } else { -1. };
+//         if z >= 0. {
+//             FRAC_2_PI
+//         } else {
+//             -FRAC_2_PI
+//         }
+//     } else {
+//         f64::atan2(y_phi, x_phi)
+//     };
+//
+//     fn geocentric_radius(a: f64, b_div_a: f64, cosphi: f64, sinphi: f64) -> f64 {
+//         // Non-optimized version:
+//         // const double b = a * b_div_a;
+//         // return hypot(a * a * cosphi, b * b * sinphi) /
+//         //        hypot(a * cosphi, b * sinphi);
+//         let cosphi_sq = cosphi * cosphi;
+//         let sinphi_sq = sinphi * sinphi;
+//         let b_div_a_sq = b_div_a * b_div_a;
+//         let b_div_a_sq_mul_sinphi_sq = b_div_a_sq * sinphi_sq;
+//         a * ((cosphi_sq + b_div_a_sq * b_div_a_sq_mul_sinphi_sq)
+//             / (cosphi_sq + b_div_a_sq_mul_sinphi_sq))
+//             .sqrt()
+//     }
+//
+//     let height = if cosphi < 1e-6 {
+//         // poleward of 89.99994 deg, we avoid division by zero
+//         // by computing the height as the cartesian z value
+//         // minus the geocentric radius of the Earth at the given latitude
+//         z.abs() - geocentric_radius(ellips.a(), b_div_a, cosphi, sinphi)
+//     } else {
+//         let n = if ellips.e_sq() == 0.0 {
+//             ellips.a() // optimization for sphere (e=0)
+//         } else {
+//             ellips.a() / (1. - ellips.e_sq() * sinphi * sinphi).sqrt()
+//         };
+//         ellips.a() * p_div_a / cosphi - n
+//     };
+//
+//     (lam.to_degrees(), phi.to_degrees(), height)
+// }
+
 #[cfg(test)]
 mod tests {
     use super::*;

@@ -88,7 +88,7 @@ fn parse_definition<R: BufRead>(
                 ));
             }
             Ok(_) => {}
-            Err(e) => return Err(ParseError::XmlError(e)),
+            Err(e) => return Err(e.into()),
         }
     }
 
@@ -107,8 +107,10 @@ pub fn parse_dictionary<R: BufRead>(
     src_reader: R,
 ) -> Result<HashMap<String, Definition>, ParseError> {
     let mut reader = quick_xml::NsReader::from_reader(src_reader);
-    reader.config_mut().trim_text(true);
-    reader.config_mut().expand_empty_elements = true;
+    let config = reader.config_mut();
+    config.trim_text(true);
+    config.expand_empty_elements = true;
+
     let mut depth = 0;
     let mut buf = Vec::new();
     let mut buf2 = Vec::new();

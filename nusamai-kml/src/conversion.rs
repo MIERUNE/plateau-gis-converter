@@ -1,11 +1,9 @@
 use std::{collections::HashMap, vec};
 
+use flatgeom::{Coord, MultiPoint, MultiPoint3, MultiPolygon, MultiPolygon3, Polygon, Polygon3};
 use kml::types::{
     AltitudeMode, Coord as KmlCoord, Geometry, LinearRing, MultiGeometry, Point,
     Polygon as KmlPolygon,
-};
-use nusamai_geometry::{
-    Coord, MultiPoint, MultiPoint3, MultiPolygon, MultiPolygon3, Polygon, Polygon3,
 };
 
 pub fn multipolygon_to_kml(mpoly: &MultiPolygon3) -> Vec<KmlPolygon> {
@@ -84,7 +82,7 @@ fn polygon_to_kml_inner_boundary_with_mapping<T: Coord>(
         .collect()
 }
 
-/// Create a kml::MultiGeometry with Polygon from `nusamai_geometry::MultiPoint` with a mapping function.
+/// Create a kml::MultiGeometry with Polygon from `flatgeom::MultiPoint` with a mapping function.
 pub fn polygon_to_kml_with_mapping<T: Coord>(
     poly: &Polygon<T>,
     mapping: impl Fn(T) -> [f64; 3],
@@ -92,7 +90,7 @@ pub fn polygon_to_kml_with_mapping<T: Coord>(
     vec![polygon_to_kml_polygon_with_mapping(poly, mapping)]
 }
 
-/// Create a kml::MultiGeometry from a nusamai_geometry::MultiPolygon
+/// Create a kml::MultiGeometry from a flatgeom::MultiPolygon
 pub fn polygon_to_kml(poly: &Polygon3) -> Vec<KmlPolygon> {
     polygon_to_kml_with_mapping(poly, |c| c)
 }
@@ -102,7 +100,7 @@ pub fn indexed_polygon_to_kml(vertices: &[[f64; 3]], poly_idx: &Polygon<u32>) ->
     polygon_to_kml_with_mapping(poly_idx, |idx| vertices[idx as usize])
 }
 
-/// Create a kml::MultiGeometry with Points from `nusamai_geometry::MultiPoint` with a mapping function.
+/// Create a kml::MultiGeometry with Points from `flatgeom::MultiPoint` with a mapping function.
 pub fn multipoint_to_kml_with_mapping<T: Coord>(
     mpoint: &MultiPoint<T>,
     mapping: impl Fn(T) -> [f64; 3],
@@ -125,7 +123,7 @@ pub fn indexed_multipoint_to_kml(
     multipoint_to_kml_with_mapping(mpoint_idx, |idx| vertices[idx as usize])
 }
 
-/// Create a kml::MultiGeometry from a nusamai_geometry::MultiPoint
+/// Create a kml::MultiGeometry from a flatgeom::MultiPoint
 pub fn multipoint_to_kml(mpoint: &MultiPoint3) -> MultiGeometry {
     multipoint_to_kml_with_mapping(mpoint, |c| c)
 }

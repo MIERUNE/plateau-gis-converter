@@ -32,7 +32,6 @@ impl Clone for Jgd2011ToWgs84 {
         Self::new()
     }
 }
-
 #[cfg(test)]
 mod tests {
     use super::*;

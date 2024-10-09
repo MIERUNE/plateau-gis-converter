@@ -1,17 +1,12 @@
 [package]
+edition = "2021"
 name = "nusamai-mvt"
-
-authors.workspace = true
-edition.workspace = true
-license.workspace = true
-repository.workspace = true
-rust-version.workspace = true
-version.workspace = true
+version = "0.1.0"
 
 [dependencies]
-ahash.workspace = true
-indexmap.workspace = true
-prost = "0.13.1"
+ahash = "0.8.11"
+indexmap = "2.2.6"
+prost = "0.13.3"
 
 [build-dependencies]
-prost-build = "0.13.1"
+prost-build = "0.13.3"

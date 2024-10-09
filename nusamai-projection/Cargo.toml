@@ -1,13 +1,8 @@
 [package]
+edition = "2021"
 name = "nusamai-projection"
-
-authors.workspace = true
-edition.workspace = true
-license.workspace = true
-repository.workspace = true
-rust-version.workspace = true
-version.workspace = true
+version = "0.1.0"
 
 [dependencies]
 japan-geoid = "0.4.0"
-thiserror.workspace = true
+thiserror = "1.0.58"

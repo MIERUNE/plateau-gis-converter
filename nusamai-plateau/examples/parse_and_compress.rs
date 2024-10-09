@@ -23,7 +23,7 @@ fn example_toplevel_dispatcher<R: BufRead>(
             b"core:cityObjectMember" => {
                 let mut cityobj: nusamai_plateau::models::TopLevelCityObject = Default::default();
                 cityobj.parse(st)?;
-                let geometries = st.collect_geometries();
+                let geometries = st.collect_geometries(None);
 
                 if let Some(root) = cityobj.into_object() {
                     let obj = self::TopLevelCityObject { root, geometries };
