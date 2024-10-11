@@ -90,36 +90,6 @@ pub fn slice_to_tiles<E>(
     };
     let mut ring_buffer: Vec<[f64; 5]> = Vec::new();
 
-    fn desired_lod(geom_error: f64) -> u8 {
-        if geom_error >= 30.0 {
-            1
-        } else if geom_error >= 15.0 {
-            2
-        } else if geom_error >= 8.0 {
-            3
-        } else {
-            4
-        }
-    }
-
-    fn should_process_entry(entry_lod: u8, geom_error: f64, available_lods: &HashSet<u8>) -> bool {
-        let desired_lod = desired_lod(geom_error);
-
-        let possible_lods: Vec<u8> = available_lods
-            .iter()
-            .cloned()
-            .filter(|&lod| lod >= desired_lod)
-            .collect();
-
-        if !possible_lods.is_empty() {
-            let selected_lod = *possible_lods.iter().min().unwrap();
-            entry_lod == selected_lod
-        } else {
-            let selected_lod = *available_lods.iter().max().unwrap();
-            entry_lod == selected_lod
-        }
-    }
-
     let available_lods: HashSet<u8> = geometries
         .iter()
         .map(|entry| entry.lod)
@@ -175,12 +145,14 @@ pub fn slice_to_tiles<E>(
                                 tiling::scheme::geometric_error(zoom, y)
                             };
 
+                            // If you have multiple LODs, extract the appropriate LOD according to the geometricError.
+                            // This works when the "All LOD" option is used.
                             if !should_process_entry(entry.lod, geom_error, &available_lods) {
                                 continue;
                             }
 
                             // Skip the feature if the size is small for geometricError.
-                            let threshold = geom_error / 0.8;
+                            let threshold = geom_error / 0.7;
                             if approx_dx < threshold
                                 && approx_dy < threshold
                                 && approx_dh < threshold
@@ -429,5 +401,35 @@ fn slice_polygon(
 
             send_polygon(key, &poly_buf);
         }
+    }
+}
+
+fn desired_lod(geom_error: f64) -> u8 {
+    if geom_error >= 30.0 {
+        1
+    } else if geom_error >= 20.0 {
+        2
+    } else if geom_error >= 5.0 {
+        3
+    } else {
+        4
+    }
+}
+
+fn should_process_entry(entry_lod: u8, geom_error: f64, available_lods: &HashSet<u8>) -> bool {
+    let desired_lod = desired_lod(geom_error);
+
+    let possible_lods: Vec<u8> = available_lods
+        .iter()
+        .cloned()
+        .filter(|&lod| lod >= desired_lod)
+        .collect();
+
+    if !possible_lods.is_empty() {
+        let selected_lod = *possible_lods.iter().min().unwrap();
+        entry_lod == selected_lod
+    } else {
+        let selected_lod = *available_lods.iter().max().unwrap();
+        entry_lod == selected_lod
     }
 }
