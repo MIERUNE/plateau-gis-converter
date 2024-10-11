@@ -72,8 +72,8 @@ impl LodSelection {
             ("最大LOD", "max_lod"),
             ("最小LOD", "min_lod"),
             ("テクスチャ付き最大LOD", "textured_max_lod"),
-            // This option will be used in 3dtiles sink
-            // ("すべてのLOD", "all_lod"),
+            // This option will be used in 3dtiles sink.
+            ("すべてのLOD", "all_lod"),
         ]
     }
 
