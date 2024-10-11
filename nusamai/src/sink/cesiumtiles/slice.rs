@@ -1,5 +1,6 @@
 //! Polygon slicing algorithm based on [geojson-vt](https://github.com/mapbox/geojson-vt).
 
+use ahash::HashSet;
 use flatgeom::{MultiPolygon, Polygon, Polygon2, Polygon3};
 use hashbrown::HashMap;
 use indexmap::IndexSet;
@@ -89,6 +90,43 @@ pub fn slice_to_tiles<E>(
     };
     let mut ring_buffer: Vec<[f64; 5]> = Vec::new();
 
+    fn desired_lod(geom_error: f64) -> u8 {
+        if geom_error >= 30.0 {
+            1
+        } else if geom_error >= 15.0 {
+            2
+        } else if geom_error >= 8.0 {
+            3
+        } else {
+            4
+        }
+    }
+
+    fn should_process_entry(entry_lod: u8, geom_error: f64, available_lods: &HashSet<u8>) -> bool {
+        let desired_lod = desired_lod(geom_error);
+
+        let possible_lods: Vec<u8> = available_lods
+            .iter()
+            .cloned()
+            .filter(|&lod| lod >= desired_lod)
+            .collect();
+
+        if !possible_lods.is_empty() {
+            let selected_lod = *possible_lods.iter().min().unwrap();
+            entry_lod == selected_lod
+        } else {
+            let selected_lod = *available_lods.iter().max().unwrap();
+            entry_lod == selected_lod
+        }
+    }
+
+    let available_lods: HashSet<u8> = geometries
+        .iter()
+        .map(|entry| entry.lod)
+        .sorted()
+        .dedup()
+        .collect();
+
     geometries.iter().for_each(|entry| {
         match entry.ty {
             GeometryType::Solid | GeometryType::Surface | GeometryType::Triangle => {
@@ -130,15 +168,19 @@ pub fn slice_to_tiles<E>(
 
                     // Slice polygon for each zoom level
                     for zoom in min_zoom..=max_zoom {
-                        // Skip the feature if the size is small for geometricError.
-                        // TODO: better method ? (bounding sphere, etc.)
-                        if zoom < max_zoom {
+                        if zoom <= max_zoom {
                             let geom_error = {
                                 let (_, _, y) =
                                     tiling::scheme::zxy_from_lng_lat(zoom, lng_center, lat_center);
                                 tiling::scheme::geometric_error(zoom, y)
                             };
-                            let threshold = geom_error / 0.9; // TODO: adjustable
+
+                            if !should_process_entry(entry.lod, geom_error, &available_lods) {
+                                continue;
+                            }
+
+                            // Skip the feature if the size is small for geometricError.
+                            let threshold = geom_error / 0.8;
                             if approx_dx < threshold
                                 && approx_dy < threshold
                                 && approx_dh < threshold
