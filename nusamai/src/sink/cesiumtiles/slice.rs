@@ -152,7 +152,7 @@ pub fn slice_to_tiles<E>(
                             }
 
                             // Skip the feature if the size is small for geometricError.
-                            let threshold = geom_error / 0.7;
+                            let threshold = geom_error * 0.5;
                             if approx_dx < threshold
                                 && approx_dy < threshold
                                 && approx_dh < threshold
