@@ -320,17 +320,6 @@ fn feature_sorting_stage(
     Ok(())
 }
 
-fn geometry_filtering_stage(
-    output_path: &Path,
-    feedback: &Feedback,
-    receiver_sorted: mpsc::Receiver<(u64, String, Vec<Vec<u8>>)>,
-    tile_id_conv: TileIdMethod,
-    schema: &Schema,
-    limit_texture_resolution: Option<bool>,
-) -> Result<()> {
-    Ok(())
-}
-
 fn tile_writing_stage(
     output_path: &Path,
     feedback: &Feedback,
