@@ -36,7 +36,7 @@ impl Transform for FilterLodTransform {
                 let available_lods = find_lods(&entity.root) & self.mask;
                 let mut highest_textured_lod = None;
 
-                // Since the “maximum LOD” is decided from the beginning, if the texture does not exist,
+                // Since the "maximum LOD" is decided from the beginning, if the texture does not exist,
                 //  the maximum LOD can be returned immediately.
                 let highest_available_lod = available_lods.highest_lod().unwrap_or(0);
 
