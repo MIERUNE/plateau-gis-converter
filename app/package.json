@@ -13,6 +13,7 @@
 		"format": "prettier --plugin-search-dir . --write .",
 		"tauri": "tauri"
 	},
+	"type": "module",
 	"devDependencies": {
 		"@iconify/svelte": "^3.1.6",
 		"@sveltejs/adapter-static": "^3.0.1",
@@ -41,5 +42,10 @@
 		"vite": "^5.4.8",
 		"vitest": "^2.1.2"
 	},
-	"type": "module"
+	"optionalDependencies": {
+		"@rollup/rollup-darwin-arm64": "4.24.0",
+		"@rollup/rollup-win32-x64-msvc": "^4.24.0",
+		"@rollup/rollup-linux-x64-gnu": "^4.24.0",
+		"@rollup/rollup-darwin-x64": "4.24.0"
+	}
 }
