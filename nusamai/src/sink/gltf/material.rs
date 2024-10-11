@@ -13,7 +13,7 @@ use crate::pipeline::Feedback;
 pub struct Material {
     pub base_color: [f32; 4],
     pub base_texture: Option<Texture>,
-    // NOTE: Adjust the hash implementation if you add more fields
+    // NOTE: You MUST adjust the Hash implementation if you add more fields
 }
 
 impl Eq for Material {}

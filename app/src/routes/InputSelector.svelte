@@ -1,38 +1,43 @@
 <script lang="ts">
-	import { dialog, fs } from '@tauri-apps/api';
+	import {} from '@tauri-apps/api';
 	import Icon from '@iconify/svelte';
 	import { abbreviatePath } from '$lib/utils';
+	import * as dialog from '@tauri-apps/plugin-dialog';
+	import * as fs from '@tauri-apps/plugin-fs';
+	import * as path from '@tauri-apps/api/path';
 
 	// let isFolderMode = true;
 	let isFolderMode = import.meta.env.VITE_TEST_INPUT_PATH ? false : true;
-	let inputFolders: string[] = [];
+	let inputDirectories: string[] = [];
 	export let inputPaths: string[] = [];
 
 	// Clear the inputs when the mode changes
 	$: if (isFolderMode || !isFolderMode) {
-		inputFolders = [];
+		inputDirectories = [];
 		inputPaths = import.meta.env.VITE_TEST_INPUT_PATH ? [import.meta.env.VITE_TEST_INPUT_PATH] : [];
 	}
 
-	async function openFolderDialog() {
+	async function openDirectoryDialog() {
 		const res = await dialog.open({
 			multiple: true,
 			directory: true
 		});
 		if (!res) return;
-		inputFolders = Array.isArray(res) ? res : [res];
-		inputPaths = [];
-		for (const folder of inputFolders) {
-			const files = await fs.readDir(folder);
-			const gmlFiles = files.filter((d) => d.name?.endsWith('.gml'));
-			inputPaths = inputPaths.concat(gmlFiles.map((d) => d.path));
+
+		inputDirectories = Array.isArray(res) ? res : [res];
+		let pathPromises: Promise<string>[] = [];
+		for (const directory of inputDirectories) {
+			const files = await fs.readDir(directory);
+			const gmlFiles = files.filter((d) => d.isFile && d.name?.endsWith('.gml'));
+			pathPromises = pathPromises.concat(gmlFiles.map(async (d) => path.join(directory, d.name)));
 		}
+		inputPaths = await Promise.all(pathPromises);
 
 		if (inputPaths.length === 0) {
 			await dialog.message('選択したフォルダにGMLファイルが含まれていません', {
-				type: 'warning'
+				kind: 'warning'
 			});
-			inputFolders = [];
+			inputDirectories = [];
 		}
 	}
 
@@ -52,7 +57,7 @@
 	}
 
 	function clearSelected() {
-		inputFolders = [];
+		inputDirectories = [];
 		inputPaths = [];
 	}
 </script>
@@ -85,23 +90,23 @@
 
 		<div class="flex items-center gap-3">
 			<button
-				on:click={isFolderMode ? openFolderDialog : openFileDialog}
+				on:click={isFolderMode ? openDirectoryDialog : openFileDialog}
 				class="bg-accent1 font-semibold rounded px-4 py-0.5 shadow hover:opacity-75">選択</button
 			>
 			<div class="text-sm">
 				{#if isFolderMode}
-					{#if inputFolders.length === 0}
+					{#if inputDirectories.length === 0}
 						<p class="text-red-400">フォルダが選択されていません</p>
 					{:else}
 						<div class="flex items-center gap-1">
 							<p>
-								<b>{inputFolders.length}</b> フォルダ （計 <b>{inputPaths.length}</b> GMLファイル）
+								<b>{inputDirectories.length}</b> フォルダ （計 <b>{inputPaths.length}</b> GMLファイル）
 							</p>
 							<button class="tooltip hover:text-accent1">
 								<Icon class="text-2xl" icon="material-symbols-light:list-alt-rounded" />
 								<div class="tooltip-text max-h-64 overflow-y-auto">
 									<ol>
-										{#each inputFolders as folder}
+										{#each inputDirectories as folder}
 											<li class="text-xs">{abbreviatePath(folder, 30)}</li>
 										{/each}
 									</ol>
@@ -137,7 +142,7 @@
 	</div>
 </div>
 
-<style>
+<style lang="postcss">
 	.active {
 		@apply bg-accent1;
 		pointer-events: none;

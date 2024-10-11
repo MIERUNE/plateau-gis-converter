@@ -8,14 +8,14 @@ default = ["serde"]
 serde = ["dep:serde"]
 
 [dependencies]
-quick-xml = "0.31.0"
+quick-xml = "0.36.2"
 serde = { version = "1.0.197", features = ["derive", "rc"], optional = true }
 nusamai-citygml = { path = "../nusamai-citygml", features = ["serde"]}
-flatgeom= "0.0"
+flatgeom = "0.0"
 chrono = { version = "0.4.35", features = ["serde"], default-features = false }
 url = "2.5.0"
 stretto = "0.8.3"
-hashbrown = { version = "0.14.3", features = ["serde"] }
+hashbrown = { version = "0.15.0", features = ["serde"] }
 indexmap = "2.2.6"
 log = "0.4.21"
 

@@ -1,7 +1,7 @@
 <script lang="ts">
-	import { message } from '@tauri-apps/api/dialog';
-	import { invoke } from '@tauri-apps/api/tauri';
-	import { attachConsole } from 'tauri-plugin-log-api';
+	import { message } from '@tauri-apps/plugin-dialog';
+	import { invoke } from '@tauri-apps/api/core';
+	import { attachConsole } from '@tauri-apps/plugin-log';
 	import type { SinkParameters } from '$lib/sinkparams';
 	import type { TransformerRegistry } from '$lib/transformer';
 
@@ -40,12 +40,12 @@
 			});
 
 			isRunning = false;
-			await message(`変換が完了しました。\n'${outputPath}' に出力しました。`, { type: 'info' });
+			await message(`変換が完了しました。\n'${outputPath}' に出力しました。`, { kind: 'info' });
 		} catch (error: any) {
 			if (error.type != 'Canceled') {
 				await message(`エラーが発生しました。\n\n${error.type}: ${error.message}`, {
 					title: '変換エラー',
-					type: 'error'
+					kind: 'error'
 				});
 			}
 			isRunning = false;

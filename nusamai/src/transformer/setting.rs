@@ -72,8 +72,8 @@ impl LodSelection {
             ("最大LOD", "max_lod"),
             ("最小LOD", "min_lod"),
             ("テクスチャ付き最大LOD", "textured_max_lod"),
-            // This option will be used in 3dtiles sink
-            // ("すべてのLOD", "all_lod"),
+            // This option will be used in 3dtiles sink.
+            ("すべてのLOD", "all_lod"),
         ]
     }
 
@@ -105,6 +105,8 @@ pub struct TransformerConfig {
     pub parameter: ParameterType,
 }
 
+// FIXME: 設計を見直す
+// FIXME: 意味のある名前に変える
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
 pub struct TransformerRegistry {
     pub configs: Vec<TransformerConfig>,
