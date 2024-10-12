@@ -74,7 +74,7 @@ pub fn apply_downsample_factor(geometric_error: f64, downsample_scale: f32) -> f
         // Applying a scale factor increases the distance per pixel and decreases the texture resolution.
         // The resolution of textures generated from aerial photographs is typically 10~20 cm.
         // When the geometric error is 0, the scale approaches 1.
-        let error_factor = 1.0 / (1.0 + (geometric_error / 8.0).powf(1.25));
+        let error_factor = 1.0 / (1.0 + (geometric_error / 15.0).powf(0.85));
         if error_factor.is_nan() {
             1.0
         } else {
@@ -83,11 +83,8 @@ pub fn apply_downsample_factor(geometric_error: f64, downsample_scale: f32) -> f
     };
 
     println!(
-        "geometric_error: {}, downsample_scale: {}, error_factor: {}, result: {}",
-        geometric_error,
-        downsample_scale,
-        error_factor,
-        (error_factor * downsample_scale as f64).clamp(0.0, 1.0)
+        "geometric_error: {}, downsample_scale: {}, error_factor: {}",
+        geometric_error, downsample_scale, error_factor
     );
 
     (error_factor * downsample_scale as f64).clamp(0.0, 1.0) as f32
