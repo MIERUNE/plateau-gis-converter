@@ -76,7 +76,7 @@ impl DataSinkProvider for CesiumTilesSinkProvider {
                 parameter: ParameterType::Integer(IntegerParameter {
                     value: Some(15),
                     min: Some(0),
-                    max: Some(20),
+                    max: Some(22),
                 }),
                 label: Some("最小ズームレベル".into()),
             },
@@ -89,7 +89,7 @@ impl DataSinkProvider for CesiumTilesSinkProvider {
                 parameter: ParameterType::Integer(IntegerParameter {
                     value: Some(18),
                     min: Some(0),
-                    max: Some(20),
+                    max: Some(22),
                 }),
                 label: Some("最大ズームレベル".into()),
             },
