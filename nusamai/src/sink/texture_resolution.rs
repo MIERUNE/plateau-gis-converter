@@ -82,10 +82,5 @@ pub fn apply_downsample_factor(geometric_error: f64, downsample_scale: f32) -> f
         }
     };
 
-    println!(
-        "geometric_error: {}, downsample_scale: {}, error_factor: {}",
-        geometric_error, downsample_scale, error_factor
-    );
-
     (error_factor * downsample_scale as f64).clamp(0.0, 1.0) as f32
 }
