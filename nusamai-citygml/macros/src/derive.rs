@@ -134,7 +134,7 @@ fn generate_citygml_impl_for_struct(
                         let hash = hash(&c);
 
                         child_arms.push(quote! {
-                            (#hash, #path) => st.parse_geometric_attr(#lod, ::nusamai_citygml::geometry::GeometryParseType::#geomtype),
+                            (#hash, #path) => st.parse_geometric_attr(&mut self.#field_ident, #lod, ::nusamai_citygml::geometry::GeometryParseType::#geomtype),
                         });
                     };
 
