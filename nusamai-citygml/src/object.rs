@@ -61,6 +61,20 @@ pub enum Value {
 }
 
 impl Value {
+    pub fn id(&self) -> Option<&str> {
+        match self {
+            Value::Object(obj) => obj.stereotype.id(),
+            _ => None,
+        }
+    }
+
+    pub fn typename(&self) -> Option<&str> {
+        match self {
+            Value::Object(obj) => Some(obj.typename.as_ref()),
+            _ => None,
+        }
+    }
+
     /// Traverses the attribute tree and apply the function to each object.
     pub fn traverse_object_mut(&mut self, mut f: impl FnMut(&mut Object)) {
         self.traverse_object_mut_inner(&mut f);
