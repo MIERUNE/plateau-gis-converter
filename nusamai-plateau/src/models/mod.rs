@@ -38,6 +38,7 @@ use crate::BoundedBy;
 
 use self::uro::UNDERGROUND_BUILDING_SURFACE_MAPPINGS;
 
+#[allow(clippy::large_enum_variant)]
 #[citygml_property(name = "_:TopLevelFeatureProperty")]
 pub enum TopLevelCityObject {
     //
