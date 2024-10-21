@@ -102,7 +102,6 @@ PLATEAU の標準仕様に準拠した CityGML 2.0 形式の3D都市モデルは
   - [`nusamai-plateau`](./nusamai-plateau/) &mdash; PLATEAU 用の CityGML モデルおよびパーサ
 - 基盤・ユーティリティ（本プロジェクトのユースケースと癒着しないように構成）：
   - [`nusamai-projection`](./nusamai-projection/) &mdash; 投影法変換
-  - [`nusamai-mvt`](./nusamai-mvt/) &mdash; Mapbox Vector Tiles (MVT)
   - [`nusamai-gpkg`](./nusamai-gpkg/) &mdash; GeoPackage
   - [`nusamai-gltf`](./nusamai-gltf/) &mdash; glTF
   - [`nusamai-geojson`](./nusamai-geojson/) &mdash; GeoJSON
@@ -119,6 +118,7 @@ PLATEAU の標準仕様に準拠した CityGML 2.0 形式の3D都市モデルは
 - [MIERUNE/dda-vozelize-rs](https://github.com/MIERUNE/dda-voxelize-rs) &mdash; 3Dメッシュサーフェスの高速なボクセル化
 - [MIERUNE/cesiumtiles-rs](https://github.com/MIERUNE/cesiumtiles-rs) &mdash; 3D TilesのJSONモデルなど
 - [MIERUNE/atlas-packer](https://github.com/MIERUNE/atlas-packer) &mdash; テクスチャアトラスの作成
+- [MIERUNE/tinymvt](https://github.com/MIERUNE/tinymvt) &mdash; A small utility for generating MVT
 
 ## 8. ライセンス
 
