@@ -17,6 +17,7 @@ pub struct PrimitiveInfo {
 
 pub type Primitives = HashMap<material::Material, PrimitiveInfo>;
 
+#[allow(clippy::too_many_arguments)]
 pub fn write_gltf_glb<W: Write>(
     feedback: &feedback::Feedback,
     writer: W,
