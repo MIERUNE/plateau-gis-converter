@@ -308,7 +308,7 @@ pub enum TopLevelCityObject {
     #[citygml(path = b"urf:TideFacility")]
     TideFacility(urf::TideFacility),
     #[citygml(path = b"urf:TrafficFacility")]
-    TrafficFacility(urf::TrafficFacility),
+    TrafficFacility(Box<urf::TrafficFacility>),
     #[citygml(path = b"urf:TreatmentFacility")]
     TreatmentFacility(urf::TreatmentFacility),
     #[citygml(path = b"urf:TreePlantingDistrict")]
