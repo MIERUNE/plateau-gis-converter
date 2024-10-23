@@ -29,6 +29,7 @@ pub use tunnel::Tunnel;
 pub use vegetation::{PlantCover, SolitaryVegetationObject};
 pub use waterbody::WaterBody;
 
+#[allow(clippy::large_enum_variant)]
 #[citygml_property(name = "_:TopLevelFeatureProperty")]
 pub enum TopLevelCityObject {
     //
