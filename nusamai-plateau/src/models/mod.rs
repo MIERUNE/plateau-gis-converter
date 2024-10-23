@@ -29,7 +29,6 @@ pub use tunnel::Tunnel;
 pub use vegetation::{PlantCover, SolitaryVegetationObject};
 pub use waterbody::WaterBody;
 
-#[allow(clippy::large_enum_variant)]
 #[citygml_property(name = "_:TopLevelFeatureProperty")]
 pub enum TopLevelCityObject {
     //
@@ -309,7 +308,7 @@ pub enum TopLevelCityObject {
     #[citygml(path = b"urf:TideFacility")]
     TideFacility(urf::TideFacility),
     #[citygml(path = b"urf:TrafficFacility")]
-    TrafficFacility(urf::TrafficFacility),
+    TrafficFacility(Box<urf::TrafficFacility>),
     #[citygml(path = b"urf:TreatmentFacility")]
     TreatmentFacility(urf::TreatmentFacility),
     #[citygml(path = b"urf:TreePlantingDistrict")]
