@@ -31,7 +31,7 @@ use gltf::write_gltf_glb;
 use indexmap::IndexSet;
 use itertools::Itertools;
 use nusamai_citygml::{object::Value, schema::Schema};
-use nusamai_mvt::tileid::TileIdMethod;
+use tinymvt::tileid::TileIdMethod;
 use nusamai_projection::cartesian::geodetic_to_geocentric;
 use rayon::prelude::*;
 use slice::{slice_to_tiles, SlicedFeature};

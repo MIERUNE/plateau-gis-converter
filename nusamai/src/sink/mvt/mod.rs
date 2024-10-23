@@ -16,12 +16,12 @@ use flatgeom::{MultiPolygon, MultiPolygon2};
 use hashbrown::HashMap;
 use itertools::Itertools;
 use nusamai_citygml::{object, schema::Schema};
-use nusamai_mvt::{geometry::GeometryEncoder, tag::TagsEncoder, tileid::TileIdMethod, vector_tile};
 use prost::Message;
 use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
 use slice::slice_cityobj_geoms;
 use tags::convert_properties;
+use tinymvt::{geometry::GeometryEncoder, tag::TagsEncoder, tileid::TileIdMethod, vector_tile};
 
 use crate::{
     get_parameter_value,

@@ -1,7 +1,7 @@
 //! Tileset encoder
 
 use cesiumtiles::tileset;
-use nusamai_mvt::TileZXY;
+use tinymvt::TileZXY;
 
 use super::scheme::{calc_parent_zxy, geometric_error};
 

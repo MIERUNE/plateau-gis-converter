@@ -1,5 +1,5 @@
 use nusamai_citygml::object;
-use nusamai_mvt::tag::TagsEncoder;
+use tinymvt::tag::TagsEncoder;
 
 pub fn convert_properties(
     tags: &mut Vec<u32>,
