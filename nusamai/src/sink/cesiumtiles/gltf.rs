@@ -2,6 +2,7 @@ use std::io::Write;
 
 use ahash::{HashMap, HashSet};
 use byteorder::{ByteOrder, LittleEndian};
+use flate2::{write::GzEncoder, Compression};
 use indexmap::IndexSet;
 use nusamai_gltf_json::extensions::mesh::ext_mesh_features;
 
@@ -24,6 +25,7 @@ pub fn write_gltf_glb<W: Write>(
     primitives: Primitives,
     num_features: usize,
     metadata_encoder: MetadataEncoder,
+    gzip_compress: bool,
 ) -> Result<(), PipelineError> {
     use nusamai_gltf_json::*;
 
@@ -281,12 +283,25 @@ pub fn write_gltf_glb<W: Write>(
         ..Default::default()
     };
 
-    // Write glb to the writer
-    nusamai_gltf::glb::Glb {
-        json: serde_json::to_vec(&gltf).unwrap().into(),
-        bin: Some(bin_content.into()),
+    if gzip_compress {
+        // Write glb to the writer with gzip compression
+        let mut encoder = GzEncoder::new(writer, Compression::default());
+
+        nusamai_gltf::glb::Glb {
+            json: serde_json::to_vec(&gltf).unwrap().into(),
+            bin: Some(bin_content.into()),
+        }
+        .to_writer_with_alignment(&mut encoder, 8)?;
+
+        encoder.finish()?;
+    } else {
+        // Write glb to the writer
+        nusamai_gltf::glb::Glb {
+            json: serde_json::to_vec(&gltf).unwrap().into(),
+            bin: Some(bin_content.into()),
+        }
+        .to_writer_with_alignment(writer, 8)?;
     }
-    .to_writer_with_alignment(writer, 8)?;
 
     Ok(())
 }
