@@ -433,14 +433,12 @@ fn make_tile(default_detail: i32, serialized_feats: &[Vec<u8>]) -> Result<Vec<u8
         }
 
         let mut id = None;
-        let mut tags: Vec<u32> = Vec::new();
-
         let layer = if let object::Value::Object(obj) = &feature.properties {
             let layer = layers.entry_ref(obj.typename.as_ref()).or_default();
 
             // Encode attributes as MVT tags
             for (key, value) in &obj.attributes {
-                convert_properties(&mut tags, &mut layer.tags_enc, key, value);
+                convert_properties(&mut layer.tags_enc, key, value);
             }
 
             // Make a MVT feature id (u64) by hashing the original feature id string.
@@ -457,7 +455,7 @@ fn make_tile(default_detail: i32, serialized_feats: &[Vec<u8>]) -> Result<Vec<u8
 
         layer.features.push(vector_tile::tile::Feature {
             id,
-            tags,
+            tags: layer.tags_enc.flush_tags(),
             r#type: Some(vector_tile::tile::GeomType::Polygon as i32),
             geometry,
         });
