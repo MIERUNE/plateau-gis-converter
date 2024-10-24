@@ -2,6 +2,7 @@
 
 mod slice;
 mod tags;
+mod tileid;
 
 use std::{
     convert::Infallible,
@@ -21,7 +22,8 @@ use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
 use slice::slice_cityobj_geoms;
 use tags::convert_properties;
-use tinymvt::{geometry::GeometryEncoder, tag::TagsEncoder, tileid::TileIdMethod, vector_tile};
+use tileid::TileIdMethod;
+use tinymvt::{geometry::GeometryEncoder, tag::TagsEncoder, vector_tile};
 
 use crate::{
     get_parameter_value,
