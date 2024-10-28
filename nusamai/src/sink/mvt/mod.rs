@@ -2,7 +2,7 @@
 
 mod slice;
 mod tags;
-mod tileid;
+pub mod tileid;
 
 use std::{
     convert::Infallible,
@@ -457,7 +457,7 @@ fn make_tile(default_detail: i32, serialized_feats: &[Vec<u8>]) -> Result<Vec<u8
 
         layer.features.push(vector_tile::tile::Feature {
             id,
-            tags: layer.tags_enc.flush_tags(),
+            tags: layer.tags_enc.take_tags(),
             r#type: Some(vector_tile::tile::GeomType::Polygon as i32),
             geometry,
         });
