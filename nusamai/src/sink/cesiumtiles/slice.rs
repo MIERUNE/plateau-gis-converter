@@ -263,7 +263,7 @@ fn slice_polygon(
         // todo?: check interior bbox to optimize
 
         for (ri, (ring, uv_ring)) in poly.rings().zip_eq(poly_uv.rings()).enumerate() {
-            if ring.raw_coords().is_empty() {
+            if ring.is_empty() {
                 continue;
             }
 
@@ -350,7 +350,7 @@ fn slice_polygon(
             poly_buf.clear();
 
             for ring in y_sliced_poly.rings() {
-                if ring.raw_coords().is_empty() {
+                if ring.is_empty() {
                     continue;
                 }
 
@@ -410,19 +410,21 @@ fn slice_polygon(
                 max_y: 1.0,
             };
 
-            let rings: Vec<_> = poly_buf.rings().collect();
+            let rings: Vec<_> = poly_buf.rings().map(|r| r.raw_coords().to_vec()).collect();
 
-            for ring in rings {
-                if ring.raw_coords().is_empty() {
+            for ring in rings.iter() {
+                if ring.is_empty() {
                     continue;
                 }
 
                 ring_buffer.clear();
 
-                for vertex in &ring {
-                    let snapped_vertex = snap_to_tile_boundary(vertex, &tile_bounds);
+                for vertex in ring {
+                    let snapped_vertex = snap_to_tile_boundary(*vertex, &tile_bounds);
                     ring_buffer.push(snapped_vertex);
                 }
+                let drained_ring: Vec<_> = ring_buffer.drain(..).collect();
+                poly_buf.add_ring(drained_ring);
             }
 
             send_polygon(key, &poly_buf);
