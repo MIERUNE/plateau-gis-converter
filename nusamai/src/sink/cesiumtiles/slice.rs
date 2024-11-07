@@ -9,9 +9,9 @@ use nusamai_citygml::{
     geometry::GeometryType,
     object::{ObjectStereotype, Value},
 };
-use nusamai_mvt::TileZXY;
 use nusamai_plateau::{appearance, Entity};
 use serde::{Deserialize, Serialize};
+use tinymvt::TileZXY;
 
 use super::{material::Material, tiling};
 use crate::sink::cesiumtiles::{material::Texture, tiling::zxy_from_lng_lat};

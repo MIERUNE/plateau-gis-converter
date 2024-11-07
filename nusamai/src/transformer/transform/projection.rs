@@ -111,7 +111,7 @@ impl ProjectionTransform {
                             Self::rectangular_to_lnglat(v[0], v[1], v[2], input_epsg);
                     };
                     // LngLat to Web Mercator
-                    (v[0], v[1]) = nusamai_mvt::webmercator::lnglat_to_web_mercator_meters(lng, lat)
+                    (v[0], v[1]) = tinymvt::webmercator::lnglat_to_web_mercator_meters(lng, lat)
                 });
                 geom_store.epsg = self.output_epsg;
             }

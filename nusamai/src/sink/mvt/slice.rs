@@ -6,8 +6,8 @@ use nusamai_citygml::{
     geometry::GeometryType,
     object::{ObjectStereotype, Value},
 };
-use nusamai_mvt::{webmercator::lnglat_to_web_mercator, TileZXY};
 use nusamai_plateau::Entity;
+use tinymvt::{webmercator::lnglat_to_web_mercator, TileZXY};
 
 pub fn slice_cityobj_geoms<E>(
     obj: &Entity,

@@ -1,6 +1,4 @@
-//! Tile ID to/from XYZ tile coordinate.
-
-pub mod hilbert;
+use tinymvt::tileid::hilbert;
 
 /// Tile ID calculation method
 #[derive(Clone, Copy, Debug)]

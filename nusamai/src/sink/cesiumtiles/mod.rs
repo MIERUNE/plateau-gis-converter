@@ -15,6 +15,7 @@ use std::{
     sync::{mpsc, Arc, Mutex},
 };
 
+use crate::sink::mvt::tileid::TileIdMethod;
 use ahash::RandomState;
 use atlas_packer::{
     export::{AtlasExporter as _, WebpAtlasExporter},
@@ -31,7 +32,6 @@ use gltf::write_gltf_glb;
 use indexmap::IndexSet;
 use itertools::Itertools;
 use nusamai_citygml::{object::Value, schema::Schema};
-use nusamai_mvt::tileid::TileIdMethod;
 use nusamai_projection::cartesian::geodetic_to_geocentric;
 use rayon::prelude::*;
 use slice::{slice_to_tiles, SlicedFeature};
@@ -76,7 +76,7 @@ impl DataSinkProvider for CesiumTilesSinkProvider {
                 parameter: ParameterType::Integer(IntegerParameter {
                     value: Some(15),
                     min: Some(0),
-                    max: Some(20),
+                    max: Some(22),
                 }),
                 label: Some("最小ズームレベル".into()),
             },
@@ -89,12 +89,21 @@ impl DataSinkProvider for CesiumTilesSinkProvider {
                 parameter: ParameterType::Integer(IntegerParameter {
                     value: Some(18),
                     min: Some(0),
-                    max: Some(20),
+                    max: Some(22),
                 }),
                 label: Some("最大ズームレベル".into()),
             },
         });
         params.define(limit_texture_resolution_parameter(false));
+        params.define(ParameterDefinition {
+            key: "gzip".into(),
+            entry: ParameterEntry {
+                description: "gzip compress".into(),
+                required: false,
+                parameter: ParameterType::Boolean(BooleanParameter { value: Some(false) }),
+                label: Some("gzipで圧縮する".into()),
+            },
+        });
 
         params
     }
@@ -112,12 +121,14 @@ impl DataSinkProvider for CesiumTilesSinkProvider {
         let max_z = get_parameter_value!(params, "max_z", Integer).unwrap() as u8;
         let limit_texture_resolution =
             *get_parameter_value!(params, "limit_texture_resolution", Boolean);
+        let gzip_compress = *get_parameter_value!(params, "gzip", Boolean);
         let transform_settings = self.transformer_options();
 
         Box::<CesiumTilesSink>::new(CesiumTilesSink {
             output_path: output_path.as_ref().unwrap().into(),
             transform_settings,
             limit_texture_resolution,
+            gzip_compress,
             min_z,
             max_z,
         })
@@ -128,6 +139,7 @@ struct CesiumTilesSink {
     output_path: PathBuf,
     transform_settings: TransformerRegistry,
     limit_texture_resolution: Option<bool>,
+    gzip_compress: Option<bool>,
     min_z: u8,
     max_z: u8,
 }
@@ -157,6 +169,7 @@ impl DataSink for CesiumTilesSink {
         let max_zoom = self.max_z;
 
         let limit_texture_resolution = self.limit_texture_resolution;
+        let gzip_compress = self.gzip_compress;
 
         // TODO: refactoring
 
@@ -205,6 +218,7 @@ impl DataSink for CesiumTilesSink {
                             tile_id_conv,
                             schema,
                             limit_texture_resolution,
+                            gzip_compress,
                         ) {
                             feedback.fatal_error(error);
                         }
@@ -327,6 +341,7 @@ fn tile_writing_stage(
     tile_id_conv: TileIdMethod,
     schema: &Schema,
     limit_texture_resolution: Option<bool>,
+    gzip_compress: Option<bool>,
 ) -> Result<()> {
     let ellipsoid = nusamai_projection::ellipsoid::wgs84();
     let contents: Arc<Mutex<Vec<TileContent>>> = Default::default();
@@ -707,6 +722,7 @@ fn tile_writing_stage(
                 primitives,
                 features.len(),
                 metadata_encoder,
+                gzip_compress.unwrap_or_default(),
             )?;
 
             Ok::<(), PipelineError>(())

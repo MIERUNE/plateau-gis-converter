@@ -26,7 +26,7 @@ pub fn limit_texture_resolution_parameter(default_value: bool) -> ParameterDefin
             parameter: ParameterType::Boolean(BooleanParameter {
                 value: Some(default_value),
             }),
-            label: Some("距離(メートル)あたりのテクスチャの解像度を制限する".into()),
+            label: Some("距離あたりの解像度を制限する".into()),
         },
     }
 }
