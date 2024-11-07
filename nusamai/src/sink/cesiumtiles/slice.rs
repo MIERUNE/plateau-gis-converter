@@ -15,7 +15,12 @@ use serde::{Deserialize, Serialize};
 
 use super::{material::Material, tiling};
 use crate::sink::cesiumtiles::{material::Texture, tiling::zxy_from_lng_lat};
-
+struct TileBounds {
+    min_x: f64,
+    max_x: f64,
+    min_y: f64,
+    max_y: f64,
+}
 #[derive(Serialize, Deserialize)]
 pub struct SlicedFeature {
     // polygons [x, y, z, u, v]
@@ -398,6 +403,27 @@ fn slice_polygon(
 
                 poly_buf.add_ring(ring_buffer.drain(..))
             }
+            let tile_bounds = TileBounds {
+                min_x: 0.0,
+                max_x: 1.0,
+                min_y: 0.0,
+                max_y: 1.0,
+            };
+
+            let rings: Vec<_> = poly_buf.rings().collect();
+
+            for ring in rings {
+                if ring.raw_coords().is_empty() {
+                    continue;
+                }
+
+                ring_buffer.clear();
+
+                for vertex in &ring {
+                    let snapped_vertex = snap_to_tile_boundary(vertex, &tile_bounds);
+                    ring_buffer.push(snapped_vertex);
+                }
+            }
 
             send_polygon(key, &poly_buf);
         }
@@ -432,4 +458,23 @@ fn should_process_entry(entry_lod: u8, geom_error: f64, available_lods: &HashSet
         let selected_lod = *available_lods.iter().max().unwrap();
         entry_lod == selected_lod
     }
+}
+
+fn snap_to_tile_boundary(vertex: [f64; 5], tile_bounds: &TileBounds) -> [f64; 5] {
+    let mut snapped_vertex = vertex;
+
+    if vertex[0] < tile_bounds.min_x {
+        snapped_vertex[0] = tile_bounds.min_x;
+    } else if vertex[0] > tile_bounds.max_x {
+        snapped_vertex[0] = tile_bounds.max_x;
+    }
+
+    // Snap y coordinate
+    if vertex[1] < tile_bounds.min_y {
+        snapped_vertex[1] = tile_bounds.min_y;
+    } else if vertex[1] > tile_bounds.max_y {
+        snapped_vertex[1] = tile_bounds.max_y;
+    }
+
+    snapped_vertex
 }
