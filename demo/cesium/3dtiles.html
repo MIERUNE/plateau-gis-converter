@@ -71,7 +71,7 @@
         viewer.scene.globe.depthTestAgainstTerrain = true;
 
         const tileset = await Cesium.Cesium3DTileset.fromUrl(
-          "/examples/3dtiles_textured",
+          "./examples/3dtiles_textured/tileset.json",
           { enableDebugWireframe: true }
         );
         viewer.scene.primitives.add(tileset);
