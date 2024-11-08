@@ -4,5 +4,5 @@ name = "nusamai-shapefile"
 version = "0.1.0"
 
 [dependencies]
-flatgeom = "0.0"
+flatgeom = "0.0.2"
 shapefile = "0.6.0"

@@ -8,22 +8,22 @@ default = ["serde"]
 serde = ["dep:serde"]
 
 [dependencies]
-chrono = { version = "0.4.35", features = ["serde"], default-features = false }
+chrono = { version = "0.4.38", features = ["serde"], default-features = false }
 flatgeom = "0.0.2"
-hashbrown = { version = "0.15.0", features = ["serde"] }
-indexmap = "2.2.6"
-log = "0.4.21"
+hashbrown = { version = "0.15.1", features = ["serde"] }
+indexmap = "2.6.0"
+log = "0.4.22"
 nusamai-citygml = { path = "../nusamai-citygml", features = ["serde"] }
 once_cell = "1.20.2"
-quick-xml = "0.36.2"
-serde = { version = "1.0.197", features = ["derive", "rc"], optional = true }
-stretto = "0.8.3"
-url = "2.5.0"
+quick-xml = "0.37.0"
+serde = { version = "1.0.214", features = ["derive", "rc"], optional = true }
+stretto = "0.8.4"
+url = "2.5.3"
 
 [dev-dependencies]
 bincode = { version = "2.0.0-rc.3", default-features = false, features = ["serde", "std"] }
-clap = { version = "4.5", features = ["derive"] }
-lz4_flex = "0.11.2"
-serde = { version = "1.0.197", features = ["derive"] }
-serde_json = "1.0.115"
-zstd = { version = "0.13.0", features = ["zdict_builder"] }
+clap = { version = "4.5.20", features = ["derive"] }
+lz4_flex = "0.11.3"
+serde = { version = "1.0.214", features = ["derive"] }
+serde_json = "1.0.132"
+zstd = { version = "0.13.2", features = ["zdict_builder"] }
