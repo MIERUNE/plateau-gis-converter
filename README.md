@@ -192,3 +192,13 @@ Codecov: [https://app.codecov.io/gh/MIERUNE/plateau-gis-converter](https://app.c
 ```bash
 cargo llvm-cov --workspace --exclude app --html --all-features
 ```
+
+### Authors（主要開発者）
+
+- Taku Fukada ([@ciscorn](https://github.com/ciscorn))
+- Satoru Nishio ([@nokonoko1203](https://github.com/nokonoko1203))
+- Qu Xinmiao ([@xinmiaooo](https://github.com/xinmiaooo))
+- Sorami Hisamoto ([@sorami](https://github.com/sorami))
+- Teruki Tada ([@TadaTeruki](https://github.com/TadaTeruki))
+- Satoshi Komatsu ([@satoshi7190](https://github.com/satoshi7190))
+- And [every contributors](https://github.com/MIERUNE/plateau-gis-converter/graphs/contributors)
