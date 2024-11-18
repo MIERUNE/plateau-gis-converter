@@ -7,7 +7,7 @@ version = "0.1.0"
 flatgeom = "0.0.2"
 indexmap = "2.6.0"
 sqlx = { version = "0.8.2", features = ["runtime-tokio", "sqlite"] }
-thiserror = "1.0.68"
+thiserror = "2.0.3"
 url = "2.5.3"
 
 [dev-dependencies]
