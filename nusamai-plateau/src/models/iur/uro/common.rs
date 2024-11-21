@@ -53,6 +53,9 @@ pub struct DataQualityAttribute {
     #[citygml(path = b"uro:lod1HeightType")]
     pub lod1_height_type: Option<Code>,
 
+    #[citygml(path = b"uro:dataAcquisition")]
+    pub data_acquisition: Option<String>,
+
     #[citygml(path = b"uro:tranDataAcquisition")]
     pub tran_data_acquisition: Option<String>,
 
