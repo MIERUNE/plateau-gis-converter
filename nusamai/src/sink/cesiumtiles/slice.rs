@@ -423,7 +423,7 @@ fn slice_polygon(
                     let snapped_vertex = snap_to_tile_boundary(*vertex, &tile_bounds);
                     ring_buffer.push(snapped_vertex);
                 }
-                let drained_ring: Vec<_> = ring_buffer.drain(..).collect();
+                let drained_ring: Vec<_> = std::mem::take(&mut ring_buffer).drain(..).collect();
                 poly_buf.add_ring(drained_ring);
             }
 
