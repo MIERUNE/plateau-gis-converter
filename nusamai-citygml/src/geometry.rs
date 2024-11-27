@@ -74,6 +74,9 @@ pub struct GeometryStore {
     /// Lists of surface for composite surface
     pub composite_surfaces: Vec<LocalId>,
 
+    /// Orientable surfaces for each surface
+    pub orientable_surfaces: Vec<OrientableSurface>,
+
     /// Assigned materials for each polygon. Empty if appearance resolution is not enabled.
     pub polygon_materials: Vec<Option<u32>>,
     /// Assigned textures for each polygon. Empty if appearance resolution is not enabled.
@@ -88,6 +91,13 @@ pub struct SurfaceSpan {
     pub id: LocalId,
     pub start: u32,
     pub end: u32,
+}
+
+#[derive(Debug, Clone)]
+#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
+pub struct OrientableSurface {
+    pub surface_id: LocalId,
+    pub reverse: bool,
 }
 
 /// Temporary storage for the parser to collect geometries.
@@ -107,6 +117,9 @@ pub(crate) struct GeometryCollector {
 
     /// Lists of surface for composite surface
     pub composite_surfaces: Vec<LocalId>,
+
+    /// Orientable surfaces for each surface
+    pub orientable_surfaces: Vec<OrientableSurface>,
 }
 
 impl GeometryCollector {
@@ -168,6 +181,7 @@ impl GeometryCollector {
             ring_ids: self.ring_ids,
             surface_spans: self.surface_spans,
             composite_surfaces: self.composite_surfaces,
+            orientable_surfaces: self.orientable_surfaces,
             ..Default::default()
         }
     }

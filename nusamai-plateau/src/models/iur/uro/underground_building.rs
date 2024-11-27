@@ -56,6 +56,7 @@ pub struct UndergroundBuilding {
     #[citygml(path = b"bldg:address/core:Address")]
     pub address: Vec<core::Address>,
 
+    #[citygml(path = b"uro:buildingDataQualityAttribute/uro:BuildingDataQualityAttribute")]
     #[citygml(path = b"uro:bldgDataQualityAttribute/uro:DataQualityAttribute")]
     pub bldg_data_quality_attribute: Option<uro::DataQualityAttribute>,
 

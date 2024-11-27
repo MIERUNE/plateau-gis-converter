@@ -18,7 +18,7 @@ use crate::{
         GeometryType,
     },
     namespace::{wellknown_prefix_from_nsres, APP_2_NS, GML31_NS},
-    CityGmlAttribute, LocalId, SurfaceSpan, XLINK_NS,
+    CityGmlAttribute, LocalId, OrientableSurface, SurfaceSpan, XLINK_NS,
 };
 
 static PROPERTY_PATTERN: Lazy<Regex> =
@@ -639,7 +639,29 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                             self.parse_composite_surface()?;
                             GeometryType::Surface
                         }
-                        (Bound(GML31_NS), b"OrientableSurface") => todo!(),
+                        (Bound(GML31_NS), b"OrientableSurface") => {
+                            let mut orientation = "+".to_string();
+                            for attr in start.attributes().flatten() {
+                                let (_, localname) = self.reader.resolve_attribute(attr.key);
+                                if localname.as_ref() == b"orientation" {
+                                    let value =
+                                        String::from_utf8_lossy(attr.value.as_ref()).to_string();
+                                    orientation = value;
+                                    break;
+                                }
+                            }
+                            let base_surface_id = self.parse_orientable_surface()?;
+                            if let Some(base_surface_id) = base_surface_id {
+                                surface_id = Some(base_surface_id.clone());
+                                self.state.geometry_collector.orientable_surfaces.push(
+                                    OrientableSurface {
+                                        surface_id: base_surface_id,
+                                        reverse: orientation == "-",
+                                    },
+                                );
+                            }
+                            GeometryType::Surface
+                        }
                         (Bound(GML31_NS), b"Polygon") => {
                             self.parse_polygon()?;
                             GeometryType::Surface
@@ -728,7 +750,7 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                         (Bound(GML31_NS), b"Tin") => self.parse_triangulated_surface()?,
                         _ => {
                             return Err(ParseError::SchemaViolation(format!(
-                                "Unexpected element <{}>",
+                                "Unexpected element <{}> by parse triangulated prop",
                                 String::from_utf8_lossy(localname.as_ref())
                             )))
                         }
@@ -792,7 +814,7 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                         (Bound(GML31_NS), b"Triangle") => self.parse_polygon()?,
                         _ => {
                             return Err(ParseError::SchemaViolation(format!(
-                                "Unexpected element <{}>",
+                                "Unexpected element <{}> by parsing triangle patch array",
                                 String::from_utf8_lossy(localname.as_ref())
                             )))
                         }
@@ -821,7 +843,11 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                             let (surface_id, _) = self.parse_surface()?;
                             surface_id
                         }
-                        _ => return Err(ParseError::SchemaViolation("Unexpected element".into())),
+                        _ => {
+                            return Err(ParseError::SchemaViolation(
+                                "Unexpected element. Because only surface member".into(),
+                            ))
+                        }
                     };
                 }
                 Ok(Event::End(_)) => return Ok(surface_id),
@@ -848,15 +874,19 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                         if nsres == Bound(XLINK_NS) && localname.as_ref() == b"href" {
                             let href = String::from_utf8_lossy(attr.value.as_ref()).to_string();
                             surface_id = Some(LocalId::from(href));
+                            break;
                         }
                     }
                     match (nsres, localname.as_ref()) {
                         (Bound(GML31_NS), b"surfaceMember") => {
-                            self.parse_surface()?;
+                            let (surface_member_id, _) = self.parse_surface()?;
+                            if surface_id.is_none() {
+                                surface_id = surface_member_id;
+                            }
                         }
                         _ => {
                             return Err(ParseError::SchemaViolation(format!(
-                                "Unexpected element <{}>",
+                                "Unexpected element <{}> by parsing composite surface",
                                 String::from_utf8_lossy(localname.as_ref())
                             )))
                         }
@@ -870,7 +900,12 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                             .push(id.clone());
                     }
                 }
-                Ok(Event::End(_)) => return Ok(result),
+                Ok(Event::End(end)) => {
+                    let (nsres, localname) = self.reader.resolve_element(end.name());
+                    if nsres == Bound(GML31_NS) && localname.as_ref() == b"CompositeSurface" {
+                        return Ok(result);
+                    }
+                }
                 Ok(Event::Text(_)) => {
                     return Err(ParseError::SchemaViolation(
                         "Unexpected text content".into(),
@@ -907,17 +942,35 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                             surface_ids = self.parse_composite_surface()?;
                         }
                         (Bound(GML31_NS), b"OrientableSurface") => {
-                            // FIXME:
-                            // TODO: OrientableSurface
-                            log::warn!("OrientableSurface is not supported yet.");
-                            self.reader
-                                .read_to_end_into(start.name(), &mut self.state.buf2)?;
+                            let mut orientation = "+".to_string();
+                            for attr in start.attributes().flatten() {
+                                let (_, localname) = self.reader.resolve_attribute(attr.key);
+                                if localname.as_ref() == b"orientation" {
+                                    let value =
+                                        String::from_utf8_lossy(attr.value.as_ref()).to_string();
+                                    orientation = value;
+                                    break;
+                                }
+                            }
+                            let base_surface_id = self.parse_orientable_surface()?;
+                            if let Some(base_surface_id) = base_surface_id {
+                                surface_id = Some(base_surface_id.clone());
+                                self.state.geometry_collector.orientable_surfaces.push(
+                                    OrientableSurface {
+                                        surface_id: base_surface_id,
+                                        reverse: orientation == "-",
+                                    },
+                                );
+                            }
+                        }
+                        (Bound(GML31_NS), b"surfaceMember") => {
+                            (surface_id, _) = self.parse_surface()?;
                         }
                         // (Bound(GML_NS), b"TriangulatedSurface") =>
                         // (Bound(GML_NS), b"Tin") =>
                         _ => {
                             return Err(ParseError::SchemaViolation(format!(
-                                "Unexpected element <{}>",
+                                "Unexpected element <{}> by parsing surface",
                                 String::from_utf8_lossy(localname.as_ref())
                             )))
                         }
@@ -939,6 +992,43 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                     }
                 }
                 Ok(Event::End(_)) => return Ok((surface_id, surface_ids)),
+                Ok(Event::Text(_)) => {
+                    return Err(ParseError::SchemaViolation(
+                        "Unexpected text content".into(),
+                    ))
+                }
+                Ok(_) => (),
+                Err(e) => return Err(e.into()),
+            }
+        }
+    }
+
+    fn parse_orientable_surface(&mut self) -> Result<Option<LocalId>, ParseError> {
+        let mut surface_id = None;
+        loop {
+            match self.reader.read_event_into(&mut self.state.buf1) {
+                Ok(Event::Start(start)) => {
+                    let (nsres, localname) = self.reader.resolve_element(start.name());
+                    match (nsres, localname.as_ref()) {
+                        (Bound(GML31_NS), b"baseSurface") => {
+                            for attr in start.attributes().flatten() {
+                                let (nsres, localname) = self.reader.resolve_attribute(attr.key);
+                                if nsres == Bound(XLINK_NS) && localname.as_ref() == b"href" {
+                                    let href =
+                                        String::from_utf8_lossy(attr.value.as_ref()).to_string();
+                                    surface_id = Some(LocalId::from(href));
+                                    break;
+                                }
+                            }
+                        }
+                        _ => {
+                            return Err(ParseError::SchemaViolation(
+                                "Unexpected element. Because only base surface".into(),
+                            ))
+                        }
+                    };
+                }
+                Ok(Event::End(_)) => return Ok(surface_id),
                 Ok(Event::Text(_)) => {
                     return Err(ParseError::SchemaViolation(
                         "Unexpected text content".into(),
@@ -1139,7 +1229,7 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                 Ok(Event::Start(start)) => {
                     if inside_coordinates {
                         return Err(ParseError::SchemaViolation(format!(
-                            "Unexpected elements <{}>",
+                            "Unexpected elements <{}> inside <app:textureCoordinates>",
                             String::from_utf8_lossy(start.name().as_ref())
                         )));
                     }
@@ -1165,7 +1255,7 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                         }
                         _ => {
                             return Err(ParseError::SchemaViolation(format!(
-                                "Unexpected elements <{}>",
+                                "Unexpected elements <{}> inside <app:TexCoordList>",
                                 String::from_utf8_lossy(start.name().as_ref())
                             )));
                         }
