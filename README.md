@@ -40,7 +40,7 @@ PLATEAU の標準仕様に準拠した CityGML 2.0 形式の3D都市モデルは
 ## 3. 利用手順
 
 - ソフトウェアの最新版は、GitHub リポジトリの [Releaseページ](https://github.com/MIERUNE/PLATEAU-GIS-Converter/releases) からダウンロードしてください。
-- 詳しい利用方法については、こちらの[マニュアル](https://mierune.github.io/plateau-gis-converter/index.html)をご覧ください。
+- 詳しい利用方法については、こちらの[マニュアル](https://project-plateau.github.io/PLATEAU-GIS-Converter/)をご覧ください。
 
 ## 4. システム概要
 
