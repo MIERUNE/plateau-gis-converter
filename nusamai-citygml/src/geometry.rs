@@ -149,6 +149,15 @@ impl GeometryCollector {
         }));
     }
 
+    pub fn add_linestring(&mut self, iter: impl IntoIterator<Item = [f64; 3]>) {
+        self.multilinestring
+            .add_linestring(iter.into_iter().map(|v| {
+                let vbits = [v[0].to_bits(), v[1].to_bits(), v[2].to_bits()];
+                let (index, _) = self.vertices.insert_full(vbits);
+                index as u32
+            }));
+    }
+
     pub fn into_geometries(self, envelope_crs_uri: Option<String>) -> GeometryStore {
         let mut vertices = Vec::with_capacity(self.vertices.len());
         for vbits in &self.vertices {

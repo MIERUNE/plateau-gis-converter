@@ -102,7 +102,7 @@ impl<'a> ParseContext<'a> {
     }
 }
 
-impl<'a> Default for ParseContext<'a> {
+impl Default for ParseContext<'_> {
     fn default() -> Self {
         Self {
             source_uri: Url::parse("file:///").unwrap(),
@@ -111,6 +111,7 @@ impl<'a> Default for ParseContext<'a> {
     }
 }
 
+#[allow(elided_named_lifetimes)]
 impl<'a> CityGmlReader<'a> {
     pub fn new(context: ParseContext<'a>) -> Self {
         Self {
@@ -386,17 +387,66 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
             Triangulated => self.parse_triangulated_prop(geomref, lod, feature_id, feature_type)?, // FIXME
             Point => todo!(),      // FIXME
             MultiPoint => todo!(), // FIXME
-            MultiCurve => {
-                log::warn!("CompositeCurve is not supported yet.");
-                self.skip_current_element()?;
-                return Ok(());
-            } // FIXME
+            MultiCurve => self.parse_multi_curve_prop(geomref, lod, feature_id, feature_type)?, // FIXME
         }
 
         self.state
             .path_buf
             .truncate(self.state.path_stack_indices.pop().unwrap());
 
+        Ok(())
+    }
+
+    fn parse_multi_curve_prop(
+        &mut self,
+        geomrefs: &mut GeometryRefs,
+        lod: u8,
+        feature_id: Option<String>,
+        feature_type: Option<String>,
+    ) -> Result<(), ParseError> {
+        loop {
+            match self.reader.read_event_into(&mut self.state.buf1) {
+                Ok(Event::Start(start)) => {
+                    let (nsres, localname) = self.reader.resolve_element(start.name());
+                    let line_begin = self.state.geometry_collector.multilinestring.len();
+
+                    let geomtype = match (nsres, localname.as_ref()) {
+                        (Bound(GML31_NS), b"MultiCurve") => {
+                            self.parse_multi_curve()?;
+                            GeometryType::Curve
+                        }
+                        _ => {
+                            return Err(ParseError::SchemaViolation(format!(
+                                "Expected MultiCurve but found <{}>",
+                                String::from_utf8_lossy(start.name().as_ref())
+                            )))
+                        }
+                    };
+
+                    let line_end = self.state.geometry_collector.multilinestring.len();
+                    if line_end - line_begin > 0 {
+                        geomrefs.push(GeometryRef {
+                            ty: geomtype,
+                            lod,
+                            pos: line_begin as u32,
+                            len: (line_end - line_begin) as u32,
+                            id: None,
+                            solid_ids: Vec::new(),
+                            feature_id: feature_id.clone(),
+                            feature_type: feature_type.clone(),
+                        });
+                    }
+                }
+                Ok(Event::End(_)) => break,
+                Ok(Event::Text(_)) => {
+                    return Err(ParseError::SchemaViolation(
+                        "Unexpected text content".into(),
+                    ))
+                }
+                Ok(_) => (),
+                Err(e) => return Err(e.into()),
+            }
+        }
         Ok(())
     }
 
@@ -599,7 +649,9 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                 Ok(Event::Start(start)) => {
                     let (nsres, localname) = self.reader.resolve_element(start.name());
                     let poly_begin = self.state.geometry_collector.multipolygon.len();
-                    let mut geometry_crs_uri = None;
+                    let line_begin = self.state.geometry_collector.multilinestring.len();
+                    let mut poly_end: Option<usize> = None;
+                    let mut line_end: Option<usize> = None;
 
                     for attr in start.attributes().flatten() {
                         let (nsres, localname) = self.reader.resolve_attribute(attr.key);
@@ -609,7 +661,7 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                             surface_id = Some(LocalId::from(id));
                         }
                         if localname.as_ref() == b"srsName" {
-                            geometry_crs_uri =
+                            self.state.geometry_collector.geometry_crs_uri =
                                 Some(String::from_utf8_lossy(attr.value.as_ref()).to_string());
                         }
                     }
@@ -626,6 +678,7 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                         }
                         (Bound(GML31_NS), b"Solid") => {
                             self.parse_solid()?;
+                            poly_end = Some(self.state.geometry_collector.multipolygon.len());
                             GeometryType::Solid
                         }
                         (Bound(GML31_NS), b"MultiSurface") => {
@@ -633,10 +686,12 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                             if surface_id.is_none() {
                                 surface_id = id;
                             }
+                            poly_end = Some(self.state.geometry_collector.multipolygon.len());
                             GeometryType::Surface
                         }
                         (Bound(GML31_NS), b"CompositeSurface") => {
                             self.parse_composite_surface()?;
+                            poly_end = Some(self.state.geometry_collector.multipolygon.len());
                             GeometryType::Surface
                         }
                         (Bound(GML31_NS), b"OrientableSurface") => {
@@ -660,27 +715,32 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                                     },
                                 );
                             }
+                            poly_end = Some(self.state.geometry_collector.multipolygon.len());
                             GeometryType::Surface
                         }
                         (Bound(GML31_NS), b"Polygon") => {
                             self.parse_polygon()?;
+                            poly_end = Some(self.state.geometry_collector.multipolygon.len());
                             GeometryType::Surface
                         }
-                        (Bound(GML31_NS), b"TriangulatedSurface") => todo!(),
-                        (Bound(GML31_NS), b"Tin") => todo!(),
-                        (
-                            Bound(GML31_NS),
-                            b"Point" | b"CompositeCurve" | b"MultiCurve" | b"LineString",
-                        ) => {
-                            // FIXME, TODO
-                            log::warn!(
-                                "Point|CompositeCurve|MultiCurve|LineString is not supported yet."
-                            );
-                            self.reader
-                                .read_to_end_into(start.name(), &mut self.state.buf2)?;
-
+                        (Bound(GML31_NS), b"LineString") => {
+                            self.parse_linestring()?;
+                            line_end = Some(self.state.geometry_collector.multilinestring.len());
                             GeometryType::Curve
-                        } // FIXME:
+                        }
+                        (Bound(GML31_NS), b"MultiCurve") => {
+                            self.parse_multi_curve_prop(
+                                geomrefs,
+                                lod,
+                                feature_id.clone(),
+                                feature_type.clone(),
+                            )?;
+                            line_end = Some(self.state.geometry_collector.multilinestring.len());
+                            GeometryType::Curve
+                        }
+                        (Bound(GML31_NS), b"TriangulatedSurface") => unimplemented!(),
+                        (Bound(GML31_NS), b"Tin") => unimplemented!(),
+                        (Bound(GML31_NS), b"Point" | b"CompositeCurve") => unimplemented!(), // FIXME:
                         _ => {
                             return Err(ParseError::SchemaViolation(format!(
                                 "Unexpected geometry elements <{}>",
@@ -688,20 +748,19 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                             )))
                         }
                     };
-
-                    let poly_end = self.state.geometry_collector.multipolygon.len();
-                    if poly_end - poly_begin > 0 {
-                        geomrefs.push(GeometryRef {
-                            ty: geomtype,
-                            lod,
-                            pos: poly_begin as u32,
-                            len: (poly_end - poly_begin) as u32,
-                            id: surface_id.clone(),
-                            solid_ids: Vec::new(),
-                            feature_id: feature_id.clone(),
-                            feature_type: feature_type.clone(),
-                        });
-
+                    if let Some(poly_end) = poly_end {
+                        if poly_end - poly_begin > 0 {
+                            geomrefs.push(GeometryRef {
+                                ty: geomtype,
+                                lod,
+                                pos: poly_begin as u32,
+                                len: (poly_end - poly_begin) as u32,
+                                id: surface_id.clone(),
+                                solid_ids: Vec::new(),
+                                feature_id: feature_id.clone(),
+                                feature_type: feature_type.clone(),
+                            });
+                        }
                         // record a partial surface span
                         if let Some(id) = surface_id.clone() {
                             self.state
@@ -713,8 +772,20 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                                     end: poly_end as u32,
                                 });
                         }
-
-                        self.state.geometry_collector.geometry_crs_uri = geometry_crs_uri;
+                    }
+                    if let Some(line_end) = line_end {
+                        if line_end - line_begin > 0 {
+                            geomrefs.push(GeometryRef {
+                                ty: geomtype,
+                                lod,
+                                pos: line_begin as u32,
+                                len: (line_end - line_begin) as u32,
+                                id: surface_id.clone(),
+                                solid_ids: Vec::new(),
+                                feature_id: feature_id.clone(),
+                                feature_type: feature_type.clone(),
+                            });
+                        }
                     }
                 }
                 Ok(Event::End(_)) => break,
@@ -781,6 +852,34 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
             });
         }
         Ok(())
+    }
+
+    fn parse_multi_curve(&mut self) -> Result<(), ParseError> {
+        loop {
+            match self.reader.read_event_into(&mut self.state.buf1) {
+                Ok(Event::Start(start)) => {
+                    let (nsres, localname) = self.reader.resolve_element(start.name());
+                    match (nsres, localname.as_ref()) {
+                        (Bound(GML31_NS), b"curveMember") => {
+                            self.parse_linestring()?;
+                        }
+                        _ => {
+                            return Err(ParseError::SchemaViolation(
+                                "Unexpected element. Because only surface member".into(),
+                            ))
+                        }
+                    };
+                }
+                Ok(Event::End(_)) => return Ok(()),
+                Ok(Event::Text(_)) => {
+                    return Err(ParseError::SchemaViolation(
+                        "Unexpected text content".into(),
+                    ))
+                }
+                Ok(_) => (),
+                Err(e) => return Err(e.into()),
+            }
+        }
     }
 
     fn parse_solid(&mut self) -> Result<(Option<LocalId>, Vec<LocalId>), ParseError> {
@@ -1003,6 +1102,68 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
         }
     }
 
+    fn parse_linestring(&mut self) -> Result<(), ParseError> {
+        let mut depth = 1;
+        loop {
+            match self.reader.read_resolved_event_into(&mut self.state.buf1) {
+                Ok((Bound(GML31_NS), Event::Start(_))) => {
+                    depth += 1;
+                }
+                Ok((_, Event::Start(start))) => {
+                    return Err(ParseError::SchemaViolation(format!(
+                        "Only GML elements are allowed but found <{}>",
+                        String::from_utf8_lossy(start.name().as_ref())
+                    )));
+                }
+                Ok((_, Event::End(_))) => {
+                    depth -= 1;
+                    if depth == 0 {
+                        return Ok(());
+                    }
+                }
+                Ok((_, Event::Text(text))) => {
+                    // check poslist
+                    if depth != 3 {
+                        return Err(ParseError::SchemaViolation(
+                            "Unexpected text content".into(),
+                        ));
+                    }
+                    // parse coordinate sequence
+                    self.state.fp_buf.clear();
+                    let unescaped_text = text
+                        .unescape()
+                        .map_err(|e| ParseError::InvalidValue(format!("Unescape error: {}", e)))?;
+                    for s in unescaped_text.split_ascii_whitespace() {
+                        if let Ok(v) = s.parse() {
+                            self.state.fp_buf.push(v);
+                        } else {
+                            return Err(ParseError::InvalidValue(format!(
+                                "Invalid floating point number: {}",
+                                s
+                            )));
+                        }
+                    }
+
+                    if self.state.fp_buf.len() % 3 != 0 {
+                        return Err(ParseError::InvalidValue(
+                            "Length of coordinate numbers must be multiple of 3".into(),
+                        ));
+                    }
+
+                    let iter = self
+                        .state
+                        .fp_buf
+                        .chunks_exact(3)
+                        .map(|c| [c[0], c[1], c[2]]);
+
+                    self.state.geometry_collector.add_linestring(iter);
+                }
+                Ok(_) => (),
+                Err(e) => return Err(e.into()),
+            }
+        }
+    }
+
     fn parse_orientable_surface(&mut self) -> Result<Option<LocalId>, ParseError> {
         let mut surface_id = None;
         loop {
@@ -1127,7 +1288,10 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
 
                     // parse coordinate sequence
                     self.state.fp_buf.clear();
-                    for s in text.unescape().unwrap().split_ascii_whitespace() {
+                    let unescaped_text = text
+                        .unescape()
+                        .map_err(|e| ParseError::InvalidValue(format!("Unescape error: {}", e)))?;
+                    for s in unescaped_text.split_ascii_whitespace() {
                         if let Ok(v) = s.parse() {
                             self.state.fp_buf.push(v);
                         } else {
