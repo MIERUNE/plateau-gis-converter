@@ -5,8 +5,8 @@ edition = "2021"
 
 [dependencies]
 chrono = { version = "0.4.38", features = ["serde"] }
-serde = { version = "1.0.214", features = ["derive"] }
-serde_json = { version = "1.0.132", features = ["float_roundtrip"] }
+serde = { version = "1.0.215", features = ["derive"] }
+serde_json = { version = "1.0.133", features = ["float_roundtrip"] }
 flatgeom = "0.0"
 
 [dev-dependencies]
