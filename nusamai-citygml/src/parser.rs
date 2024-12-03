@@ -103,7 +103,7 @@ impl<'a> ParseContext<'a> {
     }
 }
 
-impl<'a> Default for ParseContext<'a> {
+impl Default for ParseContext<'_> {
     fn default() -> Self {
         Self {
             source_uri: Url::parse("file:///").unwrap(),
@@ -120,10 +120,10 @@ impl<'a> CityGmlReader<'a> {
         }
     }
 
-    pub fn start_root<'b: 'a, R: BufRead>(
+    pub fn start_root<'b, R: BufRead>(
         &'a mut self,
         reader: &'b mut quick_xml::NsReader<R>,
-    ) -> Result<SubTreeReader<R>, ParseError> {
+    ) -> Result<SubTreeReader<'b, 'a, R>, ParseError> {
         let config = reader.config_mut();
         config.trim_text(true);
         config.expand_empty_elements = true;
