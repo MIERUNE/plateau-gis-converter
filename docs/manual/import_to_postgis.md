@@ -14,8 +14,8 @@
 
 コマンドラインまたはGUIを利用してGeoPackageへの変換手順は以下のマニュアルを参考にします。
 
-- [コマンドラインで利用する](../useCommandLine.md)
-- [GUIで利用する](../useGui.md)
+- [GUIで利用する](./use_gui.md)
+- [コマンドラインで利用する](./use_command_line.md)
 
 ## GeoPandas(Python)で取り込む
 
