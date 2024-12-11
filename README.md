@@ -39,7 +39,8 @@ PLATEAU の標準仕様に準拠した CityGML 2.0 形式の3D都市モデルは
 
 ## 3. 利用手順
 
-- ソフトウェアの最新版は、GitHub リポジトリの [Releaseページ](https://github.com/MIERUNE/PLATEAU-GIS-Converter/releases) からダウンロードしてください。
+- 安定版のソフトウェアは、GitHub リポジトリの[Releaseページ](https://github.com/MIERUNE/PLATEAU-GIS-Converter/releases)（PLATEAU リポジトリ）からダウンロードしてください。
+  - 最新版はこちら（株式会社MIERUNE リポジトリ [Releaseページ](https://github.com/MIERUNE/PLATEAU-GIS-Converter/releases)）からダウンロード可能です。
 - 詳しい利用方法については、こちらの[マニュアル](https://project-plateau.github.io/PLATEAU-GIS-Converter/)をご覧ください。
 
 ## 4. システム概要
@@ -118,7 +119,7 @@ PLATEAU の標準仕様に準拠した CityGML 2.0 形式の3D都市モデルは
 - [MIERUNE/dda-vozelize-rs](https://github.com/MIERUNE/dda-voxelize-rs) &mdash; 3Dメッシュサーフェスの高速なボクセル化
 - [MIERUNE/cesiumtiles-rs](https://github.com/MIERUNE/cesiumtiles-rs) &mdash; 3D TilesのJSONモデルなど
 - [MIERUNE/atlas-packer](https://github.com/MIERUNE/atlas-packer) &mdash; テクスチャアトラスの作成
-- [MIERUNE/tinymvt](https://github.com/MIERUNE/tinymvt) &mdash; A small utility for generating MVT
+- [MIERUNE/tinymvt](https://github.com/MIERUNE/tinymvt) &mdash; MVT生成のためのユーティリティ
 
 ## 8. ライセンス
 
