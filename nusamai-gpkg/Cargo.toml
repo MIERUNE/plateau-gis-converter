@@ -5,10 +5,10 @@ version = "0.1.0"
 
 [dependencies]
 flatgeom = "0.0.2"
-indexmap = "2.6.0"
+indexmap = "2.7.0"
 sqlx = { version = "0.8.2", features = ["runtime-tokio", "sqlite"] }
-thiserror = "2.0.3"
-url = "2.5.3"
+thiserror = "2.0.7"
+url = "2.5.4"
 
 [dev-dependencies]
 tokio = { version = "1.36", features = ["full"] }

@@ -5,4 +5,4 @@ version = "0.1.0"
 
 [dependencies]
 japan-geoid = "0.4.1"
-thiserror = "2.0.3"
+thiserror = "2.0.7"

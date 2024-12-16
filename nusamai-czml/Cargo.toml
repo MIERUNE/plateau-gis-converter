@@ -4,9 +4,9 @@ name = "nusamai-czml"
 version = "0.1.0"
 
 [dependencies]
-chrono = { version = "0.4.38", features = ["serde"] }
+chrono = { version = "0.4.39", features = ["serde"] }
 flatgeom = "0.0.2"
-serde = { version = "1.0.215", features = ["derive"] }
+serde = { version = "1.0.216", features = ["derive"] }
 serde_json = { version = "1.0.133", features = ["float_roundtrip"] }
 
 [dev-dependencies]
