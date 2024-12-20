@@ -1,4 +1,3 @@
-pub mod option;
 pub mod parameters;
 pub mod pipeline;
 pub mod sink;

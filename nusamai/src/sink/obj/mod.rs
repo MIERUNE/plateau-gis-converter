@@ -35,11 +35,10 @@ use nusamai_projection::cartesian::geodetic_to_geocentric;
 
 use crate::{
     get_parameter_value,
-    option::use_textured_lod_config,
     parameters::*,
     pipeline::{Feedback, PipelineError, Receiver, Result},
     sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo},
-    transformer::TransformerRegistry,
+    transformer::{use_textured_lod_config, TransformerRegistry},
 };
 
 use super::option::{limit_texture_resolution_parameter, output_parameter};

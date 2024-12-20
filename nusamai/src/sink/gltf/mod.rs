@@ -32,11 +32,10 @@ use url::Url;
 
 use crate::{
     get_parameter_value,
-    option::use_textured_lod_config,
     parameters::*,
     pipeline::{Feedback, PipelineError, Receiver, Result},
     sink::{cesiumtiles::metadata, DataRequirements, DataSink, DataSinkProvider, SinkInfo},
-    transformer::TransformerRegistry,
+    transformer::{use_textured_lod_config, TransformerRegistry},
 };
 
 use super::option::{limit_texture_resolution_parameter, output_parameter};

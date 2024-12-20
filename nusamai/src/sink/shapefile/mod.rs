@@ -24,12 +24,11 @@ use rayon::iter::{ParallelBridge, ParallelIterator};
 use self::crs::ProjectionRepository;
 use crate::{
     get_parameter_value,
-    option::use_lod_config,
     parameters::*,
     pipeline::{Feedback, PipelineError, Receiver, Result},
     sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo},
     transformer,
-    transformer::TransformerRegistry,
+    transformer::{use_lod_config, TransformerRegistry},
 };
 
 use super::option::output_parameter;
