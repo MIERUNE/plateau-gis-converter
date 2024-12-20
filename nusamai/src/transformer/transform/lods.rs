@@ -37,10 +37,10 @@ impl Transform for FilterLodTransform {
                 let available_lods = find_lods(&entity.root) & self.mask;
                 let mut highest_textured_lod = None;
 
-                // Since the "maximum LOD" is decided from the beginning, if the texture does not exist,
-                //  the maximum LOD can be returned immediately.
+                // The “maximum LOD” is set from the beginning. If the texture does not exist, the maximum LOD is returned immediately.
                 let highest_available_lod = available_lods.highest_lod().unwrap_or(0);
 
+                // Creating a reverse-order iterator with ev
                 for lod in (0..=highest_available_lod).rev() {
                     if available_lods.0 & (1 << lod) != 0 {
                         edit_tree(&mut entity.root, lod);
@@ -50,6 +50,7 @@ impl Transform for FilterLodTransform {
                             !appearance.textures.is_empty()
                         };
 
+                        // If a LOD with the texture is found, save it and exit.
                         if has_textures {
                             highest_textured_lod = Some(lod);
                             break;
@@ -57,6 +58,8 @@ impl Transform for FilterLodTransform {
                     }
                 }
 
+                // If “highest_textured_lod” is not None, use “highest_textured_lod”
+                // If it is None, use ”highest_available_lod”
                 if let Some(lod) = highest_textured_lod.or(Some(highest_available_lod)) {
                     edit_tree(&mut entity.root, lod);
                     out.push(entity);
