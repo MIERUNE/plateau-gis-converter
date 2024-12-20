@@ -31,6 +31,7 @@ impl FilterLodTransform {
 /// Transform to filter and split the LODs
 impl Transform for FilterLodTransform {
     fn transform(&mut self, _feedback: &Feedback, mut entity: Entity, out: &mut Vec<Entity>) {
+        // Extract the largest LOD with a texture. If there is no texture, extract the largest LOD.
         match self.mode {
             LodFilterMode::TexturedHighest => {
                 let available_lods = find_lods(&entity.root) & self.mask;
