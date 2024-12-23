@@ -67,26 +67,48 @@ impl Selection {
 pub struct LodSelection;
 
 impl LodSelection {
-    pub fn get_lod_selection_options() -> Vec<(&'static str, &'static str)> {
-        vec![
+    /// Returns LOD selection options with an optional exclusion list.
+    pub fn get_lod_selection_options(
+        exclude: Option<&[&str]>,
+    ) -> Vec<(&'static str, &'static str)> {
+        let options = vec![
             ("最大LOD", "max_lod"),
             ("最小LOD", "min_lod"),
             ("テクスチャ付き最大LOD", "textured_max_lod"),
-            // This option will be used in 3dtiles sink.
             ("すべてのLOD", "all_lod"),
-        ]
+        ];
+
+        // If `exclude` is provided, filter out matching options; otherwise, return all.
+        match exclude {
+            Some(exclude_list) => options
+                .into_iter()
+                .filter(|&(_, value)| !exclude_list.contains(&value))
+                .collect(),
+            None => options,
+        }
     }
 
-    pub fn lod_selection_with_texture(default_value: &str) -> Selection {
-        Selection::new(Self::get_lod_selection_options(), default_value)
-    }
+    /// Creates a selection with a default value and optional exclusion list.
+    pub fn create_lod_selection(default_value: &str, exclude: Option<&[&str]>) -> Selection {
+        let options = Self::get_lod_selection_options(exclude);
 
-    pub fn lod_selection_without_texture(default_value: &str) -> Selection {
-        let options = Self::get_lod_selection_options()
-            .into_iter()
-            .filter(|&(_, value)| value != "textured_max_lod")
-            .collect::<Vec<_>>();
+        // Ensure the default value exists in the options
+        if !options.iter().any(|&(_, value)| value == default_value) {
+            panic!("Default value '{}' must be a valid option", default_value);
+        }
+
         Selection::new(options, default_value)
+    }
+}
+
+pub fn use_lod_config(default_value: &str, exclude: Option<&[&str]>) -> TransformerConfig {
+    TransformerConfig {
+        key: "use_lod".to_string(),
+        label: "出力LODの選択".to_string(),
+        parameter: transformer::ParameterType::Selection(LodSelection::create_lod_selection(
+            default_value,
+            exclude,
+        )),
     }
 }
 

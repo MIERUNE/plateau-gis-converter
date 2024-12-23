@@ -49,7 +49,7 @@ impl DataSinkProvider for GpkgSinkProvider {
 
     fn transformer_options(&self) -> TransformerRegistry {
         let mut settings: TransformerRegistry = TransformerRegistry::new();
-        settings.insert(use_lod_config("max_lod"));
+        settings.insert(use_lod_config("max_lod", Some(&["textured_max_lod"])));
 
         settings
     }

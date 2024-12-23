@@ -44,7 +44,7 @@ use crate::{
     parameters::*,
     pipeline::{Feedback, PipelineError, Receiver, Result},
     sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo},
-    transformer::{use_textured_lod_config, TransformerRegistry},
+    transformer::{use_lod_config, TransformerRegistry},
 };
 use utils::calculate_normal;
 
@@ -109,7 +109,7 @@ impl DataSinkProvider for CesiumTilesSinkProvider {
 
     fn transformer_options(&self) -> TransformerRegistry {
         let mut settings: TransformerRegistry = TransformerRegistry::new();
-        settings.insert(use_textured_lod_config("max_lod"));
+        settings.insert(use_lod_config("max_lod", None));
 
         settings
     }

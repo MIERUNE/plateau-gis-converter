@@ -35,7 +35,7 @@ use crate::{
     parameters::*,
     pipeline::{Feedback, PipelineError, Receiver, Result},
     sink::{cesiumtiles::metadata, DataRequirements, DataSink, DataSinkProvider, SinkInfo},
-    transformer::{use_textured_lod_config, TransformerRegistry},
+    transformer::{use_lod_config, TransformerRegistry},
 };
 
 use super::option::{limit_texture_resolution_parameter, output_parameter};
@@ -60,7 +60,7 @@ impl DataSinkProvider for GltfSinkProvider {
 
     fn transformer_options(&self) -> TransformerRegistry {
         let mut settings: TransformerRegistry = TransformerRegistry::new();
-        settings.insert(use_textured_lod_config("max_lod"));
+        settings.insert(use_lod_config("max_lod", None));
 
         settings
     }
