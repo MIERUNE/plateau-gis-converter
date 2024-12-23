@@ -24,7 +24,7 @@ export interface BooleanConfig {
 
 type TransformerParameterType = boolean | SelectionConfig<string>;
 
-export type TransformerRegistry = {
+export type TransformerSettings = {
 	configs: Array<TransformerConfig<TransformerParameterType>>;
 };
 

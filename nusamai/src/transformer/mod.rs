@@ -1,18 +1,20 @@
 //! The transformer stage that preprocesses the attributes and geometry of the entities.
 
 mod builder;
-mod option;
 mod rules;
 mod runner;
+mod selection;
 mod setting;
+
 pub mod transform;
 
 pub use builder::*;
 use nusamai_citygml::schema::Schema;
 use nusamai_plateau::Entity;
-pub use option::*;
 pub use rules::*;
+
 pub use runner::*;
+pub use selection::*;
 pub use setting::*;
 use thiserror::Error;
 pub use transform::{

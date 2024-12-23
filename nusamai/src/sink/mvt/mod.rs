@@ -31,7 +31,7 @@ use crate::{
     pipeline::{Feedback, PipelineError, Receiver, Result},
     sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo},
     transformer,
-    transformer::{use_lod_config, TransformerRegistry},
+    transformer::{use_lod_config, TransformerSettings},
 };
 
 use super::option::output_parameter;
@@ -79,8 +79,8 @@ impl DataSinkProvider for MvtSinkProvider {
         params
     }
 
-    fn transformer_options(&self) -> TransformerRegistry {
-        let mut settings: TransformerRegistry = TransformerRegistry::new();
+    fn transformer_options(&self) -> TransformerSettings {
+        let mut settings: TransformerSettings = TransformerSettings::new();
         settings.insert(use_lod_config("min_lod", Some(&["textured_max_lod"])));
 
         settings
@@ -102,7 +102,7 @@ impl DataSinkProvider for MvtSinkProvider {
 
 struct MvtSink {
     output_path: PathBuf,
-    transform_settings: TransformerRegistry,
+    transform_settings: TransformerSettings,
     mvt_options: MvtParams,
 }
 
@@ -118,7 +118,7 @@ struct SlicedFeature<'a> {
 }
 
 impl DataSink for MvtSink {
-    fn make_requirements(&mut self, properties: TransformerRegistry) -> DataRequirements {
+    fn make_requirements(&mut self, properties: TransformerSettings) -> DataRequirements {
         let default_requirements = DataRequirements {
             key_value: transformer::KeyValueSpec::DotNotation,
             lod_filter: transformer::LodFilterSpec {

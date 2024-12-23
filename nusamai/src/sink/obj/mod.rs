@@ -38,7 +38,7 @@ use crate::{
     parameters::*,
     pipeline::{Feedback, PipelineError, Receiver, Result},
     sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo},
-    transformer::{use_lod_config, TransformerRegistry},
+    transformer::{use_lod_config, TransformerSettings},
 };
 
 use super::option::{limit_texture_resolution_parameter, output_parameter};
@@ -71,8 +71,8 @@ impl DataSinkProvider for ObjSinkProvider {
         params
     }
 
-    fn transformer_options(&self) -> TransformerRegistry {
-        let mut settings: TransformerRegistry = TransformerRegistry::new();
+    fn transformer_options(&self) -> TransformerSettings {
+        let mut settings: TransformerSettings = TransformerSettings::new();
         settings.insert(use_lod_config("max_lod", None));
 
         settings
@@ -96,7 +96,7 @@ impl DataSinkProvider for ObjSinkProvider {
 
 pub struct ObjSink {
     output_path: PathBuf,
-    transform_settings: TransformerRegistry,
+    transform_settings: TransformerSettings,
     obj_options: ObjParams,
     limit_texture_resolution: Option<bool>,
 }
@@ -176,7 +176,7 @@ pub struct FeatureMaterial {
 }
 
 impl DataSink for ObjSink {
-    fn make_requirements(&mut self, properties: TransformerRegistry) -> DataRequirements {
+    fn make_requirements(&mut self, properties: TransformerSettings) -> DataRequirements {
         let default_requirements: DataRequirements = DataRequirements {
             resolve_appearance: true,
             key_value: crate::transformer::KeyValueSpec::JsonifyObjectsAndArrays,

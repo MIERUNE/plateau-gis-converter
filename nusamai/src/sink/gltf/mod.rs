@@ -35,7 +35,7 @@ use crate::{
     parameters::*,
     pipeline::{Feedback, PipelineError, Receiver, Result},
     sink::{cesiumtiles::metadata, DataRequirements, DataSink, DataSinkProvider, SinkInfo},
-    transformer::{use_lod_config, TransformerRegistry},
+    transformer::{use_lod_config, TransformerSettings},
 };
 
 use super::option::{limit_texture_resolution_parameter, output_parameter};
@@ -58,8 +58,8 @@ impl DataSinkProvider for GltfSinkProvider {
         params
     }
 
-    fn transformer_options(&self) -> TransformerRegistry {
-        let mut settings: TransformerRegistry = TransformerRegistry::new();
+    fn transformer_options(&self) -> TransformerSettings {
+        let mut settings: TransformerSettings = TransformerSettings::new();
         settings.insert(use_lod_config("max_lod", None));
 
         settings
@@ -80,7 +80,7 @@ impl DataSinkProvider for GltfSinkProvider {
 
 pub struct GltfSink {
     output_path: PathBuf,
-    transform_settings: TransformerRegistry,
+    transform_settings: TransformerSettings,
     limit_texture_resolution: Option<bool>,
 }
 
@@ -148,7 +148,7 @@ pub struct PrimitiveInfo {
 pub type Primitives = HashMap<material::Material, PrimitiveInfo>;
 
 impl DataSink for GltfSink {
-    fn make_requirements(&mut self, properties: TransformerRegistry) -> DataRequirements {
+    fn make_requirements(&mut self, properties: TransformerSettings) -> DataRequirements {
         let default_requirements: DataRequirements = DataRequirements {
             resolve_appearance: true,
             key_value: crate::transformer::KeyValueSpec::JsonifyObjectsAndArrays,

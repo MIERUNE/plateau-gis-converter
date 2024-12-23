@@ -5,7 +5,7 @@ use nusamai::{
     pipeline::{self, Feedback, Parcel, Receiver, Result, Sender},
     sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo},
     source::{DataSource, DataSourceProvider, SourceInfo},
-    transformer::{Transformer, TransformerRegistry},
+    transformer::{Transformer, TransformerSettings},
 };
 use nusamai_citygml::schema::Schema;
 use nusamai_plateau::Entity;
@@ -94,8 +94,8 @@ impl DataSinkProvider for DummySinkProvider {
         Parameters::default()
     }
 
-    fn transformer_options(&self) -> TransformerRegistry {
-        let options: TransformerRegistry = TransformerRegistry::new();
+    fn transformer_options(&self) -> TransformerSettings {
+        let options: TransformerSettings = TransformerSettings::new();
         options
     }
 }
@@ -116,7 +116,7 @@ impl DataSink for DummySink {
         Ok(())
     }
 
-    fn make_requirements(&mut self, _: TransformerRegistry) -> DataRequirements {
+    fn make_requirements(&mut self, _: TransformerSettings) -> DataRequirements {
         DataRequirements {
             ..Default::default()
         }

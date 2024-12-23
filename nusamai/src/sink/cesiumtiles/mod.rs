@@ -44,7 +44,7 @@ use crate::{
     parameters::*,
     pipeline::{Feedback, PipelineError, Receiver, Result},
     sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo},
-    transformer::{use_lod_config, TransformerRegistry},
+    transformer::{use_lod_config, TransformerSettings},
 };
 use utils::calculate_normal;
 
@@ -107,8 +107,8 @@ impl DataSinkProvider for CesiumTilesSinkProvider {
         params
     }
 
-    fn transformer_options(&self) -> TransformerRegistry {
-        let mut settings: TransformerRegistry = TransformerRegistry::new();
+    fn transformer_options(&self) -> TransformerSettings {
+        let mut settings: TransformerSettings = TransformerSettings::new();
         settings.insert(use_lod_config("max_lod", None));
 
         settings
@@ -136,7 +136,7 @@ impl DataSinkProvider for CesiumTilesSinkProvider {
 
 struct CesiumTilesSink {
     output_path: PathBuf,
-    transform_settings: TransformerRegistry,
+    transform_settings: TransformerSettings,
     limit_texture_resolution: Option<bool>,
     gzip_compress: Option<bool>,
     min_z: u8,
@@ -144,7 +144,7 @@ struct CesiumTilesSink {
 }
 
 impl DataSink for CesiumTilesSink {
-    fn make_requirements(&mut self, properties: TransformerRegistry) -> DataRequirements {
+    fn make_requirements(&mut self, properties: TransformerSettings) -> DataRequirements {
         let default_requirements = DataRequirements {
             resolve_appearance: true,
             key_value: crate::transformer::KeyValueSpec::JsonifyObjects,

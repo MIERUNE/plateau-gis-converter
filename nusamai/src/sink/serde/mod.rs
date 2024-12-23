@@ -16,7 +16,7 @@ use crate::{
     parameters::*,
     pipeline::{Feedback, PipelineError, Receiver, Result},
     sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo},
-    transformer::TransformerRegistry,
+    transformer::TransformerSettings,
 };
 
 use super::option::output_parameter;
@@ -38,8 +38,8 @@ impl DataSinkProvider for SerdeSinkProvider {
         params
     }
 
-    fn transformer_options(&self) -> TransformerRegistry {
-        let settings: TransformerRegistry = TransformerRegistry::new();
+    fn transformer_options(&self) -> TransformerSettings {
+        let settings: TransformerSettings = TransformerSettings::new();
 
         settings
     }
@@ -62,7 +62,7 @@ pub struct SerdeSink {
 }
 
 impl DataSink for SerdeSink {
-    fn make_requirements(&mut self, _: TransformerRegistry) -> DataRequirements {
+    fn make_requirements(&mut self, _: TransformerSettings) -> DataRequirements {
         DataRequirements {
             ..Default::default()
         }

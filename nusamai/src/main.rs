@@ -13,7 +13,7 @@ use nusamai::{
     source::{citygml::CityGmlSourceProvider, DataSource, DataSourceProvider},
     transformer::{
         self, MappingRules, MultiThreadTransformer, NusamaiTransformBuilder, ParameterType,
-        TransformBuilder, TransformerConfig, TransformerRegistry,
+        TransformBuilder, TransformerConfig, TransformerSettings,
     },
     BUILTIN_SINKS,
 };
@@ -227,7 +227,7 @@ fn main() -> ExitCode {
     .collect();
 
     let updated_transformer_registry = match update_result {
-        Ok(configs) => TransformerRegistry { configs },
+        Ok(configs) => TransformerSettings { configs },
         Err(error_message) => {
             log::error!("{}", error_message);
             return ExitCode::FAILURE;
