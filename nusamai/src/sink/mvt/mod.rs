@@ -81,7 +81,7 @@ impl DataSinkProvider for MvtSinkProvider {
 
     fn transformer_options(&self) -> TransformerSettings {
         let mut settings: TransformerSettings = TransformerSettings::new();
-        settings.insert(use_lod_config("min_lod", Some(&["textured_max_lod"])));
+        settings.insert(use_lod_config("min_lod", None));
 
         settings
     }

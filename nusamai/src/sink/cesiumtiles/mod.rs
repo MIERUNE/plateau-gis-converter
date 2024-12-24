@@ -109,7 +109,10 @@ impl DataSinkProvider for CesiumTilesSinkProvider {
 
     fn transformer_options(&self) -> TransformerSettings {
         let mut settings: TransformerSettings = TransformerSettings::new();
-        settings.insert(use_lod_config("max_lod", None));
+        settings.insert(use_lod_config(
+            "max_lod",
+            Some(&["textured_max_lod", "all_lod"]),
+        ));
 
         settings
     }

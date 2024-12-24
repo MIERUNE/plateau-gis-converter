@@ -65,30 +65,42 @@ impl Selection {
 pub struct LodSelection;
 
 impl LodSelection {
-    /// Returns LOD selection options with an optional exclusion list.
-    pub fn get_lod_selection_options(
-        exclude: Option<&[&str]>,
-    ) -> Vec<(&'static str, &'static str)> {
-        let options = vec![
-            ("最大LOD", "max_lod"),
-            ("最小LOD", "min_lod"),
+    /// Returns only the default LOD selection options.
+    fn get_default_lod_selection_options() -> Vec<(&'static str, &'static str)> {
+        vec![("最大LOD", "max_lod"), ("最小LOD", "min_lod")]
+    }
+
+    /// Returns extended options based on the provided keys.
+    fn get_extended_options(keys: &[&str]) -> Vec<(&'static str, &'static str)> {
+        let all_extended_options = vec![
             ("テクスチャ付き最大LOD", "textured_max_lod"),
             ("すべてのLOD", "all_lod"),
         ];
 
-        // If `exclude` is provided, filter out matching options; otherwise, return all.
-        match exclude {
-            Some(exclude_list) => options
-                .into_iter()
-                .filter(|&(_, value)| !exclude_list.contains(&value))
-                .collect(),
-            None => options,
-        }
+        all_extended_options
+            .into_iter()
+            .filter(|(_, value)| keys.contains(value))
+            .collect()
     }
 
-    /// Creates a selection with a default value and optional exclusion list.
-    pub fn create_lod_selection(default_value: &str, exclude: Option<&[&str]>) -> Selection {
-        let options = Self::get_lod_selection_options(exclude);
+    /// Returns LOD selection options, optionally including extended options.
+    fn get_lod_selection_options(
+        extended_keys: Option<&[&str]>,
+    ) -> Vec<(&'static str, &'static str)> {
+        let mut options = Self::get_default_lod_selection_options();
+
+        // Add the filtered extended options if provided
+        if let Some(keys) = extended_keys {
+            let extended_options = Self::get_extended_options(keys);
+            options.extend(extended_options);
+        }
+
+        options
+    }
+
+    /// Creates a selection with optional extended options.
+    pub fn create_lod_selection(default_value: &str, extended_keys: Option<&[&str]>) -> Selection {
+        let options = Self::get_lod_selection_options(extended_keys);
 
         // Ensure the default value exists in the options
         if !options.iter().any(|&(_, value)| value == default_value) {
