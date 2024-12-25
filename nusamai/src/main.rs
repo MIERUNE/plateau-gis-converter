@@ -161,9 +161,9 @@ fn main() -> ExitCode {
     }
 
     let mut sink = sink_provider.create(&sink_params);
-    let transformer_registry = sink_provider.transformer_options();
+    let transformer_settings = sink_provider.transformer_options();
 
-    let valid_keys = transformer_registry.initialize_valid_keys();
+    let valid_keys = transformer_settings.initialize_valid_keys();
 
     // Check if the keys specified in args.transformopt are valid
     for (key, _) in &args.transformopt {
@@ -183,7 +183,7 @@ fn main() -> ExitCode {
         }
     }
 
-    let update_result: Result<Vec<TransformerConfig>, String> = transformer_registry
+    let update_result: Result<Vec<TransformerConfig>, String> = transformer_settings
     .configs
     .into_iter()
     .map(|mut config| {

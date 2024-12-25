@@ -148,7 +148,7 @@ fn run_conversion(
     filetype: String,
     epsg: u16,
     rules_path: String,
-    transformer_registry: TransformerSettings,
+    transformer_settings: TransformerSettings,
     sink_parameters: Parameters,
     tasks_state: tauri::State<ConversionTasksState>,
     app: tauri::AppHandle,
@@ -206,7 +206,7 @@ fn run_conversion(
         sink_provider.create(&sink_params)
     };
 
-    let mut requirements = sink.make_requirements(transformer_registry);
+    let mut requirements = sink.make_requirements(transformer_settings);
     requirements.set_output_epsg(epsg);
 
     let source = {
@@ -319,9 +319,9 @@ fn get_transform(filetype: String) -> Result<TransformerSettings, Error> {
         Error::InvalidSetting(msg)
     })?;
 
-    let transformer_registry = sink_provider.transformer_options();
+    let transformer_settings = sink_provider.transformer_options();
 
-    Ok(transformer_registry)
+    Ok(transformer_settings)
 }
 
 /// Get the configurable parameters of the sink
