@@ -1,6 +1,7 @@
 use nusamai_citygml::{citygml_data, CityGmlElement, Code, Date, Length, Measure, Point, Uri};
 
 #[citygml_data(name = "uro:DataQualityAttribute")]
+#[citygml(allow_extra)]
 pub struct DataQualityAttribute {
     // PLATEAU 3.x compatibility
     #[citygml(path = b"uro:srcScale")]

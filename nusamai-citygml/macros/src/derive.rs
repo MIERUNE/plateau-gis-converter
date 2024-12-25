@@ -391,7 +391,7 @@ fn generate_citygml_impl_for_struct(
             }
 
             #[inline(never)]
-    fn into_object(self) -> Option<::nusamai_citygml::object::Value> {
+            fn into_object(self) -> Option<::nusamai_citygml::object::Value> {
                 #into_object_impl
             }
 
