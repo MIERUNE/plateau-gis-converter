@@ -15,12 +15,7 @@ use tinymvt::TileZXY;
 
 use super::{material::Material, tiling};
 use crate::sink::cesiumtiles::{material::Texture, tiling::zxy_from_lng_lat};
-struct TileBounds {
-    min_x: f64,
-    max_x: f64,
-    min_y: f64,
-    max_y: f64,
-}
+
 #[derive(Serialize, Deserialize)]
 pub struct SlicedFeature {
     // polygons [x, y, z, u, v]
@@ -260,10 +255,8 @@ fn slice_polygon(
     for yi in y_range.clone() {
         let (k1, k2) = tiling::y_slice_range(zoom, yi);
 
-        // todo?: check interior bbox to optimize
-
         for (ri, (ring, uv_ring)) in poly.rings().zip_eq(poly_uv.rings()).enumerate() {
-            if ring.is_empty() {
+            if ring.raw_coords().is_empty() {
                 continue;
             }
 
@@ -340,8 +333,6 @@ fn slice_polygon(
         for (xi, xs) in x_iter {
             let (k1, k2) = tiling::x_slice_range(zoom, xi, xs);
 
-            // todo?: check interior bbox to optimize ...
-
             let key = (
                 zoom,
                 xi.rem_euclid(1 << zoom) as u32, // handling geometry crossing the antimeridian
@@ -350,7 +341,7 @@ fn slice_polygon(
             poly_buf.clear();
 
             for ring in y_sliced_poly.rings() {
-                if ring.is_empty() {
+                if ring.raw_coords().is_empty() {
                     continue;
                 }
 
@@ -403,29 +394,6 @@ fn slice_polygon(
 
                 poly_buf.add_ring(ring_buffer.drain(..))
             }
-            let tile_bounds = TileBounds {
-                min_x: 0.0,
-                max_x: 1.0,
-                min_y: 0.0,
-                max_y: 1.0,
-            };
-
-            let rings: Vec<_> = poly_buf.rings().map(|r| r.raw_coords().to_vec()).collect();
-
-            for ring in rings.iter() {
-                if ring.is_empty() {
-                    continue;
-                }
-
-                ring_buffer.clear();
-
-                for vertex in ring {
-                    let snapped_vertex = snap_to_tile_boundary(*vertex, &tile_bounds);
-                    ring_buffer.push(snapped_vertex);
-                }
-                let drained_ring: Vec<_> = std::mem::take(&mut ring_buffer).drain(..).collect();
-                poly_buf.add_ring(drained_ring);
-            }
 
             send_polygon(key, &poly_buf);
         }
@@ -460,23 +428,4 @@ fn should_process_entry(entry_lod: u8, geom_error: f64, available_lods: &HashSet
         let selected_lod = *available_lods.iter().max().unwrap();
         entry_lod == selected_lod
     }
-}
-
-fn snap_to_tile_boundary(vertex: [f64; 5], tile_bounds: &TileBounds) -> [f64; 5] {
-    let mut snapped_vertex = vertex;
-
-    if vertex[0] < tile_bounds.min_x {
-        snapped_vertex[0] = tile_bounds.min_x;
-    } else if vertex[0] > tile_bounds.max_x {
-        snapped_vertex[0] = tile_bounds.max_x;
-    }
-
-    // Snap y coordinate
-    if vertex[1] < tile_bounds.min_y {
-        snapped_vertex[1] = tile_bounds.min_y;
-    } else if vertex[1] > tile_bounds.max_y {
-        snapped_vertex[1] = tile_bounds.max_y;
-    }
-
-    snapped_vertex
 }
