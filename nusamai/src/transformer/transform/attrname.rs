@@ -91,7 +91,7 @@ impl Transform for EditFieldNamesTransform {
 }
 
 impl EditFieldNamesTransform {
-    fn rename<'a>(&'a self, name: &'a str) -> &str {
+    fn rename<'a>(&'a self, name: &'a str) -> &'a str {
         // Lookup and rename: exact match
         if let Some(new_key) = self.exact_rename_map.get(name) {
             return new_key.as_ref();

@@ -17,7 +17,7 @@ pub struct Glb<'a> {
     pub bin: Option<Cow<'a, [u8]>>,
 }
 
-impl<'a> Glb<'a> {
+impl Glb<'_> {
     /// Write GLB to writer.
     pub fn to_writer<W: std::io::Write>(&self, writer: W) -> std::io::Result<()> {
         self.to_writer_with_alignment(writer, 4)

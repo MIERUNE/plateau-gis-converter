@@ -4,14 +4,14 @@ version.workspace = true
 edition = "2021"
 
 [dependencies]
-indexmap = { version = "2.6.0", features = ["serde", "rayon"] }
+indexmap = { version = "2.7.0", features = ["serde", "rayon"] }
 rayon = "1.10.0"
-serde = { version = "1.0.214", features = ["derive"] }
+serde = { version = "1.0.215", features = ["derive"] }
 nusamai-plateau = { path = "../nusamai-plateau" }
 nusamai-citygml = { path = "../nusamai-citygml" }
-quick-xml = "0.37.0"
-clap = { version = "4.5.20", features = ["derive", "string"] }
-thiserror = "1.0.65"
+quick-xml = "0.37.1"
+clap = { version = "4.5.21", features = ["derive", "string"] }
+thiserror = "1.0.69"
 ctrlc = "3.4.5"
 bincode = { version = "2.0.0-rc.3", default-features = false, features = ["std", "serde"] }
 lz4_flex = "0.11.3"
@@ -26,12 +26,12 @@ tinymvt = "0.0.1"
 fastanvil = "0.31.0"
 fastnbt = "2.5.0"
 geojson = "0.24.1"
-serde_json = { version = "1.0.132", features = ["indexmap"] }
-url = "2.5.2"
+serde_json = { version = "1.0.133", features = ["indexmap"] }
+url = "2.5.4"
 nusamai-gpkg = { path = "../nusamai-gpkg" }
 tokio = { version = "1.41", features = ["full"] }
 byteorder = "1.5.0"
-hashbrown = { version = "0.15.0", features = ["serde"] }
+hashbrown = { version = "0.15.2", features = ["serde"] }
 log = { version = "0.4.22" }
 pretty_env_logger = "0.5.0"
 itertools = "0.13"
@@ -45,16 +45,16 @@ glob = "0.3.1"
 shellexpand = "3.1.0"
 kml = "0.8.5"
 nusamai-kml = { path = "../nusamai-kml" }
-image = { version = "0.25.4", default-features = false, features = ["rayon", "tiff", "jpeg", "webp", "png"] }
-flate2 = "1.0.34"
+image = { version = "0.25.5", default-features = false, features = ["rayon", "tiff", "jpeg", "webp", "png"] }
+flate2 = "1.0.35"
 chrono = "0.4.38"
 kv-extsort = { git = "https://github.com/MIERUNE/kv-extsort-rs.git" }
-bytemuck = { version = "1.19.0", features = ["derive"] }
+bytemuck = { version = "1.20.0", features = ["derive"] }
 dda-voxelize = "0.2.0-alpha.1"
 atlas-packer = { git = "https://github.com/MIERUNE/atlas-packer.git" }
 # atlas-packer = { path = "../atlas_packer" };
-tempfile = "3.13.0"
-glam = "0.29.0"
+tempfile = "3.14.0"
+glam = "0.29.2"
 
 [dev-dependencies]
 rand = "0.8.5"
