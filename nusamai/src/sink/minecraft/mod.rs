@@ -21,12 +21,11 @@ use nusamai_projection::etmerc::ExtendedTransverseMercatorProjection;
 
 use crate::{
     get_parameter_value,
-    option::use_lod_config,
     parameters::*,
     pipeline::{Feedback, Receiver, Result},
     sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo},
     transformer,
-    transformer::TransformerRegistry,
+    transformer::{use_lod_config, TransformerSettings},
 };
 
 use block_colors::{DefaultBlockResolver, Voxel};
@@ -52,9 +51,9 @@ impl DataSinkProvider for MinecraftSinkProvider {
         params
     }
 
-    fn transformer_options(&self) -> TransformerRegistry {
-        let mut settings: TransformerRegistry = TransformerRegistry::new();
-        settings.insert(use_lod_config("max_lod"));
+    fn transformer_options(&self) -> TransformerSettings {
+        let mut settings: TransformerSettings = TransformerSettings::new();
+        settings.insert(use_lod_config("max_lod", None));
 
         settings
     }
@@ -71,7 +70,7 @@ impl DataSinkProvider for MinecraftSinkProvider {
 
 pub struct MinecraftSink {
     output_path: PathBuf,
-    transform_settings: TransformerRegistry,
+    transform_settings: TransformerSettings,
 }
 
 pub struct BoundingVolume {
@@ -108,7 +107,7 @@ impl Default for BoundingVolume {
 }
 
 impl DataSink for MinecraftSink {
-    fn make_requirements(&mut self, properties: TransformerRegistry) -> DataRequirements {
+    fn make_requirements(&mut self, properties: TransformerSettings) -> DataRequirements {
         let default_requirements = DataRequirements {
             tree_flattening: transformer::TreeFlatteningSpec::Flatten {
                 feature: transformer::FeatureFlatteningOption::AllExceptThematicSurfaces,

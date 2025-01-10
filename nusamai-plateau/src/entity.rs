@@ -5,7 +5,7 @@ use nusamai_citygml::{geometry::GeometryStore, object::Value};
 use crate::appearance::AppearanceStore;
 
 /// City objects, features, objects or data
-#[derive(Debug, serde::Deserialize, serde::Serialize, Clone)]
+#[derive(Debug, serde::Deserialize, serde::Serialize)]
 pub struct Entity {
     /// Attribute tree
     pub root: Value,

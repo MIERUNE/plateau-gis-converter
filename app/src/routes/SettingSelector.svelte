@@ -2,7 +2,7 @@
 	import { filetypeOptions } from '$lib/settings';
 	import { invoke } from '@tauri-apps/api/core';
 	import type { SinkParameters } from '$lib/sinkparams';
-	import type { TransformerRegistry } from '$lib/transformer';
+	import type { TransformerSettings } from '$lib/transformer';
 	import Icon from '@iconify/svelte';
 	import {  } from '@tauri-apps/api';
 	import SinkOptions from '$lib/components/SinkOptions.svelte';
@@ -13,7 +13,7 @@ import * as dialog from "@tauri-apps/plugin-dialog"
 	export let epsg: number = 4979;
 	export let rulesPath: string;
 	export let sinkParameters: SinkParameters;
-	export let transformerRegistry: TransformerRegistry;
+	export let transformerRegistry: TransformerSettings;
 
 	$: epsgOptions = filetypeOptions[filetype]?.epsg || [];
 	$: disableEpsgOptions = epsgOptions.length < 2;

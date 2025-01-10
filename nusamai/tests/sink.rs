@@ -4,7 +4,7 @@ use nusamai::{
     sink::{self, DataSinkProvider},
     source::{citygml::CityGmlSourceProvider, DataSourceProvider},
     transformer::{
-        MultiThreadTransformer, NusamaiTransformBuilder, TransformBuilder, TransformerRegistry,
+        MultiThreadTransformer, NusamaiTransformBuilder, TransformBuilder, TransformerSettings,
     },
 };
 use nusamai_citygml::CityGmlElement;
@@ -53,7 +53,7 @@ pub(crate) fn simple_run_sink<S: DataSinkProvider>(sink_provider: S, output: Opt
         sink_provider.create(&sink_params)
     };
 
-    let options: TransformerRegistry = TransformerRegistry::new();
+    let options: TransformerSettings = TransformerSettings::new();
 
     let (transformer, schema) = {
         let transform_req = sink.make_requirements(options);

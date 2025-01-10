@@ -22,7 +22,7 @@ use nusamai_projection::crs;
 use crate::{
     parameters::Parameters,
     pipeline::{Feedback, PipelineError, Receiver},
-    transformer::{self, TransformerRegistry},
+    transformer::{self, TransformerSettings},
 };
 
 pub struct SinkInfo {
@@ -38,7 +38,7 @@ pub trait DataSinkProvider: Sync {
     fn sink_options(&self) -> Parameters;
 
     /// Gets the transform options of the sink.
-    fn transformer_options(&self) -> TransformerRegistry;
+    fn transformer_options(&self) -> TransformerSettings;
 
     /// Creates a sink instance.
     fn create(&self, config: &Parameters) -> Box<dyn DataSink>;
@@ -54,7 +54,7 @@ pub trait DataSink: Send {
     ) -> Result<(), PipelineError>;
 
     /// Make a transform requirements with options
-    fn make_requirements(&mut self, property: TransformerRegistry) -> DataRequirements;
+    fn make_requirements(&mut self, property: TransformerSettings) -> DataRequirements;
 }
 
 pub struct DataRequirements {

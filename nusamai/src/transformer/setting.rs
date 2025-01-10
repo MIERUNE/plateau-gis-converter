@@ -1,92 +1,16 @@
 use serde::{Deserialize, Serialize};
 
+use crate::transformer::selection::{LodSelection, Selection};
 use crate::{sink::DataRequirements, transformer};
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct SelectionOptions {
-    pub label: String,
-    pub value: String,
-}
-
-impl SelectionOptions {
-    pub fn new(label: &str, value: &str) -> Self {
-        Self {
-            label: label.to_string(),
-            value: value.to_string(),
-        }
-    }
-
-    pub fn get_label(&self) -> String {
-        self.label.clone()
-    }
-
-    pub fn get_value(&self) -> String {
-        self.value.clone()
-    }
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct Selection {
-    pub options: Vec<SelectionOptions>,
-    pub selected_value: String,
-}
-
-impl Selection {
-    pub fn new(options: Vec<(&str, &str)>, selected_value: &str) -> Self {
-        let options: Vec<SelectionOptions> = options
-            .into_iter()
-            .map(|(label, value)| SelectionOptions::new(label, value))
-            .collect();
-
-        let valid_value = options.iter().any(|opt| opt.value == selected_value);
-        if !valid_value {
-            panic!("selected_value must be one of the options");
-        }
-
-        Self {
-            options,
-            selected_value: selected_value.to_string(),
-        }
-    }
-
-    pub fn set_selected_value(&mut self, value: &str) -> Result<(), String> {
-        if self.options.iter().any(|opt| opt.value == value) {
-            self.selected_value = value.to_string();
-            Ok(())
-        } else {
-            Err("Invalid value".to_string())
-        }
-    }
-
-    pub fn get_options(&self) -> Vec<SelectionOptions> {
-        self.options.clone()
-    }
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct LodSelection;
-
-impl LodSelection {
-    pub fn get_lod_selection_options() -> Vec<(&'static str, &'static str)> {
-        vec![
-            ("最大LOD", "max_lod"),
-            ("最小LOD", "min_lod"),
-            ("テクスチャ付き最大LOD", "textured_max_lod"),
-            // This option will be used in 3dtiles sink.
-            ("すべてのLOD", "all_lod"),
-        ]
-    }
-
-    pub fn lod_selection_with_texture(default_value: &str) -> Selection {
-        Selection::new(Self::get_lod_selection_options(), default_value)
-    }
-
-    pub fn lod_selection_without_texture(default_value: &str) -> Selection {
-        let options = Self::get_lod_selection_options()
-            .into_iter()
-            .filter(|&(_, value)| value != "textured_max_lod")
-            .collect::<Vec<_>>();
-        Selection::new(options, default_value)
+pub fn use_lod_config(default_value: &str, exclude: Option<&[&str]>) -> TransformerConfig {
+    TransformerConfig {
+        key: "use_lod".to_string(),
+        label: "出力LODの選択".to_string(),
+        parameter: transformer::ParameterType::Selection(LodSelection::create_lod_selection(
+            default_value,
+            exclude,
+        )),
     }
 }
 
@@ -108,11 +32,11 @@ pub struct TransformerConfig {
 // FIXME: 設計を見直す
 // FIXME: 意味のある名前に変える
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
-pub struct TransformerRegistry {
+pub struct TransformerSettings {
     pub configs: Vec<TransformerConfig>,
 }
 
-impl TransformerRegistry {
+impl TransformerSettings {
     pub fn new() -> Self {
         Self { configs: vec![] }
     }

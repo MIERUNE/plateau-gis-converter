@@ -21,12 +21,11 @@ use url::Url;
 
 use crate::{
     get_parameter_value,
-    option::use_lod_config,
     parameters::*,
     pipeline::{Feedback, PipelineError, Receiver, Result},
     sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo},
     transformer,
-    transformer::TransformerRegistry,
+    transformer::{use_lod_config, TransformerSettings},
 };
 
 use super::option::output_parameter;
@@ -48,9 +47,9 @@ impl DataSinkProvider for GpkgSinkProvider {
         params
     }
 
-    fn transformer_options(&self) -> TransformerRegistry {
-        let mut settings: TransformerRegistry = TransformerRegistry::new();
-        settings.insert(use_lod_config("max_lod"));
+    fn transformer_options(&self) -> TransformerSettings {
+        let mut settings: TransformerSettings = TransformerSettings::new();
+        settings.insert(use_lod_config("max_lod", None));
 
         settings
     }
@@ -68,7 +67,7 @@ impl DataSinkProvider for GpkgSinkProvider {
 
 pub struct GpkgSink {
     output_path: PathBuf,
-    transform_settings: TransformerRegistry,
+    transform_settings: TransformerSettings,
 }
 
 // An ephimeral container to wrap and pass the data in the pipeline
@@ -265,7 +264,7 @@ impl GpkgSink {
 pub enum GpkgTransformOption {}
 
 impl DataSink for GpkgSink {
-    fn make_requirements(&mut self, properties: TransformerRegistry) -> DataRequirements {
+    fn make_requirements(&mut self, properties: TransformerSettings) -> DataRequirements {
         let default_requirements = DataRequirements {
             tree_flattening: transformer::TreeFlatteningSpec::Flatten {
                 feature: transformer::FeatureFlatteningOption::AllExceptThematicSurfaces,
