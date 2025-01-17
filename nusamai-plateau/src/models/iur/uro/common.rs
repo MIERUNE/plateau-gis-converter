@@ -14,6 +14,26 @@ pub struct DataQualityAttribute {
     #[citygml(path = b"uro:appearanceSrcDesc")]
     pub appearance_src_desc: Vec<Code>,
 
+    // PLATEAU 4.x compatibility
+    #[citygml(path = b"uro:geometrySrcDescLod0")]
+    pub geometry_src_desc_lod0: Vec<Code>,
+
+    // PLATEAU 4.x compatibility
+    #[citygml(path = b"uro:geometrySrcDescLod1")]
+    pub geometry_src_desc_lod1: Vec<Code>,
+
+    // PLATEAU 4.x compatibility
+    #[citygml(path = b"uro:geometrySrcDescLod2")]
+    pub geometry_src_desc_lod2: Vec<Code>,
+
+    // PLATEAU 4.x compatibility
+    #[citygml(path = b"uro:geometrySrcDescLod3")]
+    pub geometry_src_desc_lod3: Vec<Code>,
+
+    // PLATEAU 4.x compatibility
+    #[citygml(path = b"uro:geometrySrcDescLod4")]
+    pub geometry_src_desc_lod4: Vec<Code>,
+
     #[citygml(path = b"uro:geometrySrcDesc0")]
     pub geometry_src_desc0: Vec<Code>,
 
