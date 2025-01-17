@@ -1,5 +1,5 @@
 use nusamai_citygml::{
-    citygml_data, citygml_feature, citygml_property, CityGmlElement, LODType, Point, Vector,
+    citygml_data, citygml_feature, citygml_property, CityGmlElement, Code, LODType, Point, Vector,
 };
 
 use super::iur::uro;
@@ -11,6 +11,10 @@ pub struct ReliefFeature {
 
     #[citygml(path = b"dem:reliefComponent", required)]
     pub relief_component: Vec<ReliefComponentProperty>, // -> dem:_ReliefComponent
+
+    // PLATEAU 4.x
+    #[citygml(path = b"uro:demDataQualityAttribute", required)]
+    pub dem_data_quality_attribute: Option<uro::DemDataQualityAttribute>,
 }
 
 #[citygml_property(name = "dem:_ReliefComponentProperty")]
