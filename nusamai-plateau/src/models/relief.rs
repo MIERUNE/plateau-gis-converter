@@ -1,5 +1,5 @@
 use nusamai_citygml::{
-    citygml_data, citygml_feature, citygml_property, CityGmlElement, Code, LODType, Point, Vector,
+    citygml_data, citygml_feature, citygml_property, CityGmlElement, LODType, Point, Vector,
 };
 
 use super::iur::uro;
