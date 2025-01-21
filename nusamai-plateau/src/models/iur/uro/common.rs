@@ -48,6 +48,21 @@ pub struct DataQualityAttribute {
     #[citygml(path = b"uro:appearanceSrcDescLod4")]
     pub appearance_src_desc_lod4: Vec<Code>,
 
+    #[citygml(path = b"uro:geometrySrcDescLod0")]
+    pub geometry_src_desc_lod0: Vec<Code>,
+
+    #[citygml(path = b"uro:geometrySrcDescLod1")]
+    pub geometry_src_desc_lod1: Vec<Code>,
+
+    #[citygml(path = b"uro:geometrySrcDescLod2")]
+    pub geometry_src_desc_lod2: Vec<Code>,
+
+    #[citygml(path = b"uro:geometrySrcDescLod3")]
+    pub geometry_src_desc_lod3: Vec<Code>,
+
+    #[citygml(path = b"uro:geometrySrcDescLod4")]
+    pub geometry_src_desc_lod4: Vec<Code>,
+
     #[citygml(path = b"uro:lodType")]
     pub lod_type: Vec<Code>,
 
