@@ -868,5 +868,13 @@
   "geometrySrcDescLod1": "geomSrcDL1",
   "geometrySrcDescLod2": "geomSrcDL2",
   "geometrySrcDescLod3": "geomSrcDL3",
-  "geometrySrcDescLod4": "geomSrcDL4"
+  "geometrySrcDescLod4": "geomSrcDL4",
+  "DataQualityAttribute": "dataQual",
+  "demDataQualityAttribute": "dDataQual",
+  "wtrDataQualityAttribute": "wDataQual",
+  "wtrKeyValuePairAttribute": "wtrKVPair",
+  "dataQualityAttribute": "dataQual",
+  "urbanParkAttribute": "urbPark",
+  "luseKeyValuePairAttribute": "luseKVPair",
+  "vegKeyValuePairAttribute": "vegKVPair"
 }
