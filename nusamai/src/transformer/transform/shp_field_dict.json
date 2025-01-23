@@ -864,6 +864,6 @@
   "frnKeyValuePairAttribute": "frnKVPair",
   "tranKeyValuePairAttribute": "tranKVPair",
   "tranUsecaseAttribute": "tranUC",
-  "BuildingDataQualityAttribute": "bldgDataQuality",
-  "bldgDataQualityAttribute": "bldgDataQuality"
+  "BuildingDataQualityAttribute": "bldgDQual",
+  "bldgDataQualityAttribute": "bldgDQual"
 }
