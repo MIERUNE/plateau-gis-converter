@@ -60,6 +60,9 @@ pub struct UndergroundBuilding {
     #[citygml(path = b"uro:bldgDataQualityAttribute/uro:DataQualityAttribute")]
     pub bldg_data_quality_attribute: Option<uro::DataQualityAttribute>,
 
+    #[citygml(path = b"uro:buildingDataQualityAttribute")]
+    pub building_data_quality_attribute: Option<uro::DataQualityAttribute>,
+
     #[citygml(path = b"uro:buildingDisasterRiskAttribute")]
     #[citygml(path = b"uro:bldgDisasterRiskAttribute")]
     pub bldg_disaster_risk_attribute: Vec<uro::DisasterRiskAttributeProperty>, // -> uro:DisasterRiskAttribute

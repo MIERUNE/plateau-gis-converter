@@ -77,6 +77,26 @@ pub struct DataQualityAttribute {
 
     #[citygml(path = b"uro:publicSurveyDataQualityAttribute/uro:PublicSurveyDataQualityAttribute")]
     pub public_survey_data_quality_attribute: Option<PublicSurveyDataQualityAttribute>,
+    #[citygml(path = b"uro:BuildingDataQualityAttribute")]
+    pub building_data_quality_attribute: Option<BuildingDataQualityAttribute>,
+}
+
+#[citygml_data(name = "uro:BuildingDataQualityAttribute")]
+pub struct BuildingDataQualityAttribute {
+    #[citygml(path = b"uro:srcScale")]
+    pub src_scale: Vec<Code>,
+
+    #[citygml(path = b"uro:geometrySrcDesc")]
+    pub geometry_src_desc: Vec<Code>,
+
+    #[citygml(path = b"uro:appearanceSrcDesc")]
+    pub appearance_src_desc: Vec<Code>,
+
+    #[citygml(path = b"uro:lod1HeightType")]
+    pub lod1_height_type: Vec<Code>,
+
+    #[citygml(path = b"uro:lodType")]
+    pub lod_type: Vec<Code>,
 }
 
 #[citygml_data(name = "uro:PublicSurveyDataQualityAttribute")]
