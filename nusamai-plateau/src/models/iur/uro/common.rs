@@ -19,7 +19,7 @@ pub struct DataQualityAttribute {
     pub geometry_src_desc_lod0: Vec<Code>,
 
     // PLATEAU 4.x
-    #[citygml(path = b"uro:geometrySrcDescLod1")]
+    #[citygml(path = b"uro:geometrySrcDescLod1", required)]
     pub geometry_src_desc_lod1: Vec<Code>,
 
     // PLATEAU 4.x

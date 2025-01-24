@@ -14,7 +14,7 @@ pub struct ReliefFeature {
 
     // PLATEAU 4.x
     #[citygml(path = b"uro:demDataQualityAttribute", required)]
-    pub dem_data_quality_attribute: Option<uro::DemDataQualityAttribute>,
+    pub dem_data_quality_attribute: Option<uro::demDataQualityAttribute>,
 }
 
 #[citygml_property(name = "dem:_ReliefComponentProperty")]
