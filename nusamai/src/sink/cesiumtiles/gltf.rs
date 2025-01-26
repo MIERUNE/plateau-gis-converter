@@ -238,7 +238,7 @@ pub fn write_gltf_glb<W: Write>(
             .extensions
             .as_ref()
             .and_then(|ext| ext.ext_texture_webp.as_ref())
-            .map_or(false, |_| true)
+            .is_some_and(|_| true)
     });
 
     let extensions_used = {
