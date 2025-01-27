@@ -75,7 +75,7 @@ pub enum TopLevelCityObject {
     // i-UR urban objects
     //
     #[citygml(path = b"uro:UndergroundBuilding")]
-    UndergroundBuilding(uro::UndergroundBuilding),
+    UndergroundBuilding(Box<uro::UndergroundBuilding>),
     #[citygml(path = b"uro:Appurtenance")]
     Appurtenance(uro::Appurtenance),
     #[citygml(path = b"uro:Cable")]

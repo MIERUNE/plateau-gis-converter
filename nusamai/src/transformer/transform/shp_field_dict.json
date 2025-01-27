@@ -864,6 +864,8 @@
   "frnKeyValuePairAttribute": "frnKVPair",
   "tranKeyValuePairAttribute": "tranKVPair",
   "tranUsecaseAttribute": "tranUC",
+  "BuildingDataQualityAttribute": "bldgDQual",
+  "bldgDataQualityAttribute": "bldgDQual",
   "geometrySrcDescLod0": "geomSrcDL0",
   "geometrySrcDescLod1": "geomSrcDL1",
   "geometrySrcDescLod2": "geomSrcDL2",
