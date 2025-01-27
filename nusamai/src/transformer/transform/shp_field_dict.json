@@ -863,5 +863,20 @@
   "bldgUsecaseAttribute": "bldgUC",
   "frnKeyValuePairAttribute": "frnKVPair",
   "tranKeyValuePairAttribute": "tranKVPair",
-  "tranUsecaseAttribute": "tranUC"
+  "tranUsecaseAttribute": "tranUC",
+  "BuildingDataQualityAttribute": "bldgDQual",
+  "bldgDataQualityAttribute": "bldgDQual",
+  "geometrySrcDescLod0": "geomSrcDL0",
+  "geometrySrcDescLod1": "geomSrcDL1",
+  "geometrySrcDescLod2": "geomSrcDL2",
+  "geometrySrcDescLod3": "geomSrcDL3",
+  "geometrySrcDescLod4": "geomSrcDL4",
+  "DataQualityAttribute": "dataQual",
+  "demDataQualityAttribute": "demDQual",
+  "wtrDataQualityAttribute": "wtrDQual",
+  "wtrKeyValuePairAttribute": "wtrKVPair",
+  "dataQualityAttribute": "dataQual",
+  "urbanParkAttribute": "urbPark",
+  "luseKeyValuePairAttribute": "luseKVPair",
+  "vegKeyValuePairAttribute": "vegKVPair"
 }
