@@ -14,8 +14,8 @@
 | class | Code | 分類 | bldg:class |
 | function | JSON (<code><a href="#code">Code</a>[]</code>) | 機能 | bldg:function |
 | usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | bldg:usage |
-| yrConstrtn | NonNegativeInteger | 建築年 | bldg:yearOfConstruction |
-| yrDemolitn | NonNegativeInteger | 解体年 | bldg:yearOfDemolition |
+| yrConstrtn | String | 建築年 | bldg:yearOfConstruction |
+| yrDemolitn | String | 解体年 | bldg:yearOfDemolition |
 | roofType | Code | 屋根の種別 | bldg:roofType |
 | measurHgt | Measure | 計測高さ | bldg:measuredHeight |
 | strysAbvG | NonNegativeInteger | 地上階数 | bldg:storeysAboveGround |
@@ -28,19 +28,22 @@
 | intrirRoom | JSON (<code><a href="#bldgroom">bldg:Room</a>[]</code>) | 部屋 | bldg:interiorRoom |
 | bldgPart | JSON (<code><a href="#bldgbuildingpart">bldg:BuildingPart</a>[]</code>) | 建物部品 | bldg:consistsOfBuildingPart |
 | address | JSON (<code><a href="#coreaddress">core:Address</a>[]</code>) | 住所 | bldg:address |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) | データ品質 | uro:buildingDataQualityAttribute |
+| disastRisk | JSON (<code><a href="#urodisasterriskattributeproperty">uro:DisasterRiskAttributeProperty</a>[]</code>) | 災害リスク | uro:buildingDisasterRiskAttribute |
 | dmAttr | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) | 図式属性 | uro:bldgDmAttribute |
 | facility | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) | 施設詳細属性 | uro:bldgFacilityAttribute |
 | facilityId | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) | 施設識別属性 | uro:bldgFacilityIdAttribute |
 | facilityTy | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) | 施設属性 | uro:bldgFacilityTypeAttribute |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) | 拡張属性 | uro:keyValuePairAttribute |
 | ReIDAttr | JSON (<code><a href="#urorealestateidattribute">uro:RealEstateIDAttribute</a></code>) | 不動産ID | uro:bldgRealEstateIDAttribute |
-| dataQual | JSON (<code><a href="#urobuildingdataqualityattribute">uro:BuildingDataQualityAttribute</a></code>) | データ品質 | uro:buildingDataQualityAttribute |
+| bldgUC | JSON (<code><a href="#urobuildingusecaseattribute">uro:BuildingUsecaseAttribute</a>[]</code>) |  | uro:bldgUsecaseAttribute |
 | detail | JSON (<code><a href="#urobuildingdetailattribute">uro:BuildingDetailAttribute</a>[]</code>) | 建物利用現況 | uro:buildingDetailAttribute |
-| disastRisk | JSON (<code><a href="#urobuildingdisasterriskattributeproperty">uro:BuildingDisasterRiskAttributeProperty</a>[]</code>) | 災害リスク | uro:buildingDisasterRiskAttribute |
-| IDAttr | JSON (<code><a href="#urobuildingidattribute">uro:BuildingIDAttribute</a></code>) | 建物識別情報 | uro:buildingIDAttribute |
+| IDAttr | JSON (<code><a href="#urobuildingidattribute">uro:BuildingIDAttribute</a>[]</code>) | 建物識別情報 | uro:buildingIDAttribute |
 | ifcBldg | JSON (<code><a href="#uroifcattributeproperty">uro:IfcAttributeProperty</a>[]</code>) | IFC属性 | uro:ifcBuildingAttribute |
 | indoorBldg | JSON (<code><a href="#uroindoorattributeproperty">uro:IndoorAttributeProperty</a>[]</code>) | 屋内ナビゲーション属性 | uro:indoorBuildingAttribute |
-| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) | 拡張属性 | uro:keyValuePairAttribute |
 | lgCustFacl | JSON (<code><a href="#urolargecustomerfacilityattribute">uro:LargeCustomerFacilityAttribute</a>[]</code>) | 大規模小売店舗等の立地状況 | uro:largeCustomerFacilityAttribute |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### bldg:BuildingFurniture
 
@@ -57,6 +60,8 @@
 | usage | JSON (<code><a href="#code">Code</a>[]</code>) |  | bldg:usage |
 | ifcBldFrn | JSON (<code><a href="#uroifcattributeproperty">uro:IfcAttributeProperty</a>[]</code>) |  | uro:ifcBuildingFurnitureAttribute |
 | indoorFrn | JSON (<code><a href="#uroindoorattributeproperty">uro:IndoorAttributeProperty</a>[]</code>) |  | uro:indoorFutnitureAttribute |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### bldg:BuildingInstallation
 
@@ -74,6 +79,8 @@
 | usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | bldg:usage |
 | boundedBy | JSON (<code><a href="#bldg-boundarysurfaceproperty">bldg:_BoundarySurfaceProperty</a>[]</code>) | 境界面 | bldg:boundedBy |
 | ifcBldInst | JSON (<code><a href="#uroifcattributeproperty">uro:IfcAttributeProperty</a>[]</code>) | IFC属性 | uro:ifcBuildingInstallationAttribute |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### bldg:BuildingPart
 
@@ -103,19 +110,22 @@
 | intrirRoom | JSON (<code><a href="#bldgroom">bldg:Room</a>[]</code>) | 部屋 | bldg:interiorRoom |
 | bldgPart | JSON (<code><a href="#bldgbuildingpart">bldg:BuildingPart</a>[]</code>) | ー | bldg:consistsOfBuildingPart |
 | address | JSON (<code><a href="#coreaddress">core:Address</a>[]</code>) | 住所 | bldg:address |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) | ー | uro:buildingDataQualityAttribute |
+| disastRisk | JSON (<code><a href="#urodisasterriskattributeproperty">uro:DisasterRiskAttributeProperty</a>[]</code>) | ー | uro:buildingDisasterRiskAttribute |
 | dmAttr | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) | 図式属性 | uro:bldgDmAttribute |
 | facility | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) | 施設詳細属性 | uro:bldgFacilityAttribute |
 | facilityId | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) | 施設識別属性 | uro:bldgFacilityIdAttribute |
 | facilityTy | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) | 施設属性 | uro:bldgFacilityTypeAttribute |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) | ー | uro:keyValuePairAttribute |
 | ReIDAttr | JSON (<code><a href="#urorealestateidattribute">uro:RealEstateIDAttribute</a></code>) |  | uro:bldgRealEstateIDAttribute |
-| dataQual | JSON (<code><a href="#urobuildingdataqualityattribute">uro:BuildingDataQualityAttribute</a></code>) | ー | uro:buildingDataQualityAttribute |
+| bldgUC | JSON (<code><a href="#urobuildingusecaseattribute">uro:BuildingUsecaseAttribute</a>[]</code>) |  | uro:bldgUsecaseAttribute |
 | detail | JSON (<code><a href="#urobuildingdetailattribute">uro:BuildingDetailAttribute</a>[]</code>) | 建物利用現況 | uro:buildingDetailAttribute |
-| disastRisk | JSON (<code><a href="#urobuildingdisasterriskattributeproperty">uro:BuildingDisasterRiskAttributeProperty</a>[]</code>) | ー | uro:buildingDisasterRiskAttribute |
-| IDAttr | JSON (<code><a href="#urobuildingidattribute">uro:BuildingIDAttribute</a></code>) | 建物識別属性 | uro:buildingIDAttribute |
+| IDAttr | JSON (<code><a href="#urobuildingidattribute">uro:BuildingIDAttribute</a>[]</code>) | 建物識別属性 | uro:buildingIDAttribute |
 | ifcBldg | JSON (<code><a href="#uroifcattributeproperty">uro:IfcAttributeProperty</a>[]</code>) | IFC属性 | uro:ifcBuildingAttribute |
 | indoorBldg | JSON (<code><a href="#uroindoorattributeproperty">uro:IndoorAttributeProperty</a>[]</code>) | 屋内属性 | uro:indoorBuildingAttribute |
-| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) | ー | uro:keyValuePairAttribute |
 | lgCustFacl | JSON (<code><a href="#urolargecustomerfacilityattribute">uro:LargeCustomerFacilityAttribute</a>[]</code>) | 大規模小売店舗等の立地状況 | uro:largeCustomerFacilityAttribute |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### bldg:CeilingSurface
 
@@ -131,6 +141,8 @@
 | opening | JSON (<code><a href="#bldg-openingproperty">bldg:_OpeningProperty</a>[]</code>) | 開口部 | bldg:opening |
 | ifcSurface | JSON (<code><a href="#uroifcattributeproperty">uro:IfcAttributeProperty</a>[]</code>) | IFC属性 | uro:ifcBoundarySurfaceAttribute |
 | indoorSurf | JSON (<code><a href="#uroindoorattributeproperty">uro:IndoorAttributeProperty</a>[]</code>) | 屋内ナビゲーション属性 | uro:indoorBoundarySurfaceAttribute |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### bldg:ClosureSurface
 
@@ -146,6 +158,8 @@
 | opening | JSON (<code><a href="#bldg-openingproperty">bldg:_OpeningProperty</a>[]</code>) | 開口部 | bldg:opening |
 | ifcSurface | JSON (<code><a href="#uroifcattributeproperty">uro:IfcAttributeProperty</a>[]</code>) | IFC属性 | uro:ifcBoundarySurfaceAttribute |
 | indoorSurf | JSON (<code><a href="#uroindoorattributeproperty">uro:IndoorAttributeProperty</a>[]</code>) |  | uro:indoorBoundarySurfaceAttribute |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### bldg:Door
 
@@ -161,6 +175,8 @@
 | ifcOpening | JSON (<code><a href="#uroifcattributeproperty">uro:IfcAttributeProperty</a>[]</code>) | IFC属性 | uro:ifcOpeningAttribute |
 | indoorOpng | JSON (<code><a href="#uroindoorattributeproperty">uro:IndoorAttributeProperty</a>[]</code>) | 屋内ナビゲーション属性 | uro:indoorOpeningAttribute |
 | address | JSON (<code><a href="#coreaddress">core:Address</a>[]</code>) |  | bldg:address |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### bldg:FloorSurface
 
@@ -176,6 +192,8 @@
 | opening | JSON (<code><a href="#bldg-openingproperty">bldg:_OpeningProperty</a>[]</code>) | 開口部 | bldg:opening |
 | ifcSurface | JSON (<code><a href="#uroifcattributeproperty">uro:IfcAttributeProperty</a>[]</code>) | IFC属性 | uro:ifcBoundarySurfaceAttribute |
 | indoorSurf | JSON (<code><a href="#uroindoorattributeproperty">uro:IndoorAttributeProperty</a>[]</code>) | 屋内ナビゲーション属性 | uro:indoorBoundarySurfaceAttribute |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### bldg:GroundSurface
 
@@ -190,6 +208,8 @@
 | opening | JSON (<code><a href="#bldg-openingproperty">bldg:_OpeningProperty</a>[]</code>) |  | bldg:opening |
 | ifcSurface | JSON (<code><a href="#uroifcattributeproperty">uro:IfcAttributeProperty</a>[]</code>) |  | uro:ifcBoundarySurfaceAttribute |
 | indoorSurf | JSON (<code><a href="#uroindoorattributeproperty">uro:IndoorAttributeProperty</a>[]</code>) |  | uro:indoorBoundarySurfaceAttribute |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### bldg:InteriorWallSurface
 
@@ -205,6 +225,8 @@
 | opening | JSON (<code><a href="#bldg-openingproperty">bldg:_OpeningProperty</a>[]</code>) | 開口部 | bldg:opening |
 | ifcSurface | JSON (<code><a href="#uroifcattributeproperty">uro:IfcAttributeProperty</a>[]</code>) | IFC属性 | uro:ifcBoundarySurfaceAttribute |
 | indoorSurf | JSON (<code><a href="#uroindoorattributeproperty">uro:IndoorAttributeProperty</a>[]</code>) | 屋内ナビゲーション属性 | uro:indoorBoundarySurfaceAttribute |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### bldg:OuterCeilingSurface
 
@@ -220,6 +242,8 @@
 | opening | JSON (<code><a href="#bldg-openingproperty">bldg:_OpeningProperty</a>[]</code>) | 開口部 | bldg:opening |
 | ifcSurface | JSON (<code><a href="#uroifcattributeproperty">uro:IfcAttributeProperty</a>[]</code>) | IFC属性 | uro:ifcBoundarySurfaceAttribute |
 | indoorSurf | JSON (<code><a href="#uroindoorattributeproperty">uro:IndoorAttributeProperty</a>[]</code>) |  | uro:indoorBoundarySurfaceAttribute |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### bldg:OuterFloorSurface
 
@@ -235,6 +259,8 @@
 | opening | JSON (<code><a href="#bldg-openingproperty">bldg:_OpeningProperty</a>[]</code>) | 開口部 | bldg:opening |
 | ifcSurface | JSON (<code><a href="#uroifcattributeproperty">uro:IfcAttributeProperty</a>[]</code>) | IFC属性 | uro:ifcBoundarySurfaceAttribute |
 | indoorSurf | JSON (<code><a href="#uroindoorattributeproperty">uro:IndoorAttributeProperty</a>[]</code>) |  | uro:indoorBoundarySurfaceAttribute |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### bldg:RoofSurface
 
@@ -250,6 +276,8 @@
 | opening | JSON (<code><a href="#bldg-openingproperty">bldg:_OpeningProperty</a>[]</code>) | 開口部 | bldg:opening |
 | ifcSurface | JSON (<code><a href="#uroifcattributeproperty">uro:IfcAttributeProperty</a>[]</code>) | IFC属性 | uro:ifcBoundarySurfaceAttribute |
 | indoorSurf | JSON (<code><a href="#uroindoorattributeproperty">uro:IndoorAttributeProperty</a>[]</code>) |  | uro:indoorBoundarySurfaceAttribute |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### bldg:Room
 
@@ -270,7 +298,8 @@
 | roomInst | JSON (<code><a href="#bldgbuildinginstallation">bldg:BuildingInstallation</a>[]</code>) | 屋内付属物 | bldg:roomInstallation |
 | ifcRoom | JSON (<code><a href="#uroifcattributeproperty">uro:IfcAttributeProperty</a>[]</code>) | IFC属性 | uro:ifcRoomAttribute |
 | indoorRoom | JSON (<code><a href="#uroindoorattributeproperty">uro:IndoorAttributeProperty</a>[]</code>) | 屋内ナビゲーション属性 | uro:indoorRoomAttribute |
-| dataQual | JSON (<code><a href="#uroroomdataqualityattribute">uro:RoomDataQualityAttribute</a></code>) |  | uro:roomDataQualityAttribute |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### bldg:WallSurface
 
@@ -286,6 +315,8 @@
 | opening | JSON (<code><a href="#bldg-openingproperty">bldg:_OpeningProperty</a>[]</code>) | 開口部 | bldg:opening |
 | ifcSurface | JSON (<code><a href="#uroifcattributeproperty">uro:IfcAttributeProperty</a>[]</code>) | IFC属性 | uro:ifcBoundarySurfaceAttribute |
 | indoorSurf | JSON (<code><a href="#uroindoorattributeproperty">uro:IndoorAttributeProperty</a>[]</code>) |  | uro:indoorBoundarySurfaceAttribute |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### bldg:Window
 
@@ -300,6 +331,8 @@
 | generic | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
 | ifcOpening | JSON (<code><a href="#uroifcattributeproperty">uro:IfcAttributeProperty</a>[]</code>) | IFC属性 | uro:ifcOpeningAttribute |
 | indoorOpng | JSON (<code><a href="#uroindoorattributeproperty">uro:IndoorAttributeProperty</a>[]</code>) | 屋内ナビゲーション属性 | uro:indoorOpeningAttribute |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### tran:AuxiliaryTrafficArea
 
@@ -312,11 +345,12 @@
 | creatDate | Date | 作成日 | core:creationDate |
 | termDate | Date | 消滅日 | core:terminationDate |
 | generic | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
-| dm | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) | 図式属性 | uro:tranDmAttribute |
 | class | Code | 分類 | tran:class |
 | function | JSON (<code><a href="#code">Code</a>[]</code>) | 機能 | tran:function |
 | usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | tran:usage |
 | surfaceMat | Code | 舗装種類 | tran:surfaceMaterial |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### tran:Railway
 
@@ -329,17 +363,21 @@
 | creatDate | Date | 作成日 | core:creationDate |
 | termDate | Date | 消滅日 | core:terminationDate |
 | generic | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
-| dm | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) | 図式属性 | uro:tranDmAttribute |
 | class | Code | 分類 | tran:class |
 | function | JSON (<code><a href="#code">Code</a>[]</code>) | 機能 | tran:function |
 | usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | tran:usage |
 | tfcArea | JSON (<code><a href="#trantrafficarea">tran:TrafficArea</a>[]</code>) | 交通領域 | tran:trafficArea |
 | auxTfcArea | JSON (<code><a href="#tranauxiliarytrafficarea">tran:AuxiliaryTrafficArea</a>[]</code>) | 交通補助領域 | tran:auxiliaryTrafficArea |
-| dataQual | JSON (<code><a href="#urotransportationdataqualityattribute">uro:TransportationDataQualityAttribute</a></code>) | データ品質 | uro:tranDataQualityAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) | データ品質 | uro:tranDataQualityAttribute |
+| dm | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) | 図式属性 | uro:tranDmAttribute |
 | facility | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) | 施設詳細属性 | uro:tranFacilityAttribute |
 | facilityId | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) | 施設識別属性 | uro:tranFacilityIdAttribute |
 | facilityTy | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) | 施設属性 | uro:tranFacilityTypeAttribute |
-| route | JSON (<code><a href="#urorailwayrouteattribute">uro:RailwayRouteAttribute</a></code>) | 鉄道路線属性 | uro:railwayRouteAttribute |
+| tranKVPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | uro:tranKeyValuePairAttribute |
+| tranUC | JSON (<code><a href="#urotrafficobjectusecaseattribute">uro:TrafficObjectUsecaseAttribute</a>[]</code>) |  | uro:tranUsecaseAttribute |
+| route | JSON (<code><a href="#urorailwayrouteattribute">uro:RailwayRouteAttribute</a>[]</code>) | 鉄道路線属性 | uro:railwayRouteAttribute |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### tran:Road
 
@@ -352,19 +390,23 @@
 | creatDate | Date | 作成日 | core:creationDate |
 | termDate | Date | 消滅日 | core:terminationDate |
 | generic | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
-| dm | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) | 図式属性 | uro:tranDmAttribute |
 | class | Code | 分類 | tran:class |
 | function | JSON (<code><a href="#code">Code</a>[]</code>) | 機能 | tran:function |
 | usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | tran:usage |
 | tfcArea | JSON (<code><a href="#trantrafficarea">tran:TrafficArea</a>[]</code>) | 交通領域 | tran:trafficArea |
 | auxTfcArea | JSON (<code><a href="#tranauxiliarytrafficarea">tran:AuxiliaryTrafficArea</a>[]</code>) | 交通補助領域 | tran:auxiliaryTrafficArea |
-| dataQual | JSON (<code><a href="#urotransportationdataqualityattribute">uro:TransportationDataQualityAttribute</a></code>) | データ品質 | uro:tranDataQualityAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) | データ品質 | uro:tranDataQualityAttribute |
+| dm | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) | 図式属性 | uro:tranDmAttribute |
 | facility | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) | 施設詳細属性 | uro:tranFacilityAttribute |
 | facilityId | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) | 施設識別属性 | uro:tranFacilityIdAttribute |
 | facilityTy | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) | 施設属性 | uro:tranFacilityTypeAttribute |
+| tranKVPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | uro:tranKeyValuePairAttribute |
+| tranUC | JSON (<code><a href="#urotrafficobjectusecaseattribute">uro:TrafficObjectUsecaseAttribute</a>[]</code>) |  | uro:tranUsecaseAttribute |
 | roadStatus | JSON (<code><a href="#uroroadtype">uro:RoadType</a>[]</code>) |  | uro:roadStatus |
 | roadStruct | JSON (<code><a href="#uroroadstructureattribute">uro:RoadStructureAttribute</a>[]</code>) | 道路構造属性 | uro:roadStructureAttribute |
-| tfcVolume | JSON (<code><a href="#urotrafficvolumeattribute">uro:TrafficVolumeAttribute</a></code>) | 交通量属性 | uro:trafficVolumeAttribute |
+| tfcVolume | JSON (<code><a href="#urotrafficvolumeattribute">uro:TrafficVolumeAttribute</a>[]</code>) | 交通量属性 | uro:trafficVolumeAttribute |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### tran:Square
 
@@ -377,17 +419,21 @@
 | creatDate | Date | 作成日 | core:creationDate |
 | termDate | Date | 消滅日 | core:terminationDate |
 | generic | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
-| dm | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) | 図式属性 | uro:tranDmAttribute |
 | class | Code | 分類 | tran:class |
 | function | JSON (<code><a href="#code">Code</a>[]</code>) | 機能 | tran:function |
 | usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | tran:usage |
 | tfcArea | JSON (<code><a href="#trantrafficarea">tran:TrafficArea</a>[]</code>) | 交通領域 | tran:trafficArea |
 | auxTfcArea | JSON (<code><a href="#tranauxiliarytrafficarea">tran:AuxiliaryTrafficArea</a>[]</code>) | 交通補助領域 | tran:auxiliaryTrafficArea |
-| dataQual | JSON (<code><a href="#urotransportationdataqualityattribute">uro:TransportationDataQualityAttribute</a></code>) | データ品質 | uro:tranDataQualityAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) | データ品質 | uro:tranDataQualityAttribute |
+| dm | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) | 図式属性 | uro:tranDmAttribute |
 | facility | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) | 施設詳細属性 | uro:tranFacilityAttribute |
 | facilityId | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) | 施設識別属性 | uro:tranFacilityIdAttribute |
 | facilityTy | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) | 施設属性 | uro:tranFacilityTypeAttribute |
-| sqUrbanPln | JSON (<code><a href="#urosquareurbanplanattributeproperty">uro:SquareUrbanPlanAttributeProperty</a></code>) | 都市計画施設現況属性 | uro:squareUrbanPlanAttribute |
+| tranKVPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | uro:tranKeyValuePairAttribute |
+| tranUC | JSON (<code><a href="#urotrafficobjectusecaseattribute">uro:TrafficObjectUsecaseAttribute</a>[]</code>) |  | uro:tranUsecaseAttribute |
+| sqUrbanPln | JSON (<code><a href="#urosquareurbanplanattributeproperty">uro:SquareUrbanPlanAttributeProperty</a>[]</code>) | 都市計画施設現況属性 | uro:squareUrbanPlanAttribute |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### tran:Track
 
@@ -400,17 +446,21 @@
 | creatDate | Date | 作成日 | core:creationDate |
 | termDate | Date | 消滅日 | core:terminationDate |
 | generic | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
-| dm | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) | 図式属性 | uro:tranDmAttribute |
 | class | Code | 分類 | tran:class |
 | function | JSON (<code><a href="#code">Code</a>[]</code>) | 機能 | tran:function |
 | usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | tran:usage |
 | tfcArea | JSON (<code><a href="#trantrafficarea">tran:TrafficArea</a>[]</code>) | 交通領域 | tran:trafficArea |
 | auxTfcArea | JSON (<code><a href="#tranauxiliarytrafficarea">tran:AuxiliaryTrafficArea</a>[]</code>) | 交通補助領域 | tran:auxiliaryTrafficArea |
-| dataQual | JSON (<code><a href="#urotransportationdataqualityattribute">uro:TransportationDataQualityAttribute</a></code>) | データ品質 | uro:tranDataQualityAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) | データ品質 | uro:tranDataQualityAttribute |
+| dm | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) | 図式属性 | uro:tranDmAttribute |
 | facility | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) | 施設詳細属性 | uro:tranFacilityAttribute |
 | facilityId | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) | 施設識別属性 | uro:tranFacilityIdAttribute |
 | facilityTy | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) | 施設属性 | uro:tranFacilityTypeAttribute |
-| track | JSON (<code><a href="#urotrackattribute">uro:TrackAttribute</a></code>) | 徒歩道属性 | uro:trackAttribute |
+| tranKVPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | uro:tranKeyValuePairAttribute |
+| tranUC | JSON (<code><a href="#urotrafficobjectusecaseattribute">uro:TrafficObjectUsecaseAttribute</a>[]</code>) |  | uro:tranUsecaseAttribute |
+| track | JSON (<code><a href="#urotrackattribute">uro:TrackAttribute</a>[]</code>) | 徒歩道属性 | uro:trackAttribute |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### tran:TrafficArea
 
@@ -423,13 +473,14 @@
 | creatDate | Date | 作成日 | core:creationDate |
 | termDate | Date | 消滅日 | core:terminationDate |
 | generic | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
-| dm | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) |  | uro:tranDmAttribute |
 | class | Code | 分類 | tran:class |
 | function | JSON (<code><a href="#code">Code</a>[]</code>) | 機能 | tran:function |
 | usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | tran:usage |
 | surfaceMat | Code | 舗装種類 | tran:surfaceMaterial |
 | track | JSON (<code><a href="#urorailwaytrackattribute">uro:RailwayTrackAttribute</a>[]</code>) | 軌道中心線線形情報 | uro:railwayTrackAttribute |
-| tfcArStruc | JSON (<code><a href="#urotrafficareastructureattribute">uro:TrafficAreaStructureAttribute</a></code>) | 道路構造属性 | uro:trafficAreaStructureAttribute |
+| tfcArStruc | JSON (<code><a href="#urotrafficareastructureattribute">uro:TrafficAreaStructureAttribute</a>[]</code>) | 道路構造属性 | uro:trafficAreaStructureAttribute |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### luse:LandUse
 
@@ -446,12 +497,15 @@
 | function | JSON (<code><a href="#code">Code</a>[]</code>) | 機能 | luse:function |
 | usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | luse:usage |
 | ifcLandUse | JSON (<code><a href="#uroifcattributeproperty">uro:IfcAttributeProperty</a>[]</code>) |  | uro:ifcLandUseAttribute |
-| detail | JSON (<code><a href="#urolandusedetailattribute">uro:LandUseDetailAttribute</a></code>) |  | uro:landUseDetailAttribute |
-| dataQual | JSON (<code><a href="#urolandusedataqualityattribute">uro:LandUseDataQualityAttribute</a></code>) |  | uro:luseDataQualityAttribute |
+| detail | JSON (<code><a href="#urolandusedetailattribute">uro:LandUseDetailAttribute</a>[]</code>) |  | uro:landUseDetailAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | uro:luseDataQualityAttribute |
 | luseDm | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) | 図式属性 | uro:luseDmAttribute |
 | facility | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) | 施設詳細属性 | uro:luseFacilityAttribute |
 | facilityId | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) | 施設属性 | uro:luseFacilityIdAttribute |
 | facilityTy | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) | 施設識別属性 | uro:luseFacilityTypeAttribute |
+| luseKVPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | uro:luseKeyValuePairAttribute |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### brid:Bridge
 
@@ -477,16 +531,19 @@
 | intBrdRoom | JSON (<code><a href="#bridbridgeroom">brid:BridgeRoom</a>[]</code>) | 橋梁内部 | brid:interiorBridgeRoom |
 | bridgePart | JSON (<code><a href="#bridbridgepart">brid:BridgePart</a>[]</code>) | 橋梁部分 | brid:consistsOfBridgePart |
 | address | JSON (<code><a href="#coreaddress">core:Address</a>[]</code>) | 住所 | brid:address |
-| Base | JSON (<code><a href="#uroconstructionbaseattribute">uro:ConstructionBaseAttribute</a></code>) | 構造物基本属性 | uro:bridBaseAttribute |
-| dataQual | JSON (<code><a href="#uroconstructiondataqualityattribute">uro:ConstructionDataQualityAttribute</a></code>) | データ品質 | uro:bridDataQualityAttribute |
+| Base | JSON (<code><a href="#uroconstructionbaseattribute">uro:ConstructionBaseAttribute</a>[]</code>) | 構造物基本属性 | uro:bridBaseAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) | データ品質 | uro:bridDataQualityAttribute |
 | disastRisk | JSON (<code><a href="#urodisasterriskattributeproperty">uro:DisasterRiskAttributeProperty</a>[]</code>) | 災害リスク属性 | uro:bridDisasterRiskAttribute |
 | dm | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) | 図式属性 | uro:bridDmAttribute |
 | facility | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) | 施設詳細属性 | uro:bridFacilityAttribute |
 | facilityId | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) | 施設識別属性 | uro:bridFacilityIdAttribute |
 | facilityTy | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) | 施設属性 | uro:bridFacilityTypeAttribute |
-| Functional | JSON (<code><a href="#urobridgefunctionalattribute">uro:BridgeFunctionalAttribute</a></code>) | 橋梁機能属性 | uro:bridFunctionalAttribute |
-| RiskAssess | JSON (<code><a href="#uroconstructionriskassessmentattribute">uro:ConstructionRiskAssessmentAttribute</a></code>) | 構造物リスク評価属性 | uro:bridRiskAssessmentAttribute |
-| Struct | JSON (<code><a href="#urobridgestructureattribute">uro:BridgeStructureAttribute</a></code>) | 橋梁構造属性 | uro:bridStructureAttribute |
+| Functional | JSON (<code><a href="#urobridgefunctionalattribute">uro:BridgeFunctionalAttribute</a>[]</code>) | 橋梁機能属性 | uro:bridFunctionalAttribute |
+| bridKeyValuePairAttribute | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | uro:bridKeyValuePairAttribute |
+| RiskAssess | JSON (<code><a href="#uroconstructionriskassessmentattribute">uro:ConstructionRiskAssessmentAttribute</a>[]</code>) | 構造物リスク評価属性 | uro:bridRiskAssessmentAttribute |
+| Struct | JSON (<code><a href="#urobridgestructureattribute">uro:BridgeStructureAttribute</a>[]</code>) | 橋梁構造属性 | uro:bridStructureAttribute |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### brid:BridgeConstructionElement
 
@@ -503,6 +560,8 @@
 | function | JSON (<code><a href="#code">Code</a>[]</code>) | 機能 | brid:function |
 | usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | brid:usage |
 | boundedBy | JSON (<code><a href="#brid-boundarysurfaceproperty">brid:_BoundarySurfaceProperty</a>[]</code>) | 境界面 | brid:boundedBy |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### brid:BridgeFurniture
 
@@ -518,6 +577,8 @@
 | class | Code | 分類 | brid:class |
 | function | JSON (<code><a href="#code">Code</a>[]</code>) | 機能 | brid:function |
 | usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | brid:usage |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### brid:BridgeInstallation
 
@@ -534,6 +595,8 @@
 | function | JSON (<code><a href="#code">Code</a>[]</code>) | 機能 | brid:function |
 | usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | brid:usage |
 | boundedBy | JSON (<code><a href="#brid-boundarysurfaceproperty">brid:_BoundarySurfaceProperty</a>[]</code>) | 境界面 | brid:boundedBy |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### brid:BridgePart
 
@@ -559,16 +622,19 @@
 | intBrdRoom | JSON (<code><a href="#bridbridgeroom">brid:BridgeRoom</a>[]</code>) | 橋梁内部 | brid:interiorBridgeRoom |
 | bridgePart | JSON (<code><a href="#bridbridgepart">brid:BridgePart</a>[]</code>) | 橋梁部分 | brid:consistsOfBridgePart |
 | address | JSON (<code><a href="#coreaddress">core:Address</a>[]</code>) | 住所 | brid:address |
-| Base | JSON (<code><a href="#uroconstructionbaseattribute">uro:ConstructionBaseAttribute</a></code>) | 構造物基本属性 | uro:bridBaseAttribute |
-| dataQual | JSON (<code><a href="#uroconstructiondataqualityattribute">uro:ConstructionDataQualityAttribute</a></code>) | データ品質 | uro:bridDataQualityAttribute |
+| Base | JSON (<code><a href="#uroconstructionbaseattribute">uro:ConstructionBaseAttribute</a>[]</code>) | 構造物基本属性 | uro:bridBaseAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) | データ品質 | uro:bridDataQualityAttribute |
 | disastRisk | JSON (<code><a href="#urodisasterriskattributeproperty">uro:DisasterRiskAttributeProperty</a>[]</code>) | 災害リスク属性 | uro:bridDisasterRiskAttribute |
 | dm | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) | 図式属性 | uro:bridDmAttribute |
 | facility | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) | 施設詳細属性 | uro:bridFacilityAttribute |
 | facilityId | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) | 施設識別属性 | uro:bridFacilityIdAttribute |
 | facilityTy | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) | 施設属性 | uro:bridFacilityTypeAttribute |
-| Functional | JSON (<code><a href="#urobridgefunctionalattribute">uro:BridgeFunctionalAttribute</a></code>) | 機能属性 | uro:bridFunctionalAttribute |
-| RiskAssess | JSON (<code><a href="#uroconstructionriskassessmentattribute">uro:ConstructionRiskAssessmentAttribute</a></code>) | 構造物リスク評価属性 | uro:bridRiskAssessmentAttribute |
-| Struct | JSON (<code><a href="#urobridgestructureattribute">uro:BridgeStructureAttribute</a></code>) | 構造属性 | uro:bridStructureAttribute |
+| Functional | JSON (<code><a href="#urobridgefunctionalattribute">uro:BridgeFunctionalAttribute</a>[]</code>) | 機能属性 | uro:bridFunctionalAttribute |
+| bridKeyValuePairAttribute | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | uro:bridKeyValuePairAttribute |
+| RiskAssess | JSON (<code><a href="#uroconstructionriskassessmentattribute">uro:ConstructionRiskAssessmentAttribute</a>[]</code>) | 構造物リスク評価属性 | uro:bridRiskAssessmentAttribute |
+| Struct | JSON (<code><a href="#urobridgestructureattribute">uro:BridgeStructureAttribute</a>[]</code>) | 構造属性 | uro:bridStructureAttribute |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### brid:BridgeRoom
 
@@ -587,6 +653,8 @@
 | boundedBy | JSON (<code><a href="#brid-boundarysurfaceproperty">brid:_BoundarySurfaceProperty</a>[]</code>) | 境界面 | brid:boundedBy |
 | intFurn | JSON (<code><a href="#bridbridgefurniture">brid:BridgeFurniture</a>[]</code>) | 設置物 | brid:interiorFurniture |
 | roomInst | JSON (<code><a href="#bridbridgeinstallation">brid:BridgeInstallation</a>[]</code>) | 内部付属物 | brid:bridgeRoomInstallation |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### brid:CeilingSurface
 
@@ -600,6 +668,8 @@
 | termDate | Date | 消滅日 | core:terminationDate |
 | generic | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
 | opening | JSON (<code><a href="#brid-openingproperty">brid:_OpeningProperty</a>[]</code>) | 開口部 | brid:opening |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### brid:ClosureSurface
 
@@ -613,6 +683,8 @@
 | termDate | Date | 消滅日 | core:terminationDate |
 | generic | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
 | opening | JSON (<code><a href="#brid-openingproperty">brid:_OpeningProperty</a>[]</code>) | 開口部 | brid:opening |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### brid:Door
 
@@ -626,6 +698,8 @@
 | termDate | Date | 消滅日 | core:terminationDate |
 | generic | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
 | address | JSON (<code><a href="#coreaddress">core:Address</a>[]</code>) |  | brid:address |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### brid:FloorSurface
 
@@ -639,6 +713,8 @@
 | termDate | Date | 消滅日 | core:terminationDate |
 | generic | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
 | opening | JSON (<code><a href="#brid-openingproperty">brid:_OpeningProperty</a>[]</code>) | 開口部 | brid:opening |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### brid:GroundSurface
 
@@ -652,6 +728,8 @@
 | termDate | Date | 消滅日 | core:terminationDate |
 | generic | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
 | opening | JSON (<code><a href="#brid-openingproperty">brid:_OpeningProperty</a>[]</code>) | 開口部 | brid:opening |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### brid:InteriorWallSurface
 
@@ -665,6 +743,8 @@
 | termDate | Date | 消滅日 | core:terminationDate |
 | generic | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
 | opening | JSON (<code><a href="#brid-openingproperty">brid:_OpeningProperty</a>[]</code>) | 開口部 | brid:opening |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### brid:OuterCeilingSurface
 
@@ -678,6 +758,8 @@
 | termDate | Date | 消滅日 | core:terminationDate |
 | generic | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
 | opening | JSON (<code><a href="#brid-openingproperty">brid:_OpeningProperty</a>[]</code>) | 開口部 | brid:opening |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### brid:OuterFloorSurface
 
@@ -691,6 +773,8 @@
 | termDate | Date | 消滅日 | core:terminationDate |
 | generic | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
 | opening | JSON (<code><a href="#brid-openingproperty">brid:_OpeningProperty</a>[]</code>) | 開口部 | brid:opening |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### brid:RoofSurface
 
@@ -704,6 +788,8 @@
 | termDate | Date | 消滅日 | core:terminationDate |
 | generic | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
 | opening | JSON (<code><a href="#brid-openingproperty">brid:_OpeningProperty</a>[]</code>) | 開口部 | brid:opening |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### brid:WallSurface
 
@@ -717,6 +803,8 @@
 | termDate | Date | 消滅日 | core:terminationDate |
 | generic | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
 | opening | JSON (<code><a href="#brid-openingproperty">brid:_OpeningProperty</a>[]</code>) | 開口部 | brid:opening |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### brid:Window
 
@@ -729,6 +817,8 @@
 | creatDate | Date | 作成日 | core:creationDate |
 | termDate | Date | 消滅日 | core:terminationDate |
 | generic | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### tun:CeilingSurface
 
@@ -742,6 +832,8 @@
 | termDate | Date | 消滅日 | core:terminationDate |
 | generic | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
 | opening | JSON (<code><a href="#tun-openingproperty">tun:_OpeningProperty</a>[]</code>) | 開口部 | tun:opening |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### tun:ClosureSurface
 
@@ -755,6 +847,8 @@
 | termDate | Date | 消滅日 | core:terminationDate |
 | generic | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
 | opening | JSON (<code><a href="#tun-openingproperty">tun:_OpeningProperty</a>[]</code>) | 開口部 | tun:opening |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### tun:Door
 
@@ -767,6 +861,8 @@
 | creatDate | Date | 作成日 | core:creationDate |
 | termDate | Date | 消滅日 | core:terminationDate |
 | generic | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### tun:FloorSurface
 
@@ -780,6 +876,8 @@
 | termDate | Date | 消滅日 | core:terminationDate |
 | generic | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
 | opening | JSON (<code><a href="#tun-openingproperty">tun:_OpeningProperty</a>[]</code>) | 開口部 | tun:opening |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### tun:GroundSurface
 
@@ -793,6 +891,8 @@
 | termDate | Date | 消滅日 | core:terminationDate |
 | generic | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
 | opening | JSON (<code><a href="#tun-openingproperty">tun:_OpeningProperty</a>[]</code>) | 開口部 | tun:opening |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### tun:HollowSpace
 
@@ -811,6 +911,8 @@
 | boundedBy | JSON (<code><a href="#tun-boundarysurfaceproperty">tun:_BoundarySurfaceProperty</a>[]</code>) | 境界面 | tun:boundedBy |
 | intFurn | JSON (<code><a href="#tuntunnelfurniture">tun:TunnelFurniture</a>[]</code>) | 設置物 | tun:interiorFurniture |
 | hollwInstn | JSON (<code><a href="#tuntunnelinstallation">tun:TunnelInstallation</a>[]</code>) | 内部付属物 | tun:hollowSpaceInstallation |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### tun:InteriorWallSurface
 
@@ -824,6 +926,8 @@
 | termDate | Date | 消滅日 | core:terminationDate |
 | generic | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
 | opening | JSON (<code><a href="#tun-openingproperty">tun:_OpeningProperty</a>[]</code>) | 開口部 | tun:opening |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### tun:OuterCeilingSurface
 
@@ -837,6 +941,8 @@
 | termDate | Date | 消滅日 | core:terminationDate |
 | generic | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
 | opening | JSON (<code><a href="#tun-openingproperty">tun:_OpeningProperty</a>[]</code>) | 開口部 | tun:opening |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### tun:OuterFloorSurface
 
@@ -850,6 +956,8 @@
 | termDate | Date | 消滅日 | core:terminationDate |
 | generic | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
 | opening | JSON (<code><a href="#tun-openingproperty">tun:_OpeningProperty</a>[]</code>) | 開口部 | tun:opening |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### tun:RoofSurface
 
@@ -863,6 +971,8 @@
 | termDate | Date | 消滅日 | core:terminationDate |
 | generic | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
 | opening | JSON (<code><a href="#tun-openingproperty">tun:_OpeningProperty</a>[]</code>) | 開口部 | tun:opening |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### tun:Tunnel
 
@@ -885,16 +995,19 @@
 | boundedBy | JSON (<code><a href="#tun-boundarysurfaceproperty">tun:_BoundarySurfaceProperty</a>[]</code>) | 境界面 | tun:boundedBy |
 | intHllwSpc | JSON (<code><a href="#tunhollowspace">tun:HollowSpace</a>[]</code>) | トンネル内部空間 | tun:interiorHollowSpace |
 | tunPart | JSON (<code><a href="#tuntunnelpart">tun:TunnelPart</a>[]</code>) | トンネル部分 | tun:consistsOfTunnelPart |
-| base | JSON (<code><a href="#uroconstructionbaseattribute">uro:ConstructionBaseAttribute</a></code>) | 構造物基本属性 | uro:tunBaseAttribute |
-| dataQual | JSON (<code><a href="#uroconstructiondataqualityattribute">uro:ConstructionDataQualityAttribute</a></code>) | データ品質 | uro:tunDataQualityAttribute |
+| base | JSON (<code><a href="#uroconstructionbaseattribute">uro:ConstructionBaseAttribute</a>[]</code>) | 構造物基本属性 | uro:tunBaseAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) | データ品質 | uro:tunDataQualityAttribute |
 | disastRisk | JSON (<code><a href="#urodisasterriskattributeproperty">uro:DisasterRiskAttributeProperty</a>[]</code>) | 災害リスク属性 | uro:tunDisasterRiskAttribute |
 | dm | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) | 図式属性 | uro:tunDmAttribute |
 | facility | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) | 施設詳細属性 | uro:tunFacilityAttribute |
 | facilityId | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) | 施設識別属性 | uro:tunFacilityIdAttribute |
 | facilityTy | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) | 施設属性 | uro:tunFacilityTypeAttribute |
-| Functional | JSON (<code><a href="#urotunnelfunctionalattribute">uro:TunnelFunctionalAttribute</a></code>) | トンネル機能属性 | uro:tunFunctionalAttribute |
-| RiskAssess | JSON (<code><a href="#uroconstructionriskassessmentattribute">uro:ConstructionRiskAssessmentAttribute</a></code>) | 構造物リスク評価属性 | uro:tunRiskAssessmentAttribute |
-| structure | JSON (<code><a href="#urotunnelstructureattribute">uro:TunnelStructureAttribute</a></code>) | トンネル構造属性 | uro:tunStructureAttribute |
+| Functional | JSON (<code><a href="#urotunnelfunctionalattribute">uro:TunnelFunctionalAttribute</a>[]</code>) | トンネル機能属性 | uro:tunFunctionalAttribute |
+| tunKeyValuePairAttribute | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | uro:tunKeyValuePairAttribute |
+| RiskAssess | JSON (<code><a href="#uroconstructionriskassessmentattribute">uro:ConstructionRiskAssessmentAttribute</a>[]</code>) | 構造物リスク評価属性 | uro:tunRiskAssessmentAttribute |
+| structure | JSON (<code><a href="#urotunnelstructureattribute">uro:TunnelStructureAttribute</a>[]</code>) | トンネル構造属性 | uro:tunStructureAttribute |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### tun:TunnelFurniture
 
@@ -910,6 +1023,8 @@
 | class | Code | 分類 | tun:class |
 | function | JSON (<code><a href="#code">Code</a>[]</code>) | 機能 | tun:function |
 | usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | tun:usage |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### tun:TunnelInstallation
 
@@ -926,6 +1041,8 @@
 | function | JSON (<code><a href="#code">Code</a>[]</code>) | 機能 | tun:function |
 | usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | tun:usage |
 | boundedBy | JSON (<code><a href="#tun-boundarysurfaceproperty">tun:_BoundarySurfaceProperty</a>[]</code>) | 境界面 | tun:boundedBy |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### tun:TunnelPart
 
@@ -947,16 +1064,19 @@
 | boundedBy | JSON (<code><a href="#tun-boundarysurfaceproperty">tun:_BoundarySurfaceProperty</a>[]</code>) |  | tun:boundedBy |
 | intHllwSpc | JSON (<code><a href="#tunhollowspace">tun:HollowSpace</a>[]</code>) |  | tun:interiorHollowSpace |
 | tunPart | JSON (<code><a href="#tuntunnelpart">tun:TunnelPart</a>[]</code>) |  | tun:consistsOfTunnelPart |
-| base | JSON (<code><a href="#uroconstructionbaseattribute">uro:ConstructionBaseAttribute</a></code>) |  | uro:tunBaseAttribute |
-| dataQual | JSON (<code><a href="#uroconstructiondataqualityattribute">uro:ConstructionDataQualityAttribute</a></code>) |  | uro:tunDataQualityAttribute |
+| base | JSON (<code><a href="#uroconstructionbaseattribute">uro:ConstructionBaseAttribute</a>[]</code>) |  | uro:tunBaseAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | uro:tunDataQualityAttribute |
 | disastRisk | JSON (<code><a href="#urodisasterriskattributeproperty">uro:DisasterRiskAttributeProperty</a>[]</code>) |  | uro:tunDisasterRiskAttribute |
 | dm | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) |  | uro:tunDmAttribute |
 | facility | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) |  | uro:tunFacilityAttribute |
 | facilityId | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) |  | uro:tunFacilityIdAttribute |
 | facilityTy | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) |  | uro:tunFacilityTypeAttribute |
-| Functional | JSON (<code><a href="#urotunnelfunctionalattribute">uro:TunnelFunctionalAttribute</a></code>) |  | uro:tunFunctionalAttribute |
-| RiskAssess | JSON (<code><a href="#uroconstructionriskassessmentattribute">uro:ConstructionRiskAssessmentAttribute</a></code>) |  | uro:tunRiskAssessmentAttribute |
-| structure | JSON (<code><a href="#urotunnelstructureattribute">uro:TunnelStructureAttribute</a></code>) |  | uro:tunStructureAttribute |
+| Functional | JSON (<code><a href="#urotunnelfunctionalattribute">uro:TunnelFunctionalAttribute</a>[]</code>) |  | uro:tunFunctionalAttribute |
+| tunKeyValuePairAttribute | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | uro:tunKeyValuePairAttribute |
+| RiskAssess | JSON (<code><a href="#uroconstructionriskassessmentattribute">uro:ConstructionRiskAssessmentAttribute</a>[]</code>) |  | uro:tunRiskAssessmentAttribute |
+| structure | JSON (<code><a href="#urotunnelstructureattribute">uro:TunnelStructureAttribute</a>[]</code>) |  | uro:tunStructureAttribute |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### tun:WallSurface
 
@@ -970,6 +1090,8 @@
 | termDate | Date | 消滅日 | core:terminationDate |
 | generic | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
 | opening | JSON (<code><a href="#tun-openingproperty">tun:_OpeningProperty</a>[]</code>) | 開口部 | tun:opening |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### tun:Window
 
@@ -982,6 +1104,8 @@
 | creatDate | Date | 作成日 | core:creationDate |
 | termDate | Date | 消滅日 | core:terminationDate |
 | generic | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### frn:CityFurniture
 
@@ -997,12 +1121,15 @@
 | class | Code | 分類 | frn:class |
 | function | JSON (<code><a href="#code">Code</a>[]</code>) | 機能 | frn:function |
 | usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | frn:usage |
-| dataQual | JSON (<code><a href="#urocityfurnituredataqualityattribute">uro:CityFurnitureDataQualityAttribute</a></code>) | データ品質 | uro:cityFurnitureDataQualityAttribute |
 | detail | JSON (<code><a href="#urocityfurnituredetailattribute">uro:CityFurnitureDetailAttribute</a>[]</code>) | 都市設備詳細属性 | uro:cityFurnitureDetailAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) | データ品質 | uro:cityFurnitureDataQualityAttribute |
 | frnDm | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) | 図式属性 | uro:frnDmAttribute |
 | facility | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) | 施設詳細属性 | uro:frnFacilityAttribute |
 | facilityId | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) | 施設属性 | uro:frnFacilityIdAttribute |
 | facilityTy | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) | 施設識別属性 | uro:frnFacilityTypeAttribute |
+| frnKVPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | uro:frnKeyValuePairAttribute |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### veg:PlantCover
 
@@ -1015,15 +1142,18 @@
 | creatDate | Date | 作成日 | core:creationDate |
 | termDate | Date | 消滅日 | core:terminationDate |
 | generic | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) | データ品質 | uro:vegetationDataQualityAttribute |
 | dm | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) | 図式属性 | uro:vegDmAttribute |
 | facility | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) | 施設詳細属性 | uro:vegFacilityAttribute |
 | facilityId | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) | 施設属性 | uro:vegFacilityIdAttribute |
 | facilityTy | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) | 施設識別属性 | uro:vegFacilityTypeAttribute |
-| dataQual | JSON (<code><a href="#urovegetationdataqualityattribute">uro:VegetationDataQualityAttribute</a></code>) | データ品質 | uro:vegetationDataQualityAttribute |
+| vegKVPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | uro:vegKeyValuePairAttribute |
 | class | Code | 分類 | veg:class |
 | function | JSON (<code><a href="#code">Code</a>[]</code>) | 機能 | veg:function |
 | usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | veg:usage |
 | avgHeight | Measure | 平均高 | veg:averageHeight |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### veg:SolitaryVegetationObject
 
@@ -1036,11 +1166,12 @@
 | creatDate | Date | 作成日 | core:creationDate |
 | termDate | Date | 消滅日 | core:terminationDate |
 | generic | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) | データ品質 | uro:vegetationDataQualityAttribute |
 | dm | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) | 図式属性 | uro:vegDmAttribute |
 | facility | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) | 施設詳細属性 | uro:vegFacilityAttribute |
 | facilityId | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) | 施設属性 | uro:vegFacilityIdAttribute |
 | facilityTy | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) | 施設識別属性 | uro:vegFacilityTypeAttribute |
-| dataQual | JSON (<code><a href="#urovegetationdataqualityattribute">uro:VegetationDataQualityAttribute</a></code>) | データ品質 | uro:vegetationDataQualityAttribute |
+| vegKVPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | uro:vegKeyValuePairAttribute |
 | class | Code | 分類 | veg:class |
 | function | JSON (<code><a href="#code">Code</a>[]</code>) | 機能 | veg:function |
 | usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | veg:usage |
@@ -1048,6 +1179,8 @@
 | height | Measure | 樹高 | veg:height |
 | trunkDiam | Measure |  | veg:trunkDiameter |
 | crownDia | Measure |  | veg:crownDiameter |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### wtr:WaterBody
 
@@ -1064,12 +1197,16 @@
 | function | JSON (<code><a href="#code">Code</a>[]</code>) | 機能 | wtr:function |
 | usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | wtr:usage |
 | boundedBy | JSON (<code><a href="#wtr-waterboundarysurfaceproperty">wtr:_WaterBoundarySurfaceProperty</a>[]</code>) |  | wtr:boundedBy |
-| floodRisk | JSON (<code><a href="#urowaterbodyfloodingriskattributeproperty">uro:WaterBodyFloodingRiskAttributeProperty</a>[]</code>) | 災害リスク | uro:floodingRiskAttribute |
-| bodyDetail | JSON (<code><a href="#urowaterbodydetailattribute">uro:WaterBodyDetailAttribute</a></code>) | 水部詳細属性 | uro:waterBodyDetailAttribute |
+| floodRisk | JSON (<code><a href="#urofloodingriskattributeproperty">uro:FloodingRiskAttributeProperty</a>[]</code>) | 災害リスク | uro:floodingRiskAttribute |
+| bodyDetail | JSON (<code><a href="#urowaterbodydetailattribute">uro:WaterBodyDetailAttribute</a>[]</code>) | 水部詳細属性 | uro:waterBodyDetailAttribute |
+| wtrDQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | uro:wtrDataQualityAttribute |
 | dm | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) | 図式属性 | uro:wtrDmAttribute |
 | facility | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) | 施設詳細属性 | uro:wtrFacilityAttribute |
 | facilityId | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) | 施設属性 | uro:wtrFacilityIdAttribute |
 | facilityTy | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) | 施設識別属性 | uro:wtrFacilityTypeAttribute |
+| wtrKVPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | uro:wtrKeyValuePairAttribute |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### wtr:WaterClosureSurface
 
@@ -1082,6 +1219,8 @@
 | creatDate | Date | 作成日 | core:creationDate |
 | termDate | Date | 消滅日 | core:terminationDate |
 | generic | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### wtr:WaterGroundSurface
 
@@ -1094,6 +1233,8 @@
 | creatDate | Date | 作成日 | core:creationDate |
 | termDate | Date | 消滅日 | core:terminationDate |
 | generic | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### wtr:WaterSurface
 
@@ -1107,6 +1248,8 @@
 | termDate | Date | 消滅日 | core:terminationDate |
 | generic | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
 | waterLevel | Code |  | wtr:waterLevel |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### dem:BreaklineRelief
 
@@ -1121,6 +1264,8 @@
 | generic | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
 | lod | NonNegativeInteger | lod | dem:lod |
 | dm | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) | 図式属性 | uro:demDmAttribute |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### dem:MassPointRelief
 
@@ -1135,6 +1280,8 @@
 | generic | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
 | lod | NonNegativeInteger | lod | dem:lod |
 | dm | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) | 図式属性 | uro:demDmAttribute |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### dem:RasterRelief
 
@@ -1149,6 +1296,8 @@
 | lod | NonNegativeInteger |  | dem:lod |
 | dm | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) |  | uro:demDmAttribute |
 | grid | JSON (<code><a href="#gmlrectifiedgridcoverage">gml:RectifiedGridCoverage</a></code>) |  | dem:grid |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### dem:ReliefFeature
 
@@ -1163,6 +1312,9 @@
 | generic | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
 | lod | NonNegativeInteger | lod | dem:lod |
 | relefCmpnt | JSON (<code><a href="#dem-reliefcomponentproperty">dem:_ReliefComponentProperty</a>[]</code>) | 地形構成要素 | dem:reliefComponent |
+| demDQual | JSON (<code><a href="#urodemdataqualityattribute">uro:demDataQualityAttribute</a></code>) |  | uro:demDataQualityAttribute |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### dem:TINRelief
 
@@ -1177,6 +1329,8 @@ TIN地形
 | generic | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
 | lod | NonNegativeInteger | lod | dem:lod |
 | dm | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) | 図式属性 | uro:demDmAttribute |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### grp:CityObjectGroup
 
@@ -1197,6 +1351,8 @@ TIN地形
 | ifcBldStry | JSON (<code><a href="#uroifcattributeproperty">uro:IfcAttributeProperty</a>[]</code>) |  | uro:ifcBuildingStoreyAttribute |
 | indoorStry | JSON (<code><a href="#uroindoorattributeproperty">uro:IndoorAttributeProperty</a>[]</code>) |  | uro:indoorStoreyAttribute |
 | language | JSON (<code><a href="#code">Code</a>[]</code>) |  | uro:language |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### grp:_CityObjectOrRef
 
@@ -1209,6 +1365,8 @@ TIN地形
 | termDate | Date |  | core:terminationDate |
 | generic | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
 | href | String |  | @xlink:href |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### gen:GenericCityObject
 
@@ -1223,6 +1381,8 @@ TIN地形
 | class | Code |  | gen:class |
 | function | JSON (<code><a href="#code">Code</a>[]</code>) |  | gen:function |
 | usage | JSON (<code><a href="#code">Code</a>[]</code>) |  | gen:usage |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:Appurtenance
 
@@ -1238,12 +1398,13 @@ TIN地形
 | class | Code | 分類 | frn:class |
 | function | JSON (<code><a href="#code">Code</a>[]</code>) | 機能 | frn:function |
 | usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | frn:usage |
-| dataQual | JSON (<code><a href="#urocityfurnituredataqualityattribute">uro:CityFurnitureDataQualityAttribute</a></code>) | データ品質 | uro:cityFurnitureDataQualityAttribute |
 | detail | JSON (<code><a href="#urocityfurnituredetailattribute">uro:CityFurnitureDetailAttribute</a>[]</code>) | 都市設備詳細属性 | uro:cityFurnitureDetailAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) | データ品質 | uro:cityFurnitureDataQualityAttribute |
 | frnDm | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) | 図式属性 | uro:frnDmAttribute |
 | facility | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) | 施設詳細属性 | uro:frnFacilityAttribute |
 | facilityId | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) | 施設属性 | uro:frnFacilityIdAttribute |
 | facilityTy | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) | 施設識別属性 | uro:frnFacilityTypeAttribute |
+| frnKVPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | uro:frnKeyValuePairAttribute |
 | occupierTy | Code | 事業者種類 | uro:occupierType |
 | occupierNm | Code | 事業者名 | uro:occupierName |
 | year | String | 埋設年度 | uro:year |
@@ -1255,6 +1416,8 @@ TIN地形
 | nextLink | JSON (<code><a href="#string">String</a>[]</code>) | 次のリンク | uro:nextLink |
 | rotatAngle | Double | 回転角度 | uro:rotationAngle |
 | appurteTy | Code | 設備区分 | uro:appurtenanceType |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:Cable
 
@@ -1270,12 +1433,13 @@ TIN地形
 | class | Code | 分類 | frn:class |
 | function | JSON (<code><a href="#code">Code</a>[]</code>) | 機能 | frn:function |
 | usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | frn:usage |
-| dataQual | JSON (<code><a href="#urocityfurnituredataqualityattribute">uro:CityFurnitureDataQualityAttribute</a></code>) | データ品質 | uro:cityFurnitureDataQualityAttribute |
 | detail | JSON (<code><a href="#urocityfurnituredetailattribute">uro:CityFurnitureDetailAttribute</a>[]</code>) | 都市設備詳細属性 | uro:cityFurnitureDetailAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) | データ品質 | uro:cityFurnitureDataQualityAttribute |
 | frnDm | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) | 図式属性 | uro:frnDmAttribute |
 | facility | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) | 施設詳細属性 | uro:frnFacilityAttribute |
 | facilityId | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) | 施設属性 | uro:frnFacilityIdAttribute |
 | facilityTy | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) | 施設識別属性 | uro:frnFacilityTypeAttribute |
+| frnKVPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | uro:frnKeyValuePairAttribute |
 | occupierTy | Code | 事業者種類 | uro:occupierType |
 | occupierNm | Code | 事業者名 | uro:occupierName |
 | year | String | 埋設年度 | uro:year |
@@ -1297,6 +1461,8 @@ TIN地形
 | columns | Integer | 列数 | uro:columns |
 | rows | Integer | 段数 | uro:rows |
 | cables | Integer | 条数 | uro:cables |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:ClosureSurface
 
@@ -1309,6 +1475,8 @@ TIN地形
 | creatDate | Date | 作成日 | core:creationDate |
 | termDate | Date | 消滅日 | core:terminationDate |
 | generic | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:ConstructionInstallation
 
@@ -1324,6 +1492,8 @@ TIN地形
 | class | Code | 分類 | uro:class |
 | function | JSON (<code><a href="#code">Code</a>[]</code>) | 機能 | uro:function |
 | usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | uro:usage |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:Duct
 
@@ -1339,12 +1509,13 @@ TIN地形
 | class | Code | 分類 | frn:class |
 | function | JSON (<code><a href="#code">Code</a>[]</code>) | 機能 | frn:function |
 | usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | frn:usage |
-| dataQual | JSON (<code><a href="#urocityfurnituredataqualityattribute">uro:CityFurnitureDataQualityAttribute</a></code>) | データ品質 | uro:cityFurnitureDataQualityAttribute |
 | detail | JSON (<code><a href="#urocityfurnituredetailattribute">uro:CityFurnitureDetailAttribute</a>[]</code>) | 都市設備詳細属性 | uro:cityFurnitureDetailAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) | データ品質 | uro:cityFurnitureDataQualityAttribute |
 | frnDm | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) | 図式属性 | uro:frnDmAttribute |
 | facility | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) | 施設詳細属性 | uro:frnFacilityAttribute |
 | facilityId | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) | 施設属性 | uro:frnFacilityIdAttribute |
 | facilityTy | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) | 施設識別属性 | uro:frnFacilityTypeAttribute |
+| frnKVPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | uro:frnKeyValuePairAttribute |
 | occupierTy | Code | 事業者種類 | uro:occupierType |
 | occupierNm | Code | 事業者名 | uro:occupierName |
 | year | String | 埋設年度 | uro:year |
@@ -1364,6 +1535,8 @@ TIN地形
 | material | Code | 管きょ材質 | uro:material |
 | len | JSON (<code><a href="#urolengthattribute">uro:LengthAttribute</a>[]</code>) | 長さ情報 | uro:lengthAttribute |
 | width | Measure | 外側幅 | uro:width |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:ElectricityCable
 
@@ -1379,12 +1552,13 @@ TIN地形
 | class | Code | 分類 | frn:class |
 | function | JSON (<code><a href="#code">Code</a>[]</code>) | 機能 | frn:function |
 | usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | frn:usage |
-| dataQual | JSON (<code><a href="#urocityfurnituredataqualityattribute">uro:CityFurnitureDataQualityAttribute</a></code>) | データ品質 | uro:cityFurnitureDataQualityAttribute |
 | detail | JSON (<code><a href="#urocityfurnituredetailattribute">uro:CityFurnitureDetailAttribute</a>[]</code>) | 都市設備詳細属性 | uro:cityFurnitureDetailAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) | データ品質 | uro:cityFurnitureDataQualityAttribute |
 | frnDm | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) | 図式属性 | uro:frnDmAttribute |
 | facility | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) | 施設詳細属性 | uro:frnFacilityAttribute |
 | facilityId | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) | 施設属性 | uro:frnFacilityIdAttribute |
 | facilityTy | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) | 施設識別属性 | uro:frnFacilityTypeAttribute |
+| frnKVPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | uro:frnKeyValuePairAttribute |
 | occupierTy | Code | 事業者種類 | uro:occupierType |
 | occupierNm | Code | 事業者名 | uro:occupierName |
 | year | String | 埋設年度 | uro:year |
@@ -1406,6 +1580,8 @@ TIN地形
 | columns | Integer | 列数 | uro:columns |
 | rows | Integer | 段数 | uro:rows |
 | cables | Integer | 条数 | uro:cables |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:GroundSurface
 
@@ -1418,6 +1594,8 @@ TIN地形
 | creatDate | Date | 作成日 | core:creationDate |
 | termDate | Date | 消滅日 | core:terminationDate |
 | generic | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:Handhole
 
@@ -1433,12 +1611,13 @@ TIN地形
 | class | Code | 分類 | frn:class |
 | function | JSON (<code><a href="#code">Code</a>[]</code>) | 機能 | frn:function |
 | usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | frn:usage |
-| dataQual | JSON (<code><a href="#urocityfurnituredataqualityattribute">uro:CityFurnitureDataQualityAttribute</a></code>) | データ品質 | uro:cityFurnitureDataQualityAttribute |
 | detail | JSON (<code><a href="#urocityfurnituredetailattribute">uro:CityFurnitureDetailAttribute</a>[]</code>) | 都市設備詳細属性 | uro:cityFurnitureDetailAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) | データ品質 | uro:cityFurnitureDataQualityAttribute |
 | frnDm | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) | 図式属性 | uro:frnDmAttribute |
 | facility | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) | 施設詳細属性 | uro:frnFacilityAttribute |
 | facilityId | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) | 施設属性 | uro:frnFacilityIdAttribute |
 | facilityTy | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) | 施設識別属性 | uro:frnFacilityTypeAttribute |
+| frnKVPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | uro:frnKeyValuePairAttribute |
 | occupierTy | Code | 事業者種類 | uro:occupierType |
 | occupierNm | Code | 事業者名 | uro:occupierName |
 | year | String | 埋設年度 | uro:year |
@@ -1447,13 +1626,15 @@ TIN地形
 | offsetDpth | JSON (<code><a href="#urooffsetdepth">uro:OffsetDepth</a>[]</code>) | オフセットデプス情報 | uro:offsetDepth |
 | thmShape | JSON (<code><a href="#urothematicshape">uro:ThematicShape</a>[]</code>) | 主題図形 | uro:thematicShape |
 | containrTy | Code | 構造物種類 | uro:containerType |
-| inDiaLong | Measure | 長辺の内径 | uro:innerDiamiterLong |
-| outDiaLong | Measure | 長辺の外径 | uro:outerDiamiterLong |
-| inDiaShort | Measure | 短辺の内径 | uro:innerDiamiterShort |
-| oDiaShort | Measure | 短辺の外径 | uro:outerDiamiterShort |
+| innerDiameterLong | Measure |  | uro:innerDiameterLong |
+| outerDiameterLong | Measure |  | uro:outerDiameterLong |
+| innerDiameterShort | Measure |  | uro:innerDiameterShort |
+| outerDiameterShort | Measure |  | uro:outerDiameterShort |
 | depth | Measure | 深さ | uro:depth |
 | appurte | JSON (<code><a href="#string">String</a>[]</code>) | 識別子 | uro:appurtenance |
 | rotatAngle | Double | 回転角度 | uro:rotationAngle |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:Manhole
 
@@ -1469,12 +1650,13 @@ TIN地形
 | class | Code | 分類 | frn:class |
 | function | JSON (<code><a href="#code">Code</a>[]</code>) | 機能 | frn:function |
 | usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | frn:usage |
-| dataQual | JSON (<code><a href="#urocityfurnituredataqualityattribute">uro:CityFurnitureDataQualityAttribute</a></code>) | データ品質 | uro:cityFurnitureDataQualityAttribute |
 | detail | JSON (<code><a href="#urocityfurnituredetailattribute">uro:CityFurnitureDetailAttribute</a>[]</code>) | 都市設備詳細属性 | uro:cityFurnitureDetailAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) | データ品質 | uro:cityFurnitureDataQualityAttribute |
 | frnDm | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) | 図式属性 | uro:frnDmAttribute |
 | facility | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) | 施設詳細属性 | uro:frnFacilityAttribute |
 | facilityId | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) | 施設属性 | uro:frnFacilityIdAttribute |
 | facilityTy | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) | 施設識別属性 | uro:frnFacilityTypeAttribute |
+| frnKVPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | uro:frnKeyValuePairAttribute |
 | occupierTy | Code | 事業者種類 | uro:occupierType |
 | occupierNm | Code | 事業者名 | uro:occupierName |
 | year | String | 埋設年度 | uro:year |
@@ -1483,13 +1665,16 @@ TIN地形
 | offsetDpth | JSON (<code><a href="#urooffsetdepth">uro:OffsetDepth</a>[]</code>) | オフセットデプス情報 | uro:offsetDepth |
 | thmShape | JSON (<code><a href="#urothematicshape">uro:ThematicShape</a>[]</code>) | 主題図形 | uro:thematicShape |
 | containrTy | Code | 構造物種類 | uro:containerType |
-| inDiaLong | Measure | 長辺の内径 | uro:innerDiamiterLong |
-| outDiaLong | Measure | 長辺の外径 | uro:outerDiamiterLong |
-| inDiaShort | Measure | 短辺の内径 | uro:innerDiamiterShort |
-| oDiaShort | Measure | 短辺の外径 | uro:outerDiamiterShort |
+| innerDiameterLong | Measure |  | uro:innerDiameterLong |
+| outerDiameterLong | Measure |  | uro:outerDiameterLong |
+| innerDiameterShort | Measure |  | uro:innerDiameterShort |
+| outerDiameterShort | Measure |  | uro:outerDiameterShort |
 | depth | Measure | 深さ | uro:depth |
 | appurte | JSON (<code><a href="#string">String</a>[]</code>) | 識別子 | uro:appurtenance |
 | rotatAngle | Double | 回転角度 | uro:rotationAngle |
+| elevation | Measure |  | uro:elevation |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:OilGasChemicalsPipe
 
@@ -1504,12 +1689,13 @@ TIN地形
 | class | Code |  | frn:class |
 | function | JSON (<code><a href="#code">Code</a>[]</code>) |  | frn:function |
 | usage | JSON (<code><a href="#code">Code</a>[]</code>) |  | frn:usage |
-| dataQual | JSON (<code><a href="#urocityfurnituredataqualityattribute">uro:CityFurnitureDataQualityAttribute</a></code>) |  | uro:cityFurnitureDataQualityAttribute |
 | detail | JSON (<code><a href="#urocityfurnituredetailattribute">uro:CityFurnitureDetailAttribute</a>[]</code>) |  | uro:cityFurnitureDetailAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | uro:cityFurnitureDataQualityAttribute |
 | frnDm | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) |  | uro:frnDmAttribute |
 | facility | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) |  | uro:frnFacilityAttribute |
 | facilityId | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) |  | uro:frnFacilityIdAttribute |
 | facilityTy | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) |  | uro:frnFacilityTypeAttribute |
+| frnKVPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | uro:frnKeyValuePairAttribute |
 | occupierTy | Code |  | uro:occupierType |
 | occupierNm | Code |  | uro:occupierName |
 | year | String |  | uro:year |
@@ -1528,9 +1714,11 @@ TIN地形
 | offset | Measure |  | uro:offset |
 | material | Code |  | uro:material |
 | len | JSON (<code><a href="#urolengthattribute">uro:LengthAttribute</a>[]</code>) |  | uro:lengthAttribute |
-| inDia | Measure |  | uro:innerDiamiter |
-| outDiametr | Measure |  | uro:outerDiamiter |
+| innerDiameter | Measure |  | uro:innerDiameter |
+| outerDiameter | Measure |  | uro:outerDiameter |
 | sleeveType | Code |  | uro:sleeveType |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:OtherConstruction
 
@@ -1557,12 +1745,14 @@ TIN地形
 | structure | JSON (<code><a href="#uroconstructionstructureattributeproperty">uro:ConstructionStructureAttributeProperty</a></code>) | 構造属性 | uro:consStructureAttribute |
 | disastRisk | JSON (<code><a href="#urodisasterriskattributeproperty">uro:DisasterRiskAttributeProperty</a>[]</code>) | 災害リスク属性 | uro:consDisasterRiskAttribute |
 | dmAttr | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) | 図式属性 | uro:consDmAttribute |
-| dataQual | JSON (<code><a href="#uroconstructiondataqualityattribute">uro:ConstructionDataQualityAttribute</a></code>) | 品質属性 | uro:consDataQualityAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) | 品質属性 | uro:consDataQualityAttribute |
 | boundedBy | JSON (<code><a href="#uro-boundarysurfaceproperty">uro:_BoundarySurfaceProperty</a>[]</code>) | 境界面 | uro:boundedBy |
 | installatn | JSON (<code><a href="#uroconstructioninstallation">uro:ConstructionInstallation</a>[]</code>) | 付属物 | uro:constructionInstallation |
 | class | Code | 分類 | uro:class |
 | function | JSON (<code><a href="#code">Code</a>[]</code>) | 機能 | uro:function |
 | usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | uro:usage |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:OuterCeilingSurface
 
@@ -1575,6 +1765,8 @@ TIN地形
 | creatDate | Date | 作成日 | core:creationDate |
 | termDate | Date | 消滅日 | core:terminationDate |
 | generic | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:OuterFloorSurface
 
@@ -1587,6 +1779,8 @@ TIN地形
 | creatDate | Date | 作成日 | core:creationDate |
 | termDate | Date | 消滅日 | core:terminationDate |
 | generic | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:Pipe
 
@@ -1602,12 +1796,13 @@ TIN地形
 | class | Code | 分類 | frn:class |
 | function | JSON (<code><a href="#code">Code</a>[]</code>) | 機能 | frn:function |
 | usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | frn:usage |
-| dataQual | JSON (<code><a href="#urocityfurnituredataqualityattribute">uro:CityFurnitureDataQualityAttribute</a></code>) | データ品質 | uro:cityFurnitureDataQualityAttribute |
 | detail | JSON (<code><a href="#urocityfurnituredetailattribute">uro:CityFurnitureDetailAttribute</a>[]</code>) | 都市設備詳細属性 | uro:cityFurnitureDetailAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) | データ品質 | uro:cityFurnitureDataQualityAttribute |
 | frnDm | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) | 図式属性 | uro:frnDmAttribute |
 | facility | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) | 施設詳細属性 | uro:frnFacilityAttribute |
 | facilityId | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) | 施設属性 | uro:frnFacilityIdAttribute |
 | facilityTy | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) | 施設識別属性 | uro:frnFacilityTypeAttribute |
+| frnKVPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | uro:frnKeyValuePairAttribute |
 | occupierTy | Code | 事業者種類 | uro:occupierType |
 | occupierNm | Code | 事業者名 | uro:occupierName |
 | year | String | 埋設年度 | uro:year |
@@ -1626,9 +1821,11 @@ TIN地形
 | offset | Measure | オフセット量 | uro:offset |
 | material | Code | 管きょ材質 | uro:material |
 | len | JSON (<code><a href="#urolengthattribute">uro:LengthAttribute</a>[]</code>) | 長さ情報 | uro:lengthAttribute |
-| inDia | Measure | 内径 | uro:innerDiamiter |
-| outDiametr | Measure | 外径 | uro:outerDiamiter |
+| innerDiameter | Measure |  | uro:innerDiameter |
+| outerDiameter | Measure |  | uro:outerDiameter |
 | sleeveType | Code | 被覆区分 | uro:sleeveType |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:RoofSurface
 
@@ -1641,6 +1838,8 @@ TIN地形
 | creatDate | Date | 作成日 | core:creationDate |
 | termDate | Date | 消滅日 | core:terminationDate |
 | generic | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:SewerPipe
 
@@ -1656,12 +1855,13 @@ TIN地形
 | class | Code | 分類 | frn:class |
 | function | JSON (<code><a href="#code">Code</a>[]</code>) | 機能 | frn:function |
 | usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | frn:usage |
-| dataQual | JSON (<code><a href="#urocityfurnituredataqualityattribute">uro:CityFurnitureDataQualityAttribute</a></code>) | データ品質 | uro:cityFurnitureDataQualityAttribute |
 | detail | JSON (<code><a href="#urocityfurnituredetailattribute">uro:CityFurnitureDetailAttribute</a>[]</code>) | 都市設備詳細属性 | uro:cityFurnitureDetailAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) | データ品質 | uro:cityFurnitureDataQualityAttribute |
 | frnDm | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) | 図式属性 | uro:frnDmAttribute |
 | facility | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) | 施設詳細属性 | uro:frnFacilityAttribute |
 | facilityId | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) | 施設属性 | uro:frnFacilityIdAttribute |
 | facilityTy | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) | 施設識別属性 | uro:frnFacilityTypeAttribute |
+| frnKVPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | uro:frnKeyValuePairAttribute |
 | occupierTy | Code | 事業者種類 | uro:occupierType |
 | occupierNm | Code | 事業者名 | uro:occupierName |
 | year | String | 埋設年度 | uro:year |
@@ -1680,10 +1880,15 @@ TIN地形
 | offset | Measure | オフセット量 | uro:offset |
 | material | Code | 管きょ材質 | uro:material |
 | len | JSON (<code><a href="#urolengthattribute">uro:LengthAttribute</a>[]</code>) | 長さ情報 | uro:lengthAttribute |
-| inDia | Measure | 内径 | uro:innerDiamiter |
-| outDiametr | Measure | 外径 | uro:outerDiamiter |
+| innerDiameter | Measure |  | uro:innerDiameter |
+| outerDiameter | Measure |  | uro:outerDiameter |
 | sleeveType | Code | 被覆区分 | uro:sleeveType |
 | slope | Measure | 勾配 | uro:slope |
+| invertElevationUpstream | Measure |  | uro:invertElevationUpstream |
+| invertElevationDownstream | Measure |  | uro:invertElevationDownstream |
+| flowDir | Boolean |  | uro:flowDirection |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:TelecommunicationsCable
 
@@ -1699,12 +1904,13 @@ TIN地形
 | class | Code | 分類 | frn:class |
 | function | JSON (<code><a href="#code">Code</a>[]</code>) | 機能 | frn:function |
 | usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | frn:usage |
-| dataQual | JSON (<code><a href="#urocityfurnituredataqualityattribute">uro:CityFurnitureDataQualityAttribute</a></code>) | データ品質 | uro:cityFurnitureDataQualityAttribute |
 | detail | JSON (<code><a href="#urocityfurnituredetailattribute">uro:CityFurnitureDetailAttribute</a>[]</code>) | 都市設備詳細属性 | uro:cityFurnitureDetailAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) | データ品質 | uro:cityFurnitureDataQualityAttribute |
 | frnDm | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) | 図式属性 | uro:frnDmAttribute |
 | facility | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) | 施設詳細属性 | uro:frnFacilityAttribute |
 | facilityId | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) | 施設属性 | uro:frnFacilityIdAttribute |
 | facilityTy | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) | 施設識別属性 | uro:frnFacilityTypeAttribute |
+| frnKVPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | uro:frnKeyValuePairAttribute |
 | occupierTy | Code | 事業者種類 | uro:occupierType |
 | occupierNm | Code | 事業者名 | uro:occupierName |
 | year | String | 埋設年度 | uro:year |
@@ -1726,6 +1932,8 @@ TIN地形
 | columns | Integer | 列数 | uro:columns |
 | rows | Integer | 段数 | uro:rows |
 | cables | Integer | 条数 | uro:cables |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:ThermalPipe
 
@@ -1741,12 +1949,13 @@ TIN地形
 | class | Code | 分類 | frn:class |
 | function | JSON (<code><a href="#code">Code</a>[]</code>) | 機能 | frn:function |
 | usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | frn:usage |
-| dataQual | JSON (<code><a href="#urocityfurnituredataqualityattribute">uro:CityFurnitureDataQualityAttribute</a></code>) | データ品質 | uro:cityFurnitureDataQualityAttribute |
 | detail | JSON (<code><a href="#urocityfurnituredetailattribute">uro:CityFurnitureDetailAttribute</a>[]</code>) | 都市設備詳細属性 | uro:cityFurnitureDetailAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) | データ品質 | uro:cityFurnitureDataQualityAttribute |
 | frnDm | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) | 図式属性 | uro:frnDmAttribute |
 | facility | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) | 施設詳細属性 | uro:frnFacilityAttribute |
 | facilityId | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) | 施設属性 | uro:frnFacilityIdAttribute |
 | facilityTy | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) | 施設識別属性 | uro:frnFacilityTypeAttribute |
+| frnKVPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | uro:frnKeyValuePairAttribute |
 | occupierTy | Code | 事業者種類 | uro:occupierType |
 | occupierNm | Code | 事業者名 | uro:occupierName |
 | year | String | 埋設年度 | uro:year |
@@ -1765,9 +1974,11 @@ TIN地形
 | offset | Measure | オフセット量 | uro:offset |
 | material | Code | 管きょ材質 | uro:material |
 | len | JSON (<code><a href="#urolengthattribute">uro:LengthAttribute</a>[]</code>) | 長さ情報 | uro:lengthAttribute |
-| inDia | Measure | 内径 | uro:innerDiamiter |
-| outDiametr | Measure | 外径 | uro:outerDiamiter |
+| innerDiameter | Measure |  | uro:innerDiameter |
+| outerDiameter | Measure |  | uro:outerDiameter |
 | sleeveType | Code | 被覆区分 | uro:sleeveType |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:UndergroundBuilding
 
@@ -1797,19 +2008,23 @@ TIN地形
 | intrirRoom | JSON (<code><a href="#bldgroom">bldg:Room</a>[]</code>) | 部屋 | bldg:interiorRoom |
 | bldgPart | JSON (<code><a href="#bldgbuildingpart">bldg:BuildingPart</a>[]</code>) | 建物部品 | bldg:consistsOfBuildingPart |
 | address | JSON (<code><a href="#coreaddress">core:Address</a>[]</code>) | 住所 | bldg:address |
+| bldgDQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | uro:bldgDataQualityAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) | データ品質 | uro:buildingDataQualityAttribute |
+| disastRisk | JSON (<code><a href="#urodisasterriskattributeproperty">uro:DisasterRiskAttributeProperty</a>[]</code>) | 災害リスク | uro:buildingDisasterRiskAttribute |
 | dmAttr | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) | 図式属性 | uro:bldgDmAttribute |
 | facility | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) | 施設詳細属性 | uro:bldgFacilityAttribute |
 | facilityId | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) | 施設識別属性 | uro:bldgFacilityIdAttribute |
 | facilityTy | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) | 施設属性 | uro:bldgFacilityTypeAttribute |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) | 拡張属性 | uro:keyValuePairAttribute |
 | ReIDAttr | JSON (<code><a href="#urorealestateidattribute">uro:RealEstateIDAttribute</a></code>) |  | uro:bldgRealEstateIDAttribute |
-| dataQual | JSON (<code><a href="#urobuildingdataqualityattribute">uro:BuildingDataQualityAttribute</a></code>) | データ品質 | uro:buildingDataQualityAttribute |
+| bldgUC | JSON (<code><a href="#urobuildingusecaseattribute">uro:BuildingUsecaseAttribute</a>[]</code>) |  | uro:bldgUsecaseAttribute |
 | detail | JSON (<code><a href="#urobuildingdetailattribute">uro:BuildingDetailAttribute</a>[]</code>) | 建物利用現況 | uro:buildingDetailAttribute |
-| disastRisk | JSON (<code><a href="#urobuildingdisasterriskattributeproperty">uro:BuildingDisasterRiskAttributeProperty</a>[]</code>) | 災害リスク | uro:buildingDisasterRiskAttribute |
 | IDAttr | JSON (<code><a href="#urobuildingidattribute">uro:BuildingIDAttribute</a>[]</code>) | 建物識別情報 | uro:buildingIDAttribute |
 | ifcBldg | JSON (<code><a href="#uroifcattributeproperty">uro:IfcAttributeProperty</a>[]</code>) | IFC属性 | uro:ifcBuildingAttribute |
 | indoorBldg | JSON (<code><a href="#uroindoorattributeproperty">uro:IndoorAttributeProperty</a>[]</code>) | 屋内ナビゲーション属性 | uro:indoorBuildingAttribute |
-| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) | 拡張属性 | uro:keyValuePairAttribute |
 | lgCustFacl | JSON (<code><a href="#urolargecustomerfacilityattribute">uro:LargeCustomerFacilityAttribute</a>[]</code>) | 大規模小売店舗等の立地状況 | uro:largeCustomerFacilityAttribute |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:WallSurface
 
@@ -1822,6 +2037,8 @@ TIN地形
 | creatDate | Date | 作成日 | core:creationDate |
 | termDate | Date | 消滅日 | core:terminationDate |
 | generic | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:WaterPipe
 
@@ -1837,12 +2054,13 @@ TIN地形
 | class | Code | 分類 | frn:class |
 | function | JSON (<code><a href="#code">Code</a>[]</code>) | 機能 | frn:function |
 | usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | frn:usage |
-| dataQual | JSON (<code><a href="#urocityfurnituredataqualityattribute">uro:CityFurnitureDataQualityAttribute</a></code>) | データ品質 | uro:cityFurnitureDataQualityAttribute |
 | detail | JSON (<code><a href="#urocityfurnituredetailattribute">uro:CityFurnitureDetailAttribute</a>[]</code>) | 都市設備詳細属性 | uro:cityFurnitureDetailAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) | データ品質 | uro:cityFurnitureDataQualityAttribute |
 | frnDm | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) | 図式属性 | uro:frnDmAttribute |
 | facility | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) | 施設詳細属性 | uro:frnFacilityAttribute |
 | facilityId | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) | 施設属性 | uro:frnFacilityIdAttribute |
 | facilityTy | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) | 施設識別属性 | uro:frnFacilityTypeAttribute |
+| frnKVPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | uro:frnKeyValuePairAttribute |
 | occupierTy | Code | 事業者種類 | uro:occupierType |
 | occupierNm | Code | 事業者名 | uro:occupierName |
 | year | String | 埋設年度 | uro:year |
@@ -1861,9 +2079,11 @@ TIN地形
 | offset | Measure | オフセット量 | uro:offset |
 | material | Code | 管きょ材質 | uro:material |
 | len | JSON (<code><a href="#urolengthattribute">uro:LengthAttribute</a>[]</code>) | 長さ情報 | uro:lengthAttribute |
-| inDia | Measure | 内径 | uro:innerDiamiter |
-| outDiametr | Measure | 外径 | uro:outerDiamiter |
+| innerDiameter | Measure |  | uro:innerDiameter |
+| outerDiameter | Measure |  | uro:outerDiameter |
 | sleeveType | Code | 被覆区分 | uro:sleeveType |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:Waterway
 
@@ -1876,17 +2096,35 @@ TIN地形
 | creatDate | Date | 作成日 | core:creationDate |
 | termDate | Date | 消滅日 | core:terminationDate |
 | generic | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
-| dm | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) | 図式属性 | uro:tranDmAttribute |
 | class | Code | 分類 | tran:class |
 | function | JSON (<code><a href="#code">Code</a>[]</code>) | 機能 | tran:function |
 | usage | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | tran:usage |
 | tfcArea | JSON (<code><a href="#trantrafficarea">tran:TrafficArea</a>[]</code>) | 交通領域 | tran:trafficArea |
 | auxTfcArea | JSON (<code><a href="#tranauxiliarytrafficarea">tran:AuxiliaryTrafficArea</a>[]</code>) | 交通補助領域 | tran:auxiliaryTrafficArea |
-| dataQual | JSON (<code><a href="#urotransportationdataqualityattribute">uro:TransportationDataQualityAttribute</a></code>) | データ品質 | uro:tranDataQualityAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) | データ品質 | uro:tranDataQualityAttribute |
+| dm | JSON (<code><a href="#urodmattributeproperty">uro:DmAttributeProperty</a>[]</code>) | 図式属性 | uro:tranDmAttribute |
 | facility | JSON (<code><a href="#urofacilityattributeproperty">uro:FacilityAttributeProperty</a>[]</code>) | 施設詳細属性 | uro:tranFacilityAttribute |
 | facilityId | JSON (<code><a href="#urofacilityidattributeproperty">uro:FacilityIdAttributeProperty</a></code>) | 施設識別属性 | uro:tranFacilityIdAttribute |
 | facilityTy | JSON (<code><a href="#urofacilitytypeattribute">uro:FacilityTypeAttribute</a>[]</code>) | 施設属性 | uro:tranFacilityTypeAttribute |
+| tranKVPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | uro:tranKeyValuePairAttribute |
+| tranUC | JSON (<code><a href="#urotrafficobjectusecaseattribute">uro:TrafficObjectUsecaseAttribute</a>[]</code>) |  | uro:tranUsecaseAttribute |
 | detail | JSON (<code><a href="#urowaterwaydetailattribute">uro:WaterwayDetailAttribute</a></code>) | 航路属性 | uro:waterwayDetailAttribute |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
+
+### uro:demDataQualityAttribute
+
+
+| フィールド名 | 型 | 日本語名 | CityGML 属性名 |
+|-----------|----|--------|---------------|
+| desc | String |  | gml:description |
+| name | JSON (<code><a href="#code">Code</a>[]</code>) |  | gml:name |
+| creatDate | Date |  | core:creationDate |
+| termDate | Date |  | core:terminationDate |
+| generic | JSON (<code><a href="#gengenericattribute">gen:genericAttribute</a></code>) | 汎用属性 | gen:genericAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | uro:DataQualityAttribute |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:Agreement
 
@@ -1921,10 +2159,15 @@ TIN地形
 | reason | String |  | urf:reason |
 | note | String |  | urf:note |
 | surveyYear | String |  | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) |  | urf:boundary |
 | location | String |  | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
 | applicaAr | Measure |  | urf:applicableArea |
 | expiration | Date |  | urf:expiration |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:AircraftNoiseControlZone
 
@@ -1960,9 +2203,14 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
 | areaTotal | Measure | 面積（合計） | urf:areaInTotal |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:AreaClassification
 
@@ -1998,9 +2246,14 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
 | population | Integer | 人口 | urf:population |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:CollectiveFacilitiesForReconstruction
 
@@ -2036,8 +2289,11 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
 | number | String | 番号 | urf:number |
 | 3DExtent | JSON (<code><a href="#urfthreedimensionalextent">urf:ThreeDimensionalExtent</a>[]</code>) | 立体的な範囲 | urf:threeDimensionalExtent |
 | housFacl | String | 住宅施設の位置及び規模 | urf:housingFacilities |
@@ -2049,6 +2305,8 @@ TIN地形
 | maxFAR | Double | 容積率の最高限度 | urf:maximumFloorAreaRate |
 | minFAR | Double | 容積率の最低限度 | urf:minimumFloorAreaRate |
 | maxBCR | Double | 建ぺい率の最高限度 | urf:maximumBuildingCoverageRate |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:CollectiveFacilitiesForReconstructionAndRevitalization
 
@@ -2084,8 +2342,11 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
 | number | String | 番号 | urf:number |
 | 3DExtent | JSON (<code><a href="#urfthreedimensionalextent">urf:ThreeDimensionalExtent</a>[]</code>) | 立体的な範囲 | urf:threeDimensionalExtent |
 | housFacl | String | 住宅施設の位置及び規模 | urf:housingFacilities |
@@ -2097,6 +2358,8 @@ TIN地形
 | maxFAR | Double | 容積率の最高限度 | urf:maximumFloorAreaRate |
 | minFAR | Double | 容積率の最低限度 | urf:minimumFloorAreaRate |
 | maxBCR | Double | 建ぺい率の最高限度 | urf:maximumBuildingCoverageRate |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:CollectiveFacilitiesForTsunamiDisasterPrevention
 
@@ -2132,8 +2395,11 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
 | number | String | 番号 | urf:number |
 | 3DExtent | JSON (<code><a href="#urfthreedimensionalextent">urf:ThreeDimensionalExtent</a>[]</code>) | 立体的な範囲 | urf:threeDimensionalExtent |
 | housFacl | String | 住宅施設の位置及び規模 | urf:housingFacilities |
@@ -2145,6 +2411,8 @@ TIN地形
 | maxFAR | Double | 容積率の最高限度 | urf:maximumFloorAreaRate |
 | minFAR | Double | 容積率の最低限度 | urf:minimumFloorAreaRate |
 | maxBCR | Double | 建ぺい率の最高限度 | urf:maximumBuildingCoverageRate |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:CollectiveGovernmentAndPublicOfficeFacilities
 
@@ -2180,14 +2448,19 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
 | number | String | 番号 | urf:number |
 | 3DExtent | JSON (<code><a href="#urfthreedimensionalextent">urf:ThreeDimensionalExtent</a>[]</code>) | 立体的な範囲 | urf:threeDimensionalExtent |
 | CovRate | Double | 建ぺい率の限度 | urf:buildingCoverageRate |
 | flrArRate | Double | 容積率の限度 | urf:floorAreaRate |
 | pubFclAPol | String | 公益的施設、住宅及び公共施設の配置方針 | urf:publicFacilitiesAllocationPolicy |
 | schdExectr | String | 施行予定者 | urf:scheduledExecutor |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:CollectiveHousingFacilities
 
@@ -2223,8 +2496,11 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
 | number | String | 番号 | urf:number |
 | 3DExtent | JSON (<code><a href="#urfthreedimensionalextent">urf:ThreeDimensionalExtent</a>[]</code>) | 立体的な範囲 | urf:threeDimensionalExtent |
 | CovRate | Double | 建ぺい率の限度 | urf:buildingCoverageRate |
@@ -2235,6 +2511,8 @@ TIN地形
 | total#Hous | Integer | 住宅予定数の合計 | urf:totalNumberOfHousing |
 | pubFclAPol | String | 住宅及び公共施設の配置方針 | urf:publicFacilitiesAllocationPolicy |
 | schdExectr | String | 施行予定者 | urf:scheduledExecutor |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:CollectiveUrbanDisasterPreventionFacilities
 
@@ -2270,8 +2548,11 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
 | number | String | 番号 | urf:number |
 | 3DExtent | JSON (<code><a href="#urfthreedimensionalextent">urf:ThreeDimensionalExtent</a>[]</code>) | 立体的な範囲 | urf:threeDimensionalExtent |
 | spUtilPubF | String | 特定公益施設及び公共施設の位置及び規模 | urf:specificUtilityAndPublicFacilities |
@@ -2280,6 +2561,8 @@ TIN地形
 | maxFAR | Double | 容積率の最高限度 | urf:maximumFloorAreaRate |
 | minFAR | Double | 容積率の最低限度 | urf:minimumFloorAreaRate |
 | maxBCR | Double | 建ぺい率の最高限度 | urf:maximumBuildingCoverageRate |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:ConservationZoneForClustersOfTraditionalStructures
 
@@ -2315,9 +2598,14 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
 | areaTotal | Measure | 面積（合計） | urf:areaInTotal |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:DisasterPreventionBlockImprovementProject
 
@@ -2353,12 +2641,17 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
 | schdExectr | String | 施行予定者 | urf:scheduledExecutor |
 | diPrPbFlAl | String | 防災公共施設の配置及び規模 | urf:disasterPreventionPublicFacilityAllocation |
 | othPbFcAlc | String | その他の公共施設の配置及び規模 | urf:otherPublicFacilityAllocation |
 | devPlan | String | 防災施設建築物の整備に関する計画 | urf:developmentPlan |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:DisasterPreventionBlockImprovementZonePlan
 
@@ -2394,8 +2687,11 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
 | objectives | String | 地区計画の目標 | urf:objectives |
 | policy | String | 方針 | urf:policy |
 | distDevPln | JSON (<code><a href="#urfdistrictdevelopmentplanproperty">urf:DistrictDevelopmentPlanProperty</a>[]</code>) | 特定建築物地区整備計画及び防災街区整備地区整備計画 | urf:districtDevelopmentPlan |
@@ -2403,6 +2699,8 @@ TIN地形
 | zDiPrFcAlc | String | 地区防災施設の区域。 | urf:zonalDisasterPreventionFacilitiesAllocation |
 | spZoDiPrFA | String | 特定地区防災施設の区域。 | urf:specifiedZonalDisasterPreventionFacilitiesAllocation |
 | zoneDPFacl | JSON (<code><a href="#urfzonaldisasterpreventionfacility">urf:ZonalDisasterPreventionFacility</a>[]</code>) | 地区防災施設の区域及び特定地区防災施設 | urf:zonalDisasterPreventionFacilities |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:DistributionBusinessPark
 
@@ -2438,8 +2736,11 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
 | number | String | 番号 | urf:number |
 | 3DExtent | JSON (<code><a href="#urfthreedimensionalextent">urf:ThreeDimensionalExtent</a>[]</code>) | 立体的な範囲 | urf:threeDimensionalExtent |
 | dstrBusiPk | String | 流通業務施設の敷地の位置及び規模 | urf:distributionBusinessPark |
@@ -2450,6 +2751,8 @@ TIN地形
 | minBldHgt | Measure | 高さの最低限度 | urf:minimumBuildingHeight |
 | setbckSize | String | 外壁の後退距離 | urf:setbackSize |
 | schdExectr | String | 施行予定者 | urf:scheduledExecutor |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:DistributionBusinessZone
 
@@ -2485,10 +2788,15 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
 | areaTotal | Measure | 面積（合計） | urf:areaInTotal |
 | gdlnPubDte | Date | 基本方針が定められた日 | urf:guidelinePublicationDate |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:District
 
@@ -2524,8 +2832,11 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
 | Rstr | String | 建築物に関する制限 | urf:buildingRestrictions |
 | useRestrct | String | 建築物の用途の制限 | urf:useRestrictions |
 | maxFAR | Double | 容積率の最高限度 | urf:maximumFloorAreaRate |
@@ -2546,6 +2857,8 @@ TIN地形
 | rsnFirePr | String | 防火上の必要な制限 | urf:restrictionsForFireProtection |
 | rsnNoisePr | String | 御盤上又は遮音上必要な制限 | urf:restrictionsForNoiseProtection |
 | minFrntgRt | Double | 間口率の最低限度 | urf:minimumFrontageRate |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:DistrictDevelopmentPlan
 
@@ -2581,8 +2894,11 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
 | dstrFclAlc | String | 地区施設の配置及び規模 | urf:districtFacilitiesAllocation |
 | Rstr | String | 建築物等の制限 | urf:buildingRestrictions |
 | urbGrenCvs | String | 樹林地、草地等の保全に関する事項 | urf:urbanGreenSpaceConservation |
@@ -2590,6 +2906,8 @@ TIN地形
 | luseRestri | String | 土地の利用に関する事項 | urf:landuseRestrictions |
 | distrFacl | JSON (<code><a href="#urfdistrictfacilityproperty">urf:DistrictFacilityProperty</a>[]</code>) | 地区施設 | urf:districtFacility |
 | district | JSON (<code><a href="#urfdistrict">urf:District</a>[]</code>) | 地区 | urf:district |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:DistrictFacility
 
@@ -2625,8 +2943,13 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:DistrictImprovementPlanForDisasterPreventionBlockImprovementZonePlan
 
@@ -2662,8 +2985,11 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
 | dstrFclAlc | String | 地区施設の配置及び規模 | urf:districtFacilitiesAllocation |
 | Rstr | String | 建築物等の制限 | urf:buildingRestrictions |
 | urbGrenCvs | String | 樹林地、草地等の保全に関する事項 | urf:urbanGreenSpaceConservation |
@@ -2671,6 +2997,8 @@ TIN地形
 | luseRestri | String | 土地の利用に関する事項 | urf:landuseRestrictions |
 | distrFacl | JSON (<code><a href="#urfdistrictfacilityproperty">urf:DistrictFacilityProperty</a>[]</code>) | 地区施設 | urf:districtFacility |
 | district | JSON (<code><a href="#urfdistrict">urf:District</a>[]</code>) | 防災地区 | urf:district |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:DistrictImprovementPlanForHistoricSceneryMaintenanceAndImprovementDistrict
 
@@ -2706,8 +3034,11 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
 | dstrFclAlc | String | 地区施設の配置及び規模 | urf:districtFacilitiesAllocation |
 | Rstr | String | 建築物等の制限 | urf:buildingRestrictions |
 | urbGrenCvs | String | 樹林地、草地等の保全に関する事項 | urf:urbanGreenSpaceConservation |
@@ -2715,6 +3046,8 @@ TIN地形
 | luseRestri | String | 土地の利用に関する事項 | urf:landuseRestrictions |
 | distrFacl | JSON (<code><a href="#urfdistrictfacilityproperty">urf:DistrictFacilityProperty</a>[]</code>) | 地区施設 | urf:districtFacility |
 | district | JSON (<code><a href="#urfdistrict">urf:District</a>[]</code>) | 地区 | urf:district |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:DistrictPlan
 
@@ -2750,14 +3083,19 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
 | objectives | String | 地区計画の目標 | urf:objectives |
 | policy | String | 区域の整備、開発及び保全に関する方針 | urf:policy |
 | distDevPln | JSON (<code><a href="#urfdistrictdevelopmentplanproperty">urf:DistrictDevelopmentPlanProperty</a>[]</code>) | 地区整備計画 | urf:districtDevelopmentPlan |
 | promDistr | JSON (<code><a href="#urfpromotiondistrict">urf:PromotionDistrict</a>[]</code>) | 促進区 | urf:promotionDistrict |
 | faclAlloc | String | 施設の配置及び方針 | urf:facilityAllocation |
 | lusePolicy | String | 土地利用に関する基本方針 | urf:landUsePolicy |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:DistrictsAndZones
 
@@ -2793,9 +3131,14 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
 | areaTotal | Measure | 面積（合計） | urf:areaInTotal |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:EducationalAndCulturalFacility
 
@@ -2831,10 +3174,15 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
 | number | String | 番号 | urf:number |
 | 3DExtent | JSON (<code><a href="#urfthreedimensionalextent">urf:ThreeDimensionalExtent</a>[]</code>) | 立体的な範囲 | urf:threeDimensionalExtent |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:ExceptionalFloorAreaRateDistrict
 
@@ -2870,10 +3218,15 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
 | areaTotal | Measure | 面積（合計） | urf:areaInTotal |
 | HeightLim | Measure | 建築物の高さの最高限度 | urf:buildingHeightLimits |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:FirePreventionDistrict
 
@@ -2909,9 +3262,14 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
 | areaTotal | Measure | 面積（合計） | urf:areaInTotal |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:FireProtectionFacility
 
@@ -2947,12 +3305,17 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
 | number | String | 番号 | urf:number |
 | 3DExtent | JSON (<code><a href="#urfthreedimensionalextent">urf:ThreeDimensionalExtent</a>[]</code>) | 立体的な範囲 | urf:threeDimensionalExtent |
 | length | Measure | 延長 | urf:length |
 | width | Measure | 幅員 | urf:width |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:FloodPreventionFacility
 
@@ -2988,12 +3351,17 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
 | number | String | 番号 | urf:number |
 | 3DExtent | JSON (<code><a href="#urfthreedimensionalextent">urf:ThreeDimensionalExtent</a>[]</code>) | 立体的な範囲 | urf:threeDimensionalExtent |
 | length | Measure | 延長 | urf:length |
 | width | Measure | 幅員 | urf:width |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:GlobalHubCityDevelopmentProject
 
@@ -3028,11 +3396,16 @@ TIN地形
 | reason | String |  | urf:reason |
 | note | String |  | urf:note |
 | surveyYear | String |  | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) |  | urf:boundary |
 | location | String |  | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
 | implBody | String |  | urf:implementationBody |
 | implPeriod | String |  | urf:implementationPeriod |
 | plan | String |  | urf:plan |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:GreenSpaceConservationDistrict
 
@@ -3068,9 +3441,14 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
 | areaTotal | Measure | 面積（合計） | urf:areaInTotal |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:HeightControlDistrict
 
@@ -3106,11 +3484,16 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
 | areaTotal | Measure | 面積（合計） | urf:areaInTotal |
 | maxBldgHgt | Measure | 高さの最高限度 | urf:maximumBuildingHeight |
 | minBldHgt | Measure | 高さの最低限度 | urf:minimumBuildingHeight |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:HighLevelUseDistrict
 
@@ -3146,14 +3529,19 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
 | areaTotal | Measure | 面積（合計） | urf:areaInTotal |
 | maxFAR | JSON (<code><a href="#double">Double</a>[]</code>) | 容積率の最高限度 | urf:maximumFloorAreaRate |
 | minFAR | JSON (<code><a href="#double">Double</a>[]</code>) | 容積率の最低限度 | urf:minimumFloorAreaRate |
 | maxBCR | JSON (<code><a href="#double">Double</a>[]</code>) | 建蔽率の最高限度 | urf:maximumBuildingCoverageRate |
 | minBldgAr | JSON (<code><a href="#measure">Measure</a>[]</code>) | 建築面積の最低限度 | urf:minimumBuildingArea |
 | setbckSize | String | 外壁の後退距離 | urf:setbackSize |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:HighRiseResidentialAttractionDistrict
 
@@ -3189,12 +3577,17 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
 | areaTotal | Measure | 面積（合計） | urf:areaInTotal |
 | flrArRate | Double | 容積率 | urf:floorAreaRate |
 | maxBCR | Double | 建蔽率 | urf:maximumBuildingCoverageRate |
 | minSiteAr | Measure | 敷地面積の最低限度 | urf:minimumSiteArea |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:HistoricSceneryMaintenanceAndImprovementDistrictPlan
 
@@ -3230,13 +3623,18 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
 | objectives | String | 地区計画の目標 | urf:objectives |
 | policy | String | 方針 | urf:policy |
 | distDevPln | JSON (<code><a href="#urfdistrictdevelopmentplanproperty">urf:DistrictDevelopmentPlanProperty</a>[]</code>) | 地区整備計画 | urf:districtDevelopmentPlan |
 | promDistr | JSON (<code><a href="#urfpromotiondistrict">urf:PromotionDistrict</a>[]</code>) | 促進区 | urf:promotionDistrict |
 | lusePolicy | String | 土地利用に関する基本方針 | urf:landUsePolicy |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:HousingControlArea
 
@@ -3272,9 +3670,14 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
 | areaTotal | Measure | 面積（合計） | urf:areaInTotal |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:IndustrialParkDevelopmentProject
 
@@ -3310,11 +3713,16 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
 | schdExectr | String | 施行予定者 | urf:scheduledExecutor |
 | pubFaclAlc | String | 公共施設の配置及び規模 | urf:publicFacilityAllocation |
 | residLuseP | String | 宅地の利用計画 | urf:residentialLandUsePlan |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:LandReadjustmentProject
 
@@ -3350,11 +3758,16 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
 | schdExectr | String | 施行予定者 | urf:scheduledExecutor |
 | pubFaclAlc | String | 公共施設の配置 | urf:publicFacilityAllocation |
 | LotDev | String | 宅地の整備に関する事項 | urf:buildingLotDevelopment |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:LandReadjustmentPromotionArea
 
@@ -3390,10 +3803,15 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
 | devPol | String | 住宅市街地としての開発方針 | urf:developmentPolicy |
 | pubFclPln | String | 公共施設に関する都市計画 | urf:publicFacilitiesPlans |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:LandReadjustmentPromotionAreasForCoreBusinessUrbanDevelopment
 
@@ -3429,10 +3847,15 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
 | devPol | String | 開発の方針 | urf:developmentPolicy |
 | pubFclPln | String | 公共施設に関する都市計画 | urf:publicFacilitiesPlans |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:LandscapeZone
 
@@ -3468,14 +3891,19 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
 | areaTotal | Measure | 面積（合計） | urf:areaInTotal |
 | DesignRstr | String | 建築物の形態にかかる制限 | urf:buildingDesignRestriction |
 | maxBldgHgt | Measure | 高さの最高限度 | urf:maximumBuildingHeight |
 | minBldHgt | Measure | 高さの最低限度 | urf:minimumBuildingHeight |
 | setbckSize | String | 外壁の後退距離 | urf:setbackSize |
 | minSiteAr | Measure | 敷地面積の最低限度 | urf:minimumSiteArea |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:MarketsSlaughterhousesCrematoria
 
@@ -3511,10 +3939,15 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
 | number | String | 番号 | urf:number |
 | 3DExtent | JSON (<code><a href="#urfthreedimensionalextent">urf:ThreeDimensionalExtent</a>[]</code>) | 立体的な範囲 | urf:threeDimensionalExtent |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:MedicalFacility
 
@@ -3550,10 +3983,15 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
 | number | String | 番号 | urf:number |
 | 3DExtent | JSON (<code><a href="#urfthreedimensionalextent">urf:ThreeDimensionalExtent</a>[]</code>) | 立体的な範囲 | urf:threeDimensionalExtent |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:NewHousingAndUrbanDevelopmentProject
 
@@ -3589,12 +4027,17 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
 | schdExectr | String | 施行予定者 | urf:scheduledExecutor |
 | housing | String | 住区 | urf:housing |
 | pubFaclAlc | String | 公共施設の配置及び規模 | urf:publicFacilityAllocation |
 | residLuseP | String | 宅地の利用計画 | urf:residentialLandUsePlan |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:NewUrbanInfrastructureProject
 
@@ -3630,12 +4073,17 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
 | schdExectr | String | 施行予定者 | urf:scheduledExecutor |
 | ldCenPbFcl | String | 公共施設の用に供するべき土地の区域 | urf:landForCentralPublicFacilities |
 | distrAlloc | String | 開発誘導地区の配置及び規模 | urf:districtsAllocation |
 | lusePlan | String | 土地の利用計画 | urf:landUsePlan |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:OpenSpaceForPublicUse
 
@@ -3671,11 +4119,16 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
 | number | String | 番号 | urf:number |
 | 3DExtent | JSON (<code><a href="#urfthreedimensionalextent">urf:ThreeDimensionalExtent</a>[]</code>) | 立体的な範囲 | urf:threeDimensionalExtent |
 | park | JSON (<code><a href="#urfparkattribute">urf:ParkAttribute</a></code>) | 公園属性 | urf:parkAttribute |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:ParkingPlaceDevelopmentZone
 
@@ -3711,9 +4164,14 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
 | areaTotal | Measure | 面積（合計） | urf:areaInTotal |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:PortZone
 
@@ -3749,10 +4207,15 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
 | areaTotal | Measure | 面積（合計） | urf:areaInTotal |
 | flrArRate | Double | 容積率 | urf:floorAreaRate |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:PrivateUrbanRenewalProjectPlan
 
@@ -3787,10 +4250,15 @@ TIN地形
 | reason | String |  | urf:reason |
 | note | String |  | urf:note |
 | surveyYear | String |  | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) |  | urf:boundary |
 | location | String |  | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
 | developer | String |  | urf:developer |
 | plan | String |  | urf:plan |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:ProductiveGreenZone
 
@@ -3826,11 +4294,16 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
 | areaTotal | Measure | 面積（合計） | urf:areaInTotal |
 | zone# | String | 生産緑地区番号 | urf:zoneNumber |
 | specificat | Code | 特定生産緑地指定の有無 | urf:specification |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:ProjectPromotionArea
 
@@ -3866,10 +4339,15 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
 | devPol | String | 開発の方針 | urf:developmentPolicy |
 | pubFclPln | String | 公共施設に関する都市計画 | urf:publicFacilitiesPlans |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:PromotionDistrict
 
@@ -3904,8 +4382,13 @@ TIN地形
 | reason | String |  | urf:reason |
 | note | String |  | urf:note |
 | surveyYear | String |  | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) |  | urf:boundary |
 | location | String |  | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:QuasiUrbanPlanningArea
 
@@ -3941,11 +4424,16 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
 | population | Integer | 準都市計画区域内の総人口 | urf:population |
 | cityArea | Measure | 準都市計画区域面積（市区町村内） | urf:cityArea |
 | cityPop | Integer | 準都市計画区域内の人口（市区町村内） | urf:cityPopulation |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:Regulation
 
@@ -3980,8 +4468,13 @@ TIN地形
 | reason | String |  | urf:reason |
 | note | String |  | urf:note |
 | surveyYear | String |  | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) |  | urf:boundary |
 | location | String |  | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:ResidenceAttractionArea
 
@@ -4016,8 +4509,13 @@ TIN地形
 | reason | String |  | urf:reason |
 | note | String |  | urf:note |
 | surveyYear | String |  | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) |  | urf:boundary |
 | location | String |  | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:ResidentialBlockConstructionProject
 
@@ -4053,13 +4551,18 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
 | schdExectr | String | 施行予定者 | urf:scheduledExecutor |
 | pubFaclAlc | String | 公共施設の配置及び規模 | urf:publicFacilityAllocation |
 | devPlan | String | 施設住宅の建設に関する計画 | urf:developmentPlan |
 | siteArea | Measure | 敷地面積 | urf:siteArea |
 | totalFlrAr | Measure | 延床面積 | urf:totalFloorArea |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:ResidentialBlockConstructionPromotionArea
 
@@ -4094,10 +4597,15 @@ TIN地形
 | reason | String |  | urf:reason |
 | note | String |  | urf:note |
 | surveyYear | String |  | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) |  | urf:boundary |
 | location | String |  | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
 | devPol | String |  | urf:developmentPolicy |
 | pubFclPln | String |  | urf:publicFacilitiesPlans |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:ResidentialEnvironmentImprovementDistrict
 
@@ -4133,8 +4641,11 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
 | areaTotal | Measure | 面積（合計） | urf:areaInTotal |
 | useBeInduc | String | 誘導すべき用途 | urf:useToBeInduced |
 | maxFAR | Double | 容積率の最高限度 | urf:maximumFloorAreaRate |
@@ -4142,6 +4653,8 @@ TIN地形
 | maxBldgHgt | String | 高さの最高限度 | urf:maximumBuildingHeight |
 | setbckSize | String | 外壁の後退距離 | urf:setbackSize |
 | otherRstr | String | 建築物の敷地、構造又は建築設備に対する制限 | urf:otherRestrictions |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:RoadsideDistrictFacility
 
@@ -4177,8 +4690,13 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:RoadsideDistrictImprovementPlan
 
@@ -4214,8 +4732,11 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
 | dstrFclAlc | String | 地区施設の配置及び規模 | urf:districtFacilitiesAllocation |
 | Rstr | String | 建築物等の制限 | urf:buildingRestrictions |
 | urbGrenCvs | String | 樹林地、草地等の保全に関する事項 | urf:urbanGreenSpaceConservation |
@@ -4224,6 +4745,8 @@ TIN地形
 | distrFacl | JSON (<code><a href="#urfdistrictfacilityproperty">urf:DistrictFacilityProperty</a>[]</code>) | 地区施設 | urf:districtFacility |
 | district | JSON (<code><a href="#urfdistrict">urf:District</a>[]</code>) | 沿道地区 | urf:district |
 | rsDFaclAlc | String | 沿道地区施設の配置及び規模 | urf:roadsideDistrictFacilitiesAllocation |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:RoadsideDistrictPlan
 
@@ -4259,14 +4782,19 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
 | objectives | String | 地区計画の目標 | urf:objectives |
 | policy | String | 区域の整備、開発及び保全に関する方針 | urf:policy |
 | distDevPln | JSON (<code><a href="#urfdistrictdevelopmentplanproperty">urf:DistrictDevelopmentPlanProperty</a>[]</code>) | 沿道地区整備計画 | urf:districtDevelopmentPlan |
 | promDistr | JSON (<code><a href="#urfpromotiondistrict">urf:PromotionDistrict</a>[]</code>) | 沿道開発等促進区 | urf:promotionDistrict |
 | faclAlloc | String |  | urf:facilitiesAllocation |
 | lusePolicy | String | 土地利用に関する基本方針 | urf:landUsePolicy |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:RuralDistrictFacility
 
@@ -4302,8 +4830,13 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:RuralDistrictImprovementPlan
 
@@ -4339,8 +4872,11 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
 | dstrFclAlc | String | 地区施設の配置及び規模 | urf:districtFacilitiesAllocation |
 | Rstr | String | 建築物等の制限 | urf:buildingRestrictions |
 | urbGrenCvs | String | 樹林地、草地等の保全に関する事項 | urf:urbanGreenSpaceConservation |
@@ -4349,6 +4885,8 @@ TIN地形
 | distrFacl | JSON (<code><a href="#urfdistrictfacilityproperty">urf:DistrictFacilityProperty</a>[]</code>) | 地区施設 | urf:districtFacility |
 | district | JSON (<code><a href="#urfdistrict">urf:District</a>[]</code>) | 集落地区 | urf:district |
 | rurDFclAlc | String | 集落地区施設の配置及び規模 | urf:ruralDistrictFacilitiesAllocation |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:RuralDistrictPlan
 
@@ -4384,12 +4922,17 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
 | objectives | String | 地区計画の目標 | urf:objectives |
 | policy | String | 区域の整備、開発及び保全に関する方針 | urf:policy |
 | distDevPln | JSON (<code><a href="#urfdistrictdevelopmentplanproperty">urf:DistrictDevelopmentPlanProperty</a>[]</code>) | 集落地区整備計画 | urf:districtDevelopmentPlan |
 | promDistr | JSON (<code><a href="#urfpromotiondistrict">urf:PromotionDistrict</a>[]</code>) | 促進区 | urf:promotionDistrict |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:SandControlFacility
 
@@ -4425,12 +4968,17 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
 | number | String | 番号 | urf:number |
 | 3DExtent | JSON (<code><a href="#urfthreedimensionalextent">urf:ThreeDimensionalExtent</a>[]</code>) | 立体的な範囲 | urf:threeDimensionalExtent |
 | length | Measure | 延長 | urf:length |
 | width | Measure | 幅員 | urf:width |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:ScenicDistrict
 
@@ -4466,13 +5014,18 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
 | areaTotal | Measure | 面積（合計） | urf:areaInTotal |
 | CovRate | Double | 建蔽率 | urf:buildingCoverageRate |
 | HeightLim | Measure | 高さの規制 | urf:buildingHeightLimits |
 | wallSbDRd | Measure | 壁面から敷地境界までの距離（道路に接する部分） | urf:wallSetbackDistanceWithRoad |
 | wallSbDAdj | Measure | 壁面から敷地境界までの距離（道路に接しない部分） | urf:wallSetbackDistanceWithAdjoiningLand |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:ScheduledAreaForCollectiveGovernmentAndPublicOfficeFacilities
 
@@ -4508,9 +5061,14 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
 | schdExectr | String | 施行予定者 | urf:scheduledExecutor |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:ScheduledAreaForCollectiveHousingFacilities
 
@@ -4546,9 +5104,14 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
 | schdExectr | String | 施行予定者 | urf:scheduledExecutor |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:ScheduledAreaForDistributionBusinessPark
 
@@ -4584,9 +5147,14 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
 | schdExectr | String | 施行予定者 | urf:scheduledExecutor |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:ScheduledAreaForIndustrialParkDevelopmentProjects
 
@@ -4622,9 +5190,14 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
 | schdExectr | String | 施行予定者 | urf:scheduledExecutor |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:ScheduledAreaForNewHousingAndUrbanDevelopmentProjects
 
@@ -4660,9 +5233,14 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
 | schdExectr | String | 施行予定者 | urf:scheduledExecutor |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:ScheduledAreaForNewUrbanInfrastructureProjects
 
@@ -4698,9 +5276,14 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
 | schdExectr | String | 施行予定者 | urf:scheduledExecutor |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:ScheduledAreaForUrbanDevelopmentProject
 
@@ -4736,9 +5319,14 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
 | schdExectr | String | 施行予定者 | urf:scheduledExecutor |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:SedimentDisasterProneArea
 
@@ -4774,13 +5362,18 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
 | location | String | 所在地 | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
 | disasterTy | Code | 災害種別 | urf:disasterType |
 | areaType | Code | 区域区分 | urf:areaType |
 | zone# | String | 区域番号 | urf:zoneNumber |
 | zoneName | String | 区域名 | urf:zoneName |
 | status | Code | 特別警戒未指定フラグ | urf:status |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:SnowProtectionFacility
 
@@ -4816,12 +5409,17 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
 | number | String | 番号 | urf:number |
 | 3DExtent | JSON (<code><a href="#urfthreedimensionalextent">urf:ThreeDimensionalExtent</a>[]</code>) | 立体的な範囲 | urf:threeDimensionalExtent |
 | length | Measure | 延長 | urf:length |
 | width | Measure | 幅員 | urf:width |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:SocialWelfareFacility
 
@@ -4857,10 +5455,15 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
 | number | String | 番号 | urf:number |
 | 3DExtent | JSON (<code><a href="#urfthreedimensionalextent">urf:ThreeDimensionalExtent</a>[]</code>) | 立体的な範囲 | urf:threeDimensionalExtent |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:SpecialGreenSpaceConservationDistrict
 
@@ -4896,10 +5499,15 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
 | areaTotal | Measure | 面積（合計） | urf:areaInTotal |
 | requiremnt | Code | 指定の要件 | urf:requirement |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:SpecialUrbanRenaissanceDistrict
 
@@ -4935,8 +5543,11 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
 | areaTotal | Measure | 面積（合計） | urf:areaInTotal |
 | useBeInduc | String | 誘導すべき用途 | urf:useToBeInduced |
 | maxFAR | Double | 容積率の最高限度 | urf:maximumFloorAreaRate |
@@ -4946,6 +5557,8 @@ TIN地形
 | maxBldgHgt | String | 高さの最高限度 | urf:maximumBuildingHeight |
 | setbckSize | String | 外壁の後退距離 | urf:setbackSize |
 | otherRstr | String | 建築物の敷地、構造又は建築設備に対する制限 | urf:otherRestrictions |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:SpecialUseAttractionDistrict
 
@@ -4981,8 +5594,11 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
 | areaTotal | Measure | 面積（合計） | urf:areaInTotal |
 | useBeInduc | String | 誘導すべき用途 | urf:useToBeInduced |
 | maxFAR | Double | 容積率の最高限度 | urf:maximumFloorAreaRate |
@@ -4990,6 +5606,8 @@ TIN地形
 | minBldgAr | Measure | 建築面積の最低限度 | urf:minimumBuildingArea |
 | maxBldgHgt | String | 高さの最高限度 | urf:maximumBuildingHeight |
 | otherRstr | String | 建築物の敷地、構造又は建築設備に対する制限 | urf:otherRestrictions |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:SpecialUseDistrict
 
@@ -5025,11 +5643,16 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
 | areaTotal | Measure | 面積（合計） | urf:areaInTotal |
 | Rstr | String | 建築物の制限 | urf:buildingRestrictions |
 | otherRstr | String | 建築物の敷地、構造又は建築設備に関する制限 | urf:otherRestrictions |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:SpecialUseRestrictionDistrict
 
@@ -5065,11 +5688,16 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
 | areaTotal | Measure | 面積（合計） | urf:areaInTotal |
 | Rstr | String | 建築物の制限 | urf:buildingRestrictions |
 | otherRstr | String | 建築物の敷地、構造又は建築設備に関する制限 | urf:otherRestrictions |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:SpecialZoneForPreservationOfHistoricalLandscape
 
@@ -5105,9 +5733,14 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
 | areaTotal | Measure | 面積（合計） | urf:areaInTotal |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:SpecifiedBlock
 
@@ -5143,12 +5776,17 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
 | areaTotal | Measure | 面積（合計） | urf:areaInTotal |
 | flrArRate | Double | 容積率 | urf:floorAreaRate |
 | maxBldgHgt | Measure | 建築物の高さの最高限度 | urf:maximumBuildingHeight |
 | setbckSize | String | 外壁の後退距離 | urf:setbackSize |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:SpecifiedBuildingZoneImprovementPlan
 
@@ -5184,8 +5822,11 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
 | dstrFclAlc | String | 地区施設の配置及び規模 | urf:districtFacilitiesAllocation |
 | Rstr | String | 建築物等の制限 | urf:buildingRestrictions |
 | urbGrenCvs | String | 樹林地、草地等の保全に関する事項 | urf:urbanGreenSpaceConservation |
@@ -5193,6 +5834,8 @@ TIN地形
 | luseRestri | String | 土地の利用に関する事項 | urf:landuseRestrictions |
 | distrFacl | JSON (<code><a href="#urfdistrictfacilityproperty">urf:DistrictFacilityProperty</a>[]</code>) | 地区施設 | urf:districtFacility |
 | district | JSON (<code><a href="#urfdistrict">urf:District</a>[]</code>) | 防災地区 | urf:district |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:SpecifiedDisasterPreventionBlockImprovementZone
 
@@ -5228,13 +5871,18 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
 | areaTotal | Measure | 面積（合計） | urf:areaInTotal |
 | minSiteAr | Measure | 敷地面積の最低限度 | urf:minimumSiteArea |
 | setbckSize | String | 外壁の後退距離 | urf:setbackSize |
 | minFrntgRt | Double | 間口率の最低限度 | urf:minimumFrontageRate |
 | minBldHgt | Measure | 高さの最低限度 | urf:minimumBuildingHeight |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:SpecifiedUrgentUrbanRenewalArea
 
@@ -5269,13 +5917,18 @@ TIN地形
 | reason | String |  | urf:reason |
 | note | String |  | urf:note |
 | surveyYear | String |  | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) |  | urf:boundary |
 | location | String |  | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
 | devPol | String |  | urf:developmentPolicy |
 | privProj | JSON (<code><a href="#urfprivateurbanrenewalprojectplan">urf:PrivateUrbanRenewalProjectPlan</a>[]</code>) |  | urf:privateProject |
 | specifArea | JSON (<code><a href="#urfspecifiedurgenturbanrenewalarea">urf:SpecifiedUrgentUrbanRenewalArea</a>[]</code>) |  | urf:specifiedArea |
 | specDistr | JSON (<code><a href="#urfspecialurbanrenaissancedistrict">urf:SpecialUrbanRenaissanceDistrict</a>[]</code>) |  | urf:specialDistrict |
 | devProj | JSON (<code><a href="#urfglobalhubcitydevelopmentproject">urf:GlobalHubCityDevelopmentProject</a>[]</code>) |  | urf:developmentProject |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:SupplyFacility
 
@@ -5311,11 +5964,16 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
 | number | String | 番号 | urf:number |
 | 3DExtent | JSON (<code><a href="#urfthreedimensionalextent">urf:ThreeDimensionalExtent</a>[]</code>) | 立体的な範囲 | urf:threeDimensionalExtent |
 | wtrWorks | JSON (<code><a href="#urfwaterworksattribute">urf:WaterWorksAttribute</a></code>) | 水道属性 | urf:waterWorksAttribute |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:TelecommunicationFacility
 
@@ -5351,12 +6009,17 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
 | number | String | 番号 | urf:number |
 | 3DExtent | JSON (<code><a href="#urfthreedimensionalextent">urf:ThreeDimensionalExtent</a>[]</code>) | 立体的な範囲 | urf:threeDimensionalExtent |
 | length | Measure | 延長 | urf:length |
 | width | Measure | 幅員 | urf:width |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:ThreeDimensionalExtent
 
@@ -5394,6 +6057,8 @@ TIN地形
 | surveyYear | String | 調査年度 | urf:surveyYear |
 | minDist | Measure | 離隔距離の最小限度 | urf:minimumDistance |
 | maxLoad | Measure | 載荷重の最大限度 | urf:maximumLoad |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:TideFacility
 
@@ -5429,12 +6094,17 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
 | number | String | 番号 | urf:number |
 | 3DExtent | JSON (<code><a href="#urfthreedimensionalextent">urf:ThreeDimensionalExtent</a>[]</code>) | 立体的な範囲 | urf:threeDimensionalExtent |
 | length | Measure | 延長 | urf:length |
 | width | Measure | 幅員 | urf:width |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:TrafficFacility
 
@@ -5470,8 +6140,11 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
 | number | String | 番号 | urf:number |
 | 3DExtent | JSON (<code><a href="#urfthreedimensionalextent">urf:ThreeDimensionalExtent</a>[]</code>) | 立体的な範囲 | urf:threeDimensionalExtent |
 | stLoc | String | 起点 | urf:startLocation |
@@ -5483,6 +6156,8 @@ TIN地形
 | urRpdTtRrd | JSON (<code><a href="#urfurbanrapidtransitrailroadattribute">urf:UrbanRapidTransitRailroadAttribute</a></code>) | 都市高速鉄道属性 | urf:urbanRapidTransitRailroadAttribute |
 | parkPlace | JSON (<code><a href="#urfparkingplaceattribute">urf:ParkingPlaceAttribute</a></code>) | 駐車場属性 | urf:parkingPlaceAttribute |
 | vehclTerm | JSON (<code><a href="#urfvehicleterminalattribute">urf:VehicleTerminalAttribute</a></code>) | 自動車ターミナル属性 | urf:vehicleTerminalAttribute |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:TreatmentFacility
 
@@ -5518,11 +6193,16 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
 | number | String | 番号 | urf:number |
 | 3DExtent | JSON (<code><a href="#urfthreedimensionalextent">urf:ThreeDimensionalExtent</a>[]</code>) | 立体的な範囲 | urf:threeDimensionalExtent |
 | sewerSys | JSON (<code><a href="#urfsewersystemattribute">urf:SewerSystemAttribute</a></code>) |  | urf:sewerSystemsAttribute |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:TreePlantingDistrict
 
@@ -5558,10 +6238,15 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
 | areaTotal | Measure | 面積（合計） | urf:areaInTotal |
 | minGreenRt | Double |  | urf:minimumGreeningRate |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:UnclassifiedBlankArea
 
@@ -5596,8 +6281,13 @@ TIN地形
 | reason | String |  | urf:reason |
 | note | String |  | urf:note |
 | surveyYear | String |  | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) |  | urf:boundary |
 | location | String |  | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:UnclassifiedUseDistrict
 
@@ -5632,8 +6322,13 @@ TIN地形
 | reason | String |  | urf:reason |
 | note | String |  | urf:note |
 | surveyYear | String |  | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) |  | urf:boundary |
 | location | String |  | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:UnusedLandUsePromotionArea
 
@@ -5669,8 +6364,13 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:UrbanDevelopmentProject
 
@@ -5706,9 +6406,14 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
 | schdExectr | String | 施行予定者 | urf:scheduledExecutor |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:UrbanDisasterRecoveryPromotionArea
 
@@ -5744,11 +6449,16 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
 | exprDate | Date | 期間満了の日 | urf:expirationDate |
 | emgRcovPol | String | 市街地の整備改善の方針 | urf:emergencyRecoveryPolicy |
 | plnProjTy | Code | 事業の種類 | urf:plannedProjectType |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:UrbanFacility
 
@@ -5784,10 +6494,15 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
 | number | String | 番号 | urf:number |
 | 3DExtent | JSON (<code><a href="#urfthreedimensionalextent">urf:ThreeDimensionalExtent</a>[]</code>) | 立体的な範囲 | urf:threeDimensionalExtent |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:UrbanFacilityStipulatedByCabinetOrder
 
@@ -5823,12 +6538,17 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
 | number | String | 番号 | urf:number |
 | 3DExtent | JSON (<code><a href="#urfthreedimensionalextent">urf:ThreeDimensionalExtent</a>[]</code>) | 立体的な範囲 | urf:threeDimensionalExtent |
 | length | Measure | 延長 | urf:length |
 | width | Measure | 幅員 | urf:width |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:UrbanFunctionAttractionArea
 
@@ -5863,8 +6583,13 @@ TIN地形
 | reason | String |  | urf:reason |
 | note | String |  | urf:note |
 | surveyYear | String |  | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) |  | urf:boundary |
 | location | String |  | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:UrbanPlanningArea
 
@@ -5900,8 +6625,11 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
 | arCls | Code | 区域区分の決定の有無 | urf:areaClassification |
 | reasAreaCl | String | 区域区分を決定する理由又はしない理由 | urf:reasonForAreaClassification |
 | polArCls | String | 区域区分の決定方針 | urf:policyForAreaClassification |
@@ -5910,6 +6638,8 @@ TIN地形
 | population | Integer | 都市計画区域内の総人口 | urf:population |
 | cityArea | Measure | 都市計画区域面積（市区町村内） | urf:cityArea |
 | cityPop | Integer | 都市計画区域内の人口（市区町村内） | urf:cityPopulation |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:UrbanRedevelopmentProject
 
@@ -5945,8 +6675,11 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
 | schdExectr | String | 施行予定者 | urf:scheduledExecutor |
 | pubFaclAlc | String | 公共施設の配置及び規模 | urf:publicFacilityAllocation |
 | devPlan | String | 建築物及び建築敷地の整備計画 | urf:developmentPlan |
@@ -5954,6 +6687,8 @@ TIN地形
 | siteArea | Measure | 住宅の敷地面積 | urf:siteArea |
 | totalFlrAr | Measure | 住宅の延べ床面積 | urf:totalFloorArea |
 | #Housing | Integer | 住宅の個数 | urf:numberOfHousing |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:UrbanRedevelopmentPromotionArea
 
@@ -5989,12 +6724,17 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
 | devPol | String | 開発の方針 | urf:developmentPolicy |
 | pubFclPln | String | 公共施設に関する都市計画 | urf:publicFacilitiesPlans |
 | pubFaclty | String | 公共施設の配置及び規模 | urf:publicFacilities |
 | unitArea | String | 整備区の単位 | urf:unitArea |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:UrbanRenewalProject
 
@@ -6030,8 +6770,11 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
 | schdExectr | String | 施行予定者 | urf:scheduledExecutor |
 | strysAbvG | NonNegativeInteger | 建築物の地上階数 | urf:storeysAboveGround |
 | strysBlwG | NonNegativeInteger | 建築物の地下階数 | urf:storeysBelowGround |
@@ -6039,6 +6782,8 @@ TIN地形
 | flrArRate | Double | 容積率の限度 | urf:floorAreaRate |
 | Usage | String | 主な用途 | urf:buildingUsage |
 | siteArea | Measure | 建築敷地面積 | urf:siteArea |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:UrgentUrbanRenewalArea
 
@@ -6073,12 +6818,17 @@ TIN地形
 | reason | String |  | urf:reason |
 | note | String |  | urf:note |
 | surveyYear | String |  | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) |  | urf:boundary |
 | location | String |  | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
 | devPol | String |  | urf:developmentPolicy |
 | privProj | JSON (<code><a href="#urfprivateurbanrenewalprojectplan">urf:PrivateUrbanRenewalProjectPlan</a>[]</code>) |  | urf:privateProject |
 | specifArea | JSON (<code><a href="#urfspecifiedurgenturbanrenewalarea">urf:SpecifiedUrgentUrbanRenewalArea</a>[]</code>) |  | urf:specifiedArea |
 | specDistr | JSON (<code><a href="#urfspecialurbanrenaissancedistrict">urf:SpecialUrbanRenaissanceDistrict</a>[]</code>) |  | urf:specialDistrict |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:UseDistrict
 
@@ -6114,8 +6864,11 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
 | areaTotal | Measure | 面積（合計） | urf:areaInTotal |
 | flrArRate | Double | 容積率 | urf:floorAreaRate |
 | minSiteAr | Measure | 敷地面積の最低限度 | urf:minimumSiteArea |
@@ -6129,6 +6882,8 @@ TIN地形
 | adjLndRstr | String | 隣地斜線制限 | urf:adjacentLandRestrictions |
 | northDRstr | String | 北側斜線制限 | urf:northDirectionRestrictions |
 | shadeRegul | String | 日影規制 | urf:shadeRegulation |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:Waterway
 
@@ -6163,8 +6918,11 @@ TIN地形
 | reason | String |  | urf:reason |
 | note | String |  | urf:note |
 | surveyYear | String |  | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) |  | urf:boundary |
 | location | String |  | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
 | number | String |  | urf:number |
 | 3DExtent | JSON (<code><a href="#urfthreedimensionalextent">urf:ThreeDimensionalExtent</a>[]</code>) |  | urf:threeDimensionalExtent |
 | stLoc | String |  | urf:startLocation |
@@ -6172,6 +6930,8 @@ TIN地形
 | structure | Code |  | urf:structure |
 | length | Measure |  | urf:length |
 | width | Measure |  | urf:width |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:WindProtectionFacility
 
@@ -6207,12 +6967,17 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
 | number | String | 番号 | urf:number |
 | 3DExtent | JSON (<code><a href="#urfthreedimensionalextent">urf:ThreeDimensionalExtent</a>[]</code>) | 立体的な範囲 | urf:threeDimensionalExtent |
 | length | Measure | 延長 | urf:length |
 | width | Measure | 幅員 | urf:width |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:ZonalDisasterPreventionFacility
 
@@ -6248,9 +7013,14 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
 | facilityTy | Code | 地区防災施設の種類 | urf:facilityType |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:Zone
 
@@ -6286,8 +7056,13 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
 | location | String |  | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:ZoneForPreservationOfHistoricalLandscape
 
@@ -6323,9 +7098,14 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValPair | JSON (<code><a href="#urokeyvaluepairattribute">uro:KeyValuePairAttribute</a>[]</code>) |  | urf:keyValuePairAttribute |
+| dataQual | JSON (<code><a href="#urodataqualityattribute">uro:DataQualityAttribute</a></code>) |  | urf:dataQualityAttribute |
 | boundary | JSON (<code><a href="#urfboundary">urf:Boundary</a>[]</code>) | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbPark | JSON (<code><a href="#urfurbanparkattribute">urf:UrbanParkAttribute</a></code>) |  | urf:urbanParkAttribute |
 | areaTotal | Measure | 面積（合計） | urf:areaInTotal |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ## プロパティ (Property stereotype)
 
@@ -6409,16 +7189,6 @@ TIN地形
 - <a href='#demrasterrelief'>dem:RasterRelief</a>
 - <a href='#demtinrelief'>dem:TINRelief</a>
 
-### uro:BuildingDisasterRiskAttributeProperty
-
-以下のいずれかの型の値をとる：
-
-- <a href='#urobuildinghightideriskattribute'>uro:BuildingHighTideRiskAttribute</a>
-- <a href='#urobuildinginlandfloodingriskattribute'>uro:BuildingInlandFloodingRiskAttribute</a>
-- <a href='#urobuildinglandslideriskattribute'>uro:BuildingLandSlideRiskAttribute</a>
-- <a href='#urobuildingriverfloodingriskattribute'>uro:BuildingRiverFloodingRiskAttribute</a>
-- <a href='#urobuildingtsunamiriskattribute'>uro:BuildingTsunamiRiskAttribute</a>
-
 ### uro:ConstructionStructureAttributeProperty
 
 以下のいずれかの型の値をとる：
@@ -6443,6 +7213,7 @@ TIN地形
 - <a href='#urohightideriskattribute'>uro:HighTideRiskAttribute</a>
 - <a href='#uroinlandfloodingriskattribute'>uro:InlandFloodingRiskAttribute</a>
 - <a href='#urolandslideriskattribute'>uro:LandSlideRiskAttribute</a>
+- <a href='#uroreservoirfloodingriskattribute'>uro:ReservoirFloodingRiskAttribute</a>
 - <a href='#uroriverfloodingriskattribute'>uro:RiverFloodingRiskAttribute</a>
 - <a href='#urotsunamiriskattribute'>uro:TsunamiRiskAttribute</a>
 
@@ -6465,6 +7236,7 @@ TIN地形
 - <a href='#uromaintenancehistoryattribute'>uro:MaintenanceHistoryAttribute</a>
 - <a href='#uromooringfacility'>uro:MooringFacility</a>
 - <a href='#uronavigationassistancefacility'>uro:NavigationAssistanceFacility</a>
+- <a href='#uroparkfacilitylongevityplanattribute'>uro:ParkFacilityLongevityPlanAttribute</a>
 - <a href='#uroportenvironmentalimprovementfacility'>uro:PortEnvironmentalImprovementFacility</a>
 - <a href='#uroportmanagementfacility'>uro:PortManagementFacility</a>
 - <a href='#uroportpassengerfacility'>uro:PortPassengerFacility</a>
@@ -6482,6 +7254,16 @@ TIN地形
 
 - <a href='#urofacilityidattribute'>uro:FacilityIdAttribute</a>
 - <a href='#uroriverfacilityidattribute'>uro:RiverFacilityIdAttribute</a>
+
+### uro:FloodingRiskAttributeProperty
+
+以下のいずれかの型の値をとる：
+
+- <a href='#urohightideriskattribute'>uro:HighTideRiskAttribute</a>
+- <a href='#uroinlandfloodingriskattribute'>uro:InlandFloodingRiskAttribute</a>
+- <a href='#uroreservoirfloodingriskattribute'>uro:ReservoirFloodingRiskAttribute</a>
+- <a href='#uroriverfloodingriskattribute'>uro:RiverFloodingRiskAttribute</a>
+- <a href='#urotsunamiriskattribute'>uro:TsunamiRiskAttribute</a>
 
 ### uro:IfcAttributeProperty
 
@@ -6550,15 +7332,6 @@ TIN地形
 - <a href='#urostationsquareattribute'>uro:StationSquareAttribute</a>
 - <a href='#uroterminalattribute'>uro:TerminalAttribute</a>
 
-### uro:WaterBodyFloodingRiskAttributeProperty
-
-以下のいずれかの型の値をとる：
-
-- <a href='#urowaterbodyhightideriskattribute'>uro:WaterBodyHighTideRiskAttribute</a>
-- <a href='#urowaterbodyinlandfloodingriskattribute'>uro:WaterBodyInlandFloodingRiskAttribute</a>
-- <a href='#urowaterbodyriverfloodingriskattribute'>uro:WaterBodyRiverFloodingRiskAttribute</a>
-- <a href='#urowaterbodytsunamiriskattribute'>uro:WaterBodyTsunamiRiskAttribute</a>
-
 ### uro:_BoundarySurfaceProperty
 
 以下のいずれかの型の値をとる：
@@ -6598,18 +7371,24 @@ TIN地形
 |-----------|----|--------|---------------|
 | mappngRule | String |  | gml:MappingRule |
 | gridFunct | JSON (<code><a href="#gmlgridfunction">gml:GridFunction</a></code>) |  | gml:GridFunction |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### gml:GridEnvelope
 
 
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### gml:GridFunction
 
 
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### gml:RectifiedGrid
 
@@ -6620,6 +7399,8 @@ TIN地形
 | axisName | JSON (<code><a href="#string">String</a>[]</code>) |  | gml:axisName |
 | origin | Point |  | gml:origin |
 | offsetVec | JSON (<code><a href="#point">Point</a>[]</code>) |  | gml:offsetVector |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### gml:RectifiedGridCoverage
 
@@ -6628,6 +7409,8 @@ TIN地形
 |-----------|----|--------|---------------|
 | rectGrdDom | JSON (<code><a href="#gmlrectifiedgriddomain">gml:RectifiedGridDomain</a></code>) |  | gml:rectifiedGridDomain |
 | covFunct | JSON (<code><a href="#gmlcoveragefunction">gml:CoverageFunction</a></code>) |  | gml:coverageFunction |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### gml:RectifiedGridDomain
 
@@ -6635,18 +7418,25 @@ TIN地形
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | rectifGrid | JSON (<code><a href="#gmlrectifiedgrid">gml:RectifiedGrid</a></code>) |  | gml:RectifiedGrid |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### core:Address
 
 
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
+| xalAddress | JSON (<code><a href="#xaladdressdetails">xAL:AddressDetails</a>[]</code>) |  | core:xalAddress |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### gen:genericAttribute
 
 
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:BridgeFunctionalAttribute
 
@@ -6656,6 +7446,8 @@ TIN地形
 |-----------|----|--------|---------------|
 | directnTy | Code | 進行方向区分 | uro:directionType |
 | userType | Code | 利用者区分 | uro:userType |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:BridgeStructureAttribute
 
@@ -6674,6 +7466,8 @@ TIN地形
 | unGirdrHgt | Measure | 桁下高さ制限 | uro:underGirderHeight |
 | slopeType | Code | 昇降形式 | uro:slopeType |
 | escalator | Boolean | エスカレータ有無 | uro:escalator |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:BuildingDataQualityAttribute
 
@@ -6682,10 +7476,11 @@ TIN地形
 |-----------|----|--------|---------------|
 | srcScale | JSON (<code><a href="#code">Code</a>[]</code>) |  | uro:srcScale |
 | geomSrcDsc | JSON (<code><a href="#code">Code</a>[]</code>) |  | uro:geometrySrcDesc |
-| thmSrcDesc | JSON (<code><a href="#code">Code</a>[]</code>) |  | uro:thematicSrcDesc |
 | SrcDesc | JSON (<code><a href="#code">Code</a>[]</code>) |  | uro:appearanceSrcDesc |
 | lod1HgtTy | Code |  | uro:lod1HeightType |
 | lodType | JSON (<code><a href="#code">Code</a>[]</code>) |  | uro:lodType |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:BuildingDetailAttribute
 
@@ -6731,17 +7526,8 @@ TIN地形
 | eaveHeight | Measure | 軒の高さ | uro:eaveHeight |
 | note | String | 備考 | uro:note |
 | surveyYear | String | 調査年 | uro:surveyYear |
-
-### uro:BuildingHighTideRiskAttribute
-
-高潮浸水リスク
-
-| フィールド名 | 型 | 日本語名 | CityGML 属性名 |
-|-----------|----|--------|---------------|
-| desc | Code | 説明 | uro:description |
-| rank | Code | 浸水ランク | uro:rank |
-| rankOrg | Code | 浸水ランク（独自） | uro:rankOrg |
-| depth | Measure | 浸水深 | uro:depth |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:BuildingIDAttribute
 
@@ -6754,51 +7540,19 @@ TIN地形
 | partID | Integer | 建築物部分ID | uro:partID |
 | prefecture | Code | 都道府県 | uro:prefecture |
 | city | Code | 市区町村 | uro:city |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
-### uro:BuildingInlandFloodingRiskAttribute
+### uro:BuildingUsecaseAttribute
 
-内水浸水リスク
-
-| フィールド名 | 型 | 日本語名 | CityGML 属性名 |
-|-----------|----|--------|---------------|
-| desc | Code | 説明 | uro:description |
-| rank | Code | 浸水ランク | uro:rank |
-| rankOrg | Code | 浸水ランク（独自） | uro:rankOrg |
-| depth | Measure | 浸水深 | uro:depth |
-
-### uro:BuildingLandSlideRiskAttribute
-
-土砂災害リスク
 
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
-| desc | Code | 現象区分 | uro:description |
-| areaType | Code | 区域区分 | uro:areaType |
-
-### uro:BuildingRiverFloodingRiskAttribute
-
-洪水浸水リスク
-
-| フィールド名 | 型 | 日本語名 | CityGML 属性名 |
-|-----------|----|--------|---------------|
-| desc | Code | 指定河川名称 | uro:description |
-| rank | Code | 浸水ランク | uro:rank |
-| rankOrg | Code | 浸水ランク（独自） | uro:rankOrg |
-| depth | Measure | 浸水深 | uro:depth |
-| adminType | Code | 指定機関区分 | uro:adminType |
-| scale | Code | 浸水規模 | uro:scale |
-| duration | Measure | 継続時間 | uro:duration |
-
-### uro:BuildingTsunamiRiskAttribute
-
-津波浸水リスク
-
-| フィールド名 | 型 | 日本語名 | CityGML 属性名 |
-|-----------|----|--------|---------------|
-| desc | Code | 説明 | uro:description |
-| rank | Code | 浸水ランク | uro:rank |
-| rankOrg | Code | 浸水ランク（独自） | uro:rankOrg |
-| depth | Measure | 浸水深 | uro:depth |
+| isTemporal | Code |  | uro:isTemporal |
+| floorHeight | Measure |  | uro:floorHeight |
+| isGroundFloorOpen | Boolean |  | uro:isGroundFloorOpen |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:CargoHandlingFacility
 
@@ -6827,6 +7581,8 @@ TIN地形
 | mainMat | Code | 主要用材 | uro:mainMaterial |
 | totalCost | Integer | 事業費－総額 | uro:totalCost |
 | note | String | 備考 | uro:note |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:CircularCurveType
 
@@ -6838,17 +7594,8 @@ TIN地形
 | int | Double | 交角 | uro:intersection |
 | cutLength | Measure | 切線長 | uro:cutLength |
 | curveLen | Measure | 曲線長 | uro:curveLength |
-
-### uro:CityFurnitureDataQualityAttribute
-
-
-| フィールド名 | 型 | 日本語名 | CityGML 属性名 |
-|-----------|----|--------|---------------|
-| srcScale | JSON (<code><a href="#code">Code</a>[]</code>) |  | uro:srcScale |
-| geomSrcDsc | JSON (<code><a href="#code">Code</a>[]</code>) |  | uro:geometrySrcDesc |
-| thmSrcDesc | JSON (<code><a href="#code">Code</a>[]</code>) |  | uro:thematicSrcDesc |
-| SrcDesc | JSON (<code><a href="#code">Code</a>[]</code>) |  | uro:appearanceSrcDesc |
-| lodType | Code |  | uro:lodType |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:CityFurnitureDetailAttribute
 
@@ -6858,6 +7605,8 @@ TIN地形
 |-----------|----|--------|---------------|
 | facilityTy | Code | 施設詳細区分 | uro:facilityType |
 | desc | String |  | uro:description |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:ConstructionBaseAttribute
 
@@ -6879,21 +7628,8 @@ TIN地形
 | faclAge | Integer | 施設年数 | uro:facilityAge |
 | update | Date | 更新年月日 | uro:update |
 | purpose | Code | 目的 | uro:purpose |
-
-### uro:ConstructionDataQualityAttribute
-
-データ品質
-
-| フィールド名 | 型 | 日本語名 | CityGML 属性名 |
-|-----------|----|--------|---------------|
-| srcScale | JSON (<code><a href="#code">Code</a>[]</code>) | 地図情報レベル | uro:srcScale |
-| geomSrcDsc | JSON (<code><a href="#code">Code</a>[]</code>) | 幾何属性作成方法 | uro:geometrySrcDesc |
-| thmSrcDesc | JSON (<code><a href="#code">Code</a>[]</code>) | 主題属性作成方法 | uro:thematicSrcDesc |
-| SrcDesc | JSON (<code><a href="#code">Code</a>[]</code>) | テクスチャ作成方法 | uro:appearanceSrcDesc |
-| dataAcq | String | データ取得方法 | uro:dataAcquisition |
-| photoScale | Integer | 写真縮尺 | uro:photoScale |
-| lod1HgtTy | Code | LOD1高さ | uro:lod1HeightType |
-| lodType | JSON (<code><a href="#code">Code</a>[]</code>) | 詳細LOD | uro:lodType |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:ConstructionEvent
 
@@ -6904,6 +7640,8 @@ TIN地形
 | event | Code | 種類 | uro:event |
 | dateEvent | Date | 日付 | uro:dateOfEvent |
 | desc | String | 説明 | uro:description |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:ConstructionRiskAssessmentAttribute
 
@@ -6915,6 +7653,8 @@ TIN地形
 | riskType | Code | 判定区分 | uro:riskType |
 | status | Code | 対応状況 | uro:status |
 | refDate | Date | 更新時点 | uro:referenceDate |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:ConstructionStructureAttribute
 
@@ -6927,6 +7667,8 @@ TIN地形
 | width | Measure | 幅員 | uro:width |
 | depth | Measure | 水深 | uro:depth |
 | volume | Measure | 体積 | uro:volume |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:ControlPoint
 
@@ -6940,6 +7682,18 @@ TIN地形
 | parameter | JSON (<code><a href="#urocontrolpointtype">uro:ControlPointType</a></code>) | パラメータ | uro:parameter |
 | startPoint | Point | 開始位置 | uro:startPoint |
 | endPoint | Point | 終了位置 | uro:endPoint |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
+
+### uro:CountermeasuresCost
+
+
+| フィールド名 | 型 | 日本語名 | CityGML 属性名 |
+|-----------|----|--------|---------------|
+| cost | Integer |  | uro:cost |
+| costUnit | String |  | uro:costUnit |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:CyberportMarinaAndPBS
 
@@ -6995,6 +7749,8 @@ TIN地形
 | totalCost | Integer | 事業費－総額 | uro:totalCost |
 | subsidy | Integer | 事業費－補助金額 | uro:subsidy |
 | note | String | 備考 | uro:note |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:DamAttribute
 
@@ -7009,6 +7765,40 @@ TIN地形
 | volume | Measure | 堤体積 | uro:volume |
 | damCode | Code | ダムコード | uro:damCode |
 | tWtrStorag | Measure | 総貯水量 | uro:totalWaterStorage |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
+
+### uro:DataQualityAttribute
+
+
+| フィールド名 | 型 | 日本語名 | CityGML 属性名 |
+|-----------|----|--------|---------------|
+| srcScale | JSON (<code><a href="#code">Code</a>[]</code>) |  | uro:srcScale |
+| geomSrcDsc | JSON (<code><a href="#code">Code</a>[]</code>) |  | uro:geometrySrcDesc |
+| SrcDesc | JSON (<code><a href="#code">Code</a>[]</code>) |  | uro:appearanceSrcDesc |
+| geomSrcDL0 | JSON (<code><a href="#code">Code</a>[]</code>) |  | uro:geometrySrcDescLod0 |
+| geomSrcDL1 | JSON (<code><a href="#code">Code</a>[]</code>) |  | uro:geometrySrcDescLod1 |
+| geomSrcDL2 | JSON (<code><a href="#code">Code</a>[]</code>) |  | uro:geometrySrcDescLod2 |
+| geomSrcDL3 | JSON (<code><a href="#code">Code</a>[]</code>) |  | uro:geometrySrcDescLod3 |
+| geomSrcDL4 | JSON (<code><a href="#code">Code</a>[]</code>) |  | uro:geometrySrcDescLod4 |
+| geomSrcD0 | JSON (<code><a href="#code">Code</a>[]</code>) |  | uro:geometrySrcDesc0 |
+| geomSrcD1 | JSON (<code><a href="#code">Code</a>[]</code>) |  | uro:geometrySrcDesc1 |
+| geomSrcD2 | JSON (<code><a href="#code">Code</a>[]</code>) |  | uro:geometrySrcDesc2 |
+| geomSrcD3 | JSON (<code><a href="#code">Code</a>[]</code>) |  | uro:geometrySrcDesc3 |
+| geomSrcD4 | JSON (<code><a href="#code">Code</a>[]</code>) |  | uro:geometrySrcDesc4 |
+| thmSrcDesc | JSON (<code><a href="#code">Code</a>[]</code>) |  | uro:thematicSrcDesc |
+| appSDLod0 | JSON (<code><a href="#code">Code</a>[]</code>) |  | uro:appearanceSrcDescLod0 |
+| appSDLod1 | JSON (<code><a href="#code">Code</a>[]</code>) |  | uro:appearanceSrcDescLod1 |
+| appSDLod2 | JSON (<code><a href="#code">Code</a>[]</code>) |  | uro:appearanceSrcDescLod2 |
+| appSDLod3 | JSON (<code><a href="#code">Code</a>[]</code>) |  | uro:appearanceSrcDescLod3 |
+| appSDLod4 | JSON (<code><a href="#code">Code</a>[]</code>) |  | uro:appearanceSrcDescLod4 |
+| lodType | JSON (<code><a href="#code">Code</a>[]</code>) |  | uro:lodType |
+| lod1HgtTy | Code |  | uro:lod1HeightType |
+| tranDtaAcq | String |  | uro:tranDataAcquisition |
+| pubSvDQual | JSON (<code><a href="#uropublicsurveydataqualityattribute">uro:PublicSurveyDataQualityAttribute</a></code>) |  | uro:publicSurveyDataQualityAttribute |
+| bldgDQual | JSON (<code><a href="#urobuildingdataqualityattribute">uro:BuildingDataQualityAttribute</a></code>) |  | uro:BuildingDataQualityAttribute |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:DmAnnotation
 
@@ -7027,6 +7817,8 @@ DM注記情報
 | orientatin | Integer | 表示角度 | uro:orientation |
 | linewidth | Integer | 線号 | uro:linewidth |
 | spacing | Integer | 字隔 | uro:spacing |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:DmElement
 
@@ -7050,6 +7842,8 @@ DM注記情報
 | updateDate | String | 更新年月 | uro:updateDate |
 | termDate | String | 削除年月 | uro:terminationDate |
 | freeSpace | String | 空き領域 | uro:freeSpace |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:DmGeometricAttribute
 
@@ -7070,6 +7864,8 @@ DM図形情報
 | supplSymbl | Boolean | 補助記号フラグ | uro:isSupplementarySymbol |
 | angle | Double | 回転角度 | uro:angle |
 | elevation | Measure | 標高 | uro:elevation |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:Elevation
 
@@ -7079,6 +7875,8 @@ DM図形情報
 |-----------|----|--------|---------------|
 | elvRef | Code | 計測位置 | uro:elevationReference |
 | elvValue | Point | 標高 | uro:elevationValue |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:EmbankmentAttribute
 
@@ -7094,6 +7892,8 @@ DM図形情報
 | maiPartLen | Measure | 機能保有延長 | uro:mainPartLength |
 | ceilHgt | Measure | 天端高 | uro:ceilingHeight |
 | wavDsptLen | Measure | 消波工延長 | uro:waveDissipatorLength |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:FacilityIdAttribute
 
@@ -7112,6 +7912,8 @@ DM図形情報
 | startLat | Double |  | uro:startLat |
 | startLong | Double |  | uro:startLong |
 | altNm | JSON (<code><a href="#string">String</a>[]</code>) |  | uro:alternativeName |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:FacilityTypeAttribute
 
@@ -7121,6 +7923,8 @@ DM図形情報
 |-----------|----|--------|---------------|
 | class | Code | 区分 | uro:class |
 | function | JSON (<code><a href="#code">Code</a>[]</code>) | 用途 | uro:function |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:FishingPortCapacity
 
@@ -7150,6 +7954,8 @@ DM図形情報
 | maxRefuel | String | 能力_最大給油能力 | uro:maximumRefueling |
 | people | Integer | 能力_最大収容可能人数 | uro:people |
 | other | String | 能力_その他 | uro:other |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:FishingPortFacility
 
@@ -7181,6 +7987,8 @@ DM図形情報
 | daCnstrAcq | Date | 建設又は取得の年月日 | uro:dateOfConstructionOrAcquisition |
 | cost | Integer | 建設又は取得の価格 | uro:cost |
 | note | String | 備考 | uro:note |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:HarborFacility
 
@@ -7211,6 +8019,8 @@ DM図形情報
 | totalCost | Integer | 事業費－総額 | uro:totalCost |
 | subsidy | Integer | 事業費－補助金額 | uro:subsidy |
 | note | JSON (<code><a href="#string">String</a>[]</code>) | 備考 | uro:note |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:Height
 
@@ -7222,6 +8032,8 @@ DM図形情報
 | lowRef | Code | 計測位置（低） | uro:lowReference |
 | status | String | 計測方法 | uro:status |
 | value | Measure | 値 | uro:value |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:HighTideRiskAttribute
 
@@ -7233,6 +8045,8 @@ nan
 | rank | Code | nan | uro:rank |
 | rankOrg | Code | nan | uro:rankOrg |
 | depth | Measure | nan | uro:depth |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:IfcAxis2Placement3D
 
@@ -7243,6 +8057,8 @@ IFCローカル座標系変換情報
 | location | Point | 原点 | uro:location |
 | axis | String | Z軸ベクトル | uro:axis |
 | refDir | String | X軸ベクトル | uro:refDirection |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:IfcBuilding
 
@@ -7259,6 +8075,8 @@ IFC建物
 | elvRefHgt | Measure | 基準海抜高度 | uro:elevationOfRefHeight |
 | elvTerrain | Measure | 地盤最小海抜高度 | uro:elevationOfTerrain |
 | Address | JSON (<code><a href="#coreaddress">core:Address</a></code>) | 建物住所 | uro:buildingAddress |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:IfcBuildingElement
 
@@ -7281,6 +8099,8 @@ IFC建築部材
 | operatTy | String | 輸送設備区分 | uro:operationType |
 | capByWgt | Measure | 許容積載量 | uro:capacityByWeight |
 | capBy# | Integer | 許容定員数 | uro:capacityByNumber |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:IfcBuildingStorey
 
@@ -7294,6 +8114,8 @@ IFC建築部材
 | longName | String |  | uro:longName |
 | compositTy | String |  | uro:compositionType |
 | elevation | Measure |  | uro:elevation |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:IfcClassification
 
@@ -7305,6 +8127,8 @@ IFC分類諸元
 | edition | String | 版 | uro:edition |
 | editDate | Date | 日付 | uro:editionDate |
 | name | String | 分類ラベル | uro:name |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:IfcClassificationReference
 
@@ -7316,6 +8140,8 @@ IFC分類諸元
 | itemRef | Code |  | uro:itemReference |
 | name | String |  | uro:name |
 | refSource | JSON (<code><a href="#uroifcclassification">uro:IfcClassification</a></code>) |  | uro:referenceSource |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:IfcCoordinateReferenceSystem
 
@@ -7327,6 +8153,8 @@ nan
 | desc | String | 説明 | uro:description |
 | geodDatum | String | 測地原子 | uro:geodeticDatum |
 | vertDatum | String | 垂直原子 | uro:verticalDatum |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:IfcCurtainWall
 
@@ -7349,6 +8177,8 @@ IFCカーテンウォール
 | operatTy | String | 輸送設備区分 | uro:operationType |
 | capByWgt | Measure | 許容積載量 | uro:capacityByWeight |
 | capBy# | Integer | 許容定員数 | uro:capacityByNumber |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:IfcDoor
 
@@ -7373,6 +8203,8 @@ IFC扉
 | capBy# | Integer | 許容定員数 | uro:capacityByNumber |
 | overallHgt | Measure | 全長 | uro:overallHeight |
 | overallWth | Measure | 全幅 | uro:overallWidth |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:IfcFurnishingElement
 
@@ -7385,6 +8217,8 @@ IFC設置物
 | desc | String | 説明 | uro:description |
 | objectType | String | オブジェクトタイプ | uro:objectType |
 | tag | String | 識別番号 | uro:tag |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:IfcGeometricRepresentationContext
 
@@ -7397,6 +8231,8 @@ IFC設置物
 | precision | Double |  | uro:precision |
 | wldCordSys | JSON (<code><a href="#uroifcaxis2placement3d">uro:IfcAxis2Placement3D</a></code>) |  | uro:worldCoordinateSystem |
 | trueNorth | String |  | uro:trueNorth |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:IfcGroup
 
@@ -7407,6 +8243,8 @@ IFC設置物
 | name | String |  | uro:name |
 | desc | String |  | uro:description |
 | objectType | String |  | uro:objectType |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:IfcMapConversion
 
@@ -7422,6 +8260,8 @@ IFC座標変換
 | xAxisAbsc | Double |  | uro:xAxisAbscissa |
 | xAxisOrd | Double | 終点北座標 | uro:xAxisOrdinate |
 | scale | Double | スケール | uro:scale |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:IfcOpeningElement
 
@@ -7436,6 +8276,8 @@ IFC開口部
 | tag | String | 識別番号 | uro:tag |
 | nominalAr | Measure | 公称面積 | uro:nominalArea |
 | nominalVol | Measure | 公称体積 | uro:nominalVolume |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:IfcProject
 
@@ -7451,6 +8293,8 @@ IFCプロジェクト
 | phase | String | プロジェクトの状態 | uro:phase |
 | reprCtx | JSON (<code><a href="#uroifcgeometricrepresentationcontext">uro:IfcGeometricRepresentationContext</a></code>) | 形状表現 | uro:representationContexts |
 | unitsCtx | JSON (<code><a href="#uroifcunit">uro:IfcUnit</a>[]</code>) | 単位系 | uro:unitsInContext |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:IfcProjectedCRS
 
@@ -7465,6 +8309,8 @@ IFC投影座標参照系
 | mapUnit | String | 軸単位 | uro:mapUnit |
 | mapProject | String | 投影座標系名称 | uro:mapProjection |
 | mapZone | String | ゾーン番号 | uro:mapZone |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:IfcPsetBuildingCommon
 
@@ -7483,6 +8329,8 @@ IFC建築物共通属性
 | #Storeys | Integer | 階数 | uro:numberOfStoreys |
 | yrConstrtn | NonNegativeInteger | 建設年 | uro:yearOfConstruction |
 | landmarked | Boolean | 歴史的建造物区分 | uro:isLandmarked |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:IfcPsetDoorCommon
 
@@ -7502,6 +8350,8 @@ IFC扉共通属性
 | fireExit | Boolean | 非常口区分 | uro:fireExit |
 | selfClosng | Boolean | 自動ドア閉機能区分 | uro:selfClosing |
 | smokeStop | Boolean | 防煙機能区分 | uro:smokeStop |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:IfcPsetOpeningElementCommon
 
@@ -7514,6 +8364,8 @@ IFC開口部共通属性
 | fireExit | Boolean | 非常口区分 | uro:fireExit |
 | protectOpn | Boolean | 保護区分 | uro:protectedOpening |
 | paraJambs | Boolean | 平行区分 | uro:parallelJambs |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:IfcPsetSiteCommon
 
@@ -7524,6 +8376,8 @@ IFC敷地共通属性
 | buildaAr | Measure | 使用面積 | uro:buildableArea |
 | totalArea | Measure | 総面積 | uro:totalArea |
 | HeightLim | Measure | 最大高さ | uro:buildingHeightLimit |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:IfcPsetSpaceCommon
 
@@ -7543,6 +8397,8 @@ IFC空間共通属性
 | handcpAccs | Boolean | ハンディキャップアクセス区分 | uro:handicapAccessible |
 | cnclFloor | Boolean | 隠ぺい床スペース区分 | uro:concealedFlooring |
 | cnclCeil | Boolean | 隠ぺい天井スペース区分 | uro:concealedCeiling |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:IfcPsetWindowCommon
 
@@ -7559,6 +8415,8 @@ IFC窓共通属性
 | thermalTx | Double | 熱貫流率 | uro:thermalTransmittance |
 | glazArFrct | Double | ガラス領域比率 | uro:glazingAreaFraction |
 | smokeStop | Boolean | 防煙機能区分 | uro:smokeStop |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:IfcRoof
 
@@ -7581,6 +8439,8 @@ IFC屋根
 | operatTy | String | 輸送設備区分 | uro:operationType |
 | capByWgt | Measure | 許容積載量 | uro:capacityByWeight |
 | capBy# | Integer | 許容定員数 | uro:capacityByNumber |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:IfcSite
 
@@ -7598,6 +8458,8 @@ IFC屋根
 | refElevat | Measure |  | uro:refElevation |
 | landTitle# | String |  | uro:landTitleNumber |
 | siteAddr | JSON (<code><a href="#coreaddress">core:Address</a></code>) |  | uro:siteAddress |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:IfcSpace
 
@@ -7613,6 +8475,8 @@ IFC空間
 | compositTy | String | 構成型 | uro:compositionType |
 | intExtSpce | String | 内外区分 | uro:interiorOrExteriorSpace |
 | elvFloor | Measure | 床高さ | uro:elevationWithFlooring |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:IfcSpaceBaseQuantity
 
@@ -7633,6 +8497,8 @@ IFC空間基本数値情報
 | netWallAr | Measure | 正味壁面積 | uro:netWallArea |
 | grossVol | Measure | 体積 | uro:grossVolume |
 | netVolume | Measure | 正味体積 | uro:netVolume |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:IfcUnit
 
@@ -7644,6 +8510,8 @@ IFC単位
 | unitType | String | 単位種類 | uro:unitType |
 | perfix | String |  | uro:perfix |
 | name | String | 名称 | uro:name |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:IfcWall
 
@@ -7679,6 +8547,8 @@ IFC壁
 | netSideArR | Measure | 右側正味側面面積 | uro:netSideAreaRight |
 | grossVol | Measure | 体積 | uro:grossVolume |
 | netVolume | Measure | 正味体積 | uro:netVolume |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:IfcWallStandardCase
 
@@ -7714,6 +8584,8 @@ IFC標準壁
 | netSideArR | Measure | 右側正味側面面積 | uro:netSideAreaRight |
 | grossVol | Measure | 体積 | uro:grossVolume |
 | netVolume | Measure | 正味体積 | uro:netVolume |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:IfcWindow
 
@@ -7738,6 +8610,8 @@ IFC窓
 | capBy# | Integer | 許容定員数 | uro:capacityByNumber |
 | overallHgt | Measure | 全長 | uro:overallHeight |
 | overallWth | Measure | 全幅 | uro:overallWidth |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:IfcZone
 
@@ -7748,6 +8622,8 @@ IFC窓
 | name | String |  | uro:name |
 | desc | String |  | uro:description |
 | objectType | String |  | uro:objectType |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:IndoorFacilityAttribute
 
@@ -7760,6 +8636,8 @@ IFC窓
 | wkendHours | String | 施設の営業時間（土日祝祭日） | uro:weekendHours |
 | phone | String | 電話番号 | uro:phone |
 | website | String | ウェブサイトアドレス | uro:website |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:IndoorFurnishingAttribute
 
@@ -7769,6 +8647,8 @@ IFC窓
 |-----------|----|--------|---------------|
 | source | Code | 原典 | uro:source |
 | floorId | String | 階層ID | uro:floorId |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:IndoorPublicTagAttribute
 
@@ -7778,6 +8658,8 @@ IFC窓
 |-----------|----|--------|---------------|
 | source | Code |  | uro:source |
 | ucode | String |  | uro:ucode |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:IndoorSpaceAttribute
 
@@ -7791,6 +8673,8 @@ IFC窓
 | suite | String | 注記ラベル | uro:suite |
 | isPublic | Boolean | 公開可否 | uro:isPublic |
 | tollType | Code | 有料区分 | uro:tollType |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:IndoorStoreyAttribute
 
@@ -7800,6 +8684,8 @@ IFC窓
 | source | Code |  | uro:source |
 | category | Boolean |  | uro:category |
 | ordinal | Double |  | uro:ordinal |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:IndoorTacatileTileAttribute
 
@@ -7812,6 +8698,8 @@ IFC窓
 | category | Code |  | uro:category |
 | roof | String |  | uro:roof |
 | floorId | String |  | uro:floorId |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:IndoorUserDefinedAttribute
 
@@ -7824,6 +8712,8 @@ IFC窓
 | nominalVal | JSON (<code><a href="#urouserdefinedvalue">uro:UserDefinedValue</a></code>) | 値 | uro:nominalValue |
 | desc | String | 説明 | uro:description |
 | unit | String | 単位 | uro:unit |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:IndoorZoneAttribute
 
@@ -7833,6 +8723,8 @@ IFC窓
 |-----------|----|--------|---------------|
 | source | Code | 原典 | uro:source |
 | floorId | String | 階層ID | uro:floorId |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:InlandFloodingRiskAttribute
 
@@ -7844,6 +8736,8 @@ nan
 | rank | Code | nan | uro:rank |
 | rankOrg | Code | nan | uro:rankOrg |
 | depth | Measure | nan | uro:depth |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:KeyValuePairAttribute
 
@@ -7853,6 +8747,8 @@ nan
 |-----------|----|--------|---------------|
 | key | Code | （コードに該当する説明を使用する） | uro:key |
 | codeValue | Code | 値 | uro:codeValue |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:LandSlideRiskAttribute
 
@@ -7862,15 +8758,8 @@ nan
 |-----------|----|--------|---------------|
 | desc | Code | nan | uro:description |
 | areaType | Code | nan | uro:areaType |
-
-### uro:LandUseDataQualityAttribute
-
-
-| フィールド名 | 型 | 日本語名 | CityGML 属性名 |
-|-----------|----|--------|---------------|
-| srcScale | JSON (<code><a href="#code">Code</a>[]</code>) |  | uro:srcScale |
-| geomSrcDsc | JSON (<code><a href="#code">Code</a>[]</code>) |  | uro:geometrySrcDesc |
-| thmSrcDesc | JSON (<code><a href="#code">Code</a>[]</code>) |  | uro:thematicSrcDesc |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:LandUseDetailAttribute
 
@@ -7897,6 +8786,8 @@ nan
 | reference | String |  | uro:reference |
 | note | String |  | uro:note |
 | surveyYear | String |  | uro:surveyYear |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:LargeCustomerFacilityAttribute
 
@@ -7922,6 +8813,8 @@ nan
 | reference | String | 図面対象番号 | uro:reference |
 | note | String | 備考 | uro:note |
 | surveyYear | String | 調査年 | uro:surveyYear |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:LengthAttribute
 
@@ -7932,6 +8825,19 @@ nan
 | length | Measure | 長さ情報 | uro:length |
 | mesureType | Code | 計測方法 | uro:mesureType |
 | phaseType | Code | 計測段階 | uro:phaseType |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
+
+### uro:LongevityMeasures
+
+
+| フィールド名 | 型 | 日本語名 | CityGML 属性名 |
+|-----------|----|--------|---------------|
+| fiscalYearForCountermeasures | String |  | uro:fiscalYearForCountermeasures |
+| countermeasuresCost | JSON (<code><a href="#urocountermeasurescost">uro:CountermeasuresCost</a></code>) |  | uro:countermeasuresCost |
+| desc | String |  | uro:description |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:MaintenanceHistoryAttribute
 
@@ -7946,6 +8852,8 @@ nan
 | maintDate | Date | 実施日 | uro:maintenanceDate |
 | status | String | 実施状況 | uro:status |
 | desc | String | 実施内容 | uro:description |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:MooringFacility
 
@@ -7990,6 +8898,8 @@ nan
 | totalCost | Integer | 事業費－総額 | uro:totalCost |
 | subsidy | Integer | 事業費－補助金額 | uro:subsidy |
 | note | String | 備考 | uro:note |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:NavigationAssistanceFacility
 
@@ -8008,6 +8918,18 @@ nan
 | totalCost | Integer | 事業費－総額 | uro:totalCost |
 | subsidy | String | 事業費－補助金額 | uro:subsidy |
 | note | String | 備考 | uro:note |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
+
+### uro:NumberOfFacilities
+
+
+| フィールド名 | 型 | 日本語名 | CityGML 属性名 |
+|-----------|----|--------|---------------|
+| quantity | Integer |  | uro:quantity |
+| quantityUnit | Code |  | uro:quantityUnit |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:Occupancy
 
@@ -8018,6 +8940,8 @@ nan
 | interval | Code | 期間 | uro:interval |
 | #Occupants | Integer | 数 | uro:numberofOccupants |
 | occupantTy | Code | 種類 | uro:occupantType |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:OffsetDepth
 
@@ -8030,6 +8954,48 @@ nan
 | depth | Measure | 土被り量 | uro:depth |
 | minDepth | Measure | 最小土被り量 | uro:minDepth |
 | maxDepth | Measure | 最大土被り量 | uro:maxDepth |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
+
+### uro:ParkFacilityLongevityPlanAttribute
+
+
+| フィールド名 | 型 | 日本語名 | CityGML 属性名 |
+|-----------|----|--------|---------------|
+| facilityId | String |  | uro:facilityId |
+| parkCode | Code |  | uro:parkCode |
+| parkName | Code |  | uro:parkName |
+| parkType | Code |  | uro:parkType |
+| facilityName | Code |  | uro:facilityName |
+| facilityNameOptional | String |  | uro:facilityNameOptional |
+| specificFacilityName | String |  | uro:specificFacilityName |
+| numberOfFacilities | JSON (<code><a href="#uronumberoffacilities">uro:NumberOfFacilities</a></code>) |  | uro:numberOfFacilities |
+| size | String |  | uro:size |
+| mainMat | Code |  | uro:mainMaterial |
+| mainMaterialOptional | String |  | uro:mainMaterialOptional |
+| installationYear | String |  | uro:installationYear |
+| disposalLimitPeriod | Integer |  | uro:disposalLimitPeriod |
+| expectedUsagePeriod | Integer |  | uro:expectedUsagePeriod |
+| repairsBeforeParkHealthAssessment | JSON (<code><a href="#urorepairsbeforeparkhealthassessment">uro:RepairsBeforeParkHealthAssessment</a></code>) |  | uro:repairsBeforeParkHealthAssessment |
+| parkHealthAssessment | JSON (<code><a href="#uroparkhealthassessment">uro:ParkHealthAssessment</a>[]</code>) |  | uro:parkHealthAssessment |
+| managementType | Code |  | uro:managementType |
+| expectedRenewalYearWithMeasures | String |  | uro:expectedRenewalYearWithMeasures |
+| longevityMeasures | JSON (<code><a href="#urolongevitymeasures">uro:LongevityMeasures</a>[]</code>) |  | uro:longevityMeasures |
+| noteForLongevity | String |  | uro:noteForLongevity |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
+
+### uro:ParkHealthAssessment
+
+
+| フィールド名 | 型 | 日本語名 | CityGML 属性名 |
+|-----------|----|--------|---------------|
+| assessmentFiscalYear | String |  | uro:assessmentFiscalYear |
+| deteriorationStatus | String |  | uro:deteriorationStatus |
+| condition | Code |  | uro:condition |
+| urgency | Code |  | uro:urgency |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:PortEnvironmentalImprovementFacility
 
@@ -8052,6 +9018,8 @@ nan
 | totalCost | Integer | 事業費－総額 | uro:totalCost |
 | subsidy | Integer | 事業費－補助金額 | uro:subsidy |
 | note | String | 備考 | uro:note |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:PortManagementFacility
 
@@ -8076,6 +9044,8 @@ nan
 | totalCost | Integer | 事業費－総額 | uro:totalCost |
 | subsidy | Integer | 事業費－補助金額 | uro:subsidy |
 | note | String | 備考 | uro:note |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:PortPassengerFacility
 
@@ -8098,6 +9068,8 @@ nan
 | acqYear | String | 取得年度 | uro:acquisitionYear |
 | totalCost | Integer | 事業費－総額 | uro:totalCost |
 | note | String | 備考 | uro:note |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:PortPollutionControlFacility
 
@@ -8122,6 +9094,8 @@ nan
 | totalCost | Integer | 事業費－総額 | uro:totalCost |
 | subsidy | Integer | 事業費－補助金額 | uro:subsidy |
 | note | String | 備考 | uro:note |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:PortProtectiveFacility
 
@@ -8142,6 +9116,8 @@ nan
 | totalCost | Integer | 事業費－総額 | uro:totalCost |
 | subsidy | Integer | 事業費－補助金額 | uro:subsidy |
 | note | JSON (<code><a href="#string">String</a>[]</code>) | 備考 | uro:note |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:PortStorageFacility
 
@@ -8167,6 +9143,8 @@ nan
 | mainMat | Code | 主要用材 | uro:mainMaterial |
 | totalCost | Integer | 事業費－総額 | uro:totalCost |
 | note | String | 備考 | uro:note |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:PortTransportationFacility
 
@@ -8201,6 +9179,8 @@ nan
 | totalCost | Integer | 事業費－総額 | uro:totalCost |
 | subsidy | Integer | 事業費－補助金額 | uro:subsidy |
 | note | String | 備考 | uro:note |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:PortWasteTreatmentFacility
 
@@ -8233,6 +9213,8 @@ nan
 | totalCost | Integer | 事業費－総額 | uro:totalCost |
 | subsidy | Integer | 事業費－補助金額 | uro:subsidy |
 | note | String | 備考 | uro:note |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:PortWelfareFacility
 
@@ -8251,6 +9233,26 @@ nan
 | totalFlrAr | Measure | 面積_防波堤等の外側 | uro:totalFloorArea |
 | totalCost | Integer | 事業費－総額 | uro:totalCost |
 | note | String | 備考 | uro:note |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
+
+### uro:PublicSurveyDataQualityAttribute
+
+
+| フィールド名 | 型 | 日本語名 | CityGML 属性名 |
+|-----------|----|--------|---------------|
+| srcScaleLod0 | Code |  | uro:srcScaleLod0 |
+| srcScaleLod1 | Code |  | uro:srcScaleLod1 |
+| srcScaleLod2 | Code |  | uro:srcScaleLod2 |
+| srcScaleLod3 | Code |  | uro:srcScaleLod3 |
+| srcScaleLod4 | Code |  | uro:srcScaleLod4 |
+| publicSurveySrcDescLod0 | JSON (<code><a href="#code">Code</a>[]</code>) |  | uro:publicSurveySrcDescLod0 |
+| publicSurveySrcDescLod1 | JSON (<code><a href="#code">Code</a>[]</code>) |  | uro:publicSurveySrcDescLod1 |
+| publicSurveySrcDescLod2 | JSON (<code><a href="#code">Code</a>[]</code>) |  | uro:publicSurveySrcDescLod2 |
+| publicSurveySrcDescLod3 | JSON (<code><a href="#code">Code</a>[]</code>) |  | uro:publicSurveySrcDescLod3 |
+| publicSurveySrcDescLod4 | JSON (<code><a href="#code">Code</a>[]</code>) |  | uro:publicSurveySrcDescLod4 |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:RailwayRouteAttribute
 
@@ -8264,6 +9266,8 @@ nan
 | type | Code | 鉄道区分 | uro:railwayType |
 | stStation | String | 起点駅名 | uro:startStation |
 | endStation | String | 終点駅名 | uro:endStation |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:RailwayTrackAttribute
 
@@ -8278,6 +9282,8 @@ nan
 | endPost | String | 終了キロ程 | uro:endPost |
 | alignmntTy | Code | 線形種別 | uro:alignmentType |
 | ctrlPoint | JSON (<code><a href="#urocontrolpoint">uro:ControlPoint</a>[]</code>) | 線形変化点 | uro:controlPoint |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:RealEstateIDAttribute
 
@@ -8291,6 +9297,30 @@ nan
 | #reIdLand | Integer | 土地不動産ID数 | uro:numberOfRealEstateIDOfLand |
 | reIdLand | JSON (<code><a href="#string">String</a>[]</code>) | 土地不動産ID数 | uro:realEstateIDOfLand |
 | matchScore | Integer | マッチングスコア | uro:matchingScore |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
+
+### uro:RepairsBeforeParkHealthAssessment
+
+
+| フィールド名 | 型 | 日本語名 | CityGML 属性名 |
+|-----------|----|--------|---------------|
+| repair | Code |  | uro:repair |
+| repairFiscalYear | String |  | uro:repairFiscalYear |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
+
+### uro:ReservoirFloodingRiskAttribute
+
+
+| フィールド名 | 型 | 日本語名 | CityGML 属性名 |
+|-----------|----|--------|---------------|
+| desc | Code |  | uro:description |
+| rank | Code |  | uro:rank |
+| rankOrg | Code |  | uro:rankOrg |
+| depth | Measure |  | uro:depth |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:RiverFacilityIdAttribute
 
@@ -8324,6 +9354,8 @@ nan
 | rightStDis | Measure |  | uro:rightStartDistance |
 | rightEdPst | Measure |  | uro:rightEndPost |
 | rightEdDis | Measure |  | uro:rightEndDistance |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:RiverFloodingRiskAttribute
 
@@ -8338,6 +9370,8 @@ nan
 | adminType | Code | nan | uro:adminType |
 | scale | Code | nan | uro:scale |
 | duration | Measure | nan | uro:duration |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:RoadStructureAttribute
 
@@ -8349,6 +9383,8 @@ nan
 | width | Measure | 幅員 | uro:width |
 | #Lanes | Integer | 車線数 | uro:numberOfLanes |
 | sectionTy | Code | 区間種別 | uro:sectionType |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:RoadType
 
@@ -8363,17 +9399,8 @@ nan
 | isTollRoad | Boolean |  | uro:isTollRoad |
 | separator | Measure |  | uro:separator |
 | isHighWay | Boolean |  | uro:isHighWay |
-
-### uro:RoomDataQualityAttribute
-
-
-| フィールド名 | 型 | 日本語名 | CityGML 属性名 |
-|-----------|----|--------|---------------|
-| srcScale | JSON (<code><a href="#code">Code</a>[]</code>) |  | uro:srcScale |
-| geomSrcDsc | JSON (<code><a href="#code">Code</a>[]</code>) |  | uro:geometrySrcDesc |
-| thmSrcDesc | JSON (<code><a href="#code">Code</a>[]</code>) |  | uro:thematicSrcDesc |
-| SrcDesc | JSON (<code><a href="#code">Code</a>[]</code>) |  | uro:appearanceSrcDesc |
-| lodType | Code |  | uro:lodType |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:ShipServiceFacility
 
@@ -8399,6 +9426,8 @@ nan
 | acqYear | String | 取得年度 | uro:acquisitionYear |
 | totalCost | Integer | 事業費－総額 | uro:totalCost |
 | note | String | 備考 | uro:note |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:SlopeType
 
@@ -8408,6 +9437,8 @@ nan
 |-----------|----|--------|---------------|
 | angle | Double | 勾配角度 | uro:angle |
 | elevation | Measure | 標高 | uro:elevation |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:SquareUrbanPlanAttribute
 
@@ -8433,6 +9464,8 @@ nan
 | authorized | Boolean | 認可区分 | uro:isAuthorized |
 | purpose | String | 目的 | uro:purpose |
 | note | String | その他特筆事項 | uro:note |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:StationSquareAttribute
 
@@ -8461,6 +9494,8 @@ nan
 | station | JSON (<code><a href="#string">String</a>[]</code>) | 駅名 | uro:station |
 | route | JSON (<code><a href="#string">String</a>[]</code>) | 路線名 | uro:route |
 | type | JSON (<code><a href="#code">Code</a>[]</code>) | 鉄道種別 | uro:railwayType |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:TerminalAttribute
 
@@ -8491,6 +9526,8 @@ nan
 | #BerthsPln | Integer | 計画バース数 | uro:numberOfBerthsPlanned |
 | #berthsSvc | Integer | 供用バース数 | uro:numberOfBerthsInService |
 | userType | Code |  | uro:userType |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:ThematicShape
 
@@ -8500,6 +9537,8 @@ nan
 |-----------|----|--------|---------------|
 | horizTy | Code | 水平区分 | uro:horizontalType |
 | heightType | Code | 高さ区分 | uro:heightType |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:TrackAttribute
 
@@ -8514,6 +9553,8 @@ nan
 | structutTy | Code | 構造区分 | uro:structureType |
 | isTollRoad | Boolean | 有料区分 | uro:isTollRoad |
 | separator | Measure | 分離帯区分 | uro:separator |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:TrafficAreaStructureAttribute
 
@@ -8522,6 +9563,18 @@ nan
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | #Lanes | Integer | 車線数 | uro:numberOfLanes |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
+
+### uro:TrafficObjectUsecaseAttribute
+
+
+| フィールド名 | 型 | 日本語名 | CityGML 属性名 |
+|-----------|----|--------|---------------|
+| minWidth | Measure |  | uro:minWidth |
+| maxWidth | Measure |  | uro:maxWidth |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:TrafficVolumeAttribute
 
@@ -8543,6 +9596,8 @@ nan
 | obsPointNm | String | 観測地点名 | uro:observationPointName |
 | reference | String | 参照情報 | uro:reference |
 | surveyYear | String | 調査年 | uro:surveyYear |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:TransitionCurveType
 
@@ -8553,18 +9608,8 @@ nan
 | int | Measure | 交角 | uro:intersection |
 | distance | Measure | 移動距離 | uro:distance |
 | curveLen | Measure | 曲線長 | uro:curveLength |
-
-### uro:TransportationDataQualityAttribute
-
-データ品質
-
-| フィールド名 | 型 | 日本語名 | CityGML 属性名 |
-|-----------|----|--------|---------------|
-| srcScale | JSON (<code><a href="#code">Code</a>[]</code>) | 地図情報レベル | uro:srcScale |
-| geomSrcDsc | JSON (<code><a href="#code">Code</a>[]</code>) | 幾何属性作成方法 | uro:geometrySrcDesc |
-| thmSrcDesc | JSON (<code><a href="#code">Code</a>[]</code>) | 主題属性作成方法 | uro:thematicSrcDesc |
-| SrcDesc | JSON (<code><a href="#code">Code</a>[]</code>) | テクスチャ作成方法 | uro:appearanceSrcDesc |
-| lodType | Code | 詳細LOD | uro:lodType |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:TsunamiRiskAttribute
 
@@ -8576,6 +9621,8 @@ nan
 | rank | Code | nan | uro:rank |
 | rankOrg | Code | nan | uro:rankOrg |
 | depth | Measure | nan | uro:depth |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:TunnelFunctionalAttribute
 
@@ -8585,6 +9632,8 @@ nan
 |-----------|----|--------|---------------|
 | directnTy | Code | 進行方向区分 | uro:directionType |
 | userType | Code | 利用者区分 | uro:userType |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:TunnelStructureAttribute
 
@@ -8601,6 +9650,8 @@ nan
 | inHeight | Measure | 内空高 | uro:innerHeight |
 | effectHgt | Measure | 有効高 | uro:effectiveHeight |
 | slopeType | Code | 昇降形式 | uro:slopeType |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:UserDefinedValue
 
@@ -8614,16 +9665,8 @@ nan
 | dateValue | Date |  | uro:dateValue |
 | uriValue | URI |  | uro:uriValue |
 | measurVal | Measure |  | uro:measuredValue |
-
-### uro:VegetationDataQualityAttribute
-
-
-| フィールド名 | 型 | 日本語名 | CityGML 属性名 |
-|-----------|----|--------|---------------|
-| srcScale | JSON (<code><a href="#code">Code</a>[]</code>) |  | uro:srcScale |
-| geomSrcDsc | JSON (<code><a href="#code">Code</a>[]</code>) |  | uro:geometrySrcDesc |
-| thmSrcDesc | JSON (<code><a href="#code">Code</a>[]</code>) |  | uro:thematicSrcDesc |
-| SrcDesc | JSON (<code><a href="#code">Code</a>[]</code>) |  | uro:appearanceSrcDesc |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:VerticalCurveType
 
@@ -8633,6 +9676,8 @@ nan
 |-----------|----|--------|---------------|
 | length | Measure | 長さ | uro:length |
 | vertDist | Measure | 縦距 | uro:verticalDistance |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:WaterBodyDetailAttribute
 
@@ -8651,51 +9696,8 @@ nan
 | measureYM | String | 測量年月 | uro:measurementYearMonth |
 | prefecture | JSON (<code><a href="#code">Code</a>[]</code>) | 都道府県 | uro:prefecture |
 | city | JSON (<code><a href="#code">Code</a>[]</code>) | 市区町村 | uro:city |
-
-### uro:WaterBodyHighTideRiskAttribute
-
-
-| フィールド名 | 型 | 日本語名 | CityGML 属性名 |
-|-----------|----|--------|---------------|
-| desc | Code |  | uro:description |
-| rank | Code |  | uro:rank |
-| rankOrg | Code |  | uro:rankOrg |
-| depth | Measure |  | uro:depth |
-
-### uro:WaterBodyInlandFloodingRiskAttribute
-
-内水浸水想定区域
-
-| フィールド名 | 型 | 日本語名 | CityGML 属性名 |
-|-----------|----|--------|---------------|
-| desc | Code | 設定等名称 | uro:description |
-| rank | Code | 浸水ランク | uro:rank |
-| rankOrg | Code | 浸水ランク（独自分類） | uro:rankOrg |
-| depth | Measure | 浸水深 | uro:depth |
-
-### uro:WaterBodyRiverFloodingRiskAttribute
-
-洪水浸水想定区域
-
-| フィールド名 | 型 | 日本語名 | CityGML 属性名 |
-|-----------|----|--------|---------------|
-| desc | Code | 指定河川名称 | uro:description |
-| rank | Code | 浸水ランク | uro:rank |
-| rankOrg | Code | 浸水ランク（独自分類） | uro:rankOrg |
-| depth | Measure | 浸水深 | uro:depth |
-| adminType | Code | 指定機関 | uro:adminType |
-| scale | Code | 規模 | uro:scale |
-| duration | Measure | 浸水継続時間 | uro:duration |
-
-### uro:WaterBodyTsunamiRiskAttribute
-
-
-| フィールド名 | 型 | 日本語名 | CityGML 属性名 |
-|-----------|----|--------|---------------|
-| desc | Code |  | uro:description |
-| rank | Code |  | uro:rank |
-| rankOrg | Code |  | uro:rankOrg |
-| depth | Measure |  | uro:depth |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### uro:WaterwayDetailAttribute
 
@@ -8712,6 +9714,8 @@ nan
 | plnDpth | Measure | 計画水深 | uro:plannedDepth |
 | speedLimit | Measure | 速力制限 | uro:speedLimit |
 | tgtShipTy | JSON (<code><a href="#string">String</a>[]</code>) | 対象船型 | uro:targetShipType |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:Boundary
 
@@ -8724,6 +9728,18 @@ nan
 | usage | JSON (<code><a href="#code">Code</a>[]</code>) | 区域の種類 | urf:usage |
 | offset | Measure | オフセット値 | urf:offset |
 | offsetDir | String | オフセット値の方向 | urf:offsetDirection |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
+
+### urf:BreakdownOfNominalArea
+
+
+| フィールド名 | 型 | 日本語名 | CityGML 属性名 |
+|-----------|----|--------|---------------|
+| breakdown | String |  | urf:breakdown |
+| areaSqMetr | Measure |  | urf:areaInSquareMeter |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:ParkAttribute
 
@@ -8734,6 +9750,8 @@ nan
 | parkTy# | Code | 区分 | urf:parkTypeNumber |
 | parkSize# | Code | 規模 | urf:parkSizeNumber |
 | parkSer# | String | 一連番号 | urf:parkSerialNumber |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:ParkingPlaceAttribute
 
@@ -8743,6 +9761,8 @@ nan
 |-----------|----|--------|---------------|
 | strysAbvG | NonNegativeInteger | 地上階数 | urf:storeysAboveGround |
 | strysBlwG | NonNegativeInteger | 地下階数 | urf:storeysBelowGround |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:SewerSystemAttribute
 
@@ -8754,6 +9774,8 @@ nan
 | endLoc | String | 終点 | urf:endLocation |
 | systemType | Code | 種別 | urf:systemType |
 | drainageAr | String | 排水区域 | urf:drainageArea |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:StructureDetails
 
@@ -8770,6 +9792,19 @@ nan
 | maxWidth | Measure | 最大幅員 | urf:maximumWidth |
 | stdWidth | Measure | 標準幅員 | urf:standardWidth |
 | crossType | Code | 交差種別 | urf:crossType |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
+
+### urf:UrbanParkAttribute
+
+
+| フィールド名 | 型 | 日本語名 | CityGML 属性名 |
+|-----------|----|--------|---------------|
+| parkCode | Code |  | urf:parkCode |
+| startFrom | Date |  | urf:startFrom |
+| breakdownOfNominalArea | JSON (<code><a href="#urfbreakdownofnominalarea">urf:BreakdownOfNominalArea</a>[]</code>) |  | urf:breakdownOfNominalArea |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:UrbanRapidTransitRailroadAttribute
 
@@ -8780,6 +9815,8 @@ nan
 | structutTy | Code | 構造種別 | urf:structureType |
 | crossType | Code | 交差種別 | urf:crossType |
 | structDtl | JSON (<code><a href="#urfstructuredetails">urf:StructureDetails</a>[]</code>) |  | urf:structuralDetails |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:UrbanRoadAttribute
 
@@ -8797,6 +9834,8 @@ nan
 | crossType | Code | 交差種別 | urf:crossType |
 | tfcPlazas | Code | 交通広場の有無 | urf:trafficPlazas |
 | structDtl | JSON (<code><a href="#urfstructuredetails">urf:StructureDetails</a>[]</code>) | 構造の内訳 | urf:structuralDetails |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:VehicleTerminalAttribute
 
@@ -8805,6 +9844,8 @@ nan
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
 | terminalTy | Code | 自動車ターミナルの種類 | urf:terminalType |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 
 ### urf:WaterWorksAttribute
 
@@ -8814,4 +9855,25 @@ nan
 |-----------|----|--------|---------------|
 | stLoc | String | 起点 | urf:startLocation |
 | endLoc | String | 終点 | urf:endLocation |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
+
+### xAL:AddressDetails
+
+
+| フィールド名 | 型 | 日本語名 | CityGML 属性名 |
+|-----------|----|--------|---------------|
+| Country | JSON (<code><a href="#xalcountry">xAL:Country</a></code>) |  | xAL:Country |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
+
+### xAL:Country
+
+
+| フィールド名 | 型 | 日本語名 | CityGML 属性名 |
+|-----------|----|--------|---------------|
+| CountryName | String |  | xAL:CountryName |
+| Locality | String |  | xAL:Locality |
+| parentId | String |  | parentId |
+| parentType | String |  | parentType |
 

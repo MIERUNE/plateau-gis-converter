@@ -30,6 +30,7 @@ ORDER_MAP = {
     "gen": 12,
     "uro": 13,
     "urf": 14,
+    "xAL": 15,
 }
 
 with open("../../nusamai/data/plateau_spec.json", encoding="utf-8") as f:
@@ -83,7 +84,7 @@ def print_type(ty_name, ty, f: TextIO):
         ref_type = format_referenced_type(attr["ref"])
         original_name = attr.get("original_name") or attr_name
         ja = get_attr_ja(ty_name, original_name)
-        f.write(f"| {attr_name} | {ref_type} | {ja} | { original_name} |\n")
+        f.write(f"| {attr_name} | {ref_type} | {ja} | {original_name} |\n")
 
     f.write("\n")
 

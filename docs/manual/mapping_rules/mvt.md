@@ -14,8 +14,8 @@
 | class | Code | 分類 | bldg:class |
 | function | Code | 機能 | bldg:function |
 | usage | Code | 用途 | bldg:usage |
-| yearOfConstruction | NonNegativeInteger | 建築年 | bldg:yearOfConstruction |
-| yearOfDemolition | NonNegativeInteger | 解体年 | bldg:yearOfDemolition |
+| yearOfConstruction | String | 建築年 | bldg:yearOfConstruction |
+| yearOfDemolition | String | 解体年 | bldg:yearOfDemolition |
 | roofType | Code | 屋根の種別 | bldg:roofType |
 | measuredHeight | Measure | 計測高さ | bldg:measuredHeight |
 | storeysAboveGround | NonNegativeInteger | 地上階数 | bldg:storeysAboveGround |
@@ -28,19 +28,22 @@
 | interiorRoom | bldg:Room | 部屋 | bldg:interiorRoom |
 | consistsOfBuildingPart | bldg:BuildingPart | 建物部品 | bldg:consistsOfBuildingPart |
 | address | core:Address | 住所 | bldg:address |
+| buildingDataQualityAttribute | uro:DataQualityAttribute | データ品質 | uro:buildingDataQualityAttribute |
+| buildingDisasterRiskAttribute | uro:DisasterRiskAttributeProperty | 災害リスク | uro:buildingDisasterRiskAttribute |
 | bldgDmAttribute | uro:DmAttributeProperty | 図式属性 | uro:bldgDmAttribute |
 | bldgFacilityAttribute | uro:FacilityAttributeProperty | 施設詳細属性 | uro:bldgFacilityAttribute |
 | bldgFacilityIdAttribute | uro:FacilityIdAttributeProperty | 施設識別属性 | uro:bldgFacilityIdAttribute |
 | bldgFacilityTypeAttribute | uro:FacilityTypeAttribute | 施設属性 | uro:bldgFacilityTypeAttribute |
+| keyValuePairAttribute | uro:KeyValuePairAttribute | 拡張属性 | uro:keyValuePairAttribute |
 | bldgRealEstateIDAttribute | uro:RealEstateIDAttribute | 不動産ID | uro:bldgRealEstateIDAttribute |
-| buildingDataQualityAttribute | uro:BuildingDataQualityAttribute | データ品質 | uro:buildingDataQualityAttribute |
+| bldgUsecaseAttribute | uro:BuildingUsecaseAttribute |  | uro:bldgUsecaseAttribute |
 | buildingDetailAttribute | uro:BuildingDetailAttribute | 建物利用現況 | uro:buildingDetailAttribute |
-| buildingDisasterRiskAttribute | uro:BuildingDisasterRiskAttributeProperty | 災害リスク | uro:buildingDisasterRiskAttribute |
 | buildingIDAttribute | uro:BuildingIDAttribute | 建物識別情報 | uro:buildingIDAttribute |
 | ifcBuildingAttribute | uro:IfcAttributeProperty | IFC属性 | uro:ifcBuildingAttribute |
 | indoorBuildingAttribute | uro:IndoorAttributeProperty | 屋内ナビゲーション属性 | uro:indoorBuildingAttribute |
-| keyValuePairAttribute | uro:KeyValuePairAttribute | 拡張属性 | uro:keyValuePairAttribute |
 | largeCustomerFacilityAttribute | uro:LargeCustomerFacilityAttribute | 大規模小売店舗等の立地状況 | uro:largeCustomerFacilityAttribute |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### bldg:BuildingFurniture
 
@@ -57,6 +60,8 @@
 | usage | Code |  | bldg:usage |
 | ifcBuildingFurnitureAttribute | uro:IfcAttributeProperty |  | uro:ifcBuildingFurnitureAttribute |
 | indoorFutnitureAttribute | uro:IndoorAttributeProperty |  | uro:indoorFutnitureAttribute |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### bldg:BuildingInstallation
 
@@ -74,6 +79,8 @@
 | usage | Code | 用途 | bldg:usage |
 | boundedBy | bldg:_BoundarySurfaceProperty | 境界面 | bldg:boundedBy |
 | ifcBuildingInstallationAttribute | uro:IfcAttributeProperty | IFC属性 | uro:ifcBuildingInstallationAttribute |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### bldg:BuildingPart
 
@@ -103,19 +110,22 @@
 | interiorRoom | bldg:Room | 部屋 | bldg:interiorRoom |
 | consistsOfBuildingPart | bldg:BuildingPart | ー | bldg:consistsOfBuildingPart |
 | address | core:Address | 住所 | bldg:address |
+| buildingDataQualityAttribute | uro:DataQualityAttribute | ー | uro:buildingDataQualityAttribute |
+| buildingDisasterRiskAttribute | uro:DisasterRiskAttributeProperty | ー | uro:buildingDisasterRiskAttribute |
 | bldgDmAttribute | uro:DmAttributeProperty | 図式属性 | uro:bldgDmAttribute |
 | bldgFacilityAttribute | uro:FacilityAttributeProperty | 施設詳細属性 | uro:bldgFacilityAttribute |
 | bldgFacilityIdAttribute | uro:FacilityIdAttributeProperty | 施設識別属性 | uro:bldgFacilityIdAttribute |
 | bldgFacilityTypeAttribute | uro:FacilityTypeAttribute | 施設属性 | uro:bldgFacilityTypeAttribute |
+| keyValuePairAttribute | uro:KeyValuePairAttribute | ー | uro:keyValuePairAttribute |
 | bldgRealEstateIDAttribute | uro:RealEstateIDAttribute |  | uro:bldgRealEstateIDAttribute |
-| buildingDataQualityAttribute | uro:BuildingDataQualityAttribute | ー | uro:buildingDataQualityAttribute |
+| bldgUsecaseAttribute | uro:BuildingUsecaseAttribute |  | uro:bldgUsecaseAttribute |
 | buildingDetailAttribute | uro:BuildingDetailAttribute | 建物利用現況 | uro:buildingDetailAttribute |
-| buildingDisasterRiskAttribute | uro:BuildingDisasterRiskAttributeProperty | ー | uro:buildingDisasterRiskAttribute |
 | buildingIDAttribute | uro:BuildingIDAttribute | 建物識別属性 | uro:buildingIDAttribute |
 | ifcBuildingAttribute | uro:IfcAttributeProperty | IFC属性 | uro:ifcBuildingAttribute |
 | indoorBuildingAttribute | uro:IndoorAttributeProperty | 屋内属性 | uro:indoorBuildingAttribute |
-| keyValuePairAttribute | uro:KeyValuePairAttribute | ー | uro:keyValuePairAttribute |
 | largeCustomerFacilityAttribute | uro:LargeCustomerFacilityAttribute | 大規模小売店舗等の立地状況 | uro:largeCustomerFacilityAttribute |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### bldg:CeilingSurface
 
@@ -131,6 +141,8 @@
 | opening | bldg:_OpeningProperty | 開口部 | bldg:opening |
 | ifcBoundarySurfaceAttribute | uro:IfcAttributeProperty | IFC属性 | uro:ifcBoundarySurfaceAttribute |
 | indoorBoundarySurfaceAttribute | uro:IndoorAttributeProperty | 屋内ナビゲーション属性 | uro:indoorBoundarySurfaceAttribute |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### bldg:ClosureSurface
 
@@ -146,6 +158,8 @@
 | opening | bldg:_OpeningProperty | 開口部 | bldg:opening |
 | ifcBoundarySurfaceAttribute | uro:IfcAttributeProperty | IFC属性 | uro:ifcBoundarySurfaceAttribute |
 | indoorBoundarySurfaceAttribute | uro:IndoorAttributeProperty |  | uro:indoorBoundarySurfaceAttribute |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### bldg:Door
 
@@ -161,6 +175,8 @@
 | ifcOpeningAttribute | uro:IfcAttributeProperty | IFC属性 | uro:ifcOpeningAttribute |
 | indoorOpeningAttribute | uro:IndoorAttributeProperty | 屋内ナビゲーション属性 | uro:indoorOpeningAttribute |
 | address | core:Address |  | bldg:address |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### bldg:FloorSurface
 
@@ -176,6 +192,8 @@
 | opening | bldg:_OpeningProperty | 開口部 | bldg:opening |
 | ifcBoundarySurfaceAttribute | uro:IfcAttributeProperty | IFC属性 | uro:ifcBoundarySurfaceAttribute |
 | indoorBoundarySurfaceAttribute | uro:IndoorAttributeProperty | 屋内ナビゲーション属性 | uro:indoorBoundarySurfaceAttribute |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### bldg:GroundSurface
 
@@ -190,6 +208,8 @@
 | opening | bldg:_OpeningProperty |  | bldg:opening |
 | ifcBoundarySurfaceAttribute | uro:IfcAttributeProperty |  | uro:ifcBoundarySurfaceAttribute |
 | indoorBoundarySurfaceAttribute | uro:IndoorAttributeProperty |  | uro:indoorBoundarySurfaceAttribute |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### bldg:InteriorWallSurface
 
@@ -205,6 +225,8 @@
 | opening | bldg:_OpeningProperty | 開口部 | bldg:opening |
 | ifcBoundarySurfaceAttribute | uro:IfcAttributeProperty | IFC属性 | uro:ifcBoundarySurfaceAttribute |
 | indoorBoundarySurfaceAttribute | uro:IndoorAttributeProperty | 屋内ナビゲーション属性 | uro:indoorBoundarySurfaceAttribute |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### bldg:OuterCeilingSurface
 
@@ -220,6 +242,8 @@
 | opening | bldg:_OpeningProperty | 開口部 | bldg:opening |
 | ifcBoundarySurfaceAttribute | uro:IfcAttributeProperty | IFC属性 | uro:ifcBoundarySurfaceAttribute |
 | indoorBoundarySurfaceAttribute | uro:IndoorAttributeProperty |  | uro:indoorBoundarySurfaceAttribute |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### bldg:OuterFloorSurface
 
@@ -235,6 +259,8 @@
 | opening | bldg:_OpeningProperty | 開口部 | bldg:opening |
 | ifcBoundarySurfaceAttribute | uro:IfcAttributeProperty | IFC属性 | uro:ifcBoundarySurfaceAttribute |
 | indoorBoundarySurfaceAttribute | uro:IndoorAttributeProperty |  | uro:indoorBoundarySurfaceAttribute |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### bldg:RoofSurface
 
@@ -250,6 +276,8 @@
 | opening | bldg:_OpeningProperty | 開口部 | bldg:opening |
 | ifcBoundarySurfaceAttribute | uro:IfcAttributeProperty | IFC属性 | uro:ifcBoundarySurfaceAttribute |
 | indoorBoundarySurfaceAttribute | uro:IndoorAttributeProperty |  | uro:indoorBoundarySurfaceAttribute |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### bldg:Room
 
@@ -270,7 +298,8 @@
 | roomInstallation | bldg:BuildingInstallation | 屋内付属物 | bldg:roomInstallation |
 | ifcRoomAttribute | uro:IfcAttributeProperty | IFC属性 | uro:ifcRoomAttribute |
 | indoorRoomAttribute | uro:IndoorAttributeProperty | 屋内ナビゲーション属性 | uro:indoorRoomAttribute |
-| roomDataQualityAttribute | uro:RoomDataQualityAttribute |  | uro:roomDataQualityAttribute |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### bldg:WallSurface
 
@@ -286,6 +315,8 @@
 | opening | bldg:_OpeningProperty | 開口部 | bldg:opening |
 | ifcBoundarySurfaceAttribute | uro:IfcAttributeProperty | IFC属性 | uro:ifcBoundarySurfaceAttribute |
 | indoorBoundarySurfaceAttribute | uro:IndoorAttributeProperty |  | uro:indoorBoundarySurfaceAttribute |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### bldg:Window
 
@@ -300,6 +331,8 @@
 | genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | ifcOpeningAttribute | uro:IfcAttributeProperty | IFC属性 | uro:ifcOpeningAttribute |
 | indoorOpeningAttribute | uro:IndoorAttributeProperty | 屋内ナビゲーション属性 | uro:indoorOpeningAttribute |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### tran:AuxiliaryTrafficArea
 
@@ -312,11 +345,12 @@
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
 | genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
-| tranDmAttribute | uro:DmAttributeProperty | 図式属性 | uro:tranDmAttribute |
 | class | Code | 分類 | tran:class |
 | function | Code | 機能 | tran:function |
 | usage | Code | 用途 | tran:usage |
 | surfaceMaterial | Code | 舗装種類 | tran:surfaceMaterial |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### tran:Railway
 
@@ -329,17 +363,21 @@
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
 | genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
-| tranDmAttribute | uro:DmAttributeProperty | 図式属性 | uro:tranDmAttribute |
 | class | Code | 分類 | tran:class |
 | function | Code | 機能 | tran:function |
 | usage | Code | 用途 | tran:usage |
 | trafficArea | tran:TrafficArea | 交通領域 | tran:trafficArea |
 | auxiliaryTrafficArea | tran:AuxiliaryTrafficArea | 交通補助領域 | tran:auxiliaryTrafficArea |
-| tranDataQualityAttribute | uro:TransportationDataQualityAttribute | データ品質 | uro:tranDataQualityAttribute |
+| tranDataQualityAttribute | uro:DataQualityAttribute | データ品質 | uro:tranDataQualityAttribute |
+| tranDmAttribute | uro:DmAttributeProperty | 図式属性 | uro:tranDmAttribute |
 | tranFacilityAttribute | uro:FacilityAttributeProperty | 施設詳細属性 | uro:tranFacilityAttribute |
 | tranFacilityIdAttribute | uro:FacilityIdAttributeProperty | 施設識別属性 | uro:tranFacilityIdAttribute |
 | tranFacilityTypeAttribute | uro:FacilityTypeAttribute | 施設属性 | uro:tranFacilityTypeAttribute |
+| tranKeyValuePairAttribute | uro:KeyValuePairAttribute |  | uro:tranKeyValuePairAttribute |
+| tranUsecaseAttribute | uro:TrafficObjectUsecaseAttribute |  | uro:tranUsecaseAttribute |
 | railwayRouteAttribute | uro:RailwayRouteAttribute | 鉄道路線属性 | uro:railwayRouteAttribute |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### tran:Road
 
@@ -352,19 +390,23 @@
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
 | genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
-| tranDmAttribute | uro:DmAttributeProperty | 図式属性 | uro:tranDmAttribute |
 | class | Code | 分類 | tran:class |
 | function | Code | 機能 | tran:function |
 | usage | Code | 用途 | tran:usage |
 | trafficArea | tran:TrafficArea | 交通領域 | tran:trafficArea |
 | auxiliaryTrafficArea | tran:AuxiliaryTrafficArea | 交通補助領域 | tran:auxiliaryTrafficArea |
-| tranDataQualityAttribute | uro:TransportationDataQualityAttribute | データ品質 | uro:tranDataQualityAttribute |
+| tranDataQualityAttribute | uro:DataQualityAttribute | データ品質 | uro:tranDataQualityAttribute |
+| tranDmAttribute | uro:DmAttributeProperty | 図式属性 | uro:tranDmAttribute |
 | tranFacilityAttribute | uro:FacilityAttributeProperty | 施設詳細属性 | uro:tranFacilityAttribute |
 | tranFacilityIdAttribute | uro:FacilityIdAttributeProperty | 施設識別属性 | uro:tranFacilityIdAttribute |
 | tranFacilityTypeAttribute | uro:FacilityTypeAttribute | 施設属性 | uro:tranFacilityTypeAttribute |
+| tranKeyValuePairAttribute | uro:KeyValuePairAttribute |  | uro:tranKeyValuePairAttribute |
+| tranUsecaseAttribute | uro:TrafficObjectUsecaseAttribute |  | uro:tranUsecaseAttribute |
 | roadStatus | uro:RoadType |  | uro:roadStatus |
 | roadStructureAttribute | uro:RoadStructureAttribute | 道路構造属性 | uro:roadStructureAttribute |
 | trafficVolumeAttribute | uro:TrafficVolumeAttribute | 交通量属性 | uro:trafficVolumeAttribute |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### tran:Square
 
@@ -377,17 +419,21 @@
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
 | genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
-| tranDmAttribute | uro:DmAttributeProperty | 図式属性 | uro:tranDmAttribute |
 | class | Code | 分類 | tran:class |
 | function | Code | 機能 | tran:function |
 | usage | Code | 用途 | tran:usage |
 | trafficArea | tran:TrafficArea | 交通領域 | tran:trafficArea |
 | auxiliaryTrafficArea | tran:AuxiliaryTrafficArea | 交通補助領域 | tran:auxiliaryTrafficArea |
-| tranDataQualityAttribute | uro:TransportationDataQualityAttribute | データ品質 | uro:tranDataQualityAttribute |
+| tranDataQualityAttribute | uro:DataQualityAttribute | データ品質 | uro:tranDataQualityAttribute |
+| tranDmAttribute | uro:DmAttributeProperty | 図式属性 | uro:tranDmAttribute |
 | tranFacilityAttribute | uro:FacilityAttributeProperty | 施設詳細属性 | uro:tranFacilityAttribute |
 | tranFacilityIdAttribute | uro:FacilityIdAttributeProperty | 施設識別属性 | uro:tranFacilityIdAttribute |
 | tranFacilityTypeAttribute | uro:FacilityTypeAttribute | 施設属性 | uro:tranFacilityTypeAttribute |
+| tranKeyValuePairAttribute | uro:KeyValuePairAttribute |  | uro:tranKeyValuePairAttribute |
+| tranUsecaseAttribute | uro:TrafficObjectUsecaseAttribute |  | uro:tranUsecaseAttribute |
 | squareUrbanPlanAttribute | uro:SquareUrbanPlanAttributeProperty | 都市計画施設現況属性 | uro:squareUrbanPlanAttribute |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### tran:Track
 
@@ -400,17 +446,21 @@
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
 | genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
-| tranDmAttribute | uro:DmAttributeProperty | 図式属性 | uro:tranDmAttribute |
 | class | Code | 分類 | tran:class |
 | function | Code | 機能 | tran:function |
 | usage | Code | 用途 | tran:usage |
 | trafficArea | tran:TrafficArea | 交通領域 | tran:trafficArea |
 | auxiliaryTrafficArea | tran:AuxiliaryTrafficArea | 交通補助領域 | tran:auxiliaryTrafficArea |
-| tranDataQualityAttribute | uro:TransportationDataQualityAttribute | データ品質 | uro:tranDataQualityAttribute |
+| tranDataQualityAttribute | uro:DataQualityAttribute | データ品質 | uro:tranDataQualityAttribute |
+| tranDmAttribute | uro:DmAttributeProperty | 図式属性 | uro:tranDmAttribute |
 | tranFacilityAttribute | uro:FacilityAttributeProperty | 施設詳細属性 | uro:tranFacilityAttribute |
 | tranFacilityIdAttribute | uro:FacilityIdAttributeProperty | 施設識別属性 | uro:tranFacilityIdAttribute |
 | tranFacilityTypeAttribute | uro:FacilityTypeAttribute | 施設属性 | uro:tranFacilityTypeAttribute |
+| tranKeyValuePairAttribute | uro:KeyValuePairAttribute |  | uro:tranKeyValuePairAttribute |
+| tranUsecaseAttribute | uro:TrafficObjectUsecaseAttribute |  | uro:tranUsecaseAttribute |
 | trackAttribute | uro:TrackAttribute | 徒歩道属性 | uro:trackAttribute |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### tran:TrafficArea
 
@@ -423,13 +473,14 @@
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
 | genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
-| tranDmAttribute | uro:DmAttributeProperty |  | uro:tranDmAttribute |
 | class | Code | 分類 | tran:class |
 | function | Code | 機能 | tran:function |
 | usage | Code | 用途 | tran:usage |
 | surfaceMaterial | Code | 舗装種類 | tran:surfaceMaterial |
 | railwayTrackAttribute | uro:RailwayTrackAttribute | 軌道中心線線形情報 | uro:railwayTrackAttribute |
 | trafficAreaStructureAttribute | uro:TrafficAreaStructureAttribute | 道路構造属性 | uro:trafficAreaStructureAttribute |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### luse:LandUse
 
@@ -447,11 +498,14 @@
 | usage | Code | 用途 | luse:usage |
 | ifcLandUseAttribute | uro:IfcAttributeProperty |  | uro:ifcLandUseAttribute |
 | landUseDetailAttribute | uro:LandUseDetailAttribute |  | uro:landUseDetailAttribute |
-| luseDataQualityAttribute | uro:LandUseDataQualityAttribute |  | uro:luseDataQualityAttribute |
+| luseDataQualityAttribute | uro:DataQualityAttribute |  | uro:luseDataQualityAttribute |
 | luseDmAttribute | uro:DmAttributeProperty | 図式属性 | uro:luseDmAttribute |
 | luseFacilityAttribute | uro:FacilityAttributeProperty | 施設詳細属性 | uro:luseFacilityAttribute |
 | luseFacilityIdAttribute | uro:FacilityIdAttributeProperty | 施設属性 | uro:luseFacilityIdAttribute |
 | luseFacilityTypeAttribute | uro:FacilityTypeAttribute | 施設識別属性 | uro:luseFacilityTypeAttribute |
+| luseKeyValuePairAttribute | uro:KeyValuePairAttribute |  | uro:luseKeyValuePairAttribute |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### brid:Bridge
 
@@ -478,15 +532,18 @@
 | consistsOfBridgePart | brid:BridgePart | 橋梁部分 | brid:consistsOfBridgePart |
 | address | core:Address | 住所 | brid:address |
 | bridBaseAttribute | uro:ConstructionBaseAttribute | 構造物基本属性 | uro:bridBaseAttribute |
-| bridDataQualityAttribute | uro:ConstructionDataQualityAttribute | データ品質 | uro:bridDataQualityAttribute |
+| bridDataQualityAttribute | uro:DataQualityAttribute | データ品質 | uro:bridDataQualityAttribute |
 | bridDisasterRiskAttribute | uro:DisasterRiskAttributeProperty | 災害リスク属性 | uro:bridDisasterRiskAttribute |
 | bridDmAttribute | uro:DmAttributeProperty | 図式属性 | uro:bridDmAttribute |
 | bridFacilityAttribute | uro:FacilityAttributeProperty | 施設詳細属性 | uro:bridFacilityAttribute |
 | bridFacilityIdAttribute | uro:FacilityIdAttributeProperty | 施設識別属性 | uro:bridFacilityIdAttribute |
 | bridFacilityTypeAttribute | uro:FacilityTypeAttribute | 施設属性 | uro:bridFacilityTypeAttribute |
 | bridFunctionalAttribute | uro:BridgeFunctionalAttribute | 橋梁機能属性 | uro:bridFunctionalAttribute |
+| bridKeyValuePairAttribute | uro:KeyValuePairAttribute |  | uro:bridKeyValuePairAttribute |
 | bridRiskAssessmentAttribute | uro:ConstructionRiskAssessmentAttribute | 構造物リスク評価属性 | uro:bridRiskAssessmentAttribute |
 | bridStructureAttribute | uro:BridgeStructureAttribute | 橋梁構造属性 | uro:bridStructureAttribute |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### brid:BridgeConstructionElement
 
@@ -503,6 +560,8 @@
 | function | Code | 機能 | brid:function |
 | usage | Code | 用途 | brid:usage |
 | boundedBy | brid:_BoundarySurfaceProperty | 境界面 | brid:boundedBy |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### brid:BridgeFurniture
 
@@ -518,6 +577,8 @@
 | class | Code | 分類 | brid:class |
 | function | Code | 機能 | brid:function |
 | usage | Code | 用途 | brid:usage |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### brid:BridgeInstallation
 
@@ -534,6 +595,8 @@
 | function | Code | 機能 | brid:function |
 | usage | Code | 用途 | brid:usage |
 | boundedBy | brid:_BoundarySurfaceProperty | 境界面 | brid:boundedBy |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### brid:BridgePart
 
@@ -560,15 +623,18 @@
 | consistsOfBridgePart | brid:BridgePart | 橋梁部分 | brid:consistsOfBridgePart |
 | address | core:Address | 住所 | brid:address |
 | bridBaseAttribute | uro:ConstructionBaseAttribute | 構造物基本属性 | uro:bridBaseAttribute |
-| bridDataQualityAttribute | uro:ConstructionDataQualityAttribute | データ品質 | uro:bridDataQualityAttribute |
+| bridDataQualityAttribute | uro:DataQualityAttribute | データ品質 | uro:bridDataQualityAttribute |
 | bridDisasterRiskAttribute | uro:DisasterRiskAttributeProperty | 災害リスク属性 | uro:bridDisasterRiskAttribute |
 | bridDmAttribute | uro:DmAttributeProperty | 図式属性 | uro:bridDmAttribute |
 | bridFacilityAttribute | uro:FacilityAttributeProperty | 施設詳細属性 | uro:bridFacilityAttribute |
 | bridFacilityIdAttribute | uro:FacilityIdAttributeProperty | 施設識別属性 | uro:bridFacilityIdAttribute |
 | bridFacilityTypeAttribute | uro:FacilityTypeAttribute | 施設属性 | uro:bridFacilityTypeAttribute |
 | bridFunctionalAttribute | uro:BridgeFunctionalAttribute | 機能属性 | uro:bridFunctionalAttribute |
+| bridKeyValuePairAttribute | uro:KeyValuePairAttribute |  | uro:bridKeyValuePairAttribute |
 | bridRiskAssessmentAttribute | uro:ConstructionRiskAssessmentAttribute | 構造物リスク評価属性 | uro:bridRiskAssessmentAttribute |
 | bridStructureAttribute | uro:BridgeStructureAttribute | 構造属性 | uro:bridStructureAttribute |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### brid:BridgeRoom
 
@@ -587,6 +653,8 @@
 | boundedBy | brid:_BoundarySurfaceProperty | 境界面 | brid:boundedBy |
 | interiorFurniture | brid:BridgeFurniture | 設置物 | brid:interiorFurniture |
 | bridgeRoomInstallation | brid:BridgeInstallation | 内部付属物 | brid:bridgeRoomInstallation |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### brid:CeilingSurface
 
@@ -600,6 +668,8 @@
 | terminationDate | Date | 消滅日 | core:terminationDate |
 | genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | opening | brid:_OpeningProperty | 開口部 | brid:opening |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### brid:ClosureSurface
 
@@ -613,6 +683,8 @@
 | terminationDate | Date | 消滅日 | core:terminationDate |
 | genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | opening | brid:_OpeningProperty | 開口部 | brid:opening |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### brid:Door
 
@@ -626,6 +698,8 @@
 | terminationDate | Date | 消滅日 | core:terminationDate |
 | genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | address | core:Address |  | brid:address |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### brid:FloorSurface
 
@@ -639,6 +713,8 @@
 | terminationDate | Date | 消滅日 | core:terminationDate |
 | genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | opening | brid:_OpeningProperty | 開口部 | brid:opening |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### brid:GroundSurface
 
@@ -652,6 +728,8 @@
 | terminationDate | Date | 消滅日 | core:terminationDate |
 | genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | opening | brid:_OpeningProperty | 開口部 | brid:opening |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### brid:InteriorWallSurface
 
@@ -665,6 +743,8 @@
 | terminationDate | Date | 消滅日 | core:terminationDate |
 | genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | opening | brid:_OpeningProperty | 開口部 | brid:opening |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### brid:OuterCeilingSurface
 
@@ -678,6 +758,8 @@
 | terminationDate | Date | 消滅日 | core:terminationDate |
 | genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | opening | brid:_OpeningProperty | 開口部 | brid:opening |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### brid:OuterFloorSurface
 
@@ -691,6 +773,8 @@
 | terminationDate | Date | 消滅日 | core:terminationDate |
 | genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | opening | brid:_OpeningProperty | 開口部 | brid:opening |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### brid:RoofSurface
 
@@ -704,6 +788,8 @@
 | terminationDate | Date | 消滅日 | core:terminationDate |
 | genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | opening | brid:_OpeningProperty | 開口部 | brid:opening |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### brid:WallSurface
 
@@ -717,6 +803,8 @@
 | terminationDate | Date | 消滅日 | core:terminationDate |
 | genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | opening | brid:_OpeningProperty | 開口部 | brid:opening |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### brid:Window
 
@@ -729,6 +817,8 @@
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
 | genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### tun:CeilingSurface
 
@@ -742,6 +832,8 @@
 | terminationDate | Date | 消滅日 | core:terminationDate |
 | genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | opening | tun:_OpeningProperty | 開口部 | tun:opening |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### tun:ClosureSurface
 
@@ -755,6 +847,8 @@
 | terminationDate | Date | 消滅日 | core:terminationDate |
 | genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | opening | tun:_OpeningProperty | 開口部 | tun:opening |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### tun:Door
 
@@ -767,6 +861,8 @@
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
 | genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### tun:FloorSurface
 
@@ -780,6 +876,8 @@
 | terminationDate | Date | 消滅日 | core:terminationDate |
 | genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | opening | tun:_OpeningProperty | 開口部 | tun:opening |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### tun:GroundSurface
 
@@ -793,6 +891,8 @@
 | terminationDate | Date | 消滅日 | core:terminationDate |
 | genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | opening | tun:_OpeningProperty | 開口部 | tun:opening |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### tun:HollowSpace
 
@@ -811,6 +911,8 @@
 | boundedBy | tun:_BoundarySurfaceProperty | 境界面 | tun:boundedBy |
 | interiorFurniture | tun:TunnelFurniture | 設置物 | tun:interiorFurniture |
 | hollowSpaceInstallation | tun:TunnelInstallation | 内部付属物 | tun:hollowSpaceInstallation |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### tun:InteriorWallSurface
 
@@ -824,6 +926,8 @@
 | terminationDate | Date | 消滅日 | core:terminationDate |
 | genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | opening | tun:_OpeningProperty | 開口部 | tun:opening |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### tun:OuterCeilingSurface
 
@@ -837,6 +941,8 @@
 | terminationDate | Date | 消滅日 | core:terminationDate |
 | genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | opening | tun:_OpeningProperty | 開口部 | tun:opening |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### tun:OuterFloorSurface
 
@@ -850,6 +956,8 @@
 | terminationDate | Date | 消滅日 | core:terminationDate |
 | genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | opening | tun:_OpeningProperty | 開口部 | tun:opening |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### tun:RoofSurface
 
@@ -863,6 +971,8 @@
 | terminationDate | Date | 消滅日 | core:terminationDate |
 | genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | opening | tun:_OpeningProperty | 開口部 | tun:opening |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### tun:Tunnel
 
@@ -886,15 +996,18 @@
 | interiorHollowSpace | tun:HollowSpace | トンネル内部空間 | tun:interiorHollowSpace |
 | consistsOfTunnelPart | tun:TunnelPart | トンネル部分 | tun:consistsOfTunnelPart |
 | tunBaseAttribute | uro:ConstructionBaseAttribute | 構造物基本属性 | uro:tunBaseAttribute |
-| tunDataQualityAttribute | uro:ConstructionDataQualityAttribute | データ品質 | uro:tunDataQualityAttribute |
+| tunDataQualityAttribute | uro:DataQualityAttribute | データ品質 | uro:tunDataQualityAttribute |
 | tunDisasterRiskAttribute | uro:DisasterRiskAttributeProperty | 災害リスク属性 | uro:tunDisasterRiskAttribute |
 | tunDmAttribute | uro:DmAttributeProperty | 図式属性 | uro:tunDmAttribute |
 | tunFacilityAttribute | uro:FacilityAttributeProperty | 施設詳細属性 | uro:tunFacilityAttribute |
 | tunFacilityIdAttribute | uro:FacilityIdAttributeProperty | 施設識別属性 | uro:tunFacilityIdAttribute |
 | tunFacilityTypeAttribute | uro:FacilityTypeAttribute | 施設属性 | uro:tunFacilityTypeAttribute |
 | tunFunctionalAttribute | uro:TunnelFunctionalAttribute | トンネル機能属性 | uro:tunFunctionalAttribute |
+| tunKeyValuePairAttribute | uro:KeyValuePairAttribute |  | uro:tunKeyValuePairAttribute |
 | tunRiskAssessmentAttribute | uro:ConstructionRiskAssessmentAttribute | 構造物リスク評価属性 | uro:tunRiskAssessmentAttribute |
 | tunStructureAttribute | uro:TunnelStructureAttribute | トンネル構造属性 | uro:tunStructureAttribute |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### tun:TunnelFurniture
 
@@ -910,6 +1023,8 @@
 | class | Code | 分類 | tun:class |
 | function | Code | 機能 | tun:function |
 | usage | Code | 用途 | tun:usage |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### tun:TunnelInstallation
 
@@ -926,6 +1041,8 @@
 | function | Code | 機能 | tun:function |
 | usage | Code | 用途 | tun:usage |
 | boundedBy | tun:_BoundarySurfaceProperty | 境界面 | tun:boundedBy |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### tun:TunnelPart
 
@@ -948,15 +1065,18 @@
 | interiorHollowSpace | tun:HollowSpace |  | tun:interiorHollowSpace |
 | consistsOfTunnelPart | tun:TunnelPart |  | tun:consistsOfTunnelPart |
 | tunBaseAttribute | uro:ConstructionBaseAttribute |  | uro:tunBaseAttribute |
-| tunDataQualityAttribute | uro:ConstructionDataQualityAttribute |  | uro:tunDataQualityAttribute |
+| tunDataQualityAttribute | uro:DataQualityAttribute |  | uro:tunDataQualityAttribute |
 | tunDisasterRiskAttribute | uro:DisasterRiskAttributeProperty |  | uro:tunDisasterRiskAttribute |
 | tunDmAttribute | uro:DmAttributeProperty |  | uro:tunDmAttribute |
 | tunFacilityAttribute | uro:FacilityAttributeProperty |  | uro:tunFacilityAttribute |
 | tunFacilityIdAttribute | uro:FacilityIdAttributeProperty |  | uro:tunFacilityIdAttribute |
 | tunFacilityTypeAttribute | uro:FacilityTypeAttribute |  | uro:tunFacilityTypeAttribute |
 | tunFunctionalAttribute | uro:TunnelFunctionalAttribute |  | uro:tunFunctionalAttribute |
+| tunKeyValuePairAttribute | uro:KeyValuePairAttribute |  | uro:tunKeyValuePairAttribute |
 | tunRiskAssessmentAttribute | uro:ConstructionRiskAssessmentAttribute |  | uro:tunRiskAssessmentAttribute |
 | tunStructureAttribute | uro:TunnelStructureAttribute |  | uro:tunStructureAttribute |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### tun:WallSurface
 
@@ -970,6 +1090,8 @@
 | terminationDate | Date | 消滅日 | core:terminationDate |
 | genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | opening | tun:_OpeningProperty | 開口部 | tun:opening |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### tun:Window
 
@@ -982,6 +1104,8 @@
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
 | genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### frn:CityFurniture
 
@@ -997,12 +1121,15 @@
 | class | Code | 分類 | frn:class |
 | function | Code | 機能 | frn:function |
 | usage | Code | 用途 | frn:usage |
-| cityFurnitureDataQualityAttribute | uro:CityFurnitureDataQualityAttribute | データ品質 | uro:cityFurnitureDataQualityAttribute |
 | cityFurnitureDetailAttribute | uro:CityFurnitureDetailAttribute | 都市設備詳細属性 | uro:cityFurnitureDetailAttribute |
+| cityFurnitureDataQualityAttribute | uro:DataQualityAttribute | データ品質 | uro:cityFurnitureDataQualityAttribute |
 | frnDmAttribute | uro:DmAttributeProperty | 図式属性 | uro:frnDmAttribute |
 | frnFacilityAttribute | uro:FacilityAttributeProperty | 施設詳細属性 | uro:frnFacilityAttribute |
 | frnFacilityIdAttribute | uro:FacilityIdAttributeProperty | 施設属性 | uro:frnFacilityIdAttribute |
 | frnFacilityTypeAttribute | uro:FacilityTypeAttribute | 施設識別属性 | uro:frnFacilityTypeAttribute |
+| frnKeyValuePairAttribute | uro:KeyValuePairAttribute |  | uro:frnKeyValuePairAttribute |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### veg:PlantCover
 
@@ -1015,15 +1142,18 @@
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
 | genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
+| vegetationDataQualityAttribute | uro:DataQualityAttribute | データ品質 | uro:vegetationDataQualityAttribute |
 | vegDmAttribute | uro:DmAttributeProperty | 図式属性 | uro:vegDmAttribute |
 | vegFacilityAttribute | uro:FacilityAttributeProperty | 施設詳細属性 | uro:vegFacilityAttribute |
 | vegFacilityIdAttribute | uro:FacilityIdAttributeProperty | 施設属性 | uro:vegFacilityIdAttribute |
 | vegFacilityTypeAttribute | uro:FacilityTypeAttribute | 施設識別属性 | uro:vegFacilityTypeAttribute |
-| vegetationDataQualityAttribute | uro:VegetationDataQualityAttribute | データ品質 | uro:vegetationDataQualityAttribute |
+| vegKeyValuePairAttribute | uro:KeyValuePairAttribute |  | uro:vegKeyValuePairAttribute |
 | class | Code | 分類 | veg:class |
 | function | Code | 機能 | veg:function |
 | usage | Code | 用途 | veg:usage |
 | averageHeight | Measure | 平均高 | veg:averageHeight |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### veg:SolitaryVegetationObject
 
@@ -1036,11 +1166,12 @@
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
 | genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
+| vegetationDataQualityAttribute | uro:DataQualityAttribute | データ品質 | uro:vegetationDataQualityAttribute |
 | vegDmAttribute | uro:DmAttributeProperty | 図式属性 | uro:vegDmAttribute |
 | vegFacilityAttribute | uro:FacilityAttributeProperty | 施設詳細属性 | uro:vegFacilityAttribute |
 | vegFacilityIdAttribute | uro:FacilityIdAttributeProperty | 施設属性 | uro:vegFacilityIdAttribute |
 | vegFacilityTypeAttribute | uro:FacilityTypeAttribute | 施設識別属性 | uro:vegFacilityTypeAttribute |
-| vegetationDataQualityAttribute | uro:VegetationDataQualityAttribute | データ品質 | uro:vegetationDataQualityAttribute |
+| vegKeyValuePairAttribute | uro:KeyValuePairAttribute |  | uro:vegKeyValuePairAttribute |
 | class | Code | 分類 | veg:class |
 | function | Code | 機能 | veg:function |
 | usage | Code | 用途 | veg:usage |
@@ -1048,6 +1179,8 @@
 | height | Measure | 樹高 | veg:height |
 | trunkDiameter | Measure |  | veg:trunkDiameter |
 | crownDiameter | Measure |  | veg:crownDiameter |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### wtr:WaterBody
 
@@ -1064,12 +1197,16 @@
 | function | Code | 機能 | wtr:function |
 | usage | Code | 用途 | wtr:usage |
 | boundedBy | wtr:_WaterBoundarySurfaceProperty |  | wtr:boundedBy |
-| floodingRiskAttribute | uro:WaterBodyFloodingRiskAttributeProperty | 災害リスク | uro:floodingRiskAttribute |
+| floodingRiskAttribute | uro:FloodingRiskAttributeProperty | 災害リスク | uro:floodingRiskAttribute |
 | waterBodyDetailAttribute | uro:WaterBodyDetailAttribute | 水部詳細属性 | uro:waterBodyDetailAttribute |
+| wtrDataQualityAttribute | uro:DataQualityAttribute |  | uro:wtrDataQualityAttribute |
 | wtrDmAttribute | uro:DmAttributeProperty | 図式属性 | uro:wtrDmAttribute |
 | wtrFacilityAttribute | uro:FacilityAttributeProperty | 施設詳細属性 | uro:wtrFacilityAttribute |
 | wtrFacilityIdAttribute | uro:FacilityIdAttributeProperty | 施設属性 | uro:wtrFacilityIdAttribute |
 | wtrFacilityTypeAttribute | uro:FacilityTypeAttribute | 施設識別属性 | uro:wtrFacilityTypeAttribute |
+| wtrKeyValuePairAttribute | uro:KeyValuePairAttribute |  | uro:wtrKeyValuePairAttribute |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### wtr:WaterClosureSurface
 
@@ -1082,6 +1219,8 @@
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
 | genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### wtr:WaterGroundSurface
 
@@ -1094,6 +1233,8 @@
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
 | genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### wtr:WaterSurface
 
@@ -1107,6 +1248,8 @@
 | terminationDate | Date | 消滅日 | core:terminationDate |
 | genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | waterLevel | Code |  | wtr:waterLevel |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### dem:BreaklineRelief
 
@@ -1121,6 +1264,8 @@
 | genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | lod | NonNegativeInteger | lod | dem:lod |
 | demDmAttribute | uro:DmAttributeProperty | 図式属性 | uro:demDmAttribute |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### dem:MassPointRelief
 
@@ -1135,6 +1280,8 @@
 | genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | lod | NonNegativeInteger | lod | dem:lod |
 | demDmAttribute | uro:DmAttributeProperty | 図式属性 | uro:demDmAttribute |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### dem:RasterRelief
 
@@ -1149,6 +1296,8 @@
 | lod | NonNegativeInteger |  | dem:lod |
 | demDmAttribute | uro:DmAttributeProperty |  | uro:demDmAttribute |
 | grid | gml:RectifiedGridCoverage |  | dem:grid |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### dem:ReliefFeature
 
@@ -1163,6 +1312,9 @@
 | genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | lod | NonNegativeInteger | lod | dem:lod |
 | reliefComponent | dem:_ReliefComponentProperty | 地形構成要素 | dem:reliefComponent |
+| demDataQualityAttribute | uro:demDataQualityAttribute |  | uro:demDataQualityAttribute |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### dem:TINRelief
 
@@ -1177,6 +1329,8 @@ TIN地形
 | genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | lod | NonNegativeInteger | lod | dem:lod |
 | demDmAttribute | uro:DmAttributeProperty | 図式属性 | uro:demDmAttribute |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### grp:CityObjectGroup
 
@@ -1197,6 +1351,8 @@ TIN地形
 | ifcBuildingStoreyAttribute | uro:IfcAttributeProperty |  | uro:ifcBuildingStoreyAttribute |
 | indoorStoreyAttribute | uro:IndoorAttributeProperty |  | uro:indoorStoreyAttribute |
 | language | Code |  | uro:language |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### grp:_CityObjectOrRef
 
@@ -1209,6 +1365,8 @@ TIN地形
 | terminationDate | Date |  | core:terminationDate |
 | genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
 | href | String |  | @xlink:href |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### gen:GenericCityObject
 
@@ -1223,6 +1381,8 @@ TIN地形
 | class | Code |  | gen:class |
 | function | Code |  | gen:function |
 | usage | Code |  | gen:usage |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### uro:Appurtenance
 
@@ -1238,12 +1398,13 @@ TIN地形
 | class | Code | 分類 | frn:class |
 | function | Code | 機能 | frn:function |
 | usage | Code | 用途 | frn:usage |
-| cityFurnitureDataQualityAttribute | uro:CityFurnitureDataQualityAttribute | データ品質 | uro:cityFurnitureDataQualityAttribute |
 | cityFurnitureDetailAttribute | uro:CityFurnitureDetailAttribute | 都市設備詳細属性 | uro:cityFurnitureDetailAttribute |
+| cityFurnitureDataQualityAttribute | uro:DataQualityAttribute | データ品質 | uro:cityFurnitureDataQualityAttribute |
 | frnDmAttribute | uro:DmAttributeProperty | 図式属性 | uro:frnDmAttribute |
 | frnFacilityAttribute | uro:FacilityAttributeProperty | 施設詳細属性 | uro:frnFacilityAttribute |
 | frnFacilityIdAttribute | uro:FacilityIdAttributeProperty | 施設属性 | uro:frnFacilityIdAttribute |
 | frnFacilityTypeAttribute | uro:FacilityTypeAttribute | 施設識別属性 | uro:frnFacilityTypeAttribute |
+| frnKeyValuePairAttribute | uro:KeyValuePairAttribute |  | uro:frnKeyValuePairAttribute |
 | occupierType | Code | 事業者種類 | uro:occupierType |
 | occupierName | Code | 事業者名 | uro:occupierName |
 | year | String | 埋設年度 | uro:year |
@@ -1255,6 +1416,8 @@ TIN地形
 | nextLink | String | 次のリンク | uro:nextLink |
 | rotationAngle | Double | 回転角度 | uro:rotationAngle |
 | appurtenanceType | Code | 設備区分 | uro:appurtenanceType |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### uro:Cable
 
@@ -1270,12 +1433,13 @@ TIN地形
 | class | Code | 分類 | frn:class |
 | function | Code | 機能 | frn:function |
 | usage | Code | 用途 | frn:usage |
-| cityFurnitureDataQualityAttribute | uro:CityFurnitureDataQualityAttribute | データ品質 | uro:cityFurnitureDataQualityAttribute |
 | cityFurnitureDetailAttribute | uro:CityFurnitureDetailAttribute | 都市設備詳細属性 | uro:cityFurnitureDetailAttribute |
+| cityFurnitureDataQualityAttribute | uro:DataQualityAttribute | データ品質 | uro:cityFurnitureDataQualityAttribute |
 | frnDmAttribute | uro:DmAttributeProperty | 図式属性 | uro:frnDmAttribute |
 | frnFacilityAttribute | uro:FacilityAttributeProperty | 施設詳細属性 | uro:frnFacilityAttribute |
 | frnFacilityIdAttribute | uro:FacilityIdAttributeProperty | 施設属性 | uro:frnFacilityIdAttribute |
 | frnFacilityTypeAttribute | uro:FacilityTypeAttribute | 施設識別属性 | uro:frnFacilityTypeAttribute |
+| frnKeyValuePairAttribute | uro:KeyValuePairAttribute |  | uro:frnKeyValuePairAttribute |
 | occupierType | Code | 事業者種類 | uro:occupierType |
 | occupierName | Code | 事業者名 | uro:occupierName |
 | year | String | 埋設年度 | uro:year |
@@ -1297,6 +1461,8 @@ TIN地形
 | columns | Integer | 列数 | uro:columns |
 | rows | Integer | 段数 | uro:rows |
 | cables | Integer | 条数 | uro:cables |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### uro:ClosureSurface
 
@@ -1309,6 +1475,8 @@ TIN地形
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
 | genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### uro:ConstructionInstallation
 
@@ -1324,6 +1492,8 @@ TIN地形
 | class | Code | 分類 | uro:class |
 | function | Code | 機能 | uro:function |
 | usage | Code | 用途 | uro:usage |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### uro:Duct
 
@@ -1339,12 +1509,13 @@ TIN地形
 | class | Code | 分類 | frn:class |
 | function | Code | 機能 | frn:function |
 | usage | Code | 用途 | frn:usage |
-| cityFurnitureDataQualityAttribute | uro:CityFurnitureDataQualityAttribute | データ品質 | uro:cityFurnitureDataQualityAttribute |
 | cityFurnitureDetailAttribute | uro:CityFurnitureDetailAttribute | 都市設備詳細属性 | uro:cityFurnitureDetailAttribute |
+| cityFurnitureDataQualityAttribute | uro:DataQualityAttribute | データ品質 | uro:cityFurnitureDataQualityAttribute |
 | frnDmAttribute | uro:DmAttributeProperty | 図式属性 | uro:frnDmAttribute |
 | frnFacilityAttribute | uro:FacilityAttributeProperty | 施設詳細属性 | uro:frnFacilityAttribute |
 | frnFacilityIdAttribute | uro:FacilityIdAttributeProperty | 施設属性 | uro:frnFacilityIdAttribute |
 | frnFacilityTypeAttribute | uro:FacilityTypeAttribute | 施設識別属性 | uro:frnFacilityTypeAttribute |
+| frnKeyValuePairAttribute | uro:KeyValuePairAttribute |  | uro:frnKeyValuePairAttribute |
 | occupierType | Code | 事業者種類 | uro:occupierType |
 | occupierName | Code | 事業者名 | uro:occupierName |
 | year | String | 埋設年度 | uro:year |
@@ -1364,6 +1535,8 @@ TIN地形
 | material | Code | 管きょ材質 | uro:material |
 | lengthAttribute | uro:LengthAttribute | 長さ情報 | uro:lengthAttribute |
 | width | Measure | 外側幅 | uro:width |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### uro:ElectricityCable
 
@@ -1379,12 +1552,13 @@ TIN地形
 | class | Code | 分類 | frn:class |
 | function | Code | 機能 | frn:function |
 | usage | Code | 用途 | frn:usage |
-| cityFurnitureDataQualityAttribute | uro:CityFurnitureDataQualityAttribute | データ品質 | uro:cityFurnitureDataQualityAttribute |
 | cityFurnitureDetailAttribute | uro:CityFurnitureDetailAttribute | 都市設備詳細属性 | uro:cityFurnitureDetailAttribute |
+| cityFurnitureDataQualityAttribute | uro:DataQualityAttribute | データ品質 | uro:cityFurnitureDataQualityAttribute |
 | frnDmAttribute | uro:DmAttributeProperty | 図式属性 | uro:frnDmAttribute |
 | frnFacilityAttribute | uro:FacilityAttributeProperty | 施設詳細属性 | uro:frnFacilityAttribute |
 | frnFacilityIdAttribute | uro:FacilityIdAttributeProperty | 施設属性 | uro:frnFacilityIdAttribute |
 | frnFacilityTypeAttribute | uro:FacilityTypeAttribute | 施設識別属性 | uro:frnFacilityTypeAttribute |
+| frnKeyValuePairAttribute | uro:KeyValuePairAttribute |  | uro:frnKeyValuePairAttribute |
 | occupierType | Code | 事業者種類 | uro:occupierType |
 | occupierName | Code | 事業者名 | uro:occupierName |
 | year | String | 埋設年度 | uro:year |
@@ -1406,6 +1580,8 @@ TIN地形
 | columns | Integer | 列数 | uro:columns |
 | rows | Integer | 段数 | uro:rows |
 | cables | Integer | 条数 | uro:cables |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### uro:GroundSurface
 
@@ -1418,6 +1594,8 @@ TIN地形
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
 | genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### uro:Handhole
 
@@ -1433,12 +1611,13 @@ TIN地形
 | class | Code | 分類 | frn:class |
 | function | Code | 機能 | frn:function |
 | usage | Code | 用途 | frn:usage |
-| cityFurnitureDataQualityAttribute | uro:CityFurnitureDataQualityAttribute | データ品質 | uro:cityFurnitureDataQualityAttribute |
 | cityFurnitureDetailAttribute | uro:CityFurnitureDetailAttribute | 都市設備詳細属性 | uro:cityFurnitureDetailAttribute |
+| cityFurnitureDataQualityAttribute | uro:DataQualityAttribute | データ品質 | uro:cityFurnitureDataQualityAttribute |
 | frnDmAttribute | uro:DmAttributeProperty | 図式属性 | uro:frnDmAttribute |
 | frnFacilityAttribute | uro:FacilityAttributeProperty | 施設詳細属性 | uro:frnFacilityAttribute |
 | frnFacilityIdAttribute | uro:FacilityIdAttributeProperty | 施設属性 | uro:frnFacilityIdAttribute |
 | frnFacilityTypeAttribute | uro:FacilityTypeAttribute | 施設識別属性 | uro:frnFacilityTypeAttribute |
+| frnKeyValuePairAttribute | uro:KeyValuePairAttribute |  | uro:frnKeyValuePairAttribute |
 | occupierType | Code | 事業者種類 | uro:occupierType |
 | occupierName | Code | 事業者名 | uro:occupierName |
 | year | String | 埋設年度 | uro:year |
@@ -1447,13 +1626,15 @@ TIN地形
 | offsetDepth | uro:OffsetDepth | オフセットデプス情報 | uro:offsetDepth |
 | thematicShape | uro:ThematicShape | 主題図形 | uro:thematicShape |
 | containerType | Code | 構造物種類 | uro:containerType |
-| innerDiamiterLong | Measure | 長辺の内径 | uro:innerDiamiterLong |
-| outerDiamiterLong | Measure | 長辺の外径 | uro:outerDiamiterLong |
-| innerDiamiterShort | Measure | 短辺の内径 | uro:innerDiamiterShort |
-| outerDiamiterShort | Measure | 短辺の外径 | uro:outerDiamiterShort |
+| innerDiameterLong | Measure |  | uro:innerDiameterLong |
+| outerDiameterLong | Measure |  | uro:outerDiameterLong |
+| innerDiameterShort | Measure |  | uro:innerDiameterShort |
+| outerDiameterShort | Measure |  | uro:outerDiameterShort |
 | depth | Measure | 深さ | uro:depth |
 | appurtenance | String | 識別子 | uro:appurtenance |
 | rotationAngle | Double | 回転角度 | uro:rotationAngle |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### uro:Manhole
 
@@ -1469,12 +1650,13 @@ TIN地形
 | class | Code | 分類 | frn:class |
 | function | Code | 機能 | frn:function |
 | usage | Code | 用途 | frn:usage |
-| cityFurnitureDataQualityAttribute | uro:CityFurnitureDataQualityAttribute | データ品質 | uro:cityFurnitureDataQualityAttribute |
 | cityFurnitureDetailAttribute | uro:CityFurnitureDetailAttribute | 都市設備詳細属性 | uro:cityFurnitureDetailAttribute |
+| cityFurnitureDataQualityAttribute | uro:DataQualityAttribute | データ品質 | uro:cityFurnitureDataQualityAttribute |
 | frnDmAttribute | uro:DmAttributeProperty | 図式属性 | uro:frnDmAttribute |
 | frnFacilityAttribute | uro:FacilityAttributeProperty | 施設詳細属性 | uro:frnFacilityAttribute |
 | frnFacilityIdAttribute | uro:FacilityIdAttributeProperty | 施設属性 | uro:frnFacilityIdAttribute |
 | frnFacilityTypeAttribute | uro:FacilityTypeAttribute | 施設識別属性 | uro:frnFacilityTypeAttribute |
+| frnKeyValuePairAttribute | uro:KeyValuePairAttribute |  | uro:frnKeyValuePairAttribute |
 | occupierType | Code | 事業者種類 | uro:occupierType |
 | occupierName | Code | 事業者名 | uro:occupierName |
 | year | String | 埋設年度 | uro:year |
@@ -1483,13 +1665,16 @@ TIN地形
 | offsetDepth | uro:OffsetDepth | オフセットデプス情報 | uro:offsetDepth |
 | thematicShape | uro:ThematicShape | 主題図形 | uro:thematicShape |
 | containerType | Code | 構造物種類 | uro:containerType |
-| innerDiamiterLong | Measure | 長辺の内径 | uro:innerDiamiterLong |
-| outerDiamiterLong | Measure | 長辺の外径 | uro:outerDiamiterLong |
-| innerDiamiterShort | Measure | 短辺の内径 | uro:innerDiamiterShort |
-| outerDiamiterShort | Measure | 短辺の外径 | uro:outerDiamiterShort |
+| innerDiameterLong | Measure |  | uro:innerDiameterLong |
+| outerDiameterLong | Measure |  | uro:outerDiameterLong |
+| innerDiameterShort | Measure |  | uro:innerDiameterShort |
+| outerDiameterShort | Measure |  | uro:outerDiameterShort |
 | depth | Measure | 深さ | uro:depth |
 | appurtenance | String | 識別子 | uro:appurtenance |
 | rotationAngle | Double | 回転角度 | uro:rotationAngle |
+| elevation | Measure |  | uro:elevation |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### uro:OilGasChemicalsPipe
 
@@ -1504,12 +1689,13 @@ TIN地形
 | class | Code |  | frn:class |
 | function | Code |  | frn:function |
 | usage | Code |  | frn:usage |
-| cityFurnitureDataQualityAttribute | uro:CityFurnitureDataQualityAttribute |  | uro:cityFurnitureDataQualityAttribute |
 | cityFurnitureDetailAttribute | uro:CityFurnitureDetailAttribute |  | uro:cityFurnitureDetailAttribute |
+| cityFurnitureDataQualityAttribute | uro:DataQualityAttribute |  | uro:cityFurnitureDataQualityAttribute |
 | frnDmAttribute | uro:DmAttributeProperty |  | uro:frnDmAttribute |
 | frnFacilityAttribute | uro:FacilityAttributeProperty |  | uro:frnFacilityAttribute |
 | frnFacilityIdAttribute | uro:FacilityIdAttributeProperty |  | uro:frnFacilityIdAttribute |
 | frnFacilityTypeAttribute | uro:FacilityTypeAttribute |  | uro:frnFacilityTypeAttribute |
+| frnKeyValuePairAttribute | uro:KeyValuePairAttribute |  | uro:frnKeyValuePairAttribute |
 | occupierType | Code |  | uro:occupierType |
 | occupierName | Code |  | uro:occupierName |
 | year | String |  | uro:year |
@@ -1528,9 +1714,11 @@ TIN地形
 | offset | Measure |  | uro:offset |
 | material | Code |  | uro:material |
 | lengthAttribute | uro:LengthAttribute |  | uro:lengthAttribute |
-| innerDiamiter | Measure |  | uro:innerDiamiter |
-| outerDiamiter | Measure |  | uro:outerDiamiter |
+| innerDiameter | Measure |  | uro:innerDiameter |
+| outerDiameter | Measure |  | uro:outerDiameter |
 | sleeveType | Code |  | uro:sleeveType |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### uro:OtherConstruction
 
@@ -1557,12 +1745,14 @@ TIN地形
 | consStructureAttribute | uro:ConstructionStructureAttributeProperty | 構造属性 | uro:consStructureAttribute |
 | consDisasterRiskAttribute | uro:DisasterRiskAttributeProperty | 災害リスク属性 | uro:consDisasterRiskAttribute |
 | consDmAttribute | uro:DmAttributeProperty | 図式属性 | uro:consDmAttribute |
-| consDataQualityAttribute | uro:ConstructionDataQualityAttribute | 品質属性 | uro:consDataQualityAttribute |
+| consDataQualityAttribute | uro:DataQualityAttribute | 品質属性 | uro:consDataQualityAttribute |
 | boundedBy | uro:_BoundarySurfaceProperty | 境界面 | uro:boundedBy |
 | constructionInstallation | uro:ConstructionInstallation | 付属物 | uro:constructionInstallation |
 | class | Code | 分類 | uro:class |
 | function | Code | 機能 | uro:function |
 | usage | Code | 用途 | uro:usage |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### uro:OuterCeilingSurface
 
@@ -1575,6 +1765,8 @@ TIN地形
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
 | genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### uro:OuterFloorSurface
 
@@ -1587,6 +1779,8 @@ TIN地形
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
 | genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### uro:Pipe
 
@@ -1602,12 +1796,13 @@ TIN地形
 | class | Code | 分類 | frn:class |
 | function | Code | 機能 | frn:function |
 | usage | Code | 用途 | frn:usage |
-| cityFurnitureDataQualityAttribute | uro:CityFurnitureDataQualityAttribute | データ品質 | uro:cityFurnitureDataQualityAttribute |
 | cityFurnitureDetailAttribute | uro:CityFurnitureDetailAttribute | 都市設備詳細属性 | uro:cityFurnitureDetailAttribute |
+| cityFurnitureDataQualityAttribute | uro:DataQualityAttribute | データ品質 | uro:cityFurnitureDataQualityAttribute |
 | frnDmAttribute | uro:DmAttributeProperty | 図式属性 | uro:frnDmAttribute |
 | frnFacilityAttribute | uro:FacilityAttributeProperty | 施設詳細属性 | uro:frnFacilityAttribute |
 | frnFacilityIdAttribute | uro:FacilityIdAttributeProperty | 施設属性 | uro:frnFacilityIdAttribute |
 | frnFacilityTypeAttribute | uro:FacilityTypeAttribute | 施設識別属性 | uro:frnFacilityTypeAttribute |
+| frnKeyValuePairAttribute | uro:KeyValuePairAttribute |  | uro:frnKeyValuePairAttribute |
 | occupierType | Code | 事業者種類 | uro:occupierType |
 | occupierName | Code | 事業者名 | uro:occupierName |
 | year | String | 埋設年度 | uro:year |
@@ -1626,9 +1821,11 @@ TIN地形
 | offset | Measure | オフセット量 | uro:offset |
 | material | Code | 管きょ材質 | uro:material |
 | lengthAttribute | uro:LengthAttribute | 長さ情報 | uro:lengthAttribute |
-| innerDiamiter | Measure | 内径 | uro:innerDiamiter |
-| outerDiamiter | Measure | 外径 | uro:outerDiamiter |
+| innerDiameter | Measure |  | uro:innerDiameter |
+| outerDiameter | Measure |  | uro:outerDiameter |
 | sleeveType | Code | 被覆区分 | uro:sleeveType |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### uro:RoofSurface
 
@@ -1641,6 +1838,8 @@ TIN地形
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
 | genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### uro:SewerPipe
 
@@ -1656,12 +1855,13 @@ TIN地形
 | class | Code | 分類 | frn:class |
 | function | Code | 機能 | frn:function |
 | usage | Code | 用途 | frn:usage |
-| cityFurnitureDataQualityAttribute | uro:CityFurnitureDataQualityAttribute | データ品質 | uro:cityFurnitureDataQualityAttribute |
 | cityFurnitureDetailAttribute | uro:CityFurnitureDetailAttribute | 都市設備詳細属性 | uro:cityFurnitureDetailAttribute |
+| cityFurnitureDataQualityAttribute | uro:DataQualityAttribute | データ品質 | uro:cityFurnitureDataQualityAttribute |
 | frnDmAttribute | uro:DmAttributeProperty | 図式属性 | uro:frnDmAttribute |
 | frnFacilityAttribute | uro:FacilityAttributeProperty | 施設詳細属性 | uro:frnFacilityAttribute |
 | frnFacilityIdAttribute | uro:FacilityIdAttributeProperty | 施設属性 | uro:frnFacilityIdAttribute |
 | frnFacilityTypeAttribute | uro:FacilityTypeAttribute | 施設識別属性 | uro:frnFacilityTypeAttribute |
+| frnKeyValuePairAttribute | uro:KeyValuePairAttribute |  | uro:frnKeyValuePairAttribute |
 | occupierType | Code | 事業者種類 | uro:occupierType |
 | occupierName | Code | 事業者名 | uro:occupierName |
 | year | String | 埋設年度 | uro:year |
@@ -1680,10 +1880,15 @@ TIN地形
 | offset | Measure | オフセット量 | uro:offset |
 | material | Code | 管きょ材質 | uro:material |
 | lengthAttribute | uro:LengthAttribute | 長さ情報 | uro:lengthAttribute |
-| innerDiamiter | Measure | 内径 | uro:innerDiamiter |
-| outerDiamiter | Measure | 外径 | uro:outerDiamiter |
+| innerDiameter | Measure |  | uro:innerDiameter |
+| outerDiameter | Measure |  | uro:outerDiameter |
 | sleeveType | Code | 被覆区分 | uro:sleeveType |
 | slope | Measure | 勾配 | uro:slope |
+| invertElevationUpstream | Measure |  | uro:invertElevationUpstream |
+| invertElevationDownstream | Measure |  | uro:invertElevationDownstream |
+| flowDirection | Boolean |  | uro:flowDirection |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### uro:TelecommunicationsCable
 
@@ -1699,12 +1904,13 @@ TIN地形
 | class | Code | 分類 | frn:class |
 | function | Code | 機能 | frn:function |
 | usage | Code | 用途 | frn:usage |
-| cityFurnitureDataQualityAttribute | uro:CityFurnitureDataQualityAttribute | データ品質 | uro:cityFurnitureDataQualityAttribute |
 | cityFurnitureDetailAttribute | uro:CityFurnitureDetailAttribute | 都市設備詳細属性 | uro:cityFurnitureDetailAttribute |
+| cityFurnitureDataQualityAttribute | uro:DataQualityAttribute | データ品質 | uro:cityFurnitureDataQualityAttribute |
 | frnDmAttribute | uro:DmAttributeProperty | 図式属性 | uro:frnDmAttribute |
 | frnFacilityAttribute | uro:FacilityAttributeProperty | 施設詳細属性 | uro:frnFacilityAttribute |
 | frnFacilityIdAttribute | uro:FacilityIdAttributeProperty | 施設属性 | uro:frnFacilityIdAttribute |
 | frnFacilityTypeAttribute | uro:FacilityTypeAttribute | 施設識別属性 | uro:frnFacilityTypeAttribute |
+| frnKeyValuePairAttribute | uro:KeyValuePairAttribute |  | uro:frnKeyValuePairAttribute |
 | occupierType | Code | 事業者種類 | uro:occupierType |
 | occupierName | Code | 事業者名 | uro:occupierName |
 | year | String | 埋設年度 | uro:year |
@@ -1726,6 +1932,8 @@ TIN地形
 | columns | Integer | 列数 | uro:columns |
 | rows | Integer | 段数 | uro:rows |
 | cables | Integer | 条数 | uro:cables |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### uro:ThermalPipe
 
@@ -1741,12 +1949,13 @@ TIN地形
 | class | Code | 分類 | frn:class |
 | function | Code | 機能 | frn:function |
 | usage | Code | 用途 | frn:usage |
-| cityFurnitureDataQualityAttribute | uro:CityFurnitureDataQualityAttribute | データ品質 | uro:cityFurnitureDataQualityAttribute |
 | cityFurnitureDetailAttribute | uro:CityFurnitureDetailAttribute | 都市設備詳細属性 | uro:cityFurnitureDetailAttribute |
+| cityFurnitureDataQualityAttribute | uro:DataQualityAttribute | データ品質 | uro:cityFurnitureDataQualityAttribute |
 | frnDmAttribute | uro:DmAttributeProperty | 図式属性 | uro:frnDmAttribute |
 | frnFacilityAttribute | uro:FacilityAttributeProperty | 施設詳細属性 | uro:frnFacilityAttribute |
 | frnFacilityIdAttribute | uro:FacilityIdAttributeProperty | 施設属性 | uro:frnFacilityIdAttribute |
 | frnFacilityTypeAttribute | uro:FacilityTypeAttribute | 施設識別属性 | uro:frnFacilityTypeAttribute |
+| frnKeyValuePairAttribute | uro:KeyValuePairAttribute |  | uro:frnKeyValuePairAttribute |
 | occupierType | Code | 事業者種類 | uro:occupierType |
 | occupierName | Code | 事業者名 | uro:occupierName |
 | year | String | 埋設年度 | uro:year |
@@ -1765,9 +1974,11 @@ TIN地形
 | offset | Measure | オフセット量 | uro:offset |
 | material | Code | 管きょ材質 | uro:material |
 | lengthAttribute | uro:LengthAttribute | 長さ情報 | uro:lengthAttribute |
-| innerDiamiter | Measure | 内径 | uro:innerDiamiter |
-| outerDiamiter | Measure | 外径 | uro:outerDiamiter |
+| innerDiameter | Measure |  | uro:innerDiameter |
+| outerDiameter | Measure |  | uro:outerDiameter |
 | sleeveType | Code | 被覆区分 | uro:sleeveType |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### uro:UndergroundBuilding
 
@@ -1797,19 +2008,23 @@ TIN地形
 | interiorRoom | bldg:Room | 部屋 | bldg:interiorRoom |
 | consistsOfBuildingPart | bldg:BuildingPart | 建物部品 | bldg:consistsOfBuildingPart |
 | address | core:Address | 住所 | bldg:address |
+| bldgDataQualityAttribute | uro:DataQualityAttribute |  | uro:bldgDataQualityAttribute |
+| buildingDataQualityAttribute | uro:DataQualityAttribute | データ品質 | uro:buildingDataQualityAttribute |
+| buildingDisasterRiskAttribute | uro:DisasterRiskAttributeProperty | 災害リスク | uro:buildingDisasterRiskAttribute |
 | bldgDmAttribute | uro:DmAttributeProperty | 図式属性 | uro:bldgDmAttribute |
 | bldgFacilityAttribute | uro:FacilityAttributeProperty | 施設詳細属性 | uro:bldgFacilityAttribute |
 | bldgFacilityIdAttribute | uro:FacilityIdAttributeProperty | 施設識別属性 | uro:bldgFacilityIdAttribute |
 | bldgFacilityTypeAttribute | uro:FacilityTypeAttribute | 施設属性 | uro:bldgFacilityTypeAttribute |
+| keyValuePairAttribute | uro:KeyValuePairAttribute | 拡張属性 | uro:keyValuePairAttribute |
 | bldgRealEstateIDAttribute | uro:RealEstateIDAttribute |  | uro:bldgRealEstateIDAttribute |
-| buildingDataQualityAttribute | uro:BuildingDataQualityAttribute | データ品質 | uro:buildingDataQualityAttribute |
+| bldgUsecaseAttribute | uro:BuildingUsecaseAttribute |  | uro:bldgUsecaseAttribute |
 | buildingDetailAttribute | uro:BuildingDetailAttribute | 建物利用現況 | uro:buildingDetailAttribute |
-| buildingDisasterRiskAttribute | uro:BuildingDisasterRiskAttributeProperty | 災害リスク | uro:buildingDisasterRiskAttribute |
 | buildingIDAttribute | uro:BuildingIDAttribute | 建物識別情報 | uro:buildingIDAttribute |
 | ifcBuildingAttribute | uro:IfcAttributeProperty | IFC属性 | uro:ifcBuildingAttribute |
 | indoorBuildingAttribute | uro:IndoorAttributeProperty | 屋内ナビゲーション属性 | uro:indoorBuildingAttribute |
-| keyValuePairAttribute | uro:KeyValuePairAttribute | 拡張属性 | uro:keyValuePairAttribute |
 | largeCustomerFacilityAttribute | uro:LargeCustomerFacilityAttribute | 大規模小売店舗等の立地状況 | uro:largeCustomerFacilityAttribute |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### uro:WallSurface
 
@@ -1822,6 +2037,8 @@ TIN地形
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
 | genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### uro:WaterPipe
 
@@ -1837,12 +2054,13 @@ TIN地形
 | class | Code | 分類 | frn:class |
 | function | Code | 機能 | frn:function |
 | usage | Code | 用途 | frn:usage |
-| cityFurnitureDataQualityAttribute | uro:CityFurnitureDataQualityAttribute | データ品質 | uro:cityFurnitureDataQualityAttribute |
 | cityFurnitureDetailAttribute | uro:CityFurnitureDetailAttribute | 都市設備詳細属性 | uro:cityFurnitureDetailAttribute |
+| cityFurnitureDataQualityAttribute | uro:DataQualityAttribute | データ品質 | uro:cityFurnitureDataQualityAttribute |
 | frnDmAttribute | uro:DmAttributeProperty | 図式属性 | uro:frnDmAttribute |
 | frnFacilityAttribute | uro:FacilityAttributeProperty | 施設詳細属性 | uro:frnFacilityAttribute |
 | frnFacilityIdAttribute | uro:FacilityIdAttributeProperty | 施設属性 | uro:frnFacilityIdAttribute |
 | frnFacilityTypeAttribute | uro:FacilityTypeAttribute | 施設識別属性 | uro:frnFacilityTypeAttribute |
+| frnKeyValuePairAttribute | uro:KeyValuePairAttribute |  | uro:frnKeyValuePairAttribute |
 | occupierType | Code | 事業者種類 | uro:occupierType |
 | occupierName | Code | 事業者名 | uro:occupierName |
 | year | String | 埋設年度 | uro:year |
@@ -1861,9 +2079,11 @@ TIN地形
 | offset | Measure | オフセット量 | uro:offset |
 | material | Code | 管きょ材質 | uro:material |
 | lengthAttribute | uro:LengthAttribute | 長さ情報 | uro:lengthAttribute |
-| innerDiamiter | Measure | 内径 | uro:innerDiamiter |
-| outerDiamiter | Measure | 外径 | uro:outerDiamiter |
+| innerDiameter | Measure |  | uro:innerDiameter |
+| outerDiameter | Measure |  | uro:outerDiameter |
 | sleeveType | Code | 被覆区分 | uro:sleeveType |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### uro:Waterway
 
@@ -1876,17 +2096,35 @@ TIN地形
 | creationDate | Date | 作成日 | core:creationDate |
 | terminationDate | Date | 消滅日 | core:terminationDate |
 | genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
-| tranDmAttribute | uro:DmAttributeProperty | 図式属性 | uro:tranDmAttribute |
 | class | Code | 分類 | tran:class |
 | function | Code | 機能 | tran:function |
 | usage | Code | 用途 | tran:usage |
 | trafficArea | tran:TrafficArea | 交通領域 | tran:trafficArea |
 | auxiliaryTrafficArea | tran:AuxiliaryTrafficArea | 交通補助領域 | tran:auxiliaryTrafficArea |
-| tranDataQualityAttribute | uro:TransportationDataQualityAttribute | データ品質 | uro:tranDataQualityAttribute |
+| tranDataQualityAttribute | uro:DataQualityAttribute | データ品質 | uro:tranDataQualityAttribute |
+| tranDmAttribute | uro:DmAttributeProperty | 図式属性 | uro:tranDmAttribute |
 | tranFacilityAttribute | uro:FacilityAttributeProperty | 施設詳細属性 | uro:tranFacilityAttribute |
 | tranFacilityIdAttribute | uro:FacilityIdAttributeProperty | 施設識別属性 | uro:tranFacilityIdAttribute |
 | tranFacilityTypeAttribute | uro:FacilityTypeAttribute | 施設属性 | uro:tranFacilityTypeAttribute |
+| tranKeyValuePairAttribute | uro:KeyValuePairAttribute |  | uro:tranKeyValuePairAttribute |
+| tranUsecaseAttribute | uro:TrafficObjectUsecaseAttribute |  | uro:tranUsecaseAttribute |
 | waterwayDetailAttribute | uro:WaterwayDetailAttribute | 航路属性 | uro:waterwayDetailAttribute |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
+
+### uro:demDataQualityAttribute
+
+
+| フィールド名 | 型 | 日本語名 | CityGML 属性名 |
+|-----------|----|--------|---------------|
+| description | String |  | gml:description |
+| name | Code |  | gml:name |
+| creationDate | Date |  | core:creationDate |
+| terminationDate | Date |  | core:terminationDate |
+| genericAttribute | gen:genericAttribute | 汎用属性 | gen:genericAttribute |
+| DataQualityAttribute | uro:DataQualityAttribute |  | uro:DataQualityAttribute |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:Agreement
 
@@ -1921,10 +2159,15 @@ TIN地形
 | reason | String |  | urf:reason |
 | note | String |  | urf:note |
 | surveyYear | String |  | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary |  | urf:boundary |
 | location | String |  | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
 | applicableArea | Measure |  | urf:applicableArea |
 | expiration | Date |  | urf:expiration |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:AircraftNoiseControlZone
 
@@ -1960,9 +2203,14 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
 | areaInTotal | Measure | 面積（合計） | urf:areaInTotal |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:AreaClassification
 
@@ -1998,9 +2246,14 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
 | population | Integer | 人口 | urf:population |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:CollectiveFacilitiesForReconstruction
 
@@ -2036,8 +2289,11 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
 | number | String | 番号 | urf:number |
 | threeDimensionalExtent | urf:ThreeDimensionalExtent | 立体的な範囲 | urf:threeDimensionalExtent |
 | housingFacilities | String | 住宅施設の位置及び規模 | urf:housingFacilities |
@@ -2049,6 +2305,8 @@ TIN地形
 | maximumFloorAreaRate | Double | 容積率の最高限度 | urf:maximumFloorAreaRate |
 | minimumFloorAreaRate | Double | 容積率の最低限度 | urf:minimumFloorAreaRate |
 | maximumBuildingCoverageRate | Double | 建ぺい率の最高限度 | urf:maximumBuildingCoverageRate |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:CollectiveFacilitiesForReconstructionAndRevitalization
 
@@ -2084,8 +2342,11 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
 | number | String | 番号 | urf:number |
 | threeDimensionalExtent | urf:ThreeDimensionalExtent | 立体的な範囲 | urf:threeDimensionalExtent |
 | housingFacilities | String | 住宅施設の位置及び規模 | urf:housingFacilities |
@@ -2097,6 +2358,8 @@ TIN地形
 | maximumFloorAreaRate | Double | 容積率の最高限度 | urf:maximumFloorAreaRate |
 | minimumFloorAreaRate | Double | 容積率の最低限度 | urf:minimumFloorAreaRate |
 | maximumBuildingCoverageRate | Double | 建ぺい率の最高限度 | urf:maximumBuildingCoverageRate |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:CollectiveFacilitiesForTsunamiDisasterPrevention
 
@@ -2132,8 +2395,11 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
 | number | String | 番号 | urf:number |
 | threeDimensionalExtent | urf:ThreeDimensionalExtent | 立体的な範囲 | urf:threeDimensionalExtent |
 | housingFacilities | String | 住宅施設の位置及び規模 | urf:housingFacilities |
@@ -2145,6 +2411,8 @@ TIN地形
 | maximumFloorAreaRate | Double | 容積率の最高限度 | urf:maximumFloorAreaRate |
 | minimumFloorAreaRate | Double | 容積率の最低限度 | urf:minimumFloorAreaRate |
 | maximumBuildingCoverageRate | Double | 建ぺい率の最高限度 | urf:maximumBuildingCoverageRate |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:CollectiveGovernmentAndPublicOfficeFacilities
 
@@ -2180,14 +2448,19 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
 | number | String | 番号 | urf:number |
 | threeDimensionalExtent | urf:ThreeDimensionalExtent | 立体的な範囲 | urf:threeDimensionalExtent |
 | buildingCoverageRate | Double | 建ぺい率の限度 | urf:buildingCoverageRate |
 | floorAreaRate | Double | 容積率の限度 | urf:floorAreaRate |
 | publicFacilitiesAllocationPolicy | String | 公益的施設、住宅及び公共施設の配置方針 | urf:publicFacilitiesAllocationPolicy |
 | scheduledExecutor | String | 施行予定者 | urf:scheduledExecutor |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:CollectiveHousingFacilities
 
@@ -2223,8 +2496,11 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
 | number | String | 番号 | urf:number |
 | threeDimensionalExtent | urf:ThreeDimensionalExtent | 立体的な範囲 | urf:threeDimensionalExtent |
 | buildingCoverageRate | Double | 建ぺい率の限度 | urf:buildingCoverageRate |
@@ -2235,6 +2511,8 @@ TIN地形
 | totalNumberOfHousing | Integer | 住宅予定数の合計 | urf:totalNumberOfHousing |
 | publicFacilitiesAllocationPolicy | String | 住宅及び公共施設の配置方針 | urf:publicFacilitiesAllocationPolicy |
 | scheduledExecutor | String | 施行予定者 | urf:scheduledExecutor |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:CollectiveUrbanDisasterPreventionFacilities
 
@@ -2270,8 +2548,11 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
 | number | String | 番号 | urf:number |
 | threeDimensionalExtent | urf:ThreeDimensionalExtent | 立体的な範囲 | urf:threeDimensionalExtent |
 | specificUtilityAndPublicFacilities | String | 特定公益施設及び公共施設の位置及び規模 | urf:specificUtilityAndPublicFacilities |
@@ -2280,6 +2561,8 @@ TIN地形
 | maximumFloorAreaRate | Double | 容積率の最高限度 | urf:maximumFloorAreaRate |
 | minimumFloorAreaRate | Double | 容積率の最低限度 | urf:minimumFloorAreaRate |
 | maximumBuildingCoverageRate | Double | 建ぺい率の最高限度 | urf:maximumBuildingCoverageRate |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:ConservationZoneForClustersOfTraditionalStructures
 
@@ -2315,9 +2598,14 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
 | areaInTotal | Measure | 面積（合計） | urf:areaInTotal |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:DisasterPreventionBlockImprovementProject
 
@@ -2353,12 +2641,17 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
 | scheduledExecutor | String | 施行予定者 | urf:scheduledExecutor |
 | disasterPreventionPublicFacilityAllocation | String | 防災公共施設の配置及び規模 | urf:disasterPreventionPublicFacilityAllocation |
 | otherPublicFacilityAllocation | String | その他の公共施設の配置及び規模 | urf:otherPublicFacilityAllocation |
 | developmentPlan | String | 防災施設建築物の整備に関する計画 | urf:developmentPlan |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:DisasterPreventionBlockImprovementZonePlan
 
@@ -2394,8 +2687,11 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
 | objectives | String | 地区計画の目標 | urf:objectives |
 | policy | String | 方針 | urf:policy |
 | districtDevelopmentPlan | urf:DistrictDevelopmentPlanProperty | 特定建築物地区整備計画及び防災街区整備地区整備計画 | urf:districtDevelopmentPlan |
@@ -2403,6 +2699,8 @@ TIN地形
 | zonalDisasterPreventionFacilitiesAllocation | String | 地区防災施設の区域。 | urf:zonalDisasterPreventionFacilitiesAllocation |
 | specifiedZonalDisasterPreventionFacilitiesAllocation | String | 特定地区防災施設の区域。 | urf:specifiedZonalDisasterPreventionFacilitiesAllocation |
 | zonalDisasterPreventionFacilities | urf:ZonalDisasterPreventionFacility | 地区防災施設の区域及び特定地区防災施設 | urf:zonalDisasterPreventionFacilities |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:DistributionBusinessPark
 
@@ -2438,8 +2736,11 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
 | number | String | 番号 | urf:number |
 | threeDimensionalExtent | urf:ThreeDimensionalExtent | 立体的な範囲 | urf:threeDimensionalExtent |
 | distributionBusinessPark | String | 流通業務施設の敷地の位置及び規模 | urf:distributionBusinessPark |
@@ -2450,6 +2751,8 @@ TIN地形
 | minimumBuildingHeight | Measure | 高さの最低限度 | urf:minimumBuildingHeight |
 | setbackSize | String | 外壁の後退距離 | urf:setbackSize |
 | scheduledExecutor | String | 施行予定者 | urf:scheduledExecutor |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:DistributionBusinessZone
 
@@ -2485,10 +2788,15 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
 | areaInTotal | Measure | 面積（合計） | urf:areaInTotal |
 | guidelinePublicationDate | Date | 基本方針が定められた日 | urf:guidelinePublicationDate |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:District
 
@@ -2524,8 +2832,11 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
 | buildingRestrictions | String | 建築物に関する制限 | urf:buildingRestrictions |
 | useRestrictions | String | 建築物の用途の制限 | urf:useRestrictions |
 | maximumFloorAreaRate | Double | 容積率の最高限度 | urf:maximumFloorAreaRate |
@@ -2546,6 +2857,8 @@ TIN地形
 | restrictionsForFireProtection | String | 防火上の必要な制限 | urf:restrictionsForFireProtection |
 | restrictionsForNoiseProtection | String | 御盤上又は遮音上必要な制限 | urf:restrictionsForNoiseProtection |
 | minimumFrontageRate | Double | 間口率の最低限度 | urf:minimumFrontageRate |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:DistrictDevelopmentPlan
 
@@ -2581,8 +2894,11 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
 | districtFacilitiesAllocation | String | 地区施設の配置及び規模 | urf:districtFacilitiesAllocation |
 | buildingRestrictions | String | 建築物等の制限 | urf:buildingRestrictions |
 | urbanGreenSpaceConservation | String | 樹林地、草地等の保全に関する事項 | urf:urbanGreenSpaceConservation |
@@ -2590,6 +2906,8 @@ TIN地形
 | landuseRestrictions | String | 土地の利用に関する事項 | urf:landuseRestrictions |
 | districtFacility | urf:DistrictFacilityProperty | 地区施設 | urf:districtFacility |
 | district | urf:District | 地区 | urf:district |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:DistrictFacility
 
@@ -2625,8 +2943,13 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:DistrictImprovementPlanForDisasterPreventionBlockImprovementZonePlan
 
@@ -2662,8 +2985,11 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
 | districtFacilitiesAllocation | String | 地区施設の配置及び規模 | urf:districtFacilitiesAllocation |
 | buildingRestrictions | String | 建築物等の制限 | urf:buildingRestrictions |
 | urbanGreenSpaceConservation | String | 樹林地、草地等の保全に関する事項 | urf:urbanGreenSpaceConservation |
@@ -2671,6 +2997,8 @@ TIN地形
 | landuseRestrictions | String | 土地の利用に関する事項 | urf:landuseRestrictions |
 | districtFacility | urf:DistrictFacilityProperty | 地区施設 | urf:districtFacility |
 | district | urf:District | 防災地区 | urf:district |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:DistrictImprovementPlanForHistoricSceneryMaintenanceAndImprovementDistrict
 
@@ -2706,8 +3034,11 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
 | districtFacilitiesAllocation | String | 地区施設の配置及び規模 | urf:districtFacilitiesAllocation |
 | buildingRestrictions | String | 建築物等の制限 | urf:buildingRestrictions |
 | urbanGreenSpaceConservation | String | 樹林地、草地等の保全に関する事項 | urf:urbanGreenSpaceConservation |
@@ -2715,6 +3046,8 @@ TIN地形
 | landuseRestrictions | String | 土地の利用に関する事項 | urf:landuseRestrictions |
 | districtFacility | urf:DistrictFacilityProperty | 地区施設 | urf:districtFacility |
 | district | urf:District | 地区 | urf:district |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:DistrictPlan
 
@@ -2750,14 +3083,19 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
 | objectives | String | 地区計画の目標 | urf:objectives |
 | policy | String | 区域の整備、開発及び保全に関する方針 | urf:policy |
 | districtDevelopmentPlan | urf:DistrictDevelopmentPlanProperty | 地区整備計画 | urf:districtDevelopmentPlan |
 | promotionDistrict | urf:PromotionDistrict | 促進区 | urf:promotionDistrict |
 | facilityAllocation | String | 施設の配置及び方針 | urf:facilityAllocation |
 | landUsePolicy | String | 土地利用に関する基本方針 | urf:landUsePolicy |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:DistrictsAndZones
 
@@ -2793,9 +3131,14 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
 | areaInTotal | Measure | 面積（合計） | urf:areaInTotal |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:EducationalAndCulturalFacility
 
@@ -2831,10 +3174,15 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
 | number | String | 番号 | urf:number |
 | threeDimensionalExtent | urf:ThreeDimensionalExtent | 立体的な範囲 | urf:threeDimensionalExtent |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:ExceptionalFloorAreaRateDistrict
 
@@ -2870,10 +3218,15 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
 | areaInTotal | Measure | 面積（合計） | urf:areaInTotal |
 | buildingHeightLimits | Measure | 建築物の高さの最高限度 | urf:buildingHeightLimits |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:FirePreventionDistrict
 
@@ -2909,9 +3262,14 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
 | areaInTotal | Measure | 面積（合計） | urf:areaInTotal |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:FireProtectionFacility
 
@@ -2947,12 +3305,17 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
 | number | String | 番号 | urf:number |
 | threeDimensionalExtent | urf:ThreeDimensionalExtent | 立体的な範囲 | urf:threeDimensionalExtent |
 | length | Measure | 延長 | urf:length |
 | width | Measure | 幅員 | urf:width |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:FloodPreventionFacility
 
@@ -2988,12 +3351,17 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
 | number | String | 番号 | urf:number |
 | threeDimensionalExtent | urf:ThreeDimensionalExtent | 立体的な範囲 | urf:threeDimensionalExtent |
 | length | Measure | 延長 | urf:length |
 | width | Measure | 幅員 | urf:width |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:GlobalHubCityDevelopmentProject
 
@@ -3028,11 +3396,16 @@ TIN地形
 | reason | String |  | urf:reason |
 | note | String |  | urf:note |
 | surveyYear | String |  | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary |  | urf:boundary |
 | location | String |  | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
 | implementationBody | String |  | urf:implementationBody |
 | implementationPeriod | String |  | urf:implementationPeriod |
 | plan | String |  | urf:plan |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:GreenSpaceConservationDistrict
 
@@ -3068,9 +3441,14 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
 | areaInTotal | Measure | 面積（合計） | urf:areaInTotal |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:HeightControlDistrict
 
@@ -3106,11 +3484,16 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
 | areaInTotal | Measure | 面積（合計） | urf:areaInTotal |
 | maximumBuildingHeight | Measure | 高さの最高限度 | urf:maximumBuildingHeight |
 | minimumBuildingHeight | Measure | 高さの最低限度 | urf:minimumBuildingHeight |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:HighLevelUseDistrict
 
@@ -3146,14 +3529,19 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
 | areaInTotal | Measure | 面積（合計） | urf:areaInTotal |
 | maximumFloorAreaRate | Double | 容積率の最高限度 | urf:maximumFloorAreaRate |
 | minimumFloorAreaRate | Double | 容積率の最低限度 | urf:minimumFloorAreaRate |
 | maximumBuildingCoverageRate | Double | 建蔽率の最高限度 | urf:maximumBuildingCoverageRate |
 | minimumBuildingArea | Measure | 建築面積の最低限度 | urf:minimumBuildingArea |
 | setbackSize | String | 外壁の後退距離 | urf:setbackSize |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:HighRiseResidentialAttractionDistrict
 
@@ -3189,12 +3577,17 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
 | areaInTotal | Measure | 面積（合計） | urf:areaInTotal |
 | floorAreaRate | Double | 容積率 | urf:floorAreaRate |
 | maximumBuildingCoverageRate | Double | 建蔽率 | urf:maximumBuildingCoverageRate |
 | minimumSiteArea | Measure | 敷地面積の最低限度 | urf:minimumSiteArea |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:HistoricSceneryMaintenanceAndImprovementDistrictPlan
 
@@ -3230,13 +3623,18 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
 | objectives | String | 地区計画の目標 | urf:objectives |
 | policy | String | 方針 | urf:policy |
 | districtDevelopmentPlan | urf:DistrictDevelopmentPlanProperty | 地区整備計画 | urf:districtDevelopmentPlan |
 | promotionDistrict | urf:PromotionDistrict | 促進区 | urf:promotionDistrict |
 | landUsePolicy | String | 土地利用に関する基本方針 | urf:landUsePolicy |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:HousingControlArea
 
@@ -3272,9 +3670,14 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
 | areaInTotal | Measure | 面積（合計） | urf:areaInTotal |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:IndustrialParkDevelopmentProject
 
@@ -3310,11 +3713,16 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
 | scheduledExecutor | String | 施行予定者 | urf:scheduledExecutor |
 | publicFacilityAllocation | String | 公共施設の配置及び規模 | urf:publicFacilityAllocation |
 | residentialLandUsePlan | String | 宅地の利用計画 | urf:residentialLandUsePlan |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:LandReadjustmentProject
 
@@ -3350,11 +3758,16 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
 | scheduledExecutor | String | 施行予定者 | urf:scheduledExecutor |
 | publicFacilityAllocation | String | 公共施設の配置 | urf:publicFacilityAllocation |
 | buildingLotDevelopment | String | 宅地の整備に関する事項 | urf:buildingLotDevelopment |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:LandReadjustmentPromotionArea
 
@@ -3390,10 +3803,15 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
 | developmentPolicy | String | 住宅市街地としての開発方針 | urf:developmentPolicy |
 | publicFacilitiesPlans | String | 公共施設に関する都市計画 | urf:publicFacilitiesPlans |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:LandReadjustmentPromotionAreasForCoreBusinessUrbanDevelopment
 
@@ -3429,10 +3847,15 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
 | developmentPolicy | String | 開発の方針 | urf:developmentPolicy |
 | publicFacilitiesPlans | String | 公共施設に関する都市計画 | urf:publicFacilitiesPlans |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:LandscapeZone
 
@@ -3468,14 +3891,19 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
 | areaInTotal | Measure | 面積（合計） | urf:areaInTotal |
 | buildingDesignRestriction | String | 建築物の形態にかかる制限 | urf:buildingDesignRestriction |
 | maximumBuildingHeight | Measure | 高さの最高限度 | urf:maximumBuildingHeight |
 | minimumBuildingHeight | Measure | 高さの最低限度 | urf:minimumBuildingHeight |
 | setbackSize | String | 外壁の後退距離 | urf:setbackSize |
 | minimumSiteArea | Measure | 敷地面積の最低限度 | urf:minimumSiteArea |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:MarketsSlaughterhousesCrematoria
 
@@ -3511,10 +3939,15 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
 | number | String | 番号 | urf:number |
 | threeDimensionalExtent | urf:ThreeDimensionalExtent | 立体的な範囲 | urf:threeDimensionalExtent |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:MedicalFacility
 
@@ -3550,10 +3983,15 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
 | number | String | 番号 | urf:number |
 | threeDimensionalExtent | urf:ThreeDimensionalExtent | 立体的な範囲 | urf:threeDimensionalExtent |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:NewHousingAndUrbanDevelopmentProject
 
@@ -3589,12 +4027,17 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
 | scheduledExecutor | String | 施行予定者 | urf:scheduledExecutor |
 | housing | String | 住区 | urf:housing |
 | publicFacilityAllocation | String | 公共施設の配置及び規模 | urf:publicFacilityAllocation |
 | residentialLandUsePlan | String | 宅地の利用計画 | urf:residentialLandUsePlan |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:NewUrbanInfrastructureProject
 
@@ -3630,12 +4073,17 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
 | scheduledExecutor | String | 施行予定者 | urf:scheduledExecutor |
 | landForCentralPublicFacilities | String | 公共施設の用に供するべき土地の区域 | urf:landForCentralPublicFacilities |
 | districtsAllocation | String | 開発誘導地区の配置及び規模 | urf:districtsAllocation |
 | landUsePlan | String | 土地の利用計画 | urf:landUsePlan |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:OpenSpaceForPublicUse
 
@@ -3671,11 +4119,16 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
 | number | String | 番号 | urf:number |
 | threeDimensionalExtent | urf:ThreeDimensionalExtent | 立体的な範囲 | urf:threeDimensionalExtent |
 | parkAttribute | urf:ParkAttribute | 公園属性 | urf:parkAttribute |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:ParkingPlaceDevelopmentZone
 
@@ -3711,9 +4164,14 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
 | areaInTotal | Measure | 面積（合計） | urf:areaInTotal |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:PortZone
 
@@ -3749,10 +4207,15 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
 | areaInTotal | Measure | 面積（合計） | urf:areaInTotal |
 | floorAreaRate | Double | 容積率 | urf:floorAreaRate |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:PrivateUrbanRenewalProjectPlan
 
@@ -3787,10 +4250,15 @@ TIN地形
 | reason | String |  | urf:reason |
 | note | String |  | urf:note |
 | surveyYear | String |  | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary |  | urf:boundary |
 | location | String |  | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
 | developer | String |  | urf:developer |
 | plan | String |  | urf:plan |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:ProductiveGreenZone
 
@@ -3826,11 +4294,16 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
 | areaInTotal | Measure | 面積（合計） | urf:areaInTotal |
 | zoneNumber | String | 生産緑地区番号 | urf:zoneNumber |
 | specification | Code | 特定生産緑地指定の有無 | urf:specification |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:ProjectPromotionArea
 
@@ -3866,10 +4339,15 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
 | developmentPolicy | String | 開発の方針 | urf:developmentPolicy |
 | publicFacilitiesPlans | String | 公共施設に関する都市計画 | urf:publicFacilitiesPlans |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:PromotionDistrict
 
@@ -3904,8 +4382,13 @@ TIN地形
 | reason | String |  | urf:reason |
 | note | String |  | urf:note |
 | surveyYear | String |  | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary |  | urf:boundary |
 | location | String |  | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:QuasiUrbanPlanningArea
 
@@ -3941,11 +4424,16 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
 | population | Integer | 準都市計画区域内の総人口 | urf:population |
 | cityArea | Measure | 準都市計画区域面積（市区町村内） | urf:cityArea |
 | cityPopulation | Integer | 準都市計画区域内の人口（市区町村内） | urf:cityPopulation |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:Regulation
 
@@ -3980,8 +4468,13 @@ TIN地形
 | reason | String |  | urf:reason |
 | note | String |  | urf:note |
 | surveyYear | String |  | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary |  | urf:boundary |
 | location | String |  | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:ResidenceAttractionArea
 
@@ -4016,8 +4509,13 @@ TIN地形
 | reason | String |  | urf:reason |
 | note | String |  | urf:note |
 | surveyYear | String |  | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary |  | urf:boundary |
 | location | String |  | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:ResidentialBlockConstructionProject
 
@@ -4053,13 +4551,18 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
 | scheduledExecutor | String | 施行予定者 | urf:scheduledExecutor |
 | publicFacilityAllocation | String | 公共施設の配置及び規模 | urf:publicFacilityAllocation |
 | developmentPlan | String | 施設住宅の建設に関する計画 | urf:developmentPlan |
 | siteArea | Measure | 敷地面積 | urf:siteArea |
 | totalFloorArea | Measure | 延床面積 | urf:totalFloorArea |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:ResidentialBlockConstructionPromotionArea
 
@@ -4094,10 +4597,15 @@ TIN地形
 | reason | String |  | urf:reason |
 | note | String |  | urf:note |
 | surveyYear | String |  | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary |  | urf:boundary |
 | location | String |  | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
 | developmentPolicy | String |  | urf:developmentPolicy |
 | publicFacilitiesPlans | String |  | urf:publicFacilitiesPlans |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:ResidentialEnvironmentImprovementDistrict
 
@@ -4133,8 +4641,11 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
 | areaInTotal | Measure | 面積（合計） | urf:areaInTotal |
 | useToBeInduced | String | 誘導すべき用途 | urf:useToBeInduced |
 | maximumFloorAreaRate | Double | 容積率の最高限度 | urf:maximumFloorAreaRate |
@@ -4142,6 +4653,8 @@ TIN地形
 | maximumBuildingHeight | String | 高さの最高限度 | urf:maximumBuildingHeight |
 | setbackSize | String | 外壁の後退距離 | urf:setbackSize |
 | otherRestrictions | String | 建築物の敷地、構造又は建築設備に対する制限 | urf:otherRestrictions |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:RoadsideDistrictFacility
 
@@ -4177,8 +4690,13 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:RoadsideDistrictImprovementPlan
 
@@ -4214,8 +4732,11 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
 | districtFacilitiesAllocation | String | 地区施設の配置及び規模 | urf:districtFacilitiesAllocation |
 | buildingRestrictions | String | 建築物等の制限 | urf:buildingRestrictions |
 | urbanGreenSpaceConservation | String | 樹林地、草地等の保全に関する事項 | urf:urbanGreenSpaceConservation |
@@ -4224,6 +4745,8 @@ TIN地形
 | districtFacility | urf:DistrictFacilityProperty | 地区施設 | urf:districtFacility |
 | district | urf:District | 沿道地区 | urf:district |
 | roadsideDistrictFacilitiesAllocation | String | 沿道地区施設の配置及び規模 | urf:roadsideDistrictFacilitiesAllocation |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:RoadsideDistrictPlan
 
@@ -4259,14 +4782,19 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
 | objectives | String | 地区計画の目標 | urf:objectives |
 | policy | String | 区域の整備、開発及び保全に関する方針 | urf:policy |
 | districtDevelopmentPlan | urf:DistrictDevelopmentPlanProperty | 沿道地区整備計画 | urf:districtDevelopmentPlan |
 | promotionDistrict | urf:PromotionDistrict | 沿道開発等促進区 | urf:promotionDistrict |
 | facilitiesAllocation | String |  | urf:facilitiesAllocation |
 | landUsePolicy | String | 土地利用に関する基本方針 | urf:landUsePolicy |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:RuralDistrictFacility
 
@@ -4302,8 +4830,13 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:RuralDistrictImprovementPlan
 
@@ -4339,8 +4872,11 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
 | districtFacilitiesAllocation | String | 地区施設の配置及び規模 | urf:districtFacilitiesAllocation |
 | buildingRestrictions | String | 建築物等の制限 | urf:buildingRestrictions |
 | urbanGreenSpaceConservation | String | 樹林地、草地等の保全に関する事項 | urf:urbanGreenSpaceConservation |
@@ -4349,6 +4885,8 @@ TIN地形
 | districtFacility | urf:DistrictFacilityProperty | 地区施設 | urf:districtFacility |
 | district | urf:District | 集落地区 | urf:district |
 | ruralDistrictFacilitiesAllocation | String | 集落地区施設の配置及び規模 | urf:ruralDistrictFacilitiesAllocation |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:RuralDistrictPlan
 
@@ -4384,12 +4922,17 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
 | objectives | String | 地区計画の目標 | urf:objectives |
 | policy | String | 区域の整備、開発及び保全に関する方針 | urf:policy |
 | districtDevelopmentPlan | urf:DistrictDevelopmentPlanProperty | 集落地区整備計画 | urf:districtDevelopmentPlan |
 | promotionDistrict | urf:PromotionDistrict | 促進区 | urf:promotionDistrict |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:SandControlFacility
 
@@ -4425,12 +4968,17 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
 | number | String | 番号 | urf:number |
 | threeDimensionalExtent | urf:ThreeDimensionalExtent | 立体的な範囲 | urf:threeDimensionalExtent |
 | length | Measure | 延長 | urf:length |
 | width | Measure | 幅員 | urf:width |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:ScenicDistrict
 
@@ -4466,13 +5014,18 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
 | areaInTotal | Measure | 面積（合計） | urf:areaInTotal |
 | buildingCoverageRate | Double | 建蔽率 | urf:buildingCoverageRate |
 | buildingHeightLimits | Measure | 高さの規制 | urf:buildingHeightLimits |
 | wallSetbackDistanceWithRoad | Measure | 壁面から敷地境界までの距離（道路に接する部分） | urf:wallSetbackDistanceWithRoad |
 | wallSetbackDistanceWithAdjoiningLand | Measure | 壁面から敷地境界までの距離（道路に接しない部分） | urf:wallSetbackDistanceWithAdjoiningLand |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:ScheduledAreaForCollectiveGovernmentAndPublicOfficeFacilities
 
@@ -4508,9 +5061,14 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
 | scheduledExecutor | String | 施行予定者 | urf:scheduledExecutor |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:ScheduledAreaForCollectiveHousingFacilities
 
@@ -4546,9 +5104,14 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
 | scheduledExecutor | String | 施行予定者 | urf:scheduledExecutor |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:ScheduledAreaForDistributionBusinessPark
 
@@ -4584,9 +5147,14 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
 | scheduledExecutor | String | 施行予定者 | urf:scheduledExecutor |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:ScheduledAreaForIndustrialParkDevelopmentProjects
 
@@ -4622,9 +5190,14 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
 | scheduledExecutor | String | 施行予定者 | urf:scheduledExecutor |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:ScheduledAreaForNewHousingAndUrbanDevelopmentProjects
 
@@ -4660,9 +5233,14 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
 | scheduledExecutor | String | 施行予定者 | urf:scheduledExecutor |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:ScheduledAreaForNewUrbanInfrastructureProjects
 
@@ -4698,9 +5276,14 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
 | scheduledExecutor | String | 施行予定者 | urf:scheduledExecutor |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:ScheduledAreaForUrbanDevelopmentProject
 
@@ -4736,9 +5319,14 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
 | scheduledExecutor | String | 施行予定者 | urf:scheduledExecutor |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:SedimentDisasterProneArea
 
@@ -4774,13 +5362,18 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 所在地 | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
 | disasterType | Code | 災害種別 | urf:disasterType |
 | areaType | Code | 区域区分 | urf:areaType |
 | zoneNumber | String | 区域番号 | urf:zoneNumber |
 | zoneName | String | 区域名 | urf:zoneName |
 | status | Code | 特別警戒未指定フラグ | urf:status |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:SnowProtectionFacility
 
@@ -4816,12 +5409,17 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
 | number | String | 番号 | urf:number |
 | threeDimensionalExtent | urf:ThreeDimensionalExtent | 立体的な範囲 | urf:threeDimensionalExtent |
 | length | Measure | 延長 | urf:length |
 | width | Measure | 幅員 | urf:width |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:SocialWelfareFacility
 
@@ -4857,10 +5455,15 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
 | number | String | 番号 | urf:number |
 | threeDimensionalExtent | urf:ThreeDimensionalExtent | 立体的な範囲 | urf:threeDimensionalExtent |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:SpecialGreenSpaceConservationDistrict
 
@@ -4896,10 +5499,15 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
 | areaInTotal | Measure | 面積（合計） | urf:areaInTotal |
 | requirement | Code | 指定の要件 | urf:requirement |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:SpecialUrbanRenaissanceDistrict
 
@@ -4935,8 +5543,11 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
 | areaInTotal | Measure | 面積（合計） | urf:areaInTotal |
 | useToBeInduced | String | 誘導すべき用途 | urf:useToBeInduced |
 | maximumFloorAreaRate | Double | 容積率の最高限度 | urf:maximumFloorAreaRate |
@@ -4946,6 +5557,8 @@ TIN地形
 | maximumBuildingHeight | String | 高さの最高限度 | urf:maximumBuildingHeight |
 | setbackSize | String | 外壁の後退距離 | urf:setbackSize |
 | otherRestrictions | String | 建築物の敷地、構造又は建築設備に対する制限 | urf:otherRestrictions |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:SpecialUseAttractionDistrict
 
@@ -4981,8 +5594,11 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
 | areaInTotal | Measure | 面積（合計） | urf:areaInTotal |
 | useToBeInduced | String | 誘導すべき用途 | urf:useToBeInduced |
 | maximumFloorAreaRate | Double | 容積率の最高限度 | urf:maximumFloorAreaRate |
@@ -4990,6 +5606,8 @@ TIN地形
 | minimumBuildingArea | Measure | 建築面積の最低限度 | urf:minimumBuildingArea |
 | maximumBuildingHeight | String | 高さの最高限度 | urf:maximumBuildingHeight |
 | otherRestrictions | String | 建築物の敷地、構造又は建築設備に対する制限 | urf:otherRestrictions |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:SpecialUseDistrict
 
@@ -5025,11 +5643,16 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
 | areaInTotal | Measure | 面積（合計） | urf:areaInTotal |
 | buildingRestrictions | String | 建築物の制限 | urf:buildingRestrictions |
 | otherRestrictions | String | 建築物の敷地、構造又は建築設備に関する制限 | urf:otherRestrictions |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:SpecialUseRestrictionDistrict
 
@@ -5065,11 +5688,16 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
 | areaInTotal | Measure | 面積（合計） | urf:areaInTotal |
 | buildingRestrictions | String | 建築物の制限 | urf:buildingRestrictions |
 | otherRestrictions | String | 建築物の敷地、構造又は建築設備に関する制限 | urf:otherRestrictions |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:SpecialZoneForPreservationOfHistoricalLandscape
 
@@ -5105,9 +5733,14 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
 | areaInTotal | Measure | 面積（合計） | urf:areaInTotal |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:SpecifiedBlock
 
@@ -5143,12 +5776,17 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
 | areaInTotal | Measure | 面積（合計） | urf:areaInTotal |
 | floorAreaRate | Double | 容積率 | urf:floorAreaRate |
 | maximumBuildingHeight | Measure | 建築物の高さの最高限度 | urf:maximumBuildingHeight |
 | setbackSize | String | 外壁の後退距離 | urf:setbackSize |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:SpecifiedBuildingZoneImprovementPlan
 
@@ -5184,8 +5822,11 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
 | districtFacilitiesAllocation | String | 地区施設の配置及び規模 | urf:districtFacilitiesAllocation |
 | buildingRestrictions | String | 建築物等の制限 | urf:buildingRestrictions |
 | urbanGreenSpaceConservation | String | 樹林地、草地等の保全に関する事項 | urf:urbanGreenSpaceConservation |
@@ -5193,6 +5834,8 @@ TIN地形
 | landuseRestrictions | String | 土地の利用に関する事項 | urf:landuseRestrictions |
 | districtFacility | urf:DistrictFacilityProperty | 地区施設 | urf:districtFacility |
 | district | urf:District | 防災地区 | urf:district |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:SpecifiedDisasterPreventionBlockImprovementZone
 
@@ -5228,13 +5871,18 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
 | areaInTotal | Measure | 面積（合計） | urf:areaInTotal |
 | minimumSiteArea | Measure | 敷地面積の最低限度 | urf:minimumSiteArea |
 | setbackSize | String | 外壁の後退距離 | urf:setbackSize |
 | minimumFrontageRate | Double | 間口率の最低限度 | urf:minimumFrontageRate |
 | minimumBuildingHeight | Measure | 高さの最低限度 | urf:minimumBuildingHeight |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:SpecifiedUrgentUrbanRenewalArea
 
@@ -5269,13 +5917,18 @@ TIN地形
 | reason | String |  | urf:reason |
 | note | String |  | urf:note |
 | surveyYear | String |  | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary |  | urf:boundary |
 | location | String |  | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
 | developmentPolicy | String |  | urf:developmentPolicy |
 | privateProject | urf:PrivateUrbanRenewalProjectPlan |  | urf:privateProject |
 | specifiedArea | urf:SpecifiedUrgentUrbanRenewalArea |  | urf:specifiedArea |
 | specialDistrict | urf:SpecialUrbanRenaissanceDistrict |  | urf:specialDistrict |
 | developmentProject | urf:GlobalHubCityDevelopmentProject |  | urf:developmentProject |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:SupplyFacility
 
@@ -5311,11 +5964,16 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
 | number | String | 番号 | urf:number |
 | threeDimensionalExtent | urf:ThreeDimensionalExtent | 立体的な範囲 | urf:threeDimensionalExtent |
 | waterWorksAttribute | urf:WaterWorksAttribute | 水道属性 | urf:waterWorksAttribute |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:TelecommunicationFacility
 
@@ -5351,12 +6009,17 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
 | number | String | 番号 | urf:number |
 | threeDimensionalExtent | urf:ThreeDimensionalExtent | 立体的な範囲 | urf:threeDimensionalExtent |
 | length | Measure | 延長 | urf:length |
 | width | Measure | 幅員 | urf:width |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:ThreeDimensionalExtent
 
@@ -5394,6 +6057,8 @@ TIN地形
 | surveyYear | String | 調査年度 | urf:surveyYear |
 | minimumDistance | Measure | 離隔距離の最小限度 | urf:minimumDistance |
 | maximumLoad | Measure | 載荷重の最大限度 | urf:maximumLoad |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:TideFacility
 
@@ -5429,12 +6094,17 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
 | number | String | 番号 | urf:number |
 | threeDimensionalExtent | urf:ThreeDimensionalExtent | 立体的な範囲 | urf:threeDimensionalExtent |
 | length | Measure | 延長 | urf:length |
 | width | Measure | 幅員 | urf:width |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:TrafficFacility
 
@@ -5470,8 +6140,11 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
 | number | String | 番号 | urf:number |
 | threeDimensionalExtent | urf:ThreeDimensionalExtent | 立体的な範囲 | urf:threeDimensionalExtent |
 | startLocation | String | 起点 | urf:startLocation |
@@ -5483,6 +6156,8 @@ TIN地形
 | urbanRapidTransitRailroadAttribute | urf:UrbanRapidTransitRailroadAttribute | 都市高速鉄道属性 | urf:urbanRapidTransitRailroadAttribute |
 | parkingPlaceAttribute | urf:ParkingPlaceAttribute | 駐車場属性 | urf:parkingPlaceAttribute |
 | vehicleTerminalAttribute | urf:VehicleTerminalAttribute | 自動車ターミナル属性 | urf:vehicleTerminalAttribute |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:TreatmentFacility
 
@@ -5518,11 +6193,16 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
 | number | String | 番号 | urf:number |
 | threeDimensionalExtent | urf:ThreeDimensionalExtent | 立体的な範囲 | urf:threeDimensionalExtent |
 | sewerSystemsAttribute | urf:SewerSystemAttribute |  | urf:sewerSystemsAttribute |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:TreePlantingDistrict
 
@@ -5558,10 +6238,15 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
 | areaInTotal | Measure | 面積（合計） | urf:areaInTotal |
 | minimumGreeningRate | Double |  | urf:minimumGreeningRate |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:UnclassifiedBlankArea
 
@@ -5596,8 +6281,13 @@ TIN地形
 | reason | String |  | urf:reason |
 | note | String |  | urf:note |
 | surveyYear | String |  | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary |  | urf:boundary |
 | location | String |  | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:UnclassifiedUseDistrict
 
@@ -5632,8 +6322,13 @@ TIN地形
 | reason | String |  | urf:reason |
 | note | String |  | urf:note |
 | surveyYear | String |  | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary |  | urf:boundary |
 | location | String |  | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:UnusedLandUsePromotionArea
 
@@ -5669,8 +6364,13 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:UrbanDevelopmentProject
 
@@ -5706,9 +6406,14 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
 | scheduledExecutor | String | 施行予定者 | urf:scheduledExecutor |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:UrbanDisasterRecoveryPromotionArea
 
@@ -5744,11 +6449,16 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
 | expirationDate | Date | 期間満了の日 | urf:expirationDate |
 | emergencyRecoveryPolicy | String | 市街地の整備改善の方針 | urf:emergencyRecoveryPolicy |
 | plannedProjectType | Code | 事業の種類 | urf:plannedProjectType |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:UrbanFacility
 
@@ -5784,10 +6494,15 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
 | number | String | 番号 | urf:number |
 | threeDimensionalExtent | urf:ThreeDimensionalExtent | 立体的な範囲 | urf:threeDimensionalExtent |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:UrbanFacilityStipulatedByCabinetOrder
 
@@ -5823,12 +6538,17 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
 | number | String | 番号 | urf:number |
 | threeDimensionalExtent | urf:ThreeDimensionalExtent | 立体的な範囲 | urf:threeDimensionalExtent |
 | length | Measure | 延長 | urf:length |
 | width | Measure | 幅員 | urf:width |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:UrbanFunctionAttractionArea
 
@@ -5863,8 +6583,13 @@ TIN地形
 | reason | String |  | urf:reason |
 | note | String |  | urf:note |
 | surveyYear | String |  | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary |  | urf:boundary |
 | location | String |  | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:UrbanPlanningArea
 
@@ -5900,8 +6625,11 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
 | areaClassification | Code | 区域区分の決定の有無 | urf:areaClassification |
 | reasonForAreaClassification | String | 区域区分を決定する理由又はしない理由 | urf:reasonForAreaClassification |
 | policyForAreaClassification | String | 区域区分の決定方針 | urf:policyForAreaClassification |
@@ -5910,6 +6638,8 @@ TIN地形
 | population | Integer | 都市計画区域内の総人口 | urf:population |
 | cityArea | Measure | 都市計画区域面積（市区町村内） | urf:cityArea |
 | cityPopulation | Integer | 都市計画区域内の人口（市区町村内） | urf:cityPopulation |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:UrbanRedevelopmentProject
 
@@ -5945,8 +6675,11 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
 | scheduledExecutor | String | 施行予定者 | urf:scheduledExecutor |
 | publicFacilityAllocation | String | 公共施設の配置及び規模 | urf:publicFacilityAllocation |
 | developmentPlan | String | 建築物及び建築敷地の整備計画 | urf:developmentPlan |
@@ -5954,6 +6687,8 @@ TIN地形
 | siteArea | Measure | 住宅の敷地面積 | urf:siteArea |
 | totalFloorArea | Measure | 住宅の延べ床面積 | urf:totalFloorArea |
 | numberOfHousing | Integer | 住宅の個数 | urf:numberOfHousing |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:UrbanRedevelopmentPromotionArea
 
@@ -5989,12 +6724,17 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
 | developmentPolicy | String | 開発の方針 | urf:developmentPolicy |
 | publicFacilitiesPlans | String | 公共施設に関する都市計画 | urf:publicFacilitiesPlans |
 | publicFacilities | String | 公共施設の配置及び規模 | urf:publicFacilities |
 | unitArea | String | 整備区の単位 | urf:unitArea |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:UrbanRenewalProject
 
@@ -6030,8 +6770,11 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
 | scheduledExecutor | String | 施行予定者 | urf:scheduledExecutor |
 | storeysAboveGround | NonNegativeInteger | 建築物の地上階数 | urf:storeysAboveGround |
 | storeysBelowGround | NonNegativeInteger | 建築物の地下階数 | urf:storeysBelowGround |
@@ -6039,6 +6782,8 @@ TIN地形
 | floorAreaRate | Double | 容積率の限度 | urf:floorAreaRate |
 | buildingUsage | String | 主な用途 | urf:buildingUsage |
 | siteArea | Measure | 建築敷地面積 | urf:siteArea |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:UrgentUrbanRenewalArea
 
@@ -6073,12 +6818,17 @@ TIN地形
 | reason | String |  | urf:reason |
 | note | String |  | urf:note |
 | surveyYear | String |  | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary |  | urf:boundary |
 | location | String |  | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
 | developmentPolicy | String |  | urf:developmentPolicy |
 | privateProject | urf:PrivateUrbanRenewalProjectPlan |  | urf:privateProject |
 | specifiedArea | urf:SpecifiedUrgentUrbanRenewalArea |  | urf:specifiedArea |
 | specialDistrict | urf:SpecialUrbanRenaissanceDistrict |  | urf:specialDistrict |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:UseDistrict
 
@@ -6114,8 +6864,11 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
 | areaInTotal | Measure | 面積（合計） | urf:areaInTotal |
 | floorAreaRate | Double | 容積率 | urf:floorAreaRate |
 | minimumSiteArea | Measure | 敷地面積の最低限度 | urf:minimumSiteArea |
@@ -6129,6 +6882,8 @@ TIN地形
 | adjacentLandRestrictions | String | 隣地斜線制限 | urf:adjacentLandRestrictions |
 | northDirectionRestrictions | String | 北側斜線制限 | urf:northDirectionRestrictions |
 | shadeRegulation | String | 日影規制 | urf:shadeRegulation |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:Waterway
 
@@ -6163,8 +6918,11 @@ TIN地形
 | reason | String |  | urf:reason |
 | note | String |  | urf:note |
 | surveyYear | String |  | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary |  | urf:boundary |
 | location | String |  | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
 | number | String |  | urf:number |
 | threeDimensionalExtent | urf:ThreeDimensionalExtent |  | urf:threeDimensionalExtent |
 | startLocation | String |  | urf:startLocation |
@@ -6172,6 +6930,8 @@ TIN地形
 | structure | Code |  | urf:structure |
 | length | Measure |  | urf:length |
 | width | Measure |  | urf:width |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:WindProtectionFacility
 
@@ -6207,12 +6967,17 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
 | number | String | 番号 | urf:number |
 | threeDimensionalExtent | urf:ThreeDimensionalExtent | 立体的な範囲 | urf:threeDimensionalExtent |
 | length | Measure | 延長 | urf:length |
 | width | Measure | 幅員 | urf:width |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:ZonalDisasterPreventionFacility
 
@@ -6248,9 +7013,14 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
 | facilityType | Code | 地区防災施設の種類 | urf:facilityType |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:Zone
 
@@ -6286,8 +7056,13 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String |  | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ### urf:ZoneForPreservationOfHistoricalLandscape
 
@@ -6323,9 +7098,14 @@ TIN地形
 | reason | String | 決定の事由 | urf:reason |
 | note | String | 備考 | urf:note |
 | surveyYear | String | 調査年度 | urf:surveyYear |
+| keyValuePairAttribute | uro:KeyValuePairAttribute |  | urf:keyValuePairAttribute |
+| dataQualityAttribute | uro:DataQualityAttribute |  | urf:dataQualityAttribute |
 | boundary | urf:Boundary | 境界 | urf:boundary |
 | location | String | 位置 | urf:location |
+| urbanParkAttribute | urf:UrbanParkAttribute |  | urf:urbanParkAttribute |
 | areaInTotal | Measure | 面積（合計） | urf:areaInTotal |
+| maxHeight | Double |  | maxHeight |
+| minHeight | Double |  | minHeight |
 
 ## プロパティ (Property stereotype)
 
@@ -6409,16 +7189,6 @@ TIN地形
 - <a href='#demrasterrelief'>dem:RasterRelief</a>
 - <a href='#demtinrelief'>dem:TINRelief</a>
 
-### uro:BuildingDisasterRiskAttributeProperty
-
-以下のいずれかの型の値をとる：
-
-- <a href='#urobuildinghightideriskattribute'>uro:BuildingHighTideRiskAttribute</a>
-- <a href='#urobuildinginlandfloodingriskattribute'>uro:BuildingInlandFloodingRiskAttribute</a>
-- <a href='#urobuildinglandslideriskattribute'>uro:BuildingLandSlideRiskAttribute</a>
-- <a href='#urobuildingriverfloodingriskattribute'>uro:BuildingRiverFloodingRiskAttribute</a>
-- <a href='#urobuildingtsunamiriskattribute'>uro:BuildingTsunamiRiskAttribute</a>
-
 ### uro:ConstructionStructureAttributeProperty
 
 以下のいずれかの型の値をとる：
@@ -6443,6 +7213,7 @@ TIN地形
 - <a href='#urohightideriskattribute'>uro:HighTideRiskAttribute</a>
 - <a href='#uroinlandfloodingriskattribute'>uro:InlandFloodingRiskAttribute</a>
 - <a href='#urolandslideriskattribute'>uro:LandSlideRiskAttribute</a>
+- <a href='#uroreservoirfloodingriskattribute'>uro:ReservoirFloodingRiskAttribute</a>
 - <a href='#uroriverfloodingriskattribute'>uro:RiverFloodingRiskAttribute</a>
 - <a href='#urotsunamiriskattribute'>uro:TsunamiRiskAttribute</a>
 
@@ -6465,6 +7236,7 @@ TIN地形
 - <a href='#uromaintenancehistoryattribute'>uro:MaintenanceHistoryAttribute</a>
 - <a href='#uromooringfacility'>uro:MooringFacility</a>
 - <a href='#uronavigationassistancefacility'>uro:NavigationAssistanceFacility</a>
+- <a href='#uroparkfacilitylongevityplanattribute'>uro:ParkFacilityLongevityPlanAttribute</a>
 - <a href='#uroportenvironmentalimprovementfacility'>uro:PortEnvironmentalImprovementFacility</a>
 - <a href='#uroportmanagementfacility'>uro:PortManagementFacility</a>
 - <a href='#uroportpassengerfacility'>uro:PortPassengerFacility</a>
@@ -6482,6 +7254,16 @@ TIN地形
 
 - <a href='#urofacilityidattribute'>uro:FacilityIdAttribute</a>
 - <a href='#uroriverfacilityidattribute'>uro:RiverFacilityIdAttribute</a>
+
+### uro:FloodingRiskAttributeProperty
+
+以下のいずれかの型の値をとる：
+
+- <a href='#urohightideriskattribute'>uro:HighTideRiskAttribute</a>
+- <a href='#uroinlandfloodingriskattribute'>uro:InlandFloodingRiskAttribute</a>
+- <a href='#uroreservoirfloodingriskattribute'>uro:ReservoirFloodingRiskAttribute</a>
+- <a href='#uroriverfloodingriskattribute'>uro:RiverFloodingRiskAttribute</a>
+- <a href='#urotsunamiriskattribute'>uro:TsunamiRiskAttribute</a>
 
 ### uro:IfcAttributeProperty
 
@@ -6549,15 +7331,6 @@ TIN地形
 - <a href='#urosquareurbanplanattribute'>uro:SquareUrbanPlanAttribute</a>
 - <a href='#urostationsquareattribute'>uro:StationSquareAttribute</a>
 - <a href='#uroterminalattribute'>uro:TerminalAttribute</a>
-
-### uro:WaterBodyFloodingRiskAttributeProperty
-
-以下のいずれかの型の値をとる：
-
-- <a href='#urowaterbodyhightideriskattribute'>uro:WaterBodyHighTideRiskAttribute</a>
-- <a href='#urowaterbodyinlandfloodingriskattribute'>uro:WaterBodyInlandFloodingRiskAttribute</a>
-- <a href='#urowaterbodyriverfloodingriskattribute'>uro:WaterBodyRiverFloodingRiskAttribute</a>
-- <a href='#urowaterbodytsunamiriskattribute'>uro:WaterBodyTsunamiRiskAttribute</a>
 
 ### uro:_BoundarySurfaceProperty
 
@@ -6641,6 +7414,7 @@ TIN地形
 
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
+| xalAddress | xAL:AddressDetails |  | core:xalAddress |
 
 ### gen:genericAttribute
 
@@ -6682,7 +7456,6 @@ TIN地形
 |-----------|----|--------|---------------|
 | srcScale | Code |  | uro:srcScale |
 | geometrySrcDesc | Code |  | uro:geometrySrcDesc |
-| thematicSrcDesc | Code |  | uro:thematicSrcDesc |
 | appearanceSrcDesc | Code |  | uro:appearanceSrcDesc |
 | lod1HeightType | Code |  | uro:lod1HeightType |
 | lodType | Code |  | uro:lodType |
@@ -6732,17 +7505,6 @@ TIN地形
 | note | String | 備考 | uro:note |
 | surveyYear | String | 調査年 | uro:surveyYear |
 
-### uro:BuildingHighTideRiskAttribute
-
-高潮浸水リスク
-
-| フィールド名 | 型 | 日本語名 | CityGML 属性名 |
-|-----------|----|--------|---------------|
-| description | Code | 説明 | uro:description |
-| rank | Code | 浸水ランク | uro:rank |
-| rankOrg | Code | 浸水ランク（独自） | uro:rankOrg |
-| depth | Measure | 浸水深 | uro:depth |
-
 ### uro:BuildingIDAttribute
 
 建物ID属性
@@ -6755,50 +7517,14 @@ TIN地形
 | prefecture | Code | 都道府県 | uro:prefecture |
 | city | Code | 市区町村 | uro:city |
 
-### uro:BuildingInlandFloodingRiskAttribute
+### uro:BuildingUsecaseAttribute
 
-内水浸水リスク
-
-| フィールド名 | 型 | 日本語名 | CityGML 属性名 |
-|-----------|----|--------|---------------|
-| description | Code | 説明 | uro:description |
-| rank | Code | 浸水ランク | uro:rank |
-| rankOrg | Code | 浸水ランク（独自） | uro:rankOrg |
-| depth | Measure | 浸水深 | uro:depth |
-
-### uro:BuildingLandSlideRiskAttribute
-
-土砂災害リスク
 
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
-| description | Code | 現象区分 | uro:description |
-| areaType | Code | 区域区分 | uro:areaType |
-
-### uro:BuildingRiverFloodingRiskAttribute
-
-洪水浸水リスク
-
-| フィールド名 | 型 | 日本語名 | CityGML 属性名 |
-|-----------|----|--------|---------------|
-| description | Code | 指定河川名称 | uro:description |
-| rank | Code | 浸水ランク | uro:rank |
-| rankOrg | Code | 浸水ランク（独自） | uro:rankOrg |
-| depth | Measure | 浸水深 | uro:depth |
-| adminType | Code | 指定機関区分 | uro:adminType |
-| scale | Code | 浸水規模 | uro:scale |
-| duration | Measure | 継続時間 | uro:duration |
-
-### uro:BuildingTsunamiRiskAttribute
-
-津波浸水リスク
-
-| フィールド名 | 型 | 日本語名 | CityGML 属性名 |
-|-----------|----|--------|---------------|
-| description | Code | 説明 | uro:description |
-| rank | Code | 浸水ランク | uro:rank |
-| rankOrg | Code | 浸水ランク（独自） | uro:rankOrg |
-| depth | Measure | 浸水深 | uro:depth |
+| isTemporal | Code |  | uro:isTemporal |
+| floorHeight | Measure |  | uro:floorHeight |
+| isGroundFloorOpen | Boolean |  | uro:isGroundFloorOpen |
 
 ### uro:CargoHandlingFacility
 
@@ -6839,17 +7565,6 @@ TIN地形
 | cutLength | Measure | 切線長 | uro:cutLength |
 | curveLength | Measure | 曲線長 | uro:curveLength |
 
-### uro:CityFurnitureDataQualityAttribute
-
-
-| フィールド名 | 型 | 日本語名 | CityGML 属性名 |
-|-----------|----|--------|---------------|
-| srcScale | Code |  | uro:srcScale |
-| geometrySrcDesc | Code |  | uro:geometrySrcDesc |
-| thematicSrcDesc | Code |  | uro:thematicSrcDesc |
-| appearanceSrcDesc | Code |  | uro:appearanceSrcDesc |
-| lodType | Code |  | uro:lodType |
-
 ### uro:CityFurnitureDetailAttribute
 
 都市設備詳細属性
@@ -6879,21 +7594,6 @@ TIN地形
 | facilityAge | Integer | 施設年数 | uro:facilityAge |
 | update | Date | 更新年月日 | uro:update |
 | purpose | Code | 目的 | uro:purpose |
-
-### uro:ConstructionDataQualityAttribute
-
-データ品質
-
-| フィールド名 | 型 | 日本語名 | CityGML 属性名 |
-|-----------|----|--------|---------------|
-| srcScale | Code | 地図情報レベル | uro:srcScale |
-| geometrySrcDesc | Code | 幾何属性作成方法 | uro:geometrySrcDesc |
-| thematicSrcDesc | Code | 主題属性作成方法 | uro:thematicSrcDesc |
-| appearanceSrcDesc | Code | テクスチャ作成方法 | uro:appearanceSrcDesc |
-| dataAcquisition | String | データ取得方法 | uro:dataAcquisition |
-| photoScale | Integer | 写真縮尺 | uro:photoScale |
-| lod1HeightType | Code | LOD1高さ | uro:lod1HeightType |
-| lodType | Code | 詳細LOD | uro:lodType |
 
 ### uro:ConstructionEvent
 
@@ -6940,6 +7640,14 @@ TIN地形
 | parameter | uro:ControlPointType | パラメータ | uro:parameter |
 | startPoint | Point | 開始位置 | uro:startPoint |
 | endPoint | Point | 終了位置 | uro:endPoint |
+
+### uro:CountermeasuresCost
+
+
+| フィールド名 | 型 | 日本語名 | CityGML 属性名 |
+|-----------|----|--------|---------------|
+| cost | Integer |  | uro:cost |
+| costUnit | String |  | uro:costUnit |
 
 ### uro:CyberportMarinaAndPBS
 
@@ -7009,6 +7717,36 @@ TIN地形
 | volume | Measure | 堤体積 | uro:volume |
 | damCode | Code | ダムコード | uro:damCode |
 | totalWaterStorage | Measure | 総貯水量 | uro:totalWaterStorage |
+
+### uro:DataQualityAttribute
+
+
+| フィールド名 | 型 | 日本語名 | CityGML 属性名 |
+|-----------|----|--------|---------------|
+| srcScale | Code |  | uro:srcScale |
+| geometrySrcDesc | Code |  | uro:geometrySrcDesc |
+| appearanceSrcDesc | Code |  | uro:appearanceSrcDesc |
+| geometrySrcDescLod0 | Code |  | uro:geometrySrcDescLod0 |
+| geometrySrcDescLod1 | Code |  | uro:geometrySrcDescLod1 |
+| geometrySrcDescLod2 | Code |  | uro:geometrySrcDescLod2 |
+| geometrySrcDescLod3 | Code |  | uro:geometrySrcDescLod3 |
+| geometrySrcDescLod4 | Code |  | uro:geometrySrcDescLod4 |
+| geometrySrcDesc0 | Code |  | uro:geometrySrcDesc0 |
+| geometrySrcDesc1 | Code |  | uro:geometrySrcDesc1 |
+| geometrySrcDesc2 | Code |  | uro:geometrySrcDesc2 |
+| geometrySrcDesc3 | Code |  | uro:geometrySrcDesc3 |
+| geometrySrcDesc4 | Code |  | uro:geometrySrcDesc4 |
+| thematicSrcDesc | Code |  | uro:thematicSrcDesc |
+| appearanceSrcDescLod0 | Code |  | uro:appearanceSrcDescLod0 |
+| appearanceSrcDescLod1 | Code |  | uro:appearanceSrcDescLod1 |
+| appearanceSrcDescLod2 | Code |  | uro:appearanceSrcDescLod2 |
+| appearanceSrcDescLod3 | Code |  | uro:appearanceSrcDescLod3 |
+| appearanceSrcDescLod4 | Code |  | uro:appearanceSrcDescLod4 |
+| lodType | Code |  | uro:lodType |
+| lod1HeightType | Code |  | uro:lod1HeightType |
+| tranDataAcquisition | String |  | uro:tranDataAcquisition |
+| publicSurveyDataQualityAttribute | uro:PublicSurveyDataQualityAttribute |  | uro:publicSurveyDataQualityAttribute |
+| BuildingDataQualityAttribute | uro:BuildingDataQualityAttribute |  | uro:BuildingDataQualityAttribute |
 
 ### uro:DmAnnotation
 
@@ -7101,7 +7839,7 @@ DM図形情報
 
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
-| id | String |  | uro:id |
+| uro:id | String |  | uro:id |
 | partId | String |  | uro:partId |
 | branchId | String |  | uro:branchId |
 | prefecture | Code |  | uro:prefecture |
@@ -7863,21 +8601,12 @@ nan
 | description | Code | nan | uro:description |
 | areaType | Code | nan | uro:areaType |
 
-### uro:LandUseDataQualityAttribute
-
-
-| フィールド名 | 型 | 日本語名 | CityGML 属性名 |
-|-----------|----|--------|---------------|
-| srcScale | Code |  | uro:srcScale |
-| geometrySrcDesc | Code |  | uro:geometrySrcDesc |
-| thematicSrcDesc | Code |  | uro:thematicSrcDesc |
-
 ### uro:LandUseDetailAttribute
 
 
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
-| id | String |  | uro:id |
+| uro:id | String |  | uro:id |
 | orgLandUse | Code |  | uro:orgLandUse |
 | nominalArea | Measure |  | uro:nominalArea |
 | ownerType | Code |  | uro:ownerType |
@@ -7932,6 +8661,15 @@ nan
 | length | Measure | 長さ情報 | uro:length |
 | mesureType | Code | 計測方法 | uro:mesureType |
 | phaseType | Code | 計測段階 | uro:phaseType |
+
+### uro:LongevityMeasures
+
+
+| フィールド名 | 型 | 日本語名 | CityGML 属性名 |
+|-----------|----|--------|---------------|
+| fiscalYearForCountermeasures | String |  | uro:fiscalYearForCountermeasures |
+| countermeasuresCost | uro:CountermeasuresCost |  | uro:countermeasuresCost |
+| description | String |  | uro:description |
 
 ### uro:MaintenanceHistoryAttribute
 
@@ -8009,6 +8747,14 @@ nan
 | subsidy | String | 事業費－補助金額 | uro:subsidy |
 | note | String | 備考 | uro:note |
 
+### uro:NumberOfFacilities
+
+
+| フィールド名 | 型 | 日本語名 | CityGML 属性名 |
+|-----------|----|--------|---------------|
+| quantity | Integer |  | uro:quantity |
+| quantityUnit | Code |  | uro:quantityUnit |
+
 ### uro:Occupancy
 
 占有状況
@@ -8030,6 +8776,42 @@ nan
 | depth | Measure | 土被り量 | uro:depth |
 | minDepth | Measure | 最小土被り量 | uro:minDepth |
 | maxDepth | Measure | 最大土被り量 | uro:maxDepth |
+
+### uro:ParkFacilityLongevityPlanAttribute
+
+
+| フィールド名 | 型 | 日本語名 | CityGML 属性名 |
+|-----------|----|--------|---------------|
+| facilityId | String |  | uro:facilityId |
+| parkCode | Code |  | uro:parkCode |
+| parkName | Code |  | uro:parkName |
+| parkType | Code |  | uro:parkType |
+| facilityName | Code |  | uro:facilityName |
+| facilityNameOptional | String |  | uro:facilityNameOptional |
+| specificFacilityName | String |  | uro:specificFacilityName |
+| numberOfFacilities | uro:NumberOfFacilities |  | uro:numberOfFacilities |
+| size | String |  | uro:size |
+| mainMaterial | Code |  | uro:mainMaterial |
+| mainMaterialOptional | String |  | uro:mainMaterialOptional |
+| installationYear | String |  | uro:installationYear |
+| disposalLimitPeriod | Integer |  | uro:disposalLimitPeriod |
+| expectedUsagePeriod | Integer |  | uro:expectedUsagePeriod |
+| repairsBeforeParkHealthAssessment | uro:RepairsBeforeParkHealthAssessment |  | uro:repairsBeforeParkHealthAssessment |
+| parkHealthAssessment | uro:ParkHealthAssessment |  | uro:parkHealthAssessment |
+| managementType | Code |  | uro:managementType |
+| expectedRenewalYearWithMeasures | String |  | uro:expectedRenewalYearWithMeasures |
+| longevityMeasures | uro:LongevityMeasures |  | uro:longevityMeasures |
+| noteForLongevity | String |  | uro:noteForLongevity |
+
+### uro:ParkHealthAssessment
+
+
+| フィールド名 | 型 | 日本語名 | CityGML 属性名 |
+|-----------|----|--------|---------------|
+| assessmentFiscalYear | String |  | uro:assessmentFiscalYear |
+| deteriorationStatus | String |  | uro:deteriorationStatus |
+| condition | Code |  | uro:condition |
+| urgency | Code |  | uro:urgency |
 
 ### uro:PortEnvironmentalImprovementFacility
 
@@ -8252,6 +9034,22 @@ nan
 | totalCost | Integer | 事業費－総額 | uro:totalCost |
 | note | String | 備考 | uro:note |
 
+### uro:PublicSurveyDataQualityAttribute
+
+
+| フィールド名 | 型 | 日本語名 | CityGML 属性名 |
+|-----------|----|--------|---------------|
+| srcScaleLod0 | Code |  | uro:srcScaleLod0 |
+| srcScaleLod1 | Code |  | uro:srcScaleLod1 |
+| srcScaleLod2 | Code |  | uro:srcScaleLod2 |
+| srcScaleLod3 | Code |  | uro:srcScaleLod3 |
+| srcScaleLod4 | Code |  | uro:srcScaleLod4 |
+| publicSurveySrcDescLod0 | Code |  | uro:publicSurveySrcDescLod0 |
+| publicSurveySrcDescLod1 | Code |  | uro:publicSurveySrcDescLod1 |
+| publicSurveySrcDescLod2 | Code |  | uro:publicSurveySrcDescLod2 |
+| publicSurveySrcDescLod3 | Code |  | uro:publicSurveySrcDescLod3 |
+| publicSurveySrcDescLod4 | Code |  | uro:publicSurveySrcDescLod4 |
+
 ### uro:RailwayRouteAttribute
 
 鉄道路線属性
@@ -8292,13 +9090,31 @@ nan
 | realEstateIDOfLand | String | 土地不動産ID数 | uro:realEstateIDOfLand |
 | matchingScore | Integer | マッチングスコア | uro:matchingScore |
 
+### uro:RepairsBeforeParkHealthAssessment
+
+
+| フィールド名 | 型 | 日本語名 | CityGML 属性名 |
+|-----------|----|--------|---------------|
+| repair | Code |  | uro:repair |
+| repairFiscalYear | String |  | uro:repairFiscalYear |
+
+### uro:ReservoirFloodingRiskAttribute
+
+
+| フィールド名 | 型 | 日本語名 | CityGML 属性名 |
+|-----------|----|--------|---------------|
+| description | Code |  | uro:description |
+| rank | Code |  | uro:rank |
+| rankOrg | Code |  | uro:rankOrg |
+| depth | Measure |  | uro:depth |
+
 ### uro:RiverFacilityIdAttribute
 
 河川管理施設識別属性
 
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
-| id | String |  | uro:id |
+| uro:id | String |  | uro:id |
 | partId | String |  | uro:partId |
 | branchId | String |  | uro:branchId |
 | prefecture | Code |  | uro:prefecture |
@@ -8355,7 +9171,7 @@ nan
 
 | フィールド名 | 型 | 日本語名 | CityGML 属性名 |
 |-----------|----|--------|---------------|
-| id | String |  | uro:id |
+| uro:id | String |  | uro:id |
 | creationDate | Date |  | uro:creationDate |
 | isTemporary | Boolean |  | uro:isTemporary |
 | roadType | Code |  | uro:roadType |
@@ -8363,17 +9179,6 @@ nan
 | isTollRoad | Boolean |  | uro:isTollRoad |
 | separator | Measure |  | uro:separator |
 | isHighWay | Boolean |  | uro:isHighWay |
-
-### uro:RoomDataQualityAttribute
-
-
-| フィールド名 | 型 | 日本語名 | CityGML 属性名 |
-|-----------|----|--------|---------------|
-| srcScale | Code |  | uro:srcScale |
-| geometrySrcDesc | Code |  | uro:geometrySrcDesc |
-| thematicSrcDesc | Code |  | uro:thematicSrcDesc |
-| appearanceSrcDesc | Code |  | uro:appearanceSrcDesc |
-| lodType | Code |  | uro:lodType |
 
 ### uro:ShipServiceFacility
 
@@ -8523,6 +9328,14 @@ nan
 |-----------|----|--------|---------------|
 | numberOfLanes | Integer | 車線数 | uro:numberOfLanes |
 
+### uro:TrafficObjectUsecaseAttribute
+
+
+| フィールド名 | 型 | 日本語名 | CityGML 属性名 |
+|-----------|----|--------|---------------|
+| minWidth | Measure |  | uro:minWidth |
+| maxWidth | Measure |  | uro:maxWidth |
+
 ### uro:TrafficVolumeAttribute
 
 交通量属性
@@ -8553,18 +9366,6 @@ nan
 | intersection | Measure | 交角 | uro:intersection |
 | distance | Measure | 移動距離 | uro:distance |
 | curveLength | Measure | 曲線長 | uro:curveLength |
-
-### uro:TransportationDataQualityAttribute
-
-データ品質
-
-| フィールド名 | 型 | 日本語名 | CityGML 属性名 |
-|-----------|----|--------|---------------|
-| srcScale | Code | 地図情報レベル | uro:srcScale |
-| geometrySrcDesc | Code | 幾何属性作成方法 | uro:geometrySrcDesc |
-| thematicSrcDesc | Code | 主題属性作成方法 | uro:thematicSrcDesc |
-| appearanceSrcDesc | Code | テクスチャ作成方法 | uro:appearanceSrcDesc |
-| lodType | Code | 詳細LOD | uro:lodType |
 
 ### uro:TsunamiRiskAttribute
 
@@ -8615,16 +9416,6 @@ nan
 | uriValue | URI |  | uro:uriValue |
 | measuredValue | Measure |  | uro:measuredValue |
 
-### uro:VegetationDataQualityAttribute
-
-
-| フィールド名 | 型 | 日本語名 | CityGML 属性名 |
-|-----------|----|--------|---------------|
-| srcScale | Code |  | uro:srcScale |
-| geometrySrcDesc | Code |  | uro:geometrySrcDesc |
-| thematicSrcDesc | Code |  | uro:thematicSrcDesc |
-| appearanceSrcDesc | Code |  | uro:appearanceSrcDesc |
-
 ### uro:VerticalCurveType
 
 縦曲線パラメータ
@@ -8651,51 +9442,6 @@ nan
 | measurementYearMonth | String | 測量年月 | uro:measurementYearMonth |
 | prefecture | Code | 都道府県 | uro:prefecture |
 | city | Code | 市区町村 | uro:city |
-
-### uro:WaterBodyHighTideRiskAttribute
-
-
-| フィールド名 | 型 | 日本語名 | CityGML 属性名 |
-|-----------|----|--------|---------------|
-| description | Code |  | uro:description |
-| rank | Code |  | uro:rank |
-| rankOrg | Code |  | uro:rankOrg |
-| depth | Measure |  | uro:depth |
-
-### uro:WaterBodyInlandFloodingRiskAttribute
-
-内水浸水想定区域
-
-| フィールド名 | 型 | 日本語名 | CityGML 属性名 |
-|-----------|----|--------|---------------|
-| description | Code | 設定等名称 | uro:description |
-| rank | Code | 浸水ランク | uro:rank |
-| rankOrg | Code | 浸水ランク（独自分類） | uro:rankOrg |
-| depth | Measure | 浸水深 | uro:depth |
-
-### uro:WaterBodyRiverFloodingRiskAttribute
-
-洪水浸水想定区域
-
-| フィールド名 | 型 | 日本語名 | CityGML 属性名 |
-|-----------|----|--------|---------------|
-| description | Code | 指定河川名称 | uro:description |
-| rank | Code | 浸水ランク | uro:rank |
-| rankOrg | Code | 浸水ランク（独自分類） | uro:rankOrg |
-| depth | Measure | 浸水深 | uro:depth |
-| adminType | Code | 指定機関 | uro:adminType |
-| scale | Code | 規模 | uro:scale |
-| duration | Measure | 浸水継続時間 | uro:duration |
-
-### uro:WaterBodyTsunamiRiskAttribute
-
-
-| フィールド名 | 型 | 日本語名 | CityGML 属性名 |
-|-----------|----|--------|---------------|
-| description | Code |  | uro:description |
-| rank | Code |  | uro:rank |
-| rankOrg | Code |  | uro:rankOrg |
-| depth | Measure |  | uro:depth |
 
 ### uro:WaterwayDetailAttribute
 
@@ -8724,6 +9470,14 @@ nan
 | usage | Code | 区域の種類 | urf:usage |
 | offset | Measure | オフセット値 | urf:offset |
 | offsetDirection | String | オフセット値の方向 | urf:offsetDirection |
+
+### urf:BreakdownOfNominalArea
+
+
+| フィールド名 | 型 | 日本語名 | CityGML 属性名 |
+|-----------|----|--------|---------------|
+| breakdown | String |  | urf:breakdown |
+| areaInSquareMeter | Measure |  | urf:areaInSquareMeter |
 
 ### urf:ParkAttribute
 
@@ -8771,6 +9525,15 @@ nan
 | standardWidth | Measure | 標準幅員 | urf:standardWidth |
 | crossType | Code | 交差種別 | urf:crossType |
 
+### urf:UrbanParkAttribute
+
+
+| フィールド名 | 型 | 日本語名 | CityGML 属性名 |
+|-----------|----|--------|---------------|
+| parkCode | Code |  | urf:parkCode |
+| startFrom | Date |  | urf:startFrom |
+| breakdownOfNominalArea | urf:BreakdownOfNominalArea |  | urf:breakdownOfNominalArea |
+
 ### urf:UrbanRapidTransitRailroadAttribute
 
 都市高速鉄道属性
@@ -8814,4 +9577,19 @@ nan
 |-----------|----|--------|---------------|
 | startLocation | String | 起点 | urf:startLocation |
 | endLocation | String | 終点 | urf:endLocation |
+
+### xAL:AddressDetails
+
+
+| フィールド名 | 型 | 日本語名 | CityGML 属性名 |
+|-----------|----|--------|---------------|
+| Country | xAL:Country |  | xAL:Country |
+
+### xAL:Country
+
+
+| フィールド名 | 型 | 日本語名 | CityGML 属性名 |
+|-----------|----|--------|---------------|
+| CountryName | String |  | xAL:CountryName |
+| Locality | String |  | xAL:Locality |
 
