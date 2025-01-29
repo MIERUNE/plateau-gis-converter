@@ -23,7 +23,8 @@
 	let isConvertButtonDisabled = true;
 
 	$: isConvertButtonDisabled = !inputPaths.length || !outputPath || isRunning;
-	let transformerRegistry: TransformerSettings;
+	let transformerSettings: TransformerSettings;
+
 
 	async function convertAndSave() {
 		isRunning = true;
@@ -35,7 +36,7 @@
 				filetype,
 				epsg,
 				rulesPath,
-				transformerRegistry,
+				transformerSettings,
 				sinkParameters
 			});
 
@@ -75,7 +76,7 @@
 			bind:epsg
 			bind:rulesPath
 			bind:sinkParameters
-			bind:transformerRegistry
+			bind:transformerSettings
 		/>
 
 		<OutputSelector {filetype} bind:outputPath />

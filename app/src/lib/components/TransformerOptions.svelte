@@ -1,11 +1,11 @@
 <script lang="ts">
 	import { isBooleanConfig, isSelectionConfig } from '$lib/transformer';
 
-	export let transformerRegistry;
+	export let transformerSettings;
 </script>
 
-{#if transformerRegistry && transformerRegistry.configs.length > 0}
-	{#each transformerRegistry.configs as config}
+{#if transformerSettings && transformerSettings.configs.length > 0}
+	{#each transformerSettings.configs as config}
 		{#if isBooleanConfig(config.parameter)}
 			<div class="flex gap-2 w-80 items-center">
 				<label for={config.key} class="w-3/4 pointer-events-none">

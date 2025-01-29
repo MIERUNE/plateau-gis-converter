@@ -13,7 +13,7 @@ import * as dialog from "@tauri-apps/plugin-dialog"
 	export let epsg: number = 4979;
 	export let rulesPath: string;
 	export let sinkParameters: SinkParameters;
-	export let transformerRegistry: TransformerSettings;
+	export let transformerSettings: TransformerSettings;
 
 	$: epsgOptions = filetypeOptions[filetype]?.epsg || [];
 	$: disableEpsgOptions = epsgOptions.length < 2;
@@ -42,13 +42,13 @@ import * as dialog from "@tauri-apps/plugin-dialog"
 		rulesPath = Array.isArray(res) ? res[0] : res;
 	}
 
-	async function getTransformerRegistry(filetype: string) {
+	async function getTransformerSettings(filetype: string) {
 		const registry = (await invoke('get_transform', { filetype })) as any;
 
-		transformerRegistry = registry;
+		transformerSettings = registry;
 	}
 
-	$: getTransformerRegistry(filetype);
+	$: getTransformerSettings(filetype);
 
 	let sinkOptionKeys: string[] = [];
 
@@ -115,11 +115,11 @@ import * as dialog from "@tauri-apps/plugin-dialog"
 			</select>
 		</div>
 
-		{#if (transformerRegistry && transformerRegistry.configs.length > 0) || sinkOptionKeys.length > 0}
+		{#if (transformerSettings && transformerSettings.configs.length > 0) || sinkOptionKeys.length > 0}
 			<div class="flex flex-col">
 				<label for="transform-select" class="font-bold mb-1.5">出力の詳細設定</label>
 				<div class="flex flex-col gap-2">
-					<TransformerOptions bind:transformerRegistry />
+					<TransformerOptions bind:transformerSettings />
 					<SinkOptions bind:sinkOptionKeys bind:sinkParameters />
 				</div>
 			</div>
