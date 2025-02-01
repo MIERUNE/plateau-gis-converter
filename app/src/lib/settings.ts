@@ -6,7 +6,8 @@ const filetypeOptions: Record<string, { label: string; extensions: string[]; eps
 			label: 'GeoPackage',
 			extensions: ['gpkg'],
 			epsg: [
-				{ value: 4979, label: 'WGS 84 (EPSG:4979)' },
+				{ value: 4979, label: 'WGS 84 (EPSG:4979) (楕円体高)' },
+				{ value: 6697, label: 'JGD2011 + 標高 (EPSG:6697)' },
 				{ value: 3857, label: 'Web Mercator (EPSG:3857)' },
 				{ value: 6669, label: 'JGD2011 / 平面直角座標系 I (EPSG:6669)' },
 				{ value: 6670, label: 'JGD2011 / 平面直角座標系 II (EPSG:6670)' },
@@ -45,14 +46,17 @@ const filetypeOptions: Record<string, { label: string; extensions: string[]; eps
 		geojson: {
 			label: 'GeoJSON',
 			extensions: [],
-			epsg: [{ value: 4979, label: 'WGS 84 (EPSG:4979)' }]
+			epsg: [
+				{ value: 4979, label: 'WGS 84 (EPSG:4979) (楕円体高)' },
+				{ value: 6697, label: 'JGD2011 + 標高 (EPSG:6697)' }
+			]
 		},
 		cesiumtiles: {
 			label: '3D Tiles',
 			extensions: [''],
 			epsg: [
 				{ value: 4979, label: 'WGS 84 (EPSG:4979) (楕円体高)' },
-				{ value: 6697, label: '特殊: JGD2011 (EPSG:6697) (標高)' }
+				{ value: 6697, label: '特殊: JGD2011 + 標高 (EPSG:6697)' }
 			]
 		},
 		mvt: {
@@ -68,7 +72,7 @@ const filetypeOptions: Record<string, { label: string; extensions: string[]; eps
 		kml: {
 			label: 'KML',
 			extensions: ['kml'],
-			epsg: [{ value: 6697, label: 'JGD2011 (EPSG:6697)' }]
+			epsg: [{ value: 6697, label: 'JGD2011 + 標高 (EPSG:6697)' }]
 		},
 		gltf: {
 			label: 'glTF',
@@ -79,7 +83,8 @@ const filetypeOptions: Record<string, { label: string; extensions: string[]; eps
 			label: 'Shapefile',
 			extensions: [''],
 			epsg: [
-				{ value: 4979, label: 'WGS 84 (EPSG:4979)' },
+				{ value: 4979, label: 'WGS 84 (EPSG:4979) (楕円体高)' },
+				{ value: 6697, label: 'JGD2011 + 標高 (EPSG:6697)' },
 				{ value: 3857, label: 'Web Mercator (EPSG:3857)' },
 				{ value: 6669, label: 'JGD2011 / 平面直角座標系 I (EPSG:6669)' },
 				{ value: 6670, label: 'JGD2011 / 平面直角座標系 II (EPSG:6670)' },

@@ -1,6 +1,6 @@
 use japan_geoid::{gsi::MemoryGrid, Geoid};
 
-/// Convert from JGD 2011 Geograhpic 3D (EPSG:6697) to WGS84 Geograhpic 3D (EPSG:4979)
+/// Convert from JGD2011 Geograhpic 3D (EPSG:6697) to WGS84 Geograhpic 3D (EPSG:4979)
 pub struct Jgd2011ToWgs84 {
     geoid: MemoryGrid<'static>,
 }
