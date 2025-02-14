@@ -97,6 +97,9 @@ pub struct BuildingDataQualityAttribute {
 
     #[citygml(path = b"uro:lodType")]
     pub lod_type: Vec<Code>,
+
+    #[citygml(path = b"uro:thematicSrcDesc")]
+    pub thematic_src_desc: Vec<Code>,
 }
 
 #[citygml_data(name = "uro:PublicSurveyDataQualityAttribute")]
