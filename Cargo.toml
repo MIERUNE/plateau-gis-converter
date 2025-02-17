@@ -8,7 +8,7 @@ members = [
 resolver = "2"
 
 [workspace.package]
-version = "0.0.0-alpha.0"
+version = "0.1.0"
 authors = ["MIERUNE Inc. <info@mierune.co.jp>"]
 
 [profile.dev.package."*"]
