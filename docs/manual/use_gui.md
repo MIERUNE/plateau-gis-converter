@@ -373,3 +373,10 @@ Serving HTTP on :: port 8000 (http://[::]:8000/) ...
 ![alt text](../resources/useGui_image-18.png)
 
 - 設定を行わない場合のデフォルトの属性名は「[属性マッピングルール](./mapping_rules/index.md)」に記載されています。
+
+## その他
+
+より具体的な利用方法・ユースケースなどはPLATEAU公式のLearningに記事がありますので、そちらもご参照ください。
+
+- [TOPIC 30｜PLATEAU GIS Converterでコンバートして3Dで表示する](https://www.mlit.go.jp/plateau/learning/tpc30/)
+- [TOPIC 31｜PLATEAU GIS Converterを使ってコンバートしたデータをGIS分野で活用する](https://www.mlit.go.jp/plateau/learning/tpc31/)
