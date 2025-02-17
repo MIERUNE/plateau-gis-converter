@@ -9,20 +9,6 @@ macOSを利用している方は、`PLATEAU.GIS.Converter_<最新バージョン
 
 ![alt text](../resources/install_image-11.png)
 
-## windowsでのインストール
-
-ダウンロードした`PLATEAU.GIS.Converter_<最新バージョン>_x64-setup.exe`を実行します。
-
-![alt text](../resources/install_image-1.png)
-
-インストールウィザードが表示されるので、指示に従ってインストールを行ってください。
-
-![alt text](../resources/install_image-2.png)
-
-インストールが完了すると、アプリケーションが起動します。
-
-![alt text](../resources/install_image-3.png)
-
 ## macOSでのインストール
 
 ダウンロードした`PLATEAU.GIS.Converter_<最新バージョン>_universal.dmg`を実行します。
@@ -48,3 +34,19 @@ macOSを利用している方は、`PLATEAU.GIS.Converter_<最新バージョン
 ![alt text](../resources/install_image-9.png)
 
 ![alt text](../resources/install_image.png)
+
+## windowsでのインストール
+
+ダウンロードした`PLATEAU.GIS.Converter_<最新バージョン>_x64-setup.exe`を実行します。
+
+![alt text](../resources/install_image-1.png)
+
+インストールウィザードが表示されるので、指示に従ってインストールを行ってください。
+
+![alt text](../resources/install_image-2.png)
+
+※ WindowsでもMacOSでのダウンロードと同様にウィルス判定されてしまうことがあります。機種やOS・ウィルス対策ソフトによって対応が異なるため、自身の環境に合わせて、許可・無効化等対応してください。
+
+インストールが完了すると、アプリケーションが起動します。
+
+![alt text](../resources/install_image-3.png)

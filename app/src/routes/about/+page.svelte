@@ -17,7 +17,8 @@
 		</p>
 
 		<p>
-			PLATEAUの標準仕様に準拠したCityGML2.0形式の3D都市モデルは、専門のGISツールやCUIツールを用いて他のGIS形式に変換して用いられることが一般的ですが、一般ユーザーが簡易に利用可能な汎用的ツールは存在しません。このため、流通や活用の範囲が専門家や技術者に限られていました。「GISコンバータ」を利用することで、3D都市モデルを用いた様々な分析・開発を行うことができます。
+			PLATEAUの標準仕様に準拠したCityGML2.0形式の3D都市モデルは、専門のGISツールやCUIツールを用いて他のGIS形式に変換して用いられることが一般的ですが、一般ユーザーが簡易に利用可能な汎用的ツールは存在しません。このため、流通や活用の範囲が専門家や技術者に限られていました。「PLATEAU
+			GIS Converter」を利用することで、3D都市モデルを用いた様々な分析・開発を行うことができます。
 		</p>
 
 		<ul>
@@ -35,9 +36,9 @@
 		<h1 class="font-semibold text-lg">利用手順</h1>
 
 		<p>
-			ソフトウェアの最新版は
+			安定版のソフトウェアは、
 			<a
-				href="https://github.com/MIERUNE/PLATEAU-GIS-Converter/releases"
+				href="https://github.com/Project-PLATEAU/PLATEAU-GIS-Converter/releases"
 				target="_blank"
 				rel="noopener noreferrer">Releaseページ</a
 			>
@@ -45,10 +46,20 @@
 			<br />
 			詳しい利用方法については、こちらの
 			<a
-				href="https://mierune.github.io/PLATEAU-GIS-Converter/index.html"
+				href="https://project-plateau.github.io/PLATEAU-GIS-Converter"
 				target="_blank"
 				rel="noopener noreferrer">マニュアル</a
 			>をご覧ください。
+		</p>
+
+		<p>
+			最新版は
+			<a
+				href="https://github.com/MIERUNE/plateau-gis-converter/releases"
+				target="_blank"
+				rel="noopener noreferrer">こちら</a
+			>
+			からダウンロードしてください。
 		</p>
 
 		<div class="mx-auto">
