@@ -23,7 +23,7 @@ nusamai-plateau = { path = "../../nusamai-plateau" }
 nusamai-citygml = {path = "../../nusamai-citygml" }
 log = "0.4.22"
 tauri-plugin-log = "2.0.3"
-thiserror = "1.0.69"
+thiserror = "2.0.11"
 tauri-plugin-fs = "2.1.0"
 tauri-plugin-shell = "2.0.2"
 tauri-plugin-dialog = "2.0.4"

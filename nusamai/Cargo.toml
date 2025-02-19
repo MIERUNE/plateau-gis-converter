@@ -11,7 +11,7 @@ nusamai-plateau = { path = "../nusamai-plateau" }
 nusamai-citygml = { path = "../nusamai-citygml" }
 quick-xml = "0.37.1"
 clap = { version = "4.5.21", features = ["derive", "string"] }
-thiserror = "1.0.69"
+thiserror = "2"
 ctrlc = "3.4.5"
 bincode = { version = "2.0.0-rc.3", default-features = false, features = ["std", "serde"] }
 lz4_flex = "0.11.3"
@@ -22,7 +22,7 @@ cesiumtiles = { git = "https://github.com/MIERUNE/cesiumtiles-rs.git" }
 flatgeom = { version = "0.0", features = ["serde"] }
 nusamai-czml = { path = "../nusamai-czml" }
 nusamai-projection = { path = "../nusamai-projection" }
-tinymvt = "0.0.1"
+tinymvt = "0.0.3"
 fastanvil = "0.31.0"
 fastnbt = "2.5.0"
 geojson = "0.24.1"
@@ -34,7 +34,7 @@ byteorder = "1.5.0"
 hashbrown = { version = "0.15.2", features = ["serde"] }
 log = { version = "0.4.22" }
 pretty_env_logger = "0.5.0"
-itertools = "0.13"
+itertools = "0.14"
 prost = "0.13.3"
 bytesize = "1.3.0"
 ahash = "0.8.11"
@@ -54,10 +54,10 @@ dda-voxelize = "0.2.0-alpha.1"
 atlas-packer = { git = "https://github.com/MIERUNE/atlas-packer.git" }
 # atlas-packer = { path = "../atlas_packer" };
 tempfile = "3.14.0"
-glam = "0.29.2"
+glam = "0.30"
 
 [dev-dependencies]
-rand = "0.8.5"
+rand = "0.9.0"
 tokio = { version = "1.41", features = ["full"] }
 byteorder = "1.5.0"
 glob = "0.3.1"
