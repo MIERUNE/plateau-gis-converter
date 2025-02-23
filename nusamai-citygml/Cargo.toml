@@ -18,5 +18,5 @@ nusamai-projection = { path = "../nusamai-projection"}
 quick-xml = "0.37.1"
 serde = { version = "1.0", features = ["derive"], optional = true }
 serde_json = { version = "1.0.133", features = ["indexmap"], optional = true }
-thiserror = "1.0"
+thiserror = "2"
 url = { version = "2.5.4", features = ["serde"] }
