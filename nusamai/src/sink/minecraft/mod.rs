@@ -160,11 +160,13 @@ impl DataSink for MinecraftSink {
         let center_lng = (global_bvol.min_lng + global_bvol.max_lng) / 2.0;
         let center_lat = (global_bvol.min_lat + global_bvol.max_lat) / 2.0;
 
+        let ellips = nusamai_projection::ellipsoid::grs80();
         let projection = ExtendedTransverseMercatorProjection::new(
             center_lng,
             center_lat,
             0.9999,
-            &nusamai_projection::ellipsoid::grs80(),
+            ellips.a(),
+            ellips.f(),
         );
 
         let typename_block = DefaultBlockResolver::new();
