@@ -4,7 +4,6 @@ mod obj_writer;
 
 use std::{f64::consts::FRAC_PI_2, path::PathBuf, sync::Mutex};
 
-use ahash::{HashMap, HashMapExt};
 use atlas_packer::{
     export::{AtlasExporter as _, JpegAtlasExporter},
     pack::AtlasPacker,
@@ -16,6 +15,7 @@ use atlas_packer::{
 };
 use earcut::{utils3d::project3d_to_2d, Earcut};
 use flatgeom::MultiPolygon;
+use foldhash::{HashMap, HashMapExt};
 use glam::{DMat4, DVec3, DVec4};
 use indexmap::IndexSet;
 use itertools::Itertools;

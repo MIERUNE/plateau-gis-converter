@@ -140,9 +140,9 @@ mod tests {
 
     #[test]
     fn test_schema_to_table_infos() {
-        let mut types = IndexMap::with_hasher(ahash::RandomState::default());
+        let mut types = IndexMap::with_hasher(foldhash::RandomState::default());
 
-        let mut attrs_1 = IndexMap::with_hasher(ahash::RandomState::default());
+        let mut attrs_1 = IndexMap::with_hasher(foldhash::RandomState::default());
         attrs_1.insert("text".into(), Attribute::new(TypeRef::String));
         attrs_1.insert("number".into(), Attribute::new(TypeRef::Integer));
         attrs_1.insert("date".into(), Attribute::new(TypeRef::Date));
@@ -154,7 +154,7 @@ mod tests {
             }),
         );
 
-        let mut attrs_2 = IndexMap::with_hasher(ahash::RandomState::default());
+        let mut attrs_2 = IndexMap::with_hasher(foldhash::RandomState::default());
         attrs_2.insert(
             "json".into(),
             Attribute::new(TypeRef::JsonString(Attribute::new(TypeRef::String).into())),
@@ -229,7 +229,7 @@ mod tests {
 
     #[test]
     fn test_typedef_to_columns() {
-        let mut attrs_1 = IndexMap::with_hasher(ahash::RandomState::default());
+        let mut attrs_1 = IndexMap::with_hasher(foldhash::RandomState::default());
         attrs_1.insert("text".into(), Attribute::new(TypeRef::String));
         attrs_1.insert("number".into(), Attribute::new(TypeRef::Integer));
         attrs_1.insert("date".into(), Attribute::new(TypeRef::Date));
@@ -258,7 +258,7 @@ mod tests {
             ]
         );
 
-        let mut attrs_2 = IndexMap::with_hasher(ahash::RandomState::default());
+        let mut attrs_2 = IndexMap::with_hasher(foldhash::RandomState::default());
         attrs_2.insert(
             "json".into(),
             Attribute::new(TypeRef::JsonString(Attribute::new(TypeRef::String).into())),

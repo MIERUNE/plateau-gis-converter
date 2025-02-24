@@ -10,7 +10,7 @@ pub struct Schema {
     pub epsg: Option<EpsgCode>,
 }
 
-pub type TypeMap = IndexMap<String, TypeDef, ahash::RandomState>;
+pub type TypeMap = IndexMap<String, TypeDef, foldhash::RandomState>;
 
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
 #[serde(tag = "type")]
@@ -20,7 +20,7 @@ pub enum TypeDef {
     Property(PropertyTypeDef),
 }
 
-pub type Map = IndexMap<String, Attribute, ahash::RandomState>;
+pub type Map = IndexMap<String, Attribute, foldhash::RandomState>;
 
 #[derive(Debug, Default, Serialize, Deserialize, PartialEq)]
 pub struct DataTypeDef {

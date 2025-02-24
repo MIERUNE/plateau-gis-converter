@@ -86,7 +86,7 @@ pub struct SurfaceSpan {
 /// Temporary storage for the parser to collect geometries.
 #[derive(Default)]
 pub(crate) struct GeometryCollector {
-    pub vertices: indexmap::IndexSet<[u64; 3], ahash::RandomState>,
+    pub vertices: indexmap::IndexSet<[u64; 3], foldhash::RandomState>,
     pub geometry_crs_uri: Option<String>,
     pub multipolygon: MultiPolygon<'static, u32>,
     pub multilinestring: MultiLineString<'static, u32>,

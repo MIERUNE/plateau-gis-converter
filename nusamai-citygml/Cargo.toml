@@ -8,7 +8,6 @@ default = ["serde"]
 serde = ["dep:serde", "serde_json", "flatgeom/serde"]
 
 [dependencies]
-ahash = "0.8.11"
 chrono = { version = "0.4.38", features = ["serde"], default-features = false }
 indexmap = { version = "2.7.0", features = ["serde"] }
 log = "0.4.22"
@@ -20,3 +19,4 @@ serde = { version = "1.0", features = ["derive"], optional = true }
 serde_json = { version = "1.0.133", features = ["indexmap"], optional = true }
 thiserror = "2"
 url = { version = "2.5.4", features = ["serde"] }
+foldhash = "0.1.4"

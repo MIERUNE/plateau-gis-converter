@@ -16,7 +16,7 @@ use std::{
 };
 
 use crate::sink::mvt::tileid::TileIdMethod;
-use ahash::RandomState;
+use foldhash::RandomState;
 use atlas_packer::{
     export::{AtlasExporter as _, WebpAtlasExporter},
     pack::AtlasPacker,
@@ -284,7 +284,7 @@ fn feature_sorting_stage(
     receiver_sliced: mpsc::Receiver<(u64, String, Vec<u8>)>,
     sender_sorted: mpsc::SyncSender<(u64, String, Vec<Vec<u8>>)>,
 ) -> Result<()> {
-    let mut typename_to_seq: IndexSet<String, ahash::RandomState> = Default::default();
+    let mut typename_to_seq: IndexSet<String, foldhash::RandomState> = Default::default();
 
     let config = kv_extsort::SortConfig::default()
         .max_chunk_bytes(256 * 1024 * 1024) // TODO: Configurable
