@@ -1,6 +1,6 @@
 use std::io::Write;
 
-use ahash::{HashMap, HashMapExt};
+use foldhash::{HashMap, HashMapExt};
 
 pub struct ProjectionRepository {
     wkt_map: HashMap<u16, String>,

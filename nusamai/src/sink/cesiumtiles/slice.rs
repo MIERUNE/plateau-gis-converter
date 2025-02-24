@@ -1,7 +1,7 @@
 //! Polygon slicing algorithm based on [geojson-vt](https://github.com/mapbox/geojson-vt).
 
-use ahash::HashSet;
 use flatgeom::{MultiPolygon, Polygon, Polygon2, Polygon3};
+use foldhash::HashSet;
 use hashbrown::HashMap;
 use indexmap::IndexSet;
 use itertools::Itertools;

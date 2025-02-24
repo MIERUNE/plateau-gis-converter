@@ -12,7 +12,7 @@ use crate::{
 };
 
 // TODO: Cow<'static, str> insted of String ??
-pub type Map = indexmap::IndexMap<String, Value, ahash::RandomState>;
+pub type Map = indexmap::IndexMap<String, Value, foldhash::fast::RandomState>;
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct Object {

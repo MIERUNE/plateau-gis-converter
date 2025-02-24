@@ -37,7 +37,6 @@ pretty_env_logger = "0.5.0"
 itertools = "0.14"
 prost = "0.13.3"
 bytesize = "1.3.0"
-ahash = "0.8.11"
 nusamai-shapefile = { path = "../nusamai-shapefile" }
 shapefile = "0.6.0"
 earcut = "0.4"
@@ -52,9 +51,9 @@ kv-extsort = { git = "https://github.com/MIERUNE/kv-extsort-rs.git" }
 bytemuck = { version = "1.20.0", features = ["derive"] }
 dda-voxelize = "0.2.0-alpha.1"
 atlas-packer = { git = "https://github.com/MIERUNE/atlas-packer.git" }
-# atlas-packer = { path = "../atlas_packer" };
 tempfile = "3.14.0"
 glam = "0.30"
+foldhash = "0.1.4"
 
 [dev-dependencies]
 rand = "0.9.0"

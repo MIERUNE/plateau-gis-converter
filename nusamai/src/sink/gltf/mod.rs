@@ -5,7 +5,6 @@ mod material;
 use std::{f64::consts::FRAC_PI_2, fs::File, io::BufWriter, path::PathBuf, sync::Mutex};
 
 use crate::sink::cesiumtiles::utils::calculate_normal;
-use ahash::{HashMap, HashSet, RandomState};
 use atlas_packer::{
     export::{AtlasExporter as _, JpegAtlasExporter},
     pack::AtlasPacker,
@@ -17,6 +16,7 @@ use atlas_packer::{
 };
 use earcut::{utils3d::project3d_to_2d, Earcut};
 use flatgeom::MultiPolygon;
+use foldhash::{fast::RandomState, HashMap, HashSet};
 use glam::{DMat4, DVec3, DVec4};
 use gltf_writer::write_gltf_glb;
 use indexmap::IndexSet;
