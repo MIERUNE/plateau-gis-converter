@@ -192,8 +192,9 @@ pub fn write_gltf_glb<W: Write>(
         }
     }
 
-    let mut image_set: IndexSet<material::Image, foldhash::RandomState> = Default::default();
-    let mut texture_set: IndexSet<material::Texture, foldhash::RandomState> = Default::default();
+    let mut image_set: IndexSet<material::Image, foldhash::fast::RandomState> = Default::default();
+    let mut texture_set: IndexSet<material::Texture, foldhash::fast::RandomState> =
+        Default::default();
 
     // materials
     let gltf_materials = primitives

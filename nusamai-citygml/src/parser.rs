@@ -77,7 +77,7 @@ pub struct ParseContext<'a> {
     source_uri: Url,
     code_resolver: &'a dyn CodeResolver,
     // Mapping a string gml:id to an integer ID, unique in a single document
-    id_map: indexmap::IndexSet<String, foldhash::RandomState>,
+    id_map: indexmap::IndexSet<String, foldhash::fast::RandomState>,
 }
 
 impl<'a> ParseContext<'a> {

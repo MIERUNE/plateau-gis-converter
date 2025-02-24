@@ -16,7 +16,7 @@ use atlas_packer::{
 };
 use earcut::{utils3d::project3d_to_2d, Earcut};
 use flatgeom::MultiPolygon;
-use foldhash::{HashMap, HashSet, RandomState};
+use foldhash::{fast::RandomState, HashMap, HashSet};
 use glam::{DMat4, DVec3, DVec4};
 use gltf_writer::write_gltf_glb;
 use indexmap::IndexSet;

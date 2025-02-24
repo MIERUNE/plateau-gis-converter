@@ -4,7 +4,7 @@ use std::{io::Write, path::PathBuf};
 
 use byteorder::{ByteOrder, LittleEndian, WriteBytesExt};
 use earcut::{utils3d::project3d_to_2d, Earcut};
-use foldhash::RandomState;
+use foldhash::fast::RandomState;
 use indexmap::IndexSet;
 use nusamai_citygml::{
     object::{ObjectStereotype, Value},

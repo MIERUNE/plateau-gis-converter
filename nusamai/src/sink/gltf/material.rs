@@ -28,7 +28,7 @@ impl Hash for Material {
 impl Material {
     pub fn to_gltf(
         &self,
-        texture_set: &mut IndexSet<Texture, foldhash::RandomState>,
+        texture_set: &mut IndexSet<Texture, foldhash::fast::RandomState>,
     ) -> nusamai_gltf_json::Material {
         let tex = if let Some(texture) = &self.base_texture {
             let (tex_idx, _) = texture_set.insert_full(texture.clone());
@@ -61,7 +61,7 @@ pub struct Texture {
 impl Texture {
     pub fn to_gltf(
         &self,
-        images: &mut IndexSet<Image, foldhash::RandomState>,
+        images: &mut IndexSet<Image, foldhash::fast::RandomState>,
     ) -> nusamai_gltf_json::Texture {
         let (image_index, _) = images.insert_full(Image {
             uri: self.uri.clone(),
