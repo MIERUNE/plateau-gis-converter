@@ -17,6 +17,7 @@ use atlas_packer::{
 use earcut::{utils3d::project3d_to_2d, Earcut};
 use flatgeom::MultiPolygon;
 use foldhash::{fast::RandomState, HashMap, HashSet};
+use geocentric::geodetic_to_geocentric;
 use glam::{DMat4, DVec3, DVec4};
 use gltf_writer::write_gltf_glb;
 use indexmap::IndexSet;
@@ -24,7 +25,6 @@ use itertools::Itertools;
 use material::{Material, Texture};
 use nusamai_citygml::{object::ObjectStereotype, schema::Schema, GeometryType, Value};
 use nusamai_plateau::appearance;
-use nusamai_projection::cartesian::geodetic_to_geocentric;
 use rayon::iter::{IntoParallelIterator, ParallelBridge, ParallelIterator};
 use serde::{Deserialize, Serialize};
 use tempfile::tempdir;
@@ -311,7 +311,8 @@ impl DataSink for GltfSink {
 
             let psi = ((1. - ellipsoid.e_sq()) * center_lat.to_radians().tan()).atan();
 
-            let (tx, ty, tz) = geodetic_to_geocentric(&ellipsoid, center_lng, center_lat, 0.);
+            let (tx, ty, tz) =
+                geodetic_to_geocentric(ellipsoid.a(), ellipsoid.e_sq(), center_lng, center_lat, 0.);
             let h = (tx * tx + ty * ty + tz * tz).sqrt();
 
             DMat4::from_translation(DVec3::new(0., -h, 0.))
@@ -386,8 +387,13 @@ impl DataSink for GltfSink {
                             .polygons
                             .transform_inplace(|&[lng, lat, height, u, v]| {
                                 // geographic to geocentric
-                                let (x, y, z) =
-                                    geodetic_to_geocentric(&ellipsoid, lng, lat, height);
+                                let (x, y, z) = geodetic_to_geocentric(
+                                    ellipsoid.a(),
+                                    ellipsoid.e_sq(),
+                                    lng,
+                                    lat,
+                                    height,
+                                );
                                 // z-up to y-up
                                 let v_xyz = DVec4::new(x, z, -y, 1.0);
                                 // local ENU coordinate

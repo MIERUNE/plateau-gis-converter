@@ -28,11 +28,11 @@ use atlas_packer::{
 use bytemuck::Zeroable;
 use earcut::{utils3d::project3d_to_2d, Earcut};
 use foldhash::fast::RandomState;
+use geocentric::geodetic_to_geocentric;
 use gltf::write_gltf_glb;
 use indexmap::IndexSet;
 use itertools::Itertools;
 use nusamai_citygml::{object::Value, schema::Schema};
-use nusamai_projection::cartesian::geodetic_to_geocentric;
 use rayon::prelude::*;
 use slice::{slice_to_tiles, SlicedFeature};
 use tempfile::tempdir;
@@ -381,7 +381,8 @@ fn tile_writing_stage(
                 // Use the tile center as the translation of the glTF mesh
                 let translation = {
                     let (tx, ty, tz) = geodetic_to_geocentric(
-                        &ellipsoid,
+                        ellipsoid.a(),
+                        ellipsoid.e_sq(),
                         (min_lng + max_lng) / 2.0,
                         (min_lat + max_lat) / 2.0,
                         0.,
@@ -454,8 +455,13 @@ fn tile_writing_stage(
                                 // - z-up to y-up
                                 // - subtract the translation
                                 // - The origin of atlas-packer is in the lower right.
-                                let (x, y, z) =
-                                    geodetic_to_geocentric(&ellipsoid, lng, lat, height);
+                                let (x, y, z) = geodetic_to_geocentric(
+                                    ellipsoid.a(),
+                                    ellipsoid.e_sq(),
+                                    lng,
+                                    lat,
+                                    height,
+                                );
                                 [
                                     x - translation[0],
                                     z - translation[1],

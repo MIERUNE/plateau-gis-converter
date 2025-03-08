@@ -25,13 +25,13 @@ use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
 use url::Url;
 
+use geocentric::geodetic_to_geocentric;
 use nusamai_citygml::{
     object::{ObjectStereotype, Value},
     schema::Schema,
     GeometryType,
 };
 use nusamai_plateau::appearance;
-use nusamai_projection::cartesian::geodetic_to_geocentric;
 
 use crate::{
     get_parameter_value,
@@ -340,7 +340,8 @@ impl DataSink for ObjSink {
 
             let psi = ((1. - ellipsoid.e_sq()) * center_lat.to_radians().tan()).atan();
 
-            let (tx, ty, tz) = geodetic_to_geocentric(&ellipsoid, center_lng, center_lat, 0.);
+            let (tx, ty, tz) =
+                geodetic_to_geocentric(ellipsoid.a(), ellipsoid.e_sq(), center_lng, center_lat, 0.);
             let h = (tx * tx + ty * ty + tz * tz).sqrt();
 
             DMat4::from_translation(DVec3::new(0., -h, 0.))
@@ -399,8 +400,13 @@ impl DataSink for ObjSink {
                         feature
                             .polygons
                             .transform_inplace(|&[lng, lat, height, u, v]| {
-                                let (x, y, z) =
-                                    geodetic_to_geocentric(&ellipsoid, lng, lat, height);
+                                let (x, y, z) = geodetic_to_geocentric(
+                                    ellipsoid.a(),
+                                    ellipsoid.e_sq(),
+                                    lng,
+                                    lat,
+                                    height,
+                                );
                                 let v_xyz = DVec4::new(x, z, -y, 1.0);
                                 let v_enu = transform_matrix * v_xyz;
                                 [v_enu[0], v_enu[1], v_enu[2], u, v]
