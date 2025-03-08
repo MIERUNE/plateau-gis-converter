@@ -5,13 +5,13 @@ use std::{io::Write, path::PathBuf};
 use byteorder::{ByteOrder, LittleEndian, WriteBytesExt};
 use earcut::{utils3d::project3d_to_2d, Earcut};
 use foldhash::fast::RandomState;
+use geocentric::geodetic_to_geocentric;
 use indexmap::IndexSet;
 use nusamai_citygml::{
     object::{ObjectStereotype, Value},
     schema::Schema,
     GeometryType,
 };
-use nusamai_projection::cartesian::geodetic_to_geocentric;
 use rayon::prelude::*;
 
 use crate::{
@@ -133,8 +133,13 @@ impl DataSink for StanfordPlySink {
                                         let [lng, lat, height] = geom_store.vertices[*idx as usize];
                                         // Convert to geocentric (x, y, z) coordinate.
                                         // (Earcut do not work in geographic space)
-                                        let (x, y, z) =
-                                            geodetic_to_geocentric(&ellipsoid, lng, lat, height);
+                                        let (x, y, z) = geodetic_to_geocentric(
+                                            ellipsoid.a(),
+                                            ellipsoid.e_sq(),
+                                            lng,
+                                            lat,
+                                            height,
+                                        );
                                         [x, y, z]
                                     });
                                     let num_outer = match poly.hole_indices().first() {
