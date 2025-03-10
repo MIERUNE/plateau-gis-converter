@@ -9,7 +9,7 @@
 [![Docs](https://github.com/MIERUNE/plateau-gis-converter/actions/workflows/doc.yml/badge.svg)](https://mierune.github.io/nusamai/app/)
 -->
 
-A proof of concept GUI and CLI tool for converting PLATEAU's 3D city models (CityGML) of Japan into various geospatial formats, including 3D Tiles, MVT, and GeoPackage.
+A proof-of-concept GUI and CLI tool for converting PLATEAU's 3D city models (CityGML) of Japan into various geospatial formats, including 3D Tiles, MVT, and GeoPackage.
 
 ## 1. 概要
 
@@ -32,7 +32,7 @@ PLATEAU の標準仕様に準拠した CityGML 2.0 形式の3D都市モデルは
 「PLATEAU GIS Converter」を利用することで、3D都市モデルを一般的なGIS形式に変換して、様々な分析・開発を行うことができます：
 
 - GeoPackage 形式による [QGIS](https://www.qgis.org/) 等での解析
-- Mapbox Vector Tiles (MVT) 形式による、大規模データのWeb等での高速描画
+- Mapbox Vector Tiles (MVT) 形式による、大規模データのWebでの高速描画
 - 3D Tiles 形式による [Cesium](https://cesium.com/) 等での可視化
 - KML 形式による Google Earth での可視化
 - など
@@ -62,8 +62,8 @@ PLATEAU の標準仕様に準拠した CityGML 2.0 形式の3D都市モデルは
   - glTF
   - Wavefront OBJ
 - 複数の入力ファイルをもとにした変換
-- 属性名マッピングルールの取り込み
 - 指定された座標参照系に変換して出力（一部形式で対応）
+- 属性名マッピングルールの取り込み
 
 ## 5. 利用技術
 
@@ -115,14 +115,14 @@ PLATEAU の標準仕様に準拠した CityGML 2.0 形式の3D都市モデルは
 
 ### 7.1. 外部リポジトリ
 
-- [MIERUNE/earcut-rs](https://github.com/MIERUNE/earcut-rs) &mdash; ポリゴン三角形化アルゴリズムのRust移植
-- [ciscorn/japan-geoid](https://github.com/ciscorn/japan-geoid) &mdash; 日本のジオイドモデル (JGD2011 → WGS 84 の変換)
 - [MIERUNE/flatgeom-rs](https://github.com/MIERUNE/flatgeom-rs) &mdash; シリアライズ/デシリアライズの効率を優先したジオメトリ型
-- [MIERUNE/kv-extsort-rs](https://github.com/MIERUNE/kv-extsort-rs) &mdash; Key-value データの外部ソート
-- [MIERUNE/dda-vozelize-rs](https://github.com/MIERUNE/dda-voxelize-rs) &mdash; 3Dメッシュサーフェスの高速なボクセル化
 - [MIERUNE/cesiumtiles-rs](https://github.com/MIERUNE/cesiumtiles-rs) &mdash; 3D TilesのJSONモデルなど
 - [MIERUNE/atlas-packer](https://github.com/MIERUNE/atlas-packer) &mdash; テクスチャアトラスの作成
-- [MIERUNE/tinymvt](https://github.com/MIERUNE/tinymvt) &mdash; MVT生成のためのユーティリティ
+- [MIERUNE/dda-vozelize-rs](https://github.com/MIERUNE/dda-voxelize-rs) &mdash; 3Dメッシュサーフェスの高速なボクセル化
+- [ciscorn/earcut-rs](https://github.com/MIERUNE/earcut-rs) &mdash; ポリゴン三角形化アルゴリズムのRust移植
+- [ciscorn/japan-geoid](https://github.com/ciscorn/japan-geoid) &mdash; 日本のジオイドモデル (JGD2011 → WGS 84 の変換)
+- [ciscorn/kv-extsort-rs](https://github.com/MIERUNE/kv-extsort-rs) &mdash; Key-value データの外部ソート
+- [ciscorn/tinymvt](https://github.com/MIERUNE/tinymvt) &mdash; MVT生成のためのユーティリティ
 
 ## 8. ライセンス
 
