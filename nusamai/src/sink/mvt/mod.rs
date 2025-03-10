@@ -342,8 +342,8 @@ fn tile_writing_stage(
                 feedback.info(format!(
                     "Writing a tile: {} ({} bytes, {} compressed)",
                     &path.to_string_lossy(),
-                    bytesize::to_string(bytes.len() as u64, true),
-                    bytesize::to_string(compressed_size as u64, true),
+                    bytesize::ByteSize(bytes.len() as u64),
+                    bytesize::ByteSize(compressed_size as u64),
                 ));
                 fs::write(&path, &bytes)?;
                 break;

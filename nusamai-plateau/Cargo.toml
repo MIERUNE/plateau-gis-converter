@@ -21,7 +21,7 @@ log = "0.4.22"
 
 [dev-dependencies]
 zstd = { version = "0.13.2", features = ["zdict_builder"] }
-bincode = { version = "2.0.0-rc.3", default-features = false, features = ["std", "serde"] }
+bincode = { version = "2.0.0", default-features = false, features = ["std", "serde"] }
 clap = { version = "4.5", features = ["derive"] }
 serde = { version = "1.0.215", features = ["derive"] }
 lz4_flex = "0.11.3"
