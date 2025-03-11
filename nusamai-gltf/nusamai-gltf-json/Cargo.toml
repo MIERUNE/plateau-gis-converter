@@ -6,9 +6,9 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-serde = { version = "1.0.217", features = ["derive"] }
-serde_json = { version = "1.0.134", features = ["float_roundtrip"] }
-serde_repr = "0.1.19"
+serde = { version = "1.0.219", features = ["derive"] }
+serde_json = { version = "1.0.140", features = ["float_roundtrip"] }
+serde_repr = "0.1.20"
 cesiumtiles = { git = "https://github.com/MIERUNE/cesiumtiles-rs.git" }
 
 [dev-dependencies]

@@ -8,11 +8,3 @@ resolver = "2"
 [workspace.package]
 authors = ["MIERUNE Inc. <info@mierune.co.jp>"]
 version = "0.0.0-alpha.0"
-
-[profile.dev.package."*"]
-opt-level = 3
-
-[profile.release-lto]
-codegen-units = 8
-inherits = "release"
-lto = "fat"

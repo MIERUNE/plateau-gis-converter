@@ -7,5 +7,5 @@ version = "0.1.0"
 
 [dependencies]
 flatgeom = "0.0.2"
-geojson = "0.24.1"
-serde_json = { version = "1.0.134", features = ["indexmap"] }
+geojson = "0.24.2"
+serde_json = { version = "1.0.140", features = ["indexmap"] }

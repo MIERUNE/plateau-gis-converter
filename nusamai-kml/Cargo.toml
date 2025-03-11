@@ -7,4 +7,4 @@ version = "0.1.0"
 
 [dependencies]
 flatgeom = "0.0.2"
-kml = "0.8.5"
+kml = "0.8.7"
