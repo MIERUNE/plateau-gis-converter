@@ -4,7 +4,7 @@ use indexmap::IndexMap;
 use nusamai_projection::crs::EpsgCode;
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Serialize, Deserialize, Default)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct Schema {
     pub types: TypeMap,
     pub epsg: Option<EpsgCode>,
@@ -12,7 +12,7 @@ pub struct Schema {
 
 pub type TypeMap = IndexMap<String, TypeDef, ahash::RandomState>;
 
-#[derive(Debug, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(tag = "type")]
 pub enum TypeDef {
     Feature(FeatureTypeDef),
@@ -22,21 +22,21 @@ pub enum TypeDef {
 
 pub type Map = IndexMap<String, Attribute, ahash::RandomState>;
 
-#[derive(Debug, Default, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq)]
 pub struct DataTypeDef {
     pub attributes: Map,
     #[serde(default, skip_serializing_if = "is_false")]
     pub additional_attributes: bool,
 }
 
-#[derive(Debug, Default, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq)]
 pub struct FeatureTypeDef {
     pub attributes: Map,
     #[serde(default, skip_serializing_if = "is_false")]
     pub additional_attributes: bool,
 }
 
-#[derive(Debug, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct PropertyTypeDef {
     pub members: Vec<Attribute>,
 }

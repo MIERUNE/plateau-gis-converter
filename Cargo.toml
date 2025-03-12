@@ -7,4 +7,4 @@ resolver = "2"
 
 [workspace.package]
 authors = ["MIERUNE Inc. <info@mierune.co.jp>"]
-version = "0.0.0-alpha.0"
+version = "0.8.0"
