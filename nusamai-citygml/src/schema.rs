@@ -1,5 +1,7 @@
 //! Programmatically readable representation of the CityGML model.
 
+use std::collections::HashSet;
+
 use indexmap::IndexMap;
 use nusamai_projection::crs::EpsgCode;
 use serde::{Deserialize, Serialize};
@@ -18,6 +20,30 @@ pub enum TypeDef {
     Feature(FeatureTypeDef),
     Data(DataTypeDef),
     Property(PropertyTypeDef),
+}
+
+impl TypeDef {
+    pub fn attributes(&self) -> Map {
+        match self {
+            TypeDef::Feature(ft) => ft.attributes.clone(),
+            TypeDef::Data(dt) => dt.attributes.clone(),
+            TypeDef::Property(pt) => {
+                let mut map = Map::default();
+                for (i, attr) in pt.members.iter().enumerate() {
+                    map.insert(i.to_string(), attr.clone());
+                }
+                map
+            }
+        }
+    }
+
+    pub fn fields(&self) -> HashSet<String> {
+        match self {
+            TypeDef::Feature(ft) => ft.attributes.keys().cloned().collect(),
+            TypeDef::Data(dt) => dt.attributes.keys().cloned().collect(),
+            TypeDef::Property(_) => HashSet::new(),
+        }
+    }
 }
 
 pub type Map = IndexMap<String, Attribute, ahash::RandomState>;
