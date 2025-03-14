@@ -29,7 +29,7 @@ PLATEAU の標準仕様に準拠した CityGML 2.0 形式の3D都市モデルは
 
 ## 2. 「PLATEAU GIS Converter」について
 
-「PLATEAU GIS Converter」を利用することで、3D都市モデルを一般的なGIS形式に変換して、様々な分析・開発を行うことができます：
+一般ユーザーが簡易に利用できる汎用ツールとして、「PLATEAU GIS Converter」を利用することで、3D都市モデルを一般的なGIS形式に変換して、様々な分析・開発を行うことができます：
 
 - GeoPackage 形式による [QGIS](https://www.qgis.org/) 等での解析
 - Mapbox Vector Tiles (MVT) 形式による、大規模データのWebでの高速描画
@@ -71,7 +71,7 @@ PLATEAU の標準仕様に準拠した CityGML 2.0 形式の3D都市モデルは
 
 内部ロジック：
 
-- 都市モデルの解析および他形式への変換はすべてプログラミング言語 [Rust](https://www.rust-lang.org/) で実装しています。多くの処理はゼロから独自に実装したものです。
+- 3D都市モデルの解析および他形式への変換はすべてプログラミング言語 [Rust](https://www.rust-lang.org/) で実装しています。多くの処理はゼロから独自に実装したものです。
 
 ユーザインタフェース (UI)：
 
