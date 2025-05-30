@@ -14,7 +14,7 @@ pub struct NodeTransformation {
 #[serde(untagged)]
 pub enum NodeTransformationValueType {
     Array(Vec<NodeTransformationProperties>),
-    Object(NodeTransformationProperties),
+    Object(Box<NodeTransformationProperties>),
 }
 
 #[derive(Serialize, Deserialize, Debug)]
