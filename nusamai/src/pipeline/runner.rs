@@ -73,15 +73,6 @@ fn spawn_transformer_thread(
         feedback.info("Transformer thread finished.".into());
     });
 
-    // TODO: This is consuming the first item from the transformer output!
-    // Report an error if the converted data is empty.
-    // if let Err(error) = receiver.recv() {
-    //     main_thread_feedback.fatal_error(PipelineError::Other(format!(
-    //         "Transformer thread failed to receive data due to: {}",
-    //         error
-    //     )));
-    // }
-
     (handle, receiver)
 }
 

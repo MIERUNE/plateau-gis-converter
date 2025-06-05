@@ -108,7 +108,7 @@ fn convert_feature_to_entity(
     };
     let mut attributes = Map::default();
 
-    // Extract ID
+    // If the ID is present, it will be extracted. If not, a UUID will be generated.
     let id = feature
         .id
         .map(|id| match id {
@@ -198,6 +198,8 @@ fn convert_geometry(
 ) -> pipeline::Result<GeometryRefs> {
     use geojson::Value::*;
 
+    // GeoJSON is primarily 2D (LOD 0), but elevation may be specified optionally.
+    // Use LOD 1 for safety to handle potential 3D data.
     let mut refs = GeometryRefs::new();
 
     match &geom.value {
@@ -215,7 +217,7 @@ fn convert_geometry(
 
                 refs.push(GeometryRef {
                     ty: GeometryType::Point,
-                    lod: 1, // Use LOD 1 instead of 0 for compatibility
+                    lod: 1,
                     pos,
                     len: 1,
                 });
