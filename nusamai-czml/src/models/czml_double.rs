@@ -11,7 +11,7 @@ pub type CzmlDouble = DoubleValueType;
 #[serde(untagged)]
 pub enum DoubleValueType {
     Array(Vec<DoubleProperties>),
-    Object(DoubleProperties),
+    Object(Box<DoubleProperties>),
     Double(f32),
 }
 

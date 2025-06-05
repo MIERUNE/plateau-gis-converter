@@ -14,7 +14,7 @@ pub type Articulation = ArticulationValueType;
 #[serde(untagged)]
 pub enum ArticulationValueType {
     Array(Vec<ArticulationProperties>),
-    Object(ArticulationProperties),
+    Object(Box<ArticulationProperties>),
     Number(Number),
 }
 

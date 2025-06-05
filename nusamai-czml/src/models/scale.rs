@@ -15,7 +15,7 @@ pub struct Scale {
 #[serde(untagged)]
 pub enum ScaleValueType {
     Array(Vec<ScaleProperties>),
-    Object(ScaleProperties),
+    Object(Box<ScaleProperties>),
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -43,7 +43,7 @@ impl Default for Scale {
                 deletable_property: None,
                 distance_display_condition_value_property: None,
                 reference_value_property: None,
-            }),
+            }.into()),
         }
     }
 }

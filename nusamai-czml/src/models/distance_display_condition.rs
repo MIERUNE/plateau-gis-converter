@@ -9,7 +9,7 @@ pub type DistanceDisplayCondition = DistanceDisplayConditionValueType;
 #[serde(untagged)]
 pub enum DistanceDisplayConditionValueType {
     Array(Vec<DistanceDisplayConditionProperties>),
-    Object(DistanceDisplayConditionProperties),
+    Object(Box<DistanceDisplayConditionProperties>),
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq)]

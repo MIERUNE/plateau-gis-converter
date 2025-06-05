@@ -11,7 +11,7 @@ pub type StripeMaterial = StripeMaterialType;
 #[serde(untagged)]
 pub enum StripeMaterialType {
     Array(Vec<StripeMaterialProperties>),
-    Object(StripeMaterialProperties),
+    Object(Box<StripeMaterialProperties>),
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq)]
@@ -45,14 +45,14 @@ fn default_even_color() -> Color {
     Color::Object(ColorProperties {
         rgba: Some(RgbaValue::Constant([255, 255, 255, 0])),
         ..Default::default()
-    })
+    }.into())
 }
 
 fn default_odd_color() -> Color {
     Color::Object(ColorProperties {
         rgba: Some(RgbaValue::Constant([0, 0, 0, 0])),
         ..Default::default()
-    })
+    }.into())
 }
 
 fn default_offset() -> CzmlDouble {

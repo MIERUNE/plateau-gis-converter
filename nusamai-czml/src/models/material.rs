@@ -10,7 +10,7 @@ pub type Material = MaterialType;
 #[serde(untagged)]
 pub enum MaterialType {
     Array(Vec<MaterialProperties>),
-    Object(MaterialProperties),
+    Object(Box<MaterialProperties>),
 }
 
 #[derive(Serialize, Deserialize, Debug, Default, PartialEq)]

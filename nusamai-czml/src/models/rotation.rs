@@ -13,7 +13,7 @@ pub struct Rotation {
 #[serde(untagged)]
 pub enum RotationValueType {
     Array(Vec<RotationProperties>),
-    Object(RotationProperties),
+    Object(Box<RotationProperties>),
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -63,7 +63,7 @@ impl Default for Rotation {
                 deletable_property: None,
                 distance_display_condition_value_property: None,
                 reference_value_property: None,
-            }),
+            }.into()),
         }
     }
 }

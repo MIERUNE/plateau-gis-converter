@@ -253,7 +253,7 @@ fn calculate_bits_and_size(palette_len: usize) -> (u32, u32) {
         17..=2048 => (palette_len - 1).ilog2() + 1,
         2049.. => 12,
     };
-    let data_size = (4096 * bits_per_block + 63) / 64;
+    let data_size = (4096 * bits_per_block).div_ceil(64);
     (bits_per_block, data_size)
 }
 
@@ -302,7 +302,7 @@ fn create_chunk_section(
     // Additional padding as required
     if data_size as usize > data.len() {
         let padding_size = data_size as usize - data.len();
-        data.extend(std::iter::repeat(0).take(padding_size));
+        data.extend(std::iter::repeat_n(0, padding_size));
     }
 
     Section::new(

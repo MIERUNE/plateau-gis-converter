@@ -11,7 +11,7 @@ pub type LineThickness = LineThicknessType;
 #[serde(untagged)]
 pub enum LineThicknessType {
     Array(Vec<LineThicknessProperties>),
-    Object(LineThicknessProperties),
+    Object(Box<LineThicknessProperties>),
 }
 
 #[derive(Serialize, Deserialize, Debug, Default, PartialEq)]
