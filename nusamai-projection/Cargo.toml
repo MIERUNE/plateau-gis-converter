@@ -4,6 +4,6 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-japan-geoid = "0.4.1"
+japan-geoid = "0.4.4"
 jprect = "0.0.4"
 thiserror = "2"
