@@ -15,7 +15,7 @@ pub struct Translation {
 #[serde(untagged)]
 pub enum TranslationValueType {
     Array(Vec<TranslationProperties>),
-    Object(TranslationProperties),
+    Object(Box<TranslationProperties>),
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -43,7 +43,7 @@ impl Default for Translation {
                 deletable_property: None,
                 distance_display_condition_value_property: None,
                 reference_value_property: None,
-            }),
+            }.into()),
         }
     }
 }
