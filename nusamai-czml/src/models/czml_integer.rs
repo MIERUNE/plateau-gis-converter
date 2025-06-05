@@ -11,7 +11,7 @@ pub type CzmlInteger = IntegerValueType;
 #[serde(untagged)]
 pub enum IntegerValueType {
     Array(Vec<IntegerProperties>),
-    Object(IntegerProperties),
+    Object(Box<IntegerProperties>),
     Integer(i32),
 }
 

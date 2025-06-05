@@ -4,11 +4,11 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-sqlx = { version = "0.8.2", features = ["sqlite", "runtime-tokio"] }
+sqlx = { version = "0.8.6", features = ["sqlite", "runtime-tokio"] }
 flatgeom = "0.0"
 thiserror = "2"
 url = "2.5.4"
-indexmap = "2.7.0"
+indexmap = "2.9.0"
 
 [dev-dependencies]
-tokio = { version = "1.41", features = ["full"] }
+tokio = { version = "1.45", features = ["full"] }

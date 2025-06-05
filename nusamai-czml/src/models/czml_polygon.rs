@@ -193,10 +193,10 @@ fn default_material() -> Material {
             color: Color::Object(ColorProperties {
                 rgba: Some(RgbaValue::Constant([255, 255, 255, 255])),
                 ..Default::default()
-            }),
+            }.into()),
         }),
         ..Default::default()
-    })
+    }.into())
 }
 
 fn is_default_material(material: &Material) -> bool {
@@ -215,7 +215,7 @@ fn default_outline_color() -> Color {
     Color::Object(ColorProperties {
         rgba: Some(RgbaValue::Constant([0, 0, 0, 255])),
         ..Default::default()
-    })
+    }.into())
 }
 
 fn is_default_outline_color(outline_color: &Color) -> bool {
