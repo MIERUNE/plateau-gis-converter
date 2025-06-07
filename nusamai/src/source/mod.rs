@@ -1,6 +1,7 @@
 //! Input data sources (mainly CityGML)
 
 pub mod citygml;
+pub mod geojson;
 
 use crate::{
     parameters::Parameters,

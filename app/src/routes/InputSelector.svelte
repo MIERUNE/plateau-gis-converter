@@ -28,13 +28,15 @@
 		let pathPromises: Promise<string>[] = [];
 		for (const directory of inputDirectories) {
 			const files = await fs.readDir(directory);
-			const gmlFiles = files.filter((d) => d.isFile && d.name?.endsWith('.gml'));
-			pathPromises = pathPromises.concat(gmlFiles.map(async (d) => path.join(directory, d.name)));
+			const supportedFiles = files.filter((d) => 
+				d.isFile && (d.name?.endsWith('.gml') || d.name?.endsWith('.geojson') || d.name?.endsWith('.json'))
+			);
+			pathPromises = pathPromises.concat(supportedFiles.map(async (d) => path.join(directory, d.name)));
 		}
 		inputPaths = await Promise.all(pathPromises);
 
 		if (inputPaths.length === 0) {
-			await dialog.message('選択したフォルダにGMLファイルが含まれていません', {
+			await dialog.message('選択したフォルダに対応ファイル（GML, GeoJSON）が含まれていません', {
 				kind: 'warning'
 			});
 			inputDirectories = [];
@@ -47,8 +49,16 @@
 			directory: false,
 			filters: [
 				{
+					name: 'Supported Files',
+					extensions: ['gml', 'geojson', 'json']
+				},
+				{
 					name: 'CityGML',
 					extensions: ['gml']
+				},
+				{
+					name: 'GeoJSON',
+					extensions: ['geojson', 'json']
 				}
 			]
 		});
@@ -100,7 +110,7 @@
 					{:else}
 						<div class="flex items-center gap-1">
 							<p>
-								<b>{inputDirectories.length}</b> フォルダ （計 <b>{inputPaths.length}</b> GMLファイル）
+								<b>{inputDirectories.length}</b> フォルダ （計 <b>{inputPaths.length}</b> ファイル）
 							</p>
 							<button class="tooltip hover:text-accent1">
 								<Icon class="text-2xl" icon="material-symbols-light:list-alt-rounded" />
