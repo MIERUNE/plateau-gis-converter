@@ -1,6 +1,10 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss" source("../src");
+
+@theme {
+	--color-base: #334155;
+	--color-accent1: #00BEBE;
+	--color-accent2: #463C64;
+}
 
 body {
 	@apply text-base;

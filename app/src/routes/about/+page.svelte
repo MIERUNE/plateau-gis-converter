@@ -2,7 +2,9 @@
 	import Icon from '@iconify/svelte';
 </script>
 
-<div class="grid place-items-center h-screen">
+<div
+	class="grid place-items-center h-screen [&_a]:underline [&_a]:hover:no-underline [&_a]:hover:text-accent1"
+>
 	<div class="max-w-md flex flex-col gap-6">
 		<h1 class="font-semibold text-lg">PLATEAU GIS Converter</h1>
 
@@ -69,12 +71,3 @@
 		</div>
 	</div>
 </div>
-
-<style lang="postcss">
-	a {
-		@apply underline;
-	}
-	a:hover {
-		@apply text-accent1 no-underline;
-	}
-</style>

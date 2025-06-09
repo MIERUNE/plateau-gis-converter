@@ -4,26 +4,36 @@
 	import type { SinkParameters } from '$lib/sinkparams';
 	import type { TransformerSettings } from '$lib/transformer';
 	import Icon from '@iconify/svelte';
-	import {  } from '@tauri-apps/api';
+	import {} from '@tauri-apps/api';
 	import SinkOptions from '$lib/components/SinkOptions.svelte';
 	import TransformerOptions from '$lib/components/TransformerOptions.svelte';
-import * as dialog from "@tauri-apps/plugin-dialog"
+	import * as dialog from '@tauri-apps/plugin-dialog';
 
-	export let filetype: string;
-	export let epsg: number = 4979;
-	export let rulesPath: string;
-	export let sinkParameters: SinkParameters;
-	export let transformerSettings: TransformerSettings;
+	interface Props {
+		filetype: string;
+		epsg?: number;
+		rulesPath: string;
+		sinkParameters: SinkParameters;
+		transformerSettings: TransformerSettings | undefined;
+	}
 
-	$: epsgOptions = filetypeOptions[filetype]?.epsg || [];
-	$: disableEpsgOptions = epsgOptions.length < 2;
+	let {
+		filetype = $bindable(),
+		epsg = $bindable(4979),
+		rulesPath = $bindable(),
+		sinkParameters = $bindable(),
+		transformerSettings = $bindable()
+	}: Props = $props();
 
-	$: {
+	let epsgOptions = $derived(filetypeOptions[filetype]?.epsg || []);
+	let disableEpsgOptions = $derived(epsgOptions.length < 2);
+
+	$effect(() => {
 		// Reset the target CRS if the selected filetype does not support the current CRS
 		if (!filetypeOptions[filetype]?.epsg.some((item) => item.value === epsg)) {
 			epsg = filetypeOptions[filetype]?.epsg[0].value || 4979;
 		}
-	}
+	});
 
 	function clearRulesPath() {
 		rulesPath = '';
@@ -43,18 +53,20 @@ import * as dialog from "@tauri-apps/plugin-dialog"
 	}
 
 	async function getTransformerSettings(filetype: string) {
-		const registry = (await invoke('get_transform', { filetype })) as any;
+		const registry = await invoke<TransformerSettings>('get_transform', { filetype });
 
 		transformerSettings = registry;
 	}
 
-	$: getTransformerSettings(filetype);
+	$effect(() => {
+		getTransformerSettings(filetype);
+	});
 
-	let sinkOptionKeys: string[] = [];
+	let sinkOptionKeys: string[] = $state([]);
 
 	// Get the parameter options for the selected filetype
 	async function setSinkParameter(filetype: string) {
-		const parameters = (await invoke('get_parameter', { filetype })) as SinkParameters;
+		const parameters = await invoke<SinkParameters>('get_parameter', { filetype });
 
 		// Exclude '@output' and 'transform' from the parameter options list
 		sinkOptionKeys = Object.keys(parameters.items).filter(
@@ -63,12 +75,14 @@ import * as dialog from "@tauri-apps/plugin-dialog"
 		sinkParameters = parameters;
 	}
 
-	$: setSinkParameter(filetype);
+	$effect(() => {
+		setSinkParameter(filetype);
+	});
 
 	// Select the file format specified for testing, if any
 	const targetSink = import.meta.env.VITE_TEST_SINK;
 	if (targetSink) {
-		if (filetypeOptions.hasOwnProperty(targetSink)) {
+		if (targetSink in filetypeOptions) {
 			filetype = targetSink;
 		} else {
 			console.warn(`The specified test sink "${targetSink}" is invalid. Using default value.`);
@@ -92,7 +106,7 @@ import * as dialog from "@tauri-apps/plugin-dialog"
 				id="filetype-select"
 				class="w-80 cursor-pointer"
 			>
-				{#each Object.entries(filetypeOptions) as [value, item]}
+				{#each Object.entries(filetypeOptions) as [value, item] (value)}
 					<option {value}>{item.label}</option>
 				{/each}
 			</select>
@@ -109,7 +123,7 @@ import * as dialog from "@tauri-apps/plugin-dialog"
 				class:opacity-50={disableEpsgOptions}
 				class:cursor-auto={disableEpsgOptions}
 			>
-				{#each epsgOptions as option}
+				{#each epsgOptions as option (option.value)}
 					<option value={option.value}>{option.label}</option>
 				{/each}
 			</select>
@@ -129,14 +143,14 @@ import * as dialog from "@tauri-apps/plugin-dialog"
 			<label for="mapping-rule-select" class="font-bold">属性マッピングルール</label>
 			<div class="flex items-center gap-3">
 				<button
-					on:click={openRulesPathDialog}
+					onclick={openRulesPathDialog}
 					class="bg-accent1 font-semibold rounded px-4 py-0.5 shadow hover:opacity-75">選択</button
 				>
 				<div class="text-sm" class:opacity-50={!rulesPath}>
 					{#if rulesPath}
 						<div class="flex justify-center items-center gap-1.5">
 							<p><code>{rulesPath}</code></p>
-							<button on:click={clearRulesPath} class="hover:opacity-75">
+							<button onclick={clearRulesPath} class="hover:opacity-75">
 								<Icon icon="material-symbols:cancel" />
 							</button>
 						</div>

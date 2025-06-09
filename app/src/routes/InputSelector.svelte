@@ -5,17 +5,27 @@
 	import * as dialog from '@tauri-apps/plugin-dialog';
 	import * as fs from '@tauri-apps/plugin-fs';
 	import * as path from '@tauri-apps/api/path';
+	import { untrack } from 'svelte';
 
 	// let isFolderMode = true;
-	let isFolderMode = import.meta.env.VITE_TEST_INPUT_PATH ? false : true;
-	let inputDirectories: string[] = [];
-	export let inputPaths: string[] = [];
+	let isFolderMode = $state(!import.meta.env.VITE_TEST_INPUT_PATH);
+	let inputDirectories: string[] = $state([]);
+	let {
+		inputPaths = $bindable([])
+	}: {
+		inputPaths?: string[];
+	} = $props();
 
-	// Clear the inputs when the mode changes
-	$: if (isFolderMode || !isFolderMode) {
-		inputDirectories = [];
-		inputPaths = import.meta.env.VITE_TEST_INPUT_PATH ? [import.meta.env.VITE_TEST_INPUT_PATH] : [];
-	}
+	$effect(() => {
+		// eslint-disable-next-line @typescript-eslint/no-unused-expressions
+		isFolderMode;
+		untrack(() => {
+			inputDirectories = [];
+			inputPaths = import.meta.env.VITE_TEST_INPUT_PATH
+				? [import.meta.env.VITE_TEST_INPUT_PATH]
+				: [];
+		});
+	});
 
 	async function openDirectoryDialog() {
 		const res = await dialog.open({
@@ -74,23 +84,23 @@
 			<span class="isolate inline-flex rounded-md my-3">
 				<button
 					type="button"
-					class="relative inline-flex gap-1 items-center rounded-l-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-10"
-					class:active={isFolderMode}
-					on:click={() => (isFolderMode = true)}
+					data-active={isFolderMode ? '' : undefined}
+					class="relative inline-flex gap-1 items-center rounded-l-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-10 data-active:bg-accent1 data-active:pointer-events-none"
+					onclick={() => (isFolderMode = true)}
 					><Icon icon="material-symbols:folder" />フォルダ選択</button
 				>
 				<button
 					type="button"
-					class="relative -ml-px inline-flex gap-1 items-center rounded-r-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-10"
-					class:active={!isFolderMode}
-					on:click={() => (isFolderMode = false)}><Icon icon="ph:files" />ファイル選択</button
+					data-active={!isFolderMode ? '' : undefined}
+					class="relative -ml-px inline-flex gap-1 items-center rounded-r-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-10 data-active:bg-accent1 data-active:pointer-events-none"
+					onclick={() => (isFolderMode = false)}><Icon icon="ph:files" />ファイル選択</button
 				>
 			</span>
 		</div>
 
 		<div class="flex items-center gap-3">
 			<button
-				on:click={isFolderMode ? openDirectoryDialog : openFileDialog}
+				onclick={isFolderMode ? openDirectoryDialog : openFileDialog}
 				class="bg-accent1 font-semibold rounded px-4 py-0.5 shadow hover:opacity-75">選択</button
 			>
 			<div class="text-sm">
@@ -105,14 +115,14 @@
 							<button class="tooltip hover:text-accent1">
 								<Icon class="text-2xl" icon="material-symbols-light:list-alt-rounded" />
 								<div class="tooltip-text max-h-64 overflow-y-auto">
-									<ol>
-										{#each inputDirectories as folder}
+									<ol class="pl-4 list-decimal">
+										{#each inputDirectories as folder (folder)}
 											<li class="text-xs">{abbreviatePath(folder, 30)}</li>
 										{/each}
 									</ol>
 								</div>
 							</button>
-							<button on:click={clearSelected} class="hover:opacity-75">
+							<button onclick={clearSelected} class="hover:opacity-75">
 								<Icon icon="material-symbols:cancel" />
 							</button>
 						</div>
@@ -125,14 +135,14 @@
 						<button class="tooltip hover:text-accent1">
 							<Icon class="text-2xl" icon="material-symbols-light:list-alt-rounded" />
 							<div class="tooltip-text max-h-64 overflow-y-auto">
-								<ol>
-									{#each inputPaths as path}
+								<ol class="pl-4 list-decimal">
+									{#each inputPaths as path (path)}
 										<li class="text-xs">{abbreviatePath(path, 30)}</li>
 									{/each}
 								</ol>
 							</div>
 						</button>
-						<button on:click={clearSelected} class="hover:opacity-75">
+						<button onclick={clearSelected} class="hover:opacity-75">
 							<Icon icon="material-symbols:cancel" />
 						</button>
 					</div>
@@ -142,16 +152,8 @@
 	</div>
 </div>
 
-<style lang="postcss">
-	.active {
-		@apply bg-accent1;
-		pointer-events: none;
-	}
-
-	ol {
-		@apply pl-4;
-		@apply list-decimal;
-	}
+<style>
+	@reference "../app.css";
 
 	.tooltip {
 		position: relative;
