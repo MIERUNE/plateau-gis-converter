@@ -3,10 +3,10 @@
 </script>
 
 <div
-	class="grid place-items-center h-screen [&_a]:underline [&_a]:hover:no-underline [&_a]:hover:text-accent1"
+	class="grid h-screen place-items-center [&_a]:underline [&_a]:hover:text-accent1 [&_a]:hover:no-underline"
 >
-	<div class="max-w-md flex flex-col gap-6">
-		<h1 class="font-semibold text-lg">PLATEAU GIS Converter</h1>
+	<div class="flex max-w-md flex-col gap-6">
+		<h1 class="text-lg font-semibold">PLATEAU GIS Converter</h1>
 
 		<p>
 			国土交通省によるPLATEAUデータを、各種ファイル形式へ変換するためのツールです。
@@ -35,7 +35,7 @@
 			当ツールの開発は<a href="https://mierune.co.jp" target="_blank">MIERUNE Inc.</a>が行いました。
 		</p>
 
-		<h1 class="font-semibold text-lg">利用手順</h1>
+		<h1 class="text-lg font-semibold">利用手順</h1>
 
 		<p>
 			安定版のソフトウェアは、

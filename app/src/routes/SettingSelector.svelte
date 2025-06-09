@@ -93,11 +93,11 @@
 <div>
 	<div class="flex items-center gap-1.5">
 		<Icon class="text-xl" icon="material-symbols:settings" />
-		<h2 class="font-bold text-xl">設定</h2>
+		<h2 class="text-xl font-bold">設定</h2>
 	</div>
 	<hr class="mt-0.5" />
 
-	<div class="flex flex-col gap-5 mt-3 ml-2">
+	<div class="mt-3 ml-2 flex flex-col gap-5">
 		<div class="flex flex-col gap-1.5">
 			<label for="filetype-select" class="font-bold">ファイル形式</label>
 			<select
@@ -131,7 +131,7 @@
 
 		{#if (transformerSettings && transformerSettings.configs.length > 0) || sinkOptionKeys.length > 0}
 			<div class="flex flex-col">
-				<label for="transform-select" class="font-bold mb-1.5">出力の詳細設定</label>
+				<label for="transform-select" class="mb-1.5 font-bold">出力の詳細設定</label>
 				<div class="flex flex-col gap-2">
 					<TransformerOptions bind:transformerSettings />
 					<SinkOptions bind:sinkOptionKeys bind:sinkParameters />
@@ -144,12 +144,12 @@
 			<div class="flex items-center gap-3">
 				<button
 					onclick={openRulesPathDialog}
-					class="bg-accent1 font-semibold rounded-sm px-4 py-0.5 shadow-sm hover:opacity-75"
+					class="rounded-sm bg-accent1 px-4 py-0.5 font-semibold shadow-sm hover:opacity-75"
 					>選択</button
 				>
 				<div class="text-sm" class:opacity-50={!rulesPath}>
 					{#if rulesPath}
-						<div class="flex justify-center items-center gap-1.5">
+						<div class="flex items-center justify-center gap-1.5">
 							<p><code>{rulesPath}</code></p>
 							<button onclick={clearRulesPath} class="hover:opacity-75">
 								<Icon icon="material-symbols:cancel" />

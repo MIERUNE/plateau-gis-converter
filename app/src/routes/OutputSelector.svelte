@@ -41,20 +41,20 @@
 <div>
 	<div class="flex items-center gap-1.5">
 		<Icon class="text-xl" icon="material-symbols:output-rounded" />
-		<h2 class="font-bold text-xl">出力</h2>
+		<h2 class="text-xl font-bold">出力</h2>
 	</div>
 	<hr class="mt-0.5" />
 
-	<div class="flex flex-col gap-5 mt-3 ml-2">
+	<div class="mt-3 ml-2 flex flex-col gap-5">
 		<div class="flex items-center gap-3">
 			<button
 				onclick={openOutputDialog}
-				class="bg-accent1 font-semibold rounded-sm px-4 py-0.5 shadow-sm hover:opacity-75"
+				class="rounded-sm bg-accent1 px-4 py-0.5 font-semibold shadow-sm hover:opacity-75"
 				>選択</button
 			>
 			<div class="text-sm">
 				{#if outputPath}
-					<div class="flex justify-center items-center gap-1.5">
+					<div class="flex items-center justify-center gap-1.5">
 						<p><code>{abbreviatePath(outputPath, 40)}</code></p>
 						<button onclick={clearSelected} class="hover:opacity-75">
 							<Icon icon="material-symbols:cancel" />

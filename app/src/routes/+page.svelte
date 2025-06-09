@@ -54,17 +54,17 @@
 </script>
 
 {#if isRunning}
-	<div class="fixed inset-0 bg-black/70 backdrop-blur-[2px] z-20 h-screen">
+	<div class="fixed inset-0 z-20 h-screen bg-black/70 backdrop-blur-[2px]">
 		<LoadingAnimation />
 	</div>
 {/if}
 
-<div class="py-5 grid place-items-center h-screen">
-	<div class="max-w-2xl flex flex-col gap-8 pb-4">
+<div class="grid h-screen place-items-center py-5">
+	<div class="flex max-w-2xl flex-col gap-8 pb-4">
 		<div class="flex items-center gap-1.5">
-			<h1 class="font-bold text-2xl">PLATEAU GIS Converter</h1>
+			<h1 class="text-2xl font-bold">PLATEAU GIS Converter</h1>
 			<a href="/about" class="hover:text-accent1">
-				<Icon class="text-2xl mt-0.5" icon="mingcute:information-line" />
+				<Icon class="mt-0.5 text-2xl" icon="mingcute:information-line" />
 			</a>
 		</div>
 
@@ -84,7 +84,7 @@
 			<button
 				onclick={convertAndSave}
 				disabled={isConvertButtonDisabled}
-				class="bg-accent1 flex items-center font-bold py-1.5 pl-3 pr-5 rounded-full gap-1 shadow-2xl {isConvertButtonDisabled
+				class="flex items-center gap-1 rounded-full bg-accent1 py-1.5 pr-5 pl-3 font-bold shadow-2xl {isConvertButtonDisabled
 					? 'opacity-50'
 					: ''}"
 			>
