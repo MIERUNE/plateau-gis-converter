@@ -6,6 +6,7 @@
 	import * as fs from '@tauri-apps/plugin-fs';
 	import * as path from '@tauri-apps/api/path';
 	import { untrack } from 'svelte';
+	import Tooltip from './Tooltip.svelte';
 
 	// let isFolderMode = true;
 	let isFolderMode = $state(!import.meta.env.VITE_TEST_INPUT_PATH);
@@ -112,16 +113,18 @@
 							<p>
 								<b>{inputDirectories.length}</b> フォルダ （計 <b>{inputPaths.length}</b> GMLファイル）
 							</p>
-							<button class="tooltip hover:text-accent1">
-								<Icon class="text-2xl" icon="material-symbols-light:list-alt-rounded" />
-								<div class="tooltip-text max-h-64 overflow-y-auto">
+							<Tooltip>
+								{#snippet buttonChildren()}
+									<Icon class="text-2xl" icon="material-symbols-light:list-alt-rounded" />
+								{/snippet}
+								{#snippet tooltipContent()}
 									<ol class="pl-4 list-decimal">
 										{#each inputDirectories as folder (folder)}
 											<li class="text-xs">{abbreviatePath(folder, 30)}</li>
 										{/each}
 									</ol>
-								</div>
-							</button>
+								{/snippet}
+							</Tooltip>
 							<button onclick={clearSelected} class="hover:opacity-75">
 								<Icon icon="material-symbols:cancel" />
 							</button>
@@ -132,16 +135,19 @@
 				{:else}
 					<div class="flex items-center gap-1">
 						<p><b>{inputPaths.length}</b> ファイル</p>
-						<button class="tooltip hover:text-accent1">
-							<Icon class="text-2xl" icon="material-symbols-light:list-alt-rounded" />
-							<div class="tooltip-text max-h-64 overflow-y-auto">
+
+						<Tooltip>
+							{#snippet buttonChildren()}
+								<Icon class="text-2xl" icon="material-symbols-light:list-alt-rounded" />
+							{/snippet}
+							{#snippet tooltipContent()}
 								<ol class="pl-4 list-decimal">
 									{#each inputPaths as path (path)}
 										<li class="text-xs">{abbreviatePath(path, 30)}</li>
 									{/each}
 								</ol>
-							</div>
-						</button>
+							{/snippet}
+						</Tooltip>
 						<button onclick={clearSelected} class="hover:opacity-75">
 							<Icon icon="material-symbols:cancel" />
 						</button>
@@ -151,33 +157,3 @@
 		</div>
 	</div>
 </div>
-
-<style>
-	@reference "../app.css";
-
-	.tooltip {
-		position: relative;
-		cursor: pointer;
-	}
-
-	.tooltip-text {
-		opacity: 0;
-		visibility: hidden;
-		position: absolute;
-		left: 50%;
-		transform: translateX(-50%) translateY(100%);
-		bottom: 0px;
-		display: inline-block;
-		white-space: nowrap;
-		@apply text-left;
-		@apply px-6 py-2;
-		@apply bg-white text-base border rounded shadow;
-		transition: 0.3s ease-in;
-		z-index: 10;
-	}
-
-	.tooltip:hover .tooltip-text {
-		opacity: 1;
-		visibility: visible;
-	}
-</style>
