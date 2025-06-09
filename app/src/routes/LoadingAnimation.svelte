@@ -47,14 +47,14 @@
 
 <div class="flex flex-col gap-4 p-12 place-items-center">
 	<p class="text-white text-center font-semibold text-2xl">変換中 &hellip;</p>
-	<div class="loader ball-pulse flex justify-center">
-		<div></div>
-		<div></div>
-		<div></div>
+	<div class="flex justify-center [&>div]:bg-white [&>div]">
+		<div class="animate-loading-pulse-[-0.24s] bg-white h-4 w-4 rounded-full m-2"></div>
+		<div class="animate-loading-pulse-[-0.12s] bg-white h-4 w-4 rounded-full m-2"></div>
+		<div class="animate-loading-pulse-[0s] bg-white h-4 w-4 rounded-full m-2"></div>
 	</div>
 
 	<div
-		class="my-5 w-full h-96 max-h-96 bg-slate-900/70 text-slate-300 text-xs font-mono p-1 rounded"
+		class="my-5 w-full h-96 max-h-96 bg-slate-900/70 text-slate-300 text-xs font-mono p-1 rounded-sm"
 	>
 		<div class="w-full h-full">
 			<VirtualScroll bind:this={logView} data={items} key="id">
@@ -103,40 +103,3 @@
 		</button>
 	</div>
 </div>
-
-<style lang="postcss">
-	@reference "../app.css";
-	@keyframes scale {
-		0% {
-			transform: scale(1);
-			opacity: 1;
-		}
-		45% {
-			transform: scale(0);
-			opacity: 0.7;
-		}
-		80% {
-			transform: scale(1);
-			opacity: 1;
-		}
-	}
-
-	.ball-pulse > div:nth-child(1) {
-		animation: scale 1s -0.24s infinite cubic-bezier(0.2, 0.68, 0.18, 1.08);
-	}
-
-	.ball-pulse > div:nth-child(2) {
-		animation: scale 1s -0.12s infinite cubic-bezier(0.2, 0.68, 0.18, 1.08);
-	}
-
-	.ball-pulse > div:nth-child(3) {
-		animation: scale 1s 0s infinite cubic-bezier(0.2, 0.68, 0.18, 1.08);
-	}
-
-	.ball-pulse > div {
-		@apply bg-white;
-		@apply w-4 h-4 rounded-full;
-		@apply m-2;
-		animation-fill-mode: both;
-	}
-</style>

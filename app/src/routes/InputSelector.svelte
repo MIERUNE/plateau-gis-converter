@@ -102,7 +102,8 @@
 		<div class="flex items-center gap-3">
 			<button
 				onclick={isFolderMode ? openDirectoryDialog : openFileDialog}
-				class="bg-accent1 font-semibold rounded px-4 py-0.5 shadow hover:opacity-75">選択</button
+				class="bg-accent1 font-semibold rounded-sm px-4 py-0.5 shadow-sm hover:opacity-75"
+				>選択</button
 			>
 			<div class="text-sm">
 				{#if isFolderMode}

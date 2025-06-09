@@ -10,7 +10,7 @@
 		{@render buttonChildren()}
 	</button>
 	<div
-		class="absolute left-1/2 bottom-0 inline-block whitespace-nowrap text-left px-6 py-2 bg-white text-base border rounded shadow z-10 transition-all duration-300 -translate-x-1/2 translate-y-full group-hover:opacity-100 group-hover:visible invisible opacity-0 max-h-64 overflow-y-auto"
+		class="absolute left-1/2 bottom-0 inline-block whitespace-nowrap text-left px-6 py-2 bg-white text-base border rounded-sm shadow-sm z-10 transition-all duration-300 -translate-x-1/2 translate-y-full group-hover:opacity-100 group-hover:visible invisible opacity-0 max-h-64 overflow-y-auto"
 	>
 		{@render tooltipContent()}
 	</div>

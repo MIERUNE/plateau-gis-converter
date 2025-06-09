@@ -84,7 +84,7 @@
 			<button
 				onclick={convertAndSave}
 				disabled={isConvertButtonDisabled}
-				class="bg-accent1 flex items-center font-bold py-1.5 pl-3 pr-5 rounded-full gap-1 shawdow-2xl {isConvertButtonDisabled
+				class="bg-accent1 flex items-center font-bold py-1.5 pl-3 pr-5 rounded-full gap-1 shadow-2xl {isConvertButtonDisabled
 					? 'opacity-50'
 					: ''}"
 			>
