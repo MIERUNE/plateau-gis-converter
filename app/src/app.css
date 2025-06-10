@@ -1,9 +1,38 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss" source("../src");
+
+@theme {
+	--color-base: #334155;
+	--color-accent1: #00BEBE;
+	--color-accent2: #463C64;
+}
+
+@utility animate-loading-pulse-* {
+	animation-duration: 1s;
+	animation-iteration-count: infinite;
+	animation-name: scale;
+	animation-timing-function: cubic-bezier(0.2, 0.68, 0.18, 1.08);
+	animation-fill-mode: both;
+	animation-delay: --value([*]);
+}
+
+
+@keyframes scale {
+	0% {
+		transform: scale(1);
+		opacity: 1;
+	}
+	45% {
+		transform: scale(0);
+		opacity: 0.7;
+	}
+	80% {
+		transform: scale(1);
+		opacity: 1;
+	}
+}
 
 body {
-	@apply text-base;
+	color: #334155;
 }
 
 body::-webkit-scrollbar {

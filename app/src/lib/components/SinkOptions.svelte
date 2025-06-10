@@ -6,13 +6,12 @@
 		createRangeArray
 	} from '$lib/sinkparams';
 
-	export let sinkOptionKeys;
-	export let sinkParameters;
+	let { sinkOptionKeys = $bindable(), sinkParameters = $bindable() } = $props();
 </script>
 
 {#if sinkOptionKeys.length > 0}
 	<div class="flex flex-col gap-2">
-		{#each sinkOptionKeys as key}
+		{#each sinkOptionKeys as key (key)}
 			{#if isIntegerParameter(sinkParameters.items[key].parameter)}
 				<div class="flex gap-2 w-80">
 					<label for={key} class="w-3/4 pointer-events-none"
@@ -24,7 +23,7 @@
 						class="w-1/4 border-2 border-gray-300 px-2 rounded-md cursor-pointer"
 					>
 						{#if sinkParameters.items[key].parameter.Integer.min !== undefined && sinkParameters.items[key].parameter.Integer.max !== undefined}
-							{#each createRangeArray(sinkParameters.items[key].parameter.Integer.min, sinkParameters.items[key].parameter.Integer.max) as value}
+							{#each createRangeArray(sinkParameters.items[key].parameter.Integer.min, sinkParameters.items[key].parameter.Integer.max) as value (value)}
 								<option {value} class="text-center">{value}</option>
 							{/each}
 						{/if}
