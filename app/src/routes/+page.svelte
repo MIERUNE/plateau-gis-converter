@@ -13,18 +13,16 @@
 
 	attachConsole(); // For Tauri log in the webview console
 
-	let inputPaths: string[] = [];
-	let filetype: string;
-	let epsg: number;
-	let rulesPath = '';
-	let outputPath = '';
-	let sinkParameters = {} as SinkParameters;
-	let isRunning = false;
-	let isConvertButtonDisabled = true;
+	let inputPaths: string[] = $state([]);
+	let filetype: string = $state('gpkg');
+	let epsg: number = $state(4979);
+	let rulesPath = $state('');
+	let outputPath = $state('');
+	let sinkParameters = $state({} as SinkParameters);
+	let isRunning = $state(false);
+	let isConvertButtonDisabled = $derived(!inputPaths.length || !outputPath || isRunning);
 
-	$: isConvertButtonDisabled = !inputPaths.length || !outputPath || isRunning;
-	let transformerSettings: TransformerSettings;
-
+	let transformerSettings: TransformerSettings | undefined = $state(undefined);
 
 	async function convertAndSave() {
 		isRunning = true;
@@ -42,6 +40,7 @@
 
 			isRunning = false;
 			await message(`変換が完了しました。\n'${outputPath}' に出力しました。`, { kind: 'info' });
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		} catch (error: any) {
 			if (error.type != 'Canceled') {
 				await message(`エラーが発生しました。\n\n${error.type}: ${error.message}`, {
@@ -55,17 +54,17 @@
 </script>
 
 {#if isRunning}
-	<div class="fixed inset-0 bg-black/70 backdrop-blur-[2px] z-20 h-screen">
+	<div class="fixed inset-0 z-20 h-screen bg-black/70 backdrop-blur-[2px]">
 		<LoadingAnimation />
 	</div>
 {/if}
 
-<div class="py-5 grid place-items-center h-screen">
-	<div class="max-w-2xl flex flex-col gap-8 pb-4">
+<div class="grid h-screen place-items-center py-5">
+	<div class="flex max-w-2xl flex-col gap-8 pb-4">
 		<div class="flex items-center gap-1.5">
-			<h1 class="font-bold text-2xl">PLATEAU GIS Converter</h1>
+			<h1 class="text-2xl font-bold">PLATEAU GIS Converter</h1>
 			<a href="/about" class="hover:text-accent1">
-				<Icon class="text-2xl mt-0.5" icon="mingcute:information-line" />
+				<Icon class="mt-0.5 text-2xl" icon="mingcute:information-line" />
 			</a>
 		</div>
 
@@ -83,9 +82,9 @@
 
 		<div class="flex justify-end">
 			<button
-				on:click={convertAndSave}
+				onclick={convertAndSave}
 				disabled={isConvertButtonDisabled}
-				class="bg-accent1 flex items-center font-bold py-1.5 pl-3 pr-5 rounded-full gap-1 shawdow-2xl {isConvertButtonDisabled
+				class="flex items-center gap-1 rounded-full bg-accent1 py-1.5 pr-5 pl-3 font-bold shadow-2xl {isConvertButtonDisabled
 					? 'opacity-50'
 					: ''}"
 			>
