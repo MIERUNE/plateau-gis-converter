@@ -1,10 +1,8 @@
 <script lang="ts">
-	import {} from '@tauri-apps/api';
+	import { invoke } from '@tauri-apps/api/core';
 	import Icon from '@iconify/svelte';
 	import { abbreviatePath } from '$lib/utils';
 	import * as dialog from '@tauri-apps/plugin-dialog';
-	import * as fs from '@tauri-apps/plugin-fs';
-	import * as path from '@tauri-apps/api/path';
 	import { untrack } from 'svelte';
 	import Tooltip from './Tooltip.svelte';
 
@@ -36,19 +34,26 @@
 		if (!res) return;
 
 		inputDirectories = Array.isArray(res) ? res : [res];
-		let pathPromises: Promise<string>[] = [];
-		for (const directory of inputDirectories) {
-			const files = await fs.readDir(directory);
-			const gmlFiles = files.filter((d) => d.isFile && d.name?.endsWith('.gml'));
-			pathPromises = pathPromises.concat(gmlFiles.map(async (d) => path.join(directory, d.name)));
-		}
-		inputPaths = await Promise.all(pathPromises);
+		
+		try {
+			// Rust側でファイル列挙を実行
+			inputPaths = await invoke<string[]>('list_supported_files', {
+				directories: inputDirectories
+			});
 
-		if (inputPaths.length === 0) {
-			await dialog.message('選択したフォルダにGMLファイルが含まれていません', {
-				kind: 'warning'
+			if (inputPaths.length === 0) {
+				await dialog.message('選択したフォルダにGMLファイルが含まれていません', {
+					kind: 'warning'
+				});
+				inputDirectories = [];
+			}
+		} catch (error) {
+			console.error('Failed to list files:', error);
+			await dialog.message('ファイルの列挙中にエラーが発生しました', {
+				kind: 'error'
 			});
 			inputDirectories = [];
+			inputPaths = [];
 		}
 	}
 
@@ -114,18 +119,17 @@
 							<p>
 								<b>{inputDirectories.length}</b> フォルダ （計 <b>{inputPaths.length}</b> GMLファイル）
 							</p>
-							<Tooltip>
-								{#snippet buttonChildren()}
-									<Icon class="text-2xl" icon="material-symbols-light:list-alt-rounded" />
-								{/snippet}
-								{#snippet tooltipContent()}
-									<ol class="list-decimal pl-4">
-										{#each inputDirectories as folder (folder)}
-											<li class="text-xs">{abbreviatePath(folder, 30)}</li>
-										{/each}
-									</ol>
-								{/snippet}
-							</Tooltip>
+							{#snippet buttonChildren()}
+								<Icon class="text-2xl" icon="material-symbols-light:list-alt-rounded" />
+							{/snippet}
+							{#snippet tooltipContent()}
+								<ol class="list-decimal pl-4">
+									{#each inputDirectories as folder (folder)}
+										<li class="text-xs">{abbreviatePath(folder, 30)}</li>
+									{/each}
+								</ol>
+							{/snippet}
+							<Tooltip {buttonChildren} {tooltipContent} />
 							<button onclick={clearSelected} class="hover:opacity-75">
 								<Icon icon="material-symbols:cancel" />
 							</button>
@@ -136,19 +140,17 @@
 				{:else}
 					<div class="flex items-center gap-1">
 						<p><b>{inputPaths.length}</b> ファイル</p>
-
-						<Tooltip>
-							{#snippet buttonChildren()}
-								<Icon class="text-2xl" icon="material-symbols-light:list-alt-rounded" />
-							{/snippet}
-							{#snippet tooltipContent()}
-								<ol class="list-decimal pl-4">
-									{#each inputPaths as path (path)}
-										<li class="text-xs">{abbreviatePath(path, 30)}</li>
-									{/each}
-								</ol>
-							{/snippet}
-						</Tooltip>
+						{#snippet buttonChildren2()}
+							<Icon class="text-2xl" icon="material-symbols-light:list-alt-rounded" />
+						{/snippet}
+						{#snippet tooltipContent2()}
+							<ol class="list-decimal pl-4">
+								{#each inputPaths as path (path)}
+									<li class="text-xs">{abbreviatePath(path, 30)}</li>
+								{/each}
+							</ol>
+						{/snippet}
+						<Tooltip buttonChildren={buttonChildren2} tooltipContent={tooltipContent2} />
 						<button onclick={clearSelected} class="hover:opacity-75">
 							<Icon icon="material-symbols:cancel" />
 						</button>

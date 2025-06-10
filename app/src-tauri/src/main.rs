@@ -72,7 +72,8 @@ fn main() {
             run_conversion,
             cancel_conversion,
             get_parameter,
-            get_transform
+            get_transform,
+            list_supported_files
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
@@ -335,4 +336,56 @@ fn get_parameter(filetype: String) -> Result<Parameters, Error> {
     let sink_params = sink_provider.sink_options();
 
     Ok(sink_params)
+}
+
+/// List supported files in the given directories
+#[tauri::command]
+async fn list_supported_files(directories: Vec<String>) -> Result<Vec<String>, Error> {
+    let mut all_files = Vec::new();
+    
+    for directory in directories {
+        let dir_path = PathBuf::from(&directory);
+        
+        if !dir_path.exists() {
+            let msg = format!("Directory does not exist: {}", directory);
+            log::warn!("{}", msg);
+            continue;
+        }
+        
+        if !dir_path.is_dir() {
+            let msg = format!("Path is not a directory: {}", directory);
+            log::warn!("{}", msg);
+            continue;
+        }
+        
+        // Read directory contents
+        match std::fs::read_dir(&dir_path) {
+            Ok(entries) => {
+                for entry in entries {
+                    if let Ok(entry) = entry {
+                        let path = entry.path();
+                        
+                        // Check if it's a file and has .gml extension
+                        if path.is_file() {
+                            if let Some(extension) = path.extension() {
+                                if extension == "gml" {
+                                    if let Some(path_str) = path.to_str() {
+                                        all_files.push(path_str.to_string());
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            Err(e) => {
+                let msg = format!("Failed to read directory {}: {}", directory, e);
+                log::error!("{}", msg);
+                return Err(Error::Io(msg));
+            }
+        }
+    }
+    
+    all_files.sort();
+    Ok(all_files)
 }
