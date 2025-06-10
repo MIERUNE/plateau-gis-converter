@@ -35,10 +35,13 @@ pub struct GridMaterialProperties {
 }
 
 fn default_color() -> Color {
-    Color::Object(ColorProperties {
-        rgba: Some(RgbaValue::Constant([0, 0, 0, 0])),
-        ..Default::default()
-    }.into())
+    Color::Object(
+        ColorProperties {
+            rgba: Some(RgbaValue::Constant([0, 0, 0, 0])),
+            ..Default::default()
+        }
+        .into(),
+    )
 }
 
 fn default_cell_alpha() -> CzmlDouble {
@@ -46,22 +49,31 @@ fn default_cell_alpha() -> CzmlDouble {
 }
 
 fn default_line_count() -> LineCount {
-    LineCount::Object(LineCountProperties {
-        cartesian2: Some(vec![8.0, 8.0]),
-        ..Default::default()
-    }.into())
+    LineCount::Object(
+        LineCountProperties {
+            cartesian2: Some(vec![8.0, 8.0]),
+            ..Default::default()
+        }
+        .into(),
+    )
 }
 
 fn default_line_thickness() -> LineThickness {
-    LineThickness::Object(LineThicknessProperties {
-        cartesian2: Some(vec![1.0, 1.0]),
-        ..Default::default()
-    }.into())
+    LineThickness::Object(
+        LineThicknessProperties {
+            cartesian2: Some(vec![1.0, 1.0]),
+            ..Default::default()
+        }
+        .into(),
+    )
 }
 
 fn default_line_offset() -> LineOffset {
-    LineOffset::Object(LineOffsetProperties {
-        cartesian2: Some(vec![1.0, 1.0]),
-        ..Default::default()
-    }.into())
+    LineOffset::Object(
+        LineOffsetProperties {
+            cartesian2: Some(vec![1.0, 1.0]),
+            ..Default::default()
+        }
+        .into(),
+    )
 }

@@ -56,14 +56,17 @@ pub struct RotationProperties {
 impl Default for Rotation {
     fn default() -> Self {
         Self {
-            value: RotationValueType::Object(RotationProperties {
-                unit_quaternion: Some(UnitQuaternionValue::Constant([0.0, 0.0, 0.0, 1.0])),
-                reference: None,
-                interpolatable_property: None,
-                deletable_property: None,
-                distance_display_condition_value_property: None,
-                reference_value_property: None,
-            }.into()),
+            value: RotationValueType::Object(
+                RotationProperties {
+                    unit_quaternion: Some(UnitQuaternionValue::Constant([0.0, 0.0, 0.0, 1.0])),
+                    reference: None,
+                    interpolatable_property: None,
+                    deletable_property: None,
+                    distance_display_condition_value_property: None,
+                    reference_value_property: None,
+                }
+                .into(),
+            ),
         }
     }
 }

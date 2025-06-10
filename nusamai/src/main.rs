@@ -10,7 +10,10 @@ use clap::Parser;
 use nusamai::{
     pipeline::Canceller,
     sink::{DataRequirements, DataSink, DataSinkProvider},
-    source::{citygml::CityGmlSourceProvider, DataSource, DataSourceProvider},
+    source::{
+        citygml::CityGmlSourceProvider, geojson::GeoJsonSourceProvider, DataSource,
+        DataSourceProvider,
+    },
     transformer::{
         self, MappingRules, MultiThreadTransformer, NusamaiTransformBuilder, ParameterType,
         TransformBuilder, TransformerConfig, TransformerSettings,
@@ -271,12 +274,49 @@ fn main() -> ExitCode {
         }
 
         if filenames.is_empty() {
-            log::error!("No input CityGML files found");
+            log::error!("No input files found");
             return ExitCode::FAILURE;
         }
 
-        let source_provider: Box<dyn DataSourceProvider> =
-            Box::new(CityGmlSourceProvider { filenames });
+        // Detect source type based on file extension
+        let source_provider: Box<dyn DataSourceProvider> = {
+            let mut citygml_files = vec![];
+            let mut geojson_files = vec![];
+
+            for path in &filenames {
+                let ext = path
+                    .extension()
+                    .and_then(|e| e.to_str())
+                    .map(|e| e.to_lowercase());
+
+                match ext.as_deref() {
+                    Some("gml") => citygml_files.push(path.clone()),
+                    Some("geojson") | Some("json") => geojson_files.push(path.clone()),
+                    _ => {
+                        log::warn!("Unknown file extension for file: {:?}", path);
+                    }
+                }
+            }
+
+            if !citygml_files.is_empty() && !geojson_files.is_empty() {
+                log::error!("Mixed input file types detected. Please provide either CityGML or GeoJSON files, not both.");
+                return ExitCode::FAILURE;
+            }
+
+            if !citygml_files.is_empty() {
+                Box::new(CityGmlSourceProvider {
+                    filenames: citygml_files,
+                })
+            } else if !geojson_files.is_empty() {
+                Box::new(GeoJsonSourceProvider {
+                    filenames: geojson_files,
+                })
+            } else {
+                log::error!("No supported file types found. Supported extensions: .gml, .xml, .geojson, .json");
+                return ExitCode::FAILURE;
+            }
+        };
+
         let mut source_params = source_provider.sink_options();
         if let Err(err) = source_params.update_values_with_str(&args.sourceopt) {
             log::error!("Error parsing source parameters: {:?}", err);

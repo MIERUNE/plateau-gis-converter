@@ -26,22 +26,31 @@ pub struct CheckerboardMaterialProperties {
 }
 
 fn default_even_color() -> Color {
-    Color::Object(ColorProperties {
-        rgba: Some(RgbaValue::Constant([255, 255, 255, 255])),
-        ..Default::default()
-    }.into())
+    Color::Object(
+        ColorProperties {
+            rgba: Some(RgbaValue::Constant([255, 255, 255, 255])),
+            ..Default::default()
+        }
+        .into(),
+    )
 }
 
 fn default_odd_color() -> Color {
-    Color::Object(ColorProperties {
-        rgba: Some(RgbaValue::Constant([0, 0, 0, 255])),
-        ..Default::default()
-    }.into())
+    Color::Object(
+        ColorProperties {
+            rgba: Some(RgbaValue::Constant([0, 0, 0, 255])),
+            ..Default::default()
+        }
+        .into(),
+    )
 }
 
 fn default_repeat() -> Repeat {
-    Repeat::Object(RepeatProperties {
-        cartesian2: Some(vec![1.0, 1.0]),
-        ..Default::default()
-    }.into())
+    Repeat::Object(
+        RepeatProperties {
+            cartesian2: Some(vec![1.0, 1.0]),
+            ..Default::default()
+        }
+        .into(),
+    )
 }
