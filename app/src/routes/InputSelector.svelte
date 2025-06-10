@@ -42,7 +42,7 @@
 			});
 
 			if (inputPaths.length === 0) {
-				await dialog.message('選択したフォルダにGMLファイルが含まれていません', {
+				await dialog.message('選択したフォルダに対応ファイル（GML, GeoJSON）が含まれていません', {
 					kind: 'warning'
 				});
 				inputDirectories = [];
@@ -63,8 +63,16 @@
 			directory: false,
 			filters: [
 				{
+					name: 'Supported Files',
+					extensions: ['gml', 'geojson', 'json']
+				},
+				{
 					name: 'CityGML',
 					extensions: ['gml']
+				},
+				{
+					name: 'GeoJSON',
+					extensions: ['geojson', 'json']
 				}
 			]
 		});
@@ -117,7 +125,7 @@
 					{:else}
 						<div class="flex items-center gap-1">
 							<p>
-								<b>{inputDirectories.length}</b> フォルダ （計 <b>{inputPaths.length}</b> GMLファイル）
+								<b>{inputDirectories.length}</b> フォルダ （計 <b>{inputPaths.length}</b> ファイル）
 							</p>
 							<Tooltip>
 								{#snippet buttonChildren()}
