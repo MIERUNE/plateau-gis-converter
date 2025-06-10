@@ -131,9 +131,9 @@ fn convert_feature_to_entity(
         GeometryRefs::new()
     };
 
-    // Try to determine a suitable CityGML type based on geometry
+    // ジオメトリに基づいて適切なCityGMLタイプを決定
     let typename = match geometry_refs.first() {
-        Some(ref geom_ref) => match geom_ref.ty {
+        Some(geom_ref) => match geom_ref.ty {
             GeometryType::Surface => "bldg:Building",
             GeometryType::Curve => "tran:Road",
             GeometryType::Point => "frn:CityFurniture",
