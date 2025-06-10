@@ -342,29 +342,29 @@ fn get_parameter(filetype: String) -> Result<Parameters, Error> {
 #[tauri::command]
 async fn list_supported_files(directories: Vec<String>) -> Result<Vec<String>, Error> {
     let mut all_files = Vec::new();
-    
+
     for directory in directories {
         let dir_path = PathBuf::from(&directory);
-        
+
         if !dir_path.exists() {
             let msg = format!("Directory does not exist: {}", directory);
             log::warn!("{}", msg);
             continue;
         }
-        
+
         if !dir_path.is_dir() {
             let msg = format!("Path is not a directory: {}", directory);
             log::warn!("{}", msg);
             continue;
         }
-        
+
         // Read directory contents
         match std::fs::read_dir(&dir_path) {
             Ok(entries) => {
                 for entry in entries {
                     if let Ok(entry) = entry {
                         let path = entry.path();
-                        
+
                         // Check if it's a file and has .gml extension
                         if path.is_file() {
                             if let Some(extension) = path.extension() {
@@ -385,7 +385,7 @@ async fn list_supported_files(directories: Vec<String>) -> Result<Vec<String>, E
             }
         }
     }
-    
+
     all_files.sort();
     Ok(all_files)
 }
