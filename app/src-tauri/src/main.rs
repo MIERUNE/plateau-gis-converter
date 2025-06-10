@@ -392,20 +392,15 @@ async fn list_supported_files(directories: Vec<String>) -> Result<Vec<String>, E
         // Read directory contents
         match std::fs::read_dir(&dir_path) {
             Ok(entries) => {
-                for entry in entries {
-                    if let Ok(entry) = entry {
-                        let path = entry.path();
+                for entry in entries.flatten() {
+                    let path = entry.path();
 
-                        // Check if it's a file and has supported extension
-                        if path.is_file() {
-                            if let Some(extension) = path.extension() {
-                                if extension == "gml"
-                                    || extension == "geojson"
-                                    || extension == "json"
-                                {
-                                    if let Some(path_str) = path.to_str() {
-                                        all_files.push(path_str.to_string());
-                                    }
+                    // Check if it's a file and has supported extension
+                    if path.is_file() {
+                        if let Some(extension) = path.extension() {
+                            if extension == "gml" || extension == "geojson" || extension == "json" {
+                                if let Some(path_str) = path.to_str() {
+                                    all_files.push(path_str.to_string());
                                 }
                             }
                         }
