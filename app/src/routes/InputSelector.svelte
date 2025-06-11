@@ -1,10 +1,8 @@
 <script lang="ts">
-	import {} from '@tauri-apps/api';
+	import { invoke } from '@tauri-apps/api/core';
 	import Icon from '@iconify/svelte';
 	import { abbreviatePath } from '$lib/utils';
 	import * as dialog from '@tauri-apps/plugin-dialog';
-	import * as fs from '@tauri-apps/plugin-fs';
-	import * as path from '@tauri-apps/api/path';
 	import { untrack } from 'svelte';
 	import Tooltip from './Tooltip.svelte';
 
@@ -36,21 +34,26 @@
 		if (!res) return;
 
 		inputDirectories = Array.isArray(res) ? res : [res];
-		let pathPromises: Promise<string>[] = [];
-		for (const directory of inputDirectories) {
-			const files = await fs.readDir(directory);
-			const supportedFiles = files.filter((d) => 
-				d.isFile && (d.name?.endsWith('.gml') || d.name?.endsWith('.geojson') || d.name?.endsWith('.json'))
-			);
-			pathPromises = pathPromises.concat(supportedFiles.map(async (d) => path.join(directory, d.name)));
-		}
-		inputPaths = await Promise.all(pathPromises);
 
-		if (inputPaths.length === 0) {
-			await dialog.message('選択したフォルダに対応ファイル（GML, GeoJSON）が含まれていません', {
-				kind: 'warning'
+		try {
+			// Rust側でファイル列挙を実行
+			inputPaths = await invoke<string[]>('list_supported_files', {
+				directories: inputDirectories
+			});
+
+			if (inputPaths.length === 0) {
+				await dialog.message('選択したフォルダに対応ファイル（GML, GeoJSON）が含まれていません', {
+					kind: 'warning'
+				});
+				inputDirectories = [];
+			}
+		} catch (error) {
+			console.error('Failed to list files:', error);
+			await dialog.message('ファイルの列挙中にエラーが発生しました', {
+				kind: 'error'
 			});
 			inputDirectories = [];
+			inputPaths = [];
 		}
 	}
 
@@ -96,14 +99,14 @@
 				<button
 					type="button"
 					data-active={isFolderMode ? '' : undefined}
-					class="relative inline-flex items-center gap-1 rounded-l-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-gray-300 ring-inset hover:bg-gray-50 focus:z-10 data-active:pointer-events-none data-active:bg-accent1"
+					class="data-active:pointer-events-none data-active:bg-accent1 relative inline-flex items-center gap-1 rounded-l-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-10"
 					onclick={() => (isFolderMode = true)}
 					><Icon icon="material-symbols:folder" />フォルダ選択</button
 				>
 				<button
 					type="button"
 					data-active={!isFolderMode ? '' : undefined}
-					class="relative -ml-px inline-flex items-center gap-1 rounded-r-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-gray-300 ring-inset hover:bg-gray-50 focus:z-10 data-active:pointer-events-none data-active:bg-accent1"
+					class="data-active:pointer-events-none data-active:bg-accent1 relative -ml-px inline-flex items-center gap-1 rounded-r-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-10"
 					onclick={() => (isFolderMode = false)}><Icon icon="ph:files" />ファイル選択</button
 				>
 			</span>
@@ -112,7 +115,7 @@
 		<div class="flex items-center gap-3">
 			<button
 				onclick={isFolderMode ? openDirectoryDialog : openFileDialog}
-				class="rounded-sm bg-accent1 px-4 py-0.5 font-semibold shadow-sm hover:opacity-75"
+				class="bg-accent1 rounded-sm px-4 py-0.5 font-semibold shadow-sm hover:opacity-75"
 				>選択</button
 			>
 			<div class="text-sm">

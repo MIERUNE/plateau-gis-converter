@@ -18,7 +18,7 @@ use nusamai::{
         minecraft::MinecraftSinkProvider, mvt::MvtSinkProvider, obj::ObjSinkProvider,
         serde::SerdeSinkProvider, shapefile::ShapefileSinkProvider, DataSinkProvider,
     },
-    source::{citygml::CityGmlSourceProvider, DataSourceProvider},
+    source::{citygml::CityGmlSourceProvider, geojson::GeoJsonSourceProvider, DataSourceProvider},
     transformer::{
         self, MappingRules, MultiThreadTransformer, NusamaiTransformBuilder, TransformBuilder,
         TransformerSettings,
@@ -72,7 +72,8 @@ fn main() {
             run_conversion,
             cancel_conversion,
             get_parameter,
-            get_transform
+            get_transform,
+            list_supported_files
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
@@ -210,12 +211,43 @@ fn run_conversion(
     requirements.set_output_epsg(epsg);
 
     let source = {
-        let source_provider: Box<dyn DataSourceProvider> = Box::new(CityGmlSourceProvider {
-            filenames: input_paths
-                .iter()
-                .map(|s| PathBuf::from_str(s).unwrap())
-                .collect(),
-        });
+        // ファイルを拡張子で分類
+        let mut gml_files = Vec::new();
+        let mut geojson_files = Vec::new();
+
+        for path in input_paths.iter() {
+            let path_buf = PathBuf::from_str(path).unwrap();
+            if let Some(ext) = path_buf.extension() {
+                match ext.to_str() {
+                    Some("gml") => gml_files.push(path_buf),
+                    Some("geojson") | Some("json") => geojson_files.push(path_buf),
+                    _ => {
+                        let msg = format!("Unsupported file extension: {:?}", ext);
+                        log::error!("{}", msg);
+                        return Err(Error::InvalidPath(msg));
+                    }
+                }
+            }
+        }
+
+        // 混在チェック
+        if !gml_files.is_empty() && !geojson_files.is_empty() {
+            let msg = "Cannot mix GML and GeoJSON files in a single conversion";
+            log::error!("{}", msg);
+            return Err(Error::InvalidSetting(msg.to_string()));
+        }
+
+        // 適切なソースプロバイダーを選択
+        let source_provider: Box<dyn DataSourceProvider> = if !geojson_files.is_empty() {
+            Box::new(GeoJsonSourceProvider {
+                filenames: geojson_files,
+            })
+        } else {
+            Box::new(CityGmlSourceProvider {
+                filenames: gml_files,
+            })
+        };
+
         let mut source_params = source_provider.sink_options();
         if let Err(err) = source_params.validate() {
             let msg = format!("Error validating source parameters: {:?}", err);
@@ -335,4 +367,54 @@ fn get_parameter(filetype: String) -> Result<Parameters, Error> {
     let sink_params = sink_provider.sink_options();
 
     Ok(sink_params)
+}
+
+/// List supported files in the given directories
+#[tauri::command]
+async fn list_supported_files(directories: Vec<String>) -> Result<Vec<String>, Error> {
+    let mut all_files = Vec::new();
+
+    for directory in directories {
+        let dir_path = PathBuf::from(&directory);
+
+        if !dir_path.exists() {
+            let msg = format!("Directory does not exist: {}", directory);
+            log::warn!("{}", msg);
+            continue;
+        }
+
+        if !dir_path.is_dir() {
+            let msg = format!("Path is not a directory: {}", directory);
+            log::warn!("{}", msg);
+            continue;
+        }
+
+        // Read directory contents
+        match std::fs::read_dir(&dir_path) {
+            Ok(entries) => {
+                for entry in entries.flatten() {
+                    let path = entry.path();
+
+                    // Check if it's a file and has supported extension
+                    if path.is_file() {
+                        if let Some(extension) = path.extension() {
+                            if extension == "gml" || extension == "geojson" || extension == "json" {
+                                if let Some(path_str) = path.to_str() {
+                                    all_files.push(path_str.to_string());
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            Err(e) => {
+                let msg = format!("Failed to read directory {}: {}", directory, e);
+                log::error!("{}", msg);
+                return Err(Error::Io(msg));
+            }
+        }
+    }
+
+    all_files.sort();
+    Ok(all_files)
 }
