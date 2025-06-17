@@ -19,6 +19,13 @@ pub struct AddressDetail {
 pub struct Country {
     #[citygml(path = b"xAL:CountryName")]
     name: Option<String>,
-    #[citygml(path = b"xAL:Locality/xAL:LocalityName")]
-    locality_name: Option<Vec<String>>,
+    #[citygml(path = b"xAL:Locality")]
+    locality: Option<Locality>,
+}
+
+#[citygml_data(name = "xAL:Locality")]
+#[citygml(allow_extra)]
+pub struct Locality {
+    #[citygml(path = b"xAL:LocalityName")]
+    name: Vec<String>,
 }
