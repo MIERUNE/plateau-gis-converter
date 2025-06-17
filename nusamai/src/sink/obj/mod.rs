@@ -2,7 +2,7 @@
 mod material;
 mod obj_writer;
 
-use std::{f64::consts::FRAC_PI_2, path::PathBuf, sync::Mutex};
+use std::{path::PathBuf, sync::Mutex};
 
 use atlas_packer::{
     export::{AtlasExporter as _, JpegAtlasExporter},
@@ -25,13 +25,13 @@ use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
 use url::Url;
 
-use geocentric::geodetic_to_geocentric;
 use nusamai_citygml::{
     object::{ObjectStereotype, Value},
     schema::Schema,
     GeometryType,
 };
 use nusamai_plateau::appearance;
+use nusamai_projection::crs::{self, EpsgCode};
 
 use crate::{
     get_parameter_value,
@@ -41,7 +41,7 @@ use crate::{
     transformer::{use_lod_config, TransformerSettings},
 };
 
-use super::option::{limit_texture_resolution_parameter, output_parameter};
+use super::option::{center_at_origin_parameter, limit_texture_resolution_parameter, output_parameter};
 use super::texture_resolution::get_texture_downsample_scale_of_polygon;
 
 pub struct ObjSinkProvider {}
@@ -58,6 +58,7 @@ impl DataSinkProvider for ObjSinkProvider {
         let mut params = Parameters::new();
         params.define(output_parameter());
         params.define(limit_texture_resolution_parameter(false));
+        params.define(center_at_origin_parameter(true)); // デフォルトtrue
         params.define(ParameterDefinition {
             key: "split".into(),
             entry: ParameterEntry {
@@ -82,6 +83,9 @@ impl DataSinkProvider for ObjSinkProvider {
         let output_path = get_parameter_value!(params, "@output", FileSystemPath);
         let limit_texture_resolution =
             *get_parameter_value!(params, "limit_texture_resolution", Boolean);
+        let center_at_origin = get_parameter_value!(params, "center_at_origin", Boolean)
+            .map(|v| v)
+            .unwrap_or(true);
         let transform_options = self.transformer_options();
         let is_split = get_parameter_value!(params, "split", Boolean).unwrap();
 
@@ -90,6 +94,7 @@ impl DataSinkProvider for ObjSinkProvider {
             transform_settings: transform_options,
             obj_options: ObjParams { is_split },
             limit_texture_resolution,
+            center_at_origin,
         })
     }
 }
@@ -99,6 +104,7 @@ pub struct ObjSink {
     transform_settings: TransformerSettings,
     obj_options: ObjParams,
     limit_texture_resolution: Option<bool>,
+    center_at_origin: bool,
 }
 
 struct ObjParams {
@@ -107,34 +113,34 @@ struct ObjParams {
 
 #[derive(Debug)]
 pub struct BoundingVolume {
-    pub min_lng: f64,
-    pub max_lng: f64,
-    pub min_lat: f64,
-    pub max_lat: f64,
-    pub min_height: f64,
-    pub max_height: f64,
+    pub min_x: f64,  // lng or x
+    pub max_x: f64,  // lng or x
+    pub min_y: f64,  // lat or y
+    pub max_y: f64,  // lat or y
+    pub min_z: f64,  // height or z
+    pub max_z: f64,  // height or z
 }
 
 impl BoundingVolume {
     fn update(&mut self, other: &Self) {
-        self.min_lng = self.min_lng.min(other.min_lng);
-        self.max_lng = self.max_lng.max(other.max_lng);
-        self.min_lat = self.min_lat.min(other.min_lat);
-        self.max_lat = self.max_lat.max(other.max_lat);
-        self.min_height = self.min_height.min(other.min_height);
-        self.max_height = self.max_height.max(other.max_height);
+        self.min_x = self.min_x.min(other.min_x);
+        self.max_x = self.max_x.max(other.max_x);
+        self.min_y = self.min_y.min(other.min_y);
+        self.max_y = self.max_y.max(other.max_y);
+        self.min_z = self.min_z.min(other.min_z);
+        self.max_z = self.max_z.max(other.max_z);
     }
 }
 
 impl Default for BoundingVolume {
     fn default() -> Self {
         Self {
-            min_lng: f64::MAX,
-            max_lng: f64::MIN,
-            min_lat: f64::MAX,
-            max_lat: f64::MIN,
-            min_height: f64::MAX,
-            max_height: f64::MIN,
+            min_x: f64::MAX,
+            max_x: f64::MIN,
+            min_y: f64::MAX,
+            max_y: f64::MIN,
+            min_z: f64::MAX,
+            max_z: f64::MIN,
         }
     }
 }
@@ -190,8 +196,15 @@ impl DataSink for ObjSink {
         self.transform_settings.build(default_requirements)
     }
 
-    fn run(&mut self, upstream: Receiver, feedback: &Feedback, _schema: &Schema) -> Result<()> {
-        let ellipsoid = nusamai_projection::ellipsoid::wgs84();
+    fn run(&mut self, upstream: Receiver, feedback: &Feedback, schema: &Schema) -> Result<()> {
+        // 座標系の判定
+        let output_epsg = schema.epsg.unwrap_or(crs::EPSG_WGS84_GEOGRAPHIC_3D);
+        
+        // OBJシンクは平面直角座標系のみサポート
+        if !is_japan_plane_rectangular(output_epsg) {
+            log::error!("OBJ sink only supports Japan Plane Rectangular coordinate systems (EPSG:6669-6687, EPSG:10162-10174)");
+            return Err(PipelineError::Other("OBJ sink requires a Japan Plane Rectangular coordinate system".into()));
+        }
 
         let classified_features: Mutex<ClassifiedFeatures> = Default::default();
 
@@ -277,17 +290,17 @@ impl DataSink for ObjSink {
                                 |(ri, (ring, uv_ring))| {
                                     ring.iter_closed().zip_eq(uv_ring.iter_closed()).for_each(
                                         |(c, uv)| {
-                                            let [lng, lat, height] = c;
-                                            ring_buffer.push([lng, lat, height, uv[0], uv[1]]);
+                                            let [x, y, z] = c;
+                                            ring_buffer.push([x, y, z, uv[0], uv[1]]);
 
-                                            local_bvol.min_lng = local_bvol.min_lng.min(lng);
-                                            local_bvol.max_lng = local_bvol.max_lng.max(lng);
-                                            local_bvol.min_lat = local_bvol.min_lat.min(lat);
-                                            local_bvol.max_lat = local_bvol.max_lat.max(lat);
-                                            local_bvol.min_height =
-                                                local_bvol.min_height.min(height);
-                                            local_bvol.max_height =
-                                                local_bvol.max_height.max(height);
+                                            local_bvol.min_x = local_bvol.min_x.min(x);
+                                            local_bvol.max_x = local_bvol.max_x.max(x);
+                                            local_bvol.min_y = local_bvol.min_y.min(y);
+                                            local_bvol.max_y = local_bvol.max_y.max(y);
+                                            local_bvol.min_z =
+                                                local_bvol.min_z.min(z);
+                                            local_bvol.max_z =
+                                                local_bvol.max_z.max(z);
                                         },
                                     );
                                     if ri == 0 {
@@ -332,21 +345,17 @@ impl DataSink for ObjSink {
             global_bvol
         };
 
-        // Transformation matrix to convert geodetic coordinates to geocentric and offset to the center
-        let transform_matrix = {
+        // 座標変換行列の計算
+        let transform_matrix = if self.center_at_origin {
+            // 平面直角座標系で重心を原点に設定
             let bounds = &global_bvol;
-            let center_lng = (bounds.min_lng + bounds.max_lng) / 2.0;
-            let center_lat = (bounds.min_lat + bounds.max_lat) / 2.0;
-
-            let psi = ((1. - ellipsoid.e_sq()) * center_lat.to_radians().tan()).atan();
-
-            let (tx, ty, tz) =
-                geodetic_to_geocentric(ellipsoid.a(), ellipsoid.e_sq(), center_lng, center_lat, 0.);
-            let h = (tx * tx + ty * ty + tz * tz).sqrt();
-
-            DMat4::from_translation(DVec3::new(0., -h, 0.))
-                * DMat4::from_rotation_x(-(FRAC_PI_2 - psi))
-                * DMat4::from_rotation_y((-center_lng - 90.).to_radians())
+            let center_x = (bounds.min_x + bounds.max_x) / 2.0;
+            let center_y = (bounds.min_y + bounds.max_y) / 2.0;
+            let center_z = (bounds.min_z + bounds.max_z) / 2.0;
+            DMat4::from_translation(DVec3::new(-center_x, -center_z, center_y))
+        } else {
+            // 座標変換なし
+            DMat4::IDENTITY
         };
         let _ = transform_matrix.inverse();
 
@@ -399,17 +408,12 @@ impl DataSink for ObjSink {
 
                         feature
                             .polygons
-                            .transform_inplace(|&[lng, lat, height, u, v]| {
-                                let (x, y, z) = geodetic_to_geocentric(
-                                    ellipsoid.a(),
-                                    ellipsoid.e_sq(),
-                                    lng,
-                                    lat,
-                                    height,
-                                );
+                            .transform_inplace(|&[x, y, z, u, v]| {
+                                // 平面直角座標系
+                                // Z-up to Y-up変換: [x, z, -y]
                                 let v_xyz = DVec4::new(x, z, -y, 1.0);
-                                let v_enu = transform_matrix * v_xyz;
-                                [v_enu[0], v_enu[1], v_enu[2], u, v]
+                                let v_transformed = transform_matrix * v_xyz;
+                                [v_transformed[0], v_transformed[1], v_transformed[2], u, v]
                             });
                     }
                 }
@@ -665,4 +669,9 @@ impl DataSink for ObjSink {
 
         Ok(())
     }
+}
+
+/// Check if the EPSG code represents a Japan Plane Rectangular coordinate system
+fn is_japan_plane_rectangular(epsg: EpsgCode) -> bool {
+    matches!(epsg, 6669..=6687 | 10162..=10174)
 }
