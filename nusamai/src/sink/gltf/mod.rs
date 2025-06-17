@@ -25,6 +25,7 @@ use itertools::Itertools;
 use material::{Material, Texture};
 use nusamai_citygml::{object::ObjectStereotype, schema::Schema, GeometryType, Value};
 use nusamai_plateau::appearance;
+use nusamai_projection::crs::{self, EpsgCode};
 use rayon::iter::{IntoParallelIterator, ParallelBridge, ParallelIterator};
 use serde::{Deserialize, Serialize};
 use tempfile::tempdir;
@@ -38,7 +39,9 @@ use crate::{
     transformer::{use_lod_config, TransformerSettings},
 };
 
-use super::option::{limit_texture_resolution_parameter, output_parameter};
+use super::option::{
+    center_at_origin_parameter, limit_texture_resolution_parameter, output_parameter,
+};
 use super::texture_resolution::get_texture_downsample_scale_of_polygon;
 pub struct GltfSinkProvider {}
 
@@ -54,6 +57,7 @@ impl DataSinkProvider for GltfSinkProvider {
         let mut params = Parameters::new();
         params.define(output_parameter());
         params.define(limit_texture_resolution_parameter(false));
+        params.define(center_at_origin_parameter(true)); // デフォルトtrue
 
         params
     }
@@ -68,12 +72,16 @@ impl DataSinkProvider for GltfSinkProvider {
         let output_path = get_parameter_value!(params, "@output", FileSystemPath);
         let limit_texture_resolution =
             *get_parameter_value!(params, "limit_texture_resolution", Boolean);
+        let center_at_origin = get_parameter_value!(params, "center_at_origin", Boolean)
+            .map(|v| v)
+            .unwrap_or(true);
         let transform_settings = self.transformer_options();
 
         Box::<GltfSink>::new(GltfSink {
             output_path: output_path.as_ref().unwrap().into(),
             transform_settings,
             limit_texture_resolution,
+            center_at_origin,
         })
     }
 }
@@ -82,37 +90,38 @@ pub struct GltfSink {
     output_path: PathBuf,
     transform_settings: TransformerSettings,
     limit_texture_resolution: Option<bool>,
+    center_at_origin: bool,
 }
 
 pub struct BoundingVolume {
-    pub min_lng: f64,
-    pub max_lng: f64,
-    pub min_lat: f64,
-    pub max_lat: f64,
-    pub min_height: f64,
-    pub max_height: f64,
+    pub min_x: f64, // lng or x
+    pub max_x: f64, // lng or x
+    pub min_y: f64, // lat or y
+    pub max_y: f64, // lat or y
+    pub min_z: f64, // height or z
+    pub max_z: f64, // height or z
 }
 
 impl BoundingVolume {
     fn update(&mut self, other: &Self) {
-        self.min_lng = self.min_lng.min(other.min_lng);
-        self.max_lng = self.max_lng.max(other.max_lng);
-        self.min_lat = self.min_lat.min(other.min_lat);
-        self.max_lat = self.max_lat.max(other.max_lat);
-        self.min_height = self.min_height.min(other.min_height);
-        self.max_height = self.max_height.max(other.max_height);
+        self.min_x = self.min_x.min(other.min_x);
+        self.max_x = self.max_x.max(other.max_x);
+        self.min_y = self.min_y.min(other.min_y);
+        self.max_y = self.max_y.max(other.max_y);
+        self.min_z = self.min_z.min(other.min_z);
+        self.max_z = self.max_z.max(other.max_z);
     }
 }
 
 impl Default for BoundingVolume {
     fn default() -> Self {
         Self {
-            min_lng: f64::MAX,
-            max_lng: f64::MIN,
-            min_lat: f64::MAX,
-            max_lat: f64::MIN,
-            min_height: f64::MAX,
-            max_height: f64::MIN,
+            min_x: f64::MAX,
+            max_x: f64::MIN,
+            min_y: f64::MAX,
+            max_y: f64::MIN,
+            min_z: f64::MAX,
+            max_z: f64::MIN,
         }
     }
 }
@@ -164,6 +173,11 @@ impl DataSink for GltfSink {
 
     fn run(&mut self, upstream: Receiver, feedback: &Feedback, schema: &Schema) -> Result<()> {
         let ellipsoid = nusamai_projection::ellipsoid::wgs84();
+
+        // 座標系の判定
+        let output_epsg = schema.epsg.unwrap_or(crs::EPSG_WGS84_GEOGRAPHIC_3D);
+        let use_enu_transform = self.center_at_origin && is_geographic(output_epsg);
+        let is_projected = is_japan_plane_rectangular(output_epsg);
 
         let classified_features: Mutex<ClassifiedFeatures> = Default::default();
 
@@ -250,14 +264,12 @@ impl DataSink for GltfSink {
                                             let [lng, lat, height] = c;
                                             ring_buffer.push([lng, lat, height, uv[0], uv[1]]);
 
-                                            local_bvol.min_lng = local_bvol.min_lng.min(lng);
-                                            local_bvol.max_lng = local_bvol.max_lng.max(lng);
-                                            local_bvol.min_lat = local_bvol.min_lat.min(lat);
-                                            local_bvol.max_lat = local_bvol.max_lat.max(lat);
-                                            local_bvol.min_height =
-                                                local_bvol.min_height.min(height);
-                                            local_bvol.max_height =
-                                                local_bvol.max_height.max(height);
+                                            local_bvol.min_x = local_bvol.min_x.min(lng);
+                                            local_bvol.max_x = local_bvol.max_x.max(lng);
+                                            local_bvol.min_y = local_bvol.min_y.min(lat);
+                                            local_bvol.max_y = local_bvol.max_y.max(lat);
+                                            local_bvol.min_z = local_bvol.min_z.min(height);
+                                            local_bvol.max_z = local_bvol.max_z.max(height);
                                         },
                                     );
                                     if ri == 0 {
@@ -304,10 +316,11 @@ impl DataSink for GltfSink {
 
         let tileset_content_files = Mutex::new(Vec::new());
 
-        let transform_matrix = {
+        let transform_matrix = if use_enu_transform {
+            // 現行のENU変換処理（地心座標経由）
             let bounds = &global_bvol;
-            let center_lng = (bounds.min_lng + bounds.max_lng) / 2.0;
-            let center_lat = (bounds.min_lat + bounds.max_lat) / 2.0;
+            let center_lng = (bounds.min_x + bounds.max_x) / 2.0;
+            let center_lat = (bounds.min_y + bounds.max_y) / 2.0;
 
             let psi = ((1. - ellipsoid.e_sq()) * center_lat.to_radians().tan()).atan();
 
@@ -318,12 +331,31 @@ impl DataSink for GltfSink {
             DMat4::from_translation(DVec3::new(0., -h, 0.))
                 * DMat4::from_rotation_x(-(FRAC_PI_2 - psi))
                 * DMat4::from_rotation_y((-center_lng - 90.).to_radians())
+        } else if is_projected {
+            if self.center_at_origin {
+                // 平面直角座標系で重心を原点に設定
+                let bounds = &global_bvol;
+                let center_x = (bounds.min_x + bounds.max_x) / 2.0;
+                let center_y = (bounds.min_y + bounds.max_y) / 2.0;
+                let center_z = (bounds.min_z + bounds.max_z) / 2.0;
+                DMat4::from_translation(DVec3::new(-center_x, -center_z, center_y))
+            } else {
+                // 平面直角座標系：座標変換なし
+                DMat4::IDENTITY
+            }
+        } else {
+            // その他の座標系：単位行列
+            DMat4::IDENTITY
         };
         let _ = transform_matrix.inverse();
 
+        let use_enu_transform = use_enu_transform;
+        let is_projected = is_projected;
+        let center_at_origin = self.center_at_origin;
+
         classified_features
             .into_par_iter()
-            .try_for_each(|(typename, features)| {
+            .try_for_each(move |(typename, features)| {
                 feedback.ensure_not_canceled()?;
 
                 // The decoded image file is cached
@@ -386,21 +418,31 @@ impl DataSink for GltfSink {
                         feature
                             .polygons
                             .transform_inplace(|&[lng, lat, height, u, v]| {
-                                // geographic to geocentric
-                                let (x, y, z) = geodetic_to_geocentric(
-                                    ellipsoid.a(),
-                                    ellipsoid.e_sq(),
-                                    lng,
-                                    lat,
-                                    height,
-                                );
-                                // z-up to y-up
-                                let v_xyz = DVec4::new(x, z, -y, 1.0);
-                                // local ENU coordinate
-                                let v_enu = transform_matrix * v_xyz;
-                                // println!("enu: {:?}", v_enu);
-
-                                [v_enu[0], v_enu[1], v_enu[2], u, v]
+                                if use_enu_transform {
+                                    // ENU変換の場合：現行処理を維持
+                                    let (x, y, z) = geodetic_to_geocentric(
+                                        ellipsoid.a(),
+                                        ellipsoid.e_sq(),
+                                        lng,
+                                        lat,
+                                        height,
+                                    );
+                                    // z-up to y-up
+                                    let v_xyz = DVec4::new(x, z, -y, 1.0);
+                                    // local ENU coordinate
+                                    let v_enu = transform_matrix * v_xyz;
+                                    [v_enu[0], v_enu[1], v_enu[2], u, v]
+                                } else if is_projected {
+                                    // 平面直角座標系の場合
+                                    // 入力: x=lng, y=lat, z=height
+                                    // Z-up to Y-up変換: [x, z, -y]
+                                    let v_xyz = DVec4::new(lng, height, -lat, 1.0);
+                                    let v_transformed = transform_matrix * v_xyz;
+                                    [v_transformed[0], v_transformed[1], v_transformed[2], u, v]
+                                } else {
+                                    // その他の座標系
+                                    [lng, lat, height, u, v]
+                                }
                             });
                     });
                     features
@@ -635,4 +677,17 @@ impl DataSink for GltfSink {
 
         Ok(())
     }
+}
+
+/// Check if the EPSG code represents a geographic coordinate system
+fn is_geographic(epsg: EpsgCode) -> bool {
+    matches!(
+        epsg,
+        crs::EPSG_WGS84_GEOGRAPHIC_3D | crs::EPSG_JGD2011_GEOGRAPHIC_3D
+    )
+}
+
+/// Check if the EPSG code represents a Japan Plane Rectangular coordinate system
+fn is_japan_plane_rectangular(epsg: EpsgCode) -> bool {
+    matches!(epsg, 6669..=6687 | 10162..=10174)
 }
