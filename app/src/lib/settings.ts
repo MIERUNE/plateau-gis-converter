@@ -78,8 +78,6 @@ const filetypeOptions: Record<string, { label: string; extensions: string[]; eps
 			label: 'glTF',
 			extensions: [''],
 			epsg: [
-				{ value: 4979, label: 'WGS 84 (EPSG:4979) (楕円体高)' },
-				{ value: 6697, label: 'JGD2011 + 標高 (EPSG:6697)' },
 				{ value: 6669, label: 'JGD2011 / 平面直角座標系 I (EPSG:6669)' },
 				{ value: 6670, label: 'JGD2011 / 平面直角座標系 II (EPSG:6670)' },
 				{ value: 6671, label: 'JGD2011 / 平面直角座標系 III (EPSG:6671)' },

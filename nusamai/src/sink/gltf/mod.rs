@@ -2,7 +2,7 @@
 mod gltf_writer;
 mod material;
 
-use std::{f64::consts::FRAC_PI_2, fs::File, io::BufWriter, path::PathBuf, sync::Mutex};
+use std::{fs::File, io::BufWriter, path::PathBuf, sync::Mutex};
 
 use crate::sink::cesiumtiles::utils::calculate_normal;
 use atlas_packer::{
@@ -17,7 +17,6 @@ use atlas_packer::{
 use earcut::{utils3d::project3d_to_2d, Earcut};
 use flatgeom::MultiPolygon;
 use foldhash::{fast::RandomState, HashMap, HashSet};
-use geocentric::geodetic_to_geocentric;
 use glam::{DMat4, DVec3, DVec4};
 use gltf_writer::write_gltf_glb;
 use indexmap::IndexSet;
@@ -172,12 +171,15 @@ impl DataSink for GltfSink {
     }
 
     fn run(&mut self, upstream: Receiver, feedback: &Feedback, schema: &Schema) -> Result<()> {
-        let ellipsoid = nusamai_projection::ellipsoid::wgs84();
 
         // 座標系の判定
         let output_epsg = schema.epsg.unwrap_or(crs::EPSG_WGS84_GEOGRAPHIC_3D);
-        let use_enu_transform = self.center_at_origin && is_geographic(output_epsg);
-        let is_projected = is_japan_plane_rectangular(output_epsg);
+        
+        // glTFシンクは平面直角座標系のみサポート
+        if !is_japan_plane_rectangular(output_epsg) {
+            log::error!("glTF sink only supports Japan Plane Rectangular coordinate systems (EPSG:6669-6687, EPSG:10162-10174)");
+            return Err(PipelineError::Other("glTF sink requires a Japan Plane Rectangular coordinate system".into()));
+        }
 
         let classified_features: Mutex<ClassifiedFeatures> = Default::default();
 
@@ -261,15 +263,15 @@ impl DataSink for GltfSink {
                                 |(ri, (ring, uv_ring))| {
                                     ring.iter_closed().zip_eq(uv_ring.iter_closed()).for_each(
                                         |(c, uv)| {
-                                            let [lng, lat, height] = c;
-                                            ring_buffer.push([lng, lat, height, uv[0], uv[1]]);
+                                            let [x, y, z] = c;
+                                            ring_buffer.push([x, y, z, uv[0], uv[1]]);
 
-                                            local_bvol.min_x = local_bvol.min_x.min(lng);
-                                            local_bvol.max_x = local_bvol.max_x.max(lng);
-                                            local_bvol.min_y = local_bvol.min_y.min(lat);
-                                            local_bvol.max_y = local_bvol.max_y.max(lat);
-                                            local_bvol.min_z = local_bvol.min_z.min(height);
-                                            local_bvol.max_z = local_bvol.max_z.max(height);
+                                            local_bvol.min_x = local_bvol.min_x.min(x);
+                                            local_bvol.max_x = local_bvol.max_x.max(x);
+                                            local_bvol.min_y = local_bvol.min_y.min(y);
+                                            local_bvol.max_y = local_bvol.max_y.max(y);
+                                            local_bvol.min_z = local_bvol.min_z.min(z);
+                                            local_bvol.max_z = local_bvol.max_z.max(z);
                                         },
                                     );
                                     if ri == 0 {
@@ -316,42 +318,18 @@ impl DataSink for GltfSink {
 
         let tileset_content_files = Mutex::new(Vec::new());
 
-        let transform_matrix = if use_enu_transform {
-            // 現行のENU変換処理（地心座標経由）
+        let transform_matrix = if self.center_at_origin {
+            // 平面直角座標系で重心を原点に設定
             let bounds = &global_bvol;
-            let center_lng = (bounds.min_x + bounds.max_x) / 2.0;
-            let center_lat = (bounds.min_y + bounds.max_y) / 2.0;
-
-            let psi = ((1. - ellipsoid.e_sq()) * center_lat.to_radians().tan()).atan();
-
-            let (tx, ty, tz) =
-                geodetic_to_geocentric(ellipsoid.a(), ellipsoid.e_sq(), center_lng, center_lat, 0.);
-            let h = (tx * tx + ty * ty + tz * tz).sqrt();
-
-            DMat4::from_translation(DVec3::new(0., -h, 0.))
-                * DMat4::from_rotation_x(-(FRAC_PI_2 - psi))
-                * DMat4::from_rotation_y((-center_lng - 90.).to_radians())
-        } else if is_projected {
-            if self.center_at_origin {
-                // 平面直角座標系で重心を原点に設定
-                let bounds = &global_bvol;
-                let center_x = (bounds.min_x + bounds.max_x) / 2.0;
-                let center_y = (bounds.min_y + bounds.max_y) / 2.0;
-                let center_z = (bounds.min_z + bounds.max_z) / 2.0;
-                DMat4::from_translation(DVec3::new(-center_x, -center_z, center_y))
-            } else {
-                // 平面直角座標系：座標変換なし
-                DMat4::IDENTITY
-            }
+            let center_x = (bounds.min_x + bounds.max_x) / 2.0;
+            let center_y = (bounds.min_y + bounds.max_y) / 2.0;
+            let center_z = (bounds.min_z + bounds.max_z) / 2.0;
+            DMat4::from_translation(DVec3::new(-center_x, -center_z, center_y))
         } else {
-            // その他の座標系：単位行列
+            // 座標変換なし
             DMat4::IDENTITY
         };
         let _ = transform_matrix.inverse();
-
-        let use_enu_transform = use_enu_transform;
-        let is_projected = is_projected;
-        let center_at_origin = self.center_at_origin;
 
         classified_features
             .into_par_iter()
@@ -417,32 +395,13 @@ impl DataSink for GltfSink {
                     features.iter_mut().for_each(|feature| {
                         feature
                             .polygons
-                            .transform_inplace(|&[lng, lat, height, u, v]| {
-                                if use_enu_transform {
-                                    // ENU変換の場合：現行処理を維持
-                                    let (x, y, z) = geodetic_to_geocentric(
-                                        ellipsoid.a(),
-                                        ellipsoid.e_sq(),
-                                        lng,
-                                        lat,
-                                        height,
-                                    );
-                                    // z-up to y-up
-                                    let v_xyz = DVec4::new(x, z, -y, 1.0);
-                                    // local ENU coordinate
-                                    let v_enu = transform_matrix * v_xyz;
-                                    [v_enu[0], v_enu[1], v_enu[2], u, v]
-                                } else if is_projected {
-                                    // 平面直角座標系の場合
-                                    // 入力: x=lng, y=lat, z=height
-                                    // Z-up to Y-up変換: [x, z, -y]
-                                    let v_xyz = DVec4::new(lng, height, -lat, 1.0);
-                                    let v_transformed = transform_matrix * v_xyz;
-                                    [v_transformed[0], v_transformed[1], v_transformed[2], u, v]
-                                } else {
-                                    // その他の座標系
-                                    [lng, lat, height, u, v]
-                                }
+                            .transform_inplace(|&[x, y, z, u, v]| {
+                                // 平面直角座標系
+                                // 入力: x, y, z（Z-up座標系）
+                                // Z-up to Y-up変換: [x, z, -y]
+                                let v_xyz = DVec4::new(x, z, -y, 1.0);
+                                let v_transformed = transform_matrix * v_xyz;
+                                [v_transformed[0], v_transformed[1], v_transformed[2], u, v]
                             });
                     });
                     features
@@ -677,14 +636,6 @@ impl DataSink for GltfSink {
 
         Ok(())
     }
-}
-
-/// Check if the EPSG code represents a geographic coordinate system
-fn is_geographic(epsg: EpsgCode) -> bool {
-    matches!(
-        epsg,
-        crs::EPSG_WGS84_GEOGRAPHIC_3D | crs::EPSG_JGD2011_GEOGRAPHIC_3D
-    )
 }
 
 /// Check if the EPSG code represents a Japan Plane Rectangular coordinate system
