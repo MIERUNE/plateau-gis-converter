@@ -13,6 +13,14 @@ use nusamai_plateau::models::TopLevelCityObject;
 static INIT: Once = Once::new();
 
 pub(crate) fn simple_run_sink<S: DataSinkProvider>(sink_provider: S, output: Option<&str>) {
+    simple_run_sink_with_params(sink_provider, output, vec![])
+}
+
+pub(crate) fn simple_run_sink_with_params<S: DataSinkProvider>(
+    sink_provider: S, 
+    output: Option<&str>,
+    additional_params: Vec<(&str, &str)>
+) {
     INIT.call_once(|| {
         if std::env::var("RUST_LOG").is_err() {
             std::env::set_var("RUST_LOG", "error")
@@ -44,11 +52,24 @@ pub(crate) fn simple_run_sink<S: DataSinkProvider>(sink_provider: S, output: Opt
     let mut sink = {
         assert!(!sink_provider.info().name.is_empty());
         let mut sink_params = sink_provider.sink_options();
+        
+        let mut params_to_update: Vec<(String, String)> = vec![];
         if let Some(output) = output {
+            params_to_update.push(("@output".into(), output.into()));
+        }
+        for (key, value) in &additional_params {
+            // output_epsg is handled separately in transformer configuration
+            if key != &"output_epsg" {
+                params_to_update.push((key.to_string(), value.to_string()));
+            }
+        }
+        
+        if !params_to_update.is_empty() {
             sink_params
-                .update_values_with_str(std::iter::once(&("@output".into(), output.into())))
+                .update_values_with_str(&params_to_update)
                 .unwrap();
         }
+        
         sink_params.validate().unwrap();
         sink_provider.create(&sink_params)
     };
@@ -56,7 +77,15 @@ pub(crate) fn simple_run_sink<S: DataSinkProvider>(sink_provider: S, output: Opt
     let options: TransformerSettings = TransformerSettings::new();
 
     let (transformer, schema) = {
-        let transform_req = sink.make_requirements(options);
+        let mut transform_req = sink.make_requirements(options);
+        // Apply additional configuration if provided
+        for (key, value) in &additional_params {
+            if key == &"output_epsg" {
+                if let Ok(epsg) = value.parse::<u16>() {
+                    transform_req.set_output_epsg(epsg);
+                }
+            }
+        }
         let transform_builder = NusamaiTransformBuilder::new(transform_req.into());
         let mut schema = nusamai_citygml::schema::Schema::default();
         TopLevelCityObject::collect_schema(&mut schema);
@@ -77,6 +106,7 @@ pub(crate) fn simple_run_sink<S: DataSinkProvider>(sink_provider: S, output: Opt
     assert!(!canceller.is_canceled());
 }
 
+
 #[test]
 fn run_serde_sink() {
     simple_run_sink(sink::serde::SerdeSinkProvider {}, "/dev/null".into());
@@ -89,7 +119,11 @@ fn run_czml_sink() {
 
 #[test]
 fn run_gltf_sink() {
-    simple_run_sink(sink::gltf::GltfSinkProvider {}, "/tmp/nusamai/gltf".into());
+    simple_run_sink_with_params(
+        sink::gltf::GltfSinkProvider {}, 
+        "/tmp/nusamai/gltf".into(),
+        vec![("output_epsg", "6669")]
+    );
 }
 
 #[test]
