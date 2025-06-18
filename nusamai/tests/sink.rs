@@ -17,9 +17,9 @@ pub(crate) fn simple_run_sink<S: DataSinkProvider>(sink_provider: S, output: Opt
 }
 
 pub(crate) fn simple_run_sink_with_params<S: DataSinkProvider>(
-    sink_provider: S, 
+    sink_provider: S,
     output: Option<&str>,
-    additional_params: Vec<(&str, &str)>
+    additional_params: Vec<(&str, &str)>,
 ) {
     INIT.call_once(|| {
         if std::env::var("RUST_LOG").is_err() {
@@ -52,7 +52,7 @@ pub(crate) fn simple_run_sink_with_params<S: DataSinkProvider>(
     let mut sink = {
         assert!(!sink_provider.info().name.is_empty());
         let mut sink_params = sink_provider.sink_options();
-        
+
         let mut params_to_update: Vec<(String, String)> = vec![];
         if let Some(output) = output {
             params_to_update.push(("@output".into(), output.into()));
@@ -63,13 +63,13 @@ pub(crate) fn simple_run_sink_with_params<S: DataSinkProvider>(
                 params_to_update.push((key.to_string(), value.to_string()));
             }
         }
-        
+
         if !params_to_update.is_empty() {
             sink_params
                 .update_values_with_str(&params_to_update)
                 .unwrap();
         }
-        
+
         sink_params.validate().unwrap();
         sink_provider.create(&sink_params)
     };
@@ -106,7 +106,6 @@ pub(crate) fn simple_run_sink_with_params<S: DataSinkProvider>(
     assert!(!canceller.is_canceled());
 }
 
-
 #[test]
 fn run_serde_sink() {
     simple_run_sink(sink::serde::SerdeSinkProvider {}, "/dev/null".into());
@@ -120,9 +119,18 @@ fn run_czml_sink() {
 #[test]
 fn run_gltf_sink() {
     simple_run_sink_with_params(
-        sink::gltf::GltfSinkProvider {}, 
+        sink::gltf::GltfSinkProvider {},
         "/tmp/nusamai/gltf".into(),
-        vec![("output_epsg", "6669")]
+        vec![("output_epsg", "6669")],
+    );
+}
+
+#[test]
+fn run_obj_sink() {
+    simple_run_sink_with_params(
+        sink::obj::ObjSinkProvider {},
+        "/tmp/nusamai/obj".into(),
+        vec![("output_epsg", "6669")],
     );
 }
 
