@@ -171,14 +171,15 @@ impl DataSink for GltfSink {
     }
 
     fn run(&mut self, upstream: Receiver, feedback: &Feedback, schema: &Schema) -> Result<()> {
-
         // 座標系の判定
         let output_epsg = schema.epsg.unwrap_or(crs::EPSG_WGS84_GEOGRAPHIC_3D);
-        
+
         // glTFシンクは平面直角座標系のみサポート
-        if !is_japan_plane_rectangular(output_epsg) {
+        if !is_supported_epsg(output_epsg) {
             log::error!("glTF sink only supports Japan Plane Rectangular coordinate systems (EPSG:6669-6687, EPSG:10162-10174)");
-            return Err(PipelineError::Other("glTF sink requires a Japan Plane Rectangular coordinate system".into()));
+            return Err(PipelineError::Other(
+                "glTF sink requires a Japan Plane Rectangular coordinate system".into(),
+            ));
         }
 
         let classified_features: Mutex<ClassifiedFeatures> = Default::default();
@@ -393,16 +394,14 @@ impl DataSink for GltfSink {
                 let features = {
                     let mut features = features.features;
                     features.iter_mut().for_each(|feature| {
-                        feature
-                            .polygons
-                            .transform_inplace(|&[x, y, z, u, v]| {
-                                // 平面直角座標系
-                                // 入力: x, y, z（Z-up座標系）
-                                // Z-up to Y-up変換: [x, z, -y]
-                                let v_xyz = DVec4::new(x, z, -y, 1.0);
-                                let v_transformed = transform_matrix * v_xyz;
-                                [v_transformed[0], v_transformed[1], v_transformed[2], u, v]
-                            });
+                        feature.polygons.transform_inplace(|&[x, y, z, u, v]| {
+                            // 平面直角座標系
+                            // 入力: x, y, z（Z-up座標系）
+                            // Z-up to Y-up変換: [x, z, -y]
+                            let v_xyz = DVec4::new(x, z, -y, 1.0);
+                            let v_transformed = transform_matrix * v_xyz;
+                            [v_transformed[0], v_transformed[1], v_transformed[2], u, v]
+                        });
                     });
                     features
                 };
@@ -639,6 +638,6 @@ impl DataSink for GltfSink {
 }
 
 /// Check if the EPSG code represents a Japan Plane Rectangular coordinate system
-fn is_japan_plane_rectangular(epsg: EpsgCode) -> bool {
+fn is_supported_epsg(epsg: EpsgCode) -> bool {
     matches!(epsg, 6669..=6687 | 10162..=10174)
 }

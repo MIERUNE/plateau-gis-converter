@@ -41,7 +41,9 @@ use crate::{
     transformer::{use_lod_config, TransformerSettings},
 };
 
-use super::option::{center_at_origin_parameter, limit_texture_resolution_parameter, output_parameter};
+use super::option::{
+    center_at_origin_parameter, limit_texture_resolution_parameter, output_parameter,
+};
 use super::texture_resolution::get_texture_downsample_scale_of_polygon;
 
 pub struct ObjSinkProvider {}
@@ -113,12 +115,12 @@ struct ObjParams {
 
 #[derive(Debug)]
 pub struct BoundingVolume {
-    pub min_x: f64,  // lng or x
-    pub max_x: f64,  // lng or x
-    pub min_y: f64,  // lat or y
-    pub max_y: f64,  // lat or y
-    pub min_z: f64,  // height or z
-    pub max_z: f64,  // height or z
+    pub min_x: f64, // lng or x
+    pub max_x: f64, // lng or x
+    pub min_y: f64, // lat or y
+    pub max_y: f64, // lat or y
+    pub min_z: f64, // height or z
+    pub max_z: f64, // height or z
 }
 
 impl BoundingVolume {
@@ -199,11 +201,13 @@ impl DataSink for ObjSink {
     fn run(&mut self, upstream: Receiver, feedback: &Feedback, schema: &Schema) -> Result<()> {
         // 座標系の判定
         let output_epsg = schema.epsg.unwrap_or(crs::EPSG_WGS84_GEOGRAPHIC_3D);
-        
+
         // OBJシンクは平面直角座標系のみサポート
-        if !is_japan_plane_rectangular(output_epsg) {
+        if !is_supported_epsg(output_epsg) {
             log::error!("OBJ sink only supports Japan Plane Rectangular coordinate systems (EPSG:6669-6687, EPSG:10162-10174)");
-            return Err(PipelineError::Other("OBJ sink requires a Japan Plane Rectangular coordinate system".into()));
+            return Err(PipelineError::Other(
+                "OBJ sink requires a Japan Plane Rectangular coordinate system".into(),
+            ));
         }
 
         let classified_features: Mutex<ClassifiedFeatures> = Default::default();
@@ -297,10 +301,8 @@ impl DataSink for ObjSink {
                                             local_bvol.max_x = local_bvol.max_x.max(x);
                                             local_bvol.min_y = local_bvol.min_y.min(y);
                                             local_bvol.max_y = local_bvol.max_y.max(y);
-                                            local_bvol.min_z =
-                                                local_bvol.min_z.min(z);
-                                            local_bvol.max_z =
-                                                local_bvol.max_z.max(z);
+                                            local_bvol.min_z = local_bvol.min_z.min(z);
+                                            local_bvol.max_z = local_bvol.max_z.max(z);
                                         },
                                     );
                                     if ri == 0 {
@@ -406,15 +408,13 @@ impl DataSink for ObjSink {
                     for feature in features.features.iter_mut() {
                         feedback.ensure_not_canceled()?;
 
-                        feature
-                            .polygons
-                            .transform_inplace(|&[x, y, z, u, v]| {
-                                // 平面直角座標系
-                                // Z-up to Y-up変換: [x, z, -y]
-                                let v_xyz = DVec4::new(x, z, -y, 1.0);
-                                let v_transformed = transform_matrix * v_xyz;
-                                [v_transformed[0], v_transformed[1], v_transformed[2], u, v]
-                            });
+                        feature.polygons.transform_inplace(|&[x, y, z, u, v]| {
+                            // 平面直角座標系
+                            // Z-up to Y-up変換: [x, z, -y]
+                            let v_xyz = DVec4::new(x, z, -y, 1.0);
+                            let v_transformed = transform_matrix * v_xyz;
+                            [v_transformed[0], v_transformed[1], v_transformed[2], u, v]
+                        });
                     }
                 }
 
@@ -672,6 +672,6 @@ impl DataSink for ObjSink {
 }
 
 /// Check if the EPSG code represents a Japan Plane Rectangular coordinate system
-fn is_japan_plane_rectangular(epsg: EpsgCode) -> bool {
+fn is_supported_epsg(epsg: EpsgCode) -> bool {
     matches!(epsg, 6669..=6687 | 10162..=10174)
 }
