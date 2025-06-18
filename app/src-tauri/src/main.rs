@@ -1,13 +1,6 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use std::{
-    env,
-    path::PathBuf,
-    str::FromStr,
-    sync::{Arc, Mutex},
-};
-
 use log::LevelFilter;
 use nusamai::parameters::Parameters;
 use nusamai::{
@@ -25,6 +18,15 @@ use nusamai::{
     },
 };
 use nusamai_plateau::models::TopLevelCityObject;
+use std::collections::HashMap;
+use std::fs::File;
+use std::io::BufReader;
+use std::{
+    env,
+    path::PathBuf,
+    str::FromStr,
+    sync::{Arc, Mutex},
+};
 use tauri::Emitter;
 use tauri_plugin_log::{RotationStrategy, TimezoneStrategy};
 use thiserror::Error;
@@ -73,7 +75,8 @@ fn main() {
             cancel_conversion,
             get_parameter,
             get_transform,
-            list_supported_files
+            list_supported_files,
+            get_meshcodes_with_prefix,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
@@ -417,4 +420,110 @@ async fn list_supported_files(directories: Vec<String>) -> Result<Vec<String>, E
 
     all_files.sort();
     Ok(all_files)
+}
+
+const PLATEAU_TYPES: &[&str] = &[
+    "bldg", "tran", "rwy", "trk", "squr", "wwy", "luse", "fld", "tnm", "htd", "ifld", "rfld",
+    "lsld", "urf", "brid", "tun", "cons", "frn", "unf", "ubld", "veg", "dem", "wtr", "area", "gen",
+    "app", "ext",
+];
+
+fn extract_meshcode_and_type(filename: &str) -> Option<(String, String)> {
+    let basename = filename.split('/').next_back().unwrap_or(filename);
+
+    // PLATEAU filename pattern: {meshcode}_{type}_{crs}_[..._optionals].gml
+    // Example: 53394529_bldg_6697_op.gml
+    let parts: Vec<&str> = basename.split('_').collect();
+
+    if parts.len() <= 2 {
+        return None;
+    }
+
+    let meshcode = parts[0];
+    let meshcode_len = meshcode.len();
+
+    if (meshcode_len != 6 && meshcode_len != 8) || !meshcode.chars().all(|c| c.is_numeric()) {
+        // Meshcode must be 6 or 8 digits long and numeric
+        return None;
+    }
+
+    let file_type = parts[1];
+
+    if PLATEAU_TYPES.contains(&file_type) {
+        Some((meshcode.to_string(), file_type.to_string()))
+    } else {
+        None
+    }
+}
+
+#[tauri::command]
+fn get_meshcodes_with_prefix(
+    input_paths: Vec<String>,
+) -> Result<HashMap<String, HashMap<String, Vec<String>>>, Error> {
+    let mut result: HashMap<String, HashMap<String, Vec<String>>> = HashMap::new();
+
+    for input_path in input_paths {
+        let file = File::open(input_path.clone())?;
+        let reader = BufReader::new(file);
+        let mut archive = zip::ZipArchive::new(reader).map_err(|e| Error::Io(e.to_string()))?;
+
+        for i in 0..archive.len() {
+            let file = archive.by_index(i).map_err(|e| Error::Io(e.to_string()))?;
+            let file_path = file.name().to_string();
+
+            if file_path.ends_with(".gml") {
+                if let Some((meshcode, file_type)) = extract_meshcode_and_type(&file_path) {
+                    let meshcode_entry = result.entry(meshcode).or_default();
+                    let type_entry = meshcode_entry.entry(file_type).or_default();
+                    // Format: "/path/to/zipfile.zip/path/to/file.gml"
+                    let full_path = format!("{}/{}", input_path, file_path);
+                    type_entry.push(full_path);
+                }
+            }
+        }
+    }
+    Ok(result)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_extract_meshcode_and_type() {
+        // Test valid PLATEAU filenames with 8-digit meshcodes
+        assert_eq!(
+            extract_meshcode_and_type("53393680_bldg_6697_lod4.2_op.gml"),
+            Some(("53393680".to_string(), "bldg".to_string()))
+        );
+
+        assert_eq!(
+            extract_meshcode_and_type("52385608_tran_6697_op.gml"),
+            Some(("52385608".to_string(), "tran".to_string()))
+        );
+
+        assert_eq!(
+            extract_meshcode_and_type("udx/fld/52385721_fld_6697_l1_op.gml"),
+            Some(("52385721".to_string(), "fld".to_string()))
+        );
+
+        // Test valid PLATEAU filenames with 6-digit meshcodes (older format)
+        assert_eq!(
+            extract_meshcode_and_type("523855_tnm_6697_op.gml"),
+            Some(("523855".to_string(), "tnm".to_string()))
+        );
+
+        assert_eq!(
+            extract_meshcode_and_type("533915_urf_6668_kuiki_op.gml"),
+            Some(("533915".to_string(), "urf".to_string()))
+        );
+
+        // Test invalid patterns
+        assert_eq!(extract_meshcode_and_type("invalid_filename.gml"), None);
+        assert_eq!(extract_meshcode_and_type("12345_bldg_6697.gml"), None); // Only 5 digits
+        assert_eq!(extract_meshcode_and_type("1234567_bldg_6697.gml"), None); // 7 digits
+        assert_eq!(extract_meshcode_and_type("123456789_bldg_6697.gml"), None); // 9 digits
+        assert_eq!(extract_meshcode_and_type("12345678_unknown_6697.gml"), None); // Unknown type
+        assert_eq!(extract_meshcode_and_type("building.gml"), None); // No underscore pattern
+    }
 }
