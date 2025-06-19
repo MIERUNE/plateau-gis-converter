@@ -30,3 +30,17 @@ pub fn limit_texture_resolution_parameter(default_value: bool) -> ParameterDefin
         },
     }
 }
+
+pub fn center_at_origin_parameter(default_value: bool) -> ParameterDefinition {
+    ParameterDefinition {
+        key: "center_at_origin".into(),
+        entry: ParameterEntry {
+            description: "Center model at origin using centroid".into(),
+            required: false,
+            parameter: ParameterType::Boolean(BooleanParameter {
+                value: Some(default_value),
+            }),
+            label: Some("モデルの重心を原点に設定".into()),
+        },
+    }
+}
