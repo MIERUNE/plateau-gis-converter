@@ -1,7 +1,7 @@
 <script lang="ts">
 	import {invoke} from '@tauri-apps/api/core';
 	import Icon from '@iconify/svelte';
-	import {abbreviatePath} from '$lib/utils';
+	import {abbreviatePath, formatFilePath} from '$lib/utils';
 	import * as dialog from '@tauri-apps/plugin-dialog';
 	import {untrack} from 'svelte';
 	import Tooltip from './Tooltip.svelte';
@@ -42,7 +42,7 @@
 			});
 
 			if (inputPaths.length === 0) {
-				await dialog.message('選択したフォルダに対応ファイル（GML, GeoJSON）が含まれていません', {
+				await dialog.message('選択したフォルダに対応ファイル（GML, GeoJSON, ZIP）が含まれていません', {
 					kind: 'warning'
 				});
 				inputDirectories = [];
@@ -64,7 +64,7 @@
 			filters: [
 				{
 					name: 'Supported Files',
-					extensions: ['gml', 'geojson', 'json']
+					extensions: ['gml', 'geojson', 'json', 'zip']
 				},
 				{
 					name: 'CityGML',
@@ -73,11 +73,48 @@
 				{
 					name: 'GeoJSON',
 					extensions: ['geojson', 'json']
+				},
+				{
+					name: 'ZIP Archives',
+					extensions: ['zip']
 				}
 			]
 		});
 		if (!res) return;
-		inputPaths = Array.isArray(res) ? res : [res];
+		
+		const selectedFiles = Array.isArray(res) ? res : [res];
+		const allPaths: string[] = [];
+		
+		// Process each selected file
+		for (const file of selectedFiles) {
+			if (file.endsWith('.zip')) {
+				// For ZIP files, list their contents
+				try {
+					const zipContents = await invoke<string[]>('list_zip_contents', {
+						zipPath: file
+					});
+					allPaths.push(...zipContents);
+				} catch (error) {
+					console.error('Failed to list ZIP contents:', error);
+					await dialog.message(`ZIPファイルの読み込みに失敗しました: ${file}`, {
+						kind: 'error'
+					});
+				}
+			} else {
+				// Regular file
+				allPaths.push(file);
+			}
+		}
+		
+		inputPaths = allPaths;
+		
+		// Show message if ZIP files were processed
+		const zipCount = selectedFiles.filter(f => f.endsWith('.zip')).length;
+		if (zipCount > 0 && allPaths.length > 0) {
+			await dialog.message(`${zipCount}個のZIPファイルから${allPaths.length}個の対応ファイルを検出しました`, {
+				kind: 'info'
+			});
+		}
 	}
 
 	function clearSelected() {
@@ -158,7 +195,7 @@
                             {#snippet tooltipContent()}
                                 <ol class="list-decimal pl-4">
                                     {#each inputPaths as path (path)}
-                                        <li class="text-xs">{abbreviatePath(path, 30)}</li>
+                                        <li class="text-xs">{formatFilePath(path, 50)}</li>
                                     {/each}
                                 </ol>
                             {/snippet}

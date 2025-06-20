@@ -76,6 +76,7 @@ fn main() {
             get_parameter,
             get_transform,
             list_supported_files,
+            list_zip_contents,
             get_meshcodes_with_prefix,
         ])
         .run(tauri::generate_context!())
@@ -164,20 +165,31 @@ fn run_conversion(
 
     // Check the existence of the input paths
     for path in input_paths.iter() {
-        if !PathBuf::from_str(path).unwrap().exists() {
-            let msg = format!("Input file does not exist: {}", path);
-            log::error!("{}", msg);
-            return Err(Error::InvalidPath(msg));
+        if path.contains(".zip/") {
+            let parts: Vec<&str> = path.splitn(2, ".zip/").collect();
+            if parts.len() == 2 {
+                let zip_file = format!("{}.zip", parts[0]);
+                if !PathBuf::from_str(&zip_file).unwrap().exists() {
+                    let msg = format!("ZIP file does not exist: {}", zip_file);
+                    log::error!("{}", msg);
+                    return Err(Error::InvalidPath(msg));
+                }
+            }
+        } else {
+            if !PathBuf::from_str(path).unwrap().exists() {
+                let msg = format!("Input file does not exist: {}", path);
+                log::error!("{}", msg);
+                return Err(Error::InvalidPath(msg));
+            }
         }
     }
-    // Check if the mapping rules file is set, and if it exists
+
     if !rules_path.is_empty() && !PathBuf::from_str(&rules_path).unwrap().exists() {
         let msg = format!("Mapping rules file does not exist: {}", rules_path);
         log::error!("{}", msg);
         return Err(Error::InvalidPath(msg));
     };
 
-    // If the directory for the output path does not exist, create it
     let output_path_buf = PathBuf::from_str(&output_path).unwrap();
     let output_parent_dir = output_path_buf.parent().unwrap();
     if !output_parent_dir.exists() {
@@ -217,37 +229,70 @@ fn run_conversion(
         // ファイルを拡張子で分類
         let mut gml_files = Vec::new();
         let mut geojson_files = Vec::new();
+        let mut zip_gml_files = Vec::new();
+        let mut zip_geojson_files = Vec::new();
 
         for path in input_paths.iter() {
-            let path_buf = PathBuf::from_str(path).unwrap();
-            if let Some(ext) = path_buf.extension() {
-                match ext.to_str() {
-                    Some("gml") => gml_files.push(path_buf),
-                    Some("geojson") | Some("json") => geojson_files.push(path_buf),
-                    _ => {
-                        let msg = format!("Unsupported file extension: {:?}", ext);
+            // Check if this is a ZIP file path (format: "zipfile.zip/internal/path.ext")
+            if path.contains(".zip/") {
+                let parts: Vec<&str> = path.splitn(2, ".zip/").collect();
+                if parts.len() == 2 {
+                    let internal_path = parts[1];
+                    if internal_path.ends_with(".gml") {
+                        zip_gml_files.push(path.clone());
+                    } else if internal_path.ends_with(".geojson") || internal_path.ends_with(".json") {
+                        zip_geojson_files.push(path.clone());
+                    } else {
+                        let msg = format!("Unsupported file in ZIP: {}", internal_path);
                         log::error!("{}", msg);
                         return Err(Error::InvalidPath(msg));
+                    }
+                }
+            } else {
+                // Regular file path
+                let path_buf = PathBuf::from_str(path).unwrap();
+                if let Some(ext) = path_buf.extension() {
+                    match ext.to_str() {
+                        Some("gml") => gml_files.push(path_buf),
+                        Some("geojson") | Some("json") => geojson_files.push(path_buf),
+                        _ => {
+                            let msg = format!("Unsupported file extension: {:?}", ext);
+                            log::error!("{}", msg);
+                            return Err(Error::InvalidPath(msg));
+                        }
                     }
                 }
             }
         }
 
         // 混在チェック
-        if !gml_files.is_empty() && !geojson_files.is_empty() {
+        let has_gml = !gml_files.is_empty() || !zip_gml_files.is_empty();
+        let has_geojson = !geojson_files.is_empty() || !zip_geojson_files.is_empty();
+        
+        if has_gml && has_geojson {
             let msg = "Cannot mix GML and GeoJSON files in a single conversion";
             log::error!("{}", msg);
             return Err(Error::InvalidSetting(msg.to_string()));
         }
 
         // 適切なソースプロバイダーを選択
-        let source_provider: Box<dyn DataSourceProvider> = if !geojson_files.is_empty() {
+        let source_provider: Box<dyn DataSourceProvider> = if has_geojson {
+            // Combine regular and ZIP GeoJSON files
+            let mut all_geojson_files = geojson_files;
+            for zip_path in zip_geojson_files {
+                all_geojson_files.push(PathBuf::from(zip_path));
+            }
             Box::new(GeoJsonSourceProvider {
-                filenames: geojson_files,
+                filenames: all_geojson_files,
             })
         } else {
+            // Combine regular and ZIP GML files
+            let mut all_gml_files = gml_files;
+            for zip_path in zip_gml_files {
+                all_gml_files.push(PathBuf::from(zip_path));
+            }
             Box::new(CityGmlSourceProvider {
-                filenames: gml_files,
+                filenames: all_gml_files,
             })
         };
 
@@ -372,6 +417,35 @@ fn get_parameter(filetype: String) -> Result<Parameters, Error> {
     Ok(sink_params)
 }
 
+/// List supported files inside a ZIP archive
+fn list_files_in_zip(zip_path: &str) -> Result<Vec<String>, Error> {
+    let file = File::open(zip_path)?;
+    let reader = BufReader::new(file);
+    let mut archive = zip::ZipArchive::new(reader).map_err(|e| Error::Io(e.to_string()))?;
+    
+    let mut files = Vec::new();
+    
+    for i in 0..archive.len() {
+        let file = archive.by_index(i).map_err(|e| Error::Io(e.to_string()))?;
+        let file_path = file.name();
+        
+        // Check if the file has a supported extension
+        if file_path.ends_with(".gml") || file_path.ends_with(".geojson") || file_path.ends_with(".json") {
+            // Format: "/path/to/zipfile.zip/path/to/file.gml"
+            let full_path = format!("{}/{}", zip_path, file_path);
+            files.push(full_path);
+        }
+    }
+    
+    Ok(files)
+}
+
+/// List files in a ZIP archive (Tauri command)
+#[tauri::command]
+async fn list_zip_contents(zip_path: String) -> Result<Vec<String>, Error> {
+    list_files_in_zip(&zip_path)
+}
+
 /// List supported files in the given directories
 #[tauri::command]
 async fn list_supported_files(directories: Vec<String>) -> Result<Vec<String>, Error> {
@@ -401,9 +475,21 @@ async fn list_supported_files(directories: Vec<String>) -> Result<Vec<String>, E
                     // Check if it's a file and has supported extension
                     if path.is_file() {
                         if let Some(extension) = path.extension() {
-                            if extension == "gml" || extension == "geojson" || extension == "json" {
+                            let ext_str = extension.to_string_lossy().to_lowercase();
+                            
+                            // Check for directly supported files
+                            if ext_str == "gml" || ext_str == "geojson" || ext_str == "json" {
                                 if let Some(path_str) = path.to_str() {
                                     all_files.push(path_str.to_string());
+                                }
+                            }
+                            // Check for ZIP files
+                            else if ext_str == "zip" {
+                                if let Some(path_str) = path.to_str() {
+                                    // List files inside ZIP
+                                    if let Ok(files) = list_files_in_zip(path_str) {
+                                        all_files.extend(files);
+                                    }
                                 }
                             }
                         }
