@@ -63,7 +63,7 @@
 	<div class="flex max-w-2xl flex-col gap-8 pb-4">
 		<div class="flex items-center gap-1.5">
 			<h1 class="text-2xl font-bold">PLATEAU GIS Converter</h1>
-			<a href="/about" class="hover:text-accent1">
+			<a href="/map" class="hover:text-accent1">
 				<Icon class="mt-0.5 text-2xl" icon="mingcute:information-line" />
 			</a>
 		</div>

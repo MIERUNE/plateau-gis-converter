@@ -1,9 +1,9 @@
 <script lang="ts">
-	import { invoke } from '@tauri-apps/api/core';
+	import {invoke} from '@tauri-apps/api/core';
 	import Icon from '@iconify/svelte';
-	import { abbreviatePath } from '$lib/utils';
+	import {abbreviatePath, formatFilePath} from '$lib/utils';
 	import * as dialog from '@tauri-apps/plugin-dialog';
-	import { untrack } from 'svelte';
+	import {untrack} from 'svelte';
 	import Tooltip from './Tooltip.svelte';
 
 	// let isFolderMode = true;
@@ -42,7 +42,7 @@
 			});
 
 			if (inputPaths.length === 0) {
-				await dialog.message('選択したフォルダに対応ファイル（GML, GeoJSON）が含まれていません', {
+				await dialog.message('選択したフォルダに対応ファイル（GML, GeoJSON, ZIP）が含まれていません', {
 					kind: 'warning'
 				});
 				inputDirectories = [];
@@ -64,7 +64,7 @@
 			filters: [
 				{
 					name: 'Supported Files',
-					extensions: ['gml', 'geojson', 'json']
+					extensions: ['gml', 'geojson', 'json', 'zip']
 				},
 				{
 					name: 'CityGML',
@@ -73,11 +73,48 @@
 				{
 					name: 'GeoJSON',
 					extensions: ['geojson', 'json']
+				},
+				{
+					name: 'ZIP Archives',
+					extensions: ['zip']
 				}
 			]
 		});
 		if (!res) return;
-		inputPaths = Array.isArray(res) ? res : [res];
+		
+		const selectedFiles = Array.isArray(res) ? res : [res];
+		const allPaths: string[] = [];
+		
+		// Process each selected file
+		for (const file of selectedFiles) {
+			if (file.endsWith('.zip')) {
+				// For ZIP files, list their contents
+				try {
+					const zipContents = await invoke<string[]>('list_zip_contents', {
+						zipPath: file
+					});
+					allPaths.push(...zipContents);
+				} catch (error) {
+					console.error('Failed to list ZIP contents:', error);
+					await dialog.message(`ZIPファイルの読み込みに失敗しました: ${file}`, {
+						kind: 'error'
+					});
+				}
+			} else {
+				// Regular file
+				allPaths.push(file);
+			}
+		}
+		
+		inputPaths = allPaths;
+		
+		// Show message if ZIP files were processed
+		const zipCount = selectedFiles.filter(f => f.endsWith('.zip')).length;
+		if (zipCount > 0 && allPaths.length > 0) {
+			await dialog.message(`${zipCount}個のZIPファイルから${allPaths.length}個の対応ファイルを検出しました`, {
+				kind: 'info'
+			});
+		}
 	}
 
 	function clearSelected() {
@@ -87,87 +124,88 @@
 </script>
 
 <div>
-	<div class="flex items-center gap-1.5">
-		<Icon class="text-xl" icon="material-symbols:input-rounded" />
-		<h2 class="text-xl font-bold">入力</h2>
-	</div>
-	<hr class="mt-0.5" />
+    <div class="flex items-center gap-1.5">
+        <Icon class="text-xl" icon="material-symbols:input-rounded"/>
+        <h2 class="text-xl font-bold">入力</h2>
+    </div>
+    <hr class="mt-0.5"/>
 
-	<div class="ml-3">
-		<div>
+    <div class="ml-3">
+        <div>
 			<span class="isolate my-3 inline-flex rounded-md">
 				<button
-					type="button"
-					data-active={isFolderMode ? '' : undefined}
-					class="data-active:pointer-events-none data-active:bg-accent1 relative inline-flex items-center gap-1 rounded-l-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-10"
-					onclick={() => (isFolderMode = true)}
-					><Icon icon="material-symbols:folder" />フォルダ選択</button
-				>
+                        type="button"
+                        data-active={isFolderMode ? '' : undefined}
+                        class="data-active:pointer-events-none data-active:bg-accent1 relative inline-flex items-center gap-1 rounded-l-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-10"
+                        onclick={() => (isFolderMode = true)}
+                ><Icon icon="material-symbols:folder"/>フォルダ選択</button
+                >
 				<button
-					type="button"
-					data-active={!isFolderMode ? '' : undefined}
-					class="data-active:pointer-events-none data-active:bg-accent1 relative -ml-px inline-flex items-center gap-1 rounded-r-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-10"
-					onclick={() => (isFolderMode = false)}><Icon icon="ph:files" />ファイル選択</button
-				>
+                        type="button"
+                        data-active={!isFolderMode ? '' : undefined}
+                        class="data-active:pointer-events-none data-active:bg-accent1 relative -ml-px inline-flex items-center gap-1 rounded-r-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-10"
+                        onclick={() => (isFolderMode = false)}><Icon icon="ph:files"/>ファイル選択</button
+                >
 			</span>
-		</div>
+        </div>
 
-		<div class="flex items-center gap-3">
-			<button
-				onclick={isFolderMode ? openDirectoryDialog : openFileDialog}
-				class="bg-accent1 rounded-sm px-4 py-0.5 font-semibold shadow-sm hover:opacity-75"
-				>選択</button
-			>
-			<div class="text-sm">
-				{#if isFolderMode}
-					{#if inputDirectories.length === 0}
-						<p class="text-red-400">フォルダが選択されていません</p>
-					{:else}
-						<div class="flex items-center gap-1">
-							<p>
-								<b>{inputDirectories.length}</b> フォルダ （計 <b>{inputPaths.length}</b> ファイル）
-							</p>
-							<Tooltip>
-								{#snippet buttonChildren()}
-									<Icon class="text-2xl" icon="material-symbols-light:list-alt-rounded" />
-								{/snippet}
-								{#snippet tooltipContent()}
-									<ol class="list-decimal pl-4">
-										{#each inputDirectories as folder (folder)}
-											<li class="text-xs">{abbreviatePath(folder, 30)}</li>
-										{/each}
-									</ol>
-								{/snippet}
-							</Tooltip>
-							<button onclick={clearSelected} class="hover:opacity-75">
-								<Icon icon="material-symbols:cancel" />
-							</button>
-						</div>
-					{/if}
-				{:else if inputPaths.length === 0}
-					<p class="text-red-400">ファイルが選択されていません</p>
-				{:else}
-					<div class="flex items-center gap-1">
-						<p><b>{inputPaths.length}</b> ファイル</p>
+        <div class="flex items-center gap-3">
+            <button
+                    onclick={isFolderMode ? openDirectoryDialog : openFileDialog}
+                    class="bg-accent1 rounded-sm px-4 py-0.5 font-semibold shadow-sm hover:opacity-75"
+            >選択
+            </button
+            >
+            <div class="text-sm">
+                {#if isFolderMode}
+                    {#if inputDirectories.length === 0}
+                        <p class="text-red-400">フォルダが選択されていません</p>
+                    {:else}
+                        <div class="flex items-center gap-1">
+                            <p>
+                                <b>{inputDirectories.length}</b> フォルダ （計 <b>{inputPaths.length}</b> ファイル）
+                            </p>
+                            <Tooltip>
+                                {#snippet buttonChildren()}
+                                    <Icon class="text-2xl" icon="material-symbols-light:list-alt-rounded"/>
+                                {/snippet}
+                                {#snippet tooltipContent()}
+                                    <ol class="list-decimal pl-4">
+                                        {#each inputDirectories as folder (folder)}
+                                            <li class="text-xs">{abbreviatePath(folder, 30)}</li>
+                                        {/each}
+                                    </ol>
+                                {/snippet}
+                            </Tooltip>
+                            <button onclick={clearSelected} class="hover:opacity-75">
+                                <Icon icon="material-symbols:cancel"/>
+                            </button>
+                        </div>
+                    {/if}
+                {:else if inputPaths.length === 0}
+                    <p class="text-red-400">ファイルが選択されていません</p>
+                {:else}
+                    <div class="flex items-center gap-1">
+                        <p><b>{inputPaths.length}</b> ファイル</p>
 
-						<Tooltip>
-							{#snippet buttonChildren()}
-								<Icon class="text-2xl" icon="material-symbols-light:list-alt-rounded" />
-							{/snippet}
-							{#snippet tooltipContent()}
-								<ol class="list-decimal pl-4">
-									{#each inputPaths as path (path)}
-										<li class="text-xs">{abbreviatePath(path, 30)}</li>
-									{/each}
-								</ol>
-							{/snippet}
-						</Tooltip>
-						<button onclick={clearSelected} class="hover:opacity-75">
-							<Icon icon="material-symbols:cancel" />
-						</button>
-					</div>
-				{/if}
-			</div>
-		</div>
-	</div>
+                        <Tooltip>
+                            {#snippet buttonChildren()}
+                                <Icon class="text-2xl" icon="material-symbols-light:list-alt-rounded"/>
+                            {/snippet}
+                            {#snippet tooltipContent()}
+                                <ol class="list-decimal pl-4">
+                                    {#each inputPaths as path (path)}
+                                        <li class="text-xs">{formatFilePath(path, 50)}</li>
+                                    {/each}
+                                </ol>
+                            {/snippet}
+                        </Tooltip>
+                        <button onclick={clearSelected} class="hover:opacity-75">
+                            <Icon icon="material-symbols:cancel"/>
+                        </button>
+                    </div>
+                {/if}
+            </div>
+        </div>
+    </div>
 </div>
