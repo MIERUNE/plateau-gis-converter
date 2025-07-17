@@ -1,13 +1,6 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use std::{
-    env,
-    path::PathBuf,
-    str::FromStr,
-    sync::{Arc, Mutex},
-};
-
 use log::LevelFilter;
 use nusamai::parameters::Parameters;
 use nusamai::{
@@ -25,6 +18,15 @@ use nusamai::{
     },
 };
 use nusamai_plateau::models::TopLevelCityObject;
+use std::collections::HashMap;
+use std::fs::File;
+use std::io::BufReader;
+use std::{
+    env,
+    path::PathBuf,
+    str::FromStr,
+    sync::{Arc, Mutex},
+};
 use tauri::Emitter;
 use tauri_plugin_log::{RotationStrategy, TimezoneStrategy};
 use thiserror::Error;
@@ -73,7 +75,9 @@ fn main() {
             cancel_conversion,
             get_parameter,
             get_transform,
-            list_supported_files
+            list_supported_files,
+            list_zip_contents,
+            get_meshcodes_with_prefix,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
@@ -161,20 +165,31 @@ fn run_conversion(
 
     // Check the existence of the input paths
     for path in input_paths.iter() {
-        if !PathBuf::from_str(path).unwrap().exists() {
-            let msg = format!("Input file does not exist: {path}");
-            log::error!("{msg}");
-            return Err(Error::InvalidPath(msg));
+        if path.contains(".zip/") {
+            let parts: Vec<&str> = path.splitn(2, ".zip/").collect();
+            if parts.len() == 2 {
+                let zip_file = format!("{}.zip", parts[0]);
+                if !PathBuf::from_str(&zip_file).unwrap().exists() {
+                    let msg = format!("ZIP file does not exist: {zip_file}");
+                    log::error!("{msg}");
+                    return Err(Error::InvalidPath(msg));
+                }
+            }
+        } else {
+            if !PathBuf::from_str(path).unwrap().exists() {
+                let msg = format!("Input file does not exist: {path}");
+                log::error!("{msg}");
+                return Err(Error::InvalidPath(msg));
+            }
         }
     }
-    // Check if the mapping rules file is set, and if it exists
+
     if !rules_path.is_empty() && !PathBuf::from_str(&rules_path).unwrap().exists() {
         let msg = format!("Mapping rules file does not exist: {rules_path}");
         log::error!("{msg}");
         return Err(Error::InvalidPath(msg));
     };
 
-    // If the directory for the output path does not exist, create it
     let output_path_buf = PathBuf::from_str(&output_path).unwrap();
     let output_parent_dir = output_path_buf.parent().unwrap();
     if !output_parent_dir.exists() {
@@ -214,37 +229,72 @@ fn run_conversion(
         // ファイルを拡張子で分類
         let mut gml_files = Vec::new();
         let mut geojson_files = Vec::new();
+        let mut zip_gml_files = Vec::new();
+        let mut zip_geojson_files = Vec::new();
 
         for path in input_paths.iter() {
-            let path_buf = PathBuf::from_str(path).unwrap();
-            if let Some(ext) = path_buf.extension() {
-                match ext.to_str() {
-                    Some("gml") => gml_files.push(path_buf),
-                    Some("geojson") | Some("json") => geojson_files.push(path_buf),
-                    _ => {
-                        let msg = format!("Unsupported file extension: {ext:?}");
-                        log::error!("{msg}");
+            // Check if this is a ZIP file path (format: "zipfile.zip/internal/path.ext")
+            if path.contains(".zip/") {
+                let parts: Vec<&str> = path.splitn(2, ".zip/").collect();
+                if parts.len() == 2 {
+                    let internal_path = parts[1];
+                    if internal_path.ends_with(".gml") {
+                        zip_gml_files.push(path.clone());
+                    } else if internal_path.ends_with(".geojson")
+                        || internal_path.ends_with(".json")
+                    {
+                        zip_geojson_files.push(path.clone());
+                    } else {
+                        let msg = format!("Unsupported file in ZIP: {}", internal_path);
+                        log::error!("{}", msg);
                         return Err(Error::InvalidPath(msg));
+                    }
+                }
+            } else {
+                // Regular file path
+                let path_buf = PathBuf::from_str(path).unwrap();
+                if let Some(ext) = path_buf.extension() {
+                    match ext.to_str() {
+                        Some("gml") => gml_files.push(path_buf),
+                        Some("geojson") | Some("json") => geojson_files.push(path_buf),
+                        _ => {
+                            let msg = format!("Unsupported file extension: {ext:?}");
+                            log::error!("{msg}");
+                            return Err(Error::InvalidPath(msg));
+                        }
                     }
                 }
             }
         }
 
         // 混在チェック
-        if !gml_files.is_empty() && !geojson_files.is_empty() {
+        let has_gml = !gml_files.is_empty() || !zip_gml_files.is_empty();
+        let has_geojson = !geojson_files.is_empty() || !zip_geojson_files.is_empty();
+
+        if has_gml && has_geojson {
             let msg = "Cannot mix GML and GeoJSON files in a single conversion";
             log::error!("{msg}");
             return Err(Error::InvalidSetting(msg.to_string()));
         }
 
         // 適切なソースプロバイダーを選択
-        let source_provider: Box<dyn DataSourceProvider> = if !geojson_files.is_empty() {
+        let source_provider: Box<dyn DataSourceProvider> = if has_geojson {
+            // Combine regular and ZIP GeoJSON files
+            let mut all_geojson_files = geojson_files;
+            for zip_path in zip_geojson_files {
+                all_geojson_files.push(PathBuf::from(zip_path));
+            }
             Box::new(GeoJsonSourceProvider {
-                filenames: geojson_files,
+                filenames: all_geojson_files,
             })
         } else {
+            // Combine regular and ZIP GML files
+            let mut all_gml_files = gml_files;
+            for zip_path in zip_gml_files {
+                all_gml_files.push(PathBuf::from(zip_path));
+            }
             Box::new(CityGmlSourceProvider {
-                filenames: gml_files,
+                filenames: all_gml_files,
             })
         };
 
@@ -369,6 +419,38 @@ fn get_parameter(filetype: String) -> Result<Parameters, Error> {
     Ok(sink_params)
 }
 
+/// List supported files inside a ZIP archive
+fn list_files_in_zip(zip_path: &str) -> Result<Vec<String>, Error> {
+    let file = File::open(zip_path)?;
+    let reader = BufReader::new(file);
+    let mut archive = zip::ZipArchive::new(reader).map_err(|e| Error::Io(e.to_string()))?;
+
+    let mut files = Vec::new();
+
+    for i in 0..archive.len() {
+        let file = archive.by_index(i).map_err(|e| Error::Io(e.to_string()))?;
+        let file_path = file.name();
+
+        // Check if the file has a supported extension
+        if file_path.ends_with(".gml")
+            || file_path.ends_with(".geojson")
+            || file_path.ends_with(".json")
+        {
+            // Format: "/path/to/zipfile.zip/path/to/file.gml"
+            let full_path = format!("{}/{}", zip_path, file_path);
+            files.push(full_path);
+        }
+    }
+
+    Ok(files)
+}
+
+/// List files in a ZIP archive (Tauri command)
+#[tauri::command]
+async fn list_zip_contents(zip_path: String) -> Result<Vec<String>, Error> {
+    list_files_in_zip(&zip_path)
+}
+
 /// List supported files in the given directories
 #[tauri::command]
 async fn list_supported_files(directories: Vec<String>) -> Result<Vec<String>, Error> {
@@ -398,9 +480,21 @@ async fn list_supported_files(directories: Vec<String>) -> Result<Vec<String>, E
                     // Check if it's a file and has supported extension
                     if path.is_file() {
                         if let Some(extension) = path.extension() {
-                            if extension == "gml" || extension == "geojson" || extension == "json" {
+                            let ext_str = extension.to_string_lossy().to_lowercase();
+
+                            // Check for directly supported files
+                            if ext_str == "gml" || ext_str == "geojson" || ext_str == "json" {
                                 if let Some(path_str) = path.to_str() {
                                     all_files.push(path_str.to_string());
+                                }
+                            }
+                            // Check for ZIP files
+                            else if ext_str == "zip" {
+                                if let Some(path_str) = path.to_str() {
+                                    // List files inside ZIP
+                                    if let Ok(files) = list_files_in_zip(path_str) {
+                                        all_files.extend(files);
+                                    }
                                 }
                             }
                         }
@@ -417,4 +511,110 @@ async fn list_supported_files(directories: Vec<String>) -> Result<Vec<String>, E
 
     all_files.sort();
     Ok(all_files)
+}
+
+const PLATEAU_TYPES: &[&str] = &[
+    "bldg", "tran", "rwy", "trk", "squr", "wwy", "luse", "fld", "tnm", "htd", "ifld", "rfld",
+    "lsld", "urf", "brid", "tun", "cons", "frn", "unf", "ubld", "veg", "dem", "wtr", "area", "gen",
+    "app", "ext",
+];
+
+fn extract_meshcode_and_type(filename: &str) -> Option<(String, String)> {
+    let basename = filename.split('/').next_back().unwrap_or(filename);
+
+    // PLATEAU filename pattern: {meshcode}_{type}_{crs}_[..._optionals].gml
+    // Example: 53394529_bldg_6697_op.gml
+    let parts: Vec<&str> = basename.split('_').collect();
+
+    if parts.len() <= 2 {
+        return None;
+    }
+
+    let meshcode = parts[0];
+    let meshcode_len = meshcode.len();
+
+    if (meshcode_len != 6 && meshcode_len != 8) || !meshcode.chars().all(|c| c.is_numeric()) {
+        // Meshcode must be 6 or 8 digits long and numeric
+        return None;
+    }
+
+    let file_type = parts[1];
+
+    if PLATEAU_TYPES.contains(&file_type) {
+        Some((meshcode.to_string(), file_type.to_string()))
+    } else {
+        None
+    }
+}
+
+#[tauri::command]
+fn get_meshcodes_with_prefix(
+    input_paths: Vec<String>,
+) -> Result<HashMap<String, HashMap<String, Vec<String>>>, Error> {
+    let mut result: HashMap<String, HashMap<String, Vec<String>>> = HashMap::new();
+
+    for input_path in input_paths {
+        let file = File::open(input_path.clone())?;
+        let reader = BufReader::new(file);
+        let mut archive = zip::ZipArchive::new(reader).map_err(|e| Error::Io(e.to_string()))?;
+
+        for i in 0..archive.len() {
+            let file = archive.by_index(i).map_err(|e| Error::Io(e.to_string()))?;
+            let file_path = file.name().to_string();
+
+            if file_path.ends_with(".gml") {
+                if let Some((meshcode, file_type)) = extract_meshcode_and_type(&file_path) {
+                    let meshcode_entry = result.entry(meshcode).or_default();
+                    let type_entry = meshcode_entry.entry(file_type).or_default();
+                    // Format: "/path/to/zipfile.zip/path/to/file.gml"
+                    let full_path = format!("{}/{}", input_path, file_path);
+                    type_entry.push(full_path);
+                }
+            }
+        }
+    }
+    Ok(result)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_extract_meshcode_and_type() {
+        // Test valid PLATEAU filenames with 8-digit meshcodes
+        assert_eq!(
+            extract_meshcode_and_type("53393680_bldg_6697_lod4.2_op.gml"),
+            Some(("53393680".to_string(), "bldg".to_string()))
+        );
+
+        assert_eq!(
+            extract_meshcode_and_type("52385608_tran_6697_op.gml"),
+            Some(("52385608".to_string(), "tran".to_string()))
+        );
+
+        assert_eq!(
+            extract_meshcode_and_type("udx/fld/52385721_fld_6697_l1_op.gml"),
+            Some(("52385721".to_string(), "fld".to_string()))
+        );
+
+        // Test valid PLATEAU filenames with 6-digit meshcodes (older format)
+        assert_eq!(
+            extract_meshcode_and_type("523855_tnm_6697_op.gml"),
+            Some(("523855".to_string(), "tnm".to_string()))
+        );
+
+        assert_eq!(
+            extract_meshcode_and_type("533915_urf_6668_kuiki_op.gml"),
+            Some(("533915".to_string(), "urf".to_string()))
+        );
+
+        // Test invalid patterns
+        assert_eq!(extract_meshcode_and_type("invalid_filename.gml"), None);
+        assert_eq!(extract_meshcode_and_type("12345_bldg_6697.gml"), None); // Only 5 digits
+        assert_eq!(extract_meshcode_and_type("1234567_bldg_6697.gml"), None); // 7 digits
+        assert_eq!(extract_meshcode_and_type("123456789_bldg_6697.gml"), None); // 9 digits
+        assert_eq!(extract_meshcode_and_type("12345678_unknown_6697.gml"), None); // Unknown type
+        assert_eq!(extract_meshcode_and_type("building.gml"), None); // No underscore pattern
+    }
 }

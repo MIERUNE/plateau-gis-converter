@@ -1,8 +1,11 @@
 use std::{
     fs,
+    io::Read,
     path::{Path, PathBuf},
     sync::RwLock,
 };
+
+use super::file_reader::FileReader;
 
 use nusamai_citygml::{
     geometry::{GeometryRef, GeometryRefs, GeometryStore, GeometryType},
@@ -55,8 +58,22 @@ impl DataSource for GeoJsonSource {
             feedback.ensure_not_canceled()?;
 
             feedback.info(format!("Parsing GeoJSON file: {filename:?} ..."));
-            let content = fs::read_to_string(filename)?;
-            let source_url = Url::from_file_path(fs::canonicalize(Path::new(filename))?).unwrap();
+
+            // Convert PathBuf to string for ZIP file handling
+            let filename_str = filename.to_string_lossy();
+            let mut file_reader = FileReader::open(&filename_str)?;
+
+            // Read the entire content
+            let mut content = String::new();
+            file_reader.read_to_string(&mut content)?;
+
+            // Create source URL - use the original path for regular files, zip path for ZIP files
+            let source_url = if filename_str.contains(".zip/") {
+                // For ZIP files, use a file URL with the full ZIP path
+                Url::parse(&format!("file://{}", filename_str)).unwrap()
+            } else {
+                Url::from_file_path(fs::canonicalize(Path::new(filename))?).unwrap()
+            };
 
             let geojson: geojson::GeoJson = content.parse()
                 .map_err(|e| PipelineError::Other(format!("Failed to parse GeoJSON: {e}")))?;
