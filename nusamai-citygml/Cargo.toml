@@ -9,14 +9,14 @@ serde = ["dep:serde", "serde_json", "flatgeom/serde"]
 
 [dependencies]
 chrono = { version = "0.4.41", features = ["serde"], default-features = false }
-indexmap = { version = "2.9.0", features = ["serde"] }
+indexmap = { version = "2.10.0", features = ["serde"] }
 log = "0.4.27"
 macros = { path = "./macros" }
 flatgeom = "0.0"
 nusamai-projection = { path = "../nusamai-projection"}
 quick-xml = "0.37.5"
 serde = { version = "1.0", features = ["derive"], optional = true }
-serde_json = { version = "1.0.140", features = ["indexmap"], optional = true }
+serde_json = { version = "1.0.141", features = ["indexmap"], optional = true }
 thiserror = "2"
 url = { version = "2.5.4", features = ["serde"] }
 foldhash = "0.1.5"

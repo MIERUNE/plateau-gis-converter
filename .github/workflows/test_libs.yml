@@ -26,10 +26,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Restore timestamps to cache workspace crates
+        uses: chetan/git-restore-mtime-action@v2
+
       - name: Rustup
         run: rustup toolchain install stable --profile minimal
       - name: Rust Cache
         uses: Swatinem/rust-cache@v2
+        with:
+          cache-workspace-crates: true
       - name: Install dependencies
         run: |
           sudo apt-get update
