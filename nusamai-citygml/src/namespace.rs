@@ -175,7 +175,7 @@ mod tests {
                 }
                 Ok((_, Event::Eof)) => break,
                 Ok(_) => {}
-                Err(e) => panic!("{:?}", e),
+                Err(e) => panic!("{e:?}"),
             }
         }
     }

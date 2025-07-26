@@ -151,7 +151,7 @@ fn extract_properties(tree: &nusamai_citygml::object::Value) -> String {
             serde_json::Value::Object(map) => map_to_html_table(&map),
             _ => unreachable!(),
         },
-        _ => panic!("Root value type must be Feature, but found {:?}", tree),
+        _ => panic!("Root value type must be Feature, but found {tree:?}"),
     }
 }
 
@@ -159,7 +159,7 @@ fn map_to_html_table(map: &serde_json::Map<String, serde_json::Value>) -> String
     let mut html = String::new();
     html.push_str("<table>");
     for (key, value) in map {
-        html.push_str(&format!("<tr><td>{}</td><td>{}</td></tr>", key, value));
+        html.push_str(&format!("<tr><td>{key}</td><td>{value}</td></tr>"));
     }
     html.push_str("</table>");
     html

@@ -326,8 +326,7 @@ fn feature_sorting_stage(
             }
             Err(err) => {
                 return Err(PipelineError::Other(format!(
-                    "Failed to sort features: {:?}",
-                    err
+                    "Failed to sort features: {err:?}"
                 )));
             }
         }
@@ -434,8 +433,7 @@ fn tile_writing_stage(
                             bincode::serde::decode_from_slice(&serialized_feat, bincode_config)
                                 .map_err(|err| {
                                     PipelineError::Other(format!(
-                                        "Failed to deserialize a sliced feature: {:?}",
-                                        err
+                                        "Failed to deserialize a sliced feature: {err:?}"
                                     ))
                                 })?;
 
@@ -497,7 +495,7 @@ fn tile_writing_stage(
             // A unique ID used when planning the atlas layout
             //  and when obtaining the UV coordinates after the layout has been completed
             let generate_texture_id = |z, x, y, feature_id, poly_count| {
-                format!("{}_{}_{}_{}_{}", z, x, y, feature_id, poly_count)
+                format!("{z}_{x}_{y}_{feature_id}_{poly_count}")
             };
 
             // Check the size of all the textures and calculate the power of 2 of the largest size
@@ -640,7 +638,7 @@ fn tile_writing_stage(
                         let atlas_file_name = info.atlas_id.to_string();
 
                         let atlas_uri = atlas_dir
-                            .join(format!("{}/{}/{}/{}", z, x, y, atlas_file_name))
+                            .join(format!("{z}/{x}/{y}/{atlas_file_name}"))
                             .with_extension(ext.clone());
 
                         // update material
@@ -703,7 +701,7 @@ fn tile_writing_stage(
 
             // Write to atlas
             let (z, x, y) = tile_id_conv.id_to_zxy(tile_id);
-            let atlas_path = atlas_dir.join(format!("{}/{}/{}", z, x, y));
+            let atlas_path = atlas_dir.join(format!("{z}/{x}/{y}"));
             fs::create_dir_all(&atlas_path)?;
             packed.export(
                 exporter,

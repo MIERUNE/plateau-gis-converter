@@ -102,7 +102,7 @@ impl GpkgHandler {
         &self,
         table_name: &str,
     ) -> Result<Vec<(String, String, i8)>, GpkgError> {
-        let result = sqlx::query(&format!("PRAGMA table_info({});", table_name))
+        let result = sqlx::query(&format!("PRAGMA table_info({table_name});"))
             .fetch_all(&self.pool)
             .await?;
 
@@ -167,7 +167,7 @@ impl GpkgHandler {
 
     /// Get all rows from the specified table
     pub async fn fetch_rows(&self, table_name: &str) -> Result<Vec<SqliteRow>, GpkgError> {
-        let result = sqlx::query(&format!("SELECT * FROM {};", table_name))
+        let result = sqlx::query(&format!("SELECT * FROM {table_name};"))
             .fetch_all(&self.pool)
             .await?;
         Ok(result)
@@ -264,8 +264,7 @@ impl<'c> GpkgTransaction<'c> {
 
         if attributes.is_empty() {
             let query_string = format!(
-                "INSERT INTO \"{}\" (id, geometry) VALUES (?, ?)",
-                table_name
+                "INSERT INTO \"{table_name}\" (id, geometry) VALUES (?, ?)"
             );
             sqlx::query(&query_string)
                 .bind(id)
@@ -278,7 +277,7 @@ impl<'c> GpkgTransaction<'c> {
                 table_name,
                 attributes
                     .keys()
-                    .map(|key| format!("\"{}\"", key))
+                    .map(|key| format!("\"{key}\""))
                     .collect::<Vec<_>>()
                     .join(", "),
                 vec!["?"; attributes.len()].join(", ")

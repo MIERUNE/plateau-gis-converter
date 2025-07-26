@@ -42,7 +42,7 @@ impl EditFieldNamesTransform {
         self.general_rename_map.extend(map);
         for value in self.general_rename_map.values() {
             if value.len() > 10 {
-                panic!("The key length must be less than 10 characters: {}", value);
+                panic!("The key length must be less than 10 characters: {value}");
             }
         }
     }

@@ -131,7 +131,7 @@ impl DataSink for GeoJsonSink {
 
                         let mut file_path = self.output_path.clone();
                         let c_name = typename.split_once(':').map(|v| v.1).unwrap_or(typename);
-                        file_path.push(format!("{}.geojson", c_name));
+                        file_path.push(format!("{c_name}.geojson"));
 
                         let mut file = File::create(&file_path)?;
                         let mut writer = BufWriter::with_capacity(1024 * 1024, &mut file);
@@ -181,7 +181,7 @@ fn extract_properties(value: &nusamai_citygml::object::Value) -> Option<geojson:
             serde_json::Value::Object(map) => Some(map),
             _ => unreachable!(),
         },
-        _ => panic!("Root value type must be Feature, but found {:?}", value),
+        _ => panic!("Root value type must be Feature, but found {value:?}"),
     }
 }
 

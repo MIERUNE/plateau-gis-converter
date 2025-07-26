@@ -31,7 +31,7 @@ pub fn convert_properties(tags_enc: &mut TagsEncoder, name: &str, tree: &object:
             tags_enc.add(name, v.to_string());
         }
         nusamai_citygml::Value::Point(v) => {
-            tags_enc.add(name, format!("{:?}", v)); // FIXME
+            tags_enc.add(name, format!("{v:?}")); // FIXME
         }
         nusamai_citygml::Value::Array(_arr) => {
             // ignore non-root attributes

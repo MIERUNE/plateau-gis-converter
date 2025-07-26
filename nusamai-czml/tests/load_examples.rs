@@ -4,7 +4,7 @@ use nusamai_czml::*;
 fn load_examples() {
     for path in glob::glob("./tests/samples/*.json").unwrap() {
         let path = path.unwrap();
-        println!("loading {:?}", path);
+        println!("loading {path:?}");
         let src = std::fs::read_to_string(path).unwrap();
         let a: Packet = serde_json::from_str(&src).unwrap();
 

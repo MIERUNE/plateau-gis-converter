@@ -162,15 +162,15 @@ fn run_conversion(
     // Check the existence of the input paths
     for path in input_paths.iter() {
         if !PathBuf::from_str(path).unwrap().exists() {
-            let msg = format!("Input file does not exist: {}", path);
-            log::error!("{}", msg);
+            let msg = format!("Input file does not exist: {path}");
+            log::error!("{msg}");
             return Err(Error::InvalidPath(msg));
         }
     }
     // Check if the mapping rules file is set, and if it exists
     if !rules_path.is_empty() && !PathBuf::from_str(&rules_path).unwrap().exists() {
-        let msg = format!("Mapping rules file does not exist: {}", rules_path);
-        log::error!("{}", msg);
+        let msg = format!("Mapping rules file does not exist: {rules_path}");
+        log::error!("{msg}");
         return Err(Error::InvalidPath(msg));
     };
 
@@ -179,29 +179,29 @@ fn run_conversion(
     let output_parent_dir = output_path_buf.parent().unwrap();
     if !output_parent_dir.exists() {
         std::fs::create_dir_all(output_parent_dir)?;
-        log::info!("Created output directory: {:?}", output_parent_dir);
+        log::info!("Created output directory: {output_parent_dir:?}");
     }
 
     let sinkopt: Vec<(String, String)> = vec![("@output".into(), output_path)];
 
-    log::info!("Running pipeline with input: {:?}", input_paths);
+    log::info!("Running pipeline with input: {input_paths:?}");
 
     let mut sink = {
         let sink_provider = select_sink_provider(&filetype).ok_or_else(|| {
-            let msg = format!("Invalid sink type: {}", filetype);
-            log::error!("{}", msg);
+            let msg = format!("Invalid sink type: {filetype}");
+            log::error!("{msg}");
             Error::InvalidSetting(msg)
         })?;
 
         let mut sink_params = sink_parameters;
         if let Err(err) = sink_params.update_values_with_str(&sinkopt) {
-            let msg = format!("Error parsing sink options: {:?}", err);
-            log::error!("{}", msg);
+            let msg = format!("Error parsing sink options: {err:?}");
+            log::error!("{msg}");
             return Err(Error::InvalidSetting(msg));
         };
         if let Err(err) = sink_params.validate() {
-            let msg = format!("Error validating sink parameters: {:?}", err);
-            log::error!("{}", msg);
+            let msg = format!("Error validating sink parameters: {err:?}");
+            log::error!("{msg}");
             return Err(Error::InvalidSetting(msg));
         }
         sink_provider.create(&sink_params)
@@ -222,8 +222,8 @@ fn run_conversion(
                     Some("gml") => gml_files.push(path_buf),
                     Some("geojson") | Some("json") => geojson_files.push(path_buf),
                     _ => {
-                        let msg = format!("Unsupported file extension: {:?}", ext);
-                        log::error!("{}", msg);
+                        let msg = format!("Unsupported file extension: {ext:?}");
+                        log::error!("{msg}");
                         return Err(Error::InvalidPath(msg));
                     }
                 }
@@ -233,7 +233,7 @@ fn run_conversion(
         // 混在チェック
         if !gml_files.is_empty() && !geojson_files.is_empty() {
             let msg = "Cannot mix GML and GeoJSON files in a single conversion";
-            log::error!("{}", msg);
+            log::error!("{msg}");
             return Err(Error::InvalidSetting(msg.to_string()));
         }
 
@@ -250,8 +250,8 @@ fn run_conversion(
 
         let mut source_params = source_provider.sink_options();
         if let Err(err) = source_params.validate() {
-            let msg = format!("Error validating source parameters: {:?}", err);
-            log::error!("{}", msg);
+            let msg = format!("Error validating source parameters: {err:?}");
+            log::error!("{msg}");
             return Err(Error::InvalidSetting(msg));
         }
         let mut source = source_provider.create(&source_params);
@@ -266,14 +266,14 @@ fn run_conversion(
             None
         } else {
             let file_contents = std::fs::read_to_string(rules_path).map_err(|e| {
-                let msg = format!("Error reading mapping rules file: {}", e);
-                log::error!("{}", msg);
+                let msg = format!("Error reading mapping rules file: {e}");
+                log::error!("{msg}");
                 Error::InvalidMappingRules(msg)
             })?;
             let mapping_rules: MappingRules =
                 serde_json::from_str(&file_contents).map_err(|e| {
-                    let msg = format!("Error parsing mapping rules: {}", e);
-                    log::error!("{}", msg);
+                    let msg = format!("Error parsing mapping rules: {e}");
+                    log::error!("{msg}");
                     Error::InvalidMappingRules(msg)
                 })?;
             Some(mapping_rules)
@@ -346,8 +346,8 @@ fn cancel_conversion(tasks_state: tauri::State<ConversionTasksState>) {
 #[tauri::command]
 fn get_transform(filetype: String) -> Result<TransformerSettings, Error> {
     let sink_provider = select_sink_provider(&filetype).ok_or_else(|| {
-        let msg = format!("Invalid sink type: {}", filetype);
-        log::error!("{}", msg);
+        let msg = format!("Invalid sink type: {filetype}");
+        log::error!("{msg}");
         Error::InvalidSetting(msg)
     })?;
 
@@ -360,8 +360,8 @@ fn get_transform(filetype: String) -> Result<TransformerSettings, Error> {
 #[tauri::command]
 fn get_parameter(filetype: String) -> Result<Parameters, Error> {
     let sink_provider = select_sink_provider(&filetype).ok_or_else(|| {
-        let msg = format!("Invalid sink type: {}", filetype);
-        log::error!("{}", msg);
+        let msg = format!("Invalid sink type: {filetype}");
+        log::error!("{msg}");
         Error::InvalidSetting(msg)
     })?;
     let sink_params = sink_provider.sink_options();
@@ -378,14 +378,14 @@ async fn list_supported_files(directories: Vec<String>) -> Result<Vec<String>, E
         let dir_path = PathBuf::from(&directory);
 
         if !dir_path.exists() {
-            let msg = format!("Directory does not exist: {}", directory);
-            log::warn!("{}", msg);
+            let msg = format!("Directory does not exist: {directory}");
+            log::warn!("{msg}");
             continue;
         }
 
         if !dir_path.is_dir() {
-            let msg = format!("Path is not a directory: {}", directory);
-            log::warn!("{}", msg);
+            let msg = format!("Path is not a directory: {directory}");
+            log::warn!("{msg}");
             continue;
         }
 
@@ -408,8 +408,8 @@ async fn list_supported_files(directories: Vec<String>) -> Result<Vec<String>, E
                 }
             }
             Err(e) => {
-                let msg = format!("Failed to read directory {}: {}", directory, e);
-                log::error!("{}", msg);
+                let msg = format!("Failed to read directory {directory}: {e}");
+                log::error!("{msg}");
                 return Err(Error::Io(msg));
             }
         }

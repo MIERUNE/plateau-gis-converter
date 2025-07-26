@@ -23,7 +23,7 @@ fn parse_date() {
             assert!(root.date.is_some());
             assert_eq!(root.date, Date::from_ymd_opt(2019, 3, 21));
         }
-        Err(e) => panic!("Err: {:?}", e),
+        Err(e) => panic!("Err: {e:?}"),
     }
 }
 
@@ -59,7 +59,7 @@ fn parse_boolean() {
                 [true, true, true, true, false, false, false, false]
             );
         }
-        Err(e) => panic!("Err: {:?}", e),
+        Err(e) => panic!("Err: {e:?}"),
     }
 }
 
@@ -133,7 +133,7 @@ fn parse_basic_types() {
             );
             root.into_object();
         }
-        Err(e) => panic!("Err: {:?}", e),
+        Err(e) => panic!("Err: {e:?}"),
     }
 }
 
@@ -148,7 +148,7 @@ fn expect_invalid<T: CityGmlElement + Default>(xml: &str) {
                 _ => panic!("Should be invalid value"),
             }
         }
-        Err(e) => panic!("Err: {:?}", e),
+        Err(e) => panic!("Err: {e:?}"),
     }
 }
 
@@ -190,7 +190,7 @@ fn parse_duplicate_content() {
                 _ => panic!("Should be schema violation"),
             }
         }
-        Err(e) => panic!("Err: {:?}", e),
+        Err(e) => panic!("Err: {e:?}"),
     }
 }
 
@@ -245,7 +245,7 @@ fn generics() {
         Ok(mut st) => {
             demo.parse(&mut st).unwrap();
         }
-        Err(e) => panic!("Err: {:?}", e),
+        Err(e) => panic!("Err: {e:?}"),
     };
 
     let obj = demo.generic_attribute.into_object().unwrap();

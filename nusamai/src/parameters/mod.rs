@@ -272,16 +272,14 @@ impl IntegerParameter {
                 if let Some(min) = self.min {
                     if v < min {
                         return Err(Error::InvalidValue(format!(
-                            "Value must be greater than or equal to {}.",
-                            min
+                            "Value must be greater than or equal to {min}."
                         )));
                     }
                 }
                 if let Some(max) = self.max {
                     if v > max {
                         return Err(Error::InvalidValue(format!(
-                            "Value must be less than or equal to {}.",
-                            max
+                            "Value must be less than or equal to {max}."
                         )));
                     }
                 }

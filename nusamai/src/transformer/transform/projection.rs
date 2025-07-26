@@ -42,7 +42,7 @@ impl Transform for ProjectionTransform {
                 self.transform_from_jgd2011(&entity, Some(input_epsg));
             }
             _ => {
-                panic!("Unsupported input CRS: {}", input_epsg);
+                panic!("Unsupported input CRS: {input_epsg}");
             }
         }
 

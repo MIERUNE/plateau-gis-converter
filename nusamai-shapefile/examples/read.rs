@@ -12,9 +12,9 @@ fn main() {
 
     for result in reader.iter_shapes_and_records() {
         let (shape, record) = result.unwrap();
-        println!("Shape: {}, records: ", shape);
+        println!("Shape: {shape}, records: ");
         for (name, value) in record {
-            println!("\t{}: {:?} ", name, value);
+            println!("\t{name}: {value:?} ");
         }
     }
 }

@@ -75,8 +75,7 @@ impl Transform for ApplyAppearanceTransform {
                                 Some((_, uv)) if uv.len() != ring.len() => {
                                     // invalid texture found
                                     feedback.warn(format!(
-                                        "Length of UVs does not match length of ring: {:?} {:?}",
-                                        ring, uv
+                                        "Length of UVs does not match length of ring: {ring:?} {uv:?}"
                                     ));
                                     add_dummy_texture();
                                 }

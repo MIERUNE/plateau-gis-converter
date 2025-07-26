@@ -93,7 +93,7 @@ fn main() -> io::Result<()> {
     gltf.scenes = vec![scene];
     gltf.scene = 0.into();
 
-    println!("gltf: {:?}", gltf);
+    println!("gltf: {gltf:?}");
 
     let gltf_json = serde_json::to_value(&gltf)?;
 

@@ -25,7 +25,7 @@ pub fn make_table_builder(
 
     for (field_name, attr) in attributes {
         let Ok(name) = field_name.as_str().try_into() else {
-            log::error!("Field name '{}' cannot be used in Shapefile", field_name);
+            log::error!("Field name '{field_name}' cannot be used in Shapefile");
             continue;
         };
         let key = field_name.to_string();
@@ -153,7 +153,7 @@ fn trim_string_bytes(s: String, n: usize) -> String {
     if bytes.len() <= n {
         return s;
     }
-    log::warn!("string is too long, truncating to {} characters", n);
+    log::warn!("string is too long, truncating to {n} characters");
     match std::str::from_utf8(&bytes[..n]) {
         Ok(valid_str) => valid_str.to_string(),
         Err(e) => {

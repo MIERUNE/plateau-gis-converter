@@ -271,8 +271,7 @@ fn feature_sorting_stage(
             }
             Err(err) => {
                 return Err(PipelineError::Other(format!(
-                    "Failed to sort features: {:?}",
-                    err
+                    "Failed to sort features: {err:?}"
                 )));
             }
         }
@@ -365,7 +364,7 @@ fn make_tile(default_detail: i32, serialized_feats: &[Vec<u8>]) -> Result<Vec<u8
     for serialized_feat in serialized_feats {
         let (feature, _): (SlicedFeature, _) =
             bincode::serde::decode_from_slice(serialized_feat, bincode_config).map_err(|err| {
-                PipelineError::Other(format!("Failed to deserialize a sliced feature: {:?}", err))
+                PipelineError::Other(format!("Failed to deserialize a sliced feature: {err:?}"))
             })?;
 
         let mpoly = feature.geometry;

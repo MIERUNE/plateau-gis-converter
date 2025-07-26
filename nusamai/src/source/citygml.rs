@@ -58,7 +58,7 @@ impl DataSource for CityGmlSource {
         self.filenames.par_iter().try_for_each(|filename| {
             feedback.ensure_not_canceled()?;
 
-            feedback.info(format!("Parsing CityGML file: {:?} ...", filename));
+            feedback.info(format!("Parsing CityGML file: {filename:?} ..."));
             let file = std::fs::File::open(filename)?;
             let reader = std::io::BufReader::with_capacity(1024 * 1024, file);
             let mut xml_reader = quick_xml::NsReader::from_reader(reader);
