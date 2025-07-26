@@ -20,8 +20,9 @@ jobs:
     runs-on: ${{ matrix.settings.platform }}
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+      - name: Restore timestamps to cache workspace crates
+        uses: chetan/git-restore-mtime-action@v2
 
       - name: Rust setup
         uses: dtolnay/rust-toolchain@stable
@@ -32,6 +33,7 @@ jobs:
         uses: swatinem/rust-cache@v2
         with:
           workspaces: "./src-tauri -> target"
+          cache-workspace-crates: true
 
       - name: Install dependencies (Ubuntu only)
         if: matrix.settings.platform == 'ubuntu-latest'

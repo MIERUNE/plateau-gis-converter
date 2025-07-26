@@ -196,8 +196,7 @@ impl GpkgSink {
                             ObjectStereotype::Object { id: obj_id } => {
                                 // TODO: implement (you will also need the corresponding TypeDef::Object in the schema)
                                 feedback.warn(format!(
-                                    "ObjectStereotype::Object is not supported yet: id = {}",
-                                    obj_id
+                                    "ObjectStereotype::Object is not supported yet: id = {obj_id}"
                                 ));
                             }
                         }

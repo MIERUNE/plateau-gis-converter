@@ -30,7 +30,7 @@ fn expect_text<R: BufRead>(
             }
             Ok(Event::Text(text)) => {
                 s.push_str(std::str::from_utf8(text.as_ref()).map_err(|e| {
-                    ParseError::InvalidValue(format!("Invalid UTF-8 found: {:?}", e))
+                    ParseError::InvalidValue(format!("Invalid UTF-8 found: {e:?}"))
                 })?);
             }
             Ok(Event::End(_)) => {

@@ -54,7 +54,7 @@ impl DataSource for DummySource {
                     appearance_store: Default::default(),
                 },
             };
-            feedback.info(format!("generating: {:?}", obj));
+            feedback.info(format!("generating: {obj:?}"));
             if sink.send(obj).is_err() {
                 break;
             }
@@ -112,7 +112,7 @@ impl DataSink for DummySink {
             std::thread::sleep(std::time::Duration::from_millis(
                 (5.0 + rng.random::<f32>() * 20.0) as u64,
             ));
-            feedback.info(format!("dummy sink received: {:?}", parcel))
+            feedback.info(format!("dummy sink received: {parcel:?}"))
         }
 
         Ok(())
@@ -156,7 +156,7 @@ fn test_run_pipeline() {
         let watcher_handle = scope.spawn(move || {
             let mut sink_counter = 0;
             for msg in watcher {
-                println!("Feedback message from the pipeline: {:?}", msg);
+                println!("Feedback message from the pipeline: {msg:?}");
                 if msg.message.contains("dummy sink") {
                     sink_counter += 1;
                 }

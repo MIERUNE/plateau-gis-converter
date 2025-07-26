@@ -295,7 +295,7 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                         .path_buf
                         .truncate(self.state.path_stack_indices.pop().unwrap());
                     return str::from_utf8(self.state.buf2.as_ref())
-                        .map_err(|e| ParseError::InvalidValue(format!("Invalid UTF-8: {}", e)));
+                        .map_err(|e| ParseError::InvalidValue(format!("Invalid UTF-8: {e}")));
                 }
                 Err(e) => return Err(e.into()),
                 _ => (),
@@ -913,8 +913,7 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                             self.state.fp_buf.push(v);
                         } else {
                             return Err(ParseError::InvalidValue(format!(
-                                "Invalid floating point number: {}",
-                                s
+                                "Invalid floating point number: {s}"
                             )));
                         }
                     }
@@ -1075,8 +1074,7 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                             self.state.fp_buf.push(v);
                         } else {
                             return Err(ParseError::InvalidValue(format!(
-                                "Invalid floating point number: {}",
-                                s
+                                "Invalid floating point number: {s}"
                             )));
                         }
                     }

@@ -32,7 +32,7 @@ fn write_obj(
 ) -> Result<(), PipelineError> {
     let dir_name = folder_path.to_str().unwrap();
     let file_name = folder_path.file_stem().unwrap().to_str().unwrap();
-    let obj_path = format!("{}/{}.obj", dir_name, file_name);
+    let obj_path = format!("{dir_name}/{file_name}.obj");
 
     let mut all_vertices = Vec::new();
     let mut all_uvs = Vec::new();
@@ -50,7 +50,7 @@ fn write_obj(
 
     let mut obj_writer = BufWriter::new(File::create(obj_path)?);
 
-    writeln!(obj_writer, "mtllib {}.mtl", file_name)?;
+    writeln!(obj_writer, "mtllib {file_name}.mtl")?;
 
     for vertex in &all_vertices {
         writeln!(obj_writer, "v {} {} {}", vertex[0], vertex[1], vertex[2])?;
@@ -65,15 +65,15 @@ fn write_obj(
             let mut local_obj = Vec::new();
 
             if is_split {
-                local_obj.push(format!("o {}", feature_id));
-                local_obj.push(format!("g {}", feature_id));
+                local_obj.push(format!("o {feature_id}"));
+                local_obj.push(format!("g {feature_id}"));
             }
 
             for (material_key, indices) in &mesh.primitives {
                 if material_cache.contains_key(material_key) {
-                    local_obj.push(format!("usemtl {}", material_key));
+                    local_obj.push(format!("usemtl {material_key}"));
                 } else {
-                    eprintln!("Material not found: {}", material_key);
+                    eprintln!("Material not found: {material_key}");
                     continue;
                 }
 
@@ -95,7 +95,7 @@ fn write_obj(
         .collect();
 
     for line in face_data {
-        writeln!(obj_writer, "{}", line)?;
+        writeln!(obj_writer, "{line}")?;
     }
 
     obj_writer.flush()?;
@@ -122,10 +122,10 @@ fn write_mtl(
 
         if let Some(uri) = &material.texture_uri {
             if let Ok(path) = uri.to_file_path() {
-                writeln!(mtl_writer, "newmtl {}", material_key)?;
+                writeln!(mtl_writer, "newmtl {material_key}")?;
 
                 let texture_name = path.file_name().unwrap().to_str().unwrap();
-                writeln!(mtl_writer, "map_Kd .\\textures\\{}", texture_name)?;
+                writeln!(mtl_writer, "map_Kd .\\textures\\{texture_name}")?;
 
                 material_cache.insert(material_key.to_string(), path.to_str().unwrap().to_string());
             }
@@ -135,16 +135,16 @@ fn write_mtl(
                 material.base_color[1],
                 material.base_color[2],
             );
-            let color_key = format!("{}_{}_{}", r, g, b);
-            let material_key = format!("material_{}_{}_{}", r, g, b);
+            let color_key = format!("{r}_{g}_{b}");
+            let material_key = format!("material_{r}_{g}_{b}");
             if material_cache.contains_key(&material_key) {
                 continue;
             }
 
             if !material_cache.contains_key(&color_key) {
-                writeln!(mtl_writer, "newmtl material_{}_{}_{}", r, g, b)?;
-                writeln!(mtl_writer, "Ka {} {} {}", r, g, b)?;
-                writeln!(mtl_writer, "Kd {} {} {}", r, g, b)?;
+                writeln!(mtl_writer, "newmtl material_{r}_{g}_{b}")?;
+                writeln!(mtl_writer, "Ka {r} {g} {b}")?;
+                writeln!(mtl_writer, "Kd {r} {g} {b}")?;
                 material_cache.insert(material_key, color_key);
             }
         }

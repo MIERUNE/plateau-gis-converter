@@ -144,11 +144,11 @@ fn main() -> ExitCode {
     let sink_provider: &dyn DataSinkProvider = args.sink.create_sink();
     let mut sink_params = sink_provider.sink_options();
     if let Err(err) = sink_params.update_values_with_str(&args.sinkopt) {
-        log::error!("Error parsing sink options: {:?}", err);
+        log::error!("Error parsing sink options: {err:?}");
         return ExitCode::FAILURE;
     };
     if let Err(err) = sink_params.validate() {
-        log::error!("Error validating sink parameters: {:?}", err);
+        log::error!("Error validating sink parameters: {err:?}");
         return ExitCode::FAILURE;
     }
 
@@ -156,10 +156,10 @@ fn main() -> ExitCode {
     if let Some(output_parent_dir) = PathBuf::from(&args.output).parent() {
         if !output_parent_dir.exists() {
             if std::fs::create_dir_all(output_parent_dir).is_err() {
-                log::error!("Failed to create output directory: {:?}", output_parent_dir);
+                log::error!("Failed to create output directory: {output_parent_dir:?}");
                 return ExitCode::FAILURE;
             };
-            log::info!("Created output directory: {:?}", output_parent_dir);
+            log::info!("Created output directory: {output_parent_dir:?}");
         }
     }
 
@@ -173,7 +173,7 @@ fn main() -> ExitCode {
         if !valid_keys.contains(key) {
             let valid_keys_formatted = valid_keys
                 .iter()
-                .map(|k| format!("'{}'", k))
+                .map(|k| format!("'{k}'"))
                 .collect::<Vec<_>>()
                 .join(", ");
             log::error!(
@@ -232,7 +232,7 @@ fn main() -> ExitCode {
     let updated_transformer_registry = match update_result {
         Ok(configs) => TransformerSettings { configs },
         Err(error_message) => {
-            log::error!("{}", error_message);
+            log::error!("{error_message}");
             return ExitCode::FAILURE;
         }
     };
@@ -246,7 +246,7 @@ fn main() -> ExitCode {
     let mapping_rules = match &args.rules {
         Some(rules_path) => {
             let Ok(file_contents) = std::fs::read_to_string(rules_path) else {
-                log::error!("Error reading rules file: {}", rules_path);
+                log::error!("Error reading rules file: {rules_path}");
                 return ExitCode::FAILURE;
             };
             let Ok(mapping_rules) = serde_json::from_str::<MappingRules>(&file_contents) else {
@@ -269,7 +269,7 @@ fn main() -> ExitCode {
                 pattern_hits += 1;
             }
             if pattern_hits == 0 {
-                log::warn!("no files matched the path pattern: {}", file_pattern);
+                log::warn!("no files matched the path pattern: {file_pattern}");
             }
         }
 
@@ -293,7 +293,7 @@ fn main() -> ExitCode {
                     Some("gml") => citygml_files.push(path.clone()),
                     Some("geojson") | Some("json") => geojson_files.push(path.clone()),
                     _ => {
-                        log::warn!("Unknown file extension for file: {:?}", path);
+                        log::warn!("Unknown file extension for file: {path:?}");
                     }
                 }
             }
@@ -319,11 +319,11 @@ fn main() -> ExitCode {
 
         let mut source_params = source_provider.sink_options();
         if let Err(err) = source_params.update_values_with_str(&args.sourceopt) {
-            log::error!("Error parsing source parameters: {:?}", err);
+            log::error!("Error parsing source parameters: {err:?}");
             return ExitCode::FAILURE;
         };
         if let Err(err) = source_params.validate() {
-            log::error!("Error validating source parameters: {:?}", err);
+            log::error!("Error validating source parameters: {err:?}");
             return ExitCode::FAILURE;
         }
 
@@ -401,7 +401,7 @@ fn run(
 
     // wait for the pipeline to finish
     if let Err(msg) = handle.join() {
-        log::error!("Pipeline thread panicked: {:?}", msg);
+        log::error!("Pipeline thread panicked: {msg:?}");
     }
 
     if canceller.lock().unwrap().is_canceled() {

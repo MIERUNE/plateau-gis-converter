@@ -99,7 +99,7 @@ pub(crate) fn simple_run_sink_with_params<S: DataSinkProvider>(
     handle.join().unwrap();
 
     for msg in watcher {
-        println!("Feedback message from the pipeline {:?}", msg);
+        println!("Feedback message from the pipeline {msg:?}");
     }
 
     // should not be canceled

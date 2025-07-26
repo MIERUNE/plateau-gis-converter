@@ -116,7 +116,7 @@ fn load_image(feedback: &Feedback, path: &Path) -> std::io::Result<(Vec<u8>, Mim
     if let Some(ext) = path.extension() {
         match ext.to_ascii_lowercase().to_str() {
             Some("tif" | "tiff" | "png") => {
-                feedback.info(format!("Decoding image: {:?}", path));
+                feedback.info(format!("Decoding image: {path:?}"));
                 let t = Instant::now();
                 let image = image::open(path)
                     .map_err(|err| std::io::Error::new(std::io::ErrorKind::InvalidData, err))?;
@@ -134,17 +134,17 @@ fn load_image(feedback: &Feedback, path: &Path) -> std::io::Result<(Vec<u8>, Mim
                 Ok((writer.into_inner(), MimeType::ImagePng))
             }
             Some("jpg" | "jpeg") => {
-                feedback.info(format!("Embedding a jpeg as is: {:?}", path));
+                feedback.info(format!("Embedding a jpeg as is: {path:?}"));
                 Ok((std::fs::read(path)?, MimeType::ImageJpeg))
             }
             _ => {
-                let err = format!("Unsupported image format: {:?}", path);
+                let err = format!("Unsupported image format: {path:?}");
                 Err(std::io::Error::new(std::io::ErrorKind::InvalidData, err))
             }
         }
     } else {
-        let err = format!("Unsupported image format: {:?}", path);
-        log::error!("{}", err);
+        let err = format!("Unsupported image format: {path:?}");
+        log::error!("{err}");
         Err(std::io::Error::new(std::io::ErrorKind::InvalidData, err))
     }
 }

@@ -104,7 +104,7 @@ impl LodSelection {
 
         // Ensure the default value exists in the options
         if !options.iter().any(|&(_, value)| value == default_value) {
-            panic!("Default value '{}' must be a valid option", default_value);
+            panic!("Default value '{default_value}' must be a valid option");
         }
 
         Selection::new(options, default_value)

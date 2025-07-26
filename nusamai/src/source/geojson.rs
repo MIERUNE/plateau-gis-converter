@@ -54,12 +54,12 @@ impl DataSource for GeoJsonSource {
         self.filenames.par_iter().try_for_each(|filename| {
             feedback.ensure_not_canceled()?;
 
-            feedback.info(format!("Parsing GeoJSON file: {:?} ...", filename));
+            feedback.info(format!("Parsing GeoJSON file: {filename:?} ..."));
             let content = fs::read_to_string(filename)?;
             let source_url = Url::from_file_path(fs::canonicalize(Path::new(filename))?).unwrap();
 
             let geojson: geojson::GeoJson = content.parse()
-                .map_err(|e| PipelineError::Other(format!("Failed to parse GeoJSON: {}", e)))?;
+                .map_err(|e| PipelineError::Other(format!("Failed to parse GeoJSON: {e}")))?;
 
             match geojson {
                 geojson::GeoJson::FeatureCollection(collection) => {

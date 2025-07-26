@@ -222,7 +222,7 @@ impl DataSink for MinecraftSink {
                                     [x as f32, z as f32, -y as f32]
                                 }
                                 Err(e) => {
-                                    println!("conversion error: {:?}", e);
+                                    println!("conversion error: {e:?}");
                                     [f32::NAN, f32::NAN, f32::NAN]
                                 }
                             }

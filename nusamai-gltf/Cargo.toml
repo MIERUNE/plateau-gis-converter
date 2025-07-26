@@ -8,7 +8,7 @@ version = "0.1.0"
 [dependencies]
 nusamai-gltf-json = { "path" = "nusamai-gltf-json" }
 byteorder = "1.5.0"
-serde_json = "1.0.140"
+serde_json = "1.0.141"
 
 [dev-dependencies]
 glob = "0.3.2"

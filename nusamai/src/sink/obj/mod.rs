@@ -434,7 +434,7 @@ impl DataSink for ObjSink {
                 //  and when obtaining the UV coordinates after the layout has been completed
                 let generate_texture_id =
                     |folder_name: &str, feature_id: usize, poly_count: usize| {
-                        format!("{}_{}_{}", folder_name, feature_id, poly_count)
+                        format!("{folder_name}_{feature_id}_{poly_count}")
                     };
 
                 // Load all textures into the Packer
@@ -597,8 +597,7 @@ impl DataSink for ObjSink {
                             },
                             |_| {
                                 format!(
-                                    "{}_{}_{}",
-                                    base_folder_name, texture_folder_name, texture_name
+                                    "{base_folder_name}_{texture_folder_name}_{texture_name}"
                                 )
                             },
                         );

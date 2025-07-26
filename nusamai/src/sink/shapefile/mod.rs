@@ -143,8 +143,7 @@ impl DataSink for ShapefileSink {
 
                         let typedef = schema.types.get(&typename).ok_or_else(|| {
                             PipelineError::Other(format!(
-                                "Type {} not found in the schema",
-                                typename
+                                "Type {typename} not found in the schema"
                             ))
                         })?;
 

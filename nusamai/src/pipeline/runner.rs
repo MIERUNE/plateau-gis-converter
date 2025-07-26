@@ -113,13 +113,13 @@ impl PipelineHandle {
     pub fn join(self) -> Result<(), String> {
         fn report_error(stage: &str, err: Box<dyn std::any::Any + Send>) -> String {
             let msg = if let Some(message) = err.downcast_ref::<&str>() {
-                format!("{stage} thread panicked with message: {}", message)
+                format!("{stage} thread panicked with message: {message}")
             } else if let Some(string) = err.downcast_ref::<String>() {
-                format!("{stage} thread panicked with message: {}", string)
+                format!("{stage} thread panicked with message: {string}")
             } else {
                 format!("{stage} thread panicked with an unknown type.")
             };
-            log::error!("{}", msg);
+            log::error!("{msg}");
             msg.to_string()
         }
 
