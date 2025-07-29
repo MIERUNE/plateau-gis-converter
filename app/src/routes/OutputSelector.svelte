@@ -6,12 +6,12 @@
 	import * as dialog from '@tauri-apps/plugin-dialog';
 	import { untrack } from 'svelte';
 
-	interface Props {
+	export type OutputSelectorProps = {
 		filetype: string;
 		outputPath: string;
-	}
+	};
 
-	let { filetype, outputPath = $bindable() }: Props = $props();
+	let { filetype, outputPath = $bindable() }: OutputSelectorProps = $props();
 
 	async function openOutputDialog() {
 		const res = await dialog.save({
