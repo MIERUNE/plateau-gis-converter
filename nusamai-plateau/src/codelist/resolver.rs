@@ -94,8 +94,21 @@ impl Resolver {
         abs_url: &Url,
         code: &str,
     ) -> Result<Option<String>, nusamai_citygml::ParseError> {
+        let Ok(path) = abs_url.to_file_path() else {
+            return Err(ParseError::CodelistError(format!(
+                "failed to convert url to file path: {:?}",
+                abs_url,
+            )));
+        };
+
+        let Some(path_str) = path.to_str() else {
+            return Err(ParseError::CodelistError(format!(
+                "failed to convert path to string: {:?}",
+                path,
+            )));
+        };
         // Parse ZIP path format: "/path/to/file.zip/internal/path/to/codelist.xml"
-        let parts: Vec<&str> = abs_url.as_str().splitn(2, ".zip/").collect();
+        let parts: Vec<&str> = path_str.splitn(2, ".zip/").collect();
         if parts.len() != 2 {
             return Err(ParseError::CodelistError(format!(
                 "Invalid ZIP path format: {:?}",
@@ -106,14 +119,7 @@ impl Resolver {
         let zip_file_path = format!("{}.zip", parts[0]);
         let internal_path = parts[1];
 
-        let Ok(abs_path) = abs_url.to_file_path() else {
-            return Err(ParseError::CodelistError(format!(
-                "failed to convert url to file path: {:?}",
-                abs_url,
-            )));
-        };
-
-        if let Some(dict) = self.cache.get(&abs_path) {
+        if let Some(dict) = self.cache.get(&path) {
             let v = dict.value().get(code).map(|d| d.value().to_string());
             return Ok(v);
         }
@@ -130,7 +136,7 @@ impl Resolver {
             ))
         })?;
 
-        let mut zip_file = archive.by_name(internal_path).map_err(|e| {
+        let mut zip_file = archive.by_name(&internal_path).map_err(|e| {
             ParseError::CodelistError(format!(
                 "Failed to find file {} in ZIP {}: {}",
                 internal_path, zip_file_path, e
@@ -152,7 +158,7 @@ impl Resolver {
 
         let v = definitions.get(code).map(|d| d.value().to_string());
         let cost = definitions.len() as i64;
-        self.cache.insert(abs_path, definitions, cost);
+        self.cache.insert(path, definitions, cost);
         self.cache.wait().unwrap();
         Ok(v)
     }
