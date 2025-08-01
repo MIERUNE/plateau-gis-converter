@@ -175,12 +175,10 @@ fn run_conversion(
                     return Err(Error::InvalidPath(msg));
                 }
             }
-        } else {
-            if !PathBuf::from_str(path).unwrap().exists() {
-                let msg = format!("Input file does not exist: {path}");
-                log::error!("{msg}");
-                return Err(Error::InvalidPath(msg));
-            }
+        } else if !PathBuf::from_str(path).unwrap().exists() {
+            let msg = format!("Input file does not exist: {path}");
+            log::error!("{msg}");
+            return Err(Error::InvalidPath(msg));
         }
     }
 
@@ -245,8 +243,8 @@ fn run_conversion(
                     {
                         zip_geojson_files.push(path.clone());
                     } else {
-                        let msg = format!("Unsupported file in ZIP: {}", internal_path);
-                        log::error!("{}", msg);
+                        let msg = format!("Unsupported file in ZIP: {internal_path}");
+                        log::error!("{msg}");
                         return Err(Error::InvalidPath(msg));
                     }
                 }
@@ -437,7 +435,7 @@ fn list_files_in_zip(zip_path: &str) -> Result<Vec<String>, Error> {
             || file_path.ends_with(".json")
         {
             // Format: "/path/to/zipfile.zip/path/to/file.gml"
-            let full_path = format!("{}/{}", zip_path, file_path);
+            let full_path = format!("{zip_path}/{file_path}");
             files.push(full_path);
         }
     }
@@ -567,7 +565,7 @@ fn get_meshcodes_with_prefix(
                     let meshcode_entry = result.entry(meshcode).or_default();
                     let type_entry = meshcode_entry.entry(file_type).or_default();
                     // Format: "/path/to/zipfile.zip/path/to/file.gml"
-                    let full_path = format!("{}/{}", input_path, file_path);
+                    let full_path = format!("{input_path}/{file_path}");
                     type_entry.push(full_path);
                 }
             }

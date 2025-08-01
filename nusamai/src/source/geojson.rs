@@ -70,7 +70,7 @@ impl DataSource for GeoJsonSource {
             // Create source URL - use the original path for regular files, zip path for ZIP files
             let source_url = if filename_str.contains(".zip/") {
                 // For ZIP files, use a file URL with the full ZIP path
-                Url::parse(&format!("file://{}", filename_str)).unwrap()
+                Url::parse(&format!("file://{filename_str}")).unwrap()
             } else {
                 Url::from_file_path(fs::canonicalize(Path::new(filename))?).unwrap()
             };

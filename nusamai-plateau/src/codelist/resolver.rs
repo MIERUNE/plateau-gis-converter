@@ -49,9 +49,9 @@ impl CodeResolver for Resolver {
         let abs_path_str = abs_url.path();
 
         if abs_path_str.contains(".zip/") {
-            return self.resolve_from_zip(&abs_url, code);
+            self.resolve_from_zip(&abs_url, code)
         } else {
-            return self.resolve_from_file(&abs_url, code);
+            self.resolve_from_file(&abs_url, code)
         }
     }
 }
@@ -96,23 +96,20 @@ impl Resolver {
     ) -> Result<Option<String>, nusamai_citygml::ParseError> {
         let Ok(path) = abs_url.to_file_path() else {
             return Err(ParseError::CodelistError(format!(
-                "failed to convert url to file path: {:?}",
-                abs_url,
+                "failed to convert url to file path: {abs_url:?}",
             )));
         };
 
         let Some(path_str) = path.to_str() else {
             return Err(ParseError::CodelistError(format!(
-                "failed to convert path to string: {:?}",
-                path,
+                "failed to convert path to string: {path:?}",
             )));
         };
         // Parse ZIP path format: "/path/to/file.zip/internal/path/to/codelist.xml"
         let parts: Vec<&str> = path_str.splitn(2, ".zip/").collect();
         if parts.len() != 2 {
             return Err(ParseError::CodelistError(format!(
-                "Invalid ZIP path format: {:?}",
-                abs_url
+                "Invalid ZIP path format: {abs_url:?}"
             )));
         }
 
@@ -126,20 +123,18 @@ impl Resolver {
 
         // Read from ZIP file
         let file = File::open(&zip_file_path).map_err(|e| {
-            ParseError::CodelistError(format!("Failed to open ZIP file {}: {}", zip_file_path, e))
+            ParseError::CodelistError(format!("Failed to open ZIP file {zip_file_path}: {e}"))
         })?;
 
         let mut archive = zip::ZipArchive::new(file).map_err(|e| {
             ParseError::CodelistError(format!(
-                "Failed to read ZIP archive {}: {}",
-                zip_file_path, e
+                "Failed to read ZIP archive {zip_file_path}: {e}"
             ))
         })?;
 
-        let mut zip_file = archive.by_name(&internal_path).map_err(|e| {
+        let mut zip_file = archive.by_name(internal_path).map_err(|e| {
             ParseError::CodelistError(format!(
-                "Failed to find file {} in ZIP {}: {}",
-                internal_path, zip_file_path, e
+                "Failed to find file {internal_path} in ZIP {zip_file_path}: {e}",
             ))
         })?;
 
@@ -147,8 +142,7 @@ impl Resolver {
         let mut content = Vec::new();
         zip_file.read_to_end(&mut content).map_err(|e| {
             ParseError::CodelistError(format!(
-                "Failed to read file {} from ZIP {}: {}",
-                internal_path, zip_file_path, e
+                "Failed to read file {internal_path} from ZIP {zip_file_path}: {e}",
             ))
         })?;
 
