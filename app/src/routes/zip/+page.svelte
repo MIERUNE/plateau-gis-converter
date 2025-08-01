@@ -3,8 +3,6 @@
 	import TabNavigation from '../TabNavigation.svelte';
 	import type { SinkParameters } from '$lib/sinkparams';
 	import type { TransformerSettings } from '$lib/transformer';
-	import { onMount } from 'svelte';
-	import { getCurrentWebview } from '@tauri-apps/api/webview';
 	import type { MeshcodeData } from './utils';
 	import MeshSelectStepSidePanel from './MeshSelectStepSidePanel.svelte';
 	import FeatureTypeSelectStepSidePanel from './FeatureTypeSelectStepSidePanel.svelte';
@@ -27,39 +25,6 @@
 	let outputPath = $state('');
 	let sinkParameters = $state({} as SinkParameters);
 	let transformerSettings: TransformerSettings | undefined = $state(undefined);
-	let isDnDEnter = $state(false);
-	let timerId = $state<number | null>(null);
-
-	onMount(() => {
-		const unlisten = getCurrentWebview().onDragDropEvent(async (event) => {
-			if (event.payload.type === 'enter') {
-				isDnDEnter = true;
-			}
-			if (event.payload.type === 'leave') {
-				isDnDEnter = false;
-			}
-			if (event.payload.type === 'over') {
-				isDnDEnter = true;
-				if (timerId) {
-					clearTimeout(timerId);
-				}
-				timerId = setTimeout(() => (isDnDEnter = false), 100);
-			}
-			if (event.payload.type === 'drop') {
-				isDnDEnter = false;
-				inputPaths = event.payload.paths.filter((path) => path.endsWith('.zip'));
-				if (inputPaths.length === 0) {
-					console.warn('No valid ZIP files dropped');
-					return;
-				}
-				//await getMeshcodeWithPrefix(inputPaths);
-			}
-		});
-
-		return () => {
-			unlisten.then((f) => f());
-		};
-	});
 
 	function clearAll() {
 		inputPaths = [];
@@ -69,18 +34,6 @@
 		selectedFeatureTypes = [];
 	}
 </script>
-
-{#if isDnDEnter}
-	<div
-		class="fixed inset-0 z-30 flex h-screen items-center justify-center bg-black/70 backdrop-blur-[2px]"
-	>
-		<div class="rounded-lg border-2 border-accent1 bg-gray-50 p-8 text-center shadow-lg">
-			<Icon icon="material-symbols:upload-file" class="mx-auto mb-4 text-6xl text-accent1" />
-			<p class="text-xl font-semibold text-base">PLATEAU の ZIP ファイルをドロップしてください</p>
-			<p class="mt-2 text-sm text-gray-600">複数ファイルにも対応しています</p>
-		</div>
-	</div>
-{/if}
 
 <div class="flex h-screen">
 	<div
