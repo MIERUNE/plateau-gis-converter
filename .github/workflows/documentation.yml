@@ -14,7 +14,7 @@ jobs:
     runs-on: windows-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Install DocFX
         run: choco install -y docfx
@@ -27,7 +27,7 @@ jobs:
           name: dotnet_doc
           path: .docs/_site
 
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v4
         with:
           path: .docs/_site
 
