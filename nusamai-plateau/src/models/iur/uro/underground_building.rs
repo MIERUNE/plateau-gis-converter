@@ -42,7 +42,7 @@ pub struct UndergroundBuilding {
     pub outer_building_installation: Vec<bldg::BuildingInstallation>,
 
     #[citygml(path = b"bldg:interiorBuildingInstallation/bldg:IntBuildingInstallation")]
-    pub interior_building_installation: Vec<bldg::BuildingInstallation>,
+    pub interior_building_installation: Vec<bldg::IntBuildingInstallation>,
 
     #[citygml(path = b"bldg:boundedBy")]
     pub bounded_by: Vec<bldg::BoundarySurfaceProperty>, // -> bldg:_BoundarySurface

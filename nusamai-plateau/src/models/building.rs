@@ -47,7 +47,7 @@ pub struct Building {
     pub outer_building_installation: Vec<BuildingInstallation>,
 
     #[citygml(path = b"bldg:interiorBuildingInstallation/bldg:IntBuildingInstallation")]
-    pub interior_building_installation: Vec<BuildingInstallation>,
+    pub interior_building_installation: Vec<IntBuildingInstallation>,
 
     #[citygml(path = b"bldg:boundedBy")]
     pub bounded_by: Vec<BoundarySurfaceProperty>, // -> bldg:_BoundarySurface
@@ -146,7 +146,7 @@ pub struct BuildingPart {
     pub outer_building_installation: Vec<BuildingInstallation>,
 
     #[citygml(path = b"bldg:interiorBuildingInstallation/bldg:IntBuildingInstallation")]
-    pub interior_building_installation: Vec<BuildingInstallation>,
+    pub interior_building_installation: Vec<IntBuildingInstallation>,
 
     #[citygml(path = b"bldg:boundedBy")]
     pub bounded_by: Vec<BoundarySurfaceProperty>, // -> bldg:_BoundarySurface
@@ -372,7 +372,7 @@ pub struct Room {
     pub interior_furniture: Vec<BuildingFurniture>,
 
     #[citygml(path = b"bldg:roomInstallation/bldg:IntBuildingInstallation")]
-    pub room_installation: Vec<BuildingInstallation>,
+    pub room_installation: Vec<IntBuildingInstallation>,
 
     #[citygml(path = b"uro:ifcRoomAttribute")]
     pub ifc_room_attribute: Vec<uro::IfcAttributeProperty>, // -> uro:IfcAttribute
@@ -383,6 +383,24 @@ pub struct Room {
 
 #[citygml_feature(name = "bldg:BuildingInstallation")]
 pub struct BuildingInstallation {
+    #[citygml(path = b"bldg:class")]
+    pub class: Option<Code>,
+
+    #[citygml(path = b"bldg:function")]
+    pub function: Vec<Code>,
+
+    #[citygml(path = b"bldg:usage")]
+    pub usage: Vec<Code>,
+
+    #[citygml(path = b"bldg:boundedBy")]
+    pub bounded_by: Vec<BoundarySurfaceProperty>, // -> bldg:_BoundarySurface
+
+    #[citygml(path = b"uro:ifcBuildingInstallationAttribute")]
+    pub ifc_building_installation_attribute: Vec<uro::IfcAttributeProperty>, // -> uro:IfcAttribute
+}
+
+#[citygml_feature(name = "bldg:IntBuildingInstallation")]
+pub struct IntBuildingInstallation {
     #[citygml(path = b"bldg:class")]
     pub class: Option<Code>,
 
