@@ -15,7 +15,7 @@ pub struct Translation {
 #[serde(untagged)]
 pub enum TranslationValueType {
     Array(Vec<TranslationProperties>),
-    Object(TranslationProperties),
+    Object(Box<TranslationProperties>),
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -36,14 +36,14 @@ pub struct TranslationProperties {
 impl Default for Translation {
     fn default() -> Self {
         Self {
-            value: TranslationValueType::Object(TranslationProperties {
+            value: TranslationValueType::Object(Box::new(TranslationProperties {
                 cartesian: Some(Cartesian3Value::Constant([0.0, 0.0, 0.0])),
                 reference: None,
                 interpolatable_property: None,
                 deletable_property: None,
                 distance_display_condition_value_property: None,
                 reference_value_property: None,
-            }),
+            })),
         }
     }
 }

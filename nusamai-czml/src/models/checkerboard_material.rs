@@ -8,7 +8,7 @@ pub type CheckerboardMaterial = CheckerboardMaterialType;
 #[serde(untagged)]
 pub enum CheckerboardMaterialType {
     Array(Vec<CheckerboardMaterialProperties>),
-    Object(CheckerboardMaterialProperties),
+    Object(Box<CheckerboardMaterialProperties>),
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq)]
@@ -26,22 +26,22 @@ pub struct CheckerboardMaterialProperties {
 }
 
 fn default_even_color() -> Color {
-    Color::Object(ColorProperties {
+    Color::Object(Box::new(ColorProperties {
         rgba: Some(RgbaValue::Constant([255, 255, 255, 255])),
         ..Default::default()
-    })
+    }))
 }
 
 fn default_odd_color() -> Color {
-    Color::Object(ColorProperties {
+    Color::Object(Box::new(ColorProperties {
         rgba: Some(RgbaValue::Constant([0, 0, 0, 255])),
         ..Default::default()
-    })
+    }))
 }
 
 fn default_repeat() -> Repeat {
-    Repeat::Object(RepeatProperties {
+    Repeat::Object(Box::new(RepeatProperties {
         cartesian2: Some(vec![1.0, 1.0]),
         ..Default::default()
-    })
+    }))
 }

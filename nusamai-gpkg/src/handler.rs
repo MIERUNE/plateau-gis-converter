@@ -173,7 +173,7 @@ impl GpkgHandler {
         Ok(result)
     }
 
-    pub async fn begin(&mut self) -> Result<GpkgTransaction, GpkgError> {
+    pub async fn begin(&mut self) -> Result<GpkgTransaction<'_>, GpkgError> {
         Ok(GpkgTransaction::new(self.pool.begin().await?))
     }
 }

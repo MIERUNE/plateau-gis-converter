@@ -11,7 +11,7 @@ pub type GridMaterial = GridMaterialType;
 #[serde(untagged)]
 pub enum GridMaterialType {
     Array(Vec<GridMaterialProperties>),
-    Object(GridMaterialProperties),
+    Object(Box<GridMaterialProperties>),
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq)]
@@ -35,10 +35,10 @@ pub struct GridMaterialProperties {
 }
 
 fn default_color() -> Color {
-    Color::Object(ColorProperties {
+    Color::Object(Box::new(ColorProperties {
         rgba: Some(RgbaValue::Constant([0, 0, 0, 0])),
         ..Default::default()
-    })
+    }))
 }
 
 fn default_cell_alpha() -> CzmlDouble {
@@ -46,22 +46,22 @@ fn default_cell_alpha() -> CzmlDouble {
 }
 
 fn default_line_count() -> LineCount {
-    LineCount::Object(LineCountProperties {
+    LineCount::Object(Box::new(LineCountProperties {
         cartesian2: Some(vec![8.0, 8.0]),
         ..Default::default()
-    })
+    }))
 }
 
 fn default_line_thickness() -> LineThickness {
-    LineThickness::Object(LineThicknessProperties {
+    LineThickness::Object(Box::new(LineThicknessProperties {
         cartesian2: Some(vec![1.0, 1.0]),
         ..Default::default()
-    })
+    }))
 }
 
 fn default_line_offset() -> LineOffset {
-    LineOffset::Object(LineOffsetProperties {
+    LineOffset::Object(Box::new(LineOffsetProperties {
         cartesian2: Some(vec![1.0, 1.0]),
         ..Default::default()
-    })
+    }))
 }

@@ -95,10 +95,10 @@ fn default_height_reference() -> HeightReference {
 }
 
 fn default_silhouette_color() -> Color {
-    Color::Object(ColorProperties {
+    Color::Object(Box::new(ColorProperties {
         rgba: Some(RgbaValue::Constant([255, 0, 0, 0])),
         ..Default::default()
-    })
+    }))
 }
 
 fn default_silhouette_size() -> CzmlDouble {
@@ -106,10 +106,10 @@ fn default_silhouette_size() -> CzmlDouble {
 }
 
 fn default_color() -> Color {
-    Color::Object(ColorProperties {
+    Color::Object(Box::new(ColorProperties {
         rgba: Some(RgbaValue::Constant([0, 0, 0, 0])),
         ..Default::default()
-    })
+    }))
 }
 
 fn default_color_blend_mode() -> ColorBlendMode {

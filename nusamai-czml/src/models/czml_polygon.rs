@@ -188,15 +188,15 @@ fn is_default_fill(fill: &CzmlBoolean) -> bool {
 }
 
 fn default_material() -> Material {
-    Material::Object(MaterialProperties {
+    Material::Object(Box::new(MaterialProperties {
         solid_color: Some(SolidColorMaterial {
-            color: Color::Object(ColorProperties {
+            color: Color::Object(Box::new(ColorProperties {
                 rgba: Some(RgbaValue::Constant([255, 255, 255, 255])),
                 ..Default::default()
-            }),
+            })),
         }),
         ..Default::default()
-    })
+    }))
 }
 
 fn is_default_material(material: &Material) -> bool {
@@ -212,10 +212,10 @@ fn is_default_outline(outline: &CzmlBoolean) -> bool {
 }
 
 fn default_outline_color() -> Color {
-    Color::Object(ColorProperties {
+    Color::Object(Box::new(ColorProperties {
         rgba: Some(RgbaValue::Constant([0, 0, 0, 255])),
         ..Default::default()
-    })
+    }))
 }
 
 fn is_default_outline_color(outline_color: &Color) -> bool {

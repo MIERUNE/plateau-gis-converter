@@ -22,7 +22,7 @@ fn render_schema() {
 
         assert_eq!(
             building.attributes["bldg:interiorBuildingInstallation"].type_ref,
-            schema::TypeRef::Named("bldg:BuildingInstallation".to_string())
+            schema::TypeRef::Named("bldg:IntBuildingInstallation".to_string())
         );
 
         // property stereo type

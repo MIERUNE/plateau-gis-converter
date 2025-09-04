@@ -111,7 +111,7 @@ impl Default for ParseContext<'_> {
     }
 }
 
-#[allow(elided_named_lifetimes)]
+#[allow(mismatched_lifetime_syntaxes)]
 impl<'a> CityGmlReader<'a> {
     pub fn new(context: ParseContext<'a>) -> Self {
         Self {
@@ -325,7 +325,7 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
         }
     }
 
-    pub fn context(&self) -> &ParseContext {
+    pub fn context(&self) -> &ParseContext<'_> {
         &self.state.context
     }
 

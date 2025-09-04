@@ -9,12 +9,12 @@ pub type Color = ColorValueType;
 #[serde(untagged)]
 pub enum ColorValueType {
     Array(Vec<ColorProperties>),
-    Object(ColorProperties),
+    Object(Box<ColorProperties>),
 }
 
 impl Default for ColorValueType {
     fn default() -> Self {
-        ColorValueType::Object(ColorProperties::default())
+        ColorValueType::Object(Box::default())
     }
 }
 

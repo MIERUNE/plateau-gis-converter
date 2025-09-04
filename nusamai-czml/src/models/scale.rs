@@ -15,7 +15,7 @@ pub struct Scale {
 #[serde(untagged)]
 pub enum ScaleValueType {
     Array(Vec<ScaleProperties>),
-    Object(ScaleProperties),
+    Object(Box<ScaleProperties>),
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -36,14 +36,14 @@ pub struct ScaleProperties {
 impl Default for Scale {
     fn default() -> Self {
         Self {
-            value: ScaleValueType::Object(ScaleProperties {
+            value: ScaleValueType::Object(Box::new(ScaleProperties {
                 cartesian: Some(Cartesian3Value::Constant([1.0, 1.0, 1.0])),
                 reference: None,
                 interpolatable_property: None,
                 deletable_property: None,
                 distance_display_condition_value_property: None,
                 reference_value_property: None,
-            }),
+            })),
         }
     }
 }

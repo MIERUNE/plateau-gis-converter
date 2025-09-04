@@ -11,12 +11,12 @@ pub type Repeat = RepeatType;
 #[serde(untagged)]
 pub enum RepeatType {
     Array(Vec<RepeatProperties>),
-    Object(RepeatProperties),
+    Object(Box<RepeatProperties>),
 }
 
 impl Default for RepeatType {
     fn default() -> Self {
-        RepeatType::Object(RepeatProperties::default())
+        RepeatType::Object(Box::default())
     }
 }
 

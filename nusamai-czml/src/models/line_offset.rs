@@ -11,7 +11,7 @@ pub type LineOffset = LineOffsetType;
 #[serde(untagged)]
 pub enum LineOffsetType {
     Array(Vec<LineOffsetProperties>),
-    Object(LineOffsetProperties),
+    Object(Box<LineOffsetProperties>),
 }
 
 #[derive(Serialize, Deserialize, Debug, Default, PartialEq)]

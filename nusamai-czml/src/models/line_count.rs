@@ -11,7 +11,7 @@ pub type LineCount = LineCountType;
 #[serde(untagged)]
 pub enum LineCountType {
     Array(Vec<LineCountProperties>),
-    Object(LineCountProperties),
+    Object(Box<LineCountProperties>),
 }
 
 #[derive(Serialize, Deserialize, Debug, Default, PartialEq)]

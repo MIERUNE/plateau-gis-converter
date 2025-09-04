@@ -9,5 +9,5 @@ pub struct SolidColorMaterial {
 }
 
 fn default_color() -> Color {
-    Color::Object(Default::default())
+    Color::Object(Box::default())
 }

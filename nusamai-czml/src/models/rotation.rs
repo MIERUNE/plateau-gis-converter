@@ -13,7 +13,7 @@ pub struct Rotation {
 #[serde(untagged)]
 pub enum RotationValueType {
     Array(Vec<RotationProperties>),
-    Object(RotationProperties),
+    Object(Box<RotationProperties>),
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -56,14 +56,14 @@ pub struct RotationProperties {
 impl Default for Rotation {
     fn default() -> Self {
         Self {
-            value: RotationValueType::Object(RotationProperties {
+            value: RotationValueType::Object(Box::new(RotationProperties {
                 unit_quaternion: Some(UnitQuaternionValue::Constant([0.0, 0.0, 0.0, 1.0])),
                 reference: None,
                 interpolatable_property: None,
                 deletable_property: None,
                 distance_display_condition_value_property: None,
                 reference_value_property: None,
-            }),
+            })),
         }
     }
 }
