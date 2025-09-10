@@ -2,7 +2,14 @@
 	import type { Map, MapLayerMouseEvent } from 'maplibre-gl';
 	import { getTypeLabel, type MeshcodeData } from './utils';
 	import { meshcodeToCenter, meshcodeToPolygon } from '$lib/meshcode';
-	import { FillLayer, GeoJSONSource, MapLibre, Marker, Popup } from 'svelte-maplibre-gl';
+	import {
+		FillLayer,
+		GeoJSONSource,
+		MapLibre,
+		Marker,
+		NavigationControl,
+		Popup
+	} from 'svelte-maplibre-gl';
 	import PrimaryButton from './PrimaryButton.svelte';
 	import Icon from '@iconify/svelte';
 
@@ -17,6 +24,7 @@
 	// Map state
 	let mapCenter: [number, number] = $state([139.7, 35.7]); // Tokyo default
 	let mapZoom: number = $state(10);
+	let prevMapZoom: number = $state(10);
 	let selectedMesh: { meshcode: string; types: string[] }[] | null = $state(null);
 	let popupLngLat: [number, number] | null = $state(null);
 	let cursor: string | undefined = $state();
@@ -24,6 +32,19 @@
 	let isBoxSelecting: boolean = $state(false);
 	let boxSelectionStart: [number, number] | null = $state(null);
 	let boxSelectionEnd: [number, number] | null = $state(null);
+	let meshLevel: 'second' | 'third' = $state('second');
+
+	$effect(() => {
+		// 12以上になったとき
+		if (mapZoom > 12 && prevMapZoom <= 12) {
+			meshLevel = 'third';
+		}
+		// 9未満になったとき
+		if (mapZoom < 9 && prevMapZoom >= 9) {
+			meshLevel = 'second';
+		}
+		prevMapZoom = mapZoom;
+	});
 
 	function handleMeshClick(event: MapLayerMouseEvent) {
 		const features = event.features || [];
@@ -296,7 +317,7 @@
 	}}
 	class="h-full w-full"
 	center={mapCenter}
-	zoom={mapZoom}
+	bind:zoom={mapZoom}
 	boxZoom={false}
 	onclick={() => {
 		selectedMesh = null;
@@ -315,7 +336,6 @@
 		id="second-mesh-source"
 	>
 		<FillLayer
-			maxzoom={10}
 			paint={{
 				'fill-color': [
 					'case',
@@ -327,6 +347,9 @@
 				],
 				'fill-opacity': ['case', ['get', 'selected'], 0.8, 0.6],
 				'fill-outline-color': ['case', ['get', 'selected'], '#f57c00', '#339af0']
+			}}
+			layout={{
+				visibility: meshLevel === 'second' ? 'visible' : 'none'
 			}}
 			onmousemove={() => {
 				cursor = 'pointer';
@@ -343,7 +366,6 @@
 		id="third-mesh-source"
 	>
 		<FillLayer
-			minzoom={10}
 			paint={{
 				'fill-color': [
 					'case',
@@ -355,6 +377,9 @@
 				],
 				'fill-opacity': ['case', ['get', 'selected'], 0.8, 0.6],
 				'fill-outline-color': ['case', ['get', 'selected'], '#f57c00', '#339af0']
+			}}
+			layout={{
+				visibility: meshLevel === 'third' ? 'visible' : 'none'
 			}}
 			onmousemove={() => {
 				cursor = 'pointer';
@@ -450,6 +475,33 @@
 			</Popup>
 		</Marker>
 	{/if}
+	<div class="absolute top-2 left-2 z-10 flex">
+		<button
+			data-selected={meshLevel === 'second' ? '' : undefined}
+			onclick={() => {
+				meshLevel = 'second';
+				selectedMesh = null;
+				popupLngLat = null;
+			}}
+			type="button"
+			class="relative inline-flex cursor-pointer items-center gap-2 rounded-l-md bg-white px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-gray-300 ring-inset hover:bg-gray-50 focus:z-10 data-selected:pointer-events-none data-selected:bg-accent1"
+		>
+			2次メッシュ
+		</button>
+		<button
+			data-selected={meshLevel === 'third' ? '' : undefined}
+			onclick={() => {
+				meshLevel = 'third';
+				selectedMesh = null;
+				popupLngLat = null;
+			}}
+			type="button"
+			class="relative -ml-px inline-flex cursor-pointer items-center gap-2 rounded-r-md bg-white px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-gray-300 ring-inset hover:bg-gray-50 focus:z-10 data-selected:pointer-events-none data-selected:bg-accent1"
+		>
+			3次メッシュ
+		</button>
+	</div>
+	<NavigationControl />
 </MapLibre>
 
 <style>
