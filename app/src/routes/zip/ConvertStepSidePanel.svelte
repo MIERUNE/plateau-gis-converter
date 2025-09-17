@@ -34,7 +34,7 @@
 
 	let isRunning = $state(false);
 
-	let selectedFiles = $derived.by(() => {
+	function getAvailableFiles() {
 		const files: {
 			filepath: string;
 			meshcode: string;
@@ -52,7 +52,13 @@
 			}
 		});
 		return files;
+	}
+
+	let availableFiles = $derived.by(() => {
+		return getAvailableFiles();
 	});
+
+	let selectedFiles: string[] = $state(getAvailableFiles().map((f) => f.filepath));
 
 	// Extract filename from path, removing common directory structure
 	function getFilename(filepath: string): string {
@@ -80,11 +86,10 @@
 		if (selectedFiles.length === 0 || !outputPath) return;
 
 		isRunning = true;
-		const inputPaths = selectedFiles.map((f) => f.filepath);
 
 		try {
 			await invoke('run_conversion', {
-				inputPaths,
+				inputPaths: selectedFiles,
 				outputPath,
 				filetype,
 				epsg,
@@ -121,16 +126,35 @@
 	</div>
 	<div class="flex flex-1 flex-col gap-4">
 		<div>
+			<div class="jus flex flex-row items-center"></div>
 			<h3 class="mb-2 text-sm font-semibold">
 				選択されたファイル ({selectedFiles.length}個)
 			</h3>
-			<div class="max-h-32 overflow-y-auto rounded border bg-gray-50 p-2">
-				<div class="space-y-1 text-xs">
-					{#each selectedFiles as file (file.filepath)}
-						<div class="flex justify-between">
+			<div class=" rounded border bg-gray-50">
+				<div class="flex justify-between px-2 py-1 text-xs">
+					<input
+						type="checkbox"
+						checked={availableFiles.length === selectedFiles.length}
+						indeterminate={selectedFiles.length !== 0 &&
+							availableFiles.length !== selectedFiles.length}
+						onchange={() => {
+							if (selectedFiles.length === availableFiles.length) {
+								selectedFiles = [];
+							} else {
+								selectedFiles = availableFiles.map((f) => f.filepath);
+							}
+						}}
+					/>
+					<span class="truncate">ファイル名</span>
+					<span class="text-gray-500">メッシュコード</span>
+				</div>
+				<div class="max-h-32 space-y-1 overflow-y-auto px-2 pb-2 text-xs">
+					{#each availableFiles as file (file.filepath)}
+						<label class="flex justify-between">
+							<input type="checkbox" bind:group={selectedFiles} value={file.filepath} />
 							<span class="truncate">{getFilename(file.filepath)}</span>
 							<span class="text-gray-500">{file.meshcode}</span>
-						</div>
+						</label>
 					{/each}
 				</div>
 			</div>
