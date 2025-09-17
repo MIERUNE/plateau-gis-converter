@@ -70,8 +70,12 @@ impl DataSource for CityGmlSource {
 
             // Create source URL - use the original path for regular files, zip path for ZIP files
             let source_url = if filename_str.contains(".zip/") {
+                let parts: Vec<&str> = filename_str.splitn(2, ".zip/").collect();
+                let zip_part_path = std::fs::canonicalize(Path::new(parts[0])).unwrap();
+                let zip_part_string = zip_part_path.to_string_lossy();
+                let filename_str = format!("{}.zip/{}", zip_part_string, parts[1]);
                 // For ZIP files, use a file URL with the full ZIP path
-                Url::parse(&format!("file://{filename_str}" )).unwrap()
+                Url::parse(&format!("file://{filename_str}")).unwrap()
             } else {
                 Url::from_file_path(fs::canonicalize(Path::new(filename))?).unwrap()
             };

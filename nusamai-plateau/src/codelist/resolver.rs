@@ -127,9 +127,7 @@ impl Resolver {
         })?;
 
         let mut archive = zip::ZipArchive::new(file).map_err(|e| {
-            ParseError::CodelistError(format!(
-                "Failed to read ZIP archive {zip_file_path}: {e}"
-            ))
+            ParseError::CodelistError(format!("Failed to read ZIP archive {zip_file_path}: {e}"))
         })?;
 
         let mut zip_file = archive.by_name(internal_path).map_err(|e| {
