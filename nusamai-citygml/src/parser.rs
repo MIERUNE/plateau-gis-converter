@@ -303,7 +303,7 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
         }
     }
 
-    pub fn context(&self) -> &ParseContext {
+    pub fn context(&self) -> &ParseContext<'_> {
         &self.state.context
     }
 
