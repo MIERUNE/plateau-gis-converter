@@ -615,4 +615,84 @@ mod tests {
         assert_eq!(extract_meshcode_and_type("12345678_unknown_6697.gml"), None); // Unknown type
         assert_eq!(extract_meshcode_and_type("building.gml"), None); // No underscore pattern
     }
+
+    #[test]
+    fn test_get_meshcodes_with_prefix() {
+        // Use the test ZIP file from nusamai-plateau
+        let zip_path = "../../nusamai-plateau/tests/data/kawasaki-shi.zip";
+
+        // Skip test if the file doesn't exist (e.g., in CI environment)
+        if !std::path::Path::new(zip_path).exists() {
+            return;
+        }
+
+        let result = get_meshcodes_with_prefix(vec![zip_path.to_string()]).unwrap();
+
+        // The result should contain some meshcodes and types
+        assert!(
+            !result.is_empty(),
+            "Should find some meshcodes in the ZIP file"
+        );
+
+        // Verify the structure - each meshcode should map to types, and each type to file paths
+        for (meshcode, type_map) in &result {
+            assert!(!meshcode.is_empty(), "Meshcode should not be empty");
+            assert!(!type_map.is_empty(), "Type map should not be empty");
+
+            for (file_type, paths) in type_map {
+                assert!(
+                    PLATEAU_TYPES.contains(&file_type.as_str()),
+                    "File type '{}' should be a valid PLATEAU type",
+                    file_type
+                );
+                assert!(!paths.is_empty(), "Paths should not be empty");
+
+                for path in paths {
+                    assert!(
+                        path.starts_with(zip_path),
+                        "Path should start with the ZIP file path"
+                    );
+                    assert!(path.ends_with(".gml"), "Path should end with .gml");
+                }
+            }
+        }
+    }
+
+    #[tokio::test]
+    async fn test_list_supported_files_with_zip() {
+        // Use the test ZIP file from nusamai-plateau if it exists
+        let zip_path = "../../nusamai-plateau/tests/data/kawasaki-shi.zip";
+
+        if !std::path::Path::new(zip_path).exists() {
+            return; // Skip test if file doesn't exist
+        }
+
+        let parent_dir = std::path::Path::new(zip_path).parent().unwrap();
+        let directories = vec![parent_dir.to_str().unwrap().to_string()];
+        let result = list_supported_files(directories).await.unwrap();
+
+        // Should find files inside the ZIP
+        assert!(
+            result.iter().any(|f| f.contains(".zip/")),
+            "Should find files inside ZIP archives"
+        );
+
+        // Verify that ZIP file paths are properly formatted
+        for file_path in &result {
+            if file_path.contains(".zip/") {
+                assert!(
+                    file_path.ends_with(".gml")
+                        || file_path.ends_with(".geojson")
+                        || file_path.ends_with(".json"),
+                    "ZIP file should end with supported extension: {}",
+                    file_path
+                );
+            }
+        }
+
+        // Verify that results are sorted
+        let mut sorted_result = result.clone();
+        sorted_result.sort();
+        assert_eq!(result, sorted_result);
+    }
 }

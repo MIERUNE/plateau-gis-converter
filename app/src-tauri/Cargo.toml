@@ -28,6 +28,7 @@ tauri-plugin-fs = "2.4.1"
 tauri-plugin-shell = "2.3.0"
 tauri-plugin-dialog = "2.3.1"
 zip = "4.0.0"
+tokio = { version = "1.47.1", features = ["macros"] }
 
 [features]
 # this feature is used for production builds or when `devPath` points to the filesystem and the built-in dev server is disabled.
