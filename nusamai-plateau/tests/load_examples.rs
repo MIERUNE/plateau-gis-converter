@@ -1,6 +1,6 @@
 pub mod common;
 
-use common::{load_cityobjs, load_cityobjs_from_zstd};
+use common::{load_cityobjs, load_cityobjs_from_zip, load_cityobjs_from_zstd};
 use nusamai_citygml::{Code, Date, Measure};
 use nusamai_plateau::models::{relief, uro, TopLevelCityObject};
 
@@ -137,6 +137,23 @@ fn load_building_lod4_example() {
 #[test]
 fn load_cityfurniture_example() {
     let cityobjs = load_cityobjs("./tests/data/kawasaki-shi/udx/frn/53391597_frn_6697_op.gml");
+    assert_eq!(cityobjs.len(), 28);
+    let TopLevelCityObject::CityFurniture(frn) = &cityobjs.first().unwrap().cityobj else {
+        panic!("Not a CityFurniture");
+    };
+
+    assert_eq!(frn.function, vec![Code::new("柱".into(), "4800".into())]);
+    assert_eq!(
+        frn.frn_data_quality_attribute.as_ref().unwrap().src_scale,
+        vec![Code::new("地図情報レベル500".into(), "3".into(),)]
+    );
+}
+
+#[test]
+fn load_cityfurniture_from_zip_example() {
+    let cityobjs = load_cityobjs_from_zip(
+        "./tests/data/kawasaki-shi.zip/kawasaki-shi/udx/frn/53391597_frn_6697_op.gml",
+    );
     assert_eq!(cityobjs.len(), 28);
     let TopLevelCityObject::CityFurniture(frn) = &cityobjs.first().unwrap().cityobj else {
         panic!("Not a CityFurniture");
@@ -600,6 +617,32 @@ fn load_flood_example() {
 #[test]
 fn load_urf_kodo_example() {
     let cityobjs = load_cityobjs("./tests/data/kawasaki-shi/udx/urf/533915_urf_6668_kodo_op.gml");
+    assert_eq!(cityobjs.len(), 1);
+    let TopLevelCityObject::HeightControlDistrict(hcd) = &cityobjs.first().unwrap().cityobj else {
+        panic!("Not a HeightControlDistrict");
+    };
+
+    assert_eq!(
+        hcd.function,
+        vec![Code::new("高度地区".to_string(), "18".to_string(),)]
+    );
+
+    assert_eq!(
+        hcd.urf_valid_from,
+        Option::Some(Date::from_ymd_opt(2009, 11, 11).unwrap())
+    );
+
+    assert_eq!(
+        hcd.valid_from_type,
+        Some(Code::new("変更".to_string(), "3".to_string()))
+    );
+}
+
+#[test]
+fn load_urf_kodo_from_zip_example() {
+    let cityobjs = load_cityobjs_from_zip(
+        "./tests/data/kawasaki-shi.zip/kawasaki-shi/udx/urf/533915_urf_6668_kodo_op.gml",
+    );
     assert_eq!(cityobjs.len(), 1);
     let TopLevelCityObject::HeightControlDistrict(hcd) = &cityobjs.first().unwrap().cityobj else {
         panic!("Not a HeightControlDistrict");

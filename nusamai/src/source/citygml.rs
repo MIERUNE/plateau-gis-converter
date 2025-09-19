@@ -7,6 +7,8 @@ use std::{
     sync::RwLock,
 };
 
+use super::file_reader::FileReader;
+
 use nusamai_citygml::{CityGmlElement, CityGmlReader, Envelope, ParseError, SubTreeReader};
 use nusamai_plateau::{appearance::AppearanceStore, models, Entity};
 use rayon::prelude::*;
@@ -59,10 +61,25 @@ impl DataSource for CityGmlSource {
             feedback.ensure_not_canceled()?;
 
             feedback.info(format!("Parsing CityGML file: {filename:?} ..."));
-            let file = std::fs::File::open(filename)?;
-            let reader = std::io::BufReader::with_capacity(1024 * 1024, file);
+
+            // Convert PathBuf to string for ZIP file handling
+            let filename_str = filename.to_string_lossy();
+            let file_reader = FileReader::open(&filename_str)?;
+            let reader = file_reader.into_buf_reader();
             let mut xml_reader = quick_xml::NsReader::from_reader(reader);
-            let source_url = Url::from_file_path(fs::canonicalize(Path::new(filename))?).unwrap();
+
+            // Create source URL - use the original path for regular files, zip path for ZIP files
+            let source_url = if filename_str.contains(".zip/") {
+                let parts: Vec<&str> = filename_str.splitn(2, ".zip/").collect();
+                let zip_part_path =
+                    std::fs::canonicalize(Path::new(format!("{}.zip", parts[0]).as_str())).unwrap();
+                let zip_part_string = zip_part_path.to_string_lossy();
+                let filename_str = format!("{}/{}", zip_part_string, parts[1]);
+                // For ZIP files, use a file URL with the full ZIP path
+                Url::parse(&format!("file://{filename_str}")).unwrap()
+            } else {
+                Url::from_file_path(fs::canonicalize(Path::new(filename))?).unwrap()
+            };
 
             let context = nusamai_citygml::ParseContext::new(source_url.clone(), &code_resolver);
             let mut citygml_reader = CityGmlReader::new(context);

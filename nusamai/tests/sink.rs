@@ -37,6 +37,7 @@ pub(crate) fn simple_run_sink_with_params<S: DataSinkProvider>(
         "../nusamai-plateau/tests/data/kawasaki-shi/udx/frn/53391597_frn_6697_op.gml",
         "../nusamai-plateau/tests/data/yokosuka-shi/udx/bldg/52397519_bldg_6697_op.gml",
         "../nusamai-plateau/tests/data/numazu-shi/udx/tran/52385608_tran_6697_op.gml",
+        "../nusamai-plateau/tests/data/kawasaki-shi.zip/kawasaki-shi/udx/frn/53391597_frn_6697_op.gml",
     ];
 
     let source_provider: Box<dyn DataSourceProvider> = Box::new(CityGmlSourceProvider {

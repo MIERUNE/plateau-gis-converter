@@ -2,6 +2,7 @@
 
 pub mod citygml;
 pub mod geojson;
+pub mod file_reader;
 
 use crate::{
     parameters::Parameters,

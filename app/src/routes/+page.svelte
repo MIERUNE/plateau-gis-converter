@@ -10,6 +10,7 @@
 	import LoadingAnimation from './LoadingAnimation.svelte';
 	import OutputSelector from './OutputSelector.svelte';
 	import SettingSelector from './SettingSelector.svelte';
+	import TabNavigation from './TabNavigation.svelte';
 
 	attachConsole(); // For Tauri log in the webview console
 
@@ -67,6 +68,8 @@
 				<Icon class="mt-0.5 text-2xl" icon="mingcute:information-line" />
 			</a>
 		</div>
+
+		<TabNavigation />
 
 		<InputSelector bind:inputPaths />
 

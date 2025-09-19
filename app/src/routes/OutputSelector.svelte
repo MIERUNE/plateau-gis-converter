@@ -6,12 +6,12 @@
 	import * as dialog from '@tauri-apps/plugin-dialog';
 	import { untrack } from 'svelte';
 
-	interface Props {
+	export type OutputSelectorProps = {
 		filetype: string;
 		outputPath: string;
-	}
+	};
 
-	let { filetype, outputPath = $bindable() }: Props = $props();
+	let { filetype, outputPath = $bindable() }: OutputSelectorProps = $props();
 
 	async function openOutputDialog() {
 		const res = await dialog.save({
@@ -49,13 +49,15 @@
 		<div class="flex items-center gap-3">
 			<button
 				onclick={openOutputDialog}
-				class="rounded-sm bg-accent1 px-4 py-0.5 font-semibold shadow-sm hover:opacity-75"
+				class="min-ww-16 rounded-sm bg-accent1 px-4 py-0.5 font-semibold shadow-sm hover:opacity-75"
 				>選択</button
 			>
-			<div class="text-sm">
+			<div class="min-w-20 flex-1 text-sm">
 				{#if outputPath}
 					<div class="flex items-center justify-center gap-1.5">
-						<p><code>{abbreviatePath(outputPath, 40)}</code></p>
+						<p class="break-all">
+							<code class="break-all">{abbreviatePath(outputPath, 40)}</code>
+						</p>
 						<button onclick={clearSelected} class="hover:opacity-75">
 							<Icon icon="material-symbols:cancel" />
 						</button>

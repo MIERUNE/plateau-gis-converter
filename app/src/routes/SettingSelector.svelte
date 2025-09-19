@@ -9,13 +9,13 @@
 	import TransformerOptions from '$lib/components/TransformerOptions.svelte';
 	import * as dialog from '@tauri-apps/plugin-dialog';
 
-	interface Props {
+	export type SettingSelectorProps = {
 		filetype: string;
 		epsg?: number;
 		rulesPath: string;
 		sinkParameters: SinkParameters;
 		transformerSettings: TransformerSettings | undefined;
-	}
+	};
 
 	let {
 		filetype = $bindable(),
@@ -23,7 +23,7 @@
 		rulesPath = $bindable(),
 		sinkParameters = $bindable(),
 		transformerSettings = $bindable()
-	}: Props = $props();
+	}: SettingSelectorProps = $props();
 
 	let epsgOptions = $derived(filetypeOptions[filetype]?.epsg || []);
 	let disableEpsgOptions = $derived(epsgOptions.length < 2);

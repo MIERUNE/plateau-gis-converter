@@ -53,7 +53,17 @@ fn toplevel_dispatcher<R: BufRead>(
 pub fn load_cityobjs_from_reader(reader: impl BufRead, path: &Path) -> Vec<CityObject> {
     let mut xml_reader = quick_xml::NsReader::from_reader(reader);
     let code_resolver = nusamai_plateau::codelist::Resolver::new();
-    let source_url = Url::from_file_path(std::fs::canonicalize(path).unwrap()).unwrap();
+    let filename_str = path.to_string_lossy();
+    let source_url = if filename_str.contains(".zip/") {
+        let parts: Vec<&str> = filename_str.splitn(2, ".zip/").collect();
+        let zip_part_path = std::fs::canonicalize(Path::new(parts[0])).unwrap();
+        let zip_part_string = zip_part_path.to_string_lossy();
+        let filename_str = format!("{}.zip/{}", zip_part_string, parts[1]);
+        // For ZIP files, use a file URL with the full ZIP path
+        Url::parse(&format!("file://{filename_str}")).unwrap()
+    } else {
+        Url::from_file_path(std::fs::canonicalize(path).unwrap()).unwrap()
+    };
     let context = nusamai_citygml::ParseContext::new(source_url, &code_resolver);
 
     let cityobjs = match CityGmlReader::new(context).start_root(&mut xml_reader) {
@@ -76,4 +86,32 @@ pub fn load_cityobjs_from_zstd(path: impl AsRef<Path>) -> Vec<CityObject> {
         zstd::stream::Decoder::new(std::fs::File::open(&path).unwrap()).unwrap(),
     );
     load_cityobjs_from_reader(reader, path.as_ref())
+}
+
+pub fn load_cityobjs_from_zip(zip_path: impl AsRef<str>) -> Vec<CityObject> {
+    use std::io::Read;
+
+    let zip_path_str = zip_path.as_ref();
+
+    // Parse ZIP path format: "/path/to/file.zip/internal/path/to/file.gml"
+    let parts: Vec<&str> = zip_path_str.splitn(2, ".zip/").collect();
+    if parts.len() != 2 {
+        panic!("Invalid ZIP path format: {}", zip_path_str);
+    }
+
+    let zip_file_path = format!("{}.zip", parts[0]);
+    let internal_path = parts[1];
+
+    // Read from ZIP file
+    let file = std::fs::File::open(&zip_file_path).unwrap();
+    let mut archive = zip::ZipArchive::new(file).unwrap();
+    let mut zip_file = archive.by_name(internal_path).unwrap();
+
+    // Read the entire file content
+    let mut content = Vec::new();
+    zip_file.read_to_end(&mut content).unwrap();
+
+    let reader = std::io::BufReader::new(content.as_slice());
+    let zip_file_path = std::path::Path::new(zip_path_str);
+    load_cityobjs_from_reader(reader, zip_file_path)
 }
