@@ -918,7 +918,7 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                         }
                     }
 
-                    if self.state.fp_buf.len() % 3 != 0 {
+                    if !self.state.fp_buf.len().is_multiple_of(3) {
                         return Err(ParseError::InvalidValue(
                             "Length of coordinate numbers must be multiple of 3".into(),
                         ));
@@ -1079,7 +1079,7 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                         }
                     }
 
-                    if self.state.fp_buf.len() % 2 != 0 {
+                    if !self.state.fp_buf.len().is_multiple_of(2) {
                         return Err(ParseError::InvalidValue(
                             "Length of UV coordinates must be multiple of 2".into(),
                         ));

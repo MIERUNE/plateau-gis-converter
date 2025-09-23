@@ -105,7 +105,7 @@ mod tests {
         match z {
             0 => x == 0 && y == 0,
             1 => (0..2).contains(&x) && (0..2).contains(&y),
-            _ => x < 1 << z && y < 1 << (z - 1) && x % x_step(z, y) == 0,
+            _ => x < 1 << z && y < 1 << (z - 1) && x.is_multiple_of(x_step(z, y)),
         }
     }
 
