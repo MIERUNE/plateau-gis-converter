@@ -26,7 +26,7 @@ pub struct Texture {
     pub uri: Url,
 }
 
-#[derive(Debug, Serialize, Clone, Hash, PartialEq, Eq, Deserialize)]
-pub struct Image {
-    pub uri: Url,
-}
+// #[derive(Debug, Serialize, Clone, Hash, PartialEq, Eq, Deserialize)]
+// pub struct Image {
+//     pub uri: Url,
+// }

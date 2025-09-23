@@ -10,13 +10,13 @@ pub enum TileIdMethod {
 impl TileIdMethod {
     pub fn zxy_to_id(&self, z: u8, x: u32, y: u32) -> u64 {
         match self {
-            TileIdMethod::Hilbert => hilbert::zxy_to_id(z, x, y),
+            TileIdMethod::Hilbert => hilbert::zxy_to_hilbert(z, x, y),
         }
     }
 
     pub fn id_to_zxy(&self, tile_id: u64) -> (u8, u32, u32) {
         match self {
-            TileIdMethod::Hilbert => hilbert::id_to_zxy(tile_id),
+            TileIdMethod::Hilbert => hilbert::hilbert_to_zxy(tile_id),
         }
     }
 }

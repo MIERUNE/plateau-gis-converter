@@ -4,10 +4,10 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-chrono = { version = "0.4.41", features = ["serde"] }
-serde = { version = "1.0.219", features = ["derive"] }
-serde_json = { version = "1.0.141", features = ["float_roundtrip"] }
+chrono = { version = "0.4.42", features = ["serde"] }
+serde = { version = "1.0.226", features = ["derive"] }
+serde_json = { version = "1.0.145", features = ["float_roundtrip"] }
 flatgeom = "0.0"
 
 [dev-dependencies]
-glob = "0.3.2"
+glob = "0.3.3"

@@ -908,7 +908,7 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
 
                     // parse coordinate sequence
                     self.state.fp_buf.clear();
-                    for s in text.unescape().unwrap().split_ascii_whitespace() {
+                    for s in text.xml_content().unwrap().split_ascii_whitespace() {
                         if let Ok(v) = s.parse() {
                             self.state.fp_buf.push(v);
                         } else {
@@ -1069,7 +1069,7 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                     }
 
                     self.state.fp_buf.clear();
-                    for s in text.unescape().unwrap().split_ascii_whitespace() {
+                    for s in text.xml_content().unwrap().split_ascii_whitespace() {
                         if let Ok(v) = s.parse() {
                             self.state.fp_buf.push(v);
                         } else {
