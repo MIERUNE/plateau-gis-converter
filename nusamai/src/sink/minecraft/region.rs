@@ -197,7 +197,7 @@ pub fn write_anvil(region_data: &RegionData, file_path: &Path) -> Result<()> {
         .map_err(PipelineError::IoError)?;
 
     // Create a empty region object
-    let empty_region = Arc::new(Mutex::new(Region::new(out_file).unwrap()));
+    let empty_region = Arc::new(Mutex::new(Region::create(out_file).unwrap()));
 
     // (0..32).into_par_iter().for_each(|chunk_z| {
     //     (0..32).into_par_iter().for_each(|chunk_x| {

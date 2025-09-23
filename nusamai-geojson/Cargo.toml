@@ -8,4 +8,4 @@ edition = "2021"
 [dependencies]
 geojson = "0.24.2"
 flatgeom = "0.0"
-serde_json = { version = "1.0.141", features = ["indexmap"] }
+serde_json = { version = "1.0.145", features = ["indexmap"] }

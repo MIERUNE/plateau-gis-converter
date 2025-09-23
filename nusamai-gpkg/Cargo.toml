@@ -7,8 +7,8 @@ edition = "2021"
 sqlx = { version = "0.8.6", features = ["sqlite", "runtime-tokio"] }
 flatgeom = "0.0"
 thiserror = "2"
-url = "2.5.4"
-indexmap = "2.10.0"
+url = "2.5.7"
+indexmap = "2.11.4"
 
 [dev-dependencies]
-tokio = { version = "1.46", features = ["full"] }
+tokio = { version = "1.47", features = ["full"] }

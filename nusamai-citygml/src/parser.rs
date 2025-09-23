@@ -908,7 +908,7 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
 
                     // parse coordinate sequence
                     self.state.fp_buf.clear();
-                    for s in text.unescape().unwrap().split_ascii_whitespace() {
+                    for s in text.xml_content().unwrap().split_ascii_whitespace() {
                         if let Ok(v) = s.parse() {
                             self.state.fp_buf.push(v);
                         } else {
@@ -918,7 +918,7 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                         }
                     }
 
-                    if self.state.fp_buf.len() % 3 != 0 {
+                    if !self.state.fp_buf.len().is_multiple_of(3) {
                         return Err(ParseError::InvalidValue(
                             "Length of coordinate numbers must be multiple of 3".into(),
                         ));
@@ -1069,7 +1069,7 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                     }
 
                     self.state.fp_buf.clear();
-                    for s in text.unescape().unwrap().split_ascii_whitespace() {
+                    for s in text.xml_content().unwrap().split_ascii_whitespace() {
                         if let Ok(v) = s.parse() {
                             self.state.fp_buf.push(v);
                         } else {
@@ -1079,7 +1079,7 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                         }
                     }
 
-                    if self.state.fp_buf.len() % 2 != 0 {
+                    if !self.state.fp_buf.len().is_multiple_of(2) {
                         return Err(ParseError::InvalidValue(
                             "Length of UV coordinates must be multiple of 2".into(),
                         ));
