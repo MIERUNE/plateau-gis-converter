@@ -36,11 +36,11 @@
 
 	$effect(() => {
 		// 12以上になったとき
-		if (mapZoom > 12 && prevMapZoom <= 12) {
+		if (mapZoom > 11 && prevMapZoom <= 11) {
 			meshLevel = 'third';
 		}
 		// 9未満になったとき
-		if (mapZoom < 9 && prevMapZoom >= 9) {
+		if (mapZoom < 11 && prevMapZoom >= 11) {
 			meshLevel = 'second';
 		}
 		prevMapZoom = mapZoom;
@@ -436,12 +436,12 @@
 							<h3 class="mb-2 text-sm font-semibold">
 								メッシュコード: {mesh.meshcode}
 							</h3>
-							<div class="mb-3 space-y-1">
+							<div class="mb-3 space-y-1 list-inside list-disc">
 								{#each mesh.types as type (type)}
-									<div class="rounded bg-gray-100 px-2 py-1 text-xs">
+									<li class="rounded pl-2 text-xs">
 										<span class="font-medium">{getTypeLabel(type)}</span>
 										<span class="ml-1 text-gray-500">({type})</span>
-									</div>
+									</li>
 								{/each}
 							</div>
 							<div class="flex gap-2">
@@ -452,7 +452,7 @@
 												toggleMeshSelection(mesh.meshcode);
 											}
 										}}
-										class="flex-1 rounded bg-red-500 px-2 py-1 text-xs text-white hover:opacity-75"
+										class="flex-1 rounded bg-red-500 px-4 py-1 text-sm text-white hover:opacity-75"
 									>
 										選択解除
 									</button>
