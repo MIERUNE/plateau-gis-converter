@@ -35,11 +35,9 @@
 	let meshLevel: 'second' | 'third' = $state('second');
 
 	$effect(() => {
-		// 12以上になったとき
 		if (mapZoom > 11 && prevMapZoom <= 11) {
 			meshLevel = 'third';
 		}
-		// 9未満になったとき
 		if (mapZoom < 11 && prevMapZoom >= 11) {
 			meshLevel = 'second';
 		}
