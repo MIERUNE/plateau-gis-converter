@@ -4,7 +4,6 @@
 	import type { SinkParameters } from '$lib/sinkparams';
 	import type { TransformerSettings } from '$lib/transformer';
 	import type { MeshcodeData } from './utils';
-	import MeshSelectStepSidePanel from './MeshSelectStepSidePanel.svelte';
 	import FeatureTypeSelectStepSidePanel from './FeatureTypeSelectStepSidePanel.svelte';
 	import ConvertStepSidePanel from './ConvertStepSidePanel.svelte';
 	import MapPanel from './MapPanel.svelte';
@@ -15,7 +14,7 @@
 	let selectedMeshes: string[] = $state([]);
 
 	// New UI flow state
-	let currentStep: 'meshSelect' | 'featureTypeSelect' | 'convert' = $state('meshSelect');
+	let currentStep: 'featureTypeSelect' | 'convert' = $state('featureTypeSelect');
 	let selectedFeatureTypes: string[] = $state([]);
 
 	// Conversion settings
@@ -30,7 +29,7 @@
 		inputPaths = [];
 		meshcodeData = null;
 		selectedMeshes = [];
-		currentStep = 'meshSelect';
+		currentStep = 'featureTypeSelect';
 		selectedFeatureTypes = [];
 	}
 </script>
@@ -48,26 +47,13 @@
 
 		<TabNavigation />
 
-		{#if currentStep === 'meshSelect' || !meshcodeData}
-			<MeshSelectStepSidePanel
-				bind:meshcodeData
-				bind:selectedMeshes
-				bind:inputPaths
-				{clearAll}
-				onClickNext={() => {
-					if (selectedMeshes.length === 0) return;
-					currentStep = 'featureTypeSelect';
-				}}
-			/>
-		{:else if currentStep === 'featureTypeSelect'}
+		{#if currentStep === "featureTypeSelect" || !meshcodeData}
 			<FeatureTypeSelectStepSidePanel
 				bind:selectedFeatureTypes
-				{selectedMeshes}
-				{meshcodeData}
-				onclickBack={() => {
-					currentStep = 'meshSelect';
-					selectedFeatureTypes = [];
-				}}
+				bind:selectedMeshes
+				bind:inputPaths
+				bind:meshcodeData
+				{clearAll}
 				onclickNext={() => {
 					if (selectedFeatureTypes.length === 0) return;
 					currentStep = 'convert';
