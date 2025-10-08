@@ -47,7 +47,7 @@
 
 		<TabNavigation />
 
-		{#if currentStep === "featureTypeSelect" || !meshcodeData}
+		{#if currentStep === 'featureTypeSelect' || !meshcodeData}
 			<FeatureTypeSelectStepSidePanel
 				bind:selectedFeatureTypes
 				bind:selectedMeshes

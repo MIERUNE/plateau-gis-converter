@@ -436,14 +436,14 @@
 							<h3 class="mb-2 text-sm font-semibold">
 								メッシュコード: {mesh.meshcode}
 							</h3>
-							<div class="mb-3 space-y-1 list-inside list-disc">
+							<ul class="mb-3 list-inside list-disc space-y-1">
 								{#each mesh.types as type (type)}
 									<li class="rounded pl-2 text-xs">
 										<span class="font-medium">{getTypeLabel(type)}</span>
 										<span class="ml-1 text-gray-500">({type})</span>
 									</li>
 								{/each}
-							</div>
+							</ul>
 							<div class="flex gap-2">
 								{#if selectedMeshes.includes(mesh.meshcode)}
 									<button
