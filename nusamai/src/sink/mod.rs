@@ -12,6 +12,7 @@ pub mod noop;
 pub mod obj;
 pub mod option;
 pub mod ply;
+pub mod pmtiles;
 pub mod serde;
 pub mod shapefile;
 mod texture_resolution;

@@ -1,7 +1,7 @@
 //! Mapbox Vector Tiles (MVT) sink
 
-mod slice;
-mod tags;
+pub mod slice;
+pub mod tags;
 pub mod tileid;
 
 use std::{
