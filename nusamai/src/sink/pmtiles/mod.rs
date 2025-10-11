@@ -85,13 +85,27 @@ impl DataSinkProvider for PmTilesSinkProvider {
     }
 
     fn create(&self, params: &Parameters) -> Box<dyn DataSink> {
-        let output_path = get_parameter_value!(params, "@output", FileSystemPath);
+        let output_path = get_parameter_value!(params, "@output", FileSystemPath)
+            .as_ref()
+            .expect("Output path is required but not provided");
+
+        let min_z = get_parameter_value!(params, "min_z", Integer)
+            .expect("min_z parameter is required but not provided") as u8;
+        let max_z = get_parameter_value!(params, "max_z", Integer)
+            .expect("max_z parameter is required but not provided") as u8;
+
+        // Validate zoom range
+        if min_z > max_z {
+            panic!(
+                "Invalid zoom range: min_z ({}) must be less than or equal to max_z ({})",
+                min_z, max_z
+            );
+        }
+
         let transform_options = self.transformer_options();
-        let min_z = get_parameter_value!(params, "min_z", Integer).unwrap() as u8;
-        let max_z = get_parameter_value!(params, "max_z", Integer).unwrap() as u8;
 
         Box::<PmTilesSink>::new(PmTilesSink {
-            output_path: output_path.as_ref().unwrap().into(),
+            output_path: output_path.into(),
             transform_settings: transform_options,
             pmtiles_options: PmTilesParams { min_z, max_z },
         })
@@ -173,20 +187,25 @@ impl DataSink for PmTilesSink {
             // Stage 3: Generate MVT tiles in parallel
             {
                 s.spawn(move || {
-                    let pool = rayon::ThreadPoolBuilder::new()
-                        .use_current_thread()
-                        .build()
-                        .unwrap();
-                    pool.install(|| {
-                        if let Err(error) = tile_generation_stage(
-                            feedback,
-                            receiver_sorted,
-                            sender_tiles,
-                            tile_id_conv,
-                        ) {
+                    let pool = rayon::ThreadPoolBuilder::new().build().map_err(|e| {
+                        PipelineError::Other(format!("Failed to build thread pool: {e}"))
+                    });
+
+                    match pool {
+                        Ok(pool) => pool.install(|| {
+                            if let Err(error) = tile_generation_stage(
+                                feedback,
+                                receiver_sorted,
+                                sender_tiles,
+                                tile_id_conv,
+                            ) {
+                                feedback.fatal_error(error);
+                            }
+                        }),
+                        Err(error) => {
                             feedback.fatal_error(error);
                         }
-                    })
+                    }
                 });
             }
 
@@ -406,49 +425,45 @@ fn pmtiles_writing_stage(
         BTreeSet::new()
     };
 
-    // Calculate bounds from tile coordinates
-    let mut min_x = u32::MAX;
-    let mut max_x = 0u32;
-    let mut min_y = u32::MAX;
-    let mut max_y = 0u32;
-    let mut bounds_z = 0u8;
+    // Calculate bounds from tile coordinates across all zoom levels
+    // Each tile contributes its geographic bounds to the global bounds
+    let mut global_min_lon = f64::INFINITY;
+    let mut global_max_lon = f64::NEG_INFINITY;
+    let mut global_min_lat = f64::INFINITY;
+    let mut global_max_lat = f64::NEG_INFINITY;
 
     for (tile_id, _) in &tiles {
         let (z, x, y) = tile_id_conv.id_to_zxy(*tile_id);
 
-        // Use the maximum zoom level tiles for bounds calculation
-        if z >= bounds_z {
-            if z > bounds_z {
-                // Reset bounds when we find a higher zoom level
-                min_x = x;
-                max_x = x;
-                min_y = y;
-                max_y = y;
-                bounds_z = z;
-            } else {
-                min_x = min_x.min(x);
-                max_x = max_x.max(x);
-                min_y = min_y.min(y);
-                max_y = max_y.max(y);
-            }
-        }
+        // Calculate the geographic bounds of this tile using Web Mercator projection
+        let n = 1u32 << z; // 2^z
+
+        // Longitude: lon = (x / 2^z) * 360 - 180
+        let tile_min_lon = (x as f64 / n as f64) * 360.0 - 180.0;
+        let tile_max_lon = ((x + 1) as f64 / n as f64) * 360.0 - 180.0;
+
+        // Latitude: lat = atan(sinh(π * (1 - 2 * y / 2^z))) * 180 / π
+        // Note: Y increases downward in tile coordinates, but latitude increases upward
+        let tile_max_lat = {
+            let y_mercator = std::f64::consts::PI * (1.0 - 2.0 * y as f64 / n as f64);
+            y_mercator.sinh().atan() * 180.0 / std::f64::consts::PI
+        };
+        let tile_min_lat = {
+            let y_mercator = std::f64::consts::PI * (1.0 - 2.0 * (y + 1) as f64 / n as f64);
+            y_mercator.sinh().atan() * 180.0 / std::f64::consts::PI
+        };
+
+        // Update global bounds
+        global_min_lon = global_min_lon.min(tile_min_lon);
+        global_max_lon = global_max_lon.max(tile_max_lon);
+        global_min_lat = global_min_lat.min(tile_min_lat);
+        global_max_lat = global_max_lat.max(tile_max_lat);
     }
 
-    // Convert tile coordinates to lon/lat bounds
-    // Using Web Mercator tile math: lon = (x / 2^z) * 360 - 180
-    let n = 1u32 << bounds_z; // 2^z
-    let min_lon = (min_x as f64 / n as f64) * 360.0 - 180.0;
-    let max_lon = ((max_x + 1) as f64 / n as f64) * 360.0 - 180.0;
-
-    // lat = atan(sinh(π * (1 - 2 * y / 2^z))) * 180 / π
-    let min_lat = {
-        let y_mercator = std::f64::consts::PI * (1.0 - 2.0 * (max_y + 1) as f64 / n as f64);
-        y_mercator.sinh().atan() * 180.0 / std::f64::consts::PI
-    };
-    let max_lat = {
-        let y_mercator = std::f64::consts::PI * (1.0 - 2.0 * min_y as f64 / n as f64);
-        y_mercator.sinh().atan() * 180.0 / std::f64::consts::PI
-    };
+    let min_lon = global_min_lon;
+    let max_lon = global_max_lon;
+    let min_lat = global_min_lat;
+    let max_lat = global_max_lat;
 
     // Calculate center
     let center_lon = (min_lon + max_lon) / 2.0;
@@ -508,7 +523,7 @@ fn pmtiles_writing_stage(
             .map_err(|e| PipelineError::Other(format!("Failed to add tile: {e:?}")))?;
 
         tile_count += 1;
-        if tile_count % 1000 == 0 {
+        if tile_count.is_multiple_of(1000) {
             feedback.info(format!("Written {} tiles to PMTiles archive", tile_count));
         }
     }
@@ -617,13 +632,13 @@ fn make_tile(default_detail: i32, serialized_feats: &[Vec<u8>]) -> Result<Vec<u8
             continue;
         }
 
-        let mut id = None;
+        let mut _id = None;
         let layer = if let object::Value::Object(obj) = &feature.properties {
             let typename = obj.typename.as_ref();
 
             // id
             if let Some(object::Value::String(gml_id)) = obj.attributes.get("gml_id") {
-                id = Some(gml_id.to_string());
+                _id = Some(gml_id.to_string());
             }
 
             layers.entry(typename.to_string()).or_default()
