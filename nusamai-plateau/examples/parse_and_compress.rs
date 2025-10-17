@@ -60,7 +60,7 @@ fn example_toplevel_dispatcher<R: BufRead>(
     match parse_result {
         Ok(_) => Ok(()),
         Err(e) => {
-            println!("Err: {:?}", e);
+            println!("Err: {e:?}");
             Err(e)
         }
     }
@@ -88,11 +88,11 @@ fn main() {
         let mut total_parsing_time = std::time::Duration::new(0, 0);
 
         for filename in &args.filenames {
-            println!("loading city objects from: {} ...", filename);
+            println!("loading city objects from: {filename} ...");
 
             let reader = {
                 let Ok(xml_data) = std::fs::read(filename) else {
-                    panic!("failed to open file {}", filename);
+                    panic!("failed to open file {filename}");
                 };
 
                 // Just for reference, get the compressed size of the XML file
@@ -114,17 +114,17 @@ fn main() {
                         &mut encoded_sizes,
                     ) {
                         Ok(size) => size,
-                        Err(e) => panic!("Err: {:?}", e),
+                        Err(e) => panic!("Err: {e:?}"),
                     }
                 }
-                Err(e) => panic!("Err: {:?}", e),
+                Err(e) => panic!("Err: {e:?}"),
             };
             let parsing_time = inst.elapsed();
-            println!("elapsed time parsing: {:?}", parsing_time);
+            println!("elapsed time parsing: {parsing_time:?}");
             total_parsing_time += parsing_time;
         }
 
-        println!("total parsing time: {:?}", total_parsing_time);
+        println!("total parsing time: {total_parsing_time:?}");
     }
 
     println!("total number of features: {}", encoded_sizes.len());

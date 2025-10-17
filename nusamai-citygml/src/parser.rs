@@ -23,8 +23,6 @@ use crate::{
 
 static PROPERTY_PATTERN: Lazy<Regex> =
     Lazy::new(|| Regex::new(r"([a-zA-Z0-9:_]+)\[([^\]]+)\]").unwrap());
-static PROPERTY_KEY_VALUE_PATTERN: Lazy<Regex> =
-    Lazy::new(|| Regex::new(r"([a-zA-Z0-9:_]+)=([a-zA-Z0-9_\-]+)").unwrap());
 
 #[derive(Error, Debug)]
 pub enum ParseError {
@@ -63,6 +61,10 @@ struct InternalState<'a> {
 
     /// URI of the source file
     context: ParseContext<'a>,
+
+    /// Stack of feature IDs and types (elements with gml:id)
+    /// Each entry is (feature_id, feature_type, path_depth)
+    feature_stack: Vec<(String, String, usize)>,
 }
 
 impl<'a> InternalState<'a> {
@@ -76,6 +78,7 @@ impl<'a> InternalState<'a> {
             current_start: None,
             geometry_collector: GeometryCollector::default(),
             context,
+            feature_stack: Vec::new(),
         }
     }
 }
@@ -111,7 +114,7 @@ impl Default for ParseContext<'_> {
     }
 }
 
-#[allow(mismatched_lifetime_syntaxes)]
+#[allow(unknown_lints, elided_named_lifetimes)]
 impl<'a> CityGmlReader<'a> {
     pub fn new(context: ParseContext<'a>) -> Self {
         Self {
@@ -119,6 +122,7 @@ impl<'a> CityGmlReader<'a> {
         }
     }
 
+    #[allow(elided_named_lifetimes)]
     pub fn start_root<'b: 'a, R: BufRead>(
         &'a mut self,
         reader: &'b mut quick_xml::NsReader<R>,
@@ -189,6 +193,36 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                     self.state.path_buf.extend(ns);
                     self.state.path_buf.extend(localname.as_ref());
 
+                    // Check if this element has gml:id and push to feature stack
+                    let current_depth = self.state.path_stack_indices.len();
+                    let mut feature_id: Option<String> = None;
+                    for attr in start.attributes().flatten() {
+                        let (attr_nsres, attr_localname) = self.reader.resolve_attribute(attr.key);
+                        if attr_nsres
+                            == quick_xml::name::ResolveResult::Bound(quick_xml::name::Namespace(
+                                b"http://www.opengis.net/gml",
+                            ))
+                            && attr_localname.as_ref() == b"id"
+                        {
+                            feature_id =
+                                Some(String::from_utf8_lossy(attr.value.as_ref()).to_string());
+                            break;
+                        }
+                    }
+
+                    if let Some(fid) = feature_id {
+                        // This element has gml:id - save it as a feature
+                        // ns already includes the colon (e.g., "bldg:")
+                        let feature_type = format!(
+                            "{}{}",
+                            String::from_utf8_lossy(ns),
+                            String::from_utf8_lossy(localname.as_ref())
+                        );
+                        self.state
+                            .feature_stack
+                            .push((fid, feature_type, current_depth));
+                    }
+
                     // save start tag
                     self.state
                         .current_start
@@ -197,9 +231,18 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                     logic(self)?;
                 }
                 Ok(Event::End(_)) => {
+                    let popped_depth = self.state.path_stack_indices.len();
                     self.state
                         .path_buf
                         .truncate(self.state.path_stack_indices.pop().unwrap());
+
+                    // Pop from feature stack if this was a feature element
+                    if let Some((_, _, depth)) = self.state.feature_stack.last() {
+                        if *depth == popped_depth {
+                            self.state.feature_stack.pop();
+                        }
+                    }
+
                     if self.state.path_buf.len() < self.path_start {
                         return Ok(());
                     }
@@ -317,7 +360,7 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                         .path_buf
                         .truncate(self.state.path_stack_indices.pop().unwrap());
                     return str::from_utf8(self.state.buf2.as_ref())
-                        .map_err(|e| ParseError::InvalidValue(format!("Invalid UTF-8: {}", e)));
+                        .map_err(|e| ParseError::InvalidValue(format!("Invalid UTF-8: {e}")));
                 }
                 Err(e) => return Err(e.into()),
                 _ => (),
@@ -342,27 +385,51 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
         collector.into_geometries(envelope_crs_uri)
     }
 
+    /// Extract feature ID and feature type from the parent element's path.
+    ///
+    /// # Important
+    /// The returned `feature_type` is **guaranteed to be a CityGML Feature Type** defined in the
+    /// CityGML specification (e.g., `bldg:Building`, `bldg:GroundSurface`, `tran:Road`).
+    ///
+    /// This function is only called from `parse_geometric_attr()`, which itself is only invoked
+    /// for fields marked with `#[citygml(geom = ...)]` attribute in structs decorated with
+    /// `#[citygml_feature]` macro. These macros are used exclusively for CityGML Feature Types
+    /// defined in the specification.
+    ///
+    /// **Therefore, arbitrary XML tag names will never be returned as feature_type.**
+    ///
+    /// # Returns
+    /// * `(Some(id), Some(type))` - When the parent element has a gml:id attribute
+    /// * `(None, Some(type))` - When the parent element has no gml:id attribute
+    /// * `(None, None)` - When extraction fails
     pub fn extract_feature_id_and_type(&self) -> (Option<String>, Option<String>) {
+        // Check if there's a feature in the stack
+        if let Some((feature_id, feature_type, _)) = self.state.feature_stack.last() {
+            return (Some(feature_id.clone()), Some(feature_type.clone()));
+        }
+
+        // No feature found - try to extract from current path as fallback
         if self.state.path_stack_indices.len() < 2 {
             return (None, None);
         }
+
         let paths = String::from_utf8_lossy(self.state.path_buf.as_ref());
         let start = self.state.path_stack_indices[self.state.path_stack_indices.len() - 2];
         let end = self.state.path_stack_indices[self.state.path_stack_indices.len() - 1];
         let before_tag = &paths[start + 1..end];
 
-        for caps in PROPERTY_PATTERN.captures_iter(before_tag) {
-            let tag = &caps[1];
-            let inner_content = &caps[2];
-            for kv_caps in PROPERTY_KEY_VALUE_PATTERN.captures_iter(inner_content) {
-                let key = &kv_caps[1];
-                if key != "gml:id" {
-                    continue;
-                }
-                let value = &kv_caps[2];
-                return (Some(value.to_string()), Some(tag.to_string()));
+        // Handle paths like "bldg:GroundSurface" without attributes or "bldg:GroundSurface[]" with empty brackets
+        if !before_tag.is_empty() {
+            if !before_tag.contains('[') {
+                // No brackets at all - simple tag name
+                return (None, Some(before_tag.to_string()));
+            } else if before_tag.ends_with("[]") {
+                // Empty brackets - element has no gml:id attribute but brackets were added
+                let tag = before_tag.trim_end_matches("[]");
+                return (None, Some(tag.to_string()));
             }
         }
+
         (None, None)
     }
 
@@ -1132,14 +1199,13 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                     self.state.fp_buf.clear();
                     let unescaped_text = text
                         .unescape()
-                        .map_err(|e| ParseError::InvalidValue(format!("Unescape error: {}", e)))?;
+                        .map_err(|e| ParseError::InvalidValue(format!("Unescape error: {e}")))?;
                     for s in unescaped_text.split_ascii_whitespace() {
                         if let Ok(v) = s.parse() {
                             self.state.fp_buf.push(v);
                         } else {
                             return Err(ParseError::InvalidValue(format!(
-                                "Invalid floating point number: {}",
-                                s
+                                "Invalid floating point number: {s}"
                             )));
                         }
                     }
@@ -1290,14 +1356,13 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                     self.state.fp_buf.clear();
                     let unescaped_text = text
                         .unescape()
-                        .map_err(|e| ParseError::InvalidValue(format!("Unescape error: {}", e)))?;
+                        .map_err(|e| ParseError::InvalidValue(format!("Unescape error: {e}")))?;
                     for s in unescaped_text.split_ascii_whitespace() {
                         if let Ok(v) = s.parse() {
                             self.state.fp_buf.push(v);
                         } else {
                             return Err(ParseError::InvalidValue(format!(
-                                "Invalid floating point number: {}",
-                                s
+                                "Invalid floating point number: {s}"
                             )));
                         }
                     }
@@ -1458,8 +1523,7 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                             self.state.fp_buf.push(v);
                         } else {
                             return Err(ParseError::InvalidValue(format!(
-                                "Invalid floating point number: {}",
-                                s
+                                "Invalid floating point number: {s}"
                             )));
                         }
                     }

@@ -173,9 +173,10 @@ impl FlattenTreeTransform {
                             }
                         }
                     }
+
                     out.push(Entity {
                         id,
-                        typename,
+                        typename, // OLD: Use typename from value.typename()
                         root: Value::Object(obj),
                         base_url: url::Url::parse("file:///dummy").expect("should be valid"),
                         geometry_store: geom_store.clone(),
