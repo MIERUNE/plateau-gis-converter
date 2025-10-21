@@ -23,7 +23,7 @@ fn parse_date() {
             assert!(root.date.is_some());
             assert_eq!(root.date, Date::from_ymd_opt(2019, 3, 21));
         }
-        Err(e) => panic!("Err: {:?}", e),
+        Err(e) => panic!("Err: {e:?}"),
     }
 }
 
@@ -59,7 +59,7 @@ fn parse_boolean() {
                 [true, true, true, true, false, false, false, false]
             );
         }
-        Err(e) => panic!("Err: {:?}", e),
+        Err(e) => panic!("Err: {e:?}"),
     }
 }
 
@@ -133,7 +133,7 @@ fn parse_basic_types() {
             );
             root.into_object();
         }
-        Err(e) => panic!("Err: {:?}", e),
+        Err(e) => panic!("Err: {e:?}"),
     }
 }
 
@@ -148,7 +148,7 @@ fn expect_invalid<T: CityGmlElement + Default>(xml: &str) {
                 _ => panic!("Should be invalid value"),
             }
         }
-        Err(e) => panic!("Err: {:?}", e),
+        Err(e) => panic!("Err: {e:?}"),
     }
 }
 
@@ -190,7 +190,7 @@ fn parse_duplicate_content() {
                 _ => panic!("Should be schema violation"),
             }
         }
-        Err(e) => panic!("Err: {:?}", e),
+        Err(e) => panic!("Err: {e:?}"),
     }
 }
 
@@ -245,7 +245,7 @@ fn generics() {
         Ok(mut st) => {
             demo.parse(&mut st).unwrap();
         }
-        Err(e) => panic!("Err: {:?}", e),
+        Err(e) => panic!("Err: {e:?}"),
     };
 
     let obj = demo.generic_attribute.into_object().unwrap();
@@ -276,5 +276,88 @@ fn generics() {
         assert_eq!(set1.attributes["d1"], Value::Double(123.45));
     } else {
         panic!("expected data");
+    }
+}
+
+#[test]
+fn feature_type_issue_with_bounded_by_structure() {
+    use nusamai_citygml::geometry::GeometryRefs;
+
+    #[derive(CityGmlElement, Default)]
+    struct Root {
+        #[citygml(path = b"core:cityObjectMember")]
+        members: Vec<Member>,
+    }
+
+    #[derive(CityGmlElement, Default)]
+    struct Member {
+        #[citygml(path = b"bldg:Building")]
+        building: Option<Building>,
+    }
+
+    #[derive(CityGmlElement, Default)]
+    struct Building {
+        #[citygml(path = b"bldg:boundedBy")]
+        bounded_by: Vec<BoundedBy>,
+    }
+
+    #[derive(CityGmlElement, Default)]
+    struct BoundedBy {
+        #[citygml(path = b"bldg:GroundSurface")]
+        ground_surface: Vec<GroundSurface>,
+    }
+
+    #[derive(CityGmlElement, Default)]
+    struct GroundSurface {
+        #[citygml(geom = b"bldg")]
+        lod2_multi_surface: GeometryRefs,
+    }
+
+    let xml = r#"
+        <core:CityModel xmlns:bldg="http://www.opengis.net/citygml/building/2.0" xmlns:core="http://www.opengis.net/citygml/2.0" xmlns:gml="http://www.opengis.net/gml">
+            <core:cityObjectMember>
+                <bldg:Building gml:id="test-building-id">
+                    <bldg:boundedBy>
+                        <bldg:GroundSurface>
+                            <bldg:lod2MultiSurface>
+                                <gml:MultiSurface>
+                                    <gml:surfaceMember>
+                                        <gml:Polygon>
+                                            <gml:exterior>
+                                                <gml:LinearRing>
+                                                    <gml:posList>0.0 0.0 0.0 1.0 0.0 0.0 1.0 1.0 0.0 0.0 1.0 0.0 0.0 0.0 0.0</gml:posList>
+                                                </gml:LinearRing>
+                                            </gml:exterior>
+                                        </gml:Polygon>
+                                    </gml:surfaceMember>
+                                </gml:MultiSurface>
+                            </bldg:lod2MultiSurface>
+                        </bldg:GroundSurface>
+                    </bldg:boundedBy>
+                </bldg:Building>
+            </core:cityObjectMember>
+        </core:CityModel>
+    "#;
+
+    let mut xml_reader = quick_xml::NsReader::from_reader(std::io::Cursor::new(xml));
+    let context = ParseContext::default();
+    match CityGmlReader::new(context).start_root(&mut xml_reader) {
+        Ok(mut st) => {
+            let mut root = Root::default();
+            root.parse(&mut st).unwrap();
+
+            let geom_ref = &root.members[0].building.as_ref().unwrap().bounded_by[0].ground_surface
+                [0]
+            .lod2_multi_surface[0];
+            // feature_type should be the element containing the geometry (GroundSurface),
+            // not the parent feature (Building)
+            assert_eq!(
+                geom_ref.feature_type,
+                Some("bldg:GroundSurface".to_string())
+            );
+            // feature_id should be from the parent with gml:id (Building)
+            assert_eq!(geom_ref.feature_id, Some("test-building-id".to_string()));
+        }
+        Err(e) => panic!("Err: {e:?}"),
     }
 }

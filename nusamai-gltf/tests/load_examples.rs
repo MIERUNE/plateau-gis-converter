@@ -7,7 +7,7 @@ use nusamai_gltf_json::*;
 fn load_glb_examples() {
     for path in glob::glob("./nusamai-gltf-json/tests/samples/2.0/*.glb").unwrap() {
         let path = path.unwrap();
-        println!("loading {:?}", path);
+        println!("loading {path:?}");
 
         let reader = BufReader::new(File::open(&path).unwrap());
         let glb = Glb::from_reader(reader).unwrap();
@@ -34,7 +34,7 @@ fn load_glb_examples() {
 fn load_3dtiles_glb_examples() {
     for path in glob::glob("./nusamai-gltf-json/tests/samples/3d-tiles/**/*.glb").unwrap() {
         let path = path.unwrap();
-        println!("loading {:?}", path);
+        println!("loading {path:?}");
 
         let reader = BufReader::new(File::open(&path).unwrap());
         let glb = Glb::from_reader(reader).unwrap();

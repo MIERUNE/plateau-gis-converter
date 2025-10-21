@@ -40,14 +40,12 @@ impl CodeResolver for Resolver {
     ) -> Result<Option<String>, nusamai_citygml::ParseError> {
         let Ok(abs_url) = base_url.join(code_space) else {
             return Err(ParseError::CodelistError(format!(
-                "failed to join url: {:?} + {:?}",
-                base_url, code_space
+                "failed to join url: {base_url:?} + {code_space:?}"
             )));
         };
         let Ok(path) = abs_url.to_file_path() else {
             return Err(ParseError::CodelistError(format!(
-                "failed to convert url to file path: {:?}",
-                abs_url,
+                "failed to convert url to file path: {abs_url:?}",
             )));
         };
         if let Some(dict) = self.cache.get(&path) {
@@ -58,8 +56,7 @@ impl CodeResolver for Resolver {
             // not found in cache
             let Ok(file) = std::fs::File::open(&path) else {
                 return Err(ParseError::CodelistError(format!(
-                    "failed to open file: {:?}",
-                    path
+                    "failed to open file: {path:?}"
                 )));
             };
             let reader = std::io::BufReader::with_capacity(128 * 1024, file);

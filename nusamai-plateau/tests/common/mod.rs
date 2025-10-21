@@ -47,7 +47,7 @@ fn toplevel_dispatcher<R: BufRead>(
     }) {
         Ok(_) => Ok(cityobjs),
         Err(e) => {
-            println!("Err: {:?}", e);
+            println!("Err: {e:?}");
             Err(e)
         }
     }
@@ -62,9 +62,9 @@ pub fn load_cityobjs_from_reader(reader: impl BufRead, path: &Path) -> Vec<CityO
     let cityobjs = match CityGmlReader::new(context).start_root(&mut xml_reader) {
         Ok(mut st) => match toplevel_dispatcher(&mut st) {
             Ok(cityobjs) => cityobjs,
-            Err(e) => panic!("Err: {:?}", e),
+            Err(e) => panic!("Err: {e:?}"),
         },
-        Err(e) => panic!("Err: {:?}", e),
+        Err(e) => panic!("Err: {e:?}"),
     };
     cityobjs
 }

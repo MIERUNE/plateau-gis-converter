@@ -5,7 +5,7 @@ fn load_examples() {
     for path in glob::glob("./tests/samples/2.0/*.gltf").unwrap() {
         // deserialize
         let path = path.unwrap();
-        println!("loading {:?}", path);
+        println!("loading {path:?}");
         let src = std::fs::read_to_string(path).unwrap();
         let gltf: Gltf = serde_json::from_str(&src).unwrap();
 
@@ -25,7 +25,7 @@ fn load_3dtiles_examples() {
     for path in glob::glob("./tests/samples/3d-tiles/**/*.gltf").unwrap() {
         // deserialize
         let path = path.unwrap();
-        println!("loading {:?}", path);
+        println!("loading {path:?}");
         let src = std::fs::read_to_string(path).unwrap();
         let gltf: Gltf = serde_json::from_str(&src).unwrap();
 

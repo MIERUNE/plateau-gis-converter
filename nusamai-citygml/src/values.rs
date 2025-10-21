@@ -126,7 +126,7 @@ impl CityGmlElement for Code {
                 Ok(None) => {}
                 Err(_) => {
                     // FIXME
-                    log::warn!("Failed to lookup code {} form {}", code, code_space);
+                    log::warn!("Failed to lookup code {code} form {code_space}");
                     self.value = code;
                     return Ok(());
                 }
@@ -156,8 +156,7 @@ impl CityGmlElement for i64 {
                 Ok(())
             }
             Err(_) => Err(ParseError::InvalidValue(format!(
-                "Expected an integer, got {}",
-                text
+                "Expected an integer, got {text}"
             ))),
         }
     }
@@ -182,8 +181,7 @@ impl CityGmlElement for u64 {
                 Ok(())
             }
             Err(_) => Err(ParseError::InvalidValue(format!(
-                "Expected an integer, got {}",
-                text
+                "Expected an integer, got {text}"
             ))),
         }
     }
@@ -208,8 +206,7 @@ impl CityGmlElement for f64 {
                 Ok(())
             }
             Err(_) => Err(ParseError::InvalidValue(format!(
-                "Expected a floating point number, got {}",
-                text
+                "Expected a floating point number, got {text}"
             ))),
         }
     }
@@ -238,8 +235,7 @@ impl CityGmlElement for bool {
                 Ok(())
             }
             _ => Err(ParseError::InvalidValue(format!(
-                "Expected a boolean value, got {}",
-                text
+                "Expected a boolean value, got {text}"
             ))),
         }
     }
@@ -279,8 +275,7 @@ impl CityGmlElement for Measure {
                 Ok(())
             }
             Err(_) => Err(ParseError::InvalidValue(format!(
-                "Expected a floating point number, got {}",
-                text
+                "Expected a floating point number, got {text}"
             ))),
         }
     }
@@ -305,8 +300,7 @@ impl CityGmlElement for Date {
                 Ok(())
             }
             Err(_) => Err(ParseError::InvalidValue(format!(
-                "Expected a date in the format YYYY-MM-DD, got {}",
-                text
+                "Expected a date in the format YYYY-MM-DD, got {text}"
             ))),
         }
     }
@@ -335,8 +329,7 @@ impl CityGmlElement for Point {
         for (i, s) in s.split_ascii_whitespace().enumerate() {
             let Ok(v) = s.parse() else {
                 return Err(ParseError::InvalidValue(format!(
-                    "Point coordinate must be numeric value, but found: {}",
-                    s
+                    "Point coordinate must be numeric value, but found: {s}"
                 )));
             };
             self.coords[i] = v;
@@ -389,8 +382,7 @@ impl CityGmlElement for LocalId {
             Ok(())
         } else {
             Err(ParseError::InvalidValue(format!(
-                "Expected a reference starts with '#' but got {}",
-                s
+                "Expected a reference starts with '#' but got {s}"
             )))
         }
     }
@@ -412,8 +404,7 @@ impl CityGmlAttribute for LocalId {
             Ok(Self::from(id.to_string()))
         } else {
             Err(ParseError::InvalidValue(format!(
-                "Expected a reference starts with '#' but got {}",
-                s
+                "Expected a reference starts with '#' but got {s}"
             )))
         }
     }
@@ -460,8 +451,7 @@ impl CityGmlElement for Color {
             }
             _ => {
                 return Err(ParseError::InvalidValue(format!(
-                    "Failed to parse color value: {}",
-                    text
+                    "Failed to parse color value: {text}"
                 )))
             }
         }
@@ -527,8 +517,7 @@ impl CityGmlElement for ColorPlusOpacity {
             }
             _ => {
                 return Err(ParseError::InvalidValue(format!(
-                    "Failed to parse color value: {}",
-                    text
+                    "Failed to parse color value: {text}"
                 )))
             }
         }
