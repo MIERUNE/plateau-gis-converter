@@ -16,6 +16,7 @@ pub enum GeometryParseType {
     Surface,
     Point,
     Triangulated,
+    CompositeCurve,
 }
 
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]

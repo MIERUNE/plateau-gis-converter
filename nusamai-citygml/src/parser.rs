@@ -462,6 +462,9 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
             Point => todo!(),      // FIXME
             MultiPoint => todo!(), // FIXME
             MultiCurve => self.parse_multi_curve_prop(geomref, lod, feature_id, feature_type)?, // FIXME
+            CompositeCurve => {
+                self.parse_composite_curve_prop(geomref, lod, feature_id, feature_type)?
+            }
         }
 
         self.state
@@ -492,6 +495,65 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                         _ => {
                             return Err(ParseError::SchemaViolation(format!(
                                 "Expected MultiCurve but found <{}>",
+                                String::from_utf8_lossy(start.name().as_ref())
+                            )))
+                        }
+                    };
+
+                    let line_end = self.state.geometry_collector.multilinestring.len();
+                    if line_end - line_begin > 0 {
+                        geomrefs.push(GeometryRef {
+                            ty: geomtype,
+                            lod,
+                            pos: line_begin as u32,
+                            len: (line_end - line_begin) as u32,
+                            id: None,
+                            solid_ids: Vec::new(),
+                            feature_id: feature_id.clone(),
+                            feature_type: feature_type.clone(),
+                        });
+                    }
+                }
+                Ok(Event::End(_)) => break,
+                Ok(Event::Text(_)) => {
+                    return Err(ParseError::SchemaViolation(
+                        "Unexpected text content".into(),
+                    ))
+                }
+                Ok(_) => (),
+                Err(e) => return Err(e.into()),
+            }
+        }
+        Ok(())
+    }
+
+    fn parse_composite_curve_prop(
+        &mut self,
+        geomrefs: &mut GeometryRefs,
+        lod: u8,
+        feature_id: Option<String>,
+        feature_type: Option<String>,
+    ) -> Result<(), ParseError> {
+        // CompositeCurve has stricter semantics than MultiCurve:
+        // - Segments MUST be topologically connected (end-to-end)
+        // - Order matters (forms a continuous path)
+        // However, we reuse parse_multi_curve() because the XML structure is identical (both use <gml:curveMember>).
+        // If needed, topology validation should be handled separately. Here, we just parse the geometry for efficiency.
+        loop {
+            match self.reader.read_event_into(&mut self.state.buf1) {
+                Ok(Event::Start(start)) => {
+                    let (nsres, localname) = self.reader.resolve_element(start.name());
+                    let line_begin = self.state.geometry_collector.multilinestring.len();
+
+                    let geomtype = match (nsres, localname.as_ref()) {
+                        (Bound(GML31_NS), b"CompositeCurve") => {
+                            // CompositeCurve uses curveMember elements just like MultiCurve
+                            self.parse_multi_curve()?;
+                            GeometryType::Curve
+                        }
+                        _ => {
+                            return Err(ParseError::SchemaViolation(format!(
+                                "Expected CompositeCurve but found <{}>",
                                 String::from_utf8_lossy(start.name().as_ref())
                             )))
                         }
@@ -812,9 +874,19 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                             line_end = Some(self.state.geometry_collector.multilinestring.len());
                             GeometryType::Curve
                         }
+                        (Bound(GML31_NS), b"CompositeCurve") => {
+                            self.parse_composite_curve_prop(
+                                geomrefs,
+                                lod,
+                                feature_id.clone(),
+                                feature_type.clone(),
+                            )?;
+                            line_end = Some(self.state.geometry_collector.multilinestring.len());
+                            GeometryType::Curve
+                        }
                         (Bound(GML31_NS), b"TriangulatedSurface") => unimplemented!(),
                         (Bound(GML31_NS), b"Tin") => unimplemented!(),
-                        (Bound(GML31_NS), b"Point" | b"CompositeCurve") => unimplemented!(), // FIXME:
+                        (Bound(GML31_NS), b"Point") => unimplemented!(), // FIXME:
                         _ => {
                             return Err(ParseError::SchemaViolation(format!(
                                 "Unexpected geometry elements <{}>",

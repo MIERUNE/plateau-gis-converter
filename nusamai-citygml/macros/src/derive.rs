@@ -165,7 +165,7 @@ fn generate_citygml_impl_for_struct(
                             add_arm(0, b"lod0FootPrint", "MultiSurface");
                         }
                         b"tran" => {
-                            add_arm( 0, b"lod0Network", "MultiCurve");
+                            add_arm( 0, b"lod0Network", "CompositeCurve");
                         }
                         b"uro" => {
                             if typename.as_str() == "uro:RailwayTrackAttribute" {
