@@ -142,9 +142,7 @@ impl DataSink for ShapefileSink {
                         feedback.ensure_not_canceled()?;
 
                         let typedef = schema.types.get(&typename).ok_or_else(|| {
-                            PipelineError::Other(format!(
-                                "Type {typename} not found in the schema"
-                            ))
+                            PipelineError::Other(format!("Type {typename} not found in the schema"))
                         })?;
 
                         let (table_builder, fields_default) = make_table_builder(typedef);

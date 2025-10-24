@@ -263,9 +263,7 @@ impl<'c> GpkgTransaction<'c> {
         let executor = self.tx.acquire().await.unwrap();
 
         if attributes.is_empty() {
-            let query_string = format!(
-                "INSERT INTO \"{table_name}\" (id, geometry) VALUES (?, ?)"
-            );
+            let query_string = format!("INSERT INTO \"{table_name}\" (id, geometry) VALUES (?, ?)");
             sqlx::query(&query_string)
                 .bind(id)
                 .bind(bytes)

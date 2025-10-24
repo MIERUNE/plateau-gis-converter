@@ -494,9 +494,8 @@ fn tile_writing_stage(
 
             // A unique ID used when planning the atlas layout
             //  and when obtaining the UV coordinates after the layout has been completed
-            let generate_texture_id = |z, x, y, feature_id, poly_count| {
-                format!("{z}_{x}_{y}_{feature_id}_{poly_count}")
-            };
+            let generate_texture_id =
+                |z, x, y, feature_id, poly_count| format!("{z}_{x}_{y}_{feature_id}_{poly_count}");
 
             // Check the size of all the textures and calculate the power of 2 of the largest size
             let mut max_width = 0;

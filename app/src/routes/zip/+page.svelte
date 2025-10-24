@@ -3,11 +3,17 @@
 	import TabNavigation from '../TabNavigation.svelte';
 	import type { SinkParameters } from '$lib/sinkparams';
 	import type { TransformerSettings } from '$lib/transformer';
-	import type { MeshcodeData } from './utils';
+	import {
+		type FeatureTypeLookup,
+		type MeshcodeData,
+		type RemoteMeshcodeData
+	} from './utils';
 	import FeatureTypeSelectStepSidePanel from './FeatureTypeSelectStepSidePanel.svelte';
 	import ConvertStepSidePanel from './ConvertStepSidePanel.svelte';
 	import MapPanel from './MapPanel.svelte';
 
+	let remoteMeshcodeData: RemoteMeshcodeData = $state({});
+	let featureTypeLookup: FeatureTypeLookup = $state({});
 	let meshcodeData: MeshcodeData | null = $state(null);
 	let inputPaths: string[] = $state([]);
 
@@ -27,6 +33,8 @@
 
 	function clearAll() {
 		inputPaths = [];
+		remoteMeshcodeData = {};
+		featureTypeLookup = {};
 		meshcodeData = null;
 		selectedMeshes = [];
 		currentStep = 'featureTypeSelect';
@@ -48,10 +56,12 @@
 		<TabNavigation />
 
 		{#if currentStep === 'featureTypeSelect' || !meshcodeData}
-			<FeatureTypeSelectStepSidePanel
+		<FeatureTypeSelectStepSidePanel
 				bind:selectedFeatureTypes
 				bind:selectedMeshes
 				bind:inputPaths
+				bind:remoteMeshcodeData
+				bind:featureTypeLookup
 				bind:meshcodeData
 				{clearAll}
 				onclickNext={() => {
@@ -79,15 +89,6 @@
 	</div>
 
 	<div class="flex-1">
-		{#if meshcodeData}
-			<MapPanel bind:selectedMeshes {meshcodeData} />
-		{:else}
-			<div class="flex h-full w-full items-center justify-center bg-gray-100 text-gray-500">
-				<div class="flex flex-col items-center gap-4 text-center">
-					<Icon icon="material-symbols:map" class="text-6xl opacity-50" />
-					<p class="text-lg">PLATEAU ZIP ファイルを選択すると地図が表示されます</p>
-				</div>
-			</div>
-		{/if}
+		<MapPanel bind:selectedMeshes {remoteMeshcodeData} />
 	</div>
 </div>

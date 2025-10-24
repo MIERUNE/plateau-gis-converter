@@ -18,6 +18,7 @@ use nusamai::{
     },
 };
 use nusamai_plateau::models::TopLevelCityObject;
+use reqwest::StatusCode;
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::BufReader;
@@ -30,6 +31,7 @@ use std::{
 use tauri::Emitter;
 use tauri_plugin_log::{RotationStrategy, TimezoneStrategy};
 use thiserror::Error;
+use tokio::time::{sleep, Duration};
 
 #[cfg(debug_assertions)]
 const LOG_LEVEL: LevelFilter = LevelFilter::Debug;
@@ -40,6 +42,8 @@ const LOG_LEVEL: LevelFilter = LevelFilter::Info;
 struct ConversionTasksState {
     canceller: Arc<Mutex<Canceller>>,
 }
+
+const DEFAULT_PLATEAU_API_BASE: &str = "https://api.plateauview.mlit.go.jp";
 
 fn main() {
     // System log plugin
@@ -78,6 +82,8 @@ fn main() {
             list_supported_files,
             list_zip_contents,
             get_meshcodes_with_prefix,
+            fetch_citygml_metadata,
+            download_citygml_pack,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
@@ -118,11 +124,23 @@ enum Error {
     ConversionFailed(String),
     #[error("Conversion canceled")]
     Canceled,
+    #[error("HTTP error: {0}")]
+    Http(String),
+    #[error("API error: {0}")]
+    Api(String),
+    #[error("Timeout: {0}")]
+    Timeout(String),
 }
 
 impl From<std::io::Error> for Error {
     fn from(err: std::io::Error) -> Self {
         Error::Io(err.to_string())
+    }
+}
+
+impl From<reqwest::Error> for Error {
+    fn from(err: reqwest::Error) -> Self {
+        Error::Http(err.to_string())
     }
 }
 
@@ -143,6 +161,148 @@ fn select_sink_provider(filetype: &str) -> Option<Box<dyn DataSinkProvider>> {
         "obj" => Some(Box::new(ObjSinkProvider {})),
         _ => None,
     }
+}
+
+#[derive(Debug, serde::Deserialize)]
+struct RawFeatureTypeInfo {
+    #[serde(default)]
+    name: String,
+}
+
+#[derive(Debug, serde::Deserialize)]
+struct RawCityGmlFile {
+    #[serde(default)]
+    code: String,
+    #[serde(default)]
+    url: String,
+    #[serde(rename = "maxLod")]
+    max_lod: Option<i32>,
+    #[serde(rename = "fileSize")]
+    file_size: Option<u64>,
+    #[serde(default)]
+    features: Option<u64>,
+}
+
+#[derive(Debug, serde::Deserialize)]
+struct RawCityGmlMetadataResponse {
+    #[serde(default)]
+    cities: Vec<RawCityEntry>,
+    #[serde(rename = "featureTypes", default)]
+    feature_types: HashMap<String, RawFeatureTypeInfo>,
+}
+
+#[derive(Debug, serde::Deserialize)]
+struct RawCityEntry {
+    #[serde(rename = "cityCode")]
+    city_code: Option<String>,
+    #[serde(rename = "cityName")]
+    city_name: Option<String>,
+    year: Option<i32>,
+    #[serde(rename = "registrationYear")]
+    registration_year: Option<i32>,
+    #[serde(default)]
+    files: HashMap<String, Vec<RawCityGmlFile>>,
+}
+
+#[derive(Debug, serde::Serialize, Clone)]
+struct CityGmlRemoteFile {
+    meshcode: String,
+    #[serde(rename = "featureType")]
+    feature_type: String,
+    url: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "maxLod")]
+    max_lod: Option<i32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "fileSize")]
+    file_size: Option<u64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    features: Option<u64>,
+}
+
+#[derive(Debug, serde::Serialize)]
+struct FetchCityGmlMetadataResult {
+    #[serde(rename = "cityCode")]
+    city_code: Option<String>,
+    #[serde(rename = "cityName")]
+    city_name: Option<String>,
+    year: Option<i32>,
+    #[serde(rename = "registrationYear")]
+    registration_year: Option<i32>,
+    #[serde(rename = "featureTypes")]
+    feature_types: HashMap<String, String>,
+    meshes: HashMap<String, HashMap<String, Vec<CityGmlRemoteFile>>>,
+    cities: Vec<CitySummary>,
+}
+
+#[derive(Debug, serde::Serialize)]
+struct CitySummary {
+    #[serde(rename = "cityCode")]
+    city_code: Option<String>,
+    #[serde(rename = "cityName")]
+    city_name: Option<String>,
+    year: Option<i32>,
+    #[serde(rename = "registrationYear")]
+    registration_year: Option<i32>,
+}
+
+#[derive(Debug, serde::Deserialize)]
+struct PackResponse {
+    id: String,
+}
+
+#[derive(Debug, serde::Deserialize)]
+struct PackStatusResponse {
+    status: String,
+    #[serde(default)]
+    progress: Option<f32>,
+}
+
+#[derive(Debug, serde::Serialize, Clone)]
+struct PackProgressEvent {
+    stage: String,
+    status: String,
+    progress: f32,
+}
+
+#[derive(Debug, serde::Serialize)]
+struct DownloadCityGmlPackResult {
+    #[serde(rename = "packId")]
+    pack_id: String,
+    #[serde(rename = "zipPath")]
+    zip_path: String,
+}
+
+fn plateau_api_base_url() -> String {
+    env::var("PLATEAU_API_BASE").unwrap_or_else(|_| DEFAULT_PLATEAU_API_BASE.to_string())
+}
+
+fn emit_pack_progress(app: &tauri::AppHandle, stage: &str, status: &str, progress: f32) {
+    if let Err(err) = app.emit(
+        "plateau://pack-progress",
+        PackProgressEvent {
+            stage: stage.to_string(),
+            status: status.to_string(),
+            progress,
+        },
+    ) {
+        log::warn!("Failed to emit pack progress event: {err}");
+    }
+}
+
+fn normalize_meshcode(raw: &str) -> Option<String> {
+    let trimmed = raw.trim();
+    if trimmed.is_empty() {
+        return None;
+    }
+    let len = trimmed.len();
+    if !(6..=10).contains(&len) {
+        return None;
+    }
+    if !trimmed.chars().all(|c| c.is_ascii_digit()) {
+        return None;
+    }
+    Some(trimmed.to_string())
 }
 
 #[tauri::command(async)]
@@ -572,6 +732,267 @@ fn get_meshcodes_with_prefix(
         }
     }
     Ok(result)
+}
+
+#[tauri::command(async)]
+async fn fetch_citygml_metadata(conditions: String) -> Result<FetchCityGmlMetadataResult, Error> {
+    if conditions.trim().is_empty() {
+        return Err(Error::InvalidSetting(
+            "条件文字列が空です。メッシュコードや範囲を指定してください。".to_string(),
+        ));
+    }
+
+    let base_url = plateau_api_base_url();
+    let request_url = format!(
+        "{}/datacatalog/citygml/{}",
+        base_url.trim_end_matches('/'),
+        conditions
+    );
+
+    log::info!("Fetching CityGML metadata: {request_url}");
+
+    let client = reqwest::Client::builder()
+        .timeout(Duration::from_secs(30))
+        .build()
+        .map_err(|err| Error::Http(err.to_string()))?;
+
+    let response = client
+        .get(&request_url)
+        .send()
+        .await
+        .map_err(|err| Error::Http(err.to_string()))?;
+
+    match response.status() {
+        StatusCode::NOT_FOUND => {
+            return Err(Error::Api(format!(
+                "条件に一致するCityGMLメタデータが見つかりません: {conditions}"
+            )));
+        }
+        status if !status.is_success() => {
+            let body = response.text().await.unwrap_or_default();
+            return Err(Error::Api(format!(
+                "CityGMLメタデータの取得に失敗しました (status: {status}): {body}"
+            )));
+        }
+        _ => {}
+    }
+
+    let raw: RawCityGmlMetadataResponse = response
+        .json()
+        .await
+        .map_err(|err| Error::Http(err.to_string()))?;
+
+    let mut meshes: HashMap<String, HashMap<String, Vec<CityGmlRemoteFile>>> = HashMap::new();
+    let mut city_summaries: Vec<CitySummary> = Vec::new();
+
+    for city in raw.cities {
+        city_summaries.push(CitySummary {
+            city_code: city.city_code.clone(),
+            city_name: city.city_name.clone(),
+            year: city.year,
+            registration_year: city.registration_year,
+        });
+
+        for (feature_type, files) in city.files {
+            for file in files {
+                if file.url.is_empty() {
+                    continue;
+                }
+                if let Some(meshcode) = normalize_meshcode(&file.code) {
+                    let entry = meshes.entry(meshcode.clone()).or_insert_with(HashMap::new);
+                    let remote_file = CityGmlRemoteFile {
+                        meshcode: meshcode.clone(),
+                        feature_type: feature_type.clone(),
+                        url: file.url.clone(),
+                        max_lod: file.max_lod,
+                        file_size: file.file_size,
+                        features: file.features,
+                    };
+                    let type_entry = entry.entry(feature_type.clone()).or_insert_with(Vec::new);
+                    if !type_entry
+                        .iter()
+                        .any(|existing| existing.url == remote_file.url)
+                    {
+                        type_entry.push(remote_file);
+                    }
+                }
+            }
+        }
+    }
+
+    let feature_types = raw
+        .feature_types
+        .into_iter()
+        .map(|(code, info)| (code, info.name))
+        .collect();
+
+    Ok(FetchCityGmlMetadataResult {
+        city_code: city_summaries
+            .first()
+            .and_then(|summary| summary.city_code.clone()),
+        city_name: city_summaries
+            .first()
+            .and_then(|summary| summary.city_name.clone()),
+        year: city_summaries.first().and_then(|summary| summary.year),
+        registration_year: city_summaries
+            .first()
+            .and_then(|summary| summary.registration_year),
+        feature_types,
+        meshes,
+        cities: city_summaries,
+    })
+}
+
+#[tauri::command(async)]
+async fn download_citygml_pack(
+    urls: Vec<String>,
+    app: tauri::AppHandle,
+) -> Result<DownloadCityGmlPackResult, Error> {
+    if urls.is_empty() {
+        return Err(Error::InvalidSetting(
+            "CityGMLパックの対象URLが選択されていません。".to_string(),
+        ));
+    }
+
+    let base_url = plateau_api_base_url();
+    let client = reqwest::Client::builder()
+        .timeout(Duration::from_secs(60))
+        .build()
+        .map_err(|err| Error::Http(err.to_string()))?;
+
+    emit_pack_progress(&app, "request", "accepted", 0.0);
+
+    let request_body = serde_json::json!({ "urls": urls });
+    let pack_response = client
+        .post(format!("{}/citygml/pack", base_url.trim_end_matches('/')))
+        .json(&request_body)
+        .send()
+        .await
+        .map_err(|err| Error::Http(err.to_string()))?;
+
+    if !pack_response.status().is_success() {
+        let status = pack_response.status();
+        let body = pack_response.text().await.unwrap_or_default();
+        return Err(Error::Api(format!(
+            "CityGMLパックの作成依頼に失敗しました (status: {status}): {body}"
+        )));
+    }
+
+    let pack: PackResponse = pack_response
+        .json()
+        .await
+        .map_err(|err| Error::Http(err.to_string()))?;
+    let pack_id = pack.id;
+
+    let status_url = format!(
+        "{}/citygml/pack/{pack_id}/status",
+        base_url.trim_end_matches('/')
+    );
+
+    let mut attempt = 0usize;
+    let max_attempts = 120usize; // up to 10 minutes (120 * 5s)
+
+    loop {
+        attempt += 1;
+        emit_pack_progress(&app, "status", "checking", 0.0);
+
+        let status_response = client
+            .get(&status_url)
+            .send()
+            .await
+            .map_err(|err| Error::Http(err.to_string()))?;
+
+        if !status_response.status().is_success() {
+            let status = status_response.status();
+            let body = status_response.text().await.unwrap_or_default();
+            return Err(Error::Api(format!(
+                "CityGMLパックのステータス取得に失敗しました (status: {status}): {body}"
+            )));
+        }
+
+        let status_body: PackStatusResponse = status_response
+            .json()
+            .await
+            .map_err(|err| Error::Http(err.to_string()))?;
+
+        let progress = status_body.progress.unwrap_or(0.0);
+        emit_pack_progress(
+            &app,
+            "status",
+            status_body.status.as_str(),
+            progress.clamp(0.0, 1.0),
+        );
+
+        match status_body.status.as_str() {
+            "succeeded" => break,
+            "failed" => {
+                return Err(Error::Api(
+                    "CityGMLパックの作成が失敗しました。".to_string(),
+                ));
+            }
+            "accepted" | "processing" => {
+                if attempt >= max_attempts {
+                    return Err(Error::Timeout(
+                        "CityGMLパックの作成がタイムアウトしました。".to_string(),
+                    ));
+                }
+                sleep(Duration::from_secs(5)).await;
+            }
+            other => {
+                return Err(Error::Api(format!(
+                    "CityGMLパックのステータスが不正です: {other}"
+                )));
+            }
+        }
+    }
+
+    emit_pack_progress(&app, "download", "started", 0.0);
+
+    let download_url = format!(
+        "{}/citygml/pack/{pack_id}.zip",
+        base_url.trim_end_matches('/')
+    );
+
+    let mut download_response = client
+        .get(&download_url)
+        .send()
+        .await
+        .map_err(|err| Error::Http(err.to_string()))?;
+
+    if download_response.status().is_redirection() {
+        if let Some(location) = download_response
+            .headers()
+            .get(reqwest::header::LOCATION)
+            .and_then(|v| v.to_str().ok())
+        {
+            download_response = client.get(location).send().await?;
+        }
+    }
+
+    if !download_response.status().is_success() {
+        let status = download_response.status();
+        let body = download_response.text().await.unwrap_or_default();
+        return Err(Error::Api(format!(
+            "CityGMLパックのダウンロードに失敗しました (status: {status}): {body}"
+        )));
+    }
+
+    let bytes = download_response
+        .bytes()
+        .await
+        .map_err(|err| Error::Http(err.to_string()))?;
+
+    let mut target_path = env::temp_dir();
+    target_path.push(format!("plateau-pack-{pack_id}.zip"));
+
+    std::fs::write(&target_path, bytes.as_ref()).map_err(|err| Error::Io(err.to_string()))?;
+
+    emit_pack_progress(&app, "download", "completed", 1.0);
+
+    Ok(DownloadCityGmlPackResult {
+        pack_id,
+        zip_path: target_path.to_string_lossy().to_string(),
+    })
 }
 
 #[cfg(test)]

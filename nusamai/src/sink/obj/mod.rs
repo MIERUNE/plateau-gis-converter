@@ -595,11 +595,7 @@ impl DataSink for ObjSink {
                                     poly_color[0], poly_color[1], poly_color[2]
                                 )
                             },
-                            |_| {
-                                format!(
-                                    "{base_folder_name}_{texture_folder_name}_{texture_name}"
-                                )
-                            },
+                            |_| format!("{base_folder_name}_{texture_folder_name}_{texture_name}"),
                         );
 
                         all_materials.insert(

@@ -1,0 +1,734 @@
+openapi: 3.0.0
+info:
+  title: PLATEAU API（試験提供中）
+  version: "1.0"
+  description: PLATEAUに関する様々なデータの取得が行えるAPIです。試験運用中であり、APIの仕様は予告なく変更される可能性があります（SLAも保証していません）。
+
+servers:
+  - url: https://api.plateauview.mlit.go.jp
+
+paths:
+  /datacatalog/graphql:
+    get:
+      summary: データカタログ GraphQL Playground
+      tags:
+        - Data Catalog API
+      responses:
+        "200":
+          description: GraphQL Playground
+          content:
+            text/html:
+              schema:
+                type: string
+                format: html
+    post:
+      summary: データカタログ GraphQL API
+      description: GraphQLスキーマはPlaygroundで確認できます。
+      tags:
+        - Data Catalog API
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                query:
+                  type: string
+                  description: GraphQL query or mutation
+                variables:
+                  type: object
+                  additionalProperties: true
+                  description: Optional variables for the query
+      responses:
+        "200":
+          description: GraphQL response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    description: The response data
+                  errors:
+                    type: array
+                    description: The list of errors
+                    items:
+                      type: object
+                      properties:
+                        message:
+                          type: string
+                          description: The error message
+                        locations:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              line:
+                                type: integer
+                                description: The line number
+                              column:
+                                type: integer
+                                description: The column number
+
+  /datacatalog/plateau-datasets:
+    get:
+      summary: データカタログ シンプルAPI
+      tags:
+        - Data Catalog API
+      description: 3D Tiles/MVT のデータセット一覧がJSON形式で返却されます。
+      responses:
+        "200":
+          description: 成功時のレスポンス
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  datasets:
+                    type: array
+                    items:
+                      type: object
+                      description: 3D Tiles/MVT のデータセットを表すオブジェクト。
+                      properties:
+                        id:
+                          type: string
+                          description: データセットのID
+                        name:
+                          type: string
+                          description: データの名称
+                        pref:
+                          type: string
+                          description: 都道府県名
+                        pref_code:
+                          type: string
+                          description: 2桁の都道府県コード
+                        city:
+                          type: string
+                          description: 市区町村名
+                        city_code:
+                          type: string
+                          description: 5桁の市の市区町村コード
+                        ward:
+                          type: string
+                          nullable: true
+                          description: |
+                            区名。政令指定都市の場合のみ、区の名前が含まれる。
+                        ward_code:
+                          type: string
+                          nullable: true
+                          description: |
+                            5桁の区の市区町村コード。政令指定都市の場合のみ、区ごとの市区町村コードが含まれる。
+                        type:
+                          type: string
+                          description: |
+                            配信している3D都市モデルの地物型の種別。
+                            例: "建築物モデル"
+                          example: "建築物モデル"
+                        type_en:
+                          type: string
+                          description: |
+                            種別の英語名。
+                            例: "bldg" は建築物モデルを意味する。
+                          example: "bldg"
+                        url:
+                          type: string
+                          format: uri
+                          description: |
+                            3D Tiles の場合は tileset.json の URL。
+                            MVT の場合は `{z}/{x}/{y}.mvt` のようなタイル URL。
+                        layers:
+                          type: array
+                          nullable: true
+                          description: MVTのみ利用可能なレイヤー名リスト。3D Tilesの場合はnull。
+                          items:
+                            type: string
+                        year:
+                          type: integer
+                          description: |
+                            データが整備された年度。
+                            例: 2023 は2023年度に整備されたデータ。
+                          example: 2023
+                        registration_year:
+                          type: integer
+                          description: |
+                            データがPLATEAU VIEWに登録された年度。
+                            例: 2023 は2023年度に登録されたデータ。
+                          example: 2023
+                        spec:
+                          type: string
+                          description: |
+                            原典となるCityGMLデータが準拠するPLATEAU 3D都市モデル標準製品仕様書のバージョン（文字列）。
+                          example: "3.3"
+                        format:
+                          type: string
+                          description: データ形式
+                          enum:
+                            - "3D Tiles"
+                            - "MVT"
+                        lod:
+                          type: string
+                          description: データのLOD
+                          example: "1"
+                        texture:
+                          type: boolean
+                          description: 3D Tilesでテクスチャがある場合は `true`。テクスチャがない場合やMVTの場合は `false`。
+                      required:
+                        - id
+                        - name
+                        - pref
+                        - pref_code
+                        - city
+                        - city_code
+                        - type
+                        - type_en
+                        - url
+                        - year
+                        - registration_year
+                        - spec
+                        - format
+                        - lod
+                        - texture
+                required:
+                  - datasets
+
+  /datacatalog/citygml/{conditions}:
+    get:
+      summary: CityGMLファイルのURLリストを取得
+      description: 指定した範囲に含まれるCityGMLファイルのURLリストを取得します。
+      tags:
+        - Data Catalog API
+      parameters:
+        - name: conditions
+          in: path
+          required: true
+          schema:
+            type: string
+          description: |
+            地理的なエリアや都市の情報をフィルタリングするための条件。詳細は[ドキュメント](https://github.com/Project-PLATEAU/plateau-streaming-tutorial/blob/main/citygml/plateau-citygml.md)参照。
+
+            使用例: `m:533945`, `s:spatialID`, `r:135.5,35.0`, `g:locationName`
+
+            `:conditions`パラメータは以下の条件タイプに対応している。
+
+            1. **メッシュコード (`m`)**
+                - **概要**: カンマ区切りで複数のメッシュコードに基づいてエリアを指定。2次メッシュ（6桁）・3次メッシュ（8桁）・1/2メッシュ（9桁）・1/4メッシュ（10桁）に対応する。メッシュコードはハイフンで区切らず数値だけで表すこと。
+                - **形式**: `m:<メッシュコード>`
+                - **例**: `m:533944,533945`
+
+                    https://api.plateauview.mlit.go.jp/datacatalog/citygml/m:533935
+
+            2. **メッシュコード厳密検索 (`mm`)**
+                - **概要**: 1とほぼ同じだが、1と比べ、メッシュコードの桁数が完全に一致するCityGMLのみを取得する。2次メッシュの場合は2次メッシュのデータセットのみが、3次メッシュの場合は3次メッシュのCityGMLのみがヒットする。
+                - **形式**: `mm:<メッシュコード>`
+                - **例**: `mm:533944,533945`
+
+                    https://api.plateauview.mlit.go.jp/datacatalog/citygml/mm:533935
+
+            3. **空間ID (`s`)**
+                - **概要**: カンマ区切りで複数の空間IDを使用してエリアを指定。
+                - **形式**: `s:<空間ID>,<空間ID>,...`
+                    - 空間IDは、`z/x/y`、 `z/f/x/y`、 `/z/x/y` 、 `/z/f/x/y` 、およびタイルハッシュの表記に対応。
+                - **例**
+                    - https://api.plateauview.mlit.go.jp/datacatalog/citygml/s:18/1/232853/103220
+
+                    （ `z/f/x/y` ）
+
+            4. **座標範囲 (`r`)**
+                - **概要**: 座標範囲を指定してエリアを指定。
+                - **形式**:
+                    - 2要素（`lng`, `lat`）で中心点を指定する場合: `r:lng,lat`
+                    - 4要素（`lng1`, `lat1`, `lng2`, `lat2`）で範囲を指定する場合: `r:lng1,lat1,lng2,lat2`
+
+                        注意：`lng1` < `lng2`, `lat1` < `lat2` となるように指定する必要がある。
+
+                - **例**:
+                    - 中心点の指定: `r:139.7375,35.65833333333333`
+
+                        https://api.plateauview.mlit.go.jp/datacatalog/citygml/r:139.7385,35.65933333333333
+
+                    - 範囲の指定: `r:139.7375,35.65833333333333,139.74,35.66`
+
+                        https://api.plateauview.mlit.go.jp/datacatalog/citygml/r:139.7375,35.65833333333333,139.74,35.66
+
+            5. **ジオコーディング (`g`)**
+                - **概要**: ジオコーディングAPIを用いてエリアを指定する。
+                - **形式**: `g:<ロケーション名>`
+                - **例**: `g:千代田区`
+
+                    [https://api.plateauview.mlit.go.jp/datacatalog/citygml/g:千代田区](https://api.plateauview.mlit.go.jp/datacatalog/citygml/g:%E5%8D%83%E4%BB%A3%E7%94%B0%E5%8C%BA)
+
+            6. **自治体コード**
+                - **概要**: カンマ区切りで複数の自治体コードを指定する。
+                - **形式**: `cityId1,cityId2,...`
+                - **例**: `13999`
+
+                    https://api.plateauview.mlit.go.jp/datacatalog/citygml/13999
+      responses:
+        "200":
+          description: 成功時のレスポンス
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  cityCode:
+                    type: string
+                    description: The unique code representing the city.
+                  cityName:
+                    type: string
+                    description: The name of the city.
+                  year:
+                    type: integer
+                    description: The year associated with the CityGML data.
+                  registrationYear:
+                    type: integer
+                    description: The year of registration for the CityGML data.
+                  spec:
+                    type: string
+                    description: The specification of the CityGML data.
+                  metadataZipUrls:
+                    type: array
+                    items:
+                      type: string
+                      format: uri
+                      description: The URL for accessing the metadata zip file.
+                  url:
+                    type: string
+                    format: uri
+                    description: The URL for accessing the CityGML data.
+                  files:
+                    type: object
+                    description: A map of CityGML file lists grouped by type.
+                    additionalProperties:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          code:
+                            type: string
+                            description: The mesh code representing the geographic area.
+                          maxLod:
+                            type: integer
+                            description: The maximum Level of Detail (LOD) available for the CityGML file.
+                          url:
+                            type: string
+                            format: uri
+                            description: The URL to access this specific CityGML file.
+                          fileSize:
+                            type: integer
+                            format: int64
+                            description: The file size in bytes.
+                          features:
+                            type: integer
+                            description: The total number of features in the CityGML file.
+                          lod0:
+                            type: integer
+                            nullable: true
+                            description: The number of features with LOD0, or null if not available.
+                          lod1:
+                            type: integer
+                            nullable: true
+                            description: The number of features with LOD1, or null if not available.
+                          lod2:
+                            type: integer
+                            nullable: true
+                            description: The number of features with LOD2, or null if not available.
+                          lod3:
+                            type: integer
+                            nullable: true
+                            description: The number of features with LOD3, or null if not available.
+                          lod4:
+                            type: integer
+                            nullable: true
+                            description: The number of features with LOD4, or null if not available.
+                        required:
+                          - code
+                          - maxLod
+                          - url
+                  featureTypes:
+                    type: object
+                    description: A map of feature types available in the CityGML data.
+                    additionalProperties:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                          description: The name of the feature type.
+                required:
+                  - cityCode
+                  - cityName
+                  - year
+                  - registrationYear
+                  - spec
+                  - metadataZipUrls
+                  - url
+                  - files
+                  - featureTypes
+        "404":
+          description: リソースが見つからない
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+
+  /citygml/pack:
+    post:
+      summary: CityGMLファイルを含んだzipファイルの非同期作成をリクエスト
+      tags:
+        - CityGML Pack API
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                urls:
+                  type: array
+                  items:
+                    type: string
+                    description: PLATEAU CMSから配信されるファイルのURL
+      responses:
+        "200":
+          description: リクエストが受理され、ステータス確認のためのID（パックID）が返却
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+        "400":
+          description: 無効なリクエストやURLエラー
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+        "500":
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+
+  /citygml/pack/{id}/status:
+    get:
+      summary: 指定したIDのCityGMLパックプロセスの状態を確認
+      tags:
+        - CityGML Pack API
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: パックID
+      responses:
+        "200":
+          description: パック処理の状態を返却
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [accepted, processing, succeeded, failed]
+                  startedAt:
+                    type: string
+                    format: date-time
+                  progress:
+                    type: number
+                    minimum: 0
+                    maximum: 1
+        "404":
+          description: ファイルが存在しない
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+
+  /citygml/pack/{id}.zip:
+    get:
+      summary: 指定したIDのCityGMLパックファイルをダウンロード
+      tags:
+        - CityGML Pack API
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: パックID
+      responses:
+        "302":
+          description: リダイレクトしてファイルのダウンロードが開始
+        "404":
+          description: ファイルが存在しない
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        "400":
+          description: ファイルの状態が不正または処理未完了
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+
+  /citygml/attributes:
+    get:
+      summary: CityGMLの属性情報を取得
+      tags:
+        - CityGML API
+      parameters:
+        - name: url
+          in: query
+          required: true
+          schema:
+            type: string
+          description: CityGMLファイルのURL
+        - name: id
+          in: query
+          required: true
+          schema:
+            type: string
+          description: カンマ区切りのgml:id
+      responses:
+        "200":
+          description: 成功時のレスポンス
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  description: 地物の属性情報
+                  additionalProperties: true
+                  properties:
+                    gml:id:
+                      type: string
+                      description: 地物のID
+                    _type:
+                      type: string
+                      description: 地物の型
+                    _bbox:
+                      type: object
+                      description: ジオメトリのバウンディングボックス（lod1Solid）
+                      properties:
+                        min:
+                          type: object
+                          properties:
+                            lng:
+                              type: number
+                              format: double
+                              description: 最小経度
+                            lat:
+                              type: number
+                              format: double
+                              description: 最小緯度
+                            alt:
+                              type: number
+                              format: double
+                              description: 最小高度（m・標高）
+                        max:
+                          type: object
+                          properties:
+                            lng:
+                              type: number
+                              format: double
+                              description: 最大経度
+                            lat:
+                              type: number
+                              format: double
+                              description: 最大緯度
+                            alt:
+                              type: number
+                              format: double
+                              description: 最大高度（m・標高）
+                        center:
+                          type: object
+                          description: バウンディングボックスの中心座標
+                          properties:
+                            lng:
+                              type: number
+                              format: double
+                              description: 中心経度
+                            lat:
+                              type: number
+                              format: double
+                              description: 中心緯度
+                            alt:
+                              type: number
+                              format: double
+                              description: 中心高度（m・標高）
+        "400":
+          description: 無効なリクエスト
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+        "500":
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+
+  /citygml/features:
+    get:
+      summary: 空間ID内の地物IDリストを取得
+      tags:
+        - CityGML API
+      parameters:
+        - name: sid
+          in: query
+          required: true
+          schema:
+            type: string
+          description: カンマ区切りの空間ID
+      responses:
+        "200":
+          description: 成功時のレスポンス
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  featureIds:
+                    type: array
+                    items:
+                      type: string
+
+  /citygml/spatialid_attributes:
+    get:
+      summary: 空間IDと地物型による属性情報取得
+      tags:
+        - CityGML API
+      parameters:
+        - name: sid
+          in: query
+          required: true
+          schema:
+            type: string
+          description: カンマ区切りの空間ID
+        - name: skip_code_list_fetch
+          in: query
+          required: false
+          schema:
+            type: boolean
+          description: 属性のコードリストを取得しない場合はtrueを指定。デフォルトはfalse。
+        - name: type
+          in: query
+          required: true
+          schema:
+            type: string
+          description: カンマ区切りの地物型
+      responses:
+        "200":
+          description: 属性情報のJSON形式での返却
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  description: 地物の属性情報
+                  additionalProperties: true
+                  properties:
+                    gml:id:
+                      type: string
+                      description: 地物のID
+                    _type:
+                      type: string
+                      description: 地物の型
+                    _bbox:
+                      type: object
+                      description: ジオメトリのバウンディングボックス（lod1Solid）
+                      properties:
+                        min:
+                          type: object
+                          properties:
+                            lng:
+                              type: number
+                              format: double
+                              description: 最小経度
+                            lat:
+                              type: number
+                              format: double
+                              description: 最小緯度
+                            alt:
+                              type: number
+                              format: double
+                              description: 最小高度（メートル・標高）
+                        max:
+                          type: object
+                          properties:
+                            lng:
+                              type: number
+                              format: double
+                              description: 最大経度
+                            lat:
+                              type: number
+                              format: double
+                              description: 最大緯度
+                            alt:
+                              type: number
+                              format: double
+                              description: 最大高度（メートル・標高）
+                        center:
+                          type: object
+                          description: バウンディングボックスの中心座標
+                          properties:
+                            lng:
+                              type: number
+                              format: double
+                              description: 中心経度
+                            lat:
+                              type: number
+                              format: double
+                              description: 中心緯度
+                            alt:
+                              type: number
+                              format: double
+                              description: 中心高度（メートル・標高）
+        "400":
+          description: 無効なリクエスト
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+        "404":
+          description: リソースが見つからない
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+        "500":
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/error"
+
+components:
+  schemas:
+    error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: エラーメッセージ
+        url:
+          type: string
+          description: エラーが発生したURL
+        reason:
+          type: string
+          description: エラーの原因
+      required:
+        - error

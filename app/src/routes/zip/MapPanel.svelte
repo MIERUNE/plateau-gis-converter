@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { Map, MapLayerMouseEvent } from 'maplibre-gl';
-	import { getTypeLabel, type MeshcodeData } from './utils';
+	import { getTypeLabel, type RemoteMeshcodeData } from './utils';
 	import { meshcodeToCenter, meshcodeToPolygon } from '$lib/meshcode';
 	import {
 		FillLayer,
@@ -12,20 +12,22 @@
 	} from 'svelte-maplibre-gl';
 	import PrimaryButton from './PrimaryButton.svelte';
 	import Icon from '@iconify/svelte';
+	import { makeMeshPatches } from '$lib/japanMeshMaker';
+	import { onMount } from 'svelte';
 
 	type Props = {
-		meshcodeData: MeshcodeData;
+		remoteMeshcodeData: RemoteMeshcodeData;
 		selectedMeshes: string[];
 	};
 
-	let { meshcodeData, selectedMeshes = $bindable() }: Props = $props();
+	let { remoteMeshcodeData, selectedMeshes = $bindable() }: Props = $props();
 
 	let mapInstance: Map | undefined = $state();
 	// Map state
 	let mapCenter: [number, number] = $state([139.7, 35.7]); // Tokyo default
 	let mapZoom: number = $state(10);
 	let prevMapZoom: number = $state(10);
-	let selectedMesh: { meshcode: string; types: string[] }[] | null = $state(null);
+	let selectedMesh: string[] | null = $state(null);
 	let popupLngLat: [number, number] | null = $state(null);
 	let cursor: string | undefined = $state();
 	// Box selection state
@@ -54,7 +56,7 @@
 				return;
 			}
 			// 最初のメッシュのみを選択/選択解除
-			const meshcode = features[0]?.properties?.meshcode;
+			const meshcode = features[0]?.properties?.code;
 			if (meshcode) {
 				event.originalEvent.preventDefault();
 				toggleMeshSelection(meshcode);
@@ -62,15 +64,17 @@
 			return;
 		}
 
-		const meshes: { meshcode: string; types: string[] }[] = [];
+		const meshes:string[] = [];
 
 		for (const feature of features) {
-			const meshcode = feature.properties?.meshcode;
+			const meshcode: string | null  | undefined = feature.properties?.code;
 
 			if (meshcode) {
+			meshes.push(meshcode)
+			/*
 				const types = [
 					...new Set(
-						Object.entries(meshcodeData)
+						Object.entries(remoteMeshcodeData)
 							.filter(([code]) => code.startsWith(meshcode))
 							.flatMap(([, data]) => {
 								return Object.keys(data);
@@ -78,7 +82,7 @@
 					)
 				];
 
-				meshes.push({ meshcode, types });
+				meshes.push({ meshcode, types });*/
 			}
 		}
 
@@ -99,17 +103,14 @@
 		} else if (meshcode.length === 8 && selectedMeshes.includes(meshcode)) {
 			selectedMeshes = selectedMeshes.filter((m) => m != meshcode);
 		} else if (meshcode.length === 6) {
-			const availableMeshes = Object.keys(meshcodeData).filter((m) => {
+			const availableMeshes = Object.keys(remoteMeshcodeData).filter((m) => {
 				return m.startsWith(meshcode);
 			});
 
 			selectedMeshes = [...selectedMeshes, ...availableMeshes];
 		} else {
 			const secondMeshcode = meshcode.slice(0, 6);
-			if (
-				!selectedMeshes.includes(secondMeshcode) &&
-				Object.keys(meshcodeData).includes(secondMeshcode)
-			) {
+			if (!selectedMeshes.includes(secondMeshcode)) {
 				selectedMeshes.push(secondMeshcode);
 			}
 			selectedMeshes.push(meshcode);
@@ -152,15 +153,24 @@
 		boxSelectionEnd = null;
 	}
 
+	function handleMapLoad() {
+		setTimeout(fitMapToMeshes, 100);
+	}
+
 	function selectMeshesInBounds() {
-		if (!meshcodeData || !boxSelectionStart || !boxSelectionEnd) return;
+		if (
+			Object.keys(remoteMeshcodeData).length === 0 ||
+			!boxSelectionStart ||
+			!boxSelectionEnd
+		)
+			return;
 
 		const minLng = Math.min(boxSelectionStart[0], boxSelectionEnd[0]);
 		const maxLng = Math.max(boxSelectionStart[0], boxSelectionEnd[0]);
 		const minLat = Math.min(boxSelectionStart[1], boxSelectionEnd[1]);
 		const maxLat = Math.max(boxSelectionStart[1], boxSelectionEnd[1]);
 
-		const meshesInBounds = Object.keys(meshcodeData).filter((meshcode) => {
+		const meshesInBounds = Object.keys(remoteMeshcodeData).filter((meshcode) => {
 			const center = meshcodeToCenter(meshcode);
 			return (
 				center[0] >= minLng && center[0] <= maxLng && center[1] >= minLat && center[1] <= maxLat
@@ -173,10 +183,10 @@
 	}
 
 	function generateSecondMeshGeoJSON() {
-		if (!meshcodeData) return null;
+		if (Object.keys(remoteMeshcodeData).length === 0) return null;
 
 		const secondMeshcodes = [
-			...new Set(Object.keys(meshcodeData).map((meshcode) => meshcode.slice(0, 6)))
+			...new Set(Object.keys(remoteMeshcodeData).map((meshcode) => meshcode.slice(0, 6)))
 		];
 
 		const features = secondMeshcodes.map((meshcode) => {
@@ -197,9 +207,11 @@
 	}
 
 	function generateThirdMeshGeoJSON() {
-		if (!meshcodeData) return null;
+		if (Object.keys(remoteMeshcodeData).length === 0) return null;
 
-		const thirdMeshcodes = Object.keys(meshcodeData).filter((meshcode) => meshcode.length === 8);
+		const thirdMeshcodes = Object.keys(remoteMeshcodeData).filter(
+			(meshcode) => meshcode.length === 8
+		);
 
 		const features = thirdMeshcodes.map((meshcode) => ({
 			type: 'Feature' as const,
@@ -252,9 +264,9 @@
 	});
 
 	function calculateMeshBounds() {
-		if (!meshcodeData) return null;
+		if (Object.keys(remoteMeshcodeData).length === 0) return null;
 
-		const meshcodes = Object.keys(meshcodeData);
+		const meshcodes = Object.keys(remoteMeshcodeData);
 		if (meshcodes.length === 0) return null;
 
 		let minLng = Infinity,
@@ -281,7 +293,7 @@
 	}
 
 	function fitMapToMeshes() {
-		if (!mapInstance || !meshcodeData) return;
+		if (!mapInstance || Object.keys(remoteMeshcodeData).length === 0) return;
 
 		const bounds = calculateMeshBounds();
 		if (!bounds) return;
@@ -324,27 +336,24 @@
 	onmousedown={handleMapMouseDown}
 	onmousemove={handleMapMouseMove}
 	onmouseup={handleMapMouseUp}
-	onload={() => {
-		setTimeout(fitMapToMeshes, 100);
-	}}
 	{cursor}
 >
 	<GeoJSONSource
-		data={generateSecondMeshGeoJSON() || { type: 'FeatureCollection', features: [] }}
+		data={makeMeshPatches("2") || { type: 'FeatureCollection', features: [] }}
 		id="second-mesh-source"
 	>
 		<FillLayer
 			paint={{
 				'fill-color': [
 					'case',
-					['get', 'selected'],
+					["in", ['get', 'code'], ['literal', selectedMeshes]],
 					'#ff9800',
 					['boolean', ['feature-state', 'hover'], false],
 					'#ff6b6b',
 					'#4dabf7'
 				],
-				'fill-opacity': ['case', ['get', 'selected'], 0.8, 0.6],
-				'fill-outline-color': ['case', ['get', 'selected'], '#f57c00', '#339af0']
+				'fill-opacity': ['case', ["in", ['get', 'code'], ['literal', selectedMeshes]], 0.8, 0.6],
+				'fill-outline-color': ['case', ["in", ['get', 'code'], ['literal', selectedMeshes]], '#f57c00', '#339af0']
 			}}
 			layout={{
 				visibility: meshLevel === 'second' ? 'visible' : 'none'
@@ -360,21 +369,21 @@
 	</GeoJSONSource>
 
 	<GeoJSONSource
-		data={generateThirdMeshGeoJSON() || { type: 'FeatureCollection', features: [] }}
+		data={makeMeshPatches("3")  || { type: 'FeatureCollection', features: [] }}
 		id="third-mesh-source"
 	>
 		<FillLayer
 			paint={{
 				'fill-color': [
 					'case',
-					['get', 'selected'],
+					["in", ['get', 'code'], ['literal', selectedMeshes]],
 					'#ff9800',
 					['boolean', ['feature-state', 'hover'], false],
 					'#ff6b6b',
 					'#4dabf7'
 				],
-				'fill-opacity': ['case', ['get', 'selected'], 0.8, 0.6],
-				'fill-outline-color': ['case', ['get', 'selected'], '#f57c00', '#339af0']
+				'fill-opacity': ['case', ["in", ['get', 'code'], ['literal', selectedMeshes]], 0.8, 0.6],
+				'fill-outline-color': ['case', ["in", ['get', 'code'], ['literal', selectedMeshes]], '#f57c00', '#339af0']
 			}}
 			layout={{
 				visibility: meshLevel === 'third' ? 'visible' : 'none'
@@ -430,10 +439,11 @@
 						<Icon class="size-full" icon="material-symbols:close" />
 					</button>
 					<div class="max-h-80 space-y-2 overflow-y-auto px-4">
-						{#each selectedMesh as mesh (mesh.meshcode)}
+						{#each selectedMesh as mesh (mesh)}
 							<h3 class="mb-2 text-sm font-semibold">
-								メッシュコード: {mesh.meshcode}
+								メッシュコード: {mesh}
 							</h3>
+							<!--
 							<ul class="mb-3 list-inside list-disc space-y-1">
 								{#each mesh.types as type (type)}
 									<li class="rounded pl-2 text-xs">
@@ -442,12 +452,13 @@
 									</li>
 								{/each}
 							</ul>
+							-->
 							<div class="flex gap-2">
-								{#if selectedMeshes.includes(mesh.meshcode)}
+								{#if selectedMeshes.includes(mesh)}
 									<button
 										onclick={() => {
 											if (mesh) {
-												toggleMeshSelection(mesh.meshcode);
+												toggleMeshSelection(mesh);
 											}
 										}}
 										class="flex-1 rounded bg-red-500 px-4 py-1 text-sm text-white hover:opacity-75"
@@ -459,7 +470,7 @@
 										class="w-full"
 										onclick={() => {
 											if (mesh) {
-												toggleMeshSelection(mesh.meshcode);
+												toggleMeshSelection(mesh);
 											}
 										}}
 									>
