@@ -18,7 +18,8 @@ use nusamai::{
     },
 };
 use nusamai_plateau::models::TopLevelCityObject;
-use std::collections::HashMap;
+use reqwest::StatusCode;
+use std::collections::{HashMap, HashSet};
 use std::fs::File;
 use std::io::BufReader;
 use std::{
@@ -30,6 +31,7 @@ use std::{
 use tauri::Emitter;
 use tauri_plugin_log::{RotationStrategy, TimezoneStrategy};
 use thiserror::Error;
+use tokio::time::{sleep, Duration};
 
 #[cfg(debug_assertions)]
 const LOG_LEVEL: LevelFilter = LevelFilter::Debug;
@@ -40,6 +42,8 @@ const LOG_LEVEL: LevelFilter = LevelFilter::Info;
 struct ConversionTasksState {
     canceller: Arc<Mutex<Canceller>>,
 }
+
+const DEFAULT_PLATEAU_API_BASE: &str = "https://api.plateauview.mlit.go.jp";
 
 fn main() {
     // System log plugin
@@ -78,6 +82,9 @@ fn main() {
             list_supported_files,
             list_zip_contents,
             get_meshcodes_with_prefix,
+            fetch_citygml_metadata,
+            download_citygml_pack,
+            pack_and_run_conversion,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
@@ -118,11 +125,25 @@ enum Error {
     ConversionFailed(String),
     #[error("Conversion canceled")]
     Canceled,
+    #[error("HTTP error: {0}")]
+    Http(String),
+    #[error("API error: {0}")]
+    Api(String),
+    #[error("Not found: {0}")]
+    NotFound(String),
+    #[error("Timeout: {0}")]
+    Timeout(String),
 }
 
 impl From<std::io::Error> for Error {
     fn from(err: std::io::Error) -> Self {
         Error::Io(err.to_string())
+    }
+}
+
+impl From<reqwest::Error> for Error {
+    fn from(err: reqwest::Error) -> Self {
+        Error::Http(err.to_string())
     }
 }
 
@@ -143,6 +164,180 @@ fn select_sink_provider(filetype: &str) -> Option<Box<dyn DataSinkProvider>> {
         "obj" => Some(Box::new(ObjSinkProvider {})),
         _ => None,
     }
+}
+
+#[derive(Debug, serde::Deserialize)]
+struct RawFeatureTypeInfo {
+    #[serde(default)]
+    name: String,
+}
+
+#[derive(Debug, serde::Deserialize)]
+struct RawCityGmlFile {
+    #[serde(default)]
+    code: String,
+    #[serde(default)]
+    url: String,
+    #[serde(rename = "maxLod")]
+    max_lod: Option<i32>,
+    #[serde(rename = "fileSize")]
+    file_size: Option<u64>,
+    #[serde(default)]
+    features: Option<u64>,
+}
+
+#[derive(Debug, serde::Deserialize)]
+struct RawCityGmlMetadataResponse {
+    #[serde(default)]
+    cities: Vec<RawCityEntry>,
+    #[serde(rename = "featureTypes", default)]
+    feature_types: HashMap<String, RawFeatureTypeInfo>,
+}
+
+#[derive(Debug, serde::Deserialize)]
+struct RawCityEntry {
+    #[serde(default)]
+    files: HashMap<String, Vec<RawCityGmlFile>>,
+}
+
+#[derive(Debug, serde::Serialize, Clone)]
+struct CityGmlRemoteFile {
+    meshcode: String,
+    #[serde(rename = "featureType")]
+    feature_type: String,
+    url: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "maxLod")]
+    max_lod: Option<i32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "fileSize")]
+    file_size: Option<u64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    features: Option<u64>,
+}
+
+#[derive(Debug, serde::Serialize)]
+struct FeatureTypeInfo {
+    label: String,
+    #[serde(rename = "fileCount")]
+    file_count: usize,
+    files: Vec<CityGmlRemoteFile>,
+}
+
+#[derive(Debug, serde::Serialize)]
+struct FetchCityGmlMetadataResult {
+    #[serde(rename = "featureTypes")]
+    feature_types: HashMap<String, FeatureTypeInfo>,
+    meshes: HashMap<String, HashMap<String, Vec<CityGmlRemoteFile>>>,
+}
+
+#[derive(Debug, serde::Deserialize)]
+struct PackResponse {
+    id: String,
+}
+
+#[derive(Debug, serde::Deserialize)]
+struct PackStatusResponse {
+    status: String,
+    #[serde(default)]
+    progress: Option<f32>,
+}
+
+#[derive(Debug, serde::Serialize)]
+struct DownloadCityGmlPackResult {
+    #[serde(rename = "packId")]
+    pack_id: String,
+    #[serde(rename = "zipPath")]
+    zip_path: String,
+}
+
+fn plateau_api_base_url() -> String {
+    env::var("PLATEAU_API_BASE").unwrap_or_else(|_| DEFAULT_PLATEAU_API_BASE.to_string())
+}
+
+fn emit_pack_progress(app: &tauri::AppHandle, stage: &str, status: &str, progress: f32) {
+    // conversion-log へ進捗を出力
+    let percent = (progress * 100.0).clamp(0.0, 100.0);
+    let level = match status {
+        "failed" => "ERROR",
+        "succeeded" => "INFO",
+        "accepted" | "processing" | "checking" | "started" => "INFO",
+        _ => "INFO",
+    };
+
+    let message = match stage {
+        "request" => format!("パック作成リクエスト受理 status={status}"),
+        "status" => format!("パック作成ステータス確認 status={status} progress={percent:.1}%"),
+        "download" => match status {
+            "started" => "パックZIPダウンロード開始".to_string(),
+            "completed" => "パックZIPダウンロード完了".to_string(),
+            other => format!("パックZIPダウンロード進行 status={other} progress={percent:.1}%"),
+        },
+        _ => format!("パック進行 stage={stage} status={status} progress={percent:.1}%"),
+    };
+
+    let _ = app.emit(
+        "conversion-log",
+        LogMessage {
+            message,
+            level: level.to_string(),
+            error_message: None,
+            source: "download_citygml_pack".to_string(),
+        },
+    );
+}
+
+fn normalize_meshcode(raw: &str) -> Option<String> {
+    let trimmed = raw.trim();
+    if trimmed.is_empty() {
+        return None;
+    }
+    let len = trimmed.len();
+    if !(6..=10).contains(&len) {
+        return None;
+    }
+    if !trimmed.chars().all(|c| c.is_ascii_digit()) {
+        return None;
+    }
+    Some(trimmed.to_string())
+}
+
+fn is_included_meshcode(meshcode: &str, meshcodes: &[String], strict: bool) -> bool {
+    if strict {
+        meshcodes.iter().any(|c| c == meshcode)
+    } else {
+        meshcodes.iter().any(|c| meshcode.starts_with(c))
+    }
+}
+
+pub fn compress_meshcodes(meshcodes: &[String], limit: usize) -> Vec<String> {
+    if meshcodes.len() <= limit {
+        return meshcodes.to_vec();
+    }
+
+    // まず 6桁に縮約
+    let six = collapse_to_prefix(meshcodes, 6);
+    if six.len() <= limit {
+        return six;
+    }
+
+    // 次に 4桁へ縮約
+    let four = collapse_to_prefix(meshcodes, 4);
+    // limit を超えても仕様上ここで打ち止め（必要なら更に2桁など拡張）
+    four
+}
+
+fn collapse_to_prefix(codes: &[String], prefix_len: usize) -> Vec<String> {
+    let mut set: HashSet<String> = HashSet::with_capacity(codes.len());
+    for code in codes {
+        if code.len() >= prefix_len {
+            set.insert(code[..prefix_len].to_string());
+        } else {
+            // 既に短いコードはそのまま (例えば4桁丸め時に4桁が入ってきたら維持)
+            set.insert(code.clone());
+        }
+    }
+    set.into_iter().collect()
 }
 
 #[tauri::command(async)]
@@ -574,6 +769,450 @@ fn get_meshcodes_with_prefix(
     Ok(result)
 }
 
+#[tauri::command(async)]
+async fn fetch_citygml_metadata(
+    meshcodes: Vec<String>,
+    strict: bool,
+) -> Result<FetchCityGmlMetadataResult, Error> {
+    if meshcodes.len() <= 0 {
+        return Err(Error::InvalidSetting(
+            "メッシュコードが指定されていません。".to_string(),
+        ));
+    }
+
+    // MeshcodeをAPIが受け入れ可能な数に圧縮
+    let compressed_meshcodes = compress_meshcodes(&meshcodes, 30);
+
+    let conditions = format!("m:{}", compressed_meshcodes.join(","));
+
+    let base_url = plateau_api_base_url();
+    let request_url = format!(
+        "{}/datacatalog/citygml/{}",
+        base_url.trim_end_matches('/'),
+        conditions
+    );
+
+    log::info!("Fetching CityGML metadata: {request_url}");
+
+    let client = reqwest::Client::builder()
+        .timeout(Duration::from_secs(30))
+        .build()
+        .map_err(|err| Error::Http(err.to_string()))?;
+
+    let response = client
+        .get(&request_url)
+        .send()
+        .await
+        .map_err(|err| Error::Http(err.to_string()))?;
+
+    match response.status() {
+        StatusCode::NOT_FOUND => {
+            return Err(Error::NotFound(format!(
+                "条件に一致するCityGMLメタデータが見つかりません: {conditions}"
+            )));
+        }
+        status if !status.is_success() => {
+            let body = response.text().await.unwrap_or_default();
+            return Err(Error::Api(format!(
+                "CityGMLメタデータの取得に失敗しました (status: {status}): {body}"
+            )));
+        }
+        _ => {}
+    }
+
+    let raw: RawCityGmlMetadataResponse = response
+        .json()
+        .await
+        .map_err(|err| Error::Http(err.to_string()))?;
+
+    let mut meshes: HashMap<String, HashMap<String, Vec<CityGmlRemoteFile>>> = HashMap::new();
+    let mut feature_type_files: HashMap<String, Vec<CityGmlRemoteFile>> = HashMap::new();
+    for city in raw.cities {
+        for (feature_type, files) in city.files {
+            for file in files {
+                if file.url.is_empty() {
+                    continue;
+                }
+                if let Some(meshcode) = normalize_meshcode(&file.code) {
+                    if is_included_meshcode(&meshcode, &meshcodes, strict) {
+                        let entry = meshes.entry(meshcode.clone()).or_insert_with(HashMap::new);
+                        let remote_file = CityGmlRemoteFile {
+                            meshcode: meshcode.clone(),
+                            feature_type: feature_type.clone(),
+                            url: file.url.clone(),
+                            max_lod: file.max_lod,
+                            file_size: file.file_size,
+                            features: file.features,
+                        };
+                        let feature_type_files_entry = feature_type_files
+                            .entry(feature_type.clone())
+                            .or_insert_with(Vec::new);
+                        if !feature_type_files_entry
+                            .iter()
+                            .any(|existing| existing.url == remote_file.url)
+                        {
+                            feature_type_files_entry.push(remote_file.clone());
+                        }
+                        let type_entry = entry.entry(feature_type.clone()).or_insert_with(Vec::new);
+                        if !type_entry
+                            .iter()
+                            .any(|existing| existing.url == remote_file.url)
+                        {
+                            type_entry.push(remote_file);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    let feature_types = raw
+        .feature_types
+        .into_iter()
+        .filter(|(code, _)| feature_type_files.get(code).is_some())
+        .map(|(code, info)| {
+            let feature_type_file = feature_type_files.get(&code).unwrap();
+            let feature_type_info = FeatureTypeInfo {
+                label: info.name,
+                file_count: feature_type_file.len(),
+                files: feature_type_file.clone(),
+            };
+            (code, feature_type_info)
+        })
+        .collect();
+
+    Ok(FetchCityGmlMetadataResult {
+        feature_types,
+        meshes,
+    })
+}
+
+#[tauri::command(async)]
+async fn download_citygml_pack(
+    urls: Vec<String>,
+    app: tauri::AppHandle,
+) -> Result<DownloadCityGmlPackResult, Error> {
+    if urls.is_empty() {
+        return Err(Error::InvalidSetting(
+            "CityGMLパックの対象URLが選択されていません。".to_string(),
+        ));
+    }
+
+    let base_url = plateau_api_base_url();
+    let client = reqwest::Client::builder()
+        .timeout(Duration::from_secs(60))
+        .build()
+        .map_err(|err| Error::Http(err.to_string()))?;
+
+    emit_pack_progress(&app, "request", "accepted", 0.0);
+
+    let request_body = serde_json::json!({ "urls": urls });
+    let pack_response = client
+        .post(format!("{}/citygml/pack", base_url.trim_end_matches('/')))
+        .json(&request_body)
+        .send()
+        .await
+        .map_err(|err| Error::Http(err.to_string()))?;
+
+    if !pack_response.status().is_success() {
+        let status = pack_response.status();
+        let body = pack_response.text().await.unwrap_or_default();
+        return Err(Error::Api(format!(
+            "CityGMLパックの作成依頼に失敗しました (status: {status}): {body}"
+        )));
+    }
+
+    let pack: PackResponse = pack_response
+        .json()
+        .await
+        .map_err(|err| Error::Http(err.to_string()))?;
+    let pack_id = pack.id;
+
+    let status_url = format!(
+        "{}/citygml/pack/{pack_id}/status",
+        base_url.trim_end_matches('/')
+    );
+
+    let mut attempt = 0usize;
+    let max_attempts = 120usize; // up to 10 minutes (120 * 5s)
+
+    loop {
+        attempt += 1;
+        emit_pack_progress(&app, "status", "checking", 0.0);
+
+        let status_response = client
+            .get(&status_url)
+            .send()
+            .await
+            .map_err(|err| Error::Http(err.to_string()))?;
+
+        if !status_response.status().is_success() {
+            let status = status_response.status();
+            let body = status_response.text().await.unwrap_or_default();
+            return Err(Error::Api(format!(
+                "CityGMLパックのステータス取得に失敗しました (status: {status}): {body}"
+            )));
+        }
+
+        let status_body: PackStatusResponse = status_response
+            .json()
+            .await
+            .map_err(|err| Error::Http(err.to_string()))?;
+
+        let progress = status_body.progress.unwrap_or(0.0);
+        emit_pack_progress(
+            &app,
+            "status",
+            status_body.status.as_str(),
+            progress.clamp(0.0, 1.0),
+        );
+
+        match status_body.status.as_str() {
+            "succeeded" => break,
+            "failed" => {
+                return Err(Error::Api(
+                    "CityGMLパックの作成が失敗しました。".to_string(),
+                ));
+            }
+            "accepted" | "processing" => {
+                if attempt >= max_attempts {
+                    return Err(Error::Timeout(
+                        "CityGMLパックの作成がタイムアウトしました。".to_string(),
+                    ));
+                }
+                sleep(Duration::from_secs(5)).await;
+            }
+            other => {
+                return Err(Error::Api(format!(
+                    "CityGMLパックのステータスが不正です: {other}"
+                )));
+            }
+        }
+    }
+
+    emit_pack_progress(&app, "download", "started", 0.0);
+
+    let download_url = format!(
+        "{}/citygml/pack/{pack_id}.zip",
+        base_url.trim_end_matches('/')
+    );
+
+    let mut download_response = client
+        .get(&download_url)
+        .send()
+        .await
+        .map_err(|err| Error::Http(err.to_string()))?;
+
+    if download_response.status().is_redirection() {
+        if let Some(location) = download_response
+            .headers()
+            .get(reqwest::header::LOCATION)
+            .and_then(|v| v.to_str().ok())
+        {
+            download_response = client.get(location).send().await?;
+        }
+    }
+
+    if !download_response.status().is_success() {
+        let status = download_response.status();
+        let body = download_response.text().await.unwrap_or_default();
+        return Err(Error::Api(format!(
+            "CityGMLパックのダウンロードに失敗しました (status: {status}): {body}"
+        )));
+    }
+
+    let bytes = download_response
+        .bytes()
+        .await
+        .map_err(|err| Error::Http(err.to_string()))?;
+
+    let mut target_path = env::temp_dir();
+    target_path.push(format!("plateau-pack-{pack_id}.zip"));
+
+    std::fs::write(&target_path, bytes.as_ref()).map_err(|err| Error::Io(err.to_string()))?;
+
+    emit_pack_progress(&app, "download", "completed", 1.0);
+
+    Ok(DownloadCityGmlPackResult {
+        pack_id,
+        zip_path: target_path.to_string_lossy().to_string(),
+    })
+}
+
+#[tauri::command(async)]
+#[allow(clippy::too_many_arguments)]
+async fn pack_and_run_conversion(
+    urls: Vec<String>,
+    output_path: String,
+    filetype: String,
+    epsg: u16,
+    rules_path: String,
+    transformer_settings: TransformerSettings,
+    sink_parameters: Parameters,
+    tasks_state: tauri::State<'_, ConversionTasksState>,
+    app: tauri::AppHandle,
+) -> Result<(), Error> {
+    // Cancel any previous task
+    tasks_state.canceller.lock().unwrap().cancel();
+
+    {
+        let _ = app.emit(
+            "conversion-log",
+            LogMessage {
+                message: "CityGMLパック処理を開始します".to_string(),
+                level: "INFO".to_string(),
+                error_message: None,
+                source: "pack_and_run_conversion".to_string(),
+            },
+        );
+    }
+
+    // Start pack download
+    let pack_result = match download_citygml_pack(urls.clone(), app.clone()).await {
+        Ok(r) => {
+            {
+                let _ = app.emit(
+                    "conversion-log",
+                    LogMessage {
+                        message: format!(
+                            "CityGMLパックのダウンロードが完了しました packId={}",
+                            r.pack_id
+                        ),
+                        level: "INFO".to_string(),
+                        error_message: None,
+                        source: "pack_and_run_conversion".to_string(),
+                    },
+                );
+            }
+            r
+        }
+        Err(e) => {
+            {
+                let _ = app.emit(
+                    "conversion-log",
+                    LogMessage {
+                        message: format!("CityGMLパックの取得に失敗しました: {e}"),
+                        level: "ERROR".to_string(),
+                        error_message: None,
+                        source: "pack_and_run_conversion".to_string(),
+                    },
+                );
+            }
+            return Err(e);
+        }
+    };
+
+    // Check cancellation before conversion
+    /*
+    if tasks_state.canceller.lock().unwrap().is_canceled() {
+        {
+            let _ = app.emit(
+                "conversion-log",
+                LogMessage {
+                    message: "キャンセル要求を検知しました（パック取得後）".to_string(),
+                    level: "WARN".to_string(),
+                    error_message: None,
+                    source: "pack_and_run_conversion".to_string(),
+                },
+            );
+        }
+        return Err(Error::Canceled);
+    }*/
+
+    let packs = list_files_in_zip(&pack_result.zip_path.clone())?;
+    println!("{:?}", packs);
+    // Build input paths inside the downloaded pack zip
+    let zip_path = pack_result.zip_path.clone(); // ends with .zip
+    let mut input_paths: Vec<String> = Vec::new();
+
+    for url in urls.iter() {
+        if let Some(idx) = url.find("/udx/") {
+            // "/udx/" の直前までを取得し、その最後のディレクトリ名を親ディレクトリとして付与する
+            // 例: .../11203_kawaguchi-shi_pref_2024_citygml_1_op/udx/bldg/... -> 親: 11203_kawaguchi-shi_pref_2024_citygml_1_op
+            let before_udx = &url[..idx]; // "/udx/" 開始位置より前
+            let parent_dir = before_udx
+                .trim_end_matches('/') // 末尾スラッシュ除去
+                .rsplit('/')
+                .next()
+                .unwrap_or("");
+            // internal は "udx/..." 部分
+            let internal_udx = &url[idx + 1..]; // keep "udx/..."
+            if internal_udx.is_empty() || !internal_udx.starts_with("udx/") || parent_dir.is_empty()
+            {
+                let _ = app.emit(
+                    "conversion-log",
+                    LogMessage {
+                        message: format!(
+                            "URL から内部パス (親/udx/...) を抽出できませんでした: {url}"
+                        ),
+                        level: "ERROR".to_string(),
+                        error_message: None,
+                        source: "pack_and_run_conversion".to_string(),
+                    },
+                );
+                return Err(Error::InvalidPath(format!(
+                    "内部パスが不正です (url={url})"
+                )));
+            }
+            // Compose "<zip>.zip/<parent>/udx/..."
+            let internal_with_parent = format!("{parent_dir}/{internal_udx}");
+            let composite = format!("{zip_path}/{internal_with_parent}");
+            input_paths.push(composite);
+        } else {
+            {
+                let _ = app.emit(
+                    "conversion-log",
+                    LogMessage {
+                        message: format!("URL に /udx/ が含まれていません: {url}"),
+                        level: "ERROR".to_string(),
+                        error_message: None,
+                        source: "pack_and_run_conversion".to_string(),
+                    },
+                );
+            }
+            return Err(Error::InvalidPath(format!(
+                "/udx/ が見つかりません (url={url})"
+            )));
+        }
+    }
+
+    {
+        let _ = app.emit(
+            "conversion-log",
+            LogMessage {
+                message: format!("変換対象ファイル数: {}", input_paths.len()),
+                level: "INFO".to_string(),
+                error_message: None,
+                source: "pack_and_run_conversion".to_string(),
+            },
+        );
+    }
+
+    // Run conversion
+    {
+        let _ = app.emit(
+            "conversion-log",
+            LogMessage {
+                message: "変換パイプラインを開始します".to_string(),
+                level: "INFO".to_string(),
+                error_message: None,
+                source: "pack_and_run_conversion".to_string(),
+            },
+        );
+    }
+    run_conversion(
+        input_paths,
+        output_path,
+        filetype,
+        epsg,
+        rules_path,
+        transformer_settings,
+        sink_parameters,
+        tasks_state,
+        app.clone(),
+    )
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -694,5 +1333,32 @@ mod tests {
         let mut sorted_result = result.clone();
         sorted_result.sort();
         assert_eq!(result, sorted_result);
+    }
+
+    #[test]
+    fn test_compress_meshcodes() {
+        let meshcodes = vec![
+            "53394529".to_string(),
+            "53394530".to_string(),
+            "53394600".to_string(),
+            "53394700".to_string(),
+            "53394800".to_string(),
+            "53394900".to_string(),
+            "53395000".to_string(),
+            "53395100".to_string(),
+            "53395200".to_string(),
+            "53395300".to_string(),
+            "53395400".to_string(),
+        ];
+
+        // Test with limit greater than number of meshcodes
+        let compressed = compress_meshcodes(&meshcodes, 20);
+        assert_eq!(compressed.len(), meshcodes.len());
+
+        // Test with limit less than number of meshcodes
+        let compressed = compress_meshcodes(&meshcodes, 5);
+        // Should be compressed to 6-digit prefixes
+        assert!(compressed.iter().all(|code| code.len() == 6));
+        assert!(compressed.len() <= 5);
     }
 }

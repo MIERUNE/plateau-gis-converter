@@ -1,9 +1,9 @@
 <script lang="ts">
 	import * as dialog from '@tauri-apps/plugin-dialog';
 	import Icon from '@iconify/svelte';
-	import PrimaryButton from './PrimaryButton.svelte';
+	import PrimaryButton from '../PrimaryButton.svelte';
 	import { getTypeLabel, type MeshcodeData } from './utils';
-	import SecondaryButton from './SecondaryButton.svelte';
+	import SecondaryButton from '../SecondaryButton.svelte';
 	import { onMount } from 'svelte';
 	import { getCurrentWebview } from '@tauri-apps/api/webview';
 	import { invoke } from '@tauri-apps/api/core';

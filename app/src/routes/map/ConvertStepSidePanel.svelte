@@ -2,27 +2,23 @@
 	import Icon from '@iconify/svelte';
 	import SettingSelector, { type SettingSelectorProps } from '../SettingSelector.svelte';
 	import OutputSelector, { type OutputSelectorProps } from '../OutputSelector.svelte';
-	import SecondaryButton from '../SecondaryButton.svelte';
-	import PrimaryButton from '../PrimaryButton.svelte';
 	import { invoke } from '@tauri-apps/api/core';
 	import { message } from '@tauri-apps/plugin-dialog';
 	import LoadingAnimation from '../LoadingAnimation.svelte';
-	import type { MeshcodeData } from './utils';
+	import SecondaryButton from '../SecondaryButton.svelte';
+	import type { FetchCityGmlMetadataResult } from '$lib/fetchCityGMLMetadata';
+	import PrimaryButton from '../PrimaryButton.svelte';
 
 	type Props = {
-		meshcodeData: MeshcodeData;
+		selectedMeshcodesData: FetchCityGmlMetadataResult | null;
 		selectedFeatureTypes: string[];
-		selectedMeshes: string[];
-		inputPaths: string[];
 		onclickBack: () => void;
 	} & SettingSelectorProps &
 		OutputSelectorProps;
 
 	let {
-		meshcodeData,
+		selectedMeshcodesData,
 		selectedFeatureTypes,
-		selectedMeshes,
-		inputPaths,
 		filetype = $bindable(),
 		epsg = $bindable(4979),
 		rulesPath = $bindable(),
@@ -40,17 +36,23 @@
 			meshcode: string;
 			type: string;
 		}[] = [];
-		selectedMeshes.forEach((meshcode) => {
-			if (meshcodeData && meshcodeData[meshcode]) {
-				selectedFeatureTypes.forEach((type) => {
-					if (meshcodeData && meshcodeData[meshcode][type]) {
-						meshcodeData[meshcode][type].forEach((filepath) => {
-							files.push({ filepath, meshcode, type });
-						});
-					}
+
+		if (!selectedMeshcodesData?.success) {
+			return [];
+		}
+		for (const type of selectedFeatureTypes) {
+			const info = selectedMeshcodesData.featureTypes[type];
+			if (!info || !info.files.length) {
+				continue;
+			}
+			for (const file of info.files) {
+				files.push({
+					filepath: file.url,
+					meshcode: file.meshcode,
+					type: type
 				});
 			}
-		});
+		}
 		return files;
 	}
 
@@ -60,36 +62,19 @@
 
 	let selectedFiles: string[] = $state(getAvailableFiles().map((f) => f.filepath));
 
-	// Extract filename from path, removing common directory structure
-	function getFilename(filepath: string): string {
-		// Handle zip[index]/path/to/file.gml format
-		const zipMatch = filepath.match(/^zip\[(\d+)\]\/(.*)/);
-		if (zipMatch) {
-			const zipIndex = parseInt(zipMatch[1]);
-			const innerPath = zipMatch[2];
-			const parts = innerPath.split('/');
-			const filename = parts[parts.length - 1] || innerPath;
-
-			// Add ZIP file name if multiple files are selected
-			if (inputPaths.length > 1 && zipIndex < inputPaths.length) {
-				const zipName = inputPaths[zipIndex].split('/').pop() || `ZIP${zipIndex + 1}`;
-				return `[${zipName}] ${filename}`;
-			}
-			return filename;
-		}
-
-		const parts = filepath.split('/');
-		return parts[parts.length - 1] || filepath;
+	function getFilename(fileUrl: string): string {
+		const parts = fileUrl.split('/').filter(Boolean);
+		return parts.at(-1) || fileUrl;
 	}
 
 	async function convertFiles() {
 		if (selectedFiles.length === 0 || !outputPath) return;
 
 		isRunning = true;
-
+		console.log(selectedFiles);
 		try {
-			await invoke('run_conversion', {
-				inputPaths: selectedFiles,
+			await invoke('pack_and_run_conversion', {
+				urls: selectedFiles,
 				outputPath,
 				filetype,
 				epsg,
@@ -102,13 +87,14 @@
 			await message(`変換が完了しました。\n'${outputPath}' に出力しました。`, { kind: 'info' });
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		} catch (error: any) {
+			console.log(error);
 			if (error.type != 'Canceled') {
 				await message(`エラーが発生しました。\n\n${error.type}: ${error.message}`, {
 					title: '変換エラー',
 					kind: 'error'
 				});
 			}
-			isRunning = false;
+			//isRunning = false;
 		}
 	}
 </script>
