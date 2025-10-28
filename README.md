@@ -118,12 +118,12 @@ PLATEAU の標準仕様に準拠した CityGML 2.0 形式の3D都市モデルは
 - [MIERUNE/flatgeom-rs](https://github.com/MIERUNE/flatgeom-rs) &mdash; シリアライズ/デシリアライズの効率を優先したジオメトリ型
 - [MIERUNE/atlas-packer](https://github.com/MIERUNE/atlas-packer) &mdash; テクスチャアトラスの作成
 - [MIERUNE/dda-vozelize-rs](https://github.com/MIERUNE/dda-voxelize-rs) &mdash; 3Dメッシュサーフェスの高速なボクセル化
+- [MIERUNE/cesiumtiles-rs](https://github.com/MIERUNE/cesiumtiles-rs) &mdash; 3D TilesのJSONモデルなど
 - [ciscorn/earcut-rs](https://github.com/ciscorn/earcut-rs) &mdash; ポリゴン三角形化アルゴリズムのRust移植
 - [ciscorn/japan-geoid](https://github.com/ciscorn/japan-geoid) &mdash; 日本のジオイドモデル (JGD2011 → WGS 84 の変換)
 - [ciscorn/geocentric-rs](https://github.com/ciscorn/geocentric-rs) &mdash; 地心座標系と地理座標系の相互変換
 - [ciscorn/jprect-rs](https://github.com/ciscorn/jprect-rs) &mdash; 平面直角座標系（横メルカトル）の扱い
 - [ciscorn/tinymvt](https://github.com/ciscorn/tinymvt) &mdash; MVT生成のためのユーティリティ
-- [ciscorn/cesiumtiles-rs](https://github.com/ciscorn/cesiumtiles-rs) &mdash; 3D TilesのJSONモデルなど
 - [ciscorn/kv-extsort-rs](https://github.com/ciscorn/kv-extsort-rs) &mdash; Key-value データの外部ソート
 
 ## 8. ライセンス
