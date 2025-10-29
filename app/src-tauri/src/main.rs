@@ -322,7 +322,7 @@ pub fn compress_meshcodes(meshcodes: &[String], limit: usize) -> Vec<String> {
     }
 
     // 次に 4桁へ縮約
-    collapse_to_prefix(meshcodes, 4);
+    collapse_to_prefix(meshcodes, 4)
 }
 
 fn collapse_to_prefix(codes: &[String], prefix_len: usize) -> Vec<String> {
