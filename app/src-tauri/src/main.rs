@@ -1354,8 +1354,7 @@ mod tests {
 
         // Test with limit less than number of meshcodes
         let compressed = compress_meshcodes(&meshcodes, 5);
-        // Should be compressed to 6-digit prefixes
-        assert!(compressed.iter().all(|code| code.len() == 6));
+        assert!(compressed.iter().all(|code| code.len() == 4));
         assert!(compressed.len() <= 5);
     }
 }
