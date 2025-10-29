@@ -772,7 +772,7 @@ async fn fetch_citygml_metadata(
     meshcodes: Vec<String>,
     strict: bool,
 ) -> Result<FetchCityGmlMetadataResult, Error> {
-    if meshcodes.len() == 0 {
+    if meshcodes.is_empty() {
         return Err(Error::InvalidSetting(
             "メッシュコードが指定されていません。".to_string(),
         ));
