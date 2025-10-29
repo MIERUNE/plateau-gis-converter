@@ -322,9 +322,7 @@ pub fn compress_meshcodes(meshcodes: &[String], limit: usize) -> Vec<String> {
     }
 
     // 次に 4桁へ縮約
-    let four = collapse_to_prefix(meshcodes, 4);
-    // limit を超えても仕様上ここで打ち止め（必要なら更に2桁など拡張）
-    four
+    collapse_to_prefix(meshcodes, 4);
 }
 
 fn collapse_to_prefix(codes: &[String], prefix_len: usize) -> Vec<String> {
@@ -774,7 +772,7 @@ async fn fetch_citygml_metadata(
     meshcodes: Vec<String>,
     strict: bool,
 ) -> Result<FetchCityGmlMetadataResult, Error> {
-    if meshcodes.len() <= 0 {
+    if meshcodes.len() == 0 {
         return Err(Error::InvalidSetting(
             "メッシュコードが指定されていません。".to_string(),
         ));
@@ -835,7 +833,7 @@ async fn fetch_citygml_metadata(
                 }
                 if let Some(meshcode) = normalize_meshcode(&file.code) {
                     if is_included_meshcode(&meshcode, &meshcodes, strict) {
-                        let entry = meshes.entry(meshcode.clone()).or_insert_with(HashMap::new);
+                        let entry = meshes.entry(meshcode.clone()).or_default();
                         let remote_file = CityGmlRemoteFile {
                             meshcode: meshcode.clone(),
                             feature_type: feature_type.clone(),
@@ -844,16 +842,15 @@ async fn fetch_citygml_metadata(
                             file_size: file.file_size,
                             features: file.features,
                         };
-                        let feature_type_files_entry = feature_type_files
-                            .entry(feature_type.clone())
-                            .or_insert_with(Vec::new);
+                        let feature_type_files_entry =
+                            feature_type_files.entry(feature_type.clone()).or_default();
                         if !feature_type_files_entry
                             .iter()
                             .any(|existing| existing.url == remote_file.url)
                         {
                             feature_type_files_entry.push(remote_file.clone());
                         }
-                        let type_entry = entry.entry(feature_type.clone()).or_insert_with(Vec::new);
+                        let type_entry = entry.entry(feature_type.clone()).or_default();
                         if !type_entry
                             .iter()
                             .any(|existing| existing.url == remote_file.url)
@@ -869,7 +866,7 @@ async fn fetch_citygml_metadata(
     let feature_types = raw
         .feature_types
         .into_iter()
-        .filter(|(code, _)| feature_type_files.get(code).is_some())
+        .filter(|(code, _)| feature_type_files.contains_key(code))
         .map(|(code, info)| {
             let feature_type_file = feature_type_files.get(&code).unwrap();
             let feature_type_info = FeatureTypeInfo {
