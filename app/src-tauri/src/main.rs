@@ -266,12 +266,19 @@ fn emit_pack_progress(app: &tauri::AppHandle, stage: &str, status: &str, progres
     };
 
     let message = match stage {
-        "request" => format!("パック作成リクエスト受理 status={status}"),
-        "status" => format!("パック作成ステータス確認 status={status} progress={percent:.1}%"),
+        "request" => format!("選択したCityGMLのZIP作成リクエスト受理 status={status}"),
+        "packing" => match status {
+            "accepted" => "選択したCityGMLのZIP作成準備中".to_string(),
+            "processing" => {
+                format!("選択したCityGMLのZIP作成中 {percent:.1}%")
+            }
+            "succeeded" => "選択したCityGMLのZIP作成完了".to_string(),
+            other => format!("選択したCityGMLのZIP作成進行 status={other} progress={percent:.1}%"),
+        },
         "download" => match status {
-            "started" => "パックZIPダウンロード開始".to_string(),
-            "completed" => "パックZIPダウンロード完了".to_string(),
-            other => format!("パックZIPダウンロード進行 status={other} progress={percent:.1}%"),
+            "started" => "選択したCityGMLのZIPダウンロード開始".to_string(),
+            "completed" => "選択したCityGMLのZIPダウンロード完了".to_string(),
+            other => format!("選択したCityGMLのZIPダウンロード進行 status={other}"),
         },
         _ => format!("パック進行 stage={stage} status={status} progress={percent:.1}%"),
     };
@@ -931,11 +938,10 @@ async fn download_citygml_pack(
     );
 
     let mut attempt = 0usize;
-    let max_attempts = 120usize; // up to 10 minutes (120 * 5s)
+    let max_attempts = 300usize; // up to 25 minutes (300 * 5s)
 
     loop {
         attempt += 1;
-        emit_pack_progress(&app, "status", "checking", 0.0);
 
         let status_response = client
             .get(&status_url)
@@ -959,7 +965,7 @@ async fn download_citygml_pack(
         let progress = status_body.progress.unwrap_or(0.0);
         emit_pack_progress(
             &app,
-            "status",
+            "packing",
             status_body.status.as_str(),
             progress.clamp(0.0, 1.0),
         );
@@ -1098,23 +1104,6 @@ async fn pack_and_run_conversion(
             return Err(e);
         }
     };
-
-    // Check cancellation before conversion
-    /*
-    if tasks_state.canceller.lock().unwrap().is_canceled() {
-        {
-            let _ = app.emit(
-                "conversion-log",
-                LogMessage {
-                    message: "キャンセル要求を検知しました（パック取得後）".to_string(),
-                    level: "WARN".to_string(),
-                    error_message: None,
-                    source: "pack_and_run_conversion".to_string(),
-                },
-            );
-        }
-        return Err(Error::Canceled);
-    }*/
 
     let packs = list_files_in_zip(&pack_result.zip_path.clone())?;
     println!("{:?}", packs);

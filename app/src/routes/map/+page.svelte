@@ -15,6 +15,7 @@
 	let selectedMeshes: string[] = $state([]);
 	let selectedFeatureTypes: string[] = $state([]);
 	let selectedMeshcodesData: FetchCityGmlMetadataResult | null = $state(null);
+	let isSelectedMeshcodesDataLoading = $state(false);
 
 	// Conversion settings
 	let filetype: string = $state('gpkg');
@@ -25,17 +26,21 @@
 	let transformerSettings: TransformerSettings | undefined = $state(undefined);
 
 	async function revalidateSelectedMeshcodesData() {
+		isSelectedMeshcodesDataLoading = true;
 		if (selectedMeshes.length === 0) {
+			isSelectedMeshcodesDataLoading = false;
 			selectedMeshcodesData = null;
 			return;
 		}
 		selectedMeshcodesData = await fetchCityGMLMetadataByMeshcodes(selectedMeshes, false);
+		isSelectedMeshcodesDataLoading = false;
 	}
 
 	function clearAll() {
-		selectedMeshes = [];
 		currentStep = 'featureTypeSelect';
+		selectedMeshes = [];
 		selectedFeatureTypes = [];
+		selectedMeshcodesData = null;
 	}
 </script>
 
@@ -57,6 +62,7 @@
 				{selectedMeshes}
 				{selectedMeshcodesData}
 				{clearAll}
+				{isSelectedMeshcodesDataLoading}
 				onclickNext={() => {
 					if (selectedFeatureTypes.length === 0) return;
 					currentStep = 'convert';
