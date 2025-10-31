@@ -30,6 +30,7 @@ use std::{
 };
 use tauri::Emitter;
 use tauri_plugin_log::{RotationStrategy, TimezoneStrategy};
+use tempfile::{tempdir, TempDir};
 use thiserror::Error;
 use tokio::time::{sleep, Duration};
 
@@ -83,7 +84,6 @@ fn main() {
             list_zip_contents,
             get_meshcodes_with_prefix,
             fetch_citygml_metadata,
-            download_citygml_pack,
             pack_and_run_conversion,
         ])
         .run(tauri::generate_context!())
@@ -243,12 +243,10 @@ struct PackStatusResponse {
     progress: Option<f32>,
 }
 
-#[derive(Debug, serde::Serialize)]
 struct DownloadCityGmlPackResult {
-    #[serde(rename = "packId")]
     pack_id: String,
-    #[serde(rename = "zipPath")]
     zip_path: String,
+    temp_dir: TempDir,
 }
 
 fn plateau_api_base_url() -> String {
@@ -355,7 +353,7 @@ fn run_conversion(
     rules_path: String,
     transformer_settings: TransformerSettings,
     sink_parameters: Parameters,
-    tasks_state: tauri::State<ConversionTasksState>,
+    tasks_state: tauri::State<'_, ConversionTasksState>,
     app: tauri::AppHandle,
 ) -> Result<(), Error> {
     println!("Running conversion");
@@ -891,9 +889,9 @@ async fn fetch_citygml_metadata(
     })
 }
 
-#[tauri::command(async)]
 async fn download_citygml_pack(
     urls: Vec<String>,
+    tasks_state: tauri::State<'_, ConversionTasksState>,
     app: tauri::AppHandle,
 ) -> Result<DownloadCityGmlPackResult, Error> {
     if urls.is_empty() {
@@ -991,6 +989,11 @@ async fn download_citygml_pack(
                 )));
             }
         }
+        // Return the 'Canceled' error if the pipeline is canceled
+        if tasks_state.canceller.lock().unwrap().is_canceled() {
+            log::info!("Pipeline canceled");
+            return Err(Error::Canceled);
+        };
     }
 
     emit_pack_progress(&app, "download", "started", 0.0);
@@ -1029,8 +1032,8 @@ async fn download_citygml_pack(
         .await
         .map_err(|err| Error::Http(err.to_string()))?;
 
-    let mut target_path = env::temp_dir();
-    target_path.push(format!("plateau-pack-{pack_id}.zip"));
+    let temp_dir = tempdir()?;
+    let target_path = temp_dir.path().join(format!("plateau-pack-{pack_id}.zip"));
 
     std::fs::write(&target_path, bytes.as_ref()).map_err(|err| Error::Io(err.to_string()))?;
 
@@ -1039,6 +1042,7 @@ async fn download_citygml_pack(
     Ok(DownloadCityGmlPackResult {
         pack_id,
         zip_path: target_path.to_string_lossy().to_string(),
+        temp_dir,
     })
 }
 
@@ -1071,42 +1075,41 @@ async fn pack_and_run_conversion(
     }
 
     // Start pack download
-    let pack_result = match download_citygml_pack(urls.clone(), app.clone()).await {
-        Ok(r) => {
-            {
-                let _ = app.emit(
-                    "conversion-log",
-                    LogMessage {
-                        message: format!(
-                            "CityGMLパックのダウンロードが完了しました packId={}",
-                            r.pack_id
-                        ),
-                        level: "INFO".to_string(),
-                        error_message: None,
-                        source: "pack_and_run_conversion".to_string(),
-                    },
-                );
+    let pack_result =
+        match download_citygml_pack(urls.clone(), tasks_state.clone(), app.clone()).await {
+            Ok(r) => {
+                {
+                    let _ = app.emit(
+                        "conversion-log",
+                        LogMessage {
+                            message: format!(
+                                "CityGMLパックのダウンロードが完了しました packId={}",
+                                r.pack_id
+                            ),
+                            level: "INFO".to_string(),
+                            error_message: None,
+                            source: "pack_and_run_conversion".to_string(),
+                        },
+                    );
+                }
+                r
             }
-            r
-        }
-        Err(e) => {
-            {
-                let _ = app.emit(
-                    "conversion-log",
-                    LogMessage {
-                        message: format!("CityGMLパックの取得に失敗しました: {e}"),
-                        level: "ERROR".to_string(),
-                        error_message: None,
-                        source: "pack_and_run_conversion".to_string(),
-                    },
-                );
+            Err(e) => {
+                {
+                    let _ = app.emit(
+                        "conversion-log",
+                        LogMessage {
+                            message: format!("CityGMLパックの取得に失敗しました: {e}"),
+                            level: "ERROR".to_string(),
+                            error_message: None,
+                            source: "pack_and_run_conversion".to_string(),
+                        },
+                    );
+                }
+                return Err(e);
             }
-            return Err(e);
-        }
-    };
+        };
 
-    let packs = list_files_in_zip(&pack_result.zip_path.clone())?;
-    println!("{:?}", packs);
     // Build input paths inside the downloaded pack zip
     let zip_path = pack_result.zip_path.clone(); // ends with .zip
     let mut input_paths: Vec<String> = Vec::new();
@@ -1196,7 +1199,37 @@ async fn pack_and_run_conversion(
         sink_parameters,
         tasks_state,
         app.clone(),
-    )
+    )?;
+    match pack_result.temp_dir.close() {
+        Ok(_) => {
+            let msg = "ダウンロードした一時ファイルの削除に成功しました".to_string();
+            let _ = app.emit(
+                "conversion-log",
+                LogMessage {
+                    message: msg.clone(),
+                    level: "INFO".to_string(),
+                    error_message: None,
+                    source: "pack_and_run_conversion".to_string(),
+                },
+            );
+            log::info!("{msg}");
+            Ok(())
+        }
+        Err(_) => {
+            let msg = "ダウンロードした一時ファイルの削除に失敗しました".to_string();
+            let _ = app.emit(
+                "conversion-log",
+                LogMessage {
+                    message: msg.clone(),
+                    level: "WARN".to_string(),
+                    error_message: None,
+                    source: "pack_and_run_conversion".to_string(),
+                },
+            );
+            log::warn!("{msg}");
+            Ok(())
+        }
+    }
 }
 
 #[cfg(test)]

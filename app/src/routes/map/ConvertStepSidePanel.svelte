@@ -71,7 +71,6 @@
 		if (selectedFiles.length === 0 || !outputPath) return;
 
 		isRunning = true;
-		console.log(selectedFiles);
 		try {
 			await invoke('pack_and_run_conversion', {
 				urls: selectedFiles,
@@ -94,7 +93,7 @@
 					kind: 'error'
 				});
 			}
-			//isRunning = false;
+			isRunning = false;
 		}
 	}
 </script>
