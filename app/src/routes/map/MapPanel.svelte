@@ -3,14 +3,9 @@
 		fetchCityGMLMetadataByMeshcodes,
 		type FetchCityGmlMetadataResult
 	} from '$lib/fetchCityGMLMetadata';
-	import {
-		makeMeshPatches,
-		type MeshLevelEntry,
-		type MeshLevelKey,
-		type MeshPatchFeatureCollection
-	} from '$lib/japanMeshMaker';
+	import { makeMeshPatches, type MeshLevelEntry, type MeshLevelKey } from '$lib/japanMeshMaker';
 	import Icon from '@iconify/svelte';
-	import type { Map, MapLayerMouseEvent } from 'maplibre-gl';
+	import type { LngLatBounds, Map, MapLayerMouseEvent } from 'maplibre-gl';
 	import { Map as MaplibreMap, GeoJSONSource, FillLayer, Marker, Popup } from 'svelte-maplibre-gl';
 	import PrimaryButton from '../PrimaryButton.svelte';
 
@@ -27,9 +22,8 @@
 
 	let { selectedMeshes = $bindable(), revalidateSelectedMeshcodesData }: Props = $props();
 
-	let meshLevel: MeshLevelKey = $state('1');
-	let meshPolygons: MeshPatchFeatureCollection | null = $state(null);
 	let map: Map | undefined = $state(undefined);
+	let bounds: LngLatBounds | null = $state(null);
 	let mapCenter: [number, number] = $state([139.7, 35.7]); // Tokyo default
 	let mapZoom: number = $state(10);
 	let cursor: string | undefined = $state();
@@ -38,19 +32,22 @@
 	let isPopupDataLoading: boolean = $state(false);
 	let popupLngLat: [number, number] | null = $state(null);
 
-	function remakeMeshData() {
-		if (map) {
-			const bounds = map.getBounds();
-			const zoom = map.getZoom();
-			Object.entries(MESH_LEVEL_ENTRIES).forEach(([key, value]) => {
-				if (zoom >= value.minZoom) {
-					meshLevel = key as MeshLevelKey;
-				}
-			});
+	let meshLevel: MeshLevelKey = $derived.by(() => {
+		let level: MeshLevelKey = '1';
+		Object.entries(MESH_LEVEL_ENTRIES).forEach(([key, value]) => {
+			if (mapZoom >= value.minZoom) {
+				level = key as MeshLevelKey;
+			}
+		});
+		return level;
+	});
+
+	let meshPolygons = $derived.by(() => {
+		if (bounds) {
 			const sw = bounds.getSouthWest();
 			const ne = bounds.getNorthEast();
 			const padding = Math.max(ne.lng - sw.lng, ne.lat - sw.lat) * 0.1;
-			meshPolygons = makeMeshPatches(
+			return makeMeshPatches(
 				meshLevel,
 				[
 					sw.lng - (ne.lng - sw.lng) * padding,
@@ -60,6 +57,13 @@
 				],
 				selectedMeshes
 			);
+		}
+		return null;
+	});
+
+	function updateBounds() {
+		if (map) {
+			bounds = map.getBounds();
 		}
 	}
 
@@ -105,9 +109,9 @@
 	center={mapCenter}
 	bind:zoom={mapZoom}
 	boxZoom={false}
-	onstyledata={remakeMeshData}
-	onmove={remakeMeshData}
-	onmoveend={remakeMeshData}
+	onstyledata={updateBounds}
+	onmove={updateBounds}
+	onmoveend={updateBounds}
 	{cursor}
 >
 	{#if meshPolygons}
@@ -190,7 +194,6 @@
 												(m) => !!popupData?.success && !(m in popupData.meshes)
 											);
 											revalidateSelectedMeshcodesData();
-											remakeMeshData();
 										}}
 										class="flex-1 rounded bg-red-500 px-4 py-1 text-sm text-white hover:opacity-75"
 									>
@@ -207,7 +210,6 @@
 												])
 											);
 											revalidateSelectedMeshcodesData();
-											remakeMeshData();
 										}}
 									>
 										選択

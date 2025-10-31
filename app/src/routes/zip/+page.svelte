@@ -36,7 +36,7 @@
 
 <div class="flex h-screen">
 	<div
-		class="flex w-1/3 min-w-96 flex-col gap-8 overflow-y-auto border-r border-gray-200 bg-gray-50 p-4"
+		class="flex w-1/3 min-w-lg flex-col gap-8 overflow-y-auto border-r border-gray-200 bg-gray-50 p-4"
 	>
 		<div class="flex items-center gap-1.5">
 			<h1 class="text-2xl font-bold">PLATEAU GIS Converter</h1>

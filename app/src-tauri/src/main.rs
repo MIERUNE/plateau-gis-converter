@@ -1059,53 +1059,48 @@ async fn pack_and_run_conversion(
     tasks_state: tauri::State<'_, ConversionTasksState>,
     app: tauri::AppHandle,
 ) -> Result<(), Error> {
-    // Cancel any previous task
-    tasks_state.canceller.lock().unwrap().cancel();
-
-    {
-        let _ = app.emit(
-            "conversion-log",
-            LogMessage {
-                message: "CityGMLパック処理を開始します".to_string(),
-                level: "INFO".to_string(),
-                error_message: None,
-                source: "pack_and_run_conversion".to_string(),
-            },
-        );
-    }
+    app.emit(
+        "conversion-log",
+        LogMessage {
+            message: "CityGMLパック処理を開始します".to_string(),
+            level: "INFO".to_string(),
+            error_message: None,
+            source: "pack_and_run_conversion".to_string(),
+        },
+    )
+    .unwrap();
 
     // Start pack download
     let pack_result =
         match download_citygml_pack(urls.clone(), tasks_state.clone(), app.clone()).await {
             Ok(r) => {
-                {
-                    let _ = app.emit(
-                        "conversion-log",
-                        LogMessage {
-                            message: format!(
-                                "CityGMLパックのダウンロードが完了しました packId={}",
-                                r.pack_id
-                            ),
-                            level: "INFO".to_string(),
-                            error_message: None,
-                            source: "pack_and_run_conversion".to_string(),
-                        },
-                    );
-                }
+                app.emit(
+                    "conversion-log",
+                    LogMessage {
+                        message: format!(
+                            "CityGMLパックのダウンロードが完了しました packId={}",
+                            r.pack_id
+                        ),
+                        level: "INFO".to_string(),
+                        error_message: None,
+                        source: "pack_and_run_conversion".to_string(),
+                    },
+                )
+                .unwrap();
                 r
             }
             Err(e) => {
-                {
-                    let _ = app.emit(
-                        "conversion-log",
-                        LogMessage {
-                            message: format!("CityGMLパックの取得に失敗しました: {e}"),
-                            level: "ERROR".to_string(),
-                            error_message: None,
-                            source: "pack_and_run_conversion".to_string(),
-                        },
-                    );
-                }
+                app.emit(
+                    "conversion-log",
+                    LogMessage {
+                        message: format!("CityGMLパックの取得に失敗しました: {e}"),
+                        level: "ERROR".to_string(),
+                        error_message: None,
+                        source: "pack_and_run_conversion".to_string(),
+                    },
+                )
+                .unwrap();
+
                 return Err(e);
             }
         };
@@ -1128,7 +1123,7 @@ async fn pack_and_run_conversion(
             let internal_udx = &url[idx + 1..]; // keep "udx/..."
             if internal_udx.is_empty() || !internal_udx.starts_with("udx/") || parent_dir.is_empty()
             {
-                let _ = app.emit(
+                app.emit(
                     "conversion-log",
                     LogMessage {
                         message: format!(
@@ -1138,7 +1133,8 @@ async fn pack_and_run_conversion(
                         error_message: None,
                         source: "pack_and_run_conversion".to_string(),
                     },
-                );
+                )
+                .unwrap();
                 return Err(Error::InvalidPath(format!(
                     "内部パスが不正です (url={url})"
                 )));
@@ -1148,47 +1144,45 @@ async fn pack_and_run_conversion(
             let composite = format!("{zip_path}/{internal_with_parent}");
             input_paths.push(composite);
         } else {
-            {
-                let _ = app.emit(
-                    "conversion-log",
-                    LogMessage {
-                        message: format!("URL に /udx/ が含まれていません: {url}"),
-                        level: "ERROR".to_string(),
-                        error_message: None,
-                        source: "pack_and_run_conversion".to_string(),
-                    },
-                );
-            }
+            app.emit(
+                "conversion-log",
+                LogMessage {
+                    message: format!("URL に /udx/ が含まれていません: {url}"),
+                    level: "ERROR".to_string(),
+                    error_message: None,
+                    source: "pack_and_run_conversion".to_string(),
+                },
+            )
+            .unwrap();
+
             return Err(Error::InvalidPath(format!(
                 "/udx/ が見つかりません (url={url})"
             )));
         }
     }
-
-    {
-        let _ = app.emit(
-            "conversion-log",
-            LogMessage {
-                message: format!("変換対象ファイル数: {}", input_paths.len()),
-                level: "INFO".to_string(),
-                error_message: None,
-                source: "pack_and_run_conversion".to_string(),
-            },
-        );
-    }
+    app.emit(
+        "conversion-log",
+        LogMessage {
+            message: format!("変換対象ファイル数: {}", input_paths.len()),
+            level: "INFO".to_string(),
+            error_message: None,
+            source: "pack_and_run_conversion".to_string(),
+        },
+    )
+    .unwrap();
 
     // Run conversion
-    {
-        let _ = app.emit(
-            "conversion-log",
-            LogMessage {
-                message: "変換パイプラインを開始します".to_string(),
-                level: "INFO".to_string(),
-                error_message: None,
-                source: "pack_and_run_conversion".to_string(),
-            },
-        );
-    }
+    app.emit(
+        "conversion-log",
+        LogMessage {
+            message: "変換パイプラインを開始します".to_string(),
+            level: "INFO".to_string(),
+            error_message: None,
+            source: "pack_and_run_conversion".to_string(),
+        },
+    )
+    .unwrap();
+
     run_conversion(
         input_paths,
         output_path,
@@ -1203,7 +1197,7 @@ async fn pack_and_run_conversion(
     match pack_result.temp_dir.close() {
         Ok(_) => {
             let msg = "ダウンロードした一時ファイルの削除に成功しました".to_string();
-            let _ = app.emit(
+            app.emit(
                 "conversion-log",
                 LogMessage {
                     message: msg.clone(),
@@ -1211,13 +1205,14 @@ async fn pack_and_run_conversion(
                     error_message: None,
                     source: "pack_and_run_conversion".to_string(),
                 },
-            );
+            )
+            .unwrap();
             log::info!("{msg}");
             Ok(())
         }
         Err(_) => {
             let msg = "ダウンロードした一時ファイルの削除に失敗しました".to_string();
-            let _ = app.emit(
+            app.emit(
                 "conversion-log",
                 LogMessage {
                     message: msg.clone(),
@@ -1225,7 +1220,8 @@ async fn pack_and_run_conversion(
                     error_message: None,
                     source: "pack_and_run_conversion".to_string(),
                 },
-            );
+            )
+            .unwrap();
             log::warn!("{msg}");
             Ok(())
         }
