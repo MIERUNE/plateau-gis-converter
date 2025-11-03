@@ -22,12 +22,12 @@ jobs:
       - name: Build Document
         run: docfx docs/docfx.json
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         with:
           name: dotnet_doc
           path: .docs/_site
 
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v4
         with:
           path: .docs/_site
 
