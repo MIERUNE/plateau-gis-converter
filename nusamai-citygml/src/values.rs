@@ -252,32 +252,43 @@ impl CityGmlElement for bool {
 
 #[derive(Debug, Clone, Default, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Measure {
-    value: f64,
-    // pub uom: Option<String>,
+    value: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    uom: Option<String>,
 }
 
 impl Measure {
-    pub fn new(value: f64) -> Self {
-        Self { value }
+    pub fn new(value: String, uom: Option<String>) -> Self {
+        Self { value, uom }
     }
-    pub fn value(&self) -> f64 {
-        self.value
+    pub fn value(&self) -> &str {
+        &self.value
+    }
+    pub fn uom(&self) -> Option<&str> {
+        self.uom.as_deref()
     }
 }
 
 impl CityGmlElement for Measure {
     #[inline(never)]
     fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
-        let text = st.parse_text()?;
-        match text.parse() {
-            Ok(v) => {
-                self.value = v;
-                Ok(())
+        // Parse attributes to extract 'uom' if present
+        st.parse_attributes(|k, v, _| {
+            if k == b"@uom" {
+                self.uom = Some(String::from_utf8_lossy(v).into());
             }
-            Err(_) => Err(ParseError::InvalidValue(format!(
+            Ok(())
+        })?;
+
+        let text = st.parse_text()?;
+        // check if the value is a valid float, but store as string
+        if text.parse::<f64>().is_err() {
+            return Err(ParseError::InvalidValue(format!(
                 "Expected a floating point number, got {text}"
-            ))),
+            )));
         }
+        self.value = text.to_string();
+        Ok(())
     }
 
     #[inline(never)]

@@ -320,7 +320,7 @@ fn load_road_example() {
     );
     assert_eq!(
         road.road_structure_attribute[0].width,
-        Some(Measure::new(22.0)),
+        Some(Measure::new("22".to_string(), Some("m".to_string()))),
     );
     assert_eq!(
         road.traffic_volume_attribute[0].weekday12hour_traffic_volume,

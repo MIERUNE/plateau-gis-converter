@@ -126,7 +126,7 @@ impl<'a> CityGmlReader<'a> {
     pub fn start_root<'b: 'a, R: BufRead>(
         &'a mut self,
         reader: &'b mut quick_xml::NsReader<R>,
-    ) -> Result<SubTreeReader<R>, ParseError> {
+    ) -> Result<SubTreeReader<'a, 'a, R>, ParseError> {
         let config = reader.config_mut();
         config.trim_text(true);
         config.expand_empty_elements = true;

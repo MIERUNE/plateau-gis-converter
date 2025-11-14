@@ -98,6 +98,7 @@ impl Value {
 #[cfg(feature = "serde_json")]
 impl Value {
     /// Extracts the thematic attribute tree and converts it to a JSON representation.
+    /// Lossy conversion: Measure are converted to f64, Date to ISO 8601 string.
     pub fn to_attribute_json(&self) -> serde_json::Value {
         use Value::*;
         match &self {
@@ -107,7 +108,8 @@ impl Value {
             NonNegativeInteger(i) => serde_json::Value::Number((*i).into()),
             Double(d) => serde_json::Value::Number(serde_json::Number::from_f64(*d).unwrap()),
             Measure(m) => {
-                serde_json::Value::Number(serde_json::Number::from_f64(m.value()).unwrap())
+                let value = m.value().parse::<f64>().unwrap_or(0.0);
+                serde_json::Value::Number(serde_json::Number::from_f64(value).unwrap())
             }
             Boolean(b) => serde_json::Value::Bool(*b),
             Uri(u) => serde_json::Value::String(u.value().to_string()),
@@ -160,7 +162,7 @@ mod tests {
         let obj = Value::Double(1.0);
         assert_eq!(obj.to_attribute_json(), json!(1.0));
 
-        let obj = Value::Measure(Measure::new(1.0));
+        let obj = Value::Measure(Measure::new("1.0".to_string(), None));
         assert_eq!(obj.to_attribute_json(), json!(1.0));
 
         let obj = Value::Boolean(true);
