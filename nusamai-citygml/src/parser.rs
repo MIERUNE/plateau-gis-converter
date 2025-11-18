@@ -1162,6 +1162,42 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
         }
     }
 
+    fn parse_patches(&mut self) -> Result<Vec<LocalId>, ParseError> {
+        loop {
+            match self.reader.read_event_into(&mut self.state.buf1) {
+                Ok(Event::Start(start)) => {
+                    let (nsres, localname) = self.reader.resolve_element(start.name());
+
+                    match (nsres, localname.as_ref()) {
+                        (Bound(GML31_NS), b"patches") => {
+                            // Continue parsing - patches is the container
+                        }
+                        (Bound(GML31_NS), b"PolygonPatch") => {
+                            self.parse_polygon()?;
+                        }
+                        _ => {
+                            return Err(ParseError::SchemaViolation(format!(
+                                "Unexpected element <{}> by parsing patches",
+                                String::from_utf8_lossy(localname.as_ref())
+                            )))
+                        }
+                    }
+                }
+                Ok(Event::End(end)) => {
+                    let (nsres, localname) = self.reader.resolve_element(end.name());
+                    if nsres == Bound(GML31_NS) && localname.as_ref() == b"patches" {
+                        return Ok(Vec::new());
+                    }
+                }
+                Ok(Event::Text(_)) => {
+                    // Ignore whitespace text nodes
+                }
+                Ok(_) => (),
+                Err(e) => return Err(e.into()),
+            }
+        }
+    }
+
     fn parse_surface(&mut self) -> Result<(Option<LocalId>, Vec<LocalId>), ParseError> {
         let mut surface_id = None;
         let mut surface_ids = Vec::new();
@@ -1210,6 +1246,9 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                         }
                         (Bound(GML31_NS), b"surfaceMember") => {
                             (surface_id, _) = self.parse_surface()?;
+                        }
+                        (Bound(GML31_NS), b"Surface") => {
+                            surface_ids = self.parse_patches()?;
                         }
                         // (Bound(GML_NS), b"TriangulatedSurface") =>
                         // (Bound(GML_NS), b"Tin") =>
