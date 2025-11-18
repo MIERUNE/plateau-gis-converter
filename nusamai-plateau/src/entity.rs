@@ -145,7 +145,7 @@ impl FlattenTreeTransform {
                 }
                 obj.attributes = new_attribs;
 
-                if Self::is_flatten_target(&obj) {
+                if let ObjectStereotype::Feature { .. } = &obj.stereotype {
                     // set parent id and type to attributes
                     if let Some(parent) = parent {
                         match parent {
@@ -210,9 +210,5 @@ impl FlattenTreeTransform {
             }
             _ => Some(value),
         }
-    }
-
-    fn is_flatten_target(obj: &Object) -> bool {
-        obj.typename != "gen:genericAttribute"
     }
 }
