@@ -22,6 +22,7 @@
 	let epsg: number = $state(4979);
 	let rulesPath = $state('');
 	let outputPath = $state('');
+	let zipOutputPath: string = $state('');
 	let sinkParameters = $state({} as SinkParameters);
 	let transformerSettings: TransformerSettings | undefined = $state(undefined);
 
@@ -78,6 +79,7 @@
 				bind:sinkParameters
 				bind:transformerSettings
 				bind:outputPath
+				bind:zipOutputPath
 				onclickBack={() => {
 					currentStep = 'featureTypeSelect';
 				}}

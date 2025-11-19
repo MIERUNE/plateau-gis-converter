@@ -891,6 +891,7 @@ async fn fetch_citygml_metadata(
 
 async fn download_citygml_pack(
     urls: Vec<String>,
+    zip_output_path: Option<String>,
     tasks_state: tauri::State<'_, ConversionTasksState>,
     app: tauri::AppHandle,
 ) -> Result<DownloadCityGmlPackResult, Error> {
@@ -1033,8 +1034,11 @@ async fn download_citygml_pack(
         .map_err(|err| Error::Http(err.to_string()))?;
 
     let temp_dir = tempdir()?;
-    let target_path = temp_dir.path().join(format!("plateau-pack-{pack_id}.zip"));
-
+    let target_path = if let Some(path) = zip_output_path && !path.is_empty() {
+        PathBuf::from(path)
+    } else {
+        temp_dir.path().join(format!("plateau-pack-{pack_id}.zip"))
+    };
     std::fs::write(&target_path, bytes.as_ref()).map_err(|err| Error::Io(err.to_string()))?;
 
     emit_pack_progress(&app, "download", "completed", 1.0);
@@ -1050,6 +1054,7 @@ async fn download_citygml_pack(
 #[allow(clippy::too_many_arguments)]
 async fn pack_and_run_conversion(
     urls: Vec<String>,
+    zip_output_path: Option<String>,
     output_path: String,
     filetype: String,
     epsg: u16,
@@ -1071,39 +1076,45 @@ async fn pack_and_run_conversion(
     .unwrap();
 
     // Start pack download
-    let pack_result =
-        match download_citygml_pack(urls.clone(), tasks_state.clone(), app.clone()).await {
-            Ok(r) => {
-                app.emit(
-                    "conversion-log",
-                    LogMessage {
-                        message: format!(
-                            "CityGMLパックのダウンロードが完了しました packId={}",
-                            r.pack_id
-                        ),
-                        level: "INFO".to_string(),
-                        error_message: None,
-                        source: "pack_and_run_conversion".to_string(),
-                    },
-                )
-                .unwrap();
-                r
-            }
-            Err(e) => {
-                app.emit(
-                    "conversion-log",
-                    LogMessage {
-                        message: format!("CityGMLパックの取得に失敗しました: {e}"),
-                        level: "ERROR".to_string(),
-                        error_message: None,
-                        source: "pack_and_run_conversion".to_string(),
-                    },
-                )
-                .unwrap();
+    let pack_result = match download_citygml_pack(
+        urls.clone(),
+        zip_output_path.clone(),
+        tasks_state.clone(),
+        app.clone(),
+    )
+    .await
+    {
+        Ok(r) => {
+            app.emit(
+                "conversion-log",
+                LogMessage {
+                    message: format!(
+                        "CityGMLパックのダウンロードが完了しました packId={}",
+                        r.pack_id
+                    ),
+                    level: "INFO".to_string(),
+                    error_message: None,
+                    source: "pack_and_run_conversion".to_string(),
+                },
+            )
+            .unwrap();
+            r
+        }
+        Err(e) => {
+            app.emit(
+                "conversion-log",
+                LogMessage {
+                    message: format!("CityGMLパックの取得に失敗しました: {e}"),
+                    level: "ERROR".to_string(),
+                    error_message: None,
+                    source: "pack_and_run_conversion".to_string(),
+                },
+            )
+            .unwrap();
 
-                return Err(e);
-            }
-        };
+            return Err(e);
+        }
+    };
 
     // Build input paths inside the downloaded pack zip
     let zip_path = pack_result.zip_path.clone(); // ends with .zip
