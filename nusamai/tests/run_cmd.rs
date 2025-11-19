@@ -1,8 +1,4 @@
-// tests/cli.rs
-use assert_cmd::cargo::cargo_bin_cmd;
-
 #[test]
-
 fn test_run_cmd() {
     use assert_cmd::cargo::cargo_bin_cmd;
 
