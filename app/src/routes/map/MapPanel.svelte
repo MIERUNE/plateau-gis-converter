@@ -6,7 +6,14 @@
 	import { makeMeshPatches, type MeshLevelEntry, type MeshLevelKey } from '$lib/japanMeshMaker';
 	import Icon from '@iconify/svelte';
 	import type { LngLatBounds, Map, MapLayerMouseEvent } from 'maplibre-gl';
-	import { Map as MaplibreMap, GeoJSONSource, FillLayer, Marker, Popup } from 'svelte-maplibre-gl';
+	import {
+		Map as MaplibreMap,
+		GeoJSONSource,
+		FillLayer,
+		Marker,
+		Popup,
+		LineLayer
+	} from 'svelte-maplibre-gl';
 	import PrimaryButton from '../PrimaryButton.svelte';
 
 	const MESH_LEVEL_ENTRIES: Record<MeshLevelKey, MeshLevelEntry> = Object.freeze({
@@ -49,12 +56,7 @@
 			const padding = Math.max(ne.lng - sw.lng, ne.lat - sw.lat) * 0.1;
 			return makeMeshPatches(
 				meshLevel,
-				[
-					sw.lng - (ne.lng - sw.lng) * padding,
-					sw.lat - (ne.lat - sw.lat) * padding,
-					ne.lng + (ne.lng - sw.lng) * padding,
-					ne.lat + (ne.lat - sw.lat) * padding
-				],
+				[sw.lng - padding, sw.lat - padding, ne.lng + padding, ne.lat + padding],
 				selectedMeshes
 			);
 		}
@@ -116,6 +118,12 @@
 >
 	{#if meshPolygons}
 		<GeoJSONSource data={meshPolygons}>
+			<LineLayer
+				paint={{
+					'line-color': ['case', ['get', 'selected'], '#f57c00', '#339af0'],
+					'line-width': ['interpolate', ['linear'], ['zoom'], 5, 1, 10, 3]
+				}}
+			/>
 			<FillLayer
 				paint={{
 					'fill-color': [
@@ -126,8 +134,7 @@
 						'#ff6b6b',
 						'#4dabf7'
 					],
-					'fill-opacity': 0.6,
-					'fill-outline-color': '#339af0'
+					'fill-opacity': ['case', ['get', 'selected'], 0.8, 0.6]
 				}}
 				onmousemove={() => {
 					cursor = 'pointer';
