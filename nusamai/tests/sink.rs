@@ -159,6 +159,28 @@ fn run_mvt_sink() {
 }
 
 #[test]
+fn run_pmtiles_sink() {
+    let temp_dir = std::env::temp_dir().join("nusamai_pmtiles_sink_test");
+    std::fs::create_dir_all(&temp_dir).unwrap();
+    let output_path = temp_dir.join(format!("output-{}.pmtiles", std::process::id()));
+    if output_path.exists() {
+        std::fs::remove_file(&output_path).unwrap();
+    }
+    let output_path_string = output_path.to_str().unwrap().to_string();
+
+    simple_run_sink(
+        sink::pmtiles::PmTilesSinkProvider {},
+        Some(output_path_string.as_str()),
+    );
+
+    assert!(
+        output_path.exists(),
+        "PMTiles output should be created by the pipeline"
+    );
+    let _ = std::fs::remove_file(output_path);
+}
+
+#[test]
 fn run_shapefile_sink() {
     simple_run_sink(
         sink::shapefile::ShapefileSinkProvider {},
