@@ -54,6 +54,25 @@ AXIS ["Ellipsoidal height (h)",up,LENGTHUNIT["metre",1,ID["EPSG",9001]]],
 ID ["EPSG",4979]]'
     );
 
+-- JGD2011 + JGD2011 (vertical) height
+-- cf. https://epsg.org/crs_6697/JGD2011-JGD2011-vertical-height.html
+INSERT INTO
+    gpkg_spatial_ref_sys (
+        srs_name,
+        srs_id,
+        organization,
+        organization_coordsys_id,
+        definition
+    )
+VALUES
+    (
+        'JGD2011 + JGD2011 (vertical) height',
+        6697,
+        'EPSG',
+        6697,
+        'COMPOUNDCRS["JGD2011 + JGD2011 (vertical) height",GEOGCRS["JGD2011",DATUM["Japanese Geodetic Datum 2011",ELLIPSOID["GRS 1980",6378137,298.257222101,LENGTHUNIT["metre",1,ID["EPSG",9001]],ID["EPSG",7019]],ID["EPSG",1128]],CS[ellipsoidal,2,ID["EPSG",6422]],AXIS["Geodetic latitude (Lat)",north],AXIS["Geodetic longitude (Lon)",east],ANGLEUNIT["degree",0.0174532925199433,ID["EPSG",9102]],ID["EPSG",6668]],VERTCRS["JGD2011 (vertical) height",VDATUM["Japanese Geodetic Datum 2011 (vertical)",ID["EPSG",1131]],CS[vertical,1,ID["EPSG",6499]],AXIS["Gravity-related height (H)",up],LENGTHUNIT["metre",1,ID["EPSG",9001]],ID["EPSG",6695]],ID["EPSG",6697]]'
+    );
+
 -- Web Mercator (WGS 84 / Pseudo-Mercator)
 -- cf. https://epsg.org/crs_3857/Web_Mercator.html
 INSERT INTO
