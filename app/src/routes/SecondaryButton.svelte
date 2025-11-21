@@ -12,7 +12,7 @@
 <button
 	{disabled}
 	class={[
-		'cursor-pointer rounded-sm bg-gray-500 px-4 py-1 text-sm text-nowrap text-white hover:opacity-75 disabled:cursor-auto disabled:opacity-50',
+		'w-auto shrink-0 cursor-pointer rounded-sm bg-gray-500 px-4 py-1 text-sm text-nowrap text-white hover:opacity-75 disabled:cursor-auto disabled:opacity-50',
 		className
 	]}
 	{...props}

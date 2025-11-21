@@ -1,21 +1,21 @@
 <script lang="ts">
-	import Icon from '@iconify/svelte';
 	import TabNavigation from '../TabNavigation.svelte';
+	import Icon from '@iconify/svelte';
+	import {
+		fetchCityGMLMetadataByMeshcodes,
+		type FetchCityGmlMetadataResult
+	} from '$lib/fetchCityGMLMetadata';
+	import FeatureTypeSelectStepSidePanel from './FeatureTypeSelectStepSidePanel.svelte';
+	import MapPanel from './MapPanel.svelte';
+	import ConvertStepSidePanel from './ConvertStepSidePanel.svelte';
 	import type { SinkParameters } from '$lib/sinkparams';
 	import type { TransformerSettings } from '$lib/transformer';
-	import type { MeshcodeData } from './utils';
-	import FeatureTypeSelectStepSidePanel from './FeatureTypeSelectStepSidePanel.svelte';
-	import ConvertStepSidePanel from './ConvertStepSidePanel.svelte';
-	import MapPanel from './MapPanel.svelte';
 
-	let meshcodeData: MeshcodeData | null = $state(null);
-	let inputPaths: string[] = $state([]);
-
-	let selectedMeshes: string[] = $state([]);
-
-	// New UI flow state
 	let currentStep: 'featureTypeSelect' | 'convert' = $state('featureTypeSelect');
+	let selectedMeshes: string[] = $state([]);
 	let selectedFeatureTypes: string[] = $state([]);
+	let selectedMeshcodesData: FetchCityGmlMetadataResult | null = $state(null);
+	let isSelectedMeshcodesDataLoading = $state(false);
 
 	// Conversion settings
 	let filetype: string = $state('gpkg');
@@ -25,12 +25,22 @@
 	let sinkParameters = $state({} as SinkParameters);
 	let transformerSettings: TransformerSettings | undefined = $state(undefined);
 
+	async function revalidateSelectedMeshcodesData() {
+		isSelectedMeshcodesDataLoading = true;
+		if (selectedMeshes.length === 0) {
+			isSelectedMeshcodesDataLoading = false;
+			selectedMeshcodesData = null;
+			return;
+		}
+		selectedMeshcodesData = await fetchCityGMLMetadataByMeshcodes(selectedMeshes, false);
+		isSelectedMeshcodesDataLoading = false;
+	}
+
 	function clearAll() {
-		inputPaths = [];
-		meshcodeData = null;
-		selectedMeshes = [];
 		currentStep = 'featureTypeSelect';
+		selectedMeshes = [];
 		selectedFeatureTypes = [];
+		selectedMeshcodesData = null;
 	}
 </script>
 
@@ -46,25 +56,22 @@
 		</div>
 
 		<TabNavigation />
-
-		{#if currentStep === 'featureTypeSelect' || !meshcodeData}
+		{#if currentStep === 'featureTypeSelect'}
 			<FeatureTypeSelectStepSidePanel
 				bind:selectedFeatureTypes
-				bind:selectedMeshes
-				bind:inputPaths
-				bind:meshcodeData
+				{selectedMeshes}
+				{selectedMeshcodesData}
 				{clearAll}
+				{isSelectedMeshcodesDataLoading}
 				onclickNext={() => {
 					if (selectedFeatureTypes.length === 0) return;
 					currentStep = 'convert';
 				}}
 			/>
-		{:else if currentStep === 'convert'}
+		{:else}
 			<ConvertStepSidePanel
-				{meshcodeData}
+				{selectedMeshcodesData}
 				{selectedFeatureTypes}
-				{selectedMeshes}
-				{inputPaths}
 				bind:filetype
 				bind:epsg
 				bind:rulesPath
@@ -79,15 +86,6 @@
 	</div>
 
 	<div class="flex-1">
-		{#if meshcodeData}
-			<MapPanel bind:selectedMeshes {meshcodeData} />
-		{:else}
-			<div class="flex h-full w-full items-center justify-center bg-gray-100 text-gray-500">
-				<div class="flex flex-col items-center gap-4 text-center">
-					<Icon icon="material-symbols:map" class="text-6xl opacity-50" />
-					<p class="text-lg">PLATEAU ZIP ファイルを選択すると地図が表示されます</p>
-				</div>
-			</div>
-		{/if}
+		<MapPanel bind:selectedMeshes {revalidateSelectedMeshcodesData} />
 	</div>
 </div>
