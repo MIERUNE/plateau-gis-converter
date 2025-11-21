@@ -10,7 +10,7 @@
 		NavigationControl,
 		Popup
 	} from 'svelte-maplibre-gl';
-	import PrimaryButton from './PrimaryButton.svelte';
+	import PrimaryButton from '../PrimaryButton.svelte';
 	import Icon from '@iconify/svelte';
 
 	type Props = {
