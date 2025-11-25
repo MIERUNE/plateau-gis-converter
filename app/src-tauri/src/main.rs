@@ -4,14 +4,14 @@
 use log::LevelFilter;
 use nusamai::parameters::Parameters;
 use nusamai::{
-    pipeline::{feedback, Canceller},
+    pipeline::{Canceller, feedback},
     sink::{
-        cesiumtiles::CesiumTilesSinkProvider, czml::CzmlSinkProvider, geojson::GeoJsonSinkProvider,
-        gltf::GltfSinkProvider, gpkg::GpkgSinkProvider, kml::KmlSinkProvider,
-        minecraft::MinecraftSinkProvider, mvt::MvtSinkProvider, obj::ObjSinkProvider,
-        serde::SerdeSinkProvider, shapefile::ShapefileSinkProvider, DataSinkProvider,
+        DataSinkProvider, cesiumtiles::CesiumTilesSinkProvider, czml::CzmlSinkProvider,
+        geojson::GeoJsonSinkProvider, gltf::GltfSinkProvider, gpkg::GpkgSinkProvider,
+        kml::KmlSinkProvider, minecraft::MinecraftSinkProvider, mvt::MvtSinkProvider,
+        obj::ObjSinkProvider, serde::SerdeSinkProvider, shapefile::ShapefileSinkProvider,
     },
-    source::{citygml::CityGmlSourceProvider, geojson::GeoJsonSourceProvider, DataSourceProvider},
+    source::{DataSourceProvider, citygml::CityGmlSourceProvider, geojson::GeoJsonSourceProvider},
     transformer::{
         self, MappingRules, MultiThreadTransformer, NusamaiTransformBuilder, TransformBuilder,
         TransformerSettings,
@@ -30,9 +30,9 @@ use std::{
 };
 use tauri::Emitter;
 use tauri_plugin_log::{RotationStrategy, TimezoneStrategy};
-use tempfile::{tempdir, TempDir};
+use tempfile::{TempDir, tempdir};
 use thiserror::Error;
-use tokio::time::{sleep, Duration};
+use tokio::time::{Duration, sleep};
 
 #[cfg(debug_assertions)]
 const LOG_LEVEL: LevelFilter = LevelFilter::Debug;
@@ -674,24 +674,24 @@ async fn list_supported_files(directories: Vec<String>) -> Result<Vec<String>, E
                     let path = entry.path();
 
                     // Check if it's a file and has supported extension
-                    if path.is_file() {
-                        if let Some(extension) = path.extension() {
-                            let ext_str = extension.to_string_lossy().to_lowercase();
+                    if path.is_file()
+                        && let Some(extension) = path.extension()
+                    {
+                        let ext_str = extension.to_string_lossy().to_lowercase();
 
-                            // Check for directly supported files
-                            if ext_str == "gml" || ext_str == "geojson" || ext_str == "json" {
-                                if let Some(path_str) = path.to_str() {
-                                    all_files.push(path_str.to_string());
-                                }
-                            }
-                            // Check for ZIP files
-                            else if ext_str == "zip" {
-                                if let Some(path_str) = path.to_str() {
-                                    // List files inside ZIP
-                                    if let Ok(files) = list_files_in_zip(path_str) {
-                                        all_files.extend(files);
-                                    }
-                                }
+                        // Check for directly supported files
+                        if (ext_str == "gml" || ext_str == "geojson" || ext_str == "json")
+                            && let Some(path_str) = path.to_str()
+                        {
+                            all_files.push(path_str.to_string());
+                        }
+                        // Check for ZIP files
+                        else if ext_str == "zip"
+                            && let Some(path_str) = path.to_str()
+                        {
+                            // List files inside ZIP
+                            if let Ok(files) = list_files_in_zip(path_str) {
+                                all_files.extend(files);
                             }
                         }
                     }
@@ -758,14 +758,14 @@ fn get_meshcodes_with_prefix(
             let file = archive.by_index(i).map_err(|e| Error::Io(e.to_string()))?;
             let file_path = file.name().to_string();
 
-            if file_path.ends_with(".gml") {
-                if let Some((meshcode, file_type)) = extract_meshcode_and_type(&file_path) {
-                    let meshcode_entry = result.entry(meshcode).or_default();
-                    let type_entry = meshcode_entry.entry(file_type).or_default();
-                    // Format: "/path/to/zipfile.zip/path/to/file.gml"
-                    let full_path = format!("{input_path}/{file_path}");
-                    type_entry.push(full_path);
-                }
+            if file_path.ends_with(".gml")
+                && let Some((meshcode, file_type)) = extract_meshcode_and_type(&file_path)
+            {
+                let meshcode_entry = result.entry(meshcode).or_default();
+                let type_entry = meshcode_entry.entry(file_type).or_default();
+                // Format: "/path/to/zipfile.zip/path/to/file.gml"
+                let full_path = format!("{input_path}/{file_path}");
+                type_entry.push(full_path);
             }
         }
     }
@@ -836,32 +836,32 @@ async fn fetch_citygml_metadata(
                 if file.url.is_empty() {
                     continue;
                 }
-                if let Some(meshcode) = normalize_meshcode(&file.code) {
-                    if is_included_meshcode(&meshcode, &meshcodes, strict) {
-                        let entry = meshes.entry(meshcode.clone()).or_default();
-                        let remote_file = CityGmlRemoteFile {
-                            meshcode: meshcode.clone(),
-                            feature_type: feature_type.clone(),
-                            url: file.url.clone(),
-                            max_lod: file.max_lod,
-                            file_size: file.file_size,
-                            features: file.features,
-                        };
-                        let feature_type_files_entry =
-                            feature_type_files.entry(feature_type.clone()).or_default();
-                        if !feature_type_files_entry
-                            .iter()
-                            .any(|existing| existing.url == remote_file.url)
-                        {
-                            feature_type_files_entry.push(remote_file.clone());
-                        }
-                        let type_entry = entry.entry(feature_type.clone()).or_default();
-                        if !type_entry
-                            .iter()
-                            .any(|existing| existing.url == remote_file.url)
-                        {
-                            type_entry.push(remote_file);
-                        }
+                if let Some(meshcode) = normalize_meshcode(&file.code)
+                    && is_included_meshcode(&meshcode, &meshcodes, strict)
+                {
+                    let entry = meshes.entry(meshcode.clone()).or_default();
+                    let remote_file = CityGmlRemoteFile {
+                        meshcode: meshcode.clone(),
+                        feature_type: feature_type.clone(),
+                        url: file.url.clone(),
+                        max_lod: file.max_lod,
+                        file_size: file.file_size,
+                        features: file.features,
+                    };
+                    let feature_type_files_entry =
+                        feature_type_files.entry(feature_type.clone()).or_default();
+                    if !feature_type_files_entry
+                        .iter()
+                        .any(|existing| existing.url == remote_file.url)
+                    {
+                        feature_type_files_entry.push(remote_file.clone());
+                    }
+                    let type_entry = entry.entry(feature_type.clone()).or_default();
+                    if !type_entry
+                        .iter()
+                        .any(|existing| existing.url == remote_file.url)
+                    {
+                        type_entry.push(remote_file);
                     }
                 }
             }
@@ -1010,14 +1010,13 @@ async fn download_citygml_pack(
         .await
         .map_err(|err| Error::Http(err.to_string()))?;
 
-    if download_response.status().is_redirection() {
-        if let Some(location) = download_response
+    if download_response.status().is_redirection()
+        && let Some(location) = download_response
             .headers()
             .get(reqwest::header::LOCATION)
             .and_then(|v| v.to_str().ok())
-        {
-            download_response = client.get(location).send().await?;
-        }
+    {
+        download_response = client.get(location).send().await?;
     }
 
     if !download_response.status().is_success() {
@@ -1034,7 +1033,9 @@ async fn download_citygml_pack(
         .map_err(|err| Error::Http(err.to_string()))?;
 
     let temp_dir = tempdir()?;
-    let target_path = if let Some(path) = zip_output_path && !path.is_empty() {
+    let target_path = if let Some(path) = zip_output_path
+        && !path.is_empty()
+    {
         PathBuf::from(path)
     } else {
         temp_dir.path().join(format!("plateau-pack-{pack_id}.zip"))
