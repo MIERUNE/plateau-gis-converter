@@ -146,27 +146,30 @@ impl FlattenTreeTransform {
                 obj.attributes = new_attribs;
 
                 if let ObjectStereotype::Feature { .. } = &obj.stereotype {
+                    let mut new_obj = obj.clone();
                     // set parent id and type to attributes
                     if let Some(parent) = parent {
                         match parent {
                             Parent::Feature { id, typename } => {
-                                obj.attributes
+                                new_obj
+                                    .attributes
                                     .insert("parentId".to_string(), Value::String(id.to_string()));
-                                obj.attributes.insert(
+                                new_obj.attributes.insert(
                                     "parentType".to_string(),
                                     Value::String(typename.to_string()),
                                 );
                             }
                             Parent::Data { typename } => {
-                                obj.attributes.insert(
+                                new_obj.attributes.insert(
                                     "parentType".to_string(),
                                     Value::String(typename.to_string()),
                                 );
                             }
                             Parent::Object { id, typename } => {
-                                obj.attributes
+                                new_obj
+                                    .attributes
                                     .insert("parentId".to_string(), Value::String(id.to_string()));
-                                obj.attributes.insert(
+                                new_obj.attributes.insert(
                                     "parentType".to_string(),
                                     Value::String(typename.to_string()),
                                 );
@@ -176,14 +179,21 @@ impl FlattenTreeTransform {
 
                     out.push(Entity {
                         id,
-                        typename, // OLD: Use typename from value.typename()
-                        root: Value::Object(obj),
+                        typename: typename.clone(),
+                        root: Value::Object(new_obj),
                         base_url: url::Url::parse("file:///dummy").expect("should be valid"),
                         geometry_store: geom_store.clone(),
                         appearance_store: appearance_store.clone(),
                         bounded_by: bounded_by.clone(),
                     });
-                    return None;
+
+                    if typename == Some("uro:DmGeometricAttribute".to_string()) {
+                        // DmGeometricAttribute should be kept with geometry removed
+                        // the kept DmGeometricAttribute should not have those parent* attributes
+                        obj.stereotype = ObjectStereotype::Data;
+                    } else {
+                        return None;
+                    }
                 }
 
                 Some(Value::Object(obj))

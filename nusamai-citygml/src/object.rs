@@ -36,7 +36,15 @@ pub enum ObjectStereotype {
 impl ObjectStereotype {
     pub fn id(&self) -> Option<&str> {
         match self {
-            ObjectStereotype::Feature { id, .. } => Some(id),
+            ObjectStereotype::Feature { id, .. } => {
+                if id.is_empty() {
+                    // DmGeometricAttribute does not have gml:id
+                    // the parsing framework defaults to empty strings for missing gml:id
+                    None
+                } else {
+                    Some(id)
+                }
+            }
             ObjectStereotype::Object { id } => Some(id),
             ObjectStereotype::Data => None,
         }

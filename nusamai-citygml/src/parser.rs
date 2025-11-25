@@ -865,22 +865,13 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                             GeometryType::Curve
                         }
                         (Bound(GML31_NS), b"MultiCurve") => {
-                            self.parse_multi_curve_prop(
-                                geomrefs,
-                                lod,
-                                feature_id.clone(),
-                                feature_type.clone(),
-                            )?;
+                            self.parse_multi_curve()?;
                             line_end = Some(self.state.geometry_collector.multilinestring.len());
                             GeometryType::Curve
                         }
                         (Bound(GML31_NS), b"CompositeCurve") => {
-                            self.parse_composite_curve_prop(
-                                geomrefs,
-                                lod,
-                                feature_id.clone(),
-                                feature_type.clone(),
-                            )?;
+                            // composite curve is a subtype of multi curve (must be connected)
+                            self.parse_multi_curve()?;
                             line_end = Some(self.state.geometry_collector.multilinestring.len());
                             GeometryType::Curve
                         }

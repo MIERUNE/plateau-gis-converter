@@ -1,6 +1,9 @@
-use nusamai_citygml::{citygml_data, citygml_property, CityGmlElement, Code, GYearMonth, Length};
+use nusamai_citygml::{
+    citygml_data, citygml_feature, citygml_property, CityGmlElement, Code, GYearMonth, Length,
+};
 
 #[citygml_property(name = "uro:DmAttributeProperty")]
+#[allow(clippy::large_enum_variant)]
 pub enum DmAttributeProperty {
     #[citygml(path = b"uro:DmAnnotation")]
     DmAnnotation(DmAnnotation),
@@ -44,11 +47,8 @@ pub struct DmAnnotation {
     pub spacing: Option<i64>,
 }
 
-#[citygml_data(name = "uro:DmGeometricAttribute")]
+#[citygml_feature(name = "uro:DmGeometricAttribute")]
 pub struct DmGeometricAttribute {
-    #[citygml(geom = b"uro")]
-    pub geometries: nusamai_citygml::GeometryRefs,
-
     #[citygml(path = b"uro:dmCode", required)]
     pub dm_code: Option<Code>,
 
