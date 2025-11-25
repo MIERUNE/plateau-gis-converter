@@ -246,7 +246,7 @@ struct PackStatusResponse {
 struct DownloadCityGmlPackResult {
     pack_id: String,
     zip_path: String,
-    temp_dir: TempDir,
+    temp_dir: Option<TempDir>,
 }
 
 fn plateau_api_base_url() -> String {
@@ -1032,13 +1032,14 @@ async fn download_citygml_pack(
         .await
         .map_err(|err| Error::Http(err.to_string()))?;
 
-    let temp_dir = tempdir()?;
-    let target_path = if let Some(path) = zip_output_path
+    let (target_path, temp_dir) = if let Some(path) = zip_output_path
         && !path.is_empty()
     {
-        PathBuf::from(path)
+        (PathBuf::from(path), None)
     } else {
-        temp_dir.path().join(format!("plateau-pack-{pack_id}.zip"))
+        let temp_dir = tempdir()?;
+        let path = temp_dir.path().join(format!("plateau-pack-{pack_id}.zip"));
+        (path, Some(temp_dir))
     };
     std::fs::write(&target_path, bytes.as_ref()).map_err(|err| Error::Io(err.to_string()))?;
 
@@ -1206,38 +1207,39 @@ async fn pack_and_run_conversion(
         tasks_state,
         app.clone(),
     )?;
-    match pack_result.temp_dir.close() {
-        Ok(_) => {
-            let msg = "ダウンロードした一時ファイルの削除に成功しました".to_string();
-            app.emit(
-                "conversion-log",
-                LogMessage {
-                    message: msg.clone(),
-                    level: "INFO".to_string(),
-                    error_message: None,
-                    source: "pack_and_run_conversion".to_string(),
-                },
-            )
-            .unwrap();
-            log::info!("{msg}");
-            Ok(())
-        }
-        Err(_) => {
-            let msg = "ダウンロードした一時ファイルの削除に失敗しました".to_string();
-            app.emit(
-                "conversion-log",
-                LogMessage {
-                    message: msg.clone(),
-                    level: "WARN".to_string(),
-                    error_message: None,
-                    source: "pack_and_run_conversion".to_string(),
-                },
-            )
-            .unwrap();
-            log::warn!("{msg}");
-            Ok(())
+    if let Some(temp_dir) = pack_result.temp_dir {
+        match temp_dir.close() {
+            Ok(_) => {
+                let msg = "ダウンロードした一時ファイルの削除に成功しました".to_string();
+                app.emit(
+                    "conversion-log",
+                    LogMessage {
+                        message: msg.clone(),
+                        level: "INFO".to_string(),
+                        error_message: None,
+                        source: "pack_and_run_conversion".to_string(),
+                    },
+                )
+                .unwrap();
+                log::info!("{msg}");
+            }
+            Err(_) => {
+                let msg = "ダウンロードした一時ファイルの削除に失敗しました".to_string();
+                app.emit(
+                    "conversion-log",
+                    LogMessage {
+                        message: msg.clone(),
+                        level: "WARN".to_string(),
+                        error_message: None,
+                        source: "pack_and_run_conversion".to_string(),
+                    },
+                )
+                .unwrap();
+                log::warn!("{msg}");
+            }
         }
     }
+    Ok(())
 }
 
 #[cfg(test)]

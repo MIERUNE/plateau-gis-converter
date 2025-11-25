@@ -1,5 +1,4 @@
 <script lang="ts">
-	import {} from '@tauri-apps/api';
 	import Icon from '@iconify/svelte';
 	import { abbreviatePath } from '$lib/utils';
 	import * as dialog from '@tauri-apps/plugin-dialog';
@@ -20,6 +19,9 @@
 				}
 			]
 		});
+		if (!res) {
+			return;
+		}
 		zipOutputPath = Array.isArray(res) ? res[0] : res;
 	}
 
@@ -45,7 +47,7 @@
 		<div class="flex items-center gap-3">
 			<button
 				onclick={openOutputDialog}
-				class="min-ww-16 rounded-sm bg-accent1 px-4 py-0.5 font-semibold shadow-sm hover:opacity-75"
+				class="min-w-16 rounded-sm bg-accent1 px-4 py-0.5 font-semibold shadow-sm hover:opacity-75"
 				>選択</button
 			>
 			<div class="min-w-20 flex-1 text-sm">
