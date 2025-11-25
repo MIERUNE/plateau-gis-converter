@@ -15,7 +15,7 @@ use crate::{
     codelist::{self, CodeResolver},
     geometry::{
         GeometryCollector, GeometryParseType, GeometryRef, GeometryRefs, GeometryStore,
-        GeometryType,
+        GeometryType, GmlGeometryType, PropertyType,
     },
     namespace::{wellknown_prefix_from_nsres, APP_2_NS, GML31_NS},
     CityGmlAttribute, LocalId, OrientableSurface, SurfaceSpan, XLINK_NS,
@@ -440,6 +440,26 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
         (feature_id, feature_type)
     }
 
+    /// Extract the CityGML property name from the current path
+    /// Returns the PropertyType enum
+    fn extract_property_name(&self) -> Option<PropertyType> {
+        if self.state.path_stack_indices.is_empty() {
+            return None;
+        }
+
+        let paths = String::from_utf8_lossy(self.state.path_buf.as_ref());
+        let start = self.state.path_stack_indices[self.state.path_stack_indices.len() - 1];
+        let path_segment = &paths[start + 1..];
+
+        // Extract just the local name without namespace prefix
+        // e.g., "bldg:lod2MultiSurface" -> "lod2MultiSurface"
+        path_segment
+            .split('/')
+            .next()
+            .and_then(|s| s.split(':').next_back())
+            .and_then(PropertyType::maybe_from_str)
+    }
+
     /// Expect a geometric attribute of CityGML
     #[inline(never)]
     pub fn parse_geometric_attr(
@@ -450,21 +470,39 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
     ) -> Result<(), ParseError> {
         use GeometryParseType::*;
         let (feature_id, feature_type) = self.extract_feature_id_and_type();
-
+        let property_name = self.extract_property_name();
         match geomtype {
-            Solid => self.parse_solid_prop(geomref, lod, feature_id, feature_type)?,
-            MultiSurface => {
-                self.parse_multi_surface_prop(geomref, lod, feature_id, feature_type)?
+            Solid => {
+                self.parse_solid_prop(geomref, lod, feature_id, feature_type, property_name)?
             }
-            Surface => self.parse_surface_prop(geomref, lod, feature_id, feature_type)?, // FIXME
-            Geometry => self.parse_geometry_prop(geomref, lod, feature_id, feature_type)?, // FIXME: not only surfaces
-            Triangulated => self.parse_triangulated_prop(geomref, lod, feature_id, feature_type)?, // FIXME
+            MultiSurface => self.parse_multi_surface_prop(
+                geomref,
+                lod,
+                feature_id,
+                feature_type,
+                property_name,
+            )?,
+            Surface => {
+                self.parse_surface_prop(geomref, lod, feature_id, feature_type, property_name)?
+            } // FIXME
+            Geometry => {
+                self.parse_geometry_prop(geomref, lod, feature_id, feature_type, property_name)?
+            } // FIXME: not only surfaces
+            Triangulated => {
+                self.parse_triangulated_prop(geomref, lod, feature_id, feature_type, property_name)?
+            } // FIXME
             Point => todo!(),      // FIXME
             MultiPoint => todo!(), // FIXME
-            MultiCurve => self.parse_multi_curve_prop(geomref, lod, feature_id, feature_type)?, // FIXME
-            CompositeCurve => {
-                self.parse_composite_curve_prop(geomref, lod, feature_id, feature_type)?
-            }
+            MultiCurve => {
+                self.parse_multi_curve_prop(geomref, lod, feature_id, feature_type, property_name)?
+            } // FIXME
+            CompositeCurve => self.parse_composite_curve_prop(
+                geomref,
+                lod,
+                feature_id,
+                feature_type,
+                property_name,
+            )?,
         }
 
         self.state
@@ -480,6 +518,7 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
         lod: u8,
         feature_id: Option<String>,
         feature_type: Option<String>,
+        property_name: Option<PropertyType>,
     ) -> Result<(), ParseError> {
         loop {
             match self.reader.read_event_into(&mut self.state.buf1) {
@@ -487,6 +526,9 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                     let (nsres, localname) = self.reader.resolve_element(start.name());
                     let line_begin = self.state.geometry_collector.multilinestring.len();
 
+                    let gml_geometry_type = GmlGeometryType::maybe_from_str(
+                        &String::from_utf8_lossy(localname.as_ref()),
+                    );
                     let geomtype = match (nsres, localname.as_ref()) {
                         (Bound(GML31_NS), b"MultiCurve") => {
                             self.parse_multi_curve()?;
@@ -504,6 +546,8 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                     if line_end - line_begin > 0 {
                         geomrefs.push(GeometryRef {
                             ty: geomtype,
+                            property_name,
+                            gml_geometry_type,
                             lod,
                             pos: line_begin as u32,
                             len: (line_end - line_begin) as u32,
@@ -533,6 +577,7 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
         lod: u8,
         feature_id: Option<String>,
         feature_type: Option<String>,
+        property_name: Option<PropertyType>,
     ) -> Result<(), ParseError> {
         // CompositeCurve has stricter semantics than MultiCurve:
         // - Segments MUST be topologically connected (end-to-end)
@@ -545,6 +590,9 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                     let (nsres, localname) = self.reader.resolve_element(start.name());
                     let line_begin = self.state.geometry_collector.multilinestring.len();
 
+                    let gml_geometry_type = GmlGeometryType::maybe_from_str(
+                        &String::from_utf8_lossy(localname.as_ref()),
+                    );
                     let geomtype = match (nsres, localname.as_ref()) {
                         (Bound(GML31_NS), b"CompositeCurve") => {
                             // CompositeCurve uses curveMember elements just like MultiCurve
@@ -563,6 +611,8 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                     if line_end - line_begin > 0 {
                         geomrefs.push(GeometryRef {
                             ty: geomtype,
+                            property_name,
+                            gml_geometry_type,
                             lod,
                             pos: line_begin as u32,
                             len: (line_end - line_begin) as u32,
@@ -592,6 +642,7 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
         lod: u8,
         feature_id: Option<String>,
         feature_type: Option<String>,
+        property_name: Option<PropertyType>,
     ) -> Result<(), ParseError> {
         let mut surface_id = None;
         loop {
@@ -610,6 +661,9 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                     let (nsres, localname) = self.reader.resolve_element(start.name());
                     let poly_begin = self.state.geometry_collector.multipolygon.len();
 
+                    let gml_geometry_type = GmlGeometryType::maybe_from_str(
+                        &String::from_utf8_lossy(localname.as_ref()),
+                    );
                     let geomtype = match (nsres, localname.as_ref()) {
                         (Bound(GML31_NS), b"MultiSurface") => {
                             let id = self.parse_multi_surface()?;
@@ -630,6 +684,8 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                     if poly_end - poly_begin > 0 {
                         geomrefs.push(GeometryRef {
                             ty: geomtype,
+                            property_name,
+                            gml_geometry_type,
                             lod,
                             pos: poly_begin as u32,
                             len: (poly_end - poly_begin) as u32,
@@ -671,6 +727,7 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
         lod: u8,
         feature_id: Option<String>,
         feature_type: Option<String>,
+        property_name: Option<PropertyType>,
     ) -> Result<(), ParseError> {
         let poly_begin = self.state.geometry_collector.multipolygon.len();
         let (surface_id, _) = self.parse_surface()?;
@@ -678,6 +735,8 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
         if poly_end - poly_begin > 0 {
             geomrefs.push(GeometryRef {
                 ty: GeometryType::Surface,
+                property_name,
+                gml_geometry_type: Some(GmlGeometryType::Surface),
                 lod,
                 pos: poly_begin as u32,
                 len: (poly_end - poly_begin) as u32,
@@ -696,6 +755,7 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
         lod: u8,
         feature_id: Option<String>,
         feature_type: Option<String>,
+        property_name: Option<PropertyType>,
     ) -> Result<(), ParseError> {
         let poly_begin = self.state.geometry_collector.multipolygon.len();
         let mut surface_id = None;
@@ -710,6 +770,8 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
         if poly_end - poly_begin > 0 {
             geomrefs.push(GeometryRef {
                 ty: GeometryType::Solid,
+                property_name,
+                gml_geometry_type: Some(GmlGeometryType::Solid),
                 lod,
                 pos: poly_begin as u32,
                 len: (poly_end - poly_begin) as u32,
@@ -728,6 +790,7 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
         lod: u8,
         feature_id: Option<String>,
         feature_type: Option<String>,
+        property_name: Option<PropertyType>,
     ) -> Result<(), ParseError> {
         let mut inside_member = false;
         loop {
@@ -743,6 +806,7 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                                 lod,
                                 feature_id.clone(),
                                 feature_type.clone(),
+                                property_name,
                             )?;
                         }
                         _ => {
@@ -778,6 +842,7 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
         lod: u8,
         feature_id: Option<String>,
         feature_type: Option<String>,
+        property_name: Option<PropertyType>,
     ) -> Result<(), ParseError> {
         let mut surface_id = None;
         loop {
@@ -801,7 +866,9 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                                 Some(String::from_utf8_lossy(attr.value.as_ref()).to_string());
                         }
                     }
-
+                    let gml_geometry_type = GmlGeometryType::maybe_from_str(
+                        &String::from_utf8_lossy(localname.as_ref()),
+                    );
                     let geomtype = match (nsres, localname.as_ref()) {
                         (Bound(GML31_NS), b"MultiGeometry") => {
                             self.parse_multi_geometry(
@@ -809,6 +876,7 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                                 lod,
                                 feature_id.clone(),
                                 feature_type.clone(),
+                                property_name,
                             )?;
                             return Ok(());
                         }
@@ -865,13 +933,24 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                             GeometryType::Curve
                         }
                         (Bound(GML31_NS), b"MultiCurve") => {
-                            self.parse_multi_curve()?;
+                            self.parse_multi_curve_prop(
+                                geomrefs,
+                                lod,
+                                feature_id.clone(),
+                                feature_type.clone(),
+                                property_name,
+                            )?;
                             line_end = Some(self.state.geometry_collector.multilinestring.len());
                             GeometryType::Curve
                         }
                         (Bound(GML31_NS), b"CompositeCurve") => {
-                            // composite curve is a subtype of multi curve (must be connected)
-                            self.parse_multi_curve()?;
+                            self.parse_composite_curve_prop(
+                                geomrefs,
+                                lod,
+                                feature_id.clone(),
+                                feature_type.clone(),
+                                property_name,
+                            )?;
                             line_end = Some(self.state.geometry_collector.multilinestring.len());
                             GeometryType::Curve
                         }
@@ -889,6 +968,8 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                         if poly_end - poly_begin > 0 {
                             geomrefs.push(GeometryRef {
                                 ty: geomtype,
+                                property_name,
+                                gml_geometry_type,
                                 lod,
                                 pos: poly_begin as u32,
                                 len: (poly_end - poly_begin) as u32,
@@ -914,6 +995,8 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                         if line_end - line_begin > 0 {
                             geomrefs.push(GeometryRef {
                                 ty: geomtype,
+                                property_name,
+                                gml_geometry_type,
                                 lod,
                                 pos: line_begin as u32,
                                 len: (line_end - line_begin) as u32,
@@ -944,13 +1027,18 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
         lod: u8,
         feature_id: Option<String>,
         feature_type: Option<String>,
+        property_name: Option<PropertyType>,
     ) -> Result<(), ParseError> {
         let poly_begin = self.state.geometry_collector.multipolygon.len();
+        let mut gml_geometry_type = None;
 
         loop {
             match self.reader.read_event_into(&mut self.state.buf1) {
                 Ok(Event::Start(start)) => {
                     let (nsres, localname) = self.reader.resolve_element(start.name());
+                    gml_geometry_type = GmlGeometryType::maybe_from_str(&String::from_utf8_lossy(
+                        localname.as_ref(),
+                    ));
                     match (nsres, localname.as_ref()) {
                         (Bound(GML31_NS), b"TriangulatedSurface") => {
                             self.parse_triangulated_surface()?
@@ -979,6 +1067,8 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
         if poly_end - poly_begin > 0 {
             geomrefs.push(GeometryRef {
                 ty: GeometryType::Triangle,
+                property_name,
+                gml_geometry_type,
                 lod,
                 pos: poly_begin as u32,
                 len: (poly_end - poly_begin) as u32,

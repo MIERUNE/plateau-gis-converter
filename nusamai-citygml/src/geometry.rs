@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use flatgeom::{MultiLineString, MultiPoint, MultiPolygon};
 use nusamai_projection::crs::*;
 
@@ -17,6 +19,201 @@ pub enum GeometryParseType {
     Point,
     Triangulated,
     CompositeCurve,
+}
+
+/// GML geometry types as they appear in the XML
+#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
+#[derive(Debug, Clone, Copy, Hash, PartialEq, Eq)]
+pub enum GmlGeometryType {
+    // Polygonal types
+    Solid,
+    MultiSurface,
+    CompositeSurface,
+    OrientableSurface,
+    Polygon,
+    Surface,
+    TriangulatedSurface,
+    Tin,
+
+    // Linear types
+    LineString,
+    MultiCurve,
+    CompositeCurve,
+
+    // Point types
+    Point,
+    MultiPoint,
+
+    // Generic
+    Geometry,
+    MultiGeometry,
+}
+
+impl GmlGeometryType {
+    /// Parse from a string slice (XML element local name)
+    pub fn maybe_from_str(s: &str) -> Option<Self> {
+        match s {
+            "Solid" => Some(Self::Solid),
+            "MultiSurface" => Some(Self::MultiSurface),
+            "CompositeSurface" => Some(Self::CompositeSurface),
+            "OrientableSurface" => Some(Self::OrientableSurface),
+            "Polygon" => Some(Self::Polygon),
+            "Surface" => Some(Self::Surface),
+            "TriangulatedSurface" => Some(Self::TriangulatedSurface),
+            "Tin" => Some(Self::Tin),
+            "LineString" => Some(Self::LineString),
+            "MultiCurve" => Some(Self::MultiCurve),
+            "CompositeCurve" => Some(Self::CompositeCurve),
+            "Point" => Some(Self::Point),
+            "MultiPoint" => Some(Self::MultiPoint),
+            "Geometry" => Some(Self::Geometry),
+            "MultiGeometry" => Some(Self::MultiGeometry),
+            _ => None,
+        }
+    }
+}
+
+impl Display for GmlGeometryType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let s = match self {
+            Self::Solid => "Solid",
+            Self::MultiSurface => "MultiSurface",
+            Self::CompositeSurface => "CompositeSurface",
+            Self::OrientableSurface => "OrientableSurface",
+            Self::Polygon => "Polygon",
+            Self::Surface => "Surface",
+            Self::TriangulatedSurface => "TriangulatedSurface",
+            Self::Tin => "Tin",
+            Self::LineString => "LineString",
+            Self::MultiCurve => "MultiCurve",
+            Self::CompositeCurve => "CompositeCurve",
+            Self::Point => "Point",
+            Self::MultiPoint => "MultiPoint",
+            Self::Geometry => "Geometry",
+            Self::MultiGeometry => "MultiGeometry",
+        };
+        write!(f, "{s}")
+    }
+}
+
+/// CityGML property names that contain geometry
+#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
+#[derive(Debug, Clone, Copy, Hash, PartialEq, Eq)]
+pub enum PropertyType {
+    // Standard LOD properties
+    Lod0Point,
+    Lod0MultiCurve,
+    Lod2MultiCurve,
+    Lod3MultiCurve,
+    Lod4MultiCurve,
+
+    Lod1Solid,
+    Lod2Solid,
+    Lod3Solid,
+    Lod4Solid,
+
+    Lod0MultiSurface,
+    Lod1MultiSurface,
+    Lod2MultiSurface,
+    Lod3MultiSurface,
+    Lod4MultiSurface,
+
+    Lod0Geometry,
+    Lod1Geometry,
+    Lod2Geometry,
+    Lod3Geometry,
+    Lod4Geometry,
+
+    // Special properties
+    Lod0RoofEdge,
+    Lod0FootPrint,
+    Lod0Network,
+    Lod2Network,
+    Lod3Network,
+    Lod2Surface,
+    Lod3Surface,
+    Tin,
+}
+
+impl PropertyType {
+    /// Parse from a string slice (property name without namespace)
+    pub fn maybe_from_str(s: &str) -> Option<Self> {
+        let out = match s {
+            "lod0Point" => Self::Lod0Point,
+            "lod0MultiCurve" => Self::Lod0MultiCurve,
+            "lod2MultiCurve" => Self::Lod2MultiCurve,
+            "lod3MultiCurve" => Self::Lod3MultiCurve,
+            "lod4MultiCurve" => Self::Lod4MultiCurve,
+
+            "lod1Solid" => Self::Lod1Solid,
+            "lod2Solid" => Self::Lod2Solid,
+            "lod3Solid" => Self::Lod3Solid,
+            "lod4Solid" => Self::Lod4Solid,
+
+            "lod0MultiSurface" => Self::Lod0MultiSurface,
+            "lod1MultiSurface" => Self::Lod1MultiSurface,
+            "lod2MultiSurface" => Self::Lod2MultiSurface,
+            "lod3MultiSurface" => Self::Lod3MultiSurface,
+            "lod4MultiSurface" => Self::Lod4MultiSurface,
+
+            "lod0Geometry" => Self::Lod0Geometry,
+            "lod1Geometry" => Self::Lod1Geometry,
+            "lod2Geometry" => Self::Lod2Geometry,
+            "lod3Geometry" => Self::Lod3Geometry,
+            "lod4Geometry" => Self::Lod4Geometry,
+
+            "lod0RoofEdge" => Self::Lod0RoofEdge,
+            "lod0FootPrint" => Self::Lod0FootPrint,
+            "lod0Network" => Self::Lod0Network,
+            "lod2Network" => Self::Lod2Network,
+            "lod3Network" => Self::Lod3Network,
+            "lod2Surface" => Self::Lod2Surface,
+            "lod3Surface" => Self::Lod3Surface,
+            "tin" => Self::Tin,
+
+            &_ => return None,
+        };
+        Some(out)
+    }
+}
+
+impl Display for PropertyType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let s = match self {
+            Self::Lod0Point => "lod0Point",
+            Self::Lod0MultiCurve => "lod0MultiCurve",
+            Self::Lod2MultiCurve => "lod2MultiCurve",
+            Self::Lod3MultiCurve => "lod3MultiCurve",
+            Self::Lod4MultiCurve => "lod4MultiCurve",
+
+            Self::Lod1Solid => "lod1Solid",
+            Self::Lod2Solid => "lod2Solid",
+            Self::Lod3Solid => "lod3Solid",
+            Self::Lod4Solid => "lod4Solid",
+
+            Self::Lod0MultiSurface => "lod0MultiSurface",
+            Self::Lod1MultiSurface => "lod1MultiSurface",
+            Self::Lod2MultiSurface => "lod2MultiSurface",
+            Self::Lod3MultiSurface => "lod3MultiSurface",
+            Self::Lod4MultiSurface => "lod4MultiSurface",
+
+            Self::Lod0Geometry => "lod0Geometry",
+            Self::Lod1Geometry => "lod1Geometry",
+            Self::Lod2Geometry => "lod2Geometry",
+            Self::Lod3Geometry => "lod3Geometry",
+            Self::Lod4Geometry => "lod4Geometry",
+
+            Self::Lod0RoofEdge => "lod0RoofEdge",
+            Self::Lod0FootPrint => "lod0FootPrint",
+            Self::Lod0Network => "lod0Network",
+            Self::Lod2Network => "lod2Network",
+            Self::Lod3Network => "lod3Network",
+            Self::Lod2Surface => "lod2Surface",
+            Self::Lod3Surface => "lod3Surface",
+            Self::Tin => "tin",
+        };
+        write!(f, "{s}")
+    }
 }
 
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
@@ -40,6 +237,10 @@ pub struct GeometryRef {
     pub id: Option<LocalId>,
     #[serde(rename = "type")]
     pub ty: GeometryType,
+    /// CityGML property name (e.g., Lod2MultiSurface, Lod1Solid, Lod3Geometry)
+    pub property_name: Option<PropertyType>,
+    /// GML geometry type (e.g., MultiSurface, Polygon, CompositeSurface)
+    pub gml_geometry_type: Option<GmlGeometryType>,
     pub lod: u8,
     pub pos: u32,
     pub len: u32,
