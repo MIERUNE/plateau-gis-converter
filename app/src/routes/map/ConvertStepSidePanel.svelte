@@ -8,10 +8,12 @@
 	import SecondaryButton from '../SecondaryButton.svelte';
 	import type { FetchCityGmlMetadataResult } from '$lib/fetchCityGMLMetadata';
 	import PrimaryButton from '../PrimaryButton.svelte';
+	import ZipOutputSelector from '../ZipOutputSelector.svelte';
 
 	type Props = {
 		selectedMeshcodesData: FetchCityGmlMetadataResult | null;
 		selectedFeatureTypes: string[];
+		zipOutputPath: string;
 		onclickBack: () => void;
 	} & SettingSelectorProps &
 		OutputSelectorProps;
@@ -25,6 +27,7 @@
 		sinkParameters = $bindable(),
 		transformerSettings = $bindable(),
 		outputPath = $bindable(),
+		zipOutputPath = $bindable(),
 		onclickBack
 	}: Props = $props();
 
@@ -75,6 +78,7 @@
 			await invoke('pack_and_run_conversion', {
 				urls: selectedFiles,
 				outputPath,
+				zipOutputPath,
 				filetype,
 				epsg,
 				rulesPath,
@@ -154,8 +158,9 @@
 		/>
 
 		<OutputSelector {filetype} bind:outputPath />
+		<ZipOutputSelector bind:zipOutputPath />
 	</div>
-	<div class="flex justify-between gap-2">
+	<div class="flex justify-between gap-2 pb-4">
 		<SecondaryButton onclick={onclickBack}>戻る</SecondaryButton>
 		<PrimaryButton
 			onclick={convertFiles}
