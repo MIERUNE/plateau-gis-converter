@@ -453,6 +453,7 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
 
         // Extract just the local name without namespace prefix
         // e.g., "bldg:lod2MultiSurface" -> "lod2MultiSurface"
+        // Using maybe_from_str as not all gml objects have geometric properties
         path_segment
             .split('/')
             .next()
@@ -530,13 +531,13 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                         &String::from_utf8_lossy(localname.as_ref()),
                     );
                     let geomtype = match (nsres, localname.as_ref()) {
-                        (Bound(GML31_NS), b"MultiCurve") => {
-                            self.parse_multi_curve()?;
+                        (Bound(GML31_NS), b"curveMember") => {
+                            self.parse_curve_member()?;
                             GeometryType::Curve
                         }
                         _ => {
                             return Err(ParseError::SchemaViolation(format!(
-                                "Expected MultiCurve but found <{}>",
+                                "Expected curveMember but found <{}>",
                                 String::from_utf8_lossy(start.name().as_ref())
                             )))
                         }
@@ -594,14 +595,14 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                         &String::from_utf8_lossy(localname.as_ref()),
                     );
                     let geomtype = match (nsres, localname.as_ref()) {
-                        (Bound(GML31_NS), b"CompositeCurve") => {
+                        (Bound(GML31_NS), b"curveMember") => {
                             // CompositeCurve uses curveMember elements just like MultiCurve
-                            self.parse_multi_curve()?;
+                            self.parse_curve_member()?;
                             GeometryType::Curve
                         }
                         _ => {
                             return Err(ParseError::SchemaViolation(format!(
-                                "Expected CompositeCurve but found <{}>",
+                                "Expected curveMember but found <{}>",
                                 String::from_utf8_lossy(start.name().as_ref())
                             )))
                         }
@@ -1081,19 +1082,20 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
         Ok(())
     }
 
-    fn parse_multi_curve(&mut self) -> Result<(), ParseError> {
+    fn parse_curve_member(&mut self) -> Result<(), ParseError> {
         loop {
             match self.reader.read_event_into(&mut self.state.buf1) {
                 Ok(Event::Start(start)) => {
                     let (nsres, localname) = self.reader.resolve_element(start.name());
                     match (nsres, localname.as_ref()) {
-                        (Bound(GML31_NS), b"curveMember") => {
+                        (Bound(GML31_NS), b"LineString") => {
                             self.parse_linestring()?;
                         }
                         _ => {
-                            return Err(ParseError::SchemaViolation(
-                                "Unexpected element. Because only surface member".into(),
-                            ))
+                            return Err(ParseError::SchemaViolation(format!(
+                                "Expected <LineString>, but found {}",
+                                String::from_utf8_lossy(localname.as_ref())
+                            )))
                         }
                     };
                 }
@@ -1389,7 +1391,7 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                 }
                 Ok((_, Event::Text(text))) => {
                     // check poslist
-                    if depth != 3 {
+                    if depth != 2 {
                         return Err(ParseError::SchemaViolation(
                             "Unexpected text content".into(),
                         ));

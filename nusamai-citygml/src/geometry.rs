@@ -51,6 +51,7 @@ pub enum GmlGeometryType {
 
 impl GmlGeometryType {
     /// Parse from a string slice (XML element local name)
+    /// This function is designed to return an option since whether an object has geometric types depends on the flattening settings.
     pub fn maybe_from_str(s: &str) -> Option<Self> {
         match s {
             "Solid" => Some(Self::Solid),
@@ -137,6 +138,7 @@ pub enum PropertyType {
 
 impl PropertyType {
     /// Parse from a string slice (property name without namespace)
+    /// This function is designed to return an option since whether an object has geometric properties depends on the flattening settings.
     pub fn maybe_from_str(s: &str) -> Option<Self> {
         let out = match s {
             "lod0Point" => Self::Lod0Point,
