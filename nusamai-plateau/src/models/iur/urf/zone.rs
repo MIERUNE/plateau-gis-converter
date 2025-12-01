@@ -508,13 +508,13 @@ pub struct CollectiveFacilitiesForReconstruction {
     pub minimum_building_height: Option<Length>,
 
     #[citygml(path = b"urf:maximumFloorAreaRate")]
-    pub maximum_floor_area_rate: Option<f64>,
+    pub maximum_floor_area_rate: Option<u64>,
 
     #[citygml(path = b"urf:minimumFloorAreaRate")]
-    pub minimum_floor_area_rate: Option<f64>,
+    pub minimum_floor_area_rate: Option<u64>,
 
     #[citygml(path = b"urf:maximumBuildingCoverageRate")]
-    pub maximum_building_coverage_rate: Option<f64>,
+    pub maximum_building_coverage_rate: Option<u64>,
 }
 
 #[citygml_feature(name = "urf:CollectiveFacilitiesForReconstructionAndRevitalization")]
@@ -628,13 +628,13 @@ pub struct CollectiveFacilitiesForReconstructionAndRevitalization {
     pub minimum_building_height: Option<Length>,
 
     #[citygml(path = b"urf:maximumFloorAreaRate")]
-    pub maximum_floor_area_rate: Option<f64>,
+    pub maximum_floor_area_rate: Option<u64>,
 
     #[citygml(path = b"urf:minimumFloorAreaRate")]
-    pub minimum_floor_area_rate: Option<f64>,
+    pub minimum_floor_area_rate: Option<u64>,
 
     #[citygml(path = b"urf:maximumBuildingCoverageRate")]
-    pub maximum_building_coverage_rate: Option<f64>,
+    pub maximum_building_coverage_rate: Option<u64>,
 }
 
 #[citygml_feature(name = "urf:CollectiveFacilitiesForTsunamiDisasterPrevention")]
@@ -748,13 +748,13 @@ pub struct CollectiveFacilitiesForTsunamiDisasterPrevention {
     pub minimum_building_height: Option<Length>,
 
     #[citygml(path = b"urf:maximumFloorAreaRate")]
-    pub maximum_floor_area_rate: Option<f64>,
+    pub maximum_floor_area_rate: Option<u64>,
 
     #[citygml(path = b"urf:minimumFloorAreaRate")]
-    pub minimum_floor_area_rate: Option<f64>,
+    pub minimum_floor_area_rate: Option<u64>,
 
     #[citygml(path = b"urf:maximumBuildingCoverageRate")]
-    pub maximum_building_coverage_rate: Option<f64>,
+    pub maximum_building_coverage_rate: Option<u64>,
 }
 
 #[citygml_feature(name = "urf:CollectiveGovernmentAndPublicOfficeFacilities")]
@@ -850,10 +850,10 @@ pub struct CollectiveGovernmentAndPublicOfficeFacilities {
     pub three_dimensional_extent: Vec<ThreeDimensionalExtent>,
 
     #[citygml(path = b"urf:buildingCoverageRate")]
-    pub building_coverage_rate: Option<f64>,
+    pub building_coverage_rate: Option<u64>,
 
     #[citygml(path = b"urf:floorAreaRate")]
-    pub floor_area_rate: Option<f64>,
+    pub floor_area_rate: Option<u64>,
 
     #[citygml(path = b"urf:publicFacilitiesAllocationPolicy")]
     pub public_facilities_allocation_policy: Option<String>,
@@ -955,10 +955,10 @@ pub struct CollectiveHousingFacilities {
     pub three_dimensional_extent: Vec<ThreeDimensionalExtent>,
 
     #[citygml(path = b"urf:buildingCoverageRate")]
-    pub building_coverage_rate: Option<f64>,
+    pub building_coverage_rate: Option<u64>,
 
     #[citygml(path = b"urf:floorAreaRate")]
-    pub floor_area_rate: Option<f64>,
+    pub floor_area_rate: Option<u64>,
 
     #[citygml(path = b"urf:numberOfLowRiseHousing")]
     pub number_of_low_rise_housing: Option<i64>,
@@ -1081,13 +1081,13 @@ pub struct CollectiveUrbanDisasterPreventionFacilities {
     pub minimum_building_height: Option<Length>,
 
     #[citygml(path = b"urf:maximumFloorAreaRate")]
-    pub maximum_floor_area_rate: Option<f64>,
+    pub maximum_floor_area_rate: Option<u64>,
 
     #[citygml(path = b"urf:minimumFloorAreaRate")]
-    pub minimum_floor_area_rate: Option<f64>,
+    pub minimum_floor_area_rate: Option<u64>,
 
     #[citygml(path = b"urf:maximumBuildingCoverageRate")]
-    pub maximum_building_coverage_rate: Option<f64>,
+    pub maximum_building_coverage_rate: Option<u64>,
 }
 
 #[citygml_feature(name = "urf:ConservationZoneForClustersOfTraditionalStructures")]
@@ -1486,10 +1486,10 @@ pub struct DistributionBusinessPark {
     pub public_and_utility_facilities: Option<String>,
 
     #[citygml(path = b"urf:buildingCoverageRate")]
-    pub building_coverage_rate: Option<f64>,
+    pub building_coverage_rate: Option<u64>,
 
     #[citygml(path = b"urf:floorAreaRate")]
-    pub floor_area_rate: Option<f64>,
+    pub floor_area_rate: Option<u64>,
 
     #[citygml(path = b"urf:maximumBuildingHeight")]
     pub maximum_building_height: Option<Length>,
@@ -1690,16 +1690,16 @@ pub struct District {
     pub use_restrictions: Option<String>,
 
     #[citygml(path = b"urf:maximumFloorAreaRate")]
-    pub maximum_floor_area_rate: Option<f64>,
+    pub maximum_floor_area_rate: Option<u64>,
 
     #[citygml(path = b"urf:minimumFloorAreaRate")]
-    pub minimum_floor_area_rate: Option<f64>,
+    pub minimum_floor_area_rate: Option<u64>,
 
     #[citygml(path = b"urf:maximumBuildingCoverageRate")]
-    pub maximum_building_coverage_rate: Option<f64>,
+    pub maximum_building_coverage_rate: Option<u64>,
 
     #[citygml(path = b"urf:minimumBuildingCoverageRate")]
-    pub minimum_building_coverage_rate: Option<f64>,
+    pub minimum_building_coverage_rate: Option<u64>,
 
     #[citygml(path = b"urf:minimumSiteArea")]
     pub minimum_site_area: Option<Measure>,
@@ -1729,7 +1729,7 @@ pub struct District {
     pub building_design_restriction: Option<String>,
 
     #[citygml(path = b"urf:minimumGreeningRate")]
-    pub minimum_greening_rate: Option<f64>,
+    pub minimum_greening_rate: Option<u64>,
 
     #[citygml(path = b"urf:fenceGuideline")]
     pub fence_guideline: Option<String>,
@@ -1741,7 +1741,7 @@ pub struct District {
     pub restrictions_for_noise_protection: Option<String>,
 
     #[citygml(path = b"urf:minimumFrontageRate")]
-    pub minimum_frontage_rate: Option<f64>,
+    pub minimum_frontage_rate: Option<u64>,
 }
 
 #[citygml_feature(name = "urf:DistrictDevelopmentPlan")]
@@ -3200,13 +3200,13 @@ pub struct HighLevelUseDistrict {
     pub area_in_total: Option<Measure>,
 
     #[citygml(path = b"urf:maximumFloorAreaRate", required)]
-    pub maximum_floor_area_rate: Vec<f64>,
+    pub maximum_floor_area_rate: Vec<u64>,
 
     #[citygml(path = b"urf:minimumFloorAreaRate", required)]
-    pub minimum_floor_area_rate: Vec<f64>,
+    pub minimum_floor_area_rate: Vec<u64>,
 
     #[citygml(path = b"urf:maximumBuildingCoverageRate", required)]
-    pub maximum_building_coverage_rate: Vec<f64>,
+    pub maximum_building_coverage_rate: Vec<u64>,
 
     #[citygml(path = b"urf:minimumBuildingArea", required)]
     pub minimum_building_area: Vec<Measure>,
@@ -3305,10 +3305,10 @@ pub struct HighRiseResidentialAttractionDistrict {
     pub area_in_total: Option<Measure>,
 
     #[citygml(path = b"urf:floorAreaRate", required)]
-    pub floor_area_rate: Option<f64>,
+    pub floor_area_rate: Option<u64>,
 
     #[citygml(path = b"urf:maximumBuildingCoverageRate")]
-    pub maximum_building_coverage_rate: Option<f64>,
+    pub maximum_building_coverage_rate: Option<u64>,
 
     #[citygml(path = b"urf:minimumSiteArea")]
     pub minimum_site_area: Option<Measure>,
@@ -4649,7 +4649,7 @@ pub struct PortZone {
     pub area_in_total: Option<Measure>,
 
     #[citygml(path = b"urf:floorAreaRate")]
-    pub floor_area_rate: Option<f64>,
+    pub floor_area_rate: Option<u64>,
 }
 
 #[citygml_feature(name = "urf:PrivateUrbanRenewalProjectPlan")]
@@ -5579,10 +5579,10 @@ pub struct ResidentialEnvironmentImprovementDistrict {
     pub use_to_be_induced: Option<String>,
 
     #[citygml(path = b"urf:maximumFloorAreaRate")]
-    pub maximum_floor_area_rate: Option<f64>,
+    pub maximum_floor_area_rate: Option<u64>,
 
     #[citygml(path = b"urf:maximumBuildingCoverageRate")]
-    pub maximum_building_coverage_rate: Option<f64>,
+    pub maximum_building_coverage_rate: Option<u64>,
 
     #[citygml(path = b"urf:maximumBuildingHeight")]
     pub maximum_building_height: Option<String>,
@@ -6383,7 +6383,7 @@ pub struct ScenicDistrict {
     pub area_in_total: Option<Measure>,
 
     #[citygml(path = b"urf:buildingCoverageRate")]
-    pub building_coverage_rate: Option<f64>,
+    pub building_coverage_rate: Option<u64>,
 
     #[citygml(path = b"urf:buildingHeightLimits")]
     pub building_height_limits: Option<Length>,
@@ -7505,13 +7505,13 @@ pub struct SpecialUrbanRenaissanceDistrict {
     pub use_to_be_induced: Option<String>,
 
     #[citygml(path = b"urf:maximumFloorAreaRate", required)]
-    pub maximum_floor_area_rate: Option<f64>,
+    pub maximum_floor_area_rate: Option<u64>,
 
     #[citygml(path = b"urf:minimumFloorAreaRate", required)]
-    pub minimum_floor_area_rate: Option<f64>,
+    pub minimum_floor_area_rate: Option<u64>,
 
     #[citygml(path = b"urf:maximumBuildingCoverageRate", required)]
-    pub maximum_building_coverage_rate: Option<f64>,
+    pub maximum_building_coverage_rate: Option<u64>,
 
     #[citygml(path = b"urf:minimumBuildingArea", required)]
     pub minimum_building_area: Option<Measure>,
@@ -7619,10 +7619,10 @@ pub struct SpecialUseAttractionDistrict {
     pub use_to_be_induced: Option<String>,
 
     #[citygml(path = b"urf:maximumFloorAreaRate", required)]
-    pub maximum_floor_area_rate: Option<f64>,
+    pub maximum_floor_area_rate: Option<u64>,
 
     #[citygml(path = b"urf:minimumFloorAreaRate")]
-    pub minimum_floor_area_rate: Option<f64>,
+    pub minimum_floor_area_rate: Option<u64>,
 
     #[citygml(path = b"urf:minimumBuildingArea")]
     pub minimum_building_area: Option<Measure>,
@@ -8006,7 +8006,7 @@ pub struct SpecifiedBlock {
     pub area_in_total: Option<Measure>,
 
     #[citygml(path = b"urf:floorAreaRate", required)]
-    pub floor_area_rate: Option<f64>,
+    pub floor_area_rate: Option<u64>,
 
     #[citygml(path = b"urf:maximumBuildingHeight", required)]
     pub maximum_building_height: Option<Length>,
@@ -8219,7 +8219,7 @@ pub struct SpecifiedDisasterPreventionBlockImprovementZone {
     pub setback_size: Option<String>,
 
     #[citygml(path = b"urf:minimumFrontageRate")]
-    pub minimum_frontage_rate: Option<f64>,
+    pub minimum_frontage_rate: Option<u64>,
 
     #[citygml(path = b"urf:minimumBuildingHeight")]
     pub minimum_building_height: Option<Length>,
@@ -8929,7 +8929,7 @@ pub struct TreePlantingDistrict {
     pub area_in_total: Option<Measure>,
 
     #[citygml(path = b"urf:minimumGreeningRate", required)]
-    pub minimum_greening_rate: Option<f64>,
+    pub minimum_greening_rate: Option<u64>,
 }
 
 #[citygml_feature(name = "urf:UnclassifiedBlankArea")]
@@ -10075,7 +10075,7 @@ pub struct UrbanRenewalProject {
     pub setback_size: Option<String>,
 
     #[citygml(path = b"urf:floorAreaRate")]
-    pub floor_area_rate: Option<f64>,
+    pub floor_area_rate: Option<u64>,
 
     #[citygml(path = b"urf:buildingUsage")]
     pub building_usage: Option<String>,
@@ -10273,13 +10273,13 @@ pub struct UseDistrict {
     pub area_in_total: Option<Measure>,
 
     #[citygml(path = b"urf:floorAreaRate", required)]
-    pub floor_area_rate: Option<f64>,
+    pub floor_area_rate: Option<u64>,
 
     #[citygml(path = b"urf:minimumSiteArea")]
     pub minimum_site_area: Option<Measure>,
 
     #[citygml(path = b"urf:buildingCoverageRate")]
-    pub building_coverage_rate: Option<f64>,
+    pub building_coverage_rate: Option<u64>,
 
     #[citygml(path = b"urf:wallSetbackDistance")]
     pub wall_setback_distance: Option<String>,

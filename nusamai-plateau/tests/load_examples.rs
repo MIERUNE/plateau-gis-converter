@@ -464,11 +464,11 @@ fn load_road_example() {
 
 #[test]
 fn load_urf_example() {
-    let cityobjs = load_cityobjs("./tests/data/takeo-shi/udx/urf/493060_urf_6668_op.gml");
-    assert_eq!(cityobjs.len(), 140);
+    let cityobjs = load_cityobjs("./tests/data/takeo-shi/udx/urf/493060_urf_6697_11_op.gml");
+    assert_eq!(cityobjs.len(), 95);
 
-    let cityobjs = load_cityobjs("./tests/data/numazu-shi/udx/urf/523857_urf_6668_op.gml");
-    assert_eq!(cityobjs.len(), 47);
+    let cityobjs = load_cityobjs("./tests/data/numazu-shi/udx/urf/523857_urf_6697_08_op.gml");
+    assert_eq!(cityobjs.len(), 44);
 
     let cityobjs = load_cityobjs("./tests/data/tokyo23-ku/udx/urf/533957_urf_6668_op.gml");
     assert_eq!(cityobjs.len(), 38);
@@ -671,7 +671,7 @@ fn load_urf_rinko_example() {
 
 #[test]
 fn load_urf_yoto_example() {
-    let cityobjs = load_cityobjs("./tests/data/kawasaki-shi/udx/urf/533915_urf_6668_yoto_op.gml");
+    let cityobjs = load_cityobjs("./tests/data/kawasaki-shi/udx/urf/533915_urf_6697_yoto_op.gml");
     assert_eq!(cityobjs.len(), 4);
     let TopLevelCityObject::UseDistrict(ud) = &cityobjs.first().unwrap().cityobj else {
         panic!("Not a UseDistrict");
@@ -868,7 +868,7 @@ fn load_urf_huchi_example() {
 #[test]
 fn load_urf_kodoriyou_example() {
     let cityobjs =
-        load_cityobjs("./tests/data/sendai-shi/udx/urf/574027_urf_6668_kodoriyou_op.gml");
+        load_cityobjs("./tests/data/sendai-shi/udx/urf/574027_urf_6697_kodoriyou_op.gml");
     assert_eq!(cityobjs.len(), 3);
     let TopLevelCityObject::HighLevelUseDistrict(hlud) = &cityobjs.first().unwrap().cityobj else {
         panic!("Not a HighLevelUseDistrict");
@@ -940,7 +940,7 @@ fn load_urf_keikan_example() {
 
 #[test]
 fn load_urf_tosisai_example() {
-    let cityobjs = load_cityobjs("./tests/data/sendai-shi/udx/urf/574036_urf_6668_tosisai_op.gml");
+    let cityobjs = load_cityobjs("./tests/data/sendai-shi/udx/urf/574036_urf_6697_tosisai_op.gml");
     assert_eq!(cityobjs.len(), 1);
     let TopLevelCityObject::SpecialUrbanRenaissanceDistrict(surd) =
         &cityobjs.first().unwrap().cityobj

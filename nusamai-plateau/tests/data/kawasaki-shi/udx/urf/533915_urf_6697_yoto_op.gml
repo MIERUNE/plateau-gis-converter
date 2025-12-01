@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<core:CityModel xmlns:brid="http://www.opengis.net/citygml/bridge/2.0" xmlns:tran="http://www.opengis.net/citygml/transportation/2.0" xmlns:urf="https://www.geospatial.jp/iur/urf/2.0" xmlns:frn="http://www.opengis.net/citygml/cityfurniture/2.0" xmlns:wtr="http://www.opengis.net/citygml/waterbody/2.0" xmlns:sch="http://www.ascc.net/xml/schematron" xmlns:veg="http://www.opengis.net/citygml/vegetation/2.0" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:tun="http://www.opengis.net/citygml/tunnel/2.0" xmlns:tex="http://www.opengis.net/citygml/texturedsurface/2.0" xmlns:gml="http://www.opengis.net/gml" xmlns:gen="http://www.opengis.net/citygml/generics/2.0" xmlns:dem="http://www.opengis.net/citygml/relief/2.0" xmlns:app="http://www.opengis.net/citygml/appearance/2.0" xmlns:luse="http://www.opengis.net/citygml/landuse/2.0" xmlns:xAL="urn:oasis:names:tc:ciq:xsdschema:xAL:2.0" xmlns:bldg="http://www.opengis.net/citygml/building/2.0" xmlns:smil20="http://www.w3.org/2001/SMIL20/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:smil20lang="http://www.w3.org/2001/SMIL20/Language" xmlns:pbase="http://www.opengis.net/citygml/profiles/base/2.0" xmlns:core="http://www.opengis.net/citygml/2.0" xmlns:grp="http://www.opengis.net/citygml/cityobjectgroup/2.0" xsi:schemaLocation="https://www.geospatial.jp/iur/urf/2.0 ../../schemas/iur/urf/2.0/urbanFunction.xsd http://www.opengis.net/citygml/2.0 http://schemas.opengis.net/citygml/2.0/cityGMLBase.xsd http://www.opengis.net/citygml/landuse/2.0 http://schemas.opengis.net/citygml/landuse/2.0/landUse.xsd http://www.opengis.net/citygml/building/2.0 http://schemas.opengis.net/citygml/building/2.0/building.xsd http://www.opengis.net/citygml/transportation/2.0 http://schemas.opengis.net/citygml/transportation/2.0/transportation.xsd http://www.opengis.net/citygml/generics/2.0 http://schemas.opengis.net/citygml/generics/2.0/generics.xsd http://www.opengis.net/citygml/cityobjectgroup/2.0 http://schemas.opengis.net/citygml/cityobjectgroup/2.0/cityObjectGroup.xsd http://www.opengis.net/gml http://schemas.opengis.net/gml/3.1.1/base/gml.xsd">
+<core:CityModel xmlns:brid="http://www.opengis.net/citygml/bridge/2.0" xmlns:tran="http://www.opengis.net/citygml/transportation/2.0" xmlns:frn="http://www.opengis.net/citygml/cityfurniture/2.0" xmlns:wtr="http://www.opengis.net/citygml/waterbody/2.0" xmlns:sch="http://www.ascc.net/xml/schematron" xmlns:veg="http://www.opengis.net/citygml/vegetation/2.0" xmlns:tun="http://www.opengis.net/citygml/tunnel/2.0" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:tex="http://www.opengis.net/citygml/texturedsurface/2.0" xmlns:urf="https://www.geospatial.jp/iur/urf/3.1" xmlns:gml="http://www.opengis.net/gml" xmlns:app="http://www.opengis.net/citygml/appearance/2.0" xmlns:gen="http://www.opengis.net/citygml/generics/2.0" xmlns:dem="http://www.opengis.net/citygml/relief/2.0" xmlns:luse="http://www.opengis.net/citygml/landuse/2.0" xmlns:uro="https://www.geospatial.jp/iur/uro/3.1" xmlns:xAL="urn:oasis:names:tc:ciq:xsdschema:xAL:2.0" xmlns:bldg="http://www.opengis.net/citygml/building/2.0" xmlns:smil20="http://www.w3.org/2001/SMIL20/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:smil20lang="http://www.w3.org/2001/SMIL20/Language" xmlns:pbase="http://www.opengis.net/citygml/profiles/base/2.0" xmlns:core="http://www.opengis.net/citygml/2.0" xmlns:grp="http://www.opengis.net/citygml/cityobjectgroup/2.0" xsi:schemaLocation="https://www.geospatial.jp/iur/urf/3.1 ../../schemas/iur/urf/3.1/urbanFunction.xsd https://www.geospatial.jp/iur/uro/3.1 ../../schemas/iur/uro/3.1/urbanObject.xsd http://www.opengis.net/citygml/2.0 http://schemas.opengis.net/citygml/2.0/cityGMLBase.xsd http://www.opengis.net/citygml/landuse/2.0 http://schemas.opengis.net/citygml/landuse/2.0/landUse.xsd http://www.opengis.net/citygml/building/2.0 http://schemas.opengis.net/citygml/building/2.0/building.xsd http://www.opengis.net/citygml/transportation/2.0 http://schemas.opengis.net/citygml/transportation/2.0/transportation.xsd http://www.opengis.net/citygml/generics/2.0 http://schemas.opengis.net/citygml/generics/2.0/generics.xsd http://www.opengis.net/citygml/relief/2.0 http://schemas.opengis.net/citygml/relief/2.0/relief.xsd http://www.opengis.net/citygml/cityobjectgroup/2.0 http://schemas.opengis.net/citygml/cityobjectgroup/2.0/cityObjectGroup.xsd http://www.opengis.net/gml http://schemas.opengis.net/gml/3.1.1/base/gml.xsd http://www.opengis.net/citygml/appearance/2.0 http://schemas.opengis.net/citygml/appearance/2.0/appearance.xsd ">
 	<gml:boundedBy>
 		<gml:Envelope srsName="http://www.opengis.net/def/crs/EPSG/0/6697" srsDimension="3">
 			<gml:lowerCorner>35.46979527798224 139.70807275007022 0</gml:lowerCorner>
@@ -14,6 +14,8 @@
 			<urf:validFromType codeSpace="../../codelists/Common_validType.xml">3</urf:validFromType>
 			<urf:custodian>川崎市</urf:custodian>
 			<urf:notificationNumber>川崎市告示第589号</urf:notificationNumber>
+			<urf:finalNotificationDate>2022-07-28</urf:finalNotificationDate>
+			<urf:finalNotificationNumber>川崎市告示第423号</urf:finalNotificationNumber>
 			<urf:areaClassificationType codeSpace="../../codelists/Common_areaClassificationType.xml">22</urf:areaClassificationType>
 			<urf:prefecture codeSpace="../../codelists/Common_localPublicAuthorities.xml">14</urf:prefecture>
 			<urf:city codeSpace="../../codelists/Common_localPublicAuthorities.xml">14130</urf:city>
@@ -30,8 +32,16 @@
 					</gml:surfaceMember>
 				</gml:MultiSurface>
 			</urf:lod1MultiSurface>
-			<urf:floorAreaRate>2</urf:floorAreaRate>
-			<urf:buildingCoverageRate>0.6</urf:buildingCoverageRate>
+			<urf:dataQualityAttribute>
+				<uro:DataQualityAttribute>
+					<uro:geometrySrcDescLod1 codeSpace="../../codelists/DataQualityAttribute_geometrySrcDesc.xml">202</uro:geometrySrcDescLod1>
+					<uro:geometrySrcDescLod1 codeSpace="../../codelists/DataQualityAttribute_geometrySrcDesc.xml">700</uro:geometrySrcDescLod1>
+					<uro:thematicSrcDesc codeSpace="../../codelists/DataQualityAttribute_thematicSrcDesc.xml">700</uro:thematicSrcDesc>
+				</uro:DataQualityAttribute>
+			</urf:dataQualityAttribute>
+			<urf:floorAreaRate>200</urf:floorAreaRate>
+			<urf:buildingCoverageRate>60</urf:buildingCoverageRate>
+			<urf:shadeRegulation>日影規制なし</urf:shadeRegulation>
 		</urf:UseDistrict>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
@@ -42,6 +52,8 @@
 			<urf:validFromType codeSpace="../../codelists/Common_validType.xml">3</urf:validFromType>
 			<urf:custodian>川崎市</urf:custodian>
 			<urf:notificationNumber>川崎市告示第589号</urf:notificationNumber>
+			<urf:finalNotificationDate>2022-07-28</urf:finalNotificationDate>
+			<urf:finalNotificationNumber>川崎市告示第423号</urf:finalNotificationNumber>
 			<urf:areaClassificationType codeSpace="../../codelists/Common_areaClassificationType.xml">22</urf:areaClassificationType>
 			<urf:prefecture codeSpace="../../codelists/Common_localPublicAuthorities.xml">14</urf:prefecture>
 			<urf:city codeSpace="../../codelists/Common_localPublicAuthorities.xml">14130</urf:city>
@@ -58,8 +70,16 @@
 					</gml:surfaceMember>
 				</gml:MultiSurface>
 			</urf:lod1MultiSurface>
-			<urf:floorAreaRate>2</urf:floorAreaRate>
-			<urf:buildingCoverageRate>0.6</urf:buildingCoverageRate>
+			<urf:dataQualityAttribute>
+				<uro:DataQualityAttribute>
+					<uro:geometrySrcDescLod1 codeSpace="../../codelists/DataQualityAttribute_geometrySrcDesc.xml">202</uro:geometrySrcDescLod1>
+					<uro:geometrySrcDescLod1 codeSpace="../../codelists/DataQualityAttribute_geometrySrcDesc.xml">700</uro:geometrySrcDescLod1>
+					<uro:thematicSrcDesc codeSpace="../../codelists/DataQualityAttribute_thematicSrcDesc.xml">700</uro:thematicSrcDesc>
+				</uro:DataQualityAttribute>
+			</urf:dataQualityAttribute>
+			<urf:floorAreaRate>200</urf:floorAreaRate>
+			<urf:buildingCoverageRate>60</urf:buildingCoverageRate>
+			<urf:shadeRegulation>5m～10m以内は5時間以上、10mを超える場合は3時間以上、測定水平面高さ4m</urf:shadeRegulation>
 		</urf:UseDistrict>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
@@ -70,6 +90,8 @@
 			<urf:validFromType codeSpace="../../codelists/Common_validType.xml">3</urf:validFromType>
 			<urf:custodian>川崎市</urf:custodian>
 			<urf:notificationNumber>川崎市告示第589号</urf:notificationNumber>
+			<urf:finalNotificationDate>2022-07-28</urf:finalNotificationDate>
+			<urf:finalNotificationNumber>川崎市告示第423号</urf:finalNotificationNumber>
 			<urf:areaClassificationType codeSpace="../../codelists/Common_areaClassificationType.xml">22</urf:areaClassificationType>
 			<urf:prefecture codeSpace="../../codelists/Common_localPublicAuthorities.xml">14</urf:prefecture>
 			<urf:city codeSpace="../../codelists/Common_localPublicAuthorities.xml">14130</urf:city>
@@ -86,8 +108,16 @@
 					</gml:surfaceMember>
 				</gml:MultiSurface>
 			</urf:lod1MultiSurface>
-			<urf:floorAreaRate>2</urf:floorAreaRate>
-			<urf:buildingCoverageRate>0.4</urf:buildingCoverageRate>
+			<urf:dataQualityAttribute>
+				<uro:DataQualityAttribute>
+					<uro:geometrySrcDescLod1 codeSpace="../../codelists/DataQualityAttribute_geometrySrcDesc.xml">202</uro:geometrySrcDescLod1>
+					<uro:geometrySrcDescLod1 codeSpace="../../codelists/DataQualityAttribute_geometrySrcDesc.xml">700</uro:geometrySrcDescLod1>
+					<uro:thematicSrcDesc codeSpace="../../codelists/DataQualityAttribute_thematicSrcDesc.xml">700</uro:thematicSrcDesc>
+				</uro:DataQualityAttribute>
+			</urf:dataQualityAttribute>
+			<urf:floorAreaRate>200</urf:floorAreaRate>
+			<urf:buildingCoverageRate>40</urf:buildingCoverageRate>
+			<urf:shadeRegulation>日影規制なし</urf:shadeRegulation>
 		</urf:UseDistrict>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
@@ -98,6 +128,8 @@
 			<urf:validFromType codeSpace="../../codelists/Common_validType.xml">3</urf:validFromType>
 			<urf:custodian>川崎市</urf:custodian>
 			<urf:notificationNumber>川崎市告示第589号</urf:notificationNumber>
+			<urf:finalNotificationDate>2022-07-28</urf:finalNotificationDate>
+			<urf:finalNotificationNumber>川崎市告示第423号</urf:finalNotificationNumber>
 			<urf:areaClassificationType codeSpace="../../codelists/Common_areaClassificationType.xml">22</urf:areaClassificationType>
 			<urf:prefecture codeSpace="../../codelists/Common_localPublicAuthorities.xml">14</urf:prefecture>
 			<urf:city codeSpace="../../codelists/Common_localPublicAuthorities.xml">14130</urf:city>
@@ -114,8 +146,16 @@
 					</gml:surfaceMember>
 				</gml:MultiSurface>
 			</urf:lod1MultiSurface>
-			<urf:floorAreaRate>2</urf:floorAreaRate>
-			<urf:buildingCoverageRate>0.4</urf:buildingCoverageRate>
+			<urf:dataQualityAttribute>
+				<uro:DataQualityAttribute>
+					<uro:geometrySrcDescLod1 codeSpace="../../codelists/DataQualityAttribute_geometrySrcDesc.xml">202</uro:geometrySrcDescLod1>
+					<uro:geometrySrcDescLod1 codeSpace="../../codelists/DataQualityAttribute_geometrySrcDesc.xml">700</uro:geometrySrcDescLod1>
+					<uro:thematicSrcDesc codeSpace="../../codelists/DataQualityAttribute_thematicSrcDesc.xml">700</uro:thematicSrcDesc>
+				</uro:DataQualityAttribute>
+			</urf:dataQualityAttribute>
+			<urf:floorAreaRate>200</urf:floorAreaRate>
+			<urf:buildingCoverageRate>40</urf:buildingCoverageRate>
+			<urf:shadeRegulation>日影規制なし</urf:shadeRegulation>
 		</urf:UseDistrict>
 	</core:cityObjectMember>
 </core:CityModel>

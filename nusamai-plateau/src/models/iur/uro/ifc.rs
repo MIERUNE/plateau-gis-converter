@@ -1,5 +1,6 @@
 use nusamai_citygml::{
-    citygml_data, citygml_property, CityGmlElement, Code, Date, DoubleList, Measure, Point, Uri,
+    citygml_data, citygml_property, CityGmlElement, Code, Date, DoubleList, GYear, Measure, Point,
+    Uri,
 };
 
 use crate::models::core::Address;
@@ -504,7 +505,7 @@ pub struct IfcPsetBuildingCommon {
     pub number_of_storeys: Option<i64>,
 
     #[citygml(path = b"uro:yearOfConstruction")]
-    pub year_of_construction: Option<u64>,
+    pub year_of_construction: Option<GYear>,
 
     #[citygml(path = b"uro:isLandmarked")]
     pub is_landmarked: Option<bool>,
