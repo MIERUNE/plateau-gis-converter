@@ -4,14 +4,14 @@
 use log::LevelFilter;
 use nusamai::parameters::Parameters;
 use nusamai::{
-    pipeline::{feedback, Canceller},
+    pipeline::{Canceller, feedback},
     sink::{
-        cesiumtiles::CesiumTilesSinkProvider, czml::CzmlSinkProvider, geojson::GeoJsonSinkProvider,
-        gltf::GltfSinkProvider, gpkg::GpkgSinkProvider, kml::KmlSinkProvider,
-        minecraft::MinecraftSinkProvider, mvt::MvtSinkProvider, obj::ObjSinkProvider,
-        serde::SerdeSinkProvider, shapefile::ShapefileSinkProvider, DataSinkProvider,
+        DataSinkProvider, cesiumtiles::CesiumTilesSinkProvider, czml::CzmlSinkProvider,
+        geojson::GeoJsonSinkProvider, gltf::GltfSinkProvider, gpkg::GpkgSinkProvider,
+        kml::KmlSinkProvider, minecraft::MinecraftSinkProvider, mvt::MvtSinkProvider,
+        obj::ObjSinkProvider, serde::SerdeSinkProvider, shapefile::ShapefileSinkProvider,
     },
-    source::{citygml::CityGmlSourceProvider, geojson::GeoJsonSourceProvider, DataSourceProvider},
+    source::{DataSourceProvider, citygml::CityGmlSourceProvider, geojson::GeoJsonSourceProvider},
     transformer::{
         self, MappingRules, MultiThreadTransformer, NusamaiTransformBuilder, TransformBuilder,
         TransformerSettings,
@@ -30,9 +30,9 @@ use std::{
 };
 use tauri::Emitter;
 use tauri_plugin_log::{RotationStrategy, TimezoneStrategy};
-use tempfile::{tempdir, TempDir};
+use tempfile::{TempDir, tempdir};
 use thiserror::Error;
-use tokio::time::{sleep, Duration};
+use tokio::time::{Duration, sleep};
 
 #[cfg(debug_assertions)]
 const LOG_LEVEL: LevelFilter = LevelFilter::Debug;
@@ -246,7 +246,7 @@ struct PackStatusResponse {
 struct DownloadCityGmlPackResult {
     pack_id: String,
     zip_path: String,
-    temp_dir: TempDir,
+    temp_dir: Option<TempDir>,
 }
 
 fn plateau_api_base_url() -> String {
@@ -674,24 +674,24 @@ async fn list_supported_files(directories: Vec<String>) -> Result<Vec<String>, E
                     let path = entry.path();
 
                     // Check if it's a file and has supported extension
-                    if path.is_file() {
-                        if let Some(extension) = path.extension() {
-                            let ext_str = extension.to_string_lossy().to_lowercase();
+                    if path.is_file()
+                        && let Some(extension) = path.extension()
+                    {
+                        let ext_str = extension.to_string_lossy().to_lowercase();
 
-                            // Check for directly supported files
-                            if ext_str == "gml" || ext_str == "geojson" || ext_str == "json" {
-                                if let Some(path_str) = path.to_str() {
-                                    all_files.push(path_str.to_string());
-                                }
-                            }
-                            // Check for ZIP files
-                            else if ext_str == "zip" {
-                                if let Some(path_str) = path.to_str() {
-                                    // List files inside ZIP
-                                    if let Ok(files) = list_files_in_zip(path_str) {
-                                        all_files.extend(files);
-                                    }
-                                }
+                        // Check for directly supported files
+                        if (ext_str == "gml" || ext_str == "geojson" || ext_str == "json")
+                            && let Some(path_str) = path.to_str()
+                        {
+                            all_files.push(path_str.to_string());
+                        }
+                        // Check for ZIP files
+                        else if ext_str == "zip"
+                            && let Some(path_str) = path.to_str()
+                        {
+                            // List files inside ZIP
+                            if let Ok(files) = list_files_in_zip(path_str) {
+                                all_files.extend(files);
                             }
                         }
                     }
@@ -758,14 +758,14 @@ fn get_meshcodes_with_prefix(
             let file = archive.by_index(i).map_err(|e| Error::Io(e.to_string()))?;
             let file_path = file.name().to_string();
 
-            if file_path.ends_with(".gml") {
-                if let Some((meshcode, file_type)) = extract_meshcode_and_type(&file_path) {
-                    let meshcode_entry = result.entry(meshcode).or_default();
-                    let type_entry = meshcode_entry.entry(file_type).or_default();
-                    // Format: "/path/to/zipfile.zip/path/to/file.gml"
-                    let full_path = format!("{input_path}/{file_path}");
-                    type_entry.push(full_path);
-                }
+            if file_path.ends_with(".gml")
+                && let Some((meshcode, file_type)) = extract_meshcode_and_type(&file_path)
+            {
+                let meshcode_entry = result.entry(meshcode).or_default();
+                let type_entry = meshcode_entry.entry(file_type).or_default();
+                // Format: "/path/to/zipfile.zip/path/to/file.gml"
+                let full_path = format!("{input_path}/{file_path}");
+                type_entry.push(full_path);
             }
         }
     }
@@ -836,32 +836,32 @@ async fn fetch_citygml_metadata(
                 if file.url.is_empty() {
                     continue;
                 }
-                if let Some(meshcode) = normalize_meshcode(&file.code) {
-                    if is_included_meshcode(&meshcode, &meshcodes, strict) {
-                        let entry = meshes.entry(meshcode.clone()).or_default();
-                        let remote_file = CityGmlRemoteFile {
-                            meshcode: meshcode.clone(),
-                            feature_type: feature_type.clone(),
-                            url: file.url.clone(),
-                            max_lod: file.max_lod,
-                            file_size: file.file_size,
-                            features: file.features,
-                        };
-                        let feature_type_files_entry =
-                            feature_type_files.entry(feature_type.clone()).or_default();
-                        if !feature_type_files_entry
-                            .iter()
-                            .any(|existing| existing.url == remote_file.url)
-                        {
-                            feature_type_files_entry.push(remote_file.clone());
-                        }
-                        let type_entry = entry.entry(feature_type.clone()).or_default();
-                        if !type_entry
-                            .iter()
-                            .any(|existing| existing.url == remote_file.url)
-                        {
-                            type_entry.push(remote_file);
-                        }
+                if let Some(meshcode) = normalize_meshcode(&file.code)
+                    && is_included_meshcode(&meshcode, &meshcodes, strict)
+                {
+                    let entry = meshes.entry(meshcode.clone()).or_default();
+                    let remote_file = CityGmlRemoteFile {
+                        meshcode: meshcode.clone(),
+                        feature_type: feature_type.clone(),
+                        url: file.url.clone(),
+                        max_lod: file.max_lod,
+                        file_size: file.file_size,
+                        features: file.features,
+                    };
+                    let feature_type_files_entry =
+                        feature_type_files.entry(feature_type.clone()).or_default();
+                    if !feature_type_files_entry
+                        .iter()
+                        .any(|existing| existing.url == remote_file.url)
+                    {
+                        feature_type_files_entry.push(remote_file.clone());
+                    }
+                    let type_entry = entry.entry(feature_type.clone()).or_default();
+                    if !type_entry
+                        .iter()
+                        .any(|existing| existing.url == remote_file.url)
+                    {
+                        type_entry.push(remote_file);
                     }
                 }
             }
@@ -891,6 +891,7 @@ async fn fetch_citygml_metadata(
 
 async fn download_citygml_pack(
     urls: Vec<String>,
+    zip_output_path: Option<String>,
     tasks_state: tauri::State<'_, ConversionTasksState>,
     app: tauri::AppHandle,
 ) -> Result<DownloadCityGmlPackResult, Error> {
@@ -1009,14 +1010,13 @@ async fn download_citygml_pack(
         .await
         .map_err(|err| Error::Http(err.to_string()))?;
 
-    if download_response.status().is_redirection() {
-        if let Some(location) = download_response
+    if download_response.status().is_redirection()
+        && let Some(location) = download_response
             .headers()
             .get(reqwest::header::LOCATION)
             .and_then(|v| v.to_str().ok())
-        {
-            download_response = client.get(location).send().await?;
-        }
+    {
+        download_response = client.get(location).send().await?;
     }
 
     if !download_response.status().is_success() {
@@ -1032,9 +1032,15 @@ async fn download_citygml_pack(
         .await
         .map_err(|err| Error::Http(err.to_string()))?;
 
-    let temp_dir = tempdir()?;
-    let target_path = temp_dir.path().join(format!("plateau-pack-{pack_id}.zip"));
-
+    let (target_path, temp_dir) = if let Some(path) = zip_output_path
+        && !path.is_empty()
+    {
+        (PathBuf::from(path), None)
+    } else {
+        let temp_dir = tempdir()?;
+        let path = temp_dir.path().join(format!("plateau-pack-{pack_id}.zip"));
+        (path, Some(temp_dir))
+    };
     std::fs::write(&target_path, bytes.as_ref()).map_err(|err| Error::Io(err.to_string()))?;
 
     emit_pack_progress(&app, "download", "completed", 1.0);
@@ -1050,6 +1056,7 @@ async fn download_citygml_pack(
 #[allow(clippy::too_many_arguments)]
 async fn pack_and_run_conversion(
     urls: Vec<String>,
+    zip_output_path: Option<String>,
     output_path: String,
     filetype: String,
     epsg: u16,
@@ -1071,39 +1078,45 @@ async fn pack_and_run_conversion(
     .unwrap();
 
     // Start pack download
-    let pack_result =
-        match download_citygml_pack(urls.clone(), tasks_state.clone(), app.clone()).await {
-            Ok(r) => {
-                app.emit(
-                    "conversion-log",
-                    LogMessage {
-                        message: format!(
-                            "CityGMLパックのダウンロードが完了しました packId={}",
-                            r.pack_id
-                        ),
-                        level: "INFO".to_string(),
-                        error_message: None,
-                        source: "pack_and_run_conversion".to_string(),
-                    },
-                )
-                .unwrap();
-                r
-            }
-            Err(e) => {
-                app.emit(
-                    "conversion-log",
-                    LogMessage {
-                        message: format!("CityGMLパックの取得に失敗しました: {e}"),
-                        level: "ERROR".to_string(),
-                        error_message: None,
-                        source: "pack_and_run_conversion".to_string(),
-                    },
-                )
-                .unwrap();
+    let pack_result = match download_citygml_pack(
+        urls.clone(),
+        zip_output_path.clone(),
+        tasks_state.clone(),
+        app.clone(),
+    )
+    .await
+    {
+        Ok(r) => {
+            app.emit(
+                "conversion-log",
+                LogMessage {
+                    message: format!(
+                        "CityGMLパックのダウンロードが完了しました packId={}",
+                        r.pack_id
+                    ),
+                    level: "INFO".to_string(),
+                    error_message: None,
+                    source: "pack_and_run_conversion".to_string(),
+                },
+            )
+            .unwrap();
+            r
+        }
+        Err(e) => {
+            app.emit(
+                "conversion-log",
+                LogMessage {
+                    message: format!("CityGMLパックの取得に失敗しました: {e}"),
+                    level: "ERROR".to_string(),
+                    error_message: None,
+                    source: "pack_and_run_conversion".to_string(),
+                },
+            )
+            .unwrap();
 
-                return Err(e);
-            }
-        };
+            return Err(e);
+        }
+    };
 
     // Build input paths inside the downloaded pack zip
     let zip_path = pack_result.zip_path.clone(); // ends with .zip
@@ -1194,38 +1207,39 @@ async fn pack_and_run_conversion(
         tasks_state,
         app.clone(),
     )?;
-    match pack_result.temp_dir.close() {
-        Ok(_) => {
-            let msg = "ダウンロードした一時ファイルの削除に成功しました".to_string();
-            app.emit(
-                "conversion-log",
-                LogMessage {
-                    message: msg.clone(),
-                    level: "INFO".to_string(),
-                    error_message: None,
-                    source: "pack_and_run_conversion".to_string(),
-                },
-            )
-            .unwrap();
-            log::info!("{msg}");
-            Ok(())
-        }
-        Err(_) => {
-            let msg = "ダウンロードした一時ファイルの削除に失敗しました".to_string();
-            app.emit(
-                "conversion-log",
-                LogMessage {
-                    message: msg.clone(),
-                    level: "WARN".to_string(),
-                    error_message: None,
-                    source: "pack_and_run_conversion".to_string(),
-                },
-            )
-            .unwrap();
-            log::warn!("{msg}");
-            Ok(())
+    if let Some(temp_dir) = pack_result.temp_dir {
+        match temp_dir.close() {
+            Ok(_) => {
+                let msg = "ダウンロードした一時ファイルの削除に成功しました".to_string();
+                app.emit(
+                    "conversion-log",
+                    LogMessage {
+                        message: msg.clone(),
+                        level: "INFO".to_string(),
+                        error_message: None,
+                        source: "pack_and_run_conversion".to_string(),
+                    },
+                )
+                .unwrap();
+                log::info!("{msg}");
+            }
+            Err(_) => {
+                let msg = "ダウンロードした一時ファイルの削除に失敗しました".to_string();
+                app.emit(
+                    "conversion-log",
+                    LogMessage {
+                        message: msg.clone(),
+                        level: "WARN".to_string(),
+                        error_message: None,
+                        source: "pack_and_run_conversion".to_string(),
+                    },
+                )
+                .unwrap();
+                log::warn!("{msg}");
+            }
         }
     }
+    Ok(())
 }
 
 #[cfg(test)]
