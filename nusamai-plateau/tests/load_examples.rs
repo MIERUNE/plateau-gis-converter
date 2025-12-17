@@ -149,6 +149,23 @@ fn load_cityfurniture_example() {
     );
 }
 
+#[test]
+fn load_cityfurniture_multi_surface() {
+    // Test multi surface parsing
+    let cityobjs = load_cityobjs("./tests/data/tsukuba-shi/udx/frn/54400098_frn_6697_op.gml");
+    assert_eq!(cityobjs.len(), 153);
+
+    // Verify that multi-surface geometries with multiple surfaceMembers are collected correctly
+    // Ground truth from GML file: 369 MultiSurface elements containing 45047 surfaceMember elements (polygons)
+    let mut multipolygons = 0;
+
+    for cityobj in cityobjs {
+        multipolygons += cityobj.geometries.multipolygon.len();
+    }
+
+    assert_eq!(multipolygons, 45047);
+}
+
 // #[test]
 // fn load_generics_example() {
 //     let cityobjs = load_cityobjs("./tests/data/plateau-3_0/udx/gen/53392565_gen_6697.gml");

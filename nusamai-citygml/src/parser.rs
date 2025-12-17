@@ -667,10 +667,7 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                     );
                     let geomtype = match (nsres, localname.as_ref()) {
                         (Bound(GML31_NS), b"MultiSurface") => {
-                            let id = self.parse_multi_surface()?;
-                            if id.is_some() {
-                                surface_id = id;
-                            }
+                            self.parse_multi_surface()?;
                             GeometryType::Surface
                         }
                         _ => {
@@ -852,8 +849,10 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                     let (nsres, localname) = self.reader.resolve_element(start.name());
                     let poly_begin = self.state.geometry_collector.multipolygon.len();
                     let line_begin = self.state.geometry_collector.multilinestring.len();
+                    let point_begin = self.state.geometry_collector.multipoint.len();
                     let mut poly_end: Option<usize> = None;
                     let mut line_end: Option<usize> = None;
+                    let mut point_end: Option<usize> = None;
 
                     for attr in start.attributes().flatten() {
                         let (nsres, localname) = self.reader.resolve_attribute(attr.key);
@@ -887,10 +886,7 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                             GeometryType::Solid
                         }
                         (Bound(GML31_NS), b"MultiSurface") => {
-                            let id = self.parse_multi_surface()?;
-                            if surface_id.is_none() {
-                                surface_id = id;
-                            }
+                            self.parse_multi_surface()?;
                             poly_end = Some(self.state.geometry_collector.multipolygon.len());
                             GeometryType::Surface
                         }
@@ -957,7 +953,11 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                         }
                         (Bound(GML31_NS), b"TriangulatedSurface") => unimplemented!(),
                         (Bound(GML31_NS), b"Tin") => unimplemented!(),
-                        (Bound(GML31_NS), b"Point") => unimplemented!(), // FIXME:
+                        (Bound(GML31_NS), b"Point") => {
+                            self.parse_point()?;
+                            point_end = Some(self.state.geometry_collector.multipoint.len());
+                            GeometryType::Point
+                        }
                         _ => {
                             return Err(ParseError::SchemaViolation(format!(
                                 "Unexpected geometry elements <{}>",
@@ -1001,6 +1001,22 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                                 lod,
                                 pos: line_begin as u32,
                                 len: (line_end - line_begin) as u32,
+                                id: surface_id.clone(),
+                                solid_ids: Vec::new(),
+                                feature_id: feature_id.clone(),
+                                feature_type: feature_type.clone(),
+                            });
+                        }
+                    }
+                    if let Some(point_end) = point_end {
+                        if point_end - point_begin > 0 {
+                            geomrefs.push(GeometryRef {
+                                ty: geomtype,
+                                property_name,
+                                gml_geometry_type,
+                                lod,
+                                pos: point_begin as u32,
+                                len: (point_end - point_begin) as u32,
                                 id: surface_id.clone(),
                                 solid_ids: Vec::new(),
                                 feature_id: feature_id.clone(),
@@ -1160,25 +1176,29 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
         }
     }
 
-    fn parse_multi_surface(&mut self) -> Result<Option<LocalId>, ParseError> {
-        let mut surface_id = None;
+    fn parse_multi_surface(&mut self) -> Result<(), ParseError> {
         loop {
             match self.reader.read_event_into(&mut self.state.buf1) {
                 Ok(Event::Start(start)) => {
                     let (nsres, localname) = self.reader.resolve_element(start.name());
-                    surface_id = match (nsres, localname.as_ref()) {
+                    match (nsres, localname.as_ref()) {
                         (Bound(GML31_NS), b"surfaceMember") => {
-                            let (surface_id, _) = self.parse_surface()?;
-                            surface_id
+                            self.parse_surface()?;
                         }
-                        _ => {
-                            return Err(ParseError::SchemaViolation(
-                                "Unexpected element. Because only surface member".into(),
-                            ))
+                        (_, localname) => {
+                            return Err(ParseError::SchemaViolation(format!(
+                                "Unexpected element <{}> by parsing multi surface",
+                                String::from_utf8_lossy(localname)
+                            )))
                         }
                     };
                 }
-                Ok(Event::End(_)) => return Ok(surface_id),
+                Ok(Event::End(end)) => {
+                    let (nsres, localname) = self.reader.resolve_element(end.name());
+                    if nsres == Bound(GML31_NS) && localname.as_ref() == b"MultiSurface" {
+                        return Ok(());
+                    }
+                }
                 Ok(Event::Text(_)) => {
                     return Err(ParseError::SchemaViolation(
                         "Unexpected text content".into(),
@@ -1370,6 +1390,82 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
         }
     }
 
+    /// Parse and validate floating point coordinates from text, reject NaN
+    fn parse_pos_list(text: &str, fp_buf: &mut Vec<f64>) -> Result<(), ParseError> {
+        for s in text.split_ascii_whitespace() {
+            match s.parse::<f64>() {
+                Ok(v) if !v.is_nan() => {
+                    fp_buf.push(v);
+                }
+                Ok(v) => {
+                    return Err(ParseError::InvalidValue(format!(
+                        "Non-finite coordinate value: '{}' (parsed as {}). Expected finite floating point number.",
+                        s, v
+                    )));
+                }
+                Err(_) => {
+                    return Err(ParseError::InvalidValue(format!(
+                        "Invalid floating point number: {s}"
+                    )));
+                }
+            }
+        }
+        Ok(())
+    }
+
+    fn parse_point(&mut self) -> Result<(), ParseError> {
+        let mut depth = 1;
+        loop {
+            match self.reader.read_resolved_event_into(&mut self.state.buf1) {
+                Ok((Bound(GML31_NS), Event::Start(_))) => {
+                    depth += 1;
+                }
+                Ok((_, Event::Start(start))) => {
+                    return Err(ParseError::SchemaViolation(format!(
+                        "Only GML elements are allowed but found <{}>",
+                        String::from_utf8_lossy(start.name().as_ref())
+                    )));
+                }
+                Ok((_, Event::End(_))) => {
+                    depth -= 1;
+                    if depth == 0 {
+                        return Ok(());
+                    }
+                }
+                Ok((_, Event::Text(text))) => {
+                    // check pos
+                    if depth != 2 {
+                        return Err(ParseError::SchemaViolation(
+                            "Unexpected text content".into(),
+                        ));
+                    }
+                    // parse coordinate
+                    self.state.fp_buf.clear();
+                    let unescaped_text = text
+                        .unescape()
+                        .map_err(|e| ParseError::InvalidValue(format!("Unescape error: {e}")))?;
+                    Self::parse_pos_list(&unescaped_text, &mut self.state.fp_buf)?;
+
+                    if self.state.fp_buf.len() != 3 {
+                        return Err(ParseError::InvalidValue(
+                            "Point must have exactly 3 coordinates (x, y, z)".into(),
+                        ));
+                    }
+
+                    let point = [
+                        self.state.fp_buf[0],
+                        self.state.fp_buf[1],
+                        self.state.fp_buf[2],
+                    ];
+
+                    self.state.geometry_collector.add_point(point);
+                }
+                Ok(_) => (),
+                Err(e) => return Err(e.into()),
+            }
+        }
+    }
+
     fn parse_linestring(&mut self) -> Result<(), ParseError> {
         let mut depth = 1;
         loop {
@@ -1401,15 +1497,7 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                     let unescaped_text = text
                         .unescape()
                         .map_err(|e| ParseError::InvalidValue(format!("Unescape error: {e}")))?;
-                    for s in unescaped_text.split_ascii_whitespace() {
-                        if let Ok(v) = s.parse() {
-                            self.state.fp_buf.push(v);
-                        } else {
-                            return Err(ParseError::InvalidValue(format!(
-                                "Invalid floating point number: {s}"
-                            )));
-                        }
-                    }
+                    Self::parse_pos_list(&unescaped_text, &mut self.state.fp_buf)?;
 
                     if !self.state.fp_buf.len().is_multiple_of(3) {
                         return Err(ParseError::InvalidValue(
@@ -1558,15 +1646,7 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                     let unescaped_text = text
                         .unescape()
                         .map_err(|e| ParseError::InvalidValue(format!("Unescape error: {e}")))?;
-                    for s in unescaped_text.split_ascii_whitespace() {
-                        if let Ok(v) = s.parse() {
-                            self.state.fp_buf.push(v);
-                        } else {
-                            return Err(ParseError::InvalidValue(format!(
-                                "Invalid floating point number: {s}"
-                            )));
-                        }
-                    }
+                    Self::parse_pos_list(&unescaped_text, &mut self.state.fp_buf)?;
 
                     if !self.state.fp_buf.len().is_multiple_of(3) {
                         return Err(ParseError::InvalidValue(
@@ -1844,6 +1924,133 @@ mod tests {
         "#,
             |sr| {
                 sr.parse_text().expect_err("error expected");
+            },
+        );
+    }
+
+    #[test]
+    fn parse_point() {
+        parse(
+            r#"
+            <gml:Point xmlns:gml="http://www.opengis.net/gml">
+                <gml:pos>139.75 35.68 10.5</gml:pos>
+            </gml:Point>
+        "#,
+            |sr| {
+                sr.parse_point().expect("Failed to parse point");
+                let geometries = sr.collect_geometries(None);
+                assert_eq!(geometries.multipoint.len(), 1);
+                assert_eq!(geometries.vertices.len(), 1);
+                assert_eq!(geometries.vertices[0], [139.75, 35.68, 10.5]);
+            },
+        );
+    }
+
+    #[test]
+    fn parse_point_invalid_coord_count() {
+        parse(
+            r#"
+            <gml:Point xmlns:gml="http://www.opengis.net/gml">
+                <gml:pos>139.75 35.68</gml:pos>
+            </gml:Point>
+        "#,
+            |sr| {
+                sr.parse_point()
+                    .expect_err("Should fail with only 2 coordinates");
+            },
+        );
+    }
+
+    #[test]
+    fn parse_point_invalid_number() {
+        parse(
+            r#"
+            <gml:Point xmlns:gml="http://www.opengis.net/gml">
+                <gml:pos>invalid 35.68 10.5</gml:pos>
+            </gml:Point>
+        "#,
+            |sr| {
+                sr.parse_point()
+                    .expect_err("Should fail with invalid number");
+            },
+        );
+    }
+
+    #[test]
+    fn parse_point_with_nan() {
+        parse(
+            r#"
+            <gml:Point xmlns:gml="http://www.opengis.net/gml">
+                <gml:pos>1.0 2.0 NaN</gml:pos>
+            </gml:Point>
+        "#,
+            |sr| {
+                sr.parse_point().expect_err("Should fail with NaN");
+            },
+        );
+    }
+
+    #[test]
+    fn parse_linestring_valid() {
+        parse(
+            r#"
+            <gml:LineString xmlns:gml="http://www.opengis.net/gml">
+                <gml:posList>1.0 2.0 3.0 4.0 5.0 6.0</gml:posList>
+            </gml:LineString>
+        "#,
+            |sr| {
+                sr.parse_linestring()
+                    .expect("Should parse valid linestring");
+            },
+        );
+    }
+
+    #[test]
+    fn parse_linestring_with_nan() {
+        parse(
+            r#"
+            <gml:LineString xmlns:gml="http://www.opengis.net/gml">
+                <gml:posList>1.0 2.0 3.0 4.0 5.0 NaN</gml:posList>
+            </gml:LineString>
+        "#,
+            |sr| {
+                sr.parse_linestring().expect_err("Should fail with NaN");
+            },
+        );
+    }
+
+    #[test]
+    fn parse_polygon_valid() {
+        parse(
+            r#"
+            <gml:Polygon xmlns:gml="http://www.opengis.net/gml">
+                <gml:exterior>
+                    <gml:LinearRing>
+                        <gml:posList>0.0 0.0 0.0 1.0 0.0 0.0 0.0 1.0 0.0 0.0 0.0 0.0</gml:posList>
+                    </gml:LinearRing>
+                </gml:exterior>
+            </gml:Polygon>
+        "#,
+            |sr| {
+                sr.parse_polygon().expect("Should parse valid polygon");
+            },
+        );
+    }
+
+    #[test]
+    fn parse_polygon_with_nan() {
+        parse(
+            r#"
+            <gml:Polygon xmlns:gml="http://www.opengis.net/gml">
+                <gml:exterior>
+                    <gml:LinearRing>
+                        <gml:posList>0.0 0.0 0.0 1.0 0.0 NaN 0.0 1.0 0.0 0.0 0.0 0.0</gml:posList>
+                    </gml:LinearRing>
+                </gml:exterior>
+            </gml:Polygon>
+        "#,
+            |sr| {
+                sr.parse_polygon().expect_err("Should fail with NaN");
             },
         );
     }
