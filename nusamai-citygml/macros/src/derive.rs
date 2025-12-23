@@ -147,6 +147,10 @@ fn generate_citygml_impl_for_struct(
                     add_arm(2, b"lod2Solid", "Solid");
                     add_arm(3, b"lod3Solid", "Solid");
                     add_arm(4, b"lod4Solid", "Solid"); // only in CityGML 2.0
+                    add_arm(1, b"lod1MultiSolid", "MultiSolid");
+                    add_arm(2, b"lod2MultiSolid", "MultiSolid");
+                    add_arm(3, b"lod3MultiSolid", "MultiSolid");
+                    add_arm(4, b"lod4MultiSolid", "MultiSolid");
                     add_arm(0, b"lod0MultiSurface", "MultiSurface");
                     add_arm(1, b"lod1MultiSurface", "MultiSurface");
                     add_arm(2, b"lod2MultiSurface", "MultiSurface");

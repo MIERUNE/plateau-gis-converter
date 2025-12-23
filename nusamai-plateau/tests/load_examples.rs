@@ -1027,3 +1027,21 @@ fn load_urf_sigaidev_example() {
         Some(Code::new("山梨県甲府市".to_string(), "19201".to_string()))
     );
 }
+
+#[test]
+fn load_vegetation_multisolid_example() {
+    // Test MultiSolid geometry parsing for vegetation (PlantCover with lod1MultiSolid)
+    let cityobjs = load_cityobjs("./tests/data/tsukuba-shi/udx/veg/54401008_veg_6697_op.gml");
+
+    // Verify that PlantCover objects are loaded successfully
+    assert_eq!(cityobjs.len(), 2);
+
+    let TopLevelCityObject::PlantCover(plant_cover) = &cityobjs.first().unwrap().cityobj else {
+        panic!("Expected PlantCover");
+    };
+
+    // todo: check solid id and surface id
+
+    // Verify basic PlantCover attributes
+    assert_eq!(plant_cover.class.as_ref().map(|c| c.code()), Some("5"));
+}

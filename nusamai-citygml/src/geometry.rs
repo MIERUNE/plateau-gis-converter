@@ -12,6 +12,7 @@ const CRS_URI_EPSG_PREFIX: &str = "http://www.opengis.net/def/crs/EPSG/0/";
 pub enum GeometryParseType {
     Geometry,
     Solid,
+    MultiSolid,
     MultiSurface,
     MultiCurve,
     MultiPoint,
@@ -25,7 +26,8 @@ pub enum GeometryParseType {
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 #[derive(Debug, Clone, Copy, Hash, PartialEq, Eq)]
 pub enum GmlGeometryType {
-    // Polygonal types
+    // polygonal types
+    MultiSolid,
     Solid,
     MultiSurface,
     CompositeSurface,
@@ -55,6 +57,7 @@ impl GmlGeometryType {
     pub fn maybe_from_str(s: &str) -> Option<Self> {
         match s {
             "Solid" => Some(Self::Solid),
+            "MultiSolid" => Some(Self::MultiSolid),
             "MultiSurface" => Some(Self::MultiSurface),
             "CompositeSurface" => Some(Self::CompositeSurface),
             "OrientableSurface" => Some(Self::OrientableSurface),
@@ -78,6 +81,7 @@ impl Display for GmlGeometryType {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let s = match self {
             Self::Solid => "Solid",
+            Self::MultiSolid => "MultiSolid",
             Self::MultiSurface => "MultiSurface",
             Self::CompositeSurface => "CompositeSurface",
             Self::OrientableSurface => "OrientableSurface",
@@ -112,6 +116,11 @@ pub enum PropertyType {
     Lod2Solid,
     Lod3Solid,
     Lod4Solid,
+
+    Lod1MultiSolid,
+    Lod2MultiSolid,
+    Lod3MultiSolid,
+    Lod4MultiSolid,
 
     Lod0MultiSurface,
     Lod1MultiSurface,
@@ -151,6 +160,11 @@ impl PropertyType {
             "lod2Solid" => Self::Lod2Solid,
             "lod3Solid" => Self::Lod3Solid,
             "lod4Solid" => Self::Lod4Solid,
+
+            "lod1MultiSolid" => Self::Lod1MultiSolid,
+            "lod2MultiSolid" => Self::Lod2MultiSolid,
+            "lod3MultiSolid" => Self::Lod3MultiSolid,
+            "lod4MultiSolid" => Self::Lod4MultiSolid,
 
             "lod0MultiSurface" => Self::Lod0MultiSurface,
             "lod1MultiSurface" => Self::Lod1MultiSurface,
@@ -192,6 +206,11 @@ impl Display for PropertyType {
             Self::Lod2Solid => "lod2Solid",
             Self::Lod3Solid => "lod3Solid",
             Self::Lod4Solid => "lod4Solid",
+
+            Self::Lod1MultiSolid => "lod1MultiSolid",
+            Self::Lod2MultiSolid => "lod2MultiSolid",
+            Self::Lod3MultiSolid => "lod3MultiSolid",
+            Self::Lod4MultiSolid => "lod4MultiSolid",
 
             Self::Lod0MultiSurface => "lod0MultiSurface",
             Self::Lod1MultiSurface => "lod1MultiSurface",
@@ -246,7 +265,6 @@ pub struct GeometryRef {
     pub lod: u8,
     pub pos: u32,
     pub len: u32,
-    pub solid_ids: Vec<LocalId>,
     pub feature_id: Option<String>,
     pub feature_type: Option<String>,
 }
@@ -270,7 +288,9 @@ pub struct GeometryStore {
     /// All points, referenced by `GeometryRefs`
     pub multipoint: MultiPoint<'static, u32>,
 
-    /// Ring ids of the all polygons
+    /// Ring ids of the all polygons in flattened order:
+    /// multipolygon1: exterior = ring_ids[0], interior[0] = ring_ids[1], ... (N rings)
+    /// multipolygon2: exterior = ring_ids[N], interior[0] = ring_ids[N+1], ...
     pub ring_ids: Vec<Option<LocalId>>,
     /// List of surface ids and their spans in `multipolygon`
     pub surface_spans: Vec<SurfaceSpan>,

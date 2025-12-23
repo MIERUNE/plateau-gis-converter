@@ -195,20 +195,7 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
 
                     // Check if this element has gml:id and push to feature stack
                     let current_depth = self.state.path_stack_indices.len();
-                    let mut feature_id: Option<String> = None;
-                    for attr in start.attributes().flatten() {
-                        let (attr_nsres, attr_localname) = self.reader.resolve_attribute(attr.key);
-                        if attr_nsres
-                            == quick_xml::name::ResolveResult::Bound(quick_xml::name::Namespace(
-                                b"http://www.opengis.net/gml",
-                            ))
-                            && attr_localname.as_ref() == b"id"
-                        {
-                            feature_id =
-                                Some(String::from_utf8_lossy(attr.value.as_ref()).to_string());
-                            break;
-                        }
-                    }
+                    let feature_id: Option<LocalId> = extract_gmlid(&start, self.reader);
 
                     if let Some(fid) = feature_id {
                         // This element has gml:id - save it as a feature
@@ -220,7 +207,7 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                         );
                         self.state
                             .feature_stack
-                            .push((fid, feature_type, current_depth));
+                            .push((fid.0, feature_type, current_depth));
                     }
 
                     // save start tag
@@ -476,6 +463,9 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
             Solid => {
                 self.parse_solid_prop(geomref, lod, feature_id, feature_type, property_name)?
             }
+            MultiSolid => {
+                self.parse_multi_solid_prop(geomref, lod, feature_id, feature_type, property_name)?
+            }
             MultiSurface => self.parse_multi_surface_prop(
                 geomref,
                 lod,
@@ -553,7 +543,6 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                             pos: line_begin as u32,
                             len: (line_end - line_begin) as u32,
                             id: None,
-                            solid_ids: Vec::new(),
                             feature_id: feature_id.clone(),
                             feature_type: feature_type.clone(),
                         });
@@ -618,7 +607,6 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                             pos: line_begin as u32,
                             len: (line_end - line_begin) as u32,
                             id: None,
-                            solid_ids: Vec::new(),
                             feature_id: feature_id.clone(),
                             feature_type: feature_type.clone(),
                         });
@@ -645,20 +633,10 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
         feature_type: Option<String>,
         property_name: Option<PropertyType>,
     ) -> Result<(), ParseError> {
-        let mut surface_id = None;
         loop {
             match self.reader.read_event_into(&mut self.state.buf1) {
                 Ok(Event::Start(start)) => {
-                    // surface id
-                    for attr in start.attributes().flatten() {
-                        let (nsres, localname) = self.reader.resolve_attribute(attr.key);
-                        if nsres == Bound(GML31_NS) && localname.as_ref() == b"id" {
-                            let id = String::from_utf8_lossy(attr.value.as_ref()).to_string();
-                            surface_id = Some(LocalId::from(id));
-                            break;
-                        }
-                    }
-
+                    let surface_id = extract_gmlid(&start, self.reader);
                     let (nsres, localname) = self.reader.resolve_element(start.name());
                     let poly_begin = self.state.geometry_collector.multipolygon.len();
 
@@ -688,13 +666,12 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                             pos: poly_begin as u32,
                             len: (poly_end - poly_begin) as u32,
                             id: surface_id.clone(),
-                            solid_ids: Vec::new(),
                             feature_id: feature_id.clone(),
                             feature_type: feature_type.clone(),
                         });
 
                         // record a partial surface span
-                        if let Some(id) = surface_id.clone() {
+                        if let Some(id) = surface_id {
                             self.state
                                 .geometry_collector
                                 .surface_spans
@@ -728,7 +705,7 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
         property_name: Option<PropertyType>,
     ) -> Result<(), ParseError> {
         let poly_begin = self.state.geometry_collector.multipolygon.len();
-        let (surface_id, _) = self.parse_surface()?;
+        let surface_id = self.parse_surface_member()?;
         let poly_end = self.state.geometry_collector.multipolygon.len();
         if poly_end - poly_begin > 0 {
             geomrefs.push(GeometryRef {
@@ -739,7 +716,6 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                 pos: poly_begin as u32,
                 len: (poly_end - poly_begin) as u32,
                 id: surface_id,
-                solid_ids: Vec::new(),
                 feature_id,
                 feature_type,
             });
@@ -756,11 +732,9 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
         property_name: Option<PropertyType>,
     ) -> Result<(), ParseError> {
         let poly_begin = self.state.geometry_collector.multipolygon.len();
-        let mut surface_id = None;
-        let mut solid_ids = Vec::new();
 
         if expect_start(self.reader, &mut self.state.buf1, GML31_NS, b"Solid")? {
-            (surface_id, solid_ids) = self.parse_solid()?;
+            self.parse_solid()?;
             expect_end(self.reader, &mut self.state.buf1)?;
         }
 
@@ -773,11 +747,68 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                 lod,
                 pos: poly_begin as u32,
                 len: (poly_end - poly_begin) as u32,
-                id: surface_id,
-                solid_ids,
+                id: None,
                 feature_id,
                 feature_type,
             });
+        }
+        Ok(())
+    }
+
+    fn parse_multi_solid_prop(
+        &mut self,
+        geomrefs: &mut GeometryRefs,
+        lod: u8,
+        feature_id: Option<String>,
+        feature_type: Option<String>,
+        property_name: Option<PropertyType>,
+    ) -> Result<(), ParseError> {
+        loop {
+            match self.reader.read_event_into(&mut self.state.buf1) {
+                Ok(Event::Start(start)) => {
+                    let (nsres, localname) = self.reader.resolve_element(start.name());
+                    let poly_begin = self.state.geometry_collector.multipolygon.len();
+
+                    let gml_geometry_type = GmlGeometryType::maybe_from_str(
+                        &String::from_utf8_lossy(localname.as_ref()),
+                    );
+                    let geomtype = match (nsres, localname.as_ref()) {
+                        (Bound(GML31_NS), b"MultiSolid") => {
+                            self.parse_multi_solid()?;
+                            GeometryType::Solid
+                        }
+                        _ => {
+                            return Err(ParseError::SchemaViolation(format!(
+                                "Expected MultiSolid but found <{}>",
+                                String::from_utf8_lossy(start.name().as_ref())
+                            )))
+                        }
+                    };
+
+                    let poly_end = self.state.geometry_collector.multipolygon.len();
+                    if poly_end - poly_begin > 0 {
+                        geomrefs.push(GeometryRef {
+                            ty: geomtype,
+                            property_name,
+                            gml_geometry_type,
+                            lod,
+                            pos: poly_begin as u32,
+                            len: (poly_end - poly_begin) as u32,
+                            id: None,
+                            feature_id: feature_id.clone(),
+                            feature_type: feature_type.clone(),
+                        });
+                    }
+                }
+                Ok(Event::End(_)) => break,
+                Ok(Event::Text(_)) => {
+                    return Err(ParseError::SchemaViolation(
+                        "Unexpected text content".into(),
+                    ))
+                }
+                Ok(_) => (),
+                Err(e) => return Err(e.into()),
+            }
         }
         Ok(())
     }
@@ -975,7 +1006,6 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                                 pos: poly_begin as u32,
                                 len: (poly_end - poly_begin) as u32,
                                 id: surface_id.clone(),
-                                solid_ids: Vec::new(),
                                 feature_id: feature_id.clone(),
                                 feature_type: feature_type.clone(),
                             });
@@ -1002,7 +1032,6 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                                 pos: line_begin as u32,
                                 len: (line_end - line_begin) as u32,
                                 id: surface_id.clone(),
-                                solid_ids: Vec::new(),
                                 feature_id: feature_id.clone(),
                                 feature_type: feature_type.clone(),
                             });
@@ -1018,7 +1047,6 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                                 pos: point_begin as u32,
                                 len: (point_end - point_begin) as u32,
                                 id: surface_id.clone(),
-                                solid_ids: Vec::new(),
                                 feature_id: feature_id.clone(),
                                 feature_type: feature_type.clone(),
                             });
@@ -1090,7 +1118,6 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                 pos: poly_begin as u32,
                 len: (poly_end - poly_begin) as u32,
                 id: None,
-                solid_ids: Vec::new(),
                 feature_id,
                 feature_type,
             });
@@ -1127,13 +1154,41 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
         }
     }
 
-    fn parse_solid(&mut self) -> Result<(Option<LocalId>, Vec<LocalId>), ParseError> {
-        if expect_start(self.reader, &mut self.state.buf1, GML31_NS, b"exterior")? {
-            let (surface_id, surface_ids) = self.parse_surface()?;
-            expect_end(self.reader, &mut self.state.buf1)?;
-            return Ok((surface_id, surface_ids));
+    fn parse_solid(&mut self) -> Result<(), ParseError> {
+        loop {
+            match self.reader.read_event_into(&mut self.state.buf1) {
+                Ok(Event::Start(start)) => {
+                    let (nsres, localname) = self.reader.resolve_element(start.name());
+                    match (nsres, localname.as_ref()) {
+                        (Bound(GML31_NS), b"exterior") => {
+                            // Continue reading
+                        }
+                        (Bound(GML31_NS), b"interior") => {
+                            return Err(ParseError::SchemaViolation(
+                                "interior elements in Solid are not yet supported".into(),
+                            ));
+                        }
+                        (Bound(GML31_NS), b"CompositeSurface") => {
+                            self.parse_composite_surface()?;
+                        }
+                        _ => {
+                            return Err(ParseError::SchemaViolation(format!(
+                                "Unexpected/unimplemented element <{}> in Solid",
+                                String::from_utf8_lossy(localname.as_ref())
+                            )));
+                        }
+                    }
+                }
+                Ok(Event::End(end)) => {
+                    let (nsres, localname) = self.reader.resolve_element(end.name());
+                    if nsres == Bound(GML31_NS) && localname.as_ref() == b"Solid" {
+                        return Ok(());
+                    }
+                }
+                Ok(_) => (),
+                Err(e) => return Err(e.into()),
+            }
         }
-        Ok((None, Vec::new()))
     }
 
     fn parse_triangulated_surface(&mut self) -> Result<(), ParseError> {
@@ -1183,7 +1238,7 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                     let (nsres, localname) = self.reader.resolve_element(start.name());
                     match (nsres, localname.as_ref()) {
                         (Bound(GML31_NS), b"surfaceMember") => {
-                            self.parse_surface()?;
+                            self.parse_surface_member()?;
                         }
                         (_, localname) => {
                             return Err(ParseError::SchemaViolation(format!(
@@ -1210,6 +1265,42 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
         }
     }
 
+    fn parse_multi_solid(&mut self) -> Result<(), ParseError> {
+        loop {
+            match self.reader.read_event_into(&mut self.state.buf1) {
+                Ok(Event::Start(start)) => {
+                    let (nsres, localname) = self.reader.resolve_element(start.name());
+                    match (nsres, localname.as_ref()) {
+                        (Bound(GML31_NS), b"solidMember") => {
+                            // To handle solid IDs, implement a parse_solid_member() and call extract_gmlid() there.
+                            // Currently we just handle solid member parsing here.
+                        }
+                        (Bound(GML31_NS), b"Solid") => {
+                            self.parse_solid()?;
+                        }
+                        (_, localname) => {
+                            return Err(ParseError::SchemaViolation(format!(
+                                "Unexpected element <{}> by parsing multi solid",
+                                String::from_utf8_lossy(localname)
+                            )))
+                        }
+                    };
+                }
+                Ok(Event::End(end)) => {
+                    let (nsres, localname) = self.reader.resolve_element(end.name());
+                    if nsres == Bound(GML31_NS) && localname.as_ref() == b"MultiSolid" {
+                        return Ok(());
+                    }
+                }
+                Ok(Event::Text(_)) => {
+                    // Ignore whitespace
+                }
+                Ok(_) => (),
+                Err(e) => return Err(e.into()),
+            }
+        }
+    }
+
     fn parse_composite_surface(&mut self) -> Result<Vec<LocalId>, ParseError> {
         let mut surface_id = None;
         let mut result = Vec::new();
@@ -1227,10 +1318,7 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                     }
                     match (nsres, localname.as_ref()) {
                         (Bound(GML31_NS), b"surfaceMember") => {
-                            let (surface_member_id, _) = self.parse_surface()?;
-                            if surface_id.is_none() {
-                                surface_id = surface_member_id;
-                            }
+                            self.parse_surface_member()?;
                         }
                         _ => {
                             return Err(ParseError::SchemaViolation(format!(
@@ -1265,7 +1353,7 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
         }
     }
 
-    fn parse_patches(&mut self) -> Result<Vec<LocalId>, ParseError> {
+    fn parse_surface(&mut self) -> Result<Vec<LocalId>, ParseError> {
         loop {
             match self.reader.read_event_into(&mut self.state.buf1) {
                 Ok(Event::Start(start)) => {
@@ -1280,7 +1368,7 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                         }
                         _ => {
                             return Err(ParseError::SchemaViolation(format!(
-                                "Unexpected element <{}> by parsing patches",
+                                "Unexpected element <{}> by parsing surface",
                                 String::from_utf8_lossy(localname.as_ref())
                             )))
                         }
@@ -1301,29 +1389,18 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
         }
     }
 
-    fn parse_surface(&mut self) -> Result<(Option<LocalId>, Vec<LocalId>), ParseError> {
+    fn parse_surface_member(&mut self) -> Result<Option<LocalId>, ParseError> {
         let mut surface_id = None;
-        let mut surface_ids = Vec::new();
-        let poly_begin = self.state.geometry_collector.multipolygon.len();
-
         loop {
             match self.reader.read_event_into(&mut self.state.buf1) {
                 Ok(Event::Start(start)) => {
-                    // surface id
-                    for attr in start.attributes().flatten() {
-                        let (nsres, localname) = self.reader.resolve_attribute(attr.key);
-                        if nsres == Bound(GML31_NS) && localname.as_ref() == b"id" {
-                            let id = String::from_utf8_lossy(attr.value.as_ref()).to_string();
-                            surface_id = Some(LocalId::from(id));
-                            break;
-                        }
-                    }
-
+                    surface_id = extract_gmlid(&start, self.reader);
+                    let poly_begin = self.state.geometry_collector.multipolygon.len();
                     let (nsres, localname) = self.reader.resolve_element(start.name());
                     match (nsres, localname.as_ref()) {
                         (Bound(GML31_NS), b"Polygon") => self.parse_polygon()?,
                         (Bound(GML31_NS), b"CompositeSurface") => {
-                            surface_ids = self.parse_composite_surface()?;
+                            self.parse_composite_surface()?;
                         }
                         (Bound(GML31_NS), b"OrientableSurface") => {
                             let mut orientation = "+".to_string();
@@ -1338,7 +1415,6 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                             }
                             let base_surface_id = self.parse_orientable_surface()?;
                             if let Some(base_surface_id) = base_surface_id {
-                                surface_id = Some(base_surface_id.clone());
                                 self.state.geometry_collector.orientable_surfaces.push(
                                     OrientableSurface {
                                         surface_id: base_surface_id,
@@ -1347,17 +1423,14 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                                 );
                             }
                         }
-                        (Bound(GML31_NS), b"surfaceMember") => {
-                            (surface_id, _) = self.parse_surface()?;
-                        }
                         (Bound(GML31_NS), b"Surface") => {
-                            surface_ids = self.parse_patches()?;
+                            self.parse_surface()?;
                         }
                         // (Bound(GML_NS), b"TriangulatedSurface") =>
                         // (Bound(GML_NS), b"Tin") =>
                         _ => {
                             return Err(ParseError::SchemaViolation(format!(
-                                "Unexpected element <{}> by parsing surface",
+                                "Unexpected element <{}> by parsing surface member",
                                 String::from_utf8_lossy(localname.as_ref())
                             )))
                         }
@@ -1378,7 +1451,12 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                         }
                     }
                 }
-                Ok(Event::End(_)) => return Ok((surface_id, surface_ids)),
+                Ok(Event::End(end)) => {
+                    let (nsres, localname) = self.reader.resolve_element(end.name());
+                    if nsres == Bound(GML31_NS) && localname.as_ref() == b"surfaceMember" {
+                        return Ok(surface_id);
+                    }
+                }
                 Ok(Event::Text(_)) => {
                     return Err(ParseError::SchemaViolation(
                         "Unexpected text content".into(),
@@ -1590,16 +1668,7 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                             )));
                         }
                         (3, b"LinearRing") => {
-                            ring_id = None;
-                            for attr in start.attributes().flatten() {
-                                let (nsres, localname) = self.reader.resolve_attribute(attr.key);
-                                if nsres == Bound(GML31_NS) && localname.as_ref() == b"id" {
-                                    let id =
-                                        String::from_utf8_lossy(attr.value.as_ref()).to_string();
-                                    ring_id = Some(LocalId::from(id));
-                                    break;
-                                }
-                            }
+                            ring_id = extract_gmlid(&start, self.reader);
                         }
                         (3, _) => {
                             return Err(ParseError::SchemaViolation(format!(
@@ -1841,6 +1910,17 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
 
         Ok(())
     }
+}
+
+fn extract_gmlid(start: &BytesStart, reader: &NsReader<impl BufRead>) -> Option<LocalId> {
+    for attr in start.attributes().flatten() {
+        let (nsres, localname) = reader.resolve_attribute(attr.key);
+        if nsres == Bound(GML31_NS) && localname.as_ref() == b"id" {
+            let id = String::from_utf8_lossy(attr.value.as_ref()).to_string();
+            return Some(LocalId::from(id));
+        }
+    }
+    None
 }
 
 fn expect_start<R: BufRead>(
