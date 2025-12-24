@@ -5,7 +5,7 @@ use byteorder::{BigEndian, LittleEndian, WriteBytesExt};
 const HEADER_LENGTH_WORDS: usize = 50; // 100 bytes / 2 (16-bit words)
 const RECORD_HEADER_WORDS: usize = 4; // 8 bytes / 2 (16-bit words)
 const NULL_SHAPE_CONTENT_WORDS: usize = 2; // 4 bytes / 2 (16-bit words)
-const SHX_RECORD_WORDS: usize = 4; // each index entry is 8 bytes /2 (16-bit words)
+const SHX_RECORD_WORDS: usize = 4; // each index entry is 8 bytes / 2 (16-bit words)
 
 pub fn write_shp(mut writer: impl Write, feature_count: usize) -> Result<()> {
     let file_length_words =
