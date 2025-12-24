@@ -37,6 +37,7 @@ impl Transform for FlattenStringArrayTransform {
                 | TypeDef::Data(DataTypeDef { attributes, .. }) => {
                     for attr in attributes.values_mut() {
                         if is_multi_occurrence(attr) && is_scalar_type(&attr.type_ref) {
+                            // Change to single occurrence
                             attr.max_occurs = Some(1);
                         }
                     }
@@ -68,9 +69,6 @@ fn flatten_value(value: &mut Value, separator: &str) {
             let mut parts = Vec::with_capacity(arr.len());
             for v in arr.iter() {
                 if let Some(text) = scalar_to_string(v) {
-                    if text.eq_ignore_ascii_case("null") || text.is_empty() {
-                        continue;
-                    }
                     parts.push(text);
                 } else {
                     let json = value.to_attribute_json().to_string();
@@ -228,11 +226,110 @@ mod tests {
         transform.transform(&feedback, entity, &mut out);
 
         match &out[0].root {
+            Value::Object(obj) => match obj.attributes.get("complex") {
+                Some(Value::String(s)) => assert_eq!(s, "[[\"nested\"]]"),
+                _ => panic!("complex attribute should remain serialized JSON"),
+            },
+            _ => panic!("unexpected root"),
+        }
+    }
+
+    #[test]
+    fn flatten_empty_array() {
+        let mut attributes = Map::default();
+        attributes.insert("empty".into(), Value::Array(vec![]));
+        let entity = build_entity(Value::Object(Object {
+            typename: "bldg:Building".into(),
+            attributes,
+            stereotype: ObjectStereotype::Data,
+        }));
+
+        let mut transform = FlattenStringArrayTransform::default();
+        let mut out = Vec::new();
+        let (_watcher, feedback, _canceller) = feedback::watcher();
+        transform.transform(&feedback, entity, &mut out);
+
+        match &out[0].root {
             Value::Object(obj) => {
-                match obj.attributes.get("complex") {
-                    Some(Value::String(s)) => assert_eq!(s, "[[\"nested\"]]"),
-                    _ => panic!("complex attribute should remain serialized JSON"),
-                }
+                assert_eq!(
+                    obj.attributes.get("empty"),
+                    Some(&Value::String(String::new()))
+                );
+            }
+            _ => panic!("unexpected root"),
+        }
+    }
+
+    #[test]
+    fn flatten_mixed_scalar_types() {
+        let mut attributes = Map::default();
+        attributes.insert(
+            "mixed".into(),
+            Value::Array(vec![
+                Value::Integer(1),
+                Value::Double(2.5),
+                Value::Boolean(true),
+                Value::String("text".into()),
+            ]),
+        );
+        let entity = build_entity(Value::Object(Object {
+            typename: "bldg:Building".into(),
+            attributes,
+            stereotype: ObjectStereotype::Data,
+        }));
+
+        let mut transform = FlattenStringArrayTransform::default();
+        let mut out = Vec::new();
+        let (_watcher, feedback, _canceller) = feedback::watcher();
+        transform.transform(&feedback, entity, &mut out);
+
+        match &out[0].root {
+            Value::Object(obj) => {
+                assert_eq!(
+                    obj.attributes.get("mixed"),
+                    Some(&Value::String("1,2.5,true,text".into()))
+                );
+            }
+            _ => panic!("unexpected root"),
+        }
+    }
+
+    #[test]
+    fn array_with_object_falls_back_to_json() {
+        let mut inner_attrs = Map::default();
+        inner_attrs.insert("key".into(), Value::String("value".into()));
+        let mut attributes = Map::default();
+        attributes.insert(
+            "mixed".into(),
+            Value::Array(vec![
+                Value::String("scalar".into()),
+                Value::Object(Object {
+                    typename: "uro:Dummy".into(),
+                    attributes: inner_attrs,
+                    stereotype: ObjectStereotype::Data,
+                }),
+            ]),
+        );
+        let entity = build_entity(Value::Object(Object {
+            typename: "bldg:Building".into(),
+            attributes,
+            stereotype: ObjectStereotype::Data,
+        }));
+
+        let mut transform = FlattenStringArrayTransform::default();
+        let mut out = Vec::new();
+        let (_watcher, feedback, _canceller) = feedback::watcher();
+        transform.transform(&feedback, entity, &mut out);
+
+        match &out[0].root {
+            Value::Object(obj) => {
+                let Some(Value::String(result)) = obj.attributes.get("mixed") else {
+                    panic!("expected JSON string");
+                };
+                assert!(
+                    result.contains("\"scalar\"") && result.contains("\"key\""),
+                    "unexpected JSON output: {result}"
+                );
             }
             _ => panic!("unexpected root"),
         }
