@@ -14,6 +14,14 @@ pub fn use_lod_config(default_value: &str, exclude: Option<&[&str]>) -> Transfor
     }
 }
 
+pub fn join_attribute_arrays_config(default_value: bool) -> TransformerConfig {
+    TransformerConfig {
+        key: "join_attribute_arrays".to_string(),
+        label: "属性配列をカンマ区切りで出力".to_string(),
+        parameter: ParameterType::Boolean(default_value),
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub enum ParameterType {
     String(String),
@@ -75,8 +83,14 @@ impl TransformerSettings {
                 ParameterType::String(_value) => {
                     // TODO: Processing for String types.
                 }
-                ParameterType::Boolean(_value) => {
-                    // TODO: Processing for Boolean types.
+                ParameterType::Boolean(value) => {
+                    if config.key == "join_attribute_arrays" {
+                        data_requirements.key_value = if *value {
+                            transformer::KeyValueSpec::PlainStringArrays
+                        } else {
+                            transformer::KeyValueSpec::JsonifyObjectsAndArrays
+                        };
+                    }
                 }
                 ParameterType::Integer(_value) => {
                     // TODO: Processing for Integer types.

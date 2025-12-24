@@ -22,7 +22,7 @@ export interface BooleanConfig {
 	Boolean: boolean;
 }
 
-type TransformerParameterType = boolean | SelectionConfig<string>;
+type TransformerParameterType = BooleanConfig | Selection<string>;
 
 export type TransformerSettings = {
 	configs: Array<TransformerConfig<TransformerParameterType>>;
