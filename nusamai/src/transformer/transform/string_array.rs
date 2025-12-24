@@ -39,6 +39,7 @@ impl Transform for FlattenStringArrayTransform {
                         if is_multi_occurrence(attr) && is_scalar_type(&attr.type_ref) {
                             // Change to single occurrence
                             attr.max_occurs = Some(1);
+                            attr.type_ref = TypeRef::String;
                         }
                     }
                 }
@@ -56,7 +57,10 @@ fn flatten_value(value: &mut Value, separator: &str) {
             }
         }
         Value::Array(arr) => {
-            if arr.iter().any(|v| matches!(v, Value::Array(_))) {
+            if arr
+                .iter()
+                .any(|v| matches!(v, Value::Array(_) | Value::Object(_)))
+            {
                 let json = value.to_attribute_json().to_string();
                 *value = Value::String(json);
                 return;
@@ -68,13 +72,12 @@ fn flatten_value(value: &mut Value, separator: &str) {
 
             let mut parts = Vec::with_capacity(arr.len());
             for v in arr.iter() {
-                if let Some(text) = scalar_to_string(v) {
-                    parts.push(text);
-                } else {
+                let Some(text) = scalar_to_string(v) else {
                     let json = value.to_attribute_json().to_string();
                     *value = Value::String(json);
                     return;
-                }
+                };
+                parts.push(text);
             }
 
             let joined = if parts.is_empty() {
@@ -333,5 +336,35 @@ mod tests {
             }
             _ => panic!("unexpected root"),
         }
+    }
+
+    #[test]
+    fn transform_schema_updates_array_types() {
+        let mut schema = nusamai_citygml::schema::Schema::default();
+        let mut attributes = nusamai_citygml::schema::Map::default();
+
+        let mut attr = nusamai_citygml::schema::Attribute::new(TypeRef::Integer);
+        attr.max_occurs = Some(3);
+        attributes.insert("values".into(), attr);
+
+        schema.types.insert(
+            "test".into(),
+            TypeDef::Feature(FeatureTypeDef {
+                attributes,
+                additional_attributes: false,
+            }),
+        );
+
+        let transform = FlattenStringArrayTransform::default();
+        transform.transform_schema(&mut schema);
+
+        let TypeDef::Feature(FeatureTypeDef { attributes, .. }) = schema.types.get("test").unwrap()
+        else {
+            panic!("unexpected typedef");
+        };
+
+        let attr = attributes.get("values").unwrap();
+        assert_eq!(attr.max_occurs, Some(1));
+        assert!(matches!(attr.type_ref, TypeRef::String));
     }
 }
