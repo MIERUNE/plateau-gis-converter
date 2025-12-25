@@ -6,6 +6,7 @@ mod geommerge;
 mod geomstats;
 mod jsonify;
 mod lods;
+mod string_array;
 mod projection;
 
 pub use appearance::*;
@@ -16,6 +17,7 @@ pub use geommerge::*;
 pub use geomstats::*;
 pub use jsonify::*;
 pub use lods::*;
+pub use string_array::*;
 use nusamai_citygml::schema::Schema;
 use nusamai_plateau::Entity;
 pub use projection::*;

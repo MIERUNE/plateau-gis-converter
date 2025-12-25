@@ -24,7 +24,7 @@ use crate::{
     pipeline::{Feedback, PipelineError, Receiver, Result},
     sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo},
     transformer,
-    transformer::{use_lod_config, TransformerSettings},
+    transformer::{join_attribute_arrays_config, use_lod_config, TransformerSettings},
 };
 
 use super::option::output_parameter;
@@ -49,6 +49,7 @@ impl DataSinkProvider for GeoJsonSinkProvider {
     fn transformer_options(&self) -> TransformerSettings {
         let mut settings: TransformerSettings = TransformerSettings::new();
         settings.insert(use_lod_config("max_lod", None));
+        settings.insert(join_attribute_arrays_config(false));
 
         settings
     }

@@ -83,6 +83,8 @@ pub enum KeyValueSpec {
     JsonifyObjects,
     // Flatten nested objects and arrays as dot-split keys (e.g. `buildingDisasterRiskAttribute.0.rankOrg`)
     DotNotation,
+    // Convert scalar arrays into comma-separated strings
+    PlainStringArrays,
 }
 
 pub enum GeometryStatsSpec {
@@ -176,6 +178,10 @@ impl TransformBuilder for NusamaiTransformBuilder {
             }
             KeyValueSpec::DotNotation => {
                 transforms.push(Box::<DotNotationTransform>::default());
+            }
+            KeyValueSpec::PlainStringArrays => {
+                transforms.push(Box::new(JsonifyTransform::default().jsonify_array(false)));
+                transforms.push(Box::<FlattenStringArrayTransform>::default());
             }
             KeyValueSpec::None => {
                 // No-op

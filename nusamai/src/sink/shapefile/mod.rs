@@ -28,7 +28,7 @@ use crate::{
     pipeline::{Feedback, PipelineError, Receiver, Result},
     sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo},
     transformer,
-    transformer::{use_lod_config, TransformerSettings},
+    transformer::{join_attribute_arrays_config, use_lod_config, TransformerSettings},
 };
 
 use super::option::output_parameter;
@@ -52,6 +52,7 @@ impl DataSinkProvider for ShapefileSinkProvider {
     fn transformer_options(&self) -> TransformerSettings {
         let mut settings: TransformerSettings = TransformerSettings::new();
         settings.insert(use_lod_config("max_lod", None));
+        settings.insert(join_attribute_arrays_config(false));
 
         settings
     }
@@ -142,9 +143,7 @@ impl DataSink for ShapefileSink {
                         feedback.ensure_not_canceled()?;
 
                         let typedef = schema.types.get(&typename).ok_or_else(|| {
-                            PipelineError::Other(format!(
-                                "Type {typename} not found in the schema"
-                            ))
+                            PipelineError::Other(format!("Type {typename} not found in the schema"))
                         })?;
 
                         let (table_builder, fields_default) = make_table_builder(typedef);
