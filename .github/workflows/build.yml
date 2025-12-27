@@ -20,7 +20,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Restore timestamps to cache workspace crates
         uses: chetan/git-restore-mtime-action@v2
       - name: Rustup
