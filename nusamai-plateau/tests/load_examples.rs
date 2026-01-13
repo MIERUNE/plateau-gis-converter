@@ -1045,3 +1045,17 @@ fn load_vegetation_multisolid_example() {
     // Verify basic PlantCover attributes
     assert_eq!(plant_cover.class.as_ref().map(|c| c.code()), Some("5"));
 }
+
+#[test]
+fn load_cityfurniture_curvemembers_example() {
+    // Test CurveMembers parsing for CityFurniture with MultiCurve geometry
+    // The GML contains: <gml:MultiCurve><gml:curveMembers><gml:Curve>...
+    let cityobjs = load_cityobjs("./tests/data/nagaoka-shi/udx/frn/56380598_frn_6697_op.gml");
+
+    assert_eq!(cityobjs.len(), 1);
+
+    let geometries = &cityobjs.first().unwrap().geometries;
+
+    // Verify that curveMembers with Curve containing LineStringSegment was parsed as multilinestring
+    assert_eq!(geometries.multilinestring.len(), 1);
+}
