@@ -21,3 +21,7 @@ PLATEAU GIS Converter は、[PLATEAU](https://www.mlit.go.jp/plateau/)が提供�
 - Mapbox Vector Tilesを用いた大規模データの高速描画
 - 3DTilesを利用したCesiumでの可視化
 - など
+
+また、より具体的な利用方法・ユースケースなどはPLATEAU公式のLearningに記事がありますので、そちらもご参照ください。
+- [TOPIC 30｜PLATEAU GIS Converterでコンバートして3Dで表示する](https://www.mlit.go.jp/plateau/learning/tpc30/)
+- [TOPIC 31｜PLATEAU GIS Converterを使ってコンバートしたデータをGIS分野で活用する](https://www.mlit.go.jp/plateau/learning/tpc31/)

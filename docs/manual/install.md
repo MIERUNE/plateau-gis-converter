@@ -2,7 +2,9 @@
 
 ## ダウンロード
 
-GitHubリポジトリの[リリースページ](https://github.com/MIERUNE/PLATEAU-GIS-Converter/releases)からダウンロードすることが可能です。
+安定版のソフトウェアは、GitHub リポジトリの [Releaseページ](https://github.com/Project-PLATEAU/PLATEAU-GIS-Converter/releases)（PLATEAU リポジトリ）からダウンロードしてください。
+
+最新版はこちら（株式会社MIERUNE リポジトリ [Releaseページ](https://github.com/MIERUNE/plateau-gis-converter/releases)）からダウンロード可能です。
 
 windowsを利用している方は、`PLATEAU.GIS.Converter_<最新バージョン>_x64-setup.exe`をダウンロードしてください。
 macOSを利用している方は、`PLATEAU.GIS.Converter_<最新バージョン>_universal.dmg`をダウンロードしてください。
