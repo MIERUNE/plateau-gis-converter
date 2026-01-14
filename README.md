@@ -199,6 +199,27 @@ Codecov: [https://app.codecov.io/gh/MIERUNE/plateau-gis-converter](https://app.c
 cargo llvm-cov --workspace --exclude app --html --all-features
 ```
 
+### Documentation
+
+ドキュメントのローカルプレビュー:
+
+```bash
+cd ./docs/
+docfx docfx.json --serve
+```
+
+ビルド後、`http://localhost:8080` でプレビューできます。
+
+docfxのインストール:
+
+```bash
+# .NET Tool
+dotnet tool install -g docfx
+
+# または Homebrew (macOS)
+brew install docfx
+```
+
 ### Authors（主要開発者）
 
 - Taku Fukada ([@ciscorn](https://github.com/ciscorn))
