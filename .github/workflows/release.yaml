@@ -20,7 +20,7 @@ jobs:
     runs-on: ${{ matrix.settings.platform }}
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Restore timestamps to cache workspace crates
         uses: chetan/git-restore-mtime-action@v2
 
@@ -42,7 +42,7 @@ jobs:
           sudo apt-get install -y libwebkit2gtk-4.1-dev libxdo-dev libssl-dev libayatana-appindicator3-dev librsvg2-dev
 
       - name: Sync node version and setup cache
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: "lts/*"
           cache: "npm"
