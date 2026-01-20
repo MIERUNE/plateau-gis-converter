@@ -2,7 +2,13 @@
 mod gltf_writer;
 mod material;
 
-use std::{fs::File, io::BufWriter, path::PathBuf, sync::Mutex};
+use std::{
+    fs::File,
+    io::BufWriter,
+    panic::{catch_unwind, AssertUnwindSafe},
+    path::PathBuf,
+    sync::Mutex,
+};
 
 use crate::sink::cesiumtiles::utils::calculate_normal;
 use atlas_packer::{
@@ -608,13 +614,37 @@ impl DataSink for GltfSink {
                 // Ensure that the parent directory exists
                 std::fs::create_dir_all(&self.output_path)?;
 
-                packed.export(
-                    exporter,
-                    &atlas_dir,
-                    &texture_cache,
-                    config.width,
-                    config.height,
-                );
+                // Attempt to export texture atlas with panic recovery
+                // If JPEG encoding fails due to dimension issues, skip the texture atlas
+                // and continue processing without textures for this feature type
+                let export_result = catch_unwind(AssertUnwindSafe(|| {
+                    packed.export(
+                        exporter,
+                        &atlas_dir,
+                        &texture_cache,
+                        config.width,
+                        config.height,
+                    )
+                }));
+
+                if let Err(panic_info) = export_result {
+                    feedback.warn(format!(
+                        "Texture atlas export failed for feature type '{}'. \
+                         Skipping texture atlas and continuing without textures. \
+                         Panic info: {:?}",
+                        typename, panic_info
+                    ));
+
+                    // Remove texture references from all primitives since the atlas files don't exist
+                    // This prevents "file not found" errors when trying to load non-existent atlas images
+                    primitives = primitives
+                        .into_iter()
+                        .map(|(mut mat, prim_info)| {
+                            mat.base_texture = None;
+                            (mat, prim_info)
+                        })
+                        .collect();
+                }
 
                 // Write glTF (.glb)
                 let file_path = {

@@ -11,6 +11,7 @@ use std::{
     convert::Infallible,
     fs,
     io::BufWriter,
+    panic::{catch_unwind, AssertUnwindSafe},
     path::{Path, PathBuf},
     sync::{mpsc, Arc, Mutex},
 };
@@ -703,13 +704,38 @@ fn tile_writing_stage(
             let (z, x, y) = tile_id_conv.id_to_zxy(tile_id);
             let atlas_path = atlas_dir.join(format!("{z}/{x}/{y}"));
             fs::create_dir_all(&atlas_path)?;
-            packed.export(
-                exporter,
-                &atlas_path,
-                &texture_cache,
-                config.width,
-                config.height,
-            );
+
+            // Attempt to export texture atlas with panic recovery
+            // If WebP encoding fails due to dimension issues, skip the texture atlas
+            // and continue processing without textures for this tile
+            let export_result = catch_unwind(AssertUnwindSafe(|| {
+                packed.export(
+                    exporter,
+                    &atlas_path,
+                    &texture_cache,
+                    config.width,
+                    config.height,
+                )
+            }));
+
+            if let Err(panic_info) = export_result {
+                feedback.warn(format!(
+                    "Texture atlas export failed for tile z={z}, x={x}, y={y}. \
+                     Skipping texture atlas for this tile and continuing without textures. \
+                     Panic info: {:?}",
+                    panic_info
+                ));
+
+                // Remove texture references from all primitives since the atlas files don't exist
+                // This prevents "file not found" errors when trying to load non-existent atlas images
+                primitives = primitives
+                    .into_iter()
+                    .map(|(mut mat, prim_info)| {
+                        mat.base_texture = None;
+                        (mat, prim_info)
+                    })
+                    .collect();
+            }
 
             // Write to file
             let path_glb = output_path.join(Path::new(&content.content_path));
