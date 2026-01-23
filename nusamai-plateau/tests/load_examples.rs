@@ -1059,3 +1059,25 @@ fn load_cityfurniture_curvemembers_example() {
     // Verify that curveMembers with Curve containing LineStringSegment was parsed as multilinestring
     assert_eq!(geometries.multilinestring.len(), 1);
 }
+
+#[test]
+fn load_track_lod0network_example() {
+    // Test Track with lod0Network containing CompositeCurve
+    // The GML structure: <tran:lod0Network><gml:CompositeCurve><gml:curveMember>...
+    let cityobjs = load_cityobjs("./tests/data/mikurajima-mura/udx/trk/50396427_trk_6697_op.gml");
+
+    assert_eq!(cityobjs.len(), 1);
+
+    let TopLevelCityObject::Track(track) = &cityobjs.first().unwrap().cityobj else {
+        panic!("Expected Track");
+    };
+
+    // Verify basic Track attributes
+    assert_eq!(track.class.as_ref().map(|c| c.code()), Some("1020"));
+    assert_eq!(track.function.first().map(|c| c.code()), Some("9020"));
+
+    let geometries = &cityobjs.first().unwrap().geometries;
+
+    // Verify that lod0Network with CompositeCurve was parsed as multilinestring
+    assert_eq!(geometries.multilinestring.len(), 1);
+}
