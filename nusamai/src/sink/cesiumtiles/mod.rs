@@ -719,11 +719,19 @@ fn tile_writing_stage(
             }));
 
             if let Err(panic_info) = export_result {
+                let panic_message = if let Some(s) = panic_info.downcast_ref::<&str>() {
+                    (*s).to_string()
+                } else if let Some(s) = panic_info.downcast_ref::<String>() {
+                    s.clone()
+                } else {
+                    format!("{:?}", panic_info)
+                };
+
                 feedback.warn(format!(
                     "Texture atlas export failed for tile z={z}, x={x}, y={y}. \
                      Skipping texture atlas for this tile and continuing without textures. \
-                     Panic info: {:?}",
-                    panic_info
+                     Panic info: {}",
+                    panic_message
                 ));
 
                 // Remove texture references from all primitives since the atlas files don't exist
