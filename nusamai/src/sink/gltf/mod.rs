@@ -628,11 +628,19 @@ impl DataSink for GltfSink {
                 }));
 
                 if let Err(panic_info) = export_result {
+                    let panic_message = if let Some(s) = panic_info.downcast_ref::<&str>() {
+                        (*s).to_string()
+                    } else if let Some(s) = panic_info.downcast_ref::<String>() {
+                        s.clone()
+                    } else {
+                        format!("{:?}", panic_info)
+                    };
+
                     feedback.warn(format!(
                         "Texture atlas export failed for feature type '{}'. \
                          Skipping texture atlas and continuing without textures. \
-                         Panic info: {:?}",
-                        typename, panic_info
+                         Panic info: {}",
+                        typename, panic_message
                     ));
 
                     // Remove texture references from all primitives since the atlas files don't exist
