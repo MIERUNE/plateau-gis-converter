@@ -637,13 +637,18 @@ impl DataSink for GltfSink {
 
                     // Remove texture references from all primitives since the atlas files don't exist
                     // This prevents "file not found" errors when trying to load non-existent atlas images
-                    primitives = primitives
-                        .into_iter()
-                        .map(|(mut mat, prim_info)| {
-                            mat.base_texture = None;
-                            (mat, prim_info)
-                        })
-                        .collect();
+                    // Note: We must merge primitives that become identical after removing textures,
+                    // because Material is used as a HashMap key and its Hash includes base_texture.
+                    // Without merging, primitives with the same base_color but different textures
+                    // would collide and overwrite each other, causing geometry data loss.
+                    let mut merged_primitives: Primitives = Default::default();
+                    for (mut mat, prim_info) in primitives.into_iter() {
+                        mat.base_texture = None;
+                        let entry = merged_primitives.entry(mat).or_default();
+                        entry.indices.extend(prim_info.indices);
+                        entry.feature_ids.extend(prim_info.feature_ids);
+                    }
+                    primitives = merged_primitives;
                 }
 
                 // Write glTF (.glb)
