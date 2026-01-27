@@ -108,6 +108,7 @@ pub enum PropertyType {
     // Standard LOD properties
     Lod0Point,
     Lod0MultiCurve,
+    Lod1MultiCurve,
     Lod2MultiCurve,
     Lod3MultiCurve,
     Lod4MultiCurve,
@@ -152,6 +153,7 @@ impl PropertyType {
         let out = match s {
             "lod0Point" => Self::Lod0Point,
             "lod0MultiCurve" => Self::Lod0MultiCurve,
+            "lod1MultiCurve" => Self::Lod1MultiCurve,
             "lod2MultiCurve" => Self::Lod2MultiCurve,
             "lod3MultiCurve" => Self::Lod3MultiCurve,
             "lod4MultiCurve" => Self::Lod4MultiCurve,
@@ -198,6 +200,7 @@ impl Display for PropertyType {
         let s = match self {
             Self::Lod0Point => "lod0Point",
             Self::Lod0MultiCurve => "lod0MultiCurve",
+            Self::Lod1MultiCurve => "lod1MultiCurve",
             Self::Lod2MultiCurve => "lod2MultiCurve",
             Self::Lod3MultiCurve => "lod3MultiCurve",
             Self::Lod4MultiCurve => "lod4MultiCurve",

@@ -514,6 +514,7 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
         loop {
             match self.reader.read_event_into(&mut self.state.buf1) {
                 Ok(Event::Start(start)) => {
+                    let curve_id = extract_gmlid(&start, self.reader);
                     let (nsres, localname) = self.reader.resolve_element(start.name());
                     let line_begin = self.state.geometry_collector.multilinestring.len();
 
@@ -542,7 +543,7 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                             lod,
                             pos: line_begin as u32,
                             len: (line_end - line_begin) as u32,
-                            id: None,
+                            id: curve_id,
                             feature_id: feature_id.clone(),
                             feature_type: feature_type.clone(),
                         });

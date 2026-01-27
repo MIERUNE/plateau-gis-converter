@@ -140,6 +140,7 @@ fn generate_citygml_impl_for_struct(
 
                     add_arm(0, b"lod0Point", "Point");
                     add_arm(0, b"lod0MultiCurve", "MultiCurve");
+                    add_arm(1, b"lod1MultiCurve", "MultiCurve");
                     add_arm(2, b"lod2MultiCurve", "MultiCurve");
                     add_arm(3, b"lod3MultiCurve", "MultiCurve");
                     add_arm(4, b"lod4MultiCurve", "MultiCurve"); // only in CityGML 2.0
