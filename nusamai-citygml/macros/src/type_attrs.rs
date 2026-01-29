@@ -173,7 +173,7 @@ fn modify(ty: &Stereotype, args: &FeatureArgs, input: &mut DeriveInput) -> Resul
                         fields,
                         quote! {
                             #[citygml(path = b"gml:name")]
-                            pub name: Vec<String>
+                            pub name: Vec<::nusamai_citygml::CodeOrString>
                         },
                     );
                     pos += 1;

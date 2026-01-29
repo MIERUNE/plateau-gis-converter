@@ -146,6 +146,63 @@ impl CityGmlElement for Code {
     }
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[serde(untagged)]
+pub enum CodeOrString {
+    Code(Code),
+    String(String),
+}
+
+impl Default for CodeOrString {
+    fn default() -> Self {
+        Self::String(String::new())
+    }
+}
+
+impl CityGmlElement for CodeOrString {
+    #[inline(never)]
+    fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {
+        let code_space = st.find_codespace_attr();
+        let text = st.parse_text()?.to_string();
+
+        if let Some(code_space) = code_space {
+            // Has codeSpace attribute, parse as Code
+            let mut code = Code::new(text.clone(), text.clone());
+            let base_url = st.context().source_url();
+            match st
+                .context()
+                .code_resolver()
+                .resolve(base_url, &code_space, &text)
+            {
+                Ok(Some(v)) => {
+                    code.value = v;
+                }
+                Ok(None) => {}
+                Err(_) => {
+                    log::warn!("Failed to lookup code {text} form {code_space}");
+                }
+            }
+            *self = Self::Code(code);
+        } else {
+            // No codeSpace attribute, parse as String
+            *self = Self::String(text);
+        }
+        Ok(())
+    }
+
+    #[inline(never)]
+    fn into_object(self) -> Option<Value> {
+        Some(match self {
+            Self::Code(code) => Value::Code(code),
+            Self::String(string) => Value::String(string),
+        })
+    }
+
+    fn collect_schema(_schema: &mut schema::Schema) -> schema::Attribute {
+        schema::Attribute::new(schema::TypeRef::String)
+    }
+}
+
 impl CityGmlElement for i64 {
     #[inline(never)]
     fn parse<R: BufRead>(&mut self, st: &mut SubTreeReader<R>) -> Result<(), ParseError> {

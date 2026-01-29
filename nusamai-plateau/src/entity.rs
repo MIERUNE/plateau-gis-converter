@@ -25,8 +25,6 @@ pub struct Entity {
     pub geometry_store: Arc<RwLock<GeometryStore>>,
     /// All appearances used in this city object
     pub appearance_store: Arc<RwLock<AppearanceStore>>,
-    /// Bounded by
-    pub bounded_by: Vec<BoundedBy>,
 }
 #[derive(Debug, serde::Deserialize, serde::Serialize, Clone)]
 pub struct BoundedBy {
@@ -93,14 +91,7 @@ impl FlattenTreeTransform {
         let geom_store = entity.geometry_store;
         let appearance_store = entity.appearance_store;
         let mut out = Vec::new();
-        Self::flatten_entity(
-            entity.root,
-            &geom_store,
-            &appearance_store,
-            &entity.bounded_by,
-            &mut out,
-            &None,
-        );
+        Self::flatten_entity(entity.root, &geom_store, &appearance_store, &mut out, &None);
         out
     }
 
@@ -108,7 +99,6 @@ impl FlattenTreeTransform {
         value: Value,
         geom_store: &Arc<RwLock<GeometryStore>>,
         appearance_store: &Arc<RwLock<AppearanceStore>>,
-        bounded_by: &Vec<BoundedBy>,
         out: &mut Vec<Entity>,
         parent: &Option<Parent>,
     ) -> Option<Value> {
@@ -132,14 +122,9 @@ impl FlattenTreeTransform {
                 // Attributes
                 let mut new_attribs = Map::default();
                 for (key, value) in obj.attributes.drain(..) {
-                    if let Some(v) = Self::flatten_entity(
-                        value,
-                        geom_store,
-                        appearance_store,
-                        bounded_by,
-                        out,
-                        &new_parent,
-                    ) {
+                    if let Some(v) =
+                        Self::flatten_entity(value, geom_store, appearance_store, out, &new_parent)
+                    {
                         new_attribs.insert(key, v);
                     }
                 }
@@ -184,7 +169,6 @@ impl FlattenTreeTransform {
                         base_url: url::Url::parse("file:///dummy").expect("should be valid"),
                         geometry_store: geom_store.clone(),
                         appearance_store: appearance_store.clone(),
-                        bounded_by: bounded_by.clone(),
                     });
 
                     if let Some(typename_value) = typename.as_deref() {
@@ -207,14 +191,9 @@ impl FlattenTreeTransform {
             Value::Array(mut arr) => {
                 let mut new_arr = Vec::with_capacity(arr.len());
                 for value in arr.drain(..) {
-                    if let Some(v) = Self::flatten_entity(
-                        value,
-                        geom_store,
-                        appearance_store,
-                        bounded_by,
-                        out,
-                        parent,
-                    ) {
+                    if let Some(v) =
+                        Self::flatten_entity(value, geom_store, appearance_store, out, parent)
+                    {
                         new_arr.push(v)
                     }
                 }
