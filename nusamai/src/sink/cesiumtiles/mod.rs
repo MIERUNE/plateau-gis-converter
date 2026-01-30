@@ -377,8 +377,10 @@ fn tile_writing_stage(
                     tiling::x_step(tile_zoom, tile_y),
                 );
 
-                // Use the tile center as the translation of the glTF mesh
-                let translation = {
+                // Compute the ECEF position of the tile center (f64 precision)
+                // translation_ecef: z-up ECEF for tile.transform in tileset.json
+                // translation_yup: y-up for glTF vertex computation
+                let (translation_ecef, translation_yup) = {
                     let (tx, ty, tz) = geodetic_to_geocentric(
                         ellipsoid.a(),
                         ellipsoid.e_sq(),
@@ -386,10 +388,7 @@ fn tile_writing_stage(
                         (min_lat + max_lat) / 2.0,
                         0.,
                     );
-                    // z-up to y-up
-                    let [tx, ty, tz] = [tx, tz, -ty];
-                    // double-precision to single-precision
-                    [(tx as f32) as f64, (ty as f32) as f64, (tz as f32) as f64]
+                    ([tx, ty, tz], [tx, tz, -ty])
                 };
 
                 let geom_error = tiling::geometric_error(tile_zoom, tile_y);
@@ -410,9 +409,10 @@ fn tile_writing_stage(
                     max_lat: f64::MIN,
                     min_height: f64::MAX,
                     max_height: f64::MIN,
+                    translation: translation_ecef,
                 };
 
-                (content, translation)
+                (content, translation_yup)
             };
 
             let mut vertices: IndexSet<[u32; 9], RandomState> = IndexSet::default(); // [x, y, z, u, v, feature_id]
@@ -723,7 +723,7 @@ fn tile_writing_stage(
             write_gltf_glb(
                 feedback,
                 &mut BufWriter::new(&mut file),
-                translation,
+                [0.0; 3], // ECEF offset is now in tile.transform
                 vertices,
                 primitives,
                 features.len(),
