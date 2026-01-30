@@ -56,6 +56,9 @@ pub fn wellknown_prefix_from_nsres<'a>(ns: &ResolveResult<'a>) -> &'a [u8] {
                 } else if let Some(https_www) = http.strip_prefix(b"s://www.") {
                     if let Some(iur) = https_www.strip_prefix(b"geospatial.jp/iur/ur") {
                         match iur {
+                            // PLATEAU 5.x
+                            b"o/3.2" => b"uro:",
+                            b"f/3.2" => b"urf:",
                             // PLATEAU 4.x
                             b"o/3.1" => b"uro:",
                             b"f/3.1" => b"urf:",
