@@ -11,6 +11,7 @@ use std::{
     convert::Infallible,
     fs,
     io::BufWriter,
+    panic::{catch_unwind, AssertUnwindSafe},
     path::{Path, PathBuf},
     sync::{mpsc, Arc, Mutex},
 };
@@ -703,13 +704,51 @@ fn tile_writing_stage(
             let (z, x, y) = tile_id_conv.id_to_zxy(tile_id);
             let atlas_path = atlas_dir.join(format!("{z}/{x}/{y}"));
             fs::create_dir_all(&atlas_path)?;
-            packed.export(
-                exporter,
-                &atlas_path,
-                &texture_cache,
-                config.width,
-                config.height,
-            );
+
+            // Attempt to export texture atlas with panic recovery
+            // If WebP encoding fails due to dimension issues, skip the texture atlas
+            // and continue processing without textures for this tile
+            let export_result = catch_unwind(AssertUnwindSafe(|| {
+                packed.export(
+                    exporter,
+                    &atlas_path,
+                    &texture_cache,
+                    config.width,
+                    config.height,
+                )
+            }));
+
+            if let Err(panic_info) = export_result {
+                let panic_message = if let Some(s) = panic_info.downcast_ref::<&str>() {
+                    (*s).to_string()
+                } else if let Some(s) = panic_info.downcast_ref::<String>() {
+                    s.clone()
+                } else {
+                    format!("{:?}", panic_info)
+                };
+
+                feedback.warn(format!(
+                    "Texture atlas export failed for tile z={z}, x={x}, y={y}. \
+                     Skipping texture atlas for this tile and continuing without textures. \
+                     Panic info: {}",
+                    panic_message
+                ));
+
+                // Remove texture references from all primitives since the atlas files don't exist
+                // This prevents "file not found" errors when trying to load non-existent atlas images
+                // Note: We must merge primitives that become identical after removing textures,
+                // because Material is used as a HashMap key and its Hash includes base_texture.
+                // Without merging, primitives with the same base_color but different textures
+                // would collide and overwrite each other, causing geometry data loss.
+                let mut merged_primitives: gltf::Primitives = Default::default();
+                for (mut mat, prim_info) in primitives.into_iter() {
+                    mat.base_texture = None;
+                    let entry = merged_primitives.entry(mat).or_default();
+                    entry.indices.extend(prim_info.indices);
+                    entry.feature_ids.extend(prim_info.feature_ids);
+                }
+                primitives = merged_primitives;
+            }
 
             // Write to file
             let path_glb = output_path.join(Path::new(&content.content_path));
