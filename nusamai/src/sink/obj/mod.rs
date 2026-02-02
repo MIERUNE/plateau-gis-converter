@@ -645,13 +645,56 @@ impl DataSink for ObjSink {
                     all_meshes.insert(feature.feature_id.clone(), feature_mesh);
                 }
 
-                packed.export(
+                // Export texture atlas
+                // If export fails, skip the texture atlas and continue without textures
+                if let Err(err) = packed.export(
                     exporter,
                     &atlas_dir,
                     &texture_cache,
                     config.width,
                     config.height,
-                );
+                ) {
+                    feedback.warn(format!(
+                        "Texture atlas export failed for feature type '{}'. \
+                         Skipping texture atlas and continuing without textures. \
+                         Error: {err}",
+                        typename,
+                    ));
+
+                    // Clean up partial atlas files
+                    let _ = std::fs::remove_dir_all(&atlas_dir);
+
+                    // Remap texture-based material keys to color-based keys
+                    let mut key_remap: HashMap<MaterialKey, MaterialKey> = HashMap::new();
+                    let mut new_materials: ObjMaterials = HashMap::new();
+                    for (old_key, mat) in all_materials.into_iter() {
+                        if mat.texture_uri.is_some() {
+                            let new_key = format!(
+                                "material_{}_{}_{}",
+                                mat.base_color[0], mat.base_color[1], mat.base_color[2]
+                            );
+                            key_remap.insert(old_key, new_key.clone());
+                            new_materials.entry(new_key).or_insert(FeatureMaterial {
+                                base_color: mat.base_color,
+                                texture_uri: None,
+                            });
+                        } else {
+                            new_materials.insert(old_key, mat);
+                        }
+                    }
+                    all_materials = new_materials;
+
+                    // Remap and merge primitives in all meshes
+                    for (_fid, mesh) in all_meshes.iter_mut() {
+                        let mut new_prims: HashMap<MaterialKey, Vec<u32>> = HashMap::new();
+                        for (old_key, indices) in mesh.primitives.drain() {
+                            let new_key =
+                                key_remap.get(&old_key).cloned().unwrap_or(old_key);
+                            new_prims.entry(new_key).or_default().extend(indices);
+                        }
+                        mesh.primitives = new_prims;
+                    }
+                }
 
                 feedback.ensure_not_canceled()?;
 
