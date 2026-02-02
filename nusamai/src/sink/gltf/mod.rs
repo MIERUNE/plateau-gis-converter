@@ -608,13 +608,39 @@ impl DataSink for GltfSink {
                 // Ensure that the parent directory exists
                 std::fs::create_dir_all(&self.output_path)?;
 
-                packed.export(
+                // Export texture atlas
+                // If export fails, skip the texture atlas and continue without textures
+                if let Err(err) = packed.export(
                     exporter,
                     &atlas_dir,
                     &texture_cache,
                     config.width,
                     config.height,
-                );
+                ) {
+                    feedback.warn(format!(
+                        "Texture atlas export failed for feature type '{}'. \
+                         Skipping texture atlas and continuing without textures. \
+                         Error: {err}",
+                        typename,
+                    ));
+
+                    // Clean up partial atlas files
+                    let _ = std::fs::remove_dir_all(&atlas_dir);
+
+                    // Remove texture references from all primitives since the atlas files don't exist
+                    // Note: We must merge primitives that become identical after removing textures,
+                    // because Material is used as a HashMap key and its Hash includes base_texture.
+                    // Without merging, primitives with the same base_color but different textures
+                    // would collide and overwrite each other, causing geometry data loss.
+                    let mut merged_primitives: Primitives = Default::default();
+                    for (mut mat, prim_info) in primitives.into_iter() {
+                        mat.base_texture = None;
+                        let entry = merged_primitives.entry(mat).or_default();
+                        entry.indices.extend(prim_info.indices);
+                        entry.feature_ids.extend(prim_info.feature_ids);
+                    }
+                    primitives = merged_primitives;
+                }
 
                 // Write glTF (.glb)
                 let file_path = {

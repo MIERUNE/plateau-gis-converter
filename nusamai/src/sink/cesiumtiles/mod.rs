@@ -567,8 +567,9 @@ fn tile_writing_stage(
                 }
             }
 
-            let max_width = max_width.next_power_of_two();
-            let max_height = max_height.next_power_of_two();
+            // Clamp to 8192 (the largest power-of-two within WebP's 16383 limit)
+            let max_width = max_width.next_power_of_two().min(8192);
+            let max_height = max_height.next_power_of_two().min(8192);
 
             // initialize texture packer
             // To reduce unnecessary draw calls, set the lower limit for max_width and max_height to 1024
@@ -703,13 +704,39 @@ fn tile_writing_stage(
             let (z, x, y) = tile_id_conv.id_to_zxy(tile_id);
             let atlas_path = atlas_dir.join(format!("{z}/{x}/{y}"));
             fs::create_dir_all(&atlas_path)?;
-            packed.export(
+
+            // Export texture atlas
+            // If export fails, skip the texture atlas and continue without textures for this tile
+            if let Err(err) = packed.export(
                 exporter,
                 &atlas_path,
                 &texture_cache,
                 config.width,
                 config.height,
-            );
+            ) {
+                feedback.warn(format!(
+                    "Texture atlas export failed for tile z={z}, x={x}, y={y}. \
+                     Skipping texture atlas for this tile and continuing without textures. \
+                     Error: {err}",
+                ));
+
+                // Clean up partial atlas files
+                let _ = fs::remove_dir_all(&atlas_path);
+
+                // Remove texture references from all primitives since the atlas files don't exist
+                // Note: We must merge primitives that become identical after removing textures,
+                // because Material is used as a HashMap key and its Hash includes base_texture.
+                // Without merging, primitives with the same base_color but different textures
+                // would collide and overwrite each other, causing geometry data loss.
+                let mut merged_primitives: gltf::Primitives = Default::default();
+                for (mut mat, prim_info) in primitives.into_iter() {
+                    mat.base_texture = None;
+                    let entry = merged_primitives.entry(mat).or_default();
+                    entry.indices.extend(prim_info.indices);
+                    entry.feature_ids.extend(prim_info.feature_ids);
+                }
+                primitives = merged_primitives;
+            }
 
             // Write to file
             let path_glb = output_path.join(Path::new(&content.content_path));
