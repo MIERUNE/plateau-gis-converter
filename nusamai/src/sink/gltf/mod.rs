@@ -2,13 +2,7 @@
 mod gltf_writer;
 mod material;
 
-use std::{
-    fs::File,
-    io::BufWriter,
-    panic::{catch_unwind, AssertUnwindSafe},
-    path::PathBuf,
-    sync::Mutex,
-};
+use std::{fs::File, io::BufWriter, path::PathBuf, sync::Mutex};
 
 use crate::sink::cesiumtiles::utils::calculate_normal;
 use atlas_packer::{
@@ -614,37 +608,26 @@ impl DataSink for GltfSink {
                 // Ensure that the parent directory exists
                 std::fs::create_dir_all(&self.output_path)?;
 
-                // Attempt to export texture atlas with panic recovery
-                // If JPEG encoding fails due to dimension issues, skip the texture atlas
-                // and continue processing without textures for this feature type
-                let export_result = catch_unwind(AssertUnwindSafe(|| {
-                    packed.export(
-                        exporter,
-                        &atlas_dir,
-                        &texture_cache,
-                        config.width,
-                        config.height,
-                    )
-                }));
-
-                if let Err(panic_info) = export_result {
-                    let panic_message = if let Some(s) = panic_info.downcast_ref::<&str>() {
-                        (*s).to_string()
-                    } else if let Some(s) = panic_info.downcast_ref::<String>() {
-                        s.clone()
-                    } else {
-                        format!("{:?}", panic_info)
-                    };
-
+                // Export texture atlas
+                // If export fails, skip the texture atlas and continue without textures
+                if let Err(err) = packed.export(
+                    exporter,
+                    &atlas_dir,
+                    &texture_cache,
+                    config.width,
+                    config.height,
+                ) {
                     feedback.warn(format!(
                         "Texture atlas export failed for feature type '{}'. \
                          Skipping texture atlas and continuing without textures. \
-                         Panic info: {}",
-                        typename, panic_message
+                         Error: {err}",
+                        typename,
                     ));
 
+                    // Clean up partial atlas files
+                    let _ = std::fs::remove_dir_all(&atlas_dir);
+
                     // Remove texture references from all primitives since the atlas files don't exist
-                    // This prevents "file not found" errors when trying to load non-existent atlas images
                     // Note: We must merge primitives that become identical after removing textures,
                     // because Material is used as a HashMap key and its Hash includes base_texture.
                     // Without merging, primitives with the same base_color but different textures
