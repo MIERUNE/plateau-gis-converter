@@ -53,19 +53,21 @@ impl GeometricMergedownTransform {
         }
     }
 
-    fn collect_all_geoms(&mut self, obj: &mut Object) -> bool {
-        let mut is_feature = false;
+    fn collect_all_geoms(&mut self, obj: &mut Object) {
         if let ObjectStereotype::Feature { geometries, .. } = &mut obj.stereotype {
-            is_feature = true;
             self.geoms_buf.extend(geometries.drain(..));
         }
 
         obj.attributes.retain(|_key, value| match value {
-            Value::Object(obj) => !self.collect_all_geoms(obj),
+            Value::Object(nested_obj) => {
+                self.collect_all_geoms(nested_obj);
+                true
+            }
             Value::Array(arr) => {
                 arr.retain_mut(|value| {
                     if let Value::Object(obj) = value {
-                        !self.collect_all_geoms(obj)
+                        self.collect_all_geoms(obj);
+                        !obj.attributes.is_empty()
                     } else {
                         true
                     }
@@ -74,7 +76,6 @@ impl GeometricMergedownTransform {
             }
             _ => true,
         });
-        is_feature
     }
 }
 
@@ -177,7 +178,8 @@ impl FlattenTreeTransform {
                             // the kept DmGeometricAttribute should not have those parent* attributes
                             obj.stereotype = ObjectStereotype::Data;
                         } else if typename_value.starts_with("urf:") {
-                            // urf:* parents collect children geometries
+                            // urf:* parents collect children geometries, but not attributes
+                            obj.attributes.clear();
                         } else {
                             return None;
                         }
