@@ -388,7 +388,10 @@ impl DataSink for ObjSink {
                         let t = mat.base_texture.clone();
                         if let Some(base_texture) = t {
                             let texture_uri =
-                                texture_path_from_url(&base_texture.uri, feedback).unwrap();
+                                match texture_path_from_url(&base_texture.uri, feedback) {
+                                    Some(path) => path,
+                                    None => continue,
+                                };
                             let texture_size = texture_size_cache.get_or_insert(&texture_uri);
                             max_width = max_width.max(texture_size.0);
                             max_height = max_height.max(texture_size.1);
@@ -467,7 +470,10 @@ impl DataSink for ObjSink {
                                 .collect::<Vec<(f64, f64)>>();
 
                             let texture_uri =
-                                texture_path_from_url(&base_texture.uri, feedback).unwrap();
+                                match texture_path_from_url(&base_texture.uri, feedback) {
+                                    Some(path) => path,
+                                    None => continue,
+                                };
                             let texture_size = texture_size_cache.get_or_insert(&texture_uri);
 
                             let downsample_scale = if self.limit_texture_resolution.unwrap_or(false)
@@ -575,24 +581,18 @@ impl DataSink for ObjSink {
                                     uri: Url::from_file_path(atlas_uri).unwrap(),
                                 }),
                             };
+                        } else {
+                            // Texture not packed (invalid URI or packing failure), treat as untextured.
+                            mat.base_texture = None;
                         }
 
                         let poly_material = mat;
                         let poly_color = poly_material.base_color;
                         let poly_texture = poly_material.base_texture.as_ref();
-                        let texture_name = poly_texture.map_or_else(
-                            || "".to_string(),
-                            |t| {
-                                t.uri
-                                    .to_file_path()
-                                    .unwrap()
-                                    .file_stem()
-                                    .unwrap()
-                                    .to_str()
-                                    .unwrap()
-                                    .to_string()
-                            },
-                        );
+                        let texture_name = poly_texture
+                            .and_then(|t| t.uri.to_file_path().ok())
+                            .and_then(|p| p.file_stem().and_then(|s| s.to_str()).map(|s| s.to_string()))
+                            .unwrap_or_else(|| "".to_string());
                         let poly_material_key = poly_material.base_texture.as_ref().map_or_else(
                             || {
                                 format!(

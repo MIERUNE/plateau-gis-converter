@@ -527,7 +527,10 @@ fn tile_writing_stage(
                             .collect::<Vec<(f64, f64)>>();
 
                         let texture_uri =
-                            texture_path_from_url(&base_texture.uri, feedback).unwrap();
+                            match texture_path_from_url(&base_texture.uri, feedback) {
+                                Some(path) => path,
+                                None => continue,
+                            };
                         let texture_size = texture_size_cache.get_or_insert(&texture_uri);
 
                         let downsample_scale = if limit_texture_resolution.unwrap_or(false) {
@@ -649,6 +652,9 @@ fn tile_writing_stage(
                                 uri: Url::from_file_path(atlas_uri).unwrap(),
                             }),
                         };
+                    } else {
+                        // Texture not packed (invalid URI or packing failure), treat as untextured.
+                        mat.base_texture = None;
                     }
 
                     let primitive = primitives.entry(mat).or_default();
