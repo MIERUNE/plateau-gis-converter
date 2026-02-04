@@ -34,7 +34,10 @@ use crate::{
     get_parameter_value,
     parameters::*,
     pipeline::{Feedback, PipelineError, Receiver, Result},
-    sink::{cesiumtiles::metadata, DataRequirements, DataSink, DataSinkProvider, SinkInfo},
+    sink::{
+        cesiumtiles::metadata, texture_path::texture_path_from_url, DataRequirements, DataSink,
+        DataSinkProvider, SinkInfo,
+    },
     transformer::{use_lod_config, TransformerSettings},
 };
 
@@ -370,7 +373,11 @@ impl DataSink for GltfSink {
                         let mat = feature.materials[*orig_mat_id as usize].clone();
                         let t = mat.base_texture.clone();
                         if let Some(base_texture) = t {
-                            let texture_uri = base_texture.uri.to_file_path().unwrap();
+                            let texture_uri =
+                                match texture_path_from_url(&base_texture.uri, feedback) {
+                                    Some(path) => path,
+                                    None => continue,
+                                };
                             let texture_size = texture_size_cache.get_or_insert(&texture_uri);
                             max_width = max_width.max(texture_size.0);
                             max_height = max_height.max(texture_size.1);
@@ -454,7 +461,11 @@ impl DataSink for GltfSink {
                                 .map(|(_, _, _, u, v)| (*u, *v))
                                 .collect::<Vec<(f64, f64)>>();
 
-                            let texture_uri = base_texture.uri.to_file_path().unwrap();
+                            let texture_uri =
+                                match texture_path_from_url(&base_texture.uri, feedback) {
+                                    Some(path) => path,
+                                    None => continue,
+                                };
                             let texture_size = texture_size_cache.get_or_insert(&texture_uri);
 
                             let downsample_scale = if self.limit_texture_resolution.unwrap_or(false)
