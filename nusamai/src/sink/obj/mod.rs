@@ -44,7 +44,10 @@ use crate::{
 use super::option::{
     center_at_origin_parameter, limit_texture_resolution_parameter, output_parameter,
 };
-use super::texture_resolution::get_texture_downsample_scale_of_polygon;
+use super::{
+    texture_path::texture_path_from_url,
+    texture_resolution::get_texture_downsample_scale_of_polygon,
+};
 
 pub struct ObjSinkProvider {}
 
@@ -384,7 +387,11 @@ impl DataSink for ObjSink {
                         let mat = feature.materials[*orig_mat_id as usize].clone();
                         let t = mat.base_texture.clone();
                         if let Some(base_texture) = t {
-                            let texture_uri = base_texture.uri.to_file_path().unwrap();
+                            let texture_uri =
+                                match texture_path_from_url(&base_texture.uri, feedback) {
+                                    Some(path) => path,
+                                    None => continue,
+                                };
                             let texture_size = texture_size_cache.get_or_insert(&texture_uri);
                             max_width = max_width.max(texture_size.0);
                             max_height = max_height.max(texture_size.1);
@@ -462,7 +469,11 @@ impl DataSink for ObjSink {
                                 .map(|(_, _, _, u, v)| (*u, *v))
                                 .collect::<Vec<(f64, f64)>>();
 
-                            let texture_uri = base_texture.uri.to_file_path().unwrap();
+                            let texture_uri =
+                                match texture_path_from_url(&base_texture.uri, feedback) {
+                                    Some(path) => path,
+                                    None => continue,
+                                };
                             let texture_size = texture_size_cache.get_or_insert(&texture_uri);
 
                             let downsample_scale = if self.limit_texture_resolution.unwrap_or(false)
@@ -570,24 +581,18 @@ impl DataSink for ObjSink {
                                     uri: Url::from_file_path(atlas_uri).unwrap(),
                                 }),
                             };
+                        } else {
+                            // Texture not packed (invalid URI or packing failure), treat as untextured.
+                            mat.base_texture = None;
                         }
 
                         let poly_material = mat;
                         let poly_color = poly_material.base_color;
                         let poly_texture = poly_material.base_texture.as_ref();
-                        let texture_name = poly_texture.map_or_else(
-                            || "".to_string(),
-                            |t| {
-                                t.uri
-                                    .to_file_path()
-                                    .unwrap()
-                                    .file_stem()
-                                    .unwrap()
-                                    .to_str()
-                                    .unwrap()
-                                    .to_string()
-                            },
-                        );
+                        let texture_name = poly_texture
+                            .and_then(|t| t.uri.to_file_path().ok())
+                            .and_then(|p| p.file_stem().and_then(|s| s.to_str()).map(|s| s.to_string()))
+                            .unwrap_or_else(|| "".to_string());
                         let poly_material_key = poly_material.base_texture.as_ref().map_or_else(
                             || {
                                 format!(
@@ -595,11 +600,7 @@ impl DataSink for ObjSink {
                                     poly_color[0], poly_color[1], poly_color[2]
                                 )
                             },
-                            |_| {
-                                format!(
-                                    "{base_folder_name}_{texture_folder_name}_{texture_name}"
-                                )
-                            },
+                            |_| format!("{base_folder_name}_{texture_folder_name}_{texture_name}"),
                         );
 
                         all_materials.insert(
@@ -688,8 +689,7 @@ impl DataSink for ObjSink {
                     for (_fid, mesh) in all_meshes.iter_mut() {
                         let mut new_prims: HashMap<MaterialKey, Vec<u32>> = HashMap::new();
                         for (old_key, indices) in mesh.primitives.drain() {
-                            let new_key =
-                                key_remap.get(&old_key).cloned().unwrap_or(old_key);
+                            let new_key = key_remap.get(&old_key).cloned().unwrap_or(old_key);
                             new_prims.entry(new_key).or_default().extend(indices);
                         }
                         mesh.primitives = new_prims;

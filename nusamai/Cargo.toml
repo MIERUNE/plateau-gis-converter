@@ -44,7 +44,13 @@ glob = "0.3.3"
 shellexpand = "3.1.1"
 kml = "0.11.0"
 nusamai-kml = { path = "../nusamai-kml" }
-image = { version = "0.25.8", default-features = false, features = ["rayon", "tiff", "jpeg", "webp", "png"] }
+image = { version = "0.25.8", default-features = false, features = [
+  "rayon",
+  "tiff",
+  "jpeg",
+  "webp",
+  "png",
+] }
 flate2 = "1.1.2"
 chrono = "0.4.42"
 kv-extsort = { git = "https://github.com/ciscorn/kv-extsort-rs.git" }

@@ -15,6 +15,7 @@ pub mod ply;
 pub mod pmtiles;
 pub mod serde;
 pub mod shapefile;
+mod texture_path;
 mod texture_resolution;
 
 use nusamai_citygml::schema::Schema;

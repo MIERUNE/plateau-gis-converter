@@ -15,7 +15,7 @@ use std::{
     sync::{mpsc, Arc, Mutex},
 };
 
-use crate::sink::mvt::tileid::TileIdMethod;
+use crate::sink::{mvt::tileid::TileIdMethod, texture_path::texture_path_from_url};
 use atlas_packer::{
     export::{AtlasExporter as _, WebpAtlasExporter},
     pack::AtlasPacker,
@@ -494,9 +494,8 @@ fn tile_writing_stage(
 
             // A unique ID used when planning the atlas layout
             //  and when obtaining the UV coordinates after the layout has been completed
-            let generate_texture_id = |z, x, y, feature_id, poly_count| {
-                format!("{z}_{x}_{y}_{feature_id}_{poly_count}")
-            };
+            let generate_texture_id =
+                |z, x, y, feature_id, poly_count| format!("{z}_{x}_{y}_{feature_id}_{poly_count}");
 
             // Check the size of all the textures and calculate the power of 2 of the largest size
             let mut max_width = 0;
@@ -527,7 +526,11 @@ fn tile_writing_stage(
                             .map(|(_, _, _, u, v)| (*u, *v))
                             .collect::<Vec<(f64, f64)>>();
 
-                        let texture_uri = base_texture.uri.to_file_path().unwrap();
+                        let texture_uri =
+                            match texture_path_from_url(&base_texture.uri, feedback) {
+                                Some(path) => path,
+                                None => continue,
+                            };
                         let texture_size = texture_size_cache.get_or_insert(&texture_uri);
 
                         let downsample_scale = if limit_texture_resolution.unwrap_or(false) {
@@ -649,6 +652,9 @@ fn tile_writing_stage(
                                 uri: Url::from_file_path(atlas_uri).unwrap(),
                             }),
                         };
+                    } else {
+                        // Texture not packed (invalid URI or packing failure), treat as untextured.
+                        mat.base_texture = None;
                     }
 
                     let primitive = primitives.entry(mat).or_default();
