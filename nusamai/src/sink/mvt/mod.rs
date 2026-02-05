@@ -434,7 +434,8 @@ fn make_tile(default_detail: i32, serialized_feats: &[Vec<u8>]) -> Result<Vec<u8
 
         let mut id = None;
         let layer = if let object::Value::Object(obj) = &feature.properties {
-            let layer = layers.entry_ref(obj.typename.as_ref()).or_default();
+            let typename: &str = obj.typename.as_ref();
+            let layer = layers.entry_ref(typename).or_default();
 
             // Encode attributes as MVT tags
             for (key, value) in &obj.attributes {

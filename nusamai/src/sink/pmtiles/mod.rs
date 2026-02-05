@@ -634,7 +634,7 @@ fn make_tile(default_detail: i32, serialized_feats: &[Vec<u8>]) -> Result<Vec<u8
 
         let mut _id = None;
         let layer = if let object::Value::Object(obj) = &feature.properties {
-            let typename = obj.typename.as_ref();
+            let typename: &str = obj.typename.as_ref();
 
             // id
             if let Some(object::Value::String(gml_id)) = obj.attributes.get("gml_id") {
