@@ -99,24 +99,27 @@ PLATEAU の標準仕様に準拠した CityGML 2.0 形式の3D都市モデルは
 
 [Releaseページ](https://github.com/MIERUNE/plateau-gis-converter/releases)から、お使いの環境に合ったファイルをダウンロードしてください。
 
-| 環境 | ファイル名 |
-|------|-----------|
-| macOS (Apple Silicon) | `nusamai-<VERSION>-aarch64-apple-darwin.tar.gz` |
-| Linux (x86_64) | `nusamai-<VERSION>-x86_64-unknown-linux-gnu.tar.gz` |
-
-チェックサム検証を行う場合は、同名の `.sha256` ファイルもダウンロードしてください。
+| 環境                  | ファイル名                                          |
+| --------------------- | --------------------------------------------------- |
+| macOS (Apple Silicon) | `nusamai-<VERSION>-aarch64-apple-darwin.tar.gz`     |
+| Linux (x86_64)        | `nusamai-<VERSION>-x86_64-unknown-linux-gnu.tar.gz` |
 
 ```bash
-# チェックサム検証（任意）
-# macOS: shasum -a 256 -c <ファイル名>.sha256
-# Linux: sha256sum -c <ファイル名>.sha256
-
 # 展開
 tar -xzf nusamai-<VERSION>-<TARGET>.tar.gz
 
 # インストール（いずれかを選択）
 sudo install -m 755 nusamai /usr/local/bin/nusamai   # 全ユーザー向け
 install -m 755 nusamai ~/.local/bin/nusamai          # ユーザー配下（要PATH設定）
+```
+
+### macOSでの実行について
+
+macOSでは初回実行時に「開発元を検証できません」と表示される場合があります。
+以下のコマンドで隔離属性を削除してからインストールしてください：
+
+```bash
+xattr -d com.apple.quarantine nusamai
 ```
 
 ## 8. 本リポジトリのフォルダ構成

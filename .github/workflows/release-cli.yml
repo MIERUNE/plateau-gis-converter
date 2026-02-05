@@ -49,19 +49,12 @@ jobs:
           fi
 
           tar -czf "${OUT}" -C dist nusamai
-          if command -v sha256sum >/dev/null 2>&1; then
-            sha256sum "${OUT}" > "${OUT}.sha256"
-          else
-            shasum -a 256 "${OUT}" > "${OUT}.sha256"
-          fi
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v6
         with:
           name: cli-${{ matrix.target }}
-          path: |
-            nusamai-*.tar.gz
-            nusamai-*.tar.gz.sha256
+          path: nusamai-*.tar.gz
 
   release:
     needs: build-cli
@@ -78,6 +71,4 @@ jobs:
       - name: Upload to Release
         uses: softprops/action-gh-release@v2
         with:
-          files: |
-            nusamai-*.tar.gz
-            nusamai-*.tar.gz.sha256
+          files: nusamai-*.tar.gz
