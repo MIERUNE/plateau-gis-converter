@@ -5,8 +5,6 @@ on:
 
 jobs:
   build-cli:
-    permissions:
-      contents: write
     strategy:
       fail-fast: false
       matrix:
@@ -17,7 +15,7 @@ jobs:
             target: aarch64-apple-darwin
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Rust setup
         uses: dtolnay/rust-toolchain@stable
         with:
@@ -28,7 +26,7 @@ jobs:
           cache-workspace-crates: true
 
       - name: Install dependencies (Ubuntu only)
-        if: matrix.os == 'ubuntu-20.04'
+        if: matrix.os == 'ubuntu-latest'
         run: |
           sudo apt-get update
           sudo apt-get install -y libsqlite3-dev pkg-config
@@ -57,7 +55,27 @@ jobs:
             shasum -a 256 "${OUT}" > "${OUT}.sha256"
           fi
 
-      - name: Upload artifacts to Release
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v6
+        with:
+          name: cli-${{ matrix.target }}
+          path: |
+            nusamai-*.tar.gz
+            nusamai-*.tar.gz.sha256
+
+  release:
+    needs: build-cli
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v7
+        with:
+          pattern: cli-*
+          merge-multiple: true
+
+      - name: Upload to Release
         uses: softprops/action-gh-release@v2
         with:
           files: |
