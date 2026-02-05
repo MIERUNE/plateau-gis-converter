@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<core:CityModel xmlns:grp="http://www.opengis.net/citygml/cityobjectgroup/2.0" xmlns:core="http://www.opengis.net/citygml/2.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:smil20lang="http://www.w3.org/2001/SMIL20/Language" xmlns:pbase="http://www.opengis.net/citygml/profiles/base/2.0" xmlns:smil20="http://www.w3.org/2001/SMIL20/" xmlns:bldg="http://www.opengis.net/citygml/building/2.0" xmlns:uro="https://www.geospatial.jp/iur/uro/2.0" xmlns:xAL="urn:oasis:names:tc:ciq:xsdschema:xAL:2.0" xmlns:luse="http://www.opengis.net/citygml/landuse/2.0" xmlns:urf="https://www.geospatial.jp/iur/urf/2.0" xmlns:app="http://www.opengis.net/citygml/appearance/2.0" xmlns:gen="http://www.opengis.net/citygml/generics/2.0" xmlns:dem="http://www.opengis.net/citygml/relief/2.0" xmlns:tex="http://www.opengis.net/citygml/texturedsurface/2.0" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:tun="http://www.opengis.net/citygml/tunnel/2.0" xmlns:veg="http://www.opengis.net/citygml/vegetation/2.0" xmlns:sch="http://www.ascc.net/xml/schematron" xmlns:frn="http://www.opengis.net/citygml/cityfurniture/2.0" xmlns:gml="http://www.opengis.net/gml" xmlns:tran="http://www.opengis.net/citygml/transportation/2.0" xmlns:wtr="http://www.opengis.net/citygml/waterbody/2.0" xmlns:brid="http://www.opengis.net/citygml/bridge/2.0" xsi:schemaLocation="https://www.geospatial.jp/iur/uro/2.0  ../../schemas/iur/uro/2.0/urbanObject.xsd  https://www.geospatial.jp/iur/urf/2.0  ../../schemas/iur/urf/2.0/urbanFunction.xsd  http://www.opengis.net/citygml/2.0  http://schemas.opengis.net/citygml/2.0/cityGMLBase.xsd  http://www.opengis.net/citygml/landuse/2.0  http://schemas.opengis.net/citygml/landuse/2.0/landUse.xsd http://www.opengis.net/citygml/building/2.0  http://schemas.opengis.net/citygml/building/2.0/building.xsd http://www.opengis.net/citygml/transportation/2.0  http://schemas.opengis.net/citygml/transportation/2.0/transportation.xsd http://www.opengis.net/citygml/generics/2.0  http://schemas.opengis.net/citygml/generics/2.0/generics.xsd http://www.opengis.net/citygml/waterbody/2.0  http://schemas.opengis.net/citygml/waterbody/2.0/waterBody.xsd http://www.opengis.net/citygml/relief/2.0  http://schemas.opengis.net/citygml/relief/2.0/relief.xsd http://www.opengis.net/citygml/cityobjectgroup/2.0  http://schemas.opengis.net/citygml/cityobjectgroup/2.0/cityObjectGroup.xsd http://www.opengis.net/gml  http://schemas.opengis.net/gml/3.1.1/base/gml.xsd http://www.opengis.net/citygml/appearance/2.0  http://schemas.opengis.net/citygml/appearance/2.0/appearance.xsd">
+<core:CityModel xmlns:brid="http://www.opengis.net/citygml/bridge/2.0" xmlns:tran="http://www.opengis.net/citygml/transportation/2.0" xmlns:uro="https://www.geospatial.jp/iur/uro/3.1" xmlns:urf="https://www.geospatial.jp/iur/urf/3.1" xmlns:frn="http://www.opengis.net/citygml/cityfurniture/2.0" xmlns:wtr="http://www.opengis.net/citygml/waterbody/2.0" xmlns:sch="http://www.ascc.net/xml/schematron" xmlns:veg="http://www.opengis.net/citygml/vegetation/2.0" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:tun="http://www.opengis.net/citygml/tunnel/2.0" xmlns:tex="http://www.opengis.net/citygml/texturedsurface/2.0" xmlns:gml="http://www.opengis.net/gml" xmlns:gen="http://www.opengis.net/citygml/generics/2.0" xmlns:dem="http://www.opengis.net/citygml/relief/2.0" xmlns:app="http://www.opengis.net/citygml/appearance/2.0" xmlns:luse="http://www.opengis.net/citygml/landuse/2.0" xmlns:xAL="urn:oasis:names:tc:ciq:xsdschema:xAL:2.0" xmlns:bldg="http://www.opengis.net/citygml/building/2.0" xmlns:smil20="http://www.w3.org/2001/SMIL20/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:smil20lang="http://www.w3.org/2001/SMIL20/Language" xmlns:pbase="http://www.opengis.net/citygml/profiles/base/2.0" xmlns:core="http://www.opengis.net/citygml/2.0" xmlns:grp="http://www.opengis.net/citygml/cityobjectgroup/2.0" xsi:schemaLocation="https://www.geospatial.jp/iur/uro/3.1 ../../schemas/iur/uro/3.1/urbanObject.xsd https://www.geospatial.jp/iur/urf/3.1 ../../schemas/iur/urf/3.1/urbanFunction.xsd http://www.opengis.net/citygml/2.0 http://schemas.opengis.net/citygml/2.0/cityGMLBase.xsd http://www.opengis.net/citygml/landuse/2.0 http://schemas.opengis.net/citygml/landuse/2.0/landUse.xsd http://www.opengis.net/citygml/building/2.0 http://schemas.opengis.net/citygml/building/2.0/building.xsd http://www.opengis.net/citygml/transportation/2.0 http://schemas.opengis.net/citygml/transportation/2.0/transportation.xsd http://www.opengis.net/citygml/generics/2.0 http://schemas.opengis.net/citygml/generics/2.0/generics.xsd http://www.opengis.net/citygml/relief/2.0 http://schemas.opengis.net/citygml/relief/2.0/relief.xsd http://www.opengis.net/citygml/cityobjectgroup/2.0 http://schemas.opengis.net/citygml/cityobjectgroup/2.0/cityObjectGroup.xsd http://www.opengis.net/gml http://schemas.opengis.net/gml/3.1.1/base/gml.xsd http://www.opengis.net/citygml/appearance/2.0 http://schemas.opengis.net/citygml/appearance/2.0/appearance.xsd">
 	<gml:boundedBy>
 		<gml:Envelope srsName="http://www.opengis.net/def/crs/EPSG/0/6697" srsDimension="3">
 			<gml:lowerCorner>35.08239 138.87434888888887 0</gml:lowerCorner>
@@ -8,6 +8,7 @@
 	</gml:boundedBy>
 	<core:cityObjectMember>
 		<urf:SedimentDisasterProneArea gml:id="lsld_d5e0f93f-30ba-47ca-8819-54370ee41bfa">
+			<core:creationDate>2021-03-26</core:creationDate>
 			<urf:validFrom>2006-12-26</urf:validFrom>
 			<urf:prefecture codeSpace="../../codelists/Common_localPublicAuthorities.xml">22</urf:prefecture>
 			<urf:lod1MultiSurface>
@@ -23,16 +24,23 @@
 					</gml:surfaceMember>
 				</gml:MultiSurface>
 			</urf:lod1MultiSurface>
+			<urf:dataQualityAttribute>
+				<uro:DataQualityAttribute>
+					<uro:geometrySrcDescLod1 codeSpace="../../codelists/DataQualityAttribute_geometrySrcDesc.xml">400</uro:geometrySrcDescLod1>
+					<uro:thematicSrcDesc codeSpace="../../codelists/DataQualityAttribute_thematicSrcDesc.xml">400</uro:thematicSrcDesc>
+				</uro:DataQualityAttribute>
+			</urf:dataQualityAttribute>
 			<urf:location>沼津市下香貫八重</urf:location>
-			<urf:disasterType codeSpace="../../codelists/SedimentDisasterProneArea_disasterType.xml">1</urf:disasterType>
-			<urf:areaType codeSpace="../../codelists/SedimentDisasterProneArea_areaType.xml">2</urf:areaType>
+			<urf:disasterType codeSpace="../../codelists/LandSlideRiskAttribute_description.xml">1</urf:disasterType>
+			<urf:areaType codeSpace="../../codelists/LandSlideRiskAttribute_areaType.xml">2</urf:areaType>
 			<urf:zoneNumber>103-Ⅰ-0648</urf:zoneNumber>
 			<urf:zoneName>八重団地</urf:zoneName>
-			<urf:status codeSpace="../../codelists/SedimentDisasterProneArea_status.xml">0</urf:status>
+			<urf:status codeSpace="../../codelists/LandSlideRiskAttribute_status.xml">0</urf:status>
 		</urf:SedimentDisasterProneArea>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
 		<urf:SedimentDisasterProneArea gml:id="lsld_207f88ef-5f99-478f-bfce-c7c391a71875">
+			<core:creationDate>2021-03-26</core:creationDate>
 			<urf:validFrom>2006-12-26</urf:validFrom>
 			<urf:prefecture codeSpace="../../codelists/Common_localPublicAuthorities.xml">22</urf:prefecture>
 			<urf:lod1MultiSurface>
@@ -48,16 +56,23 @@
 					</gml:surfaceMember>
 				</gml:MultiSurface>
 			</urf:lod1MultiSurface>
+			<urf:dataQualityAttribute>
+				<uro:DataQualityAttribute>
+					<uro:geometrySrcDescLod1 codeSpace="../../codelists/DataQualityAttribute_geometrySrcDesc.xml">400</uro:geometrySrcDescLod1>
+					<uro:thematicSrcDesc codeSpace="../../codelists/DataQualityAttribute_thematicSrcDesc.xml">400</uro:thematicSrcDesc>
+				</uro:DataQualityAttribute>
+			</urf:dataQualityAttribute>
 			<urf:location>沼津市上香貫手城山</urf:location>
-			<urf:disasterType codeSpace="../../codelists/SedimentDisasterProneArea_disasterType.xml">1</urf:disasterType>
-			<urf:areaType codeSpace="../../codelists/SedimentDisasterProneArea_areaType.xml">2</urf:areaType>
+			<urf:disasterType codeSpace="../../codelists/LandSlideRiskAttribute_description.xml">1</urf:disasterType>
+			<urf:areaType codeSpace="../../codelists/LandSlideRiskAttribute_areaType.xml">2</urf:areaType>
 			<urf:zoneNumber>103-Ⅰ-0649</urf:zoneNumber>
 			<urf:zoneName>八重</urf:zoneName>
-			<urf:status codeSpace="../../codelists/SedimentDisasterProneArea_status.xml">0</urf:status>
+			<urf:status codeSpace="../../codelists/LandSlideRiskAttribute_status.xml">0</urf:status>
 		</urf:SedimentDisasterProneArea>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
 		<urf:SedimentDisasterProneArea gml:id="lsld_4033eb73-e6c4-488e-9ae5-f50ca20fc834">
+			<core:creationDate>2021-03-26</core:creationDate>
 			<urf:validFrom>2006-12-26</urf:validFrom>
 			<urf:prefecture codeSpace="../../codelists/Common_localPublicAuthorities.xml">22</urf:prefecture>
 			<urf:lod1MultiSurface>
@@ -73,16 +88,23 @@
 					</gml:surfaceMember>
 				</gml:MultiSurface>
 			</urf:lod1MultiSurface>
+			<urf:dataQualityAttribute>
+				<uro:DataQualityAttribute>
+					<uro:geometrySrcDescLod1 codeSpace="../../codelists/DataQualityAttribute_geometrySrcDesc.xml">400</uro:geometrySrcDescLod1>
+					<uro:thematicSrcDesc codeSpace="../../codelists/DataQualityAttribute_thematicSrcDesc.xml">400</uro:thematicSrcDesc>
+				</uro:DataQualityAttribute>
+			</urf:dataQualityAttribute>
 			<urf:location>沼津市上香貫手城山</urf:location>
-			<urf:disasterType codeSpace="../../codelists/SedimentDisasterProneArea_disasterType.xml">1</urf:disasterType>
-			<urf:areaType codeSpace="../../codelists/SedimentDisasterProneArea_areaType.xml">2</urf:areaType>
+			<urf:disasterType codeSpace="../../codelists/LandSlideRiskAttribute_description.xml">1</urf:disasterType>
+			<urf:areaType codeSpace="../../codelists/LandSlideRiskAttribute_areaType.xml">2</urf:areaType>
 			<urf:zoneNumber>103-Ⅰ-0649</urf:zoneNumber>
 			<urf:zoneName>八重</urf:zoneName>
-			<urf:status codeSpace="../../codelists/SedimentDisasterProneArea_status.xml">0</urf:status>
+			<urf:status codeSpace="../../codelists/LandSlideRiskAttribute_status.xml">0</urf:status>
 		</urf:SedimentDisasterProneArea>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
 		<urf:SedimentDisasterProneArea gml:id="lsld_e97a695a-18b6-496b-aeeb-b838860d3fa6">
+			<core:creationDate>2021-03-26</core:creationDate>
 			<urf:validFrom>2006-12-26</urf:validFrom>
 			<urf:prefecture codeSpace="../../codelists/Common_localPublicAuthorities.xml">22</urf:prefecture>
 			<urf:lod1MultiSurface>
@@ -98,16 +120,23 @@
 					</gml:surfaceMember>
 				</gml:MultiSurface>
 			</urf:lod1MultiSurface>
+			<urf:dataQualityAttribute>
+				<uro:DataQualityAttribute>
+					<uro:geometrySrcDescLod1 codeSpace="../../codelists/DataQualityAttribute_geometrySrcDesc.xml">400</uro:geometrySrcDescLod1>
+					<uro:thematicSrcDesc codeSpace="../../codelists/DataQualityAttribute_thematicSrcDesc.xml">400</uro:thematicSrcDesc>
+				</uro:DataQualityAttribute>
+			</urf:dataQualityAttribute>
 			<urf:location>沼津市上香貫鉛山</urf:location>
-			<urf:disasterType codeSpace="../../codelists/SedimentDisasterProneArea_disasterType.xml">1</urf:disasterType>
-			<urf:areaType codeSpace="../../codelists/SedimentDisasterProneArea_areaType.xml">2</urf:areaType>
+			<urf:disasterType codeSpace="../../codelists/LandSlideRiskAttribute_description.xml">1</urf:disasterType>
+			<urf:areaType codeSpace="../../codelists/LandSlideRiskAttribute_areaType.xml">2</urf:areaType>
 			<urf:zoneNumber>103-Ⅱ-0470</urf:zoneNumber>
 			<urf:zoneName>鉛山</urf:zoneName>
-			<urf:status codeSpace="../../codelists/SedimentDisasterProneArea_status.xml">0</urf:status>
+			<urf:status codeSpace="../../codelists/LandSlideRiskAttribute_status.xml">0</urf:status>
 		</urf:SedimentDisasterProneArea>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
 		<urf:SedimentDisasterProneArea gml:id="lsld_6e1631bc-2dfc-4b61-9f5b-b320c4318495">
+			<core:creationDate>2021-03-26</core:creationDate>
 			<urf:validFrom>2006-12-26</urf:validFrom>
 			<urf:prefecture codeSpace="../../codelists/Common_localPublicAuthorities.xml">22</urf:prefecture>
 			<urf:lod1MultiSurface>
@@ -123,16 +152,23 @@
 					</gml:surfaceMember>
 				</gml:MultiSurface>
 			</urf:lod1MultiSurface>
+			<urf:dataQualityAttribute>
+				<uro:DataQualityAttribute>
+					<uro:geometrySrcDescLod1 codeSpace="../../codelists/DataQualityAttribute_geometrySrcDesc.xml">400</uro:geometrySrcDescLod1>
+					<uro:thematicSrcDesc codeSpace="../../codelists/DataQualityAttribute_thematicSrcDesc.xml">400</uro:thematicSrcDesc>
+				</uro:DataQualityAttribute>
+			</urf:dataQualityAttribute>
 			<urf:location>沼津市上香貫東坂</urf:location>
-			<urf:disasterType codeSpace="../../codelists/SedimentDisasterProneArea_disasterType.xml">1</urf:disasterType>
-			<urf:areaType codeSpace="../../codelists/SedimentDisasterProneArea_areaType.xml">2</urf:areaType>
+			<urf:disasterType codeSpace="../../codelists/LandSlideRiskAttribute_description.xml">1</urf:disasterType>
+			<urf:areaType codeSpace="../../codelists/LandSlideRiskAttribute_areaType.xml">2</urf:areaType>
 			<urf:zoneNumber>103-Ⅰ-0651</urf:zoneNumber>
 			<urf:zoneName>八重東坂</urf:zoneName>
-			<urf:status codeSpace="../../codelists/SedimentDisasterProneArea_status.xml">0</urf:status>
+			<urf:status codeSpace="../../codelists/LandSlideRiskAttribute_status.xml">0</urf:status>
 		</urf:SedimentDisasterProneArea>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
 		<urf:SedimentDisasterProneArea gml:id="lsld_a50e10c3-7d00-4b3f-abb1-8a62e903fd0c">
+			<core:creationDate>2021-03-26</core:creationDate>
 			<urf:validFrom>2006-12-26</urf:validFrom>
 			<urf:prefecture codeSpace="../../codelists/Common_localPublicAuthorities.xml">22</urf:prefecture>
 			<urf:lod1MultiSurface>
@@ -148,16 +184,23 @@
 					</gml:surfaceMember>
 				</gml:MultiSurface>
 			</urf:lod1MultiSurface>
+			<urf:dataQualityAttribute>
+				<uro:DataQualityAttribute>
+					<uro:geometrySrcDescLod1 codeSpace="../../codelists/DataQualityAttribute_geometrySrcDesc.xml">400</uro:geometrySrcDescLod1>
+					<uro:thematicSrcDesc codeSpace="../../codelists/DataQualityAttribute_thematicSrcDesc.xml">400</uro:thematicSrcDesc>
+				</uro:DataQualityAttribute>
+			</urf:dataQualityAttribute>
 			<urf:location>沼津市上香貫仰天峰</urf:location>
-			<urf:disasterType codeSpace="../../codelists/SedimentDisasterProneArea_disasterType.xml">1</urf:disasterType>
-			<urf:areaType codeSpace="../../codelists/SedimentDisasterProneArea_areaType.xml">2</urf:areaType>
+			<urf:disasterType codeSpace="../../codelists/LandSlideRiskAttribute_description.xml">1</urf:disasterType>
+			<urf:areaType codeSpace="../../codelists/LandSlideRiskAttribute_areaType.xml">2</urf:areaType>
 			<urf:zoneNumber>103-Ⅰ-3335</urf:zoneNumber>
 			<urf:zoneName>仰天峰</urf:zoneName>
-			<urf:status codeSpace="../../codelists/SedimentDisasterProneArea_status.xml">0</urf:status>
+			<urf:status codeSpace="../../codelists/LandSlideRiskAttribute_status.xml">0</urf:status>
 		</urf:SedimentDisasterProneArea>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
 		<urf:SedimentDisasterProneArea gml:id="lsld_b63d2634-2066-431f-8513-924367af5082">
+			<core:creationDate>2021-03-26</core:creationDate>
 			<urf:validFrom>2006-12-26</urf:validFrom>
 			<urf:prefecture codeSpace="../../codelists/Common_localPublicAuthorities.xml">22</urf:prefecture>
 			<urf:lod1MultiSurface>
@@ -173,16 +216,23 @@
 					</gml:surfaceMember>
 				</gml:MultiSurface>
 			</urf:lod1MultiSurface>
+			<urf:dataQualityAttribute>
+				<uro:DataQualityAttribute>
+					<uro:geometrySrcDescLod1 codeSpace="../../codelists/DataQualityAttribute_geometrySrcDesc.xml">400</uro:geometrySrcDescLod1>
+					<uro:thematicSrcDesc codeSpace="../../codelists/DataQualityAttribute_thematicSrcDesc.xml">400</uro:thematicSrcDesc>
+				</uro:DataQualityAttribute>
+			</urf:dataQualityAttribute>
 			<urf:location>沼津市下香貫八重</urf:location>
-			<urf:disasterType codeSpace="../../codelists/SedimentDisasterProneArea_disasterType.xml">1</urf:disasterType>
-			<urf:areaType codeSpace="../../codelists/SedimentDisasterProneArea_areaType.xml">2</urf:areaType>
+			<urf:disasterType codeSpace="../../codelists/LandSlideRiskAttribute_description.xml">1</urf:disasterType>
+			<urf:areaType codeSpace="../../codelists/LandSlideRiskAttribute_areaType.xml">2</urf:areaType>
 			<urf:zoneNumber>103-Ⅰ-2708</urf:zoneNumber>
 			<urf:zoneName>八重正見寺裏</urf:zoneName>
-			<urf:status codeSpace="../../codelists/SedimentDisasterProneArea_status.xml">0</urf:status>
+			<urf:status codeSpace="../../codelists/LandSlideRiskAttribute_status.xml">0</urf:status>
 		</urf:SedimentDisasterProneArea>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
 		<urf:SedimentDisasterProneArea gml:id="lsld_a75fe707-9376-4447-ba65-d9b9c7718666">
+			<core:creationDate>2021-03-26</core:creationDate>
 			<urf:validFrom>2006-12-26</urf:validFrom>
 			<urf:prefecture codeSpace="../../codelists/Common_localPublicAuthorities.xml">22</urf:prefecture>
 			<urf:lod1MultiSurface>
@@ -198,16 +248,23 @@
 					</gml:surfaceMember>
 				</gml:MultiSurface>
 			</urf:lod1MultiSurface>
+			<urf:dataQualityAttribute>
+				<uro:DataQualityAttribute>
+					<uro:geometrySrcDescLod1 codeSpace="../../codelists/DataQualityAttribute_geometrySrcDesc.xml">400</uro:geometrySrcDescLod1>
+					<uro:thematicSrcDesc codeSpace="../../codelists/DataQualityAttribute_thematicSrcDesc.xml">400</uro:thematicSrcDesc>
+				</uro:DataQualityAttribute>
+			</urf:dataQualityAttribute>
 			<urf:location>沼津市下香貫前角</urf:location>
-			<urf:disasterType codeSpace="../../codelists/SedimentDisasterProneArea_disasterType.xml">1</urf:disasterType>
-			<urf:areaType codeSpace="../../codelists/SedimentDisasterProneArea_areaType.xml">2</urf:areaType>
+			<urf:disasterType codeSpace="../../codelists/LandSlideRiskAttribute_description.xml">1</urf:disasterType>
+			<urf:areaType codeSpace="../../codelists/LandSlideRiskAttribute_areaType.xml">2</urf:areaType>
 			<urf:zoneNumber>103-Ⅰ-0647</urf:zoneNumber>
 			<urf:zoneName>木の宮</urf:zoneName>
-			<urf:status codeSpace="../../codelists/SedimentDisasterProneArea_status.xml">0</urf:status>
+			<urf:status codeSpace="../../codelists/LandSlideRiskAttribute_status.xml">0</urf:status>
 		</urf:SedimentDisasterProneArea>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
 		<urf:SedimentDisasterProneArea gml:id="lsld_4aa3f9ed-f295-40cb-926f-7f6962e6b806">
+			<core:creationDate>2021-03-26</core:creationDate>
 			<urf:validFrom>2006-12-26</urf:validFrom>
 			<urf:prefecture codeSpace="../../codelists/Common_localPublicAuthorities.xml">22</urf:prefecture>
 			<urf:lod1MultiSurface>
@@ -223,16 +280,23 @@
 					</gml:surfaceMember>
 				</gml:MultiSurface>
 			</urf:lod1MultiSurface>
+			<urf:dataQualityAttribute>
+				<uro:DataQualityAttribute>
+					<uro:geometrySrcDescLod1 codeSpace="../../codelists/DataQualityAttribute_geometrySrcDesc.xml">400</uro:geometrySrcDescLod1>
+					<uro:thematicSrcDesc codeSpace="../../codelists/DataQualityAttribute_thematicSrcDesc.xml">400</uro:thematicSrcDesc>
+				</uro:DataQualityAttribute>
+			</urf:dataQualityAttribute>
 			<urf:location>沼津市下香貫前角</urf:location>
-			<urf:disasterType codeSpace="../../codelists/SedimentDisasterProneArea_disasterType.xml">1</urf:disasterType>
-			<urf:areaType codeSpace="../../codelists/SedimentDisasterProneArea_areaType.xml">2</urf:areaType>
+			<urf:disasterType codeSpace="../../codelists/LandSlideRiskAttribute_description.xml">1</urf:disasterType>
+			<urf:areaType codeSpace="../../codelists/LandSlideRiskAttribute_areaType.xml">2</urf:areaType>
 			<urf:zoneNumber>103-Ⅰ-0647</urf:zoneNumber>
 			<urf:zoneName>木の宮</urf:zoneName>
-			<urf:status codeSpace="../../codelists/SedimentDisasterProneArea_status.xml">0</urf:status>
+			<urf:status codeSpace="../../codelists/LandSlideRiskAttribute_status.xml">0</urf:status>
 		</urf:SedimentDisasterProneArea>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
 		<urf:SedimentDisasterProneArea gml:id="lsld_3a3fe624-3f9f-44e8-a2d0-19c4ac00214a">
+			<core:creationDate>2021-03-26</core:creationDate>
 			<urf:validFrom>2006-12-26</urf:validFrom>
 			<urf:prefecture codeSpace="../../codelists/Common_localPublicAuthorities.xml">22</urf:prefecture>
 			<urf:lod1MultiSurface>
@@ -248,16 +312,23 @@
 					</gml:surfaceMember>
 				</gml:MultiSurface>
 			</urf:lod1MultiSurface>
+			<urf:dataQualityAttribute>
+				<uro:DataQualityAttribute>
+					<uro:geometrySrcDescLod1 codeSpace="../../codelists/DataQualityAttribute_geometrySrcDesc.xml">400</uro:geometrySrcDescLod1>
+					<uro:thematicSrcDesc codeSpace="../../codelists/DataQualityAttribute_thematicSrcDesc.xml">400</uro:thematicSrcDesc>
+				</uro:DataQualityAttribute>
+			</urf:dataQualityAttribute>
 			<urf:location>沼津市下香貫前角</urf:location>
-			<urf:disasterType codeSpace="../../codelists/SedimentDisasterProneArea_disasterType.xml">1</urf:disasterType>
-			<urf:areaType codeSpace="../../codelists/SedimentDisasterProneArea_areaType.xml">2</urf:areaType>
+			<urf:disasterType codeSpace="../../codelists/LandSlideRiskAttribute_description.xml">1</urf:disasterType>
+			<urf:areaType codeSpace="../../codelists/LandSlideRiskAttribute_areaType.xml">2</urf:areaType>
 			<urf:zoneNumber>103-Ⅰ-0647</urf:zoneNumber>
 			<urf:zoneName>木の宮</urf:zoneName>
-			<urf:status codeSpace="../../codelists/SedimentDisasterProneArea_status.xml">0</urf:status>
+			<urf:status codeSpace="../../codelists/LandSlideRiskAttribute_status.xml">0</urf:status>
 		</urf:SedimentDisasterProneArea>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
 		<urf:SedimentDisasterProneArea gml:id="lsld_f1cafab0-f1f0-4e1a-a0ff-fc8cb16d8311">
+			<core:creationDate>2021-03-26</core:creationDate>
 			<urf:validFrom>2006-12-26</urf:validFrom>
 			<urf:prefecture codeSpace="../../codelists/Common_localPublicAuthorities.xml">22</urf:prefecture>
 			<urf:lod1MultiSurface>
@@ -273,16 +344,23 @@
 					</gml:surfaceMember>
 				</gml:MultiSurface>
 			</urf:lod1MultiSurface>
+			<urf:dataQualityAttribute>
+				<uro:DataQualityAttribute>
+					<uro:geometrySrcDescLod1 codeSpace="../../codelists/DataQualityAttribute_geometrySrcDesc.xml">400</uro:geometrySrcDescLod1>
+					<uro:thematicSrcDesc codeSpace="../../codelists/DataQualityAttribute_thematicSrcDesc.xml">400</uro:thematicSrcDesc>
+				</uro:DataQualityAttribute>
+			</urf:dataQualityAttribute>
 			<urf:location>沼津市下香貫前角</urf:location>
-			<urf:disasterType codeSpace="../../codelists/SedimentDisasterProneArea_disasterType.xml">1</urf:disasterType>
-			<urf:areaType codeSpace="../../codelists/SedimentDisasterProneArea_areaType.xml">2</urf:areaType>
+			<urf:disasterType codeSpace="../../codelists/LandSlideRiskAttribute_description.xml">1</urf:disasterType>
+			<urf:areaType codeSpace="../../codelists/LandSlideRiskAttribute_areaType.xml">2</urf:areaType>
 			<urf:zoneNumber>103-Ⅰ-0647</urf:zoneNumber>
 			<urf:zoneName>木の宮</urf:zoneName>
-			<urf:status codeSpace="../../codelists/SedimentDisasterProneArea_status.xml">0</urf:status>
+			<urf:status codeSpace="../../codelists/LandSlideRiskAttribute_status.xml">0</urf:status>
 		</urf:SedimentDisasterProneArea>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
 		<urf:SedimentDisasterProneArea gml:id="lsld_26915972-db27-438b-a082-955ccc0c70c7">
+			<core:creationDate>2021-03-26</core:creationDate>
 			<urf:validFrom>2008-03-28</urf:validFrom>
 			<urf:prefecture codeSpace="../../codelists/Common_localPublicAuthorities.xml">22</urf:prefecture>
 			<urf:lod1MultiSurface>
@@ -298,16 +376,23 @@
 					</gml:surfaceMember>
 				</gml:MultiSurface>
 			</urf:lod1MultiSurface>
+			<urf:dataQualityAttribute>
+				<uro:DataQualityAttribute>
+					<uro:geometrySrcDescLod1 codeSpace="../../codelists/DataQualityAttribute_geometrySrcDesc.xml">400</uro:geometrySrcDescLod1>
+					<uro:thematicSrcDesc codeSpace="../../codelists/DataQualityAttribute_thematicSrcDesc.xml">400</uro:thematicSrcDesc>
+				</uro:DataQualityAttribute>
+			</urf:dataQualityAttribute>
 			<urf:location>沼津市下香貫</urf:location>
-			<urf:disasterType codeSpace="../../codelists/SedimentDisasterProneArea_disasterType.xml">1</urf:disasterType>
-			<urf:areaType codeSpace="../../codelists/SedimentDisasterProneArea_areaType.xml">2</urf:areaType>
+			<urf:disasterType codeSpace="../../codelists/LandSlideRiskAttribute_description.xml">1</urf:disasterType>
+			<urf:areaType codeSpace="../../codelists/LandSlideRiskAttribute_areaType.xml">2</urf:areaType>
 			<urf:zoneNumber>103-Ⅰ-0652</urf:zoneNumber>
 			<urf:zoneName>八重二ノ洞</urf:zoneName>
-			<urf:status codeSpace="../../codelists/SedimentDisasterProneArea_status.xml">0</urf:status>
+			<urf:status codeSpace="../../codelists/LandSlideRiskAttribute_status.xml">0</urf:status>
 		</urf:SedimentDisasterProneArea>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
 		<urf:SedimentDisasterProneArea gml:id="lsld_d9914bfb-244d-4e01-86eb-c14dd6e85888">
+			<core:creationDate>2021-03-26</core:creationDate>
 			<urf:validFrom>2006-12-26</urf:validFrom>
 			<urf:prefecture codeSpace="../../codelists/Common_localPublicAuthorities.xml">22</urf:prefecture>
 			<urf:lod1MultiSurface>
@@ -323,16 +408,23 @@
 					</gml:surfaceMember>
 				</gml:MultiSurface>
 			</urf:lod1MultiSurface>
+			<urf:dataQualityAttribute>
+				<uro:DataQualityAttribute>
+					<uro:geometrySrcDescLod1 codeSpace="../../codelists/DataQualityAttribute_geometrySrcDesc.xml">400</uro:geometrySrcDescLod1>
+					<uro:thematicSrcDesc codeSpace="../../codelists/DataQualityAttribute_thematicSrcDesc.xml">400</uro:thematicSrcDesc>
+				</uro:DataQualityAttribute>
+			</urf:dataQualityAttribute>
 			<urf:location>沼津市上香貫仰天峰</urf:location>
-			<urf:disasterType codeSpace="../../codelists/SedimentDisasterProneArea_disasterType.xml">1</urf:disasterType>
-			<urf:areaType codeSpace="../../codelists/SedimentDisasterProneArea_areaType.xml">2</urf:areaType>
+			<urf:disasterType codeSpace="../../codelists/LandSlideRiskAttribute_description.xml">1</urf:disasterType>
+			<urf:areaType codeSpace="../../codelists/LandSlideRiskAttribute_areaType.xml">2</urf:areaType>
 			<urf:zoneNumber>103-Ⅰ-3335</urf:zoneNumber>
 			<urf:zoneName>仰天峰</urf:zoneName>
-			<urf:status codeSpace="../../codelists/SedimentDisasterProneArea_status.xml">0</urf:status>
+			<urf:status codeSpace="../../codelists/LandSlideRiskAttribute_status.xml">0</urf:status>
 		</urf:SedimentDisasterProneArea>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
 		<urf:SedimentDisasterProneArea gml:id="lsld_adbb3aac-9a9c-4586-87a5-dd687d417f40">
+			<core:creationDate>2021-03-26</core:creationDate>
 			<urf:validFrom>2006-12-26</urf:validFrom>
 			<urf:prefecture codeSpace="../../codelists/Common_localPublicAuthorities.xml">22</urf:prefecture>
 			<urf:lod1MultiSurface>
@@ -348,16 +440,23 @@
 					</gml:surfaceMember>
 				</gml:MultiSurface>
 			</urf:lod1MultiSurface>
+			<urf:dataQualityAttribute>
+				<uro:DataQualityAttribute>
+					<uro:geometrySrcDescLod1 codeSpace="../../codelists/DataQualityAttribute_geometrySrcDesc.xml">400</uro:geometrySrcDescLod1>
+					<uro:thematicSrcDesc codeSpace="../../codelists/DataQualityAttribute_thematicSrcDesc.xml">400</uro:thematicSrcDesc>
+				</uro:DataQualityAttribute>
+			</urf:dataQualityAttribute>
 			<urf:location>沼津市上香貫仰天峰</urf:location>
-			<urf:disasterType codeSpace="../../codelists/SedimentDisasterProneArea_disasterType.xml">1</urf:disasterType>
-			<urf:areaType codeSpace="../../codelists/SedimentDisasterProneArea_areaType.xml">2</urf:areaType>
+			<urf:disasterType codeSpace="../../codelists/LandSlideRiskAttribute_description.xml">1</urf:disasterType>
+			<urf:areaType codeSpace="../../codelists/LandSlideRiskAttribute_areaType.xml">2</urf:areaType>
 			<urf:zoneNumber>103-Ⅰ-3335</urf:zoneNumber>
 			<urf:zoneName>仰天峰</urf:zoneName>
-			<urf:status codeSpace="../../codelists/SedimentDisasterProneArea_status.xml">0</urf:status>
+			<urf:status codeSpace="../../codelists/LandSlideRiskAttribute_status.xml">0</urf:status>
 		</urf:SedimentDisasterProneArea>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
 		<urf:SedimentDisasterProneArea gml:id="lsld_94ff597e-4222-49a9-8581-8c722b788fd8">
+			<core:creationDate>2021-03-26</core:creationDate>
 			<urf:validFrom>2006-12-26</urf:validFrom>
 			<urf:prefecture codeSpace="../../codelists/Common_localPublicAuthorities.xml">22</urf:prefecture>
 			<urf:lod1MultiSurface>
@@ -373,16 +472,23 @@
 					</gml:surfaceMember>
 				</gml:MultiSurface>
 			</urf:lod1MultiSurface>
+			<urf:dataQualityAttribute>
+				<uro:DataQualityAttribute>
+					<uro:geometrySrcDescLod1 codeSpace="../../codelists/DataQualityAttribute_geometrySrcDesc.xml">400</uro:geometrySrcDescLod1>
+					<uro:thematicSrcDesc codeSpace="../../codelists/DataQualityAttribute_thematicSrcDesc.xml">400</uro:thematicSrcDesc>
+				</uro:DataQualityAttribute>
+			</urf:dataQualityAttribute>
 			<urf:location>沼津市中瀬町</urf:location>
-			<urf:disasterType codeSpace="../../codelists/SedimentDisasterProneArea_disasterType.xml">1</urf:disasterType>
-			<urf:areaType codeSpace="../../codelists/SedimentDisasterProneArea_areaType.xml">2</urf:areaType>
+			<urf:disasterType codeSpace="../../codelists/LandSlideRiskAttribute_description.xml">1</urf:disasterType>
+			<urf:areaType codeSpace="../../codelists/LandSlideRiskAttribute_areaType.xml">2</urf:areaType>
 			<urf:zoneNumber>103-Ⅰ-3338</urf:zoneNumber>
 			<urf:zoneName>中瀬町B</urf:zoneName>
-			<urf:status codeSpace="../../codelists/SedimentDisasterProneArea_status.xml">0</urf:status>
+			<urf:status codeSpace="../../codelists/LandSlideRiskAttribute_status.xml">0</urf:status>
 		</urf:SedimentDisasterProneArea>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
 		<urf:SedimentDisasterProneArea gml:id="lsld_ff3636fe-e0fe-47bf-9ff3-1692f144e2b2">
+			<core:creationDate>2021-03-26</core:creationDate>
 			<urf:validFrom>2006-12-26</urf:validFrom>
 			<urf:prefecture codeSpace="../../codelists/Common_localPublicAuthorities.xml">22</urf:prefecture>
 			<urf:lod1MultiSurface>
@@ -398,16 +504,23 @@
 					</gml:surfaceMember>
 				</gml:MultiSurface>
 			</urf:lod1MultiSurface>
+			<urf:dataQualityAttribute>
+				<uro:DataQualityAttribute>
+					<uro:geometrySrcDescLod1 codeSpace="../../codelists/DataQualityAttribute_geometrySrcDesc.xml">400</uro:geometrySrcDescLod1>
+					<uro:thematicSrcDesc codeSpace="../../codelists/DataQualityAttribute_thematicSrcDesc.xml">400</uro:thematicSrcDesc>
+				</uro:DataQualityAttribute>
+			</urf:dataQualityAttribute>
 			<urf:location>沼津市中瀬町</urf:location>
-			<urf:disasterType codeSpace="../../codelists/SedimentDisasterProneArea_disasterType.xml">1</urf:disasterType>
-			<urf:areaType codeSpace="../../codelists/SedimentDisasterProneArea_areaType.xml">2</urf:areaType>
+			<urf:disasterType codeSpace="../../codelists/LandSlideRiskAttribute_description.xml">1</urf:disasterType>
+			<urf:areaType codeSpace="../../codelists/LandSlideRiskAttribute_areaType.xml">2</urf:areaType>
 			<urf:zoneNumber>103-Ⅱ-5865</urf:zoneNumber>
 			<urf:zoneName>中瀬町A</urf:zoneName>
-			<urf:status codeSpace="../../codelists/SedimentDisasterProneArea_status.xml">0</urf:status>
+			<urf:status codeSpace="../../codelists/LandSlideRiskAttribute_status.xml">0</urf:status>
 		</urf:SedimentDisasterProneArea>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
 		<urf:SedimentDisasterProneArea gml:id="lsld_47f183f8-6b15-4016-84c7-e25bb817f663">
+			<core:creationDate>2021-03-26</core:creationDate>
 			<urf:validFrom>2006-12-26</urf:validFrom>
 			<urf:prefecture codeSpace="../../codelists/Common_localPublicAuthorities.xml">22</urf:prefecture>
 			<urf:lod1MultiSurface>
@@ -423,16 +536,23 @@
 					</gml:surfaceMember>
 				</gml:MultiSurface>
 			</urf:lod1MultiSurface>
+			<urf:dataQualityAttribute>
+				<uro:DataQualityAttribute>
+					<uro:geometrySrcDescLod1 codeSpace="../../codelists/DataQualityAttribute_geometrySrcDesc.xml">400</uro:geometrySrcDescLod1>
+					<uro:thematicSrcDesc codeSpace="../../codelists/DataQualityAttribute_thematicSrcDesc.xml">400</uro:thematicSrcDesc>
+				</uro:DataQualityAttribute>
+			</urf:dataQualityAttribute>
 			<urf:location>沼津市中瀬町</urf:location>
-			<urf:disasterType codeSpace="../../codelists/SedimentDisasterProneArea_disasterType.xml">1</urf:disasterType>
-			<urf:areaType codeSpace="../../codelists/SedimentDisasterProneArea_areaType.xml">2</urf:areaType>
+			<urf:disasterType codeSpace="../../codelists/LandSlideRiskAttribute_description.xml">1</urf:disasterType>
+			<urf:areaType codeSpace="../../codelists/LandSlideRiskAttribute_areaType.xml">2</urf:areaType>
 			<urf:zoneNumber>103-Ⅱ-5866</urf:zoneNumber>
 			<urf:zoneName>中瀬町C</urf:zoneName>
-			<urf:status codeSpace="../../codelists/SedimentDisasterProneArea_status.xml">0</urf:status>
+			<urf:status codeSpace="../../codelists/LandSlideRiskAttribute_status.xml">0</urf:status>
 		</urf:SedimentDisasterProneArea>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
 		<urf:SedimentDisasterProneArea gml:id="lsld_a2fd9e5a-3ca0-4914-987f-39bec98de41b">
+			<core:creationDate>2021-03-26</core:creationDate>
 			<urf:validFrom>2006-12-26</urf:validFrom>
 			<urf:prefecture codeSpace="../../codelists/Common_localPublicAuthorities.xml">22</urf:prefecture>
 			<urf:lod1MultiSurface>
@@ -448,16 +568,23 @@
 					</gml:surfaceMember>
 				</gml:MultiSurface>
 			</urf:lod1MultiSurface>
+			<urf:dataQualityAttribute>
+				<uro:DataQualityAttribute>
+					<uro:geometrySrcDescLod1 codeSpace="../../codelists/DataQualityAttribute_geometrySrcDesc.xml">400</uro:geometrySrcDescLod1>
+					<uro:thematicSrcDesc codeSpace="../../codelists/DataQualityAttribute_thematicSrcDesc.xml">400</uro:thematicSrcDesc>
+				</uro:DataQualityAttribute>
+			</urf:dataQualityAttribute>
 			<urf:location>沼津市中瀬町</urf:location>
-			<urf:disasterType codeSpace="../../codelists/SedimentDisasterProneArea_disasterType.xml">1</urf:disasterType>
-			<urf:areaType codeSpace="../../codelists/SedimentDisasterProneArea_areaType.xml">2</urf:areaType>
+			<urf:disasterType codeSpace="../../codelists/LandSlideRiskAttribute_description.xml">1</urf:disasterType>
+			<urf:areaType codeSpace="../../codelists/LandSlideRiskAttribute_areaType.xml">2</urf:areaType>
 			<urf:zoneNumber>103-Ⅰ-3338</urf:zoneNumber>
 			<urf:zoneName>中瀬町B</urf:zoneName>
-			<urf:status codeSpace="../../codelists/SedimentDisasterProneArea_status.xml">0</urf:status>
+			<urf:status codeSpace="../../codelists/LandSlideRiskAttribute_status.xml">0</urf:status>
 		</urf:SedimentDisasterProneArea>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
 		<urf:SedimentDisasterProneArea gml:id="lsld_d84aada3-ad21-46a8-8e92-7a470f1ec503">
+			<core:creationDate>2021-03-26</core:creationDate>
 			<urf:validFrom>2006-12-26</urf:validFrom>
 			<urf:prefecture codeSpace="../../codelists/Common_localPublicAuthorities.xml">22</urf:prefecture>
 			<urf:lod1MultiSurface>
@@ -473,16 +600,23 @@
 					</gml:surfaceMember>
 				</gml:MultiSurface>
 			</urf:lod1MultiSurface>
+			<urf:dataQualityAttribute>
+				<uro:DataQualityAttribute>
+					<uro:geometrySrcDescLod1 codeSpace="../../codelists/DataQualityAttribute_geometrySrcDesc.xml">400</uro:geometrySrcDescLod1>
+					<uro:thematicSrcDesc codeSpace="../../codelists/DataQualityAttribute_thematicSrcDesc.xml">400</uro:thematicSrcDesc>
+				</uro:DataQualityAttribute>
+			</urf:dataQualityAttribute>
 			<urf:location>沼津市山ヶ下町</urf:location>
-			<urf:disasterType codeSpace="../../codelists/SedimentDisasterProneArea_disasterType.xml">1</urf:disasterType>
-			<urf:areaType codeSpace="../../codelists/SedimentDisasterProneArea_areaType.xml">2</urf:areaType>
+			<urf:disasterType codeSpace="../../codelists/LandSlideRiskAttribute_description.xml">1</urf:disasterType>
+			<urf:areaType codeSpace="../../codelists/LandSlideRiskAttribute_areaType.xml">2</urf:areaType>
 			<urf:zoneNumber>103-Ⅰ-3336</urf:zoneNumber>
 			<urf:zoneName>山ヶ下町</urf:zoneName>
-			<urf:status codeSpace="../../codelists/SedimentDisasterProneArea_status.xml">0</urf:status>
+			<urf:status codeSpace="../../codelists/LandSlideRiskAttribute_status.xml">0</urf:status>
 		</urf:SedimentDisasterProneArea>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
 		<urf:SedimentDisasterProneArea gml:id="lsld_b4d9d77a-c0fe-4d29-a1bf-43188bc8a17d">
+			<core:creationDate>2021-03-26</core:creationDate>
 			<urf:validFrom>2006-12-26</urf:validFrom>
 			<urf:prefecture codeSpace="../../codelists/Common_localPublicAuthorities.xml">22</urf:prefecture>
 			<urf:lod1MultiSurface>
@@ -498,16 +632,23 @@
 					</gml:surfaceMember>
 				</gml:MultiSurface>
 			</urf:lod1MultiSurface>
+			<urf:dataQualityAttribute>
+				<uro:DataQualityAttribute>
+					<uro:geometrySrcDescLod1 codeSpace="../../codelists/DataQualityAttribute_geometrySrcDesc.xml">400</uro:geometrySrcDescLod1>
+					<uro:thematicSrcDesc codeSpace="../../codelists/DataQualityAttribute_thematicSrcDesc.xml">400</uro:thematicSrcDesc>
+				</uro:DataQualityAttribute>
+			</urf:dataQualityAttribute>
 			<urf:location>沼津市中瀬町</urf:location>
-			<urf:disasterType codeSpace="../../codelists/SedimentDisasterProneArea_disasterType.xml">1</urf:disasterType>
-			<urf:areaType codeSpace="../../codelists/SedimentDisasterProneArea_areaType.xml">2</urf:areaType>
+			<urf:disasterType codeSpace="../../codelists/LandSlideRiskAttribute_description.xml">1</urf:disasterType>
+			<urf:areaType codeSpace="../../codelists/LandSlideRiskAttribute_areaType.xml">2</urf:areaType>
 			<urf:zoneNumber>103-Ⅰ-2709</urf:zoneNumber>
 			<urf:zoneName>上香貫コテンジ</urf:zoneName>
-			<urf:status codeSpace="../../codelists/SedimentDisasterProneArea_status.xml">0</urf:status>
+			<urf:status codeSpace="../../codelists/LandSlideRiskAttribute_status.xml">0</urf:status>
 		</urf:SedimentDisasterProneArea>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
 		<urf:SedimentDisasterProneArea gml:id="lsld_e530cc17-bf8f-4282-a884-6d1b1e5dd8f1">
+			<core:creationDate>2021-03-26</core:creationDate>
 			<urf:validFrom>2006-12-26</urf:validFrom>
 			<urf:prefecture codeSpace="../../codelists/Common_localPublicAuthorities.xml">22</urf:prefecture>
 			<urf:lod1MultiSurface>
@@ -523,16 +664,23 @@
 					</gml:surfaceMember>
 				</gml:MultiSurface>
 			</urf:lod1MultiSurface>
+			<urf:dataQualityAttribute>
+				<uro:DataQualityAttribute>
+					<uro:geometrySrcDescLod1 codeSpace="../../codelists/DataQualityAttribute_geometrySrcDesc.xml">400</uro:geometrySrcDescLod1>
+					<uro:thematicSrcDesc codeSpace="../../codelists/DataQualityAttribute_thematicSrcDesc.xml">400</uro:thematicSrcDesc>
+				</uro:DataQualityAttribute>
+			</urf:dataQualityAttribute>
 			<urf:location>沼津市本郷町</urf:location>
-			<urf:disasterType codeSpace="../../codelists/SedimentDisasterProneArea_disasterType.xml">1</urf:disasterType>
-			<urf:areaType codeSpace="../../codelists/SedimentDisasterProneArea_areaType.xml">2</urf:areaType>
+			<urf:disasterType codeSpace="../../codelists/LandSlideRiskAttribute_description.xml">1</urf:disasterType>
+			<urf:areaType codeSpace="../../codelists/LandSlideRiskAttribute_areaType.xml">2</urf:areaType>
 			<urf:zoneNumber>203-Ⅰ-018</urf:zoneNumber>
 			<urf:zoneName>久保沢</urf:zoneName>
-			<urf:status codeSpace="../../codelists/SedimentDisasterProneArea_status.xml">0</urf:status>
+			<urf:status codeSpace="../../codelists/LandSlideRiskAttribute_status.xml">0</urf:status>
 		</urf:SedimentDisasterProneArea>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
 		<urf:SedimentDisasterProneArea gml:id="lsld_85969688-d673-4ef8-b14a-a012f8cb2cad">
+			<core:creationDate>2021-03-26</core:creationDate>
 			<urf:validFrom>2018-03-30</urf:validFrom>
 			<urf:prefecture codeSpace="../../codelists/Common_localPublicAuthorities.xml">22</urf:prefecture>
 			<urf:lod1MultiSurface>
@@ -548,16 +696,23 @@
 					</gml:surfaceMember>
 				</gml:MultiSurface>
 			</urf:lod1MultiSurface>
+			<urf:dataQualityAttribute>
+				<uro:DataQualityAttribute>
+					<uro:geometrySrcDescLod1 codeSpace="../../codelists/DataQualityAttribute_geometrySrcDesc.xml">400</uro:geometrySrcDescLod1>
+					<uro:thematicSrcDesc codeSpace="../../codelists/DataQualityAttribute_thematicSrcDesc.xml">400</uro:thematicSrcDesc>
+				</uro:DataQualityAttribute>
+			</urf:dataQualityAttribute>
 			<urf:location>沼津市岡一色字中山　他</urf:location>
-			<urf:disasterType codeSpace="../../codelists/SedimentDisasterProneArea_disasterType.xml">1</urf:disasterType>
-			<urf:areaType codeSpace="../../codelists/SedimentDisasterProneArea_areaType.xml">1</urf:areaType>
+			<urf:disasterType codeSpace="../../codelists/LandSlideRiskAttribute_description.xml">1</urf:disasterType>
+			<urf:areaType codeSpace="../../codelists/LandSlideRiskAttribute_areaType.xml">1</urf:areaType>
 			<urf:zoneNumber>103-S-0140</urf:zoneNumber>
 			<urf:zoneName>中山A</urf:zoneName>
-			<urf:status codeSpace="../../codelists/SedimentDisasterProneArea_status.xml">0</urf:status>
+			<urf:status codeSpace="../../codelists/LandSlideRiskAttribute_status.xml">0</urf:status>
 		</urf:SedimentDisasterProneArea>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
 		<urf:SedimentDisasterProneArea gml:id="lsld_4e11b4f3-1772-473e-b5e6-e9d989d72007">
+			<core:creationDate>2021-03-26</core:creationDate>
 			<urf:validFrom>2018-03-30</urf:validFrom>
 			<urf:prefecture codeSpace="../../codelists/Common_localPublicAuthorities.xml">22</urf:prefecture>
 			<urf:lod1MultiSurface>
@@ -573,16 +728,23 @@
 					</gml:surfaceMember>
 				</gml:MultiSurface>
 			</urf:lod1MultiSurface>
+			<urf:dataQualityAttribute>
+				<uro:DataQualityAttribute>
+					<uro:geometrySrcDescLod1 codeSpace="../../codelists/DataQualityAttribute_geometrySrcDesc.xml">400</uro:geometrySrcDescLod1>
+					<uro:thematicSrcDesc codeSpace="../../codelists/DataQualityAttribute_thematicSrcDesc.xml">400</uro:thematicSrcDesc>
+				</uro:DataQualityAttribute>
+			</urf:dataQualityAttribute>
 			<urf:location>沼津市岡一色字中山　他</urf:location>
-			<urf:disasterType codeSpace="../../codelists/SedimentDisasterProneArea_disasterType.xml">1</urf:disasterType>
-			<urf:areaType codeSpace="../../codelists/SedimentDisasterProneArea_areaType.xml">1</urf:areaType>
+			<urf:disasterType codeSpace="../../codelists/LandSlideRiskAttribute_description.xml">1</urf:disasterType>
+			<urf:areaType codeSpace="../../codelists/LandSlideRiskAttribute_areaType.xml">1</urf:areaType>
 			<urf:zoneNumber>103-S-0140</urf:zoneNumber>
 			<urf:zoneName>中山A</urf:zoneName>
-			<urf:status codeSpace="../../codelists/SedimentDisasterProneArea_status.xml">0</urf:status>
+			<urf:status codeSpace="../../codelists/LandSlideRiskAttribute_status.xml">0</urf:status>
 		</urf:SedimentDisasterProneArea>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
 		<urf:SedimentDisasterProneArea gml:id="lsld_aa546c35-49e4-48a0-b4c8-5cf86c089b78">
+			<core:creationDate>2021-03-26</core:creationDate>
 			<urf:validFrom>2018-03-30</urf:validFrom>
 			<urf:prefecture codeSpace="../../codelists/Common_localPublicAuthorities.xml">22</urf:prefecture>
 			<urf:lod1MultiSurface>
@@ -598,16 +760,23 @@
 					</gml:surfaceMember>
 				</gml:MultiSurface>
 			</urf:lod1MultiSurface>
+			<urf:dataQualityAttribute>
+				<uro:DataQualityAttribute>
+					<uro:geometrySrcDescLod1 codeSpace="../../codelists/DataQualityAttribute_geometrySrcDesc.xml">400</uro:geometrySrcDescLod1>
+					<uro:thematicSrcDesc codeSpace="../../codelists/DataQualityAttribute_thematicSrcDesc.xml">400</uro:thematicSrcDesc>
+				</uro:DataQualityAttribute>
+			</urf:dataQualityAttribute>
 			<urf:location>沼津市岡一色字中山　他</urf:location>
-			<urf:disasterType codeSpace="../../codelists/SedimentDisasterProneArea_disasterType.xml">1</urf:disasterType>
-			<urf:areaType codeSpace="../../codelists/SedimentDisasterProneArea_areaType.xml">1</urf:areaType>
+			<urf:disasterType codeSpace="../../codelists/LandSlideRiskAttribute_description.xml">1</urf:disasterType>
+			<urf:areaType codeSpace="../../codelists/LandSlideRiskAttribute_areaType.xml">1</urf:areaType>
 			<urf:zoneNumber>103-S-0141</urf:zoneNumber>
 			<urf:zoneName>池上町B</urf:zoneName>
-			<urf:status codeSpace="../../codelists/SedimentDisasterProneArea_status.xml">0</urf:status>
+			<urf:status codeSpace="../../codelists/LandSlideRiskAttribute_status.xml">0</urf:status>
 		</urf:SedimentDisasterProneArea>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
 		<urf:SedimentDisasterProneArea gml:id="lsld_5403bc89-6df2-4b6a-9ccd-e424502463c0">
+			<core:creationDate>2021-03-26</core:creationDate>
 			<urf:validFrom>2018-03-30</urf:validFrom>
 			<urf:prefecture codeSpace="../../codelists/Common_localPublicAuthorities.xml">22</urf:prefecture>
 			<urf:lod1MultiSurface>
@@ -623,16 +792,23 @@
 					</gml:surfaceMember>
 				</gml:MultiSurface>
 			</urf:lod1MultiSurface>
+			<urf:dataQualityAttribute>
+				<uro:DataQualityAttribute>
+					<uro:geometrySrcDescLod1 codeSpace="../../codelists/DataQualityAttribute_geometrySrcDesc.xml">400</uro:geometrySrcDescLod1>
+					<uro:thematicSrcDesc codeSpace="../../codelists/DataQualityAttribute_thematicSrcDesc.xml">400</uro:thematicSrcDesc>
+				</uro:DataQualityAttribute>
+			</urf:dataQualityAttribute>
 			<urf:location>沼津市岡一色字中山　他</urf:location>
-			<urf:disasterType codeSpace="../../codelists/SedimentDisasterProneArea_disasterType.xml">1</urf:disasterType>
-			<urf:areaType codeSpace="../../codelists/SedimentDisasterProneArea_areaType.xml">2</urf:areaType>
+			<urf:disasterType codeSpace="../../codelists/LandSlideRiskAttribute_description.xml">1</urf:disasterType>
+			<urf:areaType codeSpace="../../codelists/LandSlideRiskAttribute_areaType.xml">2</urf:areaType>
 			<urf:zoneNumber>103-S-0140</urf:zoneNumber>
 			<urf:zoneName>中山A</urf:zoneName>
-			<urf:status codeSpace="../../codelists/SedimentDisasterProneArea_status.xml">0</urf:status>
+			<urf:status codeSpace="../../codelists/LandSlideRiskAttribute_status.xml">0</urf:status>
 		</urf:SedimentDisasterProneArea>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
 		<urf:SedimentDisasterProneArea gml:id="lsld_8e8c009d-7f99-443d-89e5-c6cf38a379b9">
+			<core:creationDate>2021-03-26</core:creationDate>
 			<urf:validFrom>2018-03-30</urf:validFrom>
 			<urf:prefecture codeSpace="../../codelists/Common_localPublicAuthorities.xml">22</urf:prefecture>
 			<urf:lod1MultiSurface>
@@ -648,16 +824,23 @@
 					</gml:surfaceMember>
 				</gml:MultiSurface>
 			</urf:lod1MultiSurface>
+			<urf:dataQualityAttribute>
+				<uro:DataQualityAttribute>
+					<uro:geometrySrcDescLod1 codeSpace="../../codelists/DataQualityAttribute_geometrySrcDesc.xml">400</uro:geometrySrcDescLod1>
+					<uro:thematicSrcDesc codeSpace="../../codelists/DataQualityAttribute_thematicSrcDesc.xml">400</uro:thematicSrcDesc>
+				</uro:DataQualityAttribute>
+			</urf:dataQualityAttribute>
 			<urf:location>沼津市岡一色字中山　他</urf:location>
-			<urf:disasterType codeSpace="../../codelists/SedimentDisasterProneArea_disasterType.xml">1</urf:disasterType>
-			<urf:areaType codeSpace="../../codelists/SedimentDisasterProneArea_areaType.xml">2</urf:areaType>
+			<urf:disasterType codeSpace="../../codelists/LandSlideRiskAttribute_description.xml">1</urf:disasterType>
+			<urf:areaType codeSpace="../../codelists/LandSlideRiskAttribute_areaType.xml">2</urf:areaType>
 			<urf:zoneNumber>103-S-0140</urf:zoneNumber>
 			<urf:zoneName>中山A</urf:zoneName>
-			<urf:status codeSpace="../../codelists/SedimentDisasterProneArea_status.xml">0</urf:status>
+			<urf:status codeSpace="../../codelists/LandSlideRiskAttribute_status.xml">0</urf:status>
 		</urf:SedimentDisasterProneArea>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
 		<urf:SedimentDisasterProneArea gml:id="lsld_9c08644b-9170-49bc-895b-2948418c9e8a">
+			<core:creationDate>2021-03-26</core:creationDate>
 			<urf:validFrom>2018-10-23</urf:validFrom>
 			<urf:prefecture codeSpace="../../codelists/Common_localPublicAuthorities.xml">22</urf:prefecture>
 			<urf:lod1MultiSurface>
@@ -673,16 +856,23 @@
 					</gml:surfaceMember>
 				</gml:MultiSurface>
 			</urf:lod1MultiSurface>
+			<urf:dataQualityAttribute>
+				<uro:DataQualityAttribute>
+					<uro:geometrySrcDescLod1 codeSpace="../../codelists/DataQualityAttribute_geometrySrcDesc.xml">400</uro:geometrySrcDescLod1>
+					<uro:thematicSrcDesc codeSpace="../../codelists/DataQualityAttribute_thematicSrcDesc.xml">400</uro:thematicSrcDesc>
+				</uro:DataQualityAttribute>
+			</urf:dataQualityAttribute>
 			<urf:location>沼津市下香貫字外原</urf:location>
-			<urf:disasterType codeSpace="../../codelists/SedimentDisasterProneArea_disasterType.xml">1</urf:disasterType>
-			<urf:areaType codeSpace="../../codelists/SedimentDisasterProneArea_areaType.xml">2</urf:areaType>
+			<urf:disasterType codeSpace="../../codelists/LandSlideRiskAttribute_description.xml">1</urf:disasterType>
+			<urf:areaType codeSpace="../../codelists/LandSlideRiskAttribute_areaType.xml">2</urf:areaType>
 			<urf:zoneNumber>103-Ⅰ-0650</urf:zoneNumber>
 			<urf:zoneName>外原</urf:zoneName>
-			<urf:status codeSpace="../../codelists/SedimentDisasterProneArea_status.xml">0</urf:status>
+			<urf:status codeSpace="../../codelists/LandSlideRiskAttribute_status.xml">0</urf:status>
 		</urf:SedimentDisasterProneArea>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
 		<urf:SedimentDisasterProneArea gml:id="lsld_bc03a1bb-15bc-497d-a926-72ae637dc3e4">
+			<core:creationDate>2021-03-26</core:creationDate>
 			<urf:validFrom>2018-10-23</urf:validFrom>
 			<urf:prefecture codeSpace="../../codelists/Common_localPublicAuthorities.xml">22</urf:prefecture>
 			<urf:lod1MultiSurface>
@@ -698,16 +888,23 @@
 					</gml:surfaceMember>
 				</gml:MultiSurface>
 			</urf:lod1MultiSurface>
+			<urf:dataQualityAttribute>
+				<uro:DataQualityAttribute>
+					<uro:geometrySrcDescLod1 codeSpace="../../codelists/DataQualityAttribute_geometrySrcDesc.xml">400</uro:geometrySrcDescLod1>
+					<uro:thematicSrcDesc codeSpace="../../codelists/DataQualityAttribute_thematicSrcDesc.xml">400</uro:thematicSrcDesc>
+				</uro:DataQualityAttribute>
+			</urf:dataQualityAttribute>
 			<urf:location>沼津市下香貫字前角</urf:location>
-			<urf:disasterType codeSpace="../../codelists/SedimentDisasterProneArea_disasterType.xml">1</urf:disasterType>
-			<urf:areaType codeSpace="../../codelists/SedimentDisasterProneArea_areaType.xml">2</urf:areaType>
+			<urf:disasterType codeSpace="../../codelists/LandSlideRiskAttribute_description.xml">1</urf:disasterType>
+			<urf:areaType codeSpace="../../codelists/LandSlideRiskAttribute_areaType.xml">2</urf:areaType>
 			<urf:zoneNumber>103-S-0120</urf:zoneNumber>
 			<urf:zoneName>前角</urf:zoneName>
-			<urf:status codeSpace="../../codelists/SedimentDisasterProneArea_status.xml">0</urf:status>
+			<urf:status codeSpace="../../codelists/LandSlideRiskAttribute_status.xml">0</urf:status>
 		</urf:SedimentDisasterProneArea>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
 		<urf:SedimentDisasterProneArea gml:id="lsld_d793fda8-8b55-4942-a01e-bed8f28f9136">
+			<core:creationDate>2021-03-26</core:creationDate>
 			<urf:validFrom>2018-10-23</urf:validFrom>
 			<urf:prefecture codeSpace="../../codelists/Common_localPublicAuthorities.xml">22</urf:prefecture>
 			<urf:lod1MultiSurface>
@@ -723,16 +920,23 @@
 					</gml:surfaceMember>
 				</gml:MultiSurface>
 			</urf:lod1MultiSurface>
+			<urf:dataQualityAttribute>
+				<uro:DataQualityAttribute>
+					<uro:geometrySrcDescLod1 codeSpace="../../codelists/DataQualityAttribute_geometrySrcDesc.xml">400</uro:geometrySrcDescLod1>
+					<uro:thematicSrcDesc codeSpace="../../codelists/DataQualityAttribute_thematicSrcDesc.xml">400</uro:thematicSrcDesc>
+				</uro:DataQualityAttribute>
+			</urf:dataQualityAttribute>
 			<urf:location>沼津市下香貫字前角</urf:location>
-			<urf:disasterType codeSpace="../../codelists/SedimentDisasterProneArea_disasterType.xml">1</urf:disasterType>
-			<urf:areaType codeSpace="../../codelists/SedimentDisasterProneArea_areaType.xml">2</urf:areaType>
+			<urf:disasterType codeSpace="../../codelists/LandSlideRiskAttribute_description.xml">1</urf:disasterType>
+			<urf:areaType codeSpace="../../codelists/LandSlideRiskAttribute_areaType.xml">2</urf:areaType>
 			<urf:zoneNumber>103-S-0120</urf:zoneNumber>
 			<urf:zoneName>前角</urf:zoneName>
-			<urf:status codeSpace="../../codelists/SedimentDisasterProneArea_status.xml">0</urf:status>
+			<urf:status codeSpace="../../codelists/LandSlideRiskAttribute_status.xml">0</urf:status>
 		</urf:SedimentDisasterProneArea>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
 		<urf:SedimentDisasterProneArea gml:id="lsld_cf1545b6-b609-487a-92ea-956b66194208">
+			<core:creationDate>2021-03-26</core:creationDate>
 			<urf:validFrom>2018-10-23</urf:validFrom>
 			<urf:prefecture codeSpace="../../codelists/Common_localPublicAuthorities.xml">22</urf:prefecture>
 			<urf:lod1MultiSurface>
@@ -748,16 +952,23 @@
 					</gml:surfaceMember>
 				</gml:MultiSurface>
 			</urf:lod1MultiSurface>
+			<urf:dataQualityAttribute>
+				<uro:DataQualityAttribute>
+					<uro:geometrySrcDescLod1 codeSpace="../../codelists/DataQualityAttribute_geometrySrcDesc.xml">400</uro:geometrySrcDescLod1>
+					<uro:thematicSrcDesc codeSpace="../../codelists/DataQualityAttribute_thematicSrcDesc.xml">400</uro:thematicSrcDesc>
+				</uro:DataQualityAttribute>
+			</urf:dataQualityAttribute>
 			<urf:location>沼津市下香貫字八重</urf:location>
-			<urf:disasterType codeSpace="../../codelists/SedimentDisasterProneArea_disasterType.xml">1</urf:disasterType>
-			<urf:areaType codeSpace="../../codelists/SedimentDisasterProneArea_areaType.xml">2</urf:areaType>
+			<urf:disasterType codeSpace="../../codelists/LandSlideRiskAttribute_description.xml">1</urf:disasterType>
+			<urf:areaType codeSpace="../../codelists/LandSlideRiskAttribute_areaType.xml">2</urf:areaType>
 			<urf:zoneNumber>103-S-0119</urf:zoneNumber>
 			<urf:zoneName>八重B</urf:zoneName>
-			<urf:status codeSpace="../../codelists/SedimentDisasterProneArea_status.xml">0</urf:status>
+			<urf:status codeSpace="../../codelists/LandSlideRiskAttribute_status.xml">0</urf:status>
 		</urf:SedimentDisasterProneArea>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
 		<urf:SedimentDisasterProneArea gml:id="lsld_2fe4fb20-fcae-48c2-95e9-babc0aa9cd79">
+			<core:creationDate>2021-03-26</core:creationDate>
 			<urf:validFrom>2018-10-23</urf:validFrom>
 			<urf:prefecture codeSpace="../../codelists/Common_localPublicAuthorities.xml">22</urf:prefecture>
 			<urf:lod1MultiSurface>
@@ -773,16 +984,23 @@
 					</gml:surfaceMember>
 				</gml:MultiSurface>
 			</urf:lod1MultiSurface>
+			<urf:dataQualityAttribute>
+				<uro:DataQualityAttribute>
+					<uro:geometrySrcDescLod1 codeSpace="../../codelists/DataQualityAttribute_geometrySrcDesc.xml">400</uro:geometrySrcDescLod1>
+					<uro:thematicSrcDesc codeSpace="../../codelists/DataQualityAttribute_thematicSrcDesc.xml">400</uro:thematicSrcDesc>
+				</uro:DataQualityAttribute>
+			</urf:dataQualityAttribute>
 			<urf:location>沼津市上香貫字九十九洞</urf:location>
-			<urf:disasterType codeSpace="../../codelists/SedimentDisasterProneArea_disasterType.xml">1</urf:disasterType>
-			<urf:areaType codeSpace="../../codelists/SedimentDisasterProneArea_areaType.xml">2</urf:areaType>
+			<urf:disasterType codeSpace="../../codelists/LandSlideRiskAttribute_description.xml">1</urf:disasterType>
+			<urf:areaType codeSpace="../../codelists/LandSlideRiskAttribute_areaType.xml">2</urf:areaType>
 			<urf:zoneNumber>103-S-0118</urf:zoneNumber>
 			<urf:zoneName>三ノ洞</urf:zoneName>
-			<urf:status codeSpace="../../codelists/SedimentDisasterProneArea_status.xml">0</urf:status>
+			<urf:status codeSpace="../../codelists/LandSlideRiskAttribute_status.xml">0</urf:status>
 		</urf:SedimentDisasterProneArea>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
 		<urf:SedimentDisasterProneArea gml:id="lsld_da745ff4-e131-428f-8c56-8a01485a47ff">
+			<core:creationDate>2021-03-26</core:creationDate>
 			<urf:validFrom>2018-10-23</urf:validFrom>
 			<urf:prefecture codeSpace="../../codelists/Common_localPublicAuthorities.xml">22</urf:prefecture>
 			<urf:lod1MultiSurface>
@@ -798,16 +1016,23 @@
 					</gml:surfaceMember>
 				</gml:MultiSurface>
 			</urf:lod1MultiSurface>
+			<urf:dataQualityAttribute>
+				<uro:DataQualityAttribute>
+					<uro:geometrySrcDescLod1 codeSpace="../../codelists/DataQualityAttribute_geometrySrcDesc.xml">400</uro:geometrySrcDescLod1>
+					<uro:thematicSrcDesc codeSpace="../../codelists/DataQualityAttribute_thematicSrcDesc.xml">400</uro:thematicSrcDesc>
+				</uro:DataQualityAttribute>
+			</urf:dataQualityAttribute>
 			<urf:location>沼津市上香貫字九十九洞</urf:location>
-			<urf:disasterType codeSpace="../../codelists/SedimentDisasterProneArea_disasterType.xml">1</urf:disasterType>
-			<urf:areaType codeSpace="../../codelists/SedimentDisasterProneArea_areaType.xml">2</urf:areaType>
+			<urf:disasterType codeSpace="../../codelists/LandSlideRiskAttribute_description.xml">1</urf:disasterType>
+			<urf:areaType codeSpace="../../codelists/LandSlideRiskAttribute_areaType.xml">2</urf:areaType>
 			<urf:zoneNumber>103-S-0118</urf:zoneNumber>
 			<urf:zoneName>三ノ洞</urf:zoneName>
-			<urf:status codeSpace="../../codelists/SedimentDisasterProneArea_status.xml">0</urf:status>
+			<urf:status codeSpace="../../codelists/LandSlideRiskAttribute_status.xml">0</urf:status>
 		</urf:SedimentDisasterProneArea>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
 		<urf:SedimentDisasterProneArea gml:id="lsld_c458e24a-1320-4eb5-8d50-e72a2fb06cde">
+			<core:creationDate>2021-03-26</core:creationDate>
 			<urf:validFrom>2018-10-23</urf:validFrom>
 			<urf:prefecture codeSpace="../../codelists/Common_localPublicAuthorities.xml">22</urf:prefecture>
 			<urf:lod1MultiSurface>
@@ -823,16 +1048,23 @@
 					</gml:surfaceMember>
 				</gml:MultiSurface>
 			</urf:lod1MultiSurface>
+			<urf:dataQualityAttribute>
+				<uro:DataQualityAttribute>
+					<uro:geometrySrcDescLod1 codeSpace="../../codelists/DataQualityAttribute_geometrySrcDesc.xml">400</uro:geometrySrcDescLod1>
+					<uro:thematicSrcDesc codeSpace="../../codelists/DataQualityAttribute_thematicSrcDesc.xml">400</uro:thematicSrcDesc>
+				</uro:DataQualityAttribute>
+			</urf:dataQualityAttribute>
 			<urf:location>沼津市上香貫字九十九洞</urf:location>
-			<urf:disasterType codeSpace="../../codelists/SedimentDisasterProneArea_disasterType.xml">1</urf:disasterType>
-			<urf:areaType codeSpace="../../codelists/SedimentDisasterProneArea_areaType.xml">2</urf:areaType>
+			<urf:disasterType codeSpace="../../codelists/LandSlideRiskAttribute_description.xml">1</urf:disasterType>
+			<urf:areaType codeSpace="../../codelists/LandSlideRiskAttribute_areaType.xml">2</urf:areaType>
 			<urf:zoneNumber>103-S-0118</urf:zoneNumber>
 			<urf:zoneName>三ノ洞</urf:zoneName>
-			<urf:status codeSpace="../../codelists/SedimentDisasterProneArea_status.xml">0</urf:status>
+			<urf:status codeSpace="../../codelists/LandSlideRiskAttribute_status.xml">0</urf:status>
 		</urf:SedimentDisasterProneArea>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
 		<urf:SedimentDisasterProneArea gml:id="lsld_1a7577be-bddd-4a20-87b5-de2c95d90965">
+			<core:creationDate>2021-03-26</core:creationDate>
 			<urf:validFrom>2006-12-26</urf:validFrom>
 			<urf:prefecture codeSpace="../../codelists/Common_localPublicAuthorities.xml">22</urf:prefecture>
 			<urf:lod1MultiSurface>
@@ -848,16 +1080,23 @@
 					</gml:surfaceMember>
 				</gml:MultiSurface>
 			</urf:lod1MultiSurface>
+			<urf:dataQualityAttribute>
+				<uro:DataQualityAttribute>
+					<uro:geometrySrcDescLod1 codeSpace="../../codelists/DataQualityAttribute_geometrySrcDesc.xml">400</uro:geometrySrcDescLod1>
+					<uro:thematicSrcDesc codeSpace="../../codelists/DataQualityAttribute_thematicSrcDesc.xml">400</uro:thematicSrcDesc>
+				</uro:DataQualityAttribute>
+			</urf:dataQualityAttribute>
 			<urf:location>沼津市下香貫八重</urf:location>
-			<urf:disasterType codeSpace="../../codelists/SedimentDisasterProneArea_disasterType.xml">1</urf:disasterType>
-			<urf:areaType codeSpace="../../codelists/SedimentDisasterProneArea_areaType.xml">1</urf:areaType>
+			<urf:disasterType codeSpace="../../codelists/LandSlideRiskAttribute_description.xml">1</urf:disasterType>
+			<urf:areaType codeSpace="../../codelists/LandSlideRiskAttribute_areaType.xml">1</urf:areaType>
 			<urf:zoneNumber>103-Ⅰ-0648</urf:zoneNumber>
 			<urf:zoneName>八重団地</urf:zoneName>
-			<urf:status codeSpace="../../codelists/SedimentDisasterProneArea_status.xml">0</urf:status>
+			<urf:status codeSpace="../../codelists/LandSlideRiskAttribute_status.xml">0</urf:status>
 		</urf:SedimentDisasterProneArea>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
 		<urf:SedimentDisasterProneArea gml:id="lsld_32cb015b-8783-43ba-9970-1ce9fd5e7603">
+			<core:creationDate>2021-03-26</core:creationDate>
 			<urf:validFrom>2006-12-26</urf:validFrom>
 			<urf:prefecture codeSpace="../../codelists/Common_localPublicAuthorities.xml">22</urf:prefecture>
 			<urf:lod1MultiSurface>
@@ -873,16 +1112,23 @@
 					</gml:surfaceMember>
 				</gml:MultiSurface>
 			</urf:lod1MultiSurface>
+			<urf:dataQualityAttribute>
+				<uro:DataQualityAttribute>
+					<uro:geometrySrcDescLod1 codeSpace="../../codelists/DataQualityAttribute_geometrySrcDesc.xml">400</uro:geometrySrcDescLod1>
+					<uro:thematicSrcDesc codeSpace="../../codelists/DataQualityAttribute_thematicSrcDesc.xml">400</uro:thematicSrcDesc>
+				</uro:DataQualityAttribute>
+			</urf:dataQualityAttribute>
 			<urf:location>沼津市下香貫八重</urf:location>
-			<urf:disasterType codeSpace="../../codelists/SedimentDisasterProneArea_disasterType.xml">1</urf:disasterType>
-			<urf:areaType codeSpace="../../codelists/SedimentDisasterProneArea_areaType.xml">1</urf:areaType>
+			<urf:disasterType codeSpace="../../codelists/LandSlideRiskAttribute_description.xml">1</urf:disasterType>
+			<urf:areaType codeSpace="../../codelists/LandSlideRiskAttribute_areaType.xml">1</urf:areaType>
 			<urf:zoneNumber>103-Ⅰ-0648</urf:zoneNumber>
 			<urf:zoneName>八重団地</urf:zoneName>
-			<urf:status codeSpace="../../codelists/SedimentDisasterProneArea_status.xml">0</urf:status>
+			<urf:status codeSpace="../../codelists/LandSlideRiskAttribute_status.xml">0</urf:status>
 		</urf:SedimentDisasterProneArea>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
 		<urf:SedimentDisasterProneArea gml:id="lsld_cfca02b9-abfe-4dd4-b200-5a5197e2f088">
+			<core:creationDate>2021-03-26</core:creationDate>
 			<urf:validFrom>2006-12-26</urf:validFrom>
 			<urf:prefecture codeSpace="../../codelists/Common_localPublicAuthorities.xml">22</urf:prefecture>
 			<urf:lod1MultiSurface>
@@ -898,16 +1144,23 @@
 					</gml:surfaceMember>
 				</gml:MultiSurface>
 			</urf:lod1MultiSurface>
+			<urf:dataQualityAttribute>
+				<uro:DataQualityAttribute>
+					<uro:geometrySrcDescLod1 codeSpace="../../codelists/DataQualityAttribute_geometrySrcDesc.xml">400</uro:geometrySrcDescLod1>
+					<uro:thematicSrcDesc codeSpace="../../codelists/DataQualityAttribute_thematicSrcDesc.xml">400</uro:thematicSrcDesc>
+				</uro:DataQualityAttribute>
+			</urf:dataQualityAttribute>
 			<urf:location>沼津市上香貫手城山</urf:location>
-			<urf:disasterType codeSpace="../../codelists/SedimentDisasterProneArea_disasterType.xml">1</urf:disasterType>
-			<urf:areaType codeSpace="../../codelists/SedimentDisasterProneArea_areaType.xml">1</urf:areaType>
+			<urf:disasterType codeSpace="../../codelists/LandSlideRiskAttribute_description.xml">1</urf:disasterType>
+			<urf:areaType codeSpace="../../codelists/LandSlideRiskAttribute_areaType.xml">1</urf:areaType>
 			<urf:zoneNumber>103-Ⅰ-0649</urf:zoneNumber>
 			<urf:zoneName>八重</urf:zoneName>
-			<urf:status codeSpace="../../codelists/SedimentDisasterProneArea_status.xml">0</urf:status>
+			<urf:status codeSpace="../../codelists/LandSlideRiskAttribute_status.xml">0</urf:status>
 		</urf:SedimentDisasterProneArea>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
 		<urf:SedimentDisasterProneArea gml:id="lsld_0169b138-7461-40eb-96a8-16ff8ac2049c">
+			<core:creationDate>2021-03-26</core:creationDate>
 			<urf:validFrom>2006-12-26</urf:validFrom>
 			<urf:prefecture codeSpace="../../codelists/Common_localPublicAuthorities.xml">22</urf:prefecture>
 			<urf:lod1MultiSurface>
@@ -923,16 +1176,23 @@
 					</gml:surfaceMember>
 				</gml:MultiSurface>
 			</urf:lod1MultiSurface>
+			<urf:dataQualityAttribute>
+				<uro:DataQualityAttribute>
+					<uro:geometrySrcDescLod1 codeSpace="../../codelists/DataQualityAttribute_geometrySrcDesc.xml">400</uro:geometrySrcDescLod1>
+					<uro:thematicSrcDesc codeSpace="../../codelists/DataQualityAttribute_thematicSrcDesc.xml">400</uro:thematicSrcDesc>
+				</uro:DataQualityAttribute>
+			</urf:dataQualityAttribute>
 			<urf:location>沼津市上香貫手城山</urf:location>
-			<urf:disasterType codeSpace="../../codelists/SedimentDisasterProneArea_disasterType.xml">1</urf:disasterType>
-			<urf:areaType codeSpace="../../codelists/SedimentDisasterProneArea_areaType.xml">1</urf:areaType>
+			<urf:disasterType codeSpace="../../codelists/LandSlideRiskAttribute_description.xml">1</urf:disasterType>
+			<urf:areaType codeSpace="../../codelists/LandSlideRiskAttribute_areaType.xml">1</urf:areaType>
 			<urf:zoneNumber>103-Ⅰ-0649</urf:zoneNumber>
 			<urf:zoneName>八重</urf:zoneName>
-			<urf:status codeSpace="../../codelists/SedimentDisasterProneArea_status.xml">0</urf:status>
+			<urf:status codeSpace="../../codelists/LandSlideRiskAttribute_status.xml">0</urf:status>
 		</urf:SedimentDisasterProneArea>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
 		<urf:SedimentDisasterProneArea gml:id="lsld_05a5fcbc-3234-4d37-82cf-17a3f97fc6f8">
+			<core:creationDate>2021-03-26</core:creationDate>
 			<urf:validFrom>2006-12-26</urf:validFrom>
 			<urf:prefecture codeSpace="../../codelists/Common_localPublicAuthorities.xml">22</urf:prefecture>
 			<urf:lod1MultiSurface>
@@ -948,16 +1208,23 @@
 					</gml:surfaceMember>
 				</gml:MultiSurface>
 			</urf:lod1MultiSurface>
+			<urf:dataQualityAttribute>
+				<uro:DataQualityAttribute>
+					<uro:geometrySrcDescLod1 codeSpace="../../codelists/DataQualityAttribute_geometrySrcDesc.xml">400</uro:geometrySrcDescLod1>
+					<uro:thematicSrcDesc codeSpace="../../codelists/DataQualityAttribute_thematicSrcDesc.xml">400</uro:thematicSrcDesc>
+				</uro:DataQualityAttribute>
+			</urf:dataQualityAttribute>
 			<urf:location>沼津市上香貫鉛山</urf:location>
-			<urf:disasterType codeSpace="../../codelists/SedimentDisasterProneArea_disasterType.xml">1</urf:disasterType>
-			<urf:areaType codeSpace="../../codelists/SedimentDisasterProneArea_areaType.xml">1</urf:areaType>
+			<urf:disasterType codeSpace="../../codelists/LandSlideRiskAttribute_description.xml">1</urf:disasterType>
+			<urf:areaType codeSpace="../../codelists/LandSlideRiskAttribute_areaType.xml">1</urf:areaType>
 			<urf:zoneNumber>103-Ⅱ-0470</urf:zoneNumber>
 			<urf:zoneName>鉛山</urf:zoneName>
-			<urf:status codeSpace="../../codelists/SedimentDisasterProneArea_status.xml">0</urf:status>
+			<urf:status codeSpace="../../codelists/LandSlideRiskAttribute_status.xml">0</urf:status>
 		</urf:SedimentDisasterProneArea>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
 		<urf:SedimentDisasterProneArea gml:id="lsld_7cc295c2-2f7f-401d-ace0-d0d8fa5e9cca">
+			<core:creationDate>2021-03-26</core:creationDate>
 			<urf:validFrom>2006-12-26</urf:validFrom>
 			<urf:prefecture codeSpace="../../codelists/Common_localPublicAuthorities.xml">22</urf:prefecture>
 			<urf:lod1MultiSurface>
@@ -973,16 +1240,23 @@
 					</gml:surfaceMember>
 				</gml:MultiSurface>
 			</urf:lod1MultiSurface>
+			<urf:dataQualityAttribute>
+				<uro:DataQualityAttribute>
+					<uro:geometrySrcDescLod1 codeSpace="../../codelists/DataQualityAttribute_geometrySrcDesc.xml">400</uro:geometrySrcDescLod1>
+					<uro:thematicSrcDesc codeSpace="../../codelists/DataQualityAttribute_thematicSrcDesc.xml">400</uro:thematicSrcDesc>
+				</uro:DataQualityAttribute>
+			</urf:dataQualityAttribute>
 			<urf:location>沼津市上香貫東坂</urf:location>
-			<urf:disasterType codeSpace="../../codelists/SedimentDisasterProneArea_disasterType.xml">1</urf:disasterType>
-			<urf:areaType codeSpace="../../codelists/SedimentDisasterProneArea_areaType.xml">1</urf:areaType>
+			<urf:disasterType codeSpace="../../codelists/LandSlideRiskAttribute_description.xml">1</urf:disasterType>
+			<urf:areaType codeSpace="../../codelists/LandSlideRiskAttribute_areaType.xml">1</urf:areaType>
 			<urf:zoneNumber>103-Ⅰ-0651</urf:zoneNumber>
 			<urf:zoneName>八重東坂</urf:zoneName>
-			<urf:status codeSpace="../../codelists/SedimentDisasterProneArea_status.xml">0</urf:status>
+			<urf:status codeSpace="../../codelists/LandSlideRiskAttribute_status.xml">0</urf:status>
 		</urf:SedimentDisasterProneArea>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
 		<urf:SedimentDisasterProneArea gml:id="lsld_0a7db4f1-ce65-4714-ba10-3d35420ccd1c">
+			<core:creationDate>2021-03-26</core:creationDate>
 			<urf:validFrom>2006-12-26</urf:validFrom>
 			<urf:prefecture codeSpace="../../codelists/Common_localPublicAuthorities.xml">22</urf:prefecture>
 			<urf:lod1MultiSurface>
@@ -998,16 +1272,23 @@
 					</gml:surfaceMember>
 				</gml:MultiSurface>
 			</urf:lod1MultiSurface>
+			<urf:dataQualityAttribute>
+				<uro:DataQualityAttribute>
+					<uro:geometrySrcDescLod1 codeSpace="../../codelists/DataQualityAttribute_geometrySrcDesc.xml">400</uro:geometrySrcDescLod1>
+					<uro:thematicSrcDesc codeSpace="../../codelists/DataQualityAttribute_thematicSrcDesc.xml">400</uro:thematicSrcDesc>
+				</uro:DataQualityAttribute>
+			</urf:dataQualityAttribute>
 			<urf:location>沼津市上香貫長洞</urf:location>
-			<urf:disasterType codeSpace="../../codelists/SedimentDisasterProneArea_disasterType.xml">2</urf:disasterType>
-			<urf:areaType codeSpace="../../codelists/SedimentDisasterProneArea_areaType.xml">1</urf:areaType>
+			<urf:disasterType codeSpace="../../codelists/LandSlideRiskAttribute_description.xml">2</urf:disasterType>
+			<urf:areaType codeSpace="../../codelists/LandSlideRiskAttribute_areaType.xml">1</urf:areaType>
 			<urf:zoneNumber>203-Ⅰ-037</urf:zoneNumber>
 			<urf:zoneName>長ヶ洞川</urf:zoneName>
-			<urf:status codeSpace="../../codelists/SedimentDisasterProneArea_status.xml">0</urf:status>
+			<urf:status codeSpace="../../codelists/LandSlideRiskAttribute_status.xml">0</urf:status>
 		</urf:SedimentDisasterProneArea>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
 		<urf:SedimentDisasterProneArea gml:id="lsld_e2aa9323-1e3d-4c70-a39d-7649256e693b">
+			<core:creationDate>2021-03-26</core:creationDate>
 			<urf:validFrom>2018-10-23</urf:validFrom>
 			<urf:prefecture codeSpace="../../codelists/Common_localPublicAuthorities.xml">22</urf:prefecture>
 			<urf:lod1MultiSurface>
@@ -1023,16 +1304,23 @@
 					</gml:surfaceMember>
 				</gml:MultiSurface>
 			</urf:lod1MultiSurface>
+			<urf:dataQualityAttribute>
+				<uro:DataQualityAttribute>
+					<uro:geometrySrcDescLod1 codeSpace="../../codelists/DataQualityAttribute_geometrySrcDesc.xml">400</uro:geometrySrcDescLod1>
+					<uro:thematicSrcDesc codeSpace="../../codelists/DataQualityAttribute_thematicSrcDesc.xml">400</uro:thematicSrcDesc>
+				</uro:DataQualityAttribute>
+			</urf:dataQualityAttribute>
 			<urf:location>沼津市下香貫字外原</urf:location>
-			<urf:disasterType codeSpace="../../codelists/SedimentDisasterProneArea_disasterType.xml">1</urf:disasterType>
-			<urf:areaType codeSpace="../../codelists/SedimentDisasterProneArea_areaType.xml">1</urf:areaType>
+			<urf:disasterType codeSpace="../../codelists/LandSlideRiskAttribute_description.xml">1</urf:disasterType>
+			<urf:areaType codeSpace="../../codelists/LandSlideRiskAttribute_areaType.xml">1</urf:areaType>
 			<urf:zoneNumber>103-Ⅰ-0650</urf:zoneNumber>
 			<urf:zoneName>外原</urf:zoneName>
-			<urf:status codeSpace="../../codelists/SedimentDisasterProneArea_status.xml">0</urf:status>
+			<urf:status codeSpace="../../codelists/LandSlideRiskAttribute_status.xml">0</urf:status>
 		</urf:SedimentDisasterProneArea>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
 		<urf:SedimentDisasterProneArea gml:id="lsld_fc4fbd56-d4af-496b-a795-e80dd53e2665">
+			<core:creationDate>2021-03-26</core:creationDate>
 			<urf:validFrom>2006-12-26</urf:validFrom>
 			<urf:prefecture codeSpace="../../codelists/Common_localPublicAuthorities.xml">22</urf:prefecture>
 			<urf:lod1MultiSurface>
@@ -1048,16 +1336,23 @@
 					</gml:surfaceMember>
 				</gml:MultiSurface>
 			</urf:lod1MultiSurface>
+			<urf:dataQualityAttribute>
+				<uro:DataQualityAttribute>
+					<uro:geometrySrcDescLod1 codeSpace="../../codelists/DataQualityAttribute_geometrySrcDesc.xml">400</uro:geometrySrcDescLod1>
+					<uro:thematicSrcDesc codeSpace="../../codelists/DataQualityAttribute_thematicSrcDesc.xml">400</uro:thematicSrcDesc>
+				</uro:DataQualityAttribute>
+			</urf:dataQualityAttribute>
 			<urf:location>沼津市上香貫仰天峰</urf:location>
-			<urf:disasterType codeSpace="../../codelists/SedimentDisasterProneArea_disasterType.xml">1</urf:disasterType>
-			<urf:areaType codeSpace="../../codelists/SedimentDisasterProneArea_areaType.xml">1</urf:areaType>
+			<urf:disasterType codeSpace="../../codelists/LandSlideRiskAttribute_description.xml">1</urf:disasterType>
+			<urf:areaType codeSpace="../../codelists/LandSlideRiskAttribute_areaType.xml">1</urf:areaType>
 			<urf:zoneNumber>103-Ⅰ-3335</urf:zoneNumber>
 			<urf:zoneName>仰天峰</urf:zoneName>
-			<urf:status codeSpace="../../codelists/SedimentDisasterProneArea_status.xml">0</urf:status>
+			<urf:status codeSpace="../../codelists/LandSlideRiskAttribute_status.xml">0</urf:status>
 		</urf:SedimentDisasterProneArea>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
 		<urf:SedimentDisasterProneArea gml:id="lsld_80e7a179-1eb5-4485-9c48-3622bc3b3125">
+			<core:creationDate>2021-03-26</core:creationDate>
 			<urf:validFrom>2018-10-23</urf:validFrom>
 			<urf:prefecture codeSpace="../../codelists/Common_localPublicAuthorities.xml">22</urf:prefecture>
 			<urf:lod1MultiSurface>
@@ -1073,16 +1368,23 @@
 					</gml:surfaceMember>
 				</gml:MultiSurface>
 			</urf:lod1MultiSurface>
+			<urf:dataQualityAttribute>
+				<uro:DataQualityAttribute>
+					<uro:geometrySrcDescLod1 codeSpace="../../codelists/DataQualityAttribute_geometrySrcDesc.xml">400</uro:geometrySrcDescLod1>
+					<uro:thematicSrcDesc codeSpace="../../codelists/DataQualityAttribute_thematicSrcDesc.xml">400</uro:thematicSrcDesc>
+				</uro:DataQualityAttribute>
+			</urf:dataQualityAttribute>
 			<urf:location>沼津市上香貫字九十九洞</urf:location>
-			<urf:disasterType codeSpace="../../codelists/SedimentDisasterProneArea_disasterType.xml">1</urf:disasterType>
-			<urf:areaType codeSpace="../../codelists/SedimentDisasterProneArea_areaType.xml">1</urf:areaType>
+			<urf:disasterType codeSpace="../../codelists/LandSlideRiskAttribute_description.xml">1</urf:disasterType>
+			<urf:areaType codeSpace="../../codelists/LandSlideRiskAttribute_areaType.xml">1</urf:areaType>
 			<urf:zoneNumber>103-S-0118</urf:zoneNumber>
 			<urf:zoneName>三ノ洞</urf:zoneName>
-			<urf:status codeSpace="../../codelists/SedimentDisasterProneArea_status.xml">0</urf:status>
+			<urf:status codeSpace="../../codelists/LandSlideRiskAttribute_status.xml">0</urf:status>
 		</urf:SedimentDisasterProneArea>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
 		<urf:SedimentDisasterProneArea gml:id="lsld_42a4b45b-3706-4c99-9428-326fb1847729">
+			<core:creationDate>2021-03-26</core:creationDate>
 			<urf:validFrom>2018-10-23</urf:validFrom>
 			<urf:prefecture codeSpace="../../codelists/Common_localPublicAuthorities.xml">22</urf:prefecture>
 			<urf:lod1MultiSurface>
@@ -1098,16 +1400,23 @@
 					</gml:surfaceMember>
 				</gml:MultiSurface>
 			</urf:lod1MultiSurface>
+			<urf:dataQualityAttribute>
+				<uro:DataQualityAttribute>
+					<uro:geometrySrcDescLod1 codeSpace="../../codelists/DataQualityAttribute_geometrySrcDesc.xml">400</uro:geometrySrcDescLod1>
+					<uro:thematicSrcDesc codeSpace="../../codelists/DataQualityAttribute_thematicSrcDesc.xml">400</uro:thematicSrcDesc>
+				</uro:DataQualityAttribute>
+			</urf:dataQualityAttribute>
 			<urf:location>沼津市上香貫字九十九洞</urf:location>
-			<urf:disasterType codeSpace="../../codelists/SedimentDisasterProneArea_disasterType.xml">1</urf:disasterType>
-			<urf:areaType codeSpace="../../codelists/SedimentDisasterProneArea_areaType.xml">1</urf:areaType>
+			<urf:disasterType codeSpace="../../codelists/LandSlideRiskAttribute_description.xml">1</urf:disasterType>
+			<urf:areaType codeSpace="../../codelists/LandSlideRiskAttribute_areaType.xml">1</urf:areaType>
 			<urf:zoneNumber>103-S-0118</urf:zoneNumber>
 			<urf:zoneName>三ノ洞</urf:zoneName>
-			<urf:status codeSpace="../../codelists/SedimentDisasterProneArea_status.xml">0</urf:status>
+			<urf:status codeSpace="../../codelists/LandSlideRiskAttribute_status.xml">0</urf:status>
 		</urf:SedimentDisasterProneArea>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
 		<urf:SedimentDisasterProneArea gml:id="lsld_4c48997d-5ea8-4582-bc96-11cf584dc96e">
+			<core:creationDate>2021-03-26</core:creationDate>
 			<urf:validFrom>2018-10-23</urf:validFrom>
 			<urf:prefecture codeSpace="../../codelists/Common_localPublicAuthorities.xml">22</urf:prefecture>
 			<urf:lod1MultiSurface>
@@ -1123,16 +1432,23 @@
 					</gml:surfaceMember>
 				</gml:MultiSurface>
 			</urf:lod1MultiSurface>
+			<urf:dataQualityAttribute>
+				<uro:DataQualityAttribute>
+					<uro:geometrySrcDescLod1 codeSpace="../../codelists/DataQualityAttribute_geometrySrcDesc.xml">400</uro:geometrySrcDescLod1>
+					<uro:thematicSrcDesc codeSpace="../../codelists/DataQualityAttribute_thematicSrcDesc.xml">400</uro:thematicSrcDesc>
+				</uro:DataQualityAttribute>
+			</urf:dataQualityAttribute>
 			<urf:location>沼津市下香貫字八重</urf:location>
-			<urf:disasterType codeSpace="../../codelists/SedimentDisasterProneArea_disasterType.xml">1</urf:disasterType>
-			<urf:areaType codeSpace="../../codelists/SedimentDisasterProneArea_areaType.xml">1</urf:areaType>
+			<urf:disasterType codeSpace="../../codelists/LandSlideRiskAttribute_description.xml">1</urf:disasterType>
+			<urf:areaType codeSpace="../../codelists/LandSlideRiskAttribute_areaType.xml">1</urf:areaType>
 			<urf:zoneNumber>103-S-0119</urf:zoneNumber>
 			<urf:zoneName>八重B</urf:zoneName>
-			<urf:status codeSpace="../../codelists/SedimentDisasterProneArea_status.xml">0</urf:status>
+			<urf:status codeSpace="../../codelists/LandSlideRiskAttribute_status.xml">0</urf:status>
 		</urf:SedimentDisasterProneArea>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
 		<urf:SedimentDisasterProneArea gml:id="lsld_d39f1379-7ad6-4e5d-92a8-12b2fc31ce78">
+			<core:creationDate>2021-03-26</core:creationDate>
 			<urf:validFrom>2018-10-23</urf:validFrom>
 			<urf:prefecture codeSpace="../../codelists/Common_localPublicAuthorities.xml">22</urf:prefecture>
 			<urf:lod1MultiSurface>
@@ -1148,16 +1464,23 @@
 					</gml:surfaceMember>
 				</gml:MultiSurface>
 			</urf:lod1MultiSurface>
+			<urf:dataQualityAttribute>
+				<uro:DataQualityAttribute>
+					<uro:geometrySrcDescLod1 codeSpace="../../codelists/DataQualityAttribute_geometrySrcDesc.xml">400</uro:geometrySrcDescLod1>
+					<uro:thematicSrcDesc codeSpace="../../codelists/DataQualityAttribute_thematicSrcDesc.xml">400</uro:thematicSrcDesc>
+				</uro:DataQualityAttribute>
+			</urf:dataQualityAttribute>
 			<urf:location>沼津市下香貫字前角</urf:location>
-			<urf:disasterType codeSpace="../../codelists/SedimentDisasterProneArea_disasterType.xml">1</urf:disasterType>
-			<urf:areaType codeSpace="../../codelists/SedimentDisasterProneArea_areaType.xml">1</urf:areaType>
+			<urf:disasterType codeSpace="../../codelists/LandSlideRiskAttribute_description.xml">1</urf:disasterType>
+			<urf:areaType codeSpace="../../codelists/LandSlideRiskAttribute_areaType.xml">1</urf:areaType>
 			<urf:zoneNumber>103-S-0120</urf:zoneNumber>
 			<urf:zoneName>前角</urf:zoneName>
-			<urf:status codeSpace="../../codelists/SedimentDisasterProneArea_status.xml">0</urf:status>
+			<urf:status codeSpace="../../codelists/LandSlideRiskAttribute_status.xml">0</urf:status>
 		</urf:SedimentDisasterProneArea>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
 		<urf:SedimentDisasterProneArea gml:id="lsld_155f5979-cb2f-4238-b340-ae56a33921d9">
+			<core:creationDate>2021-03-26</core:creationDate>
 			<urf:validFrom>2006-12-26</urf:validFrom>
 			<urf:prefecture codeSpace="../../codelists/Common_localPublicAuthorities.xml">22</urf:prefecture>
 			<urf:lod1MultiSurface>
@@ -1173,16 +1496,23 @@
 					</gml:surfaceMember>
 				</gml:MultiSurface>
 			</urf:lod1MultiSurface>
+			<urf:dataQualityAttribute>
+				<uro:DataQualityAttribute>
+					<uro:geometrySrcDescLod1 codeSpace="../../codelists/DataQualityAttribute_geometrySrcDesc.xml">400</uro:geometrySrcDescLod1>
+					<uro:thematicSrcDesc codeSpace="../../codelists/DataQualityAttribute_thematicSrcDesc.xml">400</uro:thematicSrcDesc>
+				</uro:DataQualityAttribute>
+			</urf:dataQualityAttribute>
 			<urf:location>沼津市下香貫八重</urf:location>
-			<urf:disasterType codeSpace="../../codelists/SedimentDisasterProneArea_disasterType.xml">1</urf:disasterType>
-			<urf:areaType codeSpace="../../codelists/SedimentDisasterProneArea_areaType.xml">1</urf:areaType>
+			<urf:disasterType codeSpace="../../codelists/LandSlideRiskAttribute_description.xml">1</urf:disasterType>
+			<urf:areaType codeSpace="../../codelists/LandSlideRiskAttribute_areaType.xml">1</urf:areaType>
 			<urf:zoneNumber>103-Ⅰ-2708</urf:zoneNumber>
 			<urf:zoneName>八重正見寺裏</urf:zoneName>
-			<urf:status codeSpace="../../codelists/SedimentDisasterProneArea_status.xml">0</urf:status>
+			<urf:status codeSpace="../../codelists/LandSlideRiskAttribute_status.xml">0</urf:status>
 		</urf:SedimentDisasterProneArea>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
 		<urf:SedimentDisasterProneArea gml:id="lsld_fc021974-c08f-41c9-b703-b7178e4e1009">
+			<core:creationDate>2021-03-26</core:creationDate>
 			<urf:validFrom>2018-10-23</urf:validFrom>
 			<urf:prefecture codeSpace="../../codelists/Common_localPublicAuthorities.xml">22</urf:prefecture>
 			<urf:lod1MultiSurface>
@@ -1198,16 +1528,23 @@
 					</gml:surfaceMember>
 				</gml:MultiSurface>
 			</urf:lod1MultiSurface>
+			<urf:dataQualityAttribute>
+				<uro:DataQualityAttribute>
+					<uro:geometrySrcDescLod1 codeSpace="../../codelists/DataQualityAttribute_geometrySrcDesc.xml">400</uro:geometrySrcDescLod1>
+					<uro:thematicSrcDesc codeSpace="../../codelists/DataQualityAttribute_thematicSrcDesc.xml">400</uro:thematicSrcDesc>
+				</uro:DataQualityAttribute>
+			</urf:dataQualityAttribute>
 			<urf:location>沼津市下香貫字前角</urf:location>
-			<urf:disasterType codeSpace="../../codelists/SedimentDisasterProneArea_disasterType.xml">1</urf:disasterType>
-			<urf:areaType codeSpace="../../codelists/SedimentDisasterProneArea_areaType.xml">1</urf:areaType>
+			<urf:disasterType codeSpace="../../codelists/LandSlideRiskAttribute_description.xml">1</urf:disasterType>
+			<urf:areaType codeSpace="../../codelists/LandSlideRiskAttribute_areaType.xml">1</urf:areaType>
 			<urf:zoneNumber>103-S-0120</urf:zoneNumber>
 			<urf:zoneName>前角</urf:zoneName>
-			<urf:status codeSpace="../../codelists/SedimentDisasterProneArea_status.xml">0</urf:status>
+			<urf:status codeSpace="../../codelists/LandSlideRiskAttribute_status.xml">0</urf:status>
 		</urf:SedimentDisasterProneArea>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
 		<urf:SedimentDisasterProneArea gml:id="lsld_7b3327c3-f890-4de7-825b-8202ed2aa952">
+			<core:creationDate>2021-03-26</core:creationDate>
 			<urf:validFrom>2018-10-23</urf:validFrom>
 			<urf:prefecture codeSpace="../../codelists/Common_localPublicAuthorities.xml">22</urf:prefecture>
 			<urf:lod1MultiSurface>
@@ -1223,16 +1560,23 @@
 					</gml:surfaceMember>
 				</gml:MultiSurface>
 			</urf:lod1MultiSurface>
+			<urf:dataQualityAttribute>
+				<uro:DataQualityAttribute>
+					<uro:geometrySrcDescLod1 codeSpace="../../codelists/DataQualityAttribute_geometrySrcDesc.xml">400</uro:geometrySrcDescLod1>
+					<uro:thematicSrcDesc codeSpace="../../codelists/DataQualityAttribute_thematicSrcDesc.xml">400</uro:thematicSrcDesc>
+				</uro:DataQualityAttribute>
+			</urf:dataQualityAttribute>
 			<urf:location>沼津市上香貫字九十九洞</urf:location>
-			<urf:disasterType codeSpace="../../codelists/SedimentDisasterProneArea_disasterType.xml">1</urf:disasterType>
-			<urf:areaType codeSpace="../../codelists/SedimentDisasterProneArea_areaType.xml">2</urf:areaType>
+			<urf:disasterType codeSpace="../../codelists/LandSlideRiskAttribute_description.xml">1</urf:disasterType>
+			<urf:areaType codeSpace="../../codelists/LandSlideRiskAttribute_areaType.xml">2</urf:areaType>
 			<urf:zoneNumber>103-S-0118</urf:zoneNumber>
 			<urf:zoneName>三ノ洞</urf:zoneName>
-			<urf:status codeSpace="../../codelists/SedimentDisasterProneArea_status.xml">0</urf:status>
+			<urf:status codeSpace="../../codelists/LandSlideRiskAttribute_status.xml">0</urf:status>
 		</urf:SedimentDisasterProneArea>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
 		<urf:SedimentDisasterProneArea gml:id="lsld_6a156f59-1dc4-4831-8346-9f015728bacf">
+			<core:creationDate>2021-03-26</core:creationDate>
 			<urf:validFrom>2018-10-23</urf:validFrom>
 			<urf:prefecture codeSpace="../../codelists/Common_localPublicAuthorities.xml">22</urf:prefecture>
 			<urf:lod1MultiSurface>
@@ -1248,16 +1592,23 @@
 					</gml:surfaceMember>
 				</gml:MultiSurface>
 			</urf:lod1MultiSurface>
+			<urf:dataQualityAttribute>
+				<uro:DataQualityAttribute>
+					<uro:geometrySrcDescLod1 codeSpace="../../codelists/DataQualityAttribute_geometrySrcDesc.xml">400</uro:geometrySrcDescLod1>
+					<uro:thematicSrcDesc codeSpace="../../codelists/DataQualityAttribute_thematicSrcDesc.xml">400</uro:thematicSrcDesc>
+				</uro:DataQualityAttribute>
+			</urf:dataQualityAttribute>
 			<urf:location>沼津市上香貫字九十九洞</urf:location>
-			<urf:disasterType codeSpace="../../codelists/SedimentDisasterProneArea_disasterType.xml">1</urf:disasterType>
-			<urf:areaType codeSpace="../../codelists/SedimentDisasterProneArea_areaType.xml">2</urf:areaType>
+			<urf:disasterType codeSpace="../../codelists/LandSlideRiskAttribute_description.xml">1</urf:disasterType>
+			<urf:areaType codeSpace="../../codelists/LandSlideRiskAttribute_areaType.xml">2</urf:areaType>
 			<urf:zoneNumber>103-S-0118</urf:zoneNumber>
 			<urf:zoneName>三ノ洞</urf:zoneName>
-			<urf:status codeSpace="../../codelists/SedimentDisasterProneArea_status.xml">0</urf:status>
+			<urf:status codeSpace="../../codelists/LandSlideRiskAttribute_status.xml">0</urf:status>
 		</urf:SedimentDisasterProneArea>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
 		<urf:SedimentDisasterProneArea gml:id="lsld_08e8c685-bfe4-48a7-a058-9121a653fb62">
+			<core:creationDate>2021-03-26</core:creationDate>
 			<urf:validFrom>2006-12-26</urf:validFrom>
 			<urf:prefecture codeSpace="../../codelists/Common_localPublicAuthorities.xml">22</urf:prefecture>
 			<urf:lod1MultiSurface>
@@ -1273,16 +1624,23 @@
 					</gml:surfaceMember>
 				</gml:MultiSurface>
 			</urf:lod1MultiSurface>
+			<urf:dataQualityAttribute>
+				<uro:DataQualityAttribute>
+					<uro:geometrySrcDescLod1 codeSpace="../../codelists/DataQualityAttribute_geometrySrcDesc.xml">400</uro:geometrySrcDescLod1>
+					<uro:thematicSrcDesc codeSpace="../../codelists/DataQualityAttribute_thematicSrcDesc.xml">400</uro:thematicSrcDesc>
+				</uro:DataQualityAttribute>
+			</urf:dataQualityAttribute>
 			<urf:location>沼津市下香貫前角</urf:location>
-			<urf:disasterType codeSpace="../../codelists/SedimentDisasterProneArea_disasterType.xml">1</urf:disasterType>
-			<urf:areaType codeSpace="../../codelists/SedimentDisasterProneArea_areaType.xml">1</urf:areaType>
+			<urf:disasterType codeSpace="../../codelists/LandSlideRiskAttribute_description.xml">1</urf:disasterType>
+			<urf:areaType codeSpace="../../codelists/LandSlideRiskAttribute_areaType.xml">1</urf:areaType>
 			<urf:zoneNumber>103-Ⅰ-0647</urf:zoneNumber>
 			<urf:zoneName>木の宮</urf:zoneName>
-			<urf:status codeSpace="../../codelists/SedimentDisasterProneArea_status.xml">0</urf:status>
+			<urf:status codeSpace="../../codelists/LandSlideRiskAttribute_status.xml">0</urf:status>
 		</urf:SedimentDisasterProneArea>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
 		<urf:SedimentDisasterProneArea gml:id="lsld_f1373d38-5ecf-4423-b2f6-1f382bc5004a">
+			<core:creationDate>2021-03-26</core:creationDate>
 			<urf:validFrom>2006-12-26</urf:validFrom>
 			<urf:prefecture codeSpace="../../codelists/Common_localPublicAuthorities.xml">22</urf:prefecture>
 			<urf:lod1MultiSurface>
@@ -1298,16 +1656,23 @@
 					</gml:surfaceMember>
 				</gml:MultiSurface>
 			</urf:lod1MultiSurface>
+			<urf:dataQualityAttribute>
+				<uro:DataQualityAttribute>
+					<uro:geometrySrcDescLod1 codeSpace="../../codelists/DataQualityAttribute_geometrySrcDesc.xml">400</uro:geometrySrcDescLod1>
+					<uro:thematicSrcDesc codeSpace="../../codelists/DataQualityAttribute_thematicSrcDesc.xml">400</uro:thematicSrcDesc>
+				</uro:DataQualityAttribute>
+			</urf:dataQualityAttribute>
 			<urf:location>沼津市下香貫前角</urf:location>
-			<urf:disasterType codeSpace="../../codelists/SedimentDisasterProneArea_disasterType.xml">1</urf:disasterType>
-			<urf:areaType codeSpace="../../codelists/SedimentDisasterProneArea_areaType.xml">1</urf:areaType>
+			<urf:disasterType codeSpace="../../codelists/LandSlideRiskAttribute_description.xml">1</urf:disasterType>
+			<urf:areaType codeSpace="../../codelists/LandSlideRiskAttribute_areaType.xml">1</urf:areaType>
 			<urf:zoneNumber>103-Ⅰ-0647</urf:zoneNumber>
 			<urf:zoneName>木の宮</urf:zoneName>
-			<urf:status codeSpace="../../codelists/SedimentDisasterProneArea_status.xml">0</urf:status>
+			<urf:status codeSpace="../../codelists/LandSlideRiskAttribute_status.xml">0</urf:status>
 		</urf:SedimentDisasterProneArea>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
 		<urf:SedimentDisasterProneArea gml:id="lsld_7723ebb1-f459-4a0b-ac4b-d6c8508c88f4">
+			<core:creationDate>2021-03-26</core:creationDate>
 			<urf:validFrom>2006-12-26</urf:validFrom>
 			<urf:prefecture codeSpace="../../codelists/Common_localPublicAuthorities.xml">22</urf:prefecture>
 			<urf:lod1MultiSurface>
@@ -1323,16 +1688,23 @@
 					</gml:surfaceMember>
 				</gml:MultiSurface>
 			</urf:lod1MultiSurface>
+			<urf:dataQualityAttribute>
+				<uro:DataQualityAttribute>
+					<uro:geometrySrcDescLod1 codeSpace="../../codelists/DataQualityAttribute_geometrySrcDesc.xml">400</uro:geometrySrcDescLod1>
+					<uro:thematicSrcDesc codeSpace="../../codelists/DataQualityAttribute_thematicSrcDesc.xml">400</uro:thematicSrcDesc>
+				</uro:DataQualityAttribute>
+			</urf:dataQualityAttribute>
 			<urf:location>沼津市下香貫前角</urf:location>
-			<urf:disasterType codeSpace="../../codelists/SedimentDisasterProneArea_disasterType.xml">1</urf:disasterType>
-			<urf:areaType codeSpace="../../codelists/SedimentDisasterProneArea_areaType.xml">1</urf:areaType>
+			<urf:disasterType codeSpace="../../codelists/LandSlideRiskAttribute_description.xml">1</urf:disasterType>
+			<urf:areaType codeSpace="../../codelists/LandSlideRiskAttribute_areaType.xml">1</urf:areaType>
 			<urf:zoneNumber>103-Ⅰ-0647</urf:zoneNumber>
 			<urf:zoneName>木の宮</urf:zoneName>
-			<urf:status codeSpace="../../codelists/SedimentDisasterProneArea_status.xml">0</urf:status>
+			<urf:status codeSpace="../../codelists/LandSlideRiskAttribute_status.xml">0</urf:status>
 		</urf:SedimentDisasterProneArea>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
 		<urf:SedimentDisasterProneArea gml:id="lsld_76b0d074-a856-4a47-a664-cae19df415ac">
+			<core:creationDate>2021-03-26</core:creationDate>
 			<urf:validFrom>2006-12-26</urf:validFrom>
 			<urf:prefecture codeSpace="../../codelists/Common_localPublicAuthorities.xml">22</urf:prefecture>
 			<urf:lod1MultiSurface>
@@ -1348,16 +1720,23 @@
 					</gml:surfaceMember>
 				</gml:MultiSurface>
 			</urf:lod1MultiSurface>
+			<urf:dataQualityAttribute>
+				<uro:DataQualityAttribute>
+					<uro:geometrySrcDescLod1 codeSpace="../../codelists/DataQualityAttribute_geometrySrcDesc.xml">400</uro:geometrySrcDescLod1>
+					<uro:thematicSrcDesc codeSpace="../../codelists/DataQualityAttribute_thematicSrcDesc.xml">400</uro:thematicSrcDesc>
+				</uro:DataQualityAttribute>
+			</urf:dataQualityAttribute>
 			<urf:location>沼津市下香貫前角</urf:location>
-			<urf:disasterType codeSpace="../../codelists/SedimentDisasterProneArea_disasterType.xml">1</urf:disasterType>
-			<urf:areaType codeSpace="../../codelists/SedimentDisasterProneArea_areaType.xml">1</urf:areaType>
+			<urf:disasterType codeSpace="../../codelists/LandSlideRiskAttribute_description.xml">1</urf:disasterType>
+			<urf:areaType codeSpace="../../codelists/LandSlideRiskAttribute_areaType.xml">1</urf:areaType>
 			<urf:zoneNumber>103-Ⅰ-0647</urf:zoneNumber>
 			<urf:zoneName>木の宮</urf:zoneName>
-			<urf:status codeSpace="../../codelists/SedimentDisasterProneArea_status.xml">0</urf:status>
+			<urf:status codeSpace="../../codelists/LandSlideRiskAttribute_status.xml">0</urf:status>
 		</urf:SedimentDisasterProneArea>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
 		<urf:SedimentDisasterProneArea gml:id="lsld_bcd4041a-d9ab-44f7-b21b-66cd9afae953">
+			<core:creationDate>2021-03-26</core:creationDate>
 			<urf:validFrom>2018-10-23</urf:validFrom>
 			<urf:prefecture codeSpace="../../codelists/Common_localPublicAuthorities.xml">22</urf:prefecture>
 			<urf:lod1MultiSurface>
@@ -1373,16 +1752,23 @@
 					</gml:surfaceMember>
 				</gml:MultiSurface>
 			</urf:lod1MultiSurface>
+			<urf:dataQualityAttribute>
+				<uro:DataQualityAttribute>
+					<uro:geometrySrcDescLod1 codeSpace="../../codelists/DataQualityAttribute_geometrySrcDesc.xml">400</uro:geometrySrcDescLod1>
+					<uro:thematicSrcDesc codeSpace="../../codelists/DataQualityAttribute_thematicSrcDesc.xml">400</uro:thematicSrcDesc>
+				</uro:DataQualityAttribute>
+			</urf:dataQualityAttribute>
 			<urf:location>沼津市下香貫字外原</urf:location>
-			<urf:disasterType codeSpace="../../codelists/SedimentDisasterProneArea_disasterType.xml">1</urf:disasterType>
-			<urf:areaType codeSpace="../../codelists/SedimentDisasterProneArea_areaType.xml">2</urf:areaType>
+			<urf:disasterType codeSpace="../../codelists/LandSlideRiskAttribute_description.xml">1</urf:disasterType>
+			<urf:areaType codeSpace="../../codelists/LandSlideRiskAttribute_areaType.xml">2</urf:areaType>
 			<urf:zoneNumber>103-Ⅰ-0650</urf:zoneNumber>
 			<urf:zoneName>外原</urf:zoneName>
-			<urf:status codeSpace="../../codelists/SedimentDisasterProneArea_status.xml">0</urf:status>
+			<urf:status codeSpace="../../codelists/LandSlideRiskAttribute_status.xml">0</urf:status>
 		</urf:SedimentDisasterProneArea>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
 		<urf:SedimentDisasterProneArea gml:id="lsld_2401f3f7-6a99-4882-8346-f18ca3bb91a2">
+			<core:creationDate>2021-03-26</core:creationDate>
 			<urf:validFrom>2006-12-26</urf:validFrom>
 			<urf:prefecture codeSpace="../../codelists/Common_localPublicAuthorities.xml">22</urf:prefecture>
 			<urf:lod1MultiSurface>
@@ -1398,16 +1784,23 @@
 					</gml:surfaceMember>
 				</gml:MultiSurface>
 			</urf:lod1MultiSurface>
+			<urf:dataQualityAttribute>
+				<uro:DataQualityAttribute>
+					<uro:geometrySrcDescLod1 codeSpace="../../codelists/DataQualityAttribute_geometrySrcDesc.xml">400</uro:geometrySrcDescLod1>
+					<uro:thematicSrcDesc codeSpace="../../codelists/DataQualityAttribute_thematicSrcDesc.xml">400</uro:thematicSrcDesc>
+				</uro:DataQualityAttribute>
+			</urf:dataQualityAttribute>
 			<urf:location>沼津市上香貫仰天峰</urf:location>
-			<urf:disasterType codeSpace="../../codelists/SedimentDisasterProneArea_disasterType.xml">1</urf:disasterType>
-			<urf:areaType codeSpace="../../codelists/SedimentDisasterProneArea_areaType.xml">1</urf:areaType>
+			<urf:disasterType codeSpace="../../codelists/LandSlideRiskAttribute_description.xml">1</urf:disasterType>
+			<urf:areaType codeSpace="../../codelists/LandSlideRiskAttribute_areaType.xml">1</urf:areaType>
 			<urf:zoneNumber>103-Ⅰ-3335</urf:zoneNumber>
 			<urf:zoneName>仰天峰</urf:zoneName>
-			<urf:status codeSpace="../../codelists/SedimentDisasterProneArea_status.xml">0</urf:status>
+			<urf:status codeSpace="../../codelists/LandSlideRiskAttribute_status.xml">0</urf:status>
 		</urf:SedimentDisasterProneArea>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
 		<urf:SedimentDisasterProneArea gml:id="lsld_5227ef84-b7fb-45ca-825d-4312e33414c9">
+			<core:creationDate>2021-03-26</core:creationDate>
 			<urf:validFrom>2006-12-26</urf:validFrom>
 			<urf:prefecture codeSpace="../../codelists/Common_localPublicAuthorities.xml">22</urf:prefecture>
 			<urf:lod1MultiSurface>
@@ -1423,16 +1816,23 @@
 					</gml:surfaceMember>
 				</gml:MultiSurface>
 			</urf:lod1MultiSurface>
+			<urf:dataQualityAttribute>
+				<uro:DataQualityAttribute>
+					<uro:geometrySrcDescLod1 codeSpace="../../codelists/DataQualityAttribute_geometrySrcDesc.xml">400</uro:geometrySrcDescLod1>
+					<uro:thematicSrcDesc codeSpace="../../codelists/DataQualityAttribute_thematicSrcDesc.xml">400</uro:thematicSrcDesc>
+				</uro:DataQualityAttribute>
+			</urf:dataQualityAttribute>
 			<urf:location>沼津市上香貫仰天峰</urf:location>
-			<urf:disasterType codeSpace="../../codelists/SedimentDisasterProneArea_disasterType.xml">1</urf:disasterType>
-			<urf:areaType codeSpace="../../codelists/SedimentDisasterProneArea_areaType.xml">1</urf:areaType>
+			<urf:disasterType codeSpace="../../codelists/LandSlideRiskAttribute_description.xml">1</urf:disasterType>
+			<urf:areaType codeSpace="../../codelists/LandSlideRiskAttribute_areaType.xml">1</urf:areaType>
 			<urf:zoneNumber>103-Ⅰ-3335</urf:zoneNumber>
 			<urf:zoneName>仰天峰</urf:zoneName>
-			<urf:status codeSpace="../../codelists/SedimentDisasterProneArea_status.xml">0</urf:status>
+			<urf:status codeSpace="../../codelists/LandSlideRiskAttribute_status.xml">0</urf:status>
 		</urf:SedimentDisasterProneArea>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
 		<urf:SedimentDisasterProneArea gml:id="lsld_760b89a0-7d57-4188-85e1-70ed0e06e60e">
+			<core:creationDate>2021-03-26</core:creationDate>
 			<urf:validFrom>2008-03-28</urf:validFrom>
 			<urf:prefecture codeSpace="../../codelists/Common_localPublicAuthorities.xml">22</urf:prefecture>
 			<urf:lod1MultiSurface>
@@ -1448,16 +1848,23 @@
 					</gml:surfaceMember>
 				</gml:MultiSurface>
 			</urf:lod1MultiSurface>
+			<urf:dataQualityAttribute>
+				<uro:DataQualityAttribute>
+					<uro:geometrySrcDescLod1 codeSpace="../../codelists/DataQualityAttribute_geometrySrcDesc.xml">400</uro:geometrySrcDescLod1>
+					<uro:thematicSrcDesc codeSpace="../../codelists/DataQualityAttribute_thematicSrcDesc.xml">400</uro:thematicSrcDesc>
+				</uro:DataQualityAttribute>
+			</urf:dataQualityAttribute>
 			<urf:location>沼津市下香貫</urf:location>
-			<urf:disasterType codeSpace="../../codelists/SedimentDisasterProneArea_disasterType.xml">1</urf:disasterType>
-			<urf:areaType codeSpace="../../codelists/SedimentDisasterProneArea_areaType.xml">1</urf:areaType>
+			<urf:disasterType codeSpace="../../codelists/LandSlideRiskAttribute_description.xml">1</urf:disasterType>
+			<urf:areaType codeSpace="../../codelists/LandSlideRiskAttribute_areaType.xml">1</urf:areaType>
 			<urf:zoneNumber>103-Ⅰ-0652</urf:zoneNumber>
 			<urf:zoneName>八重二ノ洞</urf:zoneName>
-			<urf:status codeSpace="../../codelists/SedimentDisasterProneArea_status.xml">0</urf:status>
+			<urf:status codeSpace="../../codelists/LandSlideRiskAttribute_status.xml">0</urf:status>
 		</urf:SedimentDisasterProneArea>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
 		<urf:SedimentDisasterProneArea gml:id="lsld_aa7978c0-0856-4bec-9ef8-2bb98ea279fc">
+			<core:creationDate>2021-03-26</core:creationDate>
 			<urf:validFrom>2006-12-26</urf:validFrom>
 			<urf:prefecture codeSpace="../../codelists/Common_localPublicAuthorities.xml">22</urf:prefecture>
 			<urf:lod1MultiSurface>
@@ -1473,16 +1880,23 @@
 					</gml:surfaceMember>
 				</gml:MultiSurface>
 			</urf:lod1MultiSurface>
+			<urf:dataQualityAttribute>
+				<uro:DataQualityAttribute>
+					<uro:geometrySrcDescLod1 codeSpace="../../codelists/DataQualityAttribute_geometrySrcDesc.xml">400</uro:geometrySrcDescLod1>
+					<uro:thematicSrcDesc codeSpace="../../codelists/DataQualityAttribute_thematicSrcDesc.xml">400</uro:thematicSrcDesc>
+				</uro:DataQualityAttribute>
+			</urf:dataQualityAttribute>
 			<urf:location>沼津市中瀬町</urf:location>
-			<urf:disasterType codeSpace="../../codelists/SedimentDisasterProneArea_disasterType.xml">1</urf:disasterType>
-			<urf:areaType codeSpace="../../codelists/SedimentDisasterProneArea_areaType.xml">1</urf:areaType>
+			<urf:disasterType codeSpace="../../codelists/LandSlideRiskAttribute_description.xml">1</urf:disasterType>
+			<urf:areaType codeSpace="../../codelists/LandSlideRiskAttribute_areaType.xml">1</urf:areaType>
 			<urf:zoneNumber>103-Ⅰ-3338</urf:zoneNumber>
 			<urf:zoneName>中瀬町B</urf:zoneName>
-			<urf:status codeSpace="../../codelists/SedimentDisasterProneArea_status.xml">0</urf:status>
+			<urf:status codeSpace="../../codelists/LandSlideRiskAttribute_status.xml">0</urf:status>
 		</urf:SedimentDisasterProneArea>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
 		<urf:SedimentDisasterProneArea gml:id="lsld_37a94d70-51a3-4346-953e-3b2d666cb894">
+			<core:creationDate>2021-03-26</core:creationDate>
 			<urf:validFrom>2006-12-26</urf:validFrom>
 			<urf:prefecture codeSpace="../../codelists/Common_localPublicAuthorities.xml">22</urf:prefecture>
 			<urf:lod1MultiSurface>
@@ -1498,16 +1912,23 @@
 					</gml:surfaceMember>
 				</gml:MultiSurface>
 			</urf:lod1MultiSurface>
+			<urf:dataQualityAttribute>
+				<uro:DataQualityAttribute>
+					<uro:geometrySrcDescLod1 codeSpace="../../codelists/DataQualityAttribute_geometrySrcDesc.xml">400</uro:geometrySrcDescLod1>
+					<uro:thematicSrcDesc codeSpace="../../codelists/DataQualityAttribute_thematicSrcDesc.xml">400</uro:thematicSrcDesc>
+				</uro:DataQualityAttribute>
+			</urf:dataQualityAttribute>
 			<urf:location>沼津市中瀬町</urf:location>
-			<urf:disasterType codeSpace="../../codelists/SedimentDisasterProneArea_disasterType.xml">1</urf:disasterType>
-			<urf:areaType codeSpace="../../codelists/SedimentDisasterProneArea_areaType.xml">1</urf:areaType>
+			<urf:disasterType codeSpace="../../codelists/LandSlideRiskAttribute_description.xml">1</urf:disasterType>
+			<urf:areaType codeSpace="../../codelists/LandSlideRiskAttribute_areaType.xml">1</urf:areaType>
 			<urf:zoneNumber>103-Ⅰ-3338</urf:zoneNumber>
 			<urf:zoneName>中瀬町B</urf:zoneName>
-			<urf:status codeSpace="../../codelists/SedimentDisasterProneArea_status.xml">0</urf:status>
+			<urf:status codeSpace="../../codelists/LandSlideRiskAttribute_status.xml">0</urf:status>
 		</urf:SedimentDisasterProneArea>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
 		<urf:SedimentDisasterProneArea gml:id="lsld_c07ad3e7-ada4-4449-9c3e-1d3285decfa6">
+			<core:creationDate>2021-03-26</core:creationDate>
 			<urf:validFrom>2006-12-26</urf:validFrom>
 			<urf:prefecture codeSpace="../../codelists/Common_localPublicAuthorities.xml">22</urf:prefecture>
 			<urf:lod1MultiSurface>
@@ -1523,16 +1944,23 @@
 					</gml:surfaceMember>
 				</gml:MultiSurface>
 			</urf:lod1MultiSurface>
+			<urf:dataQualityAttribute>
+				<uro:DataQualityAttribute>
+					<uro:geometrySrcDescLod1 codeSpace="../../codelists/DataQualityAttribute_geometrySrcDesc.xml">400</uro:geometrySrcDescLod1>
+					<uro:thematicSrcDesc codeSpace="../../codelists/DataQualityAttribute_thematicSrcDesc.xml">400</uro:thematicSrcDesc>
+				</uro:DataQualityAttribute>
+			</urf:dataQualityAttribute>
 			<urf:location>沼津市中瀬町</urf:location>
-			<urf:disasterType codeSpace="../../codelists/SedimentDisasterProneArea_disasterType.xml">1</urf:disasterType>
-			<urf:areaType codeSpace="../../codelists/SedimentDisasterProneArea_areaType.xml">1</urf:areaType>
+			<urf:disasterType codeSpace="../../codelists/LandSlideRiskAttribute_description.xml">1</urf:disasterType>
+			<urf:areaType codeSpace="../../codelists/LandSlideRiskAttribute_areaType.xml">1</urf:areaType>
 			<urf:zoneNumber>103-Ⅱ-5865</urf:zoneNumber>
 			<urf:zoneName>中瀬町A</urf:zoneName>
-			<urf:status codeSpace="../../codelists/SedimentDisasterProneArea_status.xml">0</urf:status>
+			<urf:status codeSpace="../../codelists/LandSlideRiskAttribute_status.xml">0</urf:status>
 		</urf:SedimentDisasterProneArea>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
 		<urf:SedimentDisasterProneArea gml:id="lsld_ff884a12-9141-4493-9466-7b018e25d9b1">
+			<core:creationDate>2021-03-26</core:creationDate>
 			<urf:validFrom>2006-12-26</urf:validFrom>
 			<urf:prefecture codeSpace="../../codelists/Common_localPublicAuthorities.xml">22</urf:prefecture>
 			<urf:lod1MultiSurface>
@@ -1548,16 +1976,23 @@
 					</gml:surfaceMember>
 				</gml:MultiSurface>
 			</urf:lod1MultiSurface>
+			<urf:dataQualityAttribute>
+				<uro:DataQualityAttribute>
+					<uro:geometrySrcDescLod1 codeSpace="../../codelists/DataQualityAttribute_geometrySrcDesc.xml">400</uro:geometrySrcDescLod1>
+					<uro:thematicSrcDesc codeSpace="../../codelists/DataQualityAttribute_thematicSrcDesc.xml">400</uro:thematicSrcDesc>
+				</uro:DataQualityAttribute>
+			</urf:dataQualityAttribute>
 			<urf:location>沼津市中瀬町</urf:location>
-			<urf:disasterType codeSpace="../../codelists/SedimentDisasterProneArea_disasterType.xml">1</urf:disasterType>
-			<urf:areaType codeSpace="../../codelists/SedimentDisasterProneArea_areaType.xml">1</urf:areaType>
+			<urf:disasterType codeSpace="../../codelists/LandSlideRiskAttribute_description.xml">1</urf:disasterType>
+			<urf:areaType codeSpace="../../codelists/LandSlideRiskAttribute_areaType.xml">1</urf:areaType>
 			<urf:zoneNumber>103-Ⅱ-5866</urf:zoneNumber>
 			<urf:zoneName>中瀬町C</urf:zoneName>
-			<urf:status codeSpace="../../codelists/SedimentDisasterProneArea_status.xml">0</urf:status>
+			<urf:status codeSpace="../../codelists/LandSlideRiskAttribute_status.xml">0</urf:status>
 		</urf:SedimentDisasterProneArea>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
 		<urf:SedimentDisasterProneArea gml:id="lsld_547e4871-c5e3-49a2-8ffe-2b060052b9e2">
+			<core:creationDate>2021-03-26</core:creationDate>
 			<urf:validFrom>2006-12-26</urf:validFrom>
 			<urf:prefecture codeSpace="../../codelists/Common_localPublicAuthorities.xml">22</urf:prefecture>
 			<urf:lod1MultiSurface>
@@ -1573,16 +2008,23 @@
 					</gml:surfaceMember>
 				</gml:MultiSurface>
 			</urf:lod1MultiSurface>
+			<urf:dataQualityAttribute>
+				<uro:DataQualityAttribute>
+					<uro:geometrySrcDescLod1 codeSpace="../../codelists/DataQualityAttribute_geometrySrcDesc.xml">400</uro:geometrySrcDescLod1>
+					<uro:thematicSrcDesc codeSpace="../../codelists/DataQualityAttribute_thematicSrcDesc.xml">400</uro:thematicSrcDesc>
+				</uro:DataQualityAttribute>
+			</urf:dataQualityAttribute>
 			<urf:location>沼津市山ヶ下町</urf:location>
-			<urf:disasterType codeSpace="../../codelists/SedimentDisasterProneArea_disasterType.xml">1</urf:disasterType>
-			<urf:areaType codeSpace="../../codelists/SedimentDisasterProneArea_areaType.xml">1</urf:areaType>
+			<urf:disasterType codeSpace="../../codelists/LandSlideRiskAttribute_description.xml">1</urf:disasterType>
+			<urf:areaType codeSpace="../../codelists/LandSlideRiskAttribute_areaType.xml">1</urf:areaType>
 			<urf:zoneNumber>103-Ⅰ-3336</urf:zoneNumber>
 			<urf:zoneName>山ヶ下町</urf:zoneName>
-			<urf:status codeSpace="../../codelists/SedimentDisasterProneArea_status.xml">0</urf:status>
+			<urf:status codeSpace="../../codelists/LandSlideRiskAttribute_status.xml">0</urf:status>
 		</urf:SedimentDisasterProneArea>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
 		<urf:SedimentDisasterProneArea gml:id="lsld_4621f39f-d1f8-4c06-9c96-fdc2848eba84">
+			<core:creationDate>2021-03-26</core:creationDate>
 			<urf:validFrom>2006-12-26</urf:validFrom>
 			<urf:prefecture codeSpace="../../codelists/Common_localPublicAuthorities.xml">22</urf:prefecture>
 			<urf:lod1MultiSurface>
@@ -1598,16 +2040,23 @@
 					</gml:surfaceMember>
 				</gml:MultiSurface>
 			</urf:lod1MultiSurface>
+			<urf:dataQualityAttribute>
+				<uro:DataQualityAttribute>
+					<uro:geometrySrcDescLod1 codeSpace="../../codelists/DataQualityAttribute_geometrySrcDesc.xml">400</uro:geometrySrcDescLod1>
+					<uro:thematicSrcDesc codeSpace="../../codelists/DataQualityAttribute_thematicSrcDesc.xml">400</uro:thematicSrcDesc>
+				</uro:DataQualityAttribute>
+			</urf:dataQualityAttribute>
 			<urf:location>沼津市中瀬町</urf:location>
-			<urf:disasterType codeSpace="../../codelists/SedimentDisasterProneArea_disasterType.xml">1</urf:disasterType>
-			<urf:areaType codeSpace="../../codelists/SedimentDisasterProneArea_areaType.xml">1</urf:areaType>
+			<urf:disasterType codeSpace="../../codelists/LandSlideRiskAttribute_description.xml">1</urf:disasterType>
+			<urf:areaType codeSpace="../../codelists/LandSlideRiskAttribute_areaType.xml">1</urf:areaType>
 			<urf:zoneNumber>103-Ⅰ-2709</urf:zoneNumber>
 			<urf:zoneName>上香貫コテンジ</urf:zoneName>
-			<urf:status codeSpace="../../codelists/SedimentDisasterProneArea_status.xml">0</urf:status>
+			<urf:status codeSpace="../../codelists/LandSlideRiskAttribute_status.xml">0</urf:status>
 		</urf:SedimentDisasterProneArea>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
 		<urf:SedimentDisasterProneArea gml:id="lsld_9a1955d2-fb4f-42d6-b09d-b9741b5f3097">
+			<core:creationDate>2021-03-26</core:creationDate>
 			<urf:validFrom>2018-10-23</urf:validFrom>
 			<urf:prefecture codeSpace="../../codelists/Common_localPublicAuthorities.xml">22</urf:prefecture>
 			<urf:lod1MultiSurface>
@@ -1623,16 +2072,23 @@
 					</gml:surfaceMember>
 				</gml:MultiSurface>
 			</urf:lod1MultiSurface>
+			<urf:dataQualityAttribute>
+				<uro:DataQualityAttribute>
+					<uro:geometrySrcDescLod1 codeSpace="../../codelists/DataQualityAttribute_geometrySrcDesc.xml">400</uro:geometrySrcDescLod1>
+					<uro:thematicSrcDesc codeSpace="../../codelists/DataQualityAttribute_thematicSrcDesc.xml">400</uro:thematicSrcDesc>
+				</uro:DataQualityAttribute>
+			</urf:dataQualityAttribute>
 			<urf:location>沼津市下香貫字外原</urf:location>
-			<urf:disasterType codeSpace="../../codelists/SedimentDisasterProneArea_disasterType.xml">1</urf:disasterType>
-			<urf:areaType codeSpace="../../codelists/SedimentDisasterProneArea_areaType.xml">2</urf:areaType>
+			<urf:disasterType codeSpace="../../codelists/LandSlideRiskAttribute_description.xml">1</urf:disasterType>
+			<urf:areaType codeSpace="../../codelists/LandSlideRiskAttribute_areaType.xml">2</urf:areaType>
 			<urf:zoneNumber>103-Ⅰ-0650</urf:zoneNumber>
 			<urf:zoneName>外原</urf:zoneName>
-			<urf:status codeSpace="../../codelists/SedimentDisasterProneArea_status.xml">0</urf:status>
+			<urf:status codeSpace="../../codelists/LandSlideRiskAttribute_status.xml">0</urf:status>
 		</urf:SedimentDisasterProneArea>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
 		<urf:SedimentDisasterProneArea gml:id="lsld_b34ece0d-b60d-4e35-b7b7-6ad6f22314f2">
+			<core:creationDate>2021-03-26</core:creationDate>
 			<urf:validFrom>2017-03-31</urf:validFrom>
 			<urf:prefecture codeSpace="../../codelists/Common_localPublicAuthorities.xml">22</urf:prefecture>
 			<urf:lod1MultiSurface>
@@ -1648,16 +2104,23 @@
 					</gml:surfaceMember>
 				</gml:MultiSurface>
 			</urf:lod1MultiSurface>
+			<urf:dataQualityAttribute>
+				<uro:DataQualityAttribute>
+					<uro:geometrySrcDescLod1 codeSpace="../../codelists/DataQualityAttribute_geometrySrcDesc.xml">400</uro:geometrySrcDescLod1>
+					<uro:thematicSrcDesc codeSpace="../../codelists/DataQualityAttribute_thematicSrcDesc.xml">400</uro:thematicSrcDesc>
+				</uro:DataQualityAttribute>
+			</urf:dataQualityAttribute>
 			<urf:location>駿東郡清水町下徳倉</urf:location>
-			<urf:disasterType codeSpace="../../codelists/SedimentDisasterProneArea_disasterType.xml">1</urf:disasterType>
-			<urf:areaType codeSpace="../../codelists/SedimentDisasterProneArea_areaType.xml">1</urf:areaType>
+			<urf:disasterType codeSpace="../../codelists/LandSlideRiskAttribute_description.xml">1</urf:disasterType>
+			<urf:areaType codeSpace="../../codelists/LandSlideRiskAttribute_areaType.xml">1</urf:areaType>
 			<urf:zoneNumber>103-Ⅲ-0224</urf:zoneNumber>
 			<urf:zoneName>四方沢</urf:zoneName>
-			<urf:status codeSpace="../../codelists/SedimentDisasterProneArea_status.xml">0</urf:status>
+			<urf:status codeSpace="../../codelists/LandSlideRiskAttribute_status.xml">0</urf:status>
 		</urf:SedimentDisasterProneArea>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
 		<urf:SedimentDisasterProneArea gml:id="lsld_5edb9de2-961c-4669-87b9-558464facf1c">
+			<core:creationDate>2021-03-26</core:creationDate>
 			<urf:validFrom>2018-03-30</urf:validFrom>
 			<urf:prefecture codeSpace="../../codelists/Common_localPublicAuthorities.xml">22</urf:prefecture>
 			<urf:lod1MultiSurface>
@@ -1673,16 +2136,23 @@
 					</gml:surfaceMember>
 				</gml:MultiSurface>
 			</urf:lod1MultiSurface>
+			<urf:dataQualityAttribute>
+				<uro:DataQualityAttribute>
+					<uro:geometrySrcDescLod1 codeSpace="../../codelists/DataQualityAttribute_geometrySrcDesc.xml">400</uro:geometrySrcDescLod1>
+					<uro:thematicSrcDesc codeSpace="../../codelists/DataQualityAttribute_thematicSrcDesc.xml">400</uro:thematicSrcDesc>
+				</uro:DataQualityAttribute>
+			</urf:dataQualityAttribute>
 			<urf:location>沼津市岡一色字中山　他</urf:location>
-			<urf:disasterType codeSpace="../../codelists/SedimentDisasterProneArea_disasterType.xml">1</urf:disasterType>
-			<urf:areaType codeSpace="../../codelists/SedimentDisasterProneArea_areaType.xml">2</urf:areaType>
+			<urf:disasterType codeSpace="../../codelists/LandSlideRiskAttribute_description.xml">1</urf:disasterType>
+			<urf:areaType codeSpace="../../codelists/LandSlideRiskAttribute_areaType.xml">2</urf:areaType>
 			<urf:zoneNumber>103-S-0141</urf:zoneNumber>
 			<urf:zoneName>池上町B</urf:zoneName>
-			<urf:status codeSpace="../../codelists/SedimentDisasterProneArea_status.xml">0</urf:status>
+			<urf:status codeSpace="../../codelists/LandSlideRiskAttribute_status.xml">0</urf:status>
 		</urf:SedimentDisasterProneArea>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
 		<urf:SedimentDisasterProneArea gml:id="lsld_1c8872fa-e5bd-4368-af8d-d6a52c307cfc">
+			<core:creationDate>2021-03-26</core:creationDate>
 			<urf:validFrom>2018-03-30</urf:validFrom>
 			<urf:prefecture codeSpace="../../codelists/Common_localPublicAuthorities.xml">22</urf:prefecture>
 			<urf:lod1MultiSurface>
@@ -1698,16 +2168,23 @@
 					</gml:surfaceMember>
 				</gml:MultiSurface>
 			</urf:lod1MultiSurface>
+			<urf:dataQualityAttribute>
+				<uro:DataQualityAttribute>
+					<uro:geometrySrcDescLod1 codeSpace="../../codelists/DataQualityAttribute_geometrySrcDesc.xml">400</uro:geometrySrcDescLod1>
+					<uro:thematicSrcDesc codeSpace="../../codelists/DataQualityAttribute_thematicSrcDesc.xml">400</uro:thematicSrcDesc>
+				</uro:DataQualityAttribute>
+			</urf:dataQualityAttribute>
 			<urf:location>沼津市岡一色字田頭　他</urf:location>
-			<urf:disasterType codeSpace="../../codelists/SedimentDisasterProneArea_disasterType.xml">1</urf:disasterType>
-			<urf:areaType codeSpace="../../codelists/SedimentDisasterProneArea_areaType.xml">2</urf:areaType>
+			<urf:disasterType codeSpace="../../codelists/LandSlideRiskAttribute_description.xml">1</urf:disasterType>
+			<urf:areaType codeSpace="../../codelists/LandSlideRiskAttribute_areaType.xml">2</urf:areaType>
 			<urf:zoneNumber>103-S-0106</urf:zoneNumber>
 			<urf:zoneName>田頭</urf:zoneName>
-			<urf:status codeSpace="../../codelists/SedimentDisasterProneArea_status.xml">0</urf:status>
+			<urf:status codeSpace="../../codelists/LandSlideRiskAttribute_status.xml">0</urf:status>
 		</urf:SedimentDisasterProneArea>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
 		<urf:SedimentDisasterProneArea gml:id="lsld_7bfa2483-83b0-4e27-a4b1-6a945636b487">
+			<core:creationDate>2021-03-26</core:creationDate>
 			<urf:validFrom>2006-12-26</urf:validFrom>
 			<urf:prefecture codeSpace="../../codelists/Common_localPublicAuthorities.xml">22</urf:prefecture>
 			<urf:lod1MultiSurface>
@@ -1723,16 +2200,23 @@
 					</gml:surfaceMember>
 				</gml:MultiSurface>
 			</urf:lod1MultiSurface>
+			<urf:dataQualityAttribute>
+				<uro:DataQualityAttribute>
+					<uro:geometrySrcDescLod1 codeSpace="../../codelists/DataQualityAttribute_geometrySrcDesc.xml">400</uro:geometrySrcDescLod1>
+					<uro:thematicSrcDesc codeSpace="../../codelists/DataQualityAttribute_thematicSrcDesc.xml">400</uro:thematicSrcDesc>
+				</uro:DataQualityAttribute>
+			</urf:dataQualityAttribute>
 			<urf:location>沼津市中原町</urf:location>
-			<urf:disasterType codeSpace="../../codelists/SedimentDisasterProneArea_disasterType.xml">2</urf:disasterType>
-			<urf:areaType codeSpace="../../codelists/SedimentDisasterProneArea_areaType.xml">1</urf:areaType>
+			<urf:disasterType codeSpace="../../codelists/LandSlideRiskAttribute_description.xml">2</urf:disasterType>
+			<urf:areaType codeSpace="../../codelists/LandSlideRiskAttribute_areaType.xml">1</urf:areaType>
 			<urf:zoneNumber>203-Ⅰ-016</urf:zoneNumber>
 			<urf:zoneName>天神洞沢</urf:zoneName>
-			<urf:status codeSpace="../../codelists/SedimentDisasterProneArea_status.xml">0</urf:status>
+			<urf:status codeSpace="../../codelists/LandSlideRiskAttribute_status.xml">0</urf:status>
 		</urf:SedimentDisasterProneArea>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
 		<urf:SedimentDisasterProneArea gml:id="lsld_032ea8fd-c77d-4e2c-8c8b-45b7217008a4">
+			<core:creationDate>2021-03-26</core:creationDate>
 			<urf:validFrom>2006-12-26</urf:validFrom>
 			<urf:prefecture codeSpace="../../codelists/Common_localPublicAuthorities.xml">22</urf:prefecture>
 			<urf:lod1MultiSurface>
@@ -1748,16 +2232,23 @@
 					</gml:surfaceMember>
 				</gml:MultiSurface>
 			</urf:lod1MultiSurface>
+			<urf:dataQualityAttribute>
+				<uro:DataQualityAttribute>
+					<uro:geometrySrcDescLod1 codeSpace="../../codelists/DataQualityAttribute_geometrySrcDesc.xml">400</uro:geometrySrcDescLod1>
+					<uro:thematicSrcDesc codeSpace="../../codelists/DataQualityAttribute_thematicSrcDesc.xml">400</uro:thematicSrcDesc>
+				</uro:DataQualityAttribute>
+			</urf:dataQualityAttribute>
 			<urf:location>沼津市下香貫木ノ宮</urf:location>
-			<urf:disasterType codeSpace="../../codelists/SedimentDisasterProneArea_disasterType.xml">2</urf:disasterType>
-			<urf:areaType codeSpace="../../codelists/SedimentDisasterProneArea_areaType.xml">1</urf:areaType>
+			<urf:disasterType codeSpace="../../codelists/LandSlideRiskAttribute_description.xml">2</urf:disasterType>
+			<urf:areaType codeSpace="../../codelists/LandSlideRiskAttribute_areaType.xml">1</urf:areaType>
 			<urf:zoneNumber>203-Ⅲ-001</urf:zoneNumber>
 			<urf:zoneName>木の宮沢C</urf:zoneName>
-			<urf:status codeSpace="../../codelists/SedimentDisasterProneArea_status.xml">0</urf:status>
+			<urf:status codeSpace="../../codelists/LandSlideRiskAttribute_status.xml">0</urf:status>
 		</urf:SedimentDisasterProneArea>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
 		<urf:SedimentDisasterProneArea gml:id="lsld_c362385a-0aa5-4feb-8687-1bb844bc47a5">
+			<core:creationDate>2021-03-26</core:creationDate>
 			<urf:validFrom>2006-12-26</urf:validFrom>
 			<urf:prefecture codeSpace="../../codelists/Common_localPublicAuthorities.xml">22</urf:prefecture>
 			<urf:lod1MultiSurface>
@@ -1773,16 +2264,23 @@
 					</gml:surfaceMember>
 				</gml:MultiSurface>
 			</urf:lod1MultiSurface>
+			<urf:dataQualityAttribute>
+				<uro:DataQualityAttribute>
+					<uro:geometrySrcDescLod1 codeSpace="../../codelists/DataQualityAttribute_geometrySrcDesc.xml">400</uro:geometrySrcDescLod1>
+					<uro:thematicSrcDesc codeSpace="../../codelists/DataQualityAttribute_thematicSrcDesc.xml">400</uro:thematicSrcDesc>
+				</uro:DataQualityAttribute>
+			</urf:dataQualityAttribute>
 			<urf:location>沼津市下香貫八重</urf:location>
-			<urf:disasterType codeSpace="../../codelists/SedimentDisasterProneArea_disasterType.xml">2</urf:disasterType>
-			<urf:areaType codeSpace="../../codelists/SedimentDisasterProneArea_areaType.xml">1</urf:areaType>
+			<urf:disasterType codeSpace="../../codelists/LandSlideRiskAttribute_description.xml">2</urf:disasterType>
+			<urf:areaType codeSpace="../../codelists/LandSlideRiskAttribute_areaType.xml">1</urf:areaType>
 			<urf:zoneNumber>203-Ⅰ-036</urf:zoneNumber>
 			<urf:zoneName>八重沢A</urf:zoneName>
-			<urf:status codeSpace="../../codelists/SedimentDisasterProneArea_status.xml">0</urf:status>
+			<urf:status codeSpace="../../codelists/LandSlideRiskAttribute_status.xml">0</urf:status>
 		</urf:SedimentDisasterProneArea>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
 		<urf:SedimentDisasterProneArea gml:id="lsld_cca86814-5582-4082-9ccc-a285a9f0353a">
+			<core:creationDate>2021-03-26</core:creationDate>
 			<urf:validFrom>2008-03-28</urf:validFrom>
 			<urf:prefecture codeSpace="../../codelists/Common_localPublicAuthorities.xml">22</urf:prefecture>
 			<urf:lod1MultiSurface>
@@ -1798,16 +2296,23 @@
 					</gml:surfaceMember>
 				</gml:MultiSurface>
 			</urf:lod1MultiSurface>
+			<urf:dataQualityAttribute>
+				<uro:DataQualityAttribute>
+					<uro:geometrySrcDescLod1 codeSpace="../../codelists/DataQualityAttribute_geometrySrcDesc.xml">400</uro:geometrySrcDescLod1>
+					<uro:thematicSrcDesc codeSpace="../../codelists/DataQualityAttribute_thematicSrcDesc.xml">400</uro:thematicSrcDesc>
+				</uro:DataQualityAttribute>
+			</urf:dataQualityAttribute>
 			<urf:location>沼津市下香貫</urf:location>
-			<urf:disasterType codeSpace="../../codelists/SedimentDisasterProneArea_disasterType.xml">2</urf:disasterType>
-			<urf:areaType codeSpace="../../codelists/SedimentDisasterProneArea_areaType.xml">1</urf:areaType>
+			<urf:disasterType codeSpace="../../codelists/LandSlideRiskAttribute_description.xml">2</urf:disasterType>
+			<urf:areaType codeSpace="../../codelists/LandSlideRiskAttribute_areaType.xml">1</urf:areaType>
 			<urf:zoneNumber>203-Ⅰ-038</urf:zoneNumber>
 			<urf:zoneName>八重沢B</urf:zoneName>
-			<urf:status codeSpace="../../codelists/SedimentDisasterProneArea_status.xml">0</urf:status>
+			<urf:status codeSpace="../../codelists/LandSlideRiskAttribute_status.xml">0</urf:status>
 		</urf:SedimentDisasterProneArea>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
 		<urf:SedimentDisasterProneArea gml:id="lsld_474d9433-6512-486c-adb6-676ec01a398e">
+			<core:creationDate>2021-03-26</core:creationDate>
 			<urf:validFrom>2018-03-30</urf:validFrom>
 			<urf:prefecture codeSpace="../../codelists/Common_localPublicAuthorities.xml">22</urf:prefecture>
 			<urf:lod1MultiSurface>
@@ -1823,16 +2328,23 @@
 					</gml:surfaceMember>
 				</gml:MultiSurface>
 			</urf:lod1MultiSurface>
+			<urf:dataQualityAttribute>
+				<uro:DataQualityAttribute>
+					<uro:geometrySrcDescLod1 codeSpace="../../codelists/DataQualityAttribute_geometrySrcDesc.xml">400</uro:geometrySrcDescLod1>
+					<uro:thematicSrcDesc codeSpace="../../codelists/DataQualityAttribute_thematicSrcDesc.xml">400</uro:thematicSrcDesc>
+				</uro:DataQualityAttribute>
+			</urf:dataQualityAttribute>
 			<urf:location>沼津市岡一色字田頭　他</urf:location>
-			<urf:disasterType codeSpace="../../codelists/SedimentDisasterProneArea_disasterType.xml">1</urf:disasterType>
-			<urf:areaType codeSpace="../../codelists/SedimentDisasterProneArea_areaType.xml">1</urf:areaType>
+			<urf:disasterType codeSpace="../../codelists/LandSlideRiskAttribute_description.xml">1</urf:disasterType>
+			<urf:areaType codeSpace="../../codelists/LandSlideRiskAttribute_areaType.xml">1</urf:areaType>
 			<urf:zoneNumber>103-S-0106</urf:zoneNumber>
 			<urf:zoneName>田頭</urf:zoneName>
-			<urf:status codeSpace="../../codelists/SedimentDisasterProneArea_status.xml">0</urf:status>
+			<urf:status codeSpace="../../codelists/LandSlideRiskAttribute_status.xml">0</urf:status>
 		</urf:SedimentDisasterProneArea>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
 		<urf:SedimentDisasterProneArea gml:id="lsld_012f808e-d22d-449f-8651-a2f8acabd72c">
+			<core:creationDate>2021-03-26</core:creationDate>
 			<urf:validFrom>2018-03-30</urf:validFrom>
 			<urf:prefecture codeSpace="../../codelists/Common_localPublicAuthorities.xml">22</urf:prefecture>
 			<urf:lod1MultiSurface>
@@ -1848,16 +2360,23 @@
 					</gml:surfaceMember>
 				</gml:MultiSurface>
 			</urf:lod1MultiSurface>
+			<urf:dataQualityAttribute>
+				<uro:DataQualityAttribute>
+					<uro:geometrySrcDescLod1 codeSpace="../../codelists/DataQualityAttribute_geometrySrcDesc.xml">400</uro:geometrySrcDescLod1>
+					<uro:thematicSrcDesc codeSpace="../../codelists/DataQualityAttribute_thematicSrcDesc.xml">400</uro:thematicSrcDesc>
+				</uro:DataQualityAttribute>
+			</urf:dataQualityAttribute>
 			<urf:location>沼津市岡一色字渡戸　他</urf:location>
-			<urf:disasterType codeSpace="../../codelists/SedimentDisasterProneArea_disasterType.xml">1</urf:disasterType>
-			<urf:areaType codeSpace="../../codelists/SedimentDisasterProneArea_areaType.xml">1</urf:areaType>
+			<urf:disasterType codeSpace="../../codelists/LandSlideRiskAttribute_description.xml">1</urf:disasterType>
+			<urf:areaType codeSpace="../../codelists/LandSlideRiskAttribute_areaType.xml">1</urf:areaType>
 			<urf:zoneNumber>103-Ⅰ-0658</urf:zoneNumber>
 			<urf:zoneName>池上町A</urf:zoneName>
-			<urf:status codeSpace="../../codelists/SedimentDisasterProneArea_status.xml">0</urf:status>
+			<urf:status codeSpace="../../codelists/LandSlideRiskAttribute_status.xml">0</urf:status>
 		</urf:SedimentDisasterProneArea>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
 		<urf:SedimentDisasterProneArea gml:id="lsld_5776945f-064b-470c-ae86-5276b426078d">
+			<core:creationDate>2021-03-26</core:creationDate>
 			<urf:validFrom>2006-12-26</urf:validFrom>
 			<urf:prefecture codeSpace="../../codelists/Common_localPublicAuthorities.xml">22</urf:prefecture>
 			<urf:lod1MultiSurface>
@@ -1873,16 +2392,23 @@
 					</gml:surfaceMember>
 				</gml:MultiSurface>
 			</urf:lod1MultiSurface>
+			<urf:dataQualityAttribute>
+				<uro:DataQualityAttribute>
+					<uro:geometrySrcDescLod1 codeSpace="../../codelists/DataQualityAttribute_geometrySrcDesc.xml">400</uro:geometrySrcDescLod1>
+					<uro:thematicSrcDesc codeSpace="../../codelists/DataQualityAttribute_thematicSrcDesc.xml">400</uro:thematicSrcDesc>
+				</uro:DataQualityAttribute>
+			</urf:dataQualityAttribute>
 			<urf:location>沼津市下香貫木ノ宮</urf:location>
-			<urf:disasterType codeSpace="../../codelists/SedimentDisasterProneArea_disasterType.xml">1</urf:disasterType>
-			<urf:areaType codeSpace="../../codelists/SedimentDisasterProneArea_areaType.xml">2</urf:areaType>
+			<urf:disasterType codeSpace="../../codelists/LandSlideRiskAttribute_description.xml">1</urf:disasterType>
+			<urf:areaType codeSpace="../../codelists/LandSlideRiskAttribute_areaType.xml">2</urf:areaType>
 			<urf:zoneNumber>203-Ⅰ-041</urf:zoneNumber>
 			<urf:zoneName>木の宮沢B</urf:zoneName>
-			<urf:status codeSpace="../../codelists/SedimentDisasterProneArea_status.xml">0</urf:status>
+			<urf:status codeSpace="../../codelists/LandSlideRiskAttribute_status.xml">0</urf:status>
 		</urf:SedimentDisasterProneArea>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
 		<urf:SedimentDisasterProneArea gml:id="lsld_4c98da3b-dd3f-441d-80a6-6617ca66ee92">
+			<core:creationDate>2021-03-26</core:creationDate>
 			<urf:validFrom>2006-12-26</urf:validFrom>
 			<urf:prefecture codeSpace="../../codelists/Common_localPublicAuthorities.xml">22</urf:prefecture>
 			<urf:lod1MultiSurface>
@@ -1898,16 +2424,23 @@
 					</gml:surfaceMember>
 				</gml:MultiSurface>
 			</urf:lod1MultiSurface>
+			<urf:dataQualityAttribute>
+				<uro:DataQualityAttribute>
+					<uro:geometrySrcDescLod1 codeSpace="../../codelists/DataQualityAttribute_geometrySrcDesc.xml">400</uro:geometrySrcDescLod1>
+					<uro:thematicSrcDesc codeSpace="../../codelists/DataQualityAttribute_thematicSrcDesc.xml">400</uro:thematicSrcDesc>
+				</uro:DataQualityAttribute>
+			</urf:dataQualityAttribute>
 			<urf:location>沼津市下香貫八重</urf:location>
-			<urf:disasterType codeSpace="../../codelists/SedimentDisasterProneArea_disasterType.xml">1</urf:disasterType>
-			<urf:areaType codeSpace="../../codelists/SedimentDisasterProneArea_areaType.xml">2</urf:areaType>
+			<urf:disasterType codeSpace="../../codelists/LandSlideRiskAttribute_description.xml">1</urf:disasterType>
+			<urf:areaType codeSpace="../../codelists/LandSlideRiskAttribute_areaType.xml">2</urf:areaType>
 			<urf:zoneNumber>103-Ⅰ-0648</urf:zoneNumber>
 			<urf:zoneName>八重団地</urf:zoneName>
-			<urf:status codeSpace="../../codelists/SedimentDisasterProneArea_status.xml">0</urf:status>
+			<urf:status codeSpace="../../codelists/LandSlideRiskAttribute_status.xml">0</urf:status>
 		</urf:SedimentDisasterProneArea>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
 		<urf:SedimentDisasterProneArea gml:id="lsld_a8a73a55-feee-47b6-93a6-838ad01b5cbd">
+			<core:creationDate>2021-03-26</core:creationDate>
 			<urf:validFrom>2008-03-28</urf:validFrom>
 			<urf:prefecture codeSpace="../../codelists/Common_localPublicAuthorities.xml">22</urf:prefecture>
 			<urf:lod1MultiSurface>
@@ -1923,16 +2456,23 @@
 					</gml:surfaceMember>
 				</gml:MultiSurface>
 			</urf:lod1MultiSurface>
+			<urf:dataQualityAttribute>
+				<uro:DataQualityAttribute>
+					<uro:geometrySrcDescLod1 codeSpace="../../codelists/DataQualityAttribute_geometrySrcDesc.xml">400</uro:geometrySrcDescLod1>
+					<uro:thematicSrcDesc codeSpace="../../codelists/DataQualityAttribute_thematicSrcDesc.xml">400</uro:thematicSrcDesc>
+				</uro:DataQualityAttribute>
+			</urf:dataQualityAttribute>
 			<urf:location>沼津市下香貫</urf:location>
-			<urf:disasterType codeSpace="../../codelists/SedimentDisasterProneArea_disasterType.xml">2</urf:disasterType>
-			<urf:areaType codeSpace="../../codelists/SedimentDisasterProneArea_areaType.xml">1</urf:areaType>
+			<urf:disasterType codeSpace="../../codelists/LandSlideRiskAttribute_description.xml">2</urf:disasterType>
+			<urf:areaType codeSpace="../../codelists/LandSlideRiskAttribute_areaType.xml">1</urf:areaType>
 			<urf:zoneNumber>203-Ⅰ-040</urf:zoneNumber>
 			<urf:zoneName>八重沢D</urf:zoneName>
-			<urf:status codeSpace="../../codelists/SedimentDisasterProneArea_status.xml">0</urf:status>
+			<urf:status codeSpace="../../codelists/LandSlideRiskAttribute_status.xml">0</urf:status>
 		</urf:SedimentDisasterProneArea>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
 		<urf:SedimentDisasterProneArea gml:id="lsld_3edd026f-eefa-43c9-8338-53ba0be8b6d1">
+			<core:creationDate>2021-03-26</core:creationDate>
 			<urf:validFrom>2006-12-26</urf:validFrom>
 			<urf:prefecture codeSpace="../../codelists/Common_localPublicAuthorities.xml">22</urf:prefecture>
 			<urf:lod1MultiSurface>
@@ -1948,16 +2488,23 @@
 					</gml:surfaceMember>
 				</gml:MultiSurface>
 			</urf:lod1MultiSurface>
+			<urf:dataQualityAttribute>
+				<uro:DataQualityAttribute>
+					<uro:geometrySrcDescLod1 codeSpace="../../codelists/DataQualityAttribute_geometrySrcDesc.xml">400</uro:geometrySrcDescLod1>
+					<uro:thematicSrcDesc codeSpace="../../codelists/DataQualityAttribute_thematicSrcDesc.xml">400</uro:thematicSrcDesc>
+				</uro:DataQualityAttribute>
+			</urf:dataQualityAttribute>
 			<urf:location>沼津市下香貫八重</urf:location>
-			<urf:disasterType codeSpace="../../codelists/SedimentDisasterProneArea_disasterType.xml">1</urf:disasterType>
-			<urf:areaType codeSpace="../../codelists/SedimentDisasterProneArea_areaType.xml">2</urf:areaType>
+			<urf:disasterType codeSpace="../../codelists/LandSlideRiskAttribute_description.xml">1</urf:disasterType>
+			<urf:areaType codeSpace="../../codelists/LandSlideRiskAttribute_areaType.xml">2</urf:areaType>
 			<urf:zoneNumber>203-Ⅰ-036</urf:zoneNumber>
 			<urf:zoneName>八重沢A</urf:zoneName>
-			<urf:status codeSpace="../../codelists/SedimentDisasterProneArea_status.xml">0</urf:status>
+			<urf:status codeSpace="../../codelists/LandSlideRiskAttribute_status.xml">0</urf:status>
 		</urf:SedimentDisasterProneArea>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
 		<urf:SedimentDisasterProneArea gml:id="lsld_cce34e4d-bb88-492f-8cdb-158d52abcc5f">
+			<core:creationDate>2021-03-26</core:creationDate>
 			<urf:validFrom>2008-03-28</urf:validFrom>
 			<urf:prefecture codeSpace="../../codelists/Common_localPublicAuthorities.xml">22</urf:prefecture>
 			<urf:lod1MultiSurface>
@@ -1973,16 +2520,23 @@
 					</gml:surfaceMember>
 				</gml:MultiSurface>
 			</urf:lod1MultiSurface>
+			<urf:dataQualityAttribute>
+				<uro:DataQualityAttribute>
+					<uro:geometrySrcDescLod1 codeSpace="../../codelists/DataQualityAttribute_geometrySrcDesc.xml">400</uro:geometrySrcDescLod1>
+					<uro:thematicSrcDesc codeSpace="../../codelists/DataQualityAttribute_thematicSrcDesc.xml">400</uro:thematicSrcDesc>
+				</uro:DataQualityAttribute>
+			</urf:dataQualityAttribute>
 			<urf:location>沼津市下香貫</urf:location>
-			<urf:disasterType codeSpace="../../codelists/SedimentDisasterProneArea_disasterType.xml">1</urf:disasterType>
-			<urf:areaType codeSpace="../../codelists/SedimentDisasterProneArea_areaType.xml">2</urf:areaType>
+			<urf:disasterType codeSpace="../../codelists/LandSlideRiskAttribute_description.xml">1</urf:disasterType>
+			<urf:areaType codeSpace="../../codelists/LandSlideRiskAttribute_areaType.xml">2</urf:areaType>
 			<urf:zoneNumber>203-Ⅰ-038</urf:zoneNumber>
 			<urf:zoneName>八重沢B</urf:zoneName>
-			<urf:status codeSpace="../../codelists/SedimentDisasterProneArea_status.xml">0</urf:status>
+			<urf:status codeSpace="../../codelists/LandSlideRiskAttribute_status.xml">0</urf:status>
 		</urf:SedimentDisasterProneArea>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
 		<urf:SedimentDisasterProneArea gml:id="lsld_6f1266f6-0b9d-4813-92a5-d1a56fdc3e76">
+			<core:creationDate>2021-03-26</core:creationDate>
 			<urf:validFrom>2006-12-26</urf:validFrom>
 			<urf:prefecture codeSpace="../../codelists/Common_localPublicAuthorities.xml">22</urf:prefecture>
 			<urf:lod1MultiSurface>
@@ -1998,16 +2552,23 @@
 					</gml:surfaceMember>
 				</gml:MultiSurface>
 			</urf:lod1MultiSurface>
+			<urf:dataQualityAttribute>
+				<uro:DataQualityAttribute>
+					<uro:geometrySrcDescLod1 codeSpace="../../codelists/DataQualityAttribute_geometrySrcDesc.xml">400</uro:geometrySrcDescLod1>
+					<uro:thematicSrcDesc codeSpace="../../codelists/DataQualityAttribute_thematicSrcDesc.xml">400</uro:thematicSrcDesc>
+				</uro:DataQualityAttribute>
+			</urf:dataQualityAttribute>
 			<urf:location>沼津市上香貫長洞</urf:location>
-			<urf:disasterType codeSpace="../../codelists/SedimentDisasterProneArea_disasterType.xml">1</urf:disasterType>
-			<urf:areaType codeSpace="../../codelists/SedimentDisasterProneArea_areaType.xml">2</urf:areaType>
+			<urf:disasterType codeSpace="../../codelists/LandSlideRiskAttribute_description.xml">1</urf:disasterType>
+			<urf:areaType codeSpace="../../codelists/LandSlideRiskAttribute_areaType.xml">2</urf:areaType>
 			<urf:zoneNumber>203-Ⅰ-037</urf:zoneNumber>
 			<urf:zoneName>長ヶ洞川</urf:zoneName>
-			<urf:status codeSpace="../../codelists/SedimentDisasterProneArea_status.xml">0</urf:status>
+			<urf:status codeSpace="../../codelists/LandSlideRiskAttribute_status.xml">0</urf:status>
 		</urf:SedimentDisasterProneArea>
 	</core:cityObjectMember>
 	<core:cityObjectMember>
 		<urf:SedimentDisasterProneArea gml:id="lsld_18efb18d-e879-48ea-9cb7-108fd767d3d8">
+			<core:creationDate>2021-03-26</core:creationDate>
 			<urf:validFrom>2018-03-30</urf:validFrom>
 			<urf:prefecture codeSpace="../../codelists/Common_localPublicAuthorities.xml">22</urf:prefecture>
 			<urf:lod1MultiSurface>
@@ -2023,12 +2584,18 @@
 					</gml:surfaceMember>
 				</gml:MultiSurface>
 			</urf:lod1MultiSurface>
+			<urf:dataQualityAttribute>
+				<uro:DataQualityAttribute>
+					<uro:geometrySrcDescLod1 codeSpace="../../codelists/DataQualityAttribute_geometrySrcDesc.xml">400</uro:geometrySrcDescLod1>
+					<uro:thematicSrcDesc codeSpace="../../codelists/DataQualityAttribute_thematicSrcDesc.xml">400</uro:thematicSrcDesc>
+				</uro:DataQualityAttribute>
+			</urf:dataQualityAttribute>
 			<urf:location>沼津市岡一色字渡戸　他</urf:location>
-			<urf:disasterType codeSpace="../../codelists/SedimentDisasterProneArea_disasterType.xml">1</urf:disasterType>
-			<urf:areaType codeSpace="../../codelists/SedimentDisasterProneArea_areaType.xml">2</urf:areaType>
+			<urf:disasterType codeSpace="../../codelists/LandSlideRiskAttribute_description.xml">1</urf:disasterType>
+			<urf:areaType codeSpace="../../codelists/LandSlideRiskAttribute_areaType.xml">2</urf:areaType>
 			<urf:zoneNumber>103-Ⅰ-0658</urf:zoneNumber>
 			<urf:zoneName>池上町A</urf:zoneName>
-			<urf:status codeSpace="../../codelists/SedimentDisasterProneArea_status.xml">0</urf:status>
+			<urf:status codeSpace="../../codelists/LandSlideRiskAttribute_status.xml">0</urf:status>
 		</urf:SedimentDisasterProneArea>
 	</core:cityObjectMember>
 </core:CityModel>

@@ -1,0 +1,70 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<gml:Dictionary xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:gml="http://www.opengis.net/gml" xsi:schemaLocation="http://www.opengis.net/gml http://schemas.opengis.net/gml/3.1.1/profiles/SimpleDictionary/1.0.0/gmlSimpleDictionaryProfile.xsd" gml:id="cl_b4bb86ae-bd3f-47eb-85e2-1cd0efac7eb8">
+<gml:name>Building_lodType</gml:name>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="Building_lodType_1">
+<gml:description>LOD2.0</gml:description>
+<gml:name>2.0</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="Building_lodType_2">
+<gml:description>LOD2.1</gml:description>
+<gml:name>2.1</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="Building_lodType_3">
+<gml:description>LOD2.2</gml:description>
+<gml:name>2.2</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="Building_lodType_4">
+<gml:description>LOD3.0</gml:description>
+<gml:name>3.0</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="Building_lodType_5">
+<gml:description>LOD3.1</gml:description>
+<gml:name>3.1</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="Building_lodType_6">
+<gml:description>LOD3.2</gml:description>
+<gml:name>3.2</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="Building_lodType_7">
+<gml:description>LOD3.3</gml:description>
+<gml:name>3.3</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="Building_lodType_8">
+<gml:description>LOD4.0</gml:description>
+<gml:name>4.0</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="Building_lodType_9">
+<gml:description>LOD4.1</gml:description>
+<gml:name>4.1</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="Building_lodType_10">
+<gml:description>LOD4.2</gml:description>
+<gml:name>4.2</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="Building_lodType_11">
+<gml:description>不明</gml:description>
+<gml:name>8</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+</gml:Dictionary>

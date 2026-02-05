@@ -50,8 +50,8 @@ pub struct ConstructionBaseAttribute {
     #[citygml(path = b"uro:adminType")]
     pub admin_type: Option<Code>,
 
-    #[citygml(path = b"uro:administorator")]
-    pub administorator: Option<String>,
+    #[citygml(path = b"uro:administrator")]
+    pub administrator: Option<String>,
 
     #[citygml(path = b"uro:adminOffice")]
     pub admin_office: Option<String>,

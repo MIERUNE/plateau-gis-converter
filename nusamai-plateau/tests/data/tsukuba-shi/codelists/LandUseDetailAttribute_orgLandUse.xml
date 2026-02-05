@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gml:Dictionary xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:gml="http://www.opengis.net/gml" xsi:schemaLocation="http://www.opengis.net/gml http://schemas.opengis.net/gml/3.1.1/profiles/SimpleDictionary/1.0.0/gmlSimpleDictionaryProfile.xsd" gml:id="cl_8a84a901-5542-e34f-86a8-f72babec58f7">
+<gml:name>LandUseDetailAttribute_orgLandUse</gml:name>
+    <gml:dictionaryEntry>
+        <gml:Definition gml:id="id1">
+            <gml:description>田</gml:description>
+            <gml:name>1</gml:name>
+        </gml:Definition>
+    </gml:dictionaryEntry>
+    <gml:dictionaryEntry>
+        <gml:Definition gml:id="id2">
+            <gml:description>畑</gml:description>
+            <gml:name>2</gml:name>
+        </gml:Definition>
+    </gml:dictionaryEntry>
+    <gml:dictionaryEntry>
+        <gml:Definition gml:id="id3">
+            <gml:description>山林</gml:description>
+            <gml:name>3</gml:name>
+        </gml:Definition>
+    </gml:dictionaryEntry>
+    <gml:dictionaryEntry>
+        <gml:Definition gml:id="id4">
+            <gml:description>原野・荒地・牧野</gml:description>
+            <gml:name>4</gml:name>
+        </gml:Definition>
+    </gml:dictionaryEntry>
+    <gml:dictionaryEntry>
+        <gml:Definition gml:id="id5">
+            <gml:description>水面</gml:description>
+            <gml:name>5</gml:name>
+        </gml:Definition>
+    </gml:dictionaryEntry>
+    <gml:dictionaryEntry>
+        <gml:Definition gml:id="id6">
+            <gml:description>その他（海浜等）</gml:description>
+            <gml:name>6</gml:name>
+        </gml:Definition>
+    </gml:dictionaryEntry>
+    <gml:dictionaryEntry>
+        <gml:Definition gml:id="id7">
+            <gml:description>住宅用地</gml:description>
+            <gml:name>7</gml:name>
+        </gml:Definition>
+    </gml:dictionaryEntry>
+    <gml:dictionaryEntry>
+        <gml:Definition gml:id="id8">
+            <gml:description>併用住宅用地</gml:description>
+            <gml:name>8</gml:name>
+        </gml:Definition>
+    </gml:dictionaryEntry>
+    <gml:dictionaryEntry>
+        <gml:Definition gml:id="id9">
+            <gml:description>商業用地</gml:description>
+            <gml:name>9</gml:name>
+        </gml:Definition>
+    </gml:dictionaryEntry>
+    <gml:dictionaryEntry>
+        <gml:Definition gml:id="id10">
+            <gml:description>工業用地</gml:description>
+            <gml:name>10</gml:name>
+        </gml:Definition>
+    </gml:dictionaryEntry>
+    <gml:dictionaryEntry>
+        <gml:Definition gml:id="id11">
+            <gml:description>運輸施設用地</gml:description>
+            <gml:name>11</gml:name>
+        </gml:Definition>
+    </gml:dictionaryEntry>
+    <gml:dictionaryEntry>
+        <gml:Definition gml:id="id12">
+            <gml:description>農林漁業用施設用地</gml:description>
+            <gml:name>12</gml:name>
+        </gml:Definition>
+    </gml:dictionaryEntry>
+    <gml:dictionaryEntry>
+        <gml:Definition gml:id="id13">
+            <gml:description>公共用地</gml:description>
+            <gml:name>13</gml:name>
+        </gml:Definition>
+    </gml:dictionaryEntry>
+    <gml:dictionaryEntry>
+        <gml:Definition gml:id="id14">
+            <gml:description>文教厚生用地</gml:description>
+            <gml:name>14</gml:name>
+        </gml:Definition>
+    </gml:dictionaryEntry>
+    <gml:dictionaryEntry>
+        <gml:Definition gml:id="id15">
+            <gml:description>公園・緑地・公共空地</gml:description>
+            <gml:name>15</gml:name>
+        </gml:Definition>
+    </gml:dictionaryEntry>
+    <gml:dictionaryEntry>
+        <gml:Definition gml:id="id16">
+            <gml:description>ゴルフ場</gml:description>
+            <gml:name>16</gml:name>
+        </gml:Definition>
+    </gml:dictionaryEntry>
+    <gml:dictionaryEntry>
+        <gml:Definition gml:id="id17">
+            <gml:description>太陽光発電設備</gml:description>
+            <gml:name>17</gml:name>
+        </gml:Definition>
+    </gml:dictionaryEntry>
+    <gml:dictionaryEntry>
+        <gml:Definition gml:id="id18">
+            <gml:description>その他の空地</gml:description>
+            <gml:name>18</gml:name>
+        </gml:Definition>
+    </gml:dictionaryEntry>
+    <gml:dictionaryEntry>
+        <gml:Definition gml:id="id19">
+            <gml:description>防衛用地</gml:description>
+            <gml:name>19</gml:name>
+        </gml:Definition>
+    </gml:dictionaryEntry>
+    <gml:dictionaryEntry>
+        <gml:Definition gml:id="id20">
+            <gml:description>道路用地</gml:description>
+            <gml:name>20</gml:name>
+        </gml:Definition>
+    </gml:dictionaryEntry>
+    <gml:dictionaryEntry>
+        <gml:Definition gml:id="id21">
+            <gml:description>鉄道用地</gml:description>
+            <gml:name>21</gml:name>
+        </gml:Definition>
+    </gml:dictionaryEntry>
+    <gml:dictionaryEntry>
+        <gml:Definition gml:id="id22">
+            <gml:description>駐車場用地</gml:description>
+            <gml:name>22</gml:name>
+        </gml:Definition>
+    </gml:dictionaryEntry>
+</gml:Dictionary>

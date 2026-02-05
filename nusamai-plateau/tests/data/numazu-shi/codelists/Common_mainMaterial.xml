@@ -1,0 +1,394 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<gml:Dictionary xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:gml="http://www.opengis.net/gml" xsi:schemaLocation="http://www.opengis.net/gml http://schemas.opengis.net/gml/3.1.1/profiles/SimpleDictionary/1.0.0/gmlSimpleDictionaryProfile.xsd" gml:id="cl_00f61231-ff47-4e9a-bbcf-a73f455560f9">
+<gml:name>Common_mainMaterial</gml:name>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="Common_mainMaterial_1">
+<gml:description>コンクリ－ト</gml:description>
+<gml:name>1</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="Common_mainMaterial_2">
+<gml:description>鉄筋コンクリ－ト</gml:description>
+<gml:name>2</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="Common_mainMaterial_3">
+<gml:description>鋼材・コンクリート</gml:description>
+<gml:name>3</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="Common_mainMaterial_4">
+<gml:description>鋼矢板</gml:description>
+<gml:name>4</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="Common_mainMaterial_5">
+<gml:description>石積</gml:description>
+<gml:name>5</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="Common_mainMaterial_6">
+<gml:description>粗石</gml:description>
+<gml:name>6</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="Common_mainMaterial_7">
+<gml:description>アスファルト</gml:description>
+<gml:name>7</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="Common_mainMaterial_8">
+<gml:description>砕石</gml:description>
+<gml:name>8</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="Common_mainMaterial_9">
+<gml:description>鉄</gml:description>
+<gml:name>9</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="Common_mainMaterial_10">
+<gml:description>木</gml:description>
+<gml:name>10</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="Common_mainMaterial_11">
+<gml:description>石</gml:description>
+<gml:name>11</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="Common_mainMaterial_12">
+<gml:description>その他</gml:description>
+<gml:name>12</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="Common_mainMaterial_13">
+<gml:description>ケーソン</gml:description>
+<gml:name>13</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="Common_mainMaterial_14">
+<gml:description>異形ブロック</gml:description>
+<gml:name>14</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="Common_mainMaterial_15">
+<gml:description>練石積</gml:description>
+<gml:name>15</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="Common_mainMaterial_16">
+<gml:description>ブロック</gml:description>
+<gml:name>16</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="Common_mainMaterial_17">
+<gml:description>鋼桁・コンクリート</gml:description>
+<gml:name>17</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="Common_mainMaterial_18">
+<gml:description>鋼ぐい</gml:description>
+<gml:name>18</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="Common_mainMaterial_19">
+<gml:description>鋼管矢板</gml:description>
+<gml:name>19</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="Common_mainMaterial_20">
+<gml:description>コンクリート・ブロック</gml:description>
+<gml:name>20</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="Common_mainMaterial_21">
+<gml:description>アスファルト舗装</gml:description>
+<gml:name>21</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="Common_mainMaterial_22">
+<gml:description>砂利敷</gml:description>
+<gml:name>22</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="Common_mainMaterial_23">
+<gml:description>コンクリート舗装</gml:description>
+<gml:name>23</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="Common_mainMaterial_24">
+<gml:description>鉄骨鉄筋コンクリート</gml:description>
+<gml:name>24</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="Common_mainMaterial_25">
+<gml:description>木材</gml:description>
+<gml:name>25</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_facilityDetailsType_101">
+<gml:description>アルミ</gml:description>
+<gml:name>101</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_facilityDetailsType_102">
+<gml:description>鋼</gml:description>
+<gml:name>102</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_facilityDetailsType_103">
+<gml:description>鋼管杭,コンクリート床版</gml:description>
+<gml:name>103</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_facilityDetailsType_104">
+<gml:description>鋼矢板</gml:description>
+<gml:name>104</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_facilityDetailsType_105">
+<gml:description>コンクリートブロック</gml:description>
+<gml:name>105</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_facilityDetailsType_106">
+<gml:description>コンクリート造タイル張</gml:description>
+<gml:name>106</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_facilityDetailsType_107">
+<gml:description>コンクリート張石</gml:description>
+<gml:name>107</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_facilityDetailsType_108">
+<gml:description>雑割石</gml:description>
+<gml:name>108</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_facilityDetailsType_109">
+<gml:description>野面石又は雑石</gml:description>
+<gml:name>109</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_facilityDetailsType_110">
+<gml:description>砂利</gml:description>
+<gml:name>110</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_facilityDetailsType_111">
+<gml:description>方塊コンクリート</gml:description>
+<gml:name>111</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_facilityDetailsType_112">
+<gml:description>方塊,コンクリート石材</gml:description>
+<gml:name>112</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_facilityDetailsType_113">
+<gml:description>方塊コンクリート,石材</gml:description>
+<gml:name>113</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_facilityDetailsType_114">
+<gml:description>方塊コンクリート,場所打コンクリート</gml:description>
+<gml:name>114</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_facilityDetailsType_115">
+<gml:description>方塊ブロック,場所打コンクリート</gml:description>
+<gml:name>115</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_facilityDetailsType_116">
+<gml:description>方塊ブロックジャケット鋼材</gml:description>
+<gml:name>116</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_facilityDetailsType_117">
+<gml:description>場所打コンクリート方塊</gml:description>
+<gml:name>117</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_facilityDetailsType_118">
+<gml:description>捨石,鉄筋コンクリート</gml:description>
+<gml:name>118</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_facilityDetailsType_119">
+<gml:description>捨石,方塊,石材</gml:description>
+<gml:name>119</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_facilityDetailsType_120">
+<gml:description>捨石方塊,コンクリート</gml:description>
+<gml:name>120</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_facilityDetailsType_121">
+<gml:description>捨石方塊,場所打コンクリート</gml:description>
+<gml:name>121</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_facilityDetailsType_122">
+<gml:description>捨石方塊</gml:description>
+<gml:name>122</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_facilityDetailsType_123">
+<gml:description>捨石方塊石材</gml:description>
+<gml:name>123</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_facilityDetailsType_124">
+<gml:description>被覆石捨石</gml:description>
+<gml:name>124</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_facilityDetailsType_125">
+<gml:description>化粧ブロック</gml:description>
+<gml:name>125</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_facilityDetailsType_201">
+<gml:description>アルミ合金</gml:description>
+<gml:name>201</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_facilityDetailsType_202">
+<gml:description>石張</gml:description>
+<gml:name>202</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_facilityDetailsType_203">
+<gml:description>エアーポール</gml:description>
+<gml:name>203</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_facilityDetailsType_204">
+<gml:description>コンクリート捨石</gml:description>
+<gml:name>204</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_facilityDetailsType_205">
+<gml:description>コンクリート造タイル張</gml:description>
+<gml:name>205</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_facilityDetailsType_206">
+<gml:description>コンクリ－ト舗装</gml:description>
+<gml:name>206</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_facilityDetailsType_207">
+<gml:description>セルラーコンクリート</gml:description>
+<gml:name>207</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_facilityDetailsType_208">
+<gml:description>ボックスカルバート</gml:description>
+<gml:name>208</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_facilityDetailsType_209">
+<gml:description>ポリカーボネート樹脂</gml:description>
+<gml:name>209</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_facilityDetailsType_210">
+<gml:description>鋼材</gml:description>
+<gml:name>210</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_facilityDetailsType_211">
+<gml:description>捨石,ケーソン,コンクリート</gml:description>
+<gml:name>211</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_facilityDetailsType_212">
+<gml:description>捨石,コンクリートブロック</gml:description>
+<gml:name>212</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_facilityDetailsType_213">
+<gml:description>捨石コンクリートブロック,矢板コンクリート</gml:description>
+<gml:name>213</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_facilityDetailsType_214">
+<gml:description>石材,コンクリート</gml:description>
+<gml:name>214</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_facilityDetailsType_215">
+<gml:description>FRP</gml:description>
+<gml:name>215</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+</gml:Dictionary>

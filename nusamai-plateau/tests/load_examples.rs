@@ -177,17 +177,20 @@ fn load_cityfurniture_multi_surface() {
 
 #[test]
 fn load_landslide_example() {
-    let cityobjs = load_cityobjs("./tests/data/numazu-shi/udx/lsld/523857_lsld_6668_op.gml");
+    let cityobjs = load_cityobjs("./tests/data/numazu-shi/udx/lsld/523857_lsld_6697_op.gml");
     assert_eq!(cityobjs.len(), 81);
     let TopLevelCityObject::SedimentDisasterProneArea(lsld) = &cityobjs.first().unwrap().cityobj
     else {
         panic!("expected SedimentDisasterProneArea");
     };
     assert_eq!(lsld.location, Some("沼津市下香貫八重".into()));
-    assert_eq!(lsld.disaster_type.as_ref().unwrap().code(), "1");
-    assert_eq!(lsld.area_type.as_ref().unwrap().code(), "2");
+    assert_eq!(
+        lsld.disaster_type.as_ref().and_then(|c| c.code()),
+        Some("1")
+    );
+    assert_eq!(lsld.area_type.as_ref().and_then(|c| c.code()), Some("2"));
     assert_eq!(lsld.zone_number.as_ref().unwrap(), "103-Ⅰ-0648");
-    assert_eq!(lsld.status.as_ref().unwrap().code(), "0");
+    assert_eq!(lsld.status.as_ref().and_then(|c| c.code()), Some("0"));
 }
 
 #[test]
@@ -591,7 +594,9 @@ fn load_urf_example() {
 #[test]
 fn load_flood_example() {
     {
-        let cityobjs = load_cityobjs("./tests/data/numazu-shi/udx/fld/52385721_fld_6697_l1_op.gml");
+        let cityobjs = load_cityobjs(
+            "./tests/data/numazu-shi/udx/fld/natl/kanogawa_kisegawa/52385721_fld_6697_l1_op.gml",
+        );
         assert_eq!(cityobjs.len(), 3);
         let TopLevelCityObject::WaterBody(waterbody) = &cityobjs.first().unwrap().cityobj else {
             panic!("expected SedimentDisasterProneArea");
@@ -601,8 +606,12 @@ fn load_flood_example() {
         else {
             panic!("expected WaterBodyRiverFloodingRiskAttribute");
         };
-        assert_eq!(flood.admin_type.as_ref().unwrap().code(), "1");
-        assert_eq!(flood.scale.as_ref().unwrap().code(), "L1");
+        assert_eq!(flood.admin_type.as_ref().and_then(|c| c.code()), Some("1"));
+        assert_eq!(flood.scale.as_ref().and_then(|c| c.code()), Some("1"));
+        assert_eq!(
+            flood.scale.as_ref().map(|c| c.value()),
+            Some("L1（計画規模）")
+        );
     }
 
     {
@@ -1043,7 +1052,7 @@ fn load_vegetation_multisolid_example() {
     // todo: check solid id and surface id
 
     // Verify basic PlantCover attributes
-    assert_eq!(plant_cover.class.as_ref().map(|c| c.code()), Some("5"));
+    assert_eq!(plant_cover.class.as_ref().and_then(|c| c.code()), Some("5"));
 }
 
 #[test]
@@ -1073,8 +1082,8 @@ fn load_track_lod0network_example() {
     };
 
     // Verify basic Track attributes
-    assert_eq!(track.class.as_ref().map(|c| c.code()), Some("1020"));
-    assert_eq!(track.function.first().map(|c| c.code()), Some("9020"));
+    assert_eq!(track.class.as_ref().map(|c| c.value()), Some("1020"));
+    assert_eq!(track.function.first().map(|c| c.value()), Some("9020"));
 
     let geometries = &cityobjs.first().unwrap().geometries;
 

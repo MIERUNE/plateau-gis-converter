@@ -1,6 +1,8 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
-<gml:Dictionary xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:gml="http://www.opengis.net/gml" xsi:schemaLocation="http://www.opengis.net/gml http://schemas.opengis.net/gml/3.1.1/profiles/SimpleDictionary/1.0.0/gmlSimpleDictionaryProfile.xsd" gml:id="cl_7c2d4896-2f60-4faf-b4eb-535678bb1b80">
-	<gml:name>Common_localPublicAuthorities</gml:name>
+<?xml version="1.0" encoding="UTF-8"?>
+<gml:Dictionary xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:gml="http://www.opengis.net/gml" xsi:schemaLocation="http://www.opengis.net/gml http://schemas.opengis.net/gml/3.1.1/profiles/SimpleDictionary/1.0.0/gmlSimpleDictionaryProfile.xsd" gml:id="cl_9d8ed669-98d2-430a-8e2c-c4158b869749">
+	<gml:name>Common_localPublicAuthoritiesType</gml:name>
+	<!-- 政令指定都市の区追加、東京特別区追加 -->
+	<!-- 各都道府県に帰属未定地を追加、"都道府県コード＋999"とする -->
 	<gml:dictionaryEntry>
 		<gml:Definition gml:id="id1">
 			<gml:description>北海道</gml:description>
@@ -13,6 +15,7 @@
 			<gml:name>01100</gml:name>
 		</gml:Definition>
 	</gml:dictionaryEntry>
+	<!-- 政令指定都市の区 -->
 	<gml:dictionaryEntry>
 		<gml:Definition gml:id="id1789">
 			<gml:description>北海道札幌市中央区</gml:description>
@@ -4027,12 +4030,14 @@
 			<gml:name>13</gml:name>
 		</gml:Definition>
 	</gml:dictionaryEntry>
+	<!-- 東京都特別区 -->
 	<gml:dictionaryEntry>
 		<gml:Definition gml:id="id1964">
 			<gml:description>東京都特別区</gml:description>
 			<gml:name>13100</gml:name>
 		</gml:Definition>
 	</gml:dictionaryEntry>
+	<!-- -->
 	<gml:dictionaryEntry>
 		<gml:Definition gml:id="id641">
 			<gml:description>東京都千代田区</gml:description>
@@ -10699,7 +10704,7 @@
 			<gml:name>43100</gml:name>
 		</gml:Definition>
 	</gml:dictionaryEntry>
-	<gml:dictionaryEntry>
+		<gml:dictionaryEntry>
 		<gml:Definition gml:id="id1959">
 			<gml:description>熊本県熊本市中央区</gml:description>
 			<gml:name>43101</gml:name>
@@ -11786,9 +11791,293 @@
 		</gml:Definition>
 	</gml:dictionaryEntry>
 	<gml:dictionaryEntry>
-		<gml:Definition gml:id="id1789">
-			<gml:description>所属未定</gml:description>
-			<gml:name>13999</gml:name>
-		</gml:Definition>
-	</gml:dictionaryEntry>
+<gml:Definition gml:id="unknown_1">
+<gml:description>北海道帰属未定地</gml:description>
+<gml:name>01999</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="unknown_2">
+<gml:description>青森県帰属未定地</gml:description>
+<gml:name>02999</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="unknown_3">
+<gml:description>岩手県帰属未定地</gml:description>
+<gml:name>03999</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="unknown_4">
+<gml:description>宮城県帰属未定地</gml:description>
+<gml:name>04999</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="unknown_5">
+<gml:description>秋田県帰属未定地</gml:description>
+<gml:name>05999</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="unknown_6">
+<gml:description>山形県帰属未定地</gml:description>
+<gml:name>06999</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="unknown_7">
+<gml:description>福島県帰属未定地</gml:description>
+<gml:name>07999</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="unknown_8">
+<gml:description>茨城県帰属未定地</gml:description>
+<gml:name>08999</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="unknown_9">
+<gml:description>栃木県帰属未定地</gml:description>
+<gml:name>09999</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="unknown_10">
+<gml:description>群馬県帰属未定地</gml:description>
+<gml:name>10999</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="unknown_11">
+<gml:description>埼玉県帰属未定地</gml:description>
+<gml:name>11999</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="unknown_12">
+<gml:description>千葉県帰属未定地</gml:description>
+<gml:name>12999</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="unknown_13">
+<gml:description>東京都帰属未定地</gml:description>
+<gml:name>13999</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="unknown_14">
+<gml:description>神奈川県帰属未定地</gml:description>
+<gml:name>14999</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="unknown_15">
+<gml:description>新潟県帰属未定地</gml:description>
+<gml:name>15999</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="unknown_16">
+<gml:description>富山県帰属未定地</gml:description>
+<gml:name>16999</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="unknown_17">
+<gml:description>石川県帰属未定地</gml:description>
+<gml:name>17999</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="unknown_18">
+<gml:description>福井県帰属未定地</gml:description>
+<gml:name>18999</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="unknown_19">
+<gml:description>山梨県帰属未定地</gml:description>
+<gml:name>19999</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="unknown_20">
+<gml:description>長野県帰属未定地</gml:description>
+<gml:name>20999</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="unknown_21">
+<gml:description>岐阜県帰属未定地</gml:description>
+<gml:name>21999</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="unknown_22">
+<gml:description>静岡県帰属未定地</gml:description>
+<gml:name>22999</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="unknown_23">
+<gml:description>愛知県帰属未定地</gml:description>
+<gml:name>23999</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="unknown_24">
+<gml:description>三重県帰属未定地</gml:description>
+<gml:name>24999</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="unknown_25">
+<gml:description>滋賀県帰属未定地</gml:description>
+<gml:name>25999</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="unknown_26">
+<gml:description>京都府帰属未定地</gml:description>
+<gml:name>26999</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="unknown_27">
+<gml:description>大阪府帰属未定地</gml:description>
+<gml:name>27999</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="unknown_28">
+<gml:description>兵庫県帰属未定地</gml:description>
+<gml:name>28999</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="unknown_29">
+<gml:description>奈良県帰属未定地</gml:description>
+<gml:name>29999</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="unknown_30">
+<gml:description>和歌山県帰属未定地</gml:description>
+<gml:name>30999</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="unknown_31">
+<gml:description>鳥取県帰属未定地</gml:description>
+<gml:name>31999</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="unknown_32">
+<gml:description>島根県帰属未定地</gml:description>
+<gml:name>32999</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="unknown_33">
+<gml:description>岡山県帰属未定地</gml:description>
+<gml:name>33999</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="unknown_34">
+<gml:description>広島県帰属未定地</gml:description>
+<gml:name>34999</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="unknown_35">
+<gml:description>山口県帰属未定地</gml:description>
+<gml:name>35999</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="unknown_36">
+<gml:description>徳島県帰属未定地</gml:description>
+<gml:name>36999</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="unknown_37">
+<gml:description>香川県帰属未定地</gml:description>
+<gml:name>37999</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="unknown_38">
+<gml:description>愛媛県帰属未定地</gml:description>
+<gml:name>38999</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="unknown_39">
+<gml:description>高知県帰属未定地</gml:description>
+<gml:name>39999</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="unknown_40">
+<gml:description>福岡県帰属未定地</gml:description>
+<gml:name>40999</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="unknown_41">
+<gml:description>佐賀県帰属未定地</gml:description>
+<gml:name>41999</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="unknown_42">
+<gml:description>長崎県帰属未定地</gml:description>
+<gml:name>42999</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="unknown_43">
+<gml:description>熊本県帰属未定地</gml:description>
+<gml:name>43999</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="unknown_44">
+<gml:description>大分県帰属未定地</gml:description>
+<gml:name>44999</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="unknown_45">
+<gml:description>宮崎県帰属未定地</gml:description>
+<gml:name>45999</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="unknown_46">
+<gml:description>鹿児島県帰属未定地</gml:description>
+<gml:name>46999</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="unknown_47">
+<gml:description>沖縄県帰属未定地</gml:description>
+<gml:name>47999</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="unknown_48">
+<gml:description>不明</gml:description>
+<gml:name>99999</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
 </gml:Dictionary>
+
+

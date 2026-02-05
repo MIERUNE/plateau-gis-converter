@@ -1,0 +1,412 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<gml:Dictionary xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:gml="http://www.opengis.net/gml" xsi:schemaLocation="http://www.opengis.net/gml http://schemas.opengis.net/gml/3.1.1/profiles/SimpleDictionary/1.0.0/gmlSimpleDictionaryProfile.xsd" gml:id="cl_fd38a188-0069-4d23-9e9d-69ffb2543522">
+<gml:name>FishingPortFacilityAttribute_structureType</gml:name>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_structureType_1">
+<gml:description>直立提</gml:description>
+<gml:name>1</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_structureType_2">
+<gml:description>傾斜堤</gml:description>
+<gml:name>2</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_structureType_3">
+<gml:description>混成提</gml:description>
+<gml:name>3</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_structureType_4">
+<gml:description>矢板・杭式</gml:description>
+<gml:name>4</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_structureType_5">
+<gml:description>浮体式浮防波堤</gml:description>
+<gml:name>5</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_structureType_6">
+<gml:description>緩傾斜型</gml:description>
+<gml:name>6</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_structureType_7">
+<gml:description>重力式</gml:description>
+<gml:name>7</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_structureType_8">
+<gml:description>杭式・鋼矢板式</gml:description>
+<gml:name>8</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_structureType_9">
+<gml:description>重力式係船岸</gml:description>
+<gml:name>9</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_structureType_10">
+<gml:description>矢板式係船岸</gml:description>
+<gml:name>10</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_structureType_11">
+<gml:description>階段式係船岸</gml:description>
+<gml:name>11</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_structureType_12">
+<gml:description>係船くい式</gml:description>
+<gml:name>12</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_structureType_13">
+<gml:description>係船浮標式</gml:description>
+<gml:name>13</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_structureType_14">
+<gml:description>桟橋式係船岸</gml:description>
+<gml:name>14</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_structureType_15">
+<gml:description>浮体式係船岸</gml:description>
+<gml:name>15</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_structureType_16">
+<gml:description>斜路式</gml:description>
+<gml:name>16</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_structureType_17">
+<gml:description>上架式</gml:description>
+<gml:name>17</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_structureType_18">
+<gml:description>単桁式</gml:description>
+<gml:name>18</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_structureType_19">
+<gml:description>連結桁式</gml:description>
+<gml:name>19</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_structureType_20">
+<gml:description>構桁式</gml:description>
+<gml:name>20</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_structureType_21">
+<gml:description>アーチ式</gml:description>
+<gml:name>21</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_structureType_22">
+<gml:description>開放式</gml:description>
+<gml:name>22</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_structureType_23">
+<gml:description>閉鎖式</gml:description>
+<gml:name>23</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_structureType_101">
+<gml:description>ブロック式</gml:description>
+<gml:name>101</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_structureType_102">
+<gml:description>石張式</gml:description>
+<gml:name>102</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_structureType_103">
+<gml:description>石積堤</gml:description>
+<gml:name>103</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_structureType_104">
+<gml:description>セルラー式</gml:description>
+<gml:name>104</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_structureType_105">
+<gml:description>鋼矢板式</gml:description>
+<gml:name>105</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_structureType_106">
+<gml:description>引戸式</gml:description>
+<gml:name>106</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_structureType_107">
+<gml:description>逆Ｔ式</gml:description>
+<gml:name>107</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_structureType_108">
+<gml:description>重力式,セルラー式</gml:description>
+<gml:name>108</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_structureType_109">
+<gml:description>桟橋式</gml:description>
+<gml:name>109</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_structureType_110">
+<gml:description>Ｌ型ブロック式</gml:description>
+<gml:name>110</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_structureType_111">
+<gml:description>平行式</gml:description>
+<gml:name>111</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_structureType_112">
+<gml:description>アスファルト舗装</gml:description>
+<gml:name>112</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_structureType_113">
+<gml:description>アスファルト舗装，インターロッキング舗装</gml:description>
+<gml:name>113</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_structureType_114">
+<gml:description>塔形</gml:description>
+<gml:name>114</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_structureType_115">
+<gml:description>焼玉及ディーゼル</gml:description>
+<gml:name>115</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_structureType_116">
+<gml:description>地上式</gml:description>
+<gml:name>116</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_structureType_117">
+<gml:description>アンモニア圧縮</gml:description>
+<gml:name>117</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_structureType_118">
+<gml:description>鉄塔自立式（64.25MC，10WF3）</gml:description>
+<gml:name>118</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_facilityDetailsType_201">
+<gml:description>1階建</gml:description>
+<gml:name>201</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_facilityDetailsType_202">
+<gml:description>2階建</gml:description>
+<gml:name>202</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_facilityDetailsType_203">
+<gml:description>3階建</gml:description>
+<gml:name>203</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_facilityDetailsType_204">
+<gml:description>4階建</gml:description>
+<gml:name>204</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_facilityDetailsType_205">
+<gml:description>HL7情報板</gml:description>
+<gml:name>205</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_facilityDetailsType_206">
+<gml:description>LED電光表示板</gml:description>
+<gml:name>206</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_facilityDetailsType_207">
+<gml:description>Ｌ型壁,鋼矢板</gml:description>
+<gml:name>207</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_facilityDetailsType_208">
+<gml:description>石積</gml:description>
+<gml:name>208</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_facilityDetailsType_209">
+<gml:description>エアー遮断機</gml:description>
+<gml:name>209</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_facilityDetailsType_210">
+<gml:description>石積,コンクリートブロック積</gml:description>
+<gml:name>210</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_facilityDetailsType_211">
+<gml:description>コンクリート</gml:description>
+<gml:name>211</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_facilityDetailsType_212">
+<gml:description>コンクリートブロック積</gml:description>
+<gml:name>212</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_facilityDetailsType_213">
+<gml:description>コンクリート張</gml:description>
+<gml:name>213</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_facilityDetailsType_214">
+<gml:description>場所打コンクリート</gml:description>
+<gml:name>214</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_facilityDetailsType_215">
+<gml:description>場所打コンクリート,水叩コンクリート復旧</gml:description>
+<gml:name>215</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_facilityDetailsType_216">
+<gml:description>水処理棟,管理棟及び脱水棟,原水ポンプ棟</gml:description>
+<gml:name>216</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_facilityDetailsType_217">
+<gml:description>もたれ式</gml:description>
+<gml:name>217</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_facilityDetailsType_218">
+<gml:description>ローラゲート</gml:description>
+<gml:name>218</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_facilityDetailsType_219">
+<gml:description>横引式</gml:description>
+<gml:name>219</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_facilityDetailsType_220">
+<gml:description>片開式</gml:description>
+<gml:name>220</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_facilityDetailsType_221">
+<gml:description>横片開式</gml:description>
+<gml:name>221</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_facilityDetailsType_222">
+<gml:description>階段堤</gml:description>
+<gml:name>222</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_facilityDetailsType_223">
+<gml:description>鋼杭</gml:description>
+<gml:name>223</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_facilityDetailsType_224">
+<gml:description>捨石ケーソン</gml:description>
+<gml:name>224</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_facilityDetailsType_225">
+<gml:description>塔型プラスチック造</gml:description>
+<gml:name>225</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_facilityDetailsType_226">
+<gml:description>塔形コンクリート造</gml:description>
+<gml:name>226</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="FishingPortFacilityAttribute_facilityDetailsType_227">
+<gml:description>円すい形頭標 １個付 塔形</gml:description>
+<gml:name>227</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+</gml:Dictionary>

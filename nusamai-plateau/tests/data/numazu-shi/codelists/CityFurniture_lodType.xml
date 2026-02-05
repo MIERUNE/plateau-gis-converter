@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gml:Dictionary xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:gml="http://www.opengis.net/gml" xsi:schemaLocation="http://www.opengis.net/gml http://schemas.opengis.net/gml/3.1.1/profiles/SimpleDictionary/1.0.0/gmlSimpleDictionaryProfile.xsd" gml:id="cl_f49b86ae-bd3f-47eb-85e2-1cd0efac7eb8">
+<gml:name>CityFurniture_lodType</gml:name>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="CityFurniture_lodType_3_0">
+<gml:description>都市設備の主要な部分同士の接続部を表現しない。</gml:description>
+<gml:name>3.0</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+<gml:dictionaryEntry>
+<gml:Definition gml:id="CityFurniture_lodType_3_1">
+<gml:description>都市設備の主要な部分同士の接続部を表現する。</gml:description>
+<gml:name>3.1</gml:name>
+</gml:Definition>
+</gml:dictionaryEntry>
+</gml:Dictionary>
