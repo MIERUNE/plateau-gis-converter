@@ -229,8 +229,8 @@ impl Class {
         ext_structural_metadata::Class,
         ext_structural_metadata::PropertyTable,
     ) {
-        let mut class_properties = HashMap::new();
-        let mut pt_properties: HashMap<String, PropertyTableProperty> = Default::default();
+        let mut class_properties = IndexMap::new();
+        let mut pt_properties: IndexMap<String, PropertyTableProperty> = Default::default();
 
         for (name, prop) in self.properties {
             // Skip unused properties
