@@ -95,7 +95,31 @@ PLATEAU の標準仕様に準拠した CityGML 2.0 形式の3D都市モデルは
   - インストールには30MB程度の空き容量が必要です。
   - データ変換時には、変換元データと同等ないしそれ以上の空き容量が必要です。
 
-## 7. 本リポジトリのフォルダ構成
+## 7. CLI のインストール手順（macOS / Linux）
+
+[Releaseページ](https://github.com/MIERUNE/plateau-gis-converter/releases)から、お使いの環境に合ったファイルをダウンロードしてください。
+
+| 環境 | ファイル名 |
+|------|-----------|
+| macOS (Apple Silicon) | `nusamai-<VERSION>-aarch64-apple-darwin.tar.gz` |
+| Linux (x86_64) | `nusamai-<VERSION>-x86_64-unknown-linux-gnu.tar.gz` |
+
+チェックサム検証を行う場合は、同名の `.sha256` ファイルもダウンロードしてください。
+
+```bash
+# チェックサム検証（任意）
+# macOS: shasum -a 256 -c <ファイル名>.sha256
+# Linux: sha256sum -c <ファイル名>.sha256
+
+# 展開
+tar -xzf nusamai-<VERSION>-<TARGET>.tar.gz
+
+# インストール（いずれかを選択）
+sudo install -m 755 nusamai /usr/local/bin/nusamai   # 全ユーザー向け
+install -m 755 nusamai ~/.local/bin/nusamai          # ユーザー配下（要PATH設定）
+```
+
+## 8. 本リポジトリのフォルダ構成
 
 - アプリケーション：
   - [`app`](./app/) &mdash; Tauri による GUI 実装
@@ -113,7 +137,7 @@ PLATEAU の標準仕様に準拠した CityGML 2.0 形式の3D都市モデルは
   - [`nusamai-czml`](./nusamai-czml/) &mdash; CZML
   - [`nusamai-shapefile`](./nusamai-shapefile/) &mdash; Shapefile
 
-### 7.1. 外部リポジトリ
+### 8.1. 外部リポジトリ
 
 - [MIERUNE/flatgeom-rs](https://github.com/MIERUNE/flatgeom-rs) &mdash; シリアライズ/デシリアライズの効率を優先したジオメトリ型
 - [MIERUNE/atlas-packer](https://github.com/MIERUNE/atlas-packer) &mdash; テクスチャアトラスの作成
@@ -126,19 +150,19 @@ PLATEAU の標準仕様に準拠した CityGML 2.0 形式の3D都市モデルは
 - [ciscorn/tinymvt](https://github.com/ciscorn/tinymvt) &mdash; MVT生成のためのユーティリティ
 - [ciscorn/kv-extsort-rs](https://github.com/ciscorn/kv-extsort-rs) &mdash; Key-value データの外部ソート
 
-## 8. ライセンス
+## 9. ライセンス
 
 - 本ソフトウェアは、MITライセンスのもとで提供されるオープンソースソフトウエアです。
 - ソースコードおよび関連ドキュメントの著作権は国土交通省および開発者に帰属します。
 - 本ソフトウェアの開発は[株式会社MIERUNE](https://www.mierune.co.jp/)が行っています。
 
-## 9. 注意事項
+## 10. 注意事項
 
 - 本リポジトリおよびソフトウェアは Project PLATEAU の参考資料として提供しているものです。動作の保証は行っておりません。
 - 本リポジトリおよび本ソフトウェアの利用により生じた損失及び損害等について、開発者および国土交通省はいかなる責任も負わないものとします。
 - 本リポジトリの内容は予告なく変更・削除する場合があります。
 
-## 10. 参考資料
+## 11. 参考資料
 
 - [PLATEAU プロジェクト](https://www.mlit.go.jp/plateau/)
 - [3D都市モデル標準製品仕様書](https://www.mlit.go.jp/plateaudocument/)
