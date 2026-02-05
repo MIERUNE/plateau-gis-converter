@@ -182,6 +182,13 @@ cd ./app
 npx tauri build
 ```
 
+Enable the feature to download data from the map:
+
+```bash
+cd ./app
+PUBLIC_ENABLE_PLATEAU_API=true npx tauri build
+```
+
 ### Test
 
 - Test & Lint
