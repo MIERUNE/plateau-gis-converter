@@ -62,7 +62,12 @@ const filetypeOptions: Record<string, { label: string; extensions: string[]; eps
 		mvt: {
 			label: 'Vector Tiles (MVT)',
 			extensions: [''],
-			epsg: [{ value: 4979, label: 'WGS 84' }]
+			epsg: [{ value: 3857, label: 'Web Mercator (EPSG:3857)' }]
+		},
+		pmtiles: {
+			label: 'PMTiles',
+			extensions: ['pmtiles'],
+			epsg: [{ value: 3857, label: 'Web Mercator (EPSG:3857)' }]
 		},
 		czml: {
 			label: 'CZML',
