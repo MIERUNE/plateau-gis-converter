@@ -13,6 +13,9 @@ use crate::models::appearance::{self, ParameterizedTexture, SurfaceDataProperty,
 pub struct Theme {
     pub ring_id_to_texture: HashMap<LocalId, (u32, LineString2<'static>)>, // TODO: texture index is redundant
     pub surface_id_to_material: HashMap<LocalId, u32>,
+    /// Mapping from surface ID to list of ring IDs (for texture targets)
+    /// This preserves the surface-to-ring relationship needed for CityGML appearance output
+    pub surface_id_to_rings: HashMap<LocalId, Vec<LocalId>>,
 }
 
 /// Material (CityGML's X3DMaterial)
@@ -90,6 +93,9 @@ impl AppearanceStore {
                     let tex_idx = self.textures.len() as u32;
                     for tex_assoc in texture.target.drain(..) {
                         if let TextureAssociation::TexCoordList(tcl) = tex_assoc {
+                            let surface_id = tcl.target.clone();
+                            let mut ring_ids = Vec::new();
+                            
                             for (ring, coords) in
                                 tcl.rings.into_iter().zip(tcl.coords_list.into_iter())
                             {
@@ -98,7 +104,13 @@ impl AppearanceStore {
                                     .map(|v| [v[0], v[1]])
                                     .collect::<Vec<_>>();
                                 let ls = LineString2::from_raw(coords.into());
-                                theme.ring_id_to_texture.insert(ring, (tex_idx, ls));
+                                theme.ring_id_to_texture.insert(ring.clone(), (tex_idx, ls));
+                                ring_ids.push(ring);
+                            }
+                            
+                            // Store surface-to-rings mapping
+                            if !ring_ids.is_empty() {
+                                theme.surface_id_to_rings.insert(surface_id, ring_ids);
                             }
                         }
                     }
@@ -122,32 +134,87 @@ impl AppearanceStore {
         ring_ids: &[Option<LocalId>],
         surface_spans: &[SurfaceSpan],
     ) {
+
         // merge texture
         {
             let mut idx_map = indexmap::IndexSet::new();
             let base_idx = self.textures.len();
+            
+            // If ring_ids is empty or all None, we can't filter - transfer all entries
+            // Otherwise, only transfer entries for rings in ring_ids
+            let ring_id_set: std::collections::HashSet<_> = ring_ids
+                .iter()
+                .filter_map(|v| v.clone())
+                .collect();
+            let filter_by_ring_ids = !ring_id_set.is_empty();
 
             for (theme_name, theme_src) in other.themes.iter_mut() {
-                let entries: Vec<_> = ring_ids
-                    .iter()
-                    .filter_map(|v| v.clone())
-                    .filter_map(|ring_id| {
-                        if let Some((idx, ls)) = theme_src.ring_id_to_texture.remove(&ring_id) {
+                let entries: Vec<_> = if filter_by_ring_ids {
+                    // Only transfer entries for rings in ring_ids
+                    ring_ids
+                        .iter()
+                        .filter_map(|v| v.clone())
+                        .filter_map(|ring_id| {
+                            if let Some((idx, ls)) = theme_src.ring_id_to_texture.remove(&ring_id) {
+                                let (offset, inserted) = idx_map.insert_full(idx);
+                                if inserted {
+                                    self.textures.push(other.textures[idx as usize].clone());
+                                }
+                                Some((ring_id, ((base_idx + offset) as u32, ls)))
+                            } else {
+                                None
+                            }
+                        })
+                        .collect()
+                } else {
+                    // Transfer all entries (ring_ids is empty or all None)
+                    theme_src
+                        .ring_id_to_texture
+                        .drain()
+                        .filter_map(|(ring_id, (idx, ls))| {
                             let (offset, inserted) = idx_map.insert_full(idx);
                             if inserted {
                                 self.textures.push(other.textures[idx as usize].clone());
                             }
                             Some((ring_id, ((base_idx + offset) as u32, ls)))
-                        } else {
-                            None
-                        }
-                    })
-                    .collect();
+                        })
+                        .collect()
+                };
 
                 self.themes
                     .entry_ref(theme_name)
                     .or_default()
                     .ring_id_to_texture
+                    .extend(entries);
+            }
+        }
+
+        // merge surface_id_to_rings (for texture surface-to-ring mapping)
+        // Only transfer entries where at least one ring is in ring_ids (if ring_ids is not empty)
+        {
+            let ring_id_set: std::collections::HashSet<_> = ring_ids
+                .iter()
+                .filter_map(|v| v.clone())
+                .collect();
+            
+            for (theme_name, theme_src) in other.themes.iter_mut() {
+                let entries: Vec<_> = if ring_id_set.is_empty() {
+                    // If ring_ids is empty or all None, transfer all surface_id_to_rings entries
+                    // This happens when the ring IDs haven't been resolved yet
+                    theme_src.surface_id_to_rings.drain().collect()
+                } else {
+                    // Only transfer entries that have matching rings
+                    theme_src
+                        .surface_id_to_rings
+                        .drain()
+                        .filter(|(_, ring_ids)| ring_ids.iter().any(|r| ring_id_set.contains(r)))
+                        .collect()
+                };
+
+                self.themes
+                    .entry_ref(theme_name)
+                    .or_default()
+                    .surface_id_to_rings
                     .extend(entries);
             }
         }
