@@ -14,7 +14,7 @@ clap = { version = "4.5.48", features = ["derive", "string"] }
 thiserror = "2"
 ctrlc = "3.5.0"
 bincode = { version = "2.0.1", default-features = false, features = ["std", "serde"] }
-lz4_flex = "0.11.5"
+lz4_flex = "0.11.6"
 nusamai-geojson = { path = "../nusamai-geojson" }
 nusamai-gltf = { path = "../nusamai-gltf" }
 nusamai-gltf-json = { path = "../nusamai-gltf/nusamai-gltf-json" }
