@@ -22,7 +22,7 @@ jobs:
       - name: Build Document
         run: docfx docs/docfx.json
 
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
           name: dotnet_doc
           path: .docs/_site
