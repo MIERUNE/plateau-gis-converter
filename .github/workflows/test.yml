@@ -48,7 +48,7 @@ jobs:
       - name: Test
         run: cargo llvm-cov --workspace --lcov --output-path lcov.info --all-features
       - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v6
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
