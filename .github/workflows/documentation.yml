@@ -22,7 +22,7 @@ jobs:
       - name: Build Document
         run: docfx docs/docfx.json
 
-      - uses: actions/upload-artifact@v6
+      - uses: actions/upload-artifact@v7
         with:
           name: dotnet_doc
           path: .docs/_site
@@ -42,5 +42,5 @@ jobs:
       pages: write
       id-token: write
     steps:
-      - uses: actions/deploy-pages@v4
+      - uses: actions/deploy-pages@v5
         id: deployment
