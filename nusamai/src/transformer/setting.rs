@@ -3,6 +3,13 @@ use serde::{Deserialize, Serialize};
 use crate::transformer::selection::{LodSelection, Selection};
 use crate::{sink::DataRequirements, transformer};
 
+fn single_lod_filter(lod: u8) -> transformer::LodFilterSpec {
+    transformer::LodFilterSpec {
+        mask: transformer::LodMask::from_lod(lod),
+        mode: transformer::LodFilterMode::Highest,
+    }
+}
+
 pub fn use_lod_config(default_value: &str, exclude: Option<&[&str]>) -> TransformerConfig {
     TransformerConfig {
         key: "use_lod".to_string(),
@@ -110,6 +117,11 @@ impl TransformerSettings {
                                     ..Default::default()
                                 })
                             }
+                            "lod0" => data_requirements.set_lod_filter(single_lod_filter(0)),
+                            "lod1" => data_requirements.set_lod_filter(single_lod_filter(1)),
+                            "lod2" => data_requirements.set_lod_filter(single_lod_filter(2)),
+                            "lod3" => data_requirements.set_lod_filter(single_lod_filter(3)),
+                            "lod4" => data_requirements.set_lod_filter(single_lod_filter(4)),
                             "textured_max_lod" => {
                                 data_requirements.set_lod_filter(transformer::LodFilterSpec {
                                     mode: transformer::LodFilterMode::TexturedHighest,
