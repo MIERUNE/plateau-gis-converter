@@ -67,7 +67,15 @@ pub struct LodSelection;
 impl LodSelection {
     /// Returns only the default LOD selection options.
     fn get_default_lod_selection_options() -> Vec<(&'static str, &'static str)> {
-        vec![("最大LOD", "max_lod"), ("最小LOD", "min_lod")]
+        vec![
+            ("最大LOD", "max_lod"),
+            ("最小LOD", "min_lod"),
+            ("LOD0", "lod0"),
+            ("LOD1", "lod1"),
+            ("LOD2", "lod2"),
+            ("LOD3", "lod3"),
+            ("LOD4", "lod4"),
+        ]
     }
 
     /// Returns extended options based on the provided keys.
@@ -108,5 +116,23 @@ impl LodSelection {
         }
 
         Selection::new(options, default_value)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::LodSelection;
+
+    #[test]
+    fn create_lod_selection_includes_explicit_lod_values() {
+        let selection = LodSelection::create_lod_selection("lod1", None);
+        let values: Vec<String> = selection
+            .get_options()
+            .into_iter()
+            .map(|opt| opt.value)
+            .collect();
+
+        assert!(values.iter().any(|value| value == "lod1"));
+        assert!(values.iter().any(|value| value == "lod4"));
     }
 }

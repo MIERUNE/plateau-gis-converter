@@ -149,6 +149,12 @@ impl LodMask {
         Self(0b11111)
     }
 
+    pub fn from_lod(lod_no: u8) -> Self {
+        let mut mask = Self::default();
+        mask.add_lod(lod_no);
+        mask
+    }
+
     pub fn add_lod(&mut self, lod_no: u8) {
         self.0 |= 1 << lod_no;
     }
@@ -231,5 +237,14 @@ mod tests {
         mask2.add_lod(3);
         assert!((mask & mask2).has_lod(3));
         assert!(!(mask & mask2).has_lod(1));
+    }
+
+    #[test]
+    fn test_lod_mask_from_lod() {
+        let mask = LodMask::from_lod(1);
+        assert!(mask.has_lod(1));
+        assert_eq!(mask.lowest_lod(), Some(1));
+        assert_eq!(mask.highest_lod(), Some(1));
+        assert!(!mask.has_lod(2));
     }
 }

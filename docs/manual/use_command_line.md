@@ -68,6 +68,11 @@ cargo run --profile release-lto -- ~/path/to/PLATEAU/15100_niigata-shi_2022_city
   - `use_lod`
     - `max_lod`: 最大LODを抽出する
     - `min_lod`: 最小LODを抽出する
+    - `lod0`: LOD0のみを抽出する
+    - `lod1`: LOD1のみを抽出する
+    - `lod2`: LOD2のみを抽出する
+    - `lod3`: LOD3のみを抽出する
+    - `lod4`: LOD4のみを抽出する
     - `textured_max_lod`: テクスチャ付きの最大LODを抽出し、テクスチャがない場合は最大のLODを抽出する
 - `-o`: 出力ファイル形式固有のオプションを設定します。
   - `split`: OBJ形式専用です。オブジェクト分割についてbool値で設定します。
@@ -88,4 +93,11 @@ cargo run --release -- ~/13102_chuo-ku_city_2023_citygml_1_op/udx/bldg/*.gml \
 ```bash
 % cargo run --release -- ~/13104_shinjuku-ku_city_2023_citygml_1_op/udx/bldg/53394525_bldg_6697_op.gml \
 --sink obj --output ~/data/output/obj -t use_lod=textured_max_lod -o limit_texture_resolution=true -o split=true
+```
+
+- 建築物をLOD1のみに絞ってGeoJSONを出力する
+
+```bash
+cargo run --release -- ~/13102_chuo-ku_city_2023_citygml_1_op/udx/bldg/*.gml \
+--sink geojson --output ~/data/output/buildings_lod1.geojson -t use_lod=lod1
 ```
