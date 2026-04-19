@@ -1,7 +1,7 @@
 use std::str::FromStr;
 
 use indexmap::IndexMap;
-use sqlx::{sqlite::*, Acquire, ConnectOptions, Pool, Row};
+use sqlx::{sqlite::*, Acquire, ConnectOptions, Connection, Pool, Row};
 use thiserror::Error;
 use url::Url;
 
@@ -32,12 +32,7 @@ impl GpkgHandler {
             .create_if_missing(true)
             .synchronous(SqliteSynchronous::Normal)
             .journal_mode(SqliteJournalMode::Wal);
-        // Use a single connection so that `finalize()` can reliably switch the
-        // journal mode away from WAL on the same connection that holds it.
-        let pool = SqlitePoolOptions::new()
-            .max_connections(1)
-            .connect_with(conn_opts)
-            .await?;
+        let pool = SqlitePoolOptions::new().connect_with(conn_opts).await?;
 
         // Initialize the database with minimum GeoPackage schema
         let create_query = include_str!("sql/init.sql");
@@ -188,11 +183,20 @@ impl GpkgHandler {
     /// `-wal` and `-shm` sidecar files and makes the `.gpkg` a single
     /// self-contained file. Call this after all writes are done and before
     /// handing the file to external tools (e.g. `gdal driver gpkg validate`).
-    pub async fn finalize(&self) {
-        sqlx::query("PRAGMA journal_mode=DELETE;")
-            .execute(&self.pool)
-            .await
-            .ok();
+    ///
+    /// Changing the journal mode requires exclusive access to the database, so
+    /// the pool is closed first to release all connections, then a fresh
+    /// connection is opened to perform the switch.
+    pub async fn finalize(self) {
+        let opts = self.pool.connect_options();
+        self.pool.close().await;
+
+        if let Ok(mut conn) = SqliteConnection::connect_with(&opts).await {
+            sqlx::query("PRAGMA journal_mode=DELETE;")
+                .execute(&mut conn)
+                .await
+                .ok();
+        }
     }
 }
 
