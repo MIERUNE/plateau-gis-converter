@@ -191,12 +191,9 @@ impl GpkgHandler {
         let opts = self.pool.connect_options();
         self.pool.close().await;
 
-        if let Ok(mut conn) = SqliteConnection::connect_with(&opts).await {
-            sqlx::query("PRAGMA journal_mode=DELETE;")
-                .execute(&mut conn)
-                .await
-                .ok();
-        }
+        // Reopen with DELETE journal mode to remove -wal/-shm sidecar files.
+        let opts = opts.as_ref().clone().journal_mode(SqliteJournalMode::Delete);
+        let _ = SqliteConnection::connect_with(&opts).await;
     }
 }
 
