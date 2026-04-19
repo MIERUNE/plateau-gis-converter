@@ -254,6 +254,10 @@ impl GpkgSink {
             .await
             .map_err(|e| PipelineError::Other(e.to_string()))?;
 
+        // Flush the WAL journal into the main .gpkg file so that the output is
+        // a single self-contained file without -wal/-shm sidecars.
+        handler.close().await;
+
         match producers.await.unwrap() {
             Ok(_) | Err(PipelineError::Canceled) => Ok(()),
             error @ Err(_) => error,
