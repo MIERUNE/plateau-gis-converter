@@ -187,13 +187,15 @@ impl GpkgHandler {
     /// Changing the journal mode requires exclusive access to the database, so
     /// the pool is closed first to release all connections, then a fresh
     /// connection is opened to perform the switch.
-    pub async fn finalize(self) {
+    pub async fn finalize(self) -> Result<(), GpkgError> {
         let opts = self.pool.connect_options();
         self.pool.close().await;
 
         // Reopen with DELETE journal mode to remove -wal/-shm sidecar files.
         let opts = opts.as_ref().clone().journal_mode(SqliteJournalMode::Delete);
-        let _ = SqliteConnection::connect_with(&opts).await;
+        let conn = SqliteConnection::connect_with(&opts).await?;
+        conn.close().await?;
+        Ok(())
     }
 }
 
@@ -375,6 +377,8 @@ mod tests {
                 std::fs::create_dir_all(dir).unwrap();
                 let path = dir.join(format!("{name}.gpkg"));
                 let _ = std::fs::remove_file(&path);
+                let _ = std::fs::remove_file(format!("{}-wal", path.display()));
+                let _ = std::fs::remove_file(format!("{}-shm", path.display()));
                 let conn_str = format!("file:{}", path.display());
                 GpkgHandler::from_str(&conn_str).await.unwrap()
             }
@@ -403,7 +407,7 @@ mod tests {
             ]
         );
 
-        handler.finalize().await;
+        handler.finalize().await.unwrap();
     }
 
     #[tokio::test]
@@ -493,7 +497,7 @@ mod tests {
             )]
         );
 
-        handler.finalize().await;
+        handler.finalize().await.unwrap();
     }
 
     #[tokio::test]
@@ -553,7 +557,7 @@ mod tests {
         let gpkg_geometry_columns = handler.gpkg_geometry_columns().await.unwrap();
         assert!(gpkg_geometry_columns.is_empty());
 
-        handler.finalize().await;
+        handler.finalize().await.unwrap();
     }
 
     #[tokio::test]
@@ -615,7 +619,7 @@ mod tests {
         assert_eq!(row.get::<f64, &str>("attr3"), 3.33);
         assert!(row.get::<bool, &str>("attr4"));
 
-        handler.finalize().await;
+        handler.finalize().await.unwrap();
     }
 
     #[tokio::test]
@@ -674,7 +678,7 @@ mod tests {
         assert_eq!(row.get::<f64, &str>("attr3"), 3.33);
         assert!(row.get::<bool, &str>("attr4"));
 
-        handler.finalize().await;
+        handler.finalize().await.unwrap();
     }
 
     #[tokio::test]
@@ -711,6 +715,6 @@ mod tests {
         assert_eq!(max_x, 333.0);
         assert_eq!(max_y, -444.0);
 
-        handler.finalize().await;
+        handler.finalize().await.unwrap();
     }
 }
