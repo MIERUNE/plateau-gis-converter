@@ -32,7 +32,12 @@ impl GpkgHandler {
             .create_if_missing(true)
             .synchronous(SqliteSynchronous::Normal)
             .journal_mode(SqliteJournalMode::Wal);
-        let pool = SqlitePoolOptions::new().connect_with(conn_opts).await?;
+        // Use a single connection so that `finalize()` can reliably switch the
+        // journal mode away from WAL on the same connection that holds it.
+        let pool = SqlitePoolOptions::new()
+            .max_connections(1)
+            .connect_with(conn_opts)
+            .await?;
 
         // Initialize the database with minimum GeoPackage schema
         let create_query = include_str!("sql/init.sql");
@@ -177,20 +182,17 @@ impl GpkgHandler {
         Ok(GpkgTransaction::new(self.pool.begin().await?))
     }
 
-    /// Close the database connection pool.
+    /// Finalize the GeoPackage file for external consumption.
     ///
-    /// This checkpoints the WAL journal into the main database file and then
-    /// shuts down the pool, ensuring the `.gpkg` file is self-contained.
-    /// Required before external validation tools (e.g. `gdal driver gpkg validate`)
-    /// can read the file.
-    pub async fn close(self) {
-        // Switch from WAL to DELETE journal mode so that the -wal and -shm
-        // sidecar files are removed and the .gpkg file is fully self-contained.
+    /// Switches the journal mode from WAL to DELETE, which removes the
+    /// `-wal` and `-shm` sidecar files and makes the `.gpkg` a single
+    /// self-contained file. Call this after all writes are done and before
+    /// handing the file to external tools (e.g. `gdal driver gpkg validate`).
+    pub async fn finalize(&self) {
         sqlx::query("PRAGMA journal_mode=DELETE;")
             .execute(&self.pool)
             .await
             .ok();
-        self.pool.close().await;
     }
 }
 
@@ -400,7 +402,7 @@ mod tests {
             ]
         );
 
-        handler.close().await;
+        handler.finalize().await;
     }
 
     #[tokio::test]
@@ -490,7 +492,7 @@ mod tests {
             )]
         );
 
-        handler.close().await;
+        handler.finalize().await;
     }
 
     #[tokio::test]
@@ -550,7 +552,7 @@ mod tests {
         let gpkg_geometry_columns = handler.gpkg_geometry_columns().await.unwrap();
         assert!(gpkg_geometry_columns.is_empty());
 
-        handler.close().await;
+        handler.finalize().await;
     }
 
     #[tokio::test]
@@ -612,7 +614,7 @@ mod tests {
         assert_eq!(row.get::<f64, &str>("attr3"), 3.33);
         assert!(row.get::<bool, &str>("attr4"));
 
-        handler.close().await;
+        handler.finalize().await;
     }
 
     #[tokio::test]
@@ -671,7 +673,7 @@ mod tests {
         assert_eq!(row.get::<f64, &str>("attr3"), 3.33);
         assert!(row.get::<bool, &str>("attr4"));
 
-        handler.close().await;
+        handler.finalize().await;
     }
 
     #[tokio::test]
@@ -708,6 +710,6 @@ mod tests {
         assert_eq!(max_x, 333.0);
         assert_eq!(max_y, -444.0);
 
-        handler.close().await;
+        handler.finalize().await;
     }
 }
