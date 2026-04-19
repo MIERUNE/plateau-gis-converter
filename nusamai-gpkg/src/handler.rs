@@ -225,7 +225,7 @@ impl<'c> GpkgTransaction<'c> {
         if table_info.has_geometry {
             query_string.push_str("fid INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL");
             query_string.push_str(", id TEXT NOT NULL");
-            query_string.push_str(", geometry BLOB NOT NULL");
+            query_string.push_str(", geometry MULTIPOLYGON NOT NULL");
         } else {
             query_string.push_str("id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL");
         }
@@ -362,6 +362,7 @@ impl<'c> GpkgTransaction<'c> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::geometry::write_indexed_multipolygon;
     use crate::table::ColumnInfo;
 
     /// Create a GpkgHandler for testing.
@@ -395,7 +396,7 @@ mod tests {
         let application_id = handler.application_id().await;
         assert_eq!(application_id, 1196444487);
         let user_version = handler.user_version().await;
-        assert_eq!(user_version, 0); // FIXME: should be 10301
+        assert_eq!(user_version, 10301);
 
         let table_names = handler.table_names().await;
         assert_eq!(
@@ -465,7 +466,7 @@ mod tests {
             vec![
                 ("fid".into(), "INTEGER".into(), 1),
                 ("id".into(), "TEXT".into(), 1),
-                ("geometry".into(), "BLOB".into(), 1),
+                ("geometry".into(), "MULTIPOLYGON".into(), 1),
                 ("attr1".into(), "TEXT".into(), 0),
                 ("attr2".into(), "INTEGER".into(), 0),
                 ("attr3".into(), "REAL".into(), 0),
@@ -596,13 +597,20 @@ mod tests {
         };
         tx.add_table(&table_info, srs_id).await.unwrap();
 
+        // Build valid GeoPackage geometry binary (a simple triangle)
+        let vertices: Vec<[f64; 3]> = vec![[0., 0., 0.], [1., 0., 0.], [0., 1., 0.]];
+        let mut mpoly = flatgeom::MultiPolygon::<u32>::new();
+        mpoly.add_exterior([0, 1, 2, 0]);
+        let mut geom_bytes = Vec::new();
+        write_indexed_multipolygon(&mut geom_bytes, &vertices, &mpoly, srs_id as i32).unwrap();
+
         let attributes: IndexMap<String, String> = IndexMap::from([
             ("attr1".into(), "value1".into()),
             ("attr2".into(), "2".into()),
             ("attr3".into(), "3.33".into()),
             ("attr4".into(), "1".into()),
         ]);
-        tx.insert_feature(table_name, "id_1", &[0, 1, 2, 3], &attributes)
+        tx.insert_feature(table_name, "id_1", &geom_bytes, &attributes)
             .await
             .unwrap();
 
@@ -613,7 +621,7 @@ mod tests {
         assert_eq!(rows.len(), 1);
         let row = rows.first().unwrap();
         assert_eq!(row.get::<String, &str>("id"), "id_1");
-        assert_eq!(row.get::<Vec<u8>, &str>("geometry"), vec![0, 1, 2, 3]);
+        assert_eq!(row.get::<Vec<u8>, &str>("geometry"), geom_bytes);
         assert_eq!(row.get::<String, &str>("attr1"), "value1");
         assert_eq!(row.get::<i64, &str>("attr2"), 2);
         assert_eq!(row.get::<f64, &str>("attr3"), 3.33);
