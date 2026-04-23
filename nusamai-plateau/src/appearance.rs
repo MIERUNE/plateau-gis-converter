@@ -91,7 +91,7 @@ impl AppearanceStore {
                     for tex_assoc in texture.target.drain(..) {
                         if let TextureAssociation::TexCoordList(tcl) = tex_assoc {
                             for (ring, coords) in
-                                tcl.rings.into_iter().zip(tcl.coords_list.into_iter())
+                                tcl.rings.into_iter().zip(tcl.coords_list)
                             {
                                 let coords = coords
                                     .chunks_exact(2)
