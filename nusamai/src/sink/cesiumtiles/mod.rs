@@ -543,7 +543,7 @@ fn tile_writing_stage(
                         };
 
                         let geom_error = tiling::geometric_error(tile_zoom, tile_y);
-                        let factor = apply_downsample_factor(geom_error, downsample_scale as f32);
+                        let factor = apply_downsample_factor(geom_error, downsample_scale);
                         let downsample_factor = DownsampleFactor::new(&factor);
                         let cropped_texture = PolygonMappedTexture::new(
                             &texture_uri,
