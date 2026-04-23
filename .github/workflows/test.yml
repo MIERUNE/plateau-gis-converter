@@ -47,6 +47,15 @@ jobs:
         run: mkdir -p app/build
       - name: Test
         run: cargo llvm-cov --workspace --lcov --output-path lcov.info --all-features
+        env:
+          GPKG_TEST_OUTPUT_DIR: /tmp/gpkg_test
+      - name: Validate GeoPackage
+        run: |
+          # check if the output has no WAL/SHM sidecars
+          if find /tmp/gpkg_test -maxdepth 1 \( -name '*-wal' -o -name '*-shm' \) -print -quit | grep -q .; then
+            echo "::error::GeoPackage sidecar files (-wal/-shm) found. Ensure GpkgHandler::finalize() is called."
+            exit 1
+          fi
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v6
         env:

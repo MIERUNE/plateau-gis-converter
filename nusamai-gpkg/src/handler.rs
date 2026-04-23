@@ -1,7 +1,7 @@
 use std::str::FromStr;
 
 use indexmap::IndexMap;
-use sqlx::{sqlite::*, Acquire, ConnectOptions, Pool, Row};
+use sqlx::{sqlite::*, Acquire, ConnectOptions, Connection, Pool, Row};
 use thiserror::Error;
 use url::Url;
 
@@ -176,6 +176,30 @@ impl GpkgHandler {
     pub async fn begin(&mut self) -> Result<GpkgTransaction<'_>, GpkgError> {
         Ok(GpkgTransaction::new(self.pool.begin().await?))
     }
+
+    /// Finalize the GeoPackage file for external consumption.
+    ///
+    /// Switches the journal mode from WAL to DELETE, which removes the
+    /// `-wal` and `-shm` sidecar files and makes the `.gpkg` a single
+    /// self-contained file. Call this after all writes are done and before
+    /// handing the file to external tools (e.g. `gdal driver gpkg validate`).
+    ///
+    /// Changing the journal mode requires exclusive access to the database, so
+    /// the pool is closed first to release all connections, then a fresh
+    /// connection is opened to perform the switch.
+    pub async fn finalize(self) -> Result<(), GpkgError> {
+        let opts = self.pool.connect_options();
+        self.pool.close().await;
+
+        // Reopen with DELETE journal mode to remove -wal/-shm sidecar files.
+        let opts = opts
+            .as_ref()
+            .clone()
+            .journal_mode(SqliteJournalMode::Delete);
+        let conn = SqliteConnection::connect_with(&opts).await?;
+        conn.close().await?;
+        Ok(())
+    }
 }
 
 pub struct GpkgTransaction<'c> {
@@ -343,11 +367,33 @@ mod tests {
     use super::*;
     use crate::table::ColumnInfo;
 
+    /// Create a GpkgHandler for testing.
+    ///
+    /// By default, uses an in-memory SQLite database. When the `GPKG_TEST_OUTPUT_DIR`
+    /// environment variable is set, writes a persistent `.gpkg` file to that directory
+    /// instead. This allows external tools (e.g. `gdal driver gpkg validate`) to validate
+    /// the generated files on CI.
+    async fn test_handler(name: &str) -> GpkgHandler {
+        match std::env::var("GPKG_TEST_OUTPUT_DIR") {
+            Ok(dir) => {
+                let dir = std::path::Path::new(&dir);
+                std::fs::create_dir_all(dir).unwrap();
+                let path = dir.join(format!("{name}.gpkg"));
+                let _ = std::fs::remove_file(&path);
+                let _ = std::fs::remove_file(format!("{}-wal", path.display()));
+                let _ = std::fs::remove_file(format!("{}-shm", path.display()));
+                let conn_str = format!("file:{}", path.display());
+                GpkgHandler::from_str(&conn_str).await.unwrap()
+            }
+            Err(_) => GpkgHandler::from_url(&Url::parse("sqlite::memory:").unwrap())
+                .await
+                .unwrap(),
+        }
+    }
+
     #[tokio::test]
     async fn test_init_connect() {
-        let handler = GpkgHandler::from_url(&Url::parse("sqlite::memory:").unwrap())
-            .await
-            .unwrap();
+        let handler = test_handler("init_connect").await;
 
         let application_id = handler.application_id().await;
         assert_eq!(application_id, 1196444487);
@@ -363,13 +409,13 @@ mod tests {
                 "gpkg_spatial_ref_sys",
             ]
         );
+
+        handler.finalize().await.unwrap();
     }
 
     #[tokio::test]
     async fn test_add_table() {
-        let mut handler = GpkgHandler::from_url(&Url::parse("sqlite::memory:").unwrap())
-            .await
-            .unwrap();
+        let mut handler = test_handler("add_table").await;
 
         let srs_id = 4326;
         let table_name = "mpoly3d";
@@ -453,13 +499,13 @@ mod tests {
                 0
             )]
         );
+
+        handler.finalize().await.unwrap();
     }
 
     #[tokio::test]
     async fn test_add_table_no_geometry() {
-        let mut handler = GpkgHandler::from_url(&Url::parse("sqlite::memory:").unwrap())
-            .await
-            .unwrap();
+        let mut handler = test_handler("add_table_no_geometry").await;
 
         let srs_id = 4326;
         let table_name = "without_geometry";
@@ -513,13 +559,13 @@ mod tests {
         // No record in `gpkg_geometry_columns`
         let gpkg_geometry_columns = handler.gpkg_geometry_columns().await.unwrap();
         assert!(gpkg_geometry_columns.is_empty());
+
+        handler.finalize().await.unwrap();
     }
 
     #[tokio::test]
     async fn test_insert_feature() {
-        let mut handler = GpkgHandler::from_url(&Url::parse("sqlite::memory:").unwrap())
-            .await
-            .unwrap();
+        let mut handler = test_handler("insert_feature").await;
         let mut tx: GpkgTransaction<'_> = handler.begin().await.unwrap();
 
         let srs_id = 4326;
@@ -575,13 +621,13 @@ mod tests {
         assert_eq!(row.get::<i64, &str>("attr2"), 2);
         assert_eq!(row.get::<f64, &str>("attr3"), 3.33);
         assert!(row.get::<bool, &str>("attr4"));
+
+        handler.finalize().await.unwrap();
     }
 
     #[tokio::test]
     async fn test_insert_attribute() {
-        let mut handler = GpkgHandler::from_url(&Url::parse("sqlite::memory:").unwrap())
-            .await
-            .unwrap();
+        let mut handler = test_handler("insert_attribute").await;
         let mut tx: GpkgTransaction<'_> = handler.begin().await.unwrap();
 
         let srs_id = 4326;
@@ -634,13 +680,13 @@ mod tests {
         assert_eq!(row.get::<i64, &str>("attr2"), 2);
         assert_eq!(row.get::<f64, &str>("attr3"), 3.33);
         assert!(row.get::<bool, &str>("attr4"));
+
+        handler.finalize().await.unwrap();
     }
 
     #[tokio::test]
     async fn test_bbox() {
-        let mut handler = GpkgHandler::from_url(&Url::parse("sqlite::memory:").unwrap())
-            .await
-            .unwrap();
+        let mut handler = test_handler("bbox").await;
 
         let srs_id = 4326;
         let table_name = "mpoly3d";
@@ -671,5 +717,7 @@ mod tests {
         assert_eq!(min_y, 222.0);
         assert_eq!(max_x, 333.0);
         assert_eq!(max_y, -444.0);
+
+        handler.finalize().await.unwrap();
     }
 }
