@@ -192,7 +192,10 @@ impl GpkgHandler {
         self.pool.close().await;
 
         // Reopen with DELETE journal mode to remove -wal/-shm sidecar files.
-        let opts = opts.as_ref().clone().journal_mode(SqliteJournalMode::Delete);
+        let opts = opts
+            .as_ref()
+            .clone()
+            .journal_mode(SqliteJournalMode::Delete);
         let conn = SqliteConnection::connect_with(&opts).await?;
         conn.close().await?;
         Ok(())
