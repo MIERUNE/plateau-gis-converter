@@ -49,13 +49,29 @@ jobs:
         run: cargo llvm-cov --workspace --lcov --output-path lcov.info --all-features
         env:
           GPKG_TEST_OUTPUT_DIR: /tmp/gpkg_test
-      - name: Validate GeoPackage
+      - name: Check GeoPackage output has no WAL/SHM sidecars
         run: |
-          # check if the output has no WAL/SHM sidecars
           if find /tmp/gpkg_test -maxdepth 1 \( -name '*-wal' -o -name '*-shm' \) -print -quit | grep -q .; then
             echo "::error::GeoPackage sidecar files (-wal/-shm) found. Ensure GpkgHandler::finalize() is called."
             exit 1
           fi
+      - name: Validate GeoPackage with GDAL
+        # Using Docker because GDAL 3.13 (where `gdal driver gpkg validate` was
+        # added) is not officially released yet. Migrate to a direct install after
+        # the official release.
+        run: |
+          for f in /tmp/gpkg_test/*.gpkg; do
+            name=$(basename "$f")
+            # init_connect.gpkg has no tables/features, so GDAL cannot open it
+            if [ "$name" = "init_connect.gpkg" ]; then
+              echo "=== $name (skipped) ==="
+              continue
+            fi
+            echo "=== $name ==="
+            docker run --rm -v "$f:/data/$name:ro" \
+              ghcr.io/osgeo/gdal:alpine-normal-3.13.0beta1 \
+              gdal driver gpkg validate "/data/$name"
+          done
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v6
         env:

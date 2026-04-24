@@ -2,7 +2,7 @@
 -- GPKG v1.3.1
 PRAGMA application_id = 1196444487;
 
-PRAGMA user_vesrion = 10301;
+PRAGMA user_version = 10301;
 
 CREATE TABLE gpkg_spatial_ref_sys (
     srs_name TEXT NOT NULL,

@@ -21,14 +21,14 @@ VALUES
         0,
         'NONE',
         0,
-        'Undefined'
+        'undefined'
     ),
     (
         'undefined Cartesian',
         -1,
         'NONE',
         -1,
-        'Undefined'
+        'undefined'
     );
 
 -- WGS 84 (3D)
