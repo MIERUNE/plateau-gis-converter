@@ -140,13 +140,13 @@ xattr -d com.apple.quarantine nusamai
   - [`nusamai-czml`](./nusamai-czml/) &mdash; CZML
   - [`nusamai-shapefile`](./nusamai-shapefile/) &mdash; Shapefile
 
-### 8.1. 外部リポジトリ
+### 8.1. 当プロジェクトが基点の外部リポジトリ
 
+- [georust/earcut](https://github.com/georust/earcut) &mdash; ポリゴン三角形化アルゴリズムのRust移植
 - [MIERUNE/flatgeom-rs](https://github.com/MIERUNE/flatgeom-rs) &mdash; シリアライズ/デシリアライズの効率を優先したジオメトリ型
 - [MIERUNE/atlas-packer](https://github.com/MIERUNE/atlas-packer) &mdash; テクスチャアトラスの作成
 - [MIERUNE/dda-vozelize-rs](https://github.com/MIERUNE/dda-voxelize-rs) &mdash; 3Dメッシュサーフェスの高速なボクセル化
 - [MIERUNE/cesiumtiles-rs](https://github.com/MIERUNE/cesiumtiles-rs) &mdash; 3D TilesのJSONモデルなど
-- [ciscorn/earcut-rs](https://github.com/ciscorn/earcut-rs) &mdash; ポリゴン三角形化アルゴリズムのRust移植
 - [ciscorn/japan-geoid](https://github.com/ciscorn/japan-geoid) &mdash; 日本のジオイドモデル (JGD2011 → WGS 84 の変換)
 - [ciscorn/geocentric-rs](https://github.com/ciscorn/geocentric-rs) &mdash; 地心座標系と地理座標系の相互変換
 - [ciscorn/jprect-rs](https://github.com/ciscorn/jprect-rs) &mdash; 平面直角座標系（横メルカトル）の扱い
