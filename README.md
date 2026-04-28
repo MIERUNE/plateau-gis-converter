@@ -140,7 +140,7 @@ xattr -d com.apple.quarantine nusamai
   - [`nusamai-czml`](./nusamai-czml/) &mdash; CZML
   - [`nusamai-shapefile`](./nusamai-shapefile/) &mdash; Shapefile
 
-### 8.1. 当プロジェクトが基点の外部リポジトリ
+### 8.1. 当プロジェクトを基点とした外部リポジトリ
 
 - [georust/earcut](https://github.com/georust/earcut) &mdash; ポリゴン三角形化アルゴリズムのRust移植
 - [MIERUNE/flatgeom-rs](https://github.com/MIERUNE/flatgeom-rs) &mdash; シリアライズ/デシリアライズの効率を優先したジオメトリ型
