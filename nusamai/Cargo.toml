@@ -23,6 +23,7 @@ flatgeom = { version = "0.0", features = ["serde"] }
 nusamai-czml = { path = "../nusamai-czml" }
 nusamai-projection = { path = "../nusamai-projection" }
 tinymvt = "0.2.4"
+mlt-core = "0.12.0"
 fastanvil = "0.32.0"
 fastnbt = "2.6.0"
 geojson = "0.24.2"
