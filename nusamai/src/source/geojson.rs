@@ -12,7 +12,7 @@ use nusamai_citygml::{
     object::{Map, Object, ObjectStereotype, Value},
 };
 use nusamai_plateau::{appearance::AppearanceStore, Entity};
-use nusamai_projection::crs::EPSG_WGS84_GEOGRAPHIC_3D;
+use nusamai_projection::crs::{EPSG_WGS84_GEOGRAPHIC_2D, EPSG_WGS84_GEOGRAPHIC_3D};
 use rayon::prelude::*;
 use url::Url;
 
@@ -21,6 +21,8 @@ use crate::{
     pipeline::{self, Feedback, Parcel, PipelineError, Sender},
     source::{DataSource, DataSourceProvider, SourceInfo},
 };
+
+const GEOJSON_TYPENAME: &str = "gen:GenericCityObject";
 
 pub struct GeoJsonSourceProvider {
     pub filenames: Vec<PathBuf>,
@@ -126,7 +128,7 @@ fn convert_feature_to_entity(
     base_url: &Url,
 ) -> pipeline::Result<Option<Entity>> {
     let mut geometry_store = GeometryStore {
-        epsg: EPSG_WGS84_GEOGRAPHIC_3D, // GeoJSON uses WGS84 (EPSG:4979 for 3D)
+        epsg: EPSG_WGS84_GEOGRAPHIC_2D,
         ..Default::default()
     };
     let mut attributes = Map::default();
@@ -154,19 +156,8 @@ fn convert_feature_to_entity(
         GeometryRefs::new()
     };
 
-    // ジオメトリに基づいて適切なCityGMLタイプを決定
-    let typename = match geometry_refs.first() {
-        Some(geom_ref) => match geom_ref.ty {
-            GeometryType::Surface => "bldg:Building",
-            GeometryType::Curve => "tran:Road",
-            GeometryType::Point => "frn:CityFurniture",
-            _ => "gen:GenericCityObject",
-        },
-        None => "gen:GenericCityObject",
-    };
-
     let root = Value::Object(Object {
-        typename: typename.into(),
+        typename: GEOJSON_TYPENAME.into(),
         stereotype: ObjectStereotype::Feature {
             id: id.clone(),
             geometries: geometry_refs,
@@ -221,167 +212,84 @@ fn convert_geometry(
 ) -> pipeline::Result<GeometryRefs> {
     use geojson::Value::*;
 
-    // GeoJSON is primarily 2D (LOD 0), but elevation may be specified optionally.
-    // Use LOD 1 for safety to handle potential 3D data.
+    // GeoJSON has no LOD concept, so imported geometries are treated as LOD 0.
     let mut refs = GeometryRefs::new();
 
     match &geom.value {
         Point(coords) => {
-            if coords.len() >= 2 {
-                let vertex_idx = geometry_store.vertices.len() as u32;
-                geometry_store.vertices.push([
-                    coords[0],
-                    coords[1],
-                    coords.get(2).copied().unwrap_or(0.0),
-                ]);
+            let vertex_idx = push_position(geometry_store, coords)?;
+            let pos = geometry_store.multipoint.len() as u32;
+            geometry_store.multipoint.push(vertex_idx);
 
-                let pos = geometry_store.multipoint.len() as u32;
-                geometry_store.multipoint.push(vertex_idx);
-
-                refs.push(GeometryRef {
-                    ty: GeometryType::Point,
-                    lod: 1,
-                    pos,
-                    len: 1,
-                });
-            }
+            refs.push(GeometryRef {
+                ty: GeometryType::Point,
+                lod: 0,
+                pos,
+                len: 1,
+            });
         }
         MultiPoint(points) => {
+            let indices = push_positions(geometry_store, points)?;
             let pos = geometry_store.multipoint.len() as u32;
-            for coords in points {
-                if coords.len() >= 2 {
-                    let vertex_idx = geometry_store.vertices.len() as u32;
-                    geometry_store.vertices.push([
-                        coords[0],
-                        coords[1],
-                        coords.get(2).copied().unwrap_or(0.0),
-                    ]);
-                    geometry_store.multipoint.push(vertex_idx);
-                }
+            for vertex_idx in indices {
+                geometry_store.multipoint.push(vertex_idx);
             }
             let len = geometry_store.multipoint.len() as u32 - pos;
             if len > 0 {
                 refs.push(GeometryRef {
                     ty: GeometryType::Point,
-                    lod: 1,
+                    lod: 0,
                     pos,
                     len,
                 });
             }
         }
         LineString(coords) => {
-            if coords.len() >= 2 {
-                let start_idx = geometry_store.vertices.len() as u32;
-                let indices: Vec<u32> = coords
-                    .iter()
-                    .enumerate()
-                    .map(|(i, c)| {
-                        geometry_store.vertices.push([
-                            c[0],
-                            c[1],
-                            c.get(2).copied().unwrap_or(0.0),
-                        ]);
-                        start_idx + i as u32
-                    })
-                    .collect();
-
+            if let Some(positions) = validate_linestring(coords)? {
+                let indices = push_validated_positions(geometry_store, positions);
                 let pos = geometry_store.multilinestring.len() as u32;
                 geometry_store.multilinestring.add_linestring(indices);
 
                 refs.push(GeometryRef {
                     ty: GeometryType::Curve,
-                    lod: 1,
+                    lod: 0,
                     pos,
                     len: 1,
                 });
             }
         }
         MultiLineString(lines) => {
+            let lines = lines
+                .iter()
+                .map(|line| validate_linestring(line))
+                .collect::<pipeline::Result<Vec<_>>>()?;
             let pos = geometry_store.multilinestring.len() as u32;
             let mut count = 0;
 
-            for line in lines {
-                if line.len() >= 2 {
-                    let start_idx = geometry_store.vertices.len() as u32;
-                    let indices: Vec<u32> = line
-                        .iter()
-                        .enumerate()
-                        .map(|(i, c)| {
-                            geometry_store.vertices.push([
-                                c[0],
-                                c[1],
-                                c.get(2).copied().unwrap_or(0.0),
-                            ]);
-                            start_idx + i as u32
-                        })
-                        .collect();
-
-                    geometry_store.multilinestring.add_linestring(indices);
-                    count += 1;
-                }
+            for positions in lines.into_iter().flatten() {
+                let indices = push_validated_positions(geometry_store, positions);
+                geometry_store.multilinestring.add_linestring(indices);
+                count += 1;
             }
 
             if count > 0 {
                 refs.push(GeometryRef {
                     ty: GeometryType::Curve,
-                    lod: 1,
+                    lod: 0,
                     pos,
                     len: count,
                 });
             }
         }
         Polygon(rings) => {
-            if let Some(exterior) = rings.first() {
-                if exterior.len() >= 3 {
-                    let pos = geometry_store.multipolygon.len() as u32;
-
-                    // Add exterior ring
-                    let start_idx = geometry_store.vertices.len() as u32;
-                    let exterior_indices: Vec<u32> = exterior
-                        .iter()
-                        .enumerate()
-                        .map(|(i, c)| {
-                            geometry_store.vertices.push([
-                                c[0],
-                                c[1],
-                                c.get(2).copied().unwrap_or(0.0),
-                            ]);
-                            start_idx + i as u32
-                        })
-                        .collect();
-
-                    geometry_store.multipolygon.add_exterior(exterior_indices);
-                    geometry_store.ring_ids.push(None);
-
-                    // Add interior rings (holes)
-                    for interior in rings.iter().skip(1) {
-                        if interior.len() >= 3 {
-                            let start_idx = geometry_store.vertices.len() as u32;
-                            let interior_indices: Vec<u32> = interior
-                                .iter()
-                                .enumerate()
-                                .map(|(i, c)| {
-                                    geometry_store.vertices.push([
-                                        c[0],
-                                        c[1],
-                                        c.get(2).copied().unwrap_or(0.0),
-                                    ]);
-                                    start_idx + i as u32
-                                })
-                                .collect();
-
-                            geometry_store.multipolygon.add_interior(interior_indices);
-                            geometry_store.ring_ids.push(None);
-                        }
-                    }
-
-                    refs.push(GeometryRef {
-                        ty: GeometryType::Surface,
-                        lod: 1,
-                        pos,
-                        len: 1,
-                    });
-                }
+            let pos = geometry_store.multipolygon.len() as u32;
+            if add_polygon(geometry_store, rings)? {
+                refs.push(GeometryRef {
+                    ty: GeometryType::Surface,
+                    lod: 0,
+                    pos,
+                    len: 1,
+                });
             }
         }
         MultiPolygon(polygons) => {
@@ -389,57 +297,15 @@ fn convert_geometry(
             let mut count = 0;
 
             for rings in polygons {
-                if let Some(exterior) = rings.first() {
-                    if exterior.len() >= 3 {
-                        // Add exterior ring
-                        let start_idx = geometry_store.vertices.len() as u32;
-                        let exterior_indices: Vec<u32> = exterior
-                            .iter()
-                            .enumerate()
-                            .map(|(i, c)| {
-                                geometry_store.vertices.push([
-                                    c[0],
-                                    c[1],
-                                    c.get(2).copied().unwrap_or(0.0),
-                                ]);
-                                start_idx + i as u32
-                            })
-                            .collect();
-
-                        geometry_store.multipolygon.add_exterior(exterior_indices);
-                        geometry_store.ring_ids.push(None);
-
-                        // Add interior rings (holes)
-                        for interior in rings.iter().skip(1) {
-                            if interior.len() >= 3 {
-                                let start_idx = geometry_store.vertices.len() as u32;
-                                let interior_indices: Vec<u32> = interior
-                                    .iter()
-                                    .enumerate()
-                                    .map(|(i, c)| {
-                                        geometry_store.vertices.push([
-                                            c[0],
-                                            c[1],
-                                            c.get(2).copied().unwrap_or(0.0),
-                                        ]);
-                                        start_idx + i as u32
-                                    })
-                                    .collect();
-
-                                geometry_store.multipolygon.add_interior(interior_indices);
-                                geometry_store.ring_ids.push(None);
-                            }
-                        }
-
-                        count += 1;
-                    }
+                if add_polygon(geometry_store, rings)? {
+                    count += 1;
                 }
             }
 
             if count > 0 {
                 refs.push(GeometryRef {
                     ty: GeometryType::Surface,
-                    lod: 1,
+                    lod: 0,
                     pos,
                     len: count,
                 });
@@ -454,6 +320,129 @@ fn convert_geometry(
     }
 
     Ok(refs)
+}
+
+type ValidatedPosition = ([f64; 3], bool);
+
+fn validate_position(position: &[f64]) -> pipeline::Result<ValidatedPosition> {
+    match position {
+        [longitude, latitude] => Ok(([*longitude, *latitude, 0.0], false)),
+        [longitude, latitude, height] => Ok(([*longitude, *latitude, *height], true)),
+        _ => Err(PipelineError::Other(format!(
+            "GeoJSON Position must contain exactly 2 or 3 elements, but found {}",
+            position.len()
+        ))),
+    }
+}
+
+fn push_validated_position(
+    geometry_store: &mut GeometryStore,
+    (position, has_explicit_z): ValidatedPosition,
+) -> u32 {
+    if has_explicit_z {
+        geometry_store.epsg = EPSG_WGS84_GEOGRAPHIC_3D;
+    }
+    let vertex_idx = geometry_store.vertices.len() as u32;
+    geometry_store.vertices.push(position);
+    vertex_idx
+}
+
+fn push_position(geometry_store: &mut GeometryStore, position: &[f64]) -> pipeline::Result<u32> {
+    let position = validate_position(position)?;
+    Ok(push_validated_position(geometry_store, position))
+}
+
+fn push_positions(
+    geometry_store: &mut GeometryStore,
+    positions: &[Vec<f64>],
+) -> pipeline::Result<Vec<u32>> {
+    let positions = validate_positions(positions)?;
+    Ok(push_validated_positions(geometry_store, positions))
+}
+
+fn validate_positions(positions: &[Vec<f64>]) -> pipeline::Result<Vec<ValidatedPosition>> {
+    positions
+        .iter()
+        .map(|position| validate_position(position))
+        .collect()
+}
+
+fn validate_linestring(positions: &[Vec<f64>]) -> pipeline::Result<Option<Vec<ValidatedPosition>>> {
+    if positions.is_empty() {
+        return Ok(None);
+    }
+
+    let positions = validate_positions(positions)?;
+    if positions.len() < 2 {
+        return Err(PipelineError::Other(format!(
+            "GeoJSON LineString must contain at least 2 positions, but found {}",
+            positions.len()
+        )));
+    }
+
+    Ok(Some(positions))
+}
+
+fn push_validated_positions(
+    geometry_store: &mut GeometryStore,
+    positions: Vec<ValidatedPosition>,
+) -> Vec<u32> {
+    positions
+        .into_iter()
+        .map(|position| push_validated_position(geometry_store, position))
+        .collect()
+}
+
+fn push_linear_ring(
+    geometry_store: &mut GeometryStore,
+    ring: &[Vec<f64>],
+) -> pipeline::Result<Vec<u32>> {
+    if ring.len() < 4 {
+        return Err(PipelineError::Other(format!(
+            "GeoJSON LinearRing must contain at least 4 positions, but found {}",
+            ring.len()
+        )));
+    }
+
+    let positions = validate_positions(ring)?;
+
+    if positions.first().map(|position| &position.0) != positions.last().map(|position| &position.0)
+    {
+        return Err(PipelineError::Other(
+            "GeoJSON LinearRing must have identical first and last positions".into(),
+        ));
+    }
+
+    if positions.iter().any(|position| position.1) {
+        geometry_store.epsg = EPSG_WGS84_GEOGRAPHIC_3D;
+    }
+
+    Ok(positions
+        .into_iter()
+        .take(ring.len() - 1)
+        .map(|position| push_validated_position(geometry_store, position))
+        .collect())
+}
+
+fn add_polygon(
+    geometry_store: &mut GeometryStore,
+    rings: &[Vec<Vec<f64>>],
+) -> pipeline::Result<bool> {
+    let Some(exterior) = rings.first() else {
+        return Ok(false);
+    };
+
+    let exterior_indices = push_linear_ring(geometry_store, exterior)?;
+    geometry_store.multipolygon.add_exterior(exterior_indices);
+    geometry_store.ring_ids.push(None);
+
+    for interior in rings.iter().skip(1) {
+        let interior_indices = push_linear_ring(geometry_store, interior)?;
+        geometry_store.multipolygon.add_interior(interior_indices);
+        geometry_store.ring_ids.push(None);
+    }
+
+    Ok(true)
 }
 
 #[cfg(test)]
@@ -507,7 +496,7 @@ mod tests {
 
             let entity = &parcels[0].entity;
             if let Value::Object(obj) = &entity.root {
-                assert_eq!(obj.typename, "frn:CityFurniture");
+                assert_eq!(obj.typename, GEOJSON_TYPENAME);
                 if let ObjectStereotype::Feature { id, .. } = &obj.stereotype {
                     assert_eq!(id, "test-1");
                 }
@@ -582,7 +571,7 @@ mod tests {
             // 最初のフィーチャをチェック
             let entity1 = &parcels[0].entity;
             if let Value::Object(obj) = &entity1.root {
-                assert_eq!(obj.typename, "bldg:Building");
+                assert_eq!(obj.typename, GEOJSON_TYPENAME);
                 if let ObjectStereotype::Feature { id, geometries } = &obj.stereotype {
                     assert_eq!(id, "building-1");
                     assert!(!geometries.is_empty());
@@ -604,7 +593,7 @@ mod tests {
             // 2番目のフィーチャをチェック
             let entity2 = &parcels[1].entity;
             if let Value::Object(obj) = &entity2.root {
-                assert_eq!(obj.typename, "frn:CityFurniture");
+                assert_eq!(obj.typename, GEOJSON_TYPENAME);
                 if let ObjectStereotype::Feature { id, geometries } = &obj.stereotype {
                     assert_eq!(id, "building-2");
                     assert!(!geometries.is_empty());
@@ -666,7 +655,7 @@ mod tests {
 
             let entity = &parcels[0].entity;
             if let Value::Object(obj) = &entity.root {
-                assert_eq!(obj.typename, "bldg:Building");
+                assert_eq!(obj.typename, GEOJSON_TYPENAME);
                 if let ObjectStereotype::Feature { geometries, .. } = &obj.stereotype {
                     assert!(!geometries.is_empty());
                     assert_eq!(
@@ -732,7 +721,7 @@ mod tests {
 
             let entity = &parcels[0].entity;
             if let Value::Object(obj) = &entity.root {
-                assert_eq!(obj.typename, "tran:Road");
+                assert_eq!(obj.typename, GEOJSON_TYPENAME);
 
                 // ネストしたオブジェクトをチェック
                 if let Some(Value::Object(metadata_obj)) = obj.attributes.get("metadata") {
