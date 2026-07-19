@@ -127,6 +127,12 @@ async fn n03_like_geojson_is_written_to_geopackage_with_dynamic_columns() {
             "missing nullable TEXT column: {expected}"
         );
     }
+    assert!(
+        columns
+            .iter()
+            .all(|(name, _, _)| name != "parentId" && name != "parentType"),
+        "flat GeoJSON schema must not contain synthetic parent columns"
+    );
 
     let rows = handler.fetch_rows("\"geojson:Feature\"").await.unwrap();
     assert_eq!(rows.len(), 1);
