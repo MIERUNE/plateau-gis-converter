@@ -10,6 +10,7 @@ use super::file_reader::FileReader;
 use nusamai_citygml::{
     geometry::{GeometryRef, GeometryRefs, GeometryStore, GeometryType},
     object::{Map, Object, ObjectStereotype, Value},
+    schema::{Schema, TypeDef},
 };
 use nusamai_plateau::{appearance::AppearanceStore, Entity};
 use nusamai_projection::crs::{EPSG_WGS84_GEOGRAPHIC_2D, EPSG_WGS84_GEOGRAPHIC_3D};
@@ -22,13 +23,33 @@ use crate::{
     source::{DataSource, DataSourceProvider, SourceInfo},
 };
 
-const GEOJSON_TYPENAME: &str = "gen:GenericCityObject";
+#[path = "geojson_schema.rs"]
+mod schema;
+
+const GEOJSON_TYPENAME: &str = "geojson:Feature";
+const DIRECT_GEOMETRY_ERROR: &str =
+    "Direct geometry is not supported. Please use Feature or FeatureCollection.";
 
 pub struct GeoJsonSourceProvider {
     pub filenames: Vec<PathBuf>,
 }
 
 impl DataSourceProvider for GeoJsonSourceProvider {
+    fn collect_schema(&self, _params: &Parameters, output: &mut Schema) -> pipeline::Result<()> {
+        let mut builder = schema::GeoJsonSchemaBuilder::default();
+
+        for filename in &self.filenames {
+            let geojson = read_geojson(filename)?;
+            observe_geojson_schema(&mut builder, &geojson)?;
+        }
+
+        output.types.insert(
+            GEOJSON_TYPENAME.to_owned(),
+            TypeDef::Feature(builder.finish()),
+        );
+        Ok(())
+    }
+
     fn create(&self, _params: &Parameters) -> Box<dyn DataSource> {
         Box::new(GeoJsonSource {
             filenames: self.filenames.clone(),
@@ -61,13 +82,10 @@ impl DataSource for GeoJsonSource {
 
             feedback.info(format!("Parsing GeoJSON file: {filename:?} ..."));
 
+            let geojson = read_geojson(filename)?;
+
             // Convert PathBuf to string for ZIP file handling
             let filename_str = filename.to_string_lossy();
-            let mut file_reader = FileReader::open(&filename_str)?;
-
-            // Read the entire content
-            let mut content = String::new();
-            file_reader.read_to_string(&mut content)?;
 
             // Create source URL - use the original path for regular files, zip path for ZIP files
             let source_url = if filename_str.contains(".zip/") {
@@ -82,9 +100,6 @@ impl DataSource for GeoJsonSource {
             } else {
                 Url::from_file_path(fs::canonicalize(Path::new(filename))?).unwrap()
             };
-
-            let geojson: geojson::GeoJson = content.parse()
-                .map_err(|e| PipelineError::Other(format!("Failed to parse GeoJSON: {e}")))?;
 
             match geojson {
                 geojson::GeoJson::FeatureCollection(collection) => {
@@ -110,9 +125,7 @@ impl DataSource for GeoJsonSource {
                     }
                 }
                 geojson::GeoJson::Geometry(_) => {
-                    return Err(PipelineError::Other(
-                        "Direct geometry is not supported. Please use Feature or FeatureCollection.".to_string()
-                    ));
+                    return Err(PipelineError::Other(DIRECT_GEOMETRY_ERROR.to_owned()));
                 }
             }
 
@@ -121,6 +134,37 @@ impl DataSource for GeoJsonSource {
 
         Ok(())
     }
+}
+
+fn read_geojson(filename: &Path) -> pipeline::Result<geojson::GeoJson> {
+    let filename = filename.to_string_lossy();
+    let mut file_reader = FileReader::open(&filename)?;
+    let mut content = String::new();
+    file_reader.read_to_string(&mut content)?;
+    content
+        .parse()
+        .map_err(|error| PipelineError::Other(format!("Failed to parse GeoJSON: {error}")))
+}
+
+fn observe_geojson_schema(
+    builder: &mut schema::GeoJsonSchemaBuilder,
+    geojson: &geojson::GeoJson,
+) -> pipeline::Result<()> {
+    match geojson {
+        geojson::GeoJson::FeatureCollection(collection) => {
+            for feature in &collection.features {
+                builder.observe_properties(feature.properties.as_ref());
+            }
+        }
+        geojson::GeoJson::Feature(feature) => {
+            builder.observe_properties(feature.properties.as_ref());
+        }
+        geojson::GeoJson::Geometry(_) => {
+            return Err(PipelineError::Other(DIRECT_GEOMETRY_ERROR.to_owned()));
+        }
+    }
+
+    Ok(())
 }
 
 fn convert_feature_to_entity(
@@ -444,6 +488,10 @@ fn add_polygon(
 
     Ok(true)
 }
+
+#[cfg(test)]
+#[path = "geojson_schema_tests.rs"]
+mod schema_tests;
 
 #[cfg(test)]
 mod tests {

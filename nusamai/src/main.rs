@@ -11,8 +11,8 @@ use nusamai::{
     pipeline::Canceller,
     sink::{DataRequirements, DataSink, DataSinkProvider},
     source::{
-        citygml::CityGmlSourceProvider, geojson::GeoJsonSourceProvider, DataSource,
-        DataSourceProvider,
+        citygml::CityGmlSourceProvider, collect_input_schema, geojson::GeoJsonSourceProvider,
+        DataSource, DataSourceProvider,
     },
     transformer::{
         self, MappingRules, MultiThreadTransformer, NusamaiTransformBuilder, ParameterType,
@@ -20,8 +20,6 @@ use nusamai::{
     },
     BUILTIN_SINKS,
 };
-use nusamai_citygml::CityGmlElement;
-use nusamai_plateau::models::TopLevelCityObject;
 
 #[derive(clap::Parser)]
 #[command(author, version, about, long_about = None)]
@@ -258,7 +256,7 @@ fn main() -> ExitCode {
         None => None,
     };
 
-    let source = {
+    let (source, input_schema) = {
         // glob input file patterns
         let mut filenames = vec![];
         for file_pattern in &args.file_patterns {
@@ -327,15 +325,24 @@ fn main() -> ExitCode {
             return ExitCode::FAILURE;
         }
 
+        let input_schema = match collect_input_schema(source_provider.as_ref(), &source_params) {
+            Ok(schema) => schema,
+            Err(err) => {
+                log::error!("Error collecting source schema: {err:?}");
+                return ExitCode::FAILURE;
+            }
+        };
+
         // create source
         let mut source = source_provider.create(&source_params);
         source.set_appearance_parsing(requirements.use_appearance);
-        source
+        (source, input_schema)
     };
 
     run(
         &args,
         source,
+        input_schema,
         requirements,
         mapping_rules,
         sink,
@@ -348,6 +355,7 @@ fn main() -> ExitCode {
 fn run(
     args: &Args,
     source: Box<dyn DataSource>,
+    mut schema: nusamai_citygml::schema::Schema,
     requirements: DataRequirements,
     mapping_rules: Option<MappingRules>,
     sink: Box<dyn DataSink>,
@@ -363,8 +371,6 @@ fn run(
             request
         };
         let transform_builder = NusamaiTransformBuilder::new(request);
-        let mut schema = nusamai_citygml::schema::Schema::default();
-        TopLevelCityObject::collect_schema(&mut schema);
         transform_builder.transform_schema(&mut schema);
 
         if let Some(schema_path) = &args.schema {
