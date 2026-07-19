@@ -686,7 +686,7 @@ impl DataSink for ObjSink {
                     all_materials = new_materials;
 
                     // Remap and merge primitives in all meshes
-                    for (_fid, mesh) in all_meshes.iter_mut() {
+                    for mesh in all_meshes.values_mut() {
                         let mut new_prims: HashMap<MaterialKey, Vec<u32>> = HashMap::new();
                         for (old_key, indices) in mesh.primitives.drain() {
                             let new_key = key_remap.get(&old_key).cloned().unwrap_or(old_key);
