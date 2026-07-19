@@ -189,6 +189,9 @@ fn convert_feature_to_entity(
     // Convert properties to attributes
     if let Some(props) = feature.properties {
         for (key, value) in props {
+            if value.is_null() {
+                continue;
+            }
             attributes.insert(key, json_value_to_value(value));
         }
     }

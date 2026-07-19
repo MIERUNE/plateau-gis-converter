@@ -1,6 +1,12 @@
-use super::{schema::GeoJsonSchemaBuilder, GeoJsonSourceProvider, GEOJSON_TYPENAME};
+use super::{
+    convert_feature_to_entity, schema::GeoJsonSchemaBuilder, GeoJsonSourceProvider,
+    GEOJSON_TYPENAME,
+};
 use geojson::JsonObject;
-use nusamai_citygml::schema::{Attribute, FeatureTypeDef, Schema, TypeDef, TypeRef};
+use nusamai_citygml::{
+    object::Value,
+    schema::{Attribute, FeatureTypeDef, Schema, TypeDef, TypeRef},
+};
 use serde_json::json;
 use std::{io::Write, path::PathBuf};
 
@@ -27,6 +33,34 @@ fn geojson_feature_type(schema: &Schema) -> &FeatureTypeDef {
 #[test]
 fn uses_neutral_geojson_feature_typename() {
     assert_eq!(GEOJSON_TYPENAME, "geojson:Feature");
+}
+
+#[test]
+fn null_property_is_omitted_but_string_value_is_preserved() {
+    let feature: geojson::Feature = r#"{
+        "type": "Feature",
+        "properties": {
+            "N03_002": null,
+            "N03_007": "01000"
+        },
+        "geometry": null
+    }"#
+    .parse()
+    .unwrap();
+    let base_url = url::Url::parse("file:///input.geojson").unwrap();
+
+    let entity = convert_feature_to_entity(feature, &base_url)
+        .unwrap()
+        .unwrap();
+    let Value::Object(object) = entity.root else {
+        panic!("GeoJSON feature must become an object");
+    };
+
+    assert!(!object.attributes.contains_key("N03_002"));
+    assert_eq!(
+        object.attributes.get("N03_007"),
+        Some(&Value::String("01000".to_owned()))
+    );
 }
 
 #[test]

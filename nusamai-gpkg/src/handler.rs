@@ -18,6 +18,13 @@ pub enum GpkgError {
 }
 
 impl GpkgHandler {
+    /// Open an existing GeoPackage database without initializing its schema.
+    pub async fn open(connection_string: &str) -> Result<Self, GpkgError> {
+        let conn_opts = SqliteConnectOptions::from_str(connection_string)?;
+        let pool = SqlitePoolOptions::new().connect_with(conn_opts).await?;
+        Ok(Self { pool })
+    }
+
     /// Create and initialize new GeoPackage database at the specified URL
     pub async fn from_url(url: &Url) -> Result<Self, GpkgError> {
         Self::initialize(SqliteConnectOptions::from_url(url)?).await
