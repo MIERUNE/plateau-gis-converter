@@ -493,16 +493,195 @@ fn add_polygon(
 }
 
 #[cfg(test)]
-#[path = "geojson_schema_tests.rs"]
-mod schema_tests;
-
-#[cfg(test)]
 mod tests {
     use super::*;
-    use crate::pipeline::feedback;
-    use nusamai_citygml::object::{ObjectStereotype, Value};
-    use std::sync::mpsc::sync_channel;
+    use crate::{
+        pipeline::{feedback, PipelineError},
+        source::DataSourceProvider,
+    };
+    use nusamai_citygml::{
+        object::{ObjectStereotype, Value},
+        schema::{FeatureTypeDef, Schema, TypeDef, TypeRef},
+    };
+    use std::{io::Write, path::PathBuf, sync::mpsc::sync_channel};
     use tempfile::TempDir;
+
+    fn geojson_feature_type(schema: &Schema) -> &FeatureTypeDef {
+        let Some(TypeDef::Feature(feature_type)) = schema.types.get(GEOJSON_TYPENAME) else {
+            panic!("GeoJSON feature type must exist");
+        };
+        feature_type
+    }
+
+    #[test]
+    fn uses_neutral_geojson_feature_typename() {
+        assert_eq!(GEOJSON_TYPENAME, "geojson:Feature");
+    }
+
+    #[test]
+    fn null_property_is_omitted_but_string_value_is_preserved() {
+        let feature: geojson::Feature = r#"{
+            "type": "Feature",
+            "properties": {
+                "N03_002": null,
+                "N03_007": "01000"
+            },
+            "geometry": null
+        }"#
+        .parse()
+        .unwrap();
+        let base_url = url::Url::parse("file:///input.geojson").unwrap();
+
+        let entity = convert_feature_to_entity(feature, &base_url)
+            .unwrap()
+            .unwrap();
+        let Value::Object(object) = entity.root else {
+            panic!("GeoJSON feature must become an object");
+        };
+
+        assert!(!object.attributes.contains_key("N03_002"));
+        assert_eq!(
+            object.attributes.get("N03_007"),
+            Some(&Value::String("01000".to_owned()))
+        );
+    }
+
+    #[test]
+    fn source_provider_collects_schema_across_feature_documents_and_files() {
+        let temp_dir = tempfile::TempDir::new().unwrap();
+        let single_path = temp_dir.path().join("single.geojson");
+        let collection_path = temp_dir.path().join("collection.geojson");
+        std::fs::write(
+            &single_path,
+            r#"{
+                "type": "Feature",
+                "properties": {"single": "001", "shared": 1},
+                "geometry": null
+            }"#,
+        )
+        .unwrap();
+        std::fs::write(
+            &collection_path,
+            r#"{
+                "type": "FeatureCollection",
+                "features": [
+                    {
+                        "type": "Feature",
+                        "properties": {"collection": true, "shared": 1.5},
+                        "geometry": null
+                    },
+                    {
+                        "type": "Feature",
+                        "properties": {"null_only": null},
+                        "geometry": null
+                    }
+                ]
+            }"#,
+        )
+        .unwrap();
+        let provider = GeoJsonSourceProvider {
+            filenames: vec![single_path, collection_path],
+        };
+        let mut schema = Schema::default();
+
+        provider
+            .collect_schema(&Parameters::default(), &mut schema)
+            .unwrap();
+        let feature_type = geojson_feature_type(&schema);
+
+        assert_eq!(
+            feature_type
+                .attributes
+                .keys()
+                .map(String::as_str)
+                .collect::<Vec<_>>(),
+            ["collection", "null_only", "shared", "single"]
+        );
+        assert_eq!(
+            feature_type.attributes["collection"].type_ref,
+            TypeRef::Boolean
+        );
+        assert_eq!(
+            feature_type.attributes["null_only"].type_ref,
+            TypeRef::String
+        );
+        assert_eq!(feature_type.attributes["shared"].type_ref, TypeRef::Double);
+        assert_eq!(feature_type.attributes["single"].type_ref, TypeRef::String);
+    }
+
+    #[test]
+    fn source_provider_collects_schema_from_zip_entry() {
+        let temp_dir = tempfile::TempDir::new().unwrap();
+        let zip_path = temp_dir.path().join("input.zip");
+        let zip_file = std::fs::File::create(&zip_path).unwrap();
+        let mut writer = zip::ZipWriter::new(zip_file);
+        writer
+            .start_file(
+                "nested/input.geojson",
+                zip::write::SimpleFileOptions::default(),
+            )
+            .unwrap();
+        writer
+            .write_all(
+                br#"{
+                    "type": "Feature",
+                    "properties": {"from_zip": 42},
+                    "geometry": null
+                }"#,
+            )
+            .unwrap();
+        writer.finish().unwrap();
+
+        let virtual_path = PathBuf::from(format!(
+            "{}/nested/input.geojson",
+            zip_path.to_string_lossy()
+        ));
+        let provider = GeoJsonSourceProvider {
+            filenames: vec![virtual_path],
+        };
+        let mut schema = Schema::default();
+
+        provider
+            .collect_schema(&Parameters::default(), &mut schema)
+            .unwrap();
+
+        assert_eq!(
+            geojson_feature_type(&schema).attributes["from_zip"].type_ref,
+            TypeRef::Integer
+        );
+    }
+
+    #[test]
+    fn source_provider_rejects_bare_geometry_and_invalid_json() {
+        let temp_dir = tempfile::TempDir::new().unwrap();
+        let geometry_path = temp_dir.path().join("geometry.geojson");
+        let invalid_path = temp_dir.path().join("invalid.geojson");
+        std::fs::write(
+            &geometry_path,
+            r#"{"type":"Point","coordinates":[139.7,35.6]}"#,
+        )
+        .unwrap();
+        std::fs::write(&invalid_path, "not json").unwrap();
+
+        for (path, expected) in [
+            (geometry_path, "Direct geometry is not supported"),
+            (invalid_path, "Failed to parse GeoJSON"),
+        ] {
+            let provider = GeoJsonSourceProvider {
+                filenames: vec![path],
+            };
+            let mut schema = Schema::default();
+
+            let error = provider
+                .collect_schema(&Parameters::default(), &mut schema)
+                .unwrap_err();
+
+            assert!(
+                matches!(error, PipelineError::Other(message) if message.contains(expected)),
+                "unexpected error"
+            );
+        }
+    }
 
     #[test]
     fn test_geojson_source() {

@@ -239,4 +239,17 @@ mod tests {
             });
         }
     }
+
+    #[test]
+    fn source_provider_collects_plateau_schema() {
+        let provider = CityGmlSourceProvider { filenames: vec![] };
+        let mut schema = Schema::default();
+
+        provider
+            .collect_schema(&Parameters::default(), &mut schema)
+            .unwrap();
+
+        assert!(schema.types.contains_key("bldg:Building"));
+        assert!(schema.types.contains_key("gen:GenericCityObject"));
+    }
 }
