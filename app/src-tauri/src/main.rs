@@ -12,13 +12,15 @@ use nusamai::{
         obj::ObjSinkProvider, pmtiles::PmTilesSinkProvider, serde::SerdeSinkProvider,
         shapefile::ShapefileSinkProvider,
     },
-    source::{DataSourceProvider, citygml::CityGmlSourceProvider, geojson::GeoJsonSourceProvider},
+    source::{
+        DataSourceProvider, citygml::CityGmlSourceProvider, collect_input_schema,
+        geojson::GeoJsonSourceProvider,
+    },
     transformer::{
         self, MappingRules, MultiThreadTransformer, NusamaiTransformBuilder, TransformBuilder,
         TransformerSettings,
     },
 };
-use nusamai_plateau::models::TopLevelCityObject;
 use reqwest::StatusCode;
 use std::collections::{HashMap, HashSet};
 use std::fs::File;
@@ -423,7 +425,7 @@ fn run_conversion(
     let mut requirements = sink.make_requirements(transformer_settings);
     requirements.set_output_epsg(epsg);
 
-    let source = {
+    let (source, input_schema) = {
         // ファイルを拡張子で分類
         let mut gml_files = Vec::new();
         let mut geojson_files = Vec::new();
@@ -502,14 +504,19 @@ fn run_conversion(
             log::error!("{msg}");
             return Err(Error::InvalidSetting(msg));
         }
+
+        let input_schema =
+            collect_input_schema(source_provider.as_ref(), &source_params).map_err(|err| {
+                let msg = format!("Error collecting source schema: {err}");
+                log::error!("{msg}");
+                Error::ConversionFailed(msg)
+            })?;
         let mut source = source_provider.create(&source_params);
         source.set_appearance_parsing(requirements.use_appearance);
-        source
+        (source, input_schema)
     };
 
     let (transformer, schema) = {
-        use nusamai_citygml::CityGmlElement;
-
         let mapping_rules = if rules_path.is_empty() {
             None
         } else {
@@ -533,8 +540,7 @@ fn run_conversion(
             request
         };
         let transform_builder = NusamaiTransformBuilder::new(request);
-        let mut schema = nusamai_citygml::schema::Schema::default();
-        TopLevelCityObject::collect_schema(&mut schema);
+        let mut schema = input_schema;
         transform_builder.transform_schema(&mut schema);
         let transformer = Box::new(MultiThreadTransformer::new(transform_builder));
         (transformer, schema)

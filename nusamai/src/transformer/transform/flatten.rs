@@ -86,6 +86,25 @@ impl FlattenTreeTransform {
     }
 }
 
+/// Returns whether feature or data attributes contain a nested schema type.
+///
+/// Property members alone do not represent nesting in an entity. Likewise,
+/// types wrapped in `JsonString` have already been serialized and are not
+/// tree-flattening targets.
+fn has_nested_type_references(schema: &Schema) -> bool {
+    schema.types.values().any(|ty| {
+        let attributes = match ty {
+            TypeDef::Feature(typedef) => &typedef.attributes,
+            TypeDef::Data(typedef) => &typedef.attributes,
+            TypeDef::Property(_) => return false,
+        };
+
+        attributes
+            .values()
+            .any(|attribute| matches!(&attribute.type_ref, TypeRef::Named(_)))
+    })
+}
+
 impl Transform for FlattenTreeTransform {
     fn transform(&mut self, _feedback: &Feedback, entity: Entity, out: &mut Vec<Entity>) {
         let geom_store = entity.geometry_store;
@@ -94,6 +113,10 @@ impl Transform for FlattenTreeTransform {
     }
 
     fn transform_schema(&self, schema: &mut Schema) {
+        if !has_nested_type_references(schema) {
+            return;
+        }
+
         for ty in schema.types.values_mut() {
             match ty {
                 TypeDef::Feature(typedef) => {
@@ -291,6 +314,166 @@ impl FlattenTreeTransform {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use nusamai_citygml::schema::{DataTypeDef, FeatureTypeDef, PropertyTypeDef};
+
+    fn feature_type(attributes: nusamai_citygml::schema::Map) -> TypeDef {
+        TypeDef::Feature(FeatureTypeDef {
+            attributes,
+            additional_attributes: false,
+        })
+    }
+
+    fn data_type(attributes: nusamai_citygml::schema::Map) -> TypeDef {
+        TypeDef::Data(DataTypeDef {
+            attributes,
+            additional_attributes: false,
+        })
+    }
+
+    fn assert_has_parent_attributes(schema: &Schema, typename: &str) {
+        let TypeDef::Feature(typedef) = &schema.types[typename] else {
+            panic!("{typename} must be a feature type");
+        };
+        assert_eq!(typedef.attributes["parentId"].type_ref, TypeRef::String);
+        assert_eq!(typedef.attributes["parentType"].type_ref, TypeRef::String);
+    }
+
+    #[test]
+    fn transform_schema_does_not_add_parent_attributes_to_flat_schema() {
+        let mut attributes = nusamai_citygml::schema::Map::default();
+        attributes.insert("name".into(), Attribute::new(TypeRef::String));
+        let mut schema = Schema::default();
+        schema
+            .types
+            .insert("geojson:Feature".into(), feature_type(attributes));
+        let transform = FlattenTreeTransform::with_options(
+            FeatureFlatteningOption::All,
+            DataFlatteningOption::All,
+            ObjectFlatteningOption::None,
+        );
+
+        transform.transform_schema(&mut schema);
+
+        let TypeDef::Feature(typedef) = &schema.types["geojson:Feature"] else {
+            panic!("geojson:Feature must be a feature type");
+        };
+        assert!(!typedef.attributes.contains_key("parentId"));
+        assert!(!typedef.attributes.contains_key("parentType"));
+    }
+
+    #[test]
+    fn transform_schema_preserves_parent_attributes_for_all_features_in_hierarchical_schema() {
+        let mut root_attributes = nusamai_citygml::schema::Map::default();
+        root_attributes.insert(
+            "child".into(),
+            Attribute::new(TypeRef::Named("example:Child".into())),
+        );
+        let mut schema = Schema::default();
+        schema
+            .types
+            .insert("example:Root".into(), feature_type(root_attributes));
+        schema.types.insert(
+            "example:Child".into(),
+            feature_type(nusamai_citygml::schema::Map::default()),
+        );
+        schema.types.insert(
+            "example:Unreferenced".into(),
+            feature_type(nusamai_citygml::schema::Map::default()),
+        );
+        let transform = FlattenTreeTransform::with_options(
+            FeatureFlatteningOption::All,
+            DataFlatteningOption::None,
+            ObjectFlatteningOption::None,
+        );
+
+        transform.transform_schema(&mut schema);
+
+        assert_has_parent_attributes(&schema, "example:Root");
+        assert_has_parent_attributes(&schema, "example:Child");
+        assert_has_parent_attributes(&schema, "example:Unreferenced");
+    }
+
+    #[test]
+    fn transform_schema_detects_nested_type_references_on_data_types() {
+        let mut data_attributes = nusamai_citygml::schema::Map::default();
+        data_attributes.insert(
+            "child".into(),
+            Attribute::new(TypeRef::Named("example:Child".into())),
+        );
+        let mut schema = Schema::default();
+        schema
+            .types
+            .insert("example:Data".into(), data_type(data_attributes));
+        schema.types.insert(
+            "example:Child".into(),
+            feature_type(nusamai_citygml::schema::Map::default()),
+        );
+        let transform = FlattenTreeTransform::with_options(
+            FeatureFlatteningOption::All,
+            DataFlatteningOption::None,
+            ObjectFlatteningOption::None,
+        );
+
+        transform.transform_schema(&mut schema);
+
+        assert_has_parent_attributes(&schema, "example:Child");
+    }
+
+    #[test]
+    fn transform_schema_ignores_named_references_owned_only_by_property_types() {
+        let mut schema = Schema::default();
+        schema.types.insert(
+            "example:Root".into(),
+            feature_type(nusamai_citygml::schema::Map::default()),
+        );
+        schema.types.insert(
+            "_:TopLevelFeatureProperty".into(),
+            TypeDef::Property(PropertyTypeDef {
+                members: vec![Attribute::new(TypeRef::Named("example:Root".into()))],
+            }),
+        );
+        let transform = FlattenTreeTransform::with_options(
+            FeatureFlatteningOption::All,
+            DataFlatteningOption::None,
+            ObjectFlatteningOption::None,
+        );
+
+        transform.transform_schema(&mut schema);
+
+        let TypeDef::Feature(typedef) = &schema.types["example:Root"] else {
+            panic!("example:Root must be a feature type");
+        };
+        assert!(!typedef.attributes.contains_key("parentId"));
+        assert!(!typedef.attributes.contains_key("parentType"));
+    }
+
+    #[test]
+    fn transform_schema_does_not_treat_json_string_contents_as_nested_types() {
+        let mut attributes = nusamai_citygml::schema::Map::default();
+        attributes.insert(
+            "serializedChild".into(),
+            Attribute::new(TypeRef::JsonString(Box::new(Attribute::new(
+                TypeRef::Named("example:Child".into()),
+            )))),
+        );
+        let mut schema = Schema::default();
+        schema
+            .types
+            .insert("example:Root".into(), feature_type(attributes));
+        let transform = FlattenTreeTransform::with_options(
+            FeatureFlatteningOption::All,
+            DataFlatteningOption::None,
+            ObjectFlatteningOption::None,
+        );
+
+        transform.transform_schema(&mut schema);
+
+        let TypeDef::Feature(typedef) = &schema.types["example:Root"] else {
+            panic!("example:Root must be a feature type");
+        };
+        assert!(!typedef.attributes.contains_key("parentId"));
+        assert!(!typedef.attributes.contains_key("parentType"));
+    }
 
     #[test]
     fn test_flatten_entity_feature() {

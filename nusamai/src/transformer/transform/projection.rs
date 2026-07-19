@@ -25,6 +25,7 @@ impl Transform for ProjectionTransform {
 
         match input_epsg {
             EPSG_JGD2011_GEOGRAPHIC_3D => self.transform_from_jgd2011(&entity, None),
+            EPSG_WGS84_GEOGRAPHIC_2D => self.transform_from_wgs84_2d(&entity),
             EPSG_WGS84_GEOGRAPHIC_3D => self.transform_from_wgs84(&entity, None),
             EPSG_JGD2011_JPRECT_I_JGD2011_HEIGHT
             | EPSG_JGD2011_JPRECT_II_JGD2011_HEIGHT
@@ -71,6 +72,25 @@ impl ProjectionTransform {
         let proj = zone.projection();
         let (lng, lat, height) = proj.project_inverse(x, y, height).unwrap();
         (lng, lat, height)
+    }
+
+    fn transform_from_wgs84_2d(&mut self, entity: &Entity) {
+        match self.output_epsg {
+            EPSG_WGS84_GEOGRAPHIC_2D => {
+                // Do nothing
+            }
+            EPSG_WGS84_GEOGRAPHIC_3D => {
+                // GeoJSON XY coordinates are already normalized to XYZ with Z=0.
+                // Keep the longitude-latitude axis order and promote only the CRS.
+                entity.geometry_store.write().unwrap().epsg = self.output_epsg;
+            }
+            _ => {
+                unimplemented!(
+                    "WGS84 geographic 2D to EPSG:{} not supported yet",
+                    self.output_epsg
+                );
+            }
+        }
     }
 
     fn transform_from_jgd2011(&mut self, entity: &Entity, rectangular: Option<EpsgCode>) {
