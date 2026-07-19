@@ -26,7 +26,10 @@ use crate::{
     parameters::*,
     pipeline::{Feedback, PipelineError, Receiver, Result},
     sink::{
-        mvt::{slice::slice_cityobj_geoms, tileid::TileIdMethod},
+        mvt::{
+            slice::{slice_cityobj_geoms, validate_zoom_range},
+            tileid::TileIdMethod,
+        },
         DataRequirements, DataSink, DataSinkProvider, SinkInfo,
     },
     transformer,
@@ -106,6 +109,7 @@ impl DataSinkProvider for MltSinkProvider {
         let transform_options = self.transformer_options();
         let min_z = get_parameter_value!(params, "min_z", Integer).unwrap() as u8;
         let max_z = get_parameter_value!(params, "max_z", Integer).unwrap() as u8;
+        validate_zoom_range(min_z, max_z);
         let max_compressed_tile_size =
             get_parameter_value!(params, "max_compressed_tile_size", Integer).unwrap() as usize;
 
@@ -219,6 +223,9 @@ impl DataSink for MltSink {
     }
 
     fn run(&mut self, upstream: Receiver, feedback: &Feedback, _schema: &Schema) -> Result<()> {
+        // Property column kinds are inferred independently for each tile/layer in make_tile, so
+        // the same attribute may have different MLT types across tiles. A future schema-aware
+        // implementation should use `_schema` here to determine column kinds globally.
         let (sender_sliced, receiver_sliced) = mpsc::sync_channel(2000);
         let (sender_sorted, receiver_sorted) = mpsc::sync_channel(2000);
 
@@ -527,6 +534,8 @@ fn encode_layer(name: String, layer_data: LayerData, extent: u32) -> Result<Vec<
             .map_err(|err| PipelineError::Other(format!("Failed to add MLT feature: {err:?}")))?;
     }
 
+    // Keep output compatible with MapLibre GL JS's current MLT decoder. Optional encodings can be
+    // enabled after decoder support for them has been confirmed.
     builder
         .finish()
         .encode(

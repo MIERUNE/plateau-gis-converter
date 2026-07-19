@@ -170,6 +170,11 @@ fn run_mvt_sink() {
 }
 
 #[test]
+fn mvt_sink_rejects_invalid_zoom_range() {
+    assert_sink_rejects_invalid_zoom_range(sink::mvt::MvtSinkProvider {});
+}
+
+#[test]
 fn run_mlt_sink() {
     let temp_dir = tempfile::tempdir().unwrap();
     let output_path = temp_dir.path().join("mlt");
@@ -204,6 +209,49 @@ fn run_mlt_sink() {
     assert!(
         saw_typed_null,
         "MLT fixture output should contain at least one missing property represented as a typed null"
+    );
+}
+
+#[test]
+fn mlt_sink_rejects_invalid_zoom_range() {
+    assert_sink_rejects_invalid_zoom_range(sink::mlt::MltSinkProvider {});
+}
+
+#[test]
+fn run_mlt_sink_falls_back_to_lower_detail() {
+    let temp_dir = tempfile::tempdir().unwrap();
+    let output_path = temp_dir.path().join("mlt");
+    let output_path_string = output_path.to_str().unwrap().to_string();
+
+    simple_run_sink_with_params(
+        sink::mlt::MltSinkProvider {},
+        Some(output_path_string.as_str()),
+        vec![
+            ("min_z", "14"),
+            ("max_z", "14"),
+            ("max_compressed_tile_size", "1"),
+        ],
+    );
+
+    let mut mlt_files = Vec::new();
+    collect_files_with_extension(&output_path, "mlt", &mut mlt_files);
+    assert!(
+        !mlt_files.is_empty(),
+        "MLT fallback output should contain .mlt tiles"
+    );
+
+    let mut saw_minimum_detail_tile = false;
+    for path in &mlt_files {
+        let layers = decode_mlt_tile_layers(path);
+        for layer in &layers {
+            assert_decoded_mlt_layer_is_structurally_valid(path, layer);
+            saw_minimum_detail_tile |= layer.extent().get() == 1 << 9;
+        }
+    }
+
+    assert!(
+        saw_minimum_detail_tile,
+        "MLT output should remain decodable after falling back to detail 9"
     );
 }
 
@@ -317,6 +365,38 @@ fn collect_files_with_extension(dir: &std::path::Path, extension: &str, out: &mu
             out.push(path);
         }
     }
+}
+
+fn assert_sink_rejects_invalid_zoom_range<S: DataSinkProvider>(sink_provider: S) {
+    let temp_dir = tempfile::tempdir().unwrap();
+    let output_path = temp_dir.path().join("tiles");
+    let output_path_string = output_path.to_str().unwrap().to_string();
+    let mut params = sink_provider.sink_options();
+    params
+        .update_values_with_str(&[
+            ("@output".to_string(), output_path_string),
+            ("min_z".to_string(), "15".to_string()),
+            ("max_z".to_string(), "14".to_string()),
+        ])
+        .unwrap();
+    params.validate().unwrap();
+
+    let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+        sink_provider.create(&params)
+    }));
+    let panic = match result {
+        Ok(_) => panic!("sink should reject min_z greater than max_z"),
+        Err(panic) => panic,
+    };
+    let message = panic
+        .downcast_ref::<String>()
+        .map(String::as_str)
+        .or_else(|| panic.downcast_ref::<&str>().copied())
+        .unwrap_or("");
+    assert!(
+        message.contains("min_z (15) must be less than or equal to max_z (14)"),
+        "unexpected panic message: {message}"
+    );
 }
 
 fn decode_mlt_tiles_by_coord(root: &Path) -> BTreeMap<PathBuf, Vec<TileLayer>> {
