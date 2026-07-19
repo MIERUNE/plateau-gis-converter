@@ -9,7 +9,9 @@ use std::{
 
 use super::file_reader::FileReader;
 
-use nusamai_citygml::{CityGmlElement, CityGmlReader, Envelope, ParseError, SubTreeReader};
+use nusamai_citygml::{
+    schema::Schema, CityGmlElement, CityGmlReader, Envelope, ParseError, SubTreeReader,
+};
 use nusamai_plateau::{appearance::AppearanceStore, models, Entity};
 use rayon::prelude::*;
 use url::Url;
@@ -26,6 +28,11 @@ pub struct CityGmlSourceProvider {
 }
 
 impl DataSourceProvider for CityGmlSourceProvider {
+    fn collect_schema(&self, _params: &Parameters, output: &mut Schema) -> pipeline::Result<()> {
+        models::TopLevelCityObject::collect_schema(output);
+        Ok(())
+    }
+
     fn create(&self, _params: &Parameters) -> Box<dyn DataSource> {
         Box::new(CityGmlSource {
             filenames: self.filenames.clone(),

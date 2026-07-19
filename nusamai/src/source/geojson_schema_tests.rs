@@ -13,8 +13,29 @@ use std::{io::Write, path::PathBuf};
 use crate::{
     parameters::Parameters,
     pipeline::PipelineError,
-    source::{citygml::CityGmlSourceProvider, DataSourceProvider},
+    source::{
+        citygml::CityGmlSourceProvider, collect_input_schema, DataSource, DataSourceProvider,
+        SourceInfo,
+    },
 };
+
+struct NoSchemaSourceProvider;
+
+impl DataSourceProvider for NoSchemaSourceProvider {
+    fn create(&self, _config: &Parameters) -> Box<dyn DataSource> {
+        unreachable!("the no-schema provider is only used to test the default schema collector")
+    }
+
+    fn info(&self) -> SourceInfo {
+        SourceInfo {
+            name: "No schema".to_owned(),
+        }
+    }
+
+    fn sink_options(&self) -> Parameters {
+        Parameters::default()
+    }
+}
 
 fn properties(value: serde_json::Value) -> JsonObject {
     value
@@ -312,7 +333,7 @@ fn source_provider_rejects_bare_geometry_and_invalid_json() {
 
 #[test]
 fn source_provider_collect_schema_defaults_to_no_op() {
-    let provider = CityGmlSourceProvider { filenames: vec![] };
+    let provider = NoSchemaSourceProvider;
     let mut schema = Schema::default();
 
     provider
@@ -320,4 +341,41 @@ fn source_provider_collect_schema_defaults_to_no_op() {
         .unwrap();
 
     assert!(schema.types.is_empty());
+}
+
+#[test]
+fn citygml_source_provider_collects_plateau_schema() {
+    let provider = CityGmlSourceProvider { filenames: vec![] };
+    let mut schema = Schema::default();
+
+    provider
+        .collect_schema(&Parameters::default(), &mut schema)
+        .unwrap();
+
+    assert!(schema.types.contains_key("bldg:Building"));
+    assert!(schema.types.contains_key("gen:GenericCityObject"));
+}
+
+#[test]
+fn collect_input_schema_does_not_mix_citygml_types_into_geojson() {
+    let temp_dir = tempfile::TempDir::new().unwrap();
+    let path = temp_dir.path().join("input.geojson");
+    std::fs::write(
+        &path,
+        r#"{
+            "type": "Feature",
+            "properties": {"name": "example"},
+            "geometry": null
+        }"#,
+    )
+    .unwrap();
+    let provider = GeoJsonSourceProvider {
+        filenames: vec![path],
+    };
+
+    let schema = collect_input_schema(&provider, &Parameters::default()).unwrap();
+
+    assert!(schema.types.contains_key(GEOJSON_TYPENAME));
+    assert!(!schema.types.contains_key("bldg:Building"));
+    assert!(!schema.types.contains_key("gen:GenericCityObject"));
 }

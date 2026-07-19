@@ -8,8 +8,7 @@ use crate::{
     parameters::Parameters,
     pipeline::{Feedback, Result, Sender},
 };
-use nusamai_citygml::{schema::Schema, CityGmlElement};
-use nusamai_plateau::models::TopLevelCityObject;
+use nusamai_citygml::schema::Schema;
 
 pub struct SourceInfo {
     pub name: String,
@@ -37,7 +36,6 @@ pub fn collect_input_schema(
     config: &Parameters,
 ) -> Result<Schema> {
     let mut schema = Schema::default();
-    TopLevelCityObject::collect_schema(&mut schema);
     source_provider.collect_schema(config, &mut schema)?;
     Ok(schema)
 }
