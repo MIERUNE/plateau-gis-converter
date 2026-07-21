@@ -526,11 +526,10 @@ fn tile_writing_stage(
                             .map(|(_, _, _, u, v)| (*u, *v))
                             .collect::<Vec<(f64, f64)>>();
 
-                        let texture_uri =
-                            match texture_path_from_url(&base_texture.uri, feedback) {
-                                Some(path) => path,
-                                None => continue,
-                            };
+                        let texture_uri = match texture_path_from_url(&base_texture.uri, feedback) {
+                            Some(path) => path,
+                            None => continue,
+                        };
                         let texture_size = texture_size_cache.get_or_insert(&texture_uri);
 
                         let downsample_scale = if limit_texture_resolution.unwrap_or(false) {
