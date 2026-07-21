@@ -15,7 +15,7 @@ use crate::{
     pipeline::{Feedback, Receiver, Result},
     sink::{
         vector_tile::{
-            run_directory_pipeline, slice::validate_zoom_range, TilePipelineOptions,
+            run_zxy_directory_pipeline, slice::validate_zoom_range, TilePipelineOptions,
             DEFAULT_MAX_COMPRESSED_TILE_SIZE,
         },
         DataRequirements, DataSink, DataSinkProvider, SinkInfo,
@@ -119,7 +119,7 @@ impl DataSink for MvtSink {
     }
 
     fn run(&mut self, upstream: Receiver, feedback: &Feedback, _schema: &Schema) -> Result<()> {
-        run_directory_pipeline(
+        run_zxy_directory_pipeline(
             &self.output_path,
             "pbf",
             upstream,
