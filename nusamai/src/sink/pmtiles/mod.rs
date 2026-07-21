@@ -1,38 +1,33 @@
-// ! PMTiles sink
-//!
-//! This sink converts CityGML data to PMTiles format, a single-file archive for tiled data.
-//! It reuses geometry slicing and sorting logic from the MVT sink, but writes to a single
-//! PMTiles archive instead of individual tile files.
+//! PMTiles sink
 
 use std::{
-    convert::Infallible,
     fs::File,
     path::{Path, PathBuf},
     sync::mpsc,
 };
 
-use flatgeom::MultiPolygon2;
-use hashbrown::HashMap;
-use itertools::Itertools;
-use nusamai_citygml::{object, schema::Schema};
+use nusamai_citygml::schema::Schema;
 use pmtiles::{PmTilesWriter, TileCoord, TileType};
-use rayon::prelude::*;
-use serde::{Deserialize, Serialize};
-use tinymvt::{geometry::GeometryEncoder, tag::TagsEncoder, vector_tile};
 
 use crate::{
     get_parameter_value,
     parameters::*,
     pipeline::{Feedback, PipelineError, Receiver, Result},
     sink::{
-        mvt::slice::slice_cityobj_geoms, mvt::tags::convert_properties, mvt::tileid::TileIdMethod,
+        mvt::encode::MvtTileEncoder,
+        vector_tile::{
+            feature_sorting_stage, generate_stage, slice_stage, tile_id::TileIdMethod, EncodedTile,
+            TilePipelineOptions, DEFAULT_MAX_COMPRESSED_TILE_SIZE, FEATURE_CHANNEL_CAPACITY,
+        },
         DataRequirements, DataSink, DataSinkProvider, SinkInfo,
     },
     transformer,
     transformer::{use_lod_config, TransformerSettings},
 };
 
-use super::option::output_parameter;
+use super::{option::output_parameter, vector_tile::slice::validate_zoom_range};
+
+const TILE_CHANNEL_CAPACITY: usize = 100;
 
 pub struct PmTilesSinkProvider {}
 
@@ -73,14 +68,12 @@ impl DataSinkProvider for PmTilesSinkProvider {
                 label: Some("最大ズームレベル".into()),
             },
         });
-
         params
     }
 
     fn transformer_options(&self) -> TransformerSettings {
-        let mut settings: TransformerSettings = TransformerSettings::new();
+        let mut settings = TransformerSettings::new();
         settings.insert(use_lod_config("min_lod", None));
-
         settings
     }
 
@@ -88,26 +81,16 @@ impl DataSinkProvider for PmTilesSinkProvider {
         let output_path = get_parameter_value!(params, "@output", FileSystemPath)
             .as_ref()
             .expect("Output path is required but not provided");
-
         let min_z = get_parameter_value!(params, "min_z", Integer)
             .expect("min_z parameter is required but not provided") as u8;
         let max_z = get_parameter_value!(params, "max_z", Integer)
             .expect("max_z parameter is required but not provided") as u8;
+        validate_zoom_range(min_z, max_z);
 
-        // Validate zoom range
-        if min_z > max_z {
-            panic!(
-                "Invalid zoom range: min_z ({}) must be less than or equal to max_z ({})",
-                min_z, max_z
-            );
-        }
-
-        let transform_options = self.transformer_options();
-
-        Box::<PmTilesSink>::new(PmTilesSink {
+        Box::new(PmTilesSink {
             output_path: output_path.into(),
-            transform_settings: transform_options,
-            pmtiles_options: PmTilesParams { min_z, max_z },
+            transform_settings: self.transformer_options(),
+            options: PmTilesParams { min_z, max_z },
         })
     }
 }
@@ -115,19 +98,12 @@ impl DataSinkProvider for PmTilesSinkProvider {
 struct PmTilesSink {
     output_path: PathBuf,
     transform_settings: TransformerSettings,
-    pmtiles_options: PmTilesParams,
+    options: PmTilesParams,
 }
 
 struct PmTilesParams {
     min_z: u8,
     max_z: u8,
-}
-
-/// Sliced feature data structure (same as MVT)
-#[derive(Serialize, Deserialize)]
-struct SlicedFeature<'a> {
-    geometry: MultiPolygon2<'a>,
-    properties: nusamai_citygml::object::Value,
 }
 
 impl DataSink for PmTilesSink {
@@ -142,281 +118,127 @@ impl DataSink for PmTilesSink {
             ..Default::default()
         };
 
-        for config in properties.configs.iter() {
-            let _ = &self.transform_settings.update_transformer(config.clone());
+        for config in &properties.configs {
+            self.transform_settings.update_transformer(config.clone());
         }
-
         self.transform_settings.build(default_requirements)
     }
 
     fn run(&mut self, upstream: Receiver, feedback: &Feedback, _schema: &Schema) -> Result<()> {
-        let (sender_sliced, receiver_sliced) = mpsc::sync_channel(2000);
-        let (sender_sorted, receiver_sorted) = mpsc::sync_channel(2000);
-        let (sender_tiles, receiver_tiles) = mpsc::sync_channel(100);
+        let (sender_sliced, receiver_sliced) = mpsc::sync_channel(FEATURE_CHANNEL_CAPACITY);
+        let (sender_sorted, receiver_sorted) = mpsc::sync_channel(FEATURE_CHANNEL_CAPACITY);
+        let (sender_tiles, receiver_tiles) = mpsc::sync_channel(TILE_CHANNEL_CAPACITY);
 
-        let tile_id_conv = TileIdMethod::Hilbert;
+        let tile_id_method = TileIdMethod::Hilbert;
+        let pipeline_options = TilePipelineOptions {
+            min_z: self.options.min_z,
+            max_z: self.options.max_z,
+            max_compressed_tile_size: DEFAULT_MAX_COMPRESSED_TILE_SIZE,
+        };
+        let encoder = MvtTileEncoder::for_pmtiles_legacy();
 
-        std::thread::scope(|s| {
-            // Stage 1: Slicing geometry along the tile boundaries (parallel, reused from MVT)
-            {
-                let pmtiles_options = &self.pmtiles_options;
-                s.spawn(|| {
-                    if let Err(error) = geometry_slicing_stage(
-                        feedback,
-                        upstream,
-                        tile_id_conv,
-                        sender_sliced,
-                        pmtiles_options,
-                    ) {
-                        feedback.fatal_error(error);
-                    }
+        std::thread::scope(|scope| {
+            scope.spawn(move || {
+                if let Err(error) = slice_stage(
+                    feedback,
+                    upstream,
+                    tile_id_method,
+                    sender_sliced,
+                    pipeline_options,
+                ) {
+                    feedback.fatal_error(error);
+                }
+            });
+
+            scope.spawn(move || {
+                if let Err(error) = feature_sorting_stage(feedback, receiver_sliced, sender_sorted)
+                {
+                    feedback.fatal_error(error);
+                }
+            });
+
+            scope.spawn(move || {
+                let pool = rayon::ThreadPoolBuilder::new().build().map_err(|error| {
+                    PipelineError::Other(format!("Failed to build thread pool: {error}"))
                 });
-            }
-
-            // Stage 2: Sort features by tile_id (using external sorter, reused from MVT)
-            {
-                s.spawn(move || {
-                    if let Err(error) =
-                        feature_sorting_stage(feedback, receiver_sliced, sender_sorted)
-                    {
-                        feedback.fatal_error(error);
-                    }
-                });
-            }
-
-            // Stage 3: Generate MVT tiles in parallel
-            {
-                s.spawn(move || {
-                    let pool = rayon::ThreadPoolBuilder::new().build().map_err(|e| {
-                        PipelineError::Other(format!("Failed to build thread pool: {e}"))
-                    });
-
-                    match pool {
-                        Ok(pool) => pool.install(|| {
-                            if let Err(error) = tile_generation_stage(
-                                feedback,
-                                receiver_sorted,
-                                sender_tiles,
-                                tile_id_conv,
-                            ) {
-                                feedback.fatal_error(error);
-                            }
-                        }),
-                        Err(error) => {
+                match pool {
+                    Ok(pool) => pool.install(|| {
+                        if let Err(error) = generate_stage(
+                            feedback,
+                            receiver_sorted,
+                            tile_id_method,
+                            pipeline_options.max_compressed_tile_size,
+                            &encoder,
+                            |tile| send_generated_tile(feedback, &sender_tiles, tile),
+                        ) {
                             feedback.fatal_error(error);
                         }
-                    }
-                });
-            }
+                    }),
+                    Err(error) => feedback.fatal_error(error),
+                }
+            });
 
-            // Stage 4: Write tiles to PMTiles archive sequentially
-            {
-                let output_path = &self.output_path;
-                let min_z = self.pmtiles_options.min_z;
-                let max_z = self.pmtiles_options.max_z;
-                s.spawn(move || {
-                    if let Err(error) = pmtiles_writing_stage(
-                        output_path,
-                        min_z,
-                        max_z,
-                        feedback,
-                        receiver_tiles,
-                        tile_id_conv,
-                    ) {
-                        feedback.fatal_error(error);
-                    }
-                });
-            }
+            scope.spawn(move || {
+                if let Err(error) = pmtiles_writing_stage(
+                    &self.output_path,
+                    self.options.min_z,
+                    self.options.max_z,
+                    feedback,
+                    receiver_tiles,
+                    tile_id_method,
+                ) {
+                    feedback.fatal_error(error);
+                }
+            });
         });
 
         Ok(())
     }
 }
 
-/// Stage 1: Geometry slicing (reused from MVT)
-fn geometry_slicing_stage(
+fn send_generated_tile(
     feedback: &Feedback,
-    upstream: mpsc::Receiver<crate::pipeline::Parcel>,
-    tile_id_conv: TileIdMethod,
-    sender_sliced: mpsc::SyncSender<(u64, Vec<u8>)>,
-    pmtiles_options: &PmTilesParams,
+    sender_tiles: &mpsc::SyncSender<(u64, Vec<u8>)>,
+    tile: EncodedTile,
 ) -> Result<()> {
-    let bincode_config = bincode::config::standard();
-
-    // Convert CityObjects to sliced features
-    upstream.into_iter().par_bridge().try_for_each(|parcel| {
-        feedback.ensure_not_canceled()?;
-
-        let max_detail = 12; // 4096
-        let buffer_pixels = 5;
-        slice_cityobj_geoms(
-            &parcel.entity,
-            pmtiles_options.min_z,
-            pmtiles_options.max_z,
-            max_detail,
-            buffer_pixels,
-            |(z, x, y), mpoly| {
-                feedback.ensure_not_canceled()?;
-
-                let feature = SlicedFeature {
-                    geometry: mpoly,
-                    properties: parcel.entity.root.clone(),
-                };
-                let bytes = bincode::serde::encode_to_vec(&feature, bincode_config).unwrap();
-                let tile_id = tile_id_conv.zxy_to_id(z, x, y);
-                if sender_sliced.send((tile_id, bytes)).is_err() {
-                    return Err(PipelineError::Canceled);
-                };
-                Ok(())
-            },
-        )
-    })?;
-    Ok(())
+    let (zoom, x, y) = tile.zxy;
+    feedback.info(format!(
+        "Generated tile: {zoom}/{x}/{y} ({} bytes, {} compressed)",
+        bytesize::ByteSize(tile.bytes.len() as u64),
+        bytesize::ByteSize(tile.zlib_size as u64),
+    ));
+    sender_tiles
+        .send((tile.tile_id, tile.bytes))
+        .map_err(|_| PipelineError::Canceled)
 }
 
-/// Stage 2: Feature sorting (reused from MVT)
-fn feature_sorting_stage(
-    feedback: &Feedback,
-    receiver_sliced: mpsc::Receiver<(u64, Vec<u8>)>,
-    sender_sorted: mpsc::SyncSender<(u64, Vec<Vec<u8>>)>,
-) -> Result<()> {
-    let config = kv_extsort::SortConfig::default()
-        .max_chunk_bytes(256 * 1024 * 1024) // TODO: Configurable
-        .set_cancel_flag(feedback.get_cancellation_flag());
-
-    let sorted_iter = kv_extsort::sort(
-        receiver_sliced
-            .into_iter()
-            .map(|(tile_id, body)| std::result::Result::<_, Infallible>::Ok((tile_id, body))),
-        config,
-    );
-
-    for ((_, tile_id), grouped) in &sorted_iter.chunk_by(|feat| match feat {
-        Ok((tile_id, _)) => (false, *tile_id),
-        Err(_) => (true, 0),
-    }) {
-        let grouped = grouped
-            .into_iter()
-            .map_ok(|(_, serialized_feats)| serialized_feats)
-            .collect::<kv_extsort::Result<Vec<_>, _>>();
-        match grouped {
-            Ok(serialized_feats) => {
-                feedback.ensure_not_canceled()?;
-                if sender_sorted.send((tile_id, serialized_feats)).is_err() {
-                    return Err(PipelineError::Canceled);
-                }
-            }
-            Err(kv_extsort::Error::Canceled) => {
-                return Err(PipelineError::Canceled);
-            }
-            Err(err) => {
-                return Err(PipelineError::Other(format!(
-                    "Failed to sort features: {err:?}"
-                )));
-            }
-        }
-    }
-
-    Ok(())
-}
-
-/// Stage 3: Tile generation in parallel
-fn tile_generation_stage(
-    feedback: &Feedback,
-    receiver_sorted: mpsc::Receiver<(u64, Vec<Vec<u8>>)>,
-    sender_tiles: mpsc::SyncSender<(u64, Vec<u8>)>,
-    tile_id_conv: TileIdMethod,
-) -> Result<()> {
-    let default_detail = 12;
-    let min_detail = 9;
-
-    receiver_sorted
-        .into_iter()
-        .par_bridge()
-        .try_for_each(|(tile_id, serialized_feats)| {
-            feedback.ensure_not_canceled()?;
-
-            let (zoom, x, y) = tile_id_conv.id_to_zxy(tile_id);
-
-            if serialized_feats.len() > 200_000 {
-                feedback.warn(format!(
-                    "Too many features in a tile ({} features)",
-                    serialized_feats.len()
-                ));
-            }
-
-            // Try different detail levels to keep tile size manageable
-            for detail in (min_detail..=default_detail).rev() {
-                feedback.ensure_not_canceled()?;
-
-                // Make a MVT tile binary (reused from MVT)
-                let bytes = make_tile(detail, &serialized_feats)?;
-
-                // Check compressed tile size
-                let compressed_size = {
-                    use flate2::{write::ZlibEncoder, Compression};
-                    use std::io::prelude::*;
-                    let mut e = ZlibEncoder::new(Vec::new(), Compression::default());
-                    e.write_all(&bytes)?;
-                    let compressed_bytes = e.finish()?;
-                    compressed_bytes.len()
-                };
-
-                if detail != min_detail && compressed_size > 500_000 {
-                    // If the tile is too large, try a lower detail level
-                    let extent = 1 << detail;
-                    feedback.info(format!(
-                        "Tile size is too large: {zoom}/{x}/{y} (extent: {extent}), trying a \
-                         lower detail level."
-                    ));
-                    continue;
-                }
-
-                feedback.info(format!(
-                    "Generated tile: {zoom}/{x}/{y} ({} bytes, {} compressed)",
-                    bytesize::ByteSize(bytes.len() as u64),
-                    bytesize::ByteSize(compressed_size as u64),
-                ));
-
-                // Send to PMTiles writer
-                if sender_tiles.send((tile_id, bytes)).is_err() {
-                    return Err(PipelineError::Canceled);
-                }
-                break;
-            }
-
-            Ok::<(), PipelineError>(())
-        })?;
-
-    Ok(())
-}
-
-/// Stage 4: Write tiles to PMTiles archive sequentially
 fn pmtiles_writing_stage(
     output_path: &Path,
     min_z: u8,
     max_z: u8,
     feedback: &Feedback,
     receiver_tiles: mpsc::Receiver<(u64, Vec<u8>)>,
-    tile_id_conv: TileIdMethod,
+    tile_id_method: TileIdMethod,
 ) -> Result<()> {
     use prost::Message;
     use std::collections::BTreeSet;
+    use tinymvt::vector_tile;
 
-    // Collect all tiles first to calculate bounds
-    let tiles: Vec<_> = receiver_tiles.into_iter().collect();
-
+    let tiles = receiver_tiles.into_iter().collect::<Vec<_>>();
     if tiles.is_empty() {
         return Err(PipelineError::Other("No tiles to write".to_string()));
     }
 
-    // Extract layer names from the first tile for metadata
-    let layer_names: BTreeSet<String> = if let Some((_, first_tile_data)) = tiles.first() {
+    let layer_names = if let Some((_, first_tile_data)) = tiles.first() {
         match vector_tile::Tile::decode(&first_tile_data[..]) {
-            Ok(tile) => tile.layers.into_iter().map(|layer| layer.name).collect(),
-            Err(e) => {
+            Ok(tile) => tile
+                .layers
+                .into_iter()
+                .map(|layer| layer.name)
+                .collect::<BTreeSet<_>>(),
+            Err(error) => {
                 feedback.warn(format!(
-                    "Failed to decode first tile for metadata extraction: {e:?}"
+                    "Failed to decode first tile for metadata extraction: {error:?}"
                 ));
                 BTreeSet::new()
             }
@@ -425,54 +247,38 @@ fn pmtiles_writing_stage(
         BTreeSet::new()
     };
 
-    // Calculate bounds from tile coordinates across all zoom levels
-    // Each tile contributes its geographic bounds to the global bounds
     let mut global_min_lon = f64::INFINITY;
     let mut global_max_lon = f64::NEG_INFINITY;
     let mut global_min_lat = f64::INFINITY;
     let mut global_max_lat = f64::NEG_INFINITY;
 
     for (tile_id, _) in &tiles {
-        let (z, x, y) = tile_id_conv.id_to_zxy(*tile_id);
-
-        // Calculate the geographic bounds of this tile using Web Mercator projection
-        let n = 1u32 << z; // 2^z
-
-        // Longitude: lon = (x / 2^z) * 360 - 180
-        let tile_min_lon = (x as f64 / n as f64) * 360.0 - 180.0;
-        let tile_max_lon = ((x + 1) as f64 / n as f64) * 360.0 - 180.0;
-
-        // Latitude: lat = atan(sinh(π * (1 - 2 * y / 2^z))) * 180 / π
-        // Note: Y increases downward in tile coordinates, but latitude increases upward
+        let (zoom, x, y) = tile_id_method.id_to_zxy(*tile_id);
+        let scale = 1_u32 << zoom;
+        let tile_min_lon = (f64::from(x) / f64::from(scale)) * 360.0 - 180.0;
+        let tile_max_lon = (f64::from(x + 1) / f64::from(scale)) * 360.0 - 180.0;
         let tile_max_lat = {
-            let y_mercator = std::f64::consts::PI * (1.0 - 2.0 * y as f64 / n as f64);
-            y_mercator.sinh().atan() * 180.0 / std::f64::consts::PI
+            let mercator = std::f64::consts::PI * (1.0 - 2.0 * f64::from(y) / f64::from(scale));
+            mercator.sinh().atan() * 180.0 / std::f64::consts::PI
         };
         let tile_min_lat = {
-            let y_mercator = std::f64::consts::PI * (1.0 - 2.0 * (y + 1) as f64 / n as f64);
-            y_mercator.sinh().atan() * 180.0 / std::f64::consts::PI
+            let mercator = std::f64::consts::PI * (1.0 - 2.0 * f64::from(y + 1) / f64::from(scale));
+            mercator.sinh().atan() * 180.0 / std::f64::consts::PI
         };
 
-        // Update global bounds
         global_min_lon = global_min_lon.min(tile_min_lon);
         global_max_lon = global_max_lon.max(tile_max_lon);
         global_min_lat = global_min_lat.min(tile_min_lat);
         global_max_lat = global_max_lat.max(tile_max_lat);
     }
 
-    let min_lon = global_min_lon;
-    let max_lon = global_max_lon;
-    let min_lat = global_min_lat;
-    let max_lat = global_max_lat;
-
-    // Calculate center
-    let center_lon = (min_lon + max_lon) / 2.0;
-    let center_lat = (min_lat + max_lat) / 2.0;
+    let center_lon = (global_min_lon + global_max_lon) / 2.0;
+    let center_lat = (global_min_lat + global_max_lat) / 2.0;
     let center_zoom = (min_z + max_z) / 2;
-
-    // Generate TileJSON metadata with vector_layers (required for MVT)
-    let metadata_json = if !layer_names.is_empty() {
-        let vector_layers: Vec<_> = layer_names
+    let metadata = if layer_names.is_empty() {
+        "{}".to_string()
+    } else {
+        let vector_layers = layer_names
             .iter()
             .map(|name| {
                 serde_json::json!({
@@ -481,207 +287,52 @@ fn pmtiles_writing_stage(
                     "maxzoom": max_z
                 })
             })
-            .collect();
-
-        serde_json::json!({
-            "vector_layers": vector_layers
-        })
-        .to_string()
-    } else {
-        "{}".to_string()
+            .collect::<Vec<_>>();
+        serde_json::json!({ "vector_layers": vector_layers }).to_string()
     };
 
-    // Create PMTiles writer with bounds, center, and metadata
     let file = File::create(output_path)?;
     let mut writer = PmTilesWriter::new(TileType::Mvt)
         .min_zoom(min_z)
         .max_zoom(max_z)
         .bounds(
-            min_lon as f32,
-            min_lat as f32,
-            max_lon as f32,
-            max_lat as f32,
+            global_min_lon as f32,
+            global_min_lat as f32,
+            global_max_lon as f32,
+            global_max_lat as f32,
         )
         .center(center_lon as f32, center_lat as f32)
         .center_zoom(center_zoom)
-        .metadata(&metadata_json)
+        .metadata(&metadata)
         .create(file)
-        .map_err(|e| PipelineError::Other(format!("Failed to create PMTiles writer: {e:?}")))?;
+        .map_err(|error| {
+            PipelineError::Other(format!("Failed to create PMTiles writer: {error:?}"))
+        })?;
 
-    let mut tile_count = 0u64;
-
-    // Write tiles sequentially
+    let mut tile_count = 0_u64;
     for (tile_id, tile_data) in tiles {
         feedback.ensure_not_canceled()?;
-
-        let (z, x, y) = tile_id_conv.id_to_zxy(tile_id);
-        let coord = TileCoord::new(z, x, y)
-            .map_err(|e| PipelineError::Other(format!("Invalid tile coord: {e:?}")))?;
-
+        let (zoom, x, y) = tile_id_method.id_to_zxy(tile_id);
+        let coordinate = TileCoord::new(zoom, x, y)
+            .map_err(|error| PipelineError::Other(format!("Invalid tile coord: {error:?}")))?;
         writer
-            .add_tile(coord, &tile_data)
-            .map_err(|e| PipelineError::Other(format!("Failed to add tile: {e:?}")))?;
+            .add_tile(coordinate, &tile_data)
+            .map_err(|error| PipelineError::Other(format!("Failed to add tile: {error:?}")))?;
 
         tile_count += 1;
-        if tile_count.is_multiple_of(1000) {
-            feedback.info(format!("Written {} tiles to PMTiles archive", tile_count));
+        if tile_count.is_multiple_of(1_000) {
+            feedback.info(format!("Written {tile_count} tiles to PMTiles archive"));
         }
     }
 
-    // Finalize PMTiles archive
     feedback.info("Finalizing PMTiles archive...".to_string());
     writer
         .finalize()
-        .map_err(|e| PipelineError::Other(format!("Failed to finalize PMTiles: {e:?}")))?;
-
+        .map_err(|error| PipelineError::Other(format!("Failed to finalize PMTiles: {error:?}")))?;
     feedback.info(format!(
         "PMTiles archive created: {} ({} tiles)",
         output_path.display(),
         tile_count
     ));
-
     Ok(())
-}
-
-/// Layer data structure (from MVT)
-#[derive(Default)]
-struct LayerData {
-    pub features: Vec<vector_tile::tile::Feature>,
-    pub tags_enc: TagsEncoder,
-}
-
-/// Generate MVT tile from sliced features (reused from MVT)
-fn make_tile(default_detail: i32, serialized_feats: &[Vec<u8>]) -> Result<Vec<u8>> {
-    use flatgeom::MultiPolygon;
-    use prost::Message;
-
-    let mut layers: HashMap<String, LayerData> = HashMap::new();
-    let mut int_ring_buf = Vec::new();
-    let mut int_ring_buf2 = Vec::new();
-    let extent = 1 << default_detail;
-    let bincode_config = bincode::config::standard();
-
-    for serialized_feat in serialized_feats {
-        let (feature, _): (SlicedFeature, _) =
-            bincode::serde::decode_from_slice(serialized_feat, bincode_config).map_err(|err| {
-                PipelineError::Other(format!("Failed to deserialize a sliced feature: {err:?}"))
-            })?;
-
-        let mpoly = feature.geometry;
-        let mut int_mpoly = MultiPolygon::<[i16; 2]>::new();
-
-        for poly in &mpoly {
-            for (ri, ring) in poly.rings().enumerate() {
-                int_ring_buf.clear();
-                int_ring_buf.extend(ring.into_iter().map(|[x, y]| {
-                    let x = (x * extent as f64 + 0.5) as i16;
-                    let y = (y * extent as f64 + 0.5) as i16;
-                    [x, y]
-                }));
-
-                // some simplification
-                {
-                    int_ring_buf2.clear();
-                    int_ring_buf2.push(int_ring_buf[0]);
-                    for c in int_ring_buf.windows(3) {
-                        let &[prev, curr, next] = c.try_into().unwrap();
-
-                        // Remove duplicate points
-                        if prev == curr {
-                            continue;
-                        }
-
-                        // Reject collinear points
-                        let [curr_x, curr_y] = curr;
-                        let [prev_x, prev_y] = prev;
-                        let [next_x, next_y] = next;
-                        if curr != next
-                            && ((next_y - prev_y) as i32 * (curr_x - prev_x) as i32).abs()
-                                == ((curr_y - prev_y) as i32 * (next_x - prev_x) as i32).abs()
-                        {
-                            continue;
-                        }
-
-                        int_ring_buf2.push(curr);
-                    }
-                    int_ring_buf2.push(*int_ring_buf.last().unwrap());
-                }
-
-                match ri {
-                    0 => int_mpoly.add_exterior(int_ring_buf2.drain(..)),
-                    _ => int_mpoly.add_interior(int_ring_buf2.drain(..)),
-                }
-            }
-        }
-
-        // encode geometry
-        let mut geom_enc = GeometryEncoder::new();
-        for poly in &int_mpoly {
-            let exterior = poly.exterior();
-            if exterior.signed_ring_area() > 0.0 {
-                geom_enc.add_ring(&exterior);
-                for interior in poly.interiors() {
-                    if interior.is_cw() {
-                        geom_enc.add_ring(&interior);
-                    }
-                }
-            }
-        }
-        let geometry = geom_enc.into_vec();
-        if geometry.is_empty() {
-            continue;
-        }
-
-        let mut _id = None;
-        let layer = if let object::Value::Object(obj) = &feature.properties {
-            let typename: &str = obj.typename.as_ref();
-
-            // id
-            if let Some(object::Value::String(gml_id)) = obj.attributes.get("gml_id") {
-                _id = Some(gml_id.to_string());
-            }
-
-            layers.entry(typename.to_string()).or_default()
-        } else {
-            continue;
-        };
-
-        let mut mvt_feature = vector_tile::tile::Feature::default();
-        mvt_feature.set_type(vector_tile::tile::GeomType::Polygon);
-        mvt_feature.geometry = geometry;
-
-        // encode tags
-        if let object::Value::Object(obj) = &feature.properties {
-            for (k, v) in obj.attributes.iter() {
-                convert_properties(&mut layer.tags_enc, k, v);
-            }
-        }
-        mvt_feature.tags = layer.tags_enc.take_tags();
-
-        layer.features.push(mvt_feature);
-    }
-
-    // Encode tile (same as MVT sink)
-    let layers_vec = layers
-        .into_iter()
-        .flat_map(|(name, layer_data)| {
-            if layer_data.features.is_empty() {
-                return None;
-            }
-            let (keys, values) = layer_data.tags_enc.into_keys_and_values();
-            Some(vector_tile::tile::Layer {
-                version: 2,
-                name: name.to_string(),
-                features: layer_data.features,
-                keys,
-                values,
-                extent: Some(extent),
-            })
-        })
-        .collect();
-
-    let tile = vector_tile::Tile { layers: layers_vec };
-
-    let bytes = tile.encode_to_vec();
-    Ok(bytes)
 }
