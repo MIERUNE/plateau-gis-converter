@@ -128,8 +128,8 @@ where
         })
 }
 
-/// Runs the shared pipeline and writes each tile to `{z}/{x}/{y}.{extension}`.
-pub(crate) fn run_zxy_directory_pipeline<E>(
+/// Runs the standard vector tile pipeline and writes each tile to `{z}/{x}/{y}.{extension}`.
+pub(crate) fn run_vector_tile_pipeline<E>(
     output_path: &Path,
     extension: &str,
     upstream: Receiver,
@@ -171,7 +171,7 @@ where
                     tile_id_method,
                     options.max_compressed_tile_size,
                     encoder,
-                    |tile| write_zxy_tile_file(output_path, extension, feedback, tile),
+                    |tile| write_vector_tile(output_path, extension, feedback, tile),
                 ) {
                     feedback.fatal_error(error);
                 }
@@ -188,7 +188,7 @@ fn compressed_size(bytes: &[u8]) -> Result<usize> {
     Ok(encoder.finish()?.len())
 }
 
-fn write_zxy_tile_file(
+fn write_vector_tile(
     output_path: &Path,
     extension: &str,
     feedback: &Feedback,
