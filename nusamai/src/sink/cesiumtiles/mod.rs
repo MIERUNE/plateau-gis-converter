@@ -15,7 +15,7 @@ use std::{
     sync::{mpsc, Arc, Mutex},
 };
 
-use crate::sink::{mvt::tileid::TileIdMethod, texture_path::texture_path_from_url};
+use crate::sink::{texture_path::texture_path_from_url, vector_tile::tile_id::TileIdMethod};
 use atlas_packer::{
     export::{AtlasExporter as _, WebpAtlasExporter},
     pack::AtlasPacker,
