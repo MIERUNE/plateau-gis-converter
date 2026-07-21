@@ -36,6 +36,8 @@ use crate::{
 
 use super::option::output_parameter;
 
+pub(crate) const DEFAULT_MAX_COMPRESSED_TILE_SIZE: usize = 500_000;
+
 pub struct MvtSinkProvider {}
 
 impl DataSinkProvider for MvtSinkProvider {
@@ -329,7 +331,7 @@ fn tile_writing_stage(
                     let compressed_bytes = e.finish()?;
                     compressed_bytes.len()
                 };
-                if detail != min_detail && compressed_size > 500_000 {
+                if detail != min_detail && compressed_size > DEFAULT_MAX_COMPRESSED_TILE_SIZE {
                     // If the tile is too large, try a lower detail level
                     let extent = 1 << detail;
                     feedback.info(format!(

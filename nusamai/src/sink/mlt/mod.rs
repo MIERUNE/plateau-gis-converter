@@ -17,7 +17,11 @@ use mlt_core::{
     geo_types::{Coord, Geometry, LineString, MultiPolygon as GeoMultiPolygon, Polygon},
     PropKind, PropValue, TileLayer,
 };
-use nusamai_citygml::{object, schema::Schema, Value as CityGmlValue};
+use nusamai_citygml::{
+    object,
+    schema::{Schema, TypeDef, TypeRef},
+    Value as CityGmlValue,
+};
 use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
 
@@ -29,6 +33,7 @@ use crate::{
         mvt::{
             slice::{slice_cityobj_geoms, validate_zoom_range},
             tileid::TileIdMethod,
+            DEFAULT_MAX_COMPRESSED_TILE_SIZE,
         },
         DataRequirements, DataSink, DataSinkProvider, SinkInfo,
     },
@@ -37,8 +42,6 @@ use crate::{
 };
 
 use super::option::output_parameter;
-
-const DEFAULT_MAX_COMPRESSED_TILE_SIZE: usize = 375_000;
 
 pub struct MltSinkProvider {}
 
@@ -159,20 +162,12 @@ struct MltFeature {
 enum MltPropertyValue {
     Bool(bool),
     I64(i64),
+    U64(u64),
     F64(f64),
     Str(String),
 }
 
 impl MltPropertyValue {
-    fn kind(&self) -> PropKind {
-        match self {
-            Self::Bool(_) => PropKind::Bool,
-            Self::I64(_) => PropKind::I64,
-            Self::F64(_) => PropKind::F64,
-            Self::Str(_) => PropKind::Str,
-        }
-    }
-
     fn to_prop_value(&self, kind: PropKind) -> PropValue {
         match kind {
             PropKind::Bool => match self {
@@ -183,9 +178,14 @@ impl MltPropertyValue {
                 Self::I64(value) => PropValue::I64(Some(*value)),
                 _ => PropValue::I64(None),
             },
+            PropKind::U64 => match self {
+                Self::U64(value) => PropValue::U64(Some(*value)),
+                _ => PropValue::U64(None),
+            },
             PropKind::F64 => match self {
                 Self::F64(value) => PropValue::F64(Some(*value)),
-                Self::I64(value) => PropValue::F64(Some(*value as f64)),
+                Self::I64(value) => PropValue::F64(exact_i64_to_f64(*value)),
+                Self::U64(value) => PropValue::F64(exact_u64_to_f64(*value)),
                 _ => PropValue::F64(None),
             },
             PropKind::Str => PropValue::Str(Some(self.as_string())),
@@ -197,16 +197,27 @@ impl MltPropertyValue {
         match self {
             Self::Bool(value) => value.to_string(),
             Self::I64(value) => value.to_string(),
+            Self::U64(value) => value.to_string(),
             Self::F64(value) => value.to_string(),
             Self::Str(value) => value.clone(),
         }
     }
 }
 
+fn exact_i64_to_f64(value: i64) -> Option<f64> {
+    let converted = value as f64;
+    ((converted as i128) == i128::from(value)).then_some(converted)
+}
+
+fn exact_u64_to_f64(value: u64) -> Option<f64> {
+    let converted = value as f64;
+    ((converted as u128) == u128::from(value)).then_some(converted)
+}
+
 impl DataSink for MltSink {
     fn make_requirements(&mut self, properties: TransformerSettings) -> DataRequirements {
         let default_requirements = DataRequirements {
-            key_value: transformer::KeyValueSpec::DotNotation,
+            key_value: transformer::KeyValueSpec::JsonifyObjectsAndArrays,
             lod_filter: transformer::LodFilterSpec {
                 mode: transformer::LodFilterMode::Lowest,
                 ..Default::default()
@@ -222,10 +233,7 @@ impl DataSink for MltSink {
         self.transform_settings.build(default_requirements)
     }
 
-    fn run(&mut self, upstream: Receiver, feedback: &Feedback, _schema: &Schema) -> Result<()> {
-        // Property column kinds are inferred independently for each tile/layer in make_tile, so
-        // the same attribute may have different MLT types across tiles. A future schema-aware
-        // implementation should use `_schema` here to determine column kinds globally.
+    fn run(&mut self, upstream: Receiver, feedback: &Feedback, schema: &Schema) -> Result<()> {
         let (sender_sliced, receiver_sliced) = mpsc::sync_channel(2000);
         let (sender_sorted, receiver_sorted) = mpsc::sync_channel(2000);
 
@@ -271,6 +279,7 @@ impl DataSink for MltSink {
                             receiver_sorted,
                             tile_id_conv,
                             max_compressed_tile_size,
+                            schema,
                         ) {
                             feedback.fatal_error(error);
                         }
@@ -373,6 +382,7 @@ fn tile_writing_stage(
     receiver_sorted: mpsc::Receiver<(u64, Vec<Vec<u8>>)>,
     tile_id_conv: TileIdMethod,
     max_compressed_tile_size: usize,
+    schema: &Schema,
 ) -> Result<()> {
     let default_detail = 12;
     let min_detail = 9;
@@ -400,7 +410,7 @@ fn tile_writing_stage(
             for detail in (min_detail..=default_detail).rev() {
                 feedback.ensure_not_canceled()?;
 
-                let bytes = make_tile(detail, &serialized_feats)?;
+                let bytes = make_tile(detail, &serialized_feats, schema)?;
 
                 let compressed_size = {
                     let mut e = ZlibEncoder::new(Vec::new(), Compression::default());
@@ -433,7 +443,11 @@ fn tile_writing_stage(
     Ok(())
 }
 
-fn make_tile(default_detail: i32, serialized_feats: &[Vec<u8>]) -> Result<Vec<u8>> {
+fn make_tile(
+    default_detail: i32,
+    serialized_feats: &[Vec<u8>],
+    schema: &Schema,
+) -> Result<Vec<u8>> {
     let mut layers: BTreeMap<String, LayerData> = BTreeMap::new();
     let extent = 1 << default_detail;
     let bincode_config = bincode::config::standard();
@@ -457,12 +471,10 @@ fn make_tile(default_detail: i32, serialized_feats: &[Vec<u8>]) -> Result<Vec<u8
                 let Some(value) = convert_property_value(value) else {
                     continue;
                 };
-                let incoming_kind = value.kind();
                 layer
                     .property_kinds
                     .entry(key.clone())
-                    .and_modify(|kind| *kind = merge_property_kind(*kind, incoming_kind))
-                    .or_insert(incoming_kind);
+                    .or_insert_with(|| schema_property_kind(schema, typename, key));
                 properties.insert(key.clone(), value);
             }
 
@@ -648,10 +660,7 @@ fn convert_property_value(value: &object::Value) -> Option<MltPropertyValue> {
         CityGmlValue::String(value) => Some(MltPropertyValue::Str(value.clone())),
         CityGmlValue::Code(value) => Some(MltPropertyValue::Str(value.value().to_string())),
         CityGmlValue::Integer(value) => Some(MltPropertyValue::I64(*value)),
-        CityGmlValue::NonNegativeInteger(value) => i64::try_from(*value)
-            .map(MltPropertyValue::I64)
-            .ok()
-            .or_else(|| Some(MltPropertyValue::Str(value.to_string()))),
+        CityGmlValue::NonNegativeInteger(value) => Some(MltPropertyValue::U64(*value)),
         CityGmlValue::Double(value) => Some(MltPropertyValue::F64(*value)),
         CityGmlValue::Measure(value) => Some(MltPropertyValue::F64(value.value())),
         CityGmlValue::Boolean(value) => Some(MltPropertyValue::Bool(*value)),
@@ -662,12 +671,125 @@ fn convert_property_value(value: &object::Value) -> Option<MltPropertyValue> {
     }
 }
 
+fn schema_property_kind(schema: &Schema, typename: &str, property: &str) -> PropKind {
+    let Some(type_def) = schema.types.get(typename) else {
+        return PropKind::Str;
+    };
+
+    if let Some(attributes) = type_def_attributes(type_def) {
+        if let Some(attribute) = attributes.get(property) {
+            if let Some(kind) = resolve_type_ref_property_kind(schema, &attribute.type_ref, &[], 0)
+            {
+                return kind;
+            }
+        }
+    }
+
+    let path = property.split('.').collect::<Vec<_>>();
+    resolve_type_def_property_kind(schema, type_def, &path, 0).unwrap_or(PropKind::Str)
+}
+
+fn type_ref_to_property_kind(type_ref: &TypeRef) -> Option<PropKind> {
+    match type_ref {
+        TypeRef::String
+        | TypeRef::Code
+        | TypeRef::JsonString(_)
+        | TypeRef::URI
+        | TypeRef::Date
+        | TypeRef::DateTime
+        | TypeRef::Point => Some(PropKind::Str),
+        TypeRef::Integer => Some(PropKind::I64),
+        TypeRef::NonNegativeInteger => Some(PropKind::U64),
+        TypeRef::Double | TypeRef::Measure => Some(PropKind::F64),
+        TypeRef::Boolean => Some(PropKind::Bool),
+        TypeRef::Named(_) | TypeRef::Unknown => None,
+    }
+}
+
+fn resolve_type_def_property_kind(
+    schema: &Schema,
+    type_def: &TypeDef,
+    path: &[&str],
+    depth: usize,
+) -> Option<PropKind> {
+    if depth > 64 {
+        return None;
+    }
+
+    match type_def {
+        TypeDef::Feature(feature) => {
+            resolve_attribute_property_kind(schema, &feature.attributes, path, depth + 1)
+        }
+        TypeDef::Data(data) => {
+            resolve_attribute_property_kind(schema, &data.attributes, path, depth + 1)
+        }
+        TypeDef::Property(property) => property
+            .members
+            .iter()
+            .filter_map(|member| {
+                resolve_type_ref_property_kind(schema, &member.type_ref, path, depth + 1)
+            })
+            .reduce(merge_property_kind),
+    }
+}
+
+fn resolve_attribute_property_kind(
+    schema: &Schema,
+    attributes: &nusamai_citygml::schema::Map,
+    path: &[&str],
+    depth: usize,
+) -> Option<PropKind> {
+    let path = skip_array_indices(path);
+    let (name, remaining) = path.split_first()?;
+    let attribute = attributes.get(*name)?;
+    resolve_type_ref_property_kind(schema, &attribute.type_ref, remaining, depth + 1)
+}
+
+fn resolve_type_ref_property_kind(
+    schema: &Schema,
+    type_ref: &TypeRef,
+    path: &[&str],
+    depth: usize,
+) -> Option<PropKind> {
+    if depth > 64 {
+        return None;
+    }
+
+    let path = skip_array_indices(path);
+    if path.is_empty() {
+        return type_ref_to_property_kind(type_ref);
+    }
+
+    let TypeRef::Named(name) = type_ref else {
+        return None;
+    };
+    let type_def = schema.types.get(name)?;
+    resolve_type_def_property_kind(schema, type_def, path, depth + 1)
+}
+
+fn type_def_attributes(type_def: &TypeDef) -> Option<&nusamai_citygml::schema::Map> {
+    match type_def {
+        TypeDef::Feature(feature) => Some(&feature.attributes),
+        TypeDef::Data(data) => Some(&data.attributes),
+        TypeDef::Property(_) => None,
+    }
+}
+
+fn skip_array_indices<'a>(path: &'a [&'a str]) -> &'a [&'a str] {
+    let first_property = path
+        .iter()
+        .position(|segment| segment.parse::<usize>().is_err())
+        .unwrap_or(path.len());
+    &path[first_property..]
+}
+
 fn merge_property_kind(current: PropKind, incoming: PropKind) -> PropKind {
     if current == incoming {
         current
     } else if matches!(
         (current, incoming),
-        (PropKind::I64, PropKind::F64) | (PropKind::F64, PropKind::I64)
+        (PropKind::I64 | PropKind::U64, PropKind::F64)
+            | (PropKind::F64, PropKind::I64 | PropKind::U64)
     ) {
         PropKind::F64
     } else {
