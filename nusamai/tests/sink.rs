@@ -159,6 +159,11 @@ fn run_mvt_sink() {
 }
 
 #[test]
+fn run_mlt_sink() {
+    simple_run_sink(sink::mlt::MltSinkProvider {}, "/tmp/nusamai/mlt/".into());
+}
+
+#[test]
 fn run_pmtiles_sink() {
     let temp_dir = std::env::temp_dir().join("nusamai_pmtiles_sink_test");
     std::fs::create_dir_all(&temp_dir).unwrap();

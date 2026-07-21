@@ -591,7 +591,11 @@ impl DataSink for ObjSink {
                         let poly_texture = poly_material.base_texture.as_ref();
                         let texture_name = poly_texture
                             .and_then(|t| t.uri.to_file_path().ok())
-                            .and_then(|p| p.file_stem().and_then(|s| s.to_str()).map(|s| s.to_string()))
+                            .and_then(|p| {
+                                p.file_stem()
+                                    .and_then(|s| s.to_str())
+                                    .map(|s| s.to_string())
+                            })
                             .unwrap_or_else(|| "".to_string());
                         let poly_material_key = poly_material.base_texture.as_ref().map_or_else(
                             || {

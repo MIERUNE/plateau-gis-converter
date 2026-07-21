@@ -90,9 +90,7 @@ impl AppearanceStore {
                     let tex_idx = self.textures.len() as u32;
                     for tex_assoc in texture.target.drain(..) {
                         if let TextureAssociation::TexCoordList(tcl) = tex_assoc {
-                            for (ring, coords) in
-                                tcl.rings.into_iter().zip(tcl.coords_list)
-                            {
+                            for (ring, coords) in tcl.rings.into_iter().zip(tcl.coords_list) {
                                 let coords = coords
                                     .chunks_exact(2)
                                     .map(|v| [v[0], v[1]])

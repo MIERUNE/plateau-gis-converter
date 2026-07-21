@@ -9,6 +9,13 @@ use nusamai_citygml::{
 use nusamai_plateau::Entity;
 use tinymvt::{webmercator::lnglat_to_web_mercator, TileZXY};
 
+pub(crate) fn validate_zoom_range(min_z: u8, max_z: u8) {
+    assert!(
+        min_z <= max_z,
+        "Invalid zoom range: min_z ({min_z}) must be less than or equal to max_z ({max_z})"
+    );
+}
+
 pub fn slice_cityobj_geoms<E>(
     obj: &Entity,
     min_z: u8,
@@ -17,10 +24,7 @@ pub fn slice_cityobj_geoms<E>(
     buffer_pixels: u32,
     f: impl Fn(TileZXY, MultiPolygon2) -> Result<(), E>,
 ) -> Result<(), E> {
-    assert!(
-        max_z >= min_z,
-        "max_z must be greater than or equal to min_z"
-    );
+    validate_zoom_range(min_z, max_z);
 
     let geom_store = obj.geometry_store.read().unwrap();
     if geom_store.multipolygon.is_empty() {

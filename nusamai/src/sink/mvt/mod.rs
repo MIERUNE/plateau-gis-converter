@@ -20,7 +20,7 @@ use nusamai_citygml::{object, schema::Schema};
 use prost::Message;
 use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
-use slice::slice_cityobj_geoms;
+use slice::{slice_cityobj_geoms, validate_zoom_range};
 use tags::convert_properties;
 use tileid::TileIdMethod;
 use tinymvt::{geometry::GeometryEncoder, tag::TagsEncoder, vector_tile};
@@ -35,6 +35,8 @@ use crate::{
 };
 
 use super::option::output_parameter;
+
+pub(crate) const DEFAULT_MAX_COMPRESSED_TILE_SIZE: usize = 500_000;
 
 pub struct MvtSinkProvider {}
 
@@ -91,6 +93,7 @@ impl DataSinkProvider for MvtSinkProvider {
         let transform_options = self.transformer_options();
         let min_z = get_parameter_value!(params, "min_z", Integer).unwrap() as u8;
         let max_z = get_parameter_value!(params, "max_z", Integer).unwrap() as u8;
+        validate_zoom_range(min_z, max_z);
 
         Box::<MvtSink>::new(MvtSink {
             output_path: output_path.as_ref().unwrap().into(),
@@ -328,7 +331,7 @@ fn tile_writing_stage(
                     let compressed_bytes = e.finish()?;
                     compressed_bytes.len()
                 };
-                if detail != min_detail && compressed_size > 500_000 {
+                if detail != min_detail && compressed_size > DEFAULT_MAX_COMPRESSED_TILE_SIZE {
                     // If the tile is too large, try a lower detail level
                     let extent = 1 << detail;
                     feedback.info(format!(

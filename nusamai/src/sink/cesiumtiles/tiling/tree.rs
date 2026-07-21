@@ -155,10 +155,22 @@ impl Tile {
 
         // Build 4x4 column-major transform matrix with the relative translation
         let transform = [
-            1.0, 0.0, 0.0, 0.0, // column 0
-            0.0, 1.0, 0.0, 0.0, // column 1
-            0.0, 0.0, 1.0, 0.0, // column 2
-            relative[0], relative[1], relative[2], 1.0, // column 3
+            1.0,
+            0.0,
+            0.0,
+            0.0, // column 0
+            0.0,
+            1.0,
+            0.0,
+            0.0, // column 1
+            0.0,
+            0.0,
+            1.0,
+            0.0, // column 2
+            relative[0],
+            relative[1],
+            relative[2],
+            1.0, // column 3
         ];
 
         let (z, _, y) = self.zxy;

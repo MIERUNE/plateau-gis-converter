@@ -8,6 +8,12 @@ enum InferredType {
     NullOnly,
     Boolean,
     Integer,
+    /// An i64 that cannot be represented exactly as an IEEE-754 f64.
+    ///
+    /// It remains an Integer when no floating-point value is observed, but it
+    /// must not widen to Double because that would lose precision.
+    LargeInteger,
+    NonNegativeInteger,
     Double,
     String,
     JsonString,
@@ -18,8 +24,19 @@ impl InferredType {
         match value {
             serde_json::Value::Null => Self::NullOnly,
             serde_json::Value::Bool(_) => Self::Boolean,
-            serde_json::Value::Number(number) if number.as_i64().is_some() => Self::Integer,
-            serde_json::Value::Number(_) => Self::Double,
+            serde_json::Value::Number(number) => {
+                if let Some(value) = number.as_i64() {
+                    if is_exactly_representable_as_f64(value) {
+                        Self::Integer
+                    } else {
+                        Self::LargeInteger
+                    }
+                } else if number.as_u64().is_some() {
+                    Self::NonNegativeInteger
+                } else {
+                    Self::Double
+                }
+            }
             serde_json::Value::String(_) => Self::String,
             serde_json::Value::Array(_) | serde_json::Value::Object(_) => Self::JsonString,
         }
@@ -29,6 +46,9 @@ impl InferredType {
         match (self, other) {
             (Self::NullOnly, inferred) | (inferred, Self::NullOnly) => inferred,
             (left, right) if left == right => left,
+            (Self::Integer, Self::LargeInteger) | (Self::LargeInteger, Self::Integer) => {
+                Self::LargeInteger
+            }
             (Self::Integer, Self::Double) | (Self::Double, Self::Integer) => Self::Double,
             _ => Self::String,
         }
@@ -38,11 +58,17 @@ impl InferredType {
         match self {
             Self::NullOnly | Self::String => TypeRef::String,
             Self::Boolean => TypeRef::Boolean,
-            Self::Integer => TypeRef::Integer,
+            Self::Integer | Self::LargeInteger => TypeRef::Integer,
+            Self::NonNegativeInteger => TypeRef::NonNegativeInteger,
             Self::Double => TypeRef::Double,
             Self::JsonString => TypeRef::JsonString(Box::new(Attribute::new(TypeRef::String))),
         }
     }
+}
+
+fn is_exactly_representable_as_f64(value: i64) -> bool {
+    let converted = value as f64;
+    (converted as i128) == i128::from(value)
 }
 
 #[derive(Debug, Default)]
@@ -125,6 +151,8 @@ mod tests {
             "boolean": true,
             "double": 1.5,
             "integer": -1,
+            "large_integer": u64::MAX,
+            "precision_sensitive_integer": 9_007_199_254_740_993_i64,
             "object": {"nested": "value"},
             "string": "001"
         }));
@@ -144,6 +172,14 @@ mod tests {
         assert_eq!(feature_type.attributes["double"].type_ref, TypeRef::Double);
         assert_eq!(
             feature_type.attributes["integer"].type_ref,
+            TypeRef::Integer
+        );
+        assert_eq!(
+            feature_type.attributes["large_integer"].type_ref,
+            TypeRef::NonNegativeInteger
+        );
+        assert_eq!(
+            feature_type.attributes["precision_sensitive_integer"].type_ref,
             TypeRef::Integer
         );
         assert_eq!(
@@ -197,6 +233,38 @@ mod tests {
         assert_eq!(feature_type.attributes["mixed"].type_ref, TypeRef::String);
         assert_eq!(
             feature_type.attributes["structured"].type_ref,
+            TypeRef::String
+        );
+    }
+
+    #[test]
+    fn widens_precision_sensitive_integer_mixes_to_string_without_precision_loss() {
+        let first = properties(json!({
+            "with_integer": u64::MAX,
+            "with_double": u64::MAX,
+            "with_large_signed": 9_007_199_254_740_993_i64
+        }));
+        let second = properties(json!({
+            "with_integer": 1,
+            "with_double": 1.5,
+            "with_large_signed": 1.5
+        }));
+        let mut builder = GeoJsonSchemaBuilder::default();
+
+        builder.observe_properties(Some(&first));
+        builder.observe_properties(Some(&second));
+        let feature_type = builder.finish();
+
+        assert_eq!(
+            feature_type.attributes["with_integer"].type_ref,
+            TypeRef::String
+        );
+        assert_eq!(
+            feature_type.attributes["with_double"].type_ref,
+            TypeRef::String
+        );
+        assert_eq!(
+            feature_type.attributes["with_large_signed"].type_ref,
             TypeRef::String
         );
     }

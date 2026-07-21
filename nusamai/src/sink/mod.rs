@@ -7,6 +7,7 @@ pub mod gltf;
 pub mod gpkg;
 pub mod kml;
 pub mod minecraft;
+pub mod mlt;
 pub mod mvt;
 pub mod noop;
 pub mod obj;
