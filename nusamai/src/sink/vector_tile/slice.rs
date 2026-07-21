@@ -1,4 +1,4 @@
-//! Polygon slicing algorithm based on [geojson-vt](https://github.com/mapbox/geojson-vt).
+//! Vector tile polygon slicing based on [geojson-vt](https://github.com/mapbox/geojson-vt).
 
 use flatgeom::{LineString2, MultiPolygon2, Polygon2};
 use hashbrown::HashMap;

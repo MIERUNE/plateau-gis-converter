@@ -1,6 +1,8 @@
+//! Tile ID conversion shared by vector tile sinks.
+
 use tinymvt::tileid::hilbert;
 
-/// Tile ID calculation method
+/// Tile ID calculation method shared by tiled sinks.
 #[derive(Clone, Copy, Debug)]
 pub enum TileIdMethod {
     /// Tile ID based on Hilbert curve (compliant with PMTiles)

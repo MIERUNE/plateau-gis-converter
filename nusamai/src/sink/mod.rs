@@ -18,6 +18,7 @@ pub mod serde;
 pub mod shapefile;
 mod texture_path;
 mod texture_resolution;
+pub(crate) mod vector_tile;
 
 use nusamai_citygml::schema::Schema;
 use nusamai_projection::crs;
