@@ -1,9 +1,7 @@
 //! Mapbox Vector Tiles (MVT) sink
 
 pub(crate) mod encode;
-pub mod slice;
-pub mod tags;
-pub mod tileid;
+mod tags;
 
 use std::path::PathBuf;
 
