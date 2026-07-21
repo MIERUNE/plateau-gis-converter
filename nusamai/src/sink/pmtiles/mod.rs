@@ -224,10 +224,13 @@ fn pmtiles_writing_stage(
     use std::collections::BTreeSet;
     use tinymvt::vector_tile;
 
-    let tiles = receiver_tiles.into_iter().collect::<Vec<_>>();
+    let mut tiles = receiver_tiles.into_iter().collect::<Vec<_>>();
     if tiles.is_empty() {
         return Err(PipelineError::Other("No tiles to write".to_string()));
     }
+
+    // Tile generation runs in parallel, while PMTiles requires ascending tile IDs.
+    tiles.sort_unstable_by_key(|(tile_id, _)| *tile_id);
 
     let layer_names = if let Some((_, first_tile_data)) = tiles.first() {
         match vector_tile::Tile::decode(&first_tile_data[..]) {
