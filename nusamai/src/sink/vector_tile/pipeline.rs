@@ -8,7 +8,7 @@ use rayon::prelude::*;
 use crate::pipeline::{Feedback, PipelineError, Receiver, Result};
 
 use super::{
-    model::SlicedFeature,
+    feature::SlicedFeature,
     slice::slice_cityobj_geoms,
     sort::{feature_sorting_stage, SerializedFeature, SortedTileFeatures},
     tile_id::TileIdMethod,
@@ -30,7 +30,7 @@ pub(crate) struct TilePipelineOptions {
 }
 
 pub(crate) trait TileEncoder: Sync {
-    fn encode_tile(&self, detail: i32, serialized_features: &[Vec<u8>]) -> Result<Vec<u8>>;
+    fn encode_tile(&self, detail: i32, serialized_features: &[Vec<u8>]) -> Result<Option<Vec<u8>>>;
 }
 
 pub(crate) struct EncodedTile {
@@ -57,11 +57,11 @@ pub(crate) fn slice_stage(
             options.max_z,
             DEFAULT_DETAIL as u32,
             SLICE_BUFFER_PIXELS,
-            |(z, x, y), multipolygon| {
+            |(z, x, y), geometry| {
                 feedback.ensure_not_canceled()?;
 
                 let feature = SlicedFeature {
-                    geometry: multipolygon,
+                    geometry,
                     properties: parcel.entity.root.clone(),
                 };
                 let bytes = bincode::serde::encode_to_vec(&feature, bincode_config).unwrap();
@@ -86,10 +86,10 @@ where
     E: TileEncoder,
     C: Fn(EncodedTile) -> Result<()> + Sync,
 {
-    receiver_sorted
+    let has_generated_tile = receiver_sorted
         .into_iter()
         .par_bridge()
-        .try_for_each(|(tile_id, serialized_features)| {
+        .map(|(tile_id, serialized_features)| -> Result<bool> {
             feedback.ensure_not_canceled()?;
             let zxy = tile_id_method.id_to_zxy(tile_id);
 
@@ -102,7 +102,9 @@ where
 
             for detail in (MINIMUM_DETAIL..=DEFAULT_DETAIL).rev() {
                 feedback.ensure_not_canceled()?;
-                let bytes = encoder.encode_tile(detail, &serialized_features)?;
+                let Some(bytes) = encoder.encode_tile(detail, &serialized_features)? else {
+                    return Ok(false);
+                };
                 let zlib_size = compressed_size(&bytes)?;
 
                 if detail != MINIMUM_DETAIL && zlib_size > max_compressed_tile_size {
@@ -121,11 +123,20 @@ where
                     bytes,
                     zlib_size,
                 })?;
-                break;
+                return Ok(true);
             }
 
-            Ok::<(), PipelineError>(())
+            Ok(false)
         })
+        .try_reduce(|| false, |generated, current| Ok(generated || current))?;
+
+    if has_generated_tile {
+        Ok(())
+    } else {
+        Err(PipelineError::Other(
+            "No vector tiles could be generated from the input geometries".to_string(),
+        ))
+    }
 }
 
 /// Runs the standard vector tile pipeline and writes each tile to `{z}/{x}/{y}.{extension}`.

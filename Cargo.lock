@@ -8319,11 +8319,11 @@ dependencies = [
 
 [[package]]
 name = "tinymvt"
-version = "0.2.4"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5fa8879764a11e1dfe9b88eeb42dc6d7078bf25809129da6444190ee41b628a4"
+checksum = "acce6e20ffc2791c892da973076117815f2aad9a79601190f5ca196241e552ba"
 dependencies = [
- "foldhash 0.1.5",
+ "foldhash 0.2.0",
  "indexmap 2.13.0",
  "prost",
  "prost-build",

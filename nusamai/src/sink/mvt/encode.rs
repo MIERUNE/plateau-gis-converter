@@ -6,8 +6,8 @@ use tinymvt::{geometry::GeometryEncoder, tag::TagsEncoder, vector_tile};
 use crate::{
     pipeline::{PipelineError, Result},
     sink::vector_tile::{
-        geometry::quantize_polygons,
-        model::{hash_feature_id, SlicedFeature},
+        feature::{hash_feature_id, SlicedFeature, SlicedGeometry},
+        geometry::{quantize_linestrings, quantize_points, quantize_polygons},
         TileEncoder,
     },
 };
@@ -45,7 +45,7 @@ struct LayerData {
 }
 
 impl TileEncoder for MvtTileEncoder {
-    fn encode_tile(&self, detail: i32, serialized_features: &[Vec<u8>]) -> Result<Vec<u8>> {
+    fn encode_tile(&self, detail: i32, serialized_features: &[Vec<u8>]) -> Result<Option<Vec<u8>>> {
         let mut layers: HashMap<String, LayerData> = HashMap::new();
         let extent = 1_i32 << detail;
         let bincode_config = bincode::config::standard();
@@ -59,23 +59,9 @@ impl TileEncoder for MvtTileEncoder {
                 PipelineError::Other(format!("Failed to deserialize a sliced feature: {error:?}"))
             })?;
 
-            let mut geometry_encoder = GeometryEncoder::new();
-            for polygon in quantize_polygons(&feature.geometry, extent) {
-                geometry_encoder.add_ring(
-                    polygon
-                        .exterior
-                        .into_iter()
-                        .map(|[x, y]| [x as i16, y as i16]),
-                );
-                for interior in polygon.interiors {
-                    geometry_encoder
-                        .add_ring(interior.into_iter().map(|[x, y]| [x as i16, y as i16]));
-                }
-            }
-            let geometry = geometry_encoder.into_vec();
-            if geometry.is_empty() {
+            let Some(encoded_geometry) = encode_geometry(&feature.geometry, extent) else {
                 continue;
-            }
+            };
 
             match &feature.properties {
                 object::Value::Object(object) => {
@@ -94,8 +80,8 @@ impl TileEncoder for MvtTileEncoder {
                     layer.features.push(vector_tile::tile::Feature {
                         id,
                         tags: layer.tags_encoder.take_tags(),
-                        r#type: Some(vector_tile::tile::GeomType::Polygon as i32),
-                        geometry,
+                        r#type: Some(encoded_geometry.geometry_type as i32),
+                        geometry: encoded_geometry.commands,
                     });
                 }
                 _ if matches!(self.profile, EncodingProfile::MvtDirectory) => {
@@ -103,15 +89,15 @@ impl TileEncoder for MvtTileEncoder {
                     layer.features.push(vector_tile::tile::Feature {
                         id: None,
                         tags: layer.tags_encoder.take_tags(),
-                        r#type: Some(vector_tile::tile::GeomType::Polygon as i32),
-                        geometry,
+                        r#type: Some(encoded_geometry.geometry_type as i32),
+                        geometry: encoded_geometry.commands,
                     });
                 }
                 _ => {}
             }
         }
 
-        let layers = layers
+        let layers: Vec<_> = layers
             .into_iter()
             .filter_map(|(name, layer_data)| {
                 if layer_data.features.is_empty() {
@@ -129,6 +115,59 @@ impl TileEncoder for MvtTileEncoder {
             })
             .collect();
 
-        Ok(vector_tile::Tile { layers }.encode_to_vec())
+        if layers.is_empty() {
+            Ok(None)
+        } else {
+            Ok(Some(vector_tile::Tile { layers }.encode_to_vec()))
+        }
     }
+}
+
+struct EncodedGeometry {
+    geometry_type: vector_tile::tile::GeomType,
+    commands: Vec<u32>,
+}
+
+fn encode_geometry(geometry: &SlicedGeometry, extent: i32) -> Option<EncodedGeometry> {
+    let (geometry_type, commands) = match geometry {
+        SlicedGeometry::Point(points) => {
+            let points = quantize_points(points, extent);
+            if points.is_empty() {
+                return None;
+            }
+            let mut encoder = GeometryEncoder::new();
+            encoder.add_points(points);
+            (vector_tile::tile::GeomType::Point, encoder.into_vec())
+        }
+        SlicedGeometry::LineString(lines) => {
+            let lines = quantize_linestrings(lines, extent);
+            if lines.is_empty() {
+                return None;
+            }
+            let mut encoder = GeometryEncoder::new();
+            for line in lines {
+                encoder.add_linestring(line);
+            }
+            (vector_tile::tile::GeomType::Linestring, encoder.into_vec())
+        }
+        SlicedGeometry::Polygon(polygons) => {
+            let polygons = quantize_polygons(polygons, extent);
+            if polygons.is_empty() {
+                return None;
+            }
+            let mut encoder = GeometryEncoder::new();
+            for polygon in polygons {
+                encoder.add_ring(polygon.exterior);
+                for interior in polygon.interiors {
+                    encoder.add_ring(interior);
+                }
+            }
+            (vector_tile::tile::GeomType::Polygon, encoder.into_vec())
+        }
+    };
+
+    (!commands.is_empty()).then_some(EncodedGeometry {
+        geometry_type,
+        commands,
+    })
 }

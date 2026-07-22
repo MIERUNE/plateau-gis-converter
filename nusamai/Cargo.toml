@@ -22,7 +22,7 @@ cesiumtiles = { git = "https://github.com/MIERUNE/cesiumtiles-rs.git" }
 flatgeom = { version = "0.0", features = ["serde"] }
 nusamai-czml = { path = "../nusamai-czml" }
 nusamai-projection = { path = "../nusamai-projection" }
-tinymvt = "0.2.4"
+tinymvt = "0.3.0"
 mlt-core = "0.12.0"
 fastanvil = "0.32.0"
 fastnbt = "2.6.0"

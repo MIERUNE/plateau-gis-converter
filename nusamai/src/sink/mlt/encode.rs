@@ -2,7 +2,9 @@ use std::collections::BTreeMap;
 
 use mlt_core::{
     encoder::EncoderConfig,
-    geo_types::{Coord, Geometry, LineString, MultiPolygon, Polygon},
+    geo_types::{
+        Coord, Geometry, LineString, MultiLineString, MultiPoint, MultiPolygon, Point, Polygon,
+    },
     PropKind, PropValue, TileLayer,
 };
 use nusamai_citygml::{
@@ -14,8 +16,8 @@ use nusamai_citygml::{
 use crate::{
     pipeline::{PipelineError, Result},
     sink::vector_tile::{
-        geometry::{quantize_polygons, QuantizedPolygon},
-        model::{hash_feature_id, SlicedFeature},
+        feature::{hash_feature_id, SlicedFeature, SlicedGeometry},
+        geometry::{quantize_linestrings, quantize_points, quantize_polygons, QuantizedPolygon},
         TileEncoder,
     },
 };
@@ -89,7 +91,7 @@ impl MltPropertyValue {
 }
 
 impl TileEncoder for MltTileEncoder<'_> {
-    fn encode_tile(&self, detail: i32, serialized_features: &[Vec<u8>]) -> Result<Vec<u8>> {
+    fn encode_tile(&self, detail: i32, serialized_features: &[Vec<u8>]) -> Result<Option<Vec<u8>>> {
         let mut layers: BTreeMap<String, LayerData> = BTreeMap::new();
         let extent = 1_i32 << detail;
         let bincode_config = bincode::config::standard();
@@ -129,15 +131,12 @@ impl TileEncoder for MltTileEncoder<'_> {
                     properties,
                 });
             } else {
-                layers
-                    .entry("Unknown".to_string())
-                    .or_default()
-                    .features
-                    .push(MltFeature {
-                        geometry,
-                        id: None,
-                        properties: BTreeMap::new(),
-                    });
+                let layer = layers.entry("Unknown".to_string()).or_default();
+                layer.features.push(MltFeature {
+                    geometry,
+                    id: None,
+                    properties: BTreeMap::new(),
+                });
             }
         }
 
@@ -148,7 +147,11 @@ impl TileEncoder for MltTileEncoder<'_> {
             }
             tile.extend(encode_layer(name, layer_data, extent as u32)?);
         }
-        Ok(tile)
+        if tile.is_empty() {
+            Ok(None)
+        } else {
+            Ok(Some(tile))
+        }
     }
 }
 
@@ -199,28 +202,42 @@ fn encode_layer(name: String, layer_data: LayerData, extent: u32) -> Result<Vec<
         .map_err(|error| PipelineError::Other(format!("Failed to encode MLT layer: {error:?}")))
 }
 
-fn make_geometry(multipolygon: &flatgeom::MultiPolygon2, extent: i32) -> Option<Geometry<i32>> {
-    let polygons = quantize_polygons(multipolygon, extent)
-        .into_iter()
-        .map(|polygon| {
-            let QuantizedPolygon {
-                exterior,
-                interiors,
-            } = polygon;
-            Polygon::new(
-                to_linestring(&exterior),
-                interiors
-                    .into_iter()
-                    .map(|ring| to_linestring(&ring))
-                    .collect(),
-            )
-        })
-        .collect::<Vec<_>>();
-
-    (!polygons.is_empty()).then_some(Geometry::MultiPolygon(MultiPolygon(polygons)))
+fn make_geometry(geometry: &SlicedGeometry, extent: i32) -> Option<Geometry<i32>> {
+    match geometry {
+        SlicedGeometry::Point(points) => {
+            let points = quantize_points(points, extent)
+                .into_iter()
+                .map(|[x, y]| Point::new(x, y))
+                .collect::<Vec<_>>();
+            (!points.is_empty()).then_some(Geometry::MultiPoint(MultiPoint(points)))
+        }
+        SlicedGeometry::LineString(lines) => {
+            let lines = quantize_linestrings(lines, extent)
+                .into_iter()
+                .map(|line| to_open_linestring(&line))
+                .collect::<Vec<_>>();
+            (!lines.is_empty()).then_some(Geometry::MultiLineString(MultiLineString(lines)))
+        }
+        SlicedGeometry::Polygon(polygons) => {
+            let polygons = quantize_polygons(polygons, extent)
+                .into_iter()
+                .map(|polygon| {
+                    let QuantizedPolygon {
+                        exterior,
+                        interiors,
+                    } = polygon;
+                    Polygon::new(
+                        to_ring(&exterior),
+                        interiors.into_iter().map(|ring| to_ring(&ring)).collect(),
+                    )
+                })
+                .collect::<Vec<_>>();
+            (!polygons.is_empty()).then_some(Geometry::MultiPolygon(MultiPolygon(polygons)))
+        }
+    }
 }
 
-fn to_linestring(ring: &[[i32; 2]]) -> LineString<i32> {
+fn to_ring(ring: &[[i32; 2]]) -> LineString<i32> {
     let mut coordinates = ring
         .iter()
         .map(|[x, y]| Coord { x: *x, y: *y })
@@ -231,6 +248,10 @@ fn to_linestring(ring: &[[i32; 2]]) -> LineString<i32> {
         }
     }
     LineString(coordinates)
+}
+
+fn to_open_linestring(line: &[[i32; 2]]) -> LineString<i32> {
+    LineString(line.iter().map(|[x, y]| Coord { x: *x, y: *y }).collect())
 }
 
 fn exact_i64_to_f64(value: i64) -> Option<f64> {

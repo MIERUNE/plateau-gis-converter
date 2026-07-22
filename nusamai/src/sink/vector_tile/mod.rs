@@ -1,7 +1,7 @@
 //! Shared processing primitives for vector tile sinks.
 
+pub(crate) mod feature;
 pub(crate) mod geometry;
-pub(crate) mod model;
 pub(crate) mod pipeline;
 pub(crate) mod slice;
 pub(crate) mod sort;

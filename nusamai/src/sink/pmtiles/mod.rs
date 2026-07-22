@@ -226,6 +226,7 @@ fn pmtiles_writing_stage(
 
     let mut tiles = receiver_tiles.into_iter().collect::<Vec<_>>();
     if tiles.is_empty() {
+        feedback.ensure_not_canceled()?;
         return Err(PipelineError::Other("No tiles to write".to_string()));
     }
 

@@ -1,12 +1,19 @@
-//! Intermediate data models shared by vector tile sinks.
+//! Intermediate feature representation shared by vector tile sinks.
 
-use flatgeom::MultiPolygon2;
+use flatgeom::{MultiLineString2, MultiPoint2, MultiPolygon2};
 use nusamai_citygml::object;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
+pub(crate) enum SlicedGeometry<'a> {
+    Point(MultiPoint2<'a>),
+    LineString(MultiLineString2<'a>),
+    Polygon(MultiPolygon2<'a>),
+}
+
+#[derive(Serialize, Deserialize)]
 pub(crate) struct SlicedFeature<'a> {
-    pub(crate) geometry: MultiPolygon2<'a>,
+    pub(crate) geometry: SlicedGeometry<'a>,
     pub(crate) properties: object::Value,
 }
 
