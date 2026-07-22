@@ -29,6 +29,8 @@ mod schema;
 const GEOJSON_TYPENAME: &str = "geojson:Feature";
 const DIRECT_GEOMETRY_ERROR: &str =
     "Direct geometry is not supported. Please use Feature or FeatureCollection.";
+const GEOMETRY_COLLECTION_ERROR: &str =
+    "GeoJSON GeometryCollection is not supported. Please use separate Features for each geometry.";
 
 pub struct GeoJsonSourceProvider {
     pub filenames: Vec<PathBuf>,
@@ -358,11 +360,8 @@ fn convert_geometry(
                 });
             }
         }
-        GeometryCollection(geometries) => {
-            for geom in geometries {
-                let sub_refs = convert_geometry(geom, geometry_store)?;
-                refs.extend(sub_refs);
-            }
+        GeometryCollection(_) => {
+            return Err(PipelineError::Other(GEOMETRY_COLLECTION_ERROR.to_owned()));
         }
     }
 
