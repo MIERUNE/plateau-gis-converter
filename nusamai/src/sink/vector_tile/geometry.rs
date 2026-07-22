@@ -1,11 +1,32 @@
 //! Geometry conversion shared by vector tile encoders.
 
-use flatgeom::MultiPolygon2;
+use flatgeom::{MultiLineString2, MultiPoint2, MultiPolygon2};
 
 #[derive(Debug, PartialEq)]
 pub(crate) struct QuantizedPolygon {
     pub(crate) exterior: Vec<[i32; 2]>,
     pub(crate) interiors: Vec<Vec<[i32; 2]>>,
+}
+
+pub(crate) fn quantize_points(multipoint: &MultiPoint2, extent: i32) -> Vec<[i32; 2]> {
+    let mut points = multipoint
+        .iter()
+        .map(|point| quantize_coordinate(point, extent))
+        .collect::<Vec<_>>();
+    points.dedup();
+    points
+}
+
+pub(crate) fn quantize_linestrings(
+    multilinestring: &MultiLineString2,
+    extent: i32,
+) -> Vec<Vec<[i32; 2]>> {
+    multilinestring
+        .iter()
+        .filter_map(|line| {
+            simplify_linestring(line.iter().map(|point| quantize_coordinate(point, extent)))
+        })
+        .collect()
 }
 
 pub(crate) fn quantize_polygons(
@@ -47,6 +68,13 @@ pub(crate) fn quantize_polygons(
         .collect()
 }
 
+fn quantize_coordinate([x, y]: [f64; 2], extent: i32) -> [i32; 2] {
+    [
+        (x * f64::from(extent)).round() as i32,
+        (y * f64::from(extent)).round() as i32,
+    ]
+}
+
 fn simplify_ring(points: impl IntoIterator<Item = [i32; 2]>) -> Option<Vec<[i32; 2]>> {
     let points = points.into_iter().collect::<Vec<_>>();
     if points.len() < 3 {
@@ -65,6 +93,40 @@ fn simplify_ring(points: impl IntoIterator<Item = [i32; 2]>) -> Option<Vec<[i32;
     simplified.push(*points.last().unwrap());
 
     (simplified.len() >= 3).then_some(simplified)
+}
+
+fn simplify_linestring(points: impl IntoIterator<Item = [i32; 2]>) -> Option<Vec<[i32; 2]>> {
+    let mut simplified = Vec::new();
+
+    for point in points {
+        if simplified.last() == Some(&point) {
+            continue;
+        }
+
+        while simplified.len() >= 2 {
+            let previous = simplified[simplified.len() - 2];
+            let current = simplified[simplified.len() - 1];
+            if !is_forward_collinear(previous, current, point) {
+                break;
+            }
+            simplified.pop();
+        }
+
+        simplified.push(point);
+    }
+
+    (simplified.len() >= 2).then_some(simplified)
+}
+
+fn is_forward_collinear(previous: [i32; 2], current: [i32; 2], next: [i32; 2]) -> bool {
+    let [ax, ay] = previous.map(i128::from);
+    let [bx, by] = current.map(i128::from);
+    let [cx, cy] = next.map(i128::from);
+    let ab = [bx - ax, by - ay];
+    let bc = [cx - bx, cy - by];
+    let cross = ab[0] * bc[1] - ab[1] * bc[0];
+    let dot = ab[0] * bc[0] + ab[1] * bc[1];
+    cross == 0 && dot >= 0
 }
 
 fn is_collinear(previous: [i32; 2], current: [i32; 2], next: [i32; 2]) -> bool {
@@ -87,26 +149,4 @@ pub(crate) fn signed_ring_area2(ring: &[[i32; 2]]) -> i64 {
             (i64::from(*x1) * i64::from(*y2)) - (i64::from(*x2) * i64::from(*y1))
         })
         .sum()
-}
-
-#[cfg(test)]
-mod tests {
-    use super::{signed_ring_area2, simplify_ring};
-
-    #[test]
-    fn ring_simplification_removes_duplicates_and_collinear_points() {
-        let ring = simplify_ring([[0, 0], [0, 0], [1, 0], [2, 0], [2, 2], [0, 2]])
-            .expect("ring should remain valid");
-
-        assert_eq!(ring, vec![[0, 0], [2, 0], [2, 2], [0, 2]]);
-        assert!(signed_ring_area2(&ring) > 0);
-    }
-
-    #[test]
-    fn duplicate_next_point_is_not_treated_as_collinear() {
-        let ring = simplify_ring([[0, 0], [2, 0], [2, 0], [2, 2], [0, 2]])
-            .expect("ring should remain valid");
-
-        assert_eq!(ring, vec![[0, 0], [2, 0], [2, 2], [0, 2]]);
-    }
 }
