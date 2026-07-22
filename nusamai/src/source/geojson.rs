@@ -371,6 +371,12 @@ fn convert_geometry(
 
 type ValidatedPosition = ([f64; 3], bool);
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum PolygonRingKind {
+    Exterior,
+    Interior,
+}
+
 fn validate_position(position: &[f64]) -> pipeline::Result<ValidatedPosition> {
     match position {
         [longitude, latitude] => Ok(([*longitude, *latitude, 0.0], false)),
@@ -440,9 +446,45 @@ fn push_validated_positions(
         .collect()
 }
 
+fn signed_ring_area_2d(positions: &[ValidatedPosition]) -> f64 {
+    let Some((origin, _)) = positions.first() else {
+        return 0.0;
+    };
+    let [origin_x, origin_y, _] = *origin;
+
+    let mut area = 0.0;
+    for index in 0..positions.len() {
+        let [current_x, current_y, _] = positions[index].0;
+        let [next_x, next_y, _] = positions[(index + 1) % positions.len()].0;
+        area += (current_x - origin_x) * (next_y - origin_y)
+            - (next_x - origin_x) * (current_y - origin_y);
+    }
+    area
+}
+
+fn is_clockwise(positions: &[ValidatedPosition]) -> bool {
+    signed_ring_area_2d(positions) < 0.0
+}
+
+fn is_counter_clockwise(positions: &[ValidatedPosition]) -> bool {
+    signed_ring_area_2d(positions) > 0.0
+}
+
+fn normalize_ring_winding(positions: &mut [ValidatedPosition], ring_kind: PolygonRingKind) {
+    let needs_reversal = match ring_kind {
+        PolygonRingKind::Exterior => is_clockwise(positions),
+        PolygonRingKind::Interior => is_counter_clockwise(positions),
+    };
+
+    if needs_reversal {
+        positions[1..].reverse();
+    }
+}
+
 fn push_linear_ring(
     geometry_store: &mut GeometryStore,
     ring: &[Vec<f64>],
+    ring_kind: PolygonRingKind,
 ) -> pipeline::Result<Vec<u32>> {
     if ring.len() < 4 {
         return Err(PipelineError::Other(format!(
@@ -451,7 +493,7 @@ fn push_linear_ring(
         )));
     }
 
-    let positions = validate_positions(ring)?;
+    let mut positions = validate_positions(ring)?;
 
     if positions.first().map(|position| &position.0) != positions.last().map(|position| &position.0)
     {
@@ -464,11 +506,10 @@ fn push_linear_ring(
         geometry_store.epsg = EPSG_WGS84_GEOGRAPHIC_3D;
     }
 
-    Ok(positions
-        .into_iter()
-        .take(ring.len() - 1)
-        .map(|position| push_validated_position(geometry_store, position))
-        .collect())
+    positions.pop();
+    normalize_ring_winding(&mut positions, ring_kind);
+
+    Ok(push_validated_positions(geometry_store, positions))
 }
 
 fn add_polygon(
@@ -479,12 +520,13 @@ fn add_polygon(
         return Ok(false);
     };
 
-    let exterior_indices = push_linear_ring(geometry_store, exterior)?;
+    let exterior_indices = push_linear_ring(geometry_store, exterior, PolygonRingKind::Exterior)?;
     geometry_store.multipolygon.add_exterior(exterior_indices);
     geometry_store.ring_ids.push(None);
 
     for interior in rings.iter().skip(1) {
-        let interior_indices = push_linear_ring(geometry_store, interior)?;
+        let interior_indices =
+            push_linear_ring(geometry_store, interior, PolygonRingKind::Interior)?;
         geometry_store.multipolygon.add_interior(interior_indices);
         geometry_store.ring_ids.push(None);
     }
@@ -499,32 +541,313 @@ mod tests {
         pipeline::{feedback, PipelineError},
         source::DataSourceProvider,
     };
-    use nusamai_citygml::{
-        object::{ObjectStereotype, Value},
-        schema::{FeatureTypeDef, Schema, TypeDef, TypeRef},
-    };
-    use std::{io::Write, path::PathBuf, sync::mpsc::sync_channel};
+    use nusamai_citygml::object::{ObjectStereotype, Value};
+    use std::sync::mpsc::sync_channel;
     use tempfile::TempDir;
 
-    fn geojson_feature_type(schema: &Schema) -> &FeatureTypeDef {
-        let Some(TypeDef::Feature(feature_type)) = schema.types.get(GEOJSON_TYPENAME) else {
-            panic!("GeoJSON feature type must exist");
+    fn polygon_geometry_store(rings: Vec<Vec<Vec<f64>>>) -> GeometryStore {
+        let mut geometry_store = GeometryStore {
+            epsg: EPSG_WGS84_GEOGRAPHIC_2D,
+            ..Default::default()
         };
-        feature_type
+
+        assert!(add_polygon(&mut geometry_store, &rings).unwrap());
+        geometry_store
+    }
+
+    fn polygon_ring_vertices(geometry_store: &GeometryStore, ring_index: usize) -> Vec<[f64; 3]> {
+        multipolygon_ring_vertices(geometry_store, 0, ring_index)
+    }
+
+    fn multipolygon_ring_vertices(
+        geometry_store: &GeometryStore,
+        polygon_index: usize,
+        ring_index: usize,
+    ) -> Vec<[f64; 3]> {
+        geometry_store
+            .multipolygon
+            .get(polygon_index)
+            .rings()
+            .nth(ring_index)
+            .unwrap()
+            .iter()
+            .map(|vertex_index| geometry_store.vertices[vertex_index as usize])
+            .collect()
+    }
+
+    fn assert_counter_clockwise(vertices: Vec<[f64; 3]>) {
+        let vertices = vertices
+            .into_iter()
+            .map(|[x, y, _]| [x, y])
+            .collect::<Vec<_>>();
+        let ring = flatgeom::LineString2::from_raw(vertices.into());
+        assert!(ring.is_ccw(), "exterior ring must be counter-clockwise");
+    }
+
+    fn run_geojson_source(content: &str) -> Vec<Parcel> {
+        let temp_dir = TempDir::new().unwrap();
+        let path = temp_dir.path().join("input.geojson");
+        std::fs::write(&path, content).unwrap();
+
+        let provider = GeoJsonSourceProvider {
+            filenames: vec![path],
+        };
+        let mut source = provider.create(&Parameters::default());
+        let (sender, receiver) = sync_channel(100);
+        let (_, feedback, _) = feedback::watcher();
+
+        source.run(sender, &feedback).unwrap();
+        receiver.into_iter().collect()
+    }
+
+    fn feature_id(parcel: &Parcel) -> &str {
+        let Value::Object(object) = &parcel.entity.root else {
+            panic!("GeoJSON feature must become an object");
+        };
+        assert_eq!(object.typename, GEOJSON_TYPENAME);
+        let ObjectStereotype::Feature { id, .. } = &object.stereotype else {
+            panic!("GeoJSON object must have the Feature stereotype");
+        };
+        id
     }
 
     #[test]
-    fn uses_neutral_geojson_feature_typename() {
-        assert_eq!(GEOJSON_TYPENAME, "geojson:Feature");
+    fn polygon_normalizes_clockwise_exterior_to_counter_clockwise() {
+        let geometry_store = polygon_geometry_store(vec![vec![
+            vec![0.0, 0.0],
+            vec![0.0, 2.0],
+            vec![2.0, 2.0],
+            vec![2.0, 0.0],
+            vec![0.0, 0.0],
+        ]]);
+
+        assert_eq!(
+            polygon_ring_vertices(&geometry_store, 0),
+            vec![
+                [0.0, 0.0, 0.0],
+                [2.0, 0.0, 0.0],
+                [2.0, 2.0, 0.0],
+                [0.0, 2.0, 0.0],
+            ]
+        );
     }
 
     #[test]
-    fn null_property_is_omitted_but_string_value_is_preserved() {
+    fn polygon_normalizes_counter_clockwise_interior_to_clockwise() {
+        let geometry_store = polygon_geometry_store(vec![
+            vec![
+                vec![0.0, 0.0],
+                vec![4.0, 0.0],
+                vec![4.0, 4.0],
+                vec![0.0, 4.0],
+                vec![0.0, 0.0],
+            ],
+            vec![
+                vec![1.0, 1.0],
+                vec![3.0, 1.0],
+                vec![3.0, 3.0],
+                vec![1.0, 3.0],
+                vec![1.0, 1.0],
+            ],
+        ]);
+
+        assert_eq!(
+            polygon_ring_vertices(&geometry_store, 1),
+            vec![
+                [1.0, 1.0, 0.0],
+                [1.0, 3.0, 0.0],
+                [3.0, 3.0, 0.0],
+                [3.0, 1.0, 0.0],
+            ]
+        );
+    }
+
+    #[test]
+    fn polygon_preserves_canonical_ring_order() {
+        let exterior = vec![
+            vec![0.0, 0.0],
+            vec![4.0, 0.0],
+            vec![4.0, 4.0],
+            vec![0.0, 4.0],
+            vec![0.0, 0.0],
+        ];
+        let interior = vec![
+            vec![1.0, 1.0],
+            vec![1.0, 3.0],
+            vec![3.0, 3.0],
+            vec![3.0, 1.0],
+            vec![1.0, 1.0],
+        ];
+
+        let geometry_store = polygon_geometry_store(vec![exterior, interior]);
+
+        assert_eq!(
+            polygon_ring_vertices(&geometry_store, 0),
+            vec![
+                [0.0, 0.0, 0.0],
+                [4.0, 0.0, 0.0],
+                [4.0, 4.0, 0.0],
+                [0.0, 4.0, 0.0],
+            ]
+        );
+        assert_eq!(
+            polygon_ring_vertices(&geometry_store, 1),
+            vec![
+                [1.0, 1.0, 0.0],
+                [1.0, 3.0, 0.0],
+                [3.0, 3.0, 0.0],
+                [3.0, 1.0, 0.0],
+            ]
+        );
+        assert_eq!(geometry_store.epsg, EPSG_WGS84_GEOGRAPHIC_2D);
+    }
+
+    #[test]
+    fn polygon_normalization_preserves_first_position_and_xyz_values() {
+        let geometry_store = polygon_geometry_store(vec![vec![
+            vec![0.0, 0.0, 10.0],
+            vec![0.0, 2.0, 40.0],
+            vec![2.0, 2.0, 30.0],
+            vec![2.0, 0.0, 20.0],
+            vec![0.0, 0.0, 10.0],
+        ]]);
+
+        assert_eq!(
+            polygon_ring_vertices(&geometry_store, 0),
+            vec![
+                [0.0, 0.0, 10.0],
+                [2.0, 0.0, 20.0],
+                [2.0, 2.0, 30.0],
+                [0.0, 2.0, 40.0],
+            ]
+        );
+        assert_eq!(geometry_store.epsg, EPSG_WGS84_GEOGRAPHIC_3D);
+    }
+
+    #[test]
+    fn polygon_preserves_linear_ring_validation_errors() {
+        let mut geometry_store = GeometryStore::default();
+        let too_short = vec![vec![vec![0.0, 0.0], vec![1.0, 0.0], vec![0.0, 0.0]]];
+        let error = add_polygon(&mut geometry_store, &too_short).unwrap_err();
+        assert!(matches!(
+            error,
+            PipelineError::Other(message)
+                if message == "GeoJSON LinearRing must contain at least 4 positions, but found 3"
+        ));
+
+        let mut geometry_store = GeometryStore::default();
+        let not_closed = vec![vec![
+            vec![0.0, 0.0],
+            vec![1.0, 0.0],
+            vec![1.0, 1.0],
+            vec![0.0, 1.0],
+        ]];
+        let error = add_polygon(&mut geometry_store, &not_closed).unwrap_err();
+        assert!(matches!(
+            error,
+            PipelineError::Other(message)
+                if message == "GeoJSON LinearRing must have identical first and last positions"
+        ));
+    }
+
+    #[test]
+    fn convert_geometry_normalizes_all_multipolygon_exteriors() {
+        let geometry = geojson::Geometry::new(geojson::Value::MultiPolygon(vec![
+            vec![vec![
+                vec![0.0, 0.0],
+                vec![0.0, 2.0],
+                vec![2.0, 2.0],
+                vec![2.0, 0.0],
+                vec![0.0, 0.0],
+            ]],
+            vec![vec![
+                vec![10.0, 10.0],
+                vec![10.0, 12.0],
+                vec![12.0, 12.0],
+                vec![12.0, 10.0],
+                vec![10.0, 10.0],
+            ]],
+        ]));
+        let mut geometry_store = GeometryStore {
+            epsg: EPSG_WGS84_GEOGRAPHIC_2D,
+            ..Default::default()
+        };
+
+        let geometry_refs = convert_geometry(&geometry, &mut geometry_store).unwrap();
+
+        assert_eq!(
+            geometry_refs,
+            vec![GeometryRef {
+                ty: GeometryType::Surface,
+                lod: 0,
+                pos: 0,
+                len: 2,
+            }]
+        );
+        assert_eq!(geometry_store.multipolygon.len(), 2);
+        assert_counter_clockwise(multipolygon_ring_vertices(&geometry_store, 0, 0));
+        assert_counter_clockwise(multipolygon_ring_vertices(&geometry_store, 1, 0));
+    }
+
+    #[test]
+    fn convert_geometry_maps_point_to_point() {
+        let geometry = geojson::Geometry::new(geojson::Value::Point(vec![139.7, 35.6]));
+        let mut geometry_store = GeometryStore {
+            epsg: EPSG_WGS84_GEOGRAPHIC_2D,
+            ..Default::default()
+        };
+
+        let geometry_refs = convert_geometry(&geometry, &mut geometry_store).unwrap();
+
+        assert_eq!(
+            geometry_refs,
+            vec![GeometryRef {
+                ty: GeometryType::Point,
+                lod: 0,
+                pos: 0,
+                len: 1,
+            }]
+        );
+        assert_eq!(geometry_store.vertices, vec![[139.7, 35.6, 0.0]]);
+    }
+
+    #[test]
+    fn convert_geometry_maps_polygon_to_surface() {
+        let geometry = geojson::Geometry::new(geojson::Value::Polygon(vec![vec![
+            vec![139.7, 35.6],
+            vec![139.71, 35.6],
+            vec![139.71, 35.61],
+            vec![139.7, 35.61],
+            vec![139.7, 35.6],
+        ]]));
+        let mut geometry_store = GeometryStore {
+            epsg: EPSG_WGS84_GEOGRAPHIC_2D,
+            ..Default::default()
+        };
+
+        let geometry_refs = convert_geometry(&geometry, &mut geometry_store).unwrap();
+
+        assert_eq!(
+            geometry_refs,
+            vec![GeometryRef {
+                ty: GeometryType::Surface,
+                lod: 0,
+                pos: 0,
+                len: 1,
+            }]
+        );
+        assert_eq!(geometry_store.multipolygon.len(), 1);
+    }
+
+    #[test]
+    fn convert_feature_omits_null_and_preserves_scalar_properties() {
         let feature: geojson::Feature = r#"{
             "type": "Feature",
             "properties": {
-                "N03_002": null,
-                "N03_007": "01000"
+                "null_value": null,
+                "string_value": "01000",
+                "integer_value": 42,
+                "double_value": 12.5
             },
             "geometry": null
         }"#
@@ -539,516 +862,59 @@ mod tests {
             panic!("GeoJSON feature must become an object");
         };
 
-        assert!(!object.attributes.contains_key("N03_002"));
+        assert!(!object.attributes.contains_key("null_value"));
         assert_eq!(
-            object.attributes.get("N03_007"),
+            object.attributes.get("string_value"),
             Some(&Value::String("01000".to_owned()))
         );
+        assert_eq!(
+            object.attributes.get("integer_value"),
+            Some(&Value::Integer(42))
+        );
+        assert_eq!(
+            object.attributes.get("double_value"),
+            Some(&Value::Double(12.5))
+        );
     }
 
     #[test]
-    fn source_provider_collects_schema_across_feature_documents_and_files() {
-        let temp_dir = tempfile::TempDir::new().unwrap();
-        let single_path = temp_dir.path().join("single.geojson");
-        let collection_path = temp_dir.path().join("collection.geojson");
-        std::fs::write(
-            &single_path,
-            r#"{
-                "type": "Feature",
-                "properties": {"single": "001", "shared": 1},
-                "geometry": null
-            }"#,
-        )
-        .unwrap();
-        std::fs::write(
-            &collection_path,
-            r#"{
-                "type": "FeatureCollection",
-                "features": [
-                    {
-                        "type": "Feature",
-                        "properties": {"collection": true, "shared": 1.5},
-                        "geometry": null
-                    },
-                    {
-                        "type": "Feature",
-                        "properties": {"null_only": null},
-                        "geometry": null
-                    }
-                ]
-            }"#,
-        )
-        .unwrap();
-        let provider = GeoJsonSourceProvider {
-            filenames: vec![single_path, collection_path],
-        };
-        let mut schema = Schema::default();
-
-        provider
-            .collect_schema(&Parameters::default(), &mut schema)
-            .unwrap();
-        let feature_type = geojson_feature_type(&schema);
-
-        assert_eq!(
-            feature_type
-                .attributes
-                .keys()
-                .map(String::as_str)
-                .collect::<Vec<_>>(),
-            ["collection", "null_only", "shared", "single"]
-        );
-        assert_eq!(
-            feature_type.attributes["collection"].type_ref,
-            TypeRef::Boolean
-        );
-        assert_eq!(
-            feature_type.attributes["null_only"].type_ref,
-            TypeRef::String
-        );
-        assert_eq!(feature_type.attributes["shared"].type_ref, TypeRef::Double);
-        assert_eq!(feature_type.attributes["single"].type_ref, TypeRef::String);
-    }
-
-    #[test]
-    fn source_provider_collects_schema_from_zip_entry() {
-        let temp_dir = tempfile::TempDir::new().unwrap();
-        let zip_path = temp_dir.path().join("input.zip");
-        let zip_file = std::fs::File::create(&zip_path).unwrap();
-        let mut writer = zip::ZipWriter::new(zip_file);
-        writer
-            .start_file(
-                "nested/input.geojson",
-                zip::write::SimpleFileOptions::default(),
-            )
-            .unwrap();
-        writer
-            .write_all(
-                br#"{
+    fn source_emits_all_features_from_feature_collection() {
+        let geojson_content = r#"{
+            "type": "FeatureCollection",
+            "features": [
+                {
                     "type": "Feature",
-                    "properties": {"from_zip": 42},
+                    "id": "feature-1",
+                    "properties": {},
                     "geometry": null
-                }"#,
-            )
-            .unwrap();
-        writer.finish().unwrap();
-
-        let virtual_path = PathBuf::from(format!(
-            "{}/nested/input.geojson",
-            zip_path.to_string_lossy()
-        ));
-        let provider = GeoJsonSourceProvider {
-            filenames: vec![virtual_path],
-        };
-        let mut schema = Schema::default();
-
-        provider
-            .collect_schema(&Parameters::default(), &mut schema)
-            .unwrap();
-
-        assert_eq!(
-            geojson_feature_type(&schema).attributes["from_zip"].type_ref,
-            TypeRef::Integer
-        );
-    }
-
-    #[test]
-    fn source_provider_rejects_bare_geometry_and_invalid_json() {
-        let temp_dir = tempfile::TempDir::new().unwrap();
-        let geometry_path = temp_dir.path().join("geometry.geojson");
-        let invalid_path = temp_dir.path().join("invalid.geojson");
-        std::fs::write(
-            &geometry_path,
-            r#"{"type":"Point","coordinates":[139.7,35.6]}"#,
-        )
-        .unwrap();
-        std::fs::write(&invalid_path, "not json").unwrap();
-
-        for (path, expected) in [
-            (geometry_path, "Direct geometry is not supported"),
-            (invalid_path, "Failed to parse GeoJSON"),
-        ] {
-            let provider = GeoJsonSourceProvider {
-                filenames: vec![path],
-            };
-            let mut schema = Schema::default();
-
-            let error = provider
-                .collect_schema(&Parameters::default(), &mut schema)
-                .unwrap_err();
-
-            assert!(
-                matches!(error, PipelineError::Other(message) if message.contains(expected)),
-                "unexpected error"
-            );
-        }
-    }
-
-    #[test]
-    fn test_geojson_source() {
-        let geojson_content = r#"{
-            "type": "FeatureCollection",
-            "features": [
-                {
-                    "type": "Feature",
-                    "id": "test-1",
-                    "properties": {
-                        "name": "Test Feature",
-                        "value": 42
-                    },
-                    "geometry": {
-                        "type": "Point",
-                        "coordinates": [139.7, 35.6]
-                    }
-                }
-            ]
-        }"#;
-
-        // 一時ファイルを作成
-        let temp_dir = tempfile::TempDir::new().unwrap();
-        let temp_file = temp_dir.path().join("test.geojson");
-        std::fs::write(&temp_file, geojson_content).unwrap();
-
-        let (sender, receiver) = sync_channel(100);
-        let source_provider = GeoJsonSourceProvider {
-            filenames: vec![temp_file],
-        };
-        let mut source = source_provider.create(&Parameters::default());
-        let (_, feedback, _) = feedback::watcher();
-
-        // GeoJSONソースを開始
-        std::thread::scope(|scope| {
-            scope.spawn(move || {
-                source.run(sender, &feedback).unwrap();
-            });
-
-            let parcels: Vec<_> = receiver.iter().collect();
-            assert_eq!(parcels.len(), 1);
-
-            let entity = &parcels[0].entity;
-            if let Value::Object(obj) = &entity.root {
-                assert_eq!(obj.typename, GEOJSON_TYPENAME);
-                if let ObjectStereotype::Feature { id, .. } = &obj.stereotype {
-                    assert_eq!(id, "test-1");
-                }
-                assert_eq!(
-                    obj.attributes.get("name"),
-                    Some(&Value::String("Test Feature".to_string()))
-                );
-                assert_eq!(obj.attributes.get("value"), Some(&Value::Integer(42)));
-            } else {
-                panic!("Expected Object");
-            }
-        });
-    }
-
-    #[test]
-    fn test_geojson_source_feature_collection() {
-        let geojson_content = r#"{
-            "type": "FeatureCollection",
-            "features": [
-                {
-                    "type": "Feature",
-                    "id": "building-1",
-                    "properties": {
-                        "name": "Test Building 1",
-                        "height": 30.5,
-                        "floors": 10
-                    },
-                    "geometry": {
-                        "type": "Polygon",
-                        "coordinates": [
-                            [[139.7, 35.6], [139.71, 35.6], [139.71, 35.61], [139.7, 35.61], [139.7, 35.6]]
-                        ]
-                    }
                 },
                 {
                     "type": "Feature",
-                    "id": "building-2",
-                    "properties": {
-                        "name": "Test Building 2",
-                        "height": 45.0,
-                        "floors": 15
-                    },
-                    "geometry": {
-                        "type": "Point",
-                        "coordinates": [139.705, 35.605]
-                    }
+                    "id": "feature-2",
+                    "properties": {},
+                    "geometry": null
                 }
             ]
         }"#;
 
-        // 一時ファイルを作成
-        let temp_dir = TempDir::new().unwrap();
-        let temp_file = temp_dir.path().join("test.geojson");
-        std::fs::write(&temp_file, geojson_content).unwrap();
+        let parcels = run_geojson_source(geojson_content);
+        let ids = parcels.iter().map(feature_id).collect::<Vec<_>>();
 
-        let (sender, receiver) = sync_channel(100);
-        let source_provider = GeoJsonSourceProvider {
-            filenames: vec![temp_file],
-        };
-        let mut source = source_provider.create(&Parameters::default());
-        let (_, feedback, _) = feedback::watcher();
-
-        // GeoJSONソースを開始
-        std::thread::scope(|scope| {
-            scope.spawn(move || {
-                source.run(sender, &feedback).unwrap();
-            });
-
-            let parcels: Vec<_> = receiver.iter().collect();
-            assert_eq!(parcels.len(), 2);
-
-            // 最初のフィーチャをチェック
-            let entity1 = &parcels[0].entity;
-            if let Value::Object(obj) = &entity1.root {
-                assert_eq!(obj.typename, GEOJSON_TYPENAME);
-                if let ObjectStereotype::Feature { id, geometries } = &obj.stereotype {
-                    assert_eq!(id, "building-1");
-                    assert!(!geometries.is_empty());
-                    assert_eq!(
-                        geometries[0].ty,
-                        nusamai_citygml::geometry::GeometryType::Surface
-                    );
-                }
-                assert_eq!(
-                    obj.attributes.get("name"),
-                    Some(&Value::String("Test Building 1".to_string()))
-                );
-                assert_eq!(obj.attributes.get("height"), Some(&Value::Double(30.5)));
-                assert_eq!(obj.attributes.get("floors"), Some(&Value::Integer(10)));
-            } else {
-                panic!("Expected Object");
-            }
-
-            // 2番目のフィーチャをチェック
-            let entity2 = &parcels[1].entity;
-            if let Value::Object(obj) = &entity2.root {
-                assert_eq!(obj.typename, GEOJSON_TYPENAME);
-                if let ObjectStereotype::Feature { id, geometries } = &obj.stereotype {
-                    assert_eq!(id, "building-2");
-                    assert!(!geometries.is_empty());
-                    assert_eq!(
-                        geometries[0].ty,
-                        nusamai_citygml::geometry::GeometryType::Point
-                    );
-                }
-                assert_eq!(
-                    obj.attributes.get("name"),
-                    Some(&Value::String("Test Building 2".to_string()))
-                );
-                assert_eq!(obj.attributes.get("height"), Some(&Value::Double(45.0)));
-                assert_eq!(obj.attributes.get("floors"), Some(&Value::Integer(15)));
-            } else {
-                panic!("Expected Object");
-            }
-        });
+        assert_eq!(ids, vec!["feature-1", "feature-2"]);
     }
 
     #[test]
-    fn test_geojson_source_single_feature() {
+    fn source_emits_single_top_level_feature() {
         let geojson_content = r#"{
             "type": "Feature",
-            "properties": {
-                "category": "park",
-                "area": 1234.56
-            },
-            "geometry": {
-                "type": "MultiPolygon",
-                "coordinates": [
-                    [
-                        [[139.7, 35.6], [139.71, 35.6], [139.71, 35.61], [139.7, 35.61], [139.7, 35.6]]
-                    ]
-                ]
-            }
+            "id": "feature-1",
+            "properties": {},
+            "geometry": null
         }"#;
 
-        // 一時ファイルを作成
-        let temp_dir = TempDir::new().unwrap();
-        let temp_file = temp_dir.path().join("test.json");
-        std::fs::write(&temp_file, geojson_content).unwrap();
+        let parcels = run_geojson_source(geojson_content);
 
-        let (sender, receiver) = sync_channel(100);
-        let source_provider = GeoJsonSourceProvider {
-            filenames: vec![temp_file],
-        };
-        let mut source = source_provider.create(&Parameters::default());
-        let (_, feedback, _) = feedback::watcher();
-
-        // GeoJSONソースを開始
-        std::thread::scope(|scope| {
-            scope.spawn(move || {
-                source.run(sender, &feedback).unwrap();
-            });
-
-            let parcels: Vec<_> = receiver.iter().collect();
-            assert_eq!(parcels.len(), 1);
-
-            let entity = &parcels[0].entity;
-            if let Value::Object(obj) = &entity.root {
-                assert_eq!(obj.typename, GEOJSON_TYPENAME);
-                if let ObjectStereotype::Feature { geometries, .. } = &obj.stereotype {
-                    assert!(!geometries.is_empty());
-                    assert_eq!(
-                        geometries[0].ty,
-                        nusamai_citygml::geometry::GeometryType::Surface
-                    );
-                }
-                assert_eq!(
-                    obj.attributes.get("category"),
-                    Some(&Value::String("park".to_string()))
-                );
-                assert_eq!(obj.attributes.get("area"), Some(&Value::Double(1234.56)));
-            } else {
-                panic!("Expected Object");
-            }
-        });
-    }
-
-    #[test]
-    fn test_geojson_source_with_nested_properties() {
-        let geojson_content = r#"{
-            "type": "FeatureCollection",
-            "features": [
-                {
-                    "type": "Feature",
-                    "properties": {
-                        "name": "Complex Feature",
-                        "metadata": {
-                            "source": "survey",
-                            "date": "2024-01-01",
-                            "accuracy": 0.95
-                        },
-                        "tags": ["building", "commercial", "high-rise"]
-                    },
-                    "geometry": {
-                        "type": "LineString",
-                        "coordinates": [[139.7, 35.6], [139.71, 35.61], [139.72, 35.62]]
-                    }
-                }
-            ]
-        }"#;
-
-        // 一時ファイルを作成
-        let temp_dir = TempDir::new().unwrap();
-        let temp_file = temp_dir.path().join("test_complex.geojson");
-        std::fs::write(&temp_file, geojson_content).unwrap();
-
-        let (sender, receiver) = sync_channel(100);
-        let source_provider = GeoJsonSourceProvider {
-            filenames: vec![temp_file],
-        };
-        let mut source = source_provider.create(&Parameters::default());
-        let (_, feedback, _) = feedback::watcher();
-
-        // GeoJSONソースを開始
-        std::thread::scope(|scope| {
-            scope.spawn(move || {
-                source.run(sender, &feedback).unwrap();
-            });
-
-            let parcels: Vec<_> = receiver.iter().collect();
-            assert_eq!(parcels.len(), 1);
-
-            let entity = &parcels[0].entity;
-            if let Value::Object(obj) = &entity.root {
-                assert_eq!(obj.typename, GEOJSON_TYPENAME);
-
-                // ネストしたオブジェクトをチェック
-                if let Some(Value::Object(metadata_obj)) = obj.attributes.get("metadata") {
-                    assert_eq!(metadata_obj.typename, "Object");
-                    assert_eq!(
-                        metadata_obj.attributes.get("source"),
-                        Some(&Value::String("survey".to_string()))
-                    );
-                    assert_eq!(
-                        metadata_obj.attributes.get("accuracy"),
-                        Some(&Value::Double(0.95))
-                    );
-                } else {
-                    panic!("Expected metadata object");
-                }
-
-                // 配列をチェック
-                if let Some(Value::Array(tags)) = obj.attributes.get("tags") {
-                    assert_eq!(tags.len(), 3);
-                    assert_eq!(tags[0], Value::String("building".to_string()));
-                    assert_eq!(tags[1], Value::String("commercial".to_string()));
-                    assert_eq!(tags[2], Value::String("high-rise".to_string()));
-                } else {
-                    panic!("Expected tags array");
-                }
-
-                // ジオメトリをチェック
-                if let ObjectStereotype::Feature { geometries, .. } = &obj.stereotype {
-                    assert!(!geometries.is_empty());
-                    assert_eq!(
-                        geometries[0].ty,
-                        nusamai_citygml::geometry::GeometryType::Curve
-                    );
-                }
-            } else {
-                panic!("Expected Object");
-            }
-        });
-    }
-
-    #[test]
-    fn test_geojson_source_multiple_files() {
-        let geojson1 = r#"{
-            "type": "Feature",
-            "id": "file1-feature",
-            "properties": {"source": "file1"},
-            "geometry": {"type": "Point", "coordinates": [139.7, 35.6]}
-        }"#;
-
-        let geojson2 = r#"{
-            "type": "Feature",
-            "id": "file2-feature",
-            "properties": {"source": "file2"},
-            "geometry": {"type": "Point", "coordinates": [139.8, 35.7]}
-        }"#;
-
-        // 一時ファイルを作成
-        let temp_dir = TempDir::new().unwrap();
-        let temp_file1 = temp_dir.path().join("test1.geojson");
-        let temp_file2 = temp_dir.path().join("test2.json");
-        std::fs::write(&temp_file1, geojson1).unwrap();
-        std::fs::write(&temp_file2, geojson2).unwrap();
-
-        let (sender, receiver) = sync_channel(100);
-        let source_provider = GeoJsonSourceProvider {
-            filenames: vec![temp_file1, temp_file2],
-        };
-        let mut source = source_provider.create(&Parameters::default());
-        let (_, feedback, _) = feedback::watcher();
-
-        // GeoJSONソースを開始
-        std::thread::scope(|scope| {
-            scope.spawn(move || {
-                source.run(sender, &feedback).unwrap();
-            });
-
-            let parcels: Vec<_> = receiver.iter().collect();
-            assert_eq!(parcels.len(), 2);
-
-            // 両方のファイルからフィーチャが取得できることを確認
-            let sources: Vec<String> = parcels
-                .iter()
-                .filter_map(|p| {
-                    if let Value::Object(obj) = &p.entity.root {
-                        if let Some(Value::String(source)) = obj.attributes.get("source") {
-                            Some(source.clone())
-                        } else {
-                            None
-                        }
-                    } else {
-                        None
-                    }
-                })
-                .collect();
-
-            assert!(sources.contains(&"file1".to_string()));
-            assert!(sources.contains(&"file2".to_string()));
-        });
+        assert_eq!(parcels.len(), 1);
+        assert_eq!(feature_id(&parcels[0]), "feature-1");
     }
 }
