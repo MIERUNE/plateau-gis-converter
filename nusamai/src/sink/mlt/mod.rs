@@ -5,6 +5,7 @@ mod encode;
 use std::path::PathBuf;
 
 use nusamai_citygml::schema::Schema;
+use nusamai_projection::crs::EPSG_WGS84_GEOGRAPHIC_3D;
 
 use crate::{
     get_parameter_value,
@@ -15,7 +16,7 @@ use crate::{
             run_vector_tile_pipeline, slice::validate_zoom_range, TilePipelineOptions,
             DEFAULT_MAX_COMPRESSED_TILE_SIZE,
         },
-        DataRequirements, DataSink, DataSinkProvider, SinkInfo,
+        DataRequirements, DataSink, DataSinkProvider, SinkInfo, SinkInputCrsRequirement,
     },
     transformer,
     transformer::{use_lod_config, TransformerSettings},
@@ -84,6 +85,13 @@ impl DataSinkProvider for MltSinkProvider {
         let mut settings = TransformerSettings::new();
         settings.insert(use_lod_config("min_lod", None));
         settings
+    }
+
+    fn sink_input_crs_requirement(&self) -> SinkInputCrsRequirement {
+        // TODO: Switch to Fixed(EPSG:3857). ProjectionTransform should produce Web Mercator
+        // coordinates, and the shared vector-tile sink should consume them directly instead of
+        // calling lnglat_to_web_mercator, performing only the tile-space conversion itself.
+        SinkInputCrsRequirement::Fixed(EPSG_WGS84_GEOGRAPHIC_3D)
     }
 
     fn create(&self, params: &Parameters) -> Box<dyn DataSink> {

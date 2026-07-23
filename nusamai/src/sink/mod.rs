@@ -22,6 +22,7 @@ pub(crate) mod vector_tile;
 
 use nusamai_citygml::schema::Schema;
 use nusamai_projection::crs;
+use thiserror::Error;
 
 use crate::{
     parameters::Parameters,
@@ -34,6 +35,38 @@ pub struct SinkInfo {
     pub name: String,
 }
 
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum SinkInputCrsRequirement {
+    Selectable,
+    Fixed(crs::EpsgCode),
+}
+
+#[derive(Debug, Error, Eq, PartialEq)]
+#[error("sink requires fixed input CRS EPSG:{required}, but EPSG:{requested} was requested")]
+pub struct SinkInputCrsError {
+    required: crs::EpsgCode,
+    requested: crs::EpsgCode,
+}
+
+impl SinkInputCrsRequirement {
+    pub fn resolve(
+        self,
+        default: crs::EpsgCode,
+        requested: Option<crs::EpsgCode>,
+    ) -> Result<crs::EpsgCode, SinkInputCrsError> {
+        match (self, requested) {
+            (Self::Selectable, requested) => Ok(requested.unwrap_or(default)),
+            (Self::Fixed(required), Some(requested)) if requested != required => {
+                Err(SinkInputCrsError {
+                    required,
+                    requested,
+                })
+            }
+            (Self::Fixed(required), _) => Ok(required),
+        }
+    }
+}
+
 pub trait DataSinkProvider: Sync {
     /// Gets basic information about the sink.
     fn info(&self) -> SinkInfo;
@@ -43,6 +76,11 @@ pub trait DataSinkProvider: Sync {
 
     /// Gets the transform options of the sink.
     fn transformer_options(&self) -> TransformerSettings;
+
+    /// Gets the CRS requirement for data passed from Transform to this sink.
+    fn sink_input_crs_requirement(&self) -> SinkInputCrsRequirement {
+        SinkInputCrsRequirement::Selectable
+    }
 
     /// Creates a sink instance.
     fn create(&self, config: &Parameters) -> Box<dyn DataSink>;

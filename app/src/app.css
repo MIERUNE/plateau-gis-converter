@@ -1,9 +1,9 @@
-@import "tailwindcss" source("../src");
+@import 'tailwindcss' source('../src');
 
 @theme {
 	--color-base: #334155;
-	--color-accent1: #00BEBE;
-	--color-accent2: #463C64;
+	--color-accent1: #00bebe;
+	--color-accent2: #463c64;
 }
 
 @utility animate-loading-pulse-* {
@@ -12,9 +12,8 @@
 	animation-name: scale;
 	animation-timing-function: cubic-bezier(0.2, 0.68, 0.18, 1.08);
 	animation-fill-mode: both;
-	animation-delay: --value([*]);
+	animation-delay: --value([ *]);
 }
-
 
 @keyframes scale {
 	0% {
