@@ -64,20 +64,6 @@ impl DataSinkProvider for MltSinkProvider {
                 label: Some("最大ズームレベル".into()),
             },
         });
-        params.define(ParameterDefinition {
-            key: "max_compressed_tile_size".into(),
-            entry: ParameterEntry {
-                description:
-                    "Maximum zlib-compressed tile size in bytes before lowering tile detail".into(),
-                required: true,
-                parameter: ParameterType::Integer(IntegerParameter {
-                    value: Some(DEFAULT_MAX_COMPRESSED_TILE_SIZE as i64),
-                    min: Some(1),
-                    max: None,
-                }),
-                label: Some("最大圧縮タイルサイズ".into()),
-            },
-        });
         params
     }
 
@@ -99,8 +85,6 @@ impl DataSinkProvider for MltSinkProvider {
         let min_z = get_parameter_value!(params, "min_z", Integer).unwrap() as u8;
         let max_z = get_parameter_value!(params, "max_z", Integer).unwrap() as u8;
         validate_zoom_range(min_z, max_z);
-        let max_compressed_tile_size =
-            get_parameter_value!(params, "max_compressed_tile_size", Integer).unwrap() as usize;
 
         Box::new(MltSink {
             output_path: output_path.as_ref().unwrap().into(),
@@ -108,7 +92,7 @@ impl DataSinkProvider for MltSinkProvider {
             options: MltParams {
                 min_z,
                 max_z,
-                max_compressed_tile_size,
+                max_compressed_tile_size: DEFAULT_MAX_COMPRESSED_TILE_SIZE,
             },
         })
     }

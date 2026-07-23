@@ -2,15 +2,15 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use log::LevelFilter;
-use nusamai::parameters::Parameters;
+use nusamai::parameters::{ParameterType, Parameters};
 use nusamai::{
     pipeline::{Canceller, feedback},
     sink::{
         DataSinkProvider, cesiumtiles::CesiumTilesSinkProvider, czml::CzmlSinkProvider,
         geojson::GeoJsonSinkProvider, gltf::GltfSinkProvider, gpkg::GpkgSinkProvider,
-        kml::KmlSinkProvider, minecraft::MinecraftSinkProvider, mvt::MvtSinkProvider,
-        obj::ObjSinkProvider, pmtiles::PmTilesSinkProvider, serde::SerdeSinkProvider,
-        shapefile::ShapefileSinkProvider,
+        kml::KmlSinkProvider, minecraft::MinecraftSinkProvider, mlt::MltSinkProvider,
+        mvt::MvtSinkProvider, obj::ObjSinkProvider, pmtiles::PmTilesSinkProvider,
+        serde::SerdeSinkProvider, shapefile::ShapefileSinkProvider,
     },
     source::{
         DataSourceProvider, citygml::CityGmlSourceProvider, collect_input_schema,
@@ -157,6 +157,7 @@ fn select_sink_provider(filetype: &str) -> Option<Box<dyn DataSinkProvider>> {
         "serde" => Some(Box::new(SerdeSinkProvider {})),
         "geojson" => Some(Box::new(GeoJsonSinkProvider {})),
         "gpkg" => Some(Box::new(GpkgSinkProvider {})),
+        "mlt" => Some(Box::new(MltSinkProvider {})),
         "mvt" => Some(Box::new(MvtSinkProvider {})),
         "pmtiles" => Some(Box::new(PmTilesSinkProvider {})),
         "shapefile" => Some(Box::new(ShapefileSinkProvider {})),
@@ -168,6 +169,27 @@ fn select_sink_provider(filetype: &str) -> Option<Box<dyn DataSinkProvider>> {
         "obj" => Some(Box::new(ObjSinkProvider {})),
         _ => None,
     }
+}
+
+fn validate_zoom_range_parameters(params: &Parameters) -> Result<(), Error> {
+    let integer_value = |key| {
+        params.get(key).and_then(|entry| match &entry.parameter {
+            ParameterType::Integer(parameter) => parameter.value,
+            _ => None,
+        })
+    };
+
+    let (Some(min_z), Some(max_z)) = (integer_value("min_z"), integer_value("max_z")) else {
+        return Ok(());
+    };
+
+    if min_z > max_z {
+        return Err(Error::InvalidSetting(format!(
+            "Minimum zoom level (min_z: {min_z}) must be less than or equal to maximum zoom level (max_z: {max_z})"
+        )));
+    }
+
+    Ok(())
 }
 
 #[derive(Debug, serde::Deserialize)]
@@ -418,6 +440,7 @@ fn run_conversion(
         log::error!("{msg}");
         return Err(Error::InvalidSetting(msg));
     }
+    validate_zoom_range_parameters(&sink_params)?;
     let mut sink = sink_provider.create(&sink_params);
 
     let mut requirements = sink.make_requirements(transformer_settings);

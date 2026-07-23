@@ -64,6 +64,11 @@ const filetypeOptions: Record<string, { label: string; extensions: string[]; eps
 			extensions: [''],
 			epsg: [{ value: null, label: 'Web Mercator (EPSG:3857)' }]
 		},
+		mlt: {
+			label: 'MapLibre Tiles (MLT)',
+			extensions: [''],
+			epsg: [{ value: null, label: 'Web Mercator (EPSG:3857)' }]
+		},
 		pmtiles: {
 			label: 'PMTiles',
 			extensions: ['pmtiles'],
