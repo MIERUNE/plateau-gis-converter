@@ -1,4 +1,4 @@
-type epsgOption = { value: number; label: string };
+type epsgOption = { value: number | null; label: string };
 
 const filetypeOptions: Record<string, { label: string; extensions: string[]; epsg: epsgOption[] }> =
 	{
@@ -62,12 +62,12 @@ const filetypeOptions: Record<string, { label: string; extensions: string[]; eps
 		mvt: {
 			label: 'Vector Tiles (MVT)',
 			extensions: [''],
-			epsg: [{ value: 3857, label: 'Web Mercator (EPSG:3857)' }]
+			epsg: [{ value: null, label: 'Web Mercator (EPSG:3857)' }]
 		},
 		pmtiles: {
 			label: 'PMTiles',
 			extensions: ['pmtiles'],
-			epsg: [{ value: 3857, label: 'Web Mercator (EPSG:3857)' }]
+			epsg: [{ value: null, label: 'Web Mercator (EPSG:3857)' }]
 		},
 		czml: {
 			label: 'CZML',

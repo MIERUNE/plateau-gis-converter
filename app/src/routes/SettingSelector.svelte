@@ -11,7 +11,7 @@
 
 	export type SettingSelectorProps = {
 		filetype: string;
-		epsg?: number;
+		epsg?: number | null;
 		rulesPath: string;
 		sinkParameters: SinkParameters;
 		transformerSettings: TransformerSettings | undefined;
@@ -30,8 +30,9 @@
 
 	$effect(() => {
 		// Reset the target CRS if the selected filetype does not support the current CRS
-		if (!filetypeOptions[filetype]?.epsg.some((item) => item.value === epsg)) {
-			epsg = filetypeOptions[filetype]?.epsg[0].value || 4979;
+		const options = filetypeOptions[filetype]?.epsg || [];
+		if (options.length > 0 && !options.some((item) => item.value === epsg)) {
+			epsg = options[0].value;
 		}
 	});
 

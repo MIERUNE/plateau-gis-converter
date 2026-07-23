@@ -19,7 +19,7 @@
 
 	// Conversion settings
 	let filetype: string = $state('gpkg');
-	let epsg: number = $state(4979);
+	let epsg: number | null = $state(4979);
 	let rulesPath = $state('');
 	let outputPath = $state('');
 	let sinkParameters = $state({} as SinkParameters);
