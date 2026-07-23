@@ -74,6 +74,11 @@ impl ProjectionTransform {
         (lng, lat, height)
     }
 
+    fn project_to_web_mercator(lng: f64, lat: f64, height: f64) -> [f64; 3] {
+        let (x, y) = tinymvt::webmercator::lnglat_to_web_mercator_meters(lng, lat);
+        [x, y, height]
+    }
+
     fn transform_from_wgs84_2d(&mut self, entity: &Entity) {
         match self.output_epsg {
             EPSG_WGS84_GEOGRAPHIC_2D => {
@@ -83,6 +88,13 @@ impl ProjectionTransform {
                 // GeoJSON XY coordinates are already normalized to XYZ with Z=0.
                 // Keep the longitude-latitude axis order and promote only the CRS.
                 entity.geometry_store.write().unwrap().epsg = self.output_epsg;
+            }
+            EPSG_WEB_MERCATOR => {
+                let mut geom_store = entity.geometry_store.write().unwrap();
+                geom_store.vertices.iter_mut().for_each(|v| {
+                    *v = Self::project_to_web_mercator(v[0], v[1], v[2]);
+                });
+                geom_store.epsg = self.output_epsg;
             }
             _ => {
                 unimplemented!(
@@ -122,16 +134,19 @@ impl ProjectionTransform {
                 geom_store.epsg = self.output_epsg;
             }
             EPSG_WEB_MERCATOR => {
+                // EPSG:9936 "JGD2011 to WGS 84 (1)" is a null transformation
+                // with a stated accuracy of 1 metre for medium- and low-accuracy
+                // applications. Keep the JGD2011 longitude and latitude unchanged
+                // when using them as WGS 84 input for Pseudo-Mercator.
                 let mut geom_store = entity.geometry_store.write().unwrap();
                 geom_store.vertices.iter_mut().for_each(|v| {
-                    // Swap x and y (lat, lng -> lng, lat)
-                    let (lng, lat) = (v[1], v[0]);
-                    if let Some(input_epsg) = rectangular {
-                        (v[0], v[1], v[2]) =
-                            Self::rectangular_to_lnglat(v[0], v[1], v[2], input_epsg);
+                    let (lng, lat, height) = if let Some(input_epsg) = rectangular {
+                        Self::rectangular_to_lnglat(v[0], v[1], v[2], input_epsg)
+                    } else {
+                        // JGD2011 Geographic 3D uses latitude-longitude axis order.
+                        (v[1], v[0], v[2])
                     };
-                    // LngLat to Web Mercator
-                    (v[0], v[1]) = tinymvt::webmercator::lnglat_to_web_mercator_meters(lng, lat)
+                    *v = Self::project_to_web_mercator(lng, lat, height);
                 });
                 geom_store.epsg = self.output_epsg;
             }
@@ -203,10 +218,17 @@ impl ProjectionTransform {
         };
     }
 
-    fn transform_from_wgs84(&mut self, _entity: &Entity, _rectangular: Option<EpsgCode>) {
+    fn transform_from_wgs84(&mut self, entity: &Entity, _rectangular: Option<EpsgCode>) {
         match self.output_epsg {
             EPSG_WGS84_GEOGRAPHIC_3D => {
                 // Do nothing
+            }
+            EPSG_WEB_MERCATOR => {
+                let mut geom_store = entity.geometry_store.write().unwrap();
+                geom_store.vertices.iter_mut().for_each(|v| {
+                    *v = Self::project_to_web_mercator(v[0], v[1], v[2]);
+                });
+                geom_store.epsg = self.output_epsg;
             }
             EPSG_JGD2011_JPRECT_I_JGD2011_HEIGHT
             | EPSG_JGD2011_JPRECT_II_JGD2011_HEIGHT
