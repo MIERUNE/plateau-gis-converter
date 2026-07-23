@@ -169,7 +169,7 @@ impl DataSink for PmTilesSink {
                             tile_id_method,
                             pipeline_options.max_compressed_tile_size,
                             &encoder,
-                            |tile| send_generated_tile(feedback, &sender_tiles, tile),
+                            |tile| send_generated_tile(&sender_tiles, tile),
                         ) {
                             feedback.fatal_error(error);
                         }
@@ -197,16 +197,15 @@ impl DataSink for PmTilesSink {
 }
 
 fn send_generated_tile(
-    feedback: &Feedback,
     sender_tiles: &mpsc::SyncSender<(u64, Vec<u8>)>,
     tile: EncodedTile,
 ) -> Result<()> {
     let (zoom, x, y) = tile.zxy;
-    feedback.info(format!(
+    log::debug!(
         "Generated tile: {zoom}/{x}/{y} ({} bytes, {} compressed)",
         bytesize::ByteSize(tile.bytes.len() as u64),
         bytesize::ByteSize(tile.zlib_size as u64),
-    ));
+    );
     sender_tiles
         .send((tile.tile_id, tile.bytes))
         .map_err(|_| PipelineError::Canceled)
@@ -300,12 +299,12 @@ fn pmtiles_writing_stage(
         .min_zoom(min_z)
         .max_zoom(max_z)
         .bounds(
-            global_min_lon as f32,
-            global_min_lat as f32,
-            global_max_lon as f32,
-            global_max_lat as f32,
+            global_min_lon,
+            global_min_lat,
+            global_max_lon,
+            global_max_lat,
         )
-        .center(center_lon as f32, center_lat as f32)
+        .center(center_lon, center_lat)
         .center_zoom(center_zoom)
         .metadata(&metadata)
         .create(file)
