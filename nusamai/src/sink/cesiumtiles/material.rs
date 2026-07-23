@@ -143,7 +143,7 @@ fn load_image(feedback: &Feedback, path: &Path) -> std::io::Result<(Vec<u8>, Mim
                 let t = Instant::now();
                 let image = image::open(path)
                     .map_err(|err| std::io::Error::new(std::io::ErrorKind::InvalidData, err))?;
-                feedback.info(format!("Image decoding took {:?}", t.elapsed()));
+                log::debug!("Image decoding took {:?}", t.elapsed());
 
                 let mut writer = std::io::Cursor::new(Vec::new());
                 let encoder = image::codecs::png::PngEncoder::new(&mut writer);

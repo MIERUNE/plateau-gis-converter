@@ -182,7 +182,7 @@ where
                     tile_id_method,
                     options.max_compressed_tile_size,
                     encoder,
-                    |tile| write_vector_tile(output_path, extension, feedback, tile),
+                    |tile| write_vector_tile(output_path, extension, tile),
                 ) {
                     feedback.fatal_error(error);
                 }
@@ -199,24 +199,19 @@ fn compressed_size(bytes: &[u8]) -> Result<usize> {
     Ok(encoder.finish()?.len())
 }
 
-fn write_vector_tile(
-    output_path: &Path,
-    extension: &str,
-    feedback: &Feedback,
-    tile: EncodedTile,
-) -> Result<()> {
+fn write_vector_tile(output_path: &Path, extension: &str, tile: EncodedTile) -> Result<()> {
     let (zoom, x, y) = tile.zxy;
     let path = output_path.join(format!("{zoom}/{x}/{y}.{extension}"));
     if let Some(directory) = path.parent() {
         fs::create_dir_all(directory)?;
     }
 
-    feedback.info(format!(
+    log::debug!(
         "Writing a tile: {} ({} bytes, {} compressed)",
         path.to_string_lossy(),
         bytesize::ByteSize(tile.bytes.len() as u64),
         bytesize::ByteSize(tile.zlib_size as u64),
-    ));
+    );
     fs::write(path, tile.bytes)?;
     Ok(())
 }

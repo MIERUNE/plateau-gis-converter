@@ -392,10 +392,10 @@ fn tile_writing_stage(
                 };
 
                 let geom_error = tiling::geometric_error(tile_zoom, tile_y);
-                feedback.info(format!(
+                log::debug!(
                     "tile: z={tile_zoom}, x={tile_x}, y={tile_y} (lng: [{min_lng} => {max_lng}], \
                      lat: [{min_lat} => {max_lat}] geometricError: {geom_error}"
-                ));
+                );
                 let content_path = {
                     let normalized_typename = typename.replace(':', "_");
                     format!("{tile_zoom}/{tile_x}/{tile_y}_{normalized_typename}.glb")
