@@ -38,10 +38,11 @@ export async function fetchCityGMLMetadataByMeshcodes(
 		return { success: true, ...response };
 	} catch (e) {
 		console.error('Error fetching CityGML metadata by meshcodes:', e);
+		const error = e as { type: string; message: string };
 		return {
 			success: false,
-			type: e.type,
-			message: e.message
+			type: error.type,
+			message: error.message
 		};
 	}
 }
