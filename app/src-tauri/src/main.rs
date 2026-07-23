@@ -353,7 +353,7 @@ fn run_conversion(
     input_paths: Vec<String>,
     output_path: String,
     filetype: String,
-    epsg: u16,
+    epsg: Option<u16>,
     rules_path: String,
     transformer_settings: TransformerSettings,
     sink_parameters: Parameters,
@@ -401,29 +401,35 @@ fn run_conversion(
 
     log::info!("Running pipeline with input: {input_paths:?}");
 
-    let mut sink = {
-        let sink_provider = select_sink_provider(&filetype).ok_or_else(|| {
-            let msg = format!("Invalid sink type: {filetype}");
+    let sink_provider = select_sink_provider(&filetype).ok_or_else(|| {
+        let msg = format!("Invalid sink type: {filetype}");
+        log::error!("{msg}");
+        Error::InvalidSetting(msg)
+    })?;
+
+    let mut sink_params = sink_parameters;
+    if let Err(err) = sink_params.update_values_with_str(&sinkopt) {
+        let msg = format!("Error parsing sink options: {err:?}");
+        log::error!("{msg}");
+        return Err(Error::InvalidSetting(msg));
+    };
+    if let Err(err) = sink_params.validate() {
+        let msg = format!("Error validating sink parameters: {err:?}");
+        log::error!("{msg}");
+        return Err(Error::InvalidSetting(msg));
+    }
+    let mut sink = sink_provider.create(&sink_params);
+
+    let mut requirements = sink.make_requirements(transformer_settings);
+    let output_epsg = sink_provider
+        .sink_input_crs_requirement()
+        .resolve(requirements.output_epsg, epsg)
+        .map_err(|error| {
+            let msg = format!("Invalid CRS setting for {filetype}: {error}");
             log::error!("{msg}");
             Error::InvalidSetting(msg)
         })?;
-
-        let mut sink_params = sink_parameters;
-        if let Err(err) = sink_params.update_values_with_str(&sinkopt) {
-            let msg = format!("Error parsing sink options: {err:?}");
-            log::error!("{msg}");
-            return Err(Error::InvalidSetting(msg));
-        };
-        if let Err(err) = sink_params.validate() {
-            let msg = format!("Error validating sink parameters: {err:?}");
-            log::error!("{msg}");
-            return Err(Error::InvalidSetting(msg));
-        }
-        sink_provider.create(&sink_params)
-    };
-
-    let mut requirements = sink.make_requirements(transformer_settings);
-    requirements.set_output_epsg(epsg);
+    requirements.set_output_epsg(output_epsg);
 
     let (source, input_schema) = {
         // ファイルを拡張子で分類
@@ -1067,7 +1073,7 @@ async fn pack_and_run_conversion(
     zip_output_path: Option<String>,
     output_path: String,
     filetype: String,
-    epsg: u16,
+    epsg: Option<u16>,
     rules_path: String,
     transformer_settings: TransformerSettings,
     sink_parameters: Parameters,

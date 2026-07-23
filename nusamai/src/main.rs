@@ -36,9 +36,9 @@ struct Args {
     #[arg(long, value_parser = parse_non_empty)]
     output: String,
 
-    /// Specify the output EPSG code (default: WGS84 3D)
-    #[arg(long, default_value_t = 4979)]
-    epsg: u16,
+    /// Specify the output EPSG code
+    #[arg(long)]
+    epsg: Option<u16>,
 
     /// Specify the mapping rules JSON file
     #[arg(long)]
@@ -236,10 +236,21 @@ fn main() -> ExitCode {
     };
 
     let mut requirements = sink.make_requirements(updated_transformer_registry);
-    requirements.set_output_epsg(match args.sink.0.as_ref() {
-        "kml" => 6697, // temporary hack for KML output
+    let requested_epsg = match args.sink.0.as_ref() {
+        "kml" => Some(6697), // temporary hack for KML output
         _ => args.epsg,
-    });
+    };
+    let output_epsg = match sink_provider
+        .sink_input_crs_requirement()
+        .resolve(requirements.output_epsg, requested_epsg)
+    {
+        Ok(epsg) => epsg,
+        Err(error) => {
+            log::error!("Invalid --epsg for {}: {error}", args.sink.0);
+            return ExitCode::FAILURE;
+        }
+    };
+    requirements.set_output_epsg(output_epsg);
 
     let mapping_rules = match &args.rules {
         Some(rules_path) => {
