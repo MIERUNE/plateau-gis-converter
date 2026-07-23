@@ -2,7 +2,12 @@
 	import { filetypeOptions } from '$lib/settings';
 	import { invoke } from '@tauri-apps/api/core';
 	import type { SinkParameters } from '$lib/sinkparams';
-	import type { TransformerSettings } from '$lib/transformer';
+	import type { InputFormat } from '$lib/inputFormat';
+	import {
+		LOD_TRANSFORMER_CONFIG_KEY,
+		type DisabledTransformerConfigReasons,
+		type TransformerSettings
+	} from '$lib/transformer';
 	import Icon from '@iconify/svelte';
 	import {} from '@tauri-apps/api';
 	import SinkOptions from '$lib/components/SinkOptions.svelte';
@@ -15,18 +20,25 @@
 		rulesPath: string;
 		sinkParameters: SinkParameters;
 		transformerSettings: TransformerSettings | undefined;
+		inputFormat?: InputFormat;
 	};
+
+	const GEOJSON_LOD_DISABLED_REASON = 'GeoJSONにはLODがないため指定できません';
 
 	let {
 		filetype = $bindable(),
 		epsg = $bindable(4979),
 		rulesPath = $bindable(),
 		sinkParameters = $bindable(),
-		transformerSettings = $bindable()
+		transformerSettings = $bindable(),
+		inputFormat = 'citygml'
 	}: SettingSelectorProps = $props();
 
 	let epsgOptions = $derived(filetypeOptions[filetype]?.epsg || []);
 	let disableEpsgOptions = $derived(epsgOptions.length < 2);
+	let disabledConfigReasons: DisabledTransformerConfigReasons = $derived(
+		inputFormat === 'geojson' ? { [LOD_TRANSFORMER_CONFIG_KEY]: GEOJSON_LOD_DISABLED_REASON } : {}
+	);
 
 	$effect(() => {
 		// Reset the target CRS if the selected filetype does not support the current CRS
@@ -134,7 +146,7 @@
 			<div class="flex flex-col">
 				<label for="transform-select" class="mb-1.5 font-bold">出力の詳細設定</label>
 				<div class="flex flex-col gap-2">
-					<TransformerOptions bind:transformerSettings />
+					<TransformerOptions bind:transformerSettings {disabledConfigReasons} />
 					<SinkOptions bind:sinkOptionKeys bind:sinkParameters />
 				</div>
 			</div>

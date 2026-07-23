@@ -1,7 +1,18 @@
 <script lang="ts">
-	import { isBooleanConfig, isSelectionConfig } from '$lib/transformer';
+	import {
+		isBooleanConfig,
+		isSelectionConfig,
+		type DisabledTransformerConfigReasons,
+		type TransformerSettings
+	} from '$lib/transformer';
 
-	let { transformerSettings = $bindable() } = $props();
+	let {
+		transformerSettings = $bindable(),
+		disabledConfigReasons = {}
+	}: {
+		transformerSettings: TransformerSettings | undefined;
+		disabledConfigReasons?: DisabledTransformerConfigReasons;
+	} = $props();
 </script>
 
 {#if transformerSettings && transformerSettings.configs.length > 0}
@@ -29,17 +40,36 @@
 				</div>
 			</div>
 		{:else if isSelectionConfig(config.parameter)}
-			<div class="flex w-80 gap-2">
-				<label for={config.key} class="pointer-events-none w-2/4">{config.label}</label>
-				<select
-					id={config.key}
-					class="w-2/4 cursor-pointer rounded-md border-2 border-gray-300 px-2"
-					bind:value={config.parameter.Selection.selected_value}
-				>
-					{#each config.parameter.Selection.options as option, index (index)}
-						<option value={option.value}>{option.label}</option>
-					{/each}
-				</select>
+			{@const disabledReason = disabledConfigReasons[config.key]}
+			<div class="flex flex-col gap-1">
+				<div class="flex w-80 gap-2" class:opacity-50={Boolean(disabledReason)}>
+					<label for={config.key} class="pointer-events-none w-2/4">{config.label}</label>
+					{#if disabledReason}
+						<select
+							id={config.key}
+							disabled
+							aria-describedby={`${config.key}-disabled-reason`}
+							class="w-2/4 cursor-not-allowed rounded-md border-2 border-gray-300 px-2"
+						>
+							<option>対象外</option>
+						</select>
+					{:else}
+						<select
+							id={config.key}
+							class="w-2/4 cursor-pointer rounded-md border-2 border-gray-300 px-2"
+							bind:value={config.parameter.Selection.selected_value}
+						>
+							{#each config.parameter.Selection.options as option, index (index)}
+								<option value={option.value}>{option.label}</option>
+							{/each}
+						</select>
+					{/if}
+				</div>
+				{#if disabledReason}
+					<p id={`${config.key}-disabled-reason`} class="w-80 text-xs text-gray-500">
+						{disabledReason}
+					</p>
+				{/if}
 			</div>
 		{/if}
 	{/each}

@@ -3,7 +3,8 @@
 	import { invoke } from '@tauri-apps/api/core';
 	import { attachConsole } from '@tauri-apps/plugin-log';
 	import type { SinkParameters } from '$lib/sinkparams';
-	import type { TransformerSettings } from '$lib/transformer';
+	import { detectInputFormat } from '$lib/inputFormat';
+	import { prepareTransformerSettingsForInput, type TransformerSettings } from '$lib/transformer';
 
 	import Icon from '@iconify/svelte';
 	import InputSelector from './InputSelector.svelte';
@@ -22,6 +23,7 @@
 	let sinkParameters = $state({} as SinkParameters);
 	let isRunning = $state(false);
 	let isConvertButtonDisabled = $derived(!inputPaths.length || !outputPath || isRunning);
+	let inputFormat = $derived(detectInputFormat(inputPaths));
 
 	let transformerSettings: TransformerSettings | undefined = $state(undefined);
 
@@ -29,13 +31,17 @@
 		isRunning = true;
 
 		try {
+			const effectiveTransformerSettings = prepareTransformerSettingsForInput(
+				transformerSettings,
+				inputFormat
+			);
 			await invoke('run_conversion', {
 				inputPaths,
 				outputPath,
 				filetype,
 				epsg,
 				rulesPath,
-				transformerSettings,
+				transformerSettings: effectiveTransformerSettings,
 				sinkParameters
 			});
 
@@ -79,6 +85,7 @@
 			bind:rulesPath
 			bind:sinkParameters
 			bind:transformerSettings
+			{inputFormat}
 		/>
 
 		<OutputSelector {filetype} bind:outputPath />

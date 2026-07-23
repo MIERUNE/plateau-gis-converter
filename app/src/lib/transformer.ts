@@ -1,3 +1,7 @@
+import type { InputFormat } from '$lib/inputFormat';
+
+export const LOD_TRANSFORMER_CONFIG_KEY = 'use_lod' as const;
+
 export interface SelectionOptions<T extends string> {
 	label: string;
 	value: T;
@@ -28,6 +32,8 @@ export type TransformerSettings = {
 	configs: Array<TransformerConfig<TransformerParameterType>>;
 };
 
+export type DisabledTransformerConfigReasons = Readonly<Partial<Record<string, string>>>;
+
 export type TransformerOptions = {
 	label: string;
 	parameter_type: 'Boolean' | 'Selection';
@@ -55,4 +61,19 @@ export function isSelectionConfig<T extends string>(param: any): param is Select
 		'selected_value' in param.Selection &&
 		typeof param.Selection.selected_value === 'string'
 	);
+}
+
+// When GeoJSON is selected, the LOD setting is unnecessary and should be removed.
+export function prepareTransformerSettingsForInput(
+	settings: TransformerSettings | undefined,
+	inputFormat: InputFormat
+): TransformerSettings | undefined {
+	if (!settings || inputFormat !== 'geojson') {
+		return settings;
+	}
+
+	return {
+		...settings,
+		configs: settings.configs.filter(({ key }) => key !== LOD_TRANSFORMER_CONFIG_KEY)
+	};
 }
