@@ -55,6 +55,8 @@ cargo run --profile release-lto -- ~/path/to/PLATEAU/15100_niigata-shi_2022_city
   - `3dtiles` : 3D Tiles
   - `gpkg` : GeoPackage
   - `mvt` : Mapbox Vector Tiles
+  - `mlt` : MapLibre Tiles
+  - `pmtiles` : PMTiles
   - `geojson` : GeoJSON
   - `czml` : CZML
   - `gltf` : glTF
@@ -64,6 +66,7 @@ cargo run --profile release-lto -- ~/path/to/PLATEAU/15100_niigata-shi_2022_city
   - `obj`: Wavefront OBJ
   - `shapefile` : Shapefile
 - `--output` : 出力先を指定します。拡張子なども指定してください。
+- `--epsg` : 出力座標参照系のEPSGコードを指定します。MVT・MLT・PMTilesではWeb Mercator XYZタイルを採用しているため、EPSG:3857に固定されています。これらの形式では省略するか、`--epsg 3857`を指定してください。
 - `-t`: 利用するLODを指定可能です。利用可能なオプションはGUIと同様です。
   - `use_lod`
     - `max_lod`: 最大LODを抽出する
@@ -100,4 +103,20 @@ cargo run --release -- ~/13102_chuo-ku_city_2023_citygml_1_op/udx/bldg/*.gml \
 ```bash
 cargo run --release -- ~/13102_chuo-ku_city_2023_citygml_1_op/udx/bldg/*.gml \
 --sink geojson --output ~/data/output/buildings_lod1.geojson -t use_lod=lod1
+```
+
+- 建築物をMVT・MLT・PMTilesへ出力する
+
+```bash
+# MVT（Z/X/Y.pbf）
+cargo run --release -- ~/13102_chuo-ku_city_2023_citygml_1_op/udx/bldg/*.gml \
+--sink mvt --output ~/data/output/mvt
+
+# MLT（Z/X/Y.mlt）
+cargo run --release -- ~/13102_chuo-ku_city_2023_citygml_1_op/udx/bldg/*.gml \
+--sink mlt --output ~/data/output/mlt
+
+# PMTiles（単一ファイル）
+cargo run --release -- ~/13102_chuo-ku_city_2023_citygml_1_op/udx/bldg/*.gml \
+--sink pmtiles --output ~/data/output/buildings.pmtiles
 ```

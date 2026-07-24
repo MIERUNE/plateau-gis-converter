@@ -3,11 +3,14 @@
 use std::{
     fs::File,
     path::{Path, PathBuf},
-    sync::mpsc,
+    sync::{
+        atomic::{AtomicU64, Ordering},
+        mpsc,
+    },
 };
 
 use nusamai_citygml::schema::Schema;
-use nusamai_projection::crs::EPSG_WGS84_GEOGRAPHIC_3D;
+use nusamai_projection::crs::EPSG_WEB_MERCATOR;
 use pmtiles::{PmTilesWriter, TileCoord, TileType};
 
 use crate::{
@@ -17,7 +20,8 @@ use crate::{
     sink::{
         mvt::encode::MvtTileEncoder,
         vector_tile::{
-            feature_sorting_stage, generate_stage, slice_stage, tile_id::TileIdMethod, EncodedTile,
+            feature_sorting_stage, generate_stage, report_final_tile_count, report_tile_progress,
+            slice_stage, tile_id::TileIdMethod, validate_vector_tile_schema_crs, EncodedTile,
             TilePipelineOptions, DEFAULT_MAX_COMPRESSED_TILE_SIZE, FEATURE_CHANNEL_CAPACITY,
         },
         DataRequirements, DataSink, DataSinkProvider, SinkInfo, SinkInputCrsRequirement,
@@ -79,10 +83,7 @@ impl DataSinkProvider for PmTilesSinkProvider {
     }
 
     fn sink_input_crs_requirement(&self) -> SinkInputCrsRequirement {
-        // TODO: Switch to Fixed(EPSG:3857). ProjectionTransform should produce Web Mercator
-        // coordinates, and the shared vector-tile sink should consume them directly instead of
-        // calling lnglat_to_web_mercator, performing only the tile-space conversion itself.
-        SinkInputCrsRequirement::Fixed(EPSG_WGS84_GEOGRAPHIC_3D)
+        SinkInputCrsRequirement::Fixed(EPSG_WEB_MERCATOR)
     }
 
     fn create(&self, params: &Parameters) -> Box<dyn DataSink> {
@@ -132,7 +133,9 @@ impl DataSink for PmTilesSink {
         self.transform_settings.build(default_requirements)
     }
 
-    fn run(&mut self, upstream: Receiver, feedback: &Feedback, _schema: &Schema) -> Result<()> {
+    fn run(&mut self, upstream: Receiver, feedback: &Feedback, schema: &Schema) -> Result<()> {
+        validate_vector_tile_schema_crs(schema)?;
+
         let (sender_sliced, receiver_sliced) = mpsc::sync_channel(FEATURE_CHANNEL_CAPACITY);
         let (sender_sorted, receiver_sorted) = mpsc::sync_channel(FEATURE_CHANNEL_CAPACITY);
         let (sender_tiles, receiver_tiles) = mpsc::sync_channel(TILE_CHANNEL_CAPACITY);
@@ -166,20 +169,39 @@ impl DataSink for PmTilesSink {
             });
 
             scope.spawn(move || {
+                let generated_tile_count = AtomicU64::new(0);
                 let pool = rayon::ThreadPoolBuilder::new().build().map_err(|error| {
                     PipelineError::Other(format!("Failed to build thread pool: {error}"))
                 });
                 match pool {
                     Ok(pool) => pool.install(|| {
-                        if let Err(error) = generate_stage(
+                        let result = generate_stage(
                             feedback,
                             receiver_sorted,
                             tile_id_method,
                             pipeline_options.max_compressed_tile_size,
                             &encoder,
-                            |tile| send_generated_tile(&sender_tiles, tile),
-                        ) {
-                            feedback.fatal_error(error);
+                            |tile| {
+                                send_generated_tile(&sender_tiles, tile)?;
+                                let tile_count =
+                                    generated_tile_count.fetch_add(1, Ordering::Relaxed) + 1;
+                                report_tile_progress(
+                                    feedback,
+                                    tile_count,
+                                    "Generated",
+                                    "tiles for PMTiles archive",
+                                );
+                                Ok(())
+                            },
+                        );
+                        match result {
+                            Ok(()) => report_final_tile_count(
+                                feedback,
+                                generated_tile_count.load(Ordering::Relaxed),
+                                "generating",
+                                "tiles for PMTiles archive",
+                            ),
+                            Err(error) => feedback.fatal_error(error),
                         }
                     }),
                     Err(error) => feedback.fatal_error(error),
@@ -331,9 +353,7 @@ fn pmtiles_writing_stage(
             .map_err(|error| PipelineError::Other(format!("Failed to add tile: {error:?}")))?;
 
         tile_count += 1;
-        if tile_count.is_multiple_of(1_000) {
-            feedback.info(format!("Written {tile_count} tiles to PMTiles archive"));
-        }
+        report_tile_progress(feedback, tile_count, "Written", "tiles to PMTiles archive");
     }
 
     feedback.info("Finalizing PMTiles archive...".to_string());

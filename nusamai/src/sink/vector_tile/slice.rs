@@ -8,11 +8,12 @@ use nusamai_citygml::{
     GeometryRef,
 };
 use nusamai_plateau::Entity;
-use tinymvt::{webmercator::lnglat_to_web_mercator, TileZXY};
+use nusamai_projection::crs::EPSG_WEB_MERCATOR;
+use tinymvt::TileZXY;
 
 use crate::pipeline::PipelineError;
 
-use super::feature::SlicedGeometry;
+use super::{feature::SlicedGeometry, tile_grid::web_mercator_to_tile_coordinates};
 
 type TileKey = (u8, u32, u32);
 
@@ -92,6 +93,14 @@ pub(crate) fn slice_cityobj_geoms(
     };
 
     let geom_store = obj.geometry_store.read().unwrap();
+    if geom_store.epsg != EPSG_WEB_MERCATOR {
+        let feature_id = root_object.stereotype.id().unwrap_or("<unknown>");
+        return Err(PipelineError::Other(format!(
+            "Cannot slice vector tile feature '{feature_id}': expected GeometryStore CRS \
+             EPSG:{EPSG_WEB_MERCATOR}, but found EPSG:{}",
+            geom_store.epsg,
+        )));
+    }
 
     match geometry_type {
         VectorTileGeometryType::Point => {
@@ -101,11 +110,10 @@ pub(crate) fn slice_cityobj_geoms(
                     .multipoint
                     .iter_range(entry.pos as usize..(entry.pos + entry.len) as usize)
                 {
-                    let [longitude, latitude, _height] = geom_store.vertices[index as usize];
-                    let (x, y) = lnglat_to_web_mercator(longitude, latitude);
+                    let [easting, northing, _height] = geom_store.vertices[index as usize];
 
                     for zoom in min_z..=max_z {
-                        slice_point(zoom, extent, buffer, [x, y], &mut tiled_points);
+                        slice_point(zoom, extent, buffer, [easting, northing], &mut tiled_points);
                     }
                 }
             }
@@ -124,9 +132,8 @@ pub(crate) fn slice_cityobj_geoms(
                     .iter_range(entry.pos as usize..(entry.pos + entry.len) as usize)
                 {
                     let line = indexed_line.transform(|index| {
-                        let [longitude, latitude, _height] = geom_store.vertices[*index as usize];
-                        let (x, y) = lnglat_to_web_mercator(longitude, latitude);
-                        [x, y]
+                        let [easting, northing, _height] = geom_store.vertices[*index as usize];
+                        [easting, northing]
                     });
 
                     for zoom in min_z..=max_z {
@@ -149,26 +156,12 @@ pub(crate) fn slice_cityobj_geoms(
                     .iter_range(entry.pos as usize..(entry.pos + entry.len) as usize)
                 {
                     let polygon = indexed_polygon.transform(|coordinate| {
-                        let [longitude, latitude, _height] =
+                        let [easting, northing, _height] =
                             geom_store.vertices[*coordinate as usize];
-                        let (x, y) = lnglat_to_web_mercator(longitude, latitude);
-                        [x, y]
+                        [easting, northing]
                     });
 
-                    // Early rejection of polygons that are not front-facing.
-                    if !polygon.exterior().is_cw() {
-                        continue;
-                    }
-                    debug_assert!(polygon.exterior().ring_area() > 0.0);
-
-                    let area = polygon.area();
                     for zoom in min_z..=max_z {
-                        // Skip if the polygon is smaller than 4 square subpixels.
-                        // TODO: emulate the 'tiny-polygon-reduction' of tippecanoe.
-                        if area * (4u64.pow(zoom as u32 + max_detail) as f64) < 4.0 {
-                            continue;
-                        }
-
                         slice_polygon(zoom, extent, buffer, &polygon, &mut tiled_polygons);
                     }
                 }
@@ -189,18 +182,16 @@ fn slice_point(
     zoom: u8,
     extent: u32,
     buffer: u32,
-    [x, y]: [f64; 2],
+    [easting, northing]: [f64; 2],
     out: &mut HashMap<TileKey, MultiPoint2>,
 ) {
-    if !x.is_finite() || !y.is_finite() {
+    if !easting.is_finite() || !northing.is_finite() {
         return;
     }
 
     let tile_count = 1_i64 << zoom;
-    let scale = tile_count as f64;
     let buffer_width = buffer as f64 / extent as f64;
-    let tile_x = x * scale;
-    let tile_y = y * scale;
+    let [tile_x, tile_y] = web_mercator_to_tile_coordinates(easting, northing, zoom);
     let min_x = (tile_x - buffer_width).floor() as i64;
     let max_x = (tile_x + buffer_width).floor() as i64;
     let min_y = ((tile_y - buffer_width).floor() as i64).max(0);
@@ -244,27 +235,25 @@ fn slice_linestring(
     }
 
     let tile_count = 1_i64 << zoom;
-    let scale = tile_count as f64;
     let buffer_width = buffer as f64 / extent as f64;
-    let (min_x, max_x, min_y, max_y) = line.iter().fold(
+    let tile_line = line
+        .iter()
+        .map(|[easting, northing]| web_mercator_to_tile_coordinates(*easting, *northing, zoom))
+        .collect::<Vec<_>>();
+    let (min_x, max_x, min_y, max_y) = tile_line.iter().fold(
         (f64::MAX, f64::MIN, f64::MAX, f64::MIN),
         |(min_x, max_x, min_y, max_y), [x, y]| {
             (min_x.min(*x), max_x.max(*x), min_y.min(*y), max_y.max(*y))
         },
     );
-    let min_tile_x = (min_x * scale - buffer_width).floor() as i64;
-    let max_tile_x = (max_x * scale + buffer_width).floor() as i64;
-    let min_tile_y = ((min_y * scale - buffer_width).floor() as i64).max(0);
-    let max_tile_y = ((max_y * scale + buffer_width).floor() as i64).min(tile_count - 1);
+    let min_tile_x = (min_x - buffer_width).floor() as i64;
+    let max_tile_x = (max_x + buffer_width).floor() as i64;
+    let min_tile_y = ((min_y - buffer_width).floor() as i64).max(0);
+    let max_tile_y = ((max_y + buffer_width).floor() as i64).min(tile_count - 1);
 
     if min_tile_y > max_tile_y {
         return;
     }
-
-    let scaled_line = line
-        .iter()
-        .map(|[x, y]| [x * scale, y * scale])
-        .collect::<Vec<_>>();
 
     for yi in min_tile_y..=max_tile_y {
         for xi in min_tile_x..=max_tile_x {
@@ -274,7 +263,7 @@ fn slice_linestring(
                 xi as f64 + 1.0 + buffer_width,
                 yi as f64 + 1.0 + buffer_width,
             ];
-            let fragments = clip_linestring(&scaled_line, bounds);
+            let fragments = clip_linestring(&tile_line, bounds);
             if fragments.is_empty() {
                 continue;
             }
@@ -379,8 +368,23 @@ fn slice_polygon(
     poly: &Polygon2,
     out: &mut HashMap<TileKey, MultiPolygon2>,
 ) {
+    let poly = poly.transform(|[easting, northing]| {
+        web_mercator_to_tile_coordinates(*easting, *northing, zoom)
+    });
+
+    // Early rejection of polygons that are not front-facing.
+    if !poly.exterior().is_cw() {
+        return;
+    }
+    debug_assert!(poly.exterior().ring_area() > 0.0);
+
+    // Skip if the polygon is smaller than 4 square subpixels.
+    // TODO: emulate the 'tiny-polygon-reduction' of tippecanoe.
+    if poly.area() * f64::from(extent).powi(2) < 4.0 {
+        return;
+    }
+
     let tile_count = 1_u32 << zoom;
-    let z_scale = f64::from(tile_count);
     let buf_width = buffer as f64 / extent as f64;
     let mut new_ring_buffer: Vec<[f64; 2]> = Vec::with_capacity(poly.exterior().len() + 1);
 
@@ -392,16 +396,16 @@ fn slice_polygon(
             .fold((f64::MAX, f64::MIN), |(min_y, max_y), c| {
                 (min_y.min(c[1]), max_y.max(c[1]))
             });
-        let start = ((min_y * z_scale).floor() as i64).clamp(0, i64::from(tile_count));
-        let end = ((max_y * z_scale).ceil() as i64).clamp(0, i64::from(tile_count));
+        let start = (min_y.floor() as i64).clamp(0, i64::from(tile_count));
+        let end = (max_y.ceil() as i64).clamp(0, i64::from(tile_count));
         start as u32..end as u32
     };
 
     let mut y_sliced_polys = Vec::with_capacity(y_range.len());
 
     for yi in y_range.clone() {
-        let k1 = (yi as f64 - buf_width) / z_scale;
-        let k2 = ((yi + 1) as f64 + buf_width) / z_scale;
+        let k1 = yi as f64 - buf_width;
+        let k2 = (yi + 1) as f64 + buf_width;
         let mut y_sliced_poly = Polygon2::new();
 
         // todo?: check interior bbox to optimize
@@ -463,12 +467,12 @@ fn slice_polygon(
                 .fold((f64::MAX, f64::MIN), |(min_x, max_x), c| {
                     (min_x.min(c[0]), max_x.max(c[0]))
                 });
-            (min_x * z_scale).floor() as i32..(max_x * z_scale).ceil() as i32
+            min_x.floor() as i32..max_x.ceil() as i32
         };
 
         for xi in x_range {
-            let k1 = (xi as f64 - buf_width) / z_scale;
-            let k2 = ((xi + 1) as f64 + buf_width) / z_scale;
+            let k1 = xi as f64 - buf_width;
+            let k2 = (xi + 1) as f64 + buf_width;
 
             // todo?: check interior bbox to optimize ...
 
@@ -523,8 +527,8 @@ fn slice_polygon(
                 {
                     norm_coords_buf.clear();
                     norm_coords_buf.extend(new_ring_buffer.iter().map(|&[x, y]| {
-                        let tx = x * z_scale - xi as f64;
-                        let ty = y * z_scale - yi as f64;
+                        let tx = x - xi as f64;
+                        let ty = y - yi as f64;
                         [tx, ty]
                     }));
 
@@ -549,5 +553,127 @@ fn slice_polygon(
                 };
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    const WEB_MERCATOR_WORLD_CIRCUMFERENCE_METERS: f64 = 2.0 * std::f64::consts::PI * 6_378_137.0;
+
+    fn web_mercator_polygon_from_tile_bounds(
+        zoom: u8,
+        [min_x, min_y, max_x, max_y]: [f64; 4],
+    ) -> Polygon2<'static> {
+        let tile_width = WEB_MERCATOR_WORLD_CIRCUMFERENCE_METERS / 2_f64.powi(i32::from(zoom));
+        let half_world = WEB_MERCATOR_WORLD_CIRCUMFERENCE_METERS / 2.0;
+        let to_web_mercator =
+            |x: f64, y: f64| [x * tile_width - half_world, half_world - y * tile_width];
+
+        let mut polygon = Polygon2::new();
+        polygon.add_ring([
+            to_web_mercator(min_x, max_y),
+            to_web_mercator(max_x, max_y),
+            to_web_mercator(max_x, min_y),
+            to_web_mercator(min_x, min_y),
+        ]);
+        polygon
+    }
+
+    fn assert_close(actual: f64, expected: f64) {
+        assert!(
+            (actual - expected).abs() < 1e-12,
+            "expected {expected}, but found {actual}"
+        );
+    }
+
+    #[test]
+    fn slices_web_mercator_polygon_into_tile_local_coordinates() {
+        let polygon = web_mercator_polygon_from_tile_bounds(2, [1.25, 1.25, 1.75, 1.75]);
+        let mut tiled = HashMap::new();
+
+        slice_polygon(2, 4096, 0, &polygon, &mut tiled);
+
+        assert_eq!(tiled.len(), 1);
+        let polygons = tiled.get(&(2, 1, 1)).expect("expected tile 2/1/1");
+        assert_eq!(polygons.len(), 1);
+
+        let polygon = polygons.get(0);
+        let exterior = polygon.exterior();
+        assert_eq!(exterior.len(), 4);
+        let [min_x, min_y, max_x, max_y] = exterior.iter().fold(
+            [f64::MAX, f64::MAX, f64::MIN, f64::MIN],
+            |[min_x, min_y, max_x, max_y], [x, y]| {
+                [min_x.min(x), min_y.min(y), max_x.max(x), max_y.max(y)]
+            },
+        );
+        assert_close(min_x, 0.25);
+        assert_close(min_y, 0.25);
+        assert_close(max_x, 0.75);
+        assert_close(max_y, 0.75);
+    }
+
+    #[test]
+    fn splits_web_mercator_polygon_across_tile_boundary() {
+        let polygon = web_mercator_polygon_from_tile_bounds(2, [1.75, 1.25, 2.25, 1.75]);
+        let mut tiled = HashMap::new();
+
+        slice_polygon(2, 4096, 0, &polygon, &mut tiled);
+
+        let mut tile_keys = tiled.keys().copied().collect::<Vec<_>>();
+        tile_keys.sort_unstable();
+        assert_eq!(tile_keys, [(2, 1, 1), (2, 2, 1)]);
+        assert!(tiled.values().all(|polygons| polygons.len() == 1));
+        assert!(tiled.values().all(|polygons| {
+            polygons
+                .get(0)
+                .exterior()
+                .iter()
+                .all(|[x, y]| (0.0..=1.0).contains(&x) && (0.0..=1.0).contains(&y))
+        }));
+    }
+
+    #[test]
+    fn preserves_web_mercator_polygon_interior_ring() {
+        let mut polygon = web_mercator_polygon_from_tile_bounds(2, [1.1, 1.1, 1.9, 1.9]);
+        let interior = web_mercator_polygon_from_tile_bounds(2, [1.3, 1.3, 1.7, 1.7]);
+        let mut interior_coords = interior.exterior().iter().collect::<Vec<_>>();
+        interior_coords.reverse();
+        polygon.add_ring(interior_coords);
+        let mut tiled = HashMap::new();
+
+        slice_polygon(2, 4096, 0, &polygon, &mut tiled);
+
+        let polygons = tiled.get(&(2, 1, 1)).expect("expected tile 2/1/1");
+        assert_eq!(polygons.len(), 1);
+        assert_eq!(polygons.get(0).interiors().count(), 1);
+    }
+
+    #[test]
+    fn rejects_back_facing_web_mercator_polygon() {
+        let polygon = web_mercator_polygon_from_tile_bounds(2, [1.25, 1.25, 1.75, 1.75]);
+        let mut back_facing = Polygon2::new();
+        let mut reversed = polygon.exterior().iter().collect::<Vec<_>>();
+        reversed.reverse();
+        back_facing.add_ring(reversed);
+        let mut tiled = HashMap::new();
+
+        slice_polygon(2, 4096, 0, &back_facing, &mut tiled);
+
+        assert!(tiled.is_empty());
+    }
+
+    #[test]
+    fn skips_web_mercator_polygon_smaller_than_four_square_subpixels() {
+        let extent = 4096;
+        let width = 1.0 / (f64::from(extent) * 2.0);
+        let polygon =
+            web_mercator_polygon_from_tile_bounds(2, [1.5, 1.5, 1.5 + width, 1.5 + width]);
+        let mut tiled = HashMap::new();
+
+        slice_polygon(2, extent, 0, &polygon, &mut tiled);
+
+        assert!(tiled.is_empty());
     }
 }

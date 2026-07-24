@@ -1,6 +1,14 @@
 //! Shared slicing, sorting, and tile generation orchestration.
 
-use std::{fs, io::Write, path::Path, sync::mpsc};
+use std::{
+    fs,
+    io::Write,
+    path::Path,
+    sync::{
+        atomic::{AtomicU64, Ordering},
+        mpsc,
+    },
+};
 
 use flate2::{write::ZlibEncoder, Compression};
 use rayon::prelude::*;
@@ -19,6 +27,7 @@ const DEFAULT_DETAIL: i32 = 12;
 const MINIMUM_DETAIL: i32 = 9;
 const SLICE_BUFFER_PIXELS: u32 = 5;
 const FEATURE_WARNING_THRESHOLD: usize = 200_000;
+const TILE_PROGRESS_INTERVAL: u64 = 10_000;
 
 pub(crate) const DEFAULT_MAX_COMPRESSED_TILE_SIZE: usize = 500_000;
 
@@ -171,26 +180,61 @@ where
         });
 
         scope.spawn(move || {
+            let written_tile_count = AtomicU64::new(0);
             let pool = rayon::ThreadPoolBuilder::new()
                 .use_current_thread()
                 .build()
                 .unwrap();
             pool.install(|| {
-                if let Err(error) = generate_stage(
+                let result = generate_stage(
                     feedback,
                     receiver_sorted,
                     tile_id_method,
                     options.max_compressed_tile_size,
                     encoder,
-                    |tile| write_vector_tile(output_path, extension, tile),
-                ) {
-                    feedback.fatal_error(error);
+                    |tile| {
+                        write_vector_tile(output_path, extension, tile)?;
+                        let tile_count = written_tile_count.fetch_add(1, Ordering::Relaxed) + 1;
+                        report_tile_progress(feedback, tile_count, "Written", "vector tile files");
+                        Ok(())
+                    },
+                );
+                match result {
+                    Ok(()) => report_final_tile_count(
+                        feedback,
+                        written_tile_count.load(Ordering::Relaxed),
+                        "writing",
+                        "vector tile files",
+                    ),
+                    Err(error) => feedback.fatal_error(error),
                 }
             });
         });
     });
 
     Ok(())
+}
+
+pub(crate) fn report_tile_progress(
+    feedback: &Feedback,
+    tile_count: u64,
+    action: &str,
+    progress_target: &str,
+) {
+    if tile_count.is_multiple_of(TILE_PROGRESS_INTERVAL) {
+        feedback.info(format!("{action} {tile_count} {progress_target}"));
+    }
+}
+
+pub(crate) fn report_final_tile_count(
+    feedback: &Feedback,
+    tile_count: u64,
+    operation: &str,
+    progress_target: &str,
+) {
+    feedback.info(format!(
+        "Finished {operation} {tile_count} {progress_target}"
+    ));
 }
 
 fn compressed_size(bytes: &[u8]) -> Result<usize> {
@@ -214,4 +258,90 @@ fn write_vector_tile(output_path: &Path, extension: &str, tile: EncodedTile) -> 
     );
     fs::write(path, tile.bytes)?;
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::pipeline::feedback::watcher;
+
+    #[test]
+    fn reports_tile_write_progress_every_ten_thousand_tiles() {
+        let (watcher, feedback, _canceller) = watcher();
+
+        for tile_count in [1, 9_999, 10_000, 10_001, 19_999, 20_000] {
+            report_tile_progress(
+                &feedback,
+                tile_count,
+                "Written",
+                "tiles to test destination",
+            );
+        }
+        drop(feedback);
+
+        let messages = watcher
+            .into_iter()
+            .map(|message| (message.message, message.level))
+            .collect::<Vec<_>>();
+        assert_eq!(
+            messages,
+            [
+                (
+                    "Written 10000 tiles to test destination".to_string(),
+                    log::Level::Info
+                ),
+                (
+                    "Written 20000 tiles to test destination".to_string(),
+                    log::Level::Info
+                ),
+            ]
+        );
+    }
+
+    #[test]
+    fn reports_tile_generation_progress_every_ten_thousand_tiles() {
+        let (watcher, feedback, _canceller) = watcher();
+
+        for tile_count in [9_999, 10_000, 10_001] {
+            report_tile_progress(
+                &feedback,
+                tile_count,
+                "Generated",
+                "tiles for PMTiles archive",
+            );
+        }
+        drop(feedback);
+
+        let messages = watcher
+            .into_iter()
+            .map(|message| (message.message, message.level))
+            .collect::<Vec<_>>();
+        assert_eq!(
+            messages,
+            [(
+                "Generated 10000 tiles for PMTiles archive".to_string(),
+                log::Level::Info
+            )]
+        );
+    }
+
+    #[test]
+    fn reports_final_tile_count_below_progress_interval() {
+        let (watcher, feedback, _canceller) = watcher();
+
+        report_final_tile_count(&feedback, 1_234, "writing", "vector tile files");
+        drop(feedback);
+
+        let messages = watcher
+            .into_iter()
+            .map(|message| (message.message, message.level))
+            .collect::<Vec<_>>();
+        assert_eq!(
+            messages,
+            [(
+                "Finished writing 1234 vector tile files".to_string(),
+                log::Level::Info
+            )]
+        );
+    }
 }

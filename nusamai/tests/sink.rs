@@ -79,14 +79,17 @@ pub(crate) fn simple_run_sink_with_params<S: DataSinkProvider>(
 
     let (transformer, schema) = {
         let mut transform_req = sink.make_requirements(options);
-        // Apply additional configuration if provided
-        for (key, value) in &additional_params {
-            if key == &"output_epsg" {
-                if let Ok(epsg) = value.parse::<u16>() {
-                    transform_req.set_output_epsg(epsg);
-                }
-            }
-        }
+        let requested_epsg = additional_params.iter().find_map(|(key, value)| {
+            (*key == "output_epsg")
+                .then(|| value.parse::<u16>().ok())
+                .flatten()
+        });
+        let output_epsg = sink_provider
+            .sink_input_crs_requirement()
+            .resolve(transform_req.output_epsg, requested_epsg)
+            .unwrap();
+        transform_req.set_output_epsg(output_epsg);
+
         let transform_builder = NusamaiTransformBuilder::new(transform_req.into());
         let mut schema = nusamai_citygml::schema::Schema::default();
         TopLevelCityObject::collect_schema(&mut schema);
