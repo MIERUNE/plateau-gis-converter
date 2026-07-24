@@ -7,7 +7,9 @@ jobs:
   check-version:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@v6
+      - name: Rust setup
+        uses: dtolnay/rust-toolchain@stable
       - name: Check that the release tag matches the workspace version
         run: |
           TAG="${{ github.event.release.tag_name }}"
