@@ -12,6 +12,7 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
       - name: Check that the release tag matches the workspace version
         run: |
+          set -euo pipefail
           TAG="${{ github.event.release.tag_name }}"
           VERSION="$(cargo metadata --no-deps --format-version 1 | jq -r '.packages[] | select(.name == "nusamai") | .version')"
           if [ "${TAG}" != "v${VERSION}" ]; then
