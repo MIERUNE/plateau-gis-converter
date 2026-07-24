@@ -350,7 +350,7 @@ fn main() -> ExitCode {
         (source, input_schema)
     };
 
-    run(
+    let result = run(
         &args,
         source,
         input_schema,
@@ -360,7 +360,30 @@ fn main() -> ExitCode {
         &mut canceller,
     );
 
-    ExitCode::SUCCESS
+    if result.is_ok() {
+        ExitCode::SUCCESS
+    } else {
+        ExitCode::FAILURE
+    }
+}
+
+fn record_first_pipeline_error(
+    first_reported_pipeline_error: &mut Option<String>,
+    reported_error: impl std::fmt::Display,
+) {
+    if first_reported_pipeline_error.is_none() {
+        *first_reported_pipeline_error = Some(reported_error.to_string());
+    }
+}
+
+fn determine_pipeline_run_result(
+    first_reported_pipeline_error: Option<String>,
+    pipeline_worker_join_result: Result<(), String>,
+) -> Result<(), String> {
+    match pipeline_worker_join_result {
+        Err(panic_message) => Err(format!("Pipeline thread panicked: {panic_message}")),
+        Ok(()) => first_reported_pipeline_error.map_or(Ok(()), Err),
+    }
 }
 
 fn run(
@@ -371,7 +394,7 @@ fn run(
     mapping_rules: Option<MappingRules>,
     sink: Box<dyn DataSink>,
     canceller: &mut Arc<Mutex<Canceller>>,
-) {
+) -> Result<(), String> {
     let total_time = std::time::Instant::now();
 
     // Prepare the transformer for the pipeline and transform the schema
@@ -399,25 +422,29 @@ fn run(
         nusamai::pipeline::run(source, transformer, sink, schema.into());
     *canceller.lock().unwrap() = inner_canceller;
 
-    std::thread::scope(|scope| {
+    let first_reported_pipeline_error = std::thread::scope(|scope| {
         // log watcher
-        scope.spawn(move || {
-            for msg in watcher {
-                let msg_source = format!("{:?}", msg.source_component);
-                match msg.error {
-                    Some(error) => {
+        scope
+            .spawn(move || {
+                let mut first_reported_pipeline_error = None;
+                for msg in watcher {
+                    let msg_source = format!("{:?}", msg.source_component);
+                    if let Some(error) = &msg.error {
                         log::log!(msg.level, "[{msg_source}]: {}: {error:?}", msg.message);
-                    }
-                    None => {
+                        record_first_pipeline_error(&mut first_reported_pipeline_error, error);
+                    } else {
                         log::log!(msg.level, "[{msg_source}]: {}", msg.message);
                     }
                 }
-            }
-        });
+                first_reported_pipeline_error
+            })
+            .join()
+            .expect("Pipeline watcher thread panicked")
     });
 
     // wait for the pipeline to finish
-    if let Err(msg) = handle.join() {
+    let pipeline_worker_join_result = handle.join();
+    if let Err(msg) = &pipeline_worker_join_result {
         log::error!("Pipeline thread panicked: {msg:?}");
     }
 
@@ -426,4 +453,6 @@ fn run(
     }
 
     log::info!("Total processing time: {:?}", total_time.elapsed());
+
+    determine_pipeline_run_result(first_reported_pipeline_error, pipeline_worker_join_result)
 }
