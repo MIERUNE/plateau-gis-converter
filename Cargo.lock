@@ -174,7 +174,7 @@ checksum = "a23eb6b1614318a8071c9b2521f36b424b2c83db5eb3a0fead4a6c0809af6e61"
 
 [[package]]
 name = "app"
-version = "0.1.0"
+version = "0.1.17"
 dependencies = [
  "flatgeom",
  "log",
@@ -4680,7 +4680,7 @@ dependencies = [
 
 [[package]]
 name = "nusamai"
-version = "0.1.0"
+version = "0.1.17"
 dependencies = [
  "assert_cmd",
  "atlas-packer",
@@ -4743,7 +4743,7 @@ dependencies = [
 
 [[package]]
 name = "nusamai-citygml"
-version = "0.1.0"
+version = "0.1.17"
 dependencies = [
  "chrono",
  "flatgeom",
@@ -4822,7 +4822,7 @@ dependencies = [
 
 [[package]]
 name = "nusamai-plateau"
-version = "0.1.0"
+version = "0.1.17"
 dependencies = [
  "bincode 2.0.1",
  "chrono",
