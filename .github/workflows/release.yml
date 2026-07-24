@@ -4,7 +4,25 @@ on:
     types: [published]
 
 jobs:
+  check-version:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Rust setup
+        uses: dtolnay/rust-toolchain@stable
+      - name: Check that the release tag matches the workspace version
+        run: |
+          set -euo pipefail
+          TAG="${{ github.event.release.tag_name }}"
+          VERSION="$(cargo metadata --no-deps --format-version 1 | jq -r '.packages[] | select(.name == "nusamai") | .version')"
+          if [ "${TAG}" != "v${VERSION}" ]; then
+            echo "Release tag ${TAG} does not match the nusamai package version (expected v${VERSION})." >&2
+            echo "Bump [workspace.package] version in Cargo.toml before tagging a release." >&2
+            exit 1
+          fi
+
   build-cli:
+    needs: [check-version]
     strategy:
       fail-fast: false
       matrix:
@@ -57,6 +75,7 @@ jobs:
           path: nusamai-*.tar.gz
 
   build-gui:
+    needs: [check-version]
     permissions:
       contents: write
     strategy:
