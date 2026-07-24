@@ -6,7 +6,7 @@ mod tags;
 use std::path::PathBuf;
 
 use nusamai_citygml::schema::Schema;
-use nusamai_projection::crs::EPSG_WGS84_GEOGRAPHIC_3D;
+use nusamai_projection::crs::EPSG_WEB_MERCATOR;
 
 use crate::{
     get_parameter_value,
@@ -14,8 +14,8 @@ use crate::{
     pipeline::{Feedback, Receiver, Result},
     sink::{
         vector_tile::{
-            run_vector_tile_pipeline, slice::validate_zoom_range, TilePipelineOptions,
-            DEFAULT_MAX_COMPRESSED_TILE_SIZE,
+            run_vector_tile_pipeline, slice::validate_zoom_range, validate_vector_tile_schema_crs,
+            TilePipelineOptions, DEFAULT_MAX_COMPRESSED_TILE_SIZE,
         },
         DataRequirements, DataSink, DataSinkProvider, SinkInfo, SinkInputCrsRequirement,
     },
@@ -75,10 +75,7 @@ impl DataSinkProvider for MvtSinkProvider {
     }
 
     fn sink_input_crs_requirement(&self) -> SinkInputCrsRequirement {
-        // TODO: Switch to Fixed(EPSG:3857). ProjectionTransform should produce Web Mercator
-        // coordinates, and the shared vector-tile sink should consume them directly instead of
-        // calling lnglat_to_web_mercator, performing only the tile-space conversion itself.
-        SinkInputCrsRequirement::Fixed(EPSG_WGS84_GEOGRAPHIC_3D)
+        SinkInputCrsRequirement::Fixed(EPSG_WEB_MERCATOR)
     }
 
     fn create(&self, params: &Parameters) -> Box<dyn DataSink> {
@@ -124,7 +121,8 @@ impl DataSink for MvtSink {
         self.transform_settings.build(default_requirements)
     }
 
-    fn run(&mut self, upstream: Receiver, feedback: &Feedback, _schema: &Schema) -> Result<()> {
+    fn run(&mut self, upstream: Receiver, feedback: &Feedback, schema: &Schema) -> Result<()> {
+        validate_vector_tile_schema_crs(schema)?;
         run_vector_tile_pipeline(
             &self.output_path,
             "pbf",

@@ -18,6 +18,8 @@ Windowsで利用する場合も、同様のUI・手順で利用できます。
 | ------------------------- | ----------------- | --------------------------------- |
 | 3D Tiles                  | フォルダ          | tileset.json + 複数のglTFファイル |
 | Mapbox Vector Tiles (MVT) | フォルダ          | Z/X/Y形式のタイルファイル群       |
+| MapLibre Tiles (MLT)      | フォルダ          | Z/X/Y形式のタイルファイル群       |
+| PMTiles                   | 単一ファイル      | .pmtiles ファイル                 |
 | GeoPackage                | 単一ファイル      | .gpkg ファイル                    |
 | GeoJSON                   | 単一ファイル      | .geojson ファイル                 |
 | Shapefile                 | 複数ファイル      | .shp, .shx, .dbf, .prj など       |
@@ -82,7 +84,7 @@ Windowsで利用する場合も、同様のUI・手順で利用できます。
 ![alt text](../resources/useGui_image-8.png)
 
 - GeoPackageと同様に設定を変更します。
-  - MVTでは、座標参照系を変換することができません。仕様上、EPSG:3857の座標系に変換されます。
+  - 本ツールのMVT・MLT・PMTiles出力はWeb Mercatorのため、変換処理で座標をEPSG:3857へ投影します。これらの形式では出力座標参照系を変更できません。
   - MVTは大規模データの取り扱いに長けているため、ここでは `bldg`フォルダーを選択し、全ての`.gml`ファイルを選択します。
     - ※大量のメモリ・CPUリソースを消費します。マシンによっては実行できませんので、ご注意ください。
   - 出力データ形式は `Vector Tiles`を選択します。
