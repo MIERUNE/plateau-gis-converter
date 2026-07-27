@@ -5,16 +5,55 @@ use sqlx::{sqlite::*, Acquire, ConnectOptions, Connection, Pool, Row};
 use thiserror::Error;
 use url::Url;
 
-use crate::table::TableInfo;
+use crate::{
+    geometry::{GPB_FLAG_LITTLE_ENDIAN, GPB_HEADER_SIZE, GPB_MAGIC, GPB_VERSION},
+    table::{GpkgGeometryType, TableInfo},
+};
 
 pub struct GpkgHandler {
     pool: Pool<Sqlite>,
+}
+
+/// Read the SRS ID out of a GeoPackageBinary header.
+///
+/// Rejects anything this crate would not have written, so that a blob which is not
+/// a GeoPackageBinary is never silently reinterpreted as an SRS ID.
+fn parse_srs_id(header: &[u8], table_name: &str) -> Result<i32, GpkgError> {
+    let reject = |reason: String| {
+        GpkgError::InvalidGeometry(format!(
+            "geometry in table {table_name} is not a supported GeoPackageBinary: {reason}"
+        ))
+    };
+
+    let header: [u8; GPB_HEADER_SIZE] = header.try_into().map_err(|_| {
+        reject(format!(
+            "header must be {GPB_HEADER_SIZE} bytes, got {}",
+            header.len()
+        ))
+    })?;
+
+    if header[..GPB_MAGIC.len()] != GPB_MAGIC {
+        return Err(reject("unexpected magic number".into()));
+    }
+    if header[2] != GPB_VERSION {
+        return Err(reject(format!("unsupported version {}", header[2])));
+    }
+    if header[3] & GPB_FLAG_LITTLE_ENDIAN == 0 {
+        return Err(reject("big-endian headers are not supported".into()));
+    }
+
+    Ok(i32::from_le_bytes([
+        header[4], header[5], header[6], header[7],
+    ]))
 }
 
 #[derive(Error, Debug)]
 pub enum GpkgError {
     #[error("SQLx error: {0}")]
     SqlxError(#[from] sqlx::Error),
+
+    #[error("{0}")]
+    InvalidGeometry(String),
 }
 
 impl GpkgHandler {
@@ -180,6 +219,23 @@ impl GpkgHandler {
         Ok(result)
     }
 
+    /// Read the SRS IDs declared by GeoPackageBinary geometry headers.
+    ///
+    /// Only the fixed-size header of each row is fetched, not the whole geometry blob.
+    /// Headers written in big-endian byte order are rejected rather than misread,
+    /// since this crate always writes little-endian headers.
+    pub async fn geometry_srs_ids(&self, table_name: &str) -> Result<Vec<i32>, GpkgError> {
+        let rows = sqlx::query(&format!(
+            "SELECT substr(geometry, 1, {GPB_HEADER_SIZE}) AS header FROM {table_name};"
+        ))
+        .fetch_all(&self.pool)
+        .await?;
+
+        rows.into_iter()
+            .map(|row| parse_srs_id(&row.get::<Vec<u8>, &str>("header"), table_name))
+            .collect()
+    }
+
     pub async fn begin(&mut self) -> Result<GpkgTransaction<'_>, GpkgError> {
         Ok(GpkgTransaction::new(self.pool.begin().await?))
     }
@@ -227,15 +283,23 @@ impl<'c> GpkgTransaction<'c> {
         &mut self,
         table_info: &TableInfo,
         srs_id: u16,
+        geometry_type: Option<GpkgGeometryType>,
     ) -> Result<(), GpkgError> {
+        if table_info.has_geometry != geometry_type.is_some() {
+            return Err(GpkgError::InvalidGeometry(format!(
+                "table {} geometry declaration does not match its geometry type",
+                table_info.name
+            )));
+        }
+
         let executor = self.tx.acquire().await.unwrap();
 
         // Create the table
         let mut query_string = format!("CREATE TABLE \"{}\" (", table_info.name);
-        if table_info.has_geometry {
+        if let Some(geometry_type) = geometry_type {
             query_string.push_str("fid INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL");
             query_string.push_str(", id TEXT NOT NULL");
-            query_string.push_str(", geometry MULTIPOLYGON NOT NULL");
+            query_string.push_str(&format!(", geometry {} NOT NULL", geometry_type.sql_name()));
         } else {
             query_string.push_str("id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL");
         }
@@ -262,14 +326,14 @@ impl<'c> GpkgTransaction<'c> {
         .await?;
 
         // Add the table to `gpkg_geometry_columns`
-        if table_info.has_geometry {
+        if let Some(geometry_type) = geometry_type {
             sqlx::query(
                 "INSERT INTO gpkg_geometry_columns (table_name, column_name, geometry_type_name, \
                  srs_id, z, m) VALUES (?, ?, ?, ?, ?, ?);",
             )
             .bind(table_info.name.as_str())
             .bind("geometry")
-            .bind("MULTIPOLYGON") // Fixed for now - TODO: Change according to the data
+            .bind(geometry_type.sql_name())
             .bind(srs_id)
             .bind(1)
             .bind(0)
@@ -373,7 +437,54 @@ impl<'c> GpkgTransaction<'c> {
 mod tests {
     use super::*;
     use crate::geometry::write_indexed_multipolygon;
-    use crate::table::ColumnInfo;
+    use crate::table::{ColumnInfo, GpkgGeometryType};
+
+    /// Build a GeoPackageBinary header that `parse_gpb_srs_id` accepts.
+    fn valid_header(srs_id: i32) -> [u8; GPB_HEADER_SIZE] {
+        let mut header = [0_u8; GPB_HEADER_SIZE];
+        header[..GPB_MAGIC.len()].copy_from_slice(&GPB_MAGIC);
+        header[2] = GPB_VERSION;
+        header[3] = GPB_FLAG_LITTLE_ENDIAN;
+        header[4..8].copy_from_slice(&srs_id.to_le_bytes());
+        header
+    }
+
+    #[test]
+    fn parse_srs_id_reads_the_declared_srs_id() {
+        assert_eq!(parse_srs_id(&valid_header(4979), "t").unwrap(), 4979);
+        assert_eq!(parse_srs_id(&valid_header(3857), "t").unwrap(), 3857);
+    }
+
+    #[test]
+    fn parse_srs_id_reads_what_the_geometry_writer_produces() {
+        let vertices: Vec<[f64; 3]> = vec![[0., 0., 0.], [1., 0., 0.], [0., 1., 0.]];
+        let mut mpoly = flatgeom::MultiPolygon::<u32>::new();
+        mpoly.add_exterior([0, 1, 2, 0]);
+        let mut bytes = Vec::new();
+        write_indexed_multipolygon(&mut bytes, &vertices, &mpoly, 6697).unwrap();
+
+        assert_eq!(parse_srs_id(&bytes[..GPB_HEADER_SIZE], "t").unwrap(), 6697);
+    }
+
+    #[test]
+    fn parse_srs_id_rejects_headers_this_crate_would_not_write() {
+        let valid = valid_header(4979);
+
+        assert!(parse_srs_id(&valid[..GPB_HEADER_SIZE - 1], "t").is_err());
+        assert!(parse_srs_id(&[], "t").is_err());
+
+        let mut bad_magic = valid;
+        bad_magic[0] = b'X';
+        assert!(parse_srs_id(&bad_magic, "t").is_err());
+
+        let mut bad_version = valid;
+        bad_version[2] = GPB_VERSION + 1;
+        assert!(parse_srs_id(&bad_version, "t").is_err());
+
+        let mut big_endian = valid;
+        big_endian[3] = 0;
+        assert!(parse_srs_id(&big_endian, "t").is_err());
+    }
 
     /// Create a GpkgHandler for testing.
     ///
@@ -456,7 +567,9 @@ mod tests {
         };
 
         let mut tx = handler.begin().await.unwrap();
-        tx.add_table(&table_info, srs_id).await.unwrap();
+        tx.add_table(&table_info, srs_id, Some(GpkgGeometryType::MultiPolygon))
+            .await
+            .unwrap();
         tx.commit().await.unwrap();
 
         let table_names = handler.table_names().await;
@@ -529,7 +642,7 @@ mod tests {
         };
 
         let mut tx = handler.begin().await.unwrap();
-        tx.add_table(&table_info, srs_id).await.unwrap();
+        tx.add_table(&table_info, srs_id, None).await.unwrap();
         tx.commit().await.unwrap();
 
         let table_names = handler.table_names().await;
@@ -605,7 +718,9 @@ mod tests {
             has_geometry: true,
             columns,
         };
-        tx.add_table(&table_info, srs_id).await.unwrap();
+        tx.add_table(&table_info, srs_id, Some(GpkgGeometryType::MultiPolygon))
+            .await
+            .unwrap();
 
         // Build valid GeoPackage geometry binary (a simple triangle)
         let vertices: Vec<[f64; 3]> = vec![[0., 0., 0.], [1., 0., 0.], [0., 1., 0.]];
@@ -674,7 +789,7 @@ mod tests {
             has_geometry: false, // No geometry
             columns,
         };
-        tx.add_table(&table_info, srs_id).await.unwrap();
+        tx.add_table(&table_info, srs_id, None).await.unwrap();
 
         let attributes: IndexMap<String, String> = IndexMap::from([
             ("attr1".into(), "value1".into()),
@@ -712,7 +827,9 @@ mod tests {
         };
 
         let mut tx = handler.begin().await.unwrap();
-        tx.add_table(&table_info, srs_id).await.unwrap();
+        tx.add_table(&table_info, srs_id, Some(GpkgGeometryType::MultiPolygon))
+            .await
+            .unwrap();
         tx.commit().await.unwrap();
 
         let (min_x, min_y, max_x, max_y) = handler.bbox(table_name).await.unwrap();
@@ -732,6 +849,84 @@ mod tests {
         assert_eq!(min_y, 222.0);
         assert_eq!(max_x, 333.0);
         assert_eq!(max_y, -444.0);
+
+        handler.finalize().await.unwrap();
+    }
+
+    async fn add_geometry_family_tables(handler: &mut GpkgHandler) {
+        let mut tx = handler.begin().await.unwrap();
+
+        for (name, geometry_type) in [
+            ("point_features", GpkgGeometryType::MultiPoint),
+            ("line_features", GpkgGeometryType::MultiLineString),
+            ("polygon_features", GpkgGeometryType::MultiPolygon),
+        ] {
+            tx.add_table(
+                &TableInfo {
+                    name: name.into(),
+                    has_geometry: true,
+                    columns: vec![],
+                },
+                3857,
+                Some(geometry_type),
+            )
+            .await
+            .unwrap();
+        }
+        tx.commit().await.unwrap();
+    }
+
+    #[tokio::test]
+    async fn add_table_sets_geometry_type_in_sql() {
+        let mut handler = test_handler("add_table_geometry_family_sql").await;
+        add_geometry_family_tables(&mut handler).await;
+
+        for (name, expected_type) in [
+            ("point_features", "MULTIPOINT"),
+            ("line_features", "MULTILINESTRING"),
+            ("polygon_features", "MULTIPOLYGON"),
+        ] {
+            let columns = handler.table_columns(name).await.unwrap();
+            assert_eq!(columns[2], ("geometry".into(), expected_type.into(), 1));
+        }
+
+        handler.finalize().await.unwrap();
+    }
+
+    #[tokio::test]
+    async fn add_table_sets_geometry_type_in_metadata() {
+        let mut handler = test_handler("add_table_geometry_family_metadata").await;
+        add_geometry_family_tables(&mut handler).await;
+
+        assert_eq!(
+            handler.gpkg_geometry_columns().await.unwrap(),
+            vec![
+                (
+                    "point_features".into(),
+                    "geometry".into(),
+                    "MULTIPOINT".into(),
+                    3857,
+                    1,
+                    0,
+                ),
+                (
+                    "line_features".into(),
+                    "geometry".into(),
+                    "MULTILINESTRING".into(),
+                    3857,
+                    1,
+                    0,
+                ),
+                (
+                    "polygon_features".into(),
+                    "geometry".into(),
+                    "MULTIPOLYGON".into(),
+                    3857,
+                    1,
+                    0,
+                ),
+            ]
+        );
 
         handler.finalize().await.unwrap();
     }

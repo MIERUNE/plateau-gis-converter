@@ -2,19 +2,20 @@
 
 mod attributes;
 mod bbox;
+mod geometry;
 mod table;
 
-use std::{collections::HashSet, path::PathBuf};
+use std::{collections::HashMap, path::PathBuf};
 
 use attributes::prepare_object_attributes;
-use bbox::{get_indexed_multipolygon_bbox, Bbox};
+use bbox::Bbox;
+use geometry::encode_feature_geometry;
 use indexmap::IndexMap;
 use nusamai_citygml::{
     object::{ObjectStereotype, Value},
     schema::Schema,
-    GeometryType,
 };
-use nusamai_gpkg::{geometry::write_indexed_multipolygon, GpkgHandler};
+use nusamai_gpkg::{table::GpkgGeometryType, GpkgHandler};
 use rayon::prelude::*;
 use table::schema_to_table_infos;
 use url::Url;
@@ -76,6 +77,7 @@ pub struct GpkgSink {
 enum Record {
     Feature {
         obj_id: String,
+        geometry_type: GpkgGeometryType,
         geometry: Vec<u8>,
         bbox: Bbox,
         attributes: IndexMap<String, String>,
@@ -111,8 +113,17 @@ impl GpkgSink {
         };
 
         let table_infos = schema_to_table_infos(schema);
-        let mut created_tables = HashSet::<String>::new();
-        let srs_id = schema.epsg.unwrap_or(0); // 0 means 'Undefined Geographic'
+        let mut created_tables = HashMap::<String, Option<GpkgGeometryType>>::new();
+        let has_feature_tables = table_infos.values().any(|table| table.has_geometry);
+        let srs_id = match schema.epsg {
+            Some(srs_id) => srs_id,
+            None if !has_feature_tables => 0, // Undefined Geographic for attribute-only output
+            None => {
+                return Err(PipelineError::Other(
+                    "GeoPackage feature output requires a schema EPSG code".into(),
+                ));
+            }
+        };
 
         let mut table_bboxes = IndexMap::<String, Bbox>::new();
 
@@ -139,46 +150,23 @@ impl GpkgSink {
                                 id: obj_id,
                                 geometries,
                             } => {
-                                let mut mpoly = flatgeom::MultiPolygon::new();
-
-                                geometries.iter().for_each(|entry| match entry.ty {
-                                    GeometryType::Solid
-                                    | GeometryType::Surface
-                                    | GeometryType::Triangle => {
-                                        for idx_poly in geom_store.multipolygon.iter_range(
-                                            entry.pos as usize..(entry.pos + entry.len) as usize,
-                                        ) {
-                                            mpoly.push(&idx_poly);
-                                        }
-                                    }
-                                    GeometryType::Curve => unimplemented!(),
-                                    GeometryType::Point => unimplemented!(),
-                                });
-
-                                if mpoly.is_empty() {
-                                    return Ok(());
-                                }
-
-                                let mut bytes = Vec::new();
-                                if write_indexed_multipolygon(
-                                    &mut bytes,
-                                    &geom_store.vertices,
-                                    &mpoly,
-                                    4326,
-                                )
-                                .is_err()
-                                {
-                                    // TODO: fatal error
-                                }
-
                                 let table_name = obj.typename.to_string();
+                                let Some(encoded) = encode_feature_geometry(
+                                    &geom_store,
+                                    geometries,
+                                    srs_id,
+                                    &table_name,
+                                    obj_id,
+                                )?
+                                else {
+                                    return Ok(());
+                                };
+
                                 let record = Record::Feature {
                                     obj_id: obj_id.clone(),
-                                    geometry: bytes,
-                                    bbox: get_indexed_multipolygon_bbox(
-                                        &geom_store.vertices,
-                                        &mpoly,
-                                    ),
+                                    geometry_type: encoded.geometry_type,
+                                    geometry: encoded.bytes,
+                                    bbox: encoded.bbox,
                                     attributes: prepare_object_attributes(obj),
                                 };
                                 if sender.blocking_send((table_name, record)).is_err() {
@@ -214,17 +202,32 @@ impl GpkgSink {
         while let Some((table_name, record)) = receiver.recv().await {
             feedback.ensure_not_canceled()?;
 
-            if !created_tables.contains(&table_name) {
-                let tf = table_infos.get(&table_name).unwrap();
-                tx.add_table(tf, srs_id)
+            let record_geometry_type = match &record {
+                Record::Feature { geometry_type, .. } => Some(*geometry_type),
+                Record::Attribute { .. } => None,
+            };
+            if let Some(created_geometry_type) = created_tables.get(&table_name) {
+                if *created_geometry_type != record_geometry_type {
+                    return Err(PipelineError::Other(format!(
+                        "mixed geometry types are not supported in table {table_name}: first record uses {created_geometry_type:?}, current record uses {record_geometry_type:?}"
+                    )));
+                }
+            } else {
+                let table_info = table_infos.get(&table_name).ok_or_else(|| {
+                    PipelineError::Other(format!(
+                        "GeoPackage table information is missing for {table_name}"
+                    ))
+                })?;
+                tx.add_table(table_info, srs_id, record_geometry_type)
                     .await
                     .map_err(|e| PipelineError::Other(e.to_string()))?;
-                created_tables.insert(table_name.clone());
+                created_tables.insert(table_name.clone(), record_geometry_type);
             }
 
             match record {
                 Record::Feature {
                     obj_id,
+                    geometry_type: _,
                     geometry,
                     bbox,
                     attributes,
@@ -242,6 +245,10 @@ impl GpkgSink {
             }
         }
 
+        producers.await.map_err(|error| {
+            PipelineError::Other(format!("GeoPackage producer task failed: {error}"))
+        })??;
+
         for (table_name, bbox) in table_bboxes {
             feedback.ensure_not_canceled()?;
 
@@ -254,18 +261,13 @@ impl GpkgSink {
             .await
             .map_err(|e| PipelineError::Other(e.to_string()))?;
 
-        match producers.await.unwrap() {
-            Ok(_) | Err(PipelineError::Canceled) => {
-                // Switch from WAL to DELETE journal mode so that the output is a single
-                // self-contained .gpkg file without -wal/-shm sidecars.
-                handler
-                    .finalize()
-                    .await
-                    .map_err(|e| PipelineError::Other(e.to_string()))?;
-                Ok(())
-            }
-            error @ Err(_) => error,
-        }
+        // Switch from WAL to DELETE journal mode so that the output is a single
+        // self-contained .gpkg file without -wal/-shm sidecars.
+        handler
+            .finalize()
+            .await
+            .map_err(|e| PipelineError::Other(e.to_string()))?;
+        Ok(())
     }
 }
 
