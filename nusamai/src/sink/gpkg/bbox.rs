@@ -1,5 +1,6 @@
-use flatgeom::MultiPolygon;
+use flatgeom::{MultiLineString, MultiPoint, MultiPolygon};
 
+#[derive(Debug)]
 pub struct Bbox {
     min_x: f64,
     min_y: f64,
@@ -50,6 +51,29 @@ pub fn get_indexed_multipolygon_bbox(vertices: &[[f64; 3]], mpoly: &MultiPolygon
             let [x, y, _z] = vertices[point_idx as usize];
             bbox.update(x, y);
         }
+    }
+    bbox
+}
+
+pub fn get_indexed_multilinestring_bbox(
+    vertices: &[[f64; 3]],
+    multiline: &MultiLineString<u32>,
+) -> Bbox {
+    let mut bbox = Bbox::default();
+    for linestring in multiline {
+        for point_idx in &linestring {
+            let [x, y, _z] = vertices[point_idx as usize];
+            bbox.update(x, y);
+        }
+    }
+    bbox
+}
+
+pub fn get_indexed_multipoint_bbox(vertices: &[[f64; 3]], multipoint: &MultiPoint<u32>) -> Bbox {
+    let mut bbox = Bbox::default();
+    for point_idx in multipoint {
+        let [x, y, _z] = vertices[point_idx as usize];
+        bbox.update(x, y);
     }
     bbox
 }
@@ -116,5 +140,34 @@ mod tests {
         let bbox = get_indexed_multipolygon_bbox(&geometries.vertices, &geometries.multipolygon);
 
         assert_eq!(bbox.to_tuple(), (10., 100., 20., 200.));
+    }
+
+    #[test]
+    fn test_get_indexed_multipoint_bbox() {
+        let vertices = vec![[10., 100., 111.], [20., 50., 222.], [-5., 200., 333.]];
+        let mut multipoint = flatgeom::MultiPoint::<u32>::new();
+        multipoint.push(2);
+        multipoint.push(0);
+
+        let bbox = get_indexed_multipoint_bbox(&vertices, &multipoint);
+
+        assert_eq!(bbox.to_tuple(), (-5., 100., 10., 200.));
+    }
+
+    #[test]
+    fn test_get_indexed_multilinestring_bbox() {
+        let vertices = vec![
+            [10., 100., 111.],
+            [20., 50., 222.],
+            [-5., 200., 333.],
+            [30., -20., 444.],
+        ];
+        let mut multiline = flatgeom::MultiLineString::<u32>::new();
+        multiline.add_linestring([0, 1]);
+        multiline.add_linestring([2, 3]);
+
+        let bbox = get_indexed_multilinestring_bbox(&vertices, &multiline);
+
+        assert_eq!(bbox.to_tuple(), (-5., -20., 30., 200.));
     }
 }
