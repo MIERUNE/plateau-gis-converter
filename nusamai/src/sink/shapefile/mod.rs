@@ -18,7 +18,7 @@ use nusamai_citygml::{
     GeometryType,
 };
 use nusamai_plateau::Entity;
-use nusamai_shapefile::conversion::indexed_multipolygon_to_shape;
+use nusamai_shapefile::{conversion::indexed_multipolygon_to_shape, encoding};
 use rayon::iter::{ParallelBridge, ParallelIterator};
 
 use self::crs::ProjectionRepository;
@@ -212,6 +212,11 @@ impl DataSink for ShapefileSink {
                                 }
                             }
                         }
+
+                        // Declare the encoding of the .dbf we just wrote. dbase
+                        // stamps the LDID in the header, but QGIS/ArcGIS/GDAL
+                        // look at the .cpg sidecar first.
+                        std::fs::write(shp_path.with_extension("cpg"), encoding::CPG_UTF8)?;
 
                         // If this type has no geometry (i.e. Data or Object stereotype)
                         if has_no_geometry {

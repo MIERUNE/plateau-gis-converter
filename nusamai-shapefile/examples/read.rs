@@ -8,7 +8,10 @@ fn main() {
         }
     };
 
-    let mut reader = shapefile::Reader::from_path(filename).unwrap();
+    // Unlike `shapefile::Reader::from_path`, this falls back to Shift_JIS for
+    // .dbf files that carry no encoding marker at all.
+    let mut reader =
+        nusamai_shapefile::encoding::reader_from_path(std::path::Path::new(filename)).unwrap();
 
     for result in reader.iter_shapes_and_records() {
         let (shape, record) = result.unwrap();
