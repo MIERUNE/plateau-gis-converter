@@ -1,13 +1,9 @@
 //! Encoding of the .dbf file that accompanies a Shapefile.
 //!
-//! The .dbf format has no reliable way to tell what encoding its character
-//! fields use, so both reading and writing need some care:
-//!
-//! - When writing, we always emit UTF-8 and declare it in a .cpg file
-//!   ([`CPG_UTF8`]) in addition to the LDID that dbase stamps in the header.
-//! - When reading, [`guess_encoding`] reads the .cpg file, and falls back to
-//!   Shift_JIS for .dbf files that carry no marker at all, which is common in
-//!   Japanese data.
+//! There is no single reliable way to tell what encoding the character fields
+//! of a .dbf use: it may be declared in a .cpg sidecar file, in the LDID byte
+//! of the .dbf header, or not at all. [`guess_encoding`] resolves those cases
+//! for reading.
 
 use std::{
     fs::File,
@@ -24,20 +20,20 @@ use shapefile::{
     ShapeReader,
 };
 
-/// Content of the .cpg file we write alongside our Shapefiles.
-pub const CPG_UTF8: &str = "UTF-8";
-
 /// Offset of the LDID (language driver ID) in a dBASE file header.
 /// This is a 0-based offset, i.e. the 30th byte of the file.
 const LDID_OFFSET: usize = 29;
 
 /// Guesses the encoding of the .dbf file that belongs to the given .shp path.
 ///
-/// cf. <https://github.com/EsriJapan/shapefile_info>
+/// The encoding declared in the .cpg file wins if there is one. Otherwise, a
+/// .dbf whose header carries no LDID is assumed to be Shift_JIS, since that is
+/// what unmarked Japanese data usually turns out to be.
 ///
-/// Returns `Ok(None)` when there's no hint about the encoding; in that case,
-/// the encoding detection is left to dbase, which uses the LDID (e.g. 0x13
-/// means CP932).
+/// Returns `Ok(None)` when the .dbf does carry an LDID, in which case decoding
+/// is left to dbase (e.g. 0x13 means CP932).
+///
+/// cf. <https://github.com/EsriJapan/shapefile_info>
 pub fn guess_encoding(shp_path: &Path) -> Result<Option<DynEncoding>> {
     // First, check .cpg file
     let cpg_path = shp_path.with_extension("cpg");
@@ -45,7 +41,7 @@ pub fn guess_encoding(shp_path: &Path) -> Result<Option<DynEncoding>> {
         Ok(cpg) => {
             let name = cpg.trim().trim_start_matches('\u{feff}');
             return DynEncoding::from_name(name).map(Some).ok_or_else(|| {
-                std::io::Error::other(format!("Unknown encoding is found in .cpg file: {name}"))
+                std::io::Error::other(format!("Unknown encoding in .cpg file: {name}"))
             });
         }
         // If there's no .cpg file, fall back to the LDID...
@@ -69,8 +65,8 @@ pub fn guess_encoding(shp_path: &Path) -> Result<Option<DynEncoding>> {
 /// Opens a Shapefile, decoding its .dbf with the encoding [`guess_encoding`]
 /// detects.
 ///
-/// This is [`shapefile::Reader::from_path`] plus the heuristics that are needed
-/// for .dbf files with no (or a wrong) encoding marker.
+/// This is [`shapefile::Reader::from_path`] plus the Shift_JIS fallback for
+/// .dbf files that carry no encoding marker at all.
 pub fn reader_from_path(
     shp_path: &Path,
 ) -> std::result::Result<

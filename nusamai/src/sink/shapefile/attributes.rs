@@ -133,7 +133,9 @@ pub fn attributes_to_record(
                     .ok()
                     .and_then(|year| Date::new(d.day(), d.month(), year).ok());
                 if date.is_none() {
-                    log::warn!("Date {d} cannot be stored in Shapefile, writing NULL instead");
+                    log::warn!(
+                        "Date {d} of attribute '{attr_name}' cannot be stored in Shapefile, writing NULL instead"
+                    );
                 }
                 record.insert(attr_name, FieldValue::Date(date));
             }
