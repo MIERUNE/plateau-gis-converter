@@ -1,7 +1,7 @@
 use std::str::FromStr;
 
 use indexmap::IndexMap;
-use sqlx::{sqlite::*, Acquire, ConnectOptions, Connection, Pool, Row};
+use sqlx::{sqlite::*, Acquire, ConnectOptions, Pool, Row};
 use thiserror::Error;
 use url::Url;
 
@@ -54,13 +54,22 @@ pub enum GpkgError {
 
     #[error("{0}")]
     InvalidGeometry(String),
+
+    #[error("failed to switch the journal mode to DELETE (still {0})")]
+    JournalModeNotSwitched(String),
 }
 
 impl GpkgHandler {
+    /// One connection: a GeoPackage has a single writer, and `finalize` needs
+    /// exclusive access to switch the journal mode.
+    fn pool_options() -> SqlitePoolOptions {
+        SqlitePoolOptions::new().max_connections(1)
+    }
+
     /// Open an existing GeoPackage database without initializing its schema.
     pub async fn open(connection_string: &str) -> Result<Self, GpkgError> {
         let conn_opts = SqliteConnectOptions::from_str(connection_string)?;
-        let pool = SqlitePoolOptions::new().connect_with(conn_opts).await?;
+        let pool = Self::pool_options().connect_with(conn_opts).await?;
         Ok(Self { pool })
     }
 
@@ -78,7 +87,7 @@ impl GpkgHandler {
             .create_if_missing(true)
             .synchronous(SqliteSynchronous::Normal)
             .journal_mode(SqliteJournalMode::Wal);
-        let pool = SqlitePoolOptions::new().connect_with(conn_opts).await?;
+        let pool = Self::pool_options().connect_with(conn_opts).await?;
 
         // Initialize the database with minimum GeoPackage schema
         let create_query = include_str!("sql/init.sql");
@@ -242,25 +251,33 @@ impl GpkgHandler {
 
     /// Finalize the GeoPackage file for external consumption.
     ///
-    /// Switches the journal mode from WAL to DELETE, which removes the
-    /// `-wal` and `-shm` sidecar files and makes the `.gpkg` a single
-    /// self-contained file. Call this after all writes are done and before
-    /// handing the file to external tools (e.g. `gdal driver gpkg validate`).
-    ///
-    /// Changing the journal mode requires exclusive access to the database, so
-    /// the pool is closed first to release all connections, then a fresh
-    /// connection is opened to perform the switch.
+    /// Switches the journal mode from WAL to DELETE, so that the `.gpkg` is a
+    /// single self-contained file without `-wal`/`-shm` sidecars. Call this once
+    /// all writes are done.
     pub async fn finalize(self) -> Result<(), GpkgError> {
-        let opts = self.pool.connect_options();
+        // Close on every path, so that a failure still shuts the connection down.
+        let result = self.switch_journal_mode_to_delete().await;
         self.pool.close().await;
+        result
+    }
 
-        // Reopen with DELETE journal mode to remove -wal/-shm sidecar files.
-        let opts = opts
-            .as_ref()
-            .clone()
-            .journal_mode(SqliteJournalMode::Delete);
-        let conn = SqliteConnection::connect_with(&opts).await?;
-        conn.close().await?;
+    /// The switch needs exclusive access, so it is issued on the pool's only
+    /// connection. Closing the pool and reopening the file would not be enough:
+    /// `Pool::close` can return while a concurrently released connection is still
+    /// live in the idle queue.
+    ///
+    /// In-memory databases keep reporting `memory`, which is fine as they have no
+    /// sidecars to remove.
+    async fn switch_journal_mode_to_delete(&self) -> Result<(), GpkgError> {
+        let mut conn = self.pool.acquire().await?;
+        let journal_mode: String = sqlx::query_scalar("PRAGMA journal_mode = DELETE;")
+            .fetch_one(&mut *conn)
+            .await?;
+        if !journal_mode.eq_ignore_ascii_case("delete")
+            && !journal_mode.eq_ignore_ascii_case("memory")
+        {
+            return Err(GpkgError::JournalModeNotSwitched(journal_mode));
+        }
         Ok(())
     }
 }
