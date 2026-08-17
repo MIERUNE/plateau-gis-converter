@@ -930,4 +930,92 @@ mod tests {
 
         handler.finalize().await.unwrap();
     }
+
+    /// Write a small GeoPackage to `path` the way the GPKG sink does, and finalize it.
+    async fn write_and_finalize(path: &std::path::Path) -> Result<(), GpkgError> {
+        let mut handler = GpkgHandler::from_str(&format!("file:{}", path.display())).await?;
+
+        let table_info = TableInfo {
+            name: "features".into(),
+            has_geometry: true,
+            columns: vec![ColumnInfo {
+                name: "attr".into(),
+                data_type: "TEXT".into(),
+                mime_type: None,
+            }],
+        };
+        let vertices: Vec<[f64; 3]> = vec![[0., 0., 0.], [1., 0., 0.], [0., 1., 0.]];
+        let mut mpoly = flatgeom::MultiPolygon::<u32>::new();
+        mpoly.add_exterior([0, 1, 2, 0]);
+        let mut geom_bytes = Vec::new();
+        write_indexed_multipolygon(&mut geom_bytes, &vertices, &mpoly, 4326).unwrap();
+        let attributes = IndexMap::from([("attr".to_string(), "value".to_string())]);
+
+        let mut tx = handler.begin().await?;
+        tx.add_table(&table_info, 4326, Some(GpkgGeometryType::MultiPolygon))
+            .await?;
+        tx.insert_feature("features", "id_1", &geom_bytes, &attributes)
+            .await?;
+        tx.commit().await?;
+
+        handler.finalize().await
+    }
+
+    /// Regression test for a race that made `finalize()` fail with
+    /// "(code: 5) database is locked" on loaded machines (typically CI): it used
+    /// to close the pool and reopen the file to switch the journal mode, but
+    /// `Pool::close()` can leave a concurrently released connection alive.
+    ///
+    /// Only reproducible under scheduling pressure, hence the concurrency, and
+    /// ignored by default. Run it with:
+    ///
+    /// ```sh
+    /// cargo test -p nusamai-gpkg --release -- --ignored finalize
+    /// ```
+    #[tokio::test(flavor = "multi_thread", worker_threads = 4)]
+    #[ignore = "stress test: slow, and only meaningful under CPU contention"]
+    async fn finalize_survives_concurrent_writes() {
+        const TASKS: usize = 16;
+        const ITERATIONS: usize = 100;
+
+        let dir =
+            std::env::temp_dir().join(format!("nusamai-gpkg-finalize-{}", std::process::id()));
+        std::fs::create_dir_all(&dir).unwrap();
+
+        let mut handles = Vec::new();
+        for task in 0..TASKS {
+            let dir = dir.clone();
+            handles.push(tokio::spawn(async move {
+                for iteration in 0..ITERATIONS {
+                    let path = dir.join(format!("{task}-{iteration}.gpkg"));
+                    if let Err(error) = write_and_finalize(&path).await {
+                        return Err(format!("iteration {task}-{iteration} failed: {error}"));
+                    }
+                    for sidecar in ["-wal", "-shm"] {
+                        let sidecar = dir.join(format!("{task}-{iteration}.gpkg{sidecar}"));
+                        if sidecar.exists() {
+                            return Err(format!("{} was left behind", sidecar.display()));
+                        }
+                    }
+                    std::fs::remove_file(&path).unwrap();
+                }
+                Ok(())
+            }));
+        }
+
+        let mut failures = Vec::new();
+        for handle in handles {
+            if let Err(error) = handle.await.unwrap() {
+                failures.push(error);
+            }
+        }
+        std::fs::remove_dir_all(&dir).unwrap();
+
+        assert!(
+            failures.is_empty(),
+            "{} of {TASKS} concurrent writers failed:\n{}",
+            failures.len(),
+            failures.join("\n")
+        );
+    }
 }
