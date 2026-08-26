@@ -5,4 +5,4 @@ edition = "2021"
 
 [dependencies]
 flatgeom = "0.0"
-shapefile = "0.7.0"
+shapefile = { version = "0.9.0", features = ["encoding_rs"] }

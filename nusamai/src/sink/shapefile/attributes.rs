@@ -127,11 +127,17 @@ pub fn attributes_to_record(
                 );
             }
             Value::Date(d) => {
-                // Date represented as an ISO8601 string
-                record.insert(
-                    attr_name,
-                    FieldValue::Date(Some(Date::new(d.day(), d.month(), d.year() as u32))),
-                );
+                // dBASE dates are YYYYMMDD, so years outside 0..=9999 (e.g. BCE
+                // dates) cannot be represented and are written as NULL.
+                let date = u32::try_from(d.year())
+                    .ok()
+                    .and_then(|year| Date::new(d.day(), d.month(), year).ok());
+                if date.is_none() {
+                    log::warn!(
+                        "Date {d} of attribute '{attr_name}' cannot be stored in Shapefile, writing NULL instead"
+                    );
+                }
+                record.insert(attr_name, FieldValue::Date(date));
             }
             Value::Point(_p) => {
                 // TODO: implement
