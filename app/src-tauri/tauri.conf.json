@@ -42,7 +42,6 @@
 	},
 	"productName": "PLATEAU GIS Converter",
 	"mainBinaryName": "PLATEAU GIS Converter",
-	"version": "0.1.0",
 	"identifier": "jp.co.mierune.nusamai",
 	"plugins": {},
 	"app": {
