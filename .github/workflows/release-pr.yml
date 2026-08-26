@@ -1,0 +1,39 @@
+name: Prepare Release PR
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - Cargo.toml
+      - Cargo.lock
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Bump workspace patch version
+        id: bump
+        shell: bash
+        run: |
+          set -euo pipefail
+          current_version="$(sed -n '/^\[workspace\.package\]/,/^\[/{s/^version = "\([^"]*\)"$/\1/p;}' Cargo.toml)"
+          patch="${current_version##*.}"
+          next_version="${current_version%.*}.$((patch + 1))"
+          sed -i.bak "s/^version = \"${current_version}\"$/version = \"${next_version}\"/" Cargo.toml
+          rm Cargo.toml.bak
+          cargo update --workspace
+          echo "version=${next_version}" >> "${GITHUB_OUTPUT}"
+      - uses: peter-evans/create-pull-request@v8
+        with:
+          branch: release-version
+          draft: true
+          title: "chore: release v${{ steps.bump.outputs.version }}"
+          body: "Bumps the workspace version to v${{ steps.bump.outputs.version }}."
+          commit-message: "chore: release v${{ steps.bump.outputs.version }}"
