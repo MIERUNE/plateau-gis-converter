@@ -1,7 +1,7 @@
 use std::str::FromStr;
 
 use indexmap::IndexMap;
-use sqlx::{sqlite::*, Acquire, ConnectOptions, Connection, Pool, Row};
+use sqlx::{sqlite::*, Acquire, ConnectOptions, Pool, Row};
 use thiserror::Error;
 use url::Url;
 
@@ -54,13 +54,22 @@ pub enum GpkgError {
 
     #[error("{0}")]
     InvalidGeometry(String),
+
+    #[error("failed to switch the journal mode to DELETE (still {0})")]
+    JournalModeNotSwitched(String),
 }
 
 impl GpkgHandler {
+    /// One connection: a GeoPackage has a single writer, and `finalize` needs
+    /// exclusive access to switch the journal mode.
+    fn pool_options() -> SqlitePoolOptions {
+        SqlitePoolOptions::new().max_connections(1)
+    }
+
     /// Open an existing GeoPackage database without initializing its schema.
     pub async fn open(connection_string: &str) -> Result<Self, GpkgError> {
         let conn_opts = SqliteConnectOptions::from_str(connection_string)?;
-        let pool = SqlitePoolOptions::new().connect_with(conn_opts).await?;
+        let pool = Self::pool_options().connect_with(conn_opts).await?;
         Ok(Self { pool })
     }
 
@@ -78,7 +87,7 @@ impl GpkgHandler {
             .create_if_missing(true)
             .synchronous(SqliteSynchronous::Normal)
             .journal_mode(SqliteJournalMode::Wal);
-        let pool = SqlitePoolOptions::new().connect_with(conn_opts).await?;
+        let pool = Self::pool_options().connect_with(conn_opts).await?;
 
         // Initialize the database with minimum GeoPackage schema
         let create_query = include_str!("sql/init.sql");
@@ -242,25 +251,33 @@ impl GpkgHandler {
 
     /// Finalize the GeoPackage file for external consumption.
     ///
-    /// Switches the journal mode from WAL to DELETE, which removes the
-    /// `-wal` and `-shm` sidecar files and makes the `.gpkg` a single
-    /// self-contained file. Call this after all writes are done and before
-    /// handing the file to external tools (e.g. `gdal driver gpkg validate`).
-    ///
-    /// Changing the journal mode requires exclusive access to the database, so
-    /// the pool is closed first to release all connections, then a fresh
-    /// connection is opened to perform the switch.
+    /// Switches the journal mode from WAL to DELETE, so that the `.gpkg` is a
+    /// single self-contained file without `-wal`/`-shm` sidecars. Call this once
+    /// all writes are done.
     pub async fn finalize(self) -> Result<(), GpkgError> {
-        let opts = self.pool.connect_options();
+        // Close on every path, so that a failure still shuts the connection down.
+        let result = self.switch_journal_mode_to_delete().await;
         self.pool.close().await;
+        result
+    }
 
-        // Reopen with DELETE journal mode to remove -wal/-shm sidecar files.
-        let opts = opts
-            .as_ref()
-            .clone()
-            .journal_mode(SqliteJournalMode::Delete);
-        let conn = SqliteConnection::connect_with(&opts).await?;
-        conn.close().await?;
+    /// The switch needs exclusive access, so it is issued on the pool's only
+    /// connection. Closing the pool and reopening the file would not be enough:
+    /// `Pool::close` can return while a concurrently released connection is still
+    /// live in the idle queue.
+    ///
+    /// In-memory databases keep reporting `memory`, which is fine as they have no
+    /// sidecars to remove.
+    async fn switch_journal_mode_to_delete(&self) -> Result<(), GpkgError> {
+        let mut conn = self.pool.acquire().await?;
+        let journal_mode: String = sqlx::query_scalar("PRAGMA journal_mode = DELETE;")
+            .fetch_one(&mut *conn)
+            .await?;
+        if !journal_mode.eq_ignore_ascii_case("delete")
+            && !journal_mode.eq_ignore_ascii_case("memory")
+        {
+            return Err(GpkgError::JournalModeNotSwitched(journal_mode));
+        }
         Ok(())
     }
 }
@@ -929,5 +946,93 @@ mod tests {
         );
 
         handler.finalize().await.unwrap();
+    }
+
+    /// Write a small GeoPackage to `path` the way the GPKG sink does, and finalize it.
+    async fn write_and_finalize(path: &std::path::Path) -> Result<(), GpkgError> {
+        let mut handler = GpkgHandler::from_str(&format!("file:{}", path.display())).await?;
+
+        let table_info = TableInfo {
+            name: "features".into(),
+            has_geometry: true,
+            columns: vec![ColumnInfo {
+                name: "attr".into(),
+                data_type: "TEXT".into(),
+                mime_type: None,
+            }],
+        };
+        let vertices: Vec<[f64; 3]> = vec![[0., 0., 0.], [1., 0., 0.], [0., 1., 0.]];
+        let mut mpoly = flatgeom::MultiPolygon::<u32>::new();
+        mpoly.add_exterior([0, 1, 2, 0]);
+        let mut geom_bytes = Vec::new();
+        write_indexed_multipolygon(&mut geom_bytes, &vertices, &mpoly, 4326).unwrap();
+        let attributes = IndexMap::from([("attr".to_string(), "value".to_string())]);
+
+        let mut tx = handler.begin().await?;
+        tx.add_table(&table_info, 4326, Some(GpkgGeometryType::MultiPolygon))
+            .await?;
+        tx.insert_feature("features", "id_1", &geom_bytes, &attributes)
+            .await?;
+        tx.commit().await?;
+
+        handler.finalize().await
+    }
+
+    /// Regression test for a race that made `finalize()` fail with
+    /// "(code: 5) database is locked" on loaded machines (typically CI): it used
+    /// to close the pool and reopen the file to switch the journal mode, but
+    /// `Pool::close()` can leave a concurrently released connection alive.
+    ///
+    /// Only reproducible under scheduling pressure, hence the concurrency, and
+    /// ignored by default. Run it with:
+    ///
+    /// ```sh
+    /// cargo test -p nusamai-gpkg --release -- --ignored finalize
+    /// ```
+    #[tokio::test(flavor = "multi_thread", worker_threads = 4)]
+    #[ignore = "stress test: slow, and only meaningful under CPU contention"]
+    async fn finalize_survives_concurrent_writes() {
+        const TASKS: usize = 16;
+        const ITERATIONS: usize = 100;
+
+        let dir =
+            std::env::temp_dir().join(format!("nusamai-gpkg-finalize-{}", std::process::id()));
+        std::fs::create_dir_all(&dir).unwrap();
+
+        let mut handles = Vec::new();
+        for task in 0..TASKS {
+            let dir = dir.clone();
+            handles.push(tokio::spawn(async move {
+                for iteration in 0..ITERATIONS {
+                    let path = dir.join(format!("{task}-{iteration}.gpkg"));
+                    if let Err(error) = write_and_finalize(&path).await {
+                        return Err(format!("iteration {task}-{iteration} failed: {error}"));
+                    }
+                    for sidecar in ["-wal", "-shm"] {
+                        let sidecar = dir.join(format!("{task}-{iteration}.gpkg{sidecar}"));
+                        if sidecar.exists() {
+                            return Err(format!("{} was left behind", sidecar.display()));
+                        }
+                    }
+                    std::fs::remove_file(&path).unwrap();
+                }
+                Ok(())
+            }));
+        }
+
+        let mut failures = Vec::new();
+        for handle in handles {
+            if let Err(error) = handle.await.unwrap() {
+                failures.push(error);
+            }
+        }
+        std::fs::remove_dir_all(&dir).unwrap();
+
+        assert!(
+            failures.is_empty(),
+            "{} of {TASKS} concurrent writers failed:\n{}",
+            failures.len(),
+            failures.join("\n")
+        );
     }
 }
