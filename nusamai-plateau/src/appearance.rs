@@ -92,7 +92,7 @@ impl AppearanceStore {
                         if let TextureAssociation::TexCoordList(tcl) = tex_assoc {
                             for (ring, coords) in tcl.rings.into_iter().zip(tcl.coords_list) {
                                 let coords = coords
-                                    .chunks_exact(2)
+                                    .as_chunks::<2>().0.iter()
                                     .map(|v| [v[0], v[1]])
                                     .collect::<Vec<_>>();
                                 let ls = LineString2::from_raw(coords.into());

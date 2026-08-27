@@ -231,7 +231,7 @@ impl DataSink for StanfordPlySink {
                     writer.write_all(&buf)?;
                 }
                 let mut buf = [0; 12];
-                for idx in indices.chunks_exact(3) {
+                for idx in indices.as_chunks::<3>().0 {
                     writer.write_u8(3)?;
                     LittleEndian::write_u32_into(idx, &mut buf);
                     writer.write_all(&buf)?;
