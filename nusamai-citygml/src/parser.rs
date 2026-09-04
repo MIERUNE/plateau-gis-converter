@@ -927,7 +927,7 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                     let iter = self
                         .state
                         .fp_buf
-                        .chunks_exact(3)
+                        .as_chunks::<3>().0.iter()
                         .map(|c| [c[0], c[1], c[2]]);
 
                     if is_exterior {

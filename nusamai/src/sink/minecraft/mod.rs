@@ -236,7 +236,7 @@ impl DataSink for MinecraftSink {
                             );
                             {
                                 let mut voxelizer = voxelizer.lock().unwrap();
-                                for indx in index_buf.chunks_exact(3) {
+                                for indx in index_buf.as_chunks::<3>().0 {
                                     voxelizer.add_triangle(
                                         &[
                                             buf3d[indx[0] as usize],
