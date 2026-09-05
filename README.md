@@ -173,7 +173,7 @@ xattr -d com.apple.quarantine nusamai
 
 ## 12. 謝辞
 
-PLATEAU GIS Converter は、[Planetiler](https://github.com/onthegomap/planetiler) の [ARCHITECTURE.md](https://github.com/onthegomap/planetiler/blob/main/ARCHITECTURE.md) から特に多くの着想を得ました。
+PLATEAU GIS Converter の並列処理パイプラインおよびジオメトリのスライシング手法は、Planetiler の [ARCHITECTURE.md](https://github.com/onthegomap/planetiler/blob/main/ARCHITECTURE.md) を大いに参考にしています。
 
 ## Development (開発者向け情報)
 
