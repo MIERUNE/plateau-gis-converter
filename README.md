@@ -171,6 +171,10 @@ xattr -d com.apple.quarantine nusamai
 - [3D都市モデル標準製品仕様書](https://www.mlit.go.jp/plateaudocument/)
 - [PLATEAU QGIS Plugin](https://github.com/MIERUNE/plateau-qgis-plugin)
 
+## 12. 謝辞
+
+PLATEAU GIS Converter の並列処理パイプラインおよびジオメトリのスライシング手法は、Planetiler の [ARCHITECTURE.md](https://github.com/onthegomap/planetiler/blob/main/ARCHITECTURE.md) を大いに参考にしています。
+
 ## Development (開発者向け情報)
 
 <!--
@@ -254,12 +258,6 @@ dotnet tool install -g docfx
 brew install docfx
 ```
 
-### Authors（主要開発者）
+### Authors
 
-- Taku Fukada ([@ciscorn](https://github.com/ciscorn))
-- Satoru Nishio ([@nokonoko1203](https://github.com/nokonoko1203))
-- Qu Xinmiao ([@xinmiaooo](https://github.com/xinmiaooo))
-- Sorami Hisamoto ([@sorami](https://github.com/sorami))
-- Teruki Tada ([@TadaTeruki](https://github.com/TadaTeruki))
-- Satoshi Komatsu ([@satoshi7190](https://github.com/satoshi7190))
-- And [every contributors](https://github.com/MIERUNE/plateau-gis-converter/graphs/contributors)
+[all contributors!](https://github.com/MIERUNE/plateau-gis-converter/graphs/contributors)
