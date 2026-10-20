@@ -42,6 +42,8 @@ struct InternalState<'a> {
     path_buf: Vec<u8>,
     /// Stack of indices of slashes '/' in `path_buf`
     path_stack_indices: Vec<usize>,
+    /// Element names below the geometric property, used for error diagnostics.
+    geometry_path: Vec<String>,
     /// General purpose buffer 1
     buf1: Vec<u8>,
     /// General purpose buffer 2
@@ -63,6 +65,7 @@ impl<'a> InternalState<'a> {
         Self {
             path_buf: Vec::new(),
             path_stack_indices: Vec::new(),
+            geometry_path: Vec::new(),
             buf1: Vec::new(),
             buf2: Vec::new(),
             fp_buf: Vec::new(),
@@ -330,20 +333,35 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
     ) -> Result<(), ParseError> {
         use GeometryParseType::*;
 
-        match geomtype {
-            Solid => self.parse_solid_prop(geomref, lod)?,
-            MultiSurface => self.parse_multi_surface_prop(geomref, lod)?,
-            Surface => self.parse_surface_prop(geomref, lod)?, // FIXME
-            Geometry => self.parse_geometry_prop(geomref, lod)?, // FIXME: not only surfaces
-            Triangulated => self.parse_triangulated_prop(geomref, lod)?, // FIXME
-            Point => todo!(),                                  // FIXME
-            MultiPoint => todo!(),                             // FIXME
+        self.state.geometry_path.clear();
+        let result = match geomtype {
+            Solid => self.parse_solid_prop(geomref, lod),
+            MultiSurface => self.parse_multi_surface_prop(geomref, lod),
+            Surface => self.parse_surface_prop(geomref, lod), // FIXME
+            Geometry => self.parse_geometry_prop(geomref, lod), // FIXME: not only surfaces
+            Triangulated => self.parse_triangulated_prop(geomref, lod), // FIXME
+            Point => todo!(),                                 // FIXME
+            MultiPoint => todo!(),                            // FIXME
             MultiCurve => {
                 log::warn!("CompositeCurve is not supported yet.");
-                self.skip_current_element()?;
-                return Ok(());
+                return self.skip_current_element();
             } // FIXME
-        }
+        };
+        result.map_err(|error| match error {
+            ParseError::SchemaViolation(message) => ParseError::SchemaViolation(format!(
+                "{} (source: {}, XML path: {}{}, byte position: {})",
+                message,
+                self.state.context.source_uri,
+                String::from_utf8_lossy(&self.state.path_buf),
+                self.state
+                    .geometry_path
+                    .iter()
+                    .map(|name| format!("/{name}"))
+                    .collect::<String>(),
+                self.reader.buffer_position(),
+            )),
+            error => error,
+        })?;
 
         self.state
             .path_buf
@@ -359,7 +377,11 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
     ) -> Result<(), ParseError> {
         let mut surface_id = None;
         loop {
-            match self.reader.read_event_into(&mut self.state.buf1) {
+            match read_geometry_event(
+                self.reader,
+                &mut self.state.buf1,
+                &mut self.state.geometry_path,
+            ) {
                 Ok(Event::Start(start)) => {
                     // surface id
                     for attr in start.attributes().flatten() {
@@ -444,9 +466,19 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
     fn parse_solid_prop(&mut self, geomrefs: &mut GeometryRefs, lod: u8) -> Result<(), ParseError> {
         let poly_begin = self.state.geometry_collector.multipolygon.len();
 
-        if expect_start(self.reader, &mut self.state.buf1, GML31_NS, b"Solid")? {
+        if expect_start(
+            self.reader,
+            &mut self.state.buf1,
+            &mut self.state.geometry_path,
+            GML31_NS,
+            b"Solid",
+        )? {
             self.parse_solid()?;
-            expect_end(self.reader, &mut self.state.buf1)?;
+            expect_end(
+                self.reader,
+                &mut self.state.buf1,
+                &mut self.state.geometry_path,
+            )?;
         }
 
         let poly_end = self.state.geometry_collector.multipolygon.len();
@@ -468,7 +500,11 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
     ) -> Result<(), ParseError> {
         let mut inside_member = false;
         loop {
-            match self.reader.read_event_into(&mut self.state.buf1) {
+            match read_geometry_event(
+                self.reader,
+                &mut self.state.buf1,
+                &mut self.state.geometry_path,
+            ) {
                 Ok(Event::Start(start)) => {
                     let (nsres, localname) = self.reader.resolve_element(start.name());
 
@@ -511,7 +547,11 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
     ) -> Result<(), ParseError> {
         let mut surface_id = None;
         loop {
-            match self.reader.read_event_into(&mut self.state.buf1) {
+            match read_geometry_event(
+                self.reader,
+                &mut self.state.buf1,
+                &mut self.state.geometry_path,
+            ) {
                 Ok(Event::Start(start)) => {
                     let (nsres, localname) = self.reader.resolve_element(start.name());
                     let poly_begin = self.state.geometry_collector.multipolygon.len();
@@ -552,7 +592,10 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                             self.parse_polygon()?;
                             GeometryType::Surface
                         }
-                        (Bound(GML31_NS), b"TriangulatedSurface") => todo!(),
+                        (Bound(GML31_NS), b"TriangulatedSurface") => {
+                            self.parse_triangulated_surface()?;
+                            GeometryType::Surface
+                        }
                         (Bound(GML31_NS), b"Tin") => todo!(),
                         (
                             Bound(GML31_NS),
@@ -564,6 +607,7 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                             );
                             self.reader
                                 .read_to_end_into(start.name(), &mut self.state.buf2)?;
+                            self.state.geometry_path.pop();
 
                             GeometryType::Curve
                         } // FIXME:
@@ -620,7 +664,11 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
         let poly_begin = self.state.geometry_collector.multipolygon.len();
 
         loop {
-            match self.reader.read_event_into(&mut self.state.buf1) {
+            match read_geometry_event(
+                self.reader,
+                &mut self.state.buf1,
+                &mut self.state.geometry_path,
+            ) {
                 Ok(Event::Start(start)) => {
                     let (nsres, localname) = self.reader.resolve_element(start.name());
                     match (nsres, localname.as_ref()) {
@@ -660,9 +708,19 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
     }
 
     fn parse_solid(&mut self) -> Result<(), ParseError> {
-        if expect_start(self.reader, &mut self.state.buf1, GML31_NS, b"exterior")? {
+        if expect_start(
+            self.reader,
+            &mut self.state.buf1,
+            &mut self.state.geometry_path,
+            GML31_NS,
+            b"exterior",
+        )? {
             self.parse_surface()?;
-            expect_end(self.reader, &mut self.state.buf1)?;
+            expect_end(
+                self.reader,
+                &mut self.state.buf1,
+                &mut self.state.geometry_path,
+            )?;
         }
         Ok(())
     }
@@ -671,18 +729,27 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
         if expect_start(
             self.reader,
             &mut self.state.buf1,
+            &mut self.state.geometry_path,
             GML31_NS,
             b"trianglePatches",
         )? {
             self.parse_triangle_patch_array()?;
-            expect_end(self.reader, &mut self.state.buf1)?;
+            expect_end(
+                self.reader,
+                &mut self.state.buf1,
+                &mut self.state.geometry_path,
+            )?;
         }
         Ok(())
     }
 
     fn parse_triangle_patch_array(&mut self) -> Result<(), ParseError> {
         loop {
-            match self.reader.read_event_into(&mut self.state.buf1) {
+            match read_geometry_event(
+                self.reader,
+                &mut self.state.buf1,
+                &mut self.state.geometry_path,
+            ) {
                 Ok(Event::Start(start)) => {
                     let (nsres, localname) = self.reader.resolve_element(start.name());
                     match (nsres, localname.as_ref()) {
@@ -709,12 +776,21 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
 
     fn parse_multi_surface(&mut self) -> Result<(), ParseError> {
         loop {
-            match self.reader.read_event_into(&mut self.state.buf1) {
+            match read_geometry_event(
+                self.reader,
+                &mut self.state.buf1,
+                &mut self.state.geometry_path,
+            ) {
                 Ok(Event::Start(start)) => {
                     let (nsres, localname) = self.reader.resolve_element(start.name());
                     match (nsres, localname.as_ref()) {
                         (Bound(GML31_NS), b"surfaceMember") => self.parse_surface()?,
-                        _ => return Err(ParseError::SchemaViolation("Unexpected element".into())),
+                        _ => {
+                            return Err(ParseError::SchemaViolation(format!(
+                                "Unexpected element <{}>",
+                                String::from_utf8_lossy(localname.as_ref())
+                            )))
+                        }
                     }
                 }
                 Ok(Event::End(_)) => return Ok(()),
@@ -731,7 +807,11 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
 
     fn parse_composite_surface(&mut self) -> Result<(), ParseError> {
         loop {
-            match self.reader.read_event_into(&mut self.state.buf1) {
+            match read_geometry_event(
+                self.reader,
+                &mut self.state.buf1,
+                &mut self.state.geometry_path,
+            ) {
                 Ok(Event::Start(start)) => {
                     let (nsres, localname) = self.reader.resolve_element(start.name());
                     match (nsres, localname.as_ref()) {
@@ -761,7 +841,11 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
         let poly_begin = self.state.geometry_collector.multipolygon.len();
 
         loop {
-            match self.reader.read_event_into(&mut self.state.buf1) {
+            match read_geometry_event(
+                self.reader,
+                &mut self.state.buf1,
+                &mut self.state.geometry_path,
+            ) {
                 Ok(Event::Start(start)) => {
                     // surface id
                     for attr in start.attributes().flatten() {
@@ -783,9 +867,11 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                             log::warn!("OrientableSurface is not supported yet.");
                             self.reader
                                 .read_to_end_into(start.name(), &mut self.state.buf2)?;
+                            self.state.geometry_path.pop();
                         }
-                        // (Bound(GML_NS), b"TriangulatedSurface") =>
-                        // (Bound(GML_NS), b"Tin") =>
+                        (Bound(GML31_NS), b"TriangulatedSurface") => {
+                            self.parse_triangulated_surface()?
+                        }
                         _ => {
                             return Err(ParseError::SchemaViolation(format!(
                                 "Unexpected element <{}>",
@@ -827,8 +913,14 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
         let mut is_exterior = true;
         let mut ring_id = None;
         loop {
-            match self.reader.read_resolved_event_into(&mut self.state.buf1) {
-                Ok((Bound(GML31_NS), Event::Start(start))) => {
+            match read_geometry_event(
+                self.reader,
+                &mut self.state.buf1,
+                &mut self.state.geometry_path,
+            ) {
+                Ok(Event::Start(start))
+                    if self.reader.resolve_element(start.name()).0 == Bound(GML31_NS) =>
+                {
                     depth += 1;
                     match (depth, start.local_name().as_ref()) {
                         (2, b"exterior") => {
@@ -887,19 +979,19 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                         }
                     }
                 }
-                Ok((_, Event::Start(start))) => {
+                Ok(Event::Start(start)) => {
                     return Err(ParseError::SchemaViolation(format!(
                         "Only GML elements are allowed but found <{}>",
                         String::from_utf8_lossy(start.name().as_ref())
                     )));
                 }
-                Ok((_, Event::End(_))) => {
+                Ok(Event::End(_)) => {
                     depth -= 1;
                     if depth == 0 {
                         return Ok(());
                     }
                 }
-                Ok((_, Event::Text(text))) => {
+                Ok(Event::Text(text)) => {
                     if depth != 4 {
                         return Err(ParseError::SchemaViolation(
                             "Unexpected text content".into(),
@@ -927,7 +1019,9 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
                     let iter = self
                         .state
                         .fp_buf
-                        .as_chunks::<3>().0.iter()
+                        .as_chunks::<3>()
+                        .0
+                        .iter()
                         .map(|c| [c[0], c[1], c[2]]);
 
                     if is_exterior {
@@ -1113,14 +1207,37 @@ impl<'b, R: BufRead> SubTreeReader<'_, 'b, R> {
     }
 }
 
+/// Tracks geometry elements without changing the enclosing attribute reader's path.
+fn read_geometry_event<'a, R: BufRead>(
+    reader: &mut NsReader<R>,
+    buf: &'a mut Vec<u8>,
+    path: &mut Vec<String>,
+) -> Result<Event<'a>, quick_xml::Error> {
+    let event = reader.read_event_into(buf)?;
+    match &event {
+        Event::Start(start) => {
+            let (nsres, localname) = reader.resolve_element(start.name());
+            let mut name = wellknown_prefix_from_nsres(&nsres).to_vec();
+            name.extend(localname.as_ref());
+            path.push(String::from_utf8_lossy(&name).into_owned());
+        }
+        Event::End(_) => {
+            path.pop();
+        }
+        _ => (),
+    }
+    Ok(event)
+}
+
 fn expect_start<R: BufRead>(
     reader: &mut NsReader<R>,
     buf: &mut Vec<u8>,
+    path: &mut Vec<String>,
     expect_ns: Namespace,
     expect_name: &[u8],
 ) -> Result<bool, ParseError> {
     loop {
-        match reader.read_event_into(buf) {
+        match read_geometry_event(reader, buf, path) {
             Ok(Event::Start(start)) => {
                 let (nsres, localname) = reader.resolve_element(start.name());
                 if nsres == Bound(expect_ns) && localname.as_ref() == expect_name {
@@ -1148,12 +1265,19 @@ fn expect_start<R: BufRead>(
     }
 }
 
-fn expect_end<R: BufRead>(reader: &mut NsReader<R>, buf: &mut Vec<u8>) -> Result<(), ParseError> {
+fn expect_end<R: BufRead>(
+    reader: &mut NsReader<R>,
+    buf: &mut Vec<u8>,
+    path: &mut Vec<String>,
+) -> Result<(), ParseError> {
     loop {
-        match reader.read_event_into(buf) {
+        match read_geometry_event(reader, buf, path) {
             Ok(Event::End(_)) => return Ok(()),
-            Ok(Event::Start(_)) => {
-                return Err(ParseError::SchemaViolation("End tag is expected".into()))
+            Ok(Event::Start(start)) => {
+                return Err(ParseError::SchemaViolation(format!(
+                    "End tag is expected but found <{}>",
+                    String::from_utf8_lossy(start.name().as_ref())
+                )))
             }
             Ok(_) => (),
             Err(e) => return Err(e.into()),
