@@ -52,6 +52,11 @@ impl DataSinkProvider for GpkgSinkProvider {
         let mut settings: TransformerSettings = TransformerSettings::new();
         settings.insert(use_lod_config("max_lod", None));
         settings.insert(join_attribute_arrays_config(false));
+        settings.insert(transformer::TransformerConfig {
+            key: "split_components".to_string(),
+            label: "構成要素ごとに地物を分ける".to_string(),
+            parameter: transformer::ParameterType::Boolean(false),
+        });
 
         settings
     }
@@ -275,18 +280,26 @@ pub enum GpkgTransformOption {}
 
 impl DataSink for GpkgSink {
     fn make_requirements(&mut self, properties: TransformerSettings) -> DataRequirements {
+        for config in properties.configs.iter() {
+            let _ = &self.transform_settings.update_transformer(config.clone());
+        }
+
+        let split_components = self.transform_settings.configs.iter().any(|config| {
+            config.key == "split_components"
+                && matches!(config.parameter, transformer::ParameterType::Boolean(true))
+        });
         let default_requirements = DataRequirements {
             tree_flattening: transformer::TreeFlatteningSpec::Flatten {
-                feature: transformer::FeatureFlatteningOption::AllExceptThematicSurfaces,
+                feature: if split_components {
+                    transformer::FeatureFlatteningOption::All
+                } else {
+                    transformer::FeatureFlatteningOption::AllExceptThematicSurfaces
+                },
                 data: transformer::DataFlatteningOption::TopLevelOnly,
                 object: transformer::ObjectFlatteningOption::None,
             },
             ..Default::default()
         };
-
-        for config in properties.configs.iter() {
-            let _ = &self.transform_settings.update_transformer(config.clone());
-        }
 
         self.transform_settings.build(default_requirements)
     }
