@@ -17,7 +17,7 @@ A "proof-of-concept" GUI and CLI tool for converting PLATEAU's 3D city models (C
 
 **PLATEAU GIS Converter** は、[PLATEAU](https://www.mlit.go.jp/plateau/)が提供するCityGML形式の3D都市モデルを他の一般的なGISデータ形式に変換するソフトウェアです。
 
-[東京都23区の CityGML (v2)](https://www.geospatial.jp/ckan/dataset/plateau-tokyo23ku-2022/resource/55c72dd0-32eb-4107-9526-71fc0af8d50f3) を読み込んで、3D Tiles に変換した例：
+[東京都23区の CityGML (v2)](https://www.geospatial.jp/ckan/dataset/plateau-tokyo23ku-2022/resource/55c72dd0-32eb-4107-9526-71fc0af8d50f) を読み込んで、3D Tiles に変換した例：
 
 ![](docs/resources/README_image.png)
 
@@ -128,8 +128,8 @@ xattr -d com.apple.quarantine nusamai
   - [`app`](./app/) &mdash; Tauri による GUI 実装
   - [`nusamai`](./nusamai/) &mdash; アプリケーションバックエンドおよびコマンドライン版の実装
 - データソース：
-  - [`nusamai-citygml`](./nusamai-plateau/citygml/) &mdash; CityGML パーサ実装支援ライブラリ
-    - [`macros`](./nusamai-plateau/citygml/macros/) &mdash; パーサ導出用の proc macros
+  - [`nusamai-citygml`](./nusamai-citygml/) &mdash; CityGML パーサ実装支援ライブラリ
+    - [`macros`](./nusamai-citygml/macros/) &mdash; パーサ導出用の proc macros
   - [`nusamai-plateau`](./nusamai-plateau/) &mdash; PLATEAU 用の CityGML モデルおよびパーサ
 - 基盤・ユーティリティ（本プロジェクトのユースケースと癒着しないように構成）：
   - [`nusamai-projection`](./nusamai-projection/) &mdash; 投影法変換
@@ -176,11 +176,6 @@ xattr -d com.apple.quarantine nusamai
 PLATEAU GIS Converter の並列処理パイプラインおよびジオメトリのスライシング手法は、Planetiler の [ARCHITECTURE.md](https://github.com/onthegomap/planetiler/blob/main/ARCHITECTURE.md) を大いに参考にしています。
 
 ## Development (開発者向け情報)
-
-<!--
-- [MIERUNE/plateau-schema-experiment](https://github.com/MIERUNE/plateau-schema-experiment) — CityGML 2.0 と i-UR の XML Schema を解析する実験コード群。QGIS Pluginの属性列挙に使用。
-- [MIERUNE/3dtiles-research](https://github.com/MIERUNE/3dtiles-research) — 3D Tiles / glTF の実験コード群
--->
 
 ### Build &amp; Run
 
