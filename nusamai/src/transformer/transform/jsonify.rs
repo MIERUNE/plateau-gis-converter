@@ -65,9 +65,13 @@ impl Transform for JsonifyTransform {
                             }
                             _ => {
                                 if self.jsonify_array && attr.max_occurs != Some(1) {
-                                    attr.type_ref = TypeRef::JsonString(attr.clone().into())
+                                    attr.type_ref = TypeRef::JsonString(attr.clone().into());
                                 }
                             }
+                        }
+                        if self.jsonify_array && attr.max_occurs != Some(1) {
+                            attr.max_occurs = Some(1);
+                            attr.min_occurs = attr.min_occurs.min(1);
                         }
                     }
                 }
