@@ -18,7 +18,7 @@ stretto = "0.8.4"
 hashbrown = { version = "0.16.0", features = ["serde"] }
 indexmap = "2.11.4"
 log = "0.4.28"
-zip = "4.6.1"
+zip = "9.0.5"
 
 [dev-dependencies]
 zstd = { version = "0.13.3", features = ["zdict_builder"] }

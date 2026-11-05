@@ -27,7 +27,7 @@ nusamai-plateau = { path = "../../nusamai-plateau" }
 nusamai-citygml = { path = "../../nusamai-citygml" }
 log = "0.4.28"
 thiserror = "2.0.16"
-zip = "5.1.1"
+zip = "9.0.5"
 tokio = { version = "1.47.1", features = ["macros", "rt-multi-thread"] }
 reqwest = { version = "0.12.24", features = ["json", "gzip", "brotli", "deflate", "stream"] }
 tempfile = "3.23.0"

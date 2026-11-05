@@ -662,7 +662,7 @@ fn list_files_in_zip(zip_path: &str) -> Result<Vec<String>, Error> {
 
     for i in 0..archive.len() {
         let file = archive.by_index(i).map_err(|e| Error::Io(e.to_string()))?;
-        let file_path = file.name();
+        let file_path = file.name().map_err(|e| Error::Io(e.to_string()))?;
 
         // Check if the file has a supported extension
         if file_path.ends_with(".gml")
@@ -793,7 +793,10 @@ fn get_meshcodes_with_prefix(
 
         for i in 0..archive.len() {
             let file = archive.by_index(i).map_err(|e| Error::Io(e.to_string()))?;
-            let file_path = file.name().to_string();
+            let file_path = file
+                .name()
+                .map_err(|e| Error::Io(e.to_string()))?
+                .into_owned();
 
             if file_path.ends_with(".gml")
                 && let Some((meshcode, file_type)) = extract_meshcode_and_type(&file_path)
