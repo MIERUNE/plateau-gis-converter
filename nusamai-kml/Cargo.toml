@@ -6,5 +6,5 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-kml = "0.11.0"
+kml = { version = "0.11.0", default-features = false }
 flatgeom = "0.0"

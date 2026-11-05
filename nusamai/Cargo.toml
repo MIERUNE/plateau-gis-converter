@@ -43,7 +43,7 @@ shapefile = { version = "0.9.0", features = ["encoding_rs"] }
 earcut = "0.4"
 glob = "0.3.3"
 shellexpand = "3.1.1"
-kml = "0.11.0"
+kml = { version = "0.11.0", default-features = false }
 nusamai-kml = { path = "../nusamai-kml" }
 image = { version = "0.25.8", default-features = false, features = [
   "rayon",
