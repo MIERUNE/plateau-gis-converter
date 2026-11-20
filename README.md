@@ -148,7 +148,7 @@ xattr -d com.apple.quarantine nusamai
 - [MIERUNE/dda-vozelize-rs](https://github.com/MIERUNE/dda-voxelize-rs) &mdash; 3Dメッシュサーフェスの高速なボクセル化
 - [MIERUNE/cesiumtiles-rs](https://github.com/MIERUNE/cesiumtiles-rs) &mdash; 3D TilesのJSONモデルなど
 - [ciscorn/japan-geoid](https://github.com/ciscorn/japan-geoid) &mdash; 日本のジオイドモデル (JGD2011 → WGS 84 の変換)
-- [ciscorn/geocentric-rs](https://github.com/ciscorn/geocentric-rs) &mdash; 地心座標系と地理座標系の相互変換
+- [georust/geographiclib-rs](https://github.com/georust/geographiclib-rs) &mdash; 地心座標系と地理座標系の相互変換
 - [ciscorn/jprect-rs](https://github.com/ciscorn/jprect-rs) &mdash; 平面直角座標系（横メルカトル）の扱い
 - [ciscorn/tinymvt](https://github.com/ciscorn/tinymvt) &mdash; MVT生成のためのユーティリティ
 - [ciscorn/kv-extsort-rs](https://github.com/ciscorn/kv-extsort-rs) &mdash; Key-value データの外部ソート
