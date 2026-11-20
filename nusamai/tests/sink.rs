@@ -198,7 +198,40 @@ fn run_shapefile_sink() {
 
 #[test]
 fn run_ply_sink() {
-    simple_run_sink(sink::ply::StanfordPlySinkProvider {}, "/dev/null".into());
+    use std::io::{BufRead, BufReader};
+
+    use byteorder::{LittleEndian, ReadBytesExt};
+
+    let temp_dir = tempfile::tempdir().unwrap();
+    let output_path = temp_dir.path().join("output.ply");
+    simple_run_sink(sink::ply::StanfordPlySinkProvider {}, output_path.to_str());
+
+    let mut reader = BufReader::new(std::fs::File::open(output_path).unwrap());
+    let mut vertex_count = 0;
+    let mut line = String::new();
+    loop {
+        line.clear();
+        assert_ne!(
+            reader.read_line(&mut line).unwrap(),
+            0,
+            "incomplete PLY header"
+        );
+        if let Some(count) = line.trim().strip_prefix("element vertex ") {
+            vertex_count = count.parse::<usize>().unwrap();
+        }
+        if line.trim() == "end_header" {
+            break;
+        }
+    }
+
+    // A latitude/longitude swap in the ECEF conversion must not silently
+    // produce an empty mesh or vertices with NaN coordinates.
+    assert!(vertex_count > 0);
+    for _ in 0..vertex_count {
+        for _ in 0..3 {
+            assert!(reader.read_f64::<LittleEndian>().unwrap().is_finite());
+        }
+    }
 }
 
 #[test]

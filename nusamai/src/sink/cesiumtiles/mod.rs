@@ -28,7 +28,7 @@ use atlas_packer::{
 use bytemuck::Zeroable;
 use earcut::{utils3d::project3d_to_2d, Earcut};
 use foldhash::fast::RandomState;
-use geocentric::geodetic_to_geocentric;
+use geographiclib_rs::Geocentric;
 use gltf::write_gltf_glb;
 use indexmap::IndexSet;
 use itertools::Itertools;
@@ -344,7 +344,7 @@ fn tile_writing_stage(
     limit_texture_resolution: Option<bool>,
     gzip_compress: Option<bool>,
 ) -> Result<()> {
-    let ellipsoid = nusamai_projection::ellipsoid::wgs84();
+    let geocentric = Geocentric::wgs84();
     let contents: Arc<Mutex<Vec<TileContent>>> = Default::default();
     let bincode_config = bincode::config::standard();
 
@@ -381,11 +381,9 @@ fn tile_writing_stage(
                 // translation_ecef: z-up ECEF for tile.transform in tileset.json
                 // translation_yup: y-up for glTF vertex computation
                 let (translation_ecef, translation_yup) = {
-                    let (tx, ty, tz) = geodetic_to_geocentric(
-                        ellipsoid.a(),
-                        ellipsoid.e_sq(),
-                        (min_lng + max_lng) / 2.0,
+                    let (tx, ty, tz) = geocentric.forward(
                         (min_lat + max_lat) / 2.0,
+                        (min_lng + max_lng) / 2.0,
                         0.,
                     );
                     ([tx, ty, tz], [tx, tz, -ty])
@@ -453,13 +451,7 @@ fn tile_writing_stage(
                                 // - z-up to y-up
                                 // - subtract the translation
                                 // - The origin of atlas-packer is in the lower right.
-                                let (x, y, z) = geodetic_to_geocentric(
-                                    ellipsoid.a(),
-                                    ellipsoid.e_sq(),
-                                    lng,
-                                    lat,
-                                    height,
-                                );
+                                let (x, y, z) = geocentric.forward(lat, lng, height);
                                 [
                                     x - translation[0],
                                     z - translation[1],

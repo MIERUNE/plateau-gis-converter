@@ -5,7 +5,7 @@ use std::{io::Write, path::PathBuf};
 use byteorder::{ByteOrder, LittleEndian, WriteBytesExt};
 use earcut::{utils3d::project3d_to_2d, Earcut};
 use foldhash::fast::RandomState;
-use geocentric::geodetic_to_geocentric;
+use geographiclib_rs::Geocentric;
 use indexmap::IndexSet;
 use nusamai_citygml::{
     object::{ObjectStereotype, Value},
@@ -98,7 +98,7 @@ impl DataSink for StanfordPlySink {
 
         let (ra, rb) = rayon::join(
             || {
-                let ellipsoid = nusamai_projection::ellipsoid::wgs84();
+                let geocentric = Geocentric::wgs84();
 
                 upstream
                     .into_iter()
@@ -133,13 +133,7 @@ impl DataSink for StanfordPlySink {
                                         let [lng, lat, height] = geom_store.vertices[*idx as usize];
                                         // Convert to geocentric (x, y, z) coordinate.
                                         // (Earcut do not work in geographic space)
-                                        let (x, y, z) = geodetic_to_geocentric(
-                                            ellipsoid.a(),
-                                            ellipsoid.e_sq(),
-                                            lng,
-                                            lat,
-                                            height,
-                                        );
+                                        let (x, y, z) = geocentric.forward(lat, lng, height);
                                         [x, y, z]
                                     });
                                     let num_outer = match poly.hole_indices().first() {
