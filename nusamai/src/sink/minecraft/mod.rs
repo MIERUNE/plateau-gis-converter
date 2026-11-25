@@ -2,28 +2,36 @@
 mod block_colors;
 mod level;
 mod region;
+mod texture_color;
 
 use log::error;
 use std::{io::Write, path::PathBuf, sync::Mutex};
 
+use atlas_packer::texture::cache::TextureCache;
 use dda_voxelize::DdaVoxelizer;
 use earcut::{utils3d::project3d_to_2d, Earcut};
 use flate2::{write::GzEncoder, Compression};
 use hashbrown::HashMap;
+use image::RgbImage;
 use rayon::prelude::*;
+use url::Url;
 
 use nusamai_citygml::{
     object::{ObjectStereotype, Value},
     schema::Schema,
-    GeometryType,
+    GeometryRef, GeometryStore, GeometryType,
 };
+use nusamai_plateau::appearance::AppearanceStore;
 use nusamai_projection::etmerc::ExtendedTransverseMercatorProjection;
 
 use crate::{
     get_parameter_value,
     parameters::*,
     pipeline::{Feedback, Receiver, Result},
-    sink::{DataRequirements, DataSink, DataSinkProvider, SinkInfo},
+    sink::{
+        texture_path::texture_path_from_url, DataRequirements, DataSink, DataSinkProvider, SinkInfo,
+    },
+    source::file_reader::FileReader,
     transformer,
     transformer::{use_lod_config, TransformerSettings},
 };
@@ -31,6 +39,7 @@ use crate::{
 use block_colors::{DefaultBlockResolver, Voxel};
 use level::{Data, Level};
 use region::{write_anvil, BlockData, ChunkData, Position2D, RegionData, SectionData, WorldData};
+use texture_color::{nearest_block, polygon_pixels, representative_color};
 
 use super::option::output_parameter;
 
@@ -47,6 +56,16 @@ impl DataSinkProvider for MinecraftSinkProvider {
     fn sink_options(&self) -> Parameters {
         let mut params = Parameters::new();
         params.define(output_parameter());
+        params.define(ParameterDefinition {
+            key: "texture_block_color".into(),
+            entry: ParameterEntry {
+                description: "Choose the block of each textured polygon from the texture colour"
+                    .into(),
+                required: false,
+                parameter: ParameterType::Boolean(BooleanParameter { value: Some(false) }),
+                label: Some("テクスチャの色でブロックを選ぶ".into()),
+            },
+        });
 
         params
     }
@@ -59,11 +78,14 @@ impl DataSinkProvider for MinecraftSinkProvider {
     }
     fn create(&self, params: &Parameters) -> Box<dyn DataSink> {
         let output_path = get_parameter_value!(params, "@output", FileSystemPath);
+        let texture_block_color =
+            get_parameter_value!(params, "texture_block_color", Boolean).unwrap_or(false);
         let transform_options = self.transformer_options();
 
         Box::<MinecraftSink>::new(MinecraftSink {
             output_path: output_path.as_ref().unwrap().into(),
             transform_settings: transform_options,
+            texture_block_color,
         })
     }
 }
@@ -71,6 +93,7 @@ impl DataSinkProvider for MinecraftSinkProvider {
 pub struct MinecraftSink {
     output_path: PathBuf,
     transform_settings: TransformerSettings,
+    texture_block_color: bool,
 }
 
 pub struct BoundingVolume {
@@ -114,6 +137,9 @@ impl DataSink for MinecraftSink {
                 data: transformer::DataFlatteningOption::None,
                 object: transformer::ObjectFlatteningOption::None,
             },
+            // Minecraft's LOD options never turn on appearance parsing, so the option does it.
+            use_appearance: self.texture_block_color,
+            resolve_appearance: self.texture_block_color,
             ..Default::default()
         };
 
@@ -173,6 +199,10 @@ impl DataSink for MinecraftSink {
 
         let voxelizer = Mutex::new(DdaVoxelizer::<Voxel>::new());
 
+        let texture_cache = self
+            .texture_block_color
+            .then(|| TextureCache::new(100_000_000));
+
         // TODO: Scalable par-region processing with external sorting (map-reduce).
 
         parcels.into_par_iter().try_for_each(|parcel| {
@@ -195,6 +225,17 @@ impl DataSink for MinecraftSink {
 
             let geom_store = entity.geometry_store.read().unwrap();
 
+            let textures = match &texture_cache {
+                Some(texture_cache) => load_polygon_textures(
+                    geometries,
+                    &geom_store,
+                    &entity.appearance_store.read().unwrap(),
+                    texture_cache,
+                    feedback,
+                ),
+                None => HashMap::new(),
+            };
+
             geometries.par_iter().for_each(|entry| match entry.ty {
                 GeometryType::Solid | GeometryType::Surface | GeometryType::Triangle => {
                     let mut earcutter = Earcut::<f32>::new();
@@ -202,10 +243,29 @@ impl DataSink for MinecraftSink {
                     let mut buf2d: Vec<[f32; 2]> = Vec::new();
                     let mut index_buf: Vec<u32> = Vec::new();
 
-                    for idx_poly in geom_store
-                        .multipolygon
-                        .iter_range(entry.pos as usize..(entry.pos + entry.len) as usize)
+                    let range = entry.pos as usize..(entry.pos + entry.len) as usize;
+                    for (poly_idx, idx_poly) in
+                        range.clone().zip(geom_store.multipolygon.iter_range(range))
                     {
+                        let texture_voxel = geom_store
+                            .polygon_textures
+                            .get(poly_idx)
+                            .copied()
+                            .flatten()
+                            .and_then(|tex_idx| textures.get(&tex_idx)?.as_ref())
+                            .and_then(|img| {
+                                let uv_poly = geom_store.polygon_uvs.get(poly_idx);
+                                representative_color(&polygon_pixels(
+                                    img,
+                                    uv_poly.exterior().raw_coords(),
+                                ))
+                            })
+                            .map(|color| Voxel {
+                                block_name: nearest_block(color),
+                                priority: voxel.priority,
+                            });
+                        let poly_voxel = texture_voxel.as_ref().unwrap_or(&voxel);
+
                         let poly = idx_poly.transform(|idx| geom_store.vertices[*idx as usize]);
                         let num_outer = match poly.hole_indices().first() {
                             Some(&v) => v as usize,
@@ -244,10 +304,10 @@ impl DataSink for MinecraftSink {
                                             buf3d[indx[2] as usize],
                                         ],
                                         &|previous_value, _, _| match previous_value {
-                                            None => voxel.clone(),
+                                            None => poly_voxel.clone(),
                                             Some(prev) => {
-                                                if voxel.priority > prev.priority {
-                                                    voxel.clone()
+                                                if poly_voxel.priority > prev.priority {
+                                                    poly_voxel.clone()
                                                 } else {
                                                     prev.clone()
                                                 }
@@ -362,4 +422,45 @@ impl DataSink for MinecraftSink {
 
         Ok(())
     }
+}
+
+/// Decodes each texture that a polygon in `geometries` uses, keyed by texture index.
+/// `None` marks a texture that could not be read.
+fn load_polygon_textures(
+    geometries: &[GeometryRef],
+    geom_store: &GeometryStore,
+    appearance_store: &AppearanceStore,
+    texture_cache: &TextureCache,
+    feedback: &Feedback,
+) -> HashMap<u32, Option<RgbImage>> {
+    let mut textures = HashMap::new();
+    for entry in geometries {
+        if !matches!(
+            entry.ty,
+            GeometryType::Solid | GeometryType::Surface | GeometryType::Triangle
+        ) {
+            continue;
+        }
+        let range = entry.pos as usize..(entry.pos + entry.len) as usize;
+        for &tex_idx in geom_store.polygon_textures[range].iter().flatten() {
+            textures.entry(tex_idx).or_insert_with(|| {
+                let texture = appearance_store.textures.get(tex_idx as usize)?;
+                load_texture(texture_cache, &texture.image_url, feedback)
+            });
+        }
+    }
+    textures
+}
+
+fn load_texture(texture_cache: &TextureCache, url: &Url, feedback: &Feedback) -> Option<RgbImage> {
+    let path = texture_path_from_url(url, feedback)?;
+    // TextureCache::get_image panics on a missing file.
+    if !path.to_str().is_some_and(FileReader::is_zip_path) && !path.is_file() {
+        feedback.warn(format!(
+            "Texture not found, using the default block: {}",
+            path.display()
+        ));
+        return None;
+    }
+    Some(texture_cache.get_image(&path).into_rgb8())
 }
